@@ -133,8 +133,6 @@ export const ComboBox = forwardRef(function Combobox<
     value: valueProp,
   });
 
-  console.log({ inputProps, endAdornmentProp });
-
   const collectionItemsToItem = useCallback(
     (
       sel?: CollectionItem<Item> | null | CollectionItem<Item>[]
@@ -164,8 +162,6 @@ export const ComboBox = forwardRef(function Combobox<
         }}
       />
     );
-
-  console.log({ endAdornment });
 
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>

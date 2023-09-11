@@ -23,7 +23,15 @@ import { FilterBarProps } from "./FilterBar";
 export interface FilterBarHookProps
   extends Pick<
     FilterBarProps,
-    "filters" | "onApplyFilter" | "onChangeFilter" | "showMenu"
+    | "filters"
+    | "onActiveChange"
+    | "onApplyFilter"
+    | "onAddFilter"
+    | "onDeleteFilter"
+    | "onRemoveFilter"
+    | "onRenameFilter"
+    | "onChangeFilter"
+    | "showMenu"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -33,7 +41,12 @@ const EMPTY_FILTER_CLAUSE: Partial<Filter> = {};
 export const useFilterBar = ({
   containerRef,
   filters: filtersProp,
+  onActiveChange,
   onApplyFilter,
+  onAddFilter,
+  onDeleteFilter,
+  onRemoveFilter,
+  onRenameFilter,
   onChangeFilter,
   showMenu: showMenuProp,
 }: FilterBarHookProps) => {
@@ -98,7 +111,7 @@ export const useFilterBar = ({
     [containerRef]
   );
 
-  const deleteWithoutPrompt = useCallback(
+  const deleteConfirmed = useCallback(
     (filter: Filter) => {
       const indexOfFilter = filters.indexOf(filter);
       if (activeFilterIndices.includes(indexOfFilter)) {
@@ -108,14 +121,16 @@ export const useFilterBar = ({
         );
       }
       setFilters((filters) => filters.filter((f) => f !== filter));
-      // move focus to next/previous filter
+      onDeleteFilter?.(filter);
+
+      // TODO move focus to next/previous filter
       requestAnimationFrame(() => {
         if (filters.length) {
           focusFilterPill(0);
         }
       });
     },
-    [activeFilterIndices, filters, focusFilterPill]
+    [activeFilterIndices, filters, focusFilterPill, onDeleteFilter]
   );
 
   const getDeletePrompt = useMemo(
@@ -131,14 +146,14 @@ export const useFilterBar = ({
         onClose: close,
         onConfirm: () => {
           setPromptProps(null);
-          deleteWithoutPrompt(filter);
+          deleteConfirmed(filter);
         },
         text: `Are you sure you want to delete  ${filter.name}`,
         title: "Remove Filter",
         variant: "warn",
       } as PromptProps;
     },
-    [deleteWithoutPrompt, focusFilterPill]
+    [deleteConfirmed, focusFilterPill]
   );
 
   const deleteFilter = useCallback(
@@ -146,10 +161,76 @@ export const useFilterBar = ({
       if (withPrompt) {
         setPromptProps(getDeletePrompt(filter));
       } else {
-        deleteWithoutPrompt(filter);
+        deleteConfirmed(filter);
       }
     },
-    [deleteWithoutPrompt, getDeletePrompt]
+    [deleteConfirmed, getDeletePrompt]
+  );
+
+  const applyFilter = useCallback(
+    (filter?: Filter) => {
+      const filterQuery = filter ? filterAsQuery(filter) : "";
+      onApplyFilter({
+        filter: filterQuery,
+        filterStruct: filter,
+      });
+    },
+    [onApplyFilter]
+  );
+
+  const saveFilter = useCallback(
+    (filter: Filter) => {
+      let index = -1;
+      setFilters((filters) => {
+        const newFilters = filters.map((f, i) => {
+          if (f === filter) {
+            index = i;
+            return filter;
+          } else {
+            return f;
+          }
+        });
+        return newFilters;
+      });
+      onChangeFilter?.(filter);
+      return index;
+    },
+    [onChangeFilter]
+  );
+
+  const renameFilter = useCallback(
+    (filter: Filter, name: string) => {
+      let index = -1;
+      setFilters((filters) => {
+        const newFilters = filters.map((f, i) => {
+          if (f === filter) {
+            index = i;
+            return { ...f, name };
+          } else {
+            return f;
+          }
+        });
+        return newFilters;
+      });
+      onRenameFilter?.(filter, name);
+      return index;
+    },
+    [onRenameFilter]
+  );
+
+  const saveNewFilter = useCallback(
+    (filter: Filter) => {
+      let index = -1;
+      setFilters((filters) => {
+        index = filters.length;
+        const newFilters = filters.concat(filter);
+        editPillLabel(index);
+        return newFilters;
+      });
+      onAddFilter?.(filter);
+      return index;
+    },
+    [editPillLabel, onAddFilter]
   );
 
   const handleBeginEditFilterName = useCallback((filter: Filter) => {
@@ -160,17 +241,16 @@ export const useFilterBar = ({
   const handleExitEditFilterName: EditableLabelProps["onExitEditMode"] =
     useCallback(
       (_, editedValue = "") => {
-        const { current: filter } = editingFilter;
-        if (filter) {
-          const indexOfEditedFilter = filters.indexOf(filter);
-          setFilters((filters) =>
-            filters.map((f) => (f === filter ? { ...f, name: editedValue } : f))
+        if (editingFilter.current) {
+          const indexOfEditedFilter = renameFilter(
+            editingFilter.current,
+            editedValue
           );
           editingFilter.current = undefined;
           focusFilterPill(indexOfEditedFilter);
         }
       },
-      [filters, focusFilterPill]
+      [focusFilterPill, renameFilter]
     );
 
   const handlePillMenuAction = useCallback<MenuActionHandler>(
@@ -201,41 +281,24 @@ export const useFilterBar = ({
     [deleteFilter, editPillLabel, filters, focusFilterClause]
   );
 
-  const applyFilter = useCallback(
-    (filter?: Filter) => {
-      const filterQuery = filter ? filterAsQuery(filter) : "";
-      onApplyFilter({
-        filter: filterQuery,
-        filterStruct: filter,
-      });
-    },
-    [onApplyFilter]
-  );
-
   const handleMenuAction = useCallback<MenuActionHandler>(
     ({ menuId }) => {
       switch (menuId) {
         case "apply-save": {
           // TODO save these into state together
           const { current: editedFilter } = editingFilter;
-          const indexOfNewFilter = editedFilter
-            ? filters.indexOf(editedFilter)
-            : filters.length;
-          const newFilter = editFilter as Filter;
-          setEditFilter(undefined);
-          setFilters((filters) => {
-            const newFilters = editedFilter
-              ? filters.map((f) => (f === editedFilter ? newFilter : f))
-              : filters.concat(newFilter);
-            editPillLabel(newFilters.length - 1);
 
-            if (!activeFilterIndices.includes(indexOfNewFilter)) {
-              setActiveFilterIndices((indices) =>
-                indices.concat(indexOfNewFilter)
-              );
-            }
-            return newFilters;
-          });
+          const newFilter = editFilter as Filter;
+          const save = editedFilter ? saveFilter : saveNewFilter;
+          const indexOfNewFilter = save(newFilter);
+
+          setEditFilter(undefined);
+
+          if (!activeFilterIndices.includes(indexOfNewFilter)) {
+            setActiveFilterIndices((indices) =>
+              indices.concat(indexOfNewFilter)
+            );
+          }
           setShowMenu(false);
           applyFilter(newFilter);
           return true;
@@ -257,14 +320,14 @@ export const useFilterBar = ({
           return false;
       }
     },
-    [activeFilterIndices, applyFilter, editFilter, editPillLabel, filters]
+    [activeFilterIndices, applyFilter, editFilter, saveFilter, saveNewFilter]
   );
 
-  const handleAddFilter = useCallback(() => {
+  const handleClickAddFilter = useCallback(() => {
     setEditFilter({});
   }, []);
 
-  const handleRemoveFilter = useCallback(() => {
+  const handleClickRemoveFilter = useCallback(() => {
     setEditFilter(undefined);
   }, []);
 
@@ -313,20 +376,21 @@ export const useFilterBar = ({
         applyFilter();
       }
       setActiveFilterIndices(activeIndices);
+      onActiveChange?.(activeIndices);
     },
-    [applyFilter, filters]
+    [applyFilter, filters, onActiveChange]
   );
 
   return {
     activeFilterIndices,
     editFilter,
     filters,
-    onAddFilter: handleAddFilter,
+    onClickAddFilter: handleClickAddFilter,
+    onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,
     onFilterActivation: handleFilterActivation,
     onKeyDown,
     onMenuAction: handleMenuAction,
-    onRemoveFilter: handleRemoveFilter,
     pillProps,
     promptProps,
     showMenu,

@@ -6,7 +6,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTableConfig } from "../examples/utils";
 
 import "./TableNext.feature.css";
@@ -16,6 +16,8 @@ export interface TableNextFeatureProps {
   schema: TableSchema;
   showFilter?: boolean;
 }
+
+let renderCount = 0;
 
 type FilterbarConfig = Pick<FilterBarProps, "filters">;
 const getFilterbarProps = (config?: FilterbarConfig) => {
@@ -41,6 +43,18 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
     "filterbar-config": filterbarConfig,
     "table-config": tableConfig,
   } = useMemo(() => load?.() ?? ({} as any), [load]);
+
+  console.log(`TableNextFeature ${renderCount++}`);
+
+  if (renderCount > 5) {
+    throw Error("too many renders");
+  }
+
+  const filterbarConfigRef = useRef<FilterbarConfig>(
+    getFilterbarProps(filterbarConfig)
+  );
+
+  console.log({ filterbarConfigRef: filterbarConfigRef.current });
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
@@ -78,15 +92,16 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
     [dataSource]
   );
 
-  const handleChangeFilter = useCallback(
-    (filter: Filter, newFilter: Filter) => {
-      console.log("change filter", {
-        filter,
-        newFilter,
-      });
-    },
-    []
-  );
+  const handleAddFilter = useCallback((filter: Filter) => {
+    console.log("change filter", {
+      filter,
+    });
+  }, []);
+  const handleChangeFilter = useCallback((filter: Filter) => {
+    console.log("change filter", {
+      filter,
+    });
+  }, []);
 
   const filterBarProps: FilterBarProps = {
     ...getFilterbarProps(filterbarConfig as FilterbarConfig),
@@ -94,6 +109,7 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
       suggestionProvider: typeaheadHook,
     },
     onApplyFilter: handleApplyFilter,
+    onAddFilter: handleAddFilter,
     onChangeFilter: handleChangeFilter,
     tableSchema: schema,
   };

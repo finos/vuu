@@ -81,7 +81,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         }
       }
     },
-    [serializeState]
+    [forceRefresh, serializeState]
   );
 
   const layoutActionDispatcher: LayoutProviderDispatch = useCallback(

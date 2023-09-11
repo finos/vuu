@@ -18,11 +18,13 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
   activeFilterIndex?: number[];
   filters: Filter[];
+  onActiveChange?: (itemIndex: number[]) => void;
   onAddFilter?: (filter: Filter) => void;
   onApplyFilter: (filter: DataSourceFilter) => void;
-  onChangeFilter?: (filter: Filter, newFilter: Filter) => void;
+  onChangeFilter?: (filter: Filter) => void;
   onDeleteFilter?: (filter: Filter) => void;
   onRemoveFilter?: (filter: Filter) => void;
+  onRenameFilter?: (filter: Filter, name: string) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
 }
@@ -33,6 +35,11 @@ export const FilterBar = ({
   FilterClauseEditorProps,
   className: classNameProp,
   filters: filtersProp,
+  onActiveChange,
+  onAddFilter,
+  onDeleteFilter,
+  onRemoveFilter,
+  onRenameFilter,
   onApplyFilter,
   onChangeFilter,
   showMenu: showMenuProp = false,
@@ -44,8 +51,8 @@ export const FilterBar = ({
     activeFilterIndices,
     editFilter,
     filters,
-    onAddFilter,
-    onRemoveFilter,
+    onClickAddFilter,
+    onClickRemoveFilter,
     onChangeFilterClause,
     onFilterActivation,
     onKeyDown,
@@ -56,6 +63,11 @@ export const FilterBar = ({
   } = useFilterBar({
     containerRef: rootRef,
     filters: filtersProp,
+    onActiveChange,
+    onAddFilter,
+    onDeleteFilter,
+    onRemoveFilter,
+    onRenameFilter,
     onApplyFilter,
     onChangeFilter,
     showMenu: showMenuProp,
@@ -82,7 +94,7 @@ export const FilterBar = ({
           data-icon="plus"
           data-selectable={false}
           key="filter-add"
-          onClick={onAddFilter}
+          onClick={onClickAddFilter}
           variant="primary"
         />
       );
@@ -114,7 +126,7 @@ export const FilterBar = ({
           data-align="right"
           data-icon="cross"
           key="filter-remove"
-          onClick={onRemoveFilter}
+          onClick={onClickRemoveFilter}
           variant="primary"
         />
       );
