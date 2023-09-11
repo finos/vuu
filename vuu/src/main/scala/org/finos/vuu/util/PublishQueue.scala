@@ -1,11 +1,13 @@
 package org.finos.vuu.util
 
 import org.finos.vuu.viewport.{ViewPortUpdate, ViewPortUpdateType}
-import org.finos.toolbox.CoalescingQueueNaiveImpl
+import org.finos.toolbox.{CoalescingPriorityQueueImpl, CoalescingQueueNaiveImpl}
 
 trait PublishQueue[T] {
 
-  def push(entry: T)
+  def push(entry: T): Unit
+
+  def pushHighPriority(entry: T): Unit
 
   def pop: T
 
@@ -24,10 +26,14 @@ class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate] {
 
   private def toKeyFunc(vpu: ViewPortUpdate) = new CollKey(vpu.vp.id, vpu.vpUpdate, vpu.key.key)
 
-  private val coallescingQ = new CoalescingQueueNaiveImpl[ViewPortUpdate, CollKey](toKeyFunc, mergeFn)
+  private val coallescingQ = new CoalescingPriorityQueueImpl[ViewPortUpdate, CollKey](toKeyFunc, mergeFn)
 
   override def push(entry: ViewPortUpdate): Unit = {
     coallescingQ.push(entry)
+  }
+
+  override def pushHighPriority(entry: ViewPortUpdate): Unit = {
+    coallescingQ.pushHighPriority(entry)
   }
 
   override def popUpTo(i: Int): Seq[ViewPortUpdate] = coallescingQ.popUpTo(i)

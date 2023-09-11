@@ -3,7 +3,8 @@ package org.finos.toolbox
 import scala.collection.mutable
 
 trait CoalescingQueue[VALUE <: AnyRef, KEY]{
-  def push(item: VALUE)
+  def push(item: VALUE): Unit
+  def pushHighPriority(item: VALUE): Unit
   def isEmpty(): Boolean
   def popUpTo(i: Int): Seq[VALUE]
   def pop(): VALUE
@@ -24,6 +25,8 @@ class CoalescingQueueNaiveImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (V
       enqueue(fn(item), item)
     }
   }
+
+  override def pushHighPriority(item: VALUE): Unit = push(item)
 
   protected def enqueue(key: KEY, value: VALUE) = {
     lock.synchronized{
@@ -68,8 +71,7 @@ class CoalescingQueueNaiveImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (V
   def popOption(): Option[VALUE] = {
    val v = dequeue
 
-    if(v == null) None
-    else Some(v)
+    Option(v)
   }
 
 }

@@ -177,7 +177,7 @@ class ViewPortImpl(val id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
 
   override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = {
@@ -359,7 +359,7 @@ class ViewPortImpl(val id: String,
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if (sendSizeUpdate) {
-      outboundQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -474,10 +474,10 @@ class ViewPortImpl(val id: String,
     addObserver(key)
   }
 
-  def publishHighPriorityUpdate(key: String, index: Int): Unit = {
+  private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
-      outboundQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 

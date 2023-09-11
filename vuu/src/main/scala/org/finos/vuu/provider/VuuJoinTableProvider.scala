@@ -65,7 +65,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
     }
   }
 
-  def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, JoinTable: JoinTable, leftTableName: String, leftKey: String, ev: util.HashMap[String, Any]): Unit = {
+  private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, JoinTable: JoinTable, leftTableName: String, leftKey: String, ev: util.HashMap[String, Any]): Unit = {
     //get cached data (actually do we need to do this..)
     //val cachedEventData = joinSink.getEventDataSink(leftTableName).getEventState(leftKey)
 
@@ -186,9 +186,10 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
       //if join contains table...
       if (joinTableDef.containsTable(tableName)) {
 
+        logger.debug("Starting Event Cycle...")
         logger.debug("processing event:" + ev + " for table:" + tableName + " in join:" + joinTableDef.name)
 
-        //does it participate as a left table?
+        //does it participate as a left table? i.e. the base table of the join
         if (joinTableDef.isLeftTable(tableName)) {
 
           joinRelations.addRowJoins(joinTableDef, ev)
@@ -198,7 +199,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
           //if so, publish a left table event for the right inbound event
           publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, eventToLeftKey(joinTableDef, ev), ev)
 
-          //otherwise must be a right table
+          //otherwise must be a right table, i.e. any one of the joinTo tables
         } else {
 
           val keyName = joinTableDef.keyFieldForTable(tableName)
@@ -214,6 +215,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
             publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name, key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key))
           })
         }
+        logger.debug("Ended Event Cycle...\n")
       } else {
         //do nothing... we're not part of this join
       }
