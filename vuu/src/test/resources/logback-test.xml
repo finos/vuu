@@ -8,6 +8,10 @@
         </encoder>
     </appender>
 
+
+    <logger name="org.finos.vuu.provider.VuuJoinTableProvider" level="DEBUG">
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>

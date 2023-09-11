@@ -333,6 +333,11 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     })
   }
 
+
+  override def toString: String = {
+    "JoinTable(base=" + this.tableDef.baseTable.name + ",joins=" + this.tableDef.joins.map(join => join.table.name + "[" + join.joinSpec.toString + "]").mkString(",") + ")"
+  }
+
   @volatile private var updateCounterInternal: Long = 0
 
   override def updateCounter: Long = updateCounterInternal

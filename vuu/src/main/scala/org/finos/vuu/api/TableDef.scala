@@ -172,7 +172,9 @@ class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joi
 
 trait JoinType
 
-object LeftOuterJoin extends JoinType
+object LeftOuterJoin extends JoinType{
+  override def toString: String = "LeftOuterJoin"
+}
 
 object InnerJoin extends JoinType
 
