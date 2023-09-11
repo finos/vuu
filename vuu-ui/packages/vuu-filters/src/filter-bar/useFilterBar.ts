@@ -19,18 +19,16 @@ import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
 import { addClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
+import { useFilters } from "./useFilters";
 
 export interface FilterBarHookProps
   extends Pick<
     FilterBarProps,
+    | "activeFilterIndex"
     | "filters"
     | "onActiveChange"
     | "onApplyFilter"
-    | "onAddFilter"
-    | "onDeleteFilter"
-    | "onRemoveFilter"
-    | "onRenameFilter"
-    | "onChangeFilter"
+    | "onFiltersChanged"
     | "showMenu"
   > {
   containerRef: RefObject<HTMLDivElement>;
@@ -39,25 +37,33 @@ export interface FilterBarHookProps
 const EMPTY_FILTER_CLAUSE: Partial<Filter> = {};
 
 export const useFilterBar = ({
+  activeFilterIndex: activeFilterIdexProp = [],
   containerRef,
   filters: filtersProp,
   onActiveChange,
   onApplyFilter,
-  onAddFilter,
-  onDeleteFilter,
-  onRemoveFilter,
-  onRenameFilter,
-  onChangeFilter,
+  onFiltersChanged,
   showMenu: showMenuProp,
 }: FilterBarHookProps) => {
   const editingFilter = useRef<Filter | undefined>();
-  const [activeFilterIndices, setActiveFilterIndices] = useState<number[]>([]);
+  const [activeFilterIndex, setActiveFilterIndex] =
+    useState<number[]>(activeFilterIdexProp);
   const [showMenu, setShowMenu] = useState(showMenuProp);
-  const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [editFilter, setEditFilter] = useState<
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
+
+  const {
+    filters,
+    onAddFilter,
+    onChangeFilter,
+    onDeleteFilter,
+    onRenameFilter,
+  } = useFilters({
+    filters: filtersProp,
+    onFiltersChanged,
+  });
 
   const editPillLabel = useCallback(
     (index: number) => {
@@ -111,17 +117,56 @@ export const useFilterBar = ({
     [containerRef]
   );
 
+  const applyFilter = useCallback(
+    (filter?: Filter) => {
+      const filterQuery = filter ? filterAsQuery(filter) : "";
+      onApplyFilter({
+        filter: filterQuery,
+        filterStruct: filter,
+      });
+    },
+    [onApplyFilter]
+  );
+
+  const handleFilterActivation = useCallback(
+    (activeIndices: number[]) => {
+      if (activeIndices.length > 0) {
+        const activeFilters = activeIndices.map<Filter>(
+          (index) => filters[index]
+        );
+        if (activeFilters.length === 1) {
+          const [filter] = activeFilters;
+          applyFilter(filter);
+        } else {
+          applyFilter({
+            op: "and",
+            filters: activeFilters,
+          });
+        }
+      } else {
+        applyFilter();
+      }
+      setActiveFilterIndex(activeIndices);
+      onActiveChange?.(activeIndices);
+    },
+    [applyFilter, filters, onActiveChange]
+  );
+
   const deleteConfirmed = useCallback(
     (filter: Filter) => {
       const indexOfFilter = filters.indexOf(filter);
-      if (activeFilterIndices.includes(indexOfFilter)) {
+      if (activeFilterIndex.includes(indexOfFilter)) {
         // deselect filter
-        setActiveFilterIndices(
-          activeFilterIndices.filter((i) => i !== indexOfFilter)
+        setActiveFilterIndex(
+          activeFilterIndex.filter((i) => i !== indexOfFilter)
         );
       }
-      setFilters((filters) => filters.filter((f) => f !== filter));
-      onDeleteFilter?.(filter);
+      const indexOfDeletedFilter = onDeleteFilter?.(filter);
+      if (activeFilterIndex.includes(indexOfDeletedFilter)) {
+        handleFilterActivation(
+          activeFilterIndex.filter((i) => i !== indexOfDeletedFilter)
+        );
+      }
 
       // TODO move focus to next/previous filter
       requestAnimationFrame(() => {
@@ -130,7 +175,13 @@ export const useFilterBar = ({
         }
       });
     },
-    [activeFilterIndices, filters, focusFilterPill, onDeleteFilter]
+    [
+      activeFilterIndex,
+      filters,
+      focusFilterPill,
+      handleFilterActivation,
+      onDeleteFilter,
+    ]
   );
 
   const getDeletePrompt = useMemo(
@@ -167,72 +218,6 @@ export const useFilterBar = ({
     [deleteConfirmed, getDeletePrompt]
   );
 
-  const applyFilter = useCallback(
-    (filter?: Filter) => {
-      const filterQuery = filter ? filterAsQuery(filter) : "";
-      onApplyFilter({
-        filter: filterQuery,
-        filterStruct: filter,
-      });
-    },
-    [onApplyFilter]
-  );
-
-  const saveFilter = useCallback(
-    (filter: Filter) => {
-      let index = -1;
-      setFilters((filters) => {
-        const newFilters = filters.map((f, i) => {
-          if (f === filter) {
-            index = i;
-            return filter;
-          } else {
-            return f;
-          }
-        });
-        return newFilters;
-      });
-      onChangeFilter?.(filter);
-      return index;
-    },
-    [onChangeFilter]
-  );
-
-  const renameFilter = useCallback(
-    (filter: Filter, name: string) => {
-      let index = -1;
-      setFilters((filters) => {
-        const newFilters = filters.map((f, i) => {
-          if (f === filter) {
-            index = i;
-            return { ...f, name };
-          } else {
-            return f;
-          }
-        });
-        return newFilters;
-      });
-      onRenameFilter?.(filter, name);
-      return index;
-    },
-    [onRenameFilter]
-  );
-
-  const saveNewFilter = useCallback(
-    (filter: Filter) => {
-      let index = -1;
-      setFilters((filters) => {
-        index = filters.length;
-        const newFilters = filters.concat(filter);
-        editPillLabel(index);
-        return newFilters;
-      });
-      onAddFilter?.(filter);
-      return index;
-    },
-    [editPillLabel, onAddFilter]
-  );
-
   const handleBeginEditFilterName = useCallback((filter: Filter) => {
     editingFilter.current = filter;
   }, []);
@@ -242,7 +227,7 @@ export const useFilterBar = ({
     useCallback(
       (_, editedValue = "") => {
         if (editingFilter.current) {
-          const indexOfEditedFilter = renameFilter(
+          const indexOfEditedFilter = onRenameFilter(
             editingFilter.current,
             editedValue
           );
@@ -250,7 +235,7 @@ export const useFilterBar = ({
           focusFilterPill(indexOfEditedFilter);
         }
       },
-      [focusFilterPill, renameFilter]
+      [focusFilterPill, onRenameFilter]
     );
 
   const handlePillMenuAction = useCallback<MenuActionHandler>(
@@ -286,18 +271,20 @@ export const useFilterBar = ({
       switch (menuId) {
         case "apply-save": {
           // TODO save these into state together
-          const { current: editedFilter } = editingFilter;
+          const isNewFilter = editingFilter.current === undefined;
 
           const newFilter = editFilter as Filter;
-          const save = editedFilter ? saveFilter : saveNewFilter;
-          const indexOfNewFilter = save(newFilter);
+          const changeHandler = isNewFilter ? onAddFilter : onChangeFilter;
+          const indexOfNewFilter = changeHandler(newFilter);
+
+          if (isNewFilter) {
+            editPillLabel(indexOfNewFilter);
+          }
 
           setEditFilter(undefined);
 
-          if (!activeFilterIndices.includes(indexOfNewFilter)) {
-            setActiveFilterIndices((indices) =>
-              indices.concat(indexOfNewFilter)
-            );
+          if (!activeFilterIndex.includes(indexOfNewFilter)) {
+            handleFilterActivation(activeFilterIndex.concat(indexOfNewFilter));
           }
           setShowMenu(false);
           applyFilter(newFilter);
@@ -320,7 +307,15 @@ export const useFilterBar = ({
           return false;
       }
     },
-    [activeFilterIndices, applyFilter, editFilter, saveFilter, saveNewFilter]
+    [
+      activeFilterIndex,
+      applyFilter,
+      editFilter,
+      editPillLabel,
+      handleFilterActivation,
+      onAddFilter,
+      onChangeFilter,
+    ]
   );
 
   const handleClickAddFilter = useCallback(() => {
@@ -357,32 +352,8 @@ export const useFilterBar = ({
     [editFilter]
   );
 
-  const handleFilterActivation = useCallback(
-    (activeIndices: number[]) => {
-      if (activeIndices.length > 0) {
-        const activeFilters = activeIndices.map<Filter>(
-          (index) => filters[index]
-        );
-        if (activeFilters.length === 1) {
-          const [filter] = activeFilters;
-          applyFilter(filter);
-        } else {
-          applyFilter({
-            op: "and",
-            filters: activeFilters,
-          });
-        }
-      } else {
-        applyFilter();
-      }
-      setActiveFilterIndices(activeIndices);
-      onActiveChange?.(activeIndices);
-    },
-    [applyFilter, filters, onActiveChange]
-  );
-
   return {
-    activeFilterIndices,
+    activeFilterIndex,
     editFilter,
     filters,
     onClickAddFilter: handleClickAddFilter,

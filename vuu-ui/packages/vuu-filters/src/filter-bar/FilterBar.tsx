@@ -19,12 +19,8 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   activeFilterIndex?: number[];
   filters: Filter[];
   onActiveChange?: (itemIndex: number[]) => void;
-  onAddFilter?: (filter: Filter) => void;
   onApplyFilter: (filter: DataSourceFilter) => void;
-  onChangeFilter?: (filter: Filter) => void;
-  onDeleteFilter?: (filter: Filter) => void;
-  onRemoveFilter?: (filter: Filter) => void;
-  onRenameFilter?: (filter: Filter, name: string) => void;
+  onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
 }
@@ -32,23 +28,20 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
+  activeFilterIndex: activeFilterIndexProp,
   FilterClauseEditorProps,
   className: classNameProp,
   filters: filtersProp,
   onActiveChange,
-  onAddFilter,
-  onDeleteFilter,
-  onRemoveFilter,
-  onRenameFilter,
   onApplyFilter,
-  onChangeFilter,
+  onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
   ...htmlAttributes
 }: FilterBarProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const {
-    activeFilterIndices,
+    activeFilterIndex,
     editFilter,
     filters,
     onClickAddFilter,
@@ -61,15 +54,12 @@ export const FilterBar = ({
     promptProps,
     showMenu,
   } = useFilterBar({
+    activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
     filters: filtersProp,
     onActiveChange,
-    onAddFilter,
-    onDeleteFilter,
-    onRemoveFilter,
-    onRenameFilter,
     onApplyFilter,
-    onChangeFilter,
+    onFiltersChanged,
     showMenu: showMenuProp,
   });
 
@@ -144,7 +134,7 @@ export const FilterBar = ({
     >
       <span className={`${classBase}-icon`} data-icon="tune" />
       <Toolbar
-        activeItemIndex={activeFilterIndices}
+        activeItemIndex={activeFilterIndex}
         height={26}
         onActiveChange={onFilterActivation}
         selectionStrategy="multiple-special-key"

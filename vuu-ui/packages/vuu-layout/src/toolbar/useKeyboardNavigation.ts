@@ -147,7 +147,6 @@ export const useKeyboardNavigation = ({
       withKeyboard?: boolean,
       delay = 70
     ) => {
-      console.log("focus item");
       // The timeout is important in two scenarios:
       // 1) where tab has overflowed and is being selected from overflow menu.
       // We must not focus it until the overflow mechanism + render has restored

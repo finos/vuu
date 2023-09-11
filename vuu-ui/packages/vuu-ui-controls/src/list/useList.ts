@@ -82,10 +82,6 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     SelectionChangeHandler<string, Selection>
   >(
     (evt, selected) => {
-      console.log(`useList handleSelectionChange`, {
-        selectionStrategy,
-        selected,
-      });
       if (onSelectionChange) {
         if (Array.isArray(selected)) {
           const selectedItems = selected.map((id) => dataHook.itemById(id));
