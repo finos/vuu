@@ -124,6 +124,7 @@ export const AppSidePanel = ({
             <>
               {featureSelection()}
               <Palette
+                itemHeight={24}
                 orientation="vertical"
                 style={{ width: "100%", height: "100%" }}
                 ViewProps={ViewProps}

@@ -56,6 +56,7 @@ PaletteItem.displayName = "PaletteItem";
 export interface PaletteProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   children: ReactElement[];
+  itemHeight?: number;
   orientation: "horizontal" | "vertical";
   selection?: string;
   ViewProps?: Partial<ViewProps>;
@@ -64,6 +65,7 @@ export interface PaletteProps
 export const Palette = ({
   children,
   className,
+  itemHeight = 41,
   orientation = "horizontal",
   ViewProps,
   ...props
@@ -118,7 +120,7 @@ export const Palette = ({
     <List
       {...props}
       className={cx(classBase, className, `${classBase}-${orientation}`)}
-      itemHeight={41}
+      itemHeight={itemHeight}
       selected={null}
     >
       {children.map((child, idx) =>
