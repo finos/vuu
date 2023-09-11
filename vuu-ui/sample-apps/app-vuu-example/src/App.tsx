@@ -7,6 +7,7 @@ import {
   SessionEditingForm,
   Shell,
   ShellContextProvider,
+  ThemeProvider,
   VuuUser,
 } from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
@@ -115,23 +116,25 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <ShellContextProvider value={{ getDefaultColumnConfig, handleRpcResponse }}>
-      <Shell
-        className="App"
-        defaultLayout={defaultLayout}
-        leftSidePanel={<AppSidePanel features={features} tables={tables} />}
-        serverUrl={serverUrl}
-        user={user}
-      >
-        <Dialog
-          className="vuDialog"
-          isOpen={dialogContent !== undefined}
-          onClose={handleClose}
-          style={{ maxHeight: 500 }}
-          title={dialogTitleRef.current}
+      <ThemeProvider theme="salt">
+        <Shell
+          className="App"
+          defaultLayout={defaultLayout}
+          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
+          serverUrl={serverUrl}
+          user={user}
         >
-          {dialogContent}
-        </Dialog>
-      </Shell>
+          <Dialog
+            className="vuDialog"
+            isOpen={dialogContent !== undefined}
+            onClose={handleClose}
+            style={{ maxHeight: 500 }}
+            title={dialogTitleRef.current}
+          >
+            {dialogContent}
+          </Dialog>
+        </Shell>
+      </ThemeProvider>
     </ShellContextProvider>
   );
 };

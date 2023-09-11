@@ -41,7 +41,7 @@ export const useThemeAttributes = (): [string, string, string] => {
   if (context) {
     return [
       `${context.theme}-theme`,
-      `vuu-density-${context.density}`,
+      `${context.theme}-density-${context.density}`,
       context.themeMode,
     ];
   }
