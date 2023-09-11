@@ -62,7 +62,6 @@ export const processLayoutElement = (
     undefined,
     previousLayout
   );
-  console.log({ layoutProps });
   return cloneElement(layoutElement, layoutProps, children);
 };
 

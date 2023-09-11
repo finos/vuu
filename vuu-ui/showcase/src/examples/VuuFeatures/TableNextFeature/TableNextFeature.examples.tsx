@@ -1,10 +1,7 @@
 import { LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutConfig } from "@finos/vuu-shell";
-import { useCallback } from "react";
-import {
-  TableNextFeature,
-  TableNextFeatureProps,
-} from "../../../features/TableNext.feature";
+import { useCallback, useEffect } from "react";
+import { TableNextFeature } from "../../../features/TableNext.feature";
 import { useTableSchema } from "../../utils";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { registerComponent } from "@finos/vuu-layout";
@@ -24,10 +21,16 @@ export const DefaultTableNextFeature = () => {
   const [layout, saveLayoutConfig] = useLayoutConfig({
     // save to local storage. Use browser devtools to purge this
     saveLocation: "local",
+    saveUrl: "table-next-feature",
   });
+
+  useEffect(() => {
+    console.log(`%clayout changed`, "color: blue; font-weight: bold;");
+  }, [layout]);
 
   const handleLayoutChange = useCallback(
     (layout) => {
+      console.log("layout change");
       saveLayoutConfig(layout);
     },
     [saveLayoutConfig]
@@ -69,7 +72,7 @@ export const TableNextFeatureAsFeature = () => {
   const schema = useTableSchema("instruments");
 
   return (
-    <Feature<TableNextFeatureProps>
+    <Feature
       ComponentProps={{
         schema,
       }}

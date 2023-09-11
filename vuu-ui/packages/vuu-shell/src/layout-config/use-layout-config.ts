@@ -18,12 +18,14 @@ export type LayoutHookResult = [
   (id: string) => void
 ];
 
+const FALLBACK_LAYOUT = { type: "Placeholder" };
+
 export const useLayoutConfig = ({
   saveLocation,
   saveUrl = "api/vui",
   user,
-  // TOSO this should be an error panel
-  defaultLayout = { type: "Placeholder" },
+  // TODO this should be an error panel
+  defaultLayout = FALLBACK_LAYOUT,
 }: LayoutConfigHookProps): LayoutHookResult => {
   const [layout, _setLayout] = useState(defaultLayout);
   const usingRemote = saveLocation === "remote";

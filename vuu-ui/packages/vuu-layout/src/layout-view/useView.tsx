@@ -66,7 +66,6 @@ export const useView = ({
 
   const save = useCallback(
     (state, key) => {
-      console.log(`save state ${id} ${key} ${JSON.stringify(state)}`);
       saveState(id, key, state);
       layoutDispatch({ type: "save" });
     },

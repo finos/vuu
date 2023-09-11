@@ -6,27 +6,16 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTableConfig } from "../examples/utils";
+import { Filter } from "packages/vuu-filter-types";
 
 import "./TableNext.feature.css";
-import { Filter } from "packages/vuu-filter-types";
 
 export interface TableNextFeatureProps {
   schema: TableSchema;
   showFilter?: boolean;
 }
-
-type FilterbarConfig = Pick<FilterBarProps, "filters">;
-const getFilterbarProps = (config?: FilterbarConfig) => {
-  if (config === undefined) {
-    return {
-      filters: [],
-    };
-  } else {
-    return config;
-  }
-};
 
 export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
   const { load, save } = useViewContext();
@@ -41,6 +30,30 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
     "filterbar-config": filterbarConfig,
     "table-config": tableConfig,
   } = useMemo(() => load?.() ?? ({} as any), [load]);
+  filterbarConfig?.filters ?? [];
+  const activeRef = useRef<number[]>(filterbarConfig?.activeFilterIndex ?? []);
+  const [filters, setFilters] = useState<Filter[]>(
+    filterbarConfig?.filters ?? []
+  );
+
+  const handleActiveChange = useCallback(
+    (activeFilterIndex: number[]) => {
+      activeRef.current = activeFilterIndex;
+      save?.({ filters, activeFilterIndex }, "filterbar-config");
+    },
+    [filters, save]
+  );
+
+  const handleFiltersChanged = useCallback(
+    (filters: Filter[]) => {
+      save?.(
+        { activeFilterIndex: activeRef.current, filters },
+        "filterbar-config"
+      );
+      setFilters(filters);
+    },
+    [save]
+  );
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
@@ -78,23 +91,15 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
     [dataSource]
   );
 
-  const handleChangeFilter = useCallback(
-    (filter: Filter, newFilter: Filter) => {
-      console.log("change filter", {
-        filter,
-        newFilter,
-      });
-    },
-    []
-  );
-
   const filterBarProps: FilterBarProps = {
-    ...getFilterbarProps(filterbarConfig as FilterbarConfig),
+    activeFilterIndex: filterbarConfig?.activeFilterIndex,
+    filters,
     FilterClauseEditorProps: {
       suggestionProvider: typeaheadHook,
     },
     onApplyFilter: handleApplyFilter,
-    onChangeFilter: handleChangeFilter,
+    onActiveChange: handleActiveChange,
+    onFiltersChanged: handleFiltersChanged,
     tableSchema: schema,
   };
 
