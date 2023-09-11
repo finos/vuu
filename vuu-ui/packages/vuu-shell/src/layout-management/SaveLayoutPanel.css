@@ -1,14 +1,11 @@
-* {
+.saveLayoutPanel {
   --salt-selectable-foreground-hover: #6d18bdc3;
   --salt-selectable-foreground-selected: #6D18BD;
   --salt-selectable-borderColor-selected: #6D18BD;
-  --saltInputLegacy-fontFamily: Nunito Sans;
-  --salt-text-fontFamily: Nunito Sans;
   --saltInputLegacy-fontSize: 12px;
   --salt-text-label-fontSize: 10px;
   --saltFormFieldLegacy-label-paddingLeft: 0;
   --saltFormField-label-fontWeight: 400;
-  font-family: Nunito Sans Regular;
 }
 
 .saveLayoutPanel-panelContainer {
