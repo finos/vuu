@@ -1,9 +1,12 @@
 .vuuMenuList {
+  --salt-focused-outlineStyle: dashed !important;
+  --salt-focused-outlineWidth: 1px !important;
+  --vuuListItem-padding: 8px;
   --context-menu-color: var(--vuuMenuList-color,#161616);
   --context-menu-padding: var(--hw-list-item-padding, 0 6px);
   --context-menu-shadow: var(--hw-dialog-shadow, 0 6px 12px rgba(0, 0, 0, 0.175));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
-  --context-menu-highlight-bg: #a4d5f4;
+  --context-menu-highlight-bg: var(--vuu-color-gray-10);
   --context-menu-blur-focus-bg: #e0e4e9;
   --menu-item-icon-color: black;
   --menu-item-twisty-color: black;
@@ -15,17 +18,19 @@
 
   background-clip: padding-box;
   background-color: white;
-  border-radius: 4px;
-  border: solid 1px var(--vuuMenuList-borderColor, rgba(0, 0, 0, 0.15));
-  box-shadow: var(--context-menu-shadow);
+  border-style: var(--vuuMenuList-borderStyle, none);
   font-size: var(--vuuMenuList-fontSize, var(--salt-text-label-fontSize));
-  font-weight: var(--salt-typography-fontWeight-semiBold);
+  font-weight: var(--salt-typography-fontWeight-medium);
   list-style: none;
-  margin: 2px 0 0;
   outline: 0;
   overflow: hidden;
   padding: var(--vuuMenuList-padding, 0);
   position: absolute;
+}
+
+/* hacky fix until problem is identified (css source code order in prod build )*/
+.vuuPortal > .vuuMenuList {
+  position: relative;
 }
 
 .vuuMenuItem {
@@ -122,4 +127,14 @@
   white-space: nowrap;
   text-decoration: none;
   cursor: default;
+}
+
+/* hacky fix, to be revisited */
+.vuuMenuList.salt-theme {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  position: absolute;
+  border-color: var(--salt-container-primary-borderColor);
+  border-style: solid !important;
+  border-width: 1px;
+
 }

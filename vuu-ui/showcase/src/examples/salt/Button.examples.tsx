@@ -30,7 +30,3 @@ export const IconButtons = () => {
   );
 };
 IconButtons.displaySequence = displaySequence++;
-
-export const DefaultSwitch = () => {
-  return <Switch label="xyz" checked={false} />;
-};

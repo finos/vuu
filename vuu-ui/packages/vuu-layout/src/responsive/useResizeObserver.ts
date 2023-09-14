@@ -76,9 +76,6 @@ export function useResizeObserver(
   onResize: ResizeHandler,
   reportInitialSize = false
 ): void {
-  console.log(`resizeObserver container`, {
-    ref: ref.current,
-  });
   const dimensionsRef = useRef(dimensions);
   const measure = useCallback((target: HTMLElement): measurements<number> => {
     const rect = target.getBoundingClientRect();

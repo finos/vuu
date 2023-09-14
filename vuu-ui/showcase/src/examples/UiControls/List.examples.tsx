@@ -3,6 +3,7 @@ import {
   DragDropProvider,
   dragStrategy,
   List,
+  ListItem,
   VirtualizedList,
 } from "@finos/vuu-ui-controls";
 
@@ -12,7 +13,9 @@ import {
   SyntheticEvent,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { usa_states } from "./List.data";
@@ -21,11 +24,77 @@ import { ListVisualizer } from "./ListVisualizer";
 let displaySequence = 1;
 
 export const DefaultList = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
   return (
-    <List aria-label="Listbox example" maxWidth={292} source={usa_states} />
+    <List
+      aria-label="Listbox example"
+      maxWidth={292}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states}
+    />
   );
 };
 DefaultList.displaySequence = displaySequence++;
+
+export const InlineListItems = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+  return (
+    <List
+      aria-label="Listbox example"
+      maxWidth={292}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+    >
+      {usa_states.map((state) => (
+        <ListItem key={state}>{state}</ListItem>
+      ))}
+    </List>
+  );
+};
+InlineListItems.displaySequence = displaySequence++;
+
+export const ListExtendedSelection = () => {
+  return (
+    <List<string, "extended">
+      aria-label="Listbox example"
+      maxWidth={292}
+      selectionStrategy="extended"
+      source={usa_states}
+    />
+  );
+};
+ListExtendedSelection.displaySequence = displaySequence++;
+
+export const ListFocusAndHighlightedIndex = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (ref.current) {
+      ref.current.focus();
+    }
+  }, []);
+
+  return (
+    <List
+      aria-label="Listbox example"
+      defaultHighlightedIndex={0}
+      maxWidth={292}
+      ref={ref}
+      source={usa_states}
+    />
+  );
+};
+ListFocusAndHighlightedIndex.displaySequence = displaySequence++;
 
 export const ListHeight100Pct = () => {
   return (
@@ -232,6 +301,7 @@ export const DraggableListItemsDropIndicator = () => {
     </>
   );
 };
+DraggableListItemsDropIndicator.displaySequence = displaySequence++;
 
 export const DraggableLists = () => {
   const dragSource = useMemo(
@@ -263,3 +333,4 @@ export const DraggableLists = () => {
     </DragDropProvider>
   );
 };
+DraggableLists.displaySequence = displaySequence++;

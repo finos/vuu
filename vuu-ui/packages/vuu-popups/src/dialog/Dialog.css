@@ -33,7 +33,6 @@
   align-items: flex-start;
   align-self: stretch;
   color: var(--light-text-primary, #15171B);
-  font-family: Nunito Sans Regular;
   font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
   font-size: 16px;
   font-weight: 600;

@@ -1,4 +1,4 @@
-import { ArrayDataSource } from "@finos/vuu-data";
+import { DataSourceConfig } from "@finos/vuu-data";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
@@ -9,6 +9,7 @@ import {
 import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
 import { makeSuggestions } from "./makeSuggestions";
+import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { getColumnAndRowGenerator, populateArray } from "./vuu-row-generator";
 
 const NO_CONFIG = {} as const;
@@ -36,6 +37,7 @@ export interface TableConfigHookProps {
    * millions of rows). Generates rows of data on demand, no internal state, so
    * cannot support sorting, grouping etc. Uses an ArrayProxy
    */
+  dataSourceConfig?: DataSourceConfig;
   lazyData?: boolean;
   leftPinnedColumns?: number[];
   rightPinnedColumns?: number[];
@@ -61,6 +63,7 @@ export const useTableConfig = ({
   columnConfig = NO_CONFIG,
   columnCount,
   count = 1000,
+  dataSourceConfig,
   lazyData = false,
   leftPinnedColumns = NO_COLUMNS,
   rangeChangeRowset = "delta",
@@ -79,7 +82,8 @@ export const useTableConfig = ({
 
     // Get custom data and column generators (if a table is available) otw the default
     // data generators will be returned
-    const [columnGenerator, rowGenerator] = getColumnAndRowGenerator(table);
+    const [columnGenerator, rowGenerator, createUpdateGenerator] =
+      getColumnAndRowGenerator(table);
 
     // colCount is only used by the default generators
     const colCount =
@@ -111,12 +115,14 @@ export const useTableConfig = ({
     leftPinnedColumns.forEach((index) => (columns[index].pin = "left"));
     rightPinnedColumns.forEach((index) => (columns[index].pin = "right"));
 
-    const dataSource = new ArrayDataSource({
+    const dataSource = new TickingArrayDataSource({
+      ...dataSourceConfig,
       columnDescriptors: columns,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore yes we know an ArrayProxy is not a real Array, but don't tell the DataSource that
       data: dataArray,
       rangeChangeRowset,
+      updateGenerator: createUpdateGenerator?.(),
     });
 
     /* We omit the first array argument, table, not needed here but we must 

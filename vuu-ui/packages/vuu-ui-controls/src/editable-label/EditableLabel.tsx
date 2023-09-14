@@ -65,9 +65,12 @@ export const EditableLabel = forwardRef(function EditableLabel(
     state: "editing",
   });
 
-  const setEditing = useCallback((value: boolean) => {
-    _setEditing((editingRef.current = value));
-  }, []);
+  const setEditing = useCallback(
+    (value: boolean) => {
+      _setEditing((editingRef.current = value));
+    },
+    [_setEditing]
+  );
 
   const initialValue = useRef(value);
 
@@ -148,7 +151,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     >
       {editing ? (
         <Input
-          inputProps={{ className: `${classBase}-input` }}
+          inputProps={{ className: `${classBase}-input`, spellCheck: false }}
           value={value}
           onBlur={handleBlur}
           onChange={handleChange}
@@ -159,7 +162,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
           variant="secondary"
         />
       ) : (
-        value
+        <span className={`${classBase}-label`}>{value}</span>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 .vuuTableNextRow {
-    background: #fff;
-    border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+    background: var(--row-background,#fff);
+    border-bottom: 1px solid var(--row-borderColor);
     box-sizing: border-box;
     height: var(--row-height);
     line-height: calc(var(--row-height) - 1px);
@@ -9,6 +9,10 @@
     white-space: nowrap;
     }
     
+    .vuuTableNextRow-even {
+      background: var(--row-background-even);
+    }
+
     .vuuTableNextRow-selected,
     .vuuTableNextRow-selectedEnd {
       /* background-color: rgb(133,133,137,.16); */
@@ -27,7 +31,7 @@
         border-radius: 0 0 5px 5px;
       }
     
-      .vuuTableNextRow-selectedStart.vuuTableNexRow-selectedEnd {
+      .vuuTableNextRow-selectedStart.vuuTableNextRow-selectedEnd {
         --vuu-selection-decorator-left-radius: 5px 0 0 5px;
         --vuu-selection-decorator-right-radius: 0 5px 5px 0;
         border-radius: 5px 5px 5px 5px;
@@ -101,3 +105,8 @@
       .vuuTableNextRow-selectionDecorator.vuuStickyRight:before {
         border-radius: var(--vuu-selection-decorator-right-radius, 0);
       }
+
+      .vuuTableNextRow-expanded {
+        --toggle-icon-transform: rotate(90deg);
+      }
+    

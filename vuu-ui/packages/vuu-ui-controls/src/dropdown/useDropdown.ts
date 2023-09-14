@@ -1,21 +1,19 @@
 import { useControlled } from "@salt-ds/core";
-import { useCallback, useMemo } from "react";
+import { RefObject, useCallback, useMemo } from "react";
 import { ListHookProps, ListHookResult, useList } from "../list";
 import { DropdownHookResult, DropdownHookProps } from "./dropdownTypes";
 import {
-  CollectionItem,
   itemToString as defaultItemToString,
   SelectionChangeHandler,
   SelectHandler,
   SelectionStrategy,
 } from "../common-hooks";
 
-const NULL_REF = { current: null };
-
 export interface DropdownListHookProps<Item, Strategy extends SelectionStrategy>
   extends Partial<Omit<DropdownHookProps, "onKeyDown">>,
     Omit<ListHookProps<Item, Strategy>, "containerRef"> {
   itemToString?: (item: Item) => string;
+  listRef: RefObject<HTMLDivElement>;
 }
 
 export interface DropdownListHookResult<
@@ -38,6 +36,7 @@ export const useDropdown = <
   highlightedIndex: highlightedIndexProp,
   isOpen: isOpenProp,
   itemToString = defaultItemToString,
+  listRef,
   onHighlight,
   onOpenChange,
   onSelectionChange,
@@ -88,10 +87,10 @@ export const useDropdown = <
         ? 0
         : undefined,
     defaultSelected,
-    label: "useDropDownList",
+    label: "DropDown",
     onSelectionChange: handleSelectionChange,
     onSelect: handleSelect,
-    containerRef: NULL_REF,
+    containerRef: listRef,
     highlightedIndex: highlightedIndexProp,
     onHighlight,
     selected,
@@ -109,22 +108,24 @@ export const useDropdown = <
 
   const triggerLabel = useMemo(() => {
     if (isMultiSelect && Array.isArray(listHook.selected)) {
-      const selectedItems = listHook.selected as CollectionItem<Item>[];
+      const selectedItems = listHook.selected.map((id) =>
+        collectionHook.itemById(id)
+      );
       if (selectedItems.length === 0) {
         return undefined;
       } else if (selectedItems.length === 1) {
-        const { value } = selectedItems[0];
-        return value === null ? undefined : itemToString(value);
+        const [item] = selectedItems;
+        return item === null ? undefined : itemToString(item);
       } else {
         return `${selectedItems.length} items selected`;
       }
     } else {
-      const selectedItem = listHook.selected as CollectionItem<Item>;
-      return selectedItem == null || selectedItem.value === null
+      const selectedItem = listHook.selected as string;
+      return selectedItem == null
         ? undefined
-        : itemToString(selectedItem.value);
+        : itemToString(collectionHook.itemById(selectedItem));
     }
-  }, [isMultiSelect, itemToString, listHook.selected]);
+  }, [collectionHook, isMultiSelect, itemToString, listHook.selected]);
 
   return {
     isOpen,

@@ -1,10 +1,10 @@
-// export interface ColumnResizerProps {}
 import { useCallback, useRef } from "react";
+
 import "./ColumnResizer.css";
 
 const NOOP = () => undefined;
 
-const baseClass = "vuuColumnResizer";
+const baseClass = "vuuColumnResizerNext";
 export interface TableColumnResizerProps {
   onDrag: (evt: MouseEvent, moveBy: number) => void;
   onDragEnd: (evt: MouseEvent) => void;
@@ -67,7 +67,5 @@ export const ColumnResizer = ({
     [onDragStart, onMouseMove, onMouseUp]
   );
 
-  return (
-    <div className={baseClass} data-align="end" onMouseDown={handleMouseDown} />
-  );
+  return <div className={baseClass} onMouseDown={handleMouseDown} />;
 };

@@ -23,9 +23,9 @@ export interface ScrollingAPIHook<Item> {
 }
 
 const noScrolling: ScrollingAPI<unknown> = {
-  scrollToIndex: (itemIndex: number) => undefined,
-  scrollToItem: (item) => undefined,
-  scrollTo: (scrollOffset: number) => undefined,
+  scrollToIndex: () => undefined,
+  scrollToItem: () => undefined,
+  scrollTo: () => undefined,
 };
 
 export const useImperativeScrollingAPI = <Item>({
@@ -54,7 +54,7 @@ export const useImperativeScrollingAPI = <Item>({
         }
       },
     }),
-    [collectionHook.data, collectionHook.toCollectionItem, scrollIntoView]
+    [collectionHook, scrollIntoView, scrollableRef]
   );
 
   useImperativeHandle(
@@ -66,6 +66,6 @@ export const useImperativeScrollingAPI = <Item>({
         return noScrolling;
       }
     },
-    [scrollHandles]
+    [scrollHandles, scrollableRef]
   );
 };

@@ -62,6 +62,6 @@ export interface DropdownHookResult {
   componentProps: ComponentProps;
   isOpen: boolean;
   label: string;
-  popupComponentRef: (node: HTMLElement | null) => void;
+  popupComponentRef: React.Ref<HTMLElement>;
   triggerProps: DropdownHookTriggerProps;
 }

@@ -1,3 +1,29 @@
+import { byModule } from "@finos/vuu-data";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
+import { registerComponent } from "@finos/vuu-layout";
+import {
+  ContextMenuProvider,
+  Dialog,
+  MenuActionClosePopup,
+} from "@finos/vuu-popups";
+import {
+  FeatureConfig,
+  FeatureProps,
+  LayoutManagementProvider,
+  LayoutMetadata,
+  LeftNav,
+  SaveLayoutPanel,
+  Shell,
+  useLayoutManager,
+} from "@finos/vuu-shell";
+import {
+  ColumnSettingsPanel,
+  TableSettingsPanel,
+} from "@finos/vuu-table-extras";
 import {
   CSSProperties,
   ReactElement,
@@ -5,36 +31,46 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  LayoutMetadata,
-  LeftNav,
-  SaveLayoutPanel,
-  Shell,
-  LayoutManagementProvider,
-  useLayoutManager
-} from "@finos/vuu-shell";
-import { registerComponent } from "@finos/vuu-layout";
-import { TableSettingsPanel } from "@finos/vuu-table-extras";
-import {
-  ContextMenuProvider,
-  Dialog,
-  MenuActionClosePopup,
-} from "@finos/vuu-popups";
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@finos/vuu-data-types";
-import { AutoTableNext } from "../Table/TableNext.examples";
+import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
+import { schemas } from "../utils";
+import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature/TableNextFeature.examples";
 
 import "./NewTheme.examples.css";
 
-registerComponent("AutoTableNext", AutoTableNext, "view");
+registerComponent("FilterTable", FilterTable, "view");
+registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
+
+type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
+type Environment = "development" | "production";
+const env = process.env.NODE_ENV as Environment;
+const featurePaths: Record<Environment, PathMap> = {
+  development: {
+    TableNextFeature: {
+      url: "/src/features/TableNext.feature",
+    },
+  },
+  production: {
+    TableNextFeature: {
+      url: "/features/TableNext.feature.js",
+      css: "/features/TableNext.feature.css",
+    },
+  },
+};
+
+const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
+  .sort(byModule)
+  .map((schema) => ({
+    ComponentProps: {
+      schema,
+    },
+    title: `${schema.table.module} ${schema.table.table}`,
+    ...featurePaths[env].TableNextFeature,
+  }));
 
 const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
@@ -45,11 +81,16 @@ const ShellWithNewTheme = () => {
 
   const { saveLayout } = useLayoutManager();
 
-  const handleSave = useCallback((layoutMetadata: Omit<LayoutMetadata, "id">) => {
-    console.log(`Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`);
-    saveLayout(layoutMetadata)
-    setDialogContent(undefined)
-  }, []);
+  const handleSave = useCallback(
+    (layoutMetadata: Omit<LayoutMetadata, "id">) => {
+      console.log(
+        `Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`
+      );
+      saveLayout(layoutMetadata);
+      setDialogContent(undefined);
+    },
+    []
+  );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
     [MenuBuilder, MenuActionHandler]
@@ -129,7 +170,7 @@ const ShellWithNewTheme = () => {
               style: { height: "calc(100% - 6px)" },
               children: [
                 {
-                  type: "AutoTableNext",
+                  type: "FilterTable",
                 },
               ],
             },
@@ -141,7 +182,7 @@ const ShellWithNewTheme = () => {
               style: { height: "calc(100% - 6px)" },
               children: [
                 {
-                  type: "AutoTableNext",
+                  type: "FilterTable",
                 },
               ],
             },
@@ -159,7 +200,7 @@ const ShellWithNewTheme = () => {
       <Shell
         defaultLayout={layout}
         leftSidePanelLayout="full-height"
-        leftSidePanel={<LeftNav style={{ width: 240 }} />}
+        leftSidePanel={<LeftNav features={features} style={{ width: 240 }} />}
         loginUrl={window.location.toString()}
         user={user}
         saveLocation="local"
@@ -190,7 +231,7 @@ export const ShellWithNewThemeAndLayoutManagement = () => {
     <LayoutManagementProvider>
       <ShellWithNewTheme />
     </LayoutManagementProvider>
-  )
-}
+  );
+};
 
 ShellWithNewThemeAndLayoutManagement.displaySequence = displaySequence++;

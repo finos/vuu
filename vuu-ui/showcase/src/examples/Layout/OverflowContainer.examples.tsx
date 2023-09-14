@@ -1,5 +1,5 @@
 import { Flexbox, OverflowContainer } from "@finos/vuu-layout";
-import { CSSProperties } from "react";
+import { CSSProperties, useCallback, useState } from "react";
 
 import "./OverflowContainer.examples.css";
 
@@ -202,3 +202,51 @@ export const TestFixtureSimpleOverflowContainer = ({ width = 700 }) => {
 };
 
 TestFixtureSimpleOverflowContainer.displaySequence = displaySequence++;
+
+export const SortableOverflowContainer = () => {
+  const [items, setItems] = useState<string[]>(["1", "2", "3", "4", "5", "6"]);
+
+  const handleDrop = useCallback((fromIndex, toIndex) => {
+    console.log(`handle drop from ${fromIndex} to ${toIndex}`);
+    setItems((tabs) => {
+      const newTabs = tabs.slice();
+      const [tab] = newTabs.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newTabs.concat(tab);
+      } else {
+        newTabs.splice(toIndex, 0, tab);
+        return newTabs;
+      }
+    });
+  }, []);
+
+  return (
+    <div
+      style={
+        {
+          height: "100vh",
+          padding: 100,
+          width: "100vw",
+          background: "ivory",
+          "--vuuPopupMenu-background": "red",
+          "--vuuOverflowContainer-background": "white",
+        } as CSSProperties
+      }
+    >
+      <OverflowContainer
+        allowDragDrop
+        height={44}
+        onMoveItem={handleDrop}
+        style={{ width: "100%", height: 44 }}
+      >
+        {items.map((item) => (
+          <div className="Item" key={item} style={{ width: 100 }}>
+            {item}
+          </div>
+        ))}
+      </OverflowContainer>
+    </div>
+  );
+};
+
+SortableOverflowContainer.displaySequence = displaySequence++;

@@ -20,8 +20,8 @@ export interface NavigationHookProps<Item, Selection extends SelectionStrategy>
   containerRef: RefObject<HTMLElement>;
   label?: string;
   selected?: Selection extends SingleSelectionStrategy
-    ? CollectionItem<Item> | null
-    : CollectionItem<Item>[];
+    ? string | null
+    : string[];
 }
 
 export interface KeyboardHookListProps {

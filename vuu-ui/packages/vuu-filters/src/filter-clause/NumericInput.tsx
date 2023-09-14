@@ -1,53 +1,77 @@
 import {
   ChangeEvent,
+  forwardRef,
+  ForwardedRef,
   HTMLAttributes,
   RefObject,
-  useEffect,
-  useRef,
   useState,
+  useCallback,
+  KeyboardEvent,
 } from "react";
-import { Input } from "@salt-ds/core";
+import { ExpandoInput } from "@finos/vuu-ui-controls";
 import { isValidNumber } from "@finos/vuu-utils";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
 export interface NumericInputProps
-  extends FilterClauseValueEditor,
+  extends FilterClauseValueEditor<number>,
     HTMLAttributes<HTMLDivElement> {
   operatorInputRef?: RefObject<HTMLInputElement>;
-  onValueChange: (value: number) => void;
   operator: string;
   ref: RefObject<HTMLDivElement>;
   value?: number;
 }
 
-export const NumericInput = ({
-  className,
-  column,
-  // filterClause,
-  onValueChange,
-  // operator,
-  value,
-}: NumericInputProps) => {
-  const [valueInputValue, setValueInputValue] = useState<string>(
-    isValidNumber(value) ? value.toString() : ""
+export const NumericInput = forwardRef(function NumericInput(
+  {
+    InputProps,
+    className,
+    column,
+    // filterClause,
+    onInputComplete,
+    // operator,
+    value: valueProp,
+  }: NumericInputProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>
+) {
+  const [value, setValue] = useState<string>(
+    isValidNumber(valueProp) ? valueProp.toString() : ""
   );
-  const valueInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setValueInputValue("");
-  }, [column]);
+  // useEffect(() => {
+  //   setValueInputValue("");
+  // }, [column]);
+
+  const handleChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
+    const { value } = evt.target as HTMLInputElement;
+
+    const numericValue = parseFloat(value);
+    if (isValidNumber(numericValue)) {
+      console.log("its valid");
+    }
+    setValue(value);
+  }, []);
+
+  const handleKeyDown = useCallback(
+    (evt: KeyboardEvent<HTMLInputElement>) => {
+      if (evt.key === "Enter") {
+        const { value } = evt.target as HTMLInputElement;
+        const numericValue = parseFloat(value);
+        if (isValidNumber(numericValue)) {
+          onInputComplete(numericValue);
+        }
+      }
+    },
+    [onInputComplete]
+  );
 
   return (
-    <Input
-      className={`${className}-valueInput`}
-      // highlightOnFocus
-      value={valueInputValue}
-      ref={valueInputRef}
-      // type="text"
-      onChange={(event: ChangeEvent<HTMLInputElement>) => {
-        setValueInputValue(event.target.value);
-        onValueChange(Number.parseFloat(event.target.value));
-      }}
+    <ExpandoInput
+      {...InputProps}
+      className={className}
+      value={value}
+      ref={forwardedRef}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
     />
   );
-};
+});

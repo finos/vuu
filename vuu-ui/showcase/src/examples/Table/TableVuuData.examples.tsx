@@ -261,7 +261,7 @@ export const VuuDataTable = () => {
         dataSource={dataSource}
         config={tableConfig}
         // columnSizing="fill"
-        height={700}
+        height={645}
         onConfigChange={handleTableConfigChange}
         onShowConfigEditor={showConfigEditor}
         renderBufferSize={20}

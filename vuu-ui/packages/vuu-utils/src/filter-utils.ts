@@ -5,6 +5,7 @@ import {
   AndFilter,
   Filter,
   FilterClauseOp,
+  FilterWithPartialClause,
   MultiClauseFilter,
   MultiValueFilterClause,
   OrFilter,
@@ -51,8 +52,14 @@ export const isAndFilter = (f: Partial<Filter>): f is AndFilter =>
   f.op === "and";
 export const isOrFilter = (f: Partial<Filter>): f is OrFilter => f.op === "or";
 
+export const isCompleteFilter = (filter: Partial<Filter>): filter is Filter =>
+  isSingleValueFilter(filter) &&
+  filter.column !== undefined &&
+  filter.op !== undefined &&
+  filter.value !== undefined;
+
 export function isMultiClauseFilter(
-  f?: Partial<Filter>
+  f?: Partial<Filter> | FilterWithPartialClause
 ): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }

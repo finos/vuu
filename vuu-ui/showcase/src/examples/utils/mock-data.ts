@@ -38,6 +38,8 @@ const MOCK_FEATURES: Features = {
 
 export const useMockFeatureData = () => {
   const { schemas: vuuSchemas } = useSchemas();
+
+  console.log({ vuuSchemas });
   const schemas = useMemo(() => {
     const schemaMap = new Map<string, TableSchema>();
     for (const [name, schema] of Object.entries(vuuSchemas)) {

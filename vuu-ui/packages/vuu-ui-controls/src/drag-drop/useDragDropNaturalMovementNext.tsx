@@ -7,7 +7,7 @@ import {
   ViewportRange,
 } from "./dragDropTypesNext";
 import { useDragDisplacers } from "./useDragDisplacers";
-
+import { dispatchMouseEvent } from "@finos/vuu-utils";
 import {
   dimensions,
   getIndexOfDraggedItem,
@@ -151,6 +151,8 @@ export const useDragDropNaturalMovement = ({
           draggedItemId
         ));
 
+        console.log({ dropTargets });
+
         const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
         const draggedItem = dropTargets[indexOfDraggedItem];
 
@@ -194,14 +196,11 @@ export const useDragDropNaturalMovement = ({
     const show = (dropTarget: MeasuredDropTarget) => {
       if (!popupShowing) {
         popupShowing = true;
-        const button = dropTarget.element.querySelector(".vuuPopupMenu");
+        const button = dropTarget.element.querySelector(
+          ".vuuPopupMenu"
+        ) as HTMLElement;
         if (button) {
-          const evt = new MouseEvent("click", {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-          });
-          button.dispatchEvent(evt);
+          dispatchMouseEvent(button, "click");
         }
       }
     };
@@ -209,14 +208,11 @@ export const useDragDropNaturalMovement = ({
     const hide = (dropTarget: MeasuredDropTarget) => {
       if (popupShowing) {
         popupShowing = false;
-        const button = dropTarget.element.querySelector(".vuuPopupMenu");
+        const button = dropTarget.element.querySelector(
+          ".vuuPopupMenu"
+        ) as HTMLElement;
         if (button) {
-          const evt = new MouseEvent("click", {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-          });
-          button.dispatchEvent(evt);
+          dispatchMouseEvent(button, "click");
         }
       }
     };

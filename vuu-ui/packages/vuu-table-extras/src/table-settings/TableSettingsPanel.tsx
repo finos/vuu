@@ -12,6 +12,7 @@ import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 
 import "./TableSettingsPanel.css";
+import { Switch } from "@salt-ds/lab";
 
 const classBase = "vuuTableSettingsPanel";
 
@@ -24,7 +25,7 @@ export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
 /**
   The TableSettingsPanel assumes 'ownership' of the tableSettings.
   It updates the settings in state locally and notifies caller of
-  every change vis onChange callback
+  every change via onChange callback
  */
 export const TableSettingsPanel = ({
   availableColumns,
@@ -36,6 +37,7 @@ export const TableSettingsPanel = ({
     columnItems,
     columnLabelsValue,
     onChangeColumnLabels,
+    onChangeTableAttribute,
     onColumnChange,
     onMoveListItem,
   } = useTableSettings({
@@ -74,6 +76,35 @@ export const TableSettingsPanel = ({
         <FormFieldLabel>Default Column Width</FormFieldLabel>
         <Input className="vuuInput" />
       </FormField>
+
+      <div className={`${classBase}-header`}>
+        <span>DataTable Display</span>
+      </div>
+      <FormField labelPlacement="left">
+        <FormFieldLabel>Row Striping</FormFieldLabel>
+        <Switch
+          checked={tableConfig.zebraStripes}
+          onChange={onChangeTableAttribute}
+          value="zebraStripes"
+        />
+      </FormField>
+      <FormField labelPlacement="left">
+        <FormFieldLabel>Row Separators</FormFieldLabel>
+        <Switch
+          checked={tableConfig.rowSeparators}
+          onChange={onChangeTableAttribute}
+          value="rowSeparators"
+        />
+      </FormField>
+      <FormField labelPlacement="left">
+        <FormFieldLabel>Column Separators</FormFieldLabel>
+        <Switch
+          checked={tableConfig.columnSeparators}
+          onChange={onChangeTableAttribute}
+          value="columnSeparators"
+        />
+      </FormField>
+
       <ColumnList
         columnItems={columnItems}
         onChange={onColumnChange}

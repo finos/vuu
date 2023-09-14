@@ -18,6 +18,8 @@ export type ComponentType = "cell-renderer" | "cell-config-panel";
 
 type CellRendererOptions = {
   [key: string]: unknown;
+  description: string;
+  label: string;
   serverDataType?: VuuColumnDataType | VuuColumnDataType[];
 };
 
@@ -70,9 +72,9 @@ export const getRegisteredCellRenderers = (
   serverDataType?: VuuColumnDataType
 ): CellRendererDescriptor[] => {
   const rendererNames = Array.from(cellRenderersMap.keys());
-  const allRenderers = rendererNames.map((name) => ({
+  const allRenderers = rendererNames.map<CellRendererDescriptor>((name) => ({
     name,
-    ...optionsMap.get(name),
+    ...(optionsMap.get(name) as CellRendererOptions),
   }));
   if (serverDataType) {
     return allRenderers.filter((renderer) =>

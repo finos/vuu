@@ -2,26 +2,30 @@
     --expando-combobox-height: var(--vuuExpandoCombobox-height, 24px);
     --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSizew, 12px);
 
-    --saltInputLegacy-focused-outlineStyle: none;
-    --saltInputLegacy-fontSize: var(--expando-combobox-fontSize);
-    --saltInputLegacy-height: var(--expando-combobox-height);
-    --saltInputLegacy-minWidth: 14px;
-    --saltInputLegacy-position: absolute;
+    --saltInput-outline: none;
+    --saltInput-fontSize: var(--expando-combobox-fontSize);
+    --saltInput-height: var(--expando-combobox-height);
+    --saltInput-minWidth: 4px;
 
-    background-color: rgba(255,0,0,.2);
     display: inline-flex;
     flex-direction: column;
     height: var(--expando-combobox-height);
-    min-width: 32px;
-    padding: 0 6px;
+    min-width: 4px;
+    padding: 0;
 
 }
 
-.vuuExpandoCombobox .saltDropdown {
+.vuuExpandoCombobox .saltInput {
+    background-color: transparent;
+    position: absolute;
+}
+
+.vuuExpandoCombobox .vuuDropdown {
     height: 100%;
 }
 
-.vuuExpandoCombobox-Input {
+/** double up the selector just to increase specificity, won't need when we use cascade layers */
+.vuuExpandoCombobox-Input.saltInput {
     border: none;
     left:0px;
     margin:0;
@@ -31,7 +35,7 @@
     width: auto;
 }
 
-.vuuExpandoCombobox .saltInputLegacy-input {
+.vuuExpandoCombobox .saltInput-input {
   border: none;
   box-sizing: content-box;
   display: block;

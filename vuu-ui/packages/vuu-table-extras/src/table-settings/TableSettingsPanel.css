@@ -24,4 +24,12 @@
 
 }
 
+.vuuTableSettingsPanel-header {
+    border-top: solid 2px var(--vuu-color-gray-30);
+    font-size: 14px;
+    font-weight: 600;
+    padding-top: 24px;
+}
+
+
 

@@ -3,6 +3,7 @@ import {
   GridConfig,
   KeyedColumnDescriptor,
   PinLocation,
+  TableConfig,
 } from "@finos/vuu-datagrid-types";
 import {
   applyFilterToColumns,
@@ -22,6 +23,7 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
   moveItem,
+  getDefaultAlignment,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
@@ -63,17 +65,9 @@ export interface TableModel extends Omit<GridConfig, "columns"> {
   tableSchema?: Readonly<TableSchema>;
 }
 
-const numericTypes = ["int", "long", "double"];
-const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
-  serverDataType === undefined
-    ? undefined
-    : numericTypes.includes(serverDataType)
-    ? "right"
-    : "left";
-
 export interface ColumnActionInit {
   type: "init";
-  tableConfig: Omit<GridConfig, "headings">;
+  tableConfig: TableConfig;
   dataSourceConfig?: DataSourceConfig;
 }
 
@@ -217,7 +211,7 @@ export const useTableModel = (
 
 type InitialConfig = {
   dataSourceConfig?: DataSourceConfig;
-  tableConfig: Omit<GridConfig, "headings">;
+  tableConfig: TableConfig;
 };
 
 function init({ dataSourceConfig, tableConfig }: InitialConfig): TableModel {

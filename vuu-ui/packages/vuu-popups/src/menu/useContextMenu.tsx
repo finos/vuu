@@ -6,7 +6,7 @@ import {
 import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
-import { cloneElement, MouseEvent, useCallback, useContext } from "react";
+import { cloneElement, useCallback, useContext } from "react";
 import {
   MenuActionClosePopup,
   PopupCloseReason,
@@ -27,8 +27,15 @@ export type ContextMenuOptions = {
   controlledComponentId?: string;
 };
 
+export type EventLike = {
+  clientX: number;
+  clientY: number;
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+};
+
 export type ShowContextMenu = (
-  e: MouseEvent<HTMLElement>,
+  e: EventLike,
   location: string,
   options: ContextMenuOptions
 ) => void;
@@ -53,17 +60,19 @@ export const useContextMenu = (
     []
   );
 
-  const handleShowContextMenu = useCallback(
-    (
-      e: MouseEvent<HTMLElement>,
-      location: string,
-      { ContextMenuProps, contextMenu, ...options }: ContextMenuOptions
-    ) => {
-      e.stopPropagation();
-      e.preventDefault();
+  const handleShowContextMenu = useCallback<ShowContextMenu>(
+    (e, location, { ContextMenuProps, contextMenu, ...options }) => {
+      e.stopPropagation?.();
+      e.preventDefault?.();
 
       if (contextMenu) {
-        return showContextMenuComponent(e, contextMenu);
+        return showContextMenuComponent(
+          {
+            x: e.clientX,
+            y: e.clientY,
+          },
+          contextMenu
+        );
       }
 
       const menuBuilders: MenuBuilder[] = [];
@@ -97,9 +106,6 @@ export const useContextMenu = (
         };
 
         if (menuItemDescriptors.length && menuHandler) {
-          console.log(`showContextMenu ${location}`, {
-            options,
-          });
           showContextMenu(e, menuItemDescriptors, menuHandler, {
             ...ContextMenuProps,
             className: cx(
@@ -137,14 +143,9 @@ export const useContextMenu = (
 const NO_OPTIONS = {};
 
 const showContextMenuComponent = (
-  e: MouseEvent<HTMLElement>,
+  position: { x: number; y: number },
   contextMenu: JSX.Element
 ) => {
-  const position = {
-    x: e.clientX,
-    y: e.clientY,
-  };
-
   PopupService.showPopup({
     focus: true,
     left: 0,
@@ -154,7 +155,7 @@ const showContextMenuComponent = (
 };
 
 const showContextMenu = (
-  e: MouseEvent<HTMLElement>,
+  e: EventLike,
   menuDescriptors: ContextMenuItemDescriptor[],
   handleContextMenuAction: MenuActionHandler,
   {
@@ -172,6 +173,7 @@ const showContextMenu = (
         <MenuItem
           key={i}
           action={menuItem.action}
+          className={menuItem.className}
           data-icon={menuItem.icon}
           options={menuItem.options}
         >

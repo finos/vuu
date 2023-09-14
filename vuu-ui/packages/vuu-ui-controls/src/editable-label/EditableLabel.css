@@ -1,9 +1,10 @@
 .vuuEditableLabel {
+  --editableLabel-padding: var(--vuuEditableLabel-padding, 6px);
+  --editableLabel-height: var(--vuuEditableLabel-height, 26px);
   --saltInput-background: transparent;
+  --saltInput-height: calc(var(--editableLabel-height) - 4px);
   --saltInput-minWidth: 14px;
-  --saltInput-position: absolute;
-  --editableLabel-padding: var(--saltEditableLabel-padding, 6px);
-  --editableLabel-height: var(--saltEditableLabel-height, 26px);
+
   color: inherit;
   cursor: default;
   display: flex;
@@ -11,9 +12,13 @@
   font-size: var(--salt-text-fontSize);
   height: var(--editableLabel-height);
   justify-content: center;
+  max-width: 170px;
   outline: none;
+  overflow: hidden;
   padding: 0 var(--editableLabel-padding);
   position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   z-index: var(--salt-zIndex-default);
 }
 
@@ -44,6 +49,7 @@
   background-color: transparent;
   border: none;
   box-sizing: content-box;
+  color: inherit;
   display: block;
   flex: 1;
   font: inherit;
@@ -52,4 +58,10 @@
   min-width:0;
   outline: none;
   padding: 0;
+}
+
+.vuuEditableLabel-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

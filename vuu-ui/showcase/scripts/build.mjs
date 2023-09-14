@@ -15,6 +15,7 @@ const entryPoints = [
   "src/index.tsx",
   "src/features/Test.feature.tsx",
   "src/features/VuuBlotterMockData.feature.tsx",
+  "src/features/TableNext.feature.tsx",
   // TODO automate addition of all example files
   "src/examples/Table/TableArrayData.examples.tsx",
   "src/examples/Table/TableVuuData.examples.tsx",

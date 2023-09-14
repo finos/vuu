@@ -1,7 +1,6 @@
 import { Button, ButtonProps } from "@salt-ds/core";
-import { ChevronDownIcon, IconProps, DEFAULT_ICON_SIZE } from "@salt-ds/icons";
-import { clsx } from "clsx";
-import { AriaAttributes, ComponentType, ForwardedRef, forwardRef } from "react";
+import cx from "classnames";
+import { AriaAttributes, ForwardedRef, forwardRef } from "react";
 
 import "./DropdownButton.css";
 
@@ -9,7 +8,7 @@ export interface DropdownButtonProps extends ButtonProps {
   /**
    * Replace the default Icon component
    */
-  IconComponent?: ComponentType<any>;
+  icon?: string;
   /**
    * Whether the dropdown button should hide role='option' via 'aria-hidden'
    */
@@ -18,10 +17,6 @@ export interface DropdownButtonProps extends ButtonProps {
    * If, `true`, the Dropdown button will occupy the full width of it's container
    */
   fullWidth?: boolean;
-  /**
-   * Sets the size of the down arrow icon. If this is not specified, a default size based on density is used.
-   */
-  iconSize?: IconProps["size"];
   /**
    * Is the dropdown list open
    */
@@ -55,11 +50,10 @@ const classBase = "vuuDropdownButton";
 
 export const DropdownButton = forwardRef(function DropdownButton(
   {
-    IconComponent = ChevronDownIcon,
     ariaHideOptionRole,
     className,
     disabled,
-    iconSize = DEFAULT_ICON_SIZE,
+    icon = "chevron-down",
     isOpen,
     label,
     labelId,
@@ -76,14 +70,13 @@ export const DropdownButton = forwardRef(function DropdownButton(
   // tool's false alarm on role of 'listbox'
   return (
     <Button
-      className={clsx(
+      className={cx(
         classBase,
         {
           [`${classBase}-fullWidth`]: fullWidth,
         },
         className
       )}
-      data-testid="dropdown-button"
       disabled={disabled}
       variant="secondary"
       {...rest}
@@ -101,10 +94,9 @@ export const DropdownButton = forwardRef(function DropdownButton(
         >
           {label}
         </span>
-        <IconComponent
+        <span
           className={`${classBase}-buttonIcon`}
-          size={iconSize}
-          aria-label={null}
+          data-icon={icon}
           aria-hidden="true"
         />
       </div>

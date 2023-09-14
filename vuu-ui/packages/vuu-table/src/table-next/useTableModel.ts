@@ -1,9 +1,10 @@
 import {
   ColumnDescriptor,
-  GridConfig,
   KeyedColumnDescriptor,
   PinLocation,
+  TableAttributes,
   TableConfig,
+  TableHeadings,
 } from "@finos/vuu-datagrid-types";
 import { moveItem } from "@finos/vuu-ui-controls";
 import {
@@ -58,9 +59,23 @@ const getDataType = (
   }
 };
 
-// TODO should headings live here and this extend TableConfig ?
-export interface TableModel extends Omit<GridConfig, "columns"> {
+/**
+ * TableModel represents state used internally to manage Table. It is
+ * derived initially from the TableConfig provided by user, along with the
+ * data-related config from DataSource.
+ */
+export interface TableModel extends TableAttributes {
   columns: KeyedColumnDescriptor[];
+  headings: TableHeadings;
+}
+
+/**
+ * InternalTableModel describes the state managed within the TableModel
+ * reducer. It is the same as TableModel but with the addition of a
+ * readonly copy of the original TableConfig.
+ */
+interface InternalTableModel extends TableModel {
+  tableConfig: Readonly<TableConfig>;
 }
 
 const numericTypes = ["int", "long", "double"];
@@ -98,10 +113,13 @@ export interface ColumnActionPin {
   column: ColumnDescriptor;
   pin?: PinLocation;
 }
+
+export type ResizePhase = "begin" | "resize" | "end";
+
 export interface ColumnActionResize {
   type: "resizeColumn";
   column: KeyedColumnDescriptor;
-  phase: "begin" | "resize" | "end";
+  phase: ResizePhase;
   width?: number;
 }
 
@@ -168,7 +186,7 @@ export type GridModelAction =
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
 
-export type GridModelReducer = Reducer<TableModel, GridModelAction>;
+export type GridModelReducer = Reducer<InternalTableModel, GridModelAction>;
 
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
@@ -200,18 +218,22 @@ const columnReducer: GridModelReducer = (state, action) => {
 };
 
 export const useTableModel = (
-  tableConfig: TableConfig,
+  tableConfigProp: TableConfig,
   dataSourceConfig?: DataSourceConfig
 ) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
     InitialConfig
-  >(columnReducer, { tableConfig, dataSourceConfig }, init);
+  >(columnReducer, { tableConfig: tableConfigProp, dataSourceConfig }, init);
+
+  const { columns, headings, tableConfig, ...tableAttributes } = state;
 
   return {
-    columns: state.columns,
+    columns,
     dispatchColumnAction,
-    headings: state.headings,
+    headings,
+    tableAttributes,
+    tableConfig,
   };
 };
 
@@ -220,26 +242,29 @@ type InitialConfig = {
   tableConfig: TableConfig;
 };
 
-function init({ dataSourceConfig, tableConfig }: InitialConfig): TableModel {
-  const columns = tableConfig.columns.map(
-    toKeyedColumWithDefaults(tableConfig)
-  );
-  const maybePinnedColumns = columns.some(isPinned)
-    ? sortPinnedColumns(columns)
-    : columns;
-  const state = {
+function init({
+  dataSourceConfig,
+  tableConfig,
+}: InitialConfig): InternalTableModel {
+  const { columns, ...tableAttributes } = tableConfig;
+  const keyedColumns = columns.map(toKeyedColumWithDefaults(tableAttributes));
+  const maybePinnedColumns = keyedColumns.some(isPinned)
+    ? sortPinnedColumns(keyedColumns)
+    : keyedColumns;
+  let state: InternalTableModel = {
     columns: maybePinnedColumns,
     headings: getTableHeadings(maybePinnedColumns),
+    tableConfig,
+    ...tableAttributes,
   };
   if (dataSourceConfig) {
-    const { columns, ...rest } = dataSourceConfig;
-    return updateTableConfig(state, {
+    const { columns: _, ...rest } = dataSourceConfig;
+    state = updateTableConfig(state, {
       type: "tableConfig",
       ...rest,
     });
-  } else {
-    return state;
   }
+  return state;
 }
 
 const getLabel = (
@@ -255,13 +280,13 @@ const getLabel = (
 };
 
 const toKeyedColumWithDefaults =
-  (options: Omit<GridConfig, "headings">) =>
+  (tableAttributes: TableAttributes) =>
   (
     column: ColumnDescriptor & { key?: number },
     index: number
   ): KeyedColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
-      options;
+      tableAttributes;
     const {
       align = getDefaultAlignment(column.serverDataType),
       key,
@@ -285,7 +310,7 @@ const toKeyedColumWithDefaults =
 
     if (isGroupColumn(keyedColumnWithDefaults)) {
       keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
-        (col) => toKeyedColumWithDefaults(options)(col, col.key)
+        (col) => toKeyedColumWithDefaults(tableAttributes)(col, col.key)
       );
     }
 
@@ -293,7 +318,7 @@ const toKeyedColumWithDefaults =
   };
 
 function moveColumn(
-  state: TableModel,
+  state: InternalTableModel,
   { column, moveBy, moveTo }: ColumnActionMove
 ) {
   const { columns } = state;
@@ -316,9 +341,9 @@ function moveColumn(
   return state;
 }
 
-function hideColumns(state: TableModel, { columns }: ColumnActionHide) {
+function hideColumns(state: InternalTableModel, { columns }: ColumnActionHide) {
   if (columns.some((col) => col.hidden !== true)) {
-    return columns.reduce<TableModel>((s, c) => {
+    return columns.reduce<InternalTableModel>((s, c) => {
       if (c.hidden !== true) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -333,9 +358,9 @@ function hideColumns(state: TableModel, { columns }: ColumnActionHide) {
     return state;
   }
 }
-function showColumns(state: TableModel, { columns }: ColumnActionShow) {
+function showColumns(state: InternalTableModel, { columns }: ColumnActionShow) {
   if (columns.some((col) => col.hidden)) {
-    return columns.reduce<TableModel>((s, c) => {
+    return columns.reduce<InternalTableModel>((s, c) => {
       if (c.hidden) {
         return updateColumnProp(s, {
           type: "updateColumnProp",
@@ -352,12 +377,11 @@ function showColumns(state: TableModel, { columns }: ColumnActionShow) {
 }
 
 function resizeColumn(
-  state: TableModel,
+  state: InternalTableModel,
   { column, phase, width }: ColumnActionResize
 ) {
   const type = "updateColumnProp";
   const resizing = phase !== "end";
-
   switch (phase) {
     case "begin":
       return updateColumnProp(state, { type, column, resizing });
@@ -371,7 +395,7 @@ function resizeColumn(
 }
 
 function setTableSchema(
-  state: TableModel,
+  state: InternalTableModel,
   { tableSchema }: ColumnActionSetTableSchema
 ) {
   const { columns } = state;
@@ -394,7 +418,7 @@ function setTableSchema(
   }
 }
 
-function pinColumn(state: TableModel, action: ColumnActionPin) {
+function pinColumn(state: InternalTableModel, action: ColumnActionPin) {
   let { columns } = state;
   const { column, pin } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -409,7 +433,10 @@ function pinColumn(state: TableModel, action: ColumnActionPin) {
     return state;
   }
 }
-function updateColumnProp(state: TableModel, action: ColumnActionUpdateProp) {
+function updateColumnProp(
+  state: InternalTableModel,
+  action: ColumnActionUpdateProp
+) {
   let { columns } = state;
   const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
@@ -433,11 +460,11 @@ function updateColumnProp(state: TableModel, action: ColumnActionUpdateProp) {
   return {
     ...state,
     columns,
-  };
+  } as InternalTableModel;
 }
 
 function updateTableConfig(
-  state: TableModel,
+  state: InternalTableModel,
   { columns, confirmed, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasColumns = columns && columns.length > 0;

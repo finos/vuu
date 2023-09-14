@@ -1,14 +1,22 @@
 .vuuTableNext {
   --vuu-table-next-selection-bookend-width: 4px;
-  --columnResizer-height: var(--table-height);
   --columnResizer-color: transparent;
+  --row-background: white;
+  --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
   height: var(--table-css-height);
-  background-color: red;
   position: relative;
   user-select: none;
   width: var(--table-css-width);
+}
+
+.vuuTableNext-zebra {
+  --row-background-even: var(--vuu-color-gray-25)
+}
+
+.vuuTableNext-rowLines {
+  --row-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTableNext-scrollbarContainer {
@@ -63,12 +71,6 @@
   height: var(--content-height)
 }
 
-.vuuTableNextCell {
-  display: inline-block;
-  padding: 0 8px;
-  vertical-align: top;
-}
-
 .vuuPinLeft, .vuuPinRight {
   background-color: inherit;
   position: sticky;
@@ -97,3 +99,7 @@
     height: 0px;
   }
   
+  .vuuDraggable-vuuTableNext {
+    --header-height: 25px;
+    --vuuTableNextHeaderCell-background: var(--vuu-color-gray-25);
+  }

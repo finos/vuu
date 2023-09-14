@@ -49,6 +49,7 @@ export const ColumnMenu = ({
     [column, handleMenuClose, showContextMenu]
   );
 
+  //TODO why is this not a PopupMenu ?
   return (
     <span
       {...props}

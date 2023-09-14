@@ -35,7 +35,6 @@ export const useCollectionItems = <Item>({
   source,
 }: CollectionHookProps<Item>): CollectionHookResult<Item> => {
   const { getItemId } = options;
-
   const [, forceUpdate] = useState<unknown>(null);
   const inheritedCollectionHook = useCollection<Item>();
   const dataRef = useRef<CollectionItem<Item>[]>([]);
@@ -192,7 +191,8 @@ export const useCollectionItems = <Item>({
     () =>
       inheritedCollectionHook
         ? [EMPTY_COLLECTION, EMPTY_COLLECTION, EMPTY_COLLECTION]
-        : //@ts-ignore
+        : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
           addMetadataToItems<Item>(partialCollectionItems, { value: 0 }),
     [
       EMPTY_COLLECTION,
@@ -298,6 +298,35 @@ export const useCollectionItems = <Item>({
     [toCollectionItem]
   );
 
+  const itemToCollectionItemId = useCallback(
+    <
+      Selection extends SelectionStrategy,
+      U extends Item | Item[] | null | undefined
+    >(
+      sel: U
+    ): Selection extends SingleSelectionStrategy
+      ? string | null | undefined
+      : string[] | undefined => {
+      type returnType = Selection extends SingleSelectionStrategy
+        ? string | null
+        : string[];
+
+      if (sel === undefined) {
+        return undefined;
+      }
+
+      const selectedCollectionItem = itemToCollectionItem(sel);
+      if (Array.isArray(selectedCollectionItem)) {
+        return selectedCollectionItem.map((i) => i.id) as returnType;
+      } else if (selectedCollectionItem) {
+        return selectedCollectionItem.id as returnType;
+      } else {
+        return null as returnType;
+      }
+    },
+    [itemToCollectionItem]
+  );
+
   const stringToCollectionItem = useCallback(
     <Selection extends SelectionStrategy>(
       value: string | null | undefined
@@ -314,6 +343,7 @@ export const useCollectionItems = <Item>({
         // TODO what about Tree structures, we need to search flattened source
         const collectionItem = flattenedDataRef.current.find((i) =>
           // const collectionItem = collectionItemsRef.current.find((i) =>
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           isValidElement(i.value)
             ? i.label === item
@@ -393,6 +423,7 @@ export const useCollectionItems = <Item>({
       itemToId,
       toCollectionItem,
       itemToCollectionItem,
+      itemToCollectionItemId,
       stringToCollectionItem,
     }
   );

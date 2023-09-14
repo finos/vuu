@@ -6,10 +6,10 @@ import { loadLocalConfig, saveLocalConfig } from "./local-config";
 import { loadRemoteConfig, saveRemoteConfig } from "./remote-config";
 
 export interface LayoutConfigHookProps {
-  defaultLayout: LayoutJSON;
+  defaultLayout?: LayoutJSON;
   saveLocation: SaveLocation;
   saveUrl?: string;
-  user: VuuUser;
+  user?: VuuUser;
 }
 
 export type LayoutHookResult = [
@@ -18,11 +18,14 @@ export type LayoutHookResult = [
   (id: string) => void
 ];
 
+const FALLBACK_LAYOUT = { type: "Placeholder" };
+
 export const useLayoutConfig = ({
   saveLocation,
   saveUrl = "api/vui",
   user,
-  defaultLayout,
+  // TODO this should be an error panel
+  defaultLayout = FALLBACK_LAYOUT,
 }: LayoutConfigHookProps): LayoutHookResult => {
   const [layout, _setLayout] = useState(defaultLayout);
   const usingRemote = saveLocation === "remote";

@@ -10,7 +10,6 @@ import {
 
 import { useId } from "@finos/vuu-layout";
 import {
-  CollectionItem,
   CollectionProvider,
   itemToString as defaultItemToString,
   SelectionProps,
@@ -22,7 +21,7 @@ import { List, ListProps } from "../list";
 import { DropdownBase, MaybeChildProps } from "./DropdownBase";
 import { DropdownButton } from "./DropdownButton";
 import { DropdownBaseProps } from "./dropdownTypes";
-import { forwardCallbackProps } from "./forwardCallbackProps";
+import { forwardCallbackProps } from "../utils";
 import { useDropdown } from "./useDropdown";
 
 export interface DropdownProps<
@@ -68,6 +67,7 @@ export const Dropdown = forwardRef(function Dropdown<
 ) {
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const forkedRef = useForkRef<HTMLDivElement>(rootRef, forwardedRef);
 
   const collectionHook = useCollectionItems<Item>({
@@ -90,7 +90,7 @@ export const Dropdown = forwardRef(function Dropdown<
     collectionHook,
     defaultHighlightedIndex: ListProps?.defaultHighlightedIndex,
     defaultIsOpen,
-    defaultSelected: collectionHook.itemToCollectionItem<
+    defaultSelected: collectionHook.itemToCollectionItemId<
       Selection,
       typeof defaultSelected
     >(defaultSelected),
@@ -98,11 +98,12 @@ export const Dropdown = forwardRef(function Dropdown<
     isOpen: isOpenProp,
     itemToString,
     label: "Dropdown",
+    listRef,
     onHighlight: ListProps?.onHighlight,
     onOpenChange,
     onSelectionChange,
     onSelect,
-    selected: collectionHook.itemToCollectionItem<
+    selected: collectionHook.itemToCollectionItemId<
       Selection,
       typeof selectedProp
     >(selectedProp),
@@ -111,20 +112,22 @@ export const Dropdown = forwardRef(function Dropdown<
 
   const collectionItemsToItem = useCallback(
     (
-      itemOrItems?: CollectionItem<Item> | null | CollectionItem<Item>[]
+      itemIdOrItemIds?: string | null | string[]
     ):
       | undefined
       | (Selection extends SingleSelectionStrategy ? Item | null : Item[]) => {
       type returnType = Selection extends SingleSelectionStrategy
         ? Item | null
         : Item[];
-      if (Array.isArray(itemOrItems)) {
-        return itemOrItems.map((i) => i.value) as returnType;
-      } else if (itemOrItems) {
-        return itemOrItems.value as returnType;
+      if (Array.isArray(itemIdOrItemIds)) {
+        return itemIdOrItemIds.map((id) =>
+          collectionHook.itemById(id)
+        ) as returnType;
+      } else if (itemIdOrItemIds) {
+        return collectionHook.itemById(itemIdOrItemIds) as returnType;
       }
     },
-    []
+    [collectionHook]
   );
 
   const getTriggerComponent = () => {
@@ -154,8 +157,6 @@ export const Dropdown = forwardRef(function Dropdown<
     }
   };
 
-  console.log({ selected, selectedItem: collectionItemsToItem(selected) });
-
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
@@ -169,13 +170,13 @@ export const Dropdown = forwardRef(function Dropdown<
         {getTriggerComponent()}
         <List<Item, Selection>
           ListItem={ListItem}
-          height={500}
           itemToString={itemToString}
           {...ListProps}
           highlightedIndex={highlightedIndex}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           onSelect={onSelect}
+          ref={listRef}
           selected={collectionItemsToItem(selected)}
           selectionStrategy={selectionStrategy}
         />

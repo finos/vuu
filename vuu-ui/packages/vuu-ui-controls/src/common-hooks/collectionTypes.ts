@@ -66,6 +66,14 @@ export type CollectionHookResult<T> = {
   ) => Selection extends SingleSelectionStrategy
     ? CollectionItem<T> | null
     : CollectionItem<T>[];
+  itemToCollectionItemId: <
+    Selection extends SelectionStrategy,
+    U extends T | T[] | null | undefined
+  >(
+    item: U
+  ) =>
+    | (Selection extends SingleSelectionStrategy ? string | null : string[])
+    | undefined;
 
   stringToCollectionItem: <Selection extends SelectionStrategy>(
     item: string | null | undefined

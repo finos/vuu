@@ -18,9 +18,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const { SELECTED } = metadataKeys;
 
-// const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
-//   ((row1[RENDER_IDX] as number) - row2[RENDER_IDX]) as number;
-
 export type SubscriptionDetails = {
   columnNames?: string[];
   range: { from: number; to: number };
@@ -87,9 +84,7 @@ export function useDataSource({
         if (message.rows) {
           setData(message.rows);
         } else if (typeof message.size === "number") {
-          // TODO is this right ??????
           data.current = dataWindow.data;
-          // data.current = dataWindow.data.slice().sort(byKey);
           hasUpdated.current = true;
         }
       } else if (isVuuFeatureAction(message)) {
@@ -179,6 +174,7 @@ export function useDataSource({
   }, [dataSource, datasourceMessageHandler, onConfigChange]);
 
   useEffect(() => {
+    console.log(`adjust range as rowCount chnaged ${viewportRowCount}`);
     adjustRange(viewportRowCount);
   }, [adjustRange, viewportRowCount]);
 

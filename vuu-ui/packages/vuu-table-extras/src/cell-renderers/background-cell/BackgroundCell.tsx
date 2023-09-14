@@ -70,5 +70,7 @@ const BackgroundCell = ({ column, row }: TableCellProps) => {
 };
 
 registerComponent("background", BackgroundCell, "cell-renderer", {
+  description: "Background Cell renderer for VuuTable",
+  label: "Background Cell (deprecated)",
   serverDataType: ["long", "int", "double"],
 });

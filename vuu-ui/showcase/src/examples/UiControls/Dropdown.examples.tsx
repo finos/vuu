@@ -111,7 +111,6 @@ export const DataOnDemand = () => {
   };
 
   const handleOpenChange = useCallback((isOpen) => {
-    console.log(`handleOpenChange ${isOpen}`);
     if (isOpen) {
       setTimeout(() => {
         setData(["AUD", "CHF", "EUR", "GBP", "USD"]);
@@ -131,3 +130,21 @@ export const DataOnDemand = () => {
 };
 
 DataOnDemand.displaySequence = displaySequence++;
+
+export const MultiSelectDropdown = () => {
+  const handleSelectionChange = useCallback<
+    SelectionChangeHandler<string, "multiple">
+  >((event, selectedItem) => {
+    // nothing to see
+  }, []);
+  return (
+    <Dropdown<string, "multiple">
+      defaultSelected={[usa_states[0]]}
+      onSelectionChange={handleSelectionChange}
+      selectionStrategy="multiple"
+      source={usa_states}
+    />
+  );
+};
+
+MultiSelectDropdown.displaySequence = displaySequence++;

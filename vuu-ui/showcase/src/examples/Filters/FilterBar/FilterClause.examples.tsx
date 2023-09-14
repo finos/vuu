@@ -1,5 +1,14 @@
-import { ExpandoCombobox, FilterClauseEditor } from "@finos/vuu-filters";
 import { FilterClause } from "@finos/vuu-filter-types";
+import {
+  ExpandoCombobox,
+  ExpandoComboboxProps,
+  FilterClauseEditor,
+  TextInput,
+} from "@finos/vuu-filters";
+import { ExpandoInput } from "@finos/vuu-ui-controls";
+import { SelectionChangeHandler } from "@salt-ds/lab";
+import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
   useAutoLoginToVuuServer,
   useSchema,
@@ -7,15 +16,26 @@ import {
 } from "../../utils";
 
 import "./FilterClause.examples.css";
-import { useCallback, useMemo, useState } from "react";
-import { SelectionChangeHandler } from "@salt-ds/lab";
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
 
 let displaySequence = 1;
 
 const EMPTY_FILTER_CLAUSE: Partial<FilterClause> = {};
 
-export const DefaultExpandoComboBox = () => {
+export const DefaultExpandoInput = () => {
+  const [value, setValuue] = useState("Enter value");
+
+  const handleChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
+    const target = evt.target as HTMLInputElement;
+    setValuue(target.value);
+  }, []);
+
+  return <ExpandoInput onChange={handleChange} value={value} />;
+};
+DefaultExpandoInput.displaySequence = displaySequence++;
+
+export const DefaultExpandoComboBox = (
+  props: Partial<ExpandoComboboxProps<ColumnDescriptor>>
+) => {
   const columns: ColumnDescriptor[] = useMemo(
     () => [
       { name: "ccy", serverDataType: "string" },
@@ -47,6 +67,7 @@ export const DefaultExpandoComboBox = () => {
 
   return (
     <ExpandoCombobox<ColumnDescriptor>
+      {...props}
       itemToString={getColumnName}
       source={columns}
       onSelectionChange={handleSelectionChange}
@@ -54,6 +75,86 @@ export const DefaultExpandoComboBox = () => {
   );
 };
 DefaultExpandoComboBox.displaySequence = displaySequence++;
+
+export const DefaultExpandoComboBoxHighlightFirstRow = () => {
+  return <DefaultExpandoComboBox initialHighlightedIndex={0} />;
+};
+DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
+
+export const DataBoundTextInputEmpty = () => {
+  const tableSchema = useSchema("instruments");
+  const { typeaheadHook } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const column: ColumnDescriptor = useMemo(
+    () => ({ name: "currency", serverDataType: "string" }),
+    []
+  );
+
+  const [value, setValue] = useState("");
+
+  const [filterClause] = useState<Partial<FilterClause>>({
+    column: "currency",
+    op: "=",
+  });
+
+  const handleValueChange = useCallback((value: string | number) => {
+    setValue(String(value));
+  }, []);
+
+  return (
+    <TextInput
+      column={column}
+      filterClause={filterClause}
+      onInputComplete={handleValueChange}
+      operator="="
+      suggestionProvider={typeaheadHook}
+      table={tableSchema.table}
+      value={value}
+    />
+  );
+};
+DataBoundTextInputEmpty.displaySequence = displaySequence++;
+
+export const DataBoundTextInputLoaded = () => {
+  const tableSchema = useSchema("instruments");
+  const { typeaheadHook } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const column: ColumnDescriptor = useMemo(
+    () => ({ name: "currency", serverDataType: "string" }),
+    []
+  );
+
+  const [value, setValue] = useState("EUR");
+
+  const [filterClause] = useState<Partial<FilterClause>>({
+    column: "currency",
+    op: "=",
+    value: "EUR",
+  });
+
+  const handleValueChange = useCallback((value: string | number) => {
+    setValue(String(value));
+  }, []);
+
+  return (
+    <TextInput
+      column={column}
+      filterClause={filterClause}
+      onValueChange={handleValueChange}
+      operator="="
+      suggestionProvider={typeaheadHook}
+      table={tableSchema.table}
+      value={value}
+    />
+  );
+};
+DataBoundTextInputLoaded.displaySequence = displaySequence++;
 
 export const MultiSelectExpandoComboBox = () => {
   const columns: ColumnDescriptor[] = useMemo(
@@ -97,10 +198,10 @@ export const MultiSelectExpandoComboBox = () => {
 MultiSelectExpandoComboBox.displaySequence = displaySequence++;
 
 export const NewFilterClause = () => {
-  useAutoLoginToVuuServer();
   const tableSchema = useSchema("instruments");
 
   const { typeaheadHook } = useTableConfig({
+    count: 100_000,
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });

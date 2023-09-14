@@ -7,6 +7,7 @@ import {
   isJsonGroup,
   metadataKeys,
   notHidden,
+  RowSelected,
 } from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
@@ -17,6 +18,8 @@ import { TableGroupCell } from "./TableGroupCell";
 import "./TableRow.css";
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
+const { True, First, Last } = RowSelected;
+
 const classBase = "vuuTableRow";
 
 export interface RowProps
@@ -42,13 +45,15 @@ export const TableRow = memo(function Row({
   const {
     [IDX]: rowIndex,
     [IS_EXPANDED]: isExpanded,
-    [SELECTED]: isSelected,
+    [SELECTED]: selectionStatus,
   } = row;
 
   const className = cx(classBase, {
     [`${classBase}-even`]: rowIndex % 2 === 0,
     [`${classBase}-expanded`]: isExpanded,
-    [`${classBase}-preSelected`]: isSelected === 2,
+    [`${classBase}-selected`]: selectionStatus & True,
+    [`${classBase}-selectedStart`]: selectionStatus & First,
+    [`${classBase}-selectedEnd`]: selectionStatus & Last,
   });
 
   const handleRowClick = useCallback(
@@ -72,7 +77,7 @@ export const TableRow = memo(function Row({
 
   return (
     <div
-      aria-selected={isSelected === 1 ? true : undefined}
+      aria-selected={selectionStatus & True ? true : undefined}
       aria-rowindex={rowIndex}
       className={className}
       onClick={handleRowClick}

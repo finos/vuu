@@ -224,7 +224,7 @@ export interface ListControlProps {
 
 export interface ListHookProps<Item, Selection extends SelectionStrategy>
   extends Omit<
-    SelectionProps<CollectionItem<Item>, Selection>,
+    SelectionProps<string, Selection>,
     "onSelect" | "onSelectionChange"
   > {
   allowDragDrop?: boolean | dragStrategy;

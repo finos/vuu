@@ -1,19 +1,11 @@
-export const getElementIndex = (el: HTMLElement | null) => {
-  if (el) {
-    const index = parseInt(el.dataset.index || "");
-    if (!isNaN(index)) {
-      return index;
-    }
-  }
-  return -1;
-};
+import { getElementDataIndex } from "@finos/vuu-utils";
 
 const getIndexOfItem = (container: HTMLElement | null, query: string) => {
   if (container) {
     const targetTab = container.querySelector(
       `[data-index]:has(${query})`
     ) as HTMLElement;
-    return getElementIndex(targetTab);
+    return getElementDataIndex(targetTab);
   }
   return -1;
 };

@@ -137,7 +137,6 @@ export const VerticalTabsControlled = () => {
       <StackLayout
         TabstripProps={{ orientation: "vertical" }}
         active={active}
-        showTabs
         style={{ width: 800, height: 500 }}
       >
         <Component
@@ -174,7 +173,6 @@ export const EmptyStackAddTab = () => {
       TabstripProps={{
         allowAddTab: true,
       }}
-      showTabs
       createNewChild={createContent}
       style={{ width: 800, height: 500 }}
     ></StackLayout>
@@ -185,8 +183,8 @@ EmptyStackAddTab.displaySequence = displaySequence++;
 
 export const TabsWithinTabs = () => (
   <LayoutProvider>
-    <StackLayout showTabs style={{ width: 800, height: 500 }} active={0}>
-      <StackLayout showTabs active={0} title="Substack 1">
+    <StackLayout style={{ width: 800, height: 500 }} active={0}>
+      <StackLayout active={0} title="Substack 1">
         <View title="Rebecca" header>
           <Component style={{ backgroundColor: "rebeccapurple", flex: 1 }} />
         </View>
@@ -206,7 +204,7 @@ export const TabsWithinTabs = () => (
         <View title="Red" header>
           <Component title="Red" style={{ backgroundColor: "red", flex: 1 }} />
         </View>
-        <StackLayout showTabs active={0} title="Substack 2">
+        <StackLayout active={0} title="Substack 2">
           <View title="Alice" header>
             <Component style={{ backgroundColor: "aliceblue", flex: 1 }} />
           </View>
@@ -234,7 +232,7 @@ export const TabsWithFlexChildren = () => {
 
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <StackLayout showTabs style={{ width: 800, height: 500 }} active={0}>
+      <StackLayout style={{ width: 800, height: 500 }} active={0}>
         <Flexbox
           title="Tower"
           style={{ flexDirection: "column", flex: 1 }}

@@ -35,6 +35,7 @@ export type DataSourceRow = [
 export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
 export interface ContextMenuItemBase {
+  className?: string;
   icon?: string;
   label: string;
   location?: string;
