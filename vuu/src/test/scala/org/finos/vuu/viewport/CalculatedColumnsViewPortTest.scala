@@ -1,10 +1,10 @@
 package org.finos.vuu.viewport
 
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.core.table.TableTestHelper.combineQs
-import org.finos.vuu.util.table.TableAsserts.{assertVpEq, assertVpEqWithMeta}
-import org.scalatest.{GivenWhenThen, Ignore}
+import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
+import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
@@ -13,13 +13,13 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
   Feature("Create a Viewport with calc on a non-existant column") {
 
     Given("we've created a viewport with orders in and a calc'd column 2")
-    val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+    val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(fooBar = 109, \"Yay\", \"Boo\")"))
 
     createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
     viewPortContainer.runOnce()
 
@@ -47,13 +47,13 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
   Feature("Create a Viewport with logical calculated columns in") {
 
     Given("we've created a viewport with orders in and a calc'd column")
-    val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+    val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "logicTest:String:=if(quantity = 109, \"Yay\", \"Boo\")"))
 
     createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
     viewPortContainer.runOnce()
 
@@ -79,13 +79,13 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
     Feature("Create a Viewport with calculated columns in"){
 
     Given("we've created a viewport with orders in and a calc'd column")
-    val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
     val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric", "quantityTimes100:Long:=quantity*100"))
 
     createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
     viewPortContainer.runOnce()
 

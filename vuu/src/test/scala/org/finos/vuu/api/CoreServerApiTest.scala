@@ -1,6 +1,6 @@
 package org.finos.vuu.api
 
-import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.CoreServerApiHandler
@@ -9,15 +9,15 @@ import org.finos.vuu.net.{ClientSessionId, HeartBeatResponse, RequestContext}
 import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.ViewPortContainer
-import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 
 class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with GivenWhenThen {
   var coreServerApi: CoreServerApiHandler = _
-  override def beforeEach() {
-    implicit val clock = new TestFriendlyClock(1311544800l)
-    implicit val lifecycle = new LifecycleContainer
-    implicit val metrics = new MetricsProviderImpl
+  override def beforeEach(): Unit = {
+    implicit val clock: TestFriendlyClock = new TestFriendlyClock(1311544800l)
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+    implicit val metrics: MetricsProvider = new MetricsProviderImpl
     val joinTableProvider = JoinTableProviderImpl()
     val tableContainer = new TableContainer(joinTableProvider)
     val providerContainer = new ProviderContainer(joinTableProvider)
@@ -30,7 +30,7 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
       Given("a heart beat response")
       val heartBeatResponse = HeartBeatResponse(100000)
       val requestContext = RequestContext("reqId",
-        ClientSessionId("sessionId", "user"), new OutboundRowPublishQueue(), new OutboundRowPublishQueue(), "token")
+        ClientSessionId("sessionId", "user"), new OutboundRowPublishQueue(), "token")
       val maybeMessage = coreServerApi.process(heartBeatResponse)(requestContext)
 
       Then("core server api should process successfully")

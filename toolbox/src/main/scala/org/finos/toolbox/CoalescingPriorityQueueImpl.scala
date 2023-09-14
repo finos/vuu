@@ -1,9 +1,8 @@
 package org.finos.toolbox
 
-import java.util.{Comparator, PriorityQueue}
-import scala.collection.mutable
+import java.util.PriorityQueue
 
-class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (VALUE,VALUE) => VALUE) extends CoalescingQueue[VALUE, KEY] {
+class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (VALUE, VALUE) => VALUE, compareEqFun: (KEY, KEY) => Int) extends CoalescingQueue[VALUE, KEY] {
 
   case class PrioritizedItem[KEY](KEY: KEY, highPriority: Boolean)
 
@@ -13,7 +12,7 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
     } else if (!o1.highPriority && o2.highPriority) {
       1
     } else {
-      0
+      compareEqFun(o1.KEY, o2.KEY)
     }
   })
 
@@ -63,7 +62,7 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
 
   def popUpTo(i: Int): Seq[VALUE] = {
     lock.synchronized {
-      val entries = for (i <- 0 to (i - 1) if (keysInOrder.size > 0)) yield keysInOrder.poll()
+      val entries = for (i <- 0 until i if keysInOrder.size > 0) yield keysInOrder.poll()
       entries.map(x => values.remove(x.KEY))
     }
   }

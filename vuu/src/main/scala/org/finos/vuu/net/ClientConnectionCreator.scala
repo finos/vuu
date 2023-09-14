@@ -3,13 +3,13 @@ package org.finos.vuu.net
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import org.finos.vuu.net.json.Serializer
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
-import org.finos.toolbox.time.Clock
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
@@ -31,7 +31,6 @@ trait MessageHandler extends InboundMessageHandler with OutboundMessageHandler {
 
 class DefaultMessageHandler(val channel: Channel,
                             val outboundQueue: PublishQueue[ViewPortUpdate],
-                            val highPriorityQueue: PublishQueue[ViewPortUpdate],
                             val session: ClientSessionId,
                             serverApi: ServerApi,
                             serializer: Serializer[String, MessageBody],
@@ -47,11 +46,6 @@ class DefaultMessageHandler(val channel: Channel,
       disconnect()
     }
   })
-
-
-  private def hasHighPriorityUpdates: Boolean = {
-    highPriorityQueue.length > 0
-  }
 
   private def sendUpdatesInternal(updates: Seq[ViewPortUpdate], highPriority: Boolean = false) = {
     if (!updates.isEmpty) {
@@ -81,19 +75,9 @@ class DefaultMessageHandler(val channel: Channel,
         disconnect()
 
       case BatchSize(size) =>
-        if (hasHighPriorityUpdates) {
-          val updates = highPriorityQueue.popUpTo(size)
-          sendUpdatesInternal(updates, highPriority = true)
-          val remaining = size - updates.size
-          if (remaining > 0) {
-            val lpUpdates = outboundQueue.popUpTo(remaining)
-            sendUpdatesInternal(lpUpdates, highPriority = true)
-          }
+        val updates = outboundQueue.popUpTo(size)
+        sendUpdatesInternal(updates)
 
-        } else {
-          val updates = outboundQueue.popUpTo(size)
-          sendUpdatesInternal(updates)
-        }
     }
   }
 
@@ -142,7 +126,7 @@ class DefaultMessageHandler(val channel: Channel,
   }
 
   override def handle(msg: ViewServerMessage): Option[ViewServerMessage] = {
-    val ctx = RequestContext(msg.requestId, session, outboundQueue, highPriorityQueue, msg.token)
+    val ctx = RequestContext(msg.requestId, session, outboundQueue, msg.token)
 
     flowController.process(msg)
 

@@ -16,13 +16,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     Scenario("create viewport, update selection, see selection come back") {
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -45,7 +45,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
 
       And("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelectedIndices(Array(0, 2)))
+      viewPortContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0, 2)))
 
       Then("Check the selected rows is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -56,13 +56,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         )
       }
 
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPort.id, ViewPortSelectedIndices(Array(2)))
+      viewPortContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(2)))
 
       assertVpEqWithMeta(combineQs(viewPort)) {
           Table(
-            ("sel","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-            (1         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
-            (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       )
+            ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+            (0, "NYC-0000", "chris", "VOD.L", 1311544800L, 100),
+            (1, "NYC-0002", "chris", "VOD.L", 1311544820L, 102)
           )
         }
 
@@ -74,17 +74,17 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       Then("Check we still maintain the selection")
       assertVpEqWithMeta(combineQs(viewPortChanged)) {
         Table(
-          ("sel","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544890L,109       ),
-          (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544880L,108       ),
-          (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544870L,107       ),
-          (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544860L,106       ),
-          (0         ,"NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       ),
-          (0         ,"NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ),
-          (0         ,"NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       ),
-          (1         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
-          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
-          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800L, 100),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544810L, 101),
+          (1, "NYC-0002", "chris", "VOD.L", 1311544820L, 102),
+          (0, "NYC-0003", "chris", "VOD.L", 1311544830L, 103),
+          (0, "NYC-0004", "chris", "VOD.L", 1311544840L, 104),
+          (0, "NYC-0005", "chris", "VOD.L", 1311544850L, 105),
+          (0, "NYC-0006", "chris", "VOD.L", 1311544860L, 106),
+          (0, "NYC-0007", "chris", "VOD.L", 1311544870L, 107),
+          (0, "NYC-0008", "chris", "VOD.L", 1311544880L, 108),
+          (0, "NYC-0009", "chris", "VOD.L", 1311544890L, 109)
         )
       }
     }

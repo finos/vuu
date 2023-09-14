@@ -1,5 +1,8 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
@@ -7,9 +10,6 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer}
-import org.finos.toolbox.jmx.MetricsProviderImpl
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -29,7 +29,6 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       val tableContainer = new TableContainer(joinProvider)
 
       val outQueue          = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
 
@@ -45,7 +44,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       val vpcolumns = List("ric", "bid", "ask")
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, ViewPortColumnCreator.create(table, vpcolumns))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, ViewPortColumnCreator.create(table, vpcolumns))
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 

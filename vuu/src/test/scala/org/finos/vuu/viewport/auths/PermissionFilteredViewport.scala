@@ -33,11 +33,10 @@ class PermissionFilteredViewport extends AnyFeatureSpec with Matchers with ViewP
       joinProvider.runOnce()
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
       val session = ClientSessionId("A", "B")
       val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.columns.map(_.name).toList)
       val range = ViewPortRange(0, 20)
-      val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, highPriorityQueue, orders, range, columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, orders, range, columns)
 
       val permissionChecker = viewport.permissionChecker().get.asInstanceOf[TestFriendlyPermissionChecker]
       permissionChecker.addRole(PermissionSet.SalesTradingPermission)
