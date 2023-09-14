@@ -272,6 +272,37 @@ object SimulationModule extends DefaultModule {
         ),
         (table, vs) => new RpcProvider(table)
       )
+      .addTable(
+        TableDef(
+          name = "baskets",
+          keyField = "id",
+          Columns.fromNames("id".string(),"symbol".string()),
+          VisualLinks(),
+          joinFields = "id","symbol"
+        ),
+        (table, vs) => new BasketsProvider(table)
+//        (table, provider, providerContainer, _) => ViewPortDef(
+//          columns = table.getTableDef.columns,
+//          service = new InstrumentsService(table, providerContainer)
+//        )
+      )
+      .addTable(
+        TableDef(
+          name = "basketConstituents",
+          keyField = "id",
+          Columns.fromNames("parentBasketId".int(), "id".string(), "idAsInt".int(), "ric".string(), "description".string(),
+          "quantity".int(), "weighting".double(), "last".double(), "bid".double(), "offer".double(), "limit".double()),
+          VisualLinks(
+            Link("parentBasketId", "baskets", "idAsInt")
+          ),
+          joinFields = "id", "ric"
+        ),
+        (table, vs) => new BasketsProvider(table)
+//        (table, provider, providerContainer, _) => ViewPortDef(
+//          columns = table.getTableDef.columns,
+//          service = new InstrumentsService(table, providerContainer)
+//        )
+      )
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "orderEntryPrices",

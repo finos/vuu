@@ -106,16 +106,6 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     tableContainer.createAutoSubscribeTable(tableDef)
   }
 
-  def createBasketTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating basketTable ${tableDef.name}")
-    tableContainer.createBasketTable(tableDef)
-  }
-
-  def createBasketConstituentTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating basketConstituentTable ${tableDef.name}")
-    tableContainer.createBasketConstituentTable(tableDef)
-  }
-
   def registerProvider(table: DataTable, provider: Provider): Unit = {
     providerContainer.add(table, provider)
     table.setProvider(provider)
