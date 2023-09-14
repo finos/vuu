@@ -1,13 +1,13 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -44,11 +44,10 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
       val session = ClientSessionId("A", "B")
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
       val range = ViewPortRange(0, 20)
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, highPriorityQueue, orderPrices, range, columns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, orderPrices, range, columns)
 
       runContainersOnce(viewPortContainer, joinProvider)
 

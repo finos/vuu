@@ -16,13 +16,13 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
     Scenario("Create Viewport, run cycle count and check we recalc only when required") {
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 20), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
 
       val hashCode1 = viewPort.getStructuralHashCode()
       val updateCount1 = viewPort.getTableUpdateCount()
@@ -116,19 +116,19 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime"),
-          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544900L),
-          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544910L),
-          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544920L),
-          (0         ,"NYC-0003","chris"   ,"VOD.L"   ,1311544930L),
-          (0         ,"NYC-0004","chris"   ,"VOD.L"   ,1311544940L),
-          (0         ,"NYC-0005","chris"   ,"VOD.L"   ,1311544950L),
-          (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544960L),
-          (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544970L),
-          (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544980L),
-          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544990L),
-          (0         ,"NYC-0010","chris"   ,"VOD.L"   ,1311545000L),
-          (0         ,"NYC-0011","chris"   ,"VOD.L"   ,1311545010L)
+          ("sel", "orderId", "trader", "ric", "tradeTime"),
+          (0, "NYC-0010", "chris", "VOD.L", 1311545000L),
+          (0, "NYC-0011", "chris", "VOD.L", 1311545010L),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544900L),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544910L),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544920L),
+          (0, "NYC-0003", "chris", "VOD.L", 1311544930L),
+          (0, "NYC-0004", "chris", "VOD.L", 1311544940L),
+          (0, "NYC-0005", "chris", "VOD.L", 1311544950L),
+          (0, "NYC-0006", "chris", "VOD.L", 1311544960L),
+          (0, "NYC-0007", "chris", "VOD.L", 1311544970L),
+          (0, "NYC-0008", "chris", "VOD.L", 1311544980L),
+          (0, "NYC-0009", "chris", "VOD.L", 1311544990L)
         )
       }
 

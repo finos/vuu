@@ -10,8 +10,8 @@ import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts._
-import org.finos.vuu.viewport.{DefaultRange, GroupBy, ViewPortSetup}
 import org.finos.vuu.viewport.ViewPortTestFns.setupViewPort
+import org.finos.vuu.viewport.{DefaultRange, GroupBy, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
@@ -73,11 +73,10 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
     val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 
@@ -133,9 +132,8 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(combinedUpdates3) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
-        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", ""),
-        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", "")
+        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", "")
       )
     }
 

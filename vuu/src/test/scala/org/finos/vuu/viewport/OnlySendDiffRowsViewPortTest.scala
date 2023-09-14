@@ -18,13 +18,13 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
     Scenario("Change viewport from 0-20 to 10-30 and check we only get 10 rows"){
 
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 4), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -42,7 +42,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
         )
       }
 
-      val viewPortv2 = viewPortContainer.changeRange(session, highPriorityQueue, viewPort.id, ViewPortRange(2, 6))
+      val viewPortv2 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(2, 6))
 
       viewPortContainer.runOnce()
 

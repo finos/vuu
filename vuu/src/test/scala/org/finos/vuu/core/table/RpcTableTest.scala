@@ -1,14 +1,14 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer}
-import org.finos.toolbox.jmx.MetricsProviderImpl
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.DefaultClock
 import org.scalatest.OneInstancePerTest
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -31,7 +31,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val tableContainer = new TableContainer(joinProvider)
 
-      val (outQueue, highPriorityQueue) = getQueues
+      val (outQueue) = getQueues
       //val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
@@ -52,7 +52,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val vpcolumns = ViewPortColumnCreator.create(orderEntry, List("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderEntry, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderEntry, DefaultRange, vpcolumns)
 
       provider.tick("CLORDID-1", Map("clOrderId" ->  "CLORDID-1", "ric" -> "VOD.L", "quantity" -> 200))
 
@@ -62,7 +62,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val viewPortUpdate = combineQs(viewPort)
 
-      viewPortUpdate(1).key.key should equal("CLORDID-1")
+      viewPortUpdate(0).key.key should equal("CLORDID-1")
     }
 
   }

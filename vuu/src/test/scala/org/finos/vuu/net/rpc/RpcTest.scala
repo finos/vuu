@@ -46,7 +46,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
       val myRpcHandler = new MyCustomRpcHandler
 
-      val ctx = new RequestContext("", ClientSessionId("",""), null, null, "")
+      val ctx = new RequestContext("", ClientSessionId("", ""), null, "")
 
       val vsMsg = toVsMsg(RpcCall("RpcHandler", "doSomething", Array("test", 1234.34), Map()))
 

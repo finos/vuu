@@ -15,7 +15,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
     Scenario("create viewport, update selection, see selection come back") {
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue, highPriorityQueue) = createDefaultOrderPricesViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue) = createDefaultOrderPricesViewPortInfra()
 
       val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
       val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open", "exchange"))
@@ -28,8 +28,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(timeProvider)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(timeProvider)
 
-      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(vpcolumnsPrices.getColumnForName("exchange").get), List()))
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(vpcolumnsPrices.getColumnForName("exchange").get), List()))
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
@@ -57,10 +57,10 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
 
       assertVpEqWithMeta(priceUpdates) {
         Table(
-          ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ,"exchange"),
-          (0         ,false     ,1         ,"$root|XLON",false     ,0         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ,"XLON"    ),
-          (0         ,false     ,1         ,"$root|NYSE",false     ,0         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ,"NYSE"    ),
-          (0         ,false     ,1         ,"$root|XAMS",false     ,0         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ,"XAMS"    )
+          ("sel", "_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "ric", "bid", "ask", "last", "open", "exchange"),
+          (0, false, 1, "$root|NYSE", false, 0, "NYSE", "", "", "", "", "", "NYSE"),
+          (0, false, 1, "$root|XAMS", false, 0, "XAMS", "", "", "", "", "", "XAMS"),
+          (0, false, 1, "$root|XLON", false, 0, "XLON", "", "", "", "", "", "XLON")
         )
       }
 
@@ -73,7 +73,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|XAMS")
 
       Then("we link the viewports, with nothing selected in the parent grid yet")
-      viewPortContainer.linkViewPorts(session, highPriorityQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPricesGroupBy.id, "ric", "ric")
+      viewPortContainer.linkViewPorts(session, outQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPricesGroupBy.id, "ric", "ric")
 
       And("we run the container once through")
       viewPortContainer.runOnce()
@@ -82,7 +82,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 0
 
       When("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
+      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
       viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()
 
@@ -91,18 +91,18 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(filterByVpId(combinedUpdates2, viewPortPricesGroupBy)) {
         Table(
-          ("sel"     ,"_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ,"exchange"),
-          (0         ,false     ,2         ,"$root|XLON|VOD.L",true      ,0         ,"VOD.L"   ,"VOD.L"   ,100.0     ,101.0     ,100.5     ,null      ,"XLON"    ),
-          (0         ,true      ,1         ,"$root|NYSE",false     ,1         ,"NYSE"    ,""        ,""        ,""        ,""        ,""        ,"NYSE"    ),
-          (0         ,false     ,2         ,"$root|NYSE|BT.L",true      ,0         ,"BT.L"    ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ,"NYSE"    ),
-          (0         ,true      ,1         ,"$root|XAMS",false     ,1         ,"XAMS"    ,""        ,""        ,""        ,""        ,""        ,"XAMS"    ),
-          (0         ,false     ,2         ,"$root|XAMS|BP.L",true      ,0         ,"BP.L"    ,"BP.L"    ,300.0     ,301.0     ,300.5     ,null      ,"XAMS"    ),
-          (0         ,true      ,1         ,"$root|XLON",false     ,1         ,"XLON"    ,""        ,""        ,""        ,""        ,""        ,"XLON"    )
+          ("sel", "_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "ric", "bid", "ask", "last", "open", "exchange"),
+          (0, true, 1, "$root|NYSE", false, 1, "NYSE", "", "", "", "", "", "NYSE"),
+          (0, false, 2, "$root|NYSE|BT.L", true, 0, "BT.L", "BT.L", 200.0, 201.0, 200.5, null, "NYSE"),
+          (0, true, 1, "$root|XAMS", false, 1, "XAMS", "", "", "", "", "", "XAMS"),
+          (0, false, 2, "$root|XAMS|BP.L", true, 0, "BP.L", "BP.L", 300.0, 301.0, 300.5, null, "XAMS"),
+          (0, true, 1, "$root|XLON", false, 1, "XLON", "", "", "", "", "", "XLON"),
+          (0, false, 2, "$root|XLON|VOD.L", true, 0, "VOD.L", "VOD.L", 100.0, 101.0, 100.5, null, "XLON")
         )
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(3,5)))
+      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(3, 5)))
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
@@ -138,7 +138,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 9
 
       And("if we set selection to none")
-      viewPortContainer.changeSelection(session, highPriorityQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array()))
+      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array()))
       viewPortContainer.runOnce()
 
       Then("we should have nothing available in the viewport")

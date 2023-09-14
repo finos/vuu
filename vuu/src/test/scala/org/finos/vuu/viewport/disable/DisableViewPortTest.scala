@@ -1,19 +1,11 @@
 package org.finos.vuu.viewport.disable
 
-import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
-import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
-import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
-import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts._
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange}
 import org.scalatest.GivenWhenThen
-import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
@@ -24,13 +16,13 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
     Scenario("Check that a viewport is not emptied when disabled") {
 
       Given("we've created a viewport with orders in and a calc'd column 2")
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
       viewPortContainer.runOnce()
 
