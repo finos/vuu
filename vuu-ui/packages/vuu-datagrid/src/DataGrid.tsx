@@ -231,8 +231,6 @@ export const Grid = forwardRef(function Grid(
 
   const readyToRender = gridModel.status === "ready";
 
-  console.log(`render DataGrid with sort ${JSON.stringify(gridModel.sort)}`);
-
   return (
     // Question, how much overhead are we introducing be adding gridModel to GridContext ? Perhaps it belongs in it's own context
     <GridProvider value={gridContextData}>

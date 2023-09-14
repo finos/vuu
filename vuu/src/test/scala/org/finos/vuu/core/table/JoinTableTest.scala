@@ -66,7 +66,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )
 
-      val joinProvider   = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -96,7 +96,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val outQueue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orderPrices.getTableDef.columnForName(_))
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -181,7 +181,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       tickInData(ordersProvider, pricesProvider)
 
-      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), orderPrices.getTableDef.columns.toList)
+      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 
       runContainersOnce(vpContainer, joinProvider)
 
@@ -219,9 +219,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(false)
 
-      val array = orderPrices.pullRowAsArray("NYC-0001", orderPrices.getTableDef.columns.toList)
-
-      println()
+      val array = orderPrices.pullRowAsArray("NYC-0001", ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 
       assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
         Table(
@@ -231,11 +229,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
           ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
           ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      ),
           ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      )
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 

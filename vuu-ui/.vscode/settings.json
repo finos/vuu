@@ -19,5 +19,9 @@
         "titleBar.inactiveForeground": "#15202b99",
         "commandCenter.border": "#15202b99"
     },
-    "peacock.color": "#8ba555"
+    "peacock.color": "#8ba555",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "css.customData": [
+        "./.vscode/custom-css.json"
+   ]
 }

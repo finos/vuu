@@ -27,7 +27,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val joinProvider   = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -46,7 +46,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val session = ClientSessionId("sess-01", "chris")
 
-      val vpcolumns = List("ric", "bid", "ask").map(table.getTableDef.columnForName(_))
+      val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
 
@@ -110,7 +110,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val session = ClientSessionId("sess-01", "chris")
 
-      val vpcolumns = orderPrices.getTableDef.columns.toList
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -186,10 +186,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val session = ClientSessionId("sess-01", "chris")
 
-      val vpcolumns = orderPrices.getTableDef.columns.toList
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns,
-        groupBy = GroupBy(orderPrices, "trader")
+        groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName( "trader").get)
         .withSum("quantity")
         .withCount("trader")
         .asClause()
@@ -200,6 +200,8 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0004", Map("orderId" -> "NYC-0004", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
 
+      viewPortContainer.runOnce()
+      viewPortContainer.runGroupByOnce()
       joinProvider.runOnce()
 
       pricesProvider.getSubRequestCount.get("VOD.L") should equal(1)
@@ -208,21 +210,20 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.runOnce()
 
+      viewPortContainer.openNode(viewPort.id, "$root|chris")
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
-      viewPortContainer.openNode(viewPort.id, "$root|chris")
 
       val updates = combineQs(viewPort)
 
       assertVpEq(updates) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"1"       ,""        ,"400.0"   ,""        ,""        ,""        ,""        ),
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"1"       ,""        ,"400.0"   ,""        ,""        ,""        ,""        )
+          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -254,7 +255,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(combineQs(viewPort)) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"1"       ,""        ,"400.0"   ,""        ,""        ,""        ,""        ),
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
@@ -271,11 +272,11 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(combineQs(viewPort)) {
         Table(
           ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,"1"       ,""        ,"400.0"   ,""        ,""        ,""        ,""        ),
           (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
           (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
+          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        )
         )
       }
 

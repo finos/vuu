@@ -1,14 +1,16 @@
 import { VuuRange, VuuRow } from "@finos/vuu-protocol-types";
-import { WindowRange } from "@finos/vuu-utils";
-import { bufferBreakout } from "./buffer-range";
+import { logger, WindowRange } from "@finos/vuu-utils";
 
 const EMPTY_ARRAY = [] as const;
 
-type RangeTuple = [boolean, readonly VuuRow[], readonly VuuRow[]];
+type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
+
+const log = logger("array-backed-moving-window");
 
 export class ArrayBackedMovingWindow {
+  #range: WindowRange;
+
   private bufferSize: number;
-  private range: WindowRange;
   private internalData: VuuRow[];
   private rowsWithinRange: number;
 
@@ -23,11 +25,15 @@ export class ArrayBackedMovingWindow {
   ) {
     this.bufferSize = bufferSize;
     this.clientRange = new WindowRange(clientFrom, clientTo);
-    this.range = new WindowRange(from, to);
+    this.#range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.internalData = new Array(bufferSize);
     this.rowsWithinRange = 0;
     this.rowCount = 0;
+  }
+
+  get range() {
+    return this.#range;
   }
 
   // TODO we shpuld probably have a hasAllClientRowsWithinRange
@@ -40,7 +46,20 @@ export class ArrayBackedMovingWindow {
     );
   }
 
+  // Check to see if set of rows is outside the current viewport range, indicating
+  // that veiwport is being scrolled quickly and server is not able to keep up.
+  outOfRange(firstIndex: number, lastIndex: number) {
+    const { from, to } = this.range;
+    if (lastIndex < from) {
+      return true;
+    }
+    if (firstIndex >= to) {
+      return true;
+    }
+  }
+
   setRowCount = (rowCount: number) => {
+    log.info?.(`setRowCount ${rowCount}`);
     if (rowCount < this.internalData.length) {
       this.internalData.length = rowCount;
     }
@@ -49,7 +68,7 @@ export class ArrayBackedMovingWindow {
       this.rowsWithinRange = 0;
       const end = Math.min(rowCount, this.clientRange.to);
       for (let i = this.clientRange.from; i < end; i++) {
-        const rowIndex = i - this.range.from;
+        const rowIndex = i - this.#range.from;
         if (this.internalData[rowIndex] !== undefined) {
           this.rowsWithinRange += 1;
         }
@@ -58,29 +77,29 @@ export class ArrayBackedMovingWindow {
     this.rowCount = rowCount;
   };
 
-  setAtIndex(index: number, data: VuuRow) {
+  setAtIndex(row: VuuRow) {
+    const { rowIndex: index } = row;
     const isWithinClientRange = this.isWithinClientRange(index);
     if (isWithinClientRange || this.isWithinRange(index)) {
-      const internalIndex = index - this.range.from;
+      const internalIndex = index - this.#range.from;
       if (!this.internalData[internalIndex] && isWithinClientRange) {
         this.rowsWithinRange += 1;
-        //onsole.log(`rowsWithinRange is now ${this.rowsWithinRange} out of ${this.range.to - this.range.from}`)
       }
 
-      this.internalData[internalIndex] = data;
+      this.internalData[internalIndex] = row;
     }
     return isWithinClientRange;
   }
 
   getAtIndex(index: number): any {
-    return this.range.isWithin(index) &&
-      this.internalData[index - this.range.from] != null
-      ? this.internalData[index - this.range.from]
+    return this.#range.isWithin(index) &&
+      this.internalData[index - this.#range.from] != null
+      ? this.internalData[index - this.#range.from]
       : undefined;
   }
 
   isWithinRange(index: number): boolean {
-    return this.range.isWithin(index);
+    return this.#range.isWithin(index);
   }
 
   isWithinClientRange(index: number): boolean {
@@ -89,11 +108,13 @@ export class ArrayBackedMovingWindow {
 
   // Returns [false] or [serverDataRequired, clientRows, holdingRows]
   setClientRange(from: number, to: number): RangeTuple {
+    log.debug?.(`setClientRange ${from} - ${to}`);
+
     const currentFrom = this.clientRange.from;
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
-      return [false, EMPTY_ARRAY, EMPTY_ARRAY] as RangeTuple;
+      return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
     }
 
     const originalRange = this.clientRange.copy();
@@ -101,15 +122,14 @@ export class ArrayBackedMovingWindow {
     this.clientRange.to = to;
     this.rowsWithinRange = 0;
     for (let i = from; i < to; i++) {
-      const internalIndex = i - this.range.from;
+      const internalIndex = i - this.#range.from;
       if (this.internalData[internalIndex]) {
         this.rowsWithinRange += 1;
       }
     }
 
     let clientRows: readonly VuuRow[] = EMPTY_ARRAY;
-    let holdingRows: readonly VuuRow[] = EMPTY_ARRAY;
-    const offset = this.range.from;
+    const offset = this.#range.from;
 
     if (this.hasAllRowsWithinRange) {
       if (to > originalRange.to) {
@@ -119,32 +139,15 @@ export class ArrayBackedMovingWindow {
         const end = Math.min(originalRange.from, to);
         clientRows = this.internalData.slice(from - offset, end - offset);
       }
-    } else if (this.rowsWithinRange > 0) {
-      if (to > originalRange.to) {
-        const start = Math.max(from, originalRange.to);
-        holdingRows = this.internalData
-          .slice(start - offset, to - offset)
-          .filter((row) => !!row);
-      } else {
-        const end = Math.max(originalRange.from, to);
-        holdingRows = this.internalData
-          .slice(Math.max(0, from - offset), end - offset)
-          .filter((row) => !!row);
-      }
     }
 
-    const serverDataRequired = bufferBreakout(
-      this.range,
-      from,
-      to,
-      this.bufferSize
-    );
-    return [serverDataRequired, clientRows, holdingRows] as RangeTuple;
+    const serverDataRequired = this.bufferBreakout(from, to);
+    return [serverDataRequired, clientRows] as RangeTuple;
   }
 
   setRange(from: number, to: number) {
-    const [overlapFrom, overlapTo] = this.range.overlap(from, to);
-
+    log.debug?.(`setRange ${from} - ${to}`);
+    const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
     const newData = new Array(to - from + this.bufferSize);
     this.rowsWithinRange = 0;
 
@@ -160,15 +163,29 @@ export class ArrayBackedMovingWindow {
     }
 
     this.internalData = newData;
-    this.range.from = from;
-    this.range.to = to;
+    this.#range.from = from;
+    this.#range.to = to;
   }
 
+  private bufferBreakout = (from: number, to: number): boolean => {
+    const bufferPerimeter = this.bufferSize * 0.25;
+    if (this.#range.to - to < bufferPerimeter) {
+      return true;
+    } else if (
+      this.#range.from > 0 &&
+      from - this.#range.from < bufferPerimeter
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   getData(): any[] {
-    const { from, to } = this.range;
+    const { from, to } = this.#range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
-    // TEMP hack, whu wouldn't we have rowCount ?
+    // TEMP hack, why wouldn't we have rowCount ?
     const endOffset = Math.min(
       to - from,
       to,
@@ -177,5 +194,41 @@ export class ArrayBackedMovingWindow {
     );
     // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
+  }
+
+  clear() {
+    log.debug?.("clear");
+    this.internalData.length = 0;
+    this.rowsWithinRange = 0;
+    this.setRowCount(0);
+  }
+
+  // used only for debugging
+  getCurrentDataRange() {
+    const rows = this.internalData;
+    const len = rows.length;
+    let [firstRow] = this.internalData;
+    let lastRow = this.internalData[len - 1];
+    if (firstRow && lastRow) {
+      return [firstRow.rowIndex, lastRow.rowIndex];
+    } else {
+      for (let i = 0; i < len; i++) {
+        if (rows[i] !== undefined) {
+          firstRow = rows[i];
+          break;
+        }
+      }
+      for (let i = len - 1; i >= 0; i--) {
+        if (rows[i] !== undefined) {
+          lastRow = rows[i];
+          break;
+        }
+      }
+      if (firstRow && lastRow) {
+        return [firstRow.rowIndex, lastRow.rowIndex];
+      } else {
+        return [-1, -1];
+      }
+    }
   }
 }

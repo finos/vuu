@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.finos.vuu.api.{LuceneTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.RowProcessor
+import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.{Document, Field, TextField}
 import org.apache.lucene.index.{DirectoryReader, IndexWriter, IndexWriterConfig, Term}
@@ -101,6 +101,12 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
 
   override def getTableDef: TableDef = tableDef
 
+  @volatile private var updateCounterInternal: Long = 0
+
+  override def updateCounter: Long = updateCounterInternal
+
+  override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
+
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
     luceneData.processUpdate(rowKey, rowUpdate, timeStamp)
   }
@@ -123,16 +129,17 @@ class LuceneTable(val tableDef: LuceneTableDef, val joinProvider: JoinTableProvi
 
   override def primaryKeys: ImmutableArray[String] = ???
 
-  override def pullRow(key: String, columns: List[Column]): RowData = ???
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = ???
 
   override def pullRow(key: String): RowData = ???
 
-  override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     luceneData.loadDocument(key) match {
       case null => Array()
       case doc: Document =>
-        columns.map(c => doc.getField(c.name).stringValue()).toArray
+        columns.getColumns().map(c => doc.getField(c.name).stringValue()).toArray
     }
   }
 
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = ???
 }

@@ -1,5 +1,5 @@
 import { uuid } from "@finos/vuu-utils";
-import { List, ListItem, ListItemProps } from "@heswell/salt-lab";
+import { List, ListItem, ListItemProps } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
   cloneElement,
@@ -9,7 +9,7 @@ import {
   ReactElement
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
-import { View } from "../layout-view";
+import { View, ViewProps } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 
 import "./Palette.css";
@@ -44,6 +44,7 @@ export const PaletteItem = memo(
       <ListItem
         className={cx("vuuPaletteItem", className)}
         data-draggable
+        data-icon="draggable"
         {...props}
       />
     );
@@ -55,14 +56,18 @@ PaletteItem.displayName = "PaletteItem";
 export interface PaletteProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   children: ReactElement[];
+  itemHeight?: number;
   orientation: "horizontal" | "vertical";
   selection?: string;
+  ViewProps?: Partial<ViewProps>;
 }
 
 export const Palette = ({
   children,
   className,
+  itemHeight = 41,
   orientation = "horizontal",
+  ViewProps,
   ...props
 }: PaletteProps) => {
   const dispatch = useLayoutProviderDispatch();
@@ -71,17 +76,11 @@ export const Palette = ({
   function handleMouseDown(evt: MouseEvent) {
     const target = evt.target as HTMLElement;
     const listItemElement = target.closest(".vuuPaletteItem") as HTMLElement;
-    const idx = parseInt(listItemElement.dataset.idx ?? "-1");
-    if (idx !== -1) {
-      console.log({
-        children,
-        idx,
-        listItemElement,
-      });
-    }
+    const idx = parseInt(listItemElement.dataset?.index ?? "-1");
     const {
       props: { caption, children: payload, template, ...props },
     } = children[idx];
+    console.log({ payload });
     const { height, left, top, width } =
       listItemElement.getBoundingClientRect();
     const id = uuid();
@@ -89,7 +88,7 @@ export const Palette = ({
     const component = template ? (
       payload
     ) : (
-      <View {...identifiers} {...props} title={props.label}>
+      <View {...ViewProps} {...identifiers} {...props} title={props.label}>
         {payload}
       </View>
     );
@@ -120,9 +119,8 @@ export const Palette = ({
   return (
     <List
       {...props}
-      borderless
       className={cx(classBase, className, `${classBase}-${orientation}`)}
-      maxHeight={800}
+      itemHeight={itemHeight}
       selected={null}
     >
       {children.map((child, idx) =>

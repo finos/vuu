@@ -66,6 +66,7 @@ export const useGridModel = ({
     // eg sort, groupBy
     dispatchGridModel({ type: "initialize", props, size });
     if (dataSourceProp !== dataSource) {
+      dataSource.unsubscribe();
       setDataSource(dataSourceProp);
     }
   }, [props.columns, props.columnSizing, dataSourceProp, props.groupBy]);

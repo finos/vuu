@@ -2,7 +2,7 @@ package org.finos.vuu.core.table.lucene
 
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.api.{DeleteIndexOnShutdown, IndexFilePath, LuceneTableDef, VisualLinks}
-import org.finos.vuu.core.table.{Columns, LuceneTable, RowWithData}
+import org.finos.vuu.core.table.{Columns, LuceneTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.provider.JoinTableProviderImpl
 import org.finos.vuu.viewport.TestTimeStamp
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -30,7 +30,7 @@ class LuceneTableTest extends AnyFeatureSpec with Matchers with BeforeAndAfterAl
 
   private final val indexPath = "target/test/LuceneTableTest"
 
-  override protected def beforeAll() = {
+  override protected def beforeAll(): Unit = {
     Paths.get(indexPath).toAbsolutePath.toFile.mkdir()
   }
 
@@ -46,7 +46,7 @@ class LuceneTableTest extends AnyFeatureSpec with Matchers with BeforeAndAfterAl
       implicit val lifeCycle = new LifecycleContainer
       implicit val metrics = new MetricsProviderImpl
 
-      val joinTableProvider = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinTableProvider = JoinTableProviderImpl()
 
       val tableDef = new LuceneTableDef("executions", "executionId",
         Columns.fromNames("executionId:String", "ric:String", "quantity:Int", "price:Double", "lastExchange:String"),
@@ -74,14 +74,14 @@ class LuceneTableTest extends AnyFeatureSpec with Matchers with BeforeAndAfterAl
         })
       }
 
-      val costPerRow = (millis.toDouble / rowCount.toDouble)
+      val costPerRow = millis.toDouble / rowCount.toDouble
 
-      val ratePerSecond = (1000).toDouble / costPerRow.toDouble
-      val ratePerMinute = (1000 * 60).toDouble / costPerRow.toDouble
+      val ratePerSecond = (1000).toDouble / costPerRow
+      val ratePerMinute = (1000 * 60).toDouble / costPerRow
 
       println(s"time for $rowCount: " + millis + " millis, per row cost: " + costPerRow + " per sec: " + ratePerSecond + " per min:" + ratePerMinute)
 
-      val array = table.pullRowAsArray("exec0", tableDef.columns.toList)
+      val array = table.pullRowAsArray("exec0", ViewPortColumnCreator.create(table, tableDef.columns.map(_.name).toList))
 
       array.size should equal(5)
     }

@@ -1,7 +1,10 @@
-import { ReactElement } from 'react';
-import { getIntrinsicSize, hasUnboundedFlexStyle } from '../layout-reducer/flexUtils';
-import { getProp } from '../utils';
-import type { BreakPoint, ContentMeta } from './flexboxTypes';
+import { ReactElement } from "react";
+import {
+  getIntrinsicSize,
+  hasUnboundedFlexStyle,
+} from "../layout-reducer/flexUtils";
+import { getProp } from "../utils";
+import type { BreakPoint, ContentMeta } from "./flexboxTypes";
 
 const NO_INTRINSIC_SIZE: {
   height?: number;
@@ -11,9 +14,13 @@ const NO_INTRINSIC_SIZE: {
 export const SPLITTER = 1;
 export const PLACEHOLDER = 2;
 
-const isIntrinsicallySized = (item: ContentMeta) => typeof item.intrinsicSize === 'number';
+const isIntrinsicallySized = (item: ContentMeta) =>
+  typeof item.intrinsicSize === "number";
 
-const getBreakPointValues = (breakPoints: BreakPoint[], component: ReactElement) => {
+const getBreakPointValues = (
+  breakPoints: BreakPoint[],
+  component: ReactElement
+) => {
   const values: { [key: string]: number | undefined } = {};
   breakPoints.forEach((breakPoint) => {
     values[breakPoint] = getProp(component, breakPoint);
@@ -23,12 +30,13 @@ const getBreakPointValues = (breakPoints: BreakPoint[], component: ReactElement)
 
 export const gatherChildMeta = (
   children: ReactElement[],
-  dimension: 'width' | 'height',
+  dimension: "width" | "height",
   breakPoints?: BreakPoint[]
 ) => {
   return children.map((child, index) => {
-    const resizeable = getProp(child, 'resizeable');
-    const { [dimension]: intrinsicSize } = getIntrinsicSize(child) ?? NO_INTRINSIC_SIZE;
+    const resizeable = getProp(child, "resizeable");
+    const { [dimension]: intrinsicSize } =
+      getIntrinsicSize(child) ?? NO_INTRINSIC_SIZE;
     const flexOpen = hasUnboundedFlexStyle(child);
     if (breakPoints) {
       return {
@@ -36,7 +44,7 @@ export const gatherChildMeta = (
         flexOpen,
         intrinsicSize,
         resizeable,
-        ...getBreakPointValues(breakPoints, child)
+        ...getBreakPointValues(breakPoints, child),
       };
     } else {
       return { index, flexOpen, intrinsicSize, resizeable };
@@ -47,11 +55,13 @@ export const gatherChildMeta = (
 // Splitters are inserted AFTER the associated index, so
 // never a splitter in last position.
 // Placeholder goes before (first) OR after(last) index
-export const findSplitterAndPlaceholderPositions = (childMeta: ContentMeta[]) => {
+export const findSplitterAndPlaceholderPositions = (
+  childMeta: ContentMeta[]
+) => {
   const count = childMeta.length;
   const allIntrinsic = childMeta.every(isIntrinsicallySized);
   const splitterPositions = Array(count).fill(0);
-  if (allIntrinsic) {
+  if (allIntrinsic && count > 0) {
     splitterPositions[0] = PLACEHOLDER;
     splitterPositions[count - 1] = PLACEHOLDER;
   }
@@ -81,7 +91,10 @@ export const findSplitterAndPlaceholderPositions = (childMeta: ContentMeta[]) =>
   }
 };
 
-export const identifyResizeParties = (contentMeta: ContentMeta[], idx: number) => {
+export const identifyResizeParties = (
+  contentMeta: ContentMeta[],
+  idx: number
+) => {
   const idx1 = getLeadingResizeablePos(contentMeta, idx);
   const idx2 = getTrailingResizeablePos(contentMeta, idx);
   const participants = idx1 !== -1 && idx2 !== -1 ? [idx1, idx2] : undefined;
@@ -89,7 +102,10 @@ export const identifyResizeParties = (contentMeta: ContentMeta[], idx: number) =
   return [participants, bystanders];
 };
 
-function identifyResizeBystanders(contentMeta: ContentMeta[], participants?: number[]) {
+function identifyResizeBystanders(
+  contentMeta: ContentMeta[],
+  participants?: number[]
+) {
   if (participants) {
     const bystanders = [];
     for (let i = 0; i < contentMeta.length; i++) {
@@ -115,7 +131,7 @@ function getTrailingResizeablePos(contentMeta: ContentMeta[], idx: number) {
   let pos = idx,
     resizeable = false;
   const count = contentMeta.length;
-  while (pos < count && !resizeable) {
+  while (pos < count - 1 && !resizeable) {
     pos = pos + 1;
     resizeable = isResizeable(contentMeta, pos);
   }

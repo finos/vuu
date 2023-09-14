@@ -1,53 +1,61 @@
-import { connect as connectWebsocket } from "./websocket-connection";
+import {
+  connect as connectWebsocket,
+  WebSocketProtocol,
+} from "./websocket-connection";
 import { ServerProxy } from "./server-proxy/server-proxy";
 import {
   ConnectionStatusMessage,
+  isConnectionQualityMetrics,
   isConnectionStatusMessage,
   VuuUIMessageOut,
 } from "./vuuUIMessageTypes";
-import { VuuMenuRpcRequest, VuuRpcRequest } from "@finos/vuu-protocol-types";
+import {
+  ClientToServerMenuRPC,
+  VuuRpcRequest,
+} from "@finos/vuu-protocol-types";
 import { WithRequestId } from "./message-utils";
+import { logger } from "@finos/vuu-utils";
 
 let server: ServerProxy;
 
+const { info, infoEnabled } = logger("worker");
+
 async function connectToServer(
   url: string,
+  protocol: WebSocketProtocol,
   token: string,
+  username: string | undefined,
   onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
 ) {
   const connection = await connectWebsocket(
     url,
+    protocol,
     // if this was called during connect, we would get a ReferenceError, but it will
     // never be called until subscriptions have been made, so this is safe.
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
-    (msg) =>
-      isConnectionStatusMessage(msg)
-        ? onConnectionStatusChange(msg)
-        : server.handleMessageFromServer(msg)
+    (msg) => {
+      if (isConnectionQualityMetrics(msg))
+        postMessage({ type: "connection-metrics", messages: msg });
+      else if (isConnectionStatusMessage(msg)) {
+        onConnectionStatusChange(msg);
+        if (msg.status === "reconnected") {
+          server.reconnect();
+        }
+      } else {
+        server.handleMessageFromServer(msg);
+      }
+    }
   );
 
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
   if (connection.requiresLogin) {
     // no handling for failed login
-    await server.login(token);
+    await server.login(token, username);
   }
 }
 
-let lastTime = 0;
-const timings = [];
-
 function sendMessageToClient(message: any) {
-  const now = Math.round(performance.now());
-  if (lastTime) {
-    timings.push(now - lastTime);
-
-    // if (timings.length % 100 === 0){
-    //   console.log(timings.join(', : '))
-    //   timings.length = 0;
-    // }
-  }
   postMessage(message);
-  lastTime = now;
 }
 
 const handleMessageFromClient = async ({
@@ -55,27 +63,32 @@ const handleMessageFromClient = async ({
 }: MessageEvent<
   | VuuUIMessageOut
   | WithRequestId<VuuRpcRequest>
-  | WithRequestId<VuuMenuRpcRequest>
+  | WithRequestId<ClientToServerMenuRPC>
 >) => {
   switch (message.type) {
     case "connect":
-      await connectToServer(message.url, message.token, postMessage);
+      await connectToServer(
+        message.url,
+        message.protocol,
+        message.token,
+        message.username,
+        postMessage
+      );
       postMessage({ type: "connected" });
       break;
     // If any of the messages below are received BEFORE we have connected and created
     // the server - handle accordingly
 
     case "subscribe":
+      infoEnabled && info(`client subscribe: ${JSON.stringify(message)}`);
       server.subscribe(message);
       break;
     case "unsubscribe":
+      infoEnabled && info(`client unsubscribe: ${JSON.stringify(message)}`);
       server.unsubscribe(message.viewport);
       break;
-    // TEST DATA COLLECTION
-    // case 'send-websocket-data':
-    //   postMessage({ type: 'websocket-data', data: getTestMessages() });
-    //   break;
     default:
+      infoEnabled && info(`client message: ${JSON.stringify(message)}`);
       server.handleMessageFromClient(message);
   }
 };

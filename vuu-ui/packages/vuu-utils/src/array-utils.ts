@@ -35,3 +35,45 @@ export function itemsChanged<T = unknown>(
     );
   }
 }
+
+export function itemsOrOrderChanged<T = unknown>(
+  currentItems: T[],
+  newItems: T[],
+  identityProperty?: string
+) {
+  if (currentItems.length !== newItems.length) {
+    return true;
+  }
+  if (identityProperty === undefined) {
+    return currentItems.some((item, index) => newItems[index] !== item);
+  } else {
+    return currentItems.some(
+      (currentItem, index) =>
+        (newItems[index] as { [key: string]: unknown })[identityProperty] !==
+        (currentItem as { [key: string]: unknown })[identityProperty]
+    );
+  }
+}
+
+export const moveItem = <T = unknown>(
+  items: T[],
+  item: T,
+  moveTo: number
+): T[] => {
+  const fromIndex = items.indexOf(item);
+  if (fromIndex === moveTo) {
+    return items;
+  }
+  const newItems = items.slice();
+  if (fromIndex === -1) {
+    throw Error("moveItem, item to be moved not found");
+  }
+  newItems.splice(fromIndex, 1);
+  if (moveTo === -1) {
+    newItems.push(item);
+  } else {
+    const offset = moveTo > fromIndex ? 0 : 0;
+    newItems.splice(moveTo + offset, 0, item);
+  }
+  return newItems;
+};

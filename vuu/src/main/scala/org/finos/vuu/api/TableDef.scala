@@ -1,10 +1,14 @@
 package org.finos.vuu.api
 
+import org.finos.vuu.core.VuuServer
+import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table._
+import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.viewport.ViewPort
 
 object Fields {
-  val All = List("*")
+  val All: List[String] = List("*")
 }
 
 
@@ -17,6 +21,18 @@ object VisualLinks {
 object Link {
   def apply(fromColumn: String, toTable: String, toField: String): Link = {
     new Link(fromColumn, toTable, toField)
+  }
+}
+
+object SessionTableDef {
+  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
+    new SessionTableDef(name, keyField, columns, joinFields, indices = Indices())
+  }
+}
+
+object JoinSessionTableDef {
+  def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
+    null//new JoinSessionTableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 }
 
@@ -49,13 +65,13 @@ object AutoSubscribeTableDef {
 object GroupByColumns {
   def addTo(columns: Array[Column]): Array[Column] = get(columns.length) ++ columns
 
-  private def newBoolean(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("boolean"))
+  private def newBoolean(name: String, index: Int) = SimpleColumn(name, index, DataType.fromString("boolean"))
 
-  private def newColumn(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("int"))
+  private def newColumn(name: String, index: Int) = SimpleColumn(name, index, DataType.fromString("int"))
 
-  private def newColumnStr(name: String, index: Int) = new SimpleColumn(name, index, DataType.fromString("string"))
+  private def newColumnStr(name: String, index: Int) = SimpleColumn(name, index, DataType.fromString("string"))
 
-  def get(origColumnSize: Int) =
+  def get(origColumnSize: Int): Array[SimpleColumn] =
     Array(
       newColumn("_depth", origColumnSize),
       newBoolean("_isOpen", origColumnSize + 1),
@@ -89,6 +105,17 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields)
+
+class SessionTableDef(name: String,
+                      keyField: String,
+                      columns: Array[Column],
+                      joinFields: Seq[String],
+                      autosubscribe: Boolean = false,
+                      links: VisualLinks = VisualLinks(),
+                      indices: Indices) extends TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices)
+
+
 class TableDef(val name: String,
                val keyField: String,
                val columns: Array[Column],
@@ -98,6 +125,21 @@ class TableDef(val name: String,
                val indices: Indices) {
 
   private var module: ViewServerModule = null;
+  private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null
+
+  def withPermissions(func: (ViewPort, TableContainer) => RowPermissionChecker): TableDef = {
+    permissionFunc = func
+    this
+  }
+
+  def permissionChecker(viewPort: ViewPort, tableContainer: TableContainer): Option[RowPermissionChecker] = {
+    if(permissionFunc != null){
+      Some(permissionFunc(viewPort, tableContainer))
+    }else{
+      None
+    }
+  }
+
 
   def deleteColumnName() = s"$name._isDeleted"
 

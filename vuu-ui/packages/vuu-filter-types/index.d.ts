@@ -1,3 +1,11 @@
+export declare type NumericFilterClauseOp =
+  | "="
+  | "!="
+  | ">"
+  | ">="
+  | "<="
+  | "<";
+
 export declare type SingleValueFilterClauseOp =
   | "="
   | "!="
@@ -22,16 +30,17 @@ export interface NamedFilter {
   name?: string;
 }
 
-export interface SingleValueFilterClause extends NamedFilter {
+export interface SingleValueFilterClause<T = string | number | boolean>
+  extends NamedFilter {
   op: SingleValueFilterClauseOp;
   column: string;
-  value: string | number;
+  value: T;
 }
 
 export interface MultiValueFilterClause extends NamedFilter {
   op: MultipleValueFilterClauseOp;
   column: string;
-  values: string[] | number[];
+  values: string[] | number[] | boolean[];
 }
 
 export declare type FilterClause =
@@ -67,3 +76,16 @@ export interface OrFilter extends MultiClauseFilter {
   }
  */
 export declare type Filter = FilterClause | MultiClauseFilter;
+
+/**
+ This interface is only valid for a Filter that is being edioted
+ */
+export interface FilterWithPartialClause extends MultiClauseFilter {
+  filters: Array<Filter | Partial<Filter>>;
+}
+
+export declare type FilterState = {
+  filter: Filter | undefined;
+  filterQuery: string;
+  filterName?: string;
+};

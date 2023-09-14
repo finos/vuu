@@ -34,7 +34,7 @@ object OrdersAndPricesScenarioFixture {
       joinFields = Seq()
     )
 
-    val joinProvider   = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

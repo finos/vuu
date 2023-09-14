@@ -2,7 +2,16 @@
  * Have some global styles to simulate more realistic app. Currently only for Storybook.
  */
 
- .salt-theme {
+ @font-face {
+  font-family: 'Nunito Sans Regular';
+  src:
+      url('../NunitoSans-Regular.woff') 
+      format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+ .vuu-theme {
   color: var(--salt-text-primary-foreground);
   font-family: var(--salt-typography-fontFamily);
   font-size: var(--salt-text-fontSize);
@@ -10,11 +19,16 @@
   line-height: var(--salt-text-lineHeight);
 }
 
-.salt-theme[data-mode="light"] {
+::selection {
+  background: var(--salt-text-background-selected);
+  color: var(--salt-text-color-selected, inherit);
+}
+
+.vuu-theme[data-mode="light"] {
   color-scheme: light;
 }
 
-.salt-theme[data-mode="dark"] {
+.vuu-theme[data-mode="dark"] {
   color-scheme: dark;
 }
 
@@ -24,4 +38,16 @@ of the element is never exceeded due to padding or border. */
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+.salt-visuallyHidden {
+  position: absolute;
+  height: 1px;
+  width: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

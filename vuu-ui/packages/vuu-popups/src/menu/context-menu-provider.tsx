@@ -1,45 +1,13 @@
+import type {
+  ContextMenuContextType,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import { createContext, ReactNode, useCallback, useMemo } from "react";
 
-export type MenuActionHandler = (
-  type: string,
-  options: unknown
-) => boolean | undefined;
-export type MenuBuilder<L = string, O = unknown> = (
-  location: L,
-  options: O
-) => ContextMenuItemDescriptor[];
-
-export interface ContextMenuContext {
-  menuBuilders: MenuBuilder[];
-  menuActionHandler: MenuActionHandler;
-}
-
-export const ContextMenuContext = createContext<ContextMenuContext | null>(
+export const ContextMenuContext = createContext<ContextMenuContextType | null>(
   null
 );
-
-export interface ContextMenuItemBase {
-  icon?: string;
-  label: string;
-  location?: string;
-}
-
-export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
-  action: string;
-  options?: unknown;
-}
-
-export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
-  children: ContextMenuItemDescriptor[];
-}
-
-export type ContextMenuItemDescriptor =
-  | ContextMenuLeafItemDescriptor
-  | ContextMenuGroupItemDescriptor;
-
-export const isGroupMenuItem = (
-  menuItem: ContextMenuItemDescriptor
-): menuItem is ContextMenuGroupItemDescriptor => "children" in menuItem;
 
 export interface ContextMenuProviderProps {
   children: ReactNode;
@@ -49,7 +17,7 @@ export interface ContextMenuProviderProps {
 }
 
 interface ProviderProps extends ContextMenuProviderProps {
-  context: ContextMenuContext | null;
+  context: ContextMenuContextType | null;
 }
 
 const Provider = ({
@@ -69,12 +37,12 @@ const Provider = ({
   }, [context, menuBuilder]);
 
   const handleMenuAction = useCallback(
-    (type, options) => {
-      if (menuActionHandler?.(type, options)) {
+    (reason) => {
+      if (menuActionHandler?.(reason)) {
         return true;
       }
 
-      if (context?.menuActionHandler?.(type, options)) {
+      if (context?.menuActionHandler?.(reason)) {
         return true;
       }
     },

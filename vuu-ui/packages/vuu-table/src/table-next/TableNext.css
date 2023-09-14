@@ -1,0 +1,105 @@
+.vuuTableNext {
+  --vuu-table-next-selection-bookend-width: 4px;
+  --columnResizer-color: transparent;
+  --row-background: white;
+  --row-borderColor: var(--row-background);
+  --table-background: var(--salt-container-primary-background);
+
+  height: var(--table-css-height);
+  position: relative;
+  user-select: none;
+  width: var(--table-css-width);
+}
+
+.vuuTableNext-zebra {
+  --row-background-even: var(--vuu-color-gray-25)
+}
+
+.vuuTableNext-rowLines {
+  --row-borderColor: var(--salt-separable-tertiary-borderColor);
+}
+
+.vuuTableNext-scrollbarContainer {
+  --scroll-content-width: 1100px;
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: solid 1px var(--salt-container-primary-borderColor);
+  /*  a top border */
+  box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor);
+  height: var(--viewport-body-height);
+  left: 0px;
+  overflow: auto;
+  position: absolute;
+  top: var(--total-header-height);
+  width: var(--table-width);
+}
+
+.vuuTableNext-scrollbarContent {
+  height: calc(var(--content-height) + var(--horizontal-scrollbar-height));
+  position: absolute;
+  width: var(--content-width);
+}
+
+.vuuTableNext-contentContainer {
+  background-color: var(--salt-container-primary-background);
+  height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: none;
+  width: calc(var(--table-width) - var(--vertical-scrollbar-width));
+}
+
+.vuuTableNext-contentContainer::-webkit-scrollbar {
+  display: none;
+}
+
+ 
+.vuuTableNext-table {
+  position: absolute;
+  top: 0;
+  left: 0;
+  table-layout: fixed;
+  width: var(--content-width);
+  margin: 0;
+  border: none;
+  background-color: #fff;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vuuTableNext-body {
+  height: var(--content-height)
+}
+
+.vuuPinLeft, .vuuPinRight {
+  background-color: inherit;
+  position: sticky;
+  z-index: 1;
+}
+
+.vuuTableNext-col-headings {
+  background-color: white;
+  padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
+
+    position: sticky;
+    top: 0;
+    /* ensure header row sits atop everything else when scrolling down */
+    z-index: 1;
+}
+
+  .vuuTableNext-col-headers {
+    background-color: var(--table-background);
+    white-space: nowrap;
+  }
+
+
+  .sizer-cell {
+    background-color: green !important;
+    border: none !important;
+    height: 0px;
+  }
+  
+  .vuuDraggable-vuuTableNext {
+    --header-height: 25px;
+    --vuuTableNextHeaderCell-background: var(--vuu-color-gray-25);
+  }

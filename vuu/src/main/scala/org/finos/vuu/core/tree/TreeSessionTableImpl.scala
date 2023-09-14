@@ -1,24 +1,21 @@
 package org.finos.vuu.core.tree
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.text.AsciiUtil
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
 import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport._
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.toolbox.text.AsciiUtil
-import org.finos.toolbox.time.Clock
+import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
 
-trait SessionTable extends DataTable with SessionListener {
-  def sessionId: ClientSessionId
 
-  def delete(): Unit
-}
 
 class WrappedUpdateHandlingKeyObserver[T](mapFunc: T => T, override val wrapped: KeyObserver[T], val originalKey: String) extends WrappedKeyObserver[T](wrapped) {
   override def onUpdate(update: T): Unit = {
@@ -79,6 +76,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   override def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
     logger.debug(s"ChrisChris>> GroupBySession processUpdate $rowKey $rowData")
     super.processUpdate(rowKey, rowData, timeStamp)
+    incrementUpdateCounter()
   }
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
@@ -90,7 +88,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
     val selectedKeys = keys.toArray.take(count)
 
-    val rows = selectedKeys.map(key => pullRowAsArray(key, columns.toList))
+    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
 
     val columnNames = (GroupByColumns.get(columns.length) ++ columns).map(_.name)
 
@@ -122,10 +120,10 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   }
 
   override def pullRow(key: String): RowData = {
-    pullRow(key, this.columns().toList)
+    pullRow(key, this.viewPortColumns)
   }
 
-  override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     val node = tree.getNode(key)
 
     if (node == null) {
@@ -145,7 +143,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
    * - if so read for any aggregates at node
    * - return row with key in key position, plus depth etc, but with no values except aggregates in.
    */
-  override def pullRow(key: String, columns: List[Column]): RowData = {
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
     val node = tree.getNode(key)
     if (node == null)
       EmptyRowData
@@ -155,14 +153,32 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
       RowWithData(key, node.toMap(tree) ++ getOnlyTreeColumnsAsMap(key, columns, node))
   }
 
-  private def getSourceRowData(key: String, columns: List[Column]): Map[String, Any] = {
+
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    val node = tree.getNode(key)
+    if (node == null)
+      EmptyRowData
+    else if (node.isLeaf)
+      RowWithData(key, node.toMap(tree) ++ getSourceRowDataFiltered(node.originalKey, columns))
+    else
+      RowWithData(key, node.toMap(tree) ++ getOnlyTreeColumnsAsMap(key, columns, node))
+  }
+
+  private def getSourceRowData(key: String, columns: ViewPortColumns): Map[String, Any] = {
     source.pullRow(key, columns) match {
       case rd: RowWithData => rd.data
       case _ => Map()
     }
   }
 
-  private def getSourceRowDataAsArray(key: String, columns: List[Column]): Array[Any] = {
+  private def getSourceRowDataFiltered(key: String, columns: ViewPortColumns): Map[String, Any] = {
+    source.pullRowFiltered(key, columns) match {
+      case rd: RowWithData => rd.data
+      case _ => Map()
+    }
+  }
+
+  private def getSourceRowDataAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
     source.pullRowAsArray(key, columns) match {
       case rd: Array[Any] => rd
       case _ => Array.empty
@@ -173,9 +189,9 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
     columns.map(column => column.name -> "").toMap
   }
 
-  private def getOnlyTreeColumnsAsMap(key: String, columns: List[Column], node: TreeNode): Map[String, Any] = {
+  private def getOnlyTreeColumnsAsMap(key: String, columns: ViewPortColumns, node: TreeNode): Map[String, Any] = {
 
-    columns.map(c => {
+    columns.getColumns().map(c => {
       val aggregation = node.getAggregationFor(c)
 
       val r = if (aggregation == null)
@@ -189,9 +205,9 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   }
 
 
-  private def getOnlyTreeColumns(key: String, columns: List[Column], node: TreeNode): Array[Any] = {
+  private def getOnlyTreeColumns(key: String, columns: ViewPortColumns, node: TreeNode): Array[Any] = {
     val keysByColumn = node.keysByColumn
-    columns.map(c => {
+    columns.getColumns().map(c => {
 
       val aggregation = node.getAggregationFor(c)
 
@@ -222,27 +238,21 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   def getTree: Tree = this.tree
 
   //def getNodeState = this.tree.getNodeState()
-  def openTreeKey(treeKey: String) = {
-    this.tree.open(treeKey)
-    //this.notifyListeners(treeKey, false)
-  }
+//  def openTreeKey(treeKey: String): TreeNodeState = {
+//    this.tree.open(treeKey)
+//    //this.notifyListeners(treeKey, false)
+//  }
+//
+//  def closeTreeKey(treeKey: String): TreeNodeState = {
+//    this.tree.close(treeKey)
+//    //this.notifyListeners(treeKey, false)
+//  }
 
-  def closeTreeKey(treeKey: String) = {
-    this.tree.close(treeKey)
-    //this.notifyListeners(treeKey, false)
-  }
+  def mapKeyToTreeKey(nodeKey: String, treeKey:String, rowUpdate: RowKeyUpdate): RowKeyUpdate = {
 
-  def mapKeyToTreeKey(rowUpdate: RowKeyUpdate): RowKeyUpdate = {
-
-    val node = this.getTree.getNodeByOriginalKey(rowUpdate.key)
-
-    val mapped = if (node != null) {
-      rowUpdate.copy(key = node.key, source = this)
-    } else {
-      null
-    }
+    val mapped = rowUpdate.copy(key = treeKey, source = this)
     if(mapped != null) {
-      logger.debug(s"Found node $node for originalKey ${rowUpdate.key} mapped to ${node.key}")
+      logger.debug(s"Found node for originalKey ${nodeKey} mapped to ${treeKey}")
     }
 
     mapped
@@ -260,9 +270,10 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
         logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
 
-        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey, observer, originalKey)
+        val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey(originalKey, key, _), observer, originalKey)
 
         wrappedObservers.put(key, wappedObserver)
+
         sourceTable.addKeyObserver(originalKey, wappedObserver)
       }
       else {

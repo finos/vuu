@@ -22,11 +22,11 @@
         </encoder>
     </appender>
 
-    <logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+    <logger name="org.finos.vuu.net.ViewServerHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
     </logger>
 
-    <logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+    <logger name="org.finos.vuu.net.DefaultMessageHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
         <totalSizeCap>20MB</totalSizeCap>
     </logger-->
@@ -49,26 +49,26 @@
     </appender-->
 
     <!-- required for debugging messages off the wire -->
-    <!--logger name="io.venuu.vuu.client.swing.client.Worker" level="WARN" >
+    <!--logger name="org.finos.vuu.client.swing.client.Worker" level="WARN" >
         <appender-ref ref="roll-by-time" />
     </logger-->
 
-    <!--logger name="io.venuu.vuu.net.DefaultMessageHandler" level="DEBUG">
+    <!--logger name="org.finos.vuu.net.DefaultMessageHandler" level="DEBUG">
 
     </logger-->
 
-    <!--logger name="io.venuu.vuu.net.ViewServerHandler" level="DEBUG">
+    <!--logger name="org.finos.vuu.net.ViewServerHandler" level="DEBUG">
 
     </logger-->
 
-    <!--logger name="io.venuu.vuu.viewport.GroupByTreeBuilderImpl" level="DEBUG" >
+    <!--logger name="org.finos.vuu.viewport.GroupByTreeBuilderImpl" level="DEBUG" >
         <appender-ref ref="STDOUT"/>
     </logger-->
 
-    <!--logger name="io.venuu.vuu.core.groupby.WrappedUpdateHandlingKeyObserver" level="DEBUG">
+    <!--logger name="org.finos.vuu.core.groupby.WrappedUpdateHandlingKeyObserver" level="DEBUG">
     </logger-->
 
-    <!--logger name="io.venuu.vuu.core.groupby.GroupBySessionTableImpl" level="DEBUG">
+    <!--logger name="org.finos.vuu.core.groupby.GroupBySessionTableImpl" level="DEBUG">
     </logger-->
 
 

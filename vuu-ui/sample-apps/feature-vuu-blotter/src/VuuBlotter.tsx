@@ -1,28 +1,44 @@
-import { Filter } from "@finos/vuu-filter-types";
-import { filterAsQuery, FilterInput, updateFilter } from "@finos/vuu-filters";
-import { useViewContext } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSuggestionProvider } from "./useSuggestionProvider";
-
 import {
   ConfigChangeMessage,
-  DataSourceMenusMessage,
-  DataSourceVisualLinksMessage,
+  DataSourceVisualLinkCreatedMessage,
   RemoteDataSource,
   TableSchema,
-  useVuuMenuActions,
 } from "@finos/vuu-data";
+import {
+  isViewportMenusAction,
+  isVisualLinkCreatedAction,
+  isVisualLinkRemovedAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
-import { ToolbarButton } from "@heswell/salt-lab";
+import { GridAction, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
+import {
+  addFilter,
+  FilterInput,
+  useFilterSuggestionProvider,
+} from "@finos/vuu-filters";
+import { useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import {
+  LinkDescriptorWithLabel,
+  VuuGroupBy,
+  VuuMenu,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
+import {
+  FeatureProps,
+  ShellContextProps,
+  useShellContext,
+} from "@finos/vuu-shell";
+import { filterAsQuery } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
 import { LinkedIcon } from "@salt-ds/icons";
-
-import { FeatureProps } from "@finos/vuu-shell";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import "./VuuBlotter.css";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const classBase = "vuuBlotter";
 
@@ -32,6 +48,7 @@ type BlotterConfig = {
   columns?: KeyedColumnDescriptor[];
   groupBy?: VuuGroupBy;
   sort?: VuuSort;
+  "visual-link"?: DataSourceVisualLinkCreatedMessage;
 };
 export interface FilteredGridProps extends FeatureProps {
   schema: TableSchema;
@@ -59,14 +76,16 @@ const applyDefaults = (
 };
 
 const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
-  const { id, dispatch, load, purge, save, loadSession, saveSession } =
+  const { id, dispatch, load, purge, save, loadSession, saveSession, title } =
     useViewContext();
   const config = useMemo(() => load?.() as BlotterConfig | undefined, [load]);
-  console.log({ config });
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
-  const [currentFilter, setCurrentFilter] = useState<Filter>();
+  const [filterState, setFilterState] = useState<FilterState>({
+    filter: undefined,
+    filterQuery: "",
+  });
 
-  const suggestionProvider = useSuggestionProvider({
+  const suggestionProvider = useFilterSuggestionProvider({
     columns: schema.columns,
     table: schema.table,
   });
@@ -82,10 +101,14 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
       table: schema.table,
       ...config,
       columns,
+      title,
     });
     saveSession?.(ds, "data-source");
     return ds;
-  }, [config, id, loadSession, saveSession, schema]);
+    // Note: despite the dependency array, because we load dataStore from session
+    // after initial load, changes to the following dependencies will not cause
+    // us to create a new dataSource, which is correct.
+  }, [config, id, loadSession, saveSession, schema, title]);
 
   useEffect(() => {
     dataSource.enable();
@@ -94,60 +117,52 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     };
   }, [dataSource]);
 
+  useEffect(() => {
+    if (title !== dataSource.title) {
+      dataSource.title = title;
+    }
+  }, [dataSource, title]);
+
   const removeVisualLink = useCallback(() => {
-    dataSource.removeLink();
+    dataSource.visualLink = undefined;
   }, [dataSource]);
 
+  const dispatchGridAction = useCallback(
+    (action: GridAction) => {
+      if (isVisualLinksAction(action)) {
+        saveSession?.(action.links, "visual-links");
+        return true;
+      } else if (isVisualLinkCreatedAction(action)) {
+        dispatch?.({
+          type: "add-toolbar-contribution",
+          location: "post-title",
+          content: (
+            <Button aria-label="remove-link" onClick={removeVisualLink}>
+              <LinkedIcon />
+            </Button>
+          ),
+        });
+        save?.(action, "visual-link");
+        return true;
+      } else if (isVisualLinkRemovedAction(action)) {
+        dispatch?.({
+          type: "remove-toolbar-contribution",
+          location: "post-title",
+        });
+        purge?.("visual-link");
+        return true;
+      } else if (isViewportMenusAction(action)) {
+        saveSession?.(action.menu, "vs-context-menu");
+        return true;
+      }
+      return false;
+    },
+    [dispatch, purge, removeVisualLink, save, saveSession]
+  );
+
   const handleConfigChange = useCallback(
-    (
-      update:
-        | ConfigChangeMessage
-        | DataSourceMenusMessage
-        | DataSourceVisualLinksMessage
-    ) => {
+    (update: ConfigChangeMessage) => {
       switch (update.type) {
-        case "VIEW_PORT_MENUS_RESP":
-          {
-            // We only need to save the context menu into session state
-            // not state (which gets persisted), They are loaded afresh
-            // from the server on application load.
-            saveSession?.(update.menu, "vs-context-menu");
-          }
-          break;
-        case "VP_VISUAL_LINKS_RESP":
-          {
-            // See comment above, same here.
-            saveSession?.(update.links, "visual-links");
-          }
-          break;
-        case "CREATE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "add-toolbar-contribution",
-              location: "post-title",
-              content: (
-                <ToolbarButton
-                  aria-label="remove-link"
-                  onClick={removeVisualLink}
-                >
-                  <LinkedIcon />
-                </ToolbarButton>
-              ),
-            });
-            save?.(update, "visual-link");
-          }
-          break;
-
-        case "REMOVE_VISUAL_LINK_SUCCESS":
-          {
-            dispatch?.({
-              type: "remove-toolbar-contribution",
-              location: "post-title",
-            });
-            purge?.("visual-link");
-          }
-          break;
-
         default:
           for (const [key, state] of Object.entries(update)) {
             if (CONFIG_KEYS.includes(key)) {
@@ -156,37 +171,69 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           }
       }
     },
-    [dispatch, purge, removeVisualLink, save, saveSession]
+    [save]
   );
 
-  const { buildViewserverMenuOptions, dispatchGridAction, handleMenuAction } =
-    useVuuMenuActions({
-      vuuMenu: loadSession?.("vs-context-menu"),
-      dataSource,
-      onConfigChange: handleConfigChange,
-      onRpcResponse: handleRpcResponse,
-      visualLink: load?.("visual-link"),
-      visualLinks: loadSession?.("visual-links"),
-    });
+  // It is important that these values are not assigned in advance. They
+  // are accessed at the point of construction of ContextMenu
+  const menuActionConfig: MenuActionConfig = useMemo(
+    () => ({
+      get visualLink() {
+        return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
+      },
+      get visualLinks() {
+        return loadSession?.("visual-links") as LinkDescriptorWithLabel[];
+      },
+      get vuuMenu() {
+        return loadSession?.("vs-context-menu") as VuuMenu;
+      },
+    }),
+    [load, loadSession]
+  );
+
+  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    dataSource,
+    menuActionConfig,
+    onRpcResponse: handleRpcResponse,
+  });
+
+  const namedFilters = useMemo(() => new Map<string, string>(), []);
 
   const handleSubmitFilter = useCallback(
     (
-      filter: Filter | undefined,
+      newFilter: Filter | undefined,
       filterQuery: string,
-      filterName?: string,
-      mode = "add"
+      mode = "add",
+      filterName?: string
     ) => {
-      if (mode === "add" && currentFilter) {
-        const newFilter = updateFilter(currentFilter, filter, mode) as Filter;
-        const newFilterQuery = filterAsQuery(newFilter);
-        dataSource.filter = { filter: newFilterQuery, filterStruct: newFilter };
-        setCurrentFilter(newFilter);
+      let newFilterState: FilterState;
+      if (newFilter && (mode === "and" || mode === "or")) {
+        const fullFilter = addFilter(filterState.filter, newFilter, {
+          combineWith: mode,
+        }) as Filter;
+        newFilterState = {
+          filter: fullFilter,
+          filterQuery: filterAsQuery(fullFilter),
+          filterName,
+        };
       } else {
-        dataSource.filter = { filterStruct: filter, filter: filterQuery };
-        setCurrentFilter(filter);
+        newFilterState = {
+          filter: newFilter,
+          filterQuery,
+          filterName,
+        };
+      }
+
+      dataSource.filter = {
+        filter: newFilterState.filterQuery,
+        filterStruct: newFilterState.filter,
+      };
+      setFilterState(newFilterState);
+      if (filterName && newFilterState.filter) {
+        namedFilters.set(filterName, newFilterState.filterQuery);
       }
     },
-    [currentFilter, dataSource]
+    [dataSource, filterState.filter, namedFilters]
   );
 
   const configColumns = config?.columns;
@@ -202,7 +249,7 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
     >
       <div className={classBase}>
         <FilterInput
-          existingFilter={currentFilter}
+          existingFilter={filterState.filter}
           onSubmitFilter={handleSubmitFilter}
           suggestionProvider={suggestionProvider}
         />
@@ -212,13 +259,12 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
               {...props}
               columnSizing="fill"
               dataSource={dataSource}
-              aggregations={config?.aggregations}
               columns={columns}
               onConfigChange={handleConfigChange}
               renderBufferSize={80}
               rowHeight={18}
               selectionModel="extended"
-              showLineNumbers
+              // showLineNumbers
             />
           </div>
         </GridProvider>

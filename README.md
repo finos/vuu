@@ -4,7 +4,7 @@
 
 ## The Realtime View Server
 
-Welcome. We maintain a docusaurus book containing all the details of the project. Why not get started there:
+Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
 
 https://vuu.finos.org/docs/introduction/intro
 
@@ -22,7 +22,7 @@ git clone https://github.com/finos/vuu.git
 #cd into the repository
 cd vuu
 #run the maven compile step
-mvn compile
+mvn install
 #cd into vuu, child in repo
 cd vuu
 #The server should now be started on your machine
@@ -42,13 +42,52 @@ The UI scripts all run from the vuu/vuu-ui directory.
 ```sh
 #from top-level vuu repo (not vuu child directory in repo)
 cd vuu-ui
-yarn
-yarn build
-yarn build:app
-cd packages/electron
-#this should open an electron window pointing at https://localhost:8443/index.html
-yarn start
+npm install
+npm run build
+npm run build:app
 ```
+
+You can now open the demo app in your browser at https://127.0.0.1:8443/index.html
+
+Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
+
+```sh
+#from top-level vuu repo (not vuu child directory in repo)
+cd vuu-ui/tools/electron
+npm install
+```
+
+Then, back in vuu-ui, run the launch script"
+
+```sh
+#from vuu/vuu-ui
+npm run launch:demo:electron
+```
+
+## Configuring IntelliJ
+
+You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
+
+1. Install the Scala plugin: file -> settings -> plugins
+2. Install Scala 2.13.10
+3. Set project SDK version to 11: file -> project structure -> select an SDK -> require version 11
+4. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
+5. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
+6. In the terminal, navigate to
+
+```sh
+vuu-ui/sample-apps/app-vuu-example
+```
+
+7. Run
+
+```sh
+npm install
+npm run build
+```
+
+8. In IntelliJ, select 'SimulMain' config and click run
+9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
 
 ## Usage example
 

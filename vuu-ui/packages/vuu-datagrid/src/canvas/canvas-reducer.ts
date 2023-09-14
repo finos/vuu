@@ -1,8 +1,6 @@
-import {
-  ColumnGroupType,
-  KeyedColumnDescriptor,
-} from "../grid-model/gridModelTypes";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Reducer } from "react";
+import { ColumnGroupType } from "../grid-model/gridModelTypes";
 
 const VIRTUALIZATION_THRESHOLD = 0.66;
 

@@ -19,7 +19,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       implicit val timeProvider: Clock = new DefaultClock
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
@@ -57,7 +57,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
             )
         )
 
-      val joinProvider   = JoinTableProviderImpl()//new EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -72,6 +72,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
       val pricesProvider = new MockProvider(prices)
       val instrumentsProvider = new MockProvider(instruments)
       val fxRatesProvider = new MockProvider(fxRates)
+      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       //val viewPortContainer = setupViewPort()
 
@@ -84,7 +85,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       joinProvider.runOnce()
 
-      val row = orderPrices.pullRow("NYC-0001", joinDef.columns.toList)
+      val row = orderPrices.pullRow("NYC-0001", vpColumns)
 
       val (key, data) = (row.asInstanceOf[RowWithData].key, row.asInstanceOf[RowWithData].data)
 
@@ -92,10 +93,10 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       key should equal("NYC-0001")
 
-      data.get("fxAsk").get.asInstanceOf[Double] should be(1.341d +- 0.0000001)
-      data.get("isin").get.asInstanceOf[String] should equal("1234566GGB")
+      data("fxAsk").asInstanceOf[Double] should be(1.341d +- 0.0000001)
+      data("isin").asInstanceOf[String] should equal("1234566GGB")
       data.get("last") should be(Some(null))
-      data.get("ask").get.asInstanceOf[Double] should equal(222.0d +- 0.0000001)
+      data("ask").asInstanceOf[Double] should equal(222.0d +- 0.0000001)
     }
 
     Scenario("simple multi table join, new join manager"){
@@ -156,6 +157,8 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
       val instrumentsProvider = new MockProvider(instruments)
       val fxRatesProvider = new MockProvider(fxRates)
 
+      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+
       //val viewPortContainer = setupViewPort()
 
       joinProvider.start()
@@ -167,7 +170,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       joinProvider.runOnce()
 
-      val row = orderPrices.pullRow("NYC-0001", joinDef.columns.toList)
+      val row = orderPrices.pullRow("NYC-0001", vpColumns)
 
       val (key, data) = (row.asInstanceOf[RowWithData].key, row.asInstanceOf[RowWithData].data)
 

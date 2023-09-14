@@ -8,20 +8,23 @@ import {
   padRight,
   readJson,
   readPackageJson,
+  writeMetaFile,
 } from "../../../scripts/utils.mjs";
 import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = ["index.tsx", "login.tsx"];
+const entryPoints = ["index.tsx", "login.tsx", "demo.tsx"];
 
 const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
+const websocketUrl = getCommandLineArg("--url", true);
+console.log(`websocket URL ${websocketUrl} type ${typeof websocketUrl}`);
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
-const features = getCommandLineArg("--features", true, "feature-vuu-blotter");
+const features = getCommandLineArg("--features", true, "feature-vuu-table");
 console.log({ features });
 if (configPath) {
   configFile = configPath;
@@ -48,6 +51,9 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
   return new Promise((resolve, reject) => {
     console.log("[DEPLOY config]");
     const configJson = readJson(configFile);
+    if (websocketUrl) {
+      configJson.websocketUrl = websocketUrl;
+    }
     let { features } = configJson;
     if (features === undefined) {
       features = configJson.features = {};
@@ -107,6 +113,8 @@ async function main() {
     console.error(e);
     process.exit(1);
   });
+
+  await writeMetaFile(metafile, outdir);
 
   console.log("[DEPLOY public assets]");
   const publicContent = fs.readdirSync(`./public`);

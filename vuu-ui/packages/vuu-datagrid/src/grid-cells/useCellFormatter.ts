@@ -1,15 +1,18 @@
-import { roundDecimal } from "@finos/vuu-utils";
-import { TypeFormatting } from "@finos/vuu-datagrid-types";
+import { isTypeDescriptor, roundDecimal } from "@finos/vuu-utils";
+import {
+  KeyedColumnDescriptor,
+  TypeFormatting,
+} from "@finos/vuu-datagrid-types";
 import { createElement, useRef } from "react";
-import { isTypeDescriptor, KeyedColumnDescriptor } from "../grid-model";
 
-const defaultFormatter = (value: unknown) => (value == null ? "" : value);
+const defaultFormatter = (value: unknown) =>
+  value == null ? "" : typeof value === "string" ? value : value.toString();
 
 const getFormatter = (column: KeyedColumnDescriptor) => {
   if (isTypeDescriptor(column.type)) {
     const { name, formatting } = column.type;
     if (name === "number") {
-      return numericFormatter(formatting);
+      return numericFormatter(formatting, column.align);
     }
   }
   return defaultFormatter;
@@ -22,12 +25,14 @@ export const useCellFormatter = (column: KeyedColumnDescriptor) => {
 
 const DEFAULT_NUMERIC_FORMATTING = {};
 
-function numericFormatter({
-  align = "right",
-  alignOnDecimals = false,
-  decimals = 4,
-  zeroPad = false,
-}: TypeFormatting = DEFAULT_NUMERIC_FORMATTING) {
+function numericFormatter(
+  {
+    alignOnDecimals = false,
+    decimals = 4,
+    zeroPad = false,
+  }: TypeFormatting = DEFAULT_NUMERIC_FORMATTING,
+  align: "left" | "right" = "right"
+) {
   const props = { className: "num" };
   // eslint-disable-next-line react/display-name
   return (value: unknown) => {

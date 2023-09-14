@@ -1,4 +1,5 @@
 import { build } from "./esbuild.mjs";
+import { buildWorker } from "./build-worker.mjs";
 import fs from "fs";
 import path from "path";
 import {
@@ -7,6 +8,7 @@ import {
   formatDuration,
   getCommandLineArg,
   readPackageJson,
+  updateVersionAndDependencies,
   writeMetaFile,
 } from "./utils.mjs";
 const NO_DEPENDENCIES = {};
@@ -49,16 +51,28 @@ export default async function main(customConfig) {
   const packageJson = readPackageJson();
   const { distPath: DIST_PATH, licencePath: LICENCE_PATH, target } = config;
 
-  const { name: scopedPackageName, peerDependencies = NO_DEPENDENCIES } =
-    packageJson;
+  const {
+    name: scopedPackageName,
+    dependencies = NO_DEPENDENCIES,
+    peerDependencies = NO_DEPENDENCIES,
+  } = packageJson;
 
   const [, packageName] = scopedPackageName.split("/");
   const external = Object.keys(peerDependencies);
+  const externalVuu = Object.keys(dependencies).filter(
+    (name) =>
+      name.match(/^@[^/]+\/vuu-/) ||
+      name.match(/^@salt-ds/) ||
+      name.match(/^@heswell/) ||
+      name.match(/^@lezer/)
+  );
 
-  const outdir = `${DIST_PATH}/${packageName}`;
+  const includeLicense = getCommandLineArg("--license");
   const watch = getCommandLineArg("--watch");
-  const development = watch || getCommandLineArg("--dev");
+  const debug = getCommandLineArg("--debug");
+  const development = watch || debug || getCommandLineArg("--dev");
   const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
+  const outdir = `${DIST_PATH}/${packageName}${debug ? "-debug" : ""}`;
 
   const hasWorker = fs.existsSync(workerTS);
   const hasReadme = fs.existsSync(README);
@@ -69,23 +83,11 @@ export default async function main(customConfig) {
   const buildConfig = {
     entryPoints: [isTypeScript ? indexTS : isJavaScript ? indexJS : indexCSS],
     env: development ? "development" : "production",
-    external,
+    external: external.concat(externalVuu),
     outdir: `${outdir}/esm`,
     name: scopedPackageName,
     target,
   };
-
-  const inlineWorkerConfig = hasWorker
-    ? {
-        banner: { js: "export function InlinedWorker() {" },
-        entryPoints: [workerTS],
-        env: development ? "development" : "production",
-        footer: { js: "}" },
-        name: scopedPackageName,
-        outfile: `src/inlined-worker.js`,
-        sourcemap: false,
-      }
-    : undefined;
 
   function createDistFolder() {
     fs.rmSync(outdir, { recursive: true, force: true });
@@ -134,6 +136,13 @@ export default async function main(customConfig) {
         if (cjs) {
           newPackage.main = "cjs/index.js";
         }
+      }
+
+      if (debug) {
+        updateVersionAndDependencies(newPackage, {
+          pattern: /^@finos\/vuu/,
+          suffix: "-debug",
+        });
       }
 
       fs.writeFile(
@@ -188,13 +197,14 @@ export default async function main(customConfig) {
       `${outdir}/esm/index.css.map`,
       path.resolve(outdir, "index.css.map")
     );
+    // copy any font files
   }
 
   createDistFolder();
 
   if (hasWorker) {
     // this has to complete first, the inline worker will be consumed ny subsequent build
-    await build(inlineWorkerConfig);
+    await buildWorker(scopedPackageName);
   }
 
   // Compose the list of async tasks we are going to run
@@ -212,7 +222,10 @@ export default async function main(customConfig) {
       );
     }
   }
-  buildTasks.push(copyLicense());
+
+  if (includeLicense) {
+    buildTasks.push(copyLicense());
+  }
   if (hasReadme) {
     buildTasks.push(copyReadme());
   }

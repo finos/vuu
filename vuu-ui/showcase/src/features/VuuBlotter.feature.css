@@ -1,0 +1,10 @@
+.vuuBlotter {
+    background-color: antiquewhite;
+    height: 400px;
+    width: 600px;
+}
+
+.vuuBlotter-footer {
+    --saltToolbar-alignItems: center;
+    --saltToolbar-height: 24px;
+}

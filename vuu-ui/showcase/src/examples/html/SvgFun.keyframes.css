@@ -1,0 +1,34 @@
+@keyframes pulse-arrow {
+    0% {
+      fill: rgba(255, 255, 255, 0.65);
+    }
+    80% {
+      fill: rgba(255, 255, 255, 0.65);
+      r: 4;
+    }
+    85% {
+      fill: rgba(255, 255, 255, 1);
+      r: 6;
+    }
+    100% {
+      fill: rgba(255, 255, 255, 0.65);
+      r: 4;
+    }
+  }
+  
+  @keyframes wing-fold {
+    80% {
+      opacity: 1;
+    }
+    100% {
+      cx: 50px;
+      cy: 80px;
+      opacity: 0;
+    }
+  }
+
+  @keyframes circle-on-path {
+    to {
+        offset-distance: 100%;
+    }
+  }

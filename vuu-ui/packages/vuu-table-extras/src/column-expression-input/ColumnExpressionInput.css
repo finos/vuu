@@ -1,0 +1,85 @@
+
+.vuuColumnExpressionInput {
+    --vuuFilterEditor-background: var(--salt-container-primary-background);
+    --vuuFilterEditor-color: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
+    --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
+    --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
+    --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
+    --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
+    --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--salt-container-borderWidth) var(--salt-container-borderStyle); 
+    --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
+    --vuuFilterEditor-suggestion-selectedBackground: var(--salt-selectable-background-selected);
+    --vuuFilterEditor-suggestion-selectedColor: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-suggestion-detailColor: var(--salt-text-secondary-foreground-disabled);
+    --vuuFilterEditor-suggestion-height: 24px;
+    --vuuFilterEditor-variableColor: blue;
+
+    align-items: center;
+    box-sizing: border-box;
+    height: 30px;
+}
+
+.vuuColumnExpressionInput-FilterButton,
+.vuuColumnExpressionInput-ClearButton {
+    --vuu-icon-size: 12px;
+    --saltButton-width: 28px;
+}
+
+.expression-type-container {
+    margin: 0 3px 0 auto;
+    color: var(--salt-text-secondary-foreground)
+}
+
+.expression-kind {
+    display: inline-block;
+    width: 50px;
+}
+
+.expression-type {
+    display: inline-block;
+    text-align: right;
+    width: 50px;
+}
+
+.vuuSuggestion {
+    display: flex;
+    align-items: center;
+}
+
+
+.vuuFunctionDoc .function-heading {
+    display: flex;
+    gap: 3px;
+}
+
+.vuuFunctionDoc .function-name {
+    font-style: italic;
+}
+
+.vuuFunctionDoc .param-list {
+    font-style: italic;
+    color: blue;
+    white-space: pre;
+}
+
+.vuuFunctionDoc .function-type {
+    margin-left: auto;
+}
+
+.vuuFunctionDoc .example-container {
+    background-color: var(--salt-container-secondary-background);
+    margin: 6px 0;
+    padding: 3px;
+}
+
+.vuuFunctionDoc .example-expression {
+    font-family: var(--salt-typography-fontFamily-code);
+    margin-left: 8px;
+    margin-top: 6px;
+}
+
+.vuuFunctionDoc .example-result {
+    margin-left: 8px;
+    margin-top: 6px;
+}

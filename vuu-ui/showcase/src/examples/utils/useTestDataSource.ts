@@ -1,59 +1,121 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { useMemo } from "react";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
-import { Schema } from "./useSchemas";
+import { toDataSourceColumns } from "@finos/vuu-utils";
 
-const configureColumns = (
+const getRequestedColumns = (
   columns: ColumnDescriptor[],
-  columnConfig?: { [key: string]: ColumnDescriptor }
-): ColumnDescriptor[] => {
-  if (columnConfig) {
-    return Object.keys(columnConfig).map((colname: string) => {
-      const column = columns.find((col) => col.name === colname);
-      return {
-        ...column,
-        ...columnConfig[colname],
-      };
+  columnNames?: string[]
+) => {
+  if (Array.isArray(columnNames)) {
+    return columnNames.map((name) => {
+      const col = columns.find((col) => col.name === name);
+      if (!col) {
+        throw Error(`no column found '${name}'`);
+      }
+      return col;
     });
   } else {
     return columns;
   }
 };
 
+const configureColumns = (
+  columns: ColumnDescriptor[],
+  columnConfig?: { [key: string]: Omit<ColumnDescriptor, "name"> },
+  columnNames?: string[]
+): ColumnDescriptor[] => {
+  const requestedColumns = getRequestedColumns(columns, columnNames);
+  if (columnConfig) {
+    return requestedColumns.map((column) => ({
+      ...column,
+      ...columnConfig[column.name],
+    }));
+  } else {
+    return requestedColumns;
+  }
+};
+
+const NO_CONCATENATED_COLUMNS: ColumnDescriptor[] = [];
+
+/**
+ * Either pass in a tableSchema or a map of schemas and the tablename
+ */
 export const useTestDataSource = ({
   autoLogin = true,
   bufferSize = 100,
+  calculatedColumns = NO_CONCATENATED_COLUMNS,
+  columnNames: columnNamesProp,
   columnConfig,
+  filter,
+  groupBy,
   schemas,
+  sort,
   tablename = "instruments",
+  tableSchema = schemas[tablename],
 }: {
   autoLogin?: boolean;
   bufferSize?: number;
-  columnConfig?: any;
-  schemas: { [key: string]: Schema };
+  calculatedColumns?: ColumnDescriptor[];
+  columnConfig?: { [key: string]: Omit<ColumnDescriptor, "name"> };
+  columnNames?: string[];
+  filter?: DataSourceFilter;
+  groupBy?: VuuGroupBy;
+  schemas: { [key: string]: TableSchema };
+  sort?: VuuSort;
   tablename?: string;
+  tableSchema?: TableSchema;
 }) => {
+  const dataSourceRef = useRef<RemoteDataSource | undefined>();
+
   const [columns, config, columnNames, table] = useMemo(() => {
-    const schema = schemas[tablename];
-    const configuredColumns = configureColumns(schema.columns, columnConfig);
+    const configuredColumns = configureColumns(
+      tableSchema.columns,
+      columnConfig,
+      columnNamesProp
+    ).concat(calculatedColumns);
     return [
       configuredColumns,
       { columns: configuredColumns },
-      configuredColumns.map((col) => col.name),
-      schema.table,
+      configuredColumns.map(toDataSourceColumns),
+      tableSchema.table,
+      tableSchema,
     ];
-  }, [columnConfig, schemas, tablename]);
+  }, [calculatedColumns, columnConfig, columnNamesProp, tableSchema]);
+
+  const tableRef = useRef(table);
 
   const dataSource = useMemo(() => {
     const dataConfig = {
       bufferSize,
       columns: columnNames,
+      filter,
+      groupBy,
+      sort,
       table,
-      serverUrl: "127.0.0.1:8090/websocket",
     };
-    return new RemoteDataSource(dataConfig);
-  }, [bufferSize, columnNames, table]);
+
+    const { current: activeTable } = tableRef;
+    const { current: activeDataSource } = dataSourceRef;
+
+    if (activeDataSource && activeTable !== table) {
+      activeDataSource.unsubscribe();
+    }
+
+    if (!activeDataSource || activeTable !== table) {
+      dataSourceRef.current = new RemoteDataSource(dataConfig);
+    }
+    tableRef.current = table;
+
+    if (dataSourceRef.current === undefined) {
+      throw Error("no dataSource configuration specified");
+    }
+
+    return dataSourceRef.current;
+  }, [bufferSize, columnNames, filter, groupBy, sort, table]);
 
   const error = useAutoLoginToVuuServer(autoLogin);
 
@@ -62,5 +124,6 @@ export const useTestDataSource = ({
     columns,
     config,
     error,
+    tableSchema,
   };
 };

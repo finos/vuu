@@ -1,30 +1,54 @@
 import {
   autocompletion,
   Completion,
+  defaultKeymap,
+  EditorState,
+  EditorView,
+  ensureSyntaxTree,
+  keymap,
+  minimalSetup,
   startCompletion,
-} from "@codemirror/autocomplete";
-import { defaultKeymap } from "@codemirror/commands";
-import { ensureSyntaxTree } from "@codemirror/language";
-import { EditorState } from "@codemirror/state";
-import { EditorView, keymap } from "@codemirror/view";
+  VuuCompletion,
+} from "@finos/vuu-codemirror";
+import { walkTree } from "@finos/vuu-filter-parser";
 import { Filter } from "@finos/vuu-filter-types";
+import cx from "classnames";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
-import { minimalSetup } from "./codemirror-basic-setup";
-import { filterLanguageSupport } from "./filter-language-parser";
-import { walkTree } from "./filter-language-parser/walkTree";
+import { filterLanguageSupport } from "./FilterLanguage";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
-import { ApplyCompletion, useAutoComplete } from "./useFilterAutoComplete";
+import {
+  ApplyCompletion,
+  FilterSubmissionMode,
+  useAutoComplete,
+} from "./useFilterAutoComplete";
+import { FilterSaveOptions } from "./useFilterSuggestionProvider";
 
-export type SuggestionType = "column" | "columnValue" | "operator";
+export type SuggestionType =
+  | "column"
+  | "columnValue"
+  | "operator"
+  | "save"
+  | "name";
 
-export interface ISuggestionProvider {
-  getSuggestions: (
-    valueType: SuggestionType,
-    columnName?: string,
-    startsWith?: string,
-    selection?: string[]
-  ) => Promise<Completion[]>;
+export interface FilterSuggestionOptions {
+  quoted?: boolean;
+  columnName?: string;
+  existingFilter?: Filter;
+  filterName?: string;
+  onSubmit?: () => void;
+  operator?: string;
+  startsWith?: string;
+  selection?: string[];
+}
+
+export type getFilterSuggestionsType = (
+  suggestionType: SuggestionType,
+  options?: FilterSuggestionOptions
+) => Promise<Completion[]>;
+
+export interface IFilterSuggestionProvider {
+  getSuggestions: getFilterSuggestionsType;
   isPartialMatch: (
     valueType: SuggestionType,
     columnName?: string,
@@ -33,7 +57,7 @@ export interface ISuggestionProvider {
 }
 
 export interface SuggestionConsumer {
-  suggestionProvider: ISuggestionProvider;
+  suggestionProvider: IFilterSuggestionProvider;
 }
 
 const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
@@ -43,8 +67,10 @@ const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
   return ref.current;
 };
 
-const getOptionClass = () => {
-  return "vuuSuggestion";
+const getOptionClass = (completion: VuuCompletion) => {
+  return cx("vuuSuggestion", {
+    vuuIllustration: completion.isIllustration,
+  });
 };
 
 const stripName = (filterQuery: string) => {
@@ -58,15 +84,18 @@ const stripName = (filterQuery: string) => {
 
 const noop = () => console.log("noooop");
 
+export type filterSubmissionHandler = (
+  filter: Filter | undefined,
+  filterQuery: string,
+  mode?: FilterSubmissionMode,
+  filterName?: string
+) => void;
+
 export interface CodeMirrorEditorProps {
   existingFilter?: Filter;
-  onSubmitFilter?: (
-    filter: Filter | undefined,
-    filterQuery: string,
-    filterName?: string,
-    mode?: "add" | "replace"
-  ) => void;
-  suggestionProvider: ISuggestionProvider;
+  onSubmitFilter?: filterSubmissionHandler;
+  saveOptions?: FilterSaveOptions;
+  suggestionProvider: IFilterSuggestionProvider;
 }
 
 export const useCodeMirrorEditor = ({
@@ -91,8 +120,8 @@ export const useCodeMirrorEditor = ({
       const source = view.state.doc.toString();
       const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
-        const filter = walkTree(tree, source);
-        return [filter.toJson(), stripName(source), filter.name];
+        const filter = walkTree(tree, source) as Filter;
+        return [filter, stripName(source), filter.name];
       } else {
         return [undefined, "", undefined];
       }
@@ -102,9 +131,9 @@ export const useCodeMirrorEditor = ({
       getView(viewRef).setState(createState());
     };
 
-    const submitFilterAndClearInput = (mode?: "add" | "replace") => {
+    const submitFilterAndClearInput = (mode?: FilterSubmissionMode) => {
       const [filter, filterQuery, filterName] = parseFilter();
-      onSubmitFilter?.(filter, filterQuery, filterName, mode);
+      onSubmitFilter?.(filter, filterQuery, mode, filterName);
       clearInput();
     };
 
@@ -159,7 +188,7 @@ export const useCodeMirrorEditor = ({
         ],
       });
 
-    onSubmit.current = (mode?: "add" | "replace") => {
+    onSubmit.current = (mode?: FilterSubmissionMode) => {
       submitFilterAndClearInput(mode);
       // TODO refocu sthe editor
       setTimeout(() => {

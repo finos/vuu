@@ -10,5 +10,6 @@ class TestFriendlyClock(start: Long) extends Clock{
 
   override def now(): Long = currentTime
 
-  override def sleep(millis: Long): Unit = {currentTime += millis}
+  override def sleep(millis: Long): Unit = {
+    currentTime += millis}
 }

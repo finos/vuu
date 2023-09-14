@@ -1,6 +1,7 @@
 package org.finos.toolbox.thread.executor
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.NamedThreadFactory
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.thread.WorkItem
 import org.finos.toolbox.time.Clock
@@ -15,8 +16,8 @@ import scala.concurrent.duration.TimeUnit
  * when its complete.
  *
  */
-abstract class ResubmitExecutor[T](corePoolSize: Int, maxPoolSize: Int, keepAliveTime: Long, timeUnit: TimeUnit,
-                       workQueue: BlockingQueue[Runnable])(implicit clock: Clock) extends ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, workQueue) with StrictLogging {
+abstract class ResubmitExecutor[T](name: String, corePoolSize: Int, maxPoolSize: Int, keepAliveTime: Long, timeUnit: TimeUnit,
+                       workQueue: BlockingQueue[Runnable])(implicit clock: Clock) extends ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, timeUnit, workQueue, new NamedThreadFactory(name)) with StrictLogging {
 
   private val logEvery = new LogAtFrequency(5_000)
   private val shuttingDown = new AtomicBoolean(false)
@@ -39,7 +40,7 @@ abstract class ResubmitExecutor[T](corePoolSize: Int, maxPoolSize: Int, keepAliv
       if(shouldResubmit(futureTask, t)){
         retry(futureTask, t)
         if(logEvery.shouldLog()){
-          logger.info("Finished runnable" + futureTask.get() + " resubmitting...")
+          logger.info("Finished runnable:" + futureTask.get() + " resubmitting...")
         }
       }
 

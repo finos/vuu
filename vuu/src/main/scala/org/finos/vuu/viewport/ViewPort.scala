@@ -8,6 +8,9 @@ import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.util.PublishQueue
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.viewport.tree.TreeNodeState
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -23,7 +26,7 @@ object DefaultRange extends ViewPortRange(0, 123)
 
 case class ViewPortSelectedIndices(indices: Array[Int])
 
-case class ViewPortSelection(rowKeyIndex: Map[String, Int])
+case class ViewPortSelection(rowKeyIndex: Map[String, Int], viewPort: ViewPort)
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
@@ -57,7 +60,7 @@ case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, k
 
 trait ViewPort {
 
-  def updateSpecificKeys(keys: ImmutableArray[String])
+  def updateSpecificKeys(keys: ImmutableArray[String]): Unit
 
   def setRequestId(request: String): Unit
 
@@ -103,7 +106,7 @@ trait ViewPort {
 
   def highPriorityQ: PublishQueue[ViewPortUpdate]
 
-  def getColumns: List[Column]
+  def getColumns: ViewPortColumns
 
   def getSelection: Map[String, Int]
 
@@ -119,32 +122,52 @@ trait ViewPort {
 
   def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit
 
-  def getTreeNodeState: TreeNodeState
+  def getTreeNodeStateStore: TreeNodeState
 
   def getStructure: ViewPortStructuralFields
+
+
+  def getStructuralHashCode(): Int
+
+  def getTableUpdateCount(): Long
 
   def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
 
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
 
-  override def toString: String = "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+  override def toString: String = {
+    "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+  }
 
   def delete(): Unit
+
+  def keyBuildCount: Long
+
+  def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long): Unit
+
+  def getLastHash(): Int
+
+  def getLastUpdateCount(): Long
+
+  def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit
+
+  def permissionChecker(): Option[RowPermissionChecker]
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
-case class ViewPortStructuralFields(table: RowSource, columns: List[Column],
+case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     viewPortDef: ViewPortDef,
                                     filtAndSort: FilterAndSort, filterSpec: FilterSpec,
-                                    groupBy: GroupBy, theTreeNodeState: TreeNodeState)
+                                    groupBy: GroupBy, theTreeNodeState: TreeNodeState,
+                                    permissionChecker: Option[RowPermissionChecker])
 
-case class ViewPortImpl(id: String,
+class ViewPortImpl(val id: String,
                         //table: RowSource,
-                        session: ClientSessionId,
-                        outboundQ: PublishQueue[ViewPortUpdate],
-                        highPriorityQ: PublishQueue[ViewPortUpdate],
-                        structuralFields: AtomicReference[ViewPortStructuralFields],
-                        range: AtomicReference[ViewPortRange]
+                        val session: ClientSessionId,
+                        val outboundQ: PublishQueue[ViewPortUpdate],
+                        @deprecated val highPriorityQ: PublishQueue[ViewPortUpdate],
+                        val structuralFields: AtomicReference[ViewPortStructuralFields],
+                        val range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
@@ -154,8 +177,16 @@ case class ViewPortImpl(id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => highPriorityQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
+
+  override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = {
+    val fields = structuralFields.get()
+    val updated = fields.copy(permissionChecker = checker)
+    structuralFields.set(updated)
+  }
+
+  override def permissionChecker(): Option[RowPermissionChecker] = structuralFields.get().permissionChecker
 
   override def setRequestId(requestId: String): Unit = this.requestId = requestId
 
@@ -174,7 +205,7 @@ case class ViewPortImpl(id: String,
 
   override def getStructure: ViewPortStructuralFields = structuralFields.get()
 
-  override def getTreeNodeState: TreeNodeState = structuralFields.get().theTreeNodeState
+  override def getTreeNodeStateStore: TreeNodeState = structuralFields.get().theTreeNodeState
 
   private def onlyFilterOrSortChanged(newStructuralFields: ViewPortStructuralFields, current: ViewPortStructuralFields): Boolean = {
     newStructuralFields.table.asTable.name == current.table.asTable.name && newStructuralFields.groupBy == current.groupBy && newStructuralFields.columns == current.columns
@@ -250,7 +281,7 @@ case class ViewPortImpl(id: String,
     inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
   }
 
-  override def getColumns: List[Column] = structuralFields.get().columns
+  override def getColumns: ViewPortColumns = structuralFields.get().columns
 
   override def getRange: ViewPortRange = range.get()
 
@@ -272,6 +303,24 @@ case class ViewPortImpl(id: String,
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
 
+
+  override def getStructuralHashCode(): Int = {
+    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode()
+  }
+
+  private def getTreeNodeStateHash(): Int = {
+    table match {
+      case session: TreeSessionTableImpl =>
+        session.getTree.nodeState.hashCode()
+      case _ =>
+        0
+    }
+  }
+
+  override def getTableUpdateCount(): Long = {
+    this.table.asTable.updateCounter
+  }
+
   override def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String] = subscribedKeys
 
   override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = rowKeyToIndex
@@ -281,6 +330,10 @@ case class ViewPortImpl(id: String,
   override def delete(): Unit = {
     this.setKeys(ImmutableArray.empty[String])
   }
+
+  @volatile var keyBuildCounter: Long = 0
+
+  override def keyBuildCount: Long = keyBuildCounter
 
   override def getKeysInRange: ImmutableArray[String] = {
     val currentKeys = keys.toArray
@@ -306,7 +359,7 @@ case class ViewPortImpl(id: String,
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if (sendSizeUpdate) {
-      highPriorityQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -324,6 +377,7 @@ case class ViewPortImpl(id: String,
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
     setKeysPost(sendSizeUpdate, newKeys)
+    keyBuildCounter += 1
   }
 
   override def onUpdate(update: RowKeyUpdate): Unit = {
@@ -423,7 +477,7 @@ case class ViewPortImpl(id: String,
   def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
-      highPriorityQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 
@@ -473,4 +527,16 @@ case class ViewPortImpl(id: String,
   }
 
   override def getVisualLink: Option[ViewPortVisualLink] = this.viewPortVisualLink
+
+  @volatile var lastCycleHash: Int = 0
+  @volatile var lastUpdateCounter: Long = 0
+
+  override def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long): Unit = {
+    lastCycleHash = lastHash
+    lastUpdateCounter = lastUpdateCount
+  }
+
+  override def getLastHash(): Int = lastCycleHash
+
+  override def getLastUpdateCount(): Long = lastUpdateCounter
 }

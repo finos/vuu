@@ -47,6 +47,9 @@ export interface LayoutProps extends ComponentWithId {
   version?: number;
 }
 
+/**
+ * parse the declarative JSX and clone adding layout attributes
+ */
 export const processLayoutElement = (
   layoutElement: ReactElement,
   previousLayout?: ReactElement

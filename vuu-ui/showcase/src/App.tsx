@@ -1,50 +1,67 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
-import { SaltProvider, Text } from "@salt-ds/core";
-import Module from "module";
-import { ReactElement, useCallback, useMemo } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Tree } from "./components";
+import {
+  Density,
+  DensitySwitch,
+  ThemeMode,
+  ThemeProvider,
+  ThemeSwitch,
+} from "@finos/vuu-shell";
+import { Dropdown } from "@salt-ds/lab";
+import { Button, Text } from "@salt-ds/core";
+import { IFrame } from "./components";
+import { ReactElement, useCallback, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 
 import "./App.css";
 
-type VuuExample = (() => ReactElement) & {
-  displaySequence?: number;
+// export type VuuExample = ((props?: unknown) => ReactElement) & {
+//   displaySequence?: number;
+// };
+
+export type VuuExample = {
+  (props?: any): JSX.Element;
+  displaySequence: number;
 };
 
-type VuuTuple = [string, VuuExample];
-
-interface SourceNode {
-  id: string;
-  icon: string;
-  label: string;
-  childNodes?: SourceNode[];
+export interface ExamplesModule {
+  [key: string]: ExamplesModule | VuuExample;
 }
 
-const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
-  const { displaySequence: ds1 } = f1;
-  const { displaySequence: ds2 } = f2;
+type VuuTuple = [string, VuuExample | ExamplesModule];
 
-  if (ds1 === undefined && ds2 === undefined) {
-    return 0;
-  } else if (ds2 === undefined) {
-    return -1;
-  } else if (ds1 === undefined) {
-    return 1;
-  } else {
+const isVuuExample = (item: VuuExample | ExamplesModule): item is VuuExample =>
+  typeof item === "function";
+
+const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
+  if (isVuuExample(f1) && isVuuExample(f2)) {
+    const { displaySequence: ds1 } = f1;
+    const { displaySequence: ds2 } = f2;
+
+    if (ds1 === undefined && ds2 === undefined) {
+      return 0;
+    }
+    if (ds2 === undefined) {
+      return -1;
+    }
+    if (ds1 === undefined) {
+      return 1;
+    }
     return ds1 - ds2;
+  } else {
+    return 0;
   }
 };
 
 const sourceFromImports = (
-  stories: Module,
+  stories: ExamplesModule,
   prefix = "",
   icon = "folder"
-): SourceNode[] =>
+): TreeSourceNode[] =>
   Object.entries(stories)
     .filter(([path]) => path !== "default")
     .sort(byDisplaySequence)
-    .map<SourceNode>(([label, stories]) => {
+    .map<TreeSourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
       if (typeof stories === "function") {
         return {
@@ -62,64 +79,109 @@ const sourceFromImports = (
     });
 
 export interface AppProps {
-  stories: Module;
+  stories: ExamplesModule;
 }
 
-export const App = ({ stories }: AppProps) => {
-  console.log({ stories: Object.entries(stories) });
+type ThemeDescriptor = { label?: string; id: string };
 
+const availableThemes: ThemeDescriptor[] = [
+  { id: "vuu", label: "Vuu Classic" },
+  { id: "salt", label: "Salt Classic" },
+];
+
+export const App = ({ stories }: AppProps) => {
   const navigate = useNavigate();
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange = (evt, [selected]) => navigate(selected.id);
+  const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
+  const [theme, setTheme] = useState<ThemeDescriptor>(availableThemes[0]);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [density, setDensity] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone`, "_blank");
+    window.open(`${location.href}?standalone&theme=vuu`, "_blank");
   }, []);
 
+  const handleThemeChange = useCallback(
+    (_evt, theme: ThemeDescriptor | null) => {
+      console.log(`theme change ${theme}`);
+      if (theme) {
+        setTheme(theme);
+      }
+    },
+    []
+  );
+
   return (
-    <SaltProvider applyClassesTo="scope">
+    <ThemeProvider
+      applyThemeClasses
+      density="high"
+      theme="salt"
+      themeMode="light"
+    >
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
-        <Toolbar className="ShowcaseToolbar">
+        <div className="vuuToolbarProxy ShowcaseToolbar" style={{ height: 30 }}>
           <Text styleAs="h3">Vuu Showcase</Text>
-        </Toolbar>
+        </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
           <Tree
             className="ShowcaseNav"
             style={{ flex: "0 0 200px" }}
             data-resizeable
-            defaultSelected={[pathname.slice(1)]}
+            selected={[pathname.slice(1)]}
             onSelectionChange={handleChange}
             revealSelected
             source={source}
           />
-          <Flexbox
-            className="ShowcaseContentContainer"
-            resizeable
-            style={{ flexDirection: "column", flex: "1 1 auto" }}
+          <ThemeProvider
+            density={density}
+            theme={theme.id}
+            themeMode={themeMode}
           >
-            <Toolbar className="ShowcaseContentToolbar">
-              <span />
-              <ToolbarButton
-                data-align-end
-                data-icon="open-in"
-                onClick={launchStandaloneWindow}
-              />
-            </Toolbar>
-            <div
-              className="ShowcaseContent"
-              style={{
-                flex: "1 1 auto",
-                position: "relative",
-              }}
+            <Flexbox
+              className="ShowcaseContentContainer"
+              resizeable
+              style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
-              <Outlet />
-            </div>
-          </Flexbox>
+              <div
+                className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
+                style={{
+                  height: 30,
+                  border: "solid 1px var(--salt-container-primary-borderColor)",
+                }}
+                data-mode="light"
+              >
+                <Dropdown
+                  className="vuu-ThemePicker"
+                  source={availableThemes}
+                  selected={theme}
+                  onSelectionChange={handleThemeChange}
+                />
+
+                <DensitySwitch onChange={setDensity} />
+                <ThemeSwitch onChange={setThemeMode} />
+                <Button
+                  data-align="end"
+                  data-icon="open-in"
+                  onClick={launchStandaloneWindow}
+                  variant="secondary"
+                />
+              </div>
+              <div
+                className={`ShowcaseContent`}
+                style={{
+                  flex: "1 1 auto",
+                  position: "relative",
+                }}
+              >
+                <IFrame />
+              </div>
+            </Flexbox>
+          </ThemeProvider>
         </Flexbox>
       </Flexbox>
-    </SaltProvider>
+    </ThemeProvider>
   );
 };

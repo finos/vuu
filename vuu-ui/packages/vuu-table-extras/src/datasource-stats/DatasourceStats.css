@@ -1,0 +1,4 @@
+.vuuDatasourceStats {
+    display: flex;
+    gap: var(--salt-size-unit);
+}

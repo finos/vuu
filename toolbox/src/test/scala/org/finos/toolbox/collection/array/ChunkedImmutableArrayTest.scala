@@ -101,5 +101,54 @@ class ChunkedImmutableArrayTest extends AnyFeatureSpec with Matchers {
       result5.length shouldEqual(0)
     }
 
+    Scenario("Create from existing array") {
+
+      val sourceArray = Array("chris", "was", "here", "chunking", "arrays", "late", "into", "the", "night")
+
+      val array = ChunkedImmutableArray.fromArray(sourceArray, chunkSize = 2)
+
+      array.length should equal(9)
+      array.asInstanceOf[ChunkedImmutableArray[String]].chunkSize should equal(2)
+      array.asInstanceOf[ChunkedImmutableArray[String]].countOfChunks should equal(5)
+
+      val x = Set.from(sourceArray)
+
+      //println(array)
+
+//      array = array.+("Chris")
+//      array = array.+("Was")
+//      array = array.+("Here")
+//      array = array.+("Foo")
+//      array = array.+("Bar")
+//
+//      val result = array.-("Foo")
+
+//      result.map(x => x).toList should equal(List("Chris", "Was", "Here", "Bar"))
+//      result.length shouldEqual (4)
+//
+//      val result2 = result.-("Was")
+//
+//      result2.map(x => x).toList should equal(List("Chris", "Here", "Bar"))
+//      result2.length shouldEqual (3)
+//
+//      val result3 = result2.-("Bar")
+//
+//      result3.map(x => x).toList should equal(List("Chris", "Here"))
+//      result3.length shouldEqual (2)
+//
+//      val result4 = result3.-("Chris")
+//
+//      result4.map(x => x).toList should equal(List("Here"))
+//      result4.length shouldEqual (1)
+//
+//      val result5 = result4.-("Here")
+//
+//      result5.map(x => x).toList should equal(List())
+//      result5.length shouldEqual (0)
+    }
+
+
+
+
   }
 }

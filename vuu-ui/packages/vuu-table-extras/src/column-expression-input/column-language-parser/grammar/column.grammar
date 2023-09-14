@@ -1,0 +1,86 @@
+
+@precedence {
+  call,
+  or @left,
+  and @left
+  times @left,
+  plus @left
+}
+
+@top ColumnDefinitionExpression { expression }
+
+expression { 
+  Column | 
+  Number |
+  String |
+  True |
+  False |
+  ParenthesizedExpression |
+  ArithmeticExpression |
+  ConditionalExpression |
+  CallExpression
+}
+
+ParenthesizedExpression { OpenBrace expression CloseBrace }
+
+ArithmeticExpression {
+  expression !times (Divide | Times) expression |
+  expression !plus (Plus | Minus) expression 
+}
+
+ConditionalExpression {
+  If OpenBrace booleanCondition Comma expression Comma expression CloseBrace 
+}
+
+CallExpression {
+  Function ArgList
+}
+
+booleanCondition {
+  RelationalExpression | AndCondition | OrCondition
+}
+
+AndCondition {  booleanCondition !and "and" booleanCondition }
+OrCondition { booleanCondition !or "or" booleanCondition }
+
+RelationalExpression {
+  expression RelationalOperator expression
+}
+
+RelationalOperator {
+  "=" | ">" | "<" | ">=" | "<=" | "!="
+}
+
+ArgList {
+  OpenBrace expression (Comma expression)* CloseBrace
+}
+
+Column { identifier }
+
+Function { identifier }
+
+@skip { space  }
+
+@tokens {
+  @precedence {If, identifier}
+  @precedence { True, identifier }
+  @precedence { False, identifier }
+  OpenBrace {"("}
+  CloseBrace {")"}
+  Comma {","}
+  If {"if"}
+  Plus {"+"}
+  Minus {"-"}
+  Divide {"/"}
+  Times {"*"}
+  True {"true"}
+  False {"false"}
+  identifier { $[a-zA-Z_]char* }
+  Number {
+    @digit @digit* ("." @digit*)? | "." @digit @digit*
+  }
+  String { "\"" ![\t\r\\\n"]* "\"" }
+  char { $[a-zA-Z_0-9]  }
+  space { $[ \t\n\r]+ }
+
+}

@@ -7,7 +7,7 @@
     </option>
     <option name="testKind" value="All in package" />
     <option name="searchTest" value="In whole project" />
-    <option name="testPackagePath" value="io.venuu.vuu" />
+    <option name="testPackagePath" value="org.finos.vuu" />
     <option name="workingDirectory" value="$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />

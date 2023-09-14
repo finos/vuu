@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
-    // minify: false,
+    minify: false,
     target: "esnext",
   },
   define: {
@@ -16,7 +16,6 @@ export default defineConfig({
     proxy: {
       "/api/authn": {
         target: "https://localhost:8443",
-        // target: "http://localhost:8090",
         secure: false,
       },
     },
@@ -25,7 +24,6 @@ export default defineConfig({
     proxy: {
       "/api/authn": {
         target: "https://localhost:8443",
-        // target: "http://localhost:8090",
         secure: false,
       },
     },

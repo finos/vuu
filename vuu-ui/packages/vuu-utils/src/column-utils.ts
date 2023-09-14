@@ -1,19 +1,50 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
+  ColumnAlignment,
   ColumnDescriptor,
+  ColumnType,
+  ColumnTypeDescriptor,
+  ColumnTypeRenderer,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
+  MappedValueTypeRenderer,
+  PinLocation,
+  TableHeading,
+  TableHeadings,
+  TypeFormatting,
 } from "@finos/vuu-datagrid-types";
-import { VuuGroupBy } from "@finos/vuu-protocol-types";
-import { instrumentPriceColumns } from "../../../showcase/src/examples/DataGrid/columnMetaData";
-import { Row } from "./row-utils";
+import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
+import {
+  VuuAggregation,
+  VuuAggType,
+  VuuColumnDataType,
+  VuuDataRow,
+  VuuGroupBy,
+  VuuRowRecord,
+  VuuSort,
+} from "@finos/vuu-protocol-types";
+import { SchemaColumn } from "packages/vuu-data/src";
+import { CSSProperties } from "react";
+import { CellRendererDescriptor } from "./component-registry";
+import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
   [columnName: string]: number;
 }
 
 const SORT_ASC = "asc";
+const NO_HEADINGS: TableHeadings = [];
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
+
+export const AggregationType: { [key: string]: VuuAggType } = {
+  Average: 2,
+  Count: 3,
+  Distinct: 6,
+  Sum: 1,
+  High: 4,
+  Low: 5,
+};
 
 export function mapSortCriteria(
   sortCriteria: SortCriteriaItem[],
@@ -32,34 +63,129 @@ export function mapSortCriteria(
   });
 }
 
+const numericTypes = ["int", "long", "double"];
+export const getDefaultAlignment = (
+  serverDataType?: VuuColumnDataType
+): ColumnAlignment =>
+  serverDataType === undefined
+    ? "left"
+    : numericTypes.includes(serverDataType)
+    ? "right"
+    : "left";
+
+export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
+  v === "left" || v === "right";
+
+export const isValidPinLocation = (v: string): v is PinLocation =>
+  isValidColumnAlignment(v) || v === "floating";
+
 export const isKeyedColumn = (
   column: ColumnDescriptor
 ): column is KeyedColumnDescriptor => {
   return typeof (column as KeyedColumnDescriptor).key === "number";
 };
 
-export const isNumericColumn = ({ serverDataType }: ColumnDescriptor) =>
+export const fromServerDataType = (
+  serverDataType: VuuColumnDataType
+): ColumnTypeSimple => {
+  switch (serverDataType) {
+    case "double":
+    case "int":
+    case "long":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
+};
+
+export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
+  if (
+    serverDataType === "int" ||
+    serverDataType === "long" ||
+    serverDataType === "double"
+  ) {
+    return true;
+  }
+  if (typeof type === "string") {
+    return type === "number";
+  }
+  if (typeof type?.name === "string") {
+    return type?.name === "number";
+  }
+
+  return false;
+};
+
+export const isDateColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "date";
+export const isTimeColumn = ({ type }: ColumnDescriptor) =>
+  (isTypeDescriptor(type) ? type.name : type) === "time";
+export const isDateTimeColumn = (column: ColumnDescriptor) =>
+  isDateColumn(column) || isTimeColumn(column);
+
+export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
+
+export const isPinned = (column: ColumnDescriptor) =>
+  typeof column.pin === "string";
+
+export const hasHeadings = (column: ColumnDescriptor) =>
+  Array.isArray(column.heading) && column.heading.length > 0;
+
+export const isResizing = (column: KeyedColumnDescriptor) => column.resizing;
+
+export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined
     ? false
-    : serverDataType === "int" ||
-      serverDataType === "long" ||
-      serverDataType === "double";
+    : serverDataType === "char" || serverDataType === "string";
 
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
 
+export const isSimpleColumnType = (value: unknown): value is ColumnTypeSimple =>
+  typeof value === "string" &&
+  ["string", "number", "boolean", "json", "date", "time", "checkbox"].includes(
+    value
+  );
+
+export declare type ColumnTypeSimple =
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | "date"
+  | "time"
+  | "checkbox";
+
+export const isTypeDescriptor = (
+  type?: ColumnType
+): type is ColumnTypeDescriptor =>
+  typeof type !== "undefined" && typeof type !== "string";
+
 const EMPTY_COLUMN_MAP = {} as const;
 
+export const isColumnTypeRenderer = (
+  renderer?: unknown
+): renderer is ColumnTypeRenderer =>
+  typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
+
+export const isMappedValueTypeRenderer = (
+  renderer?: unknown
+): renderer is MappedValueTypeRenderer =>
+  renderer !== undefined &&
+  typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
+
 export function buildColumnMap(
-  columns?: (KeyedColumnDescriptor | string)[]
+  columns?: (KeyedColumnDescriptor | SchemaColumn | string)[]
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
     return columns.reduce((map, column, i) => {
       if (typeof column === "string") {
         map[column] = start + i;
-      } else if (typeof column.key === "number") {
+      } else if (isKeyedColumn(column)) {
         map[column.name] = column.key;
       } else {
         map[column.name] = start + i;
@@ -80,34 +206,6 @@ export function projectUpdates(updates: number[]): number[] {
     results[i + 2] = updates[i + 2];
   }
   return results;
-}
-
-export function projectColumns(
-  tableRowColumnMap: ColumnMap,
-  columns: ColumnDescriptor[]
-) {
-  const columnCount = columns.length;
-  const { IDX, RENDER_IDX, DEPTH, COUNT, KEY, SELECTED, count } = metadataKeys;
-  return (startIdx: number, offset: number, selectedRows: Row[] = []) =>
-    (row: Row, i: number) => {
-      // selectedRows are indices of rows within underlying dataset (not sorted or filtered)
-      // row is the original row from this set, with original index in IDX pos, which might
-      // be overwritten with a different value below if rows are sorted/filtered
-      const baseRowIdx: any = row[IDX]; // TODO
-      const out = [];
-      for (let i = 0; i < columnCount; i++) {
-        const colIdx = tableRowColumnMap[columns[i].name];
-        out[count + i] = row[colIdx];
-      }
-
-      out[IDX] = startIdx + i + offset;
-      out[RENDER_IDX] = 0;
-      out[DEPTH] = 0;
-      out[COUNT] = 0;
-      out[KEY] = row[tableRowColumnMap.KEY];
-      out[SELECTED] = selectedRows.includes(baseRowIdx) ? 1 : 0;
-      return out;
-    };
 }
 
 export const metadataKeys = {
@@ -165,7 +263,8 @@ export const flattenColumnGroup = (
 
 export function extractGroupColumn(
   columns: KeyedColumnDescriptor[],
-  groupBy?: VuuGroupBy
+  groupBy?: VuuGroupBy,
+  confirmed = true
 ): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
@@ -211,6 +310,7 @@ export function extractGroupColumn(
       heading: ["group-col"],
       isGroup: true,
       columns: groupCols,
+      groupConfirmed: confirmed,
       width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
@@ -222,3 +322,484 @@ export function extractGroupColumn(
 export const isGroupColumn = (
   column: KeyedColumnDescriptor
 ): column is GroupColumnDescriptor => column.isGroup === true;
+
+export const isJsonAttribute = (value: unknown) =>
+  typeof value === "string" && value.endsWith("+");
+
+export const isJsonGroup = (column: KeyedColumnDescriptor, row: VuuDataRow) =>
+  (column.type as ColumnTypeDescriptor)?.name === "json" &&
+  isJsonAttribute(row[column.key]);
+
+export const isJsonColumn = (column: KeyedColumnDescriptor) =>
+  (column.type as ColumnTypeDescriptor)?.name === "json";
+
+export const sortPinnedColumns = (
+  columns: KeyedColumnDescriptor[]
+): KeyedColumnDescriptor[] => {
+  const leftPinnedColumns: KeyedColumnDescriptor[] = [];
+  const rightPinnedColumns: KeyedColumnDescriptor[] = [];
+  const restColumns: KeyedColumnDescriptor[] = [];
+  // let pinnedWidthLeft = 0;
+  let pinnedWidthLeft = 4;
+  for (const column of columns) {
+    // prettier-ignore
+    switch(column.pin){
+      case "left": {
+        leftPinnedColumns.push({
+          ...column,
+          endPin: undefined,
+          pinnedOffset: pinnedWidthLeft
+        }); 
+        pinnedWidthLeft += column.width;
+      }
+      break;
+    // store right pinned columns initially in reverse order      
+      case "right": rightPinnedColumns.unshift(column); break;
+      default: restColumns.push(column)
+    }
+  }
+
+  if (leftPinnedColumns.length) {
+    leftPinnedColumns.push({
+      ...(leftPinnedColumns.pop() as KeyedColumnDescriptor),
+      endPin: true,
+    });
+  }
+
+  const allColumns = leftPinnedColumns.length
+    ? leftPinnedColumns.concat(restColumns)
+    : restColumns;
+
+  if (rightPinnedColumns.length) {
+    const measuredRightPinnedColumns: KeyedColumnDescriptor[] = [];
+    let pinnedWidthRight = 0;
+    for (const column of rightPinnedColumns) {
+      measuredRightPinnedColumns.unshift({
+        ...column,
+        pinnedOffset: pinnedWidthRight,
+      });
+      pinnedWidthRight += column.width;
+    }
+    measuredRightPinnedColumns[0].endPin = true;
+    return allColumns.concat(measuredRightPinnedColumns);
+  } else {
+    return allColumns;
+  }
+};
+
+export const getTableHeadings = (
+  columns: KeyedColumnDescriptor[]
+): TableHeadings => {
+  if (columns.some(hasHeadings)) {
+    const maxHeadingDepth = columns.reduce<number>(
+      (max, { heading }) => Math.max(max, heading?.length ?? 0),
+      0
+    );
+
+    let heading: TableHeading | undefined = undefined;
+    const tableHeadings: TableHeadings = [];
+    let tableHeadingsRow: TableHeading[];
+    for (let level = 0; level < maxHeadingDepth; level++) {
+      tableHeadingsRow = [];
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS, width }) => {
+        const label = columnHeading[level] ?? "";
+        if (heading && heading.label === label) {
+          heading.width += width;
+        } else {
+          heading = { label, width } as TableHeading;
+          tableHeadingsRow.push(heading);
+        }
+      });
+      tableHeadings.push(tableHeadingsRow);
+    }
+
+    console.log({ maxHeadingDepth, tableHeadings });
+
+    return tableHeadings;
+  }
+  return NO_HEADINGS;
+};
+
+export const getColumnStyle = ({
+  pin,
+  pinnedOffset = pin === "left" ? 0 : 4,
+  width,
+}: KeyedColumnDescriptor) =>
+  pin === "left"
+    ? ({
+        left: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width - 3}px`,
+      } as CSSProperties)
+    : pin === "right"
+    ? ({
+        right: pinnedOffset,
+        width,
+        "--pin-width": `${pinnedOffset + width}px`,
+      } as CSSProperties)
+    : { width };
+
+export const setAggregations = (
+  aggregations: VuuAggregation[],
+  column: KeyedColumnDescriptor,
+  aggType: VuuAggType
+) => {
+  return aggregations
+    .filter((agg) => agg.column !== column.name)
+    .concat({ column: column.name, aggType });
+};
+
+export const extractFilterForColumn = (
+  filter: Filter | undefined,
+  columnName: string
+) => {
+  if (isMultiClauseFilter(filter)) {
+    return collectFiltersForColumn(filter, columnName);
+  }
+  if (isFilterClause(filter)) {
+    return filter.column === columnName ? filter : undefined;
+  }
+  return undefined;
+};
+
+const collectFiltersForColumn = (
+  filter: MultiClauseFilter,
+  columnName: string
+) => {
+  const { filters, op } = filter;
+  const results: Filter[] = [];
+  filters.forEach((filter) => {
+    const ffc = extractFilterForColumn(filter, columnName);
+    if (ffc) {
+      results.push(ffc);
+    }
+  });
+  if (results.length === 0) {
+    return undefined;
+  } else if (results.length === 1) {
+    return results[0];
+  }
+  return {
+    op,
+    filters: results,
+  };
+};
+
+export const applyGroupByToColumns = (
+  columns: KeyedColumnDescriptor[],
+  groupBy: VuuGroupBy,
+  confirmed = true
+) => {
+  if (groupBy.length) {
+    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
+      columns,
+      groupBy,
+      confirmed
+    );
+    if (groupColumn) {
+      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
+    }
+  } else if (columns[0]?.isGroup) {
+    return flattenColumnGroup(columns);
+  }
+  return columns;
+};
+
+export const applySortToColumns = (
+  colunms: KeyedColumnDescriptor[],
+  sort: VuuSort
+) =>
+  colunms.map((column) => {
+    const sorted = getSortType(column, sort);
+    if (sorted !== undefined) {
+      return {
+        ...column,
+        sorted,
+      };
+    } else if (column.sorted) {
+      return {
+        ...column,
+        sorted: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+export const applyFilterToColumns = (
+  columns: KeyedColumnDescriptor[],
+  { filterStruct }: DataSourceFilter
+) =>
+  columns.map((column) => {
+    // TODO this gives us a dependency on vuu-filters
+    const filter = extractFilterForColumn(filterStruct, column.name);
+    if (filter !== undefined) {
+      return {
+        ...column,
+        filter,
+      };
+    } else if (column.filter) {
+      return {
+        ...column,
+        filter: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+export const isFilteredColumn = (column: KeyedColumnDescriptor) =>
+  column.filter !== undefined;
+
+export const stripFilterFromColumns = (columns: KeyedColumnDescriptor[]) =>
+  columns.map((col) => {
+    const { filter, ...rest } = col;
+    return filter ? rest : col;
+  });
+
+const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
+  const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);
+  if (sortDef) {
+    return sortDefs.length > 1
+      ? (sortDefs.indexOf(sortDef) + 1) * (sortDef.sortType === "A" ? 1 : -1)
+      : sortDef.sortType;
+  }
+};
+
+// Calculated columns have the formal 'name:datatype:expression'
+export const getColumnName = (name: string) => {
+  const pos = name.indexOf(":");
+  if (pos === -1) {
+    return name;
+  } else {
+    return name.slice(0, pos);
+  }
+};
+
+export const findColumn = (
+  columns: KeyedColumnDescriptor[],
+  columnName: string
+): KeyedColumnDescriptor | undefined => {
+  const column = columns.find((col) => col.name === columnName);
+  if (column) {
+    return column;
+  } else {
+    const groupColumn = columns.find(
+      (col) => col.isGroup
+    ) as GroupColumnDescriptor;
+    if (groupColumn) {
+      return findColumn(groupColumn.columns, columnName);
+    }
+  }
+};
+
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string,
+  options: Partial<ColumnDescriptor>
+): KeyedColumnDescriptor[];
+export function updateColumn(
+  columns: KeyedColumnDescriptor[],
+  column: string | KeyedColumnDescriptor,
+  options?: Partial<ColumnDescriptor>
+) {
+  const targetColumn =
+    typeof column === "string"
+      ? columns.find((col) => col.name === column)
+      : column;
+  if (targetColumn) {
+    const replacementColumn = options
+      ? { ...targetColumn, ...options }
+      : targetColumn;
+    return columns.map((col) =>
+      col.name === replacementColumn.name ? replacementColumn : col
+    );
+  } else {
+    throw Error("column-utils.replaceColun, column not found");
+  }
+}
+
+export const toDataSourceColumns = (column: ColumnDescriptor) =>
+  column.expression
+    ? `${column.name}:${column.serverDataType}:${column.expression}`
+    : column.name;
+
+export const getRowRecord = (
+  row: DataSourceRow,
+  columnMap: ColumnMap
+): VuuRowRecord => {
+  return Object.entries(columnMap).reduce<VuuRowRecord>(
+    (map, [colName, key]) => {
+      map[colName] = row[key];
+      return map;
+    },
+    {}
+  );
+};
+
+export const isDataLoading = (columns: KeyedColumnDescriptor[]) => {
+  return isGroupColumn(columns[0]) && columns[0].groupConfirmed === false;
+};
+
+export const getColumnsInViewport = (
+  columns: KeyedColumnDescriptor[],
+  vpStart: number,
+  vpEnd: number
+): [KeyedColumnDescriptor[], number] => {
+  const visibleColumns: KeyedColumnDescriptor[] = [];
+  let preSpan = 0;
+
+  for (let offset = 0, i = 0; i < columns.length; i++) {
+    const column = columns[i];
+    // TODO we need to measure the pinned columns first
+    if (column.hidden) {
+      continue;
+    } else if (offset + column.width < vpStart) {
+      if (column.pin === "left") {
+        visibleColumns.push(column);
+      } else if (offset + column.width + columns[i + 1]?.width > vpStart) {
+        visibleColumns.push(column);
+      } else {
+        preSpan += column.width;
+      }
+    } else if (offset > vpEnd) {
+      visibleColumns.push(column);
+      break;
+    } else {
+      visibleColumns.push(column);
+    }
+    offset += column.width;
+  }
+
+  return [visibleColumns, preSpan];
+};
+
+const isNotHidden = (column: KeyedColumnDescriptor) => column.hidden !== true;
+
+export const visibleColumnAtIndex = (
+  columns: KeyedColumnDescriptor[],
+  index: number
+) => {
+  if (columns.every(isNotHidden)) {
+    return columns[index];
+  } else {
+    return columns.filter(isNotHidden).at(index);
+  }
+};
+
+const { DEPTH, IS_LEAF } = metadataKeys;
+// Get the value for a specific columns within a grouped column
+export const getGroupValueAndOffset = (
+  columns: KeyedColumnDescriptor[],
+  row: DataSourceRow
+): [unknown, number] => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+  } else if (depth === 0) {
+    return ["$root", 0];
+  } else {
+    // offset 1 for now to allow for $root
+    const { key, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[key]);
+    return [value, depth - 1];
+  }
+};
+
+export const getDefaultColumnType = (
+  serverDataType?: VuuColumnDataType
+): ColumnTypeSimple => {
+  switch (serverDataType) {
+    case "int":
+    case "long":
+    case "double":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
+};
+
+export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
+  column: T,
+  formatting: TypeFormatting
+): T => {
+  const { serverDataType, type = getDefaultColumnType(serverDataType) } =
+    column;
+
+  if (typeof type === "string" || type === undefined) {
+    return {
+      ...column,
+      type: {
+        name: type,
+        formatting,
+      },
+    } as T;
+  } else {
+    return {
+      ...column,
+      type: {
+        ...type,
+        formatting,
+      },
+    } as T;
+  }
+};
+
+export const updateColumnRenderer = <
+  T extends ColumnDescriptor = ColumnDescriptor
+>(
+  column: T,
+  cellRenderer: CellRendererDescriptor
+): T => {
+  const { serverDataType, type } = column;
+  if (type === undefined) {
+    return {
+      ...column,
+      type: {
+        name: getDefaultColumnType(serverDataType),
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
+  } else if (isSimpleColumnType(type)) {
+    return {
+      ...column,
+      type: {
+        name: type,
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
+  } else {
+    return {
+      ...column,
+      type: {
+        ...type,
+        renderer: {
+          name: cellRenderer.name,
+        },
+      },
+    };
+  }
+};
+
+const NO_TYPE_SETTINGS = {};
+export const getTypeSettingsFromColumn = (
+  column: ColumnDescriptor
+): TypeFormatting => {
+  if (isTypeDescriptor(column.type)) {
+    return column.type.formatting ?? NO_TYPE_SETTINGS;
+  } else {
+    return NO_TYPE_SETTINGS;
+  }
+};

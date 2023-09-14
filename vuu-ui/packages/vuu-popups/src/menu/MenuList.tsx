@@ -2,14 +2,16 @@ import React, {
   FC,
   HTMLAttributes,
   ReactElement,
+  ReactNode,
   useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
 import cx from "classnames";
-import { useIdMemo as useId } from "@salt-ds/core";
+//TODO do we want this dependency ?
+import { useId } from "@finos/vuu-layout";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
-import { isMenuItemGroup } from "./use-items-with-ids";
+import { isMenuItemGroup } from "./use-items-with-ids-next";
 
 import "./MenuList.css";
 
@@ -18,8 +20,10 @@ const classBase = "vuuMenuList";
 export const Separator = () => <li className="vuuMenuItem-divider" />;
 
 export interface MenuItemGroupProps {
-  children: ReactElement<MenuItemProps>[];
-  label: string;
+  children:
+    | ReactElement<MenuItemProps>[]
+    | [ReactElement<MenuItemLabelProps>, ...ReactElement<MenuItemProps>[]];
+  label?: string;
 }
 
 export interface MenuItemProps extends HTMLAttributes<HTMLDivElement> {
@@ -35,32 +39,53 @@ export const MenuItem = ({ children, idx, ...props }: MenuItemProps) => {
   return <div {...props}>{children}</div>;
 };
 
+export interface MenuItemLabelProps {
+  children: ReactNode;
+}
+const MenuItemLabel = ({ children }: { children: ReactNode }) => (
+  <>{children}</>
+);
+MenuItemLabel.displayName = "MenuItemLabel";
+MenuItem.Label = MenuItemLabel;
+
+const getDisplayName = (item: ReactNode) =>
+  React.isValidElement(item) &&
+  typeof item.type !== "string" &&
+  "displayName" in item.type
+    ? item.type.displayName
+    : undefined;
+
+export const isMenuItemLabel = (
+  item: ReactNode
+): item is ReactElement<MenuItemLabelProps> =>
+  getDisplayName(item) === "MenuItemLabel";
+
 const hasIcon = (child: ReactElement) => child.props["data-icon"];
 
 export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   activatedByKeyboard?: boolean;
   children: ReactElement[];
-  childMenuShowing?: number;
+  childMenuShowing?: string;
+  defaultHighlightedIdx?: number;
   highlightedIdx?: number;
   isRoot?: boolean;
   listItemProps?: Partial<MenuItemProps>;
-  menuId?: string;
   onActivate?: (menuId: string) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu?: (menuId: string) => void;
+  onOpenMenu?: (menuItemEl: HTMLElement) => void;
   onHighlightMenuItem?: (idx: number) => void;
 }
 
-const MenuList = ({
+export const MenuList = ({
   activatedByKeyboard,
-  childMenuShowing = -1,
+  childMenuShowing,
   children,
   className,
+  defaultHighlightedIdx,
   highlightedIdx: highlightedIdxProp,
   id: idProp,
   isRoot,
   listItemProps,
-  menuId,
   onHighlightMenuItem,
   onActivate,
   onCloseMenu,
@@ -73,11 +98,6 @@ const MenuList = ({
   // The id generation be,ongs in useIttemsWithIds
   const mapIdxToId = useMemo(() => new Map(), []);
 
-  const handleOpenMenu = (idx: number) => {
-    const el = root.current?.querySelector(`:scope > [data-idx='${idx}']`);
-    el?.id && onOpenMenu?.(el.id);
-  };
-
   const handleActivate = (idx: number) => {
     const el = root.current?.querySelector(`:scope > [data-idx='${idx}']`);
     el?.id && onActivate?.(el.id);
@@ -85,17 +105,18 @@ const MenuList = ({
 
   const { focusVisible, highlightedIndex, listProps } = useKeyboardNavigation({
     count: React.Children.count(children),
+    defaultHighlightedIdx,
     highlightedIndex: highlightedIdxProp,
     onActivate: handleActivate,
     onHighlight: onHighlightMenuItem,
-    onOpenMenu: handleOpenMenu,
+    onOpenMenu,
     onCloseMenu,
   });
 
-  const appliedFocusVisible = childMenuShowing == -1 ? focusVisible : -1;
+  const appliedFocusVisible = childMenuShowing == undefined ? focusVisible : -1;
 
   useLayoutEffect(() => {
-    if (childMenuShowing === -1 && activatedByKeyboard) {
+    if (childMenuShowing === undefined && activatedByKeyboard) {
       root.current?.focus();
     }
   }, [activatedByKeyboard, childMenuShowing]);
@@ -104,24 +125,6 @@ const MenuList = ({
     highlightedIndex === undefined || highlightedIndex === -1
       ? undefined
       : mapIdxToId.get(highlightedIndex);
-
-  return (
-    <div
-      {...props}
-      {...listProps}
-      aria-activedescendant={getActiveDescendant()}
-      className={cx(classBase, className, {
-        [`${classBase}-childMenuShowing`]: childMenuShowing !== -1,
-      })}
-      data-root={isRoot || undefined}
-      id={`${id}-${menuId}`}
-      ref={root}
-      role="menu"
-      tabIndex={0}
-    >
-      {renderContent()}
-    </div>
-  );
 
   function renderContent() {
     const propsCommonToAllListItems = {
@@ -160,7 +163,7 @@ const MenuList = ({
         ...props
       } = child.props;
       const hasSubMenu = isMenuItemGroup(child);
-      const subMenuShowing = hasSubMenu && childMenuShowing === idx;
+      const subMenuShowing = hasSubMenu && childMenuShowing === itemId;
       const ariaControls = subMenuShowing ? `${id}-${itemId}` : undefined;
 
       list.push(
@@ -168,7 +171,6 @@ const MenuList = ({
           {...props}
           {...propsCommonToAllListItems}
           {...getMenuItemProps(
-            `${id}-${menuId}`,
             itemId,
             idx,
             child.key ?? itemId,
@@ -182,7 +184,7 @@ const MenuList = ({
           aria-expanded={subMenuShowing || undefined}
         >
           {hasSubMenu
-            ? maybeIcon(label, withIcon, iconName)
+            ? maybeIcon(label ?? children, withIcon, iconName)
             : maybeIcon(children, withIcon, iconName)}
         </MenuItem>
       );
@@ -193,7 +195,6 @@ const MenuList = ({
 
     if (children.length > 0) {
       const withIcon = children.some(hasIcon);
-
       children.forEach((child, idx) => {
         addClonedChild(listItems, child, idx, withIcon);
       });
@@ -201,10 +202,26 @@ const MenuList = ({
 
     return listItems;
   }
+
+  return (
+    <div
+      {...props}
+      {...listProps}
+      aria-activedescendant={getActiveDescendant()}
+      className={cx(classBase, className, {
+        [`${classBase}-childMenuShowing`]: childMenuShowing !== undefined,
+      })}
+      data-root={isRoot || undefined}
+      id={id}
+      ref={root}
+      role="menu"
+    >
+      {renderContent()}
+    </div>
+  );
 };
 
 const getMenuItemProps = (
-  baseId: string,
   itemId: string,
   idx: number,
   key: string,
@@ -213,7 +230,7 @@ const getMenuItemProps = (
   className: string,
   hasSeparator: boolean
 ) => ({
-  id: `${baseId}-${itemId}`,
+  id: `menuitem-${itemId}`,
   key: key ?? idx,
   "data-idx": idx,
   "data-highlighted": idx === highlightedIdx || undefined,
@@ -224,4 +241,3 @@ const getMenuItemProps = (
 });
 
 MenuList.displayName = "MenuList";
-export default MenuList;

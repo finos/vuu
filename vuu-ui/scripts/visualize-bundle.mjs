@@ -1,27 +1,27 @@
 import path from "path";
-import { platform } from "os";
 import { execWait, getCommandLineArg } from "./utils.mjs";
 import chalk from "chalk";
-
-const osPlatform = platform();
+import open from "open";
 
 const packageName = getCommandLineArg("--package", true);
+const appName = getCommandLineArg("--app", true);
 
-if (!packageName) {
+if (!packageName && !appName) {
   console.error(
     chalk.red.bold(
-      "Package name must be specified with command, e.g.\n --package vuu-data "
+      "Package or App name must be specified with command, e.g.\n --package vuu-data \n --app app-vuu-example"
     )
   );
   process.exit(1);
 }
 
+const pathName = packageName
+  ? `./dist/${packageName}`
+  : `./deployed_apps/${appName}`;
+
 await execWait(
-  `node ./node_modules/.bin/esbuild-visualizer --metadata ./dist/${packageName}/meta.json --filename ./dist/${packageName}/bundle.html`
+  `esbuild-visualizer --metadata ${pathName}/meta.json --filename ${pathName}/bundle.html`
 );
 
-const bundlePath = path.resolve(`./dist/${packageName}/bundle.html`);
-console.log(bundlePath);
-if (osPlatform === "darwin") {
-  execWait(`open -a "Google Chrome" file://${bundlePath}`);
-}
+const bundlePath = path.resolve(`${pathName}/bundle.html`);
+open(bundlePath);

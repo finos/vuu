@@ -2,7 +2,7 @@ package org.finos.vuu.core.module
 
 import org.finos.vuu.api.{TableDef, ViewPortDef}
 import org.finos.vuu.core.VuuServer
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -39,5 +39,5 @@ trait ViewServerModule {
 
   def restServicesUnrealized: List[VuuServer => RestService]
 
-  def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer) => ViewPortDef]
+  def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]
 }

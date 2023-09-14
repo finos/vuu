@@ -2,7 +2,7 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -45,7 +45,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       joinFields = Seq()
     )
 
-    val joinProvider = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -75,7 +75,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -89,7 +89,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns2 =     ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 
@@ -103,7 +103,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+        (1, false, "$root|chris", false, false, "chris", 0, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
@@ -125,8 +125,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
         //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
-        (1, false, "$root|VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", ""),
-        (1, false, "$root|BT.L", false, false, "BT.L", 1, "", "", "BT.L", "", "", "", "", "", "")
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", ""),
+        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", "")
       )
     }
 
@@ -161,7 +161,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       joinFields = Seq()
     )
 
-    val joinProvider = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -195,7 +195,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_))
 
     val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -212,7 +212,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_))
+    val vpcolumns2 = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))//.map(orderPrices.getTableDef.columnForName(_))
 
     val groupByColumns = List(orderPrices.columnForName("trader"))
 
@@ -226,8 +226,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
         ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-        (1         ,false     ,"$root|chris",false     ,false     ,"chris"   ,3         ,""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
+        (1         ,false     ,"$root|chris",false     ,false     ,"chris"   ,0         ,""        ,"chris"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (1         ,false     ,"$root|steve",false     ,false     ,"steve"   ,0         ,""        ,"steve"   ,""        ,""        ,""        ,""        ,""        ,""        ,""        )
       )
     }
 
@@ -277,9 +277,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
         (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
         (1         ,true      ,"$root|BT.L",false     ,true      ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
+        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
         (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
-        (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
-        (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )
+        (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      )
       )
     }
 
@@ -290,9 +290,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(combineQs(viewPort3)) {
       Table(
-        ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-        (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,502.0     ,40        ,null      ),
-        (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,502.0     ,40        ,null      )
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (3, false, "$root|BT.L|chris|NYC-0002", true, false, "NYC-0002", 0, "NYC-0002", "chris", "BT.L", 1437728400000L, 100, 500.0, 502.0, 40, null),
+        (3, false, "$root|BT.L|chris|NYC-0003", true, false, "NYC-0003", 0, "NYC-0003", "chris", "BT.L", 1437728400000L, 100, 500.0, 502.0, 40, null)
       )
     }
   }

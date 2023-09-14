@@ -1,2 +1,3 @@
-export * from "./dataTableTypes";
-export * from "./DataTable";
+export * from "./configurable-table";
+export * from "./filter-table";
+export * from "./json-table";

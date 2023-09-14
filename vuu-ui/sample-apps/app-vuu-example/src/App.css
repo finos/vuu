@@ -7,12 +7,6 @@ body {
 }
 
 .App {
-  --spectrum-alias-single-line-height: 20px;
-  --spectrum-global-dimension-size-400: 20px;
-  --spectrum-alias-border-radius-regular: 0;
-  --spectrum-alias-border-size-thin: 0;
-  --spectrum-global-dimension-size-85: 3px;
-  --spectrum-global-dimension-size-225: 16px;
 
   --vuuView-borderStyle: none solid solid none;
 
@@ -26,6 +20,10 @@ body {
 
 .DragIcon.dragging {
   background-color: orange !important;
+}
+
+.vuuApp {
+  background-color: green;
 }
 
 .ToolbarField > svg {
@@ -49,4 +47,20 @@ body {
 
 .vuDialog .Grid {
   --hw-grid-flex-size: 1 1 auto;
+}
+
+/** Temp, until we create Toolbar */
+.vuuToolbarProxy {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  height: 36px;
+}
+
+.vuuToolbarProxy > [data-align="end"]{
+  margin-left: auto;
+}
+
+.vuuToolbarProxy-vertical {
+  flex-direction: column;
 }

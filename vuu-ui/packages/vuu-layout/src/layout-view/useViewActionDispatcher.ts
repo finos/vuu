@@ -4,7 +4,7 @@ import {
   RefObject,
   SyntheticEvent,
   useCallback,
-  useState
+  useState,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
@@ -12,9 +12,11 @@ import { usePersistentState } from "../use-persistent-state";
 import { ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
 
+export type ContributionLocation = "post-title" | "pre-title";
+
 export type Contribution = {
   index?: number;
-  location?: string;
+  location?: ContributionLocation;
   content: ReactElement;
 };
 
@@ -32,7 +34,7 @@ export const useViewActionDispatcher = (
   );
   const dispatchLayoutAction = useLayoutProviderDispatch();
   const updateContributions = useCallback(
-    (location: string, content: ReactElement) => {
+    (location: ContributionLocation, content: ReactElement) => {
       const updatedContributions = contributions.concat([
         { location, content },
       ]);
@@ -98,7 +100,6 @@ export const useViewActionDispatcher = (
         case "remove":
           return handleRemove();
         case "mousedown":
-          console.log("2) ViewActionDispatch Hook dispatch Action mousedown");
           return handleMouseDown(evt, action.index, action.preDragActivity);
         case "add-toolbar-contribution":
           return updateContributions(action.location, action.content);

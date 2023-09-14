@@ -1,7 +1,9 @@
-import { DatagridSettingsPanel } from "@finos/vuu-datagrid-extras";
+import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { useCallback, useMemo } from "react";
 import { useColumns } from "../utils/useColumns";
+
+let displaySequence = 0;
 
 export const InstrumentsTableSettings = () => {
   const columns: ColumnDescriptor[] = useMemo(
@@ -22,11 +24,14 @@ export const InstrumentsTableSettings = () => {
     columns: [],
   };
 
-  const handleConfigChange = useCallback((config: GridConfig) => {
-    console.log("config change", {
-      config,
-    });
-  }, []);
+  const handleConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      console.log("config change", {
+        config,
+      });
+    },
+    []
+  );
 
   return (
     <DatagridSettingsPanel
@@ -37,6 +42,7 @@ export const InstrumentsTableSettings = () => {
     />
   );
 };
+InstrumentsTableSettings.displaySequence = displaySequence++;
 
 export const PricesTableSettings = () => {
   const columns: ColumnDescriptor[] = useMemo(
@@ -60,11 +66,14 @@ export const PricesTableSettings = () => {
     columns: [],
   };
 
-  const handleConfigChange = useCallback((config: GridConfig) => {
-    console.log("config change", {
-      config,
-    });
-  }, []);
+  const handleConfigChange = useCallback(
+    (config: Omit<GridConfig, "headings">) => {
+      console.log("config change", {
+        config,
+      });
+    },
+    []
+  );
 
   return (
     <DatagridSettingsPanel
@@ -75,3 +84,4 @@ export const PricesTableSettings = () => {
     />
   );
 };
+PricesTableSettings.displaySequence = displaySequence++;

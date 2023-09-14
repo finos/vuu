@@ -1,7 +1,11 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { Button } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
-import { SuggestionConsumer, useCodeMirrorEditor } from "./useCodeMirrorEditor";
+import {
+  filterSubmissionHandler,
+  SuggestionConsumer,
+  useCodeMirrorEditor,
+} from "./useCodeMirrorEditor";
 
 import "./FilterInput.css";
 
@@ -10,16 +14,16 @@ const classBase = "vuuFilterInput";
 export interface FilterInputProps
   extends SuggestionConsumer,
     HTMLAttributes<HTMLDivElement> {
+  iconName?: string;
   existingFilter?: Filter;
-  onSubmitFilter?: (
-    filter: Filter | undefined,
-    filterQuery: string,
-    filterName?: string
-  ) => void;
+  namedFilters?: Map<string, string>;
+  onSubmitFilter?: filterSubmissionHandler;
 }
 
 export const FilterInput = ({
   existingFilter,
+  iconName = "filter",
+  namedFilters,
   onSubmitFilter,
   suggestionProvider,
   ...props
@@ -32,7 +36,11 @@ export const FilterInput = ({
 
   return (
     <div {...props} className={classBase}>
-      <Button className={`${classBase}-FilterButton`} data-icon="filter" />
+      <Button
+        className={`${classBase}-FilterButton`}
+        data-icon={iconName}
+        tabIndex={-1}
+      />
       <div className={`${classBase}-Editor`} ref={editorRef} />
       <Button
         className={`${classBase}-ClearButton`}

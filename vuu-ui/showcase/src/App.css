@@ -4,11 +4,11 @@ body {
 }
 
 .ShowcaseNav {
-  --hwTree-toggle-expand: var(--svg-chevron-right);
-  --hwTree-toggle-collapse: var(--svg-chevron-right);
-  --hwTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --hwTree-icon-color: var(--salt-palette-accent-background);
-  --hwTree-font-size: 12px;
+  --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
+  --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
+  --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
+  --vuuTree-icon-color: var(--salt-palette-accent-background);
+  --vuuTree-font-size: 12px;
 }
 
 .ShowcaseToolbar,
@@ -26,8 +26,26 @@ body {
 .ShowcaseContentToolbar {
   --saltToolbar-background: transparent;
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
+  flex: 0 0 auto;
 }
 
 .ShowcaseContentContainer {
   border-left: solid 1px var(--salt-container-primary-borderColor);
 }
+
+.ShowcaseContent {
+  background-color: var(--salt-container-primary-background);
+  overflow: hidden;
+}
+
+.ShowCaseIFrame-container {
+  height: 100%;
+  width: 100%;
+}
+
+.ShowCaseIFrame {
+  border: none;
+  height: 100%;
+  width: 100%;
+}
+

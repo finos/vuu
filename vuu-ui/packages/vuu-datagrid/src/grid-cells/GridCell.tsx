@@ -1,14 +1,14 @@
-import React, { HTMLAttributes, useContext } from "react";
+import {
+  ColumnTypeRenderer,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
+import { ColumnMap, DataRow, isTypeDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
-import { useCellFormatter } from "./useCellFormatter";
+import React, { HTMLAttributes, useContext } from "react";
 import ComponentContext from "../component-context";
+import { useCellFormatter } from "./useCellFormatter";
 
 import "./GridCell.css";
-import {
-  isTypeDescriptor,
-  KeyedColumnDescriptor,
-} from "../grid-model/gridModelTypes";
-import { ColumnMap, DataRow } from "@finos/vuu-utils";
 
 const columnType = (column: KeyedColumnDescriptor) =>
   !column.type
@@ -54,11 +54,12 @@ export const GridCell = React.memo(function GridCell({
   const [format] = useCellFormatter(column);
   const className = useGridCellClassName(column);
   const { type } = column;
-  const rendererName = isTypeDescriptor(type) ? type?.renderer?.name : null;
+  const rendererName = isTypeDescriptor(type)
+    ? (type?.renderer as ColumnTypeRenderer)?.name
+    : null;
   const Cell =
     rendererName &&
     (components?.[rendererName] as React.FunctionComponent<GridCellProps>);
-
   if (Cell) {
     return (
       <Cell

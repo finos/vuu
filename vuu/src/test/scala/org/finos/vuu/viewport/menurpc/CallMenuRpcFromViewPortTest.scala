@@ -3,7 +3,7 @@ package org.finos.vuu.viewport.menurpc
 import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.core.table.{Columns, DataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
@@ -24,7 +24,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
   implicit val timeProvider: Clock = new TestFriendlyClock(1311544800)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
@@ -62,9 +62,9 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     }
   }
 
-  def createInstrumentsRpc() = {
+  def createInstrumentsRpc(): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, OutboundRowPublishQueue) = {
 
-    implicit val lifecycle = new LifecycleContainer
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val instrumentsDef = TableDef(
       name = "instruments",
@@ -74,7 +74,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
       joinFields = "ric"
     )
 
-    val joinProvider   = JoinTableProviderImpl()// EsperJoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -94,8 +94,8 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     (viewPortContainer, instruments, instrumentsProvider, session, outQueue, highPriorityQueue)
   }
 
-  def createViewPortDef(): (DataTable, Provider, ProviderContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
+  def createViewPortDef(): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, tableContainer: TableContainer) => ViewPortDef(t.getTableDef.columns, createRpcHandler(provider.asInstanceOf[MockProvider]))
     func
   }
 
@@ -107,7 +107,9 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       vpContainer.addViewPortDefinition(instruments.getTableDef.name, createViewPortDef())
 
-      val viewPort = vpContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, instruments, DefaultRange, instruments.getTableDef.columns.toList)
+      val vpcolumnsOrders = ViewPortColumnCreator.create(instruments, instruments.getTableDef.columns.map(_.name).toList )
+
+      val viewPort = vpContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, instruments, DefaultRange, vpcolumnsOrders)
 
       instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "description" -> "Vodafone", "bbg" -> "VOD LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))
       instrumentsProvider.tick("BT.L", Map("ric" -> "BT.L", "description" -> "British Telecom", "bbg" -> "BT LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))
@@ -126,16 +128,16 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       vpContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0)))
 
-      val result = vpContainer.callRpcSession(viewPort.id, "TEST_SELECT", session)
+      val result = vpContainer.callRpcSelection(viewPort.id, "TEST_SELECT", session)
 
       result.getClass shouldEqual classOf[NoAction]
 
-      Try(vpContainer.callRpcSession(viewPort.id, "FOO_BAR", session)) match {
+      Try(vpContainer.callRpcSelection(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>
-          assert(true == false, "I should never get here, it should be an exception")
+          assert(false, "I should never get here, it should be an exception")
         case Failure(e) =>
           println("Failed call, as expected:[" + e.getMessage + "]")
-          assert(true == true, "this is all good")
+          assert(true, "this is all good")
       }
     }
   }

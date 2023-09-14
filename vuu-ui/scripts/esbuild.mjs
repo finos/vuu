@@ -16,6 +16,7 @@ export async function build(config) {
     sourcemap = true,
     splitting,
     target = ["es2020", "chrome79"],
+    write = true,
   } = config;
 
   return esbuild({
@@ -44,7 +45,7 @@ export async function build(config) {
     sourcemap,
     splitting,
     target,
-    watch: false,
+    write,
   })
     .then((result) => {
       const [seconds, nanoSeconds] = process.hrtime(start);

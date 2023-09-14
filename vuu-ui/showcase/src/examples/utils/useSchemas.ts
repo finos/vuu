@@ -1,9 +1,17 @@
+import { TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
 
-export type Schema = { table: VuuTable; columns: ColumnDescriptor[] };
-const schemas: { [key: string]: Schema } = {
+export type VuuTableName =
+  | "instruments"
+  | "orders"
+  | "childOrders"
+  | "parentOrders"
+  | "prices";
+
+// These Schemas take the form of the schemas that we create
+// with TABLE_META returned by Vuu.
+export const schemas: { [key: string]: TableSchema } = {
   instruments: {
     columns: [
       { name: "bbg", serverDataType: "string" },
@@ -14,31 +22,46 @@ const schemas: { [key: string]: Schema } = {
       { name: "lotSize", serverDataType: "int" },
       { name: "ric", serverDataType: "string" },
     ],
+    key: "ric",
     table: { module: "SIMUL", table: "instruments" },
   },
   orders: {
     columns: [
       { name: "ccy", serverDataType: "string" },
       { name: "created", serverDataType: "long" },
-      {
-        name: "filledQuantity",
-        label: "Filled Quantity %",
-        serverDataType: "int",
-        type: {
-          name: "number",
-          renderer: { name: "progress", associatedField: "quantity" },
-          formatting: { decimals: 0 },
-        },
-        width: 120,
-      },
+      { name: "filledQuantity", serverDataType: "double" },
       { name: "lastUpdate", serverDataType: "long" },
       { name: "orderId", serverDataType: "string" },
       { name: "quantity", serverDataType: "double" },
       { name: "ric", serverDataType: "string" },
-      { name: "side", serverDataType: "char" },
+      { name: "side", serverDataType: "string" },
       { name: "trader", serverDataType: "string" },
     ],
+    key: "orderId",
     table: { module: "SIMUL", table: "orders" },
+  },
+  childOrders: {
+    columns: [
+      { name: "account", serverDataType: "string" },
+      { name: "averagePrice", serverDataType: "double" },
+      { name: "ccy", serverDataType: "string" },
+      { name: "exchange", serverDataType: "string" },
+      { name: "filledQty", serverDataType: "double" },
+      { name: "id", serverDataType: "string" },
+      { name: "idAsInt", serverDataType: "int" },
+      { name: "lastUpdate", serverDataType: "long" },
+      { name: "openQty", serverDataType: "double" },
+      { name: "parentOrderId", serverDataType: "string" },
+      { name: "price", serverDataType: "double" },
+      { name: "quantity", serverDataType: "double" },
+      { name: "ric", serverDataType: "string" },
+      { name: "side", serverDataType: "string" },
+      { name: "status", serverDataType: "string" },
+      { name: "strategy", serverDataType: "string" },
+      { name: "volLimit", serverDataType: "int" },
+    ],
+    key: "id",
+    table: { module: "SIMUL", table: "childOrders" },
   },
   parentOrders: {
     columns: [
@@ -48,60 +71,44 @@ const schemas: { [key: string]: Schema } = {
       { name: "ccy", serverDataType: "string" },
       { name: "childCount", serverDataType: "int" },
       { name: "exchange", serverDataType: "string" },
-      { name: "filledQty", serverDataType: "int" },
+      { name: "filledQty", serverDataType: "double" },
       { name: "id", serverDataType: "string" },
       { name: "idAsInt", serverDataType: "int" },
       { name: "lastUpdate", serverDataType: "long" },
-      { name: "openQty", serverDataType: "int" },
+      { name: "openQty", serverDataType: "double" },
       { name: "price", serverDataType: "double" },
-      { name: "quantity", serverDataType: "int" },
+      { name: "quantity", serverDataType: "double" },
       { name: "ric", serverDataType: "string" },
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
-      { name: "volLimit", serverDataType: "double" },
+      { name: "volLimit", serverDataType: "int" },
     ],
+    key: "id",
     table: { module: "SIMUL", table: "parentOrders" },
   },
   prices: {
     columns: [
-      {
-        name: "ask",
-        label: "Ask",
-        type: {
-          name: "number",
-          renderer: { name: "background", flashStyle: "arrow-bg" },
-          formatting: { decimals: 2, zeroPad: true },
-        },
-        aggregate: "avg",
-      },
-      { name: "askSize", type: "int" },
-      {
-        label: "Bid",
-        name: "bid",
-        type: {
-          name: "number",
-          renderer: { name: "background", flashStyle: "arrow-bg" },
-          formatting: { decimals: 2, zeroPad: true },
-        },
-        aggregate: "avg",
-      },
-      { name: "bidSize", type: "int" },
-      { name: "close", type: "double" },
-      { name: "last", type: "double" },
-      { name: "open", type: "double" },
-      { name: "phase", type: "string" },
-      { name: "ric", type: "string" },
-      { name: "scenario", type: "string" },
+      { name: "ask", serverDataType: "double" },
+      { name: "askSize", serverDataType: "double" }, // type: "int"
+      { name: "bid", serverDataType: "double" },
+      { name: "bidSize", serverDataType: "double" },
+      { name: "close", serverDataType: "double" },
+      { name: "last", serverDataType: "double" },
+      { name: "open", serverDataType: "double" },
+      { name: "phase", serverDataType: "string" },
+      { name: "ric", serverDataType: "string" },
+      { name: "scenario", serverDataType: "string" },
     ],
+    key: "ric",
     table: { module: "SIMUL", table: "prices" },
   },
 };
 
-export type ColumnState = { [key: string]: Schema };
+export type ColumnState = { [key: string]: TableSchema };
 
 export interface ColumnActionUpdate {
   type: "updateColumn";
-  column: KeyedColumnDescriptor;
+  column: ColumnDescriptor;
 }
 
 export type ColumnAction = ColumnActionUpdate;
@@ -124,4 +131,16 @@ export const useSchemas = () => {
     schemas: state,
     dispatch,
   };
+};
+
+export const useSchema = (tableName: VuuTableName) => {
+  const { schemas } = useSchemas();
+  if (schemas[tableName]) {
+    return schemas[tableName];
+  }
+  throw Error(`useSchema no schema for table ${tableName}`);
+};
+
+export const useTableSchema = (tableName: VuuTableName): TableSchema => {
+  return useSchema(tableName);
 };

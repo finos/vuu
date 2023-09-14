@@ -1,24 +1,25 @@
 package org.finos.vuu.core.groupBy
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.tree.TreeSessionTable
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
-import org.finos.vuu.provider.JoinTableProviderImpl
-import org.finos.vuu.viewport.{GroupBy, TreeBuilder}
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table._
+import org.finos.vuu.core.tree.TreeSessionTable
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.provider.JoinTableProviderImpl
+import org.finos.vuu.viewport.GroupBy
+import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 
 object PerfTestBigRoupByMain extends App with StrictLogging {
 
   implicit val clock: Clock = new DefaultClock
-  implicit val lifecycle = new LifecycleContainer
-  implicit val metrics = new MetricsProviderImpl
+  implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-  val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+  val joinProvider   = JoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 
@@ -50,11 +51,13 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val exchange = table.getTableDef.columnForName("exchange")
 
-  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), None, None)
+  val columns = ViewPortColumnCreator.create(groupByTable, table.columns().map(_.name).toList)
+
+  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
 
   for(a <- 0 until 5000){
     logger.info("Starting tree build")
-    val (millis, tree) = timeIt{ builder.build() }
+    val (millis, tree) = timeIt{ builder.buildEntireTree() }
     logger.info(s"Built tree in $millis")
   }
 

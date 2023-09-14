@@ -1,0 +1,18 @@
+{
+  "name": "chrome-devtools-protocol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chrome-launcher": "^0.15.2",
+    "chrome-remote-interface": "^0.32.2",
+    "devtools-protocol": "^0.0.1132318"
+  }
+}

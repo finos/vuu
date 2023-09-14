@@ -3,17 +3,22 @@ import {
   connectToServer,
 } from "@finos/vuu-data";
 import { useEffect, useState } from "react";
-import { ContentStatus } from "@heswell/salt-lab";
+import { ContentStatus } from "@salt-ds/lab";
 
 export const useAutoLoginToVuuServer = (autoLogin = true) => {
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     const connect = async () => {
       try {
-        const authToken = (await vuuAuthenticate("steve", "xyz")) as string;
-        connectToServer("127.0.0.1:8090/websocket", authToken);
+        const authToken = (await vuuAuthenticate(
+          "steve",
+          "xyz",
+          "/api/authn"
+        )) as string;
+        connectToServer({ url: "127.0.0.1:8090/websocket", authToken });
       } catch (e: unknown) {
         if (e instanceof Error) {
+          console.error(e.message);
           setErrorMessage(e.message);
         }
       }

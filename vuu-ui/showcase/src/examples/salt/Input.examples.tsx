@@ -1,10 +1,13 @@
-import React from "react";
-import { FormField, Input } from "@heswell/salt-lab";
+import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
+
+let displaySequence = 1;
 
 export const WithFormField = () => {
   return (
-    <FormField label="ADA compliant label" style={{ width: 292 }}>
+    <FormField style={{ width: 292 }}>
+      <FormFieldLabel>ADA compliant label</FormFieldLabel>
       <Input defaultValue="Value" />
     </FormField>
   );
 };
+WithFormField.displaySequence = displaySequence++;

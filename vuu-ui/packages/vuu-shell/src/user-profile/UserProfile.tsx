@@ -1,47 +1,39 @@
-import React, { useCallback, useRef, useState } from "react";
 import { Button } from "@salt-ds/core";
-import { DropdownBase } from "@heswell/salt-lab";
+import { DropdownBase } from "@salt-ds/lab";
 import { UserSolidIcon } from "@salt-ds/icons";
 import { UserPanel } from "./UserPanel";
 
 import "./UserProfile.css";
+import { VuuUser } from "../shell";
 
-export const UserProfile = ({ layoutId, loginUrl, onNavigate, user }) => {
-  const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
-  const buttonRef = useRef(null);
+export interface UserProfileProps {
+  layoutId: string;
+  loginUrl?: string;
+  onNavigate: (id: string) => void;
+  user: VuuUser;
+}
 
-  const toggle = useCallback(() => {
-    setOpen((isOpen) => {
-      return (openRef.current = !isOpen);
-    });
-    requestAnimationFrame(() => {
-      if (!openRef.current) {
-        requestAnimationFrame(() => {
-          buttonRef.current.focus();
-        });
-      }
-    });
-  }, []);
-
-  const handleNavigate = (id) => {
-    setOpen(false);
+export const UserProfile = ({
+  layoutId,
+  loginUrl,
+  onNavigate,
+  user,
+}: UserProfileProps) => {
+  const handleNavigate = (id: string) => {
     onNavigate(id);
   };
 
   return (
-    <div className="vuuUserProfile">
-      <DropdownBase placement="bottom-end" onCancel={toggle}>
-        <Button ref={buttonRef} variant="secondary">
-          <UserSolidIcon />
-        </Button>
-        <UserPanel
-          layoutId={layoutId}
-          loginUrl={loginUrl}
-          onNavigate={handleNavigate}
-          user={user}
-        />
-      </DropdownBase>
-    </div>
+    <DropdownBase className="vuuUserProfile" placement="bottom-end">
+      <Button variant="secondary">
+        <UserSolidIcon />
+      </Button>
+      <UserPanel
+        layoutId={layoutId}
+        loginUrl={loginUrl}
+        onNavigate={handleNavigate}
+        user={user}
+      />
+    </DropdownBase>
   );
 };

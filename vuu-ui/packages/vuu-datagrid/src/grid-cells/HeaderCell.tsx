@@ -14,7 +14,7 @@ import { SortIndicator, sortStatus } from "./sort-indicator";
 import { useCellResize } from "./useCellResize";
 
 import "./HeaderCell.css";
-import { DataSourceFilter } from "@finos/vuu-data";
+import { DataSourceFilter } from "packages/vuu-data-types";
 
 const classBase = "hwHeaderCell";
 const NO_AGGREGATION = { aggType: -1 };
@@ -25,6 +25,7 @@ const AggTypeLabel = {
   [AggregationType.Sum]: "\u03A3",
   [AggregationType.High]: "High",
   [AggregationType.Low]: "Low",
+  [AggregationType.Distinct]: "Distinct",
   none: "",
 };
 
@@ -87,9 +88,9 @@ export const HeaderCell = function HeaderCell({
     }
   }, [column, dispatchGridAction, gridModel, isResizing]);
 
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
-  const handleContextMenu = (e: MouseEvent) => {
+  const handleContextMenu = (e: MouseEvent<HTMLElement>) => {
     showContextMenu(e, "header", { column });
   };
 

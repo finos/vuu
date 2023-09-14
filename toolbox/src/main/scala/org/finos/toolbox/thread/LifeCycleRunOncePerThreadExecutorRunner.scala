@@ -31,12 +31,12 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
   private var retryExecutor: Option[ResubmitExecutor[T]] = None
   private final val workQueue = new LinkedBlockingQueue[Runnable]()
-  private val selfRef = this;
+  private val selfRef = this
   private final val setOfWork = new ConcurrentSkipListSet[WorkItem[T]]()
 
   override def doStart(): Unit = {
-    logger.info("Starting up viewport runner...")
-    retryExecutor = Some(new ResubmitExecutor[T](countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
+    logger.info(s"Starting up executor runner [$name]...")
+    retryExecutor = Some(new ResubmitExecutor[T](name, countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
       override def newCallable(r: FutureTask[T], t: Throwable): Callable[T] = {
         selfRef.newCallable(r)
       }
@@ -44,11 +44,14 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
         setOfWork.contains(newWorkItem(r))
       }
       override def newWorkItem(r: FutureTask[T]): WorkItem[T] = selfRef.newWorkItem(r)
+
+      override def allowsCoreThreadTimeOut(): Boolean = false
+
     })
     runInBackground()
   }
 
-  override protected def getRunnable() = {
+  override protected def getRunnable(): Runnable = {
     () => {
 
         while (true) {
@@ -64,12 +67,12 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
           })
 
           addedWork.foreach(item => {
-            //println("Adding" + item.hashCode())
+            println("Adding:" + item)
             setOfWork.add(item)
           })
 
           retryExecutor match {
-            case Some(executor) => {
+            case Some(executor) =>
               addedWork.foreach(work => {
                 executor.submit(new Callable[T] {
                   override def call(): T = {
@@ -78,7 +81,6 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
                   }
                 })
               })
-            }
             case None =>
           }
 
@@ -98,9 +100,8 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
   override def doStop(): Unit = {
     retryExecutor match {
-      case Some(executor) => {
+      case Some(executor) =>
         executor.shutdown()
-      }
       case None => //all good
     }
     logger.info(s"[$name] is exiting....")

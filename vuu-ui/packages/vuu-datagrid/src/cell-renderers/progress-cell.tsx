@@ -1,10 +1,11 @@
-import { LinearProgress } from "@heswell/salt-lab";
+import { LinearProgress } from "@salt-ds/lab";
 import cx from "classnames";
 import React from "react";
 
+import { isTypeDescriptor } from "@finos/vuu-utils";
 import { GridCellProps } from "../grid-cells";
-import { isTypeDescriptor } from "../grid-model";
 import "./progress-cell.css";
+import { ColumnTypeRenderer } from "packages/vuu-datagrid-types";
 
 const ProgressCell = React.memo(function ProgressCell({
   column,
@@ -15,12 +16,29 @@ const ProgressCell = React.memo(function ProgressCell({
   let showProgress = false;
   let percentage = -1;
   const value = row[column.key];
-  if (isTypeDescriptor(type) && type.renderer?.associatedField) {
-    const { associatedField } = type.renderer;
+  if (
+    isTypeDescriptor(type) &&
+    (type.renderer as ColumnTypeRenderer)?.associatedField
+  ) {
+    const associatedField = (type.renderer as ColumnTypeRenderer)
+      .associatedField as string;
     const associatedValue = row[columnMap[associatedField]];
     if (typeof value === "number" && typeof associatedValue === "number") {
       percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
       showProgress = isFinite(percentage);
+    } else {
+      // Temp workaround for bug on server that sends aggregated values as strings
+      const floatValue = parseFloat(value as string);
+      if (Number.isFinite(floatValue)) {
+        const floatOtherValue = parseFloat(associatedValue as string);
+        if (Number.isFinite(floatOtherValue)) {
+          percentage = Math.min(
+            Math.round((floatValue / floatOtherValue) * 100),
+            100
+          );
+          showProgress = isFinite(percentage);
+        }
+      }
     }
   }
 
@@ -29,11 +47,7 @@ const ProgressCell = React.memo(function ProgressCell({
       className={cx("vuuDataGridCell", { vuuProgressCell: showProgress })}
       style={{ marginLeft: column.marginLeft, width }}
     >
-      {showProgress ? (
-        <LinearProgress size="small" value={percentage} />
-      ) : (
-        value
-      )}
+      {showProgress ? <LinearProgress value={percentage} /> : value}
     </div>
   );
 });

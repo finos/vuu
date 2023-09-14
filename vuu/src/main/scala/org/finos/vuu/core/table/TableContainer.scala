@@ -1,8 +1,8 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{JoinTableDef, TableDef}
-import org.finos.vuu.core.tree.{TreeSessionTableImpl, SessionTable}
+import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
+import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowSource, ViewPortTable}
@@ -71,8 +71,22 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
 
   def getTables(): Array[ViewPortTable] = {
     val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
-    tableList.map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
+    tableList
+      .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
   }
+
+  def getNonSessionTables: Array[ViewPortTable] = {
+    val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
+    tableList
+      .filter(!isSessionTable(_))
+      .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
+  }
+
+  private def isSessionTable(table: DataTable): Boolean = {
+    table.getTableDef.isInstanceOf[SessionTableDef] || table.getTableDef.isInstanceOf[JoinSessionTableDef] ||
+      table.isInstanceOf[SessionTable]
+  }
+
 
   def getTable(name: String): DataTable = {
     tables.get(name)
@@ -93,9 +107,16 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     table
   }
 
-  def createGroupBySessionTable(source: RowSource, session: ClientSessionId): TreeSessionTableImpl = {
+  def createTreeSessionTable(source: RowSource, session: ClientSessionId): TreeSessionTableImpl = {
     val table = new TreeSessionTableImpl(source, session, joinTableProvider)
     //source.addSessionListener(table)
+    val existing = tables.put(table.name, table)
+    assert(existing == null, "we should never replace an existing table with session id")
+    table
+  }
+
+  def createSimpleSessionTable(source: RowSource, session: ClientSessionId): SimpleSessionDataTable = {
+    val table = new SimpleSessionDataTable(session, source.asTable.getTableDef.asInstanceOf[SessionTableDef], joinTableProvider)
     val existing = tables.put(table.name, table)
     assert(existing == null, "we should never replace an existing table with session id")
     table

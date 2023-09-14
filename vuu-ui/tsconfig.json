@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "noImplicitAny": true,
     "target": "es2016",
     "downlevelIteration": true,
@@ -14,11 +15,16 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "sourceMap": true
   },
-  "include": ["packages/*/src", "sample-apps/*/src", "showcase/src"],
-  "exclude": ["**/*.cy.*", "**/*.spec.*", "**/*.test.*"]
+  "include": [
+    "packages/*/src", 
+    "sample-apps/*/src", 
+    "showcase/src", 
+    "sample-apps/*/index.ts",
+    "sample-apps/*/src"
+  ],
+  "exclude": ["**/*.cy.*", "**/*.test.*"]
 }

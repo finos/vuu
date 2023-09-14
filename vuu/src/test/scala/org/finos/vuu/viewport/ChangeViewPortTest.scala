@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
-import org.finos.vuu.core.table.{Columns, TableContainer}
+import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -19,7 +19,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
@@ -30,9 +30,9 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
     Scenario("Change the columns check view port reflects this"){
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime = 1437728400000l//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
       val ordersDef = TableDef(
         name = "orders",
@@ -54,7 +54,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
         joinFields = Seq()
       )
 
-      val joinProvider   = JoinTableProviderImpl()// new EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -84,7 +84,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
       val outQueue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask").map(orderPrices.getTableDef.columnForName(_)).toList
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_)).toList
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -95,12 +95,12 @@ class ChangeViewPortTest extends AnyFeatureSpec{
       assertVpEq(combinedUpdates){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000l,100       ,220.0     ,222.0     ),
-          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000l,100       ,500.0     ,501.0     )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100       ,220.0     ,222.0     ),
+          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,501.0     )
         )
       }
 
-      val vpcolumns2 = List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open").map(orderPrices.getTableDef.columnForName(_)).toList
+      val vpcolumns2 = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))//.map(orderPrices.getTableDef.columnForName(_)).toList
 
       val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2)
 
@@ -111,12 +111,12 @@ class ChangeViewPortTest extends AnyFeatureSpec{
       assertVpEq(combinedUpdates2){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000l,100       ,220.0     ,222.0     ,30        ,null      ),
-          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000l,100       ,500.0     ,501.0     ,40        ,null      )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100       ,220.0     ,222.0     ,30        ,null      ),
+          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,501.0     ,40        ,null      )
         )
       }
 
-      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = VOD.L") )
+      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = \"VOD.L\"") )
 
       viewPortContainer.runOnce()
 

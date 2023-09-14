@@ -1,10 +1,14 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Modules
 
-Modules are how you describe the tables, providers and rpc calls that you want to add to Vuu. They are intended to be logical groupings of functionality that can be shared. 
+<SvgDottySeparator style={{marginBottom: 32}}/>
+
+Modules are how we describe tables, providers and RPC calls that we want to add to Vuu. Each module is a logical unit of functionality that can be shared.
 
 ## How to define a module
 
-The best place to start with defining a module is to look at the existing ones provided in the core infra. 
+The best place to start with defining a module is to look at the existing ones provided in the core infra.
 
 ## An example module definition:
 
@@ -31,17 +35,16 @@ object VuiStateModule extends DefaultModule {
 }
 ```
 
-Above i s the module which provides storage and retrieval of UI state across sessions. As you can see there are a few key things that you need to provide when adding a module. 
+Above is the module which provides storage and retrieval of UI state across sessions. As you can see there are a few key things that you need to provide when adding a module.
 
 1. Name - This is a unique name in the deployment
 2. An apply function that defines zero or more tables, providers, rest services, rpc services etc..
 
-In this example we define 1 table, "uiState", with the primary key "uniqueId." we also have three additional fields "user", "id" and "lastUpdate". 
+The `addTable()` builder method defines a new table, named `uiState`, with the primary key `uniqueId`. Besides the primary key, the table has three data fields - `user`, `id` and `lastUpdate`.
 
-The provider as discussed in a previous section, is responsible from sourcing data from somewhere and inserting the data or removing the data from the data table. 
+The last argument of `addTable()` is a factory function, creating a [`provider`](providers.md) instance, that will be responsible from sourcing data from somewhere and updating our table by inserting/updating/removing rows.
 
-If you look at the source code for the provider you can see that it uses a utility class VuiStateStore to retrieve the versions of the UI that have been saved. It also stores a magic
-head state which is the current live state. 
+The `VuiStateStoreProvider` implementation uses a utility class `VuiStateStore` to retrieve the versions of the UI that have been saved. It also stores a magic head state which is the current live state.
 
 ```scala
 class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
@@ -56,14 +59,13 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
     val states = store.getAll()
 
     for(state <- states){
-
-      table.processUpdate(state.uniqueId, RowWithData( state.uniqueId, Map("uniqueId" ->  state.uniqueId,
+      val dataMap = Map(
+        "uniqueId" -> state.uniqueId,
         "user" -> state.user,
         "id" -> state.id,
-        "lastUpdate" -> state.lastUpdate )
-      ),
-        clock.now()
+        "lastUpdate" -> state.lastUpdate
       )
+      table.processUpdate(state.uniqueId, RowWithData(state.uniqueId, dataMap), clock.now())
     }
 
     for(oldState <- lastState){
@@ -71,7 +73,7 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
         table.processDelete(oldState.uniqueId)
       }
     }
-v
+
     lastState = states
   }
 
@@ -84,7 +86,7 @@ v
 ```
 
 In the module we also define a rest service. This is how the UI interacts with the state store. THe rest service is exposed via the underlying Vert.x
-infrastructure. 
+infrastructure.
 
 ```scala
 class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) extends RestService {
@@ -177,7 +179,7 @@ class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) exten
 So you can see from this example we have:
 
 1. A storage mechanism, the VuiStateStore
-2. An update and retrieve mechanism, via the REST service. 
-3. A table definition, that exposes the state store to the UI via the table mechanism. In this case this is largely for auditing purposes. 
+2. An update and retrieve mechanism, via the REST service.
+3. A table definition, that exposes the state store to the UI via the table mechanism. In this case this is largely for auditing purposes.
 
-From here we can move onto to a ore complicated example. 
+From here we can move onto to a ore complicated example.

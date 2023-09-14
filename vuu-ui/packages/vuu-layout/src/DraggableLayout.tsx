@@ -1,26 +1,34 @@
-import classnames from 'classnames';
-import { useRef } from 'react';
-import { registerComponent } from './registry/ComponentRegistry';
+import classnames from "classnames";
+import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
+import { registerComponent } from "./registry/ComponentRegistry";
 
-import './DraggableLayout.css';
+import "./DraggableLayout.css";
 
+export interface DraggableLayoutProps extends HTMLAttributes<HTMLDivElement> {
+  dropTarget?: boolean;
+  resizeable?: boolean;
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const DraggableLayout = function DraggableLayout(props: any) {
-  const sourceRef = useRef();
-  sourceRef.current = props;
-
-  const { className: classNameProp, id, style } = props;
-
-  const className = classnames('DraggableLayout', classNameProp);
+export const DraggableLayout = forwardRef(function DraggableLayout(
+  {
+    children,
+    className: classNameProp,
+    dropTarget,
+    resizeable: _, // ignore, its just a marker used by the layout system
+    ...htmlAttributes
+  }: DraggableLayoutProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>
+) {
+  const className = classnames("DraggableLayout", classNameProp);
   return (
-    <div className={className} id={id} style={style}>
-      {props.children}
+    <div className={className} ref={forwardedRef} {...htmlAttributes}>
+      {children}
     </div>
   );
-};
+});
 
-const componentName = 'DraggableLayout';
+const componentName = "DraggableLayout";
 
 DraggableLayout.displayName = componentName;
 
-registerComponent(componentName, DraggableLayout, 'container');
+registerComponent(componentName, DraggableLayout, "container");

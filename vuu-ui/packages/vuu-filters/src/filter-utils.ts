@@ -1,20 +1,23 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { partition, Row } from "@finos/vuu-utils";
 import {
   AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  FilterWithPartialClause,
+  NumericFilterClauseOp,
+} from "@finos/vuu-filter-types";
+import {
+  extractFilterForColumn,
   isAndFilter,
-  isFilterClause,
+  isCompleteFilter,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
   isOrFilter,
   isSingleValueFilter,
-  MultiClauseFilter,
-} from "./filterTypes";
+  partition,
+} from "@finos/vuu-utils";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -38,28 +41,15 @@ export type FilterType =
   | "or"
   | "SW";
 
-export const SET_FILTER_DATA_COLUMNS = [
-  { name: "name", flex: 1 },
-  { name: "count", width: 40, type: "number" },
-  { name: "totalCount", width: 40, type: "number" },
-];
-
-export const BIN_FILTER_DATA_COLUMNS = [
-  { name: "bin" },
-  { name: "count" },
-  { name: "bin-lo" },
-  { name: "bin-hi" },
-];
-
 export const filterClauses = (
-  filter: Filter | null,
-  clauses: FilterClause[] = []
-) => {
+  filter: Partial<Filter> | FilterWithPartialClause | null,
+  clauses: Partial<FilterClause>[] = []
+): Partial<FilterClause>[] => {
   if (filter) {
     if (isMultiClauseFilter(filter)) {
       filter.filters.forEach((f) => clauses.push(...filterClauses(f)));
     } else {
-      clauses.push(filter);
+      clauses.push(filter as Partial<FilterClause>);
     }
   }
   return clauses;
@@ -71,6 +61,56 @@ type AddFilterOptions = {
 
 const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
   combineWith: "and",
+};
+
+/**
+  Allows an empty FilterClause to be appended to an existing filter - for use
+  in filter editing UI only.
+*/
+export const addClause = (
+  existingFilter: Filter,
+  clause: Partial<Filter>,
+  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
+): FilterWithPartialClause => {
+  if (
+    isMultiClauseFilter(existingFilter) &&
+    existingFilter.op === combineWith
+  ) {
+    if (isCompleteFilter(clause)) {
+      return {
+        ...existingFilter,
+        filters: existingFilter.filters.concat(clause),
+      };
+    } else {
+      throw Error(
+        "filter-utils, replaceFilter, only a valid clause can be added to a filter"
+      );
+    }
+  } else {
+    return {
+      op: combineWith,
+      filters: [existingFilter, clause],
+    };
+  }
+};
+
+/**
+  Replaces last clause in an incomplete Filter. Intended for filter editing UI 
+*/
+export const replaceClause = (
+  existingFilter: FilterWithPartialClause | Partial<Filter> | undefined,
+  clause: Partial<FilterClause>
+): Filter | Partial<Filter> => {
+  if (isMultiClauseFilter(existingFilter)) {
+    return {
+      ...existingFilter,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      filters: existingFilter.filters.slice(0, -1).concat(clause),
+    };
+  } else {
+    return clause;
+  }
 };
 
 export const addFilter = (
@@ -117,7 +157,7 @@ export const addFilter = (
     return filter;
   }
 
-  if (sameColumn(existingFilter, filter)) {
+  if (canMerge(existingFilter, filter)) {
     return merge(existingFilter, filter);
   }
 
@@ -132,20 +172,6 @@ const includesNoValues = (filter?: Filter | null): boolean => {
     return true;
   }
   return isAndFilter(filter) && filter.filters.some((f) => includesNoValues(f));
-};
-
-export const filterAsQuery = (f: Filter, namedFilters = {}): string => {
-  if (isMultiClauseFilter(f)) {
-    const [clause1, clause2] = f.filters;
-    return `${filterAsQuery(clause1, namedFilters)} ${f.op} ${filterAsQuery(
-      clause2,
-      namedFilters
-    )}`;
-  }
-  if (isMultiValueFilter(f)) {
-    return `${f.column} ${f.op} [${f.values.join(",")}]`;
-  }
-  return `${f.column} ${f.op} ${f.value}`;
 };
 
 interface CommonFilter {
@@ -163,8 +189,6 @@ export interface OtherFilter extends CommonFilter {
   type: FilterType;
   values?: any[];
 }
-
-export type RowFilterFn = (row: Row) => boolean;
 
 const includesAllValues = (filter?: Filter | null): boolean => {
   if (!filter) {
@@ -194,19 +218,32 @@ const merge = (f1: Filter, f2: Filter): Filter | undefined => {
         ),
       ],
     };
-  }
-  if (f1.op === STARTS_WITH && f2.op === STARTS_WITH) {
+  } else if (isInFilter(f1) && f2.op === EQUALS) {
     return {
-      op: OR,
-      filters: [f1, f2],
+      ...f1,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      values: f1.values.concat([f2.value]),
+    };
+  } else if (f1.op === EQUALS && f2.op === EQUALS) {
+    return {
+      column: f1.column,
+      op: IN,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      values: [f1.value, f2.value],
     };
   }
   return f2;
 };
 
 const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
-  const equivalentType = ({ op: t1 }: Filter, { op: t2 }: Filter) => {
-    return t1 === t2 || t1[0] === t2[0];
+  const equivalentType = ({ op: op1 }: Filter, { op: op2 }: Filter) => {
+    return (
+      op1 === op2 ||
+      (op1[0] === ">" && op2[0] === ">") ||
+      (op1[0] === "<" && op2[0] === "<")
+    );
   };
   const replaces = (existingFilter: Filter, replacementFilter: Filter) => {
     return (
@@ -219,22 +256,6 @@ const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
       replaces(existingFilter, replacementFilter)
     ) === false;
   return existingFilters.filter(stillApplicable).concat(replacementFilters);
-};
-
-export const removeColumnFromFilter = (
-  column: KeyedColumnDescriptor,
-  filter: Filter
-): [Filter | undefined, string] => {
-  if (isMultiClauseFilter(filter)) {
-    const [clause1, clause2] = filter.filters;
-    if (clause1.column === column.name) {
-      return [clause2, filterAsQuery(clause2)];
-    }
-    if (clause2.column === column.name) {
-      return [clause1, filterAsQuery(clause1)];
-    }
-  }
-  return [undefined, ""];
 };
 
 export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
@@ -255,19 +276,19 @@ export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
 };
 
 export const splitFilterOnColumn = (
-  filter: Filter | null,
-  columnName: string
-): [Filter | null, Filter | null] => {
+  columnName: string,
+  filter?: Filter
+): [Filter | undefined, Filter | undefined] => {
   if (!filter) {
-    return [null, null];
+    return [undefined, undefined];
   }
   if (filter.column === columnName) {
-    return [filter, null];
+    return [filter, undefined];
   }
   if (filter.op !== AND) {
-    return [null, filter];
+    return [undefined, filter];
   }
-  const [[columnFilter = null], filters] = partition(
+  const [[columnFilter = undefined], filters] = partition(
     (filter as AndFilter).filters,
     (f) => f.column === columnName
   );
@@ -286,45 +307,9 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
   return { ...filter, column };
 };
 
-export const extractFilterForColumn = (
-  filter: Filter | undefined,
-  columnName: string
-) => {
-  if (isMultiClauseFilter(filter)) {
-    return collectFiltersForColumn(filter, columnName);
-  }
-  if (isFilterClause(filter)) {
-    return filter.column === columnName ? filter : undefined;
-  }
-  return undefined;
-};
-
-const collectFiltersForColumn = (
-  filter: MultiClauseFilter,
-  columnName: string
-) => {
-  const { filters, op } = filter;
-  const results: Filter[] = [];
-  filters.forEach((filter) => {
-    const ffc = extractFilterForColumn(filter, columnName);
-    if (ffc) {
-      results.push(ffc);
-    }
-  });
-  if (results.length === 0) {
-    return undefined;
-  } else if (results.length === 1) {
-    return results[0];
-  }
-  return {
-    op,
-    filters: results,
-  };
-};
-
 export const filterIncludesColumn = (
   filter: Filter,
-  column: KeyedColumnDescriptor
+  column: ColumnDescriptor
 ): boolean => {
   if (!filter) {
     return false;
@@ -369,7 +354,10 @@ const removeFilterForColumn = (
   return sourceFilter;
 };
 
-const sameColumn = (f1: Filter, f2: Filter) => f1.column === f2.column;
+const canMerge = (f1: Filter, f2: Filter) =>
+  f1.column === f2.column &&
+  (f1.op === "=" || f1.op === "in") &&
+  (f2.op === "=" || f2.op === "in");
 
 const sameValues = <T>(arr1: T[], arr2: T[]) => {
   if (arr1 === arr2) {
@@ -387,7 +375,7 @@ export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
   if (!strict) {
     return true;
   }
-  if (f1 && f2 && sameColumn(f1, f2)) {
+  if (f1 && f2 && canMerge(f1, f2)) {
     return (
       f1.op === f2.op &&
       ((isSingleValueFilter(f1) &&
@@ -437,4 +425,40 @@ export const updateFilter = (
     return newFilter;
   }
   return filter;
+};
+
+export const getTypeaheadFilter = (
+  column: string,
+  filterValues: string[],
+  isStartsWithFilter?: boolean
+): Filter | undefined => {
+  if (filterValues.length === 0) {
+    return undefined;
+  }
+
+  if (isStartsWithFilter) {
+    // multiple starts with filters not currently supported
+    const startsWith = filterValues[0].substring(0, filterValues[0].length - 3);
+    return {
+      column,
+      op: "starts",
+      value: `"${startsWith}"`,
+    };
+  }
+
+  return {
+    column,
+    op: "in",
+    values: filterValues.map((value) => `"${value}"`),
+  };
+};
+
+export const getNumericFilter = (
+  column: string,
+  op?: NumericFilterClauseOp,
+  value?: number
+): FilterClause | undefined => {
+  if (op === undefined) return undefined;
+  if (value === undefined || isNaN(value)) return undefined;
+  return { column, op, value };
 };

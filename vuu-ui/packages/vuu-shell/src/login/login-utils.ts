@@ -1,16 +1,22 @@
-const getCookieValue = (name: string) =>
-  document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${name}=`))
-    ?.split("=")[1];
+import { getCookieValue } from "@finos/vuu-utils";
 
-export const getAuthDetailsFromCookies = () => {
-  const username = getCookieValue("vuu-username");
-  const token = getCookieValue("vuu-auth-token");
+export const getAuthModeFromCookies = (): string => {
+  const mode = getCookieValue("vuu-auth-mode") as string;
+  return mode ?? "";
+};
+
+export const getAuthDetailsFromCookies = (): [string, string] => {
+  const username = getCookieValue("vuu-username") as string;
+  const token = getCookieValue("vuu-auth-token") as string;
   return [username, token];
 };
 
-export const redirectToLogin = (loginUrl = "/login.html") => {
+const getDefaultLoginUrl = () => {
+  const authMode = getAuthModeFromCookies();
+  return authMode === "login" ? "login.html" : "demo.html";
+};
+
+export const redirectToLogin = (loginUrl = getDefaultLoginUrl()) => {
   window.location.href = loginUrl;
 };
 

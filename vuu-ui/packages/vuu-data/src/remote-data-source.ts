@@ -1,58 +1,69 @@
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { Selection } from "@finos/vuu-datagrid-types";
 import {
-  VuuGroupBy,
+  ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuGroupBy,
   VuuRange,
-  VuuTable,
   VuuSort,
-  VuuMenuRpcRequest,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
-import { EventEmitter, uuid } from "@finos/vuu-utils";
-import { ConnectionManager, ServerAPI } from "./connection-manager";
+
+import { parseFilter } from "@finos/vuu-filter-parser";
 import {
+  debounce,
+  EventEmitter,
+  itemsOrOrderChanged,
+  logger,
+  throttle,
+  uuid,
+} from "@finos/vuu-utils";
+import { getServerAPI, ServerAPI } from "./connection-manager";
+import {
+  configChanged,
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceFilter,
-  DataSourceProps,
+  DataSourceConfig,
+  DataSourceConstructorProps,
+  DataSourceEvents,
+  isDataSourceConfigMessage,
+  OptimizeStrategy,
   SubscribeCallback,
   SubscribeProps,
+  vanillaConfig,
+  withConfigDefaults,
+  WithFullConfig,
 } from "./data-source";
-import { getServerUrl } from "./hooks/useServerConnection";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { LinkWithLabel } from "./server-proxy/server-proxy";
 
-// const log = (message: string, ...rest: unknown[]) => {
-//   console.log(
-//     `%c[RemoteDataSource] ${message}`,
-//     "color: brown; font-weight: bold",
-//     ...rest
-//   );
-// };
+type RangeRequest = (range: VuuRange) => void;
+
+const { info } = logger("RemoteDataSource");
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export class RemoteDataSource extends EventEmitter implements DataSource {
+export class RemoteDataSource
+  extends EventEmitter<DataSourceEvents>
+  implements DataSource
+{
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private url: string;
-  private visualLink: string;
-  private status: string;
-  private disabled: boolean;
-  private suspended: boolean;
-  private initialGroupBy: VuuGroupBy = [];
-  private initialRange: VuuRange = { from: 0, to: 0 };
-  private initialSort: VuuSort = { sortDefs: [] };
-  private initialFilter: DataSourceFilter = { filter: "" };
-  private initialAggregations: any;
-  private pendingServer: any;
-  private clientCallback: any;
+  private status = "initialising";
+  private clientCallback: SubscribeCallback | undefined;
+  private configChangePending: DataSourceConfig | undefined;
+  private rangeRequest: RangeRequest;
 
-  #filter: DataSourceFilter = { filter: "" };
+  #config: WithFullConfig = vanillaConfig;
   #groupBy: VuuGroupBy = [];
-  #sort: VuuSort = { sortDefs: [] };
+  #optimize: OptimizeStrategy = "throttle";
+  #range: VuuRange = { from: 0, to: 0 };
+  #selectedRowsCount = 0;
+  #size = 0;
+  #title: string | undefined;
 
-  public columns: string[];
-  public rowCount: number | undefined;
   public table: VuuTable;
   public viewport: string | undefined;
 
@@ -64,104 +75,86 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     groupBy,
     sort,
     table,
-    configUrl,
-    serverUrl,
+    title,
     viewport,
-    "visual-link": visualLink,
-  }: DataSourceProps) {
+    visualLink,
+  }: DataSourceConstructorProps) {
     super();
+
+    if (!table)
+      throw Error("RemoteDataSource constructor called without table");
+
     this.bufferSize = bufferSize;
     this.table = table;
-    this.columns = columns;
     this.viewport = viewport;
 
-    this.url = serverUrl ?? configUrl ?? getServerUrl();
-    this.visualLink = visualLink;
+    this.#config = {
+      ...this.#config,
+      aggregations: aggregations || this.#config.aggregations,
+      columns: columns || this.#config.columns,
+      filter: filter || this.#config.filter,
+      groupBy: groupBy || this.#config.groupBy,
+      sort: sort || this.#config.sort,
+      visualLink: visualLink || this.#config.visualLink,
+    };
 
-    this.status = "initialising";
-    this.disabled = false;
-    this.suspended = false;
-
-    if (aggregations) {
-      this.initialAggregations = aggregations;
-    }
-    if (filter) {
-      this.initialFilter = filter;
-    }
-    if (groupBy) {
-      this.initialGroupBy = groupBy;
-    }
-    if (sort) {
-      this.initialSort = sort;
-    }
-
-    if (!this.url) {
-      throw Error(
-        "RemoteDataSource expects serverUrl or configUrl as argument or that serverUrl has already been set"
-      );
-    }
-
-    this.pendingServer = ConnectionManager.connect(this.url);
+    this.#title = title;
+    this.rangeRequest = this.throttleRangeRequest;
   }
 
   async subscribe(
     {
       viewport = this.viewport ?? uuid(),
-      table = this.table,
-      columns = this.columns || [],
-      aggregations = this.initialAggregations,
-      range = this.initialRange,
-      sort = this.initialSort,
-      groupBy = this.initialGroupBy,
-      filter = this.initialFilter,
+      columns,
+      aggregations,
+      range,
+      sort,
+      groupBy,
+      filter,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (!table) throw Error("RemoteDataSource subscribe called without table");
+    if (this.status !== "initialising") {
+      throw Error(
+        "VuuDataSource subscribe should not be called more than once"
+      );
+    }
 
     this.clientCallback = callback;
+
+    if (aggregations || columns || filter || groupBy || sort) {
+      this.#config = {
+        ...this.#config,
+        aggregations: aggregations || this.#config.aggregations,
+        columns: columns || this.#config.columns,
+        filter: filter || this.#config.filter,
+        groupBy: groupBy || this.#config.groupBy,
+        sort: sort || this.#config.sort,
+      };
+    }
 
     // store the range before we await the server. It's is possible the
     // range will be updated from the client before we have been able to
     // subscribe. This ensures we will subscribe with latest value.
-    this.initialFilter = filter;
-    this.initialGroupBy = groupBy;
-    this.initialRange = range;
-    this.initialSort = sort;
-
-    if (this.status !== "initialising") {
-      //TODO check if subscription details are still the same
-      return;
+    if (range) {
+      this.#range = range;
     }
-
-    // console.log(
-    //   `%c[remoteDataSource] ${this.viewport} subscribe
-    //     RemoteDataSource bufferSize ${this.bufferSize}
-    //     range ${JSON.stringify(range)}
-    //     status ${this.status}`,
-    //   "color:green;font-weight: bold;"
-    // );
 
     this.status = "subscribing";
     this.viewport = viewport;
-    this.table = table;
-    this.columns = columns;
 
-    this.server = await this.pendingServer;
+    this.server = await getServerAPI();
 
     const { bufferSize } = this;
+
     this.server?.subscribe(
       {
-        aggregations,
+        ...this.#config,
         bufferSize,
-        columns,
-        filter: this.initialFilter,
-        groupBy: this.initialGroupBy,
         viewport,
-        table,
-        range: this.initialRange,
-        sort: this.initialSort,
-        visualLink: this.visualLink,
+        table: this.table,
+        range: this.#range,
+        title: this.#title,
       },
       this.handleMessageFromServer
     );
@@ -170,36 +163,54 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.status = "subscribed";
-      // this.serverViewportId = message.serverViewportId;
-      this.emit("subscribed", message);
-      const { clientViewportId, ...rest } = message;
-      this.clientCallback(rest);
+      this.clientCallback?.(message);
     } else if (message.type === "disabled") {
       this.status = "disabled";
     } else if (message.type === "enabled") {
       this.status = "enabled";
+    } else if (isDataSourceConfigMessage(message)) {
+      // This is an ACK for a CHANGE_VP message. Nothing to do here. We need
+      // to wait for data to be returned before we can consider the change
+      // to be in effect.
+      return;
+    } else if (message.type === "debounce-begin") {
+      this.optimize = "debounce";
     } else {
       if (
         message.type === "viewport-update" &&
         message.size !== undefined &&
-        message.size !== this.rowCount
+        message.size !== this.#size
       ) {
-        this.rowCount = message.size;
+        this.#size = message.size;
+        this.emit("resize", message.size);
       }
-      this.clientCallback(message);
+      // This is used to remove any progress indication from the UI. We wait for actual data rather than
+      // just the CHANGE_VP_SUCCESS ack as there is often a delay between receiving the ack and the data.
+      // It may be a SIZE only message, eg in the case of removing a groupBy column from a multi-column
+      // groupby, where no tree nodes are expanded.
+      if (this.configChangePending) {
+        this.setConfigPending();
+      }
+      this.clientCallback?.(message);
+      if (this.optimize === "debounce") {
+        this.revertDebounce();
+      }
     }
   };
 
   unsubscribe() {
+    info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
     this.server?.destroy(this.viewport);
+    this.removeAllListeners();
   }
 
   suspend() {
+    info?.(`suspend #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
-      this.suspended = true;
+      this.status = "suspended";
       this.server?.send({
         type: "suspend",
         viewport: this.viewport,
@@ -209,21 +220,25 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   resume() {
-    if (this.viewport && this.suspended) {
-      // should we await this ?s
-      this.server?.send({
-        type: "resume",
-        viewport: this.viewport,
-      });
-      this.suspended = false;
+    info?.(`resume #${this.viewport}, current status ${this.status}`);
+    if (this.viewport) {
+      if (this.status === "disabled" || this.status === "disabling") {
+        this.enable();
+      } else if (this.status === "suspended") {
+        this.server?.send({
+          type: "resume",
+          viewport: this.viewport,
+        });
+        this.status = "subscribed";
+      }
     }
     return this;
   }
 
   disable() {
+    info?.(`disable #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
       this.status = "disabling";
-      this.disabled = true;
       this.server?.send({
         viewport: this.viewport,
         type: "disable",
@@ -233,52 +248,23 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
   }
 
   enable() {
-    if (this.viewport && this.disabled) {
+    info?.(`enable #${this.viewport}, current status ${this.status}`);
+    if (
+      this.viewport &&
+      (this.status === "disabled" || this.status === "disabling")
+    ) {
       this.status = "enabling";
-      // should we await this ?s
       this.server?.send({
         viewport: this.viewport,
         type: "enable",
       });
-      this.disabled = false;
     }
     return this;
   }
 
-  setSubscribedColumns(columns: string[]) {
-    if (this.viewport) {
-      this.columns = columns;
-
-      const message = {
-        viewport: this.viewport,
-        type: "setColumns",
-        columns,
-      } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
-    }
-  }
-
-  setRange(from: number, to: number) {
-    if (this.viewport) {
-      // log(`setRange ${from} - ${to}`);
-      const message = {
-        viewport: this.viewport,
-        type: "setViewRange",
-        range: { from, to },
-      } as const;
-
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        console.log(`set initial range to ${from} ${to}`);
-        this.initialRange = { from, to };
-      }
-    }
-  }
-
-  select(selected: number[]) {
+  select(selected: Selection) {
+    console.log({ selected });
+    this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
@@ -288,37 +274,8 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
-  selectAll() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectAll",
-      });
-    }
-  }
-
-  selectNone() {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "selectNone",
-      });
-    }
-  }
-
-  aggregate(aggregations: VuuAggregation[]) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "aggregate",
-        aggregations,
-      });
-    }
-  }
-
   openTreeNode(key: string) {
     if (this.viewport) {
-      // log(`openTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "openTreeNode",
@@ -329,7 +286,6 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
 
   closeTreeNode(key: string) {
     if (this.viewport) {
-      // log(`closeTreeNode ${key}`);
       this.server?.send({
         viewport: this.viewport,
         type: "closeTreeNode",
@@ -338,13 +294,165 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
     }
   }
 
+  get optimize() {
+    return this.#optimize;
+  }
+
+  set optimize(optimize: OptimizeStrategy) {
+    if (optimize !== this.#optimize) {
+      this.#optimize = optimize;
+      switch (optimize) {
+        case "none":
+          this.rangeRequest = this.rawRangeRequest;
+          break;
+        case "debounce":
+          this.rangeRequest = this.debounceRangeRequest;
+          break;
+        case "throttle":
+          this.rangeRequest = this.throttleRangeRequest;
+          break;
+      }
+      this.emit("optimize", optimize);
+    }
+  }
+
+  private revertDebounce = debounce(() => {
+    this.optimize = "throttle";
+  }, 100);
+
+  get selectedRowsCount() {
+    return this.#selectedRowsCount;
+  }
+
+  get size() {
+    return this.#size;
+  }
+
+  get range() {
+    return this.#range;
+  }
+
+  set range(range: VuuRange) {
+    this.#range = range;
+    this.rangeRequest(range);
+  }
+
+  private rawRangeRequest: RangeRequest = (range) => {
+    if (this.viewport && this.server) {
+      this.server.send({
+        viewport: this.viewport,
+        type: "setViewRange",
+        range,
+      });
+    }
+  };
+
+  private debounceRangeRequest: RangeRequest = debounce((range: VuuRange) => {
+    if (this.viewport && this.server) {
+      this.server.send({
+        viewport: this.viewport,
+        type: "setViewRange",
+        range,
+      });
+    }
+  }, 50);
+
+  private throttleRangeRequest: RangeRequest = throttle((range: VuuRange) => {
+    if (this.viewport && this.server) {
+      this.server.send({
+        viewport: this.viewport,
+        type: "setViewRange",
+        range,
+      });
+    }
+  }, 80);
+
+  get config() {
+    return this.#config;
+  }
+
+  set config(config: DataSourceConfig | undefined) {
+    if (configChanged(this.#config, config)) {
+      if (config) {
+        const newConfig: DataSourceConfig =
+          config?.filter?.filter && config?.filter.filterStruct === undefined
+            ? {
+                ...config,
+                filter: {
+                  filter: config.filter.filter,
+                  filterStruct: parseFilter(config.filter.filter),
+                },
+              }
+            : config;
+
+        this.#config = withConfigDefaults(newConfig);
+
+        if (this.#config && this.viewport && this.server) {
+          if (config) {
+            this.server?.send({
+              viewport: this.viewport,
+              type: "config",
+              config: this.#config,
+            });
+          }
+        }
+        this.emit("config", this.#config);
+      }
+    }
+  }
+
+  //TODO replace all these individual server calls with calls to setConfig
+  get columns() {
+    return this.#config.columns;
+  }
+
+  set columns(columns: string[]) {
+    this.#config = {
+      ...this.#config,
+      columns,
+    };
+    if (this.viewport) {
+      const message = {
+        viewport: this.viewport,
+        type: "setColumns",
+        columns,
+      } as const;
+      if (this.server) {
+        this.server.send(message);
+      }
+    }
+    this.emit("config", this.#config);
+  }
+
+  get aggregations() {
+    return this.#config.aggregations;
+  }
+
+  set aggregations(aggregations: VuuAggregation[]) {
+    this.#config = {
+      ...this.#config,
+      aggregations,
+    };
+    if (this.viewport) {
+      this.server?.send({
+        viewport: this.viewport,
+        type: "aggregate",
+        aggregations,
+      });
+    }
+    this.emit("config", this.#config);
+  }
+
   get sort() {
-    return this.#sort;
+    return this.#config.sort;
   }
 
   set sort(sort: VuuSort) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#sort = sort;
+    this.#config = {
+      ...this.#config,
+      sort,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
@@ -353,20 +461,21 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       } as const;
       if (this.server) {
         this.server.send(message);
-      } else {
-        this.initialSort = sort;
       }
     }
+    this.emit("config", this.#config);
   }
 
   get filter() {
-    return this.#filter;
+    return this.#config.filter;
   }
 
   set filter(filter: DataSourceFilter) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#filter = filter;
-    console.log(`RemoteDataSource ${JSON.stringify(filter)}`);
+    this.#config = {
+      ...this.#config,
+      filter,
+    };
     if (this.viewport) {
       const message = {
         viewport: this.viewport,
@@ -375,65 +484,117 @@ export class RemoteDataSource extends EventEmitter implements DataSource {
       } as const;
       if (this.server) {
         this.server.send(message);
-      } else {
-        this.initialFilter = filter;
       }
     }
+    this.emit("config", this.#config);
   }
 
   get groupBy() {
-    return this.#groupBy;
+    return this.#config.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    this.#groupBy = groupBy;
-    if (this.viewport) {
-      const message = {
-        viewport: this.viewport,
-        type: "groupBy",
+    if (itemsOrOrderChanged(this.groupBy, groupBy)) {
+      const wasGrouped = this.#groupBy.length > 0;
+      this.#config = {
+        ...this.#config,
         groupBy,
-      } as const;
+      };
+      if (this.viewport) {
+        const message = {
+          viewport: this.viewport,
+          type: "groupBy",
+          groupBy: this.#config.groupBy,
+        } as const;
 
-      if (this.server) {
-        this.server.send(message);
-      } else {
-        this.initialGroupBy = groupBy;
+        if (this.server) {
+          this.server.send(message);
+        }
+      }
+      if (!wasGrouped && groupBy.length > 0 && this.viewport) {
+        this.clientCallback?.({
+          clientViewportId: this.viewport,
+          mode: "batch",
+          type: "viewport-update",
+          size: 0,
+          rows: [],
+        });
+      }
+      this.emit("config", this.#config);
+      this.setConfigPending({ groupBy });
+    }
+  }
+
+  get title() {
+    return this.#title;
+  }
+
+  set title(title: string | undefined) {
+    this.#title = title;
+    if (this.viewport && title) {
+      this.server?.send({
+        type: "setTitle",
+        title,
+        viewport: this.viewport,
+      });
+    }
+  }
+
+  get visualLink() {
+    return this.#config.visualLink;
+  }
+
+  set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    this.#config = {
+      ...this.#config,
+      visualLink,
+    };
+
+    if (visualLink) {
+      const {
+        parentClientVpId,
+        link: { fromColumn, toColumn },
+      } = visualLink;
+
+      if (this.viewport) {
+        this.server?.send({
+          viewport: this.viewport,
+          type: "createLink",
+          parentClientVpId,
+          parentColumnName: toColumn,
+          childColumnName: fromColumn,
+        });
+      }
+    } else {
+      if (this.viewport) {
+        this.server?.send({
+          type: "removeLink",
+          viewport: this.viewport,
+        });
       }
     }
+    this.emit("config", this.#config);
   }
 
-  createLink({ parentVpId, link: { fromColumn, toColumn } }: LinkWithLabel) {
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "createLink",
-        parentVpId: parentVpId,
-        // childVpId: this.serverViewportId,
-        parentColumnName: toColumn,
-        childColumnName: fromColumn,
-      });
+  private setConfigPending(config?: DataSourceConfig) {
+    const pendingConfig = this.configChangePending;
+    this.configChangePending = config;
+
+    if (config !== undefined) {
+      this.emit("config", config, false);
+    } else {
+      this.emit("config", pendingConfig, true);
     }
   }
 
-  removeLink() {
-    if (this.viewport) {
-      this.server?.send({
-        type: "removeLink",
-        viewport: this.viewport,
-      });
-    }
-  }
-
-  async menuRpcCall(rpcRequest: Omit<VuuMenuRpcRequest, "vpId">) {
+  async menuRpcCall(
+    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
         ...rpcRequest,
-      } as VuuMenuRpcRequest);
+      } as ClientToServerMenuRPC);
     }
-  }
-
-  setTitle(title: string) {
-    console.log(`RemoteDataSource setTitle ${title}`);
   }
 }

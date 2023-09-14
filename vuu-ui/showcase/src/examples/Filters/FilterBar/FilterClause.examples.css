@@ -1,0 +1,22 @@
+.saltInputTest {
+  --saltInput-minWidth: 10px;
+  --saltInput-position: absolute;
+  min-width: var(--saltInput-minWidth);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 20px;
+  width: fit-content;
+}
+
+.saltInputTest .saltInput {
+  padding: 0;
+}
+
+.saltInputTest:before {
+  content: attr(data-text);
+  display: block;
+  height: 0px;
+  visibility: hidden;
+  white-space: pre-wrap;
+}

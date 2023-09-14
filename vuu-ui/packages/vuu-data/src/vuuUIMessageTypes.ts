@@ -1,7 +1,9 @@
 import {
   ClientToServerTableList,
   ClientToServerTableMeta,
-  MenuRpcAction,
+  LinkDescriptorWithLabel,
+  ServerToClientBody,
+  ServerToClientMenuSessionTableAction,
   TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
@@ -10,11 +12,26 @@ import {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { WithRequestId } from "./message-utils";
-import { DataSourceFilter } from "./data-source";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { TableSchema, WithRequestId } from "./message-utils";
+import { WithFullConfig } from "./data-source";
+import { Selection } from "@finos/vuu-datagrid-types";
+import { WebSocketProtocol } from "./websocket-connection";
+
+export interface OpenDialogAction {
+  type: "OPEN_DIALOG_ACTION";
+  tableSchema?: TableSchema;
+  table?: VuuTable;
+}
+export interface NoAction {
+  type: "NO_ACTION";
+}
+
+export declare type MenuRpcAction = OpenDialogAction | NoAction;
 
 export type ConnectionStatus =
   | "connecting"
+  | "connection-open-awaiting-session"
   | "connected"
   | "disconnected"
   | "reconnected";
@@ -27,9 +44,19 @@ export interface ConnectionStatusMessage {
 }
 
 export const isConnectionStatusMessage = (
-  msg: object
+  msg: object | ConnectionStatusMessage
 ): msg is ConnectionStatusMessage =>
   (msg as ConnectionStatusMessage).type === "connection-status";
+
+export interface ConnectionQualityMetrics {
+  type: "connection-metrics";
+  messagesLength: number;
+}
+
+export const isConnectionQualityMetrics = (
+  msg: object
+): msg is ConnectionQualityMetrics =>
+  (msg as ConnectionQualityMetrics).type === "connection-metrics";
 
 export interface ServerProxySubscribeMessage {
   aggregations: VuuAggregation[];
@@ -42,7 +69,7 @@ export interface ServerProxySubscribeMessage {
   table: VuuTable;
   title?: string;
   viewport: string;
-  visualLink: any;
+  visualLink?: LinkDescriptorWithLabel;
 }
 
 // export type VuuUIMessageInConnectionStatus = {
@@ -69,8 +96,25 @@ export interface VuuUIMessageInRPC {
   type: "RPC_RESP";
 }
 
+export interface VuuUIMessageInRPCEditReject {
+  error: string;
+  requestId?: string;
+  type: "VP_EDIT_RPC_REJECT";
+}
+
+export interface VuuUIMessageInRPCEditResponse {
+  action: unknown;
+  requestId: string;
+  rpcName: string;
+  type: "VP_EDIT_RPC_RESPONSE";
+}
+
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
+
+export const isTableSchema = (
+  message: VuuUIMessageIn
+): message is VuuUIMessageInTableMeta => message.type === "TABLE_META_RESP";
 
 export interface VuuUIMessageInTableList {
   requestId: string;
@@ -78,15 +122,15 @@ export interface VuuUIMessageInTableList {
   tables: VuuTable[];
 }
 export interface VuuUIMessageInTableMeta {
-  columns: string[];
-  dataTypes: string[];
   requestId: string;
-  table: VuuTable;
+  tableSchema: TableSchema;
   type: "TABLE_META_RESP";
 }
 export interface MenuRpcResponse {
   action: MenuRpcAction;
+  error?: string;
   requestId: string;
+  rpcName?: string;
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
@@ -97,12 +141,32 @@ export type VuuUIMessageIn =
   | VuuUIMessageInRPC
   | MenuRpcResponse
   | VuuUIMessageInTableList
-  | VuuUIMessageInTableMeta;
+  | VuuUIMessageInTableMeta
+  | VuuUIMessageInRPCEditReject
+  | VuuUIMessageInRPCEditResponse;
+
+export const isErrorResponse = (
+  response?:
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+): response is VuuUIMessageInRPCEditReject =>
+  response !== undefined && "error" in response;
+
+export const hasAction = (
+  response?:
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
+  response != undefined && "action" in response;
 
 export interface VuuUIMessageOutConnect {
+  protocol: WebSocketProtocol;
   type: "connect";
   token: string;
   url: string;
+  username?: string;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
@@ -152,11 +216,15 @@ export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
 export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
   childColumnName: string;
   parentColumnName: string;
-  parentVpId: string;
+  parentClientVpId: string;
   type: "createLink";
 }
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
   type: "removeLink";
+}
+export interface VuuUIMessageOutSetTitle extends ViewportMessageOut {
+  title: string;
+  type: "setTitle";
 }
 
 export interface VuuUIMessageOutDisable extends ViewportMessageOut {
@@ -174,7 +242,7 @@ export interface VuuUIMessageOutResume extends ViewportMessageOut {
 }
 
 export interface VuuUIMessageOutSelect extends ViewportMessageOut {
-  selected: number[];
+  selected: Selection;
   type: "select";
 }
 export interface VuuUIMessageOutSelectAll extends ViewportMessageOut {
@@ -201,10 +269,16 @@ export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
   type: "groupBy";
 }
 
+export interface VuuUIMessageOutConfig extends ViewportMessageOut {
+  config: WithFullConfig;
+  type: "config";
+}
+
 export type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
+  | VuuUIMessageOutConfig
   | VuuUIMessageOutCreateLink
   | VuuUIMessageOutFilter
   | VuuUIMessageOutDisable
@@ -216,6 +290,7 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelect
   | VuuUIMessageOutSelectAll
   | VuuUIMessageOutSelectNone
+  | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutSort
   | VuuUIMessageOutViewRange;
@@ -237,3 +312,22 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutViewport
   | WithRequestId<ClientToServerTableList>
   | WithRequestId<ClientToServerTableMeta>;
+
+export const isSessionTableActionMessage = (
+  messageBody: ServerToClientBody
+): messageBody is ServerToClientMenuSessionTableAction =>
+  messageBody.type === "VIEW_PORT_MENU_RESP" &&
+  messageBody.action !== null &&
+  isSessionTable(messageBody.action.table);
+
+export const isSessionTable = (table?: unknown) => {
+  if (
+    table !== null &&
+    typeof table === "object" &&
+    "table" in table &&
+    "module" in table
+  ) {
+    return (table as VuuTable).table.startsWith("session");
+  }
+  return false;
+};

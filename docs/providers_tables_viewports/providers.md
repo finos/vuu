@@ -1,4 +1,9 @@
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
 # Providers
+
+<SvgDottySeparator style={{marginBottom: 32}}/>
+
 Providers are classes which receive data from a particlar location (network, file, in-process lib) and format that data into a map which matches the shape of the table
 that the provider is populating. THey have a very simple interface:
 
@@ -50,7 +55,7 @@ class MetricsTableProvider (table: DataTable, tableContainer: TableContainer)(im
     }
   }
 }
- ```
+```
 
 As you can see from the code the important lines are:
 
@@ -78,7 +83,7 @@ And the runOnce() method:
         val counter = metrics.counter(tableDef.table + ".processUpdates.Counter");
         val size = tableContainer.getTable(tableDef.table).size()
         val meter = metrics.meter(tableDef.table + ".processUpdates.Meter")
-        
+
         //format the data into a map
         val dataMap = Map("table" -> (tableDef.module + "-" + tableDef.table), "updateCount" -> counter.getCount, "size" -> size, "updatesPerSecond" -> meter.getOneMinuteRate);
 
@@ -94,6 +99,4 @@ And the runOnce() method:
   }
 ```
 
-As the code comments show the runOnce() method populates the table with data. 
-
-
+As the code comments show the runOnce() method populates the table with data.

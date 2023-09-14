@@ -5,14 +5,13 @@ import {
   VuuSort,
   VuuSortCol,
 } from "@finos/vuu-protocol-types";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
-  ColumnGroupType,
-  GridModelType,
+  ColumnDescriptor,
   GroupColumnDescriptor,
   Heading,
   KeyedColumnDescriptor,
-} from "./gridModelTypes";
+} from "@finos/vuu-datagrid-types";
+import { ColumnGroupType, GridModelType } from "./gridModelTypes";
 
 // 15px works on Mac, Windows requires 17, unless we style the scrollbars
 export const getHorizontalScrollbarHeight = (
@@ -622,13 +621,21 @@ export const assignKeysToColumns = (
   const start = metadataKeys.count;
   return columns.map((column, i) =>
     typeof column === "string"
-      ? { name: column, key: start + i, width: defaultWidth }
+      ? {
+          name: column,
+          key: start + i,
+          label: column,
+          width: defaultWidth,
+          valueFormatter: undefined,
+        }
       : isKeyedColumn(column)
       ? column
       : {
           ...column,
+          label: column.label ?? column.name,
           key: start + i,
           width: column.width || defaultWidth,
+          valueFormatter: undefined,
         }
   );
 };

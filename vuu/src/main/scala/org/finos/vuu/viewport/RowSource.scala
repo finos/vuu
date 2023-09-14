@@ -4,11 +4,11 @@ import org.finos.vuu.core.table._
 import org.finos.toolbox.collection.array.ImmutableArray
 
 trait RowProcessor {
-  def processColumn(column: Column, value: Any)
+  def processColumn(column: Column, value: Any): Unit
 
-  def missingRow()
+  def missingRow(): Unit
 
-  def missingRowData(rowKey: String, column: Column)
+  def missingRowData(rowKey: String, column: Column): Unit
 }
 
 /**
@@ -27,7 +27,7 @@ trait RowSource extends KeyedObservable[RowKeyUpdate] {
   /**
    * notify listeners explicit when a rowKey changes
    */
-  def notifyListeners(rowKey: String, isDelete: Boolean = false)
+  def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit
 
   /**
    * Link table name is the name of the underlying table that we can link to.
@@ -41,19 +41,18 @@ trait RowSource extends KeyedObservable[RowKeyUpdate] {
 
   def primaryKeys: ImmutableArray[String]
 
-  def pullRow(key: String, columns: List[Column]): RowData
+  def pullRow(key: String, columns: ViewPortColumns): RowData
 
   /**
-   * Pull row ith only a key returns the immutable RowData object as its stored within the table.
-   * When doing bulk operations on data such as index hits or filters.
-   *
-   * @param key
-   * @return
+   * Note the below call should only be used for testing. It filters the contents of maps by the expected viewPortColumns.
+   * In practice we never need to do this at runtime.
    */
+  def pullRowFiltered(key: String, columns: ViewPortColumns): RowData
+
   def pullRow(key: String): RowData
 
   //def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData
-  def pullRowAsArray(key: String, columns: List[Column]): Array[Any]
+  def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any]
 
   //def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any]
   def asTable: DataTable

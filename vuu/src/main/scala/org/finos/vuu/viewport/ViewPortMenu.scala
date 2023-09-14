@@ -55,7 +55,7 @@ class SelectionViewPortMenuItem(override val name: String, filter: String, val f
 }
 
 @JsonIgnoreProperties(Array("func", "menus"))
-class CellViewPortMenuItem(override val name: String, filter: String, val func: (String, String, Object, ClientSessionId) => ViewPortAction, rpcName: String) extends ViewPortMenuItem(name, filter, rpcName) {
+class CellViewPortMenuItem(override val name: String, filter: String, val func: (String, String, Object, ClientSessionId) => ViewPortAction, rpcName: String, val field: String = "*") extends ViewPortMenuItem(name, filter, rpcName) {
   val context: String = "cell"
 }
 
@@ -76,3 +76,4 @@ class ViewPortMenuItem(val name: String, val filter: String, val rpcName: String
   }
 
 }
+

@@ -1,7 +1,7 @@
 package org.finos.vuu.net.ws
 
 import org.finos.vuu.client.ClientHelperFns.awaitMsgBody
-import org.finos.vuu.core.{CoreServerApiHander, VuuWebSocketOptions, VuuWebSocketOptionsImpl}
+import org.finos.vuu.core.{CoreServerApiHandler, VuuWebSocketOptions, VuuWebSocketOptionsImpl}
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net._
@@ -31,7 +31,7 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       val sessionContainer = new ClientSessionContainerImpl()
 
-      val joinProvider = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinProvider = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -39,7 +39,7 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
-      val serverApi = new CoreServerApiHander(viewPortContainer, tableContainer, providerContainer)
+      val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
       val moduleContainer = new ModuleContainer
       

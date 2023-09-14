@@ -7,7 +7,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:cypress/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -26,7 +27,20 @@
   "rules": {
     "react/prop-types": 0,
     "react/react-in-jsx-scope": 0,
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useLayoutEffectSkipFirst)"
+      }
+    ],
+
     "no-unused-vars": 0,
-  "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
-  }
+    "prefer-const": ["error", {"destructuring": "all"}],
+    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+  },
+  "overrides": [
+    {
+      "files": ["*.cy.tsx"]
+    }
+  ]
 }

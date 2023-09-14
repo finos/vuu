@@ -1,0 +1,22 @@
+.vuuTableNextGroupCell {
+    --group-cell-spacer-width: 20px;
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    height: var(--row-height);
+    line-height: 16px;
+}
+
+.vuuTableNextGroupCell-toggle {
+    --vuu-icon-height: 16px;
+    --vuu-icon-size: 16px;
+    --vuu-icon-width: 8px;
+    margin-right: 4px;
+    transition: transform 0.25s;
+    transform: var(--toggle-icon-transform);
+
+}
+
+.vuuTableNextGroupCell-spacer {
+    width: var(--group-cell-spacer-width);
+  }

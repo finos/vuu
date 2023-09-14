@@ -1,6 +1,14 @@
-.hwAppHeader {
-  justify-content: flex-end;
+.vuuAppHeader {
+  align-items: center;
+  border-bottom: solid 1px var(--salt-container-secondary-borderColor);
   display: flex;
   height: 40px;
-  border-bottom: solid 1px #ccc;
+  justify-content: flex-end;
+}
+
+.vuu-theme .vuuAppHeader {
+  border-radius: 8px;
+  border: 1px solid #D6D7DA; 
+  height: 44px;
+  margin-bottom: 8px;
 }

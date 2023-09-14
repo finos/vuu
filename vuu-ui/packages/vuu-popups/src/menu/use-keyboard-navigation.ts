@@ -8,15 +8,17 @@ import {
 } from "react";
 import { hasPopup, isRoot } from "./utils";
 import { isNavigationKey } from "./key-code";
+import { isValidNumber } from "@finos/vuu-utils";
 
 export interface KeyboardNavigationProps {
   autoHighlightFirstItem?: boolean;
   count: number;
+  defaultHighlightedIdx?: number;
   highlightedIndex?: number;
   onActivate: (idx: number) => void;
   onHighlight?: (idx: number) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu: (idx: number) => void;
+  onOpenMenu?: (menuItemEl: HTMLElement) => void;
 }
 
 export interface KeyboardHookListProps {
@@ -42,6 +44,7 @@ export interface NavigationHookResult {
 export const useKeyboardNavigation = ({
   autoHighlightFirstItem = false,
   count,
+  defaultHighlightedIdx,
   highlightedIndex: highlightedIndexProp,
   onActivate,
   onHighlight,
@@ -49,20 +52,22 @@ export const useKeyboardNavigation = ({
   onCloseMenu,
   onOpenMenu,
 }: KeyboardNavigationProps): NavigationHookResult => {
-  // const prevCount = useRef(count);
+  if (
+    isValidNumber(highlightedIndexProp) &&
+    isValidNumber(defaultHighlightedIdx)
+  ) {
+    throw Error(
+      "useKeyboardNavigation do not pass values for both highlightedIndex and defaultHighlightedIdx"
+    );
+  }
+
+  const controlledHighlighting = isValidNumber(highlightedIndexProp);
   const highlightedIndexRef = useRef(
-    highlightedIndexProp ?? autoHighlightFirstItem ? 0 : -1
+    defaultHighlightedIdx ??
+      highlightedIndexProp ??
+      (autoHighlightFirstItem ? 0 : -1)
   );
   const [, forceRender] = useState<unknown>(null);
-  const controlledHighlighting = highlightedIndexProp !== undefined;
-
-  // count will not work for this, as it will change when we expand collapse groups
-  // if (count !== prevCount.current) {
-  //   prevCount.current = count;
-  //   if (highlightedIndexRef.current !== -1){
-  //     highlightedIndexRef.current = autoHighlightFirstItem ? 0 : -1;
-  //   }
-  // }
 
   const setHighlightedIdx = useCallback(
     (idx) => {
@@ -114,11 +119,22 @@ export const useKeyboardNavigation = ({
         (e.key === "ArrowRight" || e.key === "Enter") &&
         hasPopup(e.target as HTMLElement, highlightedIndex)
       ) {
-        onOpenMenu(highlightedIndex);
+        const menuEl = e.target as HTMLElement;
+        const menuItemEl = menuEl.querySelector(
+          `:scope > [data-idx='${highlightedIndex}']`
+        ) as HTMLElement;
+
+        if (menuItemEl) {
+          onOpenMenu?.(menuItemEl);
+        }
       } else if (e.key === "ArrowLeft" && !isRoot(e.target as HTMLElement)) {
         onCloseMenu(highlightedIndex);
       } else if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
         onActivate && onActivate(highlightedIndex);
+      } else if (e.key === "Tab") {
+        onCloseMenu(-1);
       }
     },
     [
@@ -156,21 +172,8 @@ export const useKeyboardNavigation = ({
         setHighlightedIndex(-1);
       },
     }),
-    [
-      highlightedIndex,
-      setHighlightedIndex,
-      navigateChildldItems,
-      onActivate,
-      onCloseMenu,
-      onOpenMenu,
-      setHighlightedIdx,
-    ]
+    [handleKeyDown, highlightedIndex, setHighlightedIdx, setHighlightedIndex]
   );
-
-  // label === 'ParsedInput' && console.log(`%cuseNavigationHook<${label}>
-  // highlightedIdxProp= ${highlightedIdxProp},
-  // highlightedIndexRef= ${highlightedIndexRef.current},
-  // %chighlightedIdx= ${highlightedIdx}`, 'color: brown','color: brown;font-weight: bold;')
 
   return {
     focusVisible: keyBoardNavigation.current ? highlightedIndex : -1,

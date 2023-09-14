@@ -23,11 +23,11 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       //println(sessionTable.isInstanceOf[SessionTable])
 
-      implicit val time = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
+      implicit val time: DefaultClock = new DefaultClock
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
-      val joinProvider   = JoinTableProviderImpl()//EsperJoinTableProviderImpl()
+      val joinProvider   = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -50,7 +50,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val session = new ClientSessionId("sess-01", "chris")
 
-      val vpcolumns = List("clOrderId:String", "ric:String", "quantity:Double", "orderType:String", "price:Double", "priceLevel:String").map(orderEntry.getTableDef.columnForName(_))
+      val vpcolumns = ViewPortColumnCreator.create(orderEntry, List("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderEntry, DefaultRange, vpcolumns)
 

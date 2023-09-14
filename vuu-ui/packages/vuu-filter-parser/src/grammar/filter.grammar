@@ -1,0 +1,66 @@
+@precedence {
+  or @left,
+  and @left
+}
+
+@top Filter { filterExpression }
+
+filterExpression { expression  ( As FilterName )?}
+
+expression { 
+  filterClause | 
+  booleanClause | 
+  ParenthesizedExpression 
+}
+
+ParenthesizedExpression { "(" expression ")" }
+
+AndExpression {  expression !and And expression }
+OrExpression { expression !or Or expression }
+
+booleanClause {
+  AndExpression |
+  OrExpression 
+}
+
+filterClause { ColumnValueExpression | ColumnSetExpression }
+
+ColumnValueExpression { Column Operator value }
+
+ColumnSetExpression { Column In LBrack Values RBrack }
+
+FilterName { identifier }
+
+Column { identifier }
+
+Operator { Eq | NotEq | Gt | Lt | Starts | Ends }
+
+Values { value (Comma value)* }
+
+value { Number | String | True | False }
+
+
+@skip { space  }
+
+@tokens {
+  Starts { "starts" }
+  Ends { "ends" }
+  True { "true" }
+  False { "false" }
+  And { "and" }
+  Or { "or" }
+  As { "as" }
+  In { "in" }
+  Eq { "=" }
+  NotEq { "!=" }
+  Gt { ">" }
+  Lt { "<" }
+  Comma { "," }
+  LBrack { "[" }
+  RBrack { "]" }
+  identifier { $[a-zA-Z_]$[a-zA-Z0-9_.-]* }
+  Number { @digit+ ("." @digit+)? | "." @digit+}
+  String { "\"" ![\t\r\\\n"]* "\"" }
+  space { $[ \t\n\r]+ }
+}
+ 

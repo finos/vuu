@@ -6,7 +6,16 @@ export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   evt?: SyntheticEvent
 ) => Promise<boolean | void>;
 
-export interface ViewContextProps {
+/**
+ * This API is available to any Feature hosted within Vuu (as all Features are wrapped
+ * with View component). It offers metadata about the View as well as access to the
+ * Vuu persistencew API;
+ */
+export interface ViewContextAPI {
+  /**
+   * disdpatcher for View actions. These are a subset of LayoutActions, specifically for
+   * View manipulation
+   */
   dispatch?: ViewDispatch | null;
   id?: string;
   load?: (key?: string) => unknown;
@@ -16,11 +25,12 @@ export interface ViewContextProps {
   purge?: (key: string) => void;
   save?: (state: unknown, key: string) => void;
   saveSession?: (state: unknown, key: string) => void;
+  setComponentProps: (props: { [key: string]: unknown }) => void;
   title?: string;
 }
 
-const NO_CONTEXT = { dispatch: null } as ViewContextProps;
-export const ViewContext = React.createContext<ViewContextProps>(NO_CONTEXT);
+const NO_CONTEXT = { dispatch: null } as ViewContextAPI;
+export const ViewContext = React.createContext<ViewContextAPI>(NO_CONTEXT);
 
 export const useViewDispatch = () => {
   const context = useContext(ViewContext);

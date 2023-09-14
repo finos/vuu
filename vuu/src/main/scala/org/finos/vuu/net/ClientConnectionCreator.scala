@@ -169,6 +169,9 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ViewPortMenuTableRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortMenuCellRpcCall => serverApi.process(req)(ctx)
       case req: RemoveVisualLinkRequest => serverApi.process(req)(ctx)
+      case req: ViewPortEditCellRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortEditRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortEditSubmitFormRpcCall => serverApi.process(req)(ctx)
     }
   }
 
@@ -215,11 +218,16 @@ trait ClientSessionContainer {
   def getHandler(sessionId: ClientSessionId): Option[MessageHandler]
 
   def remove(sessionId: ClientSessionId): Unit
+
+  def getSessions(): List[ClientSessionId]
+
 }
 
 class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLogging {
 
   private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
+
+  override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
 
   override def remove(sessionId: ClientSessionId): Unit = {
     logger.info(s"Removing client session $sessionId")

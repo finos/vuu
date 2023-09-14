@@ -1,0 +1,10 @@
+.vuuFeatureList {
+    height: 100%;
+    padding: 180px 32px 0 24px;
+}
+
+.vuuFeatureList-header {
+    font-size: 12px;
+    font-weight: 700;
+}
+

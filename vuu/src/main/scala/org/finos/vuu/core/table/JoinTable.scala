@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.RowProcessor
+import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
 
@@ -333,6 +333,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     })
   }
 
+  @volatile private var updateCounterInternal: Long = 0
+
+  override def updateCounter: Long = updateCounterInternal
+
+  override def incrementUpdateCounter(): Unit = updateCounterInternal +=1
+
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
@@ -344,6 +350,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     sendToJoinSink(rowUpdate)
 
     notifyListeners(rowKey)
+
+    incrementUpdateCounter()
   }
 
   private def toEvent(rowData: RowData): java.util.HashMap[String, Any] = {
@@ -364,12 +372,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   def sendToJoinSink(rowData: RowData): Unit = {
-
-    //only send to Esper when esper cares
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toEvent(rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }
@@ -383,8 +387,14 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, this.tableDef.columns.toList)
+    pullRow(key, viewPortColumns)
   }
+
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    pullRow(key, columns)
+  }
+
+  lazy val viewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.columns.map(_.name).toList)
 
   private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
     val keysByTable = joinData.getKeyValuesByTable(key)
@@ -404,9 +414,14 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
   }
 
-  override def pullRow(key: String, columns: List[Column]): RowData = {
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
 
-    val columnsByTable = columns.map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+    val columnsByTable = columns.getColumns()
+      .filter(_.isInstanceOf[JoinColumn])
+      .map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+
+    val calculatedColumns = columns.getColumns()
+      .filter(_.isInstanceOf[CalculatedColumn]).toList
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
@@ -418,7 +433,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         val table = sourceTables(tableName)
         val fk = keysByTable(tableName)
 
-        val sourceColumns = columnList.map(jc => jc.sourceColumn)
+        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
 
         if (fk == null) {
           logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
@@ -435,14 +450,18 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      RowWithData(key, foldedMap)
+      val joinedData = RowWithData(key, foldedMap)
+
+      val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
+
+      RowWithData(key, foldedMap ++ calculatedData)
     }
   }
 
 
-  override def pullRowAsArray(key: String, columns: List[Column]): Array[Any] = {
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
 
-    val columnsByTable = columns
+    val columnsByTable = columns.getColumns()
       .map(c => c.asInstanceOf[JoinColumn])
       .groupBy(_.sourceTable.name)
 
@@ -463,7 +482,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
             case None => null
           }
 
-        val sourceColumns = columnList.map(jc => jc.sourceColumn)
+        //val sourceColumns = columnList.map(jc => jc.sourceColumn)
+        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
 
         if (fk == null) {
           logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
@@ -482,7 +502,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       if (foldedMap.isEmpty) {
         Array()
       } else {
-        columns.map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
+        columns.getColumns().map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
           case None => ""
           case Some(x) => x
         }).toArray[Any]
@@ -504,15 +524,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       sendDeleteToJoinSink(rowKey, rowData)
 
     notifyListeners(rowKey, isDelete = true)
+
+    incrementUpdateCounter()
   }
 
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
-
-    //only send to Esper when esper cares
     if (joinProvider.hasJoins(this.tableDef.name)) {
-
       val event = toDeleteEvent(rowKey, rowData)
-
       joinProvider.sendEvent(this.tableDef.name, event)
     }
   }
@@ -545,7 +563,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       val table = sourceTables(tableName)
       val fk = keysByTable(tableName)
 
-      val sourceColumns = columnList.map(jc => jc.sourceColumn)
+      //val sourceColumns = columnList.map(jc => jc.sourceColumn)
+      val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
 
       if (fk == null) {
         logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")

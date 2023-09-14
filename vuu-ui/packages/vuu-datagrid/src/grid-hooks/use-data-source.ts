@@ -1,30 +1,26 @@
-import {
-  ConfigChangeHandler,
-  DataSourceRow,
-  SubscribeCallback,
-} from "@finos/vuu-data";
-import { VuuDataRow, VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
+import { ConfigChangeHandler, SubscribeCallback } from "@finos/vuu-data";
+import { useViewContext } from "@finos/vuu-layout";
+import { VuuRange, VuuSort } from "@finos/vuu-protocol-types";
 import {
   getFullRange,
   metadataKeys,
   toColumnDescriptor,
   WindowRange,
 } from "@finos/vuu-utils";
-import { useViewContext } from "@finos/vuu-layout";
+import { DataSourceRow } from "packages/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { useGridContext } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";
 
 const { RENDER_IDX } = metadataKeys;
 
-const byKey = (row1: VuuDataRow, row2: VuuDataRow) =>
+const byKey = (row1: DataSourceRow, row2: DataSourceRow) =>
   row1[RENDER_IDX] - row2[RENDER_IDX];
 
 export type SubscriptionDetails = {
   columnNames?: string[];
   range: { from: number; to: number };
-  sort?: VuuSortCol[];
+  sort?: VuuSort;
 };
 
 //TODO allow subscription details to be set before subscribe call
@@ -105,17 +101,12 @@ export function useDataSource(
       ) {
         dispatchGridModelAction?.(message);
         onConfigChange?.(message);
-        if (message.type === "filter") {
-          // So that an external filter can be made aware of filter changes
-          dataSource?.emit("filter", message.filter);
-        }
       } else {
         // TODO
         dispatchGridAction?.(message as any);
       }
     },
     [
-      dataSource,
       dataWindow,
       dispatchGridAction,
       dispatchGridModelAction,
@@ -152,13 +143,15 @@ export function useDataSource(
 
   const setRange = useCallback(
     (from, to) => {
-      const range = getFullRange(
-        { from, to },
-        gridModel.renderBufferSize,
-        dataSource?.rowCount
-      );
-      dataSource?.setRange(range.from, range.to);
-      dataWindow.setRange(range.from, range.to);
+      if (dataSource) {
+        const range = getFullRange(
+          { from, to },
+          gridModel.renderBufferSize,
+          dataSource?.size
+        );
+        dataSource.range = range;
+        dataWindow.setRange(range.from, range.to);
+      }
     },
     [dataSource, dataWindow, gridModel.renderBufferSize]
   );
