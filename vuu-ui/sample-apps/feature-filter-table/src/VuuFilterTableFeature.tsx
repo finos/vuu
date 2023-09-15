@@ -1,20 +1,33 @@
 import {
   DataSource,
   DataSourceConfig,
+  DataSourceVisualLinkCreatedMessage,
   RemoteDataSource,
   TableSchema,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
+import { FilterTable } from "@finos/vuu-datatable";
+import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";
 import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
-import { FilterTable } from "@finos/vuu-datatable";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "packages/vuu-data-react/src";
+
 import "./VuuFilterTableFeature.css";
-import { DataSourceFilter } from "packages/vuu-data-types";
-import { Filter } from "packages/vuu-filter-types";
+import { Button } from "@salt-ds/core";
 
 const classBase = "VuuFilterTableFeature";
 
@@ -144,6 +157,68 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     };
   }, [dataSource]);
 
+  const removeVisualLink = useCallback(() => {
+    dataSource.visualLink = undefined;
+  }, [dataSource]);
+
+  const handleVuuFeatureEnabled = useCallback(
+    (message: VuuFeatureMessage) => {
+      if (isViewportMenusAction(message)) {
+        saveSession?.(message.menu, "vuu-menu");
+      } else if (isVisualLinksAction(message)) {
+        saveSession?.(message.links, "vuu-links");
+      }
+    },
+    [saveSession]
+  );
+
+  const handleVuuFeatureInvoked = useCallback(
+    (message: VuuFeatureInvocationMessage) => {
+      if (message.type === "vuu-link-created") {
+        dispatch?.({
+          type: "add-toolbar-contribution",
+          location: "post-title",
+          content: (
+            <Button
+              aria-label="remove-link"
+              data-icon="link"
+              onClick={removeVisualLink}
+            />
+          ),
+        });
+      } else {
+        dispatch?.({
+          type: "remove-toolbar-contribution",
+          location: "post-title",
+        });
+      }
+    },
+    [dispatch, removeVisualLink]
+  );
+
+  // It is important that these values are not assigned in advance. They
+  // are accessed at the point of construction of ContextMenu
+  const menuActionConfig: MenuActionConfig = useMemo(
+    () => ({
+      get visualLink() {
+        return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
+      },
+      get visualLinks() {
+        return loadSession?.("vuu-links") as LinkDescriptorWithLabel[];
+      },
+      get vuuMenu() {
+        return loadSession?.("vuu-menu") as VuuMenu;
+      },
+    }),
+    [load, loadSession]
+  );
+
+  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    dataSource,
+    menuActionConfig,
+    onRpcResponse: handleRpcResponse,
+  });
+
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
       dataSource.filter = filter;
@@ -166,20 +241,33 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     },
     dataSource,
     onConfigChange: handleTableConfigChange,
+    onFeatureEnabled: handleVuuFeatureEnabled,
+    onFeatureInvocation: handleVuuFeatureInvoked,
     renderBufferSize: 50,
   };
 
   return (
-    <FlexboxLayout style={{ flexDirection: "column", height: "100%" }}>
-      <FilterTable
-        FilterBarProps={filterBarProps}
-        TableProps={tableProps}
-        style={{ flex: "1 1 auto" }}
-      />
-      <div className="vuuToolbarProxy vuuBlotter-footer" style={{ height: 18 }}>
-        <DataSourceStats dataSource={dataSource} />
-      </div>
-    </FlexboxLayout>
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildViewserverMenuOptions}
+    >
+      <FlexboxLayout
+        className={classBase}
+        style={{ flexDirection: "column", height: "100%" }}
+      >
+        <FilterTable
+          FilterBarProps={filterBarProps}
+          TableProps={tableProps}
+          style={{ flex: "1 1 auto" }}
+        />
+        <div
+          className="vuuToolbarProxy vuuBlotter-footer"
+          style={{ height: 18 }}
+        >
+          <DataSourceStats dataSource={dataSource} />
+        </div>
+      </FlexboxLayout>
+    </ContextMenuProvider>
   );
 };
 

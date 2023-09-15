@@ -202,6 +202,7 @@ const showContextMenu = (
   const component = (
     <ContextMenu
       {...contextMenuProps}
+      className="vuuContextMenu"
       onClose={handleClose}
       position={position}
     >

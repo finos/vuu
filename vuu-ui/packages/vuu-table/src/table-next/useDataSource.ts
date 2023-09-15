@@ -2,7 +2,13 @@ import {
   DataSource,
   DataSourceSubscribedMessage,
   SubscribeCallback,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
+import {
+  isVuuFeatureAction,
+  isVuuFeatureInvocation,
+} from "@finos/vuu-data-react/src";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
@@ -12,8 +18,8 @@ import { MovingWindow } from "./moving-window";
 export interface DataSourceHookProps {
   dataSource: DataSource;
   // onConfigChange?: (message: DataSourceConfigMessage) => void;
-  // onFeatureEnabled?: (message: VuuFeatureMessage) => void;
-  // onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
@@ -22,6 +28,8 @@ export interface DataSourceHookProps {
 
 export const useDataSource = ({
   dataSource,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onSizeChange,
   onSubscribed,
   range = NULL_RANGE,
@@ -68,15 +76,22 @@ export const useDataSource = ({
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
-        // } else if (isVuuFeatureAction(message)) {
-        //   onFeatureEnabled?.(message);
-        // } else if (isVuuFeatureInvocation(message)) {
-        //   onFeatureInvocation?.(message);
+      } else if (isVuuFeatureAction(message)) {
+        onFeatureEnabled?.(message);
+      } else if (isVuuFeatureInvocation(message)) {
+        onFeatureInvocation?.(message);
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onSizeChange, onSubscribed, setData]
+    [
+      dataWindow,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      onSizeChange,
+      onSubscribed,
+      setData,
+    ]
   );
 
   useEffect(

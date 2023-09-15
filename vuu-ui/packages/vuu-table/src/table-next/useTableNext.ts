@@ -166,6 +166,8 @@ export const useTable = ({
 
   const { data, setRange } = useDataSource({
     dataSource,
+    onFeatureEnabled,
+    onFeatureInvocation,
     renderBufferSize,
     onSizeChange: onDataRowcountChange,
     onSubscribed,
@@ -396,20 +398,20 @@ export const useTable = ({
       if (cellEl && rowEl /*&& currentData && currentDataSource*/) {
         //   const { columns, selectedRowsCount } = currentDataSource;
         const columnMap = buildColumnMap(columns);
-        // const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
+        const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
         const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
-        //   const row = currentData.find(([idx]) => idx === rowIndex);
+        const row = data.find(([idx]) => idx === rowIndex);
         const columnName = columns[cellIndex];
         showContextMenu(evt, "grid", {
           columnMap,
           columnName,
-          // row,
+          row,
           // selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
           // viewport: dataSource?.viewport,
         });
       }
     },
-    [columns, showContextMenu]
+    [columns, data, showContextMenu]
   );
 
   const onHeaderClick = useCallback(
