@@ -80,7 +80,6 @@ export const Palette = ({
     const {
       props: { caption, children: payload, template, ...props },
     } = children[idx];
-    console.log({ payload });
     const { height, left, top, width } =
       listItemElement.getBoundingClientRect();
     const id = uuid();
@@ -107,6 +106,7 @@ export const Palette = ({
       instructions: {
         DoNotRemove: true,
         DoNotTransform: true,
+        DriftHomeIfNoDropTarget: true,
         RemoveDraggableOnDragEnd: true,
         dragThreshold: 10,
       },

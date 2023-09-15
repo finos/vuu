@@ -1,7 +1,6 @@
 import { DataSourceConfig, TableSchema } from "@finos/vuu-data";
 import { FilterTable } from "@finos/vuu-datatable";
 import { FilterBarProps } from "@finos/vuu-filters";
-// import { useViewContext, View } from "@finos/vuu-layout";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";

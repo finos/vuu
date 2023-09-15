@@ -72,6 +72,8 @@ const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
     ...featurePaths[env].TableNextFeature,
   }));
 
+console.log({ features });
+
 const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
@@ -89,7 +91,7 @@ const ShellWithNewTheme = () => {
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },
-    []
+    [saveLayout]
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<

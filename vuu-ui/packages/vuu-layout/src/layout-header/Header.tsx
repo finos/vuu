@@ -1,8 +1,8 @@
 import { EditableLabel } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
-import { CloseIcon } from "@salt-ds/icons";
 import { default as classnames, default as cx } from "classnames";
-import React, {
+import {
+  cloneElement,
   HTMLAttributes,
   KeyboardEvent,
   MouseEvent,
@@ -24,6 +24,8 @@ export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   tearOut?: boolean;
 }
 
+const classBase = "vuuHeader";
+
 export const Header = ({
   className: classNameProp,
   contributions,
@@ -41,7 +43,6 @@ export const Header = ({
   const viewDispatch = useViewDispatch();
   const handleClose = (evt: MouseEvent) =>
     viewDispatch?.({ type: "remove" }, evt);
-  const classBase = "vuuHeader";
 
   const handleTitleMouseDown = () => {
     labelFieldRef.current?.focus();
@@ -99,11 +100,11 @@ export const Header = ({
   contributions?.forEach((contribution, i) => {
     switch (contribution.location) {
       case "pre-title":
-        toolbarItems.push(React.cloneElement(contribution.content, { key: i }));
+        toolbarItems.push(cloneElement(contribution.content, { key: i }));
         break;
       default:
         postTitleContributedItems.push(
-          React.cloneElement(contribution.content, { key: i })
+          cloneElement(contribution.content, { key: i })
         );
     }
   });
@@ -111,6 +112,7 @@ export const Header = ({
   title &&
     toolbarItems.push(
       <EditableLabel
+        className={`${classBase}-title`}
         editing={editing}
         key="title"
         value={value}

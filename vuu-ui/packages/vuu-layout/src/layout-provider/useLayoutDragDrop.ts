@@ -3,11 +3,11 @@ import {
   DragDropRect,
   DragEndCallback,
   Draggable,
-  DragInstructions
+  DragInstructions,
 } from "../drag-drop";
 import { DragStartAction } from "../layout-reducer";
 import { getIntrinsicSize } from "../layout-reducer/flexUtils";
-import { followPath } from "../utils";
+import { followPath, resolvePath } from "../utils";
 import { LayoutProviderDispatch } from "./LayoutProviderContext";
 
 const NO_INSTRUCTIONS = {} as DragInstructions;
@@ -64,7 +64,8 @@ const determineDragOffsets = (
 
 export const useLayoutDragDrop = (
   rootLayoutRef: MutableRefObject<ReactElement>,
-  dispatch: LayoutProviderDispatch
+  dispatch: LayoutProviderDispatch,
+  pathToDropTarget?: string
 ) => {
   const dragActionRef = useRef<CurrentDragAction>();
   const dragOperationRef = useRef<DragOperation>();
@@ -87,37 +88,43 @@ export const useLayoutDragDrop = (
     }
   }, []);
 
-  const handleDrop: DragEndCallback = useCallback((dropTarget) => {
-    if (dragOperationRef.current) {
-      const {
-        dragInstructions,
-        payload: draggedReactElement,
-        originalCSS,
-      } = dragOperationRef.current;
-      dispatch({
-        type: "drag-drop",
-        draggedReactElement,
-        dragInstructions,
-        dropTarget,
-      });
+  const handleDrop: DragEndCallback = useCallback(
+    (dropTarget) => {
+      if (dragOperationRef.current) {
+        const {
+          dragInstructions,
+          payload: draggedReactElement,
+          originalCSS,
+        } = dragOperationRef.current;
 
-      console.log(`[useLayoutDragDrop]`, {
-        dragInstructions,
-      });
-      if (draggableHTMLElementRef.current) {
-        if (dragInstructions.RemoveDraggableOnDragEnd) {
-          document.body.removeChild(draggableHTMLElementRef.current);
-        } else {
-          draggableHTMLElementRef.current.style.cssText = originalCSS;
-          delete draggableHTMLElementRef.current.dataset.dragging;
+        if (dropTarget) {
+          dispatch({
+            type: "drag-drop",
+            draggedReactElement,
+            dragInstructions,
+            dropTarget,
+          });
         }
-      }
 
-      dragActionRef.current = undefined;
-      dragOperationRef.current = undefined;
-      draggableHTMLElementRef.current = undefined;
-    }
-  }, [dispatch]);
+        if (draggableHTMLElementRef.current) {
+          if (!dropTarget && dragInstructions.DriftHomeIfNoDropTarget) {
+            console.log("drift back to start");
+            document.body.removeChild(draggableHTMLElementRef.current);
+          } else if (dragInstructions.RemoveDraggableOnDragEnd) {
+            document.body.removeChild(draggableHTMLElementRef.current);
+          } else {
+            draggableHTMLElementRef.current.style.cssText = originalCSS;
+            delete draggableHTMLElementRef.current.dataset.dragging;
+          }
+        }
+
+        dragActionRef.current = undefined;
+        dragOperationRef.current = undefined;
+        draggableHTMLElementRef.current = undefined;
+      }
+    },
+    [dispatch]
+  );
 
   const handleDragStart = useCallback(
     (evt: MouseEvent) => {
@@ -194,16 +201,13 @@ export const useLayoutDragDrop = (
   const prepareToDrag = useCallback(
     (action: DragStartAction) => {
       const { evt, ...options } = action;
-      console.log(`prepare to drag`, {
-        options,
-      });
       dragActionRef.current = {
         ...options,
-        dragContainerPath: "",
+        dragContainerPath: resolvePath(rootLayoutRef.current, pathToDropTarget),
       };
       Draggable.handleMousedown(evt, handleDragStart, options.instructions);
     },
-    [handleDragStart]
+    [handleDragStart, pathToDropTarget, rootLayoutRef]
   );
 
   return prepareToDrag;

@@ -38,6 +38,8 @@ type LayoutChangeHandler = (layout: LayoutJSON, source: string) => void;
 
 export interface LayoutProviderProps {
   children: ReactElement;
+  createNewChild?: (index?: number) => ReactElement;
+  pathToDropTarget?: string;
   layout?: LayoutJSON;
   onLayoutChange?: LayoutChangeHandler;
 }
@@ -48,7 +50,8 @@ export const LayoutProviderVersion = () => {
 };
 
 export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
-  const { children, layout, onLayoutChange } = props;
+  const { children, createNewChild, pathToDropTarget, layout, onLayoutChange } =
+    props;
   const state = useRef<ReactElement | undefined>(undefined);
   const childrenRef = useRef<ReactElement>(children);
 
@@ -107,7 +110,8 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const prepareToDragLayout = useLayoutDragDrop(
     state as MutableRefObject<ReactElement>,
-    layoutActionDispatcher
+    layoutActionDispatcher,
+    pathToDropTarget
   );
 
   useEffect(() => {
@@ -158,7 +162,11 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   return (
     <LayoutProviderContext.Provider
-      value={{ dispatchLayoutProvider: layoutActionDispatcher, version: 0 }}
+      value={{
+        createNewChild,
+        dispatchLayoutProvider: layoutActionDispatcher,
+        version: 0,
+      }}
     >
       {state.current}
     </LayoutProviderContext.Provider>
@@ -168,6 +176,11 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 export const useLayoutProviderDispatch = () => {
   const { dispatchLayoutProvider } = useContext(LayoutProviderContext);
   return dispatchLayoutProvider;
+};
+
+export const useLayoutCreateNewChild = () => {
+  const { createNewChild } = useContext(LayoutProviderContext);
+  return createNewChild;
 };
 
 export const useLayoutProviderVersion = () => {

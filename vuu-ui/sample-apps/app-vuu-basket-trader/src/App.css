@@ -1,10 +1,66 @@
-
 body {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
   overflow: hidden;
+}
+
+.ToolbarField .Input {
+  border: solid 1px #ccc;
+  height: 28px;
+  padding: 0 8px;
+}
+
+.DragIcon.dragging {
+  background-color: orange !important;
+}
+
+.vuuApp {
+  background-color: green;
 }
 
 .vuuShell-content {
   padding: 8px;
+}
+
+.ToolbarField > svg {
+  fill: var(--spectrum-global-color-static-gray-600);
+  width: 18px;
+  height: 18px;
+}
+
+.vuHeaderCell {
+  text-transform: uppercase;
+}
+
+.vuDialog {
+  margin-top: 20%;
+}
+
+.vuDialog {
+  --vuuView-flex-direction: row;
+  --vuuView-flex-wrap: wrap;
+}
+
+.vuDialog .Grid {
+  --hw-grid-flex-size: 1 1 auto;
+}
+
+/** Temp, until we create Toolbar */
+.vuuToolbarProxy {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  height: 36px;
+}
+
+.vuuToolbarProxy > [data-align="end"]{
+  margin-left: auto;
+}
+
+.vuuToolbarProxy-vertical {
+  flex-direction: column;
 }
 
 .vuuShell-mainTabs {

@@ -13,11 +13,12 @@ export type DragMoveCallback = (
   x: number | undefined,
   y: number | undefined
 ) => void;
-export type DragEndCallback = (droppedTarget: Partial<DropTarget>) => void;
+export type DragEndCallback = (droppedTarget?: Partial<DropTarget>) => void;
 export type DragInstructions = {
   DoNotRemove?: boolean;
   DoNotTransform?: boolean;
   dragThreshold?: number;
+  DriftHomeIfNoDropTarget?: boolean;
   RemoveDraggableOnDragEnd?: boolean;
 };
 
@@ -50,6 +51,7 @@ function getDragContainer(
   } else {
     return findTarget(
       rootContainer,
+      // TODO dropTarget is not good
       (props) => props.dropTarget
     ) as ReactElement;
   }
@@ -80,7 +82,6 @@ export const Draggable = {
       window.addEventListener("mouseup", preDragMouseupHandler, false);
 
       _mouseDownTimer = window.setTimeout(() => {
-        console.log("mousedownTimer fires");
         window.removeEventListener("mousemove", preDragMousemoveHandler, false);
         window.removeEventListener("mouseup", preDragMouseupHandler, false);
         _dragStartCallback?.(e, 0, 0);
@@ -151,6 +152,7 @@ function initDrag(
   dropTargets?: string[]
 ) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
+
   const { "data-path": dataPath, path = dataPath } = getProps(_dragContainer);
 
   if (dropTargets) {
@@ -160,13 +162,14 @@ function initDrag(
     _validDropTargetPaths = dropPaths;
   }
 
-  // var start = window.performance.now();
+  const start = window.performance.now();
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
+
   _measurements = BoxModel.measure(_dragContainer, dropTargets);
   console.log({ _measurements });
   // onsole.log({ measurements: _measurements });
-  // var end = window.performance.now();
-  // onsole.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
+  const end = window.performance.now();
+  console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
 
   const dragZone = _measurements[path];
 
@@ -183,6 +186,7 @@ function initDrag(
 
   window.addEventListener("mousemove", dragMousemoveHandler, false);
   window.addEventListener("mouseup", dragMouseupHandler, false);
+  window.addEventListener("keydown", dragKeydownHandler, false);
 
   _simpleDrag = false;
 
@@ -251,6 +255,13 @@ function dragMousemoveHandler(evt: MouseEvent) {
   }
 }
 
+function dragKeydownHandler(evt: KeyboardEvent) {
+  if (evt.key === "Escape") {
+    _dropTarget = null;
+    onDragEnd();
+  }
+}
+
 function dragMouseupHandler() {
   onDragEnd();
 }
@@ -265,10 +276,7 @@ function onDragEnd() {
 
     _dropTarget = null;
   } else {
-    _dragEndCallback?.({
-      component: _dragContainer,
-      pos: { position: Position.Absolute } as any,
-    });
+    _dragEndCallback?.();
   }
 
   _dragMoveCallback = null;
@@ -279,4 +287,5 @@ function onDragEnd() {
   _validDropTargetPaths = undefined;
   window.removeEventListener("mousemove", dragMousemoveHandler, false);
   window.removeEventListener("mouseup", dragMouseupHandler, false);
+  window.removeEventListener("keydown", dragKeydownHandler, false);
 }
