@@ -5,7 +5,7 @@ import {
 } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getFullRange } from "@finos/vuu-utils";
+import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 
@@ -18,23 +18,21 @@ export interface DataSourceHookProps {
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
   renderBufferSize?: number;
-  viewportRowCount: number;
 }
 
 export const useDataSource = ({
   dataSource,
   onSizeChange,
   onSubscribed,
-  range = { from: 0, to: 0 },
+  range = NULL_RANGE,
   renderBufferSize = 0,
-  viewportRowCount,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef<number | null>(null);
-  const rangeRef = useRef<VuuRange>({ from: 0, to: 0 });
+  const rangeRef = useRef<VuuRange>(NULL_RANGE);
 
   const dataWindow = useMemo(
     () => new MovingWindow(getFullRange(range, renderBufferSize)),
@@ -107,7 +105,8 @@ export const useDataSource = ({
   //   rafHandle.current = requestAnimationFrame(refreshIfUpdated);
   // }, [refreshIfUpdated]);
 
-  useMemo(() => {
+  useEffect(() => {
+    //TODO could we improve this by using a ref for range ?
     dataSource?.subscribe(
       { range: getFullRange(range, renderBufferSize) },
       datasourceMessageHandler
@@ -123,12 +122,6 @@ export const useDataSource = ({
     },
     [dataSource, dataWindow, renderBufferSize]
   );
-
-  useEffect(() => {
-    const { from } = dataSource.range;
-    const rowRange = { from, to: from + viewportRowCount };
-    setRange(rowRange);
-  }, [dataSource.range, setRange, viewportRowCount]);
 
   return {
     data: data.current,

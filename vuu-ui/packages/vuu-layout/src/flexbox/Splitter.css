@@ -1,13 +1,15 @@
-.Splitter {
+.vuuSplitter {
+  --splitter-background: var(--salt-separable-secondary-borderColor);
+  --splitter-borderColor: var(--salt-separable-secondary-borderColor);
+  --splitter-borderStyle: none;
+  --splitter-borderWidth: 0;
   --splitter-size: 3px;
-  --splitter-border-width: 4px;
-  --splitter-border-style: none;
-  --splitter-border-color: white;
 
   align-items: center;
-  background-color: var(--salt-palette-neutral-secondary-separator);
-  border-color: var(--splitter-border-color);
-  border-style: var(--splitter-border-style);
+  background-color: var(--splitter-background);
+  border-color: var(--splitter-borderColor);
+  border-style: var(--splitter-borderStyle);
+  border-width: var(--splitter-borderWidth);
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -16,26 +18,25 @@
   z-index: 1;
 }
 
-.Splitter:hover {
-  background-color: var(--salt-palette-neutral-primary-separator);
-}
-.active.Splitter {
-  background-color: var(--salt-palette-interact-outline);
+.vuuSplitter:hover {
+  --splitter-background: var(--salt-separable-primary-borderColor);
 }
 
-.Splitter.column {
+.vuuSplitter-active {
+  --splitter-background: var(--salt-separable-primary-borderColor);
+}
+
+.vuuSplitter-column {
   cursor: ns-resize;
   height: var(--splitter-size);
-  border-width: var(--splitter-border-width) 0;
 }
 
-.Splitter:not(.column) {
+.vuuSplitter:not(.vuuSplitter-column) {
   cursor: ew-resize;
   width: var(--splitter-size);
-  border-width: 0 var(--splitter-border-width);
 }
 
-.Splitter:before {
+.vuuSplitter:before {
   border: none;
   border-radius: 0;
   content: '';
@@ -43,34 +44,34 @@
   padding: 0;
 }
 
-.Splitter .grab-zone {
+.vuuSplitter-grab-zone {
   position: absolute;
   background-color: rgba(255, 0, 0, 0.01);
   cursor: inherit;
 }
 
-.Splitter.column .grab-zone {
+.vuuSplitter-column .vuuSplitter-grab-zone {
   left: 0;
   right: 0;
   top: -5px;
   bottom: -5px;
 }
 
-.Splitter:not(.column) .grab-zone {
+.vuuSplitter:not(.vuuSplitter-column) .vuuSplitter-grab-zone {
   left: -5px;
   right: -5px;
   top: 0;
   bottom: 0;
 }
 
-.active.Splitter:not(.column) .grab-zone {
+.vuuSplitter-active:not(.vuuSplitter-column) .vuuSplitter-grab-zone {
   background-color: rgba(255,255,255,.05);
   left: -150px;
   right: -150px;
 }
 
 
-.Splitter:not(.column):before {
+.vuuSplitter:not(.vuuSplitter-column):before {
   width: 1px;
   height: 10px;
   background: linear-gradient(
@@ -90,7 +91,7 @@
   );
 }
 
-.active.Splitter.column:before {
+.vuuSplitter-active.vuuSplitter-column:before {
   background: linear-gradient(
     to right,
     #ffffff 10%,
@@ -108,7 +109,7 @@
   );
 }
 
-.active.Splitter:not(.column):before {
+.vuuSplitter-active:not(.vuuSplitter-column):before {
   background: linear-gradient(
     to bottom,
     #ffffff 10%,
@@ -126,7 +127,7 @@
   );
 }
 
-.Splitter.column:before {
+.vuuSplitter-column:before {
   width: 10px;
   height: 1px;
   background: linear-gradient(

@@ -170,7 +170,6 @@ export const useTable = ({
     onSizeChange: onDataRowcountChange,
     onSubscribed,
     range: initialRange,
-    viewportRowCount: viewportMeasurements.rowCount,
   });
 
   const handleConfigChanged = useCallback(

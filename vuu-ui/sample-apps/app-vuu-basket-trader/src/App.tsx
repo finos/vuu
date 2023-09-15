@@ -11,8 +11,16 @@ import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
 import { defaultLayout } from "./defaultLayout";
 import { useFeatures } from "./useFeatures";
+import {
+  ColumnSettingsPanel,
+  TableSettingsPanel,
+} from "@finos/vuu-table-extras";
+import { registerComponent } from "@finos/vuu-layout";
 
 import "./App.css";
+
+registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
+registerComponent("TableSettings", TableSettingsPanel, "view");
 
 // createNewChild is used when we add a new Tab to Stack
 const layoutProps: ShellProps["LayoutProps"] = {

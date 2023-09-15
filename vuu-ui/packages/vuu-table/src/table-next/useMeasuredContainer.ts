@@ -117,7 +117,6 @@ export const useMeasuredContainer = ({
 
   const onResize: ResizeHandler = useCallback(
     ({ clientWidth, clientHeight }: Partial<ClientSize>) => {
-      console.log(`onResize ${clientHeight}`);
       setSize((currentSize) => {
         const { css, inner, outer } = currentSize;
         return isNumber(clientHeight) &&

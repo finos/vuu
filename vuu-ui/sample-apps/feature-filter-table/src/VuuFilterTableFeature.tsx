@@ -96,10 +96,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
-  // const [filterState, setFilterState] = useState<FilterState>({
-  //   filter: undefined,
-  //   filterQuery: "",
-  // });
 
   const configColumns = tableConfigFromState?.columns;
 
@@ -110,11 +106,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     }),
     [configColumns, getDefaultColumnConfig, tableSchema]
   );
-
-  // const suggestionProvider = useFilterSuggestionProvider({
-  //   columns: tableSchema.columns,
-  //   table: tableSchema.table,
-  // });
 
   const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
@@ -146,12 +137,9 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     title,
   ]);
 
-  console.log({ dataSource, tableConfig });
-
   useEffect(() => {
     dataSource.resume?.();
     return () => {
-      // suspend activity on the dataSource when component is unmounted
       dataSource.suspend?.();
     };
   }, [dataSource]);
@@ -178,7 +166,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     },
     dataSource,
     onConfigChange: handleTableConfigChange,
-    renderBufferSize: 20,
+    renderBufferSize: 50,
   };
 
   return (
@@ -188,7 +176,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
         TableProps={tableProps}
         style={{ flex: "1 1 auto" }}
       />
-      <div className="vuuToolbarProxy vuuBlotter-footer" style={{ height: 32 }}>
+      <div className="vuuToolbarProxy vuuBlotter-footer" style={{ height: 18 }}>
         <DataSourceStats dataSource={dataSource} />
       </div>
     </FlexboxLayout>

@@ -9,6 +9,8 @@ import React, {
 
 import "./Splitter.css";
 
+const classBase = "vuuSplitter";
+
 export type SplitterDragStartHandler = (index: number) => void;
 export type SplitterDragHandler = (index: number, distance: number) => void;
 export type SplitterDragEndHandler = () => void;
@@ -56,7 +58,7 @@ export const Splitter = React.memo(function Splitter({
   const handleKeyDownInitDrag = useCallback(
     (evt) => {
       const { key } = evt;
-      const horizontalMove = key === "ArrowLeft" || key === "ArrowRIght";
+      const horizontalMove = key === "ArrowLeft" || key === "ArrowRight";
       const verticalMove = key === "ArrowUp" || key === "ArrowDown";
       if ((column && verticalMove) || (!column && horizontalMove)) {
         onDragStart(index);
@@ -115,7 +117,10 @@ export const Splitter = React.memo(function Splitter({
     keyDownHandlerRef.current = handleKeyDownInitDrag;
   };
 
-  const className = cx("Splitter", "focusable", { active, column });
+  const className = cx(classBase, {
+    [`${classBase}-active`]: active,
+    [`${classBase}-column`]: column,
+  });
   return (
     <div
       className={className}
@@ -129,7 +134,7 @@ export const Splitter = React.memo(function Splitter({
       onMouseDown={handleMouseDown}
       tabIndex={0}
     >
-      <div className="grab-zone" />
+      <div className={`${classBase}-grab-zone`} />
     </div>
   );
 });

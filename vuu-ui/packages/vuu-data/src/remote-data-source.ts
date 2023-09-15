@@ -114,12 +114,6 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (this.status !== "initialising") {
-      throw Error(
-        "VuuDataSource subscribe should not be called more than once"
-      );
-    }
-
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -138,6 +132,10 @@ export class RemoteDataSource
     // subscribe. This ensures we will subscribe with latest value.
     if (range) {
       this.#range = range;
+    }
+
+    if (this.status !== "initialising") {
+      return;
     }
 
     this.status = "subscribing";
@@ -263,7 +261,6 @@ export class RemoteDataSource
   }
 
   select(selected: Selection) {
-    console.log({ selected });
     this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
@@ -333,8 +330,10 @@ export class RemoteDataSource
   }
 
   set range(range: VuuRange) {
-    this.#range = range;
-    this.rangeRequest(range);
+    if (range.from !== this.#range.from || range.to !== this.#range.to) {
+      this.#range = range;
+      this.rangeRequest(range);
+    }
   }
 
   private rawRangeRequest: RangeRequest = (range) => {
