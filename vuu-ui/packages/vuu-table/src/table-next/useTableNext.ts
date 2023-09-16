@@ -176,6 +176,9 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
+      console.log(`useTableNext handleConfigCChanged`, {
+        tableConfig,
+      });
       dispatchColumnAction({
         type: "init",
         tableConfig,

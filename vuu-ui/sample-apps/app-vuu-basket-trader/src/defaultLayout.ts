@@ -9,6 +9,7 @@ export const defaultLayout: LayoutJSON = {
       allowAddTab: true,
       allowRenameTab: true,
       animateSelectionThumb: false,
+      className: "vuuShellMainTabstrip",
       location: "main-tab",
     },
     preserve: true,

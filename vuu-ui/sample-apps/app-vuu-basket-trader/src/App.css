@@ -24,6 +24,7 @@ body {
   padding: 8px;
 }
 
+
 .ToolbarField > svg {
   fill: var(--spectrum-global-color-static-gray-600);
   width: 18px;
@@ -73,12 +74,16 @@ body {
   position: relative;
   width: 100%;
 }
-  
+
+.vuuShellMainTabstrip > .vuuOverflowContainer-wrapContainer {
+  background: var(--vuu-color-gray-25);
+
+}
+
   .vuuShell-mainTabs > .vuuTabstrip {
     --vuuTabstrip-height: 28px;
     --saltTabs-tabstrip-height: 29px;
     --tabstrip-height: 29px;
-    background-color: white;
     left:-1px;
     padding-bottom: 7px;
     position: absolute !important;
@@ -93,20 +98,21 @@ body {
 
   .vuuShell-mainTabs > .vuuTabstrip:before {
     background-color: transparent;
+    border-radius: 0 6px 0 0;
+    border-left: solid 1px #D6D7DA;
+    border-right: solid 1px #D6D7DA;
+    border-top: solid 1px #D6D7DA;
     content: '';
     position: absolute;
     bottom: 0;
     left:0;
     right:0;
     height: 8px;
-    border-radius: 0 6px 0 0;
-    border-left: solid 1px #D6D7DA;
-    border-right: solid 1px #D6D7DA;
-    border-top: solid 1px #D6D7DA;
+    z-index: 1;
   }
 
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab {
-    background-color: #F1F2F4;
+    background-color: var(--vuu-color-gray-28);
     border-color: #D6D7DA;
     border-radius: 6px 6px 0 0;
     border-width: 1px;
@@ -117,6 +123,7 @@ body {
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected {
     background-color: white;
     border-bottom-color: white;
+    z-index: 1;
   }
 
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected:before{

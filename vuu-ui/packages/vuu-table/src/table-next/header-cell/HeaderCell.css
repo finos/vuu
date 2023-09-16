@@ -5,6 +5,9 @@
   align-items: center;
   background-color: var(--vuuTableNextHeaderCell-background, inherit);
   border-bottom: 1px solid #ccc;
+  border-right-color: var(--cell-borderColor);
+  border-right-style: solid;
+  border-right-width: 1px;
   box-sizing: border-box;
   cursor: default;
   display: inline-flex;

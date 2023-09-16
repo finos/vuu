@@ -3,7 +3,7 @@ import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
 import {
-  ChangeEvent,
+  MouseEvent,
   SyntheticEvent,
   useCallback,
   useMemo,
@@ -87,11 +87,11 @@ export const useTableSettings = ({
   }, []);
 
   const handleChangeTableAttribute = useCallback(
-    (evt: ChangeEvent<HTMLInputElement>) => {
-      const { checked, value } = evt.target as HTMLInputElement;
+    (evt: MouseEvent<HTMLButtonElement>) => {
+      const { ariaChecked, value } = evt.target as HTMLInputElement;
       setTableConfig((config) => ({
         ...config,
-        [value]: checked,
+        [value]: ariaChecked !== "true",
       }));
     },
     []
@@ -115,5 +115,6 @@ export const useTableSettings = ({
     onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
     onMoveListItem: handleMoveListItem,
+    tableConfig,
   };
 };

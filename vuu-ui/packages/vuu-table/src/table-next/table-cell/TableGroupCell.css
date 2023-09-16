@@ -1,6 +1,10 @@
 .vuuTableNextGroupCell {
     --group-cell-spacer-width: 20px;
     align-items: center;
+    border-right-color: var(--vuuTableNextGroupCell-borderColor, var(--salt-separable-tertiary-borderColor));
+    border-right-style: solid;
+    border-right-width: 1px;
+  
     cursor: pointer;
     display: inline-flex;
     height: var(--row-height);

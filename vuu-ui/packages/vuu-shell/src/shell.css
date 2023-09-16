@@ -1,7 +1,11 @@
 .vuuShell {
-  background-color: var(--salt-container-primary-background, ivory);
+  background-color: var(--vuu-color-gray-25);
   height: var(--vuuShell-height, 100vh);
   width: var(--vuuShell-width, 100vw);
+}
+
+.vuuShell-mainTabs {
+  background: var(--salt-container-primary-background);
 }
 
 .vuuShell-palette {
@@ -12,4 +16,9 @@
 .vuuShell-warningPlaceholder {
   background-color: var(--salt-container-background-high);
   height: 100%;
+}
+
+/* until we reinstat5e the toolbar */
+.vuuToolbarProxy {
+  background: var(--salt-container-primary-background);
 }

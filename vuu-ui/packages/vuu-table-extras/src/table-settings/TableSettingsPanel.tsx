@@ -12,7 +12,6 @@ import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 
 import "./TableSettingsPanel.css";
-import { Switch } from "@salt-ds/lab";
 
 const classBase = "vuuTableSettingsPanel";
 
@@ -30,7 +29,7 @@ export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
 export const TableSettingsPanel = ({
   availableColumns,
   onConfigChange,
-  tableConfig,
+  tableConfig: tableConfigProp,
   ...htmlAttributes
 }: TableSettingsProps) => {
   const {
@@ -40,10 +39,11 @@ export const TableSettingsPanel = ({
     onChangeTableAttribute,
     onColumnChange,
     onMoveListItem,
+    tableConfig,
   } = useTableSettings({
     availableColumns,
     onConfigChange,
-    tableConfig,
+    tableConfig: tableConfigProp,
   });
 
   return (
@@ -72,37 +72,37 @@ export const TableSettingsPanel = ({
           />
         </ToggleButtonGroup>
       </FormField>
+
+      <FormField>
+        <FormFieldLabel>Grid separators</FormFieldLabel>
+        <div className="saltToggleButtonGroup vuuToggleButtonGroup saltToggleButtonGroup-horizontal vuuGridSeparators">
+          <ToggleButton
+            className="vuuIconToggleButton"
+            data-icon="row-striping"
+            selected={tableConfig.zebraStripes}
+            onChange={onChangeTableAttribute}
+            value="zebraStripes"
+          />
+          <ToggleButton
+            className="vuuIconToggleButton"
+            data-icon="row-lines"
+            selected={tableConfig.rowSeparators}
+            onChange={onChangeTableAttribute}
+            value="rowSeparators"
+          />
+          <ToggleButton
+            className="vuuIconToggleButton"
+            data-icon="col-lines"
+            selected={tableConfig.columnSeparators}
+            onChange={onChangeTableAttribute}
+            value="columnSeparators"
+          />
+        </div>
+      </FormField>
+
       <FormField>
         <FormFieldLabel>Default Column Width</FormFieldLabel>
         <Input className="vuuInput" />
-      </FormField>
-
-      <div className={`${classBase}-header`}>
-        <span>DataTable Display</span>
-      </div>
-      <FormField labelPlacement="left">
-        <FormFieldLabel>Row Striping</FormFieldLabel>
-        <Switch
-          checked={tableConfig.zebraStripes}
-          onChange={onChangeTableAttribute}
-          value="zebraStripes"
-        />
-      </FormField>
-      <FormField labelPlacement="left">
-        <FormFieldLabel>Row Separators</FormFieldLabel>
-        <Switch
-          checked={tableConfig.rowSeparators}
-          onChange={onChangeTableAttribute}
-          value="rowSeparators"
-        />
-      </FormField>
-      <FormField labelPlacement="left">
-        <FormFieldLabel>Column Separators</FormFieldLabel>
-        <Switch
-          checked={tableConfig.columnSeparators}
-          onChange={onChangeTableAttribute}
-          value="columnSeparators"
-        />
       </FormField>
 
       <ColumnList
