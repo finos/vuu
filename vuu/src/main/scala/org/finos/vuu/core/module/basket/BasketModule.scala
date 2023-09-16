@@ -32,7 +32,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = "basketConstituent",
           keyField = Ric,
-          columns = Columns.fromNames(Ric.string(), BasketId.string(), Weighting.double()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(Ric.string(), BasketId.string(), Weighting.double(), LastTrade.string(), Change.string(), Volume.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = Id
         ),
@@ -92,6 +92,9 @@ object BasketModule extends DefaultModule {
     final val Ric = "ric"
     final val BasketId = "basketId"
     final val Weighting = "weighting"
+    final val LastTrade = "lastTrade"
+    final val Change = "change"
+    final val Volume = "volume"
   }
 
 }
