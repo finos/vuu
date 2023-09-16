@@ -9,7 +9,7 @@ import {
 import { Dropdown } from "@salt-ds/lab";
 import { Button, Text } from "@salt-ds/core";
 import { IFrame } from "./components";
-import { ReactElement, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 

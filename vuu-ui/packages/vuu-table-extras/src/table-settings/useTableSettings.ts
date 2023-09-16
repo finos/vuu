@@ -2,6 +2,7 @@ import { SchemaColumn } from "@finos/vuu-data";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
+import { addColumnToSubscribedColumns, subscribedOnly } from "@finos/vuu-utils";
 import {
   MouseEvent,
   SyntheticEvent,
@@ -38,6 +39,7 @@ const buildColumnItems = (
 export const useTableSettings = ({
   availableColumns,
   onConfigChange,
+  onDataSourceConfigChange,
   tableConfig: tableConfigProp,
 }: TableSettingsProps) => {
   const [tableConfig, setTableConfig] = useState<TableConfig>(tableConfigProp);
@@ -59,7 +61,36 @@ export const useTableSettings = ({
       // to be applied immediately
       const columnItem = columnItems.find((col) => col.name === name);
       if (property === "subscribed") {
-        console.log(`unsubscribe from ${name}`);
+        if (columnItem?.subscribed) {
+          const subscribedColumns = tableConfig.columns
+            .filter((col) => col.name !== name)
+            .map((col) => col.name);
+          setTableConfig({
+            ...tableConfig,
+            columns: tableConfig.columns.filter(
+              subscribedOnly(subscribedColumns)
+            ),
+          });
+          onDataSourceConfigChange({
+            columns: subscribedColumns,
+          });
+        } else {
+          const newConfig = {
+            ...tableConfig,
+            columns: addColumnToSubscribedColumns(
+              tableConfig.columns,
+              availableColumns,
+              name
+            ),
+          };
+          setTableConfig(newConfig);
+
+          const subscribedColumns = newConfig.columns.map((col) => col.name);
+
+          onDataSourceConfigChange({
+            columns: subscribedColumns,
+          });
+        }
       } else if (columnItem?.subscribed) {
         const column = tableConfig.columns.find((col) => col.name === name);
         if (column) {
@@ -73,7 +104,7 @@ export const useTableSettings = ({
         }
       }
     },
-    [columnItems, tableConfig]
+    [availableColumns, columnItems, onDataSourceConfigChange, tableConfig]
   );
 
   const handleChangeColumnLabels = useCallback((evt: SyntheticEvent) => {

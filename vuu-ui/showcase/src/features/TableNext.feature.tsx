@@ -103,6 +103,7 @@ export const TableNextFeature = ({ schema }: TableNextFeatureProps) => {
   };
 
   const tableProps = {
+    availableColumns: schema.columns,
     config: {
       ...config,
       ...tableConfig,

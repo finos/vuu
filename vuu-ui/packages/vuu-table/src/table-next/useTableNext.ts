@@ -1,4 +1,8 @@
-import { DataSourceSubscribedMessage, JsonDataSource } from "@finos/vuu-data";
+import {
+  DataSourceConfig,
+  DataSourceSubscribedMessage,
+  JsonDataSource,
+} from "@finos/vuu-data";
 import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -12,7 +16,6 @@ import {
   useLayoutEffectSkipFirst,
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
-import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
@@ -47,11 +50,14 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
+import { TableSettingsProps } from "packages/vuu-table-extras/src";
+import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
 
 export interface TableHookProps
   extends MeasuredProps,
     Pick<
       TableProps,
+      | "availableColumns"
       | "config"
       | "dataSource"
       | "onConfigChange"
@@ -68,6 +74,7 @@ export interface TableHookProps
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
 export const useTable = ({
+  availableColumns,
   config,
   dataSource,
   headerHeight = 25,
@@ -189,6 +196,30 @@ export const useTable = ({
     [dataSource.config, dispatchColumnAction, onConfigChange]
   );
 
+  const handleDataSourceConfigChanged = useCallback(
+    (dataSourceConfig: DataSourceConfig) => {
+      console.log("config changed", {
+        dataSourceConfig,
+      });
+      dataSource.config = {
+        ...dataSource.config,
+        ...dataSourceConfig,
+      };
+    },
+    [dataSource]
+  );
+
+  useEffect(() => {
+    dataSource.on("config", (config, confirmed) => {
+      // expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "tableConfig",
+        ...config,
+        confirmed,
+      });
+    });
+  }, [dataSource, dispatchColumnAction]);
+
   const showColumnSettingsPanel = useCallback(
     (action: ColumnActionColumnSettings) => {
       dispatchLayoutAction({
@@ -223,17 +254,27 @@ export const useTable = ({
           type: "TableSettings",
           props: {
             // TODO get this from dataSource
-            availableColumns: tableConfig.columns.map(
-              ({ name, serverDataType }) => ({ name, serverDataType })
-            ),
+            availableColumns:
+              availableColumns ??
+              tableConfig.columns.map(({ name, serverDataType }) => ({
+                name,
+                serverDataType,
+              })),
             onConfigChange: handleConfigChanged,
+            onDataSourceConfigChange: handleDataSourceConfigChanged,
             tableConfig,
-          },
+          } as TableSettingsProps,
         },
         title: "DataGrid Settings",
       },
     } as SetPropsAction);
-  }, [dispatchLayoutAction, handleConfigChanged, tableConfig]);
+  }, [
+    availableColumns,
+    dispatchLayoutAction,
+    handleConfigChanged,
+    handleDataSourceConfigChanged,
+    tableConfig,
+  ]);
 
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
@@ -377,45 +418,7 @@ export const useTable = ({
     onVerticalScroll: handleVerticalScroll,
   });
 
-  useEffect(() => {
-    dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
-      dispatchColumnAction({
-        type: "tableConfig",
-        ...config,
-        confirmed,
-      });
-    });
-  }, [dataSource, dispatchColumnAction]);
-
-  // TOSO ship this out into a hook
-  const [showContextMenu] = usePopupContextMenu();
-
-  const onContextMenu = useCallback(
-    (evt: MouseEvent<HTMLElement>) => {
-      // const { current: currentData } = dataRef;
-      // const { current: currentDataSource } = dataSourceRef;
-      const target = evt.target as HTMLElement;
-      const cellEl = target?.closest("div[role='cell']");
-      const rowEl = target?.closest("div[role='row']");
-      if (cellEl && rowEl /*&& currentData && currentDataSource*/) {
-        //   const { columns, selectedRowsCount } = currentDataSource;
-        const columnMap = buildColumnMap(columns);
-        const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
-        const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
-        const row = data.find(([idx]) => idx === rowIndex);
-        const columnName = columns[cellIndex];
-        showContextMenu(evt, "grid", {
-          columnMap,
-          columnName,
-          row,
-          // selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
-          // viewport: dataSource?.viewport,
-        });
-      }
-    },
-    [columns, data, showContextMenu]
-  );
+  const onContextMenu = useTableContextMenuNext({ columns, data });
 
   const onHeaderClick = useCallback(
     (evt: MouseEvent) => {
@@ -458,6 +461,17 @@ export const useTable = ({
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  useEffect(() => {
+    dataSource.on("config", (config, confirmed) => {
+      // expectConfigChangeRef.current = true;
+      dispatchColumnAction({
+        type: "tableConfig",
+        ...config,
+        confirmed,
+      });
+    });
+  }, [dataSource, dispatchColumnAction]);
 
   const handleDrop = useCallback(
     (moveFrom: number, moveTo: number) => {

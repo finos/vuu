@@ -124,6 +124,7 @@ export interface ColumnActionUpdateProp {
 
 export interface ColumnActionTableConfig extends DataSourceConfig {
   confirmed?: boolean;
+  // TODO this is datasource config not tableConfig
   type: "tableConfig";
 }
 
@@ -149,7 +150,7 @@ export type GridModelReducer = Reducer<GridModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
-  info?.(`GridModelReducer ${action.type}`);
+  info?.(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
       return init(action);
