@@ -17,6 +17,13 @@
     padding-top: 24px;
 }
 
+.vuuColumnSettingsPanel-buttonBar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
 [data-icon='align-left'] {
     --vuu-icon-svg: var(--vuu-svg-align-left);
   }

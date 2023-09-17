@@ -1,8 +1,8 @@
 import { LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutConfig } from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
-import { TableNextFeature } from "../../../features/TableNext.feature";
-import { useTableSchema } from "../../utils";
+import { TableNextFeature } from "../../features/TableNext.feature";
+import { useTableSchema } from "../utils";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { registerComponent } from "@finos/vuu-layout";
 

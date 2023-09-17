@@ -17,17 +17,17 @@ import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
 import {
   isViewportMenusAction,
   isVisualLinksAction,
   MenuActionConfig,
   useVuuMenuActions,
-} from "packages/vuu-data-react/src";
+} from "@finos/vuu-data-react";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
 
-import "./VuuFilterTableFeature.css";
 import { Button } from "@salt-ds/core";
+import "./VuuFilterTableFeature.css";
 
 const classBase = "VuuFilterTableFeature";
 

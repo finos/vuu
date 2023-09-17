@@ -1,7 +1,7 @@
 {
-  "name": "feature-vuu-basket-trading",
+  "name": "feature-vuu-template",
   "version": "0.0.26",
-  "description": "Basket Trading",
+  "description": "Vuu Feature Template",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ../../scripts/build-feature.mjs",

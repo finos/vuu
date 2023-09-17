@@ -33,7 +33,7 @@ import {
 } from "react";
 import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
 import { schemas } from "../utils";
-import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature/TableNextFeature.examples";
+import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature.examples";
 
 import "./NewTheme.examples.css";
 
@@ -202,7 +202,13 @@ const ShellWithNewTheme = () => {
       <Shell
         defaultLayout={layout}
         leftSidePanelLayout="full-height"
-        leftSidePanel={<LeftNav features={features} style={{ width: 240 }} />}
+        leftSidePanel={
+          <LeftNav
+            features={[]}
+            tableFeatures={features}
+            style={{ width: 240 }}
+          />
+        }
         loginUrl={window.location.toString()}
         user={user}
         saveLocation="local"

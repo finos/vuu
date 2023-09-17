@@ -65,7 +65,7 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     };
   }, [dataSource]);
 
-  return <div className={classBase}>Instrument Tiles</div>;
+  return <div className={classBase}>Basket Trading</div>;
 };
 
 export default VuuBasketTradingFeature;

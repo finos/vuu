@@ -204,10 +204,20 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
+  const navigateNextColumn = useCallback(() => {
+    console.log("next column");
+  }, []);
+
+  const navigatePrevColumn = useCallback(() => {
+    console.log("prev column");
+  }, []);
+
   return {
     availableRenderers,
     cellRenderer: selectedRenderer,
     column,
+    navigateNextColumn,
+    navigatePrevColumn,
     onChange: handleChange,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
