@@ -141,6 +141,7 @@ const ShellWithNewTheme = () => {
   const layout = useMemo(() => {
     return {
       type: "Stack",
+      id: "main-tabs",
       props: {
         className: "vuuShell-mainTabs",
         TabstripProps: {
@@ -200,6 +201,9 @@ const ShellWithNewTheme = () => {
       menuBuilder={buildMenuOptions}
     >
       <Shell
+        LayoutProps={{
+          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+        }}
         defaultLayout={layout}
         leftSidePanelLayout="full-height"
         leftSidePanel={

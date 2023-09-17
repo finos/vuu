@@ -54,6 +54,10 @@ export const ColumnSettingsPanel = ({
 
   return (
     <div className={classBase}>
+      <div className={`${classBase}-header`}>
+        <span>{label}</span>
+      </div>
+
       <FormField data-field="column-label">
         <FormFieldLabel>Column Label</FormFieldLabel>
         <Input
@@ -124,6 +128,7 @@ export const ColumnSettingsPanel = ({
       />
       <div className={`${classBase}-buttonBar`}>
         <Button
+          className={`${classBase}-buttonNavPrev`}
           variant="secondary"
           data-icon="arrow-left"
           onClick={navigatePrevColumn}
@@ -131,6 +136,7 @@ export const ColumnSettingsPanel = ({
           PREVIOUS
         </Button>
         <Button
+          className={`${classBase}-buttonNavNext`}
           variant="secondary"
           data-icon="arrow-right"
           onClick={navigateNextColumn}
