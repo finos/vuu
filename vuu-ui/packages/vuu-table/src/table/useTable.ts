@@ -19,7 +19,7 @@ import {
   buildColumnMap,
   isJsonGroup,
   metadataKeys,
-  moveItem,
+  moveItemDeprecated,
 } from "@finos/vuu-utils";
 import {
   MouseEvent,
@@ -305,7 +305,7 @@ export const useTable = ({
   const handleDropColumn = useCallback(
     (fromIndex: number, toIndex: number) => {
       const column = dataSource.columns[fromIndex];
-      const columns = moveItem(dataSource.columns, column, toIndex);
+      const columns = moveItemDeprecated(dataSource.columns, column, toIndex);
       if (columns !== dataSource.columns) {
         dataSource.columns = columns;
         dispatchColumnAction({ type: "tableConfig", columns });

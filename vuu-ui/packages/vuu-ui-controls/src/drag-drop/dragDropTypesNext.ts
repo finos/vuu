@@ -88,7 +88,7 @@ export interface DragDropProps {
 export type DragDropHook = (props: DragDropProps) => DragHookResult;
 
 export interface InternalDragDropProps
-  extends Omit<DragDropProps, "draggableClassName"> {
+  extends Omit<DragDropProps, "draggableClassName" | "id"> {
   draggableRef: RefObject<HTMLDivElement>;
   isDragSource?: boolean;
   isDropTarget?: boolean;

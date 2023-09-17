@@ -6,14 +6,12 @@ import {
   TableConfig,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
-import { moveItem } from "@finos/vuu-ui-controls";
+import { moveItem } from "@finos/vuu-utils";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
-  findColumn,
   getCellRenderer,
-  getColumnName,
   getTableHeadings,
   getValueFormatter,
   isFilteredColumn,

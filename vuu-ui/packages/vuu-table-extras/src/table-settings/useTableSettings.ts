@@ -2,7 +2,11 @@ import { SchemaColumn } from "@finos/vuu-data";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
-import { addColumnToSubscribedColumns, subscribedOnly } from "@finos/vuu-utils";
+import {
+  addColumnToSubscribedColumns,
+  moveItem,
+  subscribedOnly,
+} from "@finos/vuu-utils";
 import {
   MouseEvent,
   SyntheticEvent,
@@ -12,6 +16,20 @@ import {
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
 import { TableSettingsProps } from "./TableSettingsPanel";
+
+const sortOrderFromAvailableColumns = (
+  availableColumns: SchemaColumn[],
+  columns: ColumnDescriptor[]
+) => {
+  const sortedColumns: ColumnDescriptor[] = [];
+  for (const { name } of availableColumns) {
+    const column = columns.find((col) => col.name === name);
+    if (column) {
+      sortedColumns.push(column);
+    }
+  }
+  return sortedColumns;
+};
 
 export type ColumnItem = Pick<
   ColumnDescriptor,
@@ -37,11 +55,13 @@ const buildColumnItems = (
 };
 
 export const useTableSettings = ({
-  availableColumns,
+  availableColumns: availableColumnsProp,
   onConfigChange,
   onDataSourceConfigChange,
   tableConfig: tableConfigProp,
 }: TableSettingsProps) => {
+  const [availableColumns, setAvailableColumns] =
+    useState<SchemaColumn[]>(availableColumnsProp);
   const [tableConfig, setTableConfig] = useState<TableConfig>(tableConfigProp);
 
   const columnItems = useMemo(
@@ -51,7 +71,16 @@ export const useTableSettings = ({
 
   const handleMoveListItem = useCallback(
     (fromIndex: number, toIndex: number) => {
-      console.log(`move list item from ${fromIndex} to ${toIndex}`);
+      setAvailableColumns((columns) => {
+        const newAvailableColumns = moveItem(columns, fromIndex, toIndex);
+        const newColumns = sortOrderFromAvailableColumns(
+          newAvailableColumns,
+          tableConfig.columns
+        );
+        console.log({ newColumns });
+        // TODO fire a move column action
+        return newAvailableColumns;
+      });
     },
     []
   );
