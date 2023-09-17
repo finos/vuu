@@ -44,9 +44,11 @@ export const App = ({ user }: { user: VuuUser }) => {
     setDialogContent(undefined);
   };
 
-  const features = useFeatures({
+  const [features, tableFeatures] = useFeatures({
     features: configuredFeatures,
   });
+
+  console.log({ features, tableFeatures });
 
   // TODO get Context from Shell
   return (
@@ -56,7 +58,13 @@ export const App = ({ user }: { user: VuuUser }) => {
         className="App"
         defaultLayout={defaultLayout}
         leftSidePanelLayout="full-height"
-        leftSidePanel={<LeftNav features={features} style={{ width: 240 }} />}
+        leftSidePanel={
+          <LeftNav
+            features={features}
+            tableFeatures={tableFeatures}
+            style={{ width: 240 }}
+          />
+        }
         saveUrl="https://localhost:8443/api/vui"
         serverUrl={serverUrl}
         user={user}

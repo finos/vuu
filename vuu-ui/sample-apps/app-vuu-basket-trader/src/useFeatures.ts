@@ -9,14 +9,23 @@ export interface FeaturesHookProps {
 
 export const useFeatures = ({
   features: featuresProp,
-}: FeaturesHookProps): FeatureProps[] => {
+}: FeaturesHookProps): [FeatureProps[], FeatureProps[]] => {
   const tables = useVuuTables();
-  const features = useMemo<FeatureProps[]>(() => {
+  const [features, tableFeatures] = useMemo<
+    [FeatureProps[], FeatureProps[]]
+  >(() => {
     const features: FeatureProps[] = [];
-    for (const { featureProps, ...feature } of Object.values(featuresProp)) {
-      if (featureProps?.schema && tables) {
+    const tableFeatures: FeatureProps[] = [];
+    for (const {
+      featureProps,
+      leftNavLocation = "vuu-tables",
+      ...feature
+    } of Object.values(featuresProp)) {
+      const target =
+        leftNavLocation === "vuu-tables" ? tableFeatures : features;
+      if (featureProps?.schema === "*" && tables) {
         for (const tableSchema of tables.values()) {
-          features.push({
+          target.push({
             ...feature,
             ComponentProps: {
               tableSchema,
@@ -26,12 +35,21 @@ export const useFeatures = ({
             )}`,
           });
         }
+      } else if (featureProps?.schema && tables) {
+        //TODO set the
+        const tableSchema = tables.get(featureProps?.schema);
+        target.push({
+          ...feature,
+          ComponentProps: {
+            tableSchema,
+          },
+        });
       } else {
-        features.push(feature);
+        target.push(feature);
       }
     }
-    return features;
+    return [features, tableFeatures];
   }, [featuresProp, tables]);
 
-  return features;
+  return [features, tableFeatures];
 };

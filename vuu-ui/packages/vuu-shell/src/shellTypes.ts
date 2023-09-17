@@ -9,8 +9,9 @@ export interface FeatureConfig {
   title: string;
   url: string;
   css?: string;
+  leftNavLocation: "vuu-features" | "vuu-tables";
   featureProps?: {
-    schema?: boolean;
+    schema?: string;
   };
 }
 

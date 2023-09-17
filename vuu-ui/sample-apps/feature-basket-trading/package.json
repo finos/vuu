@@ -1,7 +1,7 @@
 {
-  "name": "feature-vuu-filter-table",
+  "name": "feature-vuu-basket-trading",
   "version": "0.0.26",
-  "description": "Vuu Filter Table",
+  "description": "Basket Trading",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ../../scripts/build-feature.mjs",
@@ -42,7 +42,8 @@
   },
   "vuu": {
     "featureProps": {
-      "schema": "*"
-    }
+      "schema": "instrumentPrices"
+    },
+    "leftNavLocation": "vuu-features"
   }
 }

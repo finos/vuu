@@ -12,6 +12,7 @@ export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
 
 export const FeatureList = ({
   features,
+  title = "VUU TABLES",
   ...htmlAttributes
 }: FeatureListProps) => {
   const ViewProps = {};
@@ -20,7 +21,7 @@ export const FeatureList = ({
 
   return (
     <div {...htmlAttributes} className={classBase}>
-      <div className={`${classBase}-header`}>VUU TABLES</div>
+      <div className={`${classBase}-header`}>{title}</div>
       <Palette orientation="vertical" ViewProps={ViewProps}>
         {features.map((featureProps, i) => (
           <PaletteItem

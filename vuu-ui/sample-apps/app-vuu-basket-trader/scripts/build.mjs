@@ -23,7 +23,11 @@ const websocketUrl = getCommandLineArg("--url", true);
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
-const features = getCommandLineArg("--features", true, "feature-filter-table");
+const features = getCommandLineArg(
+  "--features",
+  true,
+  "feature-filter-table,feature-instrument-tiles,feature-basket-trading"
+);
 if (configPath) {
   configFile = configPath;
 }
