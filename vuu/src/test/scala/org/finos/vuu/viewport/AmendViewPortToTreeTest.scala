@@ -242,6 +242,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       GroupBy(groupByColumns3, List()))
 
     viewPortContainer.runGroupByOnce()
+    viewPortContainer.runGroupByOnce()
     viewPortContainer.runOnce()
 
     val combinedUpdates3 = combineQs(viewPort3)
