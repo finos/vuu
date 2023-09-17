@@ -6,7 +6,6 @@ import {
   ServerToClientMenuSessionTableAction,
   TypeAheadMethod,
   VuuAggregation,
-  VuuColumnDataType,
   VuuColumns,
   VuuGroupBy,
   VuuRange,
@@ -20,11 +19,9 @@ import { Selection } from "@finos/vuu-datagrid-types";
 import { WebSocketProtocol } from "./websocket-connection";
 
 export interface OpenDialogAction {
-  columns: VuuColumns;
-  dataTypes: VuuColumnDataType[];
-  key: string;
   type: "OPEN_DIALOG_ACTION";
-  table: VuuTable;
+  tableSchema?: TableSchema;
+  table?: VuuTable;
 }
 export interface NoAction {
   type: "NO_ACTION";
@@ -105,8 +102,10 @@ export interface VuuUIMessageInRPCEditReject {
   type: "VP_EDIT_RPC_REJECT";
 }
 
-export interface VuuUIMessageInRPCEditSuccess {
+export interface VuuUIMessageInRPCEditResponse {
+  action: unknown;
   requestId: string;
+  rpcName: string;
   type: "VP_EDIT_RPC_RESPONSE";
 }
 
@@ -144,15 +143,23 @@ export type VuuUIMessageIn =
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta
   | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditSuccess;
+  | VuuUIMessageInRPCEditResponse;
 
 export const isErrorResponse = (
   response?:
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
 ): response is VuuUIMessageInRPCEditReject =>
   response !== undefined && "error" in response;
+
+export const hasAction = (
+  response?:
+    | MenuRpcResponse
+    | VuuUIMessageInRPCEditReject
+    | VuuUIMessageInRPCEditResponse
+): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
+  response != undefined && "action" in response;
 
 export interface VuuUIMessageOutConnect {
   protocol: WebSocketProtocol;

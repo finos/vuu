@@ -1,34 +1,35 @@
 import {
   DataSource,
   DataSourceConfig,
-  isVuuFeatureAction,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { isVuuFeatureAction } from "@finos/vuu-data-react";
+import { Filter } from "@finos/vuu-filter-types";
+import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
   itemsOrOrderChanged,
   metadataKeys,
 } from "@finos/vuu-utils";
-import { AgViewportRows, convertToAgViewportRows } from "./AgGridDataUtils";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { AgDataWindow } from "./AgDataWindow";
+import {
+  AgVuuDataRow,
+  convertToAgViewportRows,
+  toAgViewportRow,
+} from "./AgGridDataUtils";
 
 const { IDX, IS_LEAF, IS_EXPANDED } = metadataKeys;
 const NO_COLUMNS: string[] = [];
 
 type AgRow = {
+  data?: AgVuuDataRow;
   expanded?: boolean;
+  setData: (data: AgVuuDataRow) => void;
   setDataValue: (field: string, value: string | number | boolean) => void;
   setExpanded: (value: boolean) => void;
-};
-
-type IViewportDatasourceParams = {
-  getRow: (rowIndex: number) => AgRow;
-  setRowCount: (rowCount: number) => void;
-  setRowData: (data: AgViewportRows) => void;
+  updateData: (data: AgVuuDataRow) => void;
 };
 
 const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
@@ -37,6 +38,12 @@ const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
       (entry) => entry.reverse() as [number, string]
     )
   );
+
+export interface IViewportDatasourceParams {
+  setRowCount: (count: number, keepRenderedRows: boolean) => void;
+  setRowData: (rowData: { [key: number]: any }) => void;
+  getRow: (rowIndex: number) => AgRow;
+}
 
 /**
  * This is a custom ViewportRowModelDataSource that complies with the interface
@@ -100,8 +107,11 @@ export class ViewportRowModelDataSource {
 
   // Called by Ag Grid whe  user scrolls
   setViewportRange(firstRow: number, lastRow: number): void {
-    this.dataWindow.setRange(firstRow, lastRow + 1);
-    this.dataSource.range = { from: firstRow, to: lastRow + 1 };
+    // we have sometimes seen a call coming in here from AgGrid
+    // where lastRow is (much) less than firstRow.
+    const safeLastRow = Math.max(firstRow, lastRow + 1);
+    this.dataWindow.setRange(firstRow, safeLastRow);
+    this.dataSource.range = { from: firstRow, to: safeLastRow };
   }
 
   setRowGroups(groupBy: VuuGroupBy) {
@@ -131,7 +141,7 @@ export class ViewportRowModelDataSource {
       if (message.size !== undefined) {
         if (message.size !== this.dataWindow.rowCount) {
           this.dataWindow.setRowCount(message.size);
-          this.setAgRowCount(message.size);
+          this.setAgRowCount(message.size, false);
         }
       }
       if (message.rows) {
@@ -143,13 +153,17 @@ export class ViewportRowModelDataSource {
               [IS_EXPANDED]: isExpanded,
               [IS_LEAF]: isLeaf,
             } = dataRow;
-            const updates = this.dataWindow.update(dataRow, reverseColumnMap);
             const agRowNode = this.getAgRow(rowIndex);
-
-            if (updates) {
-              for (let i = 0; i < updates.length; i += 2) {
-                agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+            if (agRowNode.data) {
+              const updates = this.dataWindow.update(dataRow, reverseColumnMap);
+              if (updates) {
+                for (let i = 0; i < updates.length; i += 2) {
+                  agRowNode.setDataValue(updates[i] as string, updates[i + 1]);
+                }
               }
+            } else {
+              const agVuuDataRow = toAgViewportRow(dataRow, columnMap);
+              agRowNode.setData(agVuuDataRow);
             }
 
             if (!isLeaf) {

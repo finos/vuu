@@ -11,7 +11,6 @@ export const useTable = ({
   config,
   dataSource,
   headerHeight,
-  renderBufferSize = 0,
   rowHeight = 30,
   tableRef,
 }: {
@@ -22,14 +21,21 @@ export const useTable = ({
   rowHeight?: number;
   tableRef: RefObject<HTMLDivElement>;
 }) => {
-  const [rowCount, setRowCount] = useState<number>(0);
+  const [rowCount] = useState<number>(0);
   const containerMeasurements = useMeasuredContainer();
   const columnMap = useMemo(
     () => buildColumnMap(config.columns.map((col) => col.name)),
     [config.columns]
   );
   const columns: KeyedColumnDescriptor[] = useMemo(
-    () => config.columns.map((col) => ({ ...col, key: columnMap[col.name] })),
+    () =>
+      config.columns.map((col) => ({
+        ...col,
+        key: columnMap[col.name],
+        label: col.label ?? col.name,
+        valueFormatter: undefined,
+        width: col.width ?? 100,
+      })),
     [columnMap, config.columns]
   );
 
@@ -41,7 +47,7 @@ export const useTable = ({
     size: containerMeasurements.innerSize,
   });
 
-  const { data, setRange } = useDataSource({
+  const { data } = useDataSource({
     dataSource,
   });
 

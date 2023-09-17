@@ -1,16 +1,16 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
 import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -48,11 +48,10 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       (0 until 50).foreach( i => addRicSortableOrder(ordersProvider, i, dateTime))
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue  = new OutboundRowPublishQueue()
 
       val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.columns.map(_.name).toList)
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orders, ViewPortRange(0, 5), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orders, ViewPortRange(0, 5), columns)
 
       viewPortContainer.runOnce()
 
@@ -93,12 +92,12 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       assertVpEq(combineQs(viewport)){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00090","chris"   ,"90VOD.L" ,1437732000000l,100       ),
-          ("NYC-00080","chris"   ,"80VOD.L" ,1437732000000l,100       ),
-          ("NYC-00070","chris"   ,"70VOD.L" ,1437732000000l,100       ),
-          ("NYC-00060","chris"   ,"60VOD.L" ,1437732000000l,100       ),
-          ("NYC-00050","chris"   ,"50VOD.L" ,1437732000000l,100       )
+          ("orderId", "trader", "ric", "tradeTime", "quantity"),
+          ("NYC-00050", "chris", "50VOD.L", 1437732000000L, 100),
+          ("NYC-00060", "chris", "60VOD.L", 1437732000000L, 100),
+          ("NYC-00070", "chris", "70VOD.L", 1437732000000L, 100),
+          ("NYC-00080", "chris", "80VOD.L", 1437732000000L, 100),
+          ("NYC-00090", "chris", "90VOD.L", 1437732000000L, 100)
         )
       }
 
@@ -175,13 +174,12 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 //      val viewPortContainer = new ViewPortContainer(groupByContainer, tableContainer)
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue  = new OutboundRowPublishQueue()
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       //val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
       viewPortContainer.runOnce()
 
@@ -189,15 +187,15 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       assertVpEq(updates){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000l,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000l,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1437732000000l,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000l,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","chris"   ,"BT.L"    ,1437732000000l,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","chris"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+          ("NYC-0001", "chris", "VOD.L", 1437732000000L, 100, 220.0, 222.0, null, null, null),
+          ("NYC-0002", "chris", "VOD.L", 1437732000000L, 200, 220.0, 222.0, null, null, null),
+          ("NYC-0003", "chris", "VOD.L", 1437732000000L, 300, 220.0, 222.0, null, null, null),
+          ("NYC-0004", "chris", "VOD.L", 1437732000000L, 400, 220.0, 222.0, null, null, null),
+          ("NYC-0005", "chris", "VOD.L", 1437732000000L, 500, 220.0, 222.0, null, null, null),
+          ("NYC-0006", "chris", "VOD.L", 1437732000000L, 600, 220.0, 222.0, null, null, null),
+          ("NYC-0007", "chris", "BT.L", 1437732000000L, 1000, 500.0, 501.0, null, null, null),
+          ("NYC-0008", "chris", "BT.L", 1437732000000L, 500, 500.0, 501.0, null, null, null)
         )
       }
 
@@ -210,13 +208,13 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       assertVpEq(updates2){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,221.0     ,224.0     ,null      ,226.0     ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000l,200       ,221.0     ,224.0     ,null      ,226.0     ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000l,300       ,221.0     ,224.0     ,null      ,226.0     ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1437732000000l,400       ,221.0     ,224.0     ,null      ,226.0     ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,221.0     ,224.0     ,null      ,226.0     ,null      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000l,600       ,221.0     ,224.0     ,null      ,226.0     ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+          ("NYC-0001", "chris", "VOD.L", 1437732000000L, 100, 221.0, 224.0, null, 226.0, null),
+          ("NYC-0002", "chris", "VOD.L", 1437732000000L, 200, 221.0, 224.0, null, 226.0, null),
+          ("NYC-0003", "chris", "VOD.L", 1437732000000L, 300, 221.0, 224.0, null, 226.0, null),
+          ("NYC-0004", "chris", "VOD.L", 1437732000000L, 400, 221.0, 224.0, null, 226.0, null),
+          ("NYC-0005", "chris", "VOD.L", 1437732000000L, 500, 221.0, 224.0, null, 226.0, null),
+          ("NYC-0006", "chris", "VOD.L", 1437732000000L, 600, 221.0, 224.0, null, 226.0, null)
         )
       }
 
@@ -294,13 +292,13 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       assertVpEq(updates5){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0008","chris"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000l,600       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000l,300       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000l,200       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,221.0     ,226.0     ,null      ,226.0     ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+          ("NYC-0001", "chris", "VOD.L", 1437732000000L, 100, 221.0, 226.0, null, 226.0, null),
+          ("NYC-0002", "chris", "VOD.L", 1437732000000L, 200, 221.0, 226.0, null, 226.0, null),
+          ("NYC-0003", "chris", "VOD.L", 1437732000000L, 300, 221.0, 226.0, null, 226.0, null),
+          ("NYC-0005", "chris", "VOD.L", 1437732000000L, 500, 221.0, 226.0, null, 226.0, null),
+          ("NYC-0006", "chris", "VOD.L", 1437732000000L, 600, 221.0, 226.0, null, 226.0, null),
+          ("NYC-0008", "chris", "BT.L", 1437732000000L, 500, 500.0, 501.0, null, null, null)
         )
       }
 
@@ -338,13 +336,12 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       //      val viewPortContainer = new ViewPortContainer(groupByContainer, tableContainer)
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("orderIdTrader:String:=concatenate(orderId, trader)"))
 
       //val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
       viewPortContainer.runOnce()
 
@@ -433,14 +430,14 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       assertVpEq(updates4) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ,"orderIdTrader"),
-          ("NYC-0008","chris"   ,"BT.L"    ,1437732000000L,500       ,500.0     ,501.0     ,null      ,null      ,null      ,"NYC-0008chris"),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000L,600       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0006chris"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000L,500       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0005chris"),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1437732000000L,400       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0004chris"),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000L,300       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0003chris"),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000L,200       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0002chris"),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000L,100       ,221.0     ,226.0     ,null      ,226.0     ,null      ,"NYC-0001chris")
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close", "orderIdTrader"),
+          ("NYC-0001", "chris", "VOD.L", 1437732000000L, 100, 221.0, 226.0, null, 226.0, null, "NYC-0001chris"),
+          ("NYC-0002", "chris", "VOD.L", 1437732000000L, 200, 221.0, 226.0, null, 226.0, null, "NYC-0002chris"),
+          ("NYC-0003", "chris", "VOD.L", 1437732000000L, 300, 221.0, 226.0, null, 226.0, null, "NYC-0003chris"),
+          ("NYC-0004", "chris", "VOD.L", 1437732000000L, 400, 221.0, 226.0, null, 226.0, null, "NYC-0004chris"),
+          ("NYC-0005", "chris", "VOD.L", 1437732000000L, 500, 221.0, 226.0, null, 226.0, null, "NYC-0005chris"),
+          ("NYC-0006", "chris", "VOD.L", 1437732000000L, 600, 221.0, 226.0, null, 226.0, null, "NYC-0006chris"),
+          ("NYC-0008", "chris", "BT.L", 1437732000000L, 500, 500.0, 501.0, null, null, null, "NYC-0008chris")
         )
       }
 

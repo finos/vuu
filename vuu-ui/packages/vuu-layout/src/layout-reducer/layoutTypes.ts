@@ -36,16 +36,21 @@ export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
 export type layoutType = "Flexbox" | "View" | "DraggableLayout" | "Stack";
 
+// TODO duplicated in layout-action
 export const LayoutActionType = {
   ADD: "add",
   DRAG_START: "drag-start",
   DRAG_DROP: "drag-drop",
+  LAYOUT_RESIZE: "layout-resize",
   MAXIMIZE: "maximize",
   MINIMIZE: "minimize",
+  MOVE_CHILD: "move-child",
   REMOVE: "remove",
   REPLACE: "replace",
   RESTORE: "restore",
   SAVE: "save",
+  SET_PROP: "set-prop",
+  SET_PROPS: "set-props",
   SET_TITLE: "set-title",
   SPLITTER_RESIZE: "splitter-resize",
   SWITCH_TAB: "switch-tab",
@@ -75,6 +80,13 @@ export type MinimizeAction = {
   type: typeof LayoutActionType.MINIMIZE;
 };
 
+export type MoveChildAction = {
+  fromIndex: number;
+  toIndex: number;
+  path: string;
+  type: typeof LayoutActionType.MOVE_CHILD;
+};
+
 export type RemoveAction = {
   path?: string;
   type: typeof LayoutActionType.REMOVE;
@@ -91,6 +103,19 @@ export type RestoreAction = {
   type: typeof LayoutActionType.RESTORE;
 };
 
+export type SetPropAction = {
+  path: string;
+  propName: string;
+  propValue: string | number | boolean;
+  type: typeof LayoutActionType.SET_PROP;
+};
+
+export type SetPropsAction = {
+  path: string;
+  props: { [key: string]: unknown };
+  type: typeof LayoutActionType.SET_PROPS;
+};
+
 export type SetTitleAction = {
   path: string;
   title: string;
@@ -101,6 +126,12 @@ export type SplitterResizeAction = {
   path: string;
   sizes: { currentSize: number; flexBasis: number }[];
   type: typeof LayoutActionType.SPLITTER_RESIZE;
+};
+
+export type LayoutResizeAction = {
+  path: string;
+  size: number;
+  type: typeof LayoutActionType.LAYOUT_RESIZE;
 };
 
 export type SwitchTabAction = {
@@ -117,11 +148,15 @@ export type TearoutAction = {
 export type LayoutReducerAction =
   | AddAction
   | DragDropAction
+  | LayoutResizeAction
   | MaximizeAction
   | MinimizeAction
+  | MoveChildAction
   | RemoveAction
   | ReplaceAction
   | RestoreAction
+  | SetPropAction
+  | SetPropsAction
   | SetTitleAction
   | SplitterResizeAction
   | SwitchTabAction;

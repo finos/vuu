@@ -16,7 +16,6 @@ trait ViewPortSetup {
   import TestTimeStamp.EPOCH_DEFAULT
 
   def emptyQueues(viewPort: ViewPort): Seq[ViewPortUpdate] = {
-    viewPort.highPriorityQ.popUpTo(1000)
     viewPort.outboundQ.popUpTo(1000)
   }
 
@@ -25,7 +24,7 @@ trait ViewPortSetup {
   }
 
   def combineQs(viewPort: ViewPort): Seq[ViewPortUpdate] = {
-    (viewPort.highPriorityQ.popUpTo(20) ++ viewPort.outboundQ.popUpTo(20))
+    viewPort.outboundQ.popUpTo(20)
   }
 
   def getQueues: (OutboundRowPublishQueue, OutboundRowPublishQueue) = {

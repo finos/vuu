@@ -1,12 +1,16 @@
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { MenuBuilder } from "@finos/vuu-popups";
+import { isNumericColumn } from "@finos/vuu-utils";
+import {
+  ContextMenuGroupItemDescriptor,
+  ContextMenuItemDescriptor,
+  MenuBuilder,
+} from "packages/vuu-data-types";
 import {
   VuuAggregation,
   VuuGroupBy,
   VuuSort,
   VuuSortCol,
 } from "../../../vuu-protocol-types";
-import { isNumericColumn } from "@finos/vuu-utils";
 import { GridModelType } from "../grid-model/gridModelTypes";
 import { ContextMenuOptions } from "./contextMenuTypes";
 
@@ -27,22 +31,22 @@ export type GridContextMenuAction =
   | "sort-dsc"
   | "sort-remove";
 
-interface GridContextMenuDescriptor {
-  children?: GridContextMenuDescriptor[];
-  label: string;
-  action?: GridContextMenuAction;
-  options?: ContextMenuOptions;
-}
-
 export const buildContextMenuDescriptors =
   (gridModel: GridModelType): MenuBuilder =>
-  (location, options) => {
+  (location: string, options?: unknown) => {
     const descriptors = [];
     if (location === "header") {
-      descriptors.push(...buildSortMenuItems(gridModel.sort, options));
-      descriptors.push(...buildGroupMenuItems(gridModel.groupBy, options));
       descriptors.push(
-        ...buildAggregationMenuItems(gridModel.aggregations, options)
+        ...buildSortMenuItems(gridModel.sort, options as ContextMenuOptions)
+      );
+      descriptors.push(
+        ...buildGroupMenuItems(gridModel.groupBy, options as ContextMenuOptions)
+      );
+      descriptors.push(
+        ...buildAggregationMenuItems(
+          gridModel.aggregations,
+          options as ContextMenuOptions
+        )
       );
       descriptors.push({
         label: "Hide Column",
@@ -50,7 +54,7 @@ export const buildContextMenuDescriptors =
         options,
       });
     } else if (location === "filter") {
-      const { column, filter } = options;
+      const { column, filter } = options as ContextMenuOptions;
       const colIsOnlyFilter = filter?.column === column?.name;
       descriptors.push({
         label: "Edit filter",
@@ -90,17 +94,18 @@ function buildAggregationMenuItems(
   aggregations?: VuuAggregation[],
   options?: ContextMenuOptions
 ) {
-  const menuOptions: GridContextMenuDescriptor[] = [];
+  const menuOptions: ContextMenuItemDescriptor[] = [];
   if (options?.column) {
     const {
       column: { name, label = name },
     } = options;
 
-    const menu: GridContextMenuDescriptor = {
+    const menu: ContextMenuGroupItemDescriptor = {
+      children: [],
       label: `Aggregate ${label}`,
     };
 
-    const childMenuOptions: GridContextMenuDescriptor[] = [
+    const childMenuOptions: ContextMenuItemDescriptor[] = [
       { label: "Count", action: "agg-count", options },
     ];
 
@@ -132,9 +137,9 @@ const getSortType = (
 function buildSortMenuItems(
   sort?: VuuSort,
   options?: ContextMenuOptions
-): GridContextMenuDescriptor[] {
+): ContextMenuItemDescriptor[] {
   const sortCols = sort ? sort.sortDefs : undefined;
-  const menuItems: GridContextMenuDescriptor[] = [];
+  const menuItems: ContextMenuItemDescriptor[] = [];
   const column = options?.column;
   const existingColumnSort = getSortType(sortCols, column);
   if (existingColumnSort === "A") {
@@ -211,8 +216,8 @@ function buildSortMenuItems(
 function buildGroupMenuItems(
   groupBy?: VuuGroupBy,
   options?: ContextMenuOptions
-): GridContextMenuDescriptor[] {
-  const menuItems: GridContextMenuDescriptor[] = [];
+): ContextMenuItemDescriptor[] {
+  const menuItems: ContextMenuItemDescriptor[] = [];
 
   if (options?.column) {
     const {

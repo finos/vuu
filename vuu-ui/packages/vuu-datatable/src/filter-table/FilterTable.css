@@ -1,0 +1,4 @@
+.vuuFilterTable {
+    display: flex;
+    flex-direction: column;
+}

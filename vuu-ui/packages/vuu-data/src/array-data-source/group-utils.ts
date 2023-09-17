@@ -1,34 +1,11 @@
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { DataSourceRow } from "../data-source";
 
 export type KeyList = number[];
 export type GroupMap = { [key: string]: GroupMap | KeyList };
 
 const { DEPTH, IS_EXPANDED, KEY } = metadataKeys;
-
-type RowSortComparator = (
-  item1: DataSourceRow,
-  item2: DataSourceRow
-) => 0 | -1 | 1;
-
-const sortComparator =
-  (idx: number): RowSortComparator =>
-  (row1, row2) => {
-    const v1 = row1[idx];
-    const v2 = row2[idx];
-    return v1 > v2 ? 1 : v2 > v1 ? -1 : 0;
-  };
-
-export const sortRows = (
-  rows: readonly DataSourceRow[],
-  { sortDefs }: VuuSort,
-  columnMap: ColumnMap
-) => {
-  const sortIndices = sortDefs.map<number>(({ column }) => columnMap[column]);
-  const comparator = sortComparator(sortIndices[0]);
-  return rows.slice().sort(comparator);
-};
 
 export const collapseGroup = (
   key: string,
@@ -72,10 +49,20 @@ export const expandGroup = (
   sourceRows: readonly DataSourceRow[],
   groupBy: VuuGroupBy,
   columnMap: ColumnMap,
-  groupMap: GroupMap
+  groupMap: GroupMap,
+  processedData: readonly DataSourceRow[]
 ): DataSourceRow[] => {
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
-  return dataRowsFromGroups2(groupMap, groupIndices, keys, sourceRows);
+  return dataRowsFromGroups2(
+    groupMap,
+    groupIndices,
+    keys,
+    sourceRows,
+    undefined,
+    undefined,
+    undefined,
+    processedData
+  );
 };
 
 const dataRowsFromGroups2 = (
@@ -85,7 +72,8 @@ const dataRowsFromGroups2 = (
   sourceRows: readonly DataSourceRow[] = [],
   root = "$root",
   depth = 1,
-  rows: DataSourceRow[] = []
+  rows: DataSourceRow[] = [],
+  processedData: readonly DataSourceRow[]
 ) => {
   const keys = Object.keys(groupMap).sort();
   for (const key of keys) {
@@ -114,8 +102,27 @@ const dataRowsFromGroups2 = (
           sourceRows,
           groupKey,
           depth + 1,
-          rows
+          rows,
+          processedData
         );
+      }
+    }
+  }
+
+  for (const key in rows) {
+    for (const index in rows) {
+      if (rows[key][2] === false && processedData[index] != undefined) {
+        if (
+          rows[key][groupIndices[0]] === processedData[index][groupIndices[0]]
+        ) {
+          rows[key] = rows[key].splice(0, 8).concat(
+            processedData[index].slice(
+              8, // groupIndices[0] + 1,
+              processedData[index].length
+            )
+          ) as DataSourceRow;
+          break;
+        }
       }
     }
   }
@@ -145,11 +152,9 @@ export const groupRows = (
   groupBy: VuuGroupBy,
   columnMap: ColumnMap
 ): [DataSourceRow[], GroupMap] => {
-  console.time("group");
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
   const groupTree = groupLeafRows(rows, groupIndices);
   const groupedDataRows = dataRowsFromGroups(groupTree, groupIndices);
-  console.timeEnd("group");
   // 2) collapse int groups
 
   return [groupedDataRows, groupTree];
@@ -205,5 +210,6 @@ function groupLeafRows(leafRows: readonly DataSourceRow[], groupby: number[]) {
       }
     }
   }
+  console.log("!! groups", groups);
   return groups;
 }

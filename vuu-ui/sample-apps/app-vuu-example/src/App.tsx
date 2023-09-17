@@ -1,29 +1,34 @@
-import { MenuRpcResponse, useVuuTables } from "@finos/vuu-data";
+import { hasAction, MenuRpcResponse, TableSchema } from "@finos/vuu-data";
+import { RpcResponseHandler, useVuuTables } from "@finos/vuu-data-react";
 import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
+  SessionEditingForm,
   Shell,
   ShellContextProvider,
+  ThemeProvider,
   VuuUser,
 } from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
 import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { SessionEditingForm } from "@finos/vuu-shell";
 import { getFormConfig } from "./session-editing";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
 import "./app-sidepanel/AppSidePanel.css";
+import { VuuTable } from "packages/vuu-protocol-types";
 
 const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
 const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   await vuuConfig;
 
 //TODO how do we separate this from the feature
-const vuuBlotterUrl = "./feature-vuu-blotter/index.js";
+const vuuBlotterUrl = "./feature-vuu-table/index.js";
 // const vuuBlotterUrl = "./feature-vuu-table/index.js";
 
 registerComponent("Stack", Stack, "container");
@@ -35,11 +40,15 @@ const defaultLayout = {
       width: "100%",
       height: "100%",
     },
-    showTabs: true,
     enableAddTab: true,
     enableRemoveTab: true,
     preserve: true,
     active: 0,
+    TabstripProps: {
+      allowAddTab: true,
+      allowCloseTab: true,
+      allowRenameTab: true,
+    },
   },
   children: [
     {
@@ -48,6 +57,9 @@ const defaultLayout = {
     },
   ],
 };
+
+const withTable = (action: unknown): action is { table: VuuTable } =>
+  action !== null && typeof action === "object" && "table" in action;
 
 export const App = ({ user }: { user: VuuUser }) => {
   const dialogTitleRef = useRef("");
@@ -58,24 +70,36 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   const tables = useVuuTables();
 
-  const handleRpcResponse = useCallback(
-    (response?: MenuRpcResponse) => {
-      if (response?.action?.type === "OPEN_DIALOG_ACTION") {
-        const { columns, dataTypes, table } = response.action;
-        if (columns && dataTypes && table) {
-          const formConfig = getFormConfig(response);
+  const handleRpcResponse: RpcResponseHandler = useCallback(
+    (response) => {
+      if (
+        hasAction(response) &&
+        typeof response.action === "object" &&
+        response.action !== null &&
+        "type" in response.action &&
+        response?.action?.type === "OPEN_DIALOG_ACTION"
+      ) {
+        const { tableSchema } = response.action as unknown as {
+          tableSchema: TableSchema;
+        };
+        if (tableSchema) {
+          const formConfig = getFormConfig(response as MenuRpcResponse);
           dialogTitleRef.current = formConfig.config.title;
           setDialogContent(
             <SessionEditingForm {...formConfig} onClose={handleClose} />
           );
-        } else if (tables && table) {
-          const schema = tables.get(table.table);
+        } else if (
+          withTable(response.action) &&
+          tables &&
+          response.action.table
+        ) {
+          const schema = tables.get(response.action.table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore
             setDialogContent(
               <Feature
                 height={400}
-                params={{ schema }}
+                ComponentProps={{ schema }}
                 url={vuuBlotterUrl}
                 width={700}
               />
@@ -92,23 +116,25 @@ export const App = ({ user }: { user: VuuUser }) => {
   // TODO get Context from Shell
   return (
     <ShellContextProvider value={{ getDefaultColumnConfig, handleRpcResponse }}>
-      <Shell
-        className="App"
-        defaultLayout={defaultLayout}
-        leftSidePanel={<AppSidePanel features={features} tables={tables} />}
-        serverUrl={serverUrl}
-        user={user}
-      >
-        <Dialog
-          className="vuDialog"
-          isOpen={dialogContent !== undefined}
-          onClose={handleClose}
-          style={{ maxHeight: 500 }}
-          title={dialogTitleRef.current}
+      <ThemeProvider theme="salt">
+        <Shell
+          className="App"
+          defaultLayout={defaultLayout}
+          leftSidePanel={<AppSidePanel features={features} tables={tables} />}
+          serverUrl={serverUrl}
+          user={user}
         >
-          {dialogContent}
-        </Dialog>
-      </Shell>
+          <Dialog
+            className="vuDialog"
+            isOpen={dialogContent !== undefined}
+            onClose={handleClose}
+            style={{ maxHeight: 500 }}
+            title={dialogTitleRef.current}
+          >
+            {dialogContent}
+          </Dialog>
+        </Shell>
+      </ThemeProvider>
     </ShellContextProvider>
   );
 };

@@ -1,0 +1,58 @@
+.vuuExpandoInput {
+
+    --salt-editable-secondary-background: white;
+    --expandoInput-height: var(--vuuExpandoInput-height, 26px);
+    --expandoInput-padding: var(--vuuExpandoInput-padding, 6px);
+
+    --saltInput-height: calc(var(--vuuExpandoInput-height) - 4px);
+    --saltInput-minWidth: var(--vuuExpandoInput-minWidth, 8px);
+  
+    color: inherit;
+    cursor: default;
+    display: inline-block;
+    font-size: var(--salt-text-fontSize);
+    height: var(--expandoInput-height);
+    min-width: calc(var(--saltInput-minWidth) + 2 * var(--expandoInput-padding));
+    outline: none;
+    padding: 0 var(--expandoInput-padding);
+    position: relative;
+
+}
+
+.vuuExpandoInput:before {
+    content: attr(data-text);
+    display: block;
+    height: 0px;
+    visibility: hidden;
+    white-space: pre-wrap;
+  }
+  
+  .vuuExpandoInput .saltInput {
+    font-weight: var(--salt-text-fontWeight);
+    left: var(--expandoInput-padding, 0);
+    padding: 0;
+    outline-style: none;
+    position: absolute;
+    right: var(--expandoInput-padding, 0);
+    top: var(--vuuExpandoInput-top, 2px);
+    width: auto;
+  }
+  
+  .vuuExpandoInput .saltInput-activationIndicator {
+    display: none;
+  }
+  
+  .vuuExpandoInput-input {
+    background-color: transparent;
+    border: none;
+    box-sizing: content-box;
+    display: block;
+    flex: 1;
+    font: inherit;
+    height: 20px;
+    margin:0;
+    min-width:0;
+    outline: none;
+    padding: 0;
+  }
+  

@@ -1,12 +1,12 @@
-import React from "react";
+import { DOWN1, DOWN2, metadataKeys, UP1, UP2 } from "@finos/vuu-utils";
 import cx from "classnames";
-import { metadataKeys, UP1, UP2, DOWN1, DOWN2 } from "@finos/vuu-utils";
+import React from "react";
 import { useCellFormatter } from "../grid-cells/useCellFormatter";
 import { useDirection } from "./use-direction";
 
-import "./background-cell.css";
-import { GridCellProps } from "../grid-cells";
 import { ColumnType } from "@finos/vuu-datagrid-types";
+import { GridCellProps } from "../grid-cells";
+import "./background-cell.css";
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
@@ -25,7 +25,11 @@ const getFlashStyle = (colType?: ColumnType) => {
     return FlashStyle.BackgroundOnly;
   } else if (colType) {
     const { renderer } = colType;
-    return (renderer && renderer.flashStyle) || FlashStyle.BackgroundOnly;
+    if (renderer && "flashStyle" in renderer) {
+      return renderer.flashStyle;
+    } else {
+      return FlashStyle.BackgroundOnly;
+    }
   }
 };
 

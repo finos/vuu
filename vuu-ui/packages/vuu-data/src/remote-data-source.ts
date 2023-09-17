@@ -1,45 +1,46 @@
+import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
-  LinkDescriptorWithLabel,
-  VuuGroupBy,
-  VuuAggregation,
-  VuuRange,
-  VuuTable,
-  VuuSort,
-  ClientToServerMenuRPC,
   ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
+  VuuAggregation,
+  VuuGroupBy,
+  VuuRange,
+  VuuSort,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
 
+import { parseFilter } from "@finos/vuu-filter-parser";
 import {
   debounce,
   EventEmitter,
   itemsOrOrderChanged,
+  logger,
   throttle,
   uuid,
 } from "@finos/vuu-utils";
+import { getServerAPI, ServerAPI } from "./connection-manager";
 import {
+  configChanged,
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceConstructorProps,
-  SubscribeCallback,
-  SubscribeProps,
   DataSourceConfig,
+  DataSourceConstructorProps,
   DataSourceEvents,
   isDataSourceConfigMessage,
-  isSizeOnly,
-  DataSourceDataMessage,
   OptimizeStrategy,
-  configChanged,
+  SubscribeCallback,
+  SubscribeProps,
   vanillaConfig,
   withConfigDefaults,
   WithFullConfig,
 } from "./data-source";
-import { getServerAPI, ServerAPI } from "./connection-manager";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
-import { parseFilter } from "@finos/vuu-filters";
 
 type RangeRequest = (range: VuuRange) => void;
+
+const { info } = logger("RemoteDataSource");
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
@@ -51,8 +52,6 @@ export class RemoteDataSource
   private bufferSize: number;
   private server: ServerAPI | null = null;
   private status = "initialising";
-  private disabled = false;
-  private suspended = false;
   private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
@@ -101,7 +100,6 @@ export class RemoteDataSource
 
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
-    // this.rangeRequest = this.rawRangeRequest;
   }
 
   async subscribe(
@@ -116,6 +114,12 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
+    if (this.status !== "initialising") {
+      throw Error(
+        "VuuDataSource subscribe should not be called more than once"
+      );
+    }
+
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -134,11 +138,6 @@ export class RemoteDataSource
     // subscribe. This ensures we will subscribe with latest value.
     if (range) {
       this.#range = range;
-    }
-
-    if (this.status !== "initialising") {
-      //TODO check if subscription details are still the same
-      return;
     }
 
     this.status = "subscribing";
@@ -192,24 +191,15 @@ export class RemoteDataSource
       if (this.configChangePending) {
         this.setConfigPending();
       }
-      if (isSizeOnly(message)) {
-        if (message.size > 100) {
-          // this prevents excessive rebuilding of the table because of size changes,
-          // when a table is still in initial loading stage
-          this.throttleSizeCallback(message);
-        } else {
-          this.clientCallback?.(message);
-        }
-      } else {
-        this.clientCallback?.(message);
-        if (this.optimize === "debounce") {
-          this.revertDebounce();
-        }
+      this.clientCallback?.(message);
+      if (this.optimize === "debounce") {
+        this.revertDebounce();
       }
     }
   };
 
   unsubscribe() {
+    info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
@@ -218,8 +208,9 @@ export class RemoteDataSource
   }
 
   suspend() {
+    info?.(`suspend #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
-      this.suspended = true;
+      this.status = "suspended";
       this.server?.send({
         type: "suspend",
         viewport: this.viewport,
@@ -229,21 +220,25 @@ export class RemoteDataSource
   }
 
   resume() {
-    if (this.viewport && this.suspended) {
-      // should we await this ?s
-      this.server?.send({
-        type: "resume",
-        viewport: this.viewport,
-      });
-      this.suspended = false;
+    info?.(`resume #${this.viewport}, current status ${this.status}`);
+    if (this.viewport) {
+      if (this.status === "disabled" || this.status === "disabling") {
+        this.enable();
+      } else if (this.status === "suspended") {
+        this.server?.send({
+          type: "resume",
+          viewport: this.viewport,
+        });
+        this.status = "subscribed";
+      }
     }
     return this;
   }
 
   disable() {
+    info?.(`disable #${this.viewport}, current status ${this.status}`);
     if (this.viewport) {
       this.status = "disabling";
-      this.disabled = true;
       this.server?.send({
         viewport: this.viewport,
         type: "disable",
@@ -253,19 +248,22 @@ export class RemoteDataSource
   }
 
   enable() {
-    if (this.viewport && this.disabled) {
+    info?.(`enable #${this.viewport}, current status ${this.status}`);
+    if (
+      this.viewport &&
+      (this.status === "disabled" || this.status === "disabling")
+    ) {
       this.status = "enabling";
-      // should we await this ?
       this.server?.send({
         viewport: this.viewport,
         type: "enable",
       });
-      this.disabled = false;
     }
     return this;
   }
 
   select(selected: Selection) {
+    console.log({ selected });
     this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({
@@ -329,10 +327,6 @@ export class RemoteDataSource
   get size() {
     return this.#size;
   }
-
-  private throttleSizeCallback = throttle((message: DataSourceDataMessage) => {
-    this.clientCallback?.(message);
-  }, 2000);
 
   get range() {
     return this.#range;
@@ -520,6 +514,7 @@ export class RemoteDataSource
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
         this.clientCallback?.({
           clientViewportId: this.viewport,
+          mode: "batch",
           type: "viewport-update",
           size: 0,
           rows: [],

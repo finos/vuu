@@ -5,3 +5,10 @@
   height: 40px;
   justify-content: flex-end;
 }
+
+.vuu-theme .vuuAppHeader {
+  border-radius: 8px;
+  border: 1px solid #D6D7DA; 
+  height: 44px;
+  margin-bottom: 8px;
+}

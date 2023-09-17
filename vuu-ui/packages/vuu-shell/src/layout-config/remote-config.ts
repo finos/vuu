@@ -3,10 +3,13 @@ import { VuuUser } from "../shell";
 
 export const loadRemoteConfig = (
   saveUrl: string,
-  user: VuuUser,
+  user: VuuUser | undefined,
   id = "latest"
 ): Promise<LayoutJSON> =>
   new Promise((resolve, reject) => {
+    if (user === undefined) {
+      throw Error("user mustb be provided to load remote config");
+    }
     fetch(`${saveUrl}/${user.username}/${id}`, {})
       .then((response) => {
         if (response.ok) {
@@ -24,10 +27,13 @@ export const loadRemoteConfig = (
 
 export const saveRemoteConfig = (
   saveUrl: string,
-  user: VuuUser,
+  user: VuuUser | undefined,
   data: LayoutJSON
 ) =>
   new Promise((resolve, reject) => {
+    if (user === undefined) {
+      throw Error("user mustb be provided to load remote config");
+    }
     fetch(`${saveUrl}/${user.username}`, {
       method: "POST",
       headers: {

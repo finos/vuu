@@ -4,13 +4,12 @@ import { ConfigurableTable } from "@finos/vuu-datatable";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { DataSourceStats } from "@finos/vuu-table-extras";
-import { Toolbar } from "@heswell/salt-lab";
+import { filterAsQuery } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DockLayout } from "../examples/html/components/DockLayout";
 import { useTableConfig } from "../examples/utils";
@@ -130,9 +129,9 @@ export const VuuBlotterMockData = ({
         dataSource={dataSource}
         onConfigChange={handleTableConfigChange}
       />
-      <Toolbar className="vuuBlotter-footer" data-dock="bottom">
+      <div className="vuuToolbarProxy vuuBlotter-footer" data-dock="bottom">
         <DataSourceStats dataSource={dataSource} />
-      </Toolbar>
+      </div>
     </DockLayout>
   );
 };

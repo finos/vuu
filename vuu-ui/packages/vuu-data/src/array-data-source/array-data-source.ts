@@ -1,21 +1,21 @@
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
+import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
 import {
-  LinkDescriptorWithLabel,
-  VuuGroupBy,
-  VuuAggregation,
-  VuuRange,
-  VuuSort,
-  VuuTableMeta,
-  VuuRowDataItemType,
-  ClientToServerMenuRPC,
   ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
+  VuuAggregation,
+  VuuGroupBy,
+  VuuRange,
+  VuuRowDataItemType,
+  VuuSort,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
-  isSelected,
+  getSelectionStatus,
   KeySet,
   logger,
   metadataKeys,
@@ -24,35 +24,41 @@ import {
   uuid,
 } from "@finos/vuu-utils";
 import {
+  configChanged,
   DataSource,
+  DataSourceConfig,
   DataSourceConstructorProps,
+  DataSourceEvents,
+  groupByChanged,
+  hasFilter,
+  hasGroupBy,
+  hasSort,
   SubscribeCallback,
   SubscribeProps,
-  DataSourceRow,
-  DataSourceEvents,
   vanillaConfig,
+  withConfigDefaults,
   WithFullConfig,
 } from "../data-source";
-import { filterPredicate } from "@finos/vuu-filters";
+import { TableSchema } from "../message-utils";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "../vuuUIMessageTypes";
-
+import { aggregateData } from "./aggregate-utils";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
-import { TableSchema } from "../message-utils";
+import { sortRows } from "./sort-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
-  data: VuuRowDataItemType[][];
+  data: Array<VuuRowDataItemType[]>;
   rangeChangeRowset?: "delta" | "full";
 }
 
 const { debug } = logger("ArrayDataSource");
 
-const { IDX, SELECTED } = metadataKeys;
+const { RENDER_IDX, SELECTED } = metadataKeys;
 const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
 
 const toDataSourceRow = (
@@ -84,10 +90,15 @@ const buildTableSchema = (columns: ColumnDescriptor[]): TableSchema => {
   return schema;
 };
 
-const toClientRow = (row: DataSourceRow, keys: KeySet) => {
+const toClientRow = (
+  row: DataSourceRow,
+  keys: KeySet,
+  selection: Selection
+) => {
   const [rowIndex] = row;
   const clientRow = row.slice() as DataSourceRow;
-  clientRow[1] = keys.keyFor(rowIndex);
+  clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
+  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
   return clientRow;
 };
 
@@ -95,14 +106,14 @@ export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
+  private clientCallback: SubscribeCallback | undefined;
   private columnDescriptors: ColumnDescriptor[];
   private status = "initialising";
   private disabled = false;
-  private filteredData: undefined | DataSourceRow[];
   private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
+  private selectedRows: Selection = [];
   private suspended = false;
-  private clientCallback: SubscribeCallback | undefined;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
@@ -120,9 +131,11 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
+  private processedData: readonly DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
+    // different from RemoteDataSource
     columnDescriptors,
     data,
     filter,
@@ -140,15 +153,6 @@ export class ArrayDataSource
       );
     }
 
-    this.#config = {
-      ...this.#config,
-      aggregations: aggregations || this.#config.aggregations,
-      columns: columnDescriptors.map((col) => col.name),
-      filter: filter || this.#config.filter,
-      groupBy: groupBy || this.#config.groupBy,
-      sort: sort || this.#config.sort,
-    };
-
     this.columnDescriptors = columnDescriptors;
     this.#columns = columnDescriptors.map((column) => column.name);
     this.#columnMap = buildColumnMap(this.#columns);
@@ -161,6 +165,15 @@ export class ArrayDataSource
     this.#size = data.length;
 
     this.#title = title;
+
+    this.config = {
+      ...this.#config,
+      aggregations: aggregations || this.#config.aggregations,
+      columns: columnDescriptors.map((col) => col.name),
+      filter: filter || this.#config.filter,
+      groupBy: groupBy || this.#config.groupBy,
+      sort: sort || this.#config.sort,
+    };
 
     debug?.(`columnMap: ${JSON.stringify(this.#columnMap)}`);
   }
@@ -177,9 +190,16 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
+    if (this.status !== "initialising") {
+      throw Error(
+        "ArrayDataSource subscribe should not be called more than once"
+      );
+    }
+
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
+      //TODO use setter so we build the sorted/grouped etc dataset
       this.#config = {
         ...this.#config,
         aggregations: aggregations || this.#config.aggregations,
@@ -188,11 +208,6 @@ export class ArrayDataSource
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
-    }
-
-    if (this.status !== "initialising") {
-      //TODO check if subscription details are still the same
-      return;
     }
 
     this.viewport = viewport;
@@ -209,6 +224,7 @@ export class ArrayDataSource
 
     this.clientCallback({
       clientViewportId: this.viewport,
+      mode: "size-only",
       type: "viewport-update",
       size: this.#data.length,
     });
@@ -247,49 +263,27 @@ export class ArrayDataSource
 
   select(selected: Selection) {
     debug?.(`select ${JSON.stringify(selected)}`);
-    const updatedRows: DataSourceRow[] = [];
-    // TODO rewrite this without the loop through entire dataset
-    // store the selection locally and identify the changes
-    for (const row of this.#data) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
-      const wasSelected = sel === 1;
-      const nowSelected = isSelected(selected, rowIndex);
-      if (nowSelected !== wasSelected) {
-        const selectedRow = row.slice() as DataSourceRow;
-        selectedRow[SELECTED] = nowSelected ? 1 : 0;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        this.#data[rowIndex] = selectedRow;
-        updatedRows.push(selectedRow);
-      }
-    }
-
-    if (updatedRows.length > 0) {
-      this.clientCallback?.({
-        clientViewportId: this.viewport,
-        mode: "update",
-        type: "viewport-update",
-        rows: updatedRows,
-      });
-    }
+    this.selectedRows = selected;
+    this.setRange(resetRange(this.#range), true);
   }
 
   openTreeNode(key: string) {
     this.openTreeNodes.push(key);
-    this.groupedData = expandGroup(
+    this.processedData = expandGroup(
       this.openTreeNodes,
       this.#data,
       this.#config.groupBy,
       this.#columnMap,
-      this.groupMap as GroupMap
+      this.groupMap as GroupMap,
+      this.processedData as readonly DataSourceRow[]
     );
     this.setRange(resetRange(this.#range), true);
   }
 
   closeTreeNode(key: string) {
     this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
-    if (this.groupedData) {
-      this.groupedData = collapseGroup(key, this.groupedData);
+    if (this.processedData) {
+      this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
   }
@@ -299,7 +293,94 @@ export class ArrayDataSource
   }
 
   get config() {
-    return undefined;
+    return this.#config;
+  }
+
+  set config(config: DataSourceConfig | undefined) {
+    if (configChanged(this.#config, config)) {
+      if (config) {
+        const originalConfig = this.#config;
+        const newConfig: DataSourceConfig =
+          config?.filter?.filter && config?.filter.filterStruct === undefined
+            ? {
+                ...config,
+                filter: {
+                  filter: config.filter.filter,
+                  filterStruct: parseFilter(config.filter.filter),
+                },
+              }
+            : config;
+
+        this.#config = withConfigDefaults(newConfig);
+
+        let processedData: DataSourceRow[] | undefined;
+
+        if (hasFilter(config)) {
+          const { filterStruct } = config.filter;
+          if (filterStruct) {
+            const fn = filterPredicate(this.#columnMap, filterStruct);
+            processedData = this.#data.filter(fn);
+          } else {
+            throw Error("filter must include filterStruct");
+          }
+        }
+
+        if (hasSort(config)) {
+          processedData = sortRows(
+            processedData ?? this.#data,
+            config.sort,
+            this.#columnMap
+          );
+        }
+
+        if (
+          this.openTreeNodes.length > 0 &&
+          groupByChanged(originalConfig, config)
+        ) {
+          if (this.#config.groupBy.length === 0) {
+            this.openTreeNodes.length = 0;
+          } else {
+            //TODO purge any openTreeNodes for a no-longer-present groupBy col
+            console.log("adjust the openTReeNodes groupBy changed ", {
+              originalGroupBy: originalConfig.groupBy,
+              newGroupBy: newConfig.groupBy,
+            });
+          }
+        }
+
+        if (hasGroupBy(config)) {
+          const [groupedData, groupMap] = groupRows(
+            processedData ?? this.#data,
+            config.groupBy,
+            this.#columnMap
+          );
+          this.groupMap = groupMap;
+          processedData = groupedData;
+
+          if (this.openTreeNodes.length > 0) {
+            processedData = expandGroup(
+              this.openTreeNodes,
+              this.#data,
+              this.#config.groupBy,
+              this.#columnMap,
+              this.groupMap as GroupMap,
+              processedData as readonly DataSourceRow[]
+            );
+          }
+        }
+
+        this.processedData = processedData?.map((row, i) => {
+          const dolly = row.slice() as DataSourceRow;
+          dolly[0] = i;
+          dolly[1] = i;
+          return dolly;
+        });
+      }
+
+      this.setRange(resetRange(this.#range), true);
+
+      this.emit("config", this.#config);
+    }
   }
 
   get selectedRowsCount() {
@@ -327,22 +408,24 @@ export class ArrayDataSource
   }
 
   sendRowsToClient(forceFullRefresh = false) {
-    // requestAnimationFrame(() => {
     const rowRange =
       this.rangeChangeRowset === "delta" && !forceFullRefresh
         ? rangeNewItems(this.lastRangeServed, this.#range)
         : this.#range;
-    const data = this.groupedData ?? this.filteredData ?? this.#data;
+    const data = this.processedData ?? this.#data;
+
+    const rowsWithinViewport = data
+      .slice(rowRange.from, rowRange.to)
+      .map((row) => toClientRow(row, this.keys, this.selectedRows));
+
     this.clientCallback?.({
       clientViewportId: this.viewport,
-      rows: data
-        .slice(rowRange.from, rowRange.to)
-        .map((row) => toClientRow(row, this.keys)),
+      mode: "batch",
+      rows: rowsWithinViewport,
       size: data.length,
       type: "viewport-update",
     });
     this.lastRangeServed = this.#range;
-    // });
   }
 
   get columns() {
@@ -351,7 +434,6 @@ export class ArrayDataSource
 
   set columns(columns: string[]) {
     this.#columns = columns;
-    console.log(`ArrayDataSource setColumns ${columns.join(",")}`);
   }
 
   get aggregations() {
@@ -359,7 +441,25 @@ export class ArrayDataSource
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    // this.#aggregations = aggregations;
+    this.#config = {
+      ...this.#config,
+      aggregations,
+    };
+
+    const targetData = this.processedData ?? this.#data;
+    const leafData = this.#data;
+
+    aggregateData(
+      aggregations,
+      targetData,
+      this.#config.groupBy,
+      leafData,
+      this.#columnMap,
+      this.groupMap as GroupMap
+    );
+    this.setRange(resetRange(this.#range), true);
+
+    this.emit("config", this.#config);
   }
 
   get sort() {
@@ -367,13 +467,14 @@ export class ArrayDataSource
   }
 
   set sort(sort: VuuSort) {
+    console.log(`set sort`, {
+      sort,
+    });
     debug?.(`sort ${JSON.stringify(sort)}`);
-    this.#config = {
+    this.config = {
       ...this.#config,
       sort,
     };
-
-    this.emit("config", this.#config);
   }
 
   get filter() {
@@ -382,27 +483,11 @@ export class ArrayDataSource
 
   set filter(filter: DataSourceFilter) {
     debug?.(`filter ${JSON.stringify(filter)}`);
-    // TODO should we wait until server ACK before we assign #sort ?
-
-    this.#config = {
+    // TODO check that filter has changed
+    this.config = {
       ...this.#config,
       filter,
     };
-    const { filterStruct } = filter;
-    if (filterStruct) {
-      const fn = filterPredicate(this.#columnMap, filterStruct);
-      // TODO this is expensive,
-      this.filteredData = this.#data.filter(fn).map((row, i) => {
-        const dolly = row.slice() as DataSourceRow;
-        dolly[0] = i;
-        dolly[1] = i;
-        return dolly;
-      });
-    } else {
-      this.filteredData = undefined;
-    }
-    this.setRange(resetRange(this.#range), true);
-    this.emit("config", this.#config);
   }
 
   get groupBy() {
@@ -410,27 +495,10 @@ export class ArrayDataSource
   }
 
   set groupBy(groupBy: VuuGroupBy) {
-    this.#config = {
+    this.config = {
       ...this.#config,
       groupBy,
     };
-
-    if (groupBy.length) {
-      console.time("group");
-      const [groupedData, groupMap] = groupRows(
-        this.#data,
-        groupBy,
-        this.#columnMap
-      );
-      this.groupMap = groupMap;
-      this.groupedData = groupedData;
-      console.timeEnd("group");
-    } else {
-      this.groupedData = undefined;
-    }
-    this.setRange(resetRange(this.#range), true);
-
-    this.emit("config", this.#config);
   }
 
   get title() {
@@ -439,6 +507,10 @@ export class ArrayDataSource
 
   set title(title: string | undefined) {
     this.#title = title;
+  }
+
+  get _clientCallback() {
+    return this.clientCallback;
   }
 
   createLink({
@@ -479,7 +551,7 @@ export class ArrayDataSource
   ): Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
     | undefined
   > {
     return new Promise((resolve) => {

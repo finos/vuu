@@ -1,14 +1,13 @@
-import { TableSchema } from "@finos/vuu-data";
+import { byModule, TableSchema } from "@finos/vuu-data";
 import { Palette, PaletteItem, ViewProps } from "@finos/vuu-layout";
 import { Feature, Features } from "@finos/vuu-shell";
 import {
   Accordion,
-  AccordionDetails,
-  AccordionSection,
-  AccordionSummary,
-  Dropdown,
-  SelectionChangeHandler,
-} from "@heswell/salt-lab";
+  AccordionGroup,
+  AccordionHeader,
+  AccordionPanel,
+} from "@salt-ds/core";
+import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import cx from "classnames";
 import { ReactElement, useMemo, useState } from "react";
 
@@ -28,22 +27,6 @@ type FeatureDescriptor = {
   js: string;
   name: string;
   title: string;
-};
-
-const byModule = (schema1: TableSchema, schema2: TableSchema) => {
-  const m1 = schema1.table.module.toLowerCase();
-  const m2 = schema2.table.module.toLowerCase();
-  if (m1 < m2) {
-    return -1;
-  } else if (m1 > m2) {
-    return 1;
-  } else if (schema1.table.table < schema2.table.table) {
-    return -1;
-  } else if (schema1.table.table > schema2.table.table) {
-    return 1;
-  } else {
-    return 0;
-  }
 };
 
 const capitalize = (text: string) =>
@@ -79,7 +62,7 @@ export const AppSidePanel = ({
   const [selectedFeature, setSelectedFeature] = useState<FeatureDescriptor>(
     gridFeatures[0] ?? NULL_FEATURE
   );
-  const handleSelectFeature: SelectionChangeHandler<string> = (event, item) => {
+  const handleSelectFeature: SelectionChangeHandler = (event, item) => {
     const feature = gridFeatures.find((f) => f.title === item);
     if (feature) {
       setSelectedFeature(feature);
@@ -97,7 +80,7 @@ export const AppSidePanel = ({
               component: (
                 <Feature
                   css={css}
-                  params={{
+                  ComponentProps={{
                     className,
                     schema,
                     style: { height: "100%" },
@@ -130,40 +113,43 @@ export const AppSidePanel = ({
 
   return (
     <div className={cx(classBase)}>
-      <Accordion defaultExpandedSectionIds={["tables"]}>
-        <AccordionSection id="layouts" key={"layouts"}>
-          <AccordionSummary>My Layouts</AccordionSummary>
-          <AccordionDetails></AccordionDetails>
-        </AccordionSection>
-        <AccordionSection key={"rivers-and-lakes"} id="tables">
-          <AccordionSummary>Vuu Tables</AccordionSummary>
-          <AccordionDetails>
-            {featureSelection()}
-            <Palette
-              orientation="vertical"
-              style={{ width: "100%", height: "100%" }}
-              ViewProps={ViewProps}
-            >
-              {paletteItems.map((spec) => (
-                <PaletteItem
-                  closeable
-                  key={spec.id}
-                  label={spec.label}
-                  resizeable
-                  resize="defer"
-                  header
-                >
-                  {spec.component}
-                </PaletteItem>
-              ))}
-            </Palette>
-          </AccordionDetails>
-        </AccordionSection>
-        <AccordionSection id="templates" key={"islands"}>
-          <AccordionSummary>Layout Templates</AccordionSummary>
-          <AccordionDetails></AccordionDetails>
-        </AccordionSection>
-      </Accordion>
+      <AccordionGroup>
+        <Accordion value="layouts">
+          <AccordionHeader>My Layouts</AccordionHeader>
+          <AccordionPanel id="layouts" key={"layouts"}></AccordionPanel>
+        </Accordion>
+        <Accordion defaultExpanded value="tables">
+          <AccordionHeader>Vuu Tables</AccordionHeader>
+          <AccordionPanel id="tables" key={"tables"}>
+            <>
+              {featureSelection()}
+              <Palette
+                itemHeight={24}
+                orientation="vertical"
+                style={{ width: "100%", height: "100%" }}
+                ViewProps={ViewProps}
+              >
+                {paletteItems.map((spec) => (
+                  <PaletteItem
+                    closeable
+                    key={spec.id}
+                    label={spec.label}
+                    resizeable
+                    resize="defer"
+                    header
+                  >
+                    {spec.component}
+                  </PaletteItem>
+                ))}
+              </Palette>
+            </>
+          </AccordionPanel>
+        </Accordion>
+        <Accordion value="templates">
+          <AccordionHeader>Layout Templates</AccordionHeader>
+          <AccordionPanel></AccordionPanel>
+        </Accordion>
+      </AccordionGroup>
     </div>
   );
 };

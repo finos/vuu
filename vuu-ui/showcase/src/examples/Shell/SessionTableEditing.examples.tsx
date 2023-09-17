@@ -1,9 +1,8 @@
 import {
-  ContextMenuItemDescriptor,
   ContextMenuProvider,
   Dialog,
-  MenuActionHandler,
-  MenuBuilder,
+  MenuActionClosePopup,
+  PopupCloseReason,
   useContextMenu,
 } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
@@ -11,6 +10,11 @@ import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
 import { SessionEditingForm } from "@finos/vuu-shell";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ArrayDataSource, DataSource } from "@finos/vuu-data";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "packages/vuu-data-types";
 
 let displaySequence = 0;
 
@@ -18,7 +22,7 @@ const ComponentWithMenu = ({
   location,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
     console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });
@@ -163,8 +167,10 @@ export const ContextMenuActions = () => {
   );
   const [action, setAction] = useState<ActionWithParams | undefined>();
 
-  const handleMenuAction: MenuActionHandler = (action: string) => {
-    const actionDescriptor = actionDescriptors[action];
+  const handleMenuAction: MenuActionHandler = (
+    action: MenuActionClosePopup
+  ) => {
+    const actionDescriptor = actionDescriptors[action.menuId];
     if (hasParams(actionDescriptor)) {
       setAction(actionDescriptor);
     }
@@ -198,6 +204,7 @@ export const ContextMenuActions = () => {
         {action ? (
           <SessionEditingForm
             config={{
+              key: "",
               title: action.description,
               fields: action.params,
             }}

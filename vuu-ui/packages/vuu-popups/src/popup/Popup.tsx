@@ -1,0 +1,35 @@
+import cx from "classnames";
+import { useThemeAttributes } from "@finos/vuu-shell";
+import { HTMLAttributes, RefObject } from "react";
+import { useAnchoredPosition } from "./useAnchoredPosition";
+
+import "./Popup.css";
+
+export type PopupPlacement = "below" | "below-center" | "center" | "right";
+
+export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
+  placement: PopupPlacement;
+  anchorElement: RefObject<HTMLElement>;
+  offsetLeft?: number;
+  offsetTop?: number;
+}
+
+export const PopupComponent = ({
+  children,
+  className,
+  anchorElement,
+  placement,
+}: PopupComponentProps) => {
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const position = useAnchoredPosition({ anchorElement, placement });
+
+  return position === undefined ? null : (
+    <div
+      className={cx(`vuuPortal`, className, themeClass, densityClass)}
+      data-mode={dataMode}
+      style={position}
+    >
+      {children}
+    </div>
+  );
+};

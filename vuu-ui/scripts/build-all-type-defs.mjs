@@ -13,7 +13,9 @@ function buildPackage(packageName) {
 const packages = [
   "vuu-utils",
   "vuu-data",
+  "vuu-data-react",
   "vuu-data-ag-grid",
+  "vuu-filter-parser",
   "vuu-filters",
   "vuu-popups",
   "vuu-datatable",
@@ -21,6 +23,7 @@ const packages = [
   "vuu-table-extras",
   "vuu-layout",
   "vuu-shell",
+  "vuu-ui-controls",
 ];
 
 packages.forEach(buildPackage);

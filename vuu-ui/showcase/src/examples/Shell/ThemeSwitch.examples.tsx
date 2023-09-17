@@ -1,6 +1,8 @@
 import { ThemeMode, ThemeSwitch } from "@finos/vuu-shell";
 import { useCallback, useState } from "react";
 
+let displaySequence = 1;
+
 export const DefaultThemeSwitch = () => {
   const [mode, setMode] = useState<ThemeMode>("light");
   const handleChange = useCallback((mode: ThemeMode) => {
@@ -22,3 +24,4 @@ export const DefaultThemeSwitch = () => {
     </div>
   );
 };
+DefaultThemeSwitch.displaySequence = displaySequence++;

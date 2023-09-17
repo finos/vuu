@@ -8,7 +8,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   EventEmitter,
   isSelected,
@@ -24,12 +24,11 @@ import type {
   DataSourceEvents,
   SubscribeCallback,
   SubscribeProps,
-  DataSourceRow,
 } from "./data-source";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditSuccess,
+  VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
@@ -172,6 +171,7 @@ export class JsonDataSource
 
     this.clientCallback({
       clientViewportId: this.viewport,
+      mode: "size-only",
       type: "viewport-update",
       size: this.visibleRows.length,
     });
@@ -231,6 +231,8 @@ export class JsonDataSource
     const { from, to } = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
+
+      mode: "batch",
       rows: this.visibleRows
         .slice(from, to)
         .map((row) => toClientRow(row, this.keys)),
@@ -282,6 +284,7 @@ export class JsonDataSource
     const { from, to } = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
+      mode: "batch",
       rows: this.visibleRows
         .slice(from, to)
         .map((row) => toClientRow(row, this.keys)),
@@ -362,7 +365,7 @@ export class JsonDataSource
   ): Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditSuccess
+    | VuuUIMessageInRPCEditResponse
     | undefined
   > {
     console.log("rmenuRpcCall", {

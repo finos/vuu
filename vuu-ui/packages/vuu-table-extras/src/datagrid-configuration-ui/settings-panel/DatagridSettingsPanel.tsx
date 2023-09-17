@@ -8,7 +8,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { ColumnPicker } from "../column-picker";
 import { ColumnSettingsPanel } from "../column-settings-panel";
 import { GridSettingsPanel } from "./GridSettingsPanel";
 import { useGridSettings } from "./useGridSettings";
@@ -92,7 +91,7 @@ export const DatagridSettingsPanel = ({
 
   const tabstripProps: StackProps["TabstripProps"] = {
     activeTabIndex: selectedTabIndex,
-    enableRenameTab: false,
+    allowRenameTab: false,
     orientation: "vertical",
   };
 
@@ -112,7 +111,6 @@ export const DatagridSettingsPanel = ({
         getTabLabel={getTabLabel}
         active={selectedTabIndex === 2 ? 1 : selectedTabIndex}
         onTabSelectionChanged={handleTabSelectionChanged}
-        showTabs
       >
         <GridSettingsPanel
           config={gridSettings}
@@ -120,14 +118,6 @@ export const DatagridSettingsPanel = ({
         />
 
         <div className={`${classBase}-columnPanels`} data-align={panelShift}>
-          <ColumnPicker
-            availableColumns={availableColumns}
-            chosenColumns={gridSettings.columns}
-            dispatchColumnAction={dispatchColumnAction}
-            onSelectionChange={handleColumnSelected}
-            onAddCalculatedColumnClick={handleAddCalculatedColumn}
-            selectedColumn={selectedColumn}
-          />
           {selectedColumn === null ? (
             <Panel className="vuuColumnSettingsPanel">Select a column</Panel>
           ) : (

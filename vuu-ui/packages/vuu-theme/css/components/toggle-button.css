@@ -1,0 +1,20 @@
+.saltToggleButtonGroup {
+    border-radius: 6px;
+    padding: 0;
+}
+
+.saltToggleButtonGroup-horizontal .saltToggleButton {
+    height: 24px;
+}
+
+.vuuIconToggleButton {
+    --vuu-icon-size: var(--vuuIconToggleButton-iconSize, 48px);
+    width: 48px;
+}
+
+.vuuIconToggleButton:first-child {
+    border-radius: 4px 0 0 4px;
+}
+.vuuIconToggleButton:last-child {
+    border-radius: 0 4px 4px 0;
+}

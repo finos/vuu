@@ -1,0 +1,39 @@
+.vuuToolbar {
+    padding: 0 6px;
+}
+
+.Item {
+    --vuuToolbarItem-outlineColor: cyan;
+    background-color: var(--item-bg, blue);
+    color: white;
+    height: 32px;
+}
+
+.Item[aria-selected="true"] {
+    background-color: purple;;
+}
+
+.vuuToolbarItem {
+    box-sizing: border-box;
+}
+
+/* .vuuToolbarItem:focus-visible {
+    outline: none;
+} */
+
+
+.vuuToolbarItem-focusVisible {
+    outline: dashed var(--vuuToolbarItem-outlineColor, cyan);
+}
+
+/* [data-overflow-priority="1"].Item {
+    background-color: pink;
+} */
+
+.vuuOverflowContainer-wrapContainer {
+    /* overflow: visible; */
+}
+
+.vuuToolbarItem[data-selectable="false"] .Item{
+    opacity: 0.8;
+}

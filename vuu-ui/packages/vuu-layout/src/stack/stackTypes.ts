@@ -1,22 +1,23 @@
-import { TabstripProps } from "@heswell/salt-lab";
+import { TabstripProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
+export type TabPosition = "top" | "left" | "right" | "bottom";
 export interface StackProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
   active?: number;
   createNewChild?: (index: number) => ReactElement;
-  enableAddTab?: boolean;
-  enableCloseTabs?: boolean;
   getTabIcon?: (component: ReactElement, index: number) => string | undefined;
   getTabLabel?: (component: ReactElement, index: number) => string | undefined;
   keyBoardActivation?: "automatic" | "manual";
+  onAddTab?: () => void;
+  onMoveTab?: (fromIndex: number, toIndex: number) => void;
   onMouseDown?: (e: MouseEvent, tabIndex: number) => void;
-  onTabAdd?: (tabIndex: number) => void;
   onTabClose?: (tabIndex: number) => void;
   onTabEdit?: (tabIndex: number, label: string) => void;
   onTabSelectionChanged?: (nextIndex: number) => void;
   path?: string;
-  showTabs?: boolean;
+  /** should the Stack display a Tabstrip and where ? default top */
+  showTabs?: false | TabPosition;
   toolbarContent?: ReactNode;
   TabstripProps?: Partial<TabstripProps>;
 }

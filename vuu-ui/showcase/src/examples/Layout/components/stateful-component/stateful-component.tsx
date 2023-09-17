@@ -1,9 +1,25 @@
 import { useViewContext } from "@finos/vuu-layout";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { registerComponent } from "@finos/vuu-layout";
+import React, {
+  HTMLAttributes,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-export const StatefulComponent = (initialState = "", style: React.CSSProperties | undefined, stateKey: any) => {
+export interface StatefulComponentProps extends HTMLAttributes<HTMLDivElement> {
+  initialState?: string;
+  stateKey?: string;
+}
+
+export const StatefulComponent = ({
+  initialState = "",
+  style,
+  stateKey = "?",
+}: StatefulComponentProps) => {
   const { load, save } = useViewContext();
-  const storedState = useMemo(() => load(stateKey), [load, stateKey]);
+  const storedState = useMemo(() => load?.(stateKey), [load, stateKey]);
   const state = useRef(storedState ?? initialState);
   const [value, setValue] = useState(state.current);
 
@@ -11,10 +27,14 @@ export const StatefulComponent = (initialState = "", style: React.CSSProperties 
     (e) => {
       const value = e.target.value;
       setValue((state.current = value));
-      save(value, stateKey);
+      save?.(value, stateKey);
     },
     [save, stateKey]
   );
 
-  return <textarea style={style} onChange={handleChange} value={value} />;
+  return (
+    <textarea style={style} onChange={handleChange} value={value.toString()} />
+  );
 };
+
+registerComponent("StatefulComponent", StatefulComponent, "view");

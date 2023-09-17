@@ -1,4 +1,4 @@
-.vuuColumnSettingsPanel {
+.vuuColumnSettingsPanel_deprecated_deprecated {
     --saltFormField-margin: 3px 0;
     --saltFormField-label-width: 80px;
     --saltPanel-padding: var(--salt-size-unit);
@@ -13,15 +13,15 @@
 
 }
 
-.vuuColumnSettingsPanel-columnTabs {
+.vuuColumnSettingsPanel_deprecated-columnTabs {
     --saltFormField-margin: 0;
 }
 
-.vuuColumnSettingsPanel-columnTabs .saltFormField {
+.vuuColumnSettingsPanel_deprecated-columnTabs .saltFormField {
     margin-left: 0 !important;
 }
 
-.vuuColumnSettingsPanel .saltPanel {
+.vuuColumnSettingsPanel_deprecated .saltPanel {
     --saltFormField-margin: 3px 0;
     margin-top: var(--settings-panel-marginTop, var(--salt-size-unit));
 
@@ -37,6 +37,6 @@
     width: 100%;
 }
 
-.vuuColumnSettingsPanel .saltSwitch {
+.vuuColumnSettingsPanel_deprecated .saltSwitch {
     margin-left: auto;;
 }

@@ -1,7 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { App } from "./App";
-
-type ExamplesModule = typeof import("./examples/index");
+import { App, ExamplesModule } from "./App";
 
 import "./index.css";
 
@@ -14,7 +12,7 @@ const createRoutes = (stories: ExamplesModule, prefix = ""): JSX.Element[] =>
         ? routes
             .concat(<Route key={label} path={id} element={label} />)
             .concat(createRoutes(Value, `${id}/`))
-        : routes.concat(<Route key={label} path={id} element={<Value />} />);
+        : routes.concat(<Route key={label} path={id} />);
     }, []);
 
 interface AppRoutesProps {

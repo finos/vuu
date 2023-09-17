@@ -1,10 +1,9 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
-import { Schema } from "./useSchemas";
 import { toDataSourceColumns } from "@finos/vuu-utils";
 
 const getRequestedColumns = (
@@ -42,6 +41,9 @@ const configureColumns = (
 
 const NO_CONCATENATED_COLUMNS: ColumnDescriptor[] = [];
 
+/**
+ * Either pass in a tableSchema or a map of schemas and the tablename
+ */
 export const useTestDataSource = ({
   autoLogin = true,
   bufferSize = 100,
@@ -53,6 +55,7 @@ export const useTestDataSource = ({
   schemas,
   sort,
   tablename = "instruments",
+  tableSchema = schemas[tablename],
 }: {
   autoLogin?: boolean;
   bufferSize?: number;
@@ -61,16 +64,16 @@ export const useTestDataSource = ({
   columnNames?: string[];
   filter?: DataSourceFilter;
   groupBy?: VuuGroupBy;
-  schemas: { [key: string]: Schema };
+  schemas: { [key: string]: TableSchema };
   sort?: VuuSort;
   tablename?: string;
+  tableSchema?: TableSchema;
 }) => {
   const dataSourceRef = useRef<RemoteDataSource | undefined>();
 
   const [columns, config, columnNames, table] = useMemo(() => {
-    const schema = schemas[tablename];
     const configuredColumns = configureColumns(
-      schema.columns,
+      tableSchema.columns,
       columnConfig,
       columnNamesProp
     ).concat(calculatedColumns);
@@ -78,9 +81,10 @@ export const useTestDataSource = ({
       configuredColumns,
       { columns: configuredColumns },
       configuredColumns.map(toDataSourceColumns),
-      schema.table,
+      tableSchema.table,
+      tableSchema,
     ];
-  }, [calculatedColumns, columnConfig, columnNamesProp, schemas, tablename]);
+  }, [calculatedColumns, columnConfig, columnNamesProp, tableSchema]);
 
   const tableRef = useRef(table);
 
@@ -120,5 +124,6 @@ export const useTestDataSource = ({
     columns,
     config,
     error,
+    tableSchema,
   };
 };

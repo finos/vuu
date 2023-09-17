@@ -1,12 +1,11 @@
 import { ConfigChangeHandler } from "@finos/vuu-data";
-import { useCallback } from "react";
 import {
   DataSourceAction,
   GridAction,
-  GridActionSelection,
-  GridModelDispatch,
   ScrollAction,
-} from "../grid-context";
+} from "packages/vuu-datagrid-types";
+import { useCallback } from "react";
+import { GridActionSelection, GridModelDispatch } from "../grid-context";
 
 export interface GridActionHookProps {
   dispatchGridModelAction: GridModelDispatch;

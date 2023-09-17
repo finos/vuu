@@ -6,10 +6,10 @@ import { loadLocalConfig, saveLocalConfig } from "./local-config";
 import { loadRemoteConfig, saveRemoteConfig } from "./remote-config";
 
 export interface LayoutConfigHookProps {
-  defaultLayout: LayoutJSON;
+  defaultLayout?: LayoutJSON;
   saveLocation: SaveLocation;
   saveUrl?: string;
-  user: VuuUser;
+  user?: VuuUser;
 }
 
 export type LayoutHookResult = [
@@ -18,28 +18,27 @@ export type LayoutHookResult = [
   (id: string) => void
 ];
 
+const FALLBACK_LAYOUT = { type: "Placeholder" };
+
 export const useLayoutConfig = ({
   saveLocation,
   saveUrl = "api/vui",
   user,
-  defaultLayout,
+  // TODO this should be an error panel
+  defaultLayout = FALLBACK_LAYOUT,
 }: LayoutConfigHookProps): LayoutHookResult => {
   const [layout, _setLayout] = useState(defaultLayout);
   const usingRemote = saveLocation === "remote";
   const loadConfig = usingRemote ? loadRemoteConfig : loadLocalConfig;
   const saveConfig = usingRemote ? saveRemoteConfig : saveLocalConfig;
 
-  const setLayout = (layout: LayoutJSON) => {
-    _setLayout(layout);
-  };
-
   const load = useCallback(
     async (id = "latest") => {
       try {
         const layout = await loadConfig(saveUrl, user, id);
-        setLayout(layout);
+        _setLayout(layout);
       } catch {
-        setLayout(defaultLayout);
+        _setLayout(defaultLayout);
       }
     },
     [defaultLayout, loadConfig, saveUrl, user]
@@ -56,12 +55,7 @@ export const useLayoutConfig = ({
     [saveConfig, saveUrl, user]
   );
 
-  const loadLayoutById = useCallback(
-    (id) => {
-      load(id);
-    },
-    [load]
-  );
+  const loadLayoutById = useCallback((id) => load(id), [load]);
 
   return [layout, saveData, loadLayoutById];
 };

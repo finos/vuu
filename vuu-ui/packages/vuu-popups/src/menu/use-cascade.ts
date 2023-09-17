@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-import { closestListItem, listItemIndex } from "./list-dom-utils";
+import { closestListItem } from "./list-dom-utils";
 import { MenuItemProps } from "./MenuList";
 // import {mousePosition} from './aim/utils';
 // import {aiming} from './aim/aim';
@@ -65,34 +65,29 @@ export type RuntimeMenuDescriptor = {
   top: number;
 };
 
-export const getItemId = (id: string) => {
+export const getHostMenuId = (id: string, rootId: string) => {
   const pos = id.lastIndexOf("-");
-  return pos === -1 ? id : id.slice(pos + 1);
+  return pos > -1 ? id.slice(9, pos) : rootId;
 };
 
-export const getMenuId = (id: string) => {
-  const itemId = getItemId(id);
-  const pos = itemId.lastIndexOf(".");
-  return pos > -1 ? itemId.slice(0, pos) : "root";
-};
+const getTargetMenuId = (id: string) => id.slice(9);
 
-const getMenuDepth = (id: string) => {
-  let count = 0,
-    pos = id.indexOf(".", 0);
-  while (pos !== -1) {
-    count += 1;
-    pos = id.indexOf(".", pos + 1);
+const getMenuItemDetails = (
+  { ariaExpanded, ariaHasPopup, id }: HTMLElement,
+  rootId: string
+) => {
+  if (id.startsWith("menuitem")) {
+    return {
+      hostMenuId: getHostMenuId(id, rootId),
+      targetMenuId: getTargetMenuId(id),
+      menuItemId: id,
+      isGroup: ariaHasPopup === "true",
+      isOpen: ariaExpanded === "true",
+    };
+  } else {
+    throw Error(`getMenuItemDetails #${id} is not a menuitem`);
   }
-  return count;
 };
-
-const identifyItem = (el: HTMLElement) => ({
-  menuId: getMenuId(el.id),
-  itemId: getItemId(el.id),
-  isGroup: el.ariaHasPopup === "true",
-  isOpen: el.ariaExpanded === "true",
-  level: getMenuDepth(el.id),
-});
 
 export interface CascadeHookProps {
   id: string;
@@ -105,7 +100,7 @@ export interface CascadeHooksResult {
   closeMenu: () => void;
   handleRender: () => void;
   listItemProps: Partial<MenuItemProps>;
-  openMenu: (menuId?: string, itemId?: string) => void;
+  openMenu: (menuItemEl: HTMLElement) => void;
   openMenus: RuntimeMenuDescriptor[];
 }
 
@@ -113,15 +108,29 @@ type MenuStatus = "no-popup" | "popup-open" | "pending-close" | "popup-pending";
 type MenuState = { [key: string]: MenuStatus };
 
 export const useCascade = ({
-  id,
+  id: rootId,
   onActivate,
   onMouseEnterItem,
   position: { x: posX, y: posY },
 }: CascadeHookProps): CascadeHooksResult => {
   const [, forceRefresh] = useState({});
   const openMenus = useRef<RuntimeMenuDescriptor[]>([
-    { id: "root", left: posX, top: posY },
+    { id: rootId, left: posX, top: posY },
   ]);
+
+  const menuIsOpen = useCallback(
+    (menuId: string) =>
+      openMenus.current.findIndex((menu) => menu.id === menuId) !== -1,
+    []
+  );
+
+  const getOpenMenuStatus = useCallback((menuId: string) => {
+    const state = menuState.current[menuId];
+    if (state === undefined) {
+      throw Error(`getOpenMenuState no entry for menu ${menuId}`);
+    }
+    return state;
+  }, []);
 
   const setOpenMenus = useCallback((menus: RuntimeMenuDescriptor[]) => {
     openMenus.current = menus;
@@ -130,43 +139,56 @@ export const useCascade = ({
 
   const menuOpenPendingTimeout = useRef<number | undefined>();
   const menuClosePendingTimeout = useRef<number | undefined>();
-  const menuState = useRef<MenuState>({ root: "no-popup" });
-  const prevLevel = useRef(0);
+  const menuState = useRef<MenuState>({ [rootId]: "no-popup" });
+  // const prevLevel = useRef(0);
 
   // const prevAim = useRef({mousePos: null, distance: true});
 
   const openMenu = useCallback(
-    (menuId = "root", itemId = null, listItemEl = null) => {
-      if (menuId === "root" && itemId === null) {
-        setOpenMenus([{ id: "root", left: posX, top: posY }]);
+    (hostMenuId = rootId, targetMenuId: string, itemId = null) => {
+      if (hostMenuId === rootId && itemId === null) {
+        setOpenMenus([{ id: rootId, left: posX, top: posY }]);
       } else {
-        menuState.current[menuId] = "popup-open";
-        const doc = listItemEl ? listItemEl.ownerDocument : document;
-        const el = doc.getElementById(`${id}-${menuId}-${itemId}`);
-        const { left, top } = getPosition(el, openMenus.current);
-        setOpenMenus(openMenus.current.concat({ id: itemId, left, top }));
+        menuState.current[hostMenuId] = "popup-open";
+        const el = document.getElementById(itemId) as HTMLElement;
+        if (el !== null) {
+          const { left, top } = getPosition(el, openMenus.current);
+          setOpenMenus(
+            openMenus.current.concat({ id: targetMenuId, left, top })
+          );
+        } else {
+          throw Error(`openMenu no menuItem ${itemId}`);
+        }
       }
     },
-    [id, posX, posY, setOpenMenus]
+    [rootId, posX, posY, setOpenMenus]
   );
 
   const closeMenu = useCallback(
     (menuId?: string) => {
-      if (menuId === "root") {
+      if (menuId === rootId) {
         setOpenMenus([]);
       } else {
-        setOpenMenus(openMenus.current.slice(0, -1));
+        const menus = openMenus.current.slice();
+        const lastMenu = menus.pop() as RuntimeMenuDescriptor;
+        menuState.current[lastMenu.id] = "no-popup";
+        const parentMenu = menus.at(-1);
+        if (parentMenu) {
+          menuState.current[parentMenu.id] = "no-popup";
+        }
+        setOpenMenus(menus);
       }
     },
-    [setOpenMenus]
+    [rootId, setOpenMenus]
   );
 
   const closeMenus = useCallback(
-    (menuId, itemId) => {
+    (menuItemId) => {
       const menus = openMenus.current.slice();
-      let { id: lastMenuId } = menus[menus.length - 1];
-      while (menus.length > 1 && !itemId.startsWith(lastMenuId)) {
-        const parentMenuId = getMenuId(lastMenuId);
+      const menuItemMenuId = menuItemId.slice(9);
+      let { id: lastMenuId } = menus.at(-1) as RuntimeMenuDescriptor;
+      while (menus.length > 1 && !menuItemMenuId.startsWith(lastMenuId)) {
+        const parentMenuId = getHostMenuId(lastMenuId, rootId);
         menus.pop();
         menuState.current[lastMenuId] = "no-popup";
         menuState.current[parentMenuId] = "no-popup";
@@ -176,33 +198,42 @@ export const useCascade = ({
         setOpenMenus(menus);
       }
     },
-    [setOpenMenus]
+    [rootId, setOpenMenus]
   );
 
+  const clearAnyScheduledOpenTasks = useCallback(() => {
+    if (menuOpenPendingTimeout.current) {
+      clearTimeout(menuOpenPendingTimeout.current);
+      menuOpenPendingTimeout.current = undefined;
+    }
+  }, []);
+
   const scheduleOpen = useCallback(
-    (menuId, itemId, listItemEl) => {
-      if (menuOpenPendingTimeout.current) {
-        clearTimeout(menuOpenPendingTimeout.current);
-      }
+    (hostMenuId: string, targetMenuId: string, menuItemId: string) => {
+      clearAnyScheduledOpenTasks();
+      // do we need to set target state to pending-open ?s
+
       menuOpenPendingTimeout.current = window.setTimeout(() => {
-        console.log(`scheduleOpen timed out opening ${itemId}`);
-        closeMenus(menuId, itemId);
-        menuState.current[menuId] = "popup-open";
-        menuState.current[itemId] = "no-popup";
-        openMenu(menuId, itemId, listItemEl);
+        // console.log(
+        //   `scheduleOpen<timeout> opening menu ${targetMenuId} from menu ${hostMenuId} via menuitem ${menuItemId}`
+        // );
+        closeMenus(menuItemId);
+        menuState.current[hostMenuId] = "popup-open";
+        menuState.current[targetMenuId] = "no-popup";
+        openMenu(hostMenuId, targetMenuId, menuItemId);
       }, 400);
     },
-    [closeMenus, openMenu]
+    [clearAnyScheduledOpenTasks, closeMenus, openMenu]
   );
 
   const scheduleClose = useCallback(
-    (openMenuId, menuId, itemId) => {
-      console.log(
-        `scheduleClose openMenuId ${openMenuId} menuId ${menuId} itemId ${itemId}`
-      );
+    (hostMenuId: string, openMenuId: string, itemId: string) => {
+      // console.log(
+      //   `scheduleClose openMenuId ${openMenuId} from parent menu ${hostMenuId} itemId ${itemId}`
+      // );
       menuState.current[openMenuId] = "pending-close";
       menuClosePendingTimeout.current = window.setTimeout(() => {
-        closeMenus(menuId, itemId);
+        closeMenus(itemId);
       }, 400);
     },
     [closeMenus]
@@ -211,131 +242,159 @@ export const useCascade = ({
   const handleRender = useCallback(() => {
     const { current: menus } = openMenus;
     const [menu] = menus.slice(-1);
-    const el = document.getElementById(`${id}-${menu.id}`);
+    const el = document.getElementById(menu.id);
     if (el) {
       const { right, bottom } = el.getBoundingClientRect();
       const { clientHeight, clientWidth } = document.body;
       if (right > clientWidth) {
         const newMenus =
           menus.length > 1
-            ? flipSides(id, menus)
+            ? flipSides(rootId, menus)
             : nudgeLeft(menus, right - clientWidth);
         setOpenMenus(newMenus);
       } else if (bottom > clientHeight) {
         const newMenus = nudgeUp(menus, bottom - clientHeight);
         setOpenMenus(newMenus);
       }
+
+      if (typeof el.tabIndex === "number") {
+        el.focus();
+      }
+    } else {
+      console.log(`no element found with if ${menu.id}`);
     }
-  }, [id, setOpenMenus]);
+  }, [rootId, setOpenMenus]);
+
+  // TODO introduce a delay parameter that allows click to requeat an immediate render
+  const triggerChildMenu = useCallback(
+    (menuItemEl: HTMLElement) => {
+      const { hostMenuId, targetMenuId, menuItemId, isGroup, isOpen } =
+        getMenuItemDetails(menuItemEl, rootId);
+
+      const {
+        current: { [hostMenuId]: state },
+      } = menuState;
+
+      // console.log(
+      //   `%ctriggerChildMenu
+      //   menuItem ${menuItemId}
+      //   host menu: ${hostMenuId}
+      //   target menu: ${targetMenuId}
+      //   item index: ${menuItemId}
+      //   state ${state}
+      //   isGroup ${isGroup} isOpen ${isOpen}
+      //   openMenus: ${JSON.stringify(openMenus.current)}
+      //   full state='${JSON.stringify(menuState.current)}`,
+      //   "color: green; font-weight: bold;"
+      // );
+
+      if (state === "no-popup" && isGroup) {
+        menuState.current[hostMenuId] = "popup-pending";
+        scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+      } else if (state === "popup-pending" && !isGroup) {
+        menuState.current[hostMenuId] = "no-popup";
+        clearTimeout(menuOpenPendingTimeout.current);
+        menuOpenPendingTimeout.current = undefined;
+      } else if (state === "popup-pending" && isGroup) {
+        clearTimeout(menuOpenPendingTimeout.current);
+        scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+      } else if (state === "popup-open") {
+        if (menuIsOpen(targetMenuId)) {
+          const menuStatus = getOpenMenuStatus(targetMenuId);
+          // Close any child menus of the target menu. This can happen if we have
+          // opened child menus, then moused out of the menu entirely, to re-enter
+          // at a higher level
+          closeMenus(menuItemId);
+
+          switch (menuStatus) {
+            case "pending-close":
+              // cancel the close
+              clearTimeout(menuClosePendingTimeout.current);
+              menuClosePendingTimeout.current = undefined;
+              menuState.current[targetMenuId] = "no-popup";
+              clearAnyScheduledOpenTasks();
+              break;
+            default:
+          }
+        } else {
+          // TODO review the below, suspectb it's over complicating things
+          const [parentOfLastOpenedMenu, lastOpenedMenu] =
+            openMenus.current.slice(-2);
+          if (
+            parentOfLastOpenedMenu.id === hostMenuId &&
+            menuState.current[lastOpenedMenu.id] !== "pending-close" /*&&
+          sameLevel*/
+          ) {
+            scheduleClose(hostMenuId, lastOpenedMenu.id, menuItemId);
+            if (isGroup && !isOpen) {
+              scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+            }
+          } else if (
+            parentOfLastOpenedMenu.id === hostMenuId &&
+            isGroup &&
+            menuItemId !== lastOpenedMenu.id &&
+            menuState.current[lastOpenedMenu.id] === "pending-close"
+          ) {
+            // if there is already an item queued for opening cancel it
+            scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+          } else if (isGroup) {
+            // closeMenus(menuId, itemId);
+            scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+          } else if (
+            !(
+              (menuState.current[lastOpenedMenu.id] === "pending-close") /*&&
+            sameLevel*/
+            )
+          ) {
+            closeMenus(menuItemId);
+          }
+        }
+      }
+
+      if (state === "pending-close") {
+        clearAnyScheduledOpenTasks();
+        clearTimeout(menuClosePendingTimeout.current);
+        menuClosePendingTimeout.current = undefined;
+        menuState.current[hostMenuId] = "popup-open";
+      }
+    },
+    [
+      clearAnyScheduledOpenTasks,
+      closeMenus,
+      getOpenMenuStatus,
+      menuIsOpen,
+      rootId,
+      scheduleClose,
+      scheduleOpen,
+    ]
+  );
 
   const listItemProps: Partial<MenuItemProps> = useMemo(
     () => ({
       onMouseEnter: (evt: MouseEvent) => {
-        const listItemEl = closestListItem(evt.target as HTMLElement);
-        const { menuId, itemId, isGroup, isOpen, level } =
-          identifyItem(listItemEl);
-        const sameLevel = prevLevel.current === level;
-        const {
-          current: { [menuId]: state },
-        } = menuState;
-        prevLevel.current = level;
-
-        // console.log(
-        //   `%conMouseEnter #${menuId}[${itemId}] @${level}
-        //     isGroup ${isGroup} isOpen ${isOpen}
-        //     openMenus [${openMenus.current.join(',')}]
-        //     state='${JSON.stringify(menuState.current)}`,
-        //     'color: green; font-weight: bold;'
-        // );
-
-        if (state === "no-popup" && isGroup) {
-          // Shouldn;t we always set this ?
-          menuState.current[menuId] = "popup-pending";
-          scheduleOpen(menuId, itemId, listItemEl);
-        } else if (state === "popup-pending" && !isGroup) {
-          menuState.current[menuId] = "no-popup";
-          clearTimeout(menuOpenPendingTimeout.current);
-          menuOpenPendingTimeout.current = undefined;
-        } else if (state === "popup-pending" && isGroup) {
-          clearTimeout(menuOpenPendingTimeout.current);
-          scheduleOpen(menuId, itemId, listItemEl);
-        } else if (state === "popup-open") {
-          const [{ id: parentMenuId }, { id: openMenuId }] =
-            openMenus.current.slice(-2);
-          if (
-            parentMenuId === menuId &&
-            menuState.current[openMenuId] !== "pending-close" &&
-            sameLevel
-          ) {
-            scheduleClose(openMenuId, menuId, itemId);
-            if (isGroup && !isOpen) {
-              scheduleOpen(menuId, itemId, listItemEl);
-            }
-          } else if (
-            parentMenuId === menuId &&
-            isGroup &&
-            itemId !== openMenuId &&
-            menuState.current[openMenuId] === "pending-close"
-          ) {
-            // if there is already an item queued for opening cancel it
-            scheduleOpen(menuId, itemId, listItemEl);
-          } else if (isGroup) {
-            closeMenus(menuId, itemId);
-            scheduleOpen(menuId, itemId, listItemEl);
-          } else if (
-            !(menuState.current[openMenuId] === "pending-close" && sameLevel)
-          ) {
-            closeMenus(menuId, itemId);
-          }
-        }
-
-        if (state === "pending-close") {
-          if (menuOpenPendingTimeout.current) {
-            clearTimeout(menuOpenPendingTimeout.current);
-            menuOpenPendingTimeout.current = undefined;
-          }
-          clearTimeout(menuClosePendingTimeout.current);
-          menuClosePendingTimeout.current = undefined;
-          menuState.current[menuId] = "popup-open";
-        }
-
-        onMouseEnterItem(evt, itemId);
+        const menuItemEl = closestListItem(evt.target as HTMLElement);
+        triggerChildMenu(menuItemEl);
+        onMouseEnterItem(evt, menuItemEl.id);
       },
 
       onClick: (evt: SyntheticEvent) => {
-        const targetElement = evt.target as HTMLElement;
-        const listItemEl = closestListItem(targetElement);
-        const idx = listItemIndex(listItemEl);
-        console.log(
-          `list item click [${idx}] hasPopup ${listItemEl.ariaHasPopup}`
-        );
-        if (listItemEl.ariaHasPopup === "true") {
-          if (listItemEl.ariaExpanded !== "true") {
-            openMenu(idx);
-          } else {
-            // do nothing
-          }
+        const listItemEl = closestListItem(evt.target as HTMLElement);
+        const { isGroup, menuItemId } = getMenuItemDetails(listItemEl, rootId);
+        if (isGroup) {
+          triggerChildMenu(listItemEl);
         } else {
-          onActivate(getItemId(listItemEl.id));
+          onActivate(menuItemId);
         }
       },
     }),
-    [
-      closeMenus,
-      onActivate,
-
-      onMouseEnterItem,
-      openMenu,
-      scheduleClose,
-      scheduleOpen,
-    ]
+    [onActivate, onMouseEnterItem, rootId, triggerChildMenu]
   );
 
   return {
     closeMenu,
     handleRender,
     listItemProps,
-    openMenu,
+    openMenu: triggerChildMenu,
     openMenus: openMenus.current,
   };
 };

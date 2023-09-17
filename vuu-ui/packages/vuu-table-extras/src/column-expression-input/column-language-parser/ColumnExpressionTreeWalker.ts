@@ -1,4 +1,4 @@
-import { Tree } from "@lezer/common";
+import { Tree } from "@finos/vuu-codemirror";
 import { RelationalExpression } from "./generated/column-parser.terms";
 type expressionType =
   | "arithmeticExpression"

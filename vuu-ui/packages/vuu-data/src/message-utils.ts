@@ -73,6 +73,41 @@ export type TableSchema = {
   table: VuuTable;
 };
 
+// Sort TableScheas by module
+export const byModule = (schema1: TableSchema, schema2: TableSchema) => {
+  const m1 = schema1.table.module.toLowerCase();
+  const m2 = schema2.table.module.toLowerCase();
+  if (m1 < m2) {
+    return -1;
+  } else if (m1 > m2) {
+    return 1;
+  } else if (schema1.table.table < schema2.table.table) {
+    return -1;
+  } else if (schema1.table.table > schema2.table.table) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
+
+export const getColumnByName = (
+  schema: TableSchema,
+  name?: string
+): SchemaColumn | undefined => {
+  if (name === undefined) {
+    return undefined;
+  } else {
+    const column = schema.columns.find((col) => col.name === name);
+    if (column) {
+      return column;
+    } else {
+      throw Error(
+        `getColumnByName no column '${name}' in schema for ${schema.table.table}`
+      );
+    }
+  }
+};
+
 export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,

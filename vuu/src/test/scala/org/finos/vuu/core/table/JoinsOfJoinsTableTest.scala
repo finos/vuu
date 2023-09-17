@@ -1,16 +1,15 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.{DefaultRange, RowProcessor, RowUpdateType, ViewPortContainer, ViewPortSetup}
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.joda.time.LocalDateTime
+import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -27,8 +26,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
   implicit val timeProvider: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
-
-  import TableTestHelper._
 
   def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
@@ -113,11 +110,10 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPricesFx, List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPricesFx, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPricesFx, DefaultRange, vpcolumns)
 
     viewPortContainer.runOnce()
 

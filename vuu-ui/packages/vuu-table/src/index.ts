@@ -1,7 +1,3 @@
-export * from "./context-menu";
-export * from "./dataTableTypes";
-export * from "./Table";
-export * from "./useMeasuredContainer";
-export * from "./useTableModel";
-export * from "./useTableViewport";
-export * from "./cell-renderers";
+export * from "./table";
+export { GroupHeaderCellNext, TableNext } from "./table-next";
+export { updateTableConfig } from "./table-next/table-config";

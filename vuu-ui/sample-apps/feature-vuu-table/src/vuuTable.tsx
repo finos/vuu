@@ -2,20 +2,21 @@ import {
   DataSource,
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
   RemoteDataSource,
   TableSchema,
-  useVuuMenuActions,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
@@ -27,11 +28,12 @@ import {
   ShellContextProps,
   useShellContext,
 } from "@finos/vuu-shell";
-import { Toolbar, ToolbarButton } from "@heswell/salt-lab";
+import { DataSourceStats } from "@finos/vuu-table-extras";
+import { filterAsQuery } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
 import { LinkedIcon } from "@salt-ds/icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfigurableDataTable } from "./ConfigurableDataTable";
-import { DataSourceStats } from "@finos/vuu-table-extras";
 
 import "./vuuTable.css";
 
@@ -149,10 +151,10 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
   ]);
 
   useEffect(() => {
-    dataSource.enable?.();
+    dataSource.resume?.();
     return () => {
       // suspend activity on the dataSource when component is unmounted
-      dataSource.disable?.();
+      dataSource.suspend?.();
     };
   }, [dataSource]);
 
@@ -178,9 +180,9 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
           type: "add-toolbar-contribution",
           location: "post-title",
           content: (
-            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+            <Button aria-label="remove-link" onClick={removeVisualLink}>
               <LinkedIcon />
-            </ToolbarButton>
+            </Button>
           ),
         });
       } else {
@@ -284,9 +286,9 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             rowHeight={18}
           />
         </div>
-        <Toolbar className="vuuTable-footer">
+        <div className="vuuToolbarProxy vuuTable-footer">
           <DataSourceStats dataSource={dataSource as RemoteDataSource} />
-        </Toolbar>
+        </div>
       </div>
     </ContextMenuProvider>
   );

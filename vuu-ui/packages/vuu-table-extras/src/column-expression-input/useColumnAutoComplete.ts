@@ -7,9 +7,9 @@ import {
   getNamedParentNode,
   getPreviousNode,
   getValue,
+  SyntaxNode,
   syntaxTree,
 } from "@finos/vuu-codemirror";
-import { SyntaxNode } from "@lezer/common";
 import { MutableRefObject, useCallback } from "react";
 import {
   ColumnNamedTerms,

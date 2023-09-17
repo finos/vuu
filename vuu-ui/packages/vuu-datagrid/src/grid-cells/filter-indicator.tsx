@@ -4,8 +4,8 @@ import { filterIncludesColumn } from "@finos/vuu-filters";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 
-import { KeyedColumnDescriptor } from "../grid-model/gridModelTypes";
 import "./filter-indicator.css";
+import { KeyedColumnDescriptor } from "packages/vuu-datagrid-types";
 
 export const Direction = {
   ASC: "asc",
@@ -23,7 +23,7 @@ export const FilterIndicator = ({ column, filter }: FilterIndicatorProps) => {
     [filter, column]
   );
   //TODO handle this at header level
-  const showContextMenu = useContextMenu();
+  const [showContextMenu] = useContextMenu();
 
   const handleClick = useCallback(
     (evt) => {

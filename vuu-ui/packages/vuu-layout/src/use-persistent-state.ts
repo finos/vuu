@@ -6,7 +6,7 @@ import { useCallback } from "react";
  * It is kept at this level, rather than passed to the target component(s)
  * so that it endures across the unmount/mount lifecycle journey of any
  * individual component. e.g when switching between tabs, components are
- * unmounted and mounted. They re-request their persistent state on (re-)mount.
+ * unmounted and mounted. They re-request their persistent state on re-mount.
  * Persistent state is populated as the serialized layout schema is processed
  * (see layoutFromJSON).
  */

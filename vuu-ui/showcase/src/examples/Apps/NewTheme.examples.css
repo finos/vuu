@@ -1,0 +1,93 @@
+
+body {
+  overflow: hidden;
+}
+
+.vuuShell-content {
+  padding: 8px;
+}
+
+.vuuShell-mainTabs {
+  --vuuTab-height: 28px;
+  border: solid 1px #D6D7DA;
+  border-top: none !important;
+  border-radius: 6;
+  height: 100%;
+  padding: 36px 8px 8px 8px;
+  position: relative;
+  width: 100%;
+}
+  
+  .vuuShell-mainTabs > .vuuTabstrip {
+    --vuuTabstrip-height: 28px;
+    --saltTabs-tabstrip-height: 29px;
+    --tabstrip-height: 29px;
+    background-color: white;
+    left:-1px;
+    padding-bottom: 7px;
+    position: absolute !important;
+    right: 1px;
+    top: 0;
+    width: calc(100% + 2px) !important;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabHeader {
+    border-bottom: none;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabstrip:before {
+    background-color: transparent;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left:0;
+    right:0;
+    height: 8px;
+    border-radius: 0 6px 0 0;
+    border-left: solid 1px #D6D7DA;
+    border-right: solid 1px #D6D7DA;
+    border-top: solid 1px #D6D7DA;
+  }
+
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab {
+    background-color: #F1F2F4;
+    border-color: #D6D7DA;
+    border-radius: 6px 6px 0 0;
+    border-width: 1px;
+    border-style: solid; 
+    position: relative;
+  }
+
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected {
+    background-color: white;
+    border-bottom-color: white;
+  }
+
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected:before{
+    background-color: #6d188b;;
+    content: '';
+    position: absolute;
+    height: 100%;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+  }
+
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab:hover:not(.vuuTab-selected):before{
+    background-color: #F37880;
+    content: '';
+    position: absolute;
+    height: 100%;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+  }
+
+  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-main {
+    background-color: transparent;
+    font-weight: 700;
+    height: 29px;
+    padding: 0 24px;
+  }

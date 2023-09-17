@@ -1,4 +1,4 @@
-import { SuggestionFetcher } from "@finos/vuu-data";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { MutableRefObject } from "react";
 

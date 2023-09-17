@@ -1,6 +1,5 @@
 package org.finos.vuu.viewport.sessiontable
 
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
@@ -8,12 +7,10 @@ import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCrea
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.{AbstractViewPortTestCase, CloseDialogViewPortAction, DefaultRange, NoAction, OpenDialogViewPortAction, RenderComponent, SelectionViewPortMenuItem, ViewPort, ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditAction, ViewPortEditCellAction, ViewPortEditFailure, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormCloseAction, ViewPortFormSubmitAction, ViewPortMenu, ViewPortSelectedIndices, ViewPortSelection, ViewPortTable}
+import org.finos.vuu.viewport._
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-
-import java.lang
 
 class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen with AbstractSessionTestCase {
 
@@ -96,7 +93,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     Scenario("Create a session table based on a user action and populate it with callbacks") {
 
-      val (viewPortContainer, process, processProvider, session, outQueue, highPriorityQueue, fixSequence, tableContainer) = setupEditableSessionTableInfra()
+      val (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer) = setupEditableSessionTableInfra()
 
       Given("We create a viewport on the process table (view only)")
       val vpcolumns = ViewPortColumnCreator.create(process, process.getTableDef.columns.map(_.name).toList)
@@ -111,7 +108,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       processProvider.tick("proc-2", Map("id" -> "proc-2", "name" -> "My Process 2", "uptime" -> 5000L, "status" -> "running"))
 
       Then("we create a viewport...")
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, process, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, process, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -131,7 +128,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val sessionTable = tableContainer.getTable(action.table.table)
       val sessionColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
-      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, sessionTable, DefaultRange, sessionColumns)
+      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, sessionTable, DefaultRange, sessionColumns)
 
       viewPortContainer.runOnce()
 

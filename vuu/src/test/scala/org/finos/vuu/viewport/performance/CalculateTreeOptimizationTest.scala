@@ -64,12 +64,11 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0, "last" -> 30))
 
-      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0, "last" -> 40))
-      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+    val outQueue = new OutboundRowPublishQueue()
 
       joinProvider.runOnce()
 
-      val session = ClientSessionId("sess-01", "chris")
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       val outQueue = new OutboundRowPublishQueue()
       val highPriorityQueue = new OutboundRowPublishQueue()
@@ -120,10 +119,13 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
       val groupByColumns3 = List(orderPrices.columnForName("ric"))
 
-      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort2.id, DefaultRange, vpcolumns2,
-        SortSpec(List()),
-        FilterSpec(""),
-        GroupBy(groupByColumns3, List()))
+    assertVpEq(combinedUpdates3) {
+      Table(
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", "")
+      )
+    }
 
       viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()

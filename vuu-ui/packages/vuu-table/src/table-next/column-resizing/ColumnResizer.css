@@ -1,0 +1,23 @@
+.vuuColumnResizerNext {
+    background-color: var(--columnResizer-color);
+    cursor: col-resize;
+    height: var(--header-height);
+    margin-left: var(--columnResizer-left, auto);
+    position: relative;
+    width: 2px;
+}
+
+.vuuColumnResizerNext:hover {
+    --columnResizer-color: var(--salt-color-blue-500);
+}
+
+.vuuColumnResizerNext:after {
+    background-color: var(--columnResizer-color, var(--salt-separable-tertiary-borderColor));
+    bottom:0;
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0px;
+    height: var(--columnResizer-height, 0);
+    width: 2px;
+}

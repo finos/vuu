@@ -1,7 +1,5 @@
-import {
-  ContextMenuItemDescriptor,
-  isGroupMenuItemDescriptor,
-} from "@finos/vuu-popups";
+import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
+import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
 
 export interface AgGridMenuDescriptor {
   action: () => void;

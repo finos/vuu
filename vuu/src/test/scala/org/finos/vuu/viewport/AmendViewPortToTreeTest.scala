@@ -1,5 +1,8 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
@@ -7,9 +10,6 @@ import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts._
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
@@ -73,11 +73,10 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 
@@ -124,9 +123,8 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     assertVpEq(combinedUpdates3) {
       Table(
         ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        //(0, true, "$root", false, true, "", 2, "", "", "", "", "", "", "", "", ""),
-        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", ""),
-        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", "")
+        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", "")
       )
     }
 
@@ -193,11 +191,10 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 
@@ -249,9 +246,9 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(combinedUpdates3) {
       Table(
-        ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|BT.L",false     ,false     ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        )
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root|BT.L", false, false, "BT.L", 2, "", "", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", "")
       )
     }
 
@@ -274,13 +271,13 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(combineQs(viewPort3)) {
       Table(
-        ("_depth"  ,"_isOpen" ,"_treeKey","_isLeaf" ,"_isOpen" ,"_caption","_childCount","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-        (2         ,true      ,"$root|BT.L|chris",false     ,true      ,"chris"   ,2         ,""        ,"chris"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (2         ,false     ,"$root|BT.L|steve",false     ,false     ,"steve"   ,2         ,""        ,"steve"   ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,true      ,"$root|BT.L",false     ,true      ,"BT.L"    ,2         ,""        ,""        ,"BT.L"    ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (1         ,false     ,"$root|VOD.L",false     ,false     ,"VOD.L"   ,1         ,""        ,""        ,"VOD.L"   ,""        ,""        ,""        ,""        ,""        ,""        ),
-        (3         ,false     ,"$root|BT.L|chris|NYC-0002",true      ,false     ,"NYC-0002",0         ,"NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      ),
-        (3         ,false     ,"$root|BT.L|chris|NYC-0003",true      ,false     ,"NYC-0003",0         ,"NYC-0003","chris"   ,"BT.L"    ,1437728400000L,100       ,499.0     ,501.0     ,40        ,null      )
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, true, "$root|BT.L", false, true, "BT.L", 2, "", "", "BT.L", "", "", "", "", "", ""),
+        (2, true, "$root|BT.L|chris", false, true, "chris", 2, "", "chris", "BT.L", "", "", "", "", "", ""),
+        (3, false, "$root|BT.L|chris|NYC-0002", true, false, "NYC-0002", 0, "NYC-0002", "chris", "BT.L", 1437728400000L, 100, 499.0, 501.0, 40, null),
+        (3, false, "$root|BT.L|chris|NYC-0003", true, false, "NYC-0003", 0, "NYC-0003", "chris", "BT.L", 1437728400000L, 100, 499.0, 501.0, 40, null),
+        (2, false, "$root|BT.L|steve", false, false, "steve", 2, "", "steve", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, false, "VOD.L", 1, "", "", "VOD.L", "", "", "", "", "", "")
       )
     }
 

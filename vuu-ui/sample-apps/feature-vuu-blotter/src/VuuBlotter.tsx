@@ -1,54 +1,48 @@
 import {
+  ConfigChangeMessage,
+  DataSourceVisualLinkCreatedMessage,
+  RemoteDataSource,
+  TableSchema,
+} from "@finos/vuu-data";
+import {
   isViewportMenusAction,
   isVisualLinkCreatedAction,
   isVisualLinkRemovedAction,
   isVisualLinksAction,
-} from "@finos/vuu-data";
-import { GridAction } from "@finos/vuu-datagrid-types";
-import { Filter } from "@finos/vuu-filter-types";
+  MenuActionConfig,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
+import { Grid, GridProvider } from "@finos/vuu-datagrid";
+import { GridAction, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
   addFilter,
-  filterAsQuery,
   FilterInput,
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import {
-  ConfigChangeMessage,
-  DataSourceVisualLinkCreatedMessage,
-  MenuActionConfig,
-  RemoteDataSource,
-  TableSchema,
-  useVuuMenuActions,
-} from "@finos/vuu-data";
-import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuMenu,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { ToolbarButton } from "@heswell/salt-lab";
+import {
+  FeatureProps,
+  ShellContextProps,
+  useShellContext,
+} from "@finos/vuu-shell";
+import { filterAsQuery } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
 import { LinkedIcon } from "@salt-ds/icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { FeatureProps } from "@finos/vuu-shell";
-
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import "./VuuBlotter.css";
 
 const classBase = "vuuBlotter";
 
 const CONFIG_KEYS = ["filter", "filterQuery", "groupBy", "sort"];
-
-type FilterState = {
-  filter: Filter | undefined;
-  filterQuery: string;
-  filterName?: string;
-};
 
 type BlotterConfig = {
   columns?: KeyedColumnDescriptor[];
@@ -143,9 +137,9 @@ const VuuBlotter = ({ schema, ...props }: FilteredGridProps) => {
           type: "add-toolbar-contribution",
           location: "post-title",
           content: (
-            <ToolbarButton aria-label="remove-link" onClick={removeVisualLink}>
+            <Button aria-label="remove-link" onClick={removeVisualLink}>
               <LinkedIcon />
-            </ToolbarButton>
+            </Button>
           ),
         });
         save?.(action, "visual-link");

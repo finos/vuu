@@ -1,0 +1,5 @@
+.vuuCalculatedColumnPanel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-size-unit);
+}

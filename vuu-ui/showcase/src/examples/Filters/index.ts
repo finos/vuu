@@ -1,3 +1,2 @@
-export * from "./FilterInput.stories";
-export * from "./FilterToolbar.stories";
-export * from "./ColumnFilter.stories";
+export * as FilterBar from "./FilterBar";
+export * as FilterInput from "./FilterInput";

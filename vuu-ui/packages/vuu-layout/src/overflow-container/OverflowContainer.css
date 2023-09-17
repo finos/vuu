@@ -1,0 +1,100 @@
+.vuuOverflowContainer {
+    --item-gap : 4px;
+    --overflow-direction: row; 
+    --overflow-width: 0px;
+    --border-size: calc((var(--overflow-container-height) - 24px) / 2);
+    background-color: var(--vuuOverflowContainer-background, black);
+    height: var(--overflow-container-height);
+    /* padding: 0 10px; */
+}
+
+.vuuOverflowContainer-horizontal {
+    --item-align: center;
+    --item-margin: 0 0 0 var(--item-gap);
+}
+.vuuOverflowContainer-vertical {
+    --item-align: stretch;
+    --item-margin: var(--item-gap) 0 0 0;
+    --overflow-direction: column; 
+ 
+}
+
+.vuuOverflowContainer-wrapContainer {
+    align-items: var(--item-align);
+    display: flex;
+    flex-direction: var(--overflow-direction);
+    flex-wrap: wrap;
+    /* gap: 4px; */
+    height: var(--overflow-container-height);
+    min-width: 44px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+
+}
+
+.vuuOverflowContainer-wrapContainer.overflowed {
+    --overflow-order: 2;
+    --overflow-left: auto;
+    --overflow-position: relative;
+    --overflow-width: auto;
+}
+
+.vuuOverflowContainer-item:first-child {
+    --item-gap: 0;
+}
+
+.vuuOverflowContainer-item:first-child {
+    --item-margin: 0;
+}
+
+.vuuOverflowContainer-item {
+    align-items: inherit;
+    display: flex;
+    order: 1;
+    position: relative;
+    height: var(--overflow-container-height);
+    margin: var(--item-margin);
+}
+
+.vuuOverflowContainer-item[data-align="right"] {
+    margin-left: auto;
+}
+
+
+.vuuOverflowContainer-item.wrapped {
+    --overflow-item-bg: #ccc;
+    order: 3;
+}
+
+.vuuOverflowContainer-item.vuuDraggable-dragAway,
+.vuuOverflowContainer-item:has(.vuuDraggable-dragAway){
+    display: none;
+}
+
+.vuuOverflowContainer-item.vuuDropTarget-settling {
+    visibility: hidden;
+}
+
+.vuuOverflowContainer-OverflowIndicator {
+    align-items: center;
+    background-color: transparent;
+    display: flex;
+    height: var(--overflow-container-height);
+    height: var(--overflow-container-height);
+    order: var(--overflow-order, 99);
+    overflow: hidden;
+    left: var(--overflow-left, 100%);
+    position: var(--overflow-position, absolute);
+    width: var(--overflow-width);
+
+  
+}
+
+
+.vuuDraggable-vuuOverflowContainer {
+    align-items: center;
+    display: flex;
+    height: 44px;
+}
+

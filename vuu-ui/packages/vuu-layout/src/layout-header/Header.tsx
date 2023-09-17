@@ -1,4 +1,7 @@
-import classnames from "classnames";
+import { EditableLabel } from "@finos/vuu-ui-controls";
+import { Button } from "@salt-ds/core";
+import { CloseIcon } from "@salt-ds/icons";
+import { default as classnames, default as cx } from "classnames";
 import React, {
   HTMLAttributes,
   KeyboardEvent,
@@ -8,15 +11,6 @@ import React, {
   useState,
 } from "react";
 import { Contribution, useViewDispatch } from "../layout-view";
-
-import {
-  EditableLabel,
-  Toolbar,
-  ToolbarButton,
-  ToolbarField,
-  Tooltray,
-} from "@heswell/salt-lab";
-import { CloseIcon } from "@salt-ds/icons";
 
 import "./Header.css";
 
@@ -116,51 +110,48 @@ export const Header = ({
 
   title &&
     toolbarItems.push(
-      <ToolbarField className="vuuHeader-title" key="title">
-        <EditableLabel
-          editing={editing}
-          key="title"
-          value={value}
-          onChange={setValue}
-          onMouseDownCapture={handleTitleMouseDown}
-          onEnterEditMode={handleEnterEditMode}
-          onExitEditMode={handleExitEditMode}
-          onKeyDown={handleTitleKeyDown}
-          ref={labelFieldRef}
-          tabIndex={0}
-        />
-      </ToolbarField>
+      <EditableLabel
+        editing={editing}
+        key="title"
+        value={value}
+        onChange={setValue}
+        onMouseDownCapture={handleTitleMouseDown}
+        onEnterEditMode={handleEnterEditMode}
+        onExitEditMode={handleExitEditMode}
+        onKeyDown={handleTitleKeyDown}
+        ref={labelFieldRef}
+        tabIndex={0}
+      />
     );
 
   closeable &&
     actionButtons.push(
-      <ToolbarButton
+      <Button
+        data-icon="close"
         key="close"
         onClick={handleClose}
         onMouseDown={handleButtonMouseDown}
-      >
-        <CloseIcon /> Close
-      </ToolbarButton>
+        variant="secondary"
+      />
     );
 
   postTitleContributedItems.length > 0 &&
     toolbarItems.push(
-      <Tooltray data-align-end key="contributions">
+      <div className="vuuTooltrayProxy" data-align="end" key="contributions">
         {postTitleContributedItems}
-      </Tooltray>
+      </div>
     );
 
   actionButtons.length > 0 &&
     toolbarItems.push(
-      <Tooltray data-align-end key="actions">
+      <div className="vuuTooltrayProxy" data-align="end" key="actions">
         {actionButtons}
-      </Tooltray>
+      </div>
     );
 
   return (
-    <Toolbar
-      className={className}
-      orientation={orientationProp}
+    <div
+      className={cx("vuuToolbarProxy", className)}
       style={style}
       onMouseDown={handleMouseDown}
     >
@@ -219,6 +210,6 @@ export const Header = ({
           onMouseDown={handleButtonMouseDown}
         />
       ) : null} */}
-    </Toolbar>
+    </div>
   );
 };

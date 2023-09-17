@@ -1,7 +1,25 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { RowAtIndexFunc } from "./ArrayProxy";
-import { InstrumentRowGenerator } from "./instrument-row-generator";
+import {
+  InstrumentRowGenerator,
+  InstrumentColumnGenerator,
+} from "./instrument-generator";
+import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
+import {
+  ChildOrderRowGenerator,
+  ChildOrderColumnGenerator,
+} from "./child-order-generator";
+import {
+  ParentOrderRowGenerator,
+  ParentOrderColumnGenerator,
+} from "./parent-order-generator";
+import {
+  PricesRowGenerator,
+  PricesColumnGenerator,
+  createPriceUpdateGenerator,
+} from "./prices-generator";
+import { UpdateGenerator } from "./rowUpdates";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
@@ -10,26 +28,23 @@ export const VuuColumnGenerator = (columnCount: number): string[] =>
       .map((_, i) => `Column ${i + 1}`)
   );
 
-export type RowGenerator = (
-  columns: number | string[]
-) => RowAtIndexFunc<VuuRowDataItemType[]>;
+export type RowGenerator<T = VuuRowDataItemType> = (
+  columns: string[]
+) => RowAtIndexFunc<T[]>;
 
 export type ColumnGenerator = (
   columns?: number | string[],
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
-export const DefaultRowGenerator: RowGenerator = (columns) => (index) => {
-  if (typeof columns === "number") {
+export const DefaultRowGenerator: RowGenerator<string> =
+  (columns: string[]) => (index) => {
     return [`row ${index + 1}`].concat(
-      Array(columns)
+      Array(columns.length)
         .fill(true)
         .map((v, j) => `value ${j + 1} @ ${index + 1}`)
     );
-  } else {
-    throw Error("DefaultRowGenerator must be passed columns (number)");
-  }
-};
+  };
 
 export const DefaultColumnGenerator: ColumnGenerator = (
   columns,
@@ -49,28 +64,6 @@ export const DefaultColumnGenerator: ColumnGenerator = (
   }
 };
 
-export const InstrumentColumnGenerator: ColumnGenerator = (
-  columns = [],
-  columnConfig = {}
-) => {
-  const instrumentColumns: ColumnDescriptor[] = [
-    { name: "bbg", serverDataType: "string" },
-    { name: "currency", serverDataType: "string" },
-    { name: "description", serverDataType: "string" },
-    { name: "exchange", serverDataType: "string" },
-    { name: "isin", serverDataType: "string" },
-    { name: "lotSize", serverDataType: "int" },
-    { name: "ric", serverDataType: "string" },
-  ];
-  if (typeof columns === "number") {
-    throw Error("InstrumentColumnGenerator must be passed columns (strings)");
-  } else if (columns.length === 0) {
-    return instrumentColumns;
-  } else {
-    return instrumentColumns;
-  }
-};
-
 export const getRowGenerator = (table?: VuuTable): RowGenerator => {
   if (table?.table === "instruments") {
     return InstrumentRowGenerator;
@@ -80,27 +73,40 @@ export const getRowGenerator = (table?: VuuTable): RowGenerator => {
 
 export const getColumnAndRowGenerator = (
   table?: VuuTable
-  // columns?: string[]
-): [ColumnGenerator, RowGenerator] => {
-  if (table?.table === "instruments") {
-    return [InstrumentColumnGenerator, InstrumentRowGenerator];
+):
+  | [ColumnGenerator, RowGenerator]
+  | [ColumnGenerator, RowGenerator, () => UpdateGenerator] => {
+  switch (table?.table) {
+    case "instruments":
+      return [InstrumentColumnGenerator, InstrumentRowGenerator];
+    case "orders":
+      return [OrderColumnGenerator, OrderRowGenerator];
+    case "childOrders":
+      return [ChildOrderColumnGenerator, ChildOrderRowGenerator];
+    case "parentOrders":
+      return [ParentOrderColumnGenerator, ParentOrderRowGenerator];
+    case "prices":
+      return [
+        PricesColumnGenerator,
+        PricesRowGenerator,
+        createPriceUpdateGenerator,
+      ];
+    default:
+      return [DefaultColumnGenerator, DefaultRowGenerator];
   }
-
-  return [DefaultColumnGenerator, DefaultRowGenerator];
 };
 
 export const populateArray = (
   count: number,
   colGen: ColumnGenerator,
-  rowGen: RowGenerator
+  rowGen: RowGenerator,
+  columns?: number | string[]
 ) => {
-  const columns = colGen();
-  console.time("generate data");
-  const generateRow = rowGen(columns.map((col) => col.name));
-  const data = [];
+  const columnDescriptors = colGen(columns);
+  const generateRow = rowGen(columnDescriptors.map((col) => col.name));
+  const data: Array<VuuRowDataItemType[]> = [];
   for (let i = 0; i < count; i++) {
-    data[i] = generateRow(i);
+    data[i] = generateRow(i) as VuuRowDataItemType[];
   }
-  console.timeEnd("generate data");
   return data;
 };

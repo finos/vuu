@@ -1,33 +1,33 @@
+.vuuPalette {
+  --vuuList-borderStyle: none;
+}
+
 .vuuPalette-horizontal {
   align-items: center;
   display: flex;
 }
 
 .vuuPaletteItem {
-  --vuu-icon-color: var(--salt-separable-primary-borderColor);
-  --vuu-icon-inset: calc(50% - 12px) auto auto -3px;
-  --vuu-icon-height: 24px;
-  --vuu-icon-width: 24px;
+  --vuu-icon-color: var(--salt-text-primary-foreground);
+  --vuu-icon-left: 0;
+  --vuu-icon-size: 16px;
+  --vuu-icon-top: 11px;
   --list-item-text-padding: 0 0 0 calc(var(--salt-size-unit) * 3);
-}
-
-.vuuPaletteItem[data-draggable]:after {
-  height: 22px;
-  width: 6px;
-  content: "";
-  position: absolute;
-
-  background-image: 
-  linear-gradient(45deg, rgb(180, 183, 190) 25%, transparent 25%),
-  linear-gradient(-45deg, rgb(180, 183, 190) 25%, transparent 25%),
-  linear-gradient(45deg, transparent 75%, rgb(180, 183, 190) 25%),
-  linear-gradient(-45deg, transparent 75%, rgb(180, 183, 190) 25%);
-  background-size: 4px 4px;
-  background-position: 0 0, 2px 0, 2px -2px, 0 2px;  
-
+  border-bottom: solid 1px var(--salt-separable-tertiary-borderColor);
+  padding-left: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .vuuSimpleDraggableWrapper > .vuuPaletteItem {
   --vuu-icon-color: var(--salt-selectable-foreground);
 
 }
+
+.salt-theme .vuuPaletteItem {
+  font-size: 11px;
+  font-weight: normal;
+
+}
+
+

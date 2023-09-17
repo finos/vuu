@@ -1,14 +1,13 @@
 package org.finos.vuu.core.module.typeahead
 
-import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
-import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse, ViewServerMessage}
-import org.finos.vuu.provider.VuuJoinTableProvider
-import org.finos.vuu.viewport.TestTimeStamp.EPOCH_DEFAULT
-import org.finos.vuu.viewport.ViewPortTable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
+import org.finos.vuu.net._
+import org.finos.vuu.provider.VuuJoinTableProvider
+import org.finos.vuu.viewport.TestTimeStamp.EPOCH_DEFAULT
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -23,7 +22,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
     val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
 
-    val ctx = RequestContext("", ClientSessionId("",""), null, null, "")
+    val ctx = RequestContext("", ClientSessionId("", ""), null, "")
 
     val vsMsg = toVsMsg(RpcCall("TypeAheadRpcHandler", "getUniqueFieldValues", Array(Map("table" -> "orders", "module" -> "TEST"), column), Map()))
 
@@ -36,7 +35,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
     val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
 
-    val ctx = new RequestContext("", ClientSessionId("",""), null, null, "")
+    val ctx = new RequestContext("", ClientSessionId("", ""), null, "")
 
     val vsMsg = toVsMsg(RpcCall("TypeAheadRpcHandler", "getUniqueFieldValuesStartingWith", Array(Map("table" -> "orders", "module" -> "TEST"), column, starts), Map()))
 

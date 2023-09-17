@@ -6,8 +6,7 @@ import { execWait } from "../../scripts/utils.mjs";
 
 fs.copyFileSync("./templates/index.html", "./index.html");
 
-// execWait("yarn vite");
-execWait("node ../node_modules/.bin/vite");
+execWait("npm run dev");
 
 console.log(`opening showcase at ${chalk.green("http://127.0.0.1:5173/")} ...`);
 

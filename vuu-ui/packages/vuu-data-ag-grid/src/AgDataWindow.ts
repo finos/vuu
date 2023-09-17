@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { WindowRange } from "@finos/vuu-utils";
 
 export type AgDataItem = string | number | boolean;
@@ -6,12 +6,6 @@ export type AgData = { [key: string]: AgDataItem };
 export type AgDataRow = [number, AgData];
 export type RangeLike = { from: number; to: number };
 
-// const log = (message: string, ...args: unknown[]) =>
-//   console.log(
-//     `%c[AgDataWindow] ${message}`,
-//     "color: purple;font-weight: bold;",
-//     ...args
-//   );
 export class AgDataWindow {
   private range: WindowRange;
   public data: DataSourceRow[];

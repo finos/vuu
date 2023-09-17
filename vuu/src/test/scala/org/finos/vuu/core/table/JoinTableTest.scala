@@ -1,5 +1,8 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.net.ClientSessionId
@@ -7,9 +10,6 @@ import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderCont
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport._
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -94,11 +94,10 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val session = ClientSessionId("sess-01", "chris")
 
       val outQueue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -175,13 +174,12 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, vpContainer) = setup()
 
       val queue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       joinProvider.start()
 
       tickInData(ordersProvider, pricesProvider)
 
-      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
+      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 20), ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 
       runContainersOnce(vpContainer, joinProvider)
 

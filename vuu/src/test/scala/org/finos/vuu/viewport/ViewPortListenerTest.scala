@@ -14,7 +14,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
     Scenario("Check when we move vp down and back and tick, rows come through"){
 
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
@@ -22,7 +22,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       createNOrderRows(ordersProvider, 30)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -44,7 +44,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      val viewPortv2 = viewPortContainer.changeRange(session, highPriorityQueue, viewPort.id, ViewPortRange(15, 25))
+      val viewPortv2 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(15, 25))
 
       viewPortContainer.runOnce()
 
@@ -66,7 +66,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      val viewPortv3 = viewPortContainer.changeRange(session, highPriorityQueue, viewPort.id, ViewPortRange(5, 15))
+      val viewPortv3 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(5, 15))
 
       viewPortContainer.runOnce()
 
@@ -99,17 +99,17 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       assertVpEq(combinedUpdates4){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,1005      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1311544860L,1006      ),
-          ("NYC-0007","chris"   ,"VOD.L"   ,1311544870L,1007      ),
-          ("NYC-0008","chris"   ,"VOD.L"   ,1311544880L,1008      ),
-          ("NYC-0009","chris"   ,"VOD.L"   ,1311544890L,1009      ),
-          ("NYC-0010","chris"   ,"VOD.L"   ,1311544900L,1010      ),
-          ("NYC-0011","chris"   ,"VOD.L"   ,1311544910L,1011      ),
-          ("NYC-0012","chris"   ,"VOD.L"   ,1311544920L,1012      ),
-          ("NYC-0013","chris"   ,"VOD.L"   ,1311544930L,1013      ),
-          ("NYC-0014","chris"   ,"VOD.L"   ,1311544940L,1014      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity"),
+          ("NYC-0014", "chris", "VOD.L", 1311544940L, 1014),
+          ("NYC-0005", "chris", "VOD.L", 1311544850L, 1005),
+          ("NYC-0006", "chris", "VOD.L", 1311544860L, 1006),
+          ("NYC-0007", "chris", "VOD.L", 1311544870L, 1007),
+          ("NYC-0008", "chris", "VOD.L", 1311544880L, 1008),
+          ("NYC-0009", "chris", "VOD.L", 1311544890L, 1009),
+          ("NYC-0010", "chris", "VOD.L", 1311544900L, 1010),
+          ("NYC-0011", "chris", "VOD.L", 1311544910L, 1011),
+          ("NYC-0012", "chris", "VOD.L", 1311544920L, 1012),
+          ("NYC-0013", "chris", "VOD.L", 1311544930L, 1013)
         )
       }
 

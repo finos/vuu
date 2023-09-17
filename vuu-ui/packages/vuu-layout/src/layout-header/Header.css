@@ -1,5 +1,6 @@
 .vuuHeader {
-  --saltToolbar-background: var(--salt-container-tertiary-background);
+  --saltButton-height: 24px;
+  --saltButton-width: 24px;
 }
 
 .salt-density-high .vuuHeader {

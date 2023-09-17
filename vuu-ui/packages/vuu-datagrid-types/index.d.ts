@@ -25,12 +25,27 @@ export interface TableCellProps
   row: DataSourceRow;
 }
 
-export declare type GridConfig = {
-  columns: ColumnDescriptor[];
+export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+  columnSeparators?: boolean;
+  rowSeparators?: boolean;
+  zebraStripes?: boolean;
+}
+
+/**
+ * TableConfig describes the configuration used to render a Table. It is
+ * a required prop for Table and provided initially by user. It can be
+ * edited using Settings Editors (Table and Column) and can be persisted
+ * across sessions.
+ */
+export interface TableConfig extends TableAttributes {
+  columns: ColumnDescriptor[];
+}
+export interface GridConfig extends TableConfig {
   headings: TableHeadings;
-};
+  selectionBookendWidth?: number;
+}
 
 export declare type TypeFormatting = {
   alignOnDecimals?: boolean;
@@ -56,7 +71,8 @@ export declare type ColumnTypeSimple =
   | "boolean"
   | "json"
   | "date"
-  | "time";
+  | "time"
+  | "checkbox";
 
 export declare type ColumnTypeDescriptor = {
   formatting?: TypeFormatting;
@@ -70,18 +86,26 @@ export type ColumnSort = VuuSortType | number;
 
 export type PinLocation = "left" | "right" | "floating";
 
+export type ColumnAlignment = "left" | "right";
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
   aggregate?: VuuAggType;
-  align?: "left" | "right";
+  align?: ColumnAlignment;
   className?: string;
   editable?: boolean;
   expression?: string;
   flex?: number;
+  /** 
+   Optional additional level(s) of heading to display above label.
+   May span multiple columns, if multiple adjacent columns declare 
+   same heading at same level.
+  */
   heading?: string[];
   hidden?: boolean;
   isSystemColumn?: boolean;
+  /** The Label to display on column in Table */
   label?: string;
   locked?: boolean;
   minWidth?: number;

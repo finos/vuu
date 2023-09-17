@@ -1,10 +1,11 @@
-import { DataSourceRow } from "@finos/vuu-data";
-import { VuuSortCol } from "../../vuu-protocol-types";
-import { AgGridFilter } from "./AgGridFilterUtils";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { VuuSortCol } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import { AgData } from "./AgDataWindow";
+import { AgGridFilter } from "./AgGridFilterUtils";
 
 // export type AgGridDataRow = Record<string, number | string | boolean>;
-export type AgGridDataSet = { [key: number]: AgDataRow };
+export type AgGridDataSet = { [key: number]: AgVuuDataRow };
 
 type ColumnVO = {
   id: string;
@@ -45,21 +46,21 @@ export const convertToAgGridDataSet = (
 export const convertToAgGridDataRows = (
   rows: DataSourceRow[],
   columnMap: ColumnMap
-): AgDataRow[] => {
-  const result: AgDataRow[] = [];
+): AgVuuDataRow[] => {
+  const result: AgVuuDataRow[] = [];
   rows.forEach((row) => {
     result.push(toAgGridRow(row, columnMap));
   });
   return result;
 };
 
-export type AgDataItem = string | number | boolean;
-export type AgDataRow = {
+export type AgVuuDataItem = string | number | boolean;
+export type AgVuuDataRow = {
   vuuKey: string;
-  [key: string]: AgDataItem;
+  [key: string]: AgVuuDataItem;
 };
 
-export type AgViewportRows = { [key: string]: AgDataRow };
+export type AgViewportRows = { [key: string]: AgVuuDataRow };
 
 export const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
   const {
@@ -69,7 +70,7 @@ export const toAgViewportRow = (data: DataSourceRow, columnMap: ColumnMap) => {
     [KEY]: key,
   } = data;
   // TODO precompute the keys once
-  const row: AgDataRow = toAgGridRow(data, columnMap);
+  const row: AgVuuDataRow = toAgGridRow(data, columnMap);
 
   if (!isLeaf) {
     row.groupKey = key;
@@ -95,12 +96,26 @@ export const convertToAgViewportRows = (
 
 export const toAgGridRow = (data: DataSourceRow, columnMap: ColumnMap) => {
   const { [KEY]: key } = data;
-  const row: AgDataRow = { vuuKey: key };
+  const row: AgVuuDataRow = { vuuKey: key };
   // TODO precompute the keys once
   for (const colName of Object.keys(columnMap)) {
     row[colName] = data[columnMap[colName]];
   }
   return row;
+};
+
+// Createsa DataSourceRow populated with just data values, no meta data.
+// Used only in Menu filter evaluation
+export const toVuuDataSourceRow = (
+  data: AgData,
+  columnMap: ColumnMap
+): DataSourceRow => {
+  const columnValues = Object.entries(data);
+  const vuuRow: DataSourceRow = Array(columnValues.length) as DataSourceRow;
+  for (const [colName, colValue] of columnValues) {
+    vuuRow[columnMap[colName]] = colValue;
+  }
+  return vuuRow;
 };
 
 export type Changes = {
