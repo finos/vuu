@@ -162,14 +162,14 @@ function initDrag(
     _validDropTargetPaths = dropPaths;
   }
 
-  const start = window.performance.now();
+  // const start = window.performance.now();
   // translate the layout $position to drag-oriented co-ordinates, ignoring splitters
 
   _measurements = BoxModel.measure(_dragContainer, dropTargets);
-  console.log({ _measurements });
+  // console.log({ _measurements });
   // onsole.log({ measurements: _measurements });
-  const end = window.performance.now();
-  console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
+  // const end = window.performance.now();
+  // console.log(`[Draggable] measurements took ${end - start}ms`, _measurements);
 
   const dragZone = _measurements[path];
 
