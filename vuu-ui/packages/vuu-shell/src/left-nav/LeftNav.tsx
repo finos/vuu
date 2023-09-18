@@ -16,6 +16,7 @@ const classBase = "vuuLeftNav";
 interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
   features: FeatureProps[];
+  tableFeatures: FeatureProps[];
   onResize?: (size: number) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
@@ -41,6 +42,7 @@ export const LeftNav = ({
   sizeContent = 240,
   sizeExpanded = 240,
   style: styleProp,
+  tableFeatures,
   ...htmlAttributes
 }: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
@@ -164,6 +166,7 @@ export const LeftNav = ({
             orientation="vertical"
           >
             <Tab data-icon="demo" label="DEMO"></Tab>
+            <Tab data-icon="features" label="VUU FEATURES"></Tab>
             <Tab data-icon="tables" label="VUU TABLES"></Tab>
             <Tab data-icon="templates" label="LAYOUT TEMPLATES"></Tab>
             <Tab data-icon="layouts" label="MY LAYOUTS"></Tab>
@@ -191,7 +194,8 @@ export const LeftNav = ({
         className={`${classBase}-menu-secondary`}
         showTabs={false}
       >
-        <FeatureList features={features} />
+        <FeatureList features={features} title="Vuu Features" />
+        <FeatureList features={tableFeatures} title="Vuu Tables" />
         <div style={{ background: "green", height: "100%" }}>
           Layout Templates
         </div>

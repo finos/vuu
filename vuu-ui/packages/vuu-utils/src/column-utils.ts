@@ -803,3 +803,62 @@ export const getTypeSettingsFromColumn = (
     return NO_TYPE_SETTINGS;
   }
 };
+
+/**
+ *
+ * return a filter predicate that will reject columns, names of which
+ * are not in provided list.
+ */
+export const subscribedOnly =
+  (columnNames?: string[]) => (column: ColumnDescriptor) =>
+    columnNames?.includes(column.name);
+
+export const addColumnToSubscribedColumns = (
+  subscribedColumns: ColumnDescriptor[],
+  availableColumns: SchemaColumn[],
+  columnName: string
+) => {
+  const byColName =
+    (n = columnName) =>
+    (column: { name: string }) =>
+      column.name === n;
+  if (subscribedColumns.findIndex(byColName()) !== -1) {
+    throw Error(
+      `column-utils, addColumnToSubscribedColumns column ${columnName} is already subscribed`
+    );
+  }
+  const indexOfAvailableColumn = availableColumns.findIndex(byColName());
+  if (indexOfAvailableColumn === -1) {
+    throw Error(
+      `column-utils, addColumnToSubscribedColumns column ${columnName} is not available`
+    );
+  }
+
+  const newColumn = {
+    ...availableColumns[indexOfAvailableColumn],
+  } as ColumnDescriptor;
+
+  // find the nearest preceding available column which is subscribed
+  let index = -1;
+  for (let i = indexOfAvailableColumn - 1; i >= 0; i--) {
+    const { name } = availableColumns[i];
+    index = subscribedColumns.findIndex(byColName(name));
+    if (index !== -1) {
+      break;
+    }
+  }
+
+  if (index === -1) {
+    return [newColumn].concat(subscribedColumns);
+  } else {
+    const results: ColumnDescriptor[] = [];
+    for (let i = 0; i < subscribedColumns.length; i++) {
+      results.push(subscribedColumns[i]);
+      if (i === index) {
+        results.push(newColumn);
+        index = Number.MAX_SAFE_INTEGER;
+      }
+    }
+    return results;
+  }
+};

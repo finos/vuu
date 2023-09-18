@@ -204,10 +204,30 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
+  const navigateColumn = useCallback(
+    ({ moveBy }: { moveBy: number }) => {
+      const { columns } = tableConfig;
+      setColumn((column) => {
+        const index = columns.indexOf(column) + moveBy;
+        return columns[index] ?? column;
+      });
+    },
+    [tableConfig]
+  );
+  const navigateNextColumn = useCallback(() => {
+    navigateColumn({ moveBy: 1 });
+  }, [navigateColumn]);
+
+  const navigatePrevColumn = useCallback(() => {
+    navigateColumn({ moveBy: -1 });
+  }, [navigateColumn]);
+
   return {
     availableRenderers,
     cellRenderer: selectedRenderer,
     column,
+    navigateNextColumn,
+    navigatePrevColumn,
     onChange: handleChange,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,

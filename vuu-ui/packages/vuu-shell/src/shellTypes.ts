@@ -3,11 +3,16 @@ declare global {
 }
 
 export type SaveLocation = "local" | "remote";
+
 export interface FeatureConfig {
   name: string;
   title: string;
   url: string;
   css?: string;
+  leftNavLocation: "vuu-features" | "vuu-tables";
+  featureProps?: {
+    schema?: string;
+  };
 }
 
 export type Features = {

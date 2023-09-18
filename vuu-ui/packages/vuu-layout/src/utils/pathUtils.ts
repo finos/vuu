@@ -13,6 +13,35 @@ const removeFinalPathSegment = (path: string) => {
   }
 };
 
+const getChildren = (c: ReactElement) =>
+  React.isValidElement(c.props.children)
+    ? [c.props.children]
+    : c.props.children;
+
+/**
+ * This is a very specific function at the moment. It resolves a path of the form
+ * '#{componentid}.ACTIVE_CHILD'
+ * It allows a templated path to be resolved to a concrete path at runtime.
+ * The above pattern is used to identify a layout drop target. Further patterns
+ * will be added if needed.
+ */
+export const resolvePath = (source: ReactElement, path = ""): string => {
+  const [step1, ...steps] = path.split(".");
+  if (step1?.startsWith("#")) {
+    const node = findTargetById(source, step1.slice(1), true);
+    if (node && steps.length) {
+      return resolvePath(node, steps.join("."));
+    }
+  } else if (step1 === "ACTIVE_CHILD") {
+    const { active } = getProps(source);
+    const children = getChildren(source);
+    const { path } = getProps(children[active]);
+    return path;
+  }
+
+  return "";
+};
+
 export function followPathToParent(
   source: ReactElement,
   path: string
@@ -79,11 +108,6 @@ export const getChild = (
 export function followPathToComponent(component: ReactElement, path: string) {
   const paths = path.split(".");
   let children = [component];
-
-  const getChildren = (c: ReactElement) =>
-    React.isValidElement(c.props.children)
-      ? [c.props.children]
-      : c.props.children;
 
   for (let i = 0; i < paths.length; i++) {
     const idx = parseInt(paths[i]);

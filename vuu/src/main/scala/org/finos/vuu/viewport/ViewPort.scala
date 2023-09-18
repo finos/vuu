@@ -1,15 +1,15 @@
 package org.finos.vuu.viewport
 
 import com.typesafe.scalalogging.LazyLogging
-import org.finos.vuu.api.ViewPortDef
-import org.finos.vuu.core.sort.{FilterAndSort, Sort, TwoStepCompoundFilter, UserDefinedFilterAndSort, VisualLinkedFilter}
-import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
-import org.finos.vuu.util.PublishQueue
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.sort._
+import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree.TreeNodeState
 
 import java.util
@@ -56,7 +56,9 @@ case class ViewPortRange(from: Int, to: Int) {
 
 }
 
-case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long)
+case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long) {
+  override def toString: String = s"VPU(type=$vpUpdate,key=${key.key},vp=${vp.id}(${vp.table.name})"
+}
 
 trait ViewPort {
 
@@ -104,8 +106,6 @@ trait ViewPort {
 
   def outboundQ: PublishQueue[ViewPortUpdate]
 
-  def highPriorityQ: PublishQueue[ViewPortUpdate]
-
   def getColumns: ViewPortColumns
 
   def getSelection: Map[String, Int]
@@ -116,7 +116,7 @@ trait ViewPort {
 
   def getSort: Sort
 
-  def combinedQueueLength: Int = highPriorityQ.length + outboundQ.length
+  def combinedQueueLength: Int = outboundQ.length
 
   def filterSpec: FilterSpec
 
@@ -165,7 +165,6 @@ class ViewPortImpl(val id: String,
                         //table: RowSource,
                         val session: ClientSessionId,
                         val outboundQ: PublishQueue[ViewPortUpdate],
-                        @deprecated val highPriorityQ: PublishQueue[ViewPortUpdate],
                         val structuralFields: AtomicReference[ViewPortStructuralFields],
                         val range: AtomicReference[ViewPortRange]
                        )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
@@ -177,7 +176,7 @@ class ViewPortImpl(val id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.push(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
 
   override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = {
@@ -359,7 +358,7 @@ class ViewPortImpl(val id: String,
 
   def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
     if (sendSizeUpdate) {
-      outboundQ.push(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -474,10 +473,10 @@ class ViewPortImpl(val id: String,
     addObserver(key)
   }
 
-  def publishHighPriorityUpdate(key: String, index: Int): Unit = {
+  private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
-      outboundQ.push(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 

@@ -1,17 +1,17 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.api._
-import org.finos.vuu.core.table.{Columns, TableContainer}
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
-import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.api._
+import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
+import org.finos.vuu.util.OutboundRowPublishQueue
 import org.scalatest.featurespec.AnyFeatureSpec
 
 object TestTimeStamp{
-  def EPOCH_DEFAULT = 1311544800000l
+  def EPOCH_DEFAULT = 1311544800000L
 }
 
 class AbstractViewPortTestCase extends AnyFeatureSpec {
@@ -23,17 +23,17 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     vpUps.filter( vpu => vpu.vp.id == vp.id )
   }
 
-  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     viewPortContainer
   }
 
-  def createDefaultViewPortInfra() = {
-    implicit val lifecycle = new LifecycleContainer
+  def createDefaultViewPortInfra(): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-    val dateTime = 1437728400000l//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val ordersDef = TableDef(
     name = "orders",
@@ -74,20 +74,19 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
-    val session = new ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue)
+    (viewPortContainer, orders, ordersProvider, session, outQueue)
   }
 
 
 
-  def createDefaultOrderPricesViewPortInfra() = {
+  def createDefaultOrderPricesViewPortInfra(): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle = new LifecycleContainer
 
-    val dateTime = 1437728400000l//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val ordersDef = TableDef(
       name = "orders",
@@ -135,23 +134,22 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
-    val session = new ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris")
 
     val outQueue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue, highPriorityQueue)
+    (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue)
   }
 
-  def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double) = {
+  def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double): Unit = {
     pricesProvider.tick(ric, Map("ric" -> ric, "bid" -> bid, "ask" -> ask, "last" -> last, "close" -> close))
   }
-  def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double, exchange: String) = {
+  def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double, exchange: String): Unit = {
     pricesProvider.tick(ric, Map("ric" -> ric, "bid" -> bid, "ask" -> ask, "last" -> last, "close" -> close, "exchange" -> exchange))
   }
 
-  def createNOrderRows(ordersProvider: MockProvider, n: Int, ric: String = "VOD.L", idOffset: Int = 0)(implicit clock: Clock) = {
-    (0 to n - 1).foreach( i=>{
+  def createNOrderRows(ordersProvider: MockProvider, n: Int, ric: String = "VOD.L", idOffset: Int = 0)(implicit clock: Clock): Unit = {
+    (0 until n).foreach(i=>{
       val iAsString = (idOffset + i).toString
       val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
       val quantity = 100 + i
@@ -160,8 +158,8 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     })
   }
 
-  def createNOrderRows(ordersProvider: MockProvider, n: Int)(implicit clock: Clock) = {
-    (0 to n - 1).foreach( i=>{
+  def createNOrderRows(ordersProvider: MockProvider, n: Int)(implicit clock: Clock): Unit = {
+    (0 until n).foreach(i=>{
       val iAsString = i.toString
       val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
       val quantity = 100 + i
@@ -170,8 +168,8 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     })
   }
 
-  def createNOrderRowsNoSleep(ordersProvider: MockProvider, n: Int)(implicit clock: Clock) = {
-    (0 to n - 1).foreach(i => {
+  def createNOrderRowsNoSleep(ordersProvider: MockProvider, n: Int)(implicit clock: Clock): Unit = {
+    (0 until n).foreach(i => {
       val iAsString = i.toString
       val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
       val quantity = 100 + i

@@ -65,7 +65,11 @@ export const Stack = forwardRef(function Stack(
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-  const { allowCloseTab, allowRenameTab } = TabstripProps;
+  const {
+    allowCloseTab,
+    allowRenameTab,
+    className: tabstripClassName,
+  } = TabstripProps;
 
   const handleExitEditMode = useCallback(
     (
@@ -131,7 +135,7 @@ export const Stack = forwardRef(function Stack(
           }
           allowDragDrop={TabstripProps.allowDragDrop !== false}
           animateSelectionThumb
-          className="vuuTabHeader"
+          className={cx("vuuTabHeader", tabstripClassName)}
           keyBoardActivation={keyBoardActivation}
           onActiveChange={onTabSelectionChanged}
           onAddTab={onAddTab}

@@ -1,5 +1,8 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
@@ -8,9 +11,6 @@ import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderCont
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts._
 import org.finos.vuu.viewport.{DefaultRange, GroupBy, ViewPortContainer}
-import org.finos.toolbox.jmx.MetricsProviderImpl
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -32,7 +32,6 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val tableContainer = new TableContainer(joinProvider)
 
       val outQueue          = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
 
@@ -48,7 +47,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, vpcolumns)
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
       provider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 220, "ask" -> 223))
@@ -63,10 +62,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(updates) {
         Table(
-          ("ric"     ,"bid"     ,"ask"     ),
-          ("VOD.L"   ,220       ,223       ),
-          ("BT.L"    ,220       ,223       ),
-          ("TW.L"    ,220       ,223       )
+          ("ric", "bid", "ask"),
+          ("BT.L", 220, 223),
+          ("TW.L", 220, 223),
+          ("VOD.L", 220, 223)
         )
       }
 
@@ -100,7 +99,6 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val tableContainer = new TableContainer(joinProvider)
 
       val outQueue          = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
 
@@ -112,7 +110,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
@@ -176,7 +174,6 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       val tableContainer = new TableContainer(joinProvider)
 
       val outQueue          = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
 
@@ -188,11 +185,11 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns,
-        groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName( "trader").get)
-        .withSum("quantity")
-        .withCount("trader")
-        .asClause()
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns,
+        groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName("trader").get)
+          .withSum("quantity")
+          .withCount("trader")
+          .asClause()
       )
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
@@ -271,12 +268,12 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(combineQs(viewPort)) {
         Table(
-          ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,219.0     ,223.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        )
+          ("_childCount", "_depth", "_caption", "_isOpen", "_treeKey", "_isLeaf", "ric", "bid", "ask", "orderId", "trader", "ric", "quantity", "last", "open", "close", "tradeTime"),
+          (4, 1, "chris", true, "$root|chris", false, "", "", "", "", 1, "", 400.0, "", "", "", ""),
+          (0, 2, "NYC-0005", false, "$root|chris|NYC-0005", true, "VOD.L", 219.0, 223.0, "NYC-0005", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0006", false, "$root|chris|NYC-0006", true, "VOD.L", 219.0, 223.0, "NYC-0006", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0007", false, "$root|chris|NYC-0007", true, "VOD.L", 219.0, 223.0, "NYC-0007", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0008", false, "$root|chris|NYC-0008", true, "VOD.L", 219.0, 223.0, "NYC-0008", "chris", "VOD.L", 100, null, null, null, 1437732000000L)
         )
       }
 

@@ -1,13 +1,13 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
-import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.ViewPortColumnCreator
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
+import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -33,7 +33,6 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
     joinProvider.runOnce()
 
     val queue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
 
     val columns = orderPrices.getTableDef.columns
 
@@ -41,7 +40,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       ClientSessionId("A", "B"),
-      queue, highPriorityQueue, orderPrices, ViewPortRange(0, 20), vpColumns,
+      queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List(
         SortDef("trader", 'A'),
         SortDef("ric", 'A')
@@ -57,9 +56,9 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
-        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,2100.0    ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,1         ,""        ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        )
+        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+        (false, 1, "$root|chris", false, 1, "chris", "", 1, "", "", 1500.0, "", "", "", "", ""),
+        (false, 1, "$root|steve", false, 2, "steve", "", 1, "", "", 2100.0, "", "", "", "", "")
       )
     }
 
@@ -72,17 +71,17 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     assertVpEq(filterByVpId(combineQs(viewport), viewport)) {
       Table(
-        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,2         ,"$root|steve|VOD.L",false     ,1         ,"VOD.L"   ,""        ,1         ,"VOD.L"   ,""        ,600.0     ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,2         ,"$root|steve|BT.L",false     ,2         ,"BT.L"    ,""        ,1         ,"BT.L"    ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,1         ,"$root|chris",false     ,1         ,"chris"   ,""        ,1         ,""        ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,2         ,"$root|chris|VOD.L",false     ,5         ,"VOD.L"   ,""        ,1         ,"VOD.L"   ,""        ,1500.0    ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0002",true      ,0         ,"NYC-0002","NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0003",true      ,0         ,"NYC-0003","NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,2100.0    ,""        ,""        ,""        ,""        ,""        )
+        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+        (true, 1, "$root|chris", false, 1, "chris", "", 1, "", "", 1500.0, "", "", "", "", ""),
+        (true, 2, "$root|chris|VOD.L", false, 5, "VOD.L", "", 1, "VOD.L", "", 1500.0, "", "", "", "", ""),
+        (false, 3, "$root|chris|VOD.L|NYC-0001", true, 0, "NYC-0001", "NYC-0001", "chris", "VOD.L", 1311544800000L, 100, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|chris|VOD.L|NYC-0002", true, 0, "NYC-0002", "NYC-0002", "chris", "VOD.L", 1311544800000L, 200, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|chris|VOD.L|NYC-0003", true, 0, "NYC-0003", "NYC-0003", "chris", "VOD.L", 1311544800000L, 300, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|chris|VOD.L|NYC-0004", true, 0, "NYC-0004", "NYC-0004", "chris", "VOD.L", 1311544800000L, 400, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|chris|VOD.L|NYC-0005", true, 0, "NYC-0005", "NYC-0005", "chris", "VOD.L", 1311544800000L, 500, 220.0, 222.0, null, null, null),
+        (true, 1, "$root|steve", false, 2, "steve", "", 1, "", "", 2100.0, "", "", "", "", ""),
+        (false, 2, "$root|steve|BT.L", false, 2, "BT.L", "", 1, "BT.L", "", 1500.0, "", "", "", "", ""),
+        (false, 2, "$root|steve|VOD.L", false, 1, "VOD.L", "", 1, "VOD.L", "", 600.0, "", "", "", "", "")
       )
     }
 
@@ -98,11 +97,11 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     assertVpEq(updates) {
       Table(
-        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,2         ,"$root|chris|BT.L",false     ,1         ,"BT.L"    ,""        ,1         ,"BT.L"    ,""        ,700.0     ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,2         ,"$root|steve|BT.L",false     ,1         ,"BT.L"    ,""        ,1         ,"BT.L"    ,""        ,1000.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,1600.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,1         ,"$root|chris",false     ,2         ,"chris"   ,""        ,1         ,""        ,""        ,2200.0    ,""        ,""        ,""        ,""        ,""        )
+        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+        (true, 1, "$root|chris", false, 2, "chris", "", 1, "", "", 2200.0, "", "", "", "", ""),
+        (false, 2, "$root|chris|BT.L", false, 1, "BT.L", "", 1, "BT.L", "", 700.0, "", "", "", "", ""),
+        (true, 1, "$root|steve", false, 2, "steve", "", 1, "", "", 1600.0, "", "", "", "", ""),
+        (false, 2, "$root|steve|BT.L", false, 1, "BT.L", "", 1, "BT.L", "", 1000.0, "", "", "", "", "")
       )
 
     }
@@ -126,19 +125,19 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     assertVpEq(updates2) {
       Table(
-        ("_isOpen" ,"_depth"  ,"_treeKey","_isLeaf" ,"_childCount","_caption","orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-        (false     ,3         ,"$root|steve|VOD.L|NYC-0001",true      ,0         ,"NYC-0001","NYC-0001","steve"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|steve|VOD.L|NYC-0002",true      ,0         ,"NYC-0002","NYC-0002","steve"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|steve|VOD.L|NYC-0003",true      ,0         ,"NYC-0003","NYC-0003","steve"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|steve|VOD.L|NYC-0004",true      ,0         ,"NYC-0004","NYC-0004","steve"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,3         ,"$root|steve|VOD.L|NYC-0006",true      ,0         ,"NYC-0006","NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,2         ,"$root|steve|BT.L",false     ,1         ,"BT.L"    ,""        ,1         ,"BT.L"    ,""        ,1000.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,1         ,"$root|chris",false     ,2         ,"chris"   ,""        ,1         ,""        ,""        ,1200.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,2         ,"$root|chris|VOD.L",false     ,1         ,"VOD.L"   ,""        ,1         ,"VOD.L"   ,""        ,500.0     ,""        ,""        ,""        ,""        ,""        ),
-        (false     ,3         ,"$root|chris|VOD.L|NYC-0005",true      ,0         ,"NYC-0005","NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-        (false     ,2         ,"$root|chris|BT.L",false     ,1         ,"BT.L"    ,""        ,1         ,"BT.L"    ,""        ,700.0     ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,2         ,"$root|steve|VOD.L",false     ,5         ,"VOD.L"   ,""        ,1         ,"VOD.L"   ,""        ,1600.0    ,""        ,""        ,""        ,""        ,""        ),
-        (true      ,1         ,"$root|steve",false     ,2         ,"steve"   ,""        ,1         ,""        ,""        ,2600.0    ,""        ,""        ,""        ,""        ,""        )
+        ("_isOpen", "_depth", "_treeKey", "_isLeaf", "_childCount", "_caption", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+        (true, 1, "$root|chris", false, 2, "chris", "", 1, "", "", 1200.0, "", "", "", "", ""),
+        (false, 2, "$root|chris|BT.L", false, 1, "BT.L", "", 1, "BT.L", "", 700.0, "", "", "", "", ""),
+        (true, 2, "$root|chris|VOD.L", false, 1, "VOD.L", "", 1, "VOD.L", "", 500.0, "", "", "", "", ""),
+        (false, 3, "$root|chris|VOD.L|NYC-0005", true, 0, "NYC-0005", "NYC-0005", "chris", "VOD.L", 1311544800000L, 500, 220.0, 222.0, null, null, null),
+        (true, 1, "$root|steve", false, 2, "steve", "", 1, "", "", 2600.0, "", "", "", "", ""),
+        (false, 2, "$root|steve|BT.L", false, 1, "BT.L", "", 1, "BT.L", "", 1000.0, "", "", "", "", ""),
+        (true, 2, "$root|steve|VOD.L", false, 5, "VOD.L", "", 1, "VOD.L", "", 1600.0, "", "", "", "", ""),
+        (false, 3, "$root|steve|VOD.L|NYC-0001", true, 0, "NYC-0001", "NYC-0001", "steve", "VOD.L", 1311544800000L, 100, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|steve|VOD.L|NYC-0002", true, 0, "NYC-0002", "NYC-0002", "steve", "VOD.L", 1311544800000L, 200, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|steve|VOD.L|NYC-0003", true, 0, "NYC-0003", "NYC-0003", "steve", "VOD.L", 1311544800000L, 300, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|steve|VOD.L|NYC-0004", true, 0, "NYC-0004", "NYC-0004", "steve", "VOD.L", 1311544800000L, 400, 220.0, 222.0, null, null, null),
+        (false, 3, "$root|steve|VOD.L|NYC-0006", true, 0, "NYC-0006", "NYC-0006", "steve", "VOD.L", 1311544800000L, 600, 220.0, 222.0, null, null, null)
       )
     }
 

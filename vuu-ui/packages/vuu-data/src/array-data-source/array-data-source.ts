@@ -19,6 +19,7 @@ import {
   KeySet,
   logger,
   metadataKeys,
+  NULL_RANGE,
   rangeNewItems,
   resetRange,
   uuid,
@@ -59,7 +60,6 @@ export interface ArrayDataSourceConstructorProps
 const { debug } = logger("ArrayDataSource");
 
 const { RENDER_IDX, SELECTED } = metadataKeys;
-const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
 
 const toDataSourceRow = (
   data: VuuRowDataItemType[],

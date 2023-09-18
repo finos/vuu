@@ -8,6 +8,8 @@ import { useId } from "@finos/vuu-layout";
 import { PopupCloseCallback } from "../popup";
 import { ContextMenuOptions } from "./useContextMenu";
 
+import "./ContextMenu.css";
+
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
   onClose?: PopupCloseCallback;
   position?: { x: number; y: number };

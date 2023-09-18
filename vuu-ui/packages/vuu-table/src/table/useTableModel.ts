@@ -22,7 +22,7 @@ import {
   updateColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
-  moveItem,
+  moveItemDeprecated,
   getDefaultAlignment,
 } from "@finos/vuu-utils";
 
@@ -308,7 +308,7 @@ function moveColumn(
   } else if (typeof moveTo === "number") {
     return {
       ...state,
-      columns: moveItem(columns, column, moveTo),
+      columns: moveItemDeprecated(columns, column, moveTo),
     };
   }
   return state;

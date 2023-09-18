@@ -85,7 +85,6 @@ export class ArrayBackedMovingWindow {
       if (!this.internalData[internalIndex] && isWithinClientRange) {
         this.rowsWithinRange += 1;
       }
-
       this.internalData[internalIndex] = row;
     }
     return isWithinClientRange;
@@ -146,25 +145,34 @@ export class ArrayBackedMovingWindow {
   }
 
   setRange(from: number, to: number) {
-    log.debug?.(`setRange ${from} - ${to}`);
-    const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
-    const newData = new Array(to - from + this.bufferSize);
-    this.rowsWithinRange = 0;
+    if (from !== this.#range.from || to !== this.#range.to) {
+      log.debug?.(`setRange ${from} - ${to}`);
+      const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
+      const newData = new Array(to - from);
+      this.rowsWithinRange = 0;
 
-    for (let i = overlapFrom; i < overlapTo; i++) {
-      const data = this.getAtIndex(i);
-      if (data) {
-        const index = i - from;
-        newData[index] = data;
-        if (this.isWithinClientRange(i)) {
-          this.rowsWithinRange += 1;
+      for (let i = overlapFrom; i < overlapTo; i++) {
+        const data = this.getAtIndex(i);
+        if (data) {
+          const index = i - from;
+          newData[index] = data;
+          if (this.isWithinClientRange(i)) {
+            this.rowsWithinRange += 1;
+          }
         }
       }
-    }
 
-    this.internalData = newData;
-    this.#range.from = from;
-    this.#range.to = to;
+      this.internalData = newData;
+      this.#range.from = from;
+      this.#range.to = to;
+    } else {
+      log.debug?.(`setRange ${from} - ${to} IGNORED because not changed`);
+    }
+  }
+
+  //TODO temp
+  get data() {
+    return this.internalData;
   }
 
   private bufferBreakout = (from: number, to: number): boolean => {
@@ -192,7 +200,6 @@ export class ArrayBackedMovingWindow {
       clientTo - from,
       this.rowCount ?? to
     );
-    // const endOffset = Math.min(to-from, to, hi - from, this.rowCount);
     return this.internalData.slice(startOffset, endOffset);
   }
 

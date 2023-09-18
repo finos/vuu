@@ -521,7 +521,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort
   }
 
-  def create(requestId: String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], highPriorityQ: PublishQueue[ViewPortUpdate], table: RowSource,
+  def create(requestId: String, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], table: RowSource,
              range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val id = createId(clientSession.user)
@@ -540,7 +540,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState, None)
 
-    val viewPort = new ViewPortImpl(id, clientSession, outboundQ, highPriorityQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
+    val viewPort = new ViewPortImpl(id, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
     val permission = table.asTable.getTableDef.permissionChecker(viewPort, tableContainer)
 

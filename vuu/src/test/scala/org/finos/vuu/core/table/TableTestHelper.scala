@@ -1,32 +1,30 @@
 package org.finos.vuu.core.table
 
+import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.api._
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.{ViewPort, ViewPortUpdate}
-import org.finos.toolbox.jmx.MetricsProviderImpl
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.TestFriendlyClock
 
 object TableTestHelper {
 
-  def emptyQueues(viewPort: ViewPort) = {
-    viewPort.highPriorityQ.popUpTo(1000)
+  def emptyQueues(viewPort: ViewPort): Seq[ViewPortUpdate] = {
     viewPort.outboundQ.popUpTo(1000)
   }
 
-  def combineQs(queue: PublishQueue[ViewPortUpdate], highPriorityQueue: PublishQueue[ViewPortUpdate]) = {
-    highPriorityQueue.popUpTo(20) ++ queue.popUpTo(20)
+  def combineQs(queue: PublishQueue[ViewPortUpdate]): Seq[ViewPortUpdate] = {
+    queue.popUpTo(20)
   }
 
-  def combineQs(viewPort: ViewPort) = {
-    (viewPort.highPriorityQ.popUpTo(20) ++ viewPort.outboundQ.popUpTo(20))
+  def combineQs(viewPort: ViewPort): Seq[ViewPortUpdate] = {
+    viewPort.outboundQ.popUpTo(20)
   }
 
-  def getQueues = {
-    val outQueue          = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
-    (outQueue, highPriorityQueue)
+  def getQueues: OutboundRowPublishQueue = {
+    val outQueue = new OutboundRowPublishQueue()
+    (outQueue)
   }
 
   def createOrderPricesScenario() = {

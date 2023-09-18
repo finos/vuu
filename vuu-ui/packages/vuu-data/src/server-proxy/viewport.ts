@@ -166,8 +166,7 @@ export class Viewport {
    */
   private clientRange: VuuRange;
   private columns: string[];
-  // TODO create this in constructor so we don't have to mark is as optional
-  private dataWindow?: ArrayBackedMovingWindow = undefined;
+  private dataWindow: ArrayBackedMovingWindow;
   private filter: DataSourceFilter;
   private groupBy: string[];
   private sort: VuuSort;
@@ -240,6 +239,12 @@ export class Viewport {
       info?.(
         `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`
       );
+    this.dataWindow = new ArrayBackedMovingWindow(
+      this.clientRange,
+      range,
+      this.bufferSize
+    );
+
     this.postMessageToClient = postMessageToClient;
   }
 
@@ -253,6 +258,7 @@ export class Viewport {
 
     if (lastMode === mode) {
       const ts = Date.now();
+      console.log(`read data now ${ts}`);
       this.lastUpdateStatus.count += 1;
       this.lastUpdateStatus.ts = ts;
       elapsedTime = lastTS === 0 ? 0 : ts - lastTS;
@@ -275,7 +281,7 @@ export class Viewport {
   }
 
   get size() {
-    return this.dataWindow?.rowCount ?? 0;
+    return this.dataWindow.rowCount ?? 0;
   }
 
   subscribe() {
@@ -309,12 +315,12 @@ export class Viewport {
     this.columns = columns;
     this.groupBy = groupBy;
     this.isTree = groupBy && groupBy.length > 0;
-    this.dataWindow = new ArrayBackedMovingWindow(
-      this.clientRange,
-      range,
-      this.bufferSize
-    );
-
+    // this.dataWindow = new ArrayBackedMovingWindow(
+    //   this.clientRange,
+    //   range,
+    //   this.bufferSize
+    // );
+    this.dataWindow.setRange(range.from, range.to);
     // TODO retrieve the filterStruct
     return {
       aggregations,
@@ -857,7 +863,7 @@ export class Viewport {
       return NO_DATA_UPDATE;
     }
 
-    if (this.hasUpdates && this.dataWindow) {
+    if (this.hasUpdates) {
       const { keys, selectedRows } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
 
@@ -877,6 +883,7 @@ export class Viewport {
         const records = this.dataWindow.getData();
         // if scrolling and hasAllRowsWithinRange, turn scrolling off
         // if not scrolling, return just the updates
+
         if (this.dataWindow.hasAllRowsWithinRange) {
           out = [];
           mode = "batch";
@@ -912,6 +919,7 @@ export class Viewport {
   // alleviate pressure on UI DataTable.
   private shouldThrottleMessage = (mode: DataUpdateMode) => {
     const elapsedTime = this.setLastUpdate(mode);
+    console.log(`elapsed time = ${elapsedTime}`);
     return (
       mode === "size-only" &&
       elapsedTime > 0 &&
@@ -922,6 +930,7 @@ export class Viewport {
 
   private throttleMessage = (mode: DataUpdateMode) => {
     if (this.shouldThrottleMessage(mode)) {
+      console.log("throttling updates setTimeout to 2000");
       if (this.updateThrottleTimer === undefined) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

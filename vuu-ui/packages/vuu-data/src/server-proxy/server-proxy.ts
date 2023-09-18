@@ -1108,12 +1108,6 @@ export class ServerProxy {
                 } rows, size ${size}`
               );
 
-            if (size) {
-              console.log(
-                `send size to client (along with ${rows?.length} rows)`
-              );
-            }
-
             if (mode) {
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,

@@ -15,6 +15,7 @@ const classBase = "vuuTableNext";
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export const TableNext = ({
+  availableColumns,
   className: classNameProp,
   config,
   dataSource,
@@ -52,6 +53,7 @@ export const TableNext = ({
     viewportMeasurements,
     ...tableProps
   } = useTable({
+    availableColumns,
     config,
     dataSource,
     headerHeight,

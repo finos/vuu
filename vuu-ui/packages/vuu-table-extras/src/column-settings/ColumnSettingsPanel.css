@@ -17,6 +17,33 @@
     padding-top: 24px;
 }
 
+.vuuColumnSettingsPanel-header {
+  border-top: solid 2px var(--vuu-color-gray-30);
+  font-size: 14px;
+  font-weight: 600;
+  padding-top: 24px;
+}
+
+
+.vuuColumnSettingsPanel-buttonBar {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.vuuColumnSettingsPanel-buttonNavPrev {
+  --vuu-icon-left: 6px;
+  padding-left: 24px
+}
+
+.vuuColumnSettingsPanel-buttonNavNext {
+  --vuu-icon-left: calc(100% - 18px);
+  padding-right: 24px
+}
+
+
+
 [data-icon='align-left'] {
     --vuu-icon-svg: var(--vuu-svg-align-left);
   }

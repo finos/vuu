@@ -45,7 +45,7 @@ export const Tab = forwardRef(function Tab(
     onMenuClose,
     orientation,
     selected,
-    showMenuButton = closeable || editable,
+    showMenuButton = closeable || editable || Boolean(location),
     tabIndex,
     ...props
   }: TabProps,

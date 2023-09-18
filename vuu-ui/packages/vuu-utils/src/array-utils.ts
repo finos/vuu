@@ -55,7 +55,7 @@ export function itemsOrOrderChanged<T = unknown>(
   }
 }
 
-export const moveItem = <T = unknown>(
+export const moveItemDeprecated = <T = unknown>(
   items: T[],
   item: T,
   moveTo: number
@@ -76,4 +76,24 @@ export const moveItem = <T = unknown>(
     newItems.splice(moveTo + offset, 0, item);
   }
   return newItems;
+};
+
+export const moveItem = <T = unknown>(
+  items: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] => {
+  if (fromIndex === toIndex) {
+    return items;
+  } else {
+    const newItems = items.slice();
+    const [item] = newItems.splice(fromIndex, 1);
+    if (toIndex === -1) {
+      return newItems.concat(item);
+    } else {
+      const offset = toIndex > fromIndex ? 0 : 0;
+      newItems.splice(toIndex + offset, 0, item);
+      return newItems;
+    }
+  }
 };

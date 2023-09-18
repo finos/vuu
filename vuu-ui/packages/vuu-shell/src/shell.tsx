@@ -9,7 +9,11 @@ import {
   useRef,
 } from "react";
 import { useLayoutConfig } from "./layout-config";
-import { DraggableLayout, LayoutProvider } from "@finos/vuu-layout";
+import {
+  DraggableLayout,
+  LayoutProvider,
+  LayoutProviderProps,
+} from "@finos/vuu-layout";
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
@@ -42,6 +46,10 @@ const warningLayout = {
 };
 
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
+  LayoutProps?: Pick<
+    LayoutProviderProps,
+    "createNewChild" | "pathToDropTarget"
+  >;
   children?: ReactNode;
   defaultLayout?: LayoutJSON;
   leftSidePanel?: ReactElement;
@@ -55,6 +63,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const Shell = ({
+  LayoutProps,
   children,
   className: classNameProp,
   defaultLayout = warningLayout,
@@ -72,6 +81,7 @@ export const Shell = ({
   const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
     defaultLayout,
     saveLocation,
+    saveUrl,
     user,
   });
 
@@ -128,9 +138,12 @@ export const Shell = ({
   });
 
   return (
-    // ShellContext TBD
     <ThemeProvider>
-      <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
+      <LayoutProvider
+        {...LayoutProps}
+        layout={layout}
+        onLayoutChange={handleLayoutChange}
+      >
         <DraggableLayout
           className={className}
           data-mode={dataMode}

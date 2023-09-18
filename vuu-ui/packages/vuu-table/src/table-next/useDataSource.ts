@@ -2,39 +2,45 @@ import {
   DataSource,
   DataSourceSubscribedMessage,
   SubscribeCallback,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
 } from "@finos/vuu-data";
+import {
+  isVuuFeatureAction,
+  isVuuFeatureInvocation,
+} from "@finos/vuu-data-react/src";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getFullRange } from "@finos/vuu-utils";
+import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
   // onConfigChange?: (message: DataSourceConfigMessage) => void;
-  // onFeatureEnabled?: (message: VuuFeatureMessage) => void;
-  // onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
   renderBufferSize?: number;
-  viewportRowCount: number;
 }
 
 export const useDataSource = ({
   dataSource,
+  onFeatureEnabled,
+  onFeatureInvocation,
   onSizeChange,
   onSubscribed,
-  range = { from: 0, to: 0 },
+  range = NULL_RANGE,
   renderBufferSize = 0,
-  viewportRowCount,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
   const rafHandle = useRef<number | null>(null);
-  const rangeRef = useRef<VuuRange>({ from: 0, to: 0 });
+  const rangeRef = useRef<VuuRange>(NULL_RANGE);
 
   const dataWindow = useMemo(
     () => new MovingWindow(getFullRange(range, renderBufferSize)),
@@ -70,15 +76,22 @@ export const useDataSource = ({
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
-        // } else if (isVuuFeatureAction(message)) {
-        //   onFeatureEnabled?.(message);
-        // } else if (isVuuFeatureInvocation(message)) {
-        //   onFeatureInvocation?.(message);
+      } else if (isVuuFeatureAction(message)) {
+        onFeatureEnabled?.(message);
+      } else if (isVuuFeatureInvocation(message)) {
+        onFeatureInvocation?.(message);
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onSizeChange, onSubscribed, setData]
+    [
+      dataWindow,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      onSizeChange,
+      onSubscribed,
+      setData,
+    ]
   );
 
   useEffect(
@@ -107,7 +120,8 @@ export const useDataSource = ({
   //   rafHandle.current = requestAnimationFrame(refreshIfUpdated);
   // }, [refreshIfUpdated]);
 
-  useMemo(() => {
+  useEffect(() => {
+    //TODO could we improve this by using a ref for range ?
     dataSource?.subscribe(
       { range: getFullRange(range, renderBufferSize) },
       datasourceMessageHandler
@@ -123,12 +137,6 @@ export const useDataSource = ({
     },
     [dataSource, dataWindow, renderBufferSize]
   );
-
-  useEffect(() => {
-    const { from } = dataSource.range;
-    const rowRange = { from, to: from + viewportRowCount };
-    setRange(rowRange);
-  }, [dataSource.range, setRange, viewportRowCount]);
 
   return {
     data: data.current,

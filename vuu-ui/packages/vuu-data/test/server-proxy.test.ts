@@ -1364,8 +1364,7 @@ describe("ServerProxy", () => {
     });
   });
 
-  // Temp skip until new timer code accounted for
-  describe.skip("growing and shrinking rowset (Orders)", () => {
+  describe("growing and shrinking rowset (Orders)", () => {
     it("initializes with rowset that does not fill client viewport", () => {
       const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
         to: 20,
@@ -1421,6 +1420,10 @@ describe("ServerProxy", () => {
       serverProxy.subscribe(clientSubscription1);
       serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
+      const timeNow = Date.now();
+      console.log(`time now ${timeNow}`);
+      vi.setSystemTime(timeNow);
+
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1462,6 +1465,8 @@ describe("ServerProxy", () => {
         size: 9,
       });
 
+      vi.setSystemTime(timeNow + 10);
+
       callback.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1477,6 +1482,8 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 8,
       });
+
+      vi.setSystemTime(timeNow + 20);
 
       callback.mockClear();
       serverProxy.handleMessageFromServer({
@@ -1502,6 +1509,7 @@ describe("ServerProxy", () => {
           rows: [sizeRow("server-vp-1", 0)],
         },
       });
+      // fails intermittent;y with 0
       expect(callback).toHaveBeenCalledTimes(1);
       expect(callback).toHaveBeenCalledWith({
         mode: "size-only",

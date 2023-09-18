@@ -1,5 +1,6 @@
 .saltToggleButtonGroup {
     border-radius: 6px;
+    gap: 0;
     padding: 0;
 }
 

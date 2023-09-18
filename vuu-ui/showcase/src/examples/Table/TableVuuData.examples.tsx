@@ -12,10 +12,7 @@ import { Flexbox, useViewContext, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import { VuuGroupBy, VuuSort, VuuTable } from "@finos/vuu-protocol-types";
 import { Table, TableProps } from "@finos/vuu-table";
-import {
-  DatagridSettingsPanel,
-  DataSourceStats,
-} from "@finos/vuu-table-extras";
+import { DataSourceStats } from "@finos/vuu-table-extras";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
@@ -113,16 +110,6 @@ export const VuuDataTable = () => {
     },
     []
   );
-
-  const showConfigEditor = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={configRef.current}
-        onConfigChange={handleSettingsConfigChange}
-      />
-    );
-  }, [columns, handleSettingsConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);
@@ -263,7 +250,6 @@ export const VuuDataTable = () => {
         // columnSizing="fill"
         height={645}
         onConfigChange={handleTableConfigChange}
-        onShowConfigEditor={showConfigEditor}
         renderBufferSize={20}
         width={750}
       />
@@ -427,16 +413,6 @@ export const VuuTableCalculatedColumns = () => {
     []
   );
 
-  const showConfigEditor = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={configRef.current}
-        onConfigChange={handleConfigChange}
-      />
-    );
-  }, [columns, handleConfigChange]);
-
   const hideSettings = useCallback(() => {
     setDialogContent(null);
   }, []);
@@ -493,7 +469,6 @@ export const VuuTableCalculatedColumns = () => {
         // columnSizing="fill"
         height={600}
         onConfigChange={handleTableConfigChange}
-        onShowConfigEditor={showConfigEditor}
         width={750}
       />
       <Dialog
@@ -540,21 +515,6 @@ const ConfigurableDataTable = ({
     setTableConfig((configRef.current = config));
   }, [config]);
 
-  // This needs to trigger a re-render of Table
-  const handleSettingConfigChange = useCallback(
-    (config: Omit<GridConfig, "headings">, closePanel = false) => {
-      save?.(config, "table-config");
-      setTableConfig((currentConfig) => {
-        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          dataSource.columns = config.columns.map(toDataSourceColumns);
-        }
-        return (configRef.current = config);
-      });
-      closePanel && setDialogContent(null);
-    },
-    [dataSource, save]
-  );
-
   // This does NOT need to trigger a re-render of Table
   const handleTableConfigChange = useCallback(
     (config: Omit<GridConfig, "headings">) => {
@@ -573,16 +533,6 @@ const ConfigurableDataTable = ({
     },
     [dataSource]
   );
-
-  const showConfigEditor = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={configRef.current}
-        onConfigChange={handleSettingConfigChange}
-      />
-    );
-  }, [columns, handleSettingConfigChange]);
 
   const hideSettings = useCallback(() => {
     setDialogContent(null);
@@ -619,7 +569,6 @@ const ConfigurableDataTable = ({
         allowConfigEditing
         dataSource={dataSource}
         onConfigChange={handleTableConfigChange}
-        onShowConfigEditor={showConfigEditor}
         {...props}
         config={tableConfig}
       />
@@ -738,16 +687,6 @@ export const HiddenColumns = () => {
     []
   );
 
-  const showConfigEditor = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={configRef.current}
-        onConfigChange={handleSettingsConfigChange}
-      />
-    );
-  }, [columns, handleSettingsConfigChange]);
-
   const hideSettings = useCallback(() => {
     setDialogContent(null);
   }, []);
@@ -765,7 +704,6 @@ export const HiddenColumns = () => {
         // columnSizing="fill"
         height={600}
         onConfigChange={handleTableConfigChange}
-        onShowConfigEditor={showConfigEditor}
         width={750}
       />
       <Dialog
@@ -909,16 +847,6 @@ export const SwitchColumns = () => {
     []
   );
 
-  const showConfigEditor = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={configRef.current}
-        onConfigChange={handleSettingsConfigChange}
-      />
-    );
-  }, [columns, handleSettingsConfigChange]);
-
   const hideSettings = useCallback(() => {
     setDialogContent(null);
   }, []);
@@ -948,7 +876,6 @@ export const SwitchColumns = () => {
         // columnSizing="fill"
         height={600}
         onConfigChange={handleTableConfigChange}
-        onShowConfigEditor={showConfigEditor}
         width={750}
       />
       <Dialog

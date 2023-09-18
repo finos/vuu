@@ -1,5 +1,8 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
@@ -8,9 +11,6 @@ import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts._
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
@@ -82,11 +82,10 @@ class ChangeViewPortTest extends AnyFeatureSpec{
       val session = ClientSessionId("sess-01", "chris")
 
       val outQueue = new OutboundRowPublishQueue()
-      val highPriorityQueue = new OutboundRowPublishQueue()
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_)).toList
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 

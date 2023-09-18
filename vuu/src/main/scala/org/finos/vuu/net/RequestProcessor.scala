@@ -3,16 +3,16 @@ package org.finos.vuu.net
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.SessionId
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.DefaultFlowController
 import org.finos.vuu.net.json.Serializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
-import org.finos.toolbox.time.Clock
 
 case class RequestContext(requestId: String, session: ClientSessionId,
-                          queue: PublishQueue[ViewPortUpdate], highPriorityQueue: PublishQueue[ViewPortUpdate],
+                          queue: PublishQueue[ViewPortUpdate],
                           token: String)
 
 
@@ -63,9 +63,8 @@ class RequestProcessor(authenticator: Authenticator,
 
   protected def createMessageHandler(channel: Channel, sessionId: ClientSessionId): MessageHandler = {
     val queue = new OutboundRowPublishQueue()
-    val highPriorityQueue = new OutboundRowPublishQueue()
     val flowController = new DefaultFlowController
-    new DefaultMessageHandler(channel, queue, highPriorityQueue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
+    new DefaultMessageHandler(channel, queue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
   }
 
   protected def handleViewServerMessage(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {

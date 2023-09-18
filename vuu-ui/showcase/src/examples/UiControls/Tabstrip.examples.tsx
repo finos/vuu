@@ -1,4 +1,5 @@
 import { ExitEditModeHandler, Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
@@ -201,17 +202,8 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
     "Liquidity",
   ]);
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
-    setTabs((tabs) => {
-      const newTabs = tabs.slice();
-      const [tab] = newTabs.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        return newTabs.concat(tab);
-      } else {
-        newTabs.splice(toIndex, 0, tab);
-        return newTabs;
-      }
-    });
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
+    setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
   }, []);
 
   return (

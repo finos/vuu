@@ -267,7 +267,8 @@ function measureComponent(
 
   const type = typeOf(component);
   if (header || type === "Stack") {
-    const headerEl = el.querySelector(".vuuHeader");
+    const query = type === "Stack" ? ".vuuTabstrip" : ".vuuHeader";
+    const headerEl = el.querySelector(query);
     if (headerEl) {
       const { top, left, right, bottom } = headerEl.getBoundingClientRect();
       measurements[path].header = {
@@ -278,7 +279,7 @@ function measureComponent(
       };
       if (type === "Stack") {
         measurements[path].Stack = Array.from(
-          headerEl.querySelectorAll(".saltTab")
+          headerEl.querySelectorAll(".vuuTab")
         )
           .map((tab) => tab.getBoundingClientRect())
           .map(({ left, right }) => ({ left, right }));

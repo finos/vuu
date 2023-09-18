@@ -14,13 +14,13 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
 
     Scenario("Create viewport delete it, check no further ticks") {
 
-      val (viewPortContainer, orders, ordersProvider, session, outQueue, highPriorityQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
       createNOrderRows(ordersProvider, 10)(timeProvider)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, highPriorityQueue, orders, ViewPortRange(0, 4), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
       viewPortContainer.runOnce()
 

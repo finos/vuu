@@ -6,14 +6,12 @@ import {
   TableConfig,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
-import { moveItem } from "@finos/vuu-ui-controls";
+import { moveItem } from "@finos/vuu-utils";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
-  findColumn,
   getCellRenderer,
-  getColumnName,
   getTableHeadings,
   getValueFormatter,
   isFilteredColumn,
@@ -24,6 +22,7 @@ import {
   metadataKeys,
   sortPinnedColumns,
   stripFilterFromColumns,
+  subscribedOnly,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
@@ -191,9 +190,11 @@ export type GridModelReducer = Reducer<InternalTableModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
-  info?.(`GridModelReducer ${action.type}`);
+  info?.(`TableModelReducer ${action.type}`);
+  console.log(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
+      console.log({ init: action });
       return init(action);
     case "moveColumn":
       return moveColumn(state, action);
@@ -247,7 +248,9 @@ function init({
   tableConfig,
 }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
-  const keyedColumns = columns.map(toKeyedColumWithDefaults(tableAttributes));
+  const keyedColumns = columns
+    .filter(subscribedOnly(dataSourceConfig?.columns))
+    .map(toKeyedColumWithDefaults(tableAttributes));
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
     : keyedColumns;
@@ -465,38 +468,13 @@ function updateColumnProp(
 
 function updateTableConfig(
   state: InternalTableModel,
-  { columns, confirmed, filter, groupBy, sort }: ColumnActionTableConfig
+  { confirmed, filter, groupBy, sort }: ColumnActionTableConfig
 ) {
-  const hasColumns = columns && columns.length > 0;
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";
   const hasSort = sort && sort.sortDefs.length > 0;
 
-  //TODO check if just confirmed has changed
-
   let result = state;
-
-  if (hasColumns) {
-    result = {
-      ...state,
-      columns: columns.map((colName, index) => {
-        const columnName = getColumnName(colName);
-        const key = index + KEY_OFFSET;
-        const col = findColumn(result.columns, columnName);
-        if (col) {
-          if (col.key === key) {
-            return col;
-          } else {
-            return {
-              ...col,
-              key,
-            };
-          }
-        }
-        throw Error(`useTableModel column ${colName} not found`);
-      }),
-    };
-  }
 
   if (hasGroupBy) {
     result = {
