@@ -1,0 +1,6 @@
+.vuuBasketSelector {
+    border: solid 1px var(--vuu-color-gray-45);
+    border-radius: 6px;
+    height: 61px;
+    width: 377px;
+}

@@ -4,8 +4,13 @@ import {
   RemoteDataSource,
   TableSchema,
 } from "@finos/vuu-data";
-import { useViewContext } from "@finos/vuu-layout";
-import { useCallback, useEffect, useMemo } from "react";
+import { FlexboxLayout, Stack, useViewContext } from "@finos/vuu-layout";
+import { ContextMenuProvider } from "@finos/vuu-popups";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BasketTableEdit } from "./basket-table-edit";
+import { BasketTableLive } from "./basket-table-live";
+import { BasketToolbar } from "./basket-toolbar";
+import { useBasketTabMenu } from "./useBasketTabMenu";
 
 import "./VuuBasketTradingFeature.css";
 
@@ -17,10 +22,7 @@ export interface FilterTableFeatureProps {
 
 const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
-
-  console.log("Instrument Prices", {
-    tableSchema,
-  });
+  const [active, setActive] = useState(0);
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
@@ -65,7 +67,32 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     };
   }, [dataSource]);
 
-  return <div className={classBase}>Basket Trading</div>;
+  const [buildMenuOptions, handleMenuAction] = useBasketTabMenu();
+
+  return (
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildMenuOptions}
+    >
+      <FlexboxLayout
+        className={classBase}
+        style={{ flexDirection: "column", height: "100%" }}
+      >
+        <BasketToolbar />
+        <Stack
+          active={active}
+          className={`${classBase}-stack`}
+          onTabSelectionChanged={setActive}
+        >
+          <BasketTableEdit
+            data-tab-location="basket-design"
+            data-tab-title="Design"
+          />
+          <BasketTableLive data-tab-title="On Market" />
+        </Stack>
+      </FlexboxLayout>
+    </ContextMenuProvider>
+  );
 };
 
 export default VuuBasketTradingFeature;
