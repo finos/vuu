@@ -1,11 +1,10 @@
-import { useCallback } from 'react';
-import { useLayoutProviderDispatch } from '../layout-provider';
-import { registerComponent } from '../registry/ComponentRegistry';
-import Flexbox from './Flexbox';
-
-type FlexboxLayoutProps = {
-  path: string
-}
+import { useCallback } from "react";
+import { Action } from "../layout-action";
+import { useLayoutProviderDispatch } from "../layout-provider";
+import { SplitterResizeAction } from "../layout-reducer";
+import { registerComponent } from "../registry/ComponentRegistry";
+import Flexbox from "./Flexbox";
+import { FlexboxLayoutProps } from "./flexboxTypes";
 
 export const FlexboxLayout = function FlexboxLayout(props: FlexboxLayoutProps) {
   const { path } = props;
@@ -14,16 +13,16 @@ export const FlexboxLayout = function FlexboxLayout(props: FlexboxLayoutProps) {
   const handleSplitterMoved = useCallback(
     (sizes) => {
       dispatch({
-        type: "splitter-resize",
+        type: Action.SPLITTER_RESIZE,
         path,
-        sizes
-      });
+        sizes,
+      } as SplitterResizeAction);
     },
     [dispatch, path]
   );
 
   return <Flexbox {...props} onSplitterMoved={handleSplitterMoved} />;
 };
-FlexboxLayout.displayName = 'Flexbox';
+FlexboxLayout.displayName = "Flexbox";
 
-registerComponent('Flexbox', FlexboxLayout, 'container');
+registerComponent("Flexbox", FlexboxLayout, "container");

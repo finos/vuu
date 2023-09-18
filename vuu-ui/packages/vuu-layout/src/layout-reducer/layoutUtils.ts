@@ -6,12 +6,12 @@ import {
   ComponentWithId,
   ComponentRegistry,
   isContainer,
-  isLayoutComponent
+  isLayoutComponent,
 } from "../registry/ComponentRegistry";
 import {
   getPersistentState,
   hasPersistentState,
-  setPersistentState
+  setPersistentState,
 } from "../use-persistent-state";
 import { expandFlex, getProps, typeOf } from "../utils";
 import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
@@ -234,6 +234,7 @@ export function layoutFromJson(
       id,
       ...props,
       key: id,
+      path,
     },
     children
       ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))

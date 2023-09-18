@@ -1,5 +1,6 @@
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
-import { CSSProperties, forwardRef } from "react";
+import { CSSProperties, ForwardedRef, forwardRef } from "react";
 import { FlexboxProps } from "./flexboxTypes";
 import { useSplitterResizing } from "./useSplitterResizing";
 
@@ -9,10 +10,12 @@ const classBase = "hwFlexbox";
 
 const Flexbox = forwardRef(function Flexbox(
   props: FlexboxProps,
+  ref: ForwardedRef<HTMLDivElement>
 ) {
   const {
     breakPoints,
     children,
+    // cols: colsProp,
     column,
     className: classNameProp,
     flexFill,
@@ -28,8 +31,9 @@ const Flexbox = forwardRef(function Flexbox(
     ...rest
   } = props;
 
-  const { content } = useSplitterResizing({
+  const { content, rootRef } = useSplitterResizing({
     children,
+    // cols: colsProp,
     onSplitterMoved,
     style,
   });
@@ -45,8 +49,10 @@ const Flexbox = forwardRef(function Flexbox(
     <div
       {...rest}
       className={className}
+      // data-cols={cols}
       data-resizeable={resizeable || undefined}
       id={id}
+      ref={useForkRef(rootRef, ref)}
       style={
         {
           ...style,

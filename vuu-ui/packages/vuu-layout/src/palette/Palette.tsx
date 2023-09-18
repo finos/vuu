@@ -6,7 +6,7 @@ import {
   HTMLAttributes,
   memo,
   MouseEvent,
-  ReactElement
+  ReactElement,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View, ViewProps } from "../layout-view";
