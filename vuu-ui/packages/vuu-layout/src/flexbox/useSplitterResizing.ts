@@ -4,7 +4,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import { Placeholder } from "../placeholder";
 import { Splitter } from "./Splitter";
@@ -14,14 +14,14 @@ import {
   gatherChildMeta,
   identifyResizeParties,
   PLACEHOLDER,
-  SPLITTER
+  SPLITTER,
 } from "./flexbox-utils";
 import {
   ContentMeta,
   FlexSize,
   SplitterFactory,
   SplitterHookProps,
-  SplitterHookResult
+  SplitterHookResult,
 } from "./flexboxTypes";
 
 const originalContentOnly = (meta: ContentMeta) =>

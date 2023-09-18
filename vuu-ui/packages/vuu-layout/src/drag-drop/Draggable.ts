@@ -267,9 +267,6 @@ function dragMouseupHandler() {
 }
 
 function onDragEnd() {
-  if (!_dragContainer) { 
-    return 
-  }
   if (_dropTarget) {
     const dropTarget =
       _dropTargetRenderer.hoverDropTarget ||

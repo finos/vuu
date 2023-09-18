@@ -7,7 +7,7 @@ import {
   Measurements,
   Position,
   positionValues,
-  RelativeDropPosition
+  RelativeDropPosition,
 } from "./BoxModel";
 import { DragDropRect, DropPos, DropPosTab } from "./dragDropTypes";
 import { DragState } from "./DragState";
