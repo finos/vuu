@@ -5,3 +5,4 @@ export * from "./column-settings";
 export * from "./column-expression-input";
 export * from "./datasource-stats";
 export * from "./table-settings";
+export * from "./useTableAndColumnSettings";

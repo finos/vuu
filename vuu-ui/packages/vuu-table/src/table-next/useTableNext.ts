@@ -11,11 +11,7 @@ import {
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import {
-  SetPropsAction,
-  useLayoutEffectSkipFirst,
-  useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   applySort,
@@ -30,7 +26,6 @@ import {
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   buildContextMenuDescriptors,
-  ColumnActionColumnSettings,
   MeasuredProps,
   TableProps,
   useSelection,
@@ -50,7 +45,7 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
-import { TableSettingsProps } from "packages/vuu-table-extras/src";
+import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
 
 export interface TableHookProps
@@ -88,7 +83,6 @@ export const useTable = ({
   ...measuredProps
 }: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
-  const dispatchLayoutAction = useLayoutProviderDispatch();
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
@@ -220,61 +214,18 @@ export const useTable = ({
     });
   }, [dataSource, dispatchColumnAction]);
 
-  const showColumnSettingsPanel = useCallback(
-    (action: ColumnActionColumnSettings) => {
-      dispatchLayoutAction({
-        type: "set-props",
-        path: "#context-panel",
-        props: {
-          expanded: true,
-          content: {
-            type: "ColumnSettings",
-            props: {
-              columnName: action.column.name,
-              onConfigChange: handleConfigChanged,
-              tableConfig,
-            },
-          },
-          column: action.column,
-          tableConfig,
-          title: "Column Settings",
-        },
-      } as SetPropsAction);
-    },
-    [dispatchLayoutAction, handleConfigChanged, tableConfig]
-  );
-
-  const showTableSettingsPanel = useCallback(() => {
-    dispatchLayoutAction({
-      type: "set-props",
-      path: "#context-panel",
-      props: {
-        expanded: true,
-        content: {
-          type: "TableSettings",
-          props: {
-            // TODO get this from dataSource
-            availableColumns:
-              availableColumns ??
-              tableConfig.columns.map(({ name, serverDataType }) => ({
-                name,
-                serverDataType,
-              })),
-            onConfigChange: handleConfigChanged,
-            onDataSourceConfigChange: handleDataSourceConfigChanged,
-            tableConfig,
-          } as TableSettingsProps,
-        },
-        title: "DataGrid Settings",
-      },
-    } as SetPropsAction);
-  }, [
-    availableColumns,
-    dispatchLayoutAction,
-    handleConfigChanged,
-    handleDataSourceConfigChanged,
-    tableConfig,
-  ]);
+  const { showColumnSettingsPanel, showTableSettingsPanel } =
+    useTableAndColumnSettings({
+      availableColumns:
+        availableColumns ??
+        tableConfig.columns.map(({ name, serverDataType = "string" }) => ({
+          name,
+          serverDataType,
+        })),
+      onConfigChange: handleConfigChanged,
+      onDataSourceConfigChange: handleDataSourceConfigChanged,
+      tableConfig,
+    });
 
   const onPersistentColumnOperation = useCallback(
     (action: PersistentColumnAction) => {
