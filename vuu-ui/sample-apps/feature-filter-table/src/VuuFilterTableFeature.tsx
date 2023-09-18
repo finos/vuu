@@ -152,6 +152,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     return ds;
   }, [
     dataSourceConfigFromState,
+    handleDataSourceConfigChange,
     id,
     loadSession,
     saveSession,

@@ -240,7 +240,6 @@ export const useDragDropNext: DragDropHook = ({
         : 0;
 
       if (dragOutDistance - dragDistance > 5) {
-        console.log("going unbounded");
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
         // Need to notify the dragDropHook, so it can clearSpacers
@@ -424,7 +423,6 @@ export const useDragDropNext: DragDropHook = ({
 
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
-      console.log("mousedown drag drop");
       const { current: container } = containerRef;
       if (container && !evt.defaultPrevented) {
         const { clientX, clientY } = evt;

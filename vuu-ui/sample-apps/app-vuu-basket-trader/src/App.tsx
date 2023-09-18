@@ -48,8 +48,6 @@ export const App = ({ user }: { user: VuuUser }) => {
     features: configuredFeatures,
   });
 
-  console.log({ features, tableFeatures });
-
   // TODO get Context from Shell
   return (
     <ShellContextProvider value={{ getDefaultColumnConfig }}>
