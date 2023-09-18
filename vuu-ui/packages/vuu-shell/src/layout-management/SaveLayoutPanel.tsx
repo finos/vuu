@@ -71,14 +71,6 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           <FormField className={formField}>
             <FormFieldLabel>Group</FormFieldLabel>
             <ComboBox
-              ListProps={{
-                style: {
-                  zIndex: 10000,
-                  border: "1px solid #777C94",
-                  borderRadius: 10,
-                  boxSizing: "border-box"
-                }
-              }}
               source={groups}
               allowFreeText={true}
               InputProps={{

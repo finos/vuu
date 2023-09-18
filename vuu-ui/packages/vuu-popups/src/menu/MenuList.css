@@ -18,7 +18,6 @@
 
   background-clip: padding-box;
   background-color: white;
-  border-style: var(--vuuMenuList-borderStyle, none);
   font-size: var(--vuuMenuList-fontSize, var(--salt-text-label-fontSize));
   font-weight: var(--salt-typography-fontWeight-medium);
   list-style: none;

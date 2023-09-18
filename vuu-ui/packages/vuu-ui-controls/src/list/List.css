@@ -12,9 +12,6 @@
   --vuuDraggable-transitionProp: height;
 
   background: var(--list-background);
-  border-color: var(--salt-container-primary-borderColor);
-  border-style: var(--list-borderStyle);
-  border-width: var(--list-borderWidth);
   height: var(--saltList-height, var(--list-height));
   max-height: var(--list-maxHeight);
   outline: none;
@@ -22,6 +19,7 @@
   position: relative;
   user-select: none;
   width: var(--saltList-width, auto);
+  padding: 0 1px;
 }
 
 .vuuList-borderless {
