@@ -72,6 +72,7 @@ export const Tabstrip = ({
             id: tabId = `${id}-tab-${index}`,
             closeable = allowCloseTab,
             editable = allowRenameTab,
+            location: tabLocation,
             showMenuButton = showTabMenuButton,
           } = child.props;
           const selected = index === activeTabIndex;
@@ -86,7 +87,7 @@ export const Tabstrip = ({
             id: tabId,
             index,
             key: index,
-            location,
+            location: cx(location, tabLocation),
             selected,
             showMenuButton,
             tabIndex: selected ? 0 : -1,
