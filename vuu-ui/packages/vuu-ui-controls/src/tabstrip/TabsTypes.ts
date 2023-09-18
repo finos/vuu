@@ -72,7 +72,7 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   editing?: boolean;
   keyBoardActivation?: "manual" | "automatic";
   /**
-   * A custom context menu location for TabMenu
+   * A custom context menu location for TabMenu, applied to all tabs
    */
   location?: string;
   /**
@@ -108,7 +108,7 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
   promptForNewTabName?: boolean;
   /**
    * Should each tab render a popup menu. Default is false if tab is
-   * not closeable or renameable, otherwise true.
+   * not closeable, not renameable and has no tab-location , otherwise true.
    */
   showTabMenuButton?: boolean;
 }
