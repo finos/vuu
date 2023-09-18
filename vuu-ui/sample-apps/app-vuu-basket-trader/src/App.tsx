@@ -17,6 +17,9 @@ import {
 } from "@finos/vuu-table-extras";
 import { registerComponent } from "@finos/vuu-layout";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { InstrumentSearch } from "@finos/vuu-ui-controls";
+
 import "./App.css";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");

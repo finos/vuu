@@ -21,7 +21,9 @@ const classBase = "Tabs";
 const getDefaultTabIcon = () => undefined;
 
 const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
-  component.props?.title ?? `Tab ${tabIndex + 1}`;
+  component.props?.title ??
+  component.props?.["data-tab-title"] ??
+  `Tab ${tabIndex + 1}`;
 
 const getChildElements = <T extends ReactElement = ReactElement>(
   children: ReactNode
@@ -98,8 +100,11 @@ export const Stack = forwardRef(function Stack(
 
   const renderTabs = () =>
     getChildElements(children).map((child, idx) => {
-      const { closeable = allowCloseTab, id: childId = `${id}-${idx}` } =
-        child.props;
+      const {
+        closeable = allowCloseTab,
+        id: childId = `${id}-${idx}`,
+        "data-tab-location": tabLocation,
+      } = child.props;
       return (
         <Tab
           ariaControls={childId}
@@ -108,6 +113,7 @@ export const Stack = forwardRef(function Stack(
           id={`${childId}-tab`}
           index={idx}
           label={getTabLabel(child, idx)}
+          location={tabLocation}
           closeable={closeable}
           editable={allowRenameTab}
         />

@@ -45,7 +45,7 @@ export const Tab = forwardRef(function Tab(
     onMenuClose,
     orientation,
     selected,
-    showMenuButton = closeable || editable,
+    showMenuButton = closeable || editable || Boolean(location),
     tabIndex,
     ...props
   }: TabProps,
@@ -54,6 +54,8 @@ export const Tab = forwardRef(function Tab(
   if (showMenuButton && typeof onMenuAction !== "function") {
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
+
+  console.log(`tab ${label} location ${location}`);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
