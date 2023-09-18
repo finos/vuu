@@ -1,0 +1,3 @@
+.vuuBasketToolbar {
+    flex: 0 0 var(--basket-toolbar-height, 75px); 
+}
