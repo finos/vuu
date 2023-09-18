@@ -33,7 +33,6 @@ export const Table = ({
   selectionModel = "extended",
   style: styleProp,
   width,
-  zebraStripes = false,
   ...htmlAttributes
 }: TableProps) => {
   const id = useIdMemo(idProp);

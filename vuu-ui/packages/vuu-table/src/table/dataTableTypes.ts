@@ -1,5 +1,6 @@
 import {
   DataSource,
+  SchemaColumn,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
@@ -15,6 +16,10 @@ import { HTMLAttributes, MouseEvent } from "react";
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   allowConfigEditing?: boolean;
+  /**
+   * required if a fully featured column picker is to be available
+   */
+  availableColumns?: SchemaColumn[];
   config: TableConfig;
   dataSource: DataSource;
   headerHeight?: number;

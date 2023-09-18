@@ -1,5 +1,5 @@
 .vuuTableNextRow {
-    background: var(--row-background,#fff);
+  background: var(--row-background,#fff);
     border-bottom: 1px solid var(--row-borderColor);
     box-sizing: border-box;
     height: var(--row-height);
@@ -10,7 +10,7 @@
     }
     
     .vuuTableNextRow-even {
-      background: var(--row-background-even);
+      --row-background: var(--row-background-even);
     }
 
     .vuuTableNextRow-selected,

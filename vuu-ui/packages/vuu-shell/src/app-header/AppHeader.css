@@ -1,5 +1,6 @@
 .vuuAppHeader {
   align-items: center;
+  background: var(--vuuAppHeader-background, var(--salt-container-primary-background));
   border-bottom: solid 1px var(--salt-container-secondary-borderColor);
   display: flex;
   height: 40px;

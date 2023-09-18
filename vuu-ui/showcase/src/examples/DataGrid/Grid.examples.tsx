@@ -1,9 +1,8 @@
 import { ConfigChangeHandler } from "@finos/vuu-data";
 import { Grid } from "@finos/vuu-datagrid";
-import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
-import { DatagridSettingsPanel } from "@finos/vuu-table-extras";
 import {
   Button,
   FormField,
@@ -119,27 +118,6 @@ export const DefaultGrid = () => {
     setSelectedIndex(parseInt(value));
   };
 
-  const handleConfigChange = useCallback(
-    (config: Omit<GridConfig, "headings">) => {
-      console.log("config change", {
-        config,
-      });
-    },
-    []
-  );
-
-  const showSettings = useCallback(() => {
-    setDialogContent(
-      <DatagridSettingsPanel
-        availableColumns={columns}
-        gridConfig={{
-          columns,
-        }}
-        onConfigChange={handleConfigChange}
-      />
-    );
-  }, [columns, handleConfigChange]);
-
   const hideSettings = useCallback(() => {
     setDialogContent(null);
   }, []);
@@ -185,12 +163,6 @@ export const DefaultGrid = () => {
           <ToggleButton value={2}>Parent Orders</ToggleButton>
           <ToggleButton value={3}>Prices</ToggleButton>
         </ToggleButtonGroup>
-        <Button
-          data-align="end"
-          data-icon="settings"
-          onClick={showSettings}
-          style={{ width: 28 }}
-        />
       </div>
 
       <Grid

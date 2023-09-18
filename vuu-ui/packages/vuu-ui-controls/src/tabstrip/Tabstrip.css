@@ -7,12 +7,12 @@
   --tabstrip-background: transparent;
 
   align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
+  display: flex;
   font-size: var(--salt-text-fontSize);
   font-weight: var(--vuuTabstrip-fontWeight, var(--salt-text-fontWeight));
+  min-width: 28px;
   position: relative;
   overflow: visible;
-  display: flex;
-  min-width: 28px;
   width: var(--tabstrip-width);
 }
 

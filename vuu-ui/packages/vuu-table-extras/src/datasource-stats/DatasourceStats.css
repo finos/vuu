@@ -1,4 +1,11 @@
 .vuuDatasourceStats {
+    color: black;
     display: flex;
+    font-size: 10px;
     gap: var(--salt-size-unit);
+    padding: 4px 0 0 12px;
+}
+
+.vuuDatasourceStats-label {
+    color: var(--vuu-color-gray-50);
 }

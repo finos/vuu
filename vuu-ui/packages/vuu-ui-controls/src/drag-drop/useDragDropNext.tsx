@@ -10,6 +10,7 @@ import { useDragDropProvider } from "./DragDropProvider";
 import {
   MouseEventHandler,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -83,6 +84,7 @@ export const useDragDropNext: DragDropHook = ({
   allowDragDrop,
   containerRef,
   draggableClassName,
+  id,
   itemQuery = "*",
   onDragStart,
   onDrop,
@@ -121,13 +123,13 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleScrollStopRef = useRef<ScrollStopHandler>();
 
-  const { isDragSource, isDropTarget, register } = useDragDropProvider(
-    dragDropProps.id
-  );
+  const { isDragSource, isDropTarget, register } = useDragDropProvider(id);
 
-  if (dragDropProps.id && (isDragSource || isDropTarget)) {
-    register(dragDropProps.id);
-  }
+  useEffect(() => {
+    if (id && (isDragSource || isDropTarget)) {
+      register(id);
+    }
+  }, [id, isDragSource, isDropTarget, register]);
 
   const terminateDrag = useCallback(() => {
     const { current: toIndex } = dropIndexRef;
@@ -238,6 +240,7 @@ export const useDragDropNext: DragDropHook = ({
         : 0;
 
       if (dragOutDistance - dragDistance > 5) {
+        console.log("going unbounded");
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
         // Need to notify the dragDropHook, so it can clearSpacers

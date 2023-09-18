@@ -1,8 +1,11 @@
 .vuuTableNextCell {
+  border-right-color: var(--cell-borderColor);
+  border-right-style: solid;
+  border-right-width: 1px;
     display: inline-block;
     overflow:hidden;
     padding: 0 8px;
-    text-overflow: ellipsis;;
+    text-overflow: ellipsis;
     vertical-align: top;
   }
 

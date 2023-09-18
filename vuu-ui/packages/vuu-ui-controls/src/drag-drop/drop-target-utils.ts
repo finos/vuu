@@ -350,26 +350,6 @@ export function constrainRect(targetRect: Rect, constraintRect: Rect): Rect {
   };
 }
 
-export const moveItem = <T = unknown>(
-  items: T[],
-  fromIndex: number,
-  toIndex: number
-): T[] => {
-  if (fromIndex === toIndex) {
-    return items;
-  } else {
-    const newItems = items.slice();
-    const [item] = newItems.splice(fromIndex, 1);
-    if (toIndex === -1) {
-      return newItems.concat(item);
-    } else {
-      const offset = toIndex > fromIndex ? 0 : 0;
-      newItems.splice(toIndex + offset, 0, item);
-      return newItems;
-    }
-  }
-};
-
 export const dropTargetsDebugString = (dropTargets: MeasuredDropTarget[]) =>
   dropTargets
     .map(

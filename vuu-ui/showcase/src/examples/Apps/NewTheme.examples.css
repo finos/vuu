@@ -11,7 +11,7 @@ body {
   --vuuTab-height: 28px;
   border: solid 1px #D6D7DA;
   border-top: none !important;
-  border-radius: 6;
+  border-radius: 6px;
   height: 100%;
   padding: 36px 8px 8px 8px;
   position: relative;
@@ -31,22 +31,30 @@ body {
     width: calc(100% + 2px) !important;
   } 
 
+  .vuuShell-mainTabs > .vuuTabstrip > .vuuOverflowContainer-wrapContainer {
+    background: var(--vuu-color-gray-25);
+  
+  }
+  
+
   .vuuShell-mainTabs > .vuuTabHeader {
     border-bottom: none;
   } 
 
   .vuuShell-mainTabs > .vuuTabstrip:before {
     background-color: transparent;
+    border-radius: 0 6px 0 0;
+    border-left: solid 1px #D6D7DA;
+    border-right: solid 1px #D6D7DA;
+    border-top: solid 1px #D6D7DA;
     content: '';
     position: absolute;
     bottom: 0;
     left:0;
     right:0;
     height: 8px;
-    border-radius: 0 6px 0 0;
-    border-left: solid 1px #D6D7DA;
-    border-right: solid 1px #D6D7DA;
-    border-top: solid 1px #D6D7DA;
+    z-index: 1;
+
   }
 
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab {
@@ -61,6 +69,8 @@ body {
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected {
     background-color: white;
     border-bottom-color: white;
+    z-index: 1;
+
   }
 
   .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected:before{

@@ -126,7 +126,7 @@ export function useResizeObserver(
       // Create the map entry immediately. useEffect may fire below
       // before fonts are ready and attempt to update entry
       observedMap.set(target, { measurements: {} as measurements<number> });
-      await document.fonts.ready;
+      // await document.fonts.ready;
       const observedTarget = observedMap.get(target);
       if (observedTarget) {
         const measurements = measure(target);

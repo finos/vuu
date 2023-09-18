@@ -3,7 +3,12 @@ import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
 import {
-  ChangeEvent,
+  addColumnToSubscribedColumns,
+  moveItem,
+  subscribedOnly,
+} from "@finos/vuu-utils";
+import {
+  MouseEvent,
   SyntheticEvent,
   useCallback,
   useMemo,
@@ -11,6 +16,20 @@ import {
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
 import { TableSettingsProps } from "./TableSettingsPanel";
+
+const sortOrderFromAvailableColumns = (
+  availableColumns: SchemaColumn[],
+  columns: ColumnDescriptor[]
+) => {
+  const sortedColumns: ColumnDescriptor[] = [];
+  for (const { name } of availableColumns) {
+    const column = columns.find((col) => col.name === name);
+    if (column) {
+      sortedColumns.push(column);
+    }
+  }
+  return sortedColumns;
+};
 
 export type ColumnItem = Pick<
   ColumnDescriptor,
@@ -36,10 +55,13 @@ const buildColumnItems = (
 };
 
 export const useTableSettings = ({
-  availableColumns,
+  availableColumns: availableColumnsProp,
   onConfigChange,
+  onDataSourceConfigChange,
   tableConfig: tableConfigProp,
 }: TableSettingsProps) => {
+  const [availableColumns, setAvailableColumns] =
+    useState<SchemaColumn[]>(availableColumnsProp);
   const [tableConfig, setTableConfig] = useState<TableConfig>(tableConfigProp);
 
   const columnItems = useMemo(
@@ -49,7 +71,16 @@ export const useTableSettings = ({
 
   const handleMoveListItem = useCallback(
     (fromIndex: number, toIndex: number) => {
-      console.log(`move list item from ${fromIndex} to ${toIndex}`);
+      setAvailableColumns((columns) => {
+        const newAvailableColumns = moveItem(columns, fromIndex, toIndex);
+        const newColumns = sortOrderFromAvailableColumns(
+          newAvailableColumns,
+          tableConfig.columns
+        );
+        console.log({ newColumns });
+        // TODO fire a move column action
+        return newAvailableColumns;
+      });
     },
     []
   );
@@ -59,7 +90,36 @@ export const useTableSettings = ({
       // to be applied immediately
       const columnItem = columnItems.find((col) => col.name === name);
       if (property === "subscribed") {
-        console.log(`unsubscribe from ${name}`);
+        if (columnItem?.subscribed) {
+          const subscribedColumns = tableConfig.columns
+            .filter((col) => col.name !== name)
+            .map((col) => col.name);
+          setTableConfig({
+            ...tableConfig,
+            columns: tableConfig.columns.filter(
+              subscribedOnly(subscribedColumns)
+            ),
+          });
+          onDataSourceConfigChange({
+            columns: subscribedColumns,
+          });
+        } else {
+          const newConfig = {
+            ...tableConfig,
+            columns: addColumnToSubscribedColumns(
+              tableConfig.columns,
+              availableColumns,
+              name
+            ),
+          };
+          setTableConfig(newConfig);
+
+          const subscribedColumns = newConfig.columns.map((col) => col.name);
+
+          onDataSourceConfigChange({
+            columns: subscribedColumns,
+          });
+        }
       } else if (columnItem?.subscribed) {
         const column = tableConfig.columns.find((col) => col.name === name);
         if (column) {
@@ -73,7 +133,7 @@ export const useTableSettings = ({
         }
       }
     },
-    [columnItems, tableConfig]
+    [availableColumns, columnItems, onDataSourceConfigChange, tableConfig]
   );
 
   const handleChangeColumnLabels = useCallback((evt: SyntheticEvent) => {
@@ -87,11 +147,11 @@ export const useTableSettings = ({
   }, []);
 
   const handleChangeTableAttribute = useCallback(
-    (evt: ChangeEvent<HTMLInputElement>) => {
-      const { checked, value } = evt.target as HTMLInputElement;
+    (evt: MouseEvent<HTMLButtonElement>) => {
+      const { ariaChecked, value } = evt.target as HTMLInputElement;
       setTableConfig((config) => ({
         ...config,
-        [value]: checked,
+        [value]: ariaChecked !== "true",
       }));
     },
     []
@@ -115,5 +175,6 @@ export const useTableSettings = ({
     onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
     onMoveListItem: handleMoveListItem,
+    tableConfig,
   };
 };

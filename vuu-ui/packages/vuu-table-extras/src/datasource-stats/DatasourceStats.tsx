@@ -32,8 +32,9 @@ export const DataSourceStats = ({
   const value = numberFormatter.format(size);
   return (
     <div className={className}>
-      <span>Showing rows</span>
+      <span className={`${classBase}-label`}>Row count</span>
       <span className={`${classBase}-range`}>{from}</span>
+      <span>-</span>
       <span className={`${classBase}-range`}>{to}</span>
       <span>of</span>
       <span className={`${classBase}-size`}>{value}</span>

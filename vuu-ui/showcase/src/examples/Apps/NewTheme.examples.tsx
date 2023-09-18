@@ -33,7 +33,7 @@ import {
 } from "react";
 import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
 import { schemas } from "../utils";
-import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature/TableNextFeature.examples";
+import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature.examples";
 
 import "./NewTheme.examples.css";
 
@@ -72,6 +72,8 @@ const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
     ...featurePaths[env].TableNextFeature,
   }));
 
+console.log({ features });
+
 const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
 
@@ -89,7 +91,7 @@ const ShellWithNewTheme = () => {
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },
-    []
+    [saveLayout]
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
@@ -139,6 +141,7 @@ const ShellWithNewTheme = () => {
   const layout = useMemo(() => {
     return {
       type: "Stack",
+      id: "main-tabs",
       props: {
         className: "vuuShell-mainTabs",
         TabstripProps: {
@@ -198,9 +201,18 @@ const ShellWithNewTheme = () => {
       menuBuilder={buildMenuOptions}
     >
       <Shell
+        LayoutProps={{
+          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+        }}
         defaultLayout={layout}
         leftSidePanelLayout="full-height"
-        leftSidePanel={<LeftNav features={features} style={{ width: 240 }} />}
+        leftSidePanel={
+          <LeftNav
+            features={[]}
+            tableFeatures={features}
+            style={{ width: 240 }}
+          />
+        }
         loginUrl={window.location.toString()}
         user={user}
         saveLocation="local"

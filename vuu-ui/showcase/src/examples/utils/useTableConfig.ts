@@ -149,6 +149,7 @@ export const useTableConfig = ({
     columnConfig,
     columnCount,
     count,
+    dataSourceConfig,
     lazyData,
     leftPinnedColumns,
     rangeChangeRowset,

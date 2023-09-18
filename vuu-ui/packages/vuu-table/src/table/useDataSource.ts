@@ -161,9 +161,10 @@ export function useDataSource({
   // Note: we do not call unsubscribe in a cleanup function here.
   // Thats because we do not want to unsubscribe in the event that
   // our view is unmounts due to a layout drag drop operation. In
-  // that scenario, we disable the viewport. THis is handles at the
+  // that scenario, we disable the viewport. This is handles at the
   // View level. Might need to revisit this - what if Table is not
   // nested within a View ?
+
   useEffect(() => {
     dataSource?.subscribe(
       {

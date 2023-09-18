@@ -1,7 +1,10 @@
 import { useIdMemo as useId } from "@salt-ds/core";
 import React, { ReactElement, useCallback, useRef } from "react";
 import Component from "../Component";
-import { useLayoutProviderDispatch } from "../layout-provider";
+import {
+  useLayoutCreateNewChild,
+  useLayoutProviderDispatch,
+} from "../layout-provider";
 import { useViewActionDispatcher, View } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { usePersistentState } from "../use-persistent-state";
@@ -28,7 +31,7 @@ export const StackLayout = (props: StackProps) => {
   const { loadState } = usePersistentState();
 
   const {
-    createNewChild = defaultCreateNewChild,
+    createNewChild: createNewChildProp,
     id: idProp,
     onTabSelectionChanged,
     path,
@@ -40,6 +43,9 @@ export const StackLayout = (props: StackProps) => {
   const id = useId(idProp);
 
   const [dispatchViewAction] = useViewActionDispatcher(id, ref, path);
+  const createNewChildFromContext = useLayoutCreateNewChild();
+  const createNewChild =
+    createNewChildProp ?? createNewChildFromContext ?? defaultCreateNewChild;
 
   const handleTabSelection = (nextIdx: number) => {
     if (path) {

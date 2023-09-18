@@ -10,6 +10,8 @@ interface FromToRange {
   to: number;
 }
 
+export const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
+
 export function getFullRange(
   { from, to }: VuuRange,
   bufferSize = 0,

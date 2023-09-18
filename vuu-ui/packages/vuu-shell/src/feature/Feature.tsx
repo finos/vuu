@@ -54,13 +54,12 @@ function RawFeature<Params extends object | undefined>({
   ComponentProps: params,
   ...props
 }: FeatureProps<Params>) {
-  console.log("Feature render", { css, url, props, params });
-  useEffect(() => {
-    console.log("%cFeature mount", "color: green;");
-    return () => {
-      console.log("%cFeature unmount", "color:red;");
-    };
-  }, []);
+  // useEffect(() => {
+  //   console.log("%cFeature mount", "color: green;");
+  //   return () => {
+  //     console.log("%cFeature unmount", "color:red;");
+  //   };
+  // }, []);
 
   if (css) {
     //   import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(

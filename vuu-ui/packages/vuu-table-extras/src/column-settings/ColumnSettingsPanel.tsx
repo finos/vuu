@@ -1,4 +1,5 @@
 import {
+  Button,
   FormField,
   FormFieldLabel,
   Input,
@@ -30,6 +31,8 @@ export const ColumnSettingsPanel = ({
     availableRenderers,
     cellRenderer,
     column,
+    navigateNextColumn,
+    navigatePrevColumn,
     onChange,
     onChangeFormatting,
     onChangeRenderer,
@@ -51,6 +54,10 @@ export const ColumnSettingsPanel = ({
 
   return (
     <div className={classBase}>
+      <div className={`${classBase}-header`}>
+        <span>{label}</span>
+      </div>
+
       <FormField data-field="column-label">
         <FormFieldLabel>Column Label</FormFieldLabel>
         <Input
@@ -119,6 +126,24 @@ export const ColumnSettingsPanel = ({
         onChangeFormatting={onChangeFormatting}
         onChangeRenderer={onChangeRenderer}
       />
+      <div className={`${classBase}-buttonBar`}>
+        <Button
+          className={`${classBase}-buttonNavPrev`}
+          variant="secondary"
+          data-icon="arrow-left"
+          onClick={navigatePrevColumn}
+        >
+          PREVIOUS
+        </Button>
+        <Button
+          className={`${classBase}-buttonNavNext`}
+          variant="secondary"
+          data-icon="arrow-right"
+          onClick={navigateNextColumn}
+        >
+          NEXT
+        </Button>
+      </div>
     </div>
   );
 };
