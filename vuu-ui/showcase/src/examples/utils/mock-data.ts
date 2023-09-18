@@ -30,6 +30,7 @@ const env = process.env.NODE_ENV as Environment;
 
 const MOCK_FEATURES: Features = {
   vuuTableMockData: {
+    leftNavLocation: "vuu-tables",
     name: "vuuTableMockData",
     title: "Vuu Table (mock test data)",
     ...componentPaths[env]["VuuBlotterMockData"],

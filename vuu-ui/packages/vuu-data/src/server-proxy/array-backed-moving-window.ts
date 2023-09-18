@@ -148,7 +148,7 @@ export class ArrayBackedMovingWindow {
     if (from !== this.#range.from || to !== this.#range.to) {
       log.debug?.(`setRange ${from} - ${to}`);
       const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
-      const newData = new Array(to - from + this.bufferSize);
+      const newData = new Array(to - from);
       this.rowsWithinRange = 0;
 
       for (let i = overlapFrom; i < overlapTo; i++) {
