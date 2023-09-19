@@ -1,0 +1,48 @@
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { schemas } from "./useSchemas";
+import {
+  InstrumentPricesReferenceData,
+  InstrumentPricesColumnMap,
+} from "./reference-data";
+
+export const InstrumentPricesRowGenerator: RowGenerator =
+  (columnNames?: string[]) => (index: number) => {
+    if (index >= InstrumentPricesReferenceData.length) {
+      throw Error("generateRow index val is too high");
+    }
+    if (columnNames) {
+      return columnNames.map(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        (name) =>
+          InstrumentPricesReferenceData[index][InstrumentPricesColumnMap[name]]
+      );
+    } else {
+      return InstrumentPricesReferenceData[index].slice(0, 7);
+    }
+  };
+
+export const InstrumentPricesColumnGenerator: ColumnGenerator = (
+  columns = []
+  //columnConfig: ExtendedColumnConfig = {}
+) => {
+  const instrumentPriceColumns: ColumnDescriptor[] =
+    schemas.instrumentPrices.columns;
+  if (typeof columns === "number") {
+    throw Error(
+      "InstrumentPricesColumnGenerator must be passed columns (strings)"
+    );
+  } else if (columns.length === 0) {
+    return instrumentPriceColumns;
+  } else {
+    return columns.map<ColumnDescriptor>((name) => {
+      const column = instrumentPriceColumns.find((col) => col.name === name);
+      if (column) {
+        return column;
+      } else {
+        throw Error(`InstrumentPricesColumnGenerator no column ${name}`);
+      }
+    });
+  }
+};

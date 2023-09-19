@@ -1,11 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import {
-  VuuDataRow,
-  VuuRange,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
+import { VuuRange, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
 import { PriceReferenceData, random } from "./reference-data";
 import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
 import { schemas } from "./useSchemas";
@@ -57,7 +52,6 @@ class PriceUpdateGenerator implements UpdateGenerator {
 
   private startUpdating() {
     this.updating = true;
-    console.log("start updating");
     this.update();
   }
 

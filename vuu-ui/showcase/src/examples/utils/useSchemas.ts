@@ -4,6 +4,7 @@ import { Reducer, useReducer } from "react";
 
 export type VuuTableName =
   | "instruments"
+  | "instrumentPrices"
   | "orders"
   | "childOrders"
   | "parentOrders"
@@ -13,6 +14,25 @@ export type VuuTableName =
 // These Schemas take the form of the schemas that we create
 // with TABLE_META returned by Vuu.
 export const schemas: Record<VuuTableName, TableSchema> = {
+  basketDesign: {
+    columns: [
+      { name: "ric", serverDataType: "double" },
+      { name: "quantity", serverDataType: "double" },
+      { name: "weighting", serverDataType: "double" },
+      { name: "last", serverDataType: "double" },
+      { name: "bid", serverDataType: "double" },
+      { name: "ask", serverDataType: "double" },
+      { name: "limitPrice", serverDataType: "double" },
+      { name: "priceStrategy", serverDataType: "string" },
+      { name: "dollarNotional", serverDataType: "double" },
+      { name: "localNotional", serverDataType: "double" },
+      { name: "venue", serverDataType: "string" },
+      { name: "algo", serverDataType: "string" },
+      { name: "algoParams", serverDataType: "string" },
+    ],
+    key: "ric",
+    table: { module: "SIMUL", table: "prices" },
+  },
   instruments: {
     columns: [
       { name: "bbg", serverDataType: "string" },
@@ -25,6 +45,28 @@ export const schemas: Record<VuuTableName, TableSchema> = {
     ],
     key: "ric",
     table: { module: "SIMUL", table: "instruments" },
+  },
+  instrumentPrices: {
+    columns: [
+      { name: "ask", serverDataType: "double" },
+      { name: "askSize", serverDataType: "double" }, // type: "int"
+      { name: "bbg", serverDataType: "string" },
+      { name: "bid", serverDataType: "double" },
+      { name: "bidSize", serverDataType: "double" },
+      { name: "close", serverDataType: "double" },
+      { name: "currency", serverDataType: "string" },
+      { name: "description", serverDataType: "string" },
+      { name: "exchange", serverDataType: "string" },
+      { name: "isin", serverDataType: "string" },
+      { name: "last", serverDataType: "double" },
+      { name: "lotSize", serverDataType: "int" },
+      { name: "open", serverDataType: "double" },
+      { name: "phase", serverDataType: "string" },
+      { name: "ric", serverDataType: "string" },
+      { name: "scenario", serverDataType: "string" },
+    ],
+    key: "ric",
+    table: { module: "SIMUL", table: "instrumentPrices" },
   },
   orders: {
     columns: [
@@ -99,25 +141,6 @@ export const schemas: Record<VuuTableName, TableSchema> = {
       { name: "phase", serverDataType: "string" },
       { name: "ric", serverDataType: "string" },
       { name: "scenario", serverDataType: "string" },
-    ],
-    key: "ric",
-    table: { module: "SIMUL", table: "prices" },
-  },
-  basketDesign: {
-    columns: [
-      { name: "ric", serverDataType: "double" },
-      { name: "quantity", serverDataType: "double" },
-      { name: "weighting", serverDataType: "double" },
-      { name: "last", serverDataType: "double" },
-      { name: "bid", serverDataType: "double" },
-      { name: "ask", serverDataType: "double" },
-      { name: "limitPrice", serverDataType: "double" },
-      { name: "priceStrategy", serverDataType: "string" },
-      { name: "dollarNotional", serverDataType: "double" },
-      { name: "localNotional", serverDataType: "double" },
-      { name: "venue", serverDataType: "string" },
-      { name: "algo", serverDataType: "string" },
-      { name: "algoParams", serverDataType: "string" },
     ],
     key: "ric",
     table: { module: "SIMUL", table: "prices" },

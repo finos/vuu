@@ -11,11 +11,13 @@ export const InstrumentTilesFeature = ({
 
   const { dataSource } = useTableConfig({
     count: 1000,
+    dataSourceConfig: {
+      columns: ["ask", "bid", "description", "ric"],
+    },
     table: tableSchema.table,
     rangeChangeRowset: "delta",
   });
 
-  console.log("save session");
   saveSession?.(dataSource, "data-source");
 
   return <VuuInstrumentTilesFeature tableSchema={tableSchema} />;

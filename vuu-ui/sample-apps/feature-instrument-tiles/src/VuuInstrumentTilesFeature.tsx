@@ -90,8 +90,8 @@ const VuuInstrumentTilesFeature = ({
   });
 
   const columnMap = useMemo(
-    () => buildColumnMap(tableSchema.columns),
-    [tableSchema.columns]
+    () => buildColumnMap(dataSource.columns),
+    [dataSource.columns]
   );
 
   useEffect(() => {

@@ -16,6 +16,7 @@ export const InstrumentTile = ({
   instrument,
 }: InstrumentTileProps) => {
   const { ask, description, bid, ric } = columnMap;
+  console.log({ instrument, columnMap });
   return (
     <div className={classBase}>
       <div>{instrument[description]}</div>

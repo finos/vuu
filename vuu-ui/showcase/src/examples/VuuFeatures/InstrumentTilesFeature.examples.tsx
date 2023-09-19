@@ -11,7 +11,7 @@ registerComponent("InstrumentTilesFeature", InstrumentTilesFeature, "view");
 let displaySequence = 1;
 
 export const DefaultInstrumentTilesFeature = () => {
-  const schema = useTableSchema("instruments");
+  const schema = useTableSchema("instrumentPrices");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -69,7 +69,7 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const InstrumentTilesFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const tableSchema = useTableSchema("instruments");
+  const tableSchema = useTableSchema("instrumentPrices");
 
   return (
     <View
