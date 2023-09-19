@@ -26,7 +26,7 @@ import {
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
 import { TableSchema } from "@finos/vuu-data/src/message-utils";
 
@@ -149,7 +149,9 @@ export interface ColumnActionTableConfig extends DataSourceConfig {
 
 export interface ColumnActionColumnSettings extends DataSourceConfig {
   type: "columnSettings";
-  column: KeyedColumnDescriptor;
+  column: ColumnDescriptor;
+  /** required only for calculated coplumns */
+  vuuTable?: VuuTable;
 }
 
 export interface ColumnActionTableSettings extends DataSourceConfig {

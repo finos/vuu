@@ -1,5 +1,5 @@
 import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { SetPropsAction, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { TableSettingsProps } from "@finos/vuu-table-extras";
 import { useCallback } from "react";
@@ -19,6 +19,15 @@ export const useTableAndColumnSettings = ({
 }: TableAndColumnSettingsHookProps) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
+  const handleCreateCalculatedColumn = useCallback(
+    (column: ColumnDescriptor) => {
+      console.log(`create column`, {
+        column,
+      });
+    },
+    []
+  );
+
   const showColumnSettingsPanel = useCallback(
     (action: ColumnActionColumnSettings) => {
       dispatchLayoutAction({
@@ -30,18 +39,36 @@ export const useTableAndColumnSettings = ({
             type: "ColumnSettings",
             props: {
               columnName: action.column.name,
+              isNewCalculatedColumn:
+                action.column.isCalculated && action.column.name === "",
               onConfigChange,
+              onCreateCalculatedColumn: handleCreateCalculatedColumn,
               tableConfig,
+              vuuTable: action.vuuTable,
             },
           },
-          column: action.column,
-          tableConfig,
           title: "Column Settings",
         },
       } as SetPropsAction);
     },
-    [dispatchLayoutAction, onConfigChange, tableConfig]
+    [
+      dispatchLayoutAction,
+      handleCreateCalculatedColumn,
+      onConfigChange,
+      tableConfig,
+    ]
   );
+
+  const handleAddCalculatedColumn = useCallback(() => {
+    showColumnSettingsPanel({
+      column: {
+        name: "",
+        isCalculated: true,
+      },
+      type: "columnSettings",
+      vuuTable: { module: "SIMUL", table: "instruments" },
+    });
+  }, [showColumnSettingsPanel]);
 
   const showTableSettingsPanel = useCallback(() => {
     dispatchLayoutAction({
@@ -58,6 +85,7 @@ export const useTableAndColumnSettings = ({
                 name,
                 serverDataType,
               })),
+            onAddCalculatedColumn: handleAddCalculatedColumn,
             onConfigChange,
             onDataSourceConfigChange,
             tableConfig,
@@ -69,6 +97,7 @@ export const useTableAndColumnSettings = ({
   }, [
     availableColumns,
     dispatchLayoutAction,
+    handleAddCalculatedColumn,
     onConfigChange,
     onDataSourceConfigChange,
     tableConfig,

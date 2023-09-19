@@ -2,7 +2,8 @@
 .vuuColumnList {
     --vuuList-borderStyle: none;
     --vuuListItem-padding: 0;
-
+    display: flex;
+    flex-direction: column;
     width: 252px;
 }
 
@@ -25,6 +26,7 @@
 
 .vuuColumnList-header {
     border-top: solid 2px var(--vuu-color-gray-30);
+    flex: 0 0 40px;
     font-size: 14px;
     font-weight: 600;
     padding-top: 24px;
@@ -34,6 +36,7 @@
     border-bottom: solid 2px var(--vuu-color-gray-30);
     color: var(--vuu-color-gray-50);
     display: flex;
+    flex: 0 0 24px;
     font-size: 10px;
     justify-content: space-between;
     margin-top: 16px;

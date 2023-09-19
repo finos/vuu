@@ -20,9 +20,11 @@ import {
   KeyboardEvent,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { ColumnSettingsProps } from "./ColumnSettingsPanel";
+import { ColumnDefinitionExpression } from "../column-expression-input";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
@@ -39,6 +41,7 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
   },
   ...getRegisteredCellRenderers("double"),
 ];
+
 const stringCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type string",
@@ -94,12 +97,27 @@ const getFieldName = (input: HTMLInputElement): string => {
   }
 };
 
-const getColumn = (columns: ColumnDescriptor[], name: string) => {
-  const column = columns.find((col) => col.name === name);
-  if (column) {
-    return column;
+const createCalculatedColumn = () =>
+  ({
+    label: "New calculated column",
+    name: "",
+    isCalculated: true,
+  } as ColumnDescriptor);
+
+const getColumn = (
+  columns: ColumnDescriptor[],
+  name: string,
+  isNewCalculatedColumn = false
+) => {
+  if (isNewCalculatedColumn) {
+    return createCalculatedColumn();
+  } else {
+    const column = columns.find((col) => col.name === name);
+    if (column) {
+      return column;
+    }
+    throw Error(`columns does not contain column ${name}`);
   }
-  throw Error(`columns does not contain column ${name}`);
 };
 
 const replaceColumn = (
@@ -115,16 +133,24 @@ const replaceColumn = (
 export const useColumnSettings = ({
   columnName,
   onConfigChange,
+  onCreateCalculatedColumn,
+  isNewCalculatedColumn,
   tableConfig,
-}: ColumnSettingsProps) => {
+}: Omit<ColumnSettingsProps, "vuuTable">) => {
+  const sourceRef = useRef<string>("");
+
   const [column, setColumn] = useState<ColumnDescriptor>(
-    getColumn(tableConfig.columns, columnName)
+    getColumn(tableConfig.columns, columnName, isNewCalculatedColumn)
   );
 
-  const availableRenderers = useMemo(
-    () => getAvailableCellRenderers(column),
-    [column]
-  );
+  const availableRenderers = useMemo(() => {
+    console.log(`get available cell renderers for `, {
+      column,
+    });
+    return getAvailableCellRenderers(column);
+  }, [column]);
+
+  console.log({ availableRenderers });
 
   const [selectedRenderer, setSelectedRenderer] =
     useState<CellRendererDescriptor>(
@@ -222,6 +248,28 @@ export const useColumnSettings = ({
     navigateColumn({ moveBy: -1 });
   }, [navigateColumn]);
 
+  const handleChangeExpression = useCallback((source: string) => {
+    sourceRef.current = source;
+    console.log({ source });
+  }, []);
+
+  const handleSubmitExpression = useCallback(
+    (source: string, expression: ColumnDefinitionExpression | undefined) => {
+      console.log(`handleSubmitExpression`, { source, expression });
+      // setExpression(expression);
+    },
+    []
+  );
+
+  const handleSave = useCallback(() => {
+    if (sourceRef.current) {
+      onCreateCalculatedColumn({
+        name: "blah",
+        expression: sourceRef.current,
+      });
+    }
+  }, [onCreateCalculatedColumn]);
+
   return {
     availableRenderers,
     cellRenderer: selectedRenderer,
@@ -229,8 +277,11 @@ export const useColumnSettings = ({
     navigateNextColumn,
     navigatePrevColumn,
     onChange: handleChange,
+    onChangeExpression: handleChangeExpression,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
     onKeyDown: handleInputKeyDown,
+    onSave: handleSave,
+    onSubmitExpression: handleSubmitExpression,
   };
 };

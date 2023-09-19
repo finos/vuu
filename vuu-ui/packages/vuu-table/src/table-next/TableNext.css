@@ -30,7 +30,8 @@
   border-top: none !important;
   border-left: solid 1px var(--salt-container-primary-borderColor);
   /*  a top border */
-  box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor);
+  /** creates a border to top od scrollbar */
+  /* box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor); */
   height: var(--viewport-body-height);
   left: 0px;
   overflow: auto;

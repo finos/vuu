@@ -52,6 +52,11 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    */
   selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
+  /**
+   * if false, table rendered without headers. Useful when table is being included in a
+   * composite component.
+   */
+  showColumnHeaders?: boolean;
   width?: number;
 }
 

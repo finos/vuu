@@ -41,7 +41,7 @@ export const DefaultInstrumentTilesFeature = () => {
     <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
       <View
         Header={VuuBlotterHeader}
-        id="table-next-feature"
+        id="instrument-tiles-feature"
         className="vuuTableNextFeature"
         closeable
         header
@@ -71,7 +71,19 @@ export const InstrumentTilesFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
   const tableSchema = useTableSchema("instruments");
 
-  return <Feature ComponentProps={{ tableSchema }} url={url} css={css} />;
+  return (
+    <View
+      Header={VuuBlotterHeader}
+      id="instrument-tiles-feature"
+      className="vuuTableNextFeature"
+      closeable
+      header
+      title="Instruments"
+      style={{ width: 700, height: 500 }}
+    >
+      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+    </View>
+  );
 };
 InstrumentTilesFeatureAsFeature.displayName = "InstrumentTiles";
 InstrumentTilesFeatureAsFeature.displaySequence = displaySequence++;

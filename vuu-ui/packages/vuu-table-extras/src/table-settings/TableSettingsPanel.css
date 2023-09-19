@@ -40,6 +40,22 @@
     padding-top: 24px;
 }
 
+.vuuTableSettingsPanel .vuuColumList {
+    flex-grow: 0;
+    flex-shrink:  1;
+    flex-basis: auto;
+}
+
+.vuuTableSettingsPanel-calculatedButtonbar {
+    --vuu-icon-size: 16px;
+    --saltButton-height: 24px;
+    --saltButton-width: 24px;
+    align-items: center;
+    display: flex;
+    flex: 0 0 32px;
+    gap: 12px;
+}
+
 .vuuGridSeparators {
     --vuuIconToggleButton-iconSize: 16px;
 }

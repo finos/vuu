@@ -59,7 +59,7 @@ export const useTableSettings = ({
   onConfigChange,
   onDataSourceConfigChange,
   tableConfig: tableConfigProp,
-}: TableSettingsProps) => {
+}: Omit<TableSettingsProps, "onAddCalculatedColumn">) => {
   const [availableColumns, setAvailableColumns] =
     useState<SchemaColumn[]>(availableColumnsProp);
   const [tableConfig, setTableConfig] = useState<TableConfig>(tableConfigProp);

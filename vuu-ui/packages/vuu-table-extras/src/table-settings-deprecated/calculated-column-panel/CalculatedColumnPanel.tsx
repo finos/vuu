@@ -21,7 +21,6 @@ import {
   ColumnExpressionInput,
   useColumnExpressionSuggestionProvider,
 } from "../../column-expression-input";
-import { ColumnAction } from "../settings-panel/useGridSettings";
 
 import "./CalculatedColumnPanel.css";
 

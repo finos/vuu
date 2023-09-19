@@ -94,7 +94,7 @@ export const useTableConfig = ({
         : undefined;
 
     const columns = table
-      ? columnGenerator([], columnConfig)
+      ? columnGenerator(dataSourceConfig?.columns ?? [], columnConfig)
       : columnGenerator(colCount, columnConfig);
 
     // We use an ArrayProxy in the rare scenario that we want a large dataset with no

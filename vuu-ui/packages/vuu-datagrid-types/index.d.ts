@@ -104,6 +104,7 @@ export interface ColumnDescriptor {
   */
   heading?: string[];
   hidden?: boolean;
+  isCalculated?: boolean;
   isSystemColumn?: boolean;
   /** The Label to display on column in Table */
   label?: string;

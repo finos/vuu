@@ -16,11 +16,13 @@ import "./VuuBasketTradingFeature.css";
 
 const classBase = "VuuBasketTradingFeature";
 
-export interface FilterTableFeatureProps {
-  tableSchema: TableSchema;
+export interface BasketTradingFeatureProps {
+  basketDesignSchema: TableSchema;
 }
 
-const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
+const VuuBasketTradingFeature = ({
+  basketDesignSchema,
+}: BasketTradingFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
   const [active, setActive] = useState(0);
 
@@ -43,20 +45,20 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     ds = new RemoteDataSource({
       bufferSize: 200,
       viewport: id,
-      table: tableSchema.table,
-      columns: tableSchema.columns.map((col) => col.name),
+      table: basketDesignSchema.table,
+      columns: basketDesignSchema.columns.map((col) => col.name),
       title,
     });
     ds.on("config", handleDataSourceConfigChange);
     saveSession?.(ds, "data-source");
     return ds;
   }, [
+    basketDesignSchema.columns,
+    basketDesignSchema.table,
     handleDataSourceConfigChange,
     id,
     loadSession,
     saveSession,
-    tableSchema.columns,
-    tableSchema.table,
     title,
   ]);
 

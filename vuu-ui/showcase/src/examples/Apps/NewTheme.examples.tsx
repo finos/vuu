@@ -34,6 +34,8 @@ import {
 import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
 import { schemas } from "../utils";
 import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature.examples";
+import { BackgroundCell } from "@finos/vuu-table-extras";
+console.log({ BackgroundCell });
 
 import "./NewTheme.examples.css";
 
@@ -53,6 +55,12 @@ const featurePaths: Record<Environment, PathMap> = {
     TableNextFeature: {
       url: "/src/features/TableNext.feature",
     },
+    InstrumentTiles: {
+      url: "/src/features/InstrumentTiles.feature",
+    },
+    BasketTrading: {
+      url: "/src/features/BasketTrading.feature",
+    },
   },
   production: {
     TableNextFeature: {
@@ -62,7 +70,26 @@ const featurePaths: Record<Environment, PathMap> = {
   },
 };
 
-const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
+const features: FeatureProps[] = [
+  {
+    title: "Instrument Price Tiles",
+    ...featurePaths[env].InstrumentTiles,
+    ComponentProps: {
+      tableSchema: schemas.instruments,
+    },
+  },
+  {
+    title: "Basket Trading",
+    ...featurePaths[env].BasketTrading,
+    ComponentProps: {
+      basketDesignSchema: schemas.basketDesign,
+    },
+  },
+];
+
+const tableFeatures: FeatureProps<TableNextFeatureProps>[] = Object.values(
+  schemas
+)
   .sort(byModule)
   .map((schema) => ({
     ComponentProps: {
@@ -71,8 +98,6 @@ const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
     title: `${schema.table.module} ${schema.table.table}`,
     ...featurePaths[env].TableNextFeature,
   }));
-
-console.log({ features });
 
 const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
@@ -208,8 +233,8 @@ const ShellWithNewTheme = () => {
         leftSidePanelLayout="full-height"
         leftSidePanel={
           <LeftNav
-            features={[]}
-            tableFeatures={features}
+            features={features}
+            tableFeatures={tableFeatures}
             style={{ width: 240 }}
           />
         }

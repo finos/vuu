@@ -19,7 +19,6 @@ export const TableNext = ({
   className: classNameProp,
   config,
   dataSource,
-  headerHeight = 25,
   height,
   id: idProp,
   onConfigChange,
@@ -30,6 +29,8 @@ export const TableNext = ({
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel = "extended",
+  showColumnHeaders = true,
+  headerHeight = showColumnHeaders ? 25 : 0,
   style: styleProp,
   width,
   ...htmlAttributes
@@ -132,34 +133,36 @@ export const TableNext = ({
             ref={scrollProps.contentContainerRef}
           >
             <div {...tableProps} className={`${classBase}-table`}>
-              <div className={`${classBase}-col-headings`}>
-                <div className={`${classBase}-col-headers`} role="row">
-                  {columns.filter(notHidden).map((col, i) =>
-                    isGroupColumn(col) ? (
-                      <GroupHeaderCell
-                        {...headerProps}
-                        column={col}
-                        data-index={i}
-                        key={col.name}
-                        onRemoveColumn={onRemoveGroupColumn}
-                      />
-                    ) : (
-                      <HeaderCell
-                        {...headerProps}
-                        className={cx({
-                          "vuuDraggable-dragAway":
-                            i === dragDropHook.draggedItemIndex,
-                        })}
-                        column={col}
-                        data-index={i}
-                        id={`${id}-col-${i}`}
-                        key={col.name}
-                      />
-                    )
-                  )}
-                  {dragDropHook.draggable}
+              {showColumnHeaders ? (
+                <div className={`${classBase}-col-headings`}>
+                  <div className={`${classBase}-col-headers`} role="row">
+                    {columns.filter(notHidden).map((col, i) =>
+                      isGroupColumn(col) ? (
+                        <GroupHeaderCell
+                          {...headerProps}
+                          column={col}
+                          data-index={i}
+                          key={col.name}
+                          onRemoveColumn={onRemoveGroupColumn}
+                        />
+                      ) : (
+                        <HeaderCell
+                          {...headerProps}
+                          className={cx({
+                            "vuuDraggable-dragAway":
+                              i === dragDropHook.draggedItemIndex,
+                          })}
+                          column={col}
+                          data-index={i}
+                          id={`${id}-col-${i}`}
+                          key={col.name}
+                        />
+                      )
+                    )}
+                    {dragDropHook.draggable}
+                  </div>
                 </div>
-              </div>
+              ) : null}
               <div className={`${classBase}-body`}>
                 {data.map((data) => (
                   <Row
