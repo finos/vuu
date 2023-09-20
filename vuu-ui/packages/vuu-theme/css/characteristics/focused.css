@@ -1,7 +1,7 @@
 .vuu-theme {
-  --salt-editable-borderColor-active: var(--editable-border-active, #6D18BD);
+  --vuu-editable-borderColor-active: var(--editable-border-active, #6D18BD);
 }
 
-.saltInput-focused{
-  border-color: var(  --salt-editable-borderColor-active)!important;
+.saltInput-focused {
+  border-color: var(--vuu-editable-borderColor-active) !important;
 }
