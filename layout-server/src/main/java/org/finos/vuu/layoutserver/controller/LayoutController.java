@@ -1,6 +1,11 @@
 package org.finos.vuu.layoutserver.controller;
 
+import org.finos.vuu.layoutserver.model.Layout;
+import org.finos.vuu.layoutserver.model.Metadata;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController("/layout")
 public class LayoutController {
@@ -12,8 +17,8 @@ public class LayoutController {
      * @return the layouts
      */
     @GetMapping
-    public String getLayouts(@RequestBody(required = false) String[] ids) {
-        return "Hello World";
+    public List<Layout> getLayouts(@RequestBody(required = false) String[] ids) {
+        return new ArrayList<>();
     }
 
     /**
@@ -23,8 +28,8 @@ public class LayoutController {
      * @return the layout
      */
     @GetMapping("/{id}")
-    public String getLayout(@PathVariable String id) {
-        return "Hello World";
+    public Layout getLayout(@PathVariable String id) {
+        return Layout.builder().build();
     }
 
     /**
@@ -34,14 +39,14 @@ public class LayoutController {
      * @return the metadata
      */
     @GetMapping("/metadata")
-    public String getMetadata(@RequestBody(required = false) String[] ids) {
-        return "Hello World";
+    public List<Metadata> getMetadata(@RequestBody(required = false) String[] ids) {
+        return new ArrayList<>();
     }
 
     /**
      * Creates a new layout
      *
-     * @return the ID of the new layout
+     * @return the ID of the new layout`
      */
     @PostMapping
     public String createLayout() {
