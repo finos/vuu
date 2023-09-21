@@ -31,7 +31,6 @@ const isTypeCompatible = (
   rendererType: VuuColumnDataType | VuuColumnDataType[] | "private" | undefined,
   serverDataType: VuuColumnDataType
 ) => {
-  console.log(`isTypeCompatible ${rendererType} ${serverDataType}`);
   if (rendererType === undefined || rendererType === "private") {
     return true;
   } else if (Array.isArray(rendererType)) {
@@ -59,9 +58,6 @@ export function registerComponent<
   type: ComponentType = "cell-renderer",
   options: CellRendererOptions
 ): void {
-  console.log(
-    `register component ${componentName} as ${options.label} for ${options.serverDataType}`
-  );
   if (isCellRenderer(type, component)) {
     cellRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {
@@ -75,9 +71,6 @@ export function registerComponent<
 export const getRegisteredCellRenderers = (
   serverDataType?: VuuColumnDataType
 ): CellRendererDescriptor[] => {
-  console.log(`getRegisteredCellRenderers ${serverDataType}`, {
-    cellRenderers: cellRenderersMap.values(),
-  });
   const rendererNames = Array.from(cellRenderersMap.keys());
   const allRenderers = rendererNames.map<CellRendererDescriptor>((name) => ({
     name,

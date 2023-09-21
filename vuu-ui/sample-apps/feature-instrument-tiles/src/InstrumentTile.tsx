@@ -1,6 +1,7 @@
-import { DataSourceRow } from "packages/vuu-data-types";
-import { ColumnMap } from "packages/vuu-utils/src";
-import { HTMLAttributes } from "react";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { ColumnMap, numericFormatter } from "@finos/vuu-utils";
+import { HTMLAttributes, memo } from "react";
+import { PriceTicker } from "./PriceTicker";
 
 import "./InstrumentTile.css";
 
@@ -11,16 +12,27 @@ export interface InstrumentTileProps extends HTMLAttributes<HTMLDivElement> {
   instrument: DataSourceRow;
 }
 
-export const InstrumentTile = ({
-  columnMap,
-  instrument,
-}: InstrumentTileProps) => {
-  const { ask, description, bid, ric } = columnMap;
-  console.log({ instrument, columnMap });
-  return (
-    <div className={classBase}>
-      <div>{instrument[description]}</div>
-      <div>{instrument[ask]}</div>
-    </div>
-  );
-};
+const formatNumber = numericFormatter({
+  type: {
+    name: "number",
+    formatting: {
+      decimals: 4,
+    },
+  },
+});
+
+export const InstrumentTile = memo(
+  ({ columnMap, instrument }: InstrumentTileProps) => {
+    const { ask, description, bid } = columnMap;
+    return (
+      <div className={classBase}>
+        <div className={`${classBase}-name`}>{instrument[description]}</div>
+        <div className={`${classBase}-value`}>
+          {formatNumber(instrument[ask])}
+        </div>
+        <PriceTicker price={instrument[bid] as number} />
+      </div>
+    );
+  }
+);
+InstrumentTile.displayName = "InstrumentTile";

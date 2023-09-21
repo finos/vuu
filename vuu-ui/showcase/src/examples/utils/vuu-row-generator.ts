@@ -6,6 +6,7 @@ import {
   InstrumentColumnGenerator,
 } from "./instrument-generator";
 import {
+  createInstrumentPriceUpdateGenerator,
   InstrumentPricesRowGenerator,
   InstrumentPricesColumnGenerator,
 } from "./instrument-prices-generator";
@@ -88,7 +89,11 @@ export const getColumnAndRowGenerator = (
     case "instruments":
       return [InstrumentColumnGenerator, InstrumentRowGenerator];
     case "instrumentPrices":
-      return [InstrumentPricesColumnGenerator, InstrumentPricesRowGenerator];
+      return [
+        InstrumentPricesColumnGenerator,
+        InstrumentPricesRowGenerator,
+        createInstrumentPriceUpdateGenerator,
+      ];
     case "basketDesign":
       return [BasketDesignColumnGenerator, BasketDesignRowGenerator];
     case "orders":

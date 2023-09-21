@@ -1,4 +1,18 @@
 .vuuInstrumentTile {
+    align-items: center;
+    display: flex;
     flex: 1 1 auto;
-    height: 150px;
+    flex-direction: column;
+    height: 65px;
+    justify-content: space-around;
+}
+
+.vuuInstrumentTile-name {
+    color: var(--vuu-color-gray-50);
+}
+
+.vuuInstrumentTile-value {
+    color: var(--vuu-color-gray-80);
+    font-size: 24px;
+    font-weight: 700;
 }

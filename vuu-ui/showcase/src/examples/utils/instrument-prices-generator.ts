@@ -1,10 +1,14 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
-import { schemas } from "./useSchemas";
+import { buildColumnMap } from "@finos/vuu-utils/src";
 import {
-  InstrumentPricesReferenceData,
   InstrumentPricesColumnMap,
+  InstrumentPricesReferenceData,
 } from "./reference-data";
+import { BaseUpdateGenerator } from "./UpdateGenerator";
+import { schemas } from "./useSchemas";
+import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+
+const { instrumentPrices: instrumentPriceSchema } = schemas;
 
 export const InstrumentPricesRowGenerator: RowGenerator =
   (columnNames?: string[]) => (index: number) => {
@@ -22,6 +26,13 @@ export const InstrumentPricesRowGenerator: RowGenerator =
       return InstrumentPricesReferenceData[index].slice(0, 7);
     }
   };
+
+const { bid, bidSize, ask, askSize } = buildColumnMap(
+  instrumentPriceSchema.columns
+);
+
+export const createInstrumentPriceUpdateGenerator = () =>
+  new BaseUpdateGenerator([bid, bidSize, ask, askSize]);
 
 export const InstrumentPricesColumnGenerator: ColumnGenerator = (
   columns = []
