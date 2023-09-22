@@ -40,10 +40,10 @@
     padding-top: 24px;
 }
 
-.vuuTableSettingsPanel .vuuColumList {
-    flex-grow: 0;
+.vuuTableSettingsPanel .vuuColumnList {
+    flex-grow: 1;
     flex-shrink:  1;
-    flex-basis: auto;
+    flex-basis: 0;
 }
 
 .vuuTableSettingsPanel-calculatedButtonbar {

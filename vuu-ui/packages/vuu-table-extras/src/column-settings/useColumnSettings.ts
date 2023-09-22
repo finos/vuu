@@ -11,20 +11,19 @@ import {
   isTypeDescriptor,
   isValidColumnAlignment,
   isValidPinLocation,
+  setCalculatedColumnName,
   updateColumnRenderer,
   updateColumnType,
 } from "@finos/vuu-utils";
 import { SelectionChangeHandler } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
-  KeyboardEvent,
   useCallback,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { ColumnSettingsProps } from "./ColumnSettingsPanel";
-import { ColumnDefinitionExpression } from "../column-expression-input";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
@@ -69,10 +68,10 @@ const getAvailableCellRenderers = (
 
 const getCellRendererDescriptor = (
   availableRenderers: CellRendererDescriptor[],
-  { type }: ColumnDescriptor
+  column: ColumnDescriptor
 ) => {
-  if (isTypeDescriptor(type)) {
-    const { renderer } = type;
+  if (isTypeDescriptor(column.type)) {
+    const { renderer } = column.type;
     if (isColumnTypeRenderer(renderer)) {
       const cellRenderer = availableRenderers.find(
         (r) => r.name === renderer.name
@@ -82,7 +81,9 @@ const getCellRendererDescriptor = (
       }
     }
   }
-  return availableRenderers[0];
+  // retur the appropriate default value for the column
+  const typedAvailableRenderers = getAvailableCellRenderers(column);
+  return typedAvailableRenderers[0];
 };
 
 const getFieldName = (input: HTMLInputElement): string => {
@@ -97,24 +98,14 @@ const getFieldName = (input: HTMLInputElement): string => {
   }
 };
 
-const createCalculatedColumn = () =>
-  ({
-    label: "New calculated column",
-    name: "",
-    isCalculated: true,
-  } as ColumnDescriptor);
-
-const getColumn = (
-  columns: ColumnDescriptor[],
-  name: string,
-  isNewCalculatedColumn = false
-) => {
-  if (isNewCalculatedColumn) {
-    return createCalculatedColumn();
+const getColumn = (columns: ColumnDescriptor[], column: ColumnDescriptor) => {
+  if (column.name === "::") {
+    // this is a new calculated column
+    return column;
   } else {
-    const column = columns.find((col) => col.name === name);
-    if (column) {
-      return column;
+    const col = columns.find((col) => col.name === column.name);
+    if (col) {
+      return col;
     }
     throw Error(`columns does not contain column ${name}`);
   }
@@ -131,40 +122,26 @@ const replaceColumn = (
 });
 
 export const useColumnSettings = ({
-  columnName,
+  column: columnProp,
   onConfigChange,
   onCreateCalculatedColumn,
-  isNewCalculatedColumn,
   tableConfig,
 }: Omit<ColumnSettingsProps, "vuuTable">) => {
-  const sourceRef = useRef<string>("");
-
   const [column, setColumn] = useState<ColumnDescriptor>(
-    getColumn(tableConfig.columns, columnName, isNewCalculatedColumn)
+    getColumn(tableConfig.columns, columnProp)
   );
 
   const availableRenderers = useMemo(() => {
-    console.log(`get available cell renderers for `, {
-      column,
-    });
     return getAvailableCellRenderers(column);
   }, [column]);
 
-  console.log({ availableRenderers });
-
-  const [selectedRenderer, setSelectedRenderer] =
-    useState<CellRendererDescriptor>(
-      getCellRendererDescriptor(availableRenderers, column)
-    );
-
-  const handleInputKeyDown = useCallback(
-    (evt: KeyboardEvent<HTMLInputElement>) => {
-      if (evt.key === "Enter" || evt.key === "Tab") {
-        onConfigChange(replaceColumn(tableConfig, column));
-      }
-    },
-    [column, onConfigChange, tableConfig]
+  const selectedCellRendererRef = useRef<CellRendererDescriptor | null>(
+    getCellRendererDescriptor(availableRenderers, column)
   );
+
+  const handleInputCommit = useCallback(() => {
+    onConfigChange(replaceColumn(tableConfig, column));
+  }, [column, onConfigChange, tableConfig]);
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
@@ -174,6 +151,9 @@ export const useColumnSettings = ({
       switch (fieldName) {
         case "column-label":
           setColumn((state) => ({ ...state, label: value }));
+          break;
+        case "column-name":
+          setColumn((state) => setCalculatedColumnName(state, value));
           break;
         case "column-width":
           setColumn((state) => ({ ...state, width: parseInt(value) }));
@@ -213,7 +193,7 @@ export const useColumnSettings = ({
           column,
           cellRenderer
         );
-        setSelectedRenderer(cellRenderer);
+        selectedCellRendererRef.current = cellRenderer;
         setColumn(newColumn);
         onConfigChange(replaceColumn(tableConfig, newColumn));
       }
@@ -233,12 +213,17 @@ export const useColumnSettings = ({
   const navigateColumn = useCallback(
     ({ moveBy }: { moveBy: number }) => {
       const { columns } = tableConfig;
-      setColumn((column) => {
-        const index = columns.indexOf(column) + moveBy;
-        return columns[index] ?? column;
-      });
+      const index = columns.indexOf(column) + moveBy;
+      const newColumn = columns[index];
+      if (newColumn) {
+        selectedCellRendererRef.current = getCellRendererDescriptor(
+          availableRenderers,
+          newColumn
+        );
+        setColumn(newColumn);
+      }
     },
-    [tableConfig]
+    [availableRenderers, column, tableConfig]
   );
   const navigateNextColumn = useCallback(() => {
     navigateColumn({ moveBy: 1 });
@@ -248,40 +233,27 @@ export const useColumnSettings = ({
     navigateColumn({ moveBy: -1 });
   }, [navigateColumn]);
 
-  const handleChangeExpression = useCallback((source: string) => {
-    sourceRef.current = source;
-    console.log({ source });
-  }, []);
-
-  const handleSubmitExpression = useCallback(
-    (source: string, expression: ColumnDefinitionExpression | undefined) => {
-      console.log(`handleSubmitExpression`, { source, expression });
-      // setExpression(expression);
-    },
-    []
-  );
-
-  const handleSave = useCallback(() => {
-    if (sourceRef.current) {
+  const handleSaveCalculatedColumn = useCallback(
+    (calculatedColumn: ColumnDescriptor) => {
+      // TODO validate expression, unique name
       onCreateCalculatedColumn({
-        name: "blah",
-        expression: sourceRef.current,
+        ...column,
+        ...calculatedColumn,
       });
-    }
-  }, [onCreateCalculatedColumn]);
+    },
+    [column, onCreateCalculatedColumn]
+  );
 
   return {
     availableRenderers,
-    cellRenderer: selectedRenderer,
+    selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange: handleChange,
-    onChangeExpression: handleChangeExpression,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
-    onKeyDown: handleInputKeyDown,
-    onSave: handleSave,
-    onSubmitExpression: handleSubmitExpression,
+    onInputCommit: handleInputCommit,
+    onSave: handleSaveCalculatedColumn,
   };
 };

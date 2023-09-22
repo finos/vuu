@@ -3,6 +3,7 @@ import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
 import { schemas } from "./useSchemas";
 import { InstrumentReferenceData, InstrumentColumnMap } from "./reference-data";
 import "./reference-data";
+import { getCalculatedColumnType, isCalculatedColumn } from "@finos/vuu-utils";
 
 export const InstrumentRowGenerator: RowGenerator =
   (columnNames?: string[]) => (index: number) => {
@@ -34,6 +35,11 @@ export const InstrumentColumnGenerator: ColumnGenerator = (
       const column = instrumentColumns.find((col) => col.name === name);
       if (column) {
         return column;
+      } else if (isCalculatedColumn(name)) {
+        return {
+          name,
+          serverDataType: getCalculatedColumnType({ name }),
+        } as ColumnDescriptor;
       } else {
         throw Error(`InstrumentColumnGenerator no column ${name}`);
       }

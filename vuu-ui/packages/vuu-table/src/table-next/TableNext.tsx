@@ -21,6 +21,7 @@ export const TableNext = ({
   dataSource,
   height,
   id: idProp,
+  onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
@@ -59,6 +60,7 @@ export const TableNext = ({
     dataSource,
     headerHeight,
     height,
+    onAvailableColumnsChange,
     onConfigChange,
     onFeatureEnabled,
     onFeatureInvocation,
@@ -101,6 +103,8 @@ export const TableNext = ({
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
     // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
+
+  console.log({ columns });
 
   return (
     <ContextMenuProvider

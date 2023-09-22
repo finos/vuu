@@ -3,9 +3,9 @@ import {
   DataSourceSubscribedMessage,
   JsonDataSource,
 } from "@finos/vuu-data";
-import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
+  ColumnDescriptor,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
@@ -13,6 +13,8 @@ import {
 } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
+import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
+import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import {
   applySort,
   buildColumnMap,
@@ -37,6 +39,7 @@ import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
 import { useMeasuredContainer } from "./useMeasuredContainer";
+import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
 import {
   isShowColumnSettings,
   isShowTableSettings,
@@ -45,8 +48,6 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
-import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
-import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
 
 export interface TableHookProps
   extends MeasuredProps,
@@ -55,6 +56,7 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
@@ -68,11 +70,20 @@ export interface TableHookProps
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
+const addColumn = (
+  tableConfig: TableConfig,
+  column: ColumnDescriptor
+): TableConfig => ({
+  ...tableConfig,
+  columns: tableConfig.columns.concat(column),
+});
+
 export const useTable = ({
   availableColumns,
   config,
   dataSource,
   headerHeight = 25,
+  onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
@@ -177,7 +188,7 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`useTableNext handleConfigCChanged`, {
+      console.log(`useTableNext handleConfigChanged`, {
         tableConfig,
       });
       dispatchColumnAction({
@@ -203,6 +214,23 @@ export const useTable = ({
     [dataSource]
   );
 
+  const handleCreateCalculatedColumn = useCallback(
+    (column: ColumnDescriptor) => {
+      console.log(`useTableNext handleCreateCalculatedColumn`, {
+        column,
+      });
+      dataSource.columns = dataSource.columns.concat(column.name);
+      const newTableConfig = addColumn(tableConfig, column);
+      dispatchColumnAction({
+        type: "init",
+        tableConfig: newTableConfig,
+        dataSourceConfig: dataSource.config,
+      });
+      onConfigChange?.(newTableConfig);
+    },
+    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
+  );
+
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
       // expectConfigChangeRef.current = true;
@@ -222,7 +250,9 @@ export const useTable = ({
           name,
           serverDataType,
         })),
+      onAvailableColumnsChange,
       onConfigChange: handleConfigChanged,
+      onCreateCalculatedColumn: handleCreateCalculatedColumn,
       onDataSourceConfigChange: handleDataSourceConfigChanged,
       tableConfig,
     });

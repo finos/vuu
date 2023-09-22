@@ -1,30 +1,25 @@
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
+import { getDefaultAlignment, isCalculatedColumn } from "@finos/vuu-utils";
 import {
   Button,
   FormField,
   FormFieldLabel,
-  Input,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { useColumnSettings } from "./useColumnSettings";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes } from "react";
-import { getDefaultAlignment } from "@finos/vuu-utils";
 import { ColumnFormattingPanel } from "../column-formatting-settings/ColumnFormattingPanel";
-
-import {
-  ColumnExpressionInput,
-  useColumnExpressionSuggestionProvider,
-} from "../column-expression-input";
+import { useColumnSettings } from "./useColumnSettings";
+import { ColumnExpressionPanel } from "../column-expression-panel";
+import { VuuInput } from "@finos/vuu-ui-controls";
 
 import "./ColumnSettingsPanel.css";
-import { VuuTable } from "packages/vuu-protocol-types";
 
 const classBase = "vuuColumnSettingsPanel";
 
 export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
-  columnName: string;
-  isNewCalculatedColumn: boolean;
+  column: ColumnDescriptor;
   onConfigChange: (config: TableConfig) => void;
   onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
   tableConfig: TableConfig;
@@ -32,37 +27,29 @@ export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const ColumnSettingsPanel = ({
-  columnName,
-  isNewCalculatedColumn,
+  column: columnProp,
   onConfigChange,
   onCreateCalculatedColumn,
   tableConfig,
   vuuTable,
 }: ColumnSettingsProps) => {
+  const isNewCalculatedColumn = columnProp.name === "::";
   const {
     availableRenderers,
-    cellRenderer,
+    selectedCellRenderer,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange,
-    onChangeExpression,
     onChangeFormatting,
     onChangeRenderer,
-    onKeyDown,
+    onInputCommit,
     onSave,
-    onSubmitExpression,
   } = useColumnSettings({
-    columnName,
-    isNewCalculatedColumn,
+    column: columnProp,
     onConfigChange,
     onCreateCalculatedColumn,
     tableConfig,
-  });
-
-  const suggestionProvider = useColumnExpressionSuggestionProvider({
-    columns: tableConfig.columns,
-    table: vuuTable,
   });
 
   const {
@@ -77,38 +64,27 @@ export const ColumnSettingsPanel = ({
   return (
     <div className={classBase}>
       <div className={`${classBase}-header`}>
-        <span>{label}</span>
+        <span>{name}</span>
       </div>
 
       <FormField data-field="column-label">
         <FormFieldLabel>Column Label</FormFieldLabel>
-        <Input
+        <VuuInput
           className="vuuInput"
           onChange={onChange}
-          onKeyDown={onKeyDown}
+          onCommit={onInputCommit}
           value={label}
         />
       </FormField>
 
-      {column.isCalculated ? (
-        <>
-          <div className={`${classBase}-header`}>
-            <span>Calculation</span>
-          </div>
-          <FormField data-field="column-expression">
-            <FormFieldLabel>Expression</FormFieldLabel>
-            <ColumnExpressionInput
-              onChange={onChangeExpression}
-              onSubmitExpression={onSubmitExpression}
-              suggestionProvider={suggestionProvider}
-            />
-          </FormField>
-        </>
-      ) : null}
-
       <FormField data-field="column-width">
         <FormFieldLabel>Column Width</FormFieldLabel>
-        <Input className="vuuInput" onChange={onChange} value={width} />
+        <VuuInput
+          className="vuuInput"
+          onChange={onChange}
+          value={width}
+          onCommit={onInputCommit}
+        />
       </FormField>
       <FormField data-field="column-alignment">
         <FormFieldLabel>Alignment</FormFieldLabel>
@@ -160,49 +136,42 @@ export const ColumnSettingsPanel = ({
       </FormField>
       <ColumnFormattingPanel
         availableRenderers={availableRenderers}
-        cellRenderer={cellRenderer}
+        selectedCellRenderer={selectedCellRenderer}
         column={column}
         onChangeFormatting={onChangeFormatting}
         onChangeRenderer={onChangeRenderer}
       />
 
-      <div
-        className={`${classBase}-buttonBar`}
-        data-align={isNewCalculatedColumn ? "right" : undefined}
-      >
-        {isNewCalculatedColumn ? (
-          <>
-            <Button className={`${classBase}-buttonCancel`}>cancel</Button>
-            <Button className={`${classBase}-buttonApply`}>apply</Button>
-            <Button
-              className={`${classBase}-buttonSave`}
-              onClick={onSave}
-              variant="cta"
-            >
-              save
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              className={`${classBase}-buttonNavPrev`}
-              variant="secondary"
-              data-icon="arrow-left"
-              onClick={navigatePrevColumn}
-            >
-              PREVIOUS
-            </Button>
-            <Button
-              className={`${classBase}-buttonNavNext`}
-              variant="secondary"
-              data-icon="arrow-right"
-              onClick={navigateNextColumn}
-            >
-              NEXT
-            </Button>
-          </>
-        )}
-      </div>
+      {isCalculatedColumn(column.name) ? (
+        <ColumnExpressionPanel
+          column={column}
+          onSave={onSave}
+          tableConfig={tableConfig}
+          vuuTable={vuuTable}
+        />
+      ) : (
+        <div
+          className={`${classBase}-buttonBar`}
+          data-align={isNewCalculatedColumn ? "right" : undefined}
+        >
+          <Button
+            className={`${classBase}-buttonNavPrev`}
+            variant="secondary"
+            data-icon="arrow-left"
+            onClick={navigatePrevColumn}
+          >
+            PREVIOUS
+          </Button>
+          <Button
+            className={`${classBase}-buttonNavNext`}
+            variant="secondary"
+            data-icon="arrow-right"
+            onClick={navigateNextColumn}
+          >
+            NEXT
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

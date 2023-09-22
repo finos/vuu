@@ -3,6 +3,7 @@ import {
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
   RemoteDataSource,
+  SchemaColumn,
   TableSchema,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
@@ -36,6 +37,7 @@ export interface FilterTableFeatureProps {
 }
 
 type FilterTableConfig = {
+  "available-columns"?: SchemaColumn[];
   "datasource-config"?: DataSourceConfig;
   "filterbar-config"?: Partial<FilterBarProps>;
   "table-config"?: TableConfig;
@@ -69,6 +71,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     useViewContext();
 
   const {
+    "available-columns": availableColumnsFromState,
     "datasource-config": dataSourceConfigFromState,
     "filterbar-config": filterbarConfigFromState,
     "table-config": tableConfigFromState,
@@ -106,6 +109,15 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
       if (confirmed === undefined) {
         save?.(config, "datasource-config");
       }
+    },
+    [save]
+  );
+
+  const handleAvailableColumnsChange = useCallback(
+    (columns: SchemaColumn[]) => {
+      console.log("save new available columns");
+      save?.(columns, "available-columns");
+      // tableConfigRef.current = config;
     },
     [save]
   );
@@ -152,6 +164,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     return ds;
   }, [
     dataSourceConfigFromState,
+    handleDataSourceConfigChange,
     id,
     loadSession,
     saveSession,
@@ -246,11 +259,12 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   };
 
   const tableProps = {
-    availableColumns: tableSchema.columns,
+    availableColumns: availableColumnsFromState ?? tableSchema.columns,
     config: {
       ...tableConfig,
     },
     dataSource,
+    onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
     onFeatureEnabled: handleVuuFeatureEnabled,
     onFeatureInvocation: handleVuuFeatureInvoked,

@@ -4,6 +4,7 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { updateTableConfig } from "@finos/vuu-table";
 import {
   addColumnToSubscribedColumns,
+  isCalculatedColumn,
   moveItem,
   subscribedOnly,
 } from "@finos/vuu-utils";
@@ -35,6 +36,7 @@ export type ColumnItem = Pick<
   ColumnDescriptor,
   "hidden" | "label" | "name" | "serverDataType"
 > & {
+  isCalculated: boolean;
   subscribed: boolean;
 };
 
@@ -46,6 +48,7 @@ const buildColumnItems = (
     const configuredColumn = configuredColumns.find((col) => col.name === name);
     return {
       hidden: configuredColumn?.hidden,
+      isCalculated: isCalculatedColumn(name),
       label: configuredColumn?.label,
       name,
       serverDataType,
@@ -54,15 +57,22 @@ const buildColumnItems = (
   });
 };
 
+type ColumnState = {
+  availableColumns: SchemaColumn[];
+  tableConfig: TableConfig;
+};
+
 export const useTableSettings = ({
   availableColumns: availableColumnsProp,
   onConfigChange,
   onDataSourceConfigChange,
   tableConfig: tableConfigProp,
 }: Omit<TableSettingsProps, "onAddCalculatedColumn">) => {
-  const [availableColumns, setAvailableColumns] =
-    useState<SchemaColumn[]>(availableColumnsProp);
-  const [tableConfig, setTableConfig] = useState<TableConfig>(tableConfigProp);
+  const [{ availableColumns, tableConfig }, setColumnState] =
+    useState<ColumnState>({
+      availableColumns: availableColumnsProp,
+      tableConfig: tableConfigProp,
+    });
 
   const columnItems = useMemo(
     () => buildColumnItems(availableColumns, tableConfig.columns),
@@ -71,18 +81,27 @@ export const useTableSettings = ({
 
   const handleMoveListItem = useCallback(
     (fromIndex: number, toIndex: number) => {
-      setAvailableColumns((columns) => {
-        const newAvailableColumns = moveItem(columns, fromIndex, toIndex);
+      setColumnState((state) => {
+        const newAvailableColumns = moveItem(
+          state.availableColumns,
+          fromIndex,
+          toIndex
+        );
         const newColumns = sortOrderFromAvailableColumns(
           newAvailableColumns,
           tableConfig.columns
         );
-        console.log({ newColumns });
-        // TODO fire a move column action
-        return newAvailableColumns;
+
+        return {
+          availableColumns: newAvailableColumns,
+          tableConfig: {
+            ...state.tableConfig,
+            columns: newColumns,
+          },
+        };
       });
     },
-    []
+    [tableConfig.columns]
   );
 
   const handleColumnChange = useCallback<ColumnChangeHandler>(
@@ -94,12 +113,15 @@ export const useTableSettings = ({
           const subscribedColumns = tableConfig.columns
             .filter((col) => col.name !== name)
             .map((col) => col.name);
-          setTableConfig({
-            ...tableConfig,
-            columns: tableConfig.columns.filter(
-              subscribedOnly(subscribedColumns)
-            ),
-          });
+          setColumnState((state) => ({
+            ...state,
+            tableConfig: {
+              ...tableConfig,
+              columns: tableConfig.columns.filter(
+                subscribedOnly(subscribedColumns)
+              ),
+            },
+          }));
           onDataSourceConfigChange({
             columns: subscribedColumns,
           });
@@ -112,7 +134,10 @@ export const useTableSettings = ({
               name
             ),
           };
-          setTableConfig(newConfig);
+          setColumnState((state) => ({
+            ...state,
+            tableConfig: newConfig,
+          }));
 
           const subscribedColumns = newConfig.columns.map((col) => col.name);
 
@@ -129,7 +154,10 @@ export const useTableSettings = ({
             column,
             value,
           });
-          setTableConfig(newConfig);
+          setColumnState((state) => ({
+            ...state,
+            tableConfig: newConfig,
+          }));
         }
       }
     },
@@ -140,18 +168,24 @@ export const useTableSettings = ({
     const { value } = evt.target as HTMLFormElement;
     const columnFormatHeader =
       value === "0" ? undefined : value === "1" ? "capitalize" : "uppercase";
-    setTableConfig((config) => ({
-      ...config,
-      columnFormatHeader,
+    setColumnState((state) => ({
+      ...state,
+      tableConfig: {
+        ...state.tableConfig,
+        columnFormatHeader,
+      },
     }));
   }, []);
 
   const handleChangeTableAttribute = useCallback(
     (evt: MouseEvent<HTMLButtonElement>) => {
       const { ariaChecked, value } = evt.target as HTMLInputElement;
-      setTableConfig((config) => ({
-        ...config,
-        [value]: ariaChecked !== "true",
+      setColumnState((state) => ({
+        ...state,
+        tableConfig: {
+          ...state.tableConfig,
+          [value]: ariaChecked !== "true",
+        },
       }));
     },
     []

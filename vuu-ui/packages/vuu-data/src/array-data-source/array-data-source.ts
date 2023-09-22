@@ -429,11 +429,14 @@ export class ArrayDataSource
   }
 
   get columns() {
-    return this.#columns;
+    return this.#config.columns;
   }
 
   set columns(columns: string[]) {
-    this.#columns = columns;
+    this.config = {
+      ...this.#config,
+      columns,
+    };
   }
 
   get aggregations() {

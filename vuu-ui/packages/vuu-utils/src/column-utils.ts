@@ -862,3 +862,59 @@ export const addColumnToSubscribedColumns = (
     return results;
   }
 };
+
+const CalculatedColumnPattern = /.*:.*:.*/;
+
+export const isCalculatedColumn = (columnName?: string) =>
+  columnName !== undefined && CalculatedColumnPattern.test(columnName);
+
+export const getCalculatedColumnDetails = (column: ColumnDescriptor) => {
+  if (isCalculatedColumn(column.name)) {
+    return column.name.split(":");
+  } else {
+    throw Error(
+      `column-utils, getCalculatedColumnDetails column name ${column.name} is not valid calculated column`
+    );
+  }
+};
+
+export const getCalculatedColumnName = (column: ColumnDescriptor) =>
+  getCalculatedColumnDetails(column)[0];
+export const getCalculatedColumnExpression = (column: ColumnDescriptor) =>
+  getCalculatedColumnDetails(column)[1];
+export const getCalculatedColumnType = (column: ColumnDescriptor) =>
+  getCalculatedColumnDetails(column)[2] as VuuColumnDataType;
+
+export const setCalculatedColumnName = (
+  column: ColumnDescriptor,
+  name: string
+): ColumnDescriptor => {
+  const [, expression, type] = column.name.split(":");
+  return {
+    ...column,
+    name: `${name}:${expression}:${type}`,
+  };
+};
+
+// TODO should we validate the expression here ?
+export const setCalculatedColumnExpression = (
+  column: ColumnDescriptor,
+  expression: string
+): ColumnDescriptor => {
+  const [name, , type] = column.name.split(":");
+  return {
+    ...column,
+    name: `${name}:${expression}:${type}`,
+  };
+};
+
+export const setCalculatedColumnType = (
+  column: ColumnDescriptor,
+  type: string
+): ColumnDescriptor => {
+  const [name, expression] = column.name.split(":");
+  return {
+    ...column,
+    name: `${name}:${expression}:${type}`,
+  };
+};
