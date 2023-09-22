@@ -1,28 +1,28 @@
 package org.finos.vuu.layoutserver.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.Date;
 
-@Entity
 @Data
-@Builder
+@NoArgsConstructor
+@Entity
 public class Metadata {
 
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
+
+    @OneToOne(mappedBy = "metadata")
+    @NonNull
+    private Layout layout;
 
     private String name;
     private String group;
     private String screenshot;
     private String user;
-    private Date date;
-
-    protected Metadata() {
-    }
+    private Date date = new Date();
 }
