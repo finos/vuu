@@ -6,6 +6,7 @@ export * from "./DraggableLayout";
 export * from "./flexbox";
 export { Action } from "./layout-action";
 export * from "./layout-header";
+export * from "./layout-persistence";
 export * from "./layout-provider";
 export * from "./layout-reducer";
 export * from "./layout-view";

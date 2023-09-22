@@ -85,9 +85,6 @@ const ShellWithNewTheme = () => {
 
   const handleSave = useCallback(
     (layoutMetadata: Omit<LayoutMetadata, "id">) => {
-      console.log(
-        `Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`
-      );
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },
@@ -229,7 +226,6 @@ const ShellWithNewTheme = () => {
           style={{ maxHeight: 500, borderColor: "#6d188b" }}
           title={"Save Layout"}
           hideCloseButton
-          headerProps={{ className: "dialogHeader" }}
         >
           {dialogContent}
         </Dialog>
