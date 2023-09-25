@@ -7,7 +7,7 @@ import org.finos.vuu.core.module.basket.csv.CsvStaticLoader
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.DefaultProvider
 
-class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultProvider{
+class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultProvider {
 
   private val runner = new RunOnceLifeCycleRunner("BasketConstituentProvider", runOnce)
 
@@ -16,7 +16,7 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
   import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentColumnNames._
 
   def runOnce(): Unit = {
-     val data = CsvStaticLoader.loadStatic
+    val data = CsvStaticLoader.loadStatic
 
 
     data.foreachEntry((k, v) => {
@@ -26,20 +26,20 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
           val symbol = row("Symbol")
           val name = row("Name")
           val lastTrade = row("Last Trade")
-//          val change = row("Change")
-//          val volume = row("Volume")
-//          val weighting = row("Weight")
+          val change = row("Change")
+          val volume = row("Volume")
+          val weighting = row("Weight")
 
           table.processUpdate(symbol, RowWithData(symbol, Map(
             Ric -> symbol,
             BasketId -> k,
             LastTrade -> lastTrade,
-//            Change -> change,
-            //Volume -> volume
+            Change -> change,
+            Weighting -> weighting,
+            Volume -> volume
           )), clock.now())
         }
-    })
-
+      })
 
 
     })

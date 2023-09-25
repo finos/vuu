@@ -27,17 +27,20 @@ object CsvStaticLoader {
       val weightInd = header.indexOf("Weight")
       val changeInd = header.indexOf("Change")
       val list = array.tail.map(e => Map(
-        "Symbol" -> e(symbolInd),
-        "Last Trade" -> e(lastTradeInd),
-        "Name" -> e(nameInd),
-        //      "Weight" -> e(weightInd),
-        //      "Volume" -> e(volumeInd),
-//        "Change" -> (if (e.length > changeInd) e(changeInd) else null)
+        "Symbol" -> getValueFromIndex(symbolInd, e),
+        "Last Trade" -> getValueFromIndex(lastTradeInd, e),
+        "Name" -> getValueFromIndex(nameInd, e),
+        "Weight" -> getValueFromIndex(weightInd, e),
+        "Volume" -> getValueFromIndex(volumeInd, e),
+        "Change" -> getValueFromIndex(changeInd, e)
       ))
       val fileName = csvFile.getName.replace(".csv", "")
-      map += ("."+fileName.toUpperCase -> list)
+      map += ("." + fileName.toUpperCase -> list)
     })
     map
   }
 
+  private def getValueFromIndex(index: Int, e: Array[String]) = {
+    if (e.length > index && index > -1) e(index) else null
+  }
 }
