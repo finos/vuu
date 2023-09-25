@@ -11,13 +11,14 @@ export const LayoutManagementContext = React.createContext<{
 }>({ layoutMetadata: [], saveLayout: () => { } })
 
 export const LayoutManagementProvider = (props: {
-    children: JSX.Element | JSX.Element[]
-  }) => {
+  children: JSX.Element | JSX.Element[]
+}) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
 
   useEffect(() => {
-    const loadedMetadata = persistenceManager.loadMetadata();
-    setLayoutMetadata(loadedMetadata || [])
+    persistenceManager.loadMetadata().then(loadedMetadata => {
+      setLayoutMetadata(loadedMetadata)
+    })
   }, [])
 
   const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {
@@ -25,15 +26,16 @@ export const LayoutManagementProvider = (props: {
 
     if (json) {
       // Persist layouts
-      const generatedId = persistenceManager.createLayout(metadata, json);
+      persistenceManager.createLayout(metadata, json).then(generatedId => {
 
-      // Update state
-      const newMetadata: LayoutMetadata = {
-        ...metadata,
-        id: generatedId
-      };
+        // Update state
+        const newMetadata: LayoutMetadata = {
+          ...metadata,
+          id: generatedId
+        };
 
-      setLayoutMetadata(prev => [...prev, newMetadata]);
+        setLayoutMetadata(prev => [...prev, newMetadata]);
+      })
     }
   }, [])
 
