@@ -1,3 +1,7 @@
+.vuuLayoutList {
+    align-self: stretch;
+}
+
 .vuuLayoutList-header {
     color: var(--light-text-primary, #15171B);
     font-weight: 700;
@@ -5,8 +9,6 @@
     text-transform: uppercase;
     display: flex;
     padding: 16px 0px;
-    align-items: center;
-    align-self: stretch;
     border-bottom: 1px solid rgba(119, 124, 148, 0.10);
     line-height: 200%;
 }
@@ -14,8 +16,6 @@
 .vuuLayoutList-groupName {
     display: flex;
     padding-top: 24px;
-    align-items: center;
-    align-self: stretch;
     color: var(--light-text-secondary, #606477);
     font-weight: 700;
     letter-spacing: 0.48px;
@@ -27,7 +27,6 @@
     align-items: center;
     gap: 8px;
     padding: 8px 0px;
-    align-self: stretch;
     flex: 1 1 auto;
     cursor: pointer;
 }
