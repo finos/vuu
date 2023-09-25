@@ -11,10 +11,17 @@ object BasketModule extends DefaultModule {
 
   private final val NAME = "BASKET"
 
+  import BasketColumnNames._
+  import BasketConstituentColumnNames._
+  final val BASKET_CONSTITUENT_TABLE_DEF = TableDef(
+    name = "basketConstituent",
+    keyField = Ric,
+    columns = Columns.fromNames(Ric.string(), BasketId.string(), Weighting.double(), LastTrade.string(), Change.string(), Volume.string()), // we can join to instruments and other tables to get the rest of the data.....
+    VisualLinks(),
+    joinFields = Id
+  )
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
 
-    import BasketColumnNames._
-    import BasketConstituentColumnNames._
 
     ModuleFactory.withNamespace(NAME)
       .addTable(
@@ -28,13 +35,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketProvider(table),
       )
       .addTable(
-        TableDef(
-          name = "basketConstituent",
-          keyField = Ric,
-          columns = Columns.fromNames(Ric.string(), BasketId.string(), Weighting.double(), LastTrade.string(), Change.string(), Volume.string()), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(),
-          joinFields = Id
-        ),
+        BASKET_CONSTITUENT_TABLE_DEF,
         (table, vs) => new BasketConstituentProvider(table),
       )
       .addTable(
