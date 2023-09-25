@@ -10,7 +10,7 @@ export interface LayoutPersistenceManager {
    *
    * @returns Unique identifier assigned to the saved layout
    */
-  createLayout: (metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => string;
+  createLayout: (metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => Promise<string>;
 
   /**
    * Overwrites an existing layout and its corresponding metadata with the provided infromation
@@ -19,14 +19,14 @@ export interface LayoutPersistenceManager {
    * @param metadata - Metadata describing the new layout to overwrite with
    * @param layout   - Full JSON representation of the new layout to overwrite with
    */
-  updateLayout: (id: string, metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => void;
+  updateLayout: (id: string, metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => Promise<void>;
 
   /**
    * Deletes an existing layout and its corresponding metadata
    *
    * @param id - Unique identifier of the existing layout to be deleted
    */
-  deleteLayout: (id: string) => void;
+  deleteLayout: (id: string) => Promise<void>;
 
   /**
    * Retrieves an existing layout
@@ -35,12 +35,12 @@ export interface LayoutPersistenceManager {
    *
    * @returns Full JSON representation of the layout corresponding to the provided ID
    */
-  loadLayout: (id: string) => LayoutJSON;
+  loadLayout: (id: string) => Promise<LayoutJSON>;
 
   /**
    * Retrieves metadata for all existing layouts
    *
    * @returns an array of all persisted layout metadata
    */
-  loadMetadata: () => LayoutMetadata[];
+  loadMetadata: () => Promise<LayoutMetadata[]>;
 }
