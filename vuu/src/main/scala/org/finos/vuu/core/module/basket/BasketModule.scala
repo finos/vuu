@@ -27,7 +27,6 @@ object BasketModule extends DefaultModule {
         ),
         (table, vs) => new BasketProvider(table),
       )
-    ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
           name = "basketConstituent",
