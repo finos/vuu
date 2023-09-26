@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -13,8 +14,8 @@ import java.util.Date;
 public class Metadata {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne(mappedBy = "metadata")
     @NonNull
@@ -24,5 +25,6 @@ public class Metadata {
     private String group;
     private String screenshot;
     private String user;
-    private Date date = new Date();
+    private Date created = new Date();
+    private Date updated;
 }

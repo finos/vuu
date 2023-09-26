@@ -1,9 +1,11 @@
 package org.finos.vuu.layoutserver.controller;
 
-import org.finos.vuu.layoutserver.dto.response.LayoutDTO;
-import org.finos.vuu.layoutserver.dto.response.MetadataDTO;
+import lombok.RequiredArgsConstructor;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
+import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
+import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
-import org.finos.vuu.layoutserver.model.Metadata;
+import org.finos.vuu.layoutserver.service.LayoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,28 +18,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/layout")
 public class LayoutController {
 
-    public static final String LAYOUT_ID = "testLayoutId";
-
-    // TODO: Delete dummy data
-    private Layout createDummyLayout(String id) {
-        Layout layout = new Layout();
-        layout.setId(id);
-        layout.setDefinition("testDefinition");
-        Metadata metadata = new Metadata();
-        metadata.setId("testMetadataId");
-        metadata.setLayout(layout);
-        metadata.setName("testName");
-        metadata.setGroup("testGroup");
-        metadata.setScreenshot("testScreenshot");
-        metadata.setUser("testUser");
-        layout.setMetadata(metadata);
-        return layout;
-    }
+    private final LayoutService layoutService;
 
     /**
      * Gets the specified layout
@@ -46,9 +34,8 @@ public class LayoutController {
      * @return the layout
      */
     @GetMapping("/{id}")
-    public LayoutDTO getLayout(@PathVariable String id) {
-        Layout layout = createDummyLayout(id);
-        return LayoutDTO.fromEntity(layout);
+    public LayoutResponseDTO getLayout(@PathVariable UUID id) {
+        return LayoutResponseDTO.fromEntity(layoutService.getLayout(id));
     }
 
     /**
@@ -57,9 +44,8 @@ public class LayoutController {
      * @return the metadata
      */
     @GetMapping("/metadata")
-    public List<MetadataDTO> getMetadata() {
-        Layout layout = createDummyLayout(LAYOUT_ID);
-        return List.of(MetadataDTO.fromEntity(layout.getMetadata()));
+    public List<MetadataResponseDTO> getMetadata() {
+        return layoutService.getMetadata().stream().map(MetadataResponseDTO::fromEntity).toList();
     }
 
     /**
@@ -69,20 +55,26 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public String createLayout(@RequestBody LayoutDTO layoutDTO) {
-        return createDummyLayout(LAYOUT_ID).getId();
+    public UUID createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
+        Layout layout = layoutToCreate.toEntity();
+
+        // TODO: Layout already created, updating instead
+
+        return layoutService.createLayout(layout);
     }
 
     /**
      * Updates the specified layout
      *
      * @param id        ID of the layout to update
-     * @param layoutDTO the new data to overwrite the layout with
+     * @param layoutToUpdate the new data to overwrite the layout with
      */
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable String id, @RequestBody LayoutDTO layoutDTO) {
-        createDummyLayout(LAYOUT_ID);
+    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layoutToUpdate) {
+        Layout layout = layoutToUpdate.toEntity();
+
+        layoutService.updateLayout(id, layout);
     }
 
     /**
@@ -92,5 +84,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.ACCEPTED)
     @DeleteMapping("/{id}")
-    public void deleteLayout(@PathVariable String id) {}
+    public void deleteLayout(@PathVariable UUID id) {
+        layoutService.deleteLayout(id);
+    }
 }
