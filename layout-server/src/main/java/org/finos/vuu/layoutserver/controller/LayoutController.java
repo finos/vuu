@@ -6,6 +6,7 @@ import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.service.LayoutService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class LayoutController {
 
     private final LayoutService layoutService;
+    private final ModelMapper mapper;
 
     /**
      * Gets the specified layout
@@ -35,7 +37,7 @@ public class LayoutController {
      */
     @GetMapping("/{id}")
     public LayoutResponseDTO getLayout(@PathVariable UUID id) {
-        return LayoutResponseDTO.fromEntity(layoutService.getLayout(id));
+        return mapper.map(layoutService.getLayout(id), LayoutResponseDTO.class);
     }
 
     /**
@@ -45,7 +47,11 @@ public class LayoutController {
      */
     @GetMapping("/metadata")
     public List<MetadataResponseDTO> getMetadata() {
-        return layoutService.getMetadata().stream().map(MetadataResponseDTO::fromEntity).toList();
+
+        return layoutService.getMetadata()
+                .stream()
+                .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
+                .toList();
     }
 
     /**
@@ -56,7 +62,7 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UUID createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
-        Layout layout = layoutToCreate.toEntity();
+        Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         // TODO: Layout already created, updating instead
 
@@ -66,13 +72,13 @@ public class LayoutController {
     /**
      * Updates the specified layout
      *
-     * @param id        ID of the layout to update
+     * @param id             ID of the layout to update
      * @param layoutToUpdate the new data to overwrite the layout with
      */
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PutMapping("/{id}")
     public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layoutToUpdate) {
-        Layout layout = layoutToUpdate.toEntity();
+        Layout layout = mapper.map(layoutToUpdate, Layout.class);
 
         layoutService.updateLayout(id, layout);
     }

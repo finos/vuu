@@ -24,7 +24,7 @@ public class Layout {
     @NonNull
     private String definition;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "metadata_id", referencedColumnName = "id")
     @NonNull
     private Metadata metadata;

@@ -17,7 +17,7 @@ public class Metadata {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(mappedBy = "metadata")
+    @OneToOne(mappedBy = "metadata", cascade = CascadeType.ALL)
     @NonNull
     private Layout layout;
 
