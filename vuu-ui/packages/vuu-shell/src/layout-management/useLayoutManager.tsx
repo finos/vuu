@@ -1,48 +1,65 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
-import { getLocalEntity } from "@finos/vuu-filters";
 import { LayoutJSON, LocalLayoutPersistenceManager } from "@finos/vuu-layout";
 import { LayoutMetadata } from "./layoutTypes";
+import { defaultLayout } from "@finos/vuu-layout/";
 
 const persistenceManager = new LocalLayoutPersistenceManager();
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[],
-  saveLayout: (n: Omit<LayoutMetadata, "id">) => void
-}>({ layoutMetadata: [], saveLayout: () => { } })
+  saveLayout: (n: Omit<LayoutMetadata, "id">) => void,
+  currentLayout: LayoutJSON,
+  saveCurrentLayout: (layout: LayoutJSON) => void,
+  loadLayoutById: (id: string) => void
+}>({
+  layoutMetadata: [],
+  saveLayout: () => { },
+  currentLayout: defaultLayout,
+  saveCurrentLayout: () => { },
+  loadLayoutById: () => defaultLayout
+})
 
-export const LayoutManagementProvider = (props: {
+type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[]
-}) => {
+}
+
+export const LayoutManagementProvider = (props: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
+  const [currentLayout, setCurrentLayout] = useState<LayoutJSON>(defaultLayout);
 
   useEffect(() => {
-    persistenceManager.loadMetadata().then(loadedMetadata => {
-      setLayoutMetadata(loadedMetadata)
-    })
+    Promise.all([persistenceManager.loadMetadata(), persistenceManager.loadTempLayout()])
+      .then(([metadata, layout]) => {
+        setLayoutMetadata(metadata)
+        setCurrentLayout(layout);
+      })
   }, [])
+
+  const saveCurrentLayout = useCallback((layout: LayoutJSON) => {
+    setCurrentLayout(layout)
+    persistenceManager.saveTempLayout(layout)
+  }, []);
 
   const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {
-    const json = getLocalEntity<LayoutJSON>("api/vui");
+    persistenceManager.createLayout(metadata, currentLayout).then(generatedId => {
 
-    if (json) {
-      // Persist layouts
-      persistenceManager.createLayout(metadata, json).then(generatedId => {
+      const newMetadata: LayoutMetadata = {
+        ...metadata,
+        id: generatedId
+      };
 
-        // Update state
-        const newMetadata: LayoutMetadata = {
-          ...metadata,
-          id: generatedId
-        };
+      setLayoutMetadata(prev => [...prev, newMetadata]);
+    })
+  }, [currentLayout])
 
-        setLayoutMetadata(prev => [...prev, newMetadata]);
-      })
-    }
-  }, [])
-
-  // TODO: add loadLayout function
+  const loadLayoutById = useCallback((id: string) => {
+    persistenceManager.loadLayout(id).then((layoutJson) => {
+      setCurrentLayout(layoutJson)
+    })
+  }, []);
 
   return (
-    <LayoutManagementContext.Provider value={{ layoutMetadata, saveLayout }} >
+    <LayoutManagementContext.Provider value={{ layoutMetadata, saveLayout, currentLayout, saveCurrentLayout, loadLayoutById }} >
       {props.children}
     </LayoutManagementContext.Provider>
   )
