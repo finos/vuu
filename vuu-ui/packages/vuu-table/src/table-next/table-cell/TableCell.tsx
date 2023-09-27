@@ -21,7 +21,8 @@ export interface TableCellProps {
 export const TableCell = ({ column, columnMap, row }: TableCellProps) => {
   const { className, style } = useCell(column, classBase);
   const { CellRenderer, valueFormatter } = column;
-  const value = valueFormatter(row[column.key]);
+  const dataIdx = columnMap[column.name];
+  const value = valueFormatter(row[dataIdx]);
 
   return (
     <div className={className} role="cell" style={style}>

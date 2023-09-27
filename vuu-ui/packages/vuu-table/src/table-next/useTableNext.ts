@@ -136,8 +136,8 @@ export const useTable = ({
   }, [modelColumns, stateColumns]);
 
   const columnMap = useMemo(
-    () => buildColumnMap(tableConfig.columns.map((col) => col.name)),
-    [tableConfig.columns]
+    () => buildColumnMap(dataSource.columns),
+    [dataSource.columns]
   );
 
   const {

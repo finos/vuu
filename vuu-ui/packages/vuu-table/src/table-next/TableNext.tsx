@@ -71,6 +71,8 @@ export const TableNext = ({
     width,
   });
 
+  console.log(JSON.stringify(columnMap, null, 2));
+
   const unmeasured = innerSize === undefined;
 
   const getStyle = () => {
