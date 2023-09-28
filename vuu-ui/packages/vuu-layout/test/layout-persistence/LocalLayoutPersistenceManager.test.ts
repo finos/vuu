@@ -4,6 +4,23 @@ import { LocalLayoutPersistenceManager } from "../../src/layout-persistence";
 import { LayoutJSON } from "../../src";
 import { getLocalEntity, saveLocalEntity } from "../../../vuu-filters/src/local-config";
 
+vi.mock("@finos/vuu-filters", async () => {
+  return {
+    getLocalEntity: <T>(url: string): T | undefined => {
+      const data = localStorage.getItem(url);
+      return data ? JSON.parse(data) : undefined;
+    },
+    saveLocalEntity: <T>(url: string, data: T): T | undefined => {
+      try {
+        localStorage.setItem(url, JSON.stringify(data));
+        return data;
+      } catch {
+        return undefined;
+      }
+    },
+  }
+});
+
 const persistenceManager = new LocalLayoutPersistenceManager();
 
 const existingId = "existing_id";

@@ -1,8 +1,7 @@
 import { Layout, LayoutMetadata } from "@finos/vuu-shell";
 import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
 
-// import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
-import { getLocalEntity, saveLocalEntity } from "../../../vuu-filters/src/local-config";
+import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { getUniqueId } from "@finos/vuu-utils";
 
 const metadataSaveLocation = "layouts/metadata";
