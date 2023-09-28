@@ -73,14 +73,15 @@ public class LayoutController {
      * Updates the specified layout
      *
      * @param id             ID of the layout to update
-     * @param layoutToUpdate the new data to overwrite the layout with
+     * @param layoutToUpdate the updated layout
      */
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layoutToUpdate) {
-        Layout layout = mapper.map(layoutToUpdate, Layout.class);
+        Layout layout = layoutService.getLayout(id);
+        mapper.map(layoutToUpdate, layout);
 
-        layoutService.updateLayout(id, layout);
+        layoutService.updateLayout(layout);
     }
 
     /**
@@ -88,7 +89,7 @@ public class LayoutController {
      *
      * @param id ID of the layout to delete
      */
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{id}")
     public void deleteLayout(@PathVariable UUID id) {
         layoutService.deleteLayout(id);

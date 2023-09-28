@@ -1,9 +1,12 @@
 package org.finos.vuu.layoutserver.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.util.Date;
 import java.util.UUID;
@@ -17,8 +20,7 @@ public class Metadata {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(mappedBy = "metadata", cascade = CascadeType.ALL)
-    @NonNull
+    @OneToOne(mappedBy = "metadata")
     private Layout layout;
 
     private String name;

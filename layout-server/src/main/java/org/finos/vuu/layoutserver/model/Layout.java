@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 import java.util.UUID;
 
@@ -17,15 +16,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class Layout {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NonNull
     private String definition;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "metadata_id", referencedColumnName = "id")
-    @NonNull
     private Metadata metadata;
 }
