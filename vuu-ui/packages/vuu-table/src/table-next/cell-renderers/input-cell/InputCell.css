@@ -1,0 +1,13 @@
+
+.vuuTableInputCell.saltInput-primary {
+    --salt-focused-outlineStyle: none;
+    --saltInput-height: 18px;
+    --saltInput-minHeight: 18px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.vuuTableInputCell.saltInput-primary.saltInput-focused {
+    border: solid 2px var(--vuu-color-purple-10);
+    padding-left: 3px;
+}

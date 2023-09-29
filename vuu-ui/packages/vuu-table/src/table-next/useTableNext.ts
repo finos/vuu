@@ -15,6 +15,7 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
   buildColumnMap,
@@ -176,7 +177,7 @@ export const useTable = ({
     []
   );
 
-  const { data, setRange } = useDataSource({
+  const { data, range, setRange } = useDataSource({
     dataSource,
     onFeatureEnabled,
     onFeatureInvocation,
@@ -389,14 +390,21 @@ export const useTable = ({
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
-    // contentHeight: viewportMeasurements.contentHeight,
-    // contentWidth: viewportMeasurements.contentWidth,
-    // height: containerMeasurements.innerSize?.height ?? 0,
-    // width: containerMeasurements.innerSize?.width ?? 0,
-
     maxScrollLeft: viewportMeasurements.maxScrollContainerScrollHorizontal,
     maxScrollTop: viewportMeasurements.maxScrollContainerScrollVertical,
+    rowHeight,
     onVerticalScroll: handleVerticalScroll,
+    viewportRowCount: viewportMeasurements.rowCount,
+  });
+
+  const containerProps = useKeyboardNavigation({
+    columnCount: columns.length,
+    containerRef,
+    data,
+    requestScroll,
+    rowCount: dataSource?.size,
+    viewportRange: range,
+    viewportRowCount: viewportMeasurements.rowCount,
   });
 
   const onContextMenu = useTableContextMenuNext({ columns, data });
@@ -487,6 +495,7 @@ export const useTable = ({
   };
 
   return {
+    ...containerProps,
     columnMap,
     columns,
     containerRef,

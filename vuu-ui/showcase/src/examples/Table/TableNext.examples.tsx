@@ -43,12 +43,56 @@ export const DefaultTableNextArrayData = () => {
       config={config}
       height={645}
       onConfigChange={handleConfigChange}
-      renderBufferSize={0}
-      width={715}
+      renderBufferSize={5}
+      width={723}
     />
   );
 };
 DefaultTableNextArrayData.displaySequence = displaySequence++;
+
+export const EditableTableNextArrayData = () => {
+  const { config, dataSource } = useTableConfig({
+    columnConfig: {
+      bbg: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "input-cell",
+          },
+        },
+      },
+      currency: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "dropdown-cell",
+            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
+          },
+        },
+      },
+    },
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  console.log(config.columns);
+
+  return (
+    <TableNext
+      config={{
+        ...config,
+        rowSeparators: true,
+      }}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={10}
+      width={723}
+    />
+  );
+};
+EditableTableNextArrayData.displaySequence = displaySequence++;
 
 export const TableNextVuuInstruments = () => {
   const { schemas } = useSchemas();

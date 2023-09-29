@@ -58,8 +58,11 @@ export type ColumnTypeValueMap = { [key: string]: string };
 
 export interface ColumnTypeRenderer {
   associatedField?: string;
+  // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
+  // These are for the dropdown-input - how do we type parameters for custom renderers ?
+  values?: ReadonlyArray<string>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;

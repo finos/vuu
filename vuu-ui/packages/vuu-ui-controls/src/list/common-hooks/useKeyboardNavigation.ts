@@ -322,6 +322,7 @@ export const useKeyboardNavigation = <
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      console.log("Dropdown useKeyDown");
       if (indexPositions.length > 0 && isNavigationKey(e)) {
         e.preventDefault();
         e.stopPropagation();

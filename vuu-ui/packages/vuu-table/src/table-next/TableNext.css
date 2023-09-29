@@ -1,4 +1,5 @@
 .vuuTableNext {
+  --vuu-table-cell-outlineWidth: 1px;
   --vuu-table-next-selection-bookend-width: 4px;
   --columnResizer-color: transparent;
   --row-background: white;

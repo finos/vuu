@@ -36,7 +36,7 @@ const VuuBasketTradingFeature = ({
     [save]
   );
 
-  const dataSource: DataSource = useMemo(() => {
+  const basketDesignDataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
@@ -63,11 +63,11 @@ const VuuBasketTradingFeature = ({
   ]);
 
   useEffect(() => {
-    dataSource.resume?.();
+    basketDesignDataSource.resume?.();
     return () => {
-      dataSource.suspend?.();
+      basketDesignDataSource.suspend?.();
     };
-  }, [dataSource]);
+  }, [basketDesignDataSource]);
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu();
 
@@ -85,10 +85,13 @@ const VuuBasketTradingFeature = ({
           active={active}
           className={`${classBase}-stack`}
           onTabSelectionChanged={setActive}
+          style={{ flex: 1 }}
         >
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
+            dataSource={basketDesignDataSource}
+            tableSchema={basketDesignSchema}
           />
           <BasketTableLive data-tab-title="On Market" />
         </Stack>

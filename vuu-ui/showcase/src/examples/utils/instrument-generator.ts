@@ -4,6 +4,7 @@ import { schemas } from "./useSchemas";
 import { InstrumentReferenceData, InstrumentColumnMap } from "./reference-data";
 import "./reference-data";
 import { getCalculatedColumnType, isCalculatedColumn } from "@finos/vuu-utils";
+import { ExtendedColumnConfig } from "./useTableConfig";
 
 export const InstrumentRowGenerator: RowGenerator =
   (columnNames?: string[]) => (index: number) => {
@@ -22,19 +23,26 @@ export const InstrumentRowGenerator: RowGenerator =
   };
 
 export const InstrumentColumnGenerator: ColumnGenerator = (
-  columns = []
-  //columnConfig: ExtendedColumnConfig = {}
+  columns = [],
+  columnConfig: ExtendedColumnConfig = {}
 ) => {
   const instrumentColumns: ColumnDescriptor[] = schemas.instruments.columns;
   if (typeof columns === "number") {
     throw Error("InstrumentColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {
-    return instrumentColumns;
+    return instrumentColumns.map((column) => ({
+      ...column,
+      ...columnConfig[column.name],
+    }));
   } else {
     return columns.map<ColumnDescriptor>((name) => {
       const column = instrumentColumns.find((col) => col.name === name);
       if (column) {
-        return column;
+        console.log(columnConfig[column.name]);
+        return {
+          ...column,
+          ...columnConfig[column.name],
+        };
       } else if (isCalculatedColumn(name)) {
         return {
           name,

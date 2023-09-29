@@ -3,6 +3,7 @@
   border-right-style: solid;
   border-right-width: 1px;
     display: inline-block;
+    height: 100%;
     overflow:hidden;
     padding: 0 8px;
     text-overflow: ellipsis;
@@ -12,4 +13,23 @@
   .vuuTableNextCell-right {
     text-align: right;
   }
+
+  .vuuTableNextCell-editable {
+    line-height: 18px;
+    padding-bottom: 1px;
+    padding-top: 1px;
+    text-overflow: unset;
+  }
   
+  .vuuTableNextCell:focus {
+    outline: var(--vuuTableCell-outline, solid var(--vuu-color-pink-10) var(--vuu-table-cell-outlineWidth));
+    outline-offset: -2px;
+    /** This is to achieve a white background to outline dashes */
+    box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+    border-bottom: none;
+}
+
+.vuuTableNextCell-editable:focus {
+  outline: none;
+}
+

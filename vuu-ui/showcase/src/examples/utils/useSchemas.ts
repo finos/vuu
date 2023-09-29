@@ -16,7 +16,8 @@ export type VuuTableName =
 export const schemas: Record<VuuTableName, TableSchema> = {
   basketDesign: {
     columns: [
-      { name: "ric", serverDataType: "double" },
+      { name: "ric", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
       { name: "quantity", serverDataType: "double" },
       { name: "weighting", serverDataType: "double" },
       { name: "last", serverDataType: "double" },
@@ -31,7 +32,7 @@ export const schemas: Record<VuuTableName, TableSchema> = {
       { name: "algoParams", serverDataType: "string" },
     ],
     key: "ric",
-    table: { module: "SIMUL", table: "prices" },
+    table: { module: "SIMUL", table: "basketDesign" },
   },
   instruments: {
     columns: [

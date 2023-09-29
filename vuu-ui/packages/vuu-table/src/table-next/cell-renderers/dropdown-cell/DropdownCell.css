@@ -1,0 +1,12 @@
+
+.vuuTableDropdownCell {
+    --salt-focused-outlineStyle: none;
+
+    --saltButton-borderRadius: 4px;
+    font-weight: 500;
+}
+
+.vuuTableDropdownCell button:focus-visible {
+    --saltButton-borderColor: var(--vuu-color-purple-10);
+    --saltButton-borderWidth: 2px;
+}

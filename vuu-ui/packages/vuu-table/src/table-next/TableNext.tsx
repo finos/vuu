@@ -71,8 +71,6 @@ export const TableNext = ({
     width,
   });
 
-  console.log(JSON.stringify(columnMap, null, 2));
-
   const unmeasured = innerSize === undefined;
 
   const getStyle = () => {
@@ -106,8 +104,6 @@ export const TableNext = ({
     // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
 
-  console.log({ columns });
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -138,7 +134,7 @@ export const TableNext = ({
             className={`${classBase}-contentContainer`}
             ref={scrollProps.contentContainerRef}
           >
-            <div {...tableProps} className={`${classBase}-table`}>
+            <div {...tableProps} className={`${classBase}-table`} tabIndex={-1}>
               {showColumnHeaders ? (
                 <div className={`${classBase}-col-headings`}>
                   <div className={`${classBase}-col-headers`} role="row">

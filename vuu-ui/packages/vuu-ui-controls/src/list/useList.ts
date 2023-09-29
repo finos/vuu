@@ -251,6 +251,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent) => {
+      console.log(`DropDown (useList) keyDown`);
       if (!evt.defaultPrevented) {
         typeaheadOnKeyDown?.(evt);
       }
