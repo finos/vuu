@@ -4,6 +4,15 @@ import scala.io.Source
 
 object CsvStaticLoader {
 
+  def load: Array[String] = {
+    val staticDirPath = getClass.getResource("/static").getPath
+    val dir = new java.io.File(staticDirPath)
+    val csvFiles = dir.listFiles.filter(_.isFile)
+      .filter(_.getName.endsWith(".csv"))
+    val ids = csvFiles.map(e => "." + e.getName.replace(".csv", "").toUpperCase)
+    ids
+  }
+
   def loadStatic: Map[String, Array[Map[String, String]]] = {
     var map: Map[String, Array[Map[String, String]]] = Map()
     val staticDirPath = getClass.getResource("/static").getPath

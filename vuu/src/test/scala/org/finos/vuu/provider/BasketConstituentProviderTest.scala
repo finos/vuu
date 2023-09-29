@@ -68,7 +68,8 @@ class BasketConstituentProviderTest extends AnyFeatureSpec with Matchers with Be
   Feature("Able to load basket constituents from .NASDAQ100 and show on basket constituent table") {
 
     Scenario("display ric") {
-      assert(getDataForBasket(".NASDAQ100")(0)(headers.indexOf(BC.Ric)) == "AAPL")
+      val array = getDataForBasket(".NASDAQ100")
+      assert(array(0)(headers.indexOf(BC.Ric)) == "AAPL")
     }
 
     Scenario("display basket id") {
@@ -95,6 +96,7 @@ class BasketConstituentProviderTest extends AnyFeatureSpec with Matchers with Be
     data
   }
   private def getDataForBasket(basketId:String) = {
-    getData.filter(e => e(headers.indexOf(BC.BasketId))==basketId).toArray
+    val data = getData
+    data.filter(e => e(headers.indexOf(BC.BasketId))==basketId)
   }
 }
