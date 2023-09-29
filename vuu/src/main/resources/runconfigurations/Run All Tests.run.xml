@@ -2,10 +2,84 @@
   <configuration default="false" name="Run All Tests" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
     <module name="vuu" />
     <option name="allowRunningInParallel" value="false" />
+    <option name="projectPathOnTarget" />
     <option name="selectedOptions">
       <list />
     </option>
     <option name="testKind" value="All in package" />
+    <option name="classBuf">
+      <list>
+        <option value="org.finos.vuu.json.ObjectMappingTest" />
+        <option value="org.finos.vuu.json.JsonVsSerializerTest" />
+        <option value="org.finos.vuu.json.ViewPortMenuTest" />
+        <option value="org.finos.vuu.core.module.ModuleSyntaxTest" />
+        <option value="org.finos.vuu.core.module.core.CoreModuleTest" />
+        <option value="org.finos.vuu.core.module.authn.AuthNServerTest" />
+        <option value="org.finos.vuu.core.module.typeahead.TypeAheadModuleTest" />
+        <option value="org.finos.vuu.core.module.auths.PermissionsTest" />
+        <option value="org.finos.vuu.core.index.IndexedFieldTest" />
+        <option value="org.finos.vuu.core.table.RpcTableTest" />
+        <option value="org.finos.vuu.core.table.DataTableTest" />
+        <option value="org.finos.vuu.core.table.DataTypesTest" />
+        <option value="org.finos.vuu.core.table.JoinTableTest" />
+        <option value="org.finos.vuu.core.table.RowDeleteTest" />
+        <option value="org.finos.vuu.core.table.MultiJoinTableTest" />
+        <option value="org.finos.vuu.core.table.JavaToScalaRowUpdates" />
+        <option value="org.finos.vuu.core.table.JoinsOfJoinsTableTest" />
+        <option value="org.finos.vuu.core.table.AutoSubscribeTableTest" />
+        <option value="org.finos.vuu.core.table.lucene.LuceneTableTest" />
+        <option value="org.finos.vuu.core.table.join.JoinManagerTest" />
+        <option value="org.finos.vuu.core.table.column.CalculatedColumnMathTest" />
+        <option value="org.finos.vuu.core.table.column.CalculatedColumnLogicTest" />
+        <option value="org.finos.vuu.core.table.column.CalculatedColumnParseTest" />
+        <option value="org.finos.vuu.core.table.column.CalculatedColumnStringTest" />
+        <option value="org.finos.vuu.core.filter.FilterGrammarTest" />
+        <option value="org.finos.vuu.core.groupBy.BuildBigGroupByTest" />
+        <option value="org.finos.vuu.core.groupBy.TreeNodeHashingTest" />
+        <option value="org.finos.vuu.core.sort.GenericSortTest" />
+        <option value="org.finos.vuu.net.WebSocketApiTest" />
+        <option value="org.finos.vuu.net.http.HttpServerTest" />
+        <option value="org.finos.vuu.net.flowcontrol.FlowControllerTest" />
+        <option value="org.finos.vuu.net.ws.WebSocketServerClientTest" />
+        <option value="org.finos.vuu.net.rest.RestServiceTest" />
+        <option value="org.finos.vuu.net.rpc.RpcTest" />
+        <option value="org.finos.vuu.net.rpc.RpcModuleTest" />
+        <option value="org.finos.vuu.state.VuiStateStoreTest" />
+        <option value="org.finos.vuu.viewport.TreeSortTest" />
+        <option value="org.finos.vuu.viewport.TreeOnOffTest" />
+        <option value="org.finos.vuu.viewport.FilterAndSortTest" />
+        <option value="org.finos.vuu.viewport.RangeSubtractTest" />
+        <option value="org.finos.vuu.viewport.ChangeViewPortTest" />
+        <option value="org.finos.vuu.viewport.DeleteViewPortTest" />
+        <option value="org.finos.vuu.viewport.TreeAndAggregateTest" />
+        <option value="org.finos.vuu.viewport.ViewPortListenerTest" />
+        <option value="org.finos.vuu.viewport.TreeAndAggregate2Test" />
+        <option value="org.finos.vuu.viewport.AmendViewPortToTreeTest" />
+        <option value="org.finos.vuu.viewport.AbstractViewPortTestCase" />
+        <option value="org.finos.vuu.viewport.VisualLinkedViewPortTest" />
+        <option value="org.finos.vuu.viewport.TreeUpdateChildCountsTest" />
+        <option value="org.finos.vuu.viewport.CreateViewPortScenarioTest" />
+        <option value="org.finos.vuu.viewport.UpdateSelectionViewPortTest" />
+        <option value="org.finos.vuu.viewport.OnlySendDiffRowsViewPortTest" />
+        <option value="org.finos.vuu.viewport.TreeBuilderAndAggregatesTest" />
+        <option value="org.finos.vuu.viewport.VisualLinkedTreeViewPortTest" />
+        <option value="org.finos.vuu.viewport.CalculatedColumnsViewPortTest" />
+        <option value="org.finos.vuu.viewport.thread.ResubmitExecutorTest" />
+        <option value="org.finos.vuu.viewport.auths.PermissionFilteredViewport" />
+        <option value="org.finos.vuu.viewport.performance.CalculateTreeOptimizationTest" />
+        <option value="org.finos.vuu.viewport.performance.DontRecalculateUnchangedViewPortTest" />
+        <option value="org.finos.vuu.viewport.disable.DisableViewPortTest" />
+        <option value="org.finos.vuu.viewport.sessiontable.EditSessionTableTest" />
+        <option value="org.finos.vuu.viewport.sessiontable.SessionTableViewportTest" />
+        <option value="org.finos.vuu.viewport.validation.CreateValidViewportTest" />
+        <option value="org.finos.vuu.viewport.menurpc.CallMenuRpcFromViewPortTest" />
+        <option value="org.finos.vuu.api.CoreServerApiTest" />
+        <option value="org.finos.vuu.provider.BasketProviderTest" />
+        <option value="org.finos.vuu.provider.BasketConstituentProviderTest" />
+        <option value="org.finos.vuu.provider.simulation.SimulatedPricesProviderTest" />
+        <option value="org.finos.vuu.module.vuucel.VuuCelGrammarTest" />
+      </list>
+    </option>
     <option name="searchTest" value="In whole project" />
     <option name="testPackagePath" value="org.finos.vuu" />
     <option name="workingDirectory" value="$PROJECT_DIR$" />
