@@ -420,3 +420,56 @@ export const GroupHeaderCellNextThreeColumn = () => {
   );
 };
 GroupHeaderCellNextThreeColumn.displaySequence = displaySequence++;
+
+export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
+  const valueFormatter = defaultValueFormatter;
+
+  const [column, setColumn] = useState<GroupColumnDescriptor>({
+    groupConfirmed: true,
+    key: 0,
+    label: "group-column",
+    name: "group-column",
+    isGroup: true,
+    columns: [
+      {
+        key: 1,
+        name: "currency",
+        label: "currency",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 2,
+        name: "exchange",
+        label: "exchange",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 3,
+        name: "price",
+        label: "proce",
+        valueFormatter,
+        width: 100,
+      },
+    ],
+    valueFormatter,
+    width: 250,
+  });
+  const handleRemoveColumn = useCallback((column) => {
+    console.log("remove column", {
+      column,
+    });
+  }, []);
+
+  return (
+    <div data-resizeable style={{ width: 300, overflow: "hidden" }}>
+      <GroupHeaderCellNext
+        className="vuuFullWidthExample"
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
+    </div>
+  );
+};
+GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;
