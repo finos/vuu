@@ -90,7 +90,7 @@ const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
 // with initial size
 export function useResizeObserver(
   ref: RefObject<Element | HTMLElement | null>,
-  dimensions: string[],
+  dimensions: readonly string[],
   onResize: ResizeHandler,
   reportInitialSize = false
 ) {
@@ -146,9 +146,15 @@ export function useResizeObserver(
     if (target) {
       // TODO might we want multiple callers to attach a listener to the same element ?
       if (observedMap.has(target)) {
-        throw Error(
-          "useResizeObserver attemping to observe same element twice"
+        console.log(
+          `useResizeObserver attemping to observe same element twice`,
+          {
+            target,
+          }
         );
+        // throw Error(
+        //   "useResizeObserver attemping to observe same element twice"
+        // );
       }
       // TODO set a pending entry on map
       registerObserver();

@@ -38,7 +38,6 @@ export const InstrumentColumnGenerator: ColumnGenerator = (
     return columns.map<ColumnDescriptor>((name) => {
       const column = instrumentColumns.find((col) => col.name === name);
       if (column) {
-        console.log(columnConfig[column.name]);
         return {
           ...column,
           ...columnConfig[column.name],

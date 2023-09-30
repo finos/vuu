@@ -90,7 +90,6 @@ export const useDropdownBase = ({
 
   const handleKeydown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
-      console.log("useDropdownBase keyDown");
       if ((evt.key === "Tab" || evt.key === "Escape") && isOpen) {
         // No preventDefault for Tab, but if we've handled Escape, we should own it
         if (evt.key === "Escape") {

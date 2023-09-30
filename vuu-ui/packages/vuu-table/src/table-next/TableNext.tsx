@@ -2,11 +2,11 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import { CSSProperties } from "react";
+import { CSSProperties, useRef } from "react";
 import { GroupHeaderCell, HeaderCell } from "./header-cell";
 import { Row } from "./Row";
 import { useTable } from "./useTableNext";
-import { useId } from "@finos/vuu-layout";
+import { MeasuredContainer, useId } from "@finos/vuu-layout";
 
 import "./TableNext.css";
 
@@ -19,7 +19,6 @@ export const TableNext = ({
   className: classNameProp,
   config,
   dataSource,
-  height,
   id: idProp,
   onAvailableColumnsChange,
   onConfigChange,
@@ -33,20 +32,19 @@ export const TableNext = ({
   showColumnHeaders = true,
   headerHeight = showColumnHeaders ? 25 : 0,
   style: styleProp,
-  width,
   ...htmlAttributes
 }: TableProps) => {
   const id = useId(idProp);
+  const containerRef = useRef<HTMLDivElement>(null);
   const {
     columnMap,
     columns,
-    containerMeasurements: { cssSize, innerSize },
-    containerRef,
     data,
     dragDropHook,
     handleContextMenuAction,
     headerProps,
     onRemoveGroupColumn,
+    onResize,
     onRowClick,
     onToggleGroup,
     menuBuilder,
@@ -57,9 +55,9 @@ export const TableNext = ({
   } = useTable({
     availableColumns,
     config,
+    containerRef,
     dataSource,
     headerHeight,
-    height,
     onAvailableColumnsChange,
     onConfigChange,
     onFeatureEnabled,
@@ -68,34 +66,22 @@ export const TableNext = ({
     renderBufferSize,
     rowHeight,
     selectionModel,
-    width,
   });
 
-  const unmeasured = innerSize === undefined;
-
   const getStyle = () => {
-    return unmeasured
-      ? ({
-          "--table-css-height": `${cssSize.height}`,
-          "--table-css-width": `${cssSize.width}`,
-        } as CSSProperties)
-      : ({
-          ...styleProp,
-          "--content-height": `${viewportMeasurements.contentHeight}px`,
-          "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
-          "--content-width": `${viewportMeasurements.contentWidth}px`,
-          "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
-          "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
-          "--header-height": `${headerHeight}px`,
-          "--row-height": `${rowHeight}px`,
-          "--table-css-height": `${cssSize?.height}`,
-          "--table-css-width": `${cssSize?.width}`,
-          "--table-height": `${innerSize?.height}px`,
-          "--table-width": `${innerSize?.width}px`,
-          "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
-          "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
-          "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
-        } as CSSProperties);
+    return {
+      ...styleProp,
+      "--content-height": `${viewportMeasurements.contentHeight}px`,
+      "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
+      "--content-width": `${viewportMeasurements.contentWidth}px`,
+      "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
+      "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
+      "--header-height": `${headerHeight}px`,
+      "--row-height": `${rowHeight}px`,
+      "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
+      "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
+      "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
+    } as CSSProperties;
   };
   const className = cx(classBase, classNameProp, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
@@ -109,80 +95,71 @@ export const TableNext = ({
       menuActionHandler={handleContextMenuAction}
       menuBuilder={menuBuilder}
     >
-      {unmeasured ? (
+      <MeasuredContainer
+        {...htmlAttributes}
+        className={className}
+        onResize={onResize}
+        ref={containerRef}
+        style={getStyle()}
+      >
         <div
-          {...htmlAttributes}
-          className={classBase}
-          id={id}
-          style={getStyle()}
-          ref={containerRef}
-        />
-      ) : (
-        <div
-          {...htmlAttributes}
-          className={className}
-          style={getStyle()}
-          ref={containerRef}
+          className={`${classBase}-scrollbarContainer`}
+          ref={scrollProps.scrollbarContainerRef}
         >
-          <div
-            className={`${classBase}-scrollbarContainer`}
-            ref={scrollProps.scrollbarContainerRef}
-          >
-            <div className={`${classBase}-scrollbarContent`} />
-          </div>
-          <div
-            className={`${classBase}-contentContainer`}
-            ref={scrollProps.contentContainerRef}
-          >
-            <div {...tableProps} className={`${classBase}-table`} tabIndex={-1}>
-              {showColumnHeaders ? (
-                <div className={`${classBase}-col-headings`}>
-                  <div className={`${classBase}-col-headers`} role="row">
-                    {columns.filter(notHidden).map((col, i) =>
-                      isGroupColumn(col) ? (
-                        <GroupHeaderCell
-                          {...headerProps}
-                          column={col}
-                          data-index={i}
-                          key={col.name}
-                          onRemoveColumn={onRemoveGroupColumn}
-                        />
-                      ) : (
-                        <HeaderCell
-                          {...headerProps}
-                          className={cx({
-                            "vuuDraggable-dragAway":
-                              i === dragDropHook.draggedItemIndex,
-                          })}
-                          column={col}
-                          data-index={i}
-                          id={`${id}-col-${i}`}
-                          key={col.name}
-                        />
-                      )
-                    )}
-                    {dragDropHook.draggable}
-                  </div>
+          <div className={`${classBase}-scrollbarContent`} />
+        </div>
+        <div
+          className={`${classBase}-contentContainer`}
+          ref={scrollProps.contentContainerRef}
+        >
+          <div {...tableProps} className={`${classBase}-table`} tabIndex={-1}>
+            {showColumnHeaders ? (
+              <div className={`${classBase}-col-headings`}>
+                <div className={`${classBase}-col-headers`} role="row">
+                  {columns.filter(notHidden).map((col, i) =>
+                    isGroupColumn(col) ? (
+                      <GroupHeaderCell
+                        {...headerProps}
+                        column={col}
+                        data-index={i}
+                        key={col.name}
+                        onRemoveColumn={onRemoveGroupColumn}
+                      />
+                    ) : (
+                      <HeaderCell
+                        {...headerProps}
+                        className={cx({
+                          "vuuDraggable-dragAway":
+                            i === dragDropHook.draggedItemIndex,
+                        })}
+                        column={col}
+                        data-index={i}
+                        id={`${id}-col-${i}`}
+                        key={col.name}
+                      />
+                    )
+                  )}
+                  {dragDropHook.draggable}
                 </div>
-              ) : null}
-              <div className={`${classBase}-body`}>
-                {data.map((data) => (
-                  <Row
-                    columnMap={columnMap}
-                    columns={columns}
-                    key={data[RENDER_IDX]}
-                    onClick={onRowClick}
-                    row={data}
-                    offset={rowHeight * data[IDX] + headerHeight}
-                    onToggleGroup={onToggleGroup}
-                    zebraStripes={tableAttributes.zebraStripes}
-                  />
-                ))}
               </div>
+            ) : null}
+            <div className={`${classBase}-body`}>
+              {data.map((data) => (
+                <Row
+                  columnMap={columnMap}
+                  columns={columns}
+                  key={data[RENDER_IDX]}
+                  onClick={onRowClick}
+                  row={data}
+                  offset={rowHeight * data[IDX] + headerHeight}
+                  onToggleGroup={onToggleGroup}
+                  zebraStripes={tableAttributes.zebraStripes}
+                />
+              ))}
             </div>
           </div>
         </div>
-      )}
+      </MeasuredContainer>
     </ContextMenuProvider>
   );
 };

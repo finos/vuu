@@ -1,5 +1,7 @@
 .vuuTableNext {
   --vuu-table-cell-outlineWidth: 1px;
+  --table-height: var(--measured-px-height);
+  --table-width: var(--measured-px-width);
   --vuu-table-next-selection-bookend-width: 4px;
   --columnResizer-color: transparent;
   --row-background: white;
@@ -7,10 +9,8 @@
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
-  height: var(--table-css-height);
   position: relative;
   user-select: none;
-  width: var(--table-css-width);
 }
 
 .vuuTableNext-zebra {

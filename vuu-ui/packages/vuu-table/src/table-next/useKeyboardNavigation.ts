@@ -10,12 +10,7 @@ import {
   useRef,
 } from "react";
 import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
-import {
-  cellIsEditable,
-  CellPos,
-  getTableCell,
-  headerCellQuery,
-} from "./table-dom-utils";
+import { CellPos, getTableCell, headerCellQuery } from "./table-dom-utils";
 
 const navigationKeys = new Set<NavigationKey>([
   "Home",
@@ -113,7 +108,6 @@ function nextCellPos(
 export interface NavigationHookProps {
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
-  data: DataSourceRow[];
   disableHighlightOnFocus?: boolean;
   label?: string;
   viewportRange: VuuRange;
@@ -128,7 +122,6 @@ export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
   disableHighlightOnFocus,
-  data,
   requestScroll,
   rowCount = 0,
   viewportRowCount,
@@ -258,14 +251,13 @@ NavigationHookProps) => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      console.log("TableNext useKeyboardNavigation keyDown");
-      if (data.length > 0 && isNavigationKey(e.key)) {
+      if (rowCount > 0 && isNavigationKey(e.key)) {
         e.preventDefault();
         e.stopPropagation();
         void navigateChildItems(e.key);
       }
     },
-    [data, navigateChildItems]
+    [rowCount, navigateChildItems]
   );
 
   const handleClick = useCallback(

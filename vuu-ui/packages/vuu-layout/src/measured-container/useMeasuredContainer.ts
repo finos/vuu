@@ -3,6 +3,7 @@ import {
   CSSProperties,
   RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -100,6 +101,7 @@ export const useMeasuredContainer = ({
   });
   const fixedHeight = typeof height === "number";
   const fixedWidth = typeof width === "number";
+
   const dimensions =
     fixedHeight && fixedWidth
       ? NO_MEASUREMENT
@@ -136,6 +138,7 @@ export const useMeasuredContainer = ({
 
   const onResize: ResizeHandler = useCallback(
     ({ clientWidth, clientHeight }: Partial<ClientSize>) => {
+      console.log(`onResize ${clientHeight} ${clientWidth}`);
       const { css, inner, outer } = size;
       let newState: MeasuredState = size;
 
@@ -182,22 +185,16 @@ export const useMeasuredContainer = ({
 
       if (newState !== size) {
         setSize(newState);
-        if (newState.inner !== undefined) {
-          onResizeProp?.(newState.inner);
-        }
       }
     },
-    [
-      defaultHeight,
-      defaultWidth,
-      fixedHeight,
-      fixedWidth,
-      height,
-      onResizeProp,
-      size,
-      width,
-    ]
+    [defaultHeight, defaultWidth, fixedHeight, fixedWidth, height, size, width]
   );
+
+  useEffect(() => {
+    if (size.inner) {
+      onResizeProp?.(size.inner);
+    }
+  }, [onResizeProp, size.inner]);
 
   useResizeObserver(containerRef, dimensions, onResize, true);
 

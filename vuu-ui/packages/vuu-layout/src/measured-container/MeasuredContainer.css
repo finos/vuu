@@ -1,6 +1,6 @@
 
 .vuuMeasuredContainer {
-    height: var(--measured-css-height);
+    height: var(--vuuMeasuredContainer-height, var(--measured-css-height));
     width: var(--measured-css-width);
   
 }

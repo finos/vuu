@@ -10,9 +10,11 @@ export interface NavigationProps<Item = unknown> {
   focusVisible?: number;
   highlightedIndex?: number;
   indexPositions: CollectionItem<Item>[];
+  itemCount: number;
   onHighlight?: (idx: number) => void;
   onKeyboardNavigation?: (evt: KeyboardEvent, idx: number) => void;
   restoreLastFocus?: boolean;
+  viewportItemCount: number;
 }
 
 export interface NavigationHookProps<Item, Selection extends SelectionStrategy>
@@ -24,7 +26,7 @@ export interface NavigationHookProps<Item, Selection extends SelectionStrategy>
     : string[];
 }
 
-export interface KeyboardHookListProps {
+export interface KeyboardHookContainerProps {
   onBlur: (evt: FocusEvent) => void;
   onFocus: (evt: FocusEvent) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
@@ -39,6 +41,6 @@ export interface NavigationHookResult {
   highlightedIndex: number;
   setHighlightedIndex: (idx: number) => void;
   keyboardNavigation: RefObject<boolean>;
-  listProps: KeyboardHookListProps;
+  containerProps: KeyboardHookContainerProps;
   setIgnoreFocus: (ignoreFocus: boolean) => void;
 }

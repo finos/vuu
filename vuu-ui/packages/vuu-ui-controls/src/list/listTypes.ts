@@ -252,6 +252,7 @@ export interface ListHookProps<Item, Selection extends SelectionStrategy>
   onSelect?: SelectHandler<Item>;
   onSelectionChange?: SelectionChangeHandler<Item, Selection>;
   restoreLastFocus?: boolean;
+  scrollContainerRef?: RefObject<HTMLElement>;
   selectionKeys?: string[];
   stickyHeaders?: boolean;
   tabToSelect?: boolean;

@@ -25,6 +25,7 @@ import {
   hasSelection,
   SelectionStrategy,
 } from "../../common-hooks";
+import { getElementByDataIndex } from "@finos/vuu-utils";
 
 export const LIST_FOCUS_VISIBLE = -2;
 
@@ -75,26 +76,15 @@ const getStartIdx = (
   }
 };
 
-const getItemRect = (item: CollectionItem<unknown>) => {
-  const el = document.getElementById(item.id);
-  if (el) {
-    return el.getBoundingClientRect();
-  } else {
-    throw Error(
-      `useKeyboardNavigation.getItemRect no element found for item  #${item?.id}`
-    );
-  }
-};
-
 const pageDown = (
   containerEl: HTMLElement,
   itemEl: HTMLElement,
-  indexPositions: CollectionItem<unknown>[],
+  itemCount: number,
   index: number
 ): number | undefined => {
   const { top: itemTop } = itemEl.getBoundingClientRect();
   const { scrollTop, clientHeight, scrollHeight } = containerEl;
-  const lastIndexPosition = indexPositions.length - 1;
+  const lastIndexPosition = itemCount - 1;
   const newScrollTop = Math.min(
     scrollTop + clientHeight,
     scrollHeight - clientHeight
@@ -106,7 +96,11 @@ const pageDown = (
     let nextRect;
     do {
       nextIdx += 1;
-      nextRect = getItemRect(indexPositions[nextIdx]);
+      nextRect = getElementByDataIndex(
+        containerEl,
+        nextIdx,
+        true
+      ).getBoundingClientRect();
     } while (nextRect.top < itemTop && nextIdx < lastIndexPosition);
     return nextIdx;
   }
@@ -115,7 +109,6 @@ const pageDown = (
 const pageUp = async (
   containerEl: HTMLElement,
   itemEl: HTMLElement,
-  indexPositions: CollectionItem<unknown>[],
   index: number
 ): Promise<number | undefined> => {
   const { top: itemTop } = itemEl.getBoundingClientRect();
@@ -131,7 +124,11 @@ const pageUp = async (
         let nextRect;
         do {
           nextIdx -= 1;
-          nextRect = getItemRect(indexPositions[nextIdx]);
+          nextRect = getElementByDataIndex(
+            containerEl,
+            nextIdx,
+            true
+          ).getBoundingClientRect();
         } while (nextRect.top > itemTop && nextIdx > 0);
         resolve(nextIdx);
       });
@@ -153,10 +150,12 @@ export const useKeyboardNavigation = <
   disableHighlightOnFocus,
   highlightedIndex: highlightedIndexProp,
   indexPositions,
+  itemCount,
   onHighlight,
   onKeyboardNavigation,
   restoreLastFocus,
   selected,
+  viewportItemCount,
 }: NavigationHookProps<Item, Selection>): NavigationHookResult => {
   const lastFocus = useRef(-1);
   const [, forceRender] = useState({});
@@ -179,30 +178,29 @@ export const useKeyboardNavigation = <
   );
 
   const nextPageItemIdx = useCallback(
-    async (e: KeyboardEvent, index: number): Promise<number> => {
-      const { id } = indexPositions[index];
+    async (
+      key: "PageDown" | "PageUp" | "Home" | "End",
+      index: number
+    ): Promise<number> => {
+      const itemEl = getElementByDataIndex(containerRef.current, index, true);
       let result: number | undefined;
-      if (id) {
-        const itemEl = document.getElementById(id);
+      if (itemEl) {
         const { current: containerEl } = containerRef;
         if (itemEl && containerEl) {
           result =
-            e.key === PageDown
-              ? pageDown(containerEl, itemEl, indexPositions, index)
-              : await pageUp(containerEl, itemEl, indexPositions, index);
+            key === PageDown
+              ? pageDown(containerEl, itemEl, itemCount, index)
+              : await pageUp(containerEl, itemEl, index);
         }
       }
       return result ?? index;
     },
-    [containerRef, indexPositions]
+    [containerRef, itemCount]
   );
 
   const nextFocusableItemIdx = useCallback(
-    (
-      key = ArrowDown,
-      idx: number = key === ArrowDown ? -1 : indexPositions.length
-    ) => {
-      if (indexPositions.length === 0) {
+    (key = ArrowDown, idx: number = key === ArrowDown ? -1 : itemCount) => {
+      if (itemCount === 0) {
         return -1;
       } else {
         const indexOfSelectedItem = getIndexOfSelectedItem(
@@ -213,14 +211,9 @@ export const useKeyboardNavigation = <
         // We don't need it for Home and End navigation.
         // Special case where we have selection, but no highlighting - begin
         // navigation from selected item.
-        const startIdx = getStartIdx(
-          key,
-          idx,
-          indexOfSelectedItem,
-          indexPositions.length
-        );
+        const startIdx = getStartIdx(key, idx, indexOfSelectedItem, itemCount);
 
-        let nextIdx = nextItemIdx(indexPositions.length, key, startIdx);
+        let nextIdx = nextItemIdx(itemCount, key, startIdx);
         // Guard against returning zero, when first item is a header or group
         if (
           nextIdx === 0 &&
@@ -230,17 +223,16 @@ export const useKeyboardNavigation = <
           return idx;
         }
         while (
-          (((key === ArrowDown || key === Home) &&
-            nextIdx < indexPositions.length) ||
+          (((key === ArrowDown || key === Home) && nextIdx < itemCount) ||
             ((key === ArrowUp || key === End) && nextIdx > 0)) &&
           !isFocusable(indexPositions[nextIdx])
         ) {
-          nextIdx = nextItemIdx(indexPositions.length, key, nextIdx);
+          nextIdx = nextItemIdx(itemCount, key, nextIdx);
         }
         return nextIdx;
       }
     },
-    [indexPositions, selected]
+    [indexPositions, itemCount, selected]
   );
 
   // does this belong here or should it be a method passed in?
@@ -300,7 +292,7 @@ export const useKeyboardNavigation = <
     async (e: KeyboardEvent) => {
       const nextIdx =
         e.key === PageDown || e.key === PageUp
-          ? await nextPageItemIdx(e, highlightedIndex)
+          ? await nextPageItemIdx(e.key, highlightedIndex)
           : nextFocusableItemIdx(e.key, highlightedIndex);
 
       if (nextIdx !== highlightedIndex) {
@@ -322,8 +314,7 @@ export const useKeyboardNavigation = <
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      console.log("Dropdown useKeyDown");
-      if (indexPositions.length > 0 && isNavigationKey(e)) {
+      if (itemCount > 0 && isNavigationKey(e)) {
         e.preventDefault();
         e.stopPropagation();
         keyboardNavigation.current = true;
@@ -332,10 +323,10 @@ export const useKeyboardNavigation = <
         keyboardNavigation.current = true;
       }
     },
-    [indexPositions, navigateChildItems]
+    [itemCount, navigateChildItems]
   );
 
-  const listProps = useMemo(() => {
+  const containerProps = useMemo(() => {
     return {
       onBlur: (e: FocusEvent) => {
         //TODO no direct ref to List
@@ -382,7 +373,7 @@ export const useKeyboardNavigation = <
     highlightedIndex,
     setHighlightedIndex,
     keyboardNavigation,
-    listProps,
+    containerProps,
     setIgnoreFocus,
   };
 };

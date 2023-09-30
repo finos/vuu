@@ -2,8 +2,10 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   KeyboardEvent,
   MouseEvent,
+  RefObject,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import {
@@ -49,6 +51,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   onSelect,
   onSelectionChange,
   restoreLastFocus,
+  scrollContainerRef,
   selected,
   selectionStrategy,
   selectionKeys,
@@ -76,6 +79,18 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     [dataHook, onSelect]
   );
 
+  const scrollContainer = useMemo<RefObject<HTMLElement>>(() => {
+    if (scrollContainerRef) {
+      return scrollContainerRef;
+    } else {
+      return {
+        current:
+          containerRef.current?.querySelector(".vuuList-scrollContainer") ??
+          null,
+      };
+    }
+  }, []);
+
   // TODO should we leave the id to item conversion to List ?
   // consider the use case where we use this hook from dropdown etc
   const handleSelectionChange = useCallback<
@@ -97,7 +112,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   const {
     highlightedIndex,
-    listProps: {
+    containerProps: {
       onKeyDown: navigationKeyDown,
       onMouseMove: navigationMouseMove,
       ...navigationControlProps
@@ -105,16 +120,18 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     setHighlightedIndex,
     ...keyboardHook
   } = useKeyboardNavigation<Item, Selection>({
-    containerRef,
+    containerRef: scrollContainer,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
     highlightedIndex: highlightedIndexProp,
     indexPositions: dataHook.data,
+    itemCount: dataHook.data.length,
     label,
     onHighlight,
     onKeyboardNavigation: handleKeyboardNavigation,
     restoreLastFocus,
     selected: lastSelection.current,
+    viewportItemCount: 10,
   });
 
   const collapsibleHook = useCollapsibleGroups({
@@ -251,7 +268,6 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent) => {
-      console.log(`DropDown (useList) keyDown`);
       if (!evt.defaultPrevented) {
         typeaheadOnKeyDown?.(evt);
       }
@@ -283,7 +299,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   // not when a control is manipulating the list
   const { isScrolling: isViewportScrolling, scrollIntoView } =
     useViewportTracking({
-      containerRef,
+      containerRef: scrollContainer,
       contentRef,
       highlightedIdx: highlightedIndex,
       indexPositions: dataHook.data,

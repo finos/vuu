@@ -11,7 +11,7 @@ import {
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { MeasuredSize, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
@@ -26,20 +26,25 @@ import {
   updateColumn,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  MouseEvent,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   buildContextMenuDescriptors,
   MeasuredProps,
   TableProps,
   useSelection,
   useTableContextMenu,
-  useTableViewport,
 } from "../table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
-import { useMeasuredContainer } from "./useMeasuredContainer";
 import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
 import {
   isShowColumnSettings,
@@ -49,6 +54,7 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
+import { useTableViewport } from "./useTableViewport";
 
 export interface TableHookProps
   extends MeasuredProps,
@@ -64,6 +70,7 @@ export interface TableHookProps
       | "onSelectionChange"
       | "renderBufferSize"
     > {
+  containerRef: RefObject<HTMLDivElement>;
   headerHeight: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -82,6 +89,7 @@ const addColumn = (
 export const useTable = ({
   availableColumns,
   config,
+  containerRef,
   dataSource,
   headerHeight = 25,
   onAvailableColumnsChange,
@@ -92,20 +100,23 @@ export const useTable = ({
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel,
-  ...measuredProps
-}: TableHookProps) => {
+}: // ...measuredProps
+TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
 
+  const [size, setSize] = useState<MeasuredSize | undefined>();
+  const handleResize = useCallback((size: MeasuredSize) => {
+    console.log({ size });
+    setSize(size);
+  }, []);
+
   const menuBuilder = useMemo(
     () => buildContextMenuDescriptors(dataSource),
     [dataSource]
   );
-
-  const { containerRef, ...containerMeasurements } =
-    useMeasuredContainer(measuredProps);
 
   const onDataRowcountChange = useCallback((size: number) => {
     setRowCount(size);
@@ -152,9 +163,7 @@ export const useTable = ({
     headings,
     rowCount,
     rowHeight,
-    // Note: innerSize will take border into account, whereas outerSize will not
-    // size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
-    size: containerMeasurements.innerSize,
+    size,
   });
 
   const initialRange = useInitialValue<VuuRange>({
@@ -400,7 +409,6 @@ export const useTable = ({
   const containerProps = useKeyboardNavigation({
     columnCount: columns.length,
     containerRef,
-    data,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,
@@ -498,14 +506,13 @@ export const useTable = ({
     ...containerProps,
     columnMap,
     columns,
-    containerRef,
-    containerMeasurements,
     data,
     handleContextMenuAction,
     headerProps,
     menuBuilder,
     onContextMenu,
     onRemoveGroupColumn,
+    onResize: handleResize,
     onRowClick,
     onToggleGroup,
     scrollProps,

@@ -38,7 +38,7 @@ import { MeasuredProps, useMeasuredContainer } from "./useMeasuredContainer";
 import { useSelection } from "./useSelection";
 import { PersistentColumnAction, useTableModel } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
-import { useTableViewport } from "./useTableViewport";
+import { useTableViewport } from "../table-next/useTableViewport";
 import { useVirtualViewport } from "./useVirtualViewport";
 
 const NO_ROWS = [] as const;
