@@ -16,32 +16,31 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
   import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentColumnNames._
 
   def runOnce(): Unit = {
-    val data = CsvStaticLoader.loadStatic
+    val baskets = CsvStaticLoader.load
+    baskets.foreach(basketId => updateBasketConstituents(basketId))
+  }
 
+  def updateBasketConstituents(basketId: String): Unit = {
+    val list = CsvStaticLoader.loadConstituent(basketId)
+    list.foreach(row => {
 
-    data.foreachEntry((k, v) => {
-      v.foreach(row => {
+      if (row.nonEmpty) {
+        val symbol = row("Symbol")
+        val name = row("Name")
+        val lastTrade = row("Last Trade")
+        val change = row("Change")
+        val volume = row("Volume")
+        val weighting = row("Weight")
 
-        if (row.nonEmpty) {
-          val symbol = row("Symbol")
-          val name = row("Name")
-          val lastTrade = row("Last Trade")
-          val change = row("Change")
-          val volume = row("Volume")
-          val weighting = row("Weight")
-
-          table.processUpdate(symbol, RowWithData(symbol, Map(
-            Ric -> symbol,
-            BasketId -> k,
-            LastTrade -> lastTrade,
-            Change -> change,
-            Weighting -> weighting,
-            Volume -> volume
-          )), clock.now())
-        }
-      })
-
-
+        table.processUpdate(symbol, RowWithData(symbol, Map(
+          Ric -> symbol,
+          BasketId -> basketId,
+          LastTrade -> lastTrade,
+          Change -> change,
+          Weighting -> weighting,
+          Volume -> volume
+        )), clock.now())
+      }
     })
 
   }

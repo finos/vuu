@@ -38,7 +38,7 @@ class BasketConstituentProviderTest extends AnyFeatureSpec with Matchers with Be
   val headers: Array[String] = columns.map(_.name)
 
   before {
-    provider.runOnce()
+    provider.runOnce
   }
 
   Feature("Able to load basket constituents from .FTSE100 and show on basket constituent table") {

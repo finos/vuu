@@ -96,7 +96,7 @@ object BasketModule extends DefaultModule {
     final val Id = "id"
     final val Name = "name"
     final val NotionalValue = "notionalValue"
-    final val NotionalValueUsd = "notionalValue"
+    final val NotionalValueUsd = "notionalValueUsd"
   }
 
   object BasketConstituentColumnNames {
