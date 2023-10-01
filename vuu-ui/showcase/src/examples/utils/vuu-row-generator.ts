@@ -5,6 +5,15 @@ import {
   InstrumentRowGenerator,
   InstrumentColumnGenerator,
 } from "./instrument-generator";
+import {
+  createInstrumentPriceUpdateGenerator,
+  InstrumentPricesRowGenerator,
+  InstrumentPricesColumnGenerator,
+} from "./instrument-prices-generator";
+import {
+  BasketDesignRowGenerator,
+  BasketDesignColumnGenerator,
+} from "./basket-design-generator";
 import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
 import {
   ChildOrderRowGenerator,
@@ -79,6 +88,14 @@ export const getColumnAndRowGenerator = (
   switch (table?.table) {
     case "instruments":
       return [InstrumentColumnGenerator, InstrumentRowGenerator];
+    case "instrumentPrices":
+      return [
+        InstrumentPricesColumnGenerator,
+        InstrumentPricesRowGenerator,
+        createInstrumentPriceUpdateGenerator,
+      ];
+    case "basketDesign":
+      return [BasketDesignColumnGenerator, BasketDesignRowGenerator];
     case "orders":
       return [OrderColumnGenerator, OrderRowGenerator];
     case "childOrders":

@@ -3,16 +3,20 @@ import {
   DataSourceSubscribedMessage,
   JsonDataSource,
 } from "@finos/vuu-data";
-import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
+  ColumnDescriptor,
+  DataCellEditHandler,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { MeasuredSize, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
+import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
+import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
   buildColumnMap,
@@ -23,20 +27,28 @@ import {
   updateColumn,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  KeyboardEvent,
+  MouseEvent,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   buildContextMenuDescriptors,
   MeasuredProps,
   TableProps,
   useSelection,
   useTableContextMenu,
-  useTableViewport,
 } from "../table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
-import { useMeasuredContainer } from "./useMeasuredContainer";
+import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
+import { useCellEditing } from "./useCellEditing";
 import {
   isShowColumnSettings,
   isShowTableSettings,
@@ -45,8 +57,7 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
-import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
-import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
+import { useTableViewport } from "./useTableViewport";
 
 export interface TableHookProps
   extends MeasuredProps,
@@ -55,12 +66,14 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
       | "onSelectionChange"
       | "renderBufferSize"
     > {
+  containerRef: RefObject<HTMLDivElement>;
   headerHeight: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -68,11 +81,21 @@ export interface TableHookProps
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
+const addColumn = (
+  tableConfig: TableConfig,
+  column: ColumnDescriptor
+): TableConfig => ({
+  ...tableConfig,
+  columns: tableConfig.columns.concat(column),
+});
+
 export const useTable = ({
   availableColumns,
   config,
+  containerRef,
   dataSource,
   headerHeight = 25,
+  onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
@@ -80,20 +103,22 @@ export const useTable = ({
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel,
-  ...measuredProps
-}: TableHookProps) => {
+}: // ...measuredProps
+TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
 
+  const [size, setSize] = useState<MeasuredSize | undefined>();
+  const handleResize = useCallback((size: MeasuredSize) => {
+    setSize(size);
+  }, []);
+
   const menuBuilder = useMemo(
     () => buildContextMenuDescriptors(dataSource),
     [dataSource]
   );
-
-  const { containerRef, ...containerMeasurements } =
-    useMeasuredContainer(measuredProps);
 
   const onDataRowcountChange = useCallback((size: number) => {
     setRowCount(size);
@@ -125,8 +150,8 @@ export const useTable = ({
   }, [modelColumns, stateColumns]);
 
   const columnMap = useMemo(
-    () => buildColumnMap(tableConfig.columns.map((col) => col.name)),
-    [tableConfig.columns]
+    () => buildColumnMap(dataSource.columns),
+    [dataSource.columns]
   );
 
   const {
@@ -140,9 +165,7 @@ export const useTable = ({
     headings,
     rowCount,
     rowHeight,
-    // Note: innerSize will take border into account, whereas outerSize will not
-    // size: containerMeasurements.innerSize ?? containerMeasurements.outerSize,
-    size: containerMeasurements.innerSize,
+    size,
   });
 
   const initialRange = useInitialValue<VuuRange>({
@@ -165,7 +188,7 @@ export const useTable = ({
     []
   );
 
-  const { data, setRange } = useDataSource({
+  const { data, range, setRange } = useDataSource({
     dataSource,
     onFeatureEnabled,
     onFeatureInvocation,
@@ -177,7 +200,7 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`useTableNext handleConfigCChanged`, {
+      console.log(`useTableNext handleConfigChanged`, {
         tableConfig,
       });
       dispatchColumnAction({
@@ -203,6 +226,23 @@ export const useTable = ({
     [dataSource]
   );
 
+  const handleCreateCalculatedColumn = useCallback(
+    (column: ColumnDescriptor) => {
+      console.log(`useTableNext handleCreateCalculatedColumn`, {
+        column,
+      });
+      dataSource.columns = dataSource.columns.concat(column.name);
+      const newTableConfig = addColumn(tableConfig, column);
+      dispatchColumnAction({
+        type: "init",
+        tableConfig: newTableConfig,
+        dataSourceConfig: dataSource.config,
+      });
+      onConfigChange?.(newTableConfig);
+    },
+    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
+  );
+
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
       // expectConfigChangeRef.current = true;
@@ -222,7 +262,9 @@ export const useTable = ({
           name,
           serverDataType,
         })),
+      onAvailableColumnsChange,
       onConfigChange: handleConfigChanged,
+      onCreateCalculatedColumn: handleCreateCalculatedColumn,
       onDataSourceConfigChange: handleDataSourceConfigChanged,
       tableConfig,
     });
@@ -359,15 +401,37 @@ export const useTable = ({
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
-    // contentHeight: viewportMeasurements.contentHeight,
-    // contentWidth: viewportMeasurements.contentWidth,
-    // height: containerMeasurements.innerSize?.height ?? 0,
-    // width: containerMeasurements.innerSize?.width ?? 0,
-
     maxScrollLeft: viewportMeasurements.maxScrollContainerScrollHorizontal,
     maxScrollTop: viewportMeasurements.maxScrollContainerScrollVertical,
+    rowHeight,
     onVerticalScroll: handleVerticalScroll,
+    viewportRowCount: viewportMeasurements.rowCount,
   });
+
+  const {
+    navigate,
+    onKeyDown: navigationKeyDown,
+    ...containerProps
+  } = useKeyboardNavigation({
+    columnCount: columns.length,
+    containerRef,
+    requestScroll,
+    rowCount: dataSource?.size,
+    viewportRange: range,
+    viewportRowCount: viewportMeasurements.rowCount,
+  });
+
+  const { onKeyDown: editingKeyDown } = useCellEditing({ navigate });
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      navigationKeyDown(e);
+      if (!e.defaultPrevented) {
+        editingKeyDown(e);
+      }
+    },
+    [navigationKeyDown, editingKeyDown]
+  );
 
   const onContextMenu = useTableContextMenuNext({ columns, data });
 
@@ -438,6 +502,13 @@ export const useTable = ({
     [columns, dispatchColumnAction]
   );
 
+  const handleDataEdited = useCallback<DataCellEditHandler>(
+    (rowIndex, columnName, value) => {
+      return dataSource.applyEdit(rowIndex, columnName, value);
+    },
+    [dataSource]
+  );
+
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
     useDragDrop({
       allowDragDrop: true,
@@ -457,16 +528,18 @@ export const useTable = ({
   };
 
   return {
+    ...containerProps,
+    onKeyDown: handleKeyDown,
     columnMap,
     columns,
-    containerRef,
-    containerMeasurements,
     data,
     handleContextMenuAction,
     headerProps,
     menuBuilder,
     onContextMenu,
+    onDataEdited: handleDataEdited,
     onRemoveGroupColumn,
+    onResize: handleResize,
     onRowClick,
     onToggleGroup,
     scrollProps,

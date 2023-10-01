@@ -19,7 +19,7 @@ const CHAR_ARROW_DOWN = String.fromCharCode(11015);
 
 const { KEY } = metadataKeys;
 
-const classBase = "vuuBackgroundCell";
+const classBase = "vuuBackgroundCellDeprecated";
 
 // TODO these sre repeated from PriceFormatter - where shoud they live ?
 const FlashStyle = {

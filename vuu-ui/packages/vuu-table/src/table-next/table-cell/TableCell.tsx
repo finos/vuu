@@ -1,34 +1,44 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnMap } from "packages/vuu-utils/src";
-import { MouseEvent } from "react";
+import { TableCellProps } from "@finos/vuu-datagrid-types";
+import { metadataKeys } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { useCallback } from "react";
 import { useCell } from "../useCell";
 
 import "./TableCell.css";
 
+const { IDX } = metadataKeys;
 const classBase = "vuuTableNextCell";
 
-export interface TableCellProps {
-  column: KeyedColumnDescriptor;
-  columnMap: ColumnMap;
-  onClick?: (
-    evt: MouseEvent<HTMLDivElement>,
-    column: KeyedColumnDescriptor
-  ) => void;
-  row: DataSourceRow;
-}
-
-export const TableCell = ({ column, columnMap, row }: TableCellProps) => {
+export const TableCell = ({
+  column,
+  columnMap,
+  onDataEdited,
+  row,
+}: TableCellProps) => {
   const { className, style } = useCell(column, classBase);
-  const { CellRenderer, valueFormatter } = column;
-  const value = valueFormatter(row[column.key]);
+  const { CellRenderer, name, valueFormatter } = column;
+  const dataIdx = columnMap[name];
+
+  const handleDataItemEdited = useCallback(
+    (value: VuuColumnDataType) => {
+      onDataEdited?.(row[IDX], name, value);
+      // TODO will only return false in case of server rejection
+      return true;
+    },
+    [name, onDataEdited, row]
+  );
 
   return (
     <div className={className} role="cell" style={style}>
       {CellRenderer ? (
-        <CellRenderer column={column} columnMap={columnMap} row={row} />
+        <CellRenderer
+          column={column}
+          columnMap={columnMap}
+          onCommit={handleDataItemEdited}
+          row={row}
+        />
       ) : (
-        value
+        valueFormatter(row[dataIdx])
       )}
     </div>
   );

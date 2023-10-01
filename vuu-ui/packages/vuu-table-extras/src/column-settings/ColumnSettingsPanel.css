@@ -7,7 +7,7 @@
     --vuuDropdown-height: 24px;
     --vuuDropdown-width: 100%;
     
-    
+  
     --vuuIconToggleButton-iconSize: 16px;
 
     display: flex;
@@ -30,6 +30,11 @@
   display: flex;
   justify-content: space-between;
   margin-top: auto;
+}
+
+.vuuColumnSettingsPanel-buttonBar[data-align="right"]{
+  gap: 6px;
+  justify-content: flex-end;
 }
 
 .vuuColumnSettingsPanel-buttonNavPrev {

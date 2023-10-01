@@ -41,7 +41,7 @@ export const dateFormatter = (column: ColumnDescriptor) => {
 export const numericFormatter = ({
   align = "right",
   type,
-}: ColumnDescriptor) => {
+}: Partial<ColumnDescriptor>) => {
   if (type === undefined || typeof type === "string") {
     return defaultValueFormatter;
   } else {

@@ -3,7 +3,7 @@
 }
 
 .saltInput-primary {
+    --saltInput-height: 24px;
     border: solid 1px var(--salt-editable-borderColor);
     border-radius: 6px;
-    height: 24px;
 }

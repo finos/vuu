@@ -37,7 +37,8 @@ const getFlashStyle = (colType?: ColumnType) => {
   return FlashStyle.BackgroundOnly;
 };
 
-const BackgroundCell = ({ column, row }: TableCellProps) => {
+// export to avoid tree shaking, component is not consumed directly
+export const BackgroundCell = ({ column, row }: TableCellProps) => {
   //TODO what about click handling
 
   const { key, type, valueFormatter } = column;
@@ -68,6 +69,8 @@ const BackgroundCell = ({ column, row }: TableCellProps) => {
     </div>
   );
 };
+
+console.log("register BackgroundCellNext");
 
 registerComponent("background-next", BackgroundCell, "cell-renderer", {
   description: "Change background color of cell when value changes",

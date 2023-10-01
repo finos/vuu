@@ -1,4 +1,20 @@
 .vuuInstrumentSearch {
-    background-color: yellow;
-    height: 100%
+    background-color: var(--vuu-color-gray-25);
+    height: 100%;
+    padding: var(--vuuInstrumentSearch-padding, 12px);
+    display: flex;
+    flex-direction: column;
+}
+
+.vuuInstrumentSearch-inputField {
+    --vuu-icon-size: 16px;
+    flex: 0 0 40px;
+}
+.vuuInstrumentSearch-list {
+    background-color: var(--salt-container-primary-background);
+    flex: 1 1 auto;
+}
+
+.vuuInstrumentSearch .vuuTableNextCell {
+    padding: 0;
 }

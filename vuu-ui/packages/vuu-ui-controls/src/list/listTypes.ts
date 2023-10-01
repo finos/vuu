@@ -14,7 +14,6 @@ import { ScrollingAPI, ViewportTrackingResult } from "./common-hooks";
 
 import {
   CollectionHookResult,
-  CollectionItem,
   ListHandlers,
   NavigationHookResult,
   SelectHandler,
@@ -252,6 +251,7 @@ export interface ListHookProps<Item, Selection extends SelectionStrategy>
   onSelect?: SelectHandler<Item>;
   onSelectionChange?: SelectionChangeHandler<Item, Selection>;
   restoreLastFocus?: boolean;
+  scrollContainerRef?: RefObject<HTMLElement>;
   selectionKeys?: string[];
   stickyHeaders?: boolean;
   tabToSelect?: boolean;
@@ -260,7 +260,7 @@ export interface ListHookProps<Item, Selection extends SelectionStrategy>
 
 export interface ListHookResult<Item, Selection extends SelectionStrategy>
   extends Partial<ViewportTrackingResult<Item>>,
-    Pick<SelectionHookResult<Item, Selection>, "selected" | "setSelected">,
+    Pick<SelectionHookResult<Selection>, "selected" | "setSelected">,
     Partial<Omit<NavigationHookResult, "listProps">>,
     Omit<DragHookResult, "isDragging" | "isScrolling"> {
   keyboardNavigation: RefObject<boolean>;
