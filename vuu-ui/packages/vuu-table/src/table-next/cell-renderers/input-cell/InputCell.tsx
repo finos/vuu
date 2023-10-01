@@ -2,6 +2,10 @@ import { TableCellRendererProps } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { useEditableText } from "@finos/vuu-ui-controls";
+import cx from "classnames";
+// make sure all validators are loaded - how do we manage this ?
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { CaseValidator, PatternValidator } from "@finos/vuu-table-extras";
 
 import "./InputCell.css";
 
@@ -20,14 +24,38 @@ export const InputCell = ({
   row,
 }: TableCellRendererProps) => {
   const dataIdx = columnMap[column.name];
-  const { valueFormatter } = column;
+  const {
+    align = "left",
+    clientSideEditValidationCheck,
+    valueFormatter,
+  } = column;
 
-  const editProps = useEditableText({
+  const { warningMessage, ...editProps } = useEditableText({
     initialValue: valueFormatter(row[dataIdx]),
     onCommit,
+    clientSideEditValidationCheck,
   });
 
-  return <Input {...editProps} className={classBase} />;
+  const endAdornment =
+    warningMessage && align === "left" ? (
+      <span className={`${classBase}-icon`} data-icon="error" />
+    ) : undefined;
+
+  const startAdornment =
+    warningMessage && align === "right" ? (
+      <span className={`${classBase}-icon`} data-icon="error" />
+    ) : undefined;
+
+  return (
+    <Input
+      {...editProps}
+      className={cx(classBase, {
+        [`${classBase}-error`]: warningMessage !== undefined,
+      })}
+      endAdornment={endAdornment}
+      startAdornment={startAdornment}
+    />
+  );
 };
 
 registerComponent("input-cell", InputCell, "cell-renderer", {});

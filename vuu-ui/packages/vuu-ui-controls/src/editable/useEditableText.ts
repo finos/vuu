@@ -1,4 +1,4 @@
-import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import {
   FormEventHandler,
   KeyboardEvent,
@@ -6,10 +6,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { ClientSideValidationChecker } from "./editable-utils";
 
 export interface EditableTextHookProps<
   T extends VuuColumnDataType = VuuColumnDataType
 > {
+  clientSideEditValidationCheck?: ClientSideValidationChecker;
   initialValue: T;
   onCommit: (value: T) => boolean;
 }
@@ -22,9 +24,11 @@ const dispatchCommitEvent = (el: HTMLInputElement) => {
 export const useEditableText = <
   T extends VuuColumnDataType = VuuColumnDataType
 >({
+  clientSideEditValidationCheck,
   initialValue,
   onCommit,
 }: EditableTextHookProps<T>) => {
+  const [message, setMessage] = useState<string | undefined>();
   const [value, setValue] = useState(initialValue);
   const initialValueRef = useRef<T>(initialValue);
   const isDirtyRef = useRef(false);
@@ -34,10 +38,16 @@ export const useEditableText = <
       if (evt.key === "Enter") {
         evt.stopPropagation();
         if (isDirtyRef.current) {
-          // if we want to potentially await server ACK here, need async
-          if (onCommit(value)) {
-            isDirtyRef.current = false;
-            dispatchCommitEvent(evt.target as HTMLInputElement);
+          const warningMessage = clientSideEditValidationCheck?.(value);
+          if (warningMessage) {
+            setMessage(warningMessage);
+          } else {
+            setMessage(undefined);
+            // if we want to potentially await server ACK here, need async
+            if (onCommit(value)) {
+              isDirtyRef.current = false;
+              dispatchCommitEvent(evt.target as HTMLInputElement);
+            }
           }
         } else {
           dispatchCommitEvent(evt.target as HTMLInputElement);
@@ -47,11 +57,12 @@ export const useEditableText = <
       } else if (evt.key === "Escape") {
         if (isDirtyRef.current) {
           isDirtyRef.current = false;
+          setMessage(undefined);
           setValue(initialValueRef.current);
         }
       }
     },
-    [onCommit, value]
+    [clientSideEditValidationCheck, onCommit, value]
   );
 
   const handleChange = useCallback<FormEventHandler>((evt) => {
@@ -64,5 +75,6 @@ export const useEditableText = <
     onChange: handleChange,
     onKeyDown: handleKeyDown,
     value,
+    warningMessage: message,
   };
 };

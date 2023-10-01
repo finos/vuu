@@ -138,7 +138,6 @@ export const useMeasuredContainer = ({
 
   const onResize: ResizeHandler = useCallback(
     ({ clientWidth, clientHeight }: Partial<ClientSize>) => {
-      console.log(`onResize ${clientHeight} ${clientWidth}`);
       const { css, inner, outer } = size;
       let newState: MeasuredState = size;
 

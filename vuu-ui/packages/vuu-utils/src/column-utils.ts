@@ -1,10 +1,11 @@
-import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
-import {
+import type { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
+import type {
   ColumnAlignment,
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
   ColumnTypeRenderer,
+  ColumnTypeWithValidationRules,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
   MappedValueTypeRenderer,
@@ -13,8 +14,8 @@ import {
   TableHeadings,
   TypeFormatting,
 } from "@finos/vuu-datagrid-types";
-import { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
-import {
+import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
+import type {
   VuuAggregation,
   VuuAggType,
   VuuColumnDataType,
@@ -23,9 +24,9 @@ import {
   VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { SchemaColumn } from "packages/vuu-data/src";
-import { CSSProperties } from "react";
-import { CellRendererDescriptor } from "./component-registry";
+import type { SchemaColumn } from "@finos/vuu-data";
+import type { CSSProperties } from "react";
+import type { CellRendererDescriptor } from "./component-registry";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 export interface ColumnMap {
@@ -170,6 +171,14 @@ export const isColumnTypeRenderer = (
   renderer?: unknown
 ): renderer is ColumnTypeRenderer =>
   typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
+
+export const hasValidationRules = (
+  type?: ColumnType
+): type is ColumnTypeWithValidationRules =>
+  isTypeDescriptor(type) &&
+  isColumnTypeRenderer(type.renderer) &&
+  Array.isArray(type.renderer.rules) &&
+  type.renderer.rules.length > 0;
 
 export const isMappedValueTypeRenderer = (
   renderer?: unknown

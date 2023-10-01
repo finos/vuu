@@ -10,5 +10,22 @@
 .vuuTableNextCell:focus .vuuTableInputCell.saltInput-primary,
 .vuuTableInputCell.saltInput-primary.saltInput-focused {
     border: solid 2px var(--vuu-color-purple-10);
-    padding-left: 3px;
+    padding: 0 3px;
+}
+
+.vuuTableInputCell-icon {
+    --vuu-icon-height: 13px;
+    --vuu-icon-size: 15px;
+    --vuu-icon-width: 12px;
+    border-radius: 10px;
+}
+
+.vuuTableNextCell:focus .vuuTableInputCell.saltInput-primary.vuuTableInputCell-error,
+.vuuTableInputCell.saltInput-primary.saltInput-focused.vuuTableInputCell-error {
+    border: solid 2px var(--vuu-color-red-50);
+}
+
+
+.vuuTableInputCell-error.saltInput-primary {
+    border: solid 1px var(--vuu-color-red-50);
 }

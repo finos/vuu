@@ -59,6 +59,14 @@ export const EditableTableNextArrayData = () => {
           name: "string",
           renderer: {
             name: "input-cell",
+            rules: [
+              { name: "vuu-case", value: "upper" },
+              {
+                name: "vuu-pattern",
+                value: "^.{5,8}$",
+                message: "Value must contain between 5 and 8 characters",
+              },
+            ],
           },
         },
       },
@@ -76,8 +84,6 @@ export const EditableTableNextArrayData = () => {
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });
-
-  console.log(config.columns);
 
   return (
     <TableNext
@@ -176,9 +182,7 @@ export const TableNextInLayoutWithContextPanel = () => {
   });
 
   const handleConfigChange = useCallback((tableConfig: TableConfig) => {
-    console.log("config changed", {
-      tableConfig,
-    });
+    console.log("config changed");
   }, []);
 
   return (
@@ -210,7 +214,6 @@ export const AutoTableNext = () => {
   const [config, setConfig] = useState(configProp);
 
   const handleConfigChange = (config: TableConfig) => {
-    console.log({ config });
     setConfig(config);
   };
 
@@ -240,7 +243,6 @@ export const AutoTableNextBasketDesign = () => {
   const [config, setConfig] = useState(configProp);
 
   const handleConfigChange = (config: TableConfig) => {
-    console.log({ config });
     setConfig(config);
   };
 
@@ -282,9 +284,7 @@ export const GroupHeaderCellNextOneColumn = () => {
     };
   }, []);
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log("remove column");
   }, []);
 
   return (
@@ -334,9 +334,7 @@ export const GroupHeaderCellNextTwoColumn = () => {
     };
   }, []);
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (
@@ -392,9 +390,7 @@ export const GroupHeaderCellNextThreeColumn = () => {
     width: 250,
   });
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (
@@ -457,9 +453,7 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
     width: 250,
   });
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (

@@ -6,7 +6,6 @@ import {
   TableConfig,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
-import { moveItem } from "@finos/vuu-utils";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
@@ -14,21 +13,24 @@ import {
   getCellRenderer,
   getTableHeadings,
   getValueFormatter,
+  hasValidationRules,
   isFilteredColumn,
   isGroupColumn,
   isPinned,
   isTypeDescriptor,
   logger,
   metadataKeys,
+  moveItem,
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
 } from "@finos/vuu-utils";
 
-import { Reducer, useReducer } from "react";
-import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
 import { DataSourceConfig } from "@finos/vuu-data";
 import { TableSchema } from "@finos/vuu-data/src/message-utils";
+import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
+import { buildValidationChecker } from "@finos/vuu-ui-controls";
+import { Reducer, useReducer } from "react";
 
 const { info } = logger("useTableModel");
 
@@ -252,7 +254,7 @@ function init({
   const { columns, ...tableAttributes } = tableConfig;
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
-    .map(toKeyedColumWithDefaults(tableAttributes));
+    .map(columnDescriptorToKeyedColumDescriptor(tableAttributes));
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
     : keyedColumns;
@@ -284,7 +286,7 @@ const getLabel = (
   return label;
 };
 
-const toKeyedColumWithDefaults =
+const columnDescriptorToKeyedColumDescriptor =
   (tableAttributes: TableAttributes) =>
   (
     column: ColumnDescriptor & { key?: number },
@@ -305,6 +307,9 @@ const toKeyedColumWithDefaults =
       ...rest,
       align,
       CellRenderer: getCellRendererForColumn(column),
+      clientSideEditValidationCheck: hasValidationRules(column.type)
+        ? buildValidationChecker(column.type.renderer.rules)
+        : undefined,
       label: getLabel(label, columnFormatHeader),
       key: key ?? index + KEY_OFFSET,
       name,
@@ -315,7 +320,8 @@ const toKeyedColumWithDefaults =
 
     if (isGroupColumn(keyedColumnWithDefaults)) {
       keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
-        (col) => toKeyedColumWithDefaults(tableAttributes)(col, col.key)
+        (col) =>
+          columnDescriptorToKeyedColumDescriptor(tableAttributes)(col, col.key)
       );
     }
 

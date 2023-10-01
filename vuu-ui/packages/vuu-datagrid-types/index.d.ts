@@ -1,11 +1,12 @@
-import { ValueFormatter } from "@finos/vuu-table";
-import { Filter } from "@finos/vuu-filter-types";
-import {
+import type { ValueFormatter } from "@finos/vuu-table";
+import type { Filter } from "@finos/vuu-filter-types";
+import type {
   VuuAggType,
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
-import { FunctionComponent, MouseEvent } from "react";
+import type { FunctionComponent, MouseEvent } from "react";
+import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -67,11 +68,18 @@ export declare type TypeFormatting = {
 
 export type ColumnTypeValueMap = { [key: string]: string };
 
+export interface EditValidationRule {
+  name: string;
+  message?: string;
+  value?: string;
+}
+
 export interface ColumnTypeRenderer {
   associatedField?: string;
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
+  rules?: EditValidationRule[];
   // These are for the dropdown-input - how do we type parameters for custom renderers ?
   values?: ReadonlyArray<string>;
 }
@@ -93,6 +101,15 @@ export declare type ColumnTypeDescriptor = {
   name: ColumnTypeSimple;
   renderer?: ColumnTypeRenderer | MappedValueTypeRenderer;
 };
+
+export interface ColumnTypeRendererWithValidationRules
+  extends ColumnTypeRenderer {
+  rules: EditValidationRule[];
+}
+
+export interface ColumnTypeWithValidationRules extends ColumnTypeDescriptor {
+  renderer: ColumnTypeRendererWithValidationRules;
+}
 
 export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
 
@@ -131,12 +148,14 @@ export interface ColumnDescriptor {
   type?: ColumnType;
   width?: number;
 }
+
 /** This is an internal description of a Column that extends the public
  * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
   className?: string;
+  clientSideEditValidationCheck?: ClientSideValidationChecker;
   endPin?: true | undefined;
   filter?: Filter;
   flex?: number;

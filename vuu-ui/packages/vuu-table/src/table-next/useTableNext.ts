@@ -112,7 +112,6 @@ TableHookProps) => {
 
   const [size, setSize] = useState<MeasuredSize | undefined>();
   const handleResize = useCallback((size: MeasuredSize) => {
-    console.log({ size });
     setSize(size);
   }, []);
 

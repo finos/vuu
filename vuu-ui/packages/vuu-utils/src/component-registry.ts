@@ -1,20 +1,33 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   ColumnTypeRenderer,
+  EditValidationRule,
   MappedValueTypeRenderer,
-  TableCellProps,
+  TableCellRendererProps,
 } from "@finos/vuu-datagrid-types";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
 }
 
-const cellRenderersMap = new Map<string, FC<TableCellProps>>();
+const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
 const cellConfigPanelsMap = new Map<string, FC<CellConfigPanelProps>>();
+const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
 const optionsMap = new Map<string, CellRendererOptions>();
 
-export type ComponentType = "cell-renderer" | "cell-config-panel";
+export type EditRuleValidator = (
+  editRule: EditValidationRule,
+  value: VuuRowDataItemType
+) => boolean | string;
+
+export type ComponentType =
+  | "cell-renderer"
+  | "cell-config-panel"
+  | "data-edit-validator";
 
 type CellRendererOptions = {
   [key: string]: unknown;
@@ -43,18 +56,26 @@ const isTypeCompatible = (
 const isCellRenderer = (
   type: ComponentType,
   component: unknown
-): component is FC<TableCellProps> => type === "cell-renderer";
+): component is FC<TableCellRendererProps> => type === "cell-renderer";
 
 const isCellConfigPanel = (
   type: ComponentType,
   component: unknown
 ): component is FC<CellConfigPanelProps> => type === "cell-config-panel";
 
+const isEditRuleValidator = (
+  type: ComponentType,
+  component: unknown
+): component is EditRuleValidator => type === "data-edit-validator";
+
 export function registerComponent<
-  T extends TableCellProps | CellConfigPanelProps = TableCellProps
+  T extends
+    | TableCellRendererProps
+    | CellConfigPanelProps
+    | EditRuleValidator = TableCellRendererProps
 >(
   componentName: string,
-  component: FC<T>,
+  component: T extends EditRuleValidator ? T : FC<T>,
   type: ComponentType = "cell-renderer",
   options: CellRendererOptions
 ): void {
@@ -62,6 +83,8 @@ export function registerComponent<
     cellRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {
     cellConfigPanelsMap.set(componentName, component);
+  } else if (isEditRuleValidator(type, component)) {
+    editRuleValidatorsMap.set(componentName, component);
   }
   if (options) {
     optionsMap.set(componentName, options);
@@ -95,4 +118,8 @@ export function getCellRenderer(
 
 export function getCellConfigPanelRenderer(name: string) {
   return cellConfigPanelsMap.get(name);
+}
+
+export function getEditRuleValidator(name: string) {
+  return editRuleValidatorsMap.get(name);
 }
