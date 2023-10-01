@@ -5,3 +5,4 @@ export * from "./popup-menu";
 export * from "./portal";
 export * from "./portal-deprecated";
 export * from "./prompt";
+export * from "./tooltip";
