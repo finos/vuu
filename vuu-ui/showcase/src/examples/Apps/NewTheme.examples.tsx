@@ -34,8 +34,6 @@ import {
 import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
 import { schemas } from "../utils";
 import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature.examples";
-import { BackgroundCell } from "@finos/vuu-table-extras";
-console.log({ BackgroundCell });
 
 import "./NewTheme.examples.css";
 
