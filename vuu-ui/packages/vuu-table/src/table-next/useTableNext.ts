@@ -6,6 +6,7 @@ import {
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
+  DataCellEditHandler,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
@@ -27,6 +28,7 @@ import {
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import {
+  KeyboardEvent,
   MouseEvent,
   RefObject,
   useCallback,
@@ -46,6 +48,7 @@ import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
 import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
+import { useCellEditing } from "./useCellEditing";
 import {
   isShowColumnSettings,
   isShowTableSettings,
@@ -406,7 +409,11 @@ TableHookProps) => {
     viewportRowCount: viewportMeasurements.rowCount,
   });
 
-  const containerProps = useKeyboardNavigation({
+  const {
+    navigate,
+    onKeyDown: navigationKeyDown,
+    ...containerProps
+  } = useKeyboardNavigation({
     columnCount: columns.length,
     containerRef,
     requestScroll,
@@ -414,6 +421,18 @@ TableHookProps) => {
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
   });
+
+  const { onKeyDown: editingKeyDown } = useCellEditing({ navigate });
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      navigationKeyDown(e);
+      if (!e.defaultPrevented) {
+        editingKeyDown(e);
+      }
+    },
+    [navigationKeyDown, editingKeyDown]
+  );
 
   const onContextMenu = useTableContextMenuNext({ columns, data });
 
@@ -484,6 +503,13 @@ TableHookProps) => {
     [columns, dispatchColumnAction]
   );
 
+  const handleDataEdited = useCallback<DataCellEditHandler>(
+    (rowIndex, columnName, value) => {
+      return dataSource.applyEdit(rowIndex, columnName, value);
+    },
+    [dataSource]
+  );
+
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
     useDragDrop({
       allowDragDrop: true,
@@ -504,6 +530,7 @@ TableHookProps) => {
 
   return {
     ...containerProps,
+    onKeyDown: handleKeyDown,
     columnMap,
     columns,
     data,
@@ -511,6 +538,7 @@ TableHookProps) => {
     headerProps,
     menuBuilder,
     onContextMenu,
+    onDataEdited: handleDataEdited,
     onRemoveGroupColumn,
     onResize: handleResize,
     onRowClick,

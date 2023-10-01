@@ -27,7 +27,7 @@ export const DropdownCell = ({ column, columnMap, row }: TableCellProps) => {
       openKeys={openKeys}
       selected={value}
       source={values}
-      width="auto"
+      width={column.width - 17} // temp hack
     />
   );
 };

@@ -156,7 +156,6 @@ export const Dropdown = forwardRef(function Dropdown<
       );
     }
   };
-
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase

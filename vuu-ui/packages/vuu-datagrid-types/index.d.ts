@@ -5,7 +5,7 @@ import {
   VuuColumnDataType,
   VuuSortType,
 } from "@finos/vuu-protocol-types";
-import { FunctionComponent, HTMLAttributes, MouseEvent } from "react";
+import { FunctionComponent, MouseEvent } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -17,12 +17,23 @@ export type SelectionChangeHandler = (selection: Selection) => void;
 export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
-export interface TableCellProps
-  extends Omit<HTMLAttributes<HTMLTableCellElement>, "onClick"> {
+export type DataCellEditHandler = (
+  rowIndex: number,
+  columnName: string,
+  value: VuuColumnDataType
+) => boolean;
+
+export interface TableCellProps {
   column: KeyedColumnDescriptor;
   columnMap: ColumnMap;
   onClick?: (event: MouseEvent, column: KeyedColumnDescriptor) => void;
+  onDataEdited?: DataCellEditHandler;
   row: DataSourceRow;
+}
+
+export interface TableCellRendererProps
+  extends Omit<TableCellProps, "onDataEdited"> {
+  onCommit: (value: VuuColumnDataType) => boolean;
 }
 
 export interface TableAttributes {
@@ -124,7 +135,7 @@ export interface ColumnDescriptor {
  * definitin with internal state values. */
 export interface KeyedColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
-  CellRenderer?: FunctionComponent<TableCellProps>;
+  CellRenderer?: FunctionComponent<TableCellRendererProps>;
   className?: string;
   endPin?: true | undefined;
   filter?: Filter;

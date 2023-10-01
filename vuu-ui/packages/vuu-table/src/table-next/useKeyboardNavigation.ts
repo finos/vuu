@@ -1,4 +1,3 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import {
   KeyboardEvent,
@@ -273,13 +272,18 @@ NavigationHookProps) => {
     [setActiveCell]
   );
 
+  const navigate = useCallback(() => {
+    navigateChildItems("ArrowDown");
+  }, [navigateChildItems]);
+
   const containerProps = useMemo(() => {
     return {
+      navigate,
       onClick: handleClick,
       onFocus: handleFocus,
       onKeyDown: handleKeyDown,
     };
-  }, [handleClick, handleFocus, handleKeyDown]);
+  }, [handleClick, handleFocus, handleKeyDown, navigate]);
 
   // First render will only render the outer container when explicit
   // sizing has not been provided. Outer container is measured and

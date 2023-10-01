@@ -43,6 +43,7 @@ export const TableNext = ({
     dragDropHook,
     handleContextMenuAction,
     headerProps,
+    onDataEdited,
     onRemoveGroupColumn,
     onResize,
     onRowClick,
@@ -150,6 +151,7 @@ export const TableNext = ({
                   columns={columns}
                   key={data[RENDER_IDX]}
                   onClick={onRowClick}
+                  onDataEdited={onDataEdited}
                   row={data}
                   offset={rowHeight * data[IDX] + headerHeight}
                   onToggleGroup={onToggleGroup}

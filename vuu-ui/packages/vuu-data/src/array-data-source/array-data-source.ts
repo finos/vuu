@@ -6,6 +6,7 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuColumnDataType,
   VuuGroupBy,
   VuuRange,
   VuuRowDataItemType,
@@ -547,6 +548,11 @@ export class ArrayDataSource
   ) {
     const row = this.findRow(parseInt(rowKey));
     console.log({ row, colName, value });
+  }
+
+  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+    return true;
   }
 
   async menuRpcCall(

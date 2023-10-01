@@ -22,7 +22,9 @@ export const getTableCell = (
   ) as HTMLTableCellElement;
 
   if (cellIsEditable(cell)) {
-    return cell.querySelector("input,button") as HTMLElement;
+    // Dropdown gets focus, Input does not
+    const focusableContent = cell.querySelector("button") as HTMLElement;
+    return focusableContent || cell;
   } else {
     return cell;
   }
@@ -30,3 +32,6 @@ export const getTableCell = (
 
 export const cellIsEditable = (cell: HTMLDivElement) =>
   cell.classList.contains("vuuTableNextCell-editable");
+
+export const cellIsTextInput = (cell: HTMLDivElement) =>
+  cell.querySelector(".vuuTableInputCell") !== null;
