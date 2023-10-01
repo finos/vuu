@@ -1,7 +1,9 @@
-import { GroupColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  GroupColumnDescriptor,
+  TableCellProps,
+} from "@finos/vuu-datagrid-types";
 import { getGroupValueAndOffset, metadataKeys } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
-import { TableCellProps } from "./TableCell";
 import { useCell } from "../useCell";
 import cx from "classnames";
 

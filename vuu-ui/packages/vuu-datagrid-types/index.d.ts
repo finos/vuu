@@ -25,6 +25,7 @@ export type DataCellEditHandler = (
 ) => boolean;
 
 export interface TableCellProps {
+  className?: string;
   column: KeyedColumnDescriptor;
   columnMap: ColumnMap;
   onClick?: (event: MouseEvent, column: KeyedColumnDescriptor) => void;
@@ -34,7 +35,7 @@ export interface TableCellProps {
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onCommit: (value: VuuColumnDataType) => boolean;
+  onCommit?: (value: VuuColumnDataType) => boolean;
 }
 
 export interface TableAttributes {

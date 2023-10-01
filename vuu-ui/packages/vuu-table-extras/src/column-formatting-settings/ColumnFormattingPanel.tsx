@@ -19,7 +19,7 @@ export interface ColumnFormattingPanelProps
   onChangeRenderer: SelectionChangeHandler<CellRendererDescriptor>;
 }
 
-const itemToString = (item: CellRendererDescriptor) => item.label;
+const itemToString = (item: CellRendererDescriptor) => item.label ?? item.name;
 
 export const ColumnFormattingPanel = ({
   availableRenderers,

@@ -33,7 +33,7 @@ type CellRendererOptions = {
   [key: string]: unknown;
   description?: string;
   label?: string;
-  serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "private";
+  serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "json" | "private";
 };
 
 export interface CellRendererDescriptor extends CellRendererOptions {
@@ -41,8 +41,13 @@ export interface CellRendererDescriptor extends CellRendererOptions {
 }
 
 const isTypeCompatible = (
-  rendererType: VuuColumnDataType | VuuColumnDataType[] | "private" | undefined,
-  serverDataType: VuuColumnDataType
+  rendererType:
+    | VuuColumnDataType
+    | (VuuColumnDataType | "json")[]
+    | "json"
+    | "private"
+    | undefined,
+  serverDataType: VuuColumnDataType | "json"
 ) => {
   if (rendererType === undefined || rendererType === "private") {
     return true;
@@ -92,7 +97,7 @@ export function registerComponent<
 }
 
 export const getRegisteredCellRenderers = (
-  serverDataType?: VuuColumnDataType
+  serverDataType?: VuuColumnDataType | "json"
 ): CellRendererDescriptor[] => {
   const rendererNames = Array.from(cellRenderersMap.keys());
   const allRenderers = rendererNames.map<CellRendererDescriptor>((name) => ({
