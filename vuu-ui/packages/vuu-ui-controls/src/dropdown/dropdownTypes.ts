@@ -6,6 +6,8 @@ export type DropdownPlacement =
   | "top-start"
   | "top-end"; // do any others make sense ?
 
+export type DropdownOpenKey = "Enter" | "ArrowDown" | " ";
+
 export interface DropdownBaseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   defaultIsOpen?: boolean;
@@ -13,6 +15,7 @@ export interface DropdownBaseProps
   fullWidth?: boolean;
   isOpen?: boolean;
   onKeyDown?: (e: KeyboardEvent<HTMLElement>) => void;
+  openKeys?: DropdownOpenKey[];
   onOpenChange?: (isOpen: boolean) => void;
   openOnFocus?: boolean;
   placement?: DropdownPlacement;
@@ -30,6 +33,7 @@ export interface DropdownHookProps
     | "isOpen"
     | "onOpenChange"
     | "onKeyDown"
+    | "openKeys"
     | "openOnFocus"
     | "popupWidth"
     | "width"

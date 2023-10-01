@@ -40,7 +40,11 @@ const ColumnListItem = ({
       className={cx(classNameProp, classBaseListItem)}
       data-name={item?.name}
     >
-      <Switch className={`${classBase}-switch`} checked={item?.subscribed} />
+      {item?.isCalculated ? (
+        <span className={`${classBase}-icon`} data-icon="function" />
+      ) : (
+        <Switch className={`${classBase}-switch`} checked={item?.subscribed} />
+      )}
       <span className={`${classBase}-text`}>{item?.label ?? item?.name}</span>
       <Checkbox
         className={`${classBase}-checkBox`}

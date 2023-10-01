@@ -1,0 +1,32 @@
+@property --price-ticker-color {
+    syntax: '<color>'; /* <- defined as type number for the transition to work */
+    initial-value: #15171B;
+    inherits: false;
+}
+  
+.vuuPriceTicker {
+    font-weight: 700;
+    transition-property: color;
+    transition-duration: .3s;;
+}
+
+.vuuPriceTicker.up1 {
+  color: var(--vuu-color-red-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.up2 {
+    color: var(--vuu-color-red-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.down1 {
+    color: var(--vuu-color-green-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.down2 {
+    color: var(--vuu-color-green-50);
+    animation-duration: 30s;
+  }
+  

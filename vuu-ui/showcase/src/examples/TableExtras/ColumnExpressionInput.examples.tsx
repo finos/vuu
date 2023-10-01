@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ColumnExpressionInput,
   ColumnExpressionInputProps,
@@ -37,7 +37,7 @@ const columns = [
 
 export const DefaultColumnExpressionInput = () => {
   const [expression, setExpression] = useState<Expression>();
-  const [, setSource] = useState<string>("");
+  const [source, setSource] = useState("");
   const [isValid] = useState(false);
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
@@ -68,6 +68,7 @@ export const DefaultColumnExpressionInput = () => {
       <ColumnExpressionInput
         onChange={handleChange}
         onSubmitExpression={handleSubmitExpression}
+        source={source}
         suggestionProvider={suggestionProvider}
       />
       <span>isValid {isValid}</span>

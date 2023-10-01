@@ -23,6 +23,17 @@ export type InstrumentsDataRow = [
   price
 ];
 
+export const InstrumentColumnMap = {
+  bbg: 0,
+  currency: 1,
+  description: 2,
+  exchange: 3,
+  string: 4,
+  number: 5,
+  ric: 6,
+  price: 7,
+};
+
 const instruments: InstrumentsDataRow[] = [];
 
 const chars = Array.from("ABCEFGHKMNOPQRTUVWYZ");

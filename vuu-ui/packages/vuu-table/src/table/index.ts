@@ -6,5 +6,5 @@ export * from "./useMeasuredContainer";
 export * from "./useSelection";
 export * from "./useTableColumnResize";
 export * from "./useTableModel";
-export * from "./useTableViewport";
+export * from "../table-next/useTableViewport";
 export * from "./cell-renderers";

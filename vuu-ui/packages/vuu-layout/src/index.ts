@@ -9,6 +9,7 @@ export * from "./layout-header";
 export * from "./layout-provider";
 export * from "./layout-reducer";
 export * from "./layout-view";
+export * from "./measured-container";
 export * from "./overflow-container";
 export * from "./palette";
 export * from "./placeholder";

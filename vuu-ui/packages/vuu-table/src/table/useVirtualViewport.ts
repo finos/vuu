@@ -6,7 +6,7 @@ import {
 } from "@finos/vuu-utils";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ViewportMeasurements } from "./useTableViewport";
+import { ViewportMeasurements } from "../table-next/useTableViewport";
 
 export interface VirtualViewportHookProps {
   columns: KeyedColumnDescriptor[];

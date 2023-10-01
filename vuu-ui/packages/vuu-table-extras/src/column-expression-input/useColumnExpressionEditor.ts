@@ -16,6 +16,7 @@ import {
   ColumnDefinitionExpression,
   walkTree,
 } from "./column-language-parser/ColumnExpressionTreeWalker";
+import { ColumnExpressionInputProps } from "./ColumnExpressionInput";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import {
@@ -90,27 +91,16 @@ const injectOptionContent = (
   }
 };
 
-export interface ColumnExpressionEditorProps {
-  onChange?: (
-    source: string,
-    expression: ColumnDefinitionExpression | undefined
-  ) => void;
-  onSubmitExpression?: (
-    source: string,
-    expression: ColumnDefinitionExpression | undefined
-  ) => void;
-  suggestionProvider: IExpressionSuggestionProvider;
-}
-
 export const useColumnExpressionEditor = ({
   onChange,
   onSubmitExpression,
+  source,
   suggestionProvider,
-}: ColumnExpressionEditorProps) => {
+}: ColumnExpressionInputProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const onSubmit = useRef<ApplyCompletion>(noop);
+  const onSubmitRef = useRef<ApplyCompletion>(noop);
   const viewRef = useRef<EditorView>();
-  const completionFn = useColumnAutoComplete(suggestionProvider, onSubmit);
+  const completionFn = useColumnAutoComplete(suggestionProvider, onSubmitRef);
 
   const [createState, clearInput] = useMemo(() => {
     const parseExpression = ():
@@ -131,22 +121,9 @@ export const useColumnExpressionEditor = ({
       getView(viewRef).setState(createState());
     };
 
-    const submitExpressionAndClearInput = () => {
+    const submitExpression = () => {
       const [source, expression] = parseExpression();
       onSubmitExpression?.(source, expression);
-      clearInput();
-    };
-
-    const submitFilter = (key: string) => {
-      return keymap.of([
-        {
-          key,
-          run() {
-            submitExpressionAndClearInput();
-            return true;
-          },
-        },
-      ]);
     };
 
     const showSuggestions = (key: string) => {
@@ -163,7 +140,7 @@ export const useColumnExpressionEditor = ({
 
     const createState = (): EditorState =>
       EditorState.create({
-        doc: "",
+        doc: source,
         extensions: [
           minimalSetup,
           autocompletion({
@@ -178,14 +155,13 @@ export const useColumnExpressionEditor = ({
           }),
           columnExpressionLanguageSupport(),
           keymap.of(defaultKeymap),
-          submitFilter("Ctrl-Enter"),
           showSuggestions("ArrowDown"),
           EditorView.updateListener.of((v) => {
             const view = getView(viewRef);
             if (v.docChanged) {
               startCompletion(view);
               const source = view.state.doc.toString();
-              onChange?.(source, undefined);
+              onChange?.(source);
             }
           }),
           // Enforces single line view
@@ -197,16 +173,12 @@ export const useColumnExpressionEditor = ({
         ],
       });
 
-    onSubmit.current = () => {
-      submitExpressionAndClearInput();
-      // TODO refocu sthe editor
-      setTimeout(() => {
-        getView(viewRef).focus();
-      }, 100);
+    onSubmitRef.current = () => {
+      submitExpression();
     };
 
     return [createState, clearInput];
-  }, [completionFn, onChange, onSubmitExpression]);
+  }, [completionFn, onChange, onSubmitExpression, source]);
 
   useEffect(() => {
     if (!editorRef.current) {
