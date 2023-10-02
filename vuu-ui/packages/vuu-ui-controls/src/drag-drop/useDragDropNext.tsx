@@ -124,38 +124,15 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleScrollStopRef = useRef<ScrollStopHandler>();
 
-  const {
-    isDragSource,
-    isDropTarget,
-    onDragOut,
-    onEndOfDragOperation,
-    register,
-  } = useDragDropProvider(id);
+  const { isDragSource, isDropTarget, onDragOut, register } =
+    useDragDropProvider(id);
+  console.log(
+    `#${id} is drag source ${isDragSource} isDropTarget ${isDropTarget}`
+  );
 
-  type NativeMouseHandler = (evt: MouseEvent) => void;
-  /** refs for drag handlers to avoid circular dependency issues  */
-  const dragMouseMoveHandlerRef = useRef<NativeMouseHandler>();
-  const dragMouseUpHandlerRef = useRef<NativeMouseHandler>();
-
-  const attachDragHandlers = useCallback(() => {
-    console.log("attach drag handlers");
-    const { current: dragMove } = dragMouseMoveHandlerRef;
-    const { current: dragUp } = dragMouseUpHandlerRef;
-    if (dragMove && dragUp) {
-      // prettier-ignore
-      document.addEventListener("mousemove", dragMove, false);
-      document.addEventListener("mouseup", dragUp, false);
-    }
-  }, []);
-  const removeDragHandlers = useCallback(() => {
-    console.log("remove drag handlers");
-    const { current: dragMove } = dragMouseMoveHandlerRef;
-    const { current: dragUp } = dragMouseUpHandlerRef;
-    if (dragMove && dragUp) {
-      console.log("... we have both handlers");
-      // prettier-ignore
-      document.removeEventListener("mousemove", dragMove, false);
-      document.removeEventListener("mouseup", dragUp, false);
+  useEffect(() => {
+    if (id && (isDragSource || isDropTarget)) {
+      register(id);
     }
   }, []);
 
@@ -308,12 +285,20 @@ export const useDragDropNext: DragDropHook = ({
         ? Math.abs(lastClientContraPos - clientContraPos)
         : 0;
 
-      if (dragDropStateRef.current && dragOutDistance - dragDistance > 5) {
-        if (onDragOut?.(id as string, dragDropStateRef.current)) {
-          // TODO create a cleanup function
-          removeDragHandlers();
-          releaseDrag?.();
-          dragDropStateRef.current = null;
+      console.log(`dragOutDistance ${dragOutDistance} `);
+
+      if (dragOutDistance - dragDistance > 5) {
+        if (
+          onDragOut?.(
+            id as string,
+            draggableRef.current as HTMLElement,
+            mouseOffsetRef.current
+          )
+        ) {
+          console.log(`drag handed over to provider`);
+          // prettier-ignore
+          document.removeEventListener("mousemove", dragMouseMoveHandler, false);
+          document.removeEventListener("mouseup", dragMouseUpHandler, false);
         }
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
