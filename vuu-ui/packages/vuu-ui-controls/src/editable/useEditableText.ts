@@ -16,7 +16,7 @@ export interface EditableTextHookProps<
   onCommit: (value: T) => boolean;
 }
 
-const dispatchCommitEvent = (el: HTMLInputElement) => {
+export const dispatchCommitEvent = (el: HTMLElement) => {
   const commitEvent = new Event("vuu-commit");
   el.dispatchEvent(commitEvent);
 };
@@ -32,12 +32,18 @@ export const useEditableText = <
   const [value, setValue] = useState(initialValue);
   const initialValueRef = useRef<T>(initialValue);
   const isDirtyRef = useRef(false);
+  const hasCommittedRef = useRef(false);
+
+  const handleBlur = useCallback(() => {
+    console.log("blur");
+  }, []);
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
       if (evt.key === "Enter") {
         evt.stopPropagation();
         if (isDirtyRef.current) {
+          hasCommittedRef.current = true;
           const warningMessage = clientSideEditValidationCheck?.(value);
           if (warningMessage) {
             setMessage(warningMessage);
@@ -51,8 +57,14 @@ export const useEditableText = <
           }
         } else {
           dispatchCommitEvent(evt.target as HTMLInputElement);
+          hasCommittedRef.current = false;
         }
-      } else if (evt.key === "ArrowRight" || evt.key === "ArrowLeft") {
+      } else if (
+        evt.key === "ArrowRight" ||
+        evt.key === "ArrowLeft" ||
+        evt.key === "ArrowUp" ||
+        evt.key === "ArrowDown"
+      ) {
         evt.stopPropagation();
       } else if (evt.key === "Escape") {
         if (isDirtyRef.current) {
@@ -65,13 +77,25 @@ export const useEditableText = <
     [clientSideEditValidationCheck, onCommit, value]
   );
 
-  const handleChange = useCallback<FormEventHandler>((evt) => {
-    const { value } = evt.target as HTMLInputElement;
-    isDirtyRef.current = value !== initialValueRef.current;
-    setValue(value as T);
-  }, []);
+  const handleChange = useCallback<FormEventHandler>(
+    (evt) => {
+      const { value } = evt.target as HTMLInputElement;
+      isDirtyRef.current = value !== initialValueRef.current;
+      setValue(value as T);
+      console.log(`value changes to ${value} message ${message}`);
+      if (hasCommittedRef.current) {
+        const warningMessage = clientSideEditValidationCheck?.(value);
+        console.log({ warningMessage });
+        if (warningMessage !== message && warningMessage !== false) {
+          setMessage(warningMessage);
+        }
+      }
+    },
+    [clientSideEditValidationCheck, message]
+  );
 
   return {
+    onBlur: handleBlur,
     onChange: handleChange,
     onKeyDown: handleKeyDown,
     value,

@@ -14,7 +14,10 @@ import {
   LayoutProvider,
   LayoutProviderProps,
 } from "@finos/vuu-layout";
-import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
+import {
+  LayoutChangeHandler,
+  LayoutJSON,
+} from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
@@ -85,9 +88,10 @@ export const Shell = ({
     user,
   });
 
-  const handleLayoutChange = useCallback(
-    (layout) => {
+  const handleLayoutChange = useCallback<LayoutChangeHandler>(
+    (layout, layoutChangeReason) => {
       try {
+        console.log(`handle layout changed ${layoutChangeReason}`);
         saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");
