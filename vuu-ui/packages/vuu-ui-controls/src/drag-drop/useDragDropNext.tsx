@@ -123,7 +123,11 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleScrollStopRef = useRef<ScrollStopHandler>();
 
-  const { isDragSource, isDropTarget, register } = useDragDropProvider(id);
+  const { isDragSource, isDropTarget, onDragOut, register } =
+    useDragDropProvider(id);
+  console.log(
+    `#${id} is drag source ${isDragSource} isDropTarget ${isDropTarget}`
+  );
 
   useEffect(() => {
     if (id && (isDragSource || isDropTarget)) {
@@ -239,8 +243,21 @@ export const useDragDropNext: DragDropHook = ({
         ? Math.abs(lastClientContraPos - clientContraPos)
         : 0;
 
+      console.log(`dragOutDistance ${dragOutDistance} `);
+
       if (dragOutDistance - dragDistance > 5) {
-        console.log("going unbounded");
+        if (
+          onDragOut?.(
+            id as string,
+            draggableRef.current as HTMLElement,
+            mouseOffsetRef.current
+          )
+        ) {
+          console.log(`drag handed over to provider`);
+          // prettier-ignore
+          document.removeEventListener("mousemove", dragMouseMoveHandler, false);
+          document.removeEventListener("mouseup", dragMouseUpHandler, false);
+        }
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
         // Need to notify the dragDropHook, so it can clearSpacers
@@ -284,13 +301,15 @@ export const useDragDropNext: DragDropHook = ({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       drag,
-      draggableRef,
       getScrollDirection,
       handleScrollStart,
+      id,
       isDragSource,
       isScrolling,
+      onDragOut,
       orientation,
       startScrolling,
       stopScrolling,
