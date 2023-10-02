@@ -49,12 +49,12 @@ export interface LayoutPersistenceManager {
    *
    * @returns Full JSON representation of a layouts
    */
-  loadTempLayout: () => Promise<LayoutJSON>;
+  loadCurrentLayout: () => Promise<LayoutJSON>;
 
   /**
   * Saves a temporary layout
   *   
   * @param layout - Full JSON representation of layout to be saved
   */
-   saveTempLayout: (layout: LayoutJSON) => Promise<void>
+   saveCurrentLayout: (layout: LayoutJSON) => Promise<void>
 }

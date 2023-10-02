@@ -28,16 +28,17 @@ export const LayoutManagementProvider = (props: LayoutManagementProviderProps) =
   const [currentLayout, setCurrentLayout] = useState<LayoutJSON>(defaultLayout);
 
   useEffect(() => {
-    Promise.all([persistenceManager.loadMetadata(), persistenceManager.loadTempLayout()])
-      .then(([metadata, layout]) => {
-        setLayoutMetadata(metadata)
-        setCurrentLayout(layout);
-      })
+    persistenceManager.loadMetadata().then(metadata => {
+      setLayoutMetadata(metadata)
+    })
+    persistenceManager.loadCurrentLayout().then(layout => {
+      setCurrentLayout(layout);
+    })
   }, [])
 
   const saveCurrentLayout = useCallback((layout: LayoutJSON) => {
     setCurrentLayout(layout)
-    persistenceManager.saveTempLayout(layout)
+    persistenceManager.saveCurrentLayout(layout)
   }, []);
 
   const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {

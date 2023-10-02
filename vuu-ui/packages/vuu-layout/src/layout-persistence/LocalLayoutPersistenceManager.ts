@@ -102,18 +102,18 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  loadTempLayout(): Promise<LayoutJSON> {
-    return new Promise((resolve, reject) => {
-      const tempLayout = getLocalEntity<LayoutJSON>("api/vui");
-      if (tempLayout) {
-        resolve(tempLayout);
+  loadCurrentLayout(): Promise<LayoutJSON> {
+    return new Promise((resolve) => {
+      const currentLayout = getLocalEntity<LayoutJSON>("api/vui");
+      if (currentLayout) {
+        resolve(currentLayout);
       } else {
         resolve(defaultLayout);
       }
     });
   }
 
-  saveTempLayout(layout: LayoutJSON): Promise<void> {
+  saveCurrentLayout(layout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) => {
       const savedLayout = saveLocalEntity<LayoutJSON>("api/vui", layout);
       if (savedLayout) {
