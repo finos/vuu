@@ -1,4 +1,5 @@
 import { LayoutJSON } from "@finos/vuu-layout/src/layout-reducer";
+import { resolveJSONPath } from "@finos/vuu-layout";
 import { VuuUser } from "../shell";
 
 export const loadLocalConfig = (
@@ -26,7 +27,10 @@ export const saveLocalConfig = (
 ): Promise<undefined> =>
   new Promise((resolve, reject) => {
     try {
-      console.log(`save local config at ${saveUrl}`);
+      // Just for demonstration,not currently being used
+      const layoutJson = resolveJSONPath(data, "#main-tabs.ACTIVE_CHILD");
+      console.log(layoutJson);
+
       localStorage.setItem(saveUrl, JSON.stringify(data));
       resolve(undefined);
     } catch {
