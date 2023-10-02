@@ -45,14 +45,14 @@ export interface LayoutPersistenceManager {
   loadMetadata: () => Promise<LayoutMetadata[]>;
 
   /**
-   * Retrieves a temporary layout
+   * Retrieves the current layout
    *
    * @returns Full JSON representation of a layouts
    */
   loadCurrentLayout: () => Promise<LayoutJSON>;
 
   /**
-  * Saves a temporary layout
+  * Saves the current layout
   *   
   * @param layout - Full JSON representation of layout to be saved
   */
