@@ -9,12 +9,15 @@ import {
 } from "react";
 import {
   LayoutActionType,
+  LayoutChangeHandler,
+  LayoutChangeReason,
   layoutFromJson,
   LayoutJSON,
   layoutReducer,
   LayoutReducerAction,
   layoutToJSON,
   processLayoutElement,
+  SaveAction,
 } from "../layout-reducer";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {
@@ -34,7 +37,31 @@ const shouldSave = (action: LayoutReducerAction) =>
     "switch-tab",
   ].includes(action.type);
 
-type LayoutChangeHandler = (layout: LayoutJSON, source: string) => void;
+const getLayoutChangeReason = (
+  action: LayoutReducerAction | SaveAction
+): LayoutChangeReason => {
+  switch (action.type) {
+    case "switch-tab":
+      // TODO how can we make this more robust, shouldn't rely on 'main-tabs'
+      if (action.id === "main-tabs") {
+        return "switch-active-layout";
+      } else {
+        return "switch-active-tab";
+      }
+    case "save":
+      return "save-feature-props";
+    case "drag-drop":
+      return "drag-drop-operation";
+    case "remove":
+      return "remove-component";
+    case "splitter-resize":
+      return "resize-component";
+    case "set-title":
+      return "edit-feature-title";
+    default:
+      throw Error("unknown layout action");
+  }
+};
 
 export interface LayoutProviderProps {
   children: ReactElement;
@@ -58,7 +85,8 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const [, forceRefresh] = useState<unknown>(null);
 
   const serializeState = useCallback(
-    (source) => {
+    (source, layoutChangeReason: LayoutChangeReason) => {
+      console.log(`serialize state ${layoutChangeReason}`);
       if (onLayoutChange) {
         const targetContainer =
           findTarget(source, withDropTarget) || state.current;
@@ -67,7 +95,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           ? getProps(targetContainer).children[0]
           : targetContainer;
         const serializedModel = layoutToJSON(target);
-        onLayoutChange(serializedModel, "drag-root");
+        onLayoutChange(serializedModel, layoutChangeReason);
       }
     },
     [onLayoutChange]
@@ -80,7 +108,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         state.current = nextState;
         forceRefresh({});
         if (!suppressSave && shouldSave(action)) {
-          serializeState(nextState);
+          serializeState(nextState, getLayoutChangeReason(action));
         }
       }
     },
@@ -95,7 +123,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           break;
         }
         case "save": {
-          serializeState(state.current);
+          serializeState(state.current, getLayoutChangeReason(action));
           break;
         }
         default: {

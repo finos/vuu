@@ -49,7 +49,7 @@ export const StackLayout = (props: StackProps) => {
 
   const handleTabSelection = (nextIdx: number) => {
     if (path) {
-      dispatch({ type: "switch-tab", path, nextIdx });
+      dispatch({ type: "switch-tab", id, path, nextIdx });
       onTabSelectionChanged?.(nextIdx);
     }
   };

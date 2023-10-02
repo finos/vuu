@@ -135,6 +135,7 @@ export type LayoutResizeAction = {
 };
 
 export type SwitchTabAction = {
+  id?: string;
   nextIdx: number;
   path: string;
   type: typeof LayoutActionType.SWITCH_TAB;
@@ -193,3 +194,46 @@ export type DragStartAction = {
   path: string;
   type: typeof LayoutActionType.DRAG_START;
 };
+
+export type LayoutLevelChange =
+  | "switch-active-tab"
+  | "edit-feature-title"
+  | "save-feature-props"
+  | "resize-component"
+  | "remove-component"
+  | "drag-drop-operation";
+
+export type ApplicationLevelChange =
+  | "switch-active-layout"
+  | "open-layout"
+  | "close-layout"
+  | "rename-layout";
+
+export type LayoutChangeReason = LayoutLevelChange | ApplicationLevelChange;
+
+export type LayoutChangeHandler = (
+  layout: LayoutJSON,
+  layoutChangeReason: LayoutChangeReason
+) => void;
+
+export const isApplicationLevelChange = (
+  layoutChangeReason: LayoutChangeReason
+): layoutChangeReason is ApplicationLevelChange =>
+  [
+    "switch-active-layout",
+    "open-layout",
+    "close-layout",
+    "rename-layout",
+  ].includes(layoutChangeReason);
+
+export const isLayoutLevelChange = (
+  layoutChangeReason: LayoutChangeReason
+): layoutChangeReason is LayoutLevelChange =>
+  [
+    "switch-active-tab",
+    "edit-feature-title",
+    "save-feature-props",
+    "remove-component",
+    "resize-component",
+    "drag-drop-operation",
+  ].includes(layoutChangeReason);
