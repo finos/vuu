@@ -31,41 +31,10 @@ export const defaultLayout: LayoutJSON = {
   },
   children: [
     {
-      type: "Stack",
       props: {
-        active: 0,
-        title: "My Instruments",
-        TabstripProps: {
-          allowRenameTab: true,
-          allowCloseTab: true,
-        },
+        className: "vuuShell-Placeholder",
       },
-      children: [
-        {
-          type: "View",
-          props: {
-            title: "European Stock",
-          },
-          style: { height: "calc(100% - 6px)" },
-          children: [
-            {
-              type: "FilterTable",
-            },
-          ],
-        },
-        {
-          type: "View",
-          props: {
-            title: "Other Stock",
-          },
-          style: { height: "calc(100% - 6px)" },
-          children: [
-            {
-              type: "FilterTable",
-            },
-          ],
-        },
-      ],
+      type: "Placeholder",
     },
   ],
-}
+};
