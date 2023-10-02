@@ -26,10 +26,6 @@
   box-sizing: content-box;
 }
 
-.vuuList-contentSized {
-  box-sizing: content-box;
-}
-
 .vuuList-borderless {
   --list-borderStyle: none;
 }
