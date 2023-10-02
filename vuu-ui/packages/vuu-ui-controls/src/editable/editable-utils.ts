@@ -15,6 +15,7 @@ function applyRules(
   rules: EditValidationRule[],
   value: VuuRowDataItemType
 ): string | false | undefined {
+  console.log(`apply rules to ${value}`);
   let result: false | string | undefined = undefined;
   for (const rule of rules) {
     const editRuleValidator = getEditRuleValidator(rule.name);
@@ -42,5 +43,6 @@ function applyRules(
     }
   }
 
+  console.log(result);
   return result;
 }
