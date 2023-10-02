@@ -12,24 +12,29 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     return new Promise(async (resolve) => {
       console.log(`Saving layout as ${metadata.name} to group ${metadata.group}...`);
 
-      const existingLayouts = await this.loadLayouts();
-      const existingMetadata = await this.loadMetadata();
-
-      const id = getUniqueId();
-
-      this.appendAndPersist(id, metadata, layout, existingLayouts, existingMetadata);
-
-      resolve(id);
+      Promise.all([this.loadLayouts(), this.loadMetadata()])
+        .then(([existingLayouts, existingMetadata]) => {
+          const id = getUniqueId();
+          this.appendAndPersist(
+            id,
+            metadata,
+            layout,
+            existingLayouts,
+            existingMetadata
+          );
+          resolve(id);
+        });
     })
   }
 
   updateLayout(id: string, metadata: Omit<LayoutMetadata, "id">, newLayoutJson: LayoutJSON): Promise<void> {
     return new Promise(async (resolve, reject) => {
       this.validateIds(id)
-        .then(async () => {
-          const existingLayouts = (await this.loadLayouts()).filter(layout => layout.id !== id);
-          const existingMetadata = (await this.loadMetadata()).filter(metadata => metadata.id !== id);
-          this.appendAndPersist(id, metadata, newLayoutJson, existingLayouts, existingMetadata);
+        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
+        .then(([existingLayouts, existingMetadata]) => {
+          const newLayouts = existingLayouts.filter(layout => layout.id !== id);
+          const newMetadata = existingMetadata.filter(metadata => metadata.id !== id);
+          this.appendAndPersist(id, metadata, newLayoutJson, newLayouts, newMetadata);
           resolve();
         })
         .catch(e => reject(e));
@@ -39,9 +44,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   deleteLayout(id: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       this.validateIds(id)
-        .then(async () => {
-          const layouts = (await this.loadLayouts()).filter((layout) => layout.id !== id);
-          const metadata = (await this.loadMetadata()).filter(metadata => metadata.id !== id);
+        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
+        .then(([existingLayouts, existingMetadata]) => {
+          const layouts = existingLayouts.filter((layout) => layout.id !== id);
+          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
         })
@@ -52,8 +58,9 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   loadLayout(id: string): Promise<LayoutJSON> {
     return new Promise((resolve, reject) => {
       this.validateId(id, false)
-        .then(async () => {
-          const layouts = (await this.loadLayouts()).filter(layout => layout.id === id);
+        .then(() => this.loadLayouts())
+        .then(existingLayouts => {
+          const layouts = existingLayouts.filter(layout => layout.id === id);
           resolve(layouts[0].json);
         })
         .catch(e => reject(e));
