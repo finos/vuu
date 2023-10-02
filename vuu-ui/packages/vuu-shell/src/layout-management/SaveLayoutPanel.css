@@ -38,6 +38,7 @@
 
 .saveLayoutPanel-inputText {
   color: var(--light-text-secondary, #606477);
+  font-family: Nunito Sans Regular;
   font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
   font-size: 12px;
   font-weight: 400;

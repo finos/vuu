@@ -1,47 +1,46 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
-import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
-import { LayoutJSON } from "@finos/vuu-layout";
-import { getUniqueId } from "@finos/vuu-utils";
-import { LayoutMetadata, Layout } from "./layoutTypes";
+import { getLocalEntity } from "@finos/vuu-filters";
+import { LayoutJSON, LocalLayoutPersistenceManager } from "@finos/vuu-layout";
+import { LayoutMetadata } from "./layoutTypes";
+
+const persistenceManager = new LocalLayoutPersistenceManager();
 
 export const LayoutManagementContext = React.createContext<{
-  layouts: Layout[],
+  layoutMetadata: LayoutMetadata[],
   saveLayout: (n: Omit<LayoutMetadata, "id">) => void
-}>({ layouts: [], saveLayout: () => { } })
+}>({ layoutMetadata: [], saveLayout: () => { } })
 
-export const LayoutManagementProvider = (props: { children: JSX.Element | JSX.Element[] }) => {
-
-  const [layouts, setLayouts] = useState<Layout[]>([])
+export const LayoutManagementProvider = (props: {
+    children: JSX.Element | JSX.Element[]
+  }) => {
+  const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
 
   useEffect(() => {
-    const layouts = getLocalEntity<Layout[]>("layouts")
-    setLayouts(layouts || [])
+    const loadedMetadata = persistenceManager.loadMetadata();
+    setLayoutMetadata(loadedMetadata || [])
   }, [])
 
-  useEffect(() => {
-    saveLocalEntity<Layout[]>("layouts", layouts)
-  }, [layouts])
-
   const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {
-    const json = getLocalEntity<LayoutJSON>("api/vui")
+    const json = getLocalEntity<LayoutJSON>("api/vui");
+
     if (json) {
-      setLayouts(prev =>
-        [
-          ...prev,
-          {
-            metadata: {
-              ...metadata,
-              id: getUniqueId()
-            },
-            json
-          }
-        ]
-      )
+      // Persist layouts
+      const generatedId = persistenceManager.createLayout(metadata, json);
+
+      // Update state
+      const newMetadata: LayoutMetadata = {
+        ...metadata,
+        id: generatedId
+      };
+
+      setLayoutMetadata(prev => [...prev, newMetadata]);
     }
   }, [])
 
+  // TODO: add loadLayout function
+
   return (
-    <LayoutManagementContext.Provider value={{ layouts, saveLayout }} >
+    <LayoutManagementContext.Provider value={{ layoutMetadata, saveLayout }} >
       {props.children}
     </LayoutManagementContext.Provider>
   )
