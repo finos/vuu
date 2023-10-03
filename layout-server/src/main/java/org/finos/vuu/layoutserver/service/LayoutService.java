@@ -21,6 +21,8 @@ public class LayoutService {
         return layoutRepository.findById(id).orElseThrow();
     }
 
+
+    // TODO Refactor to use a metadatarepository.findAll method
     public List<Metadata> getMetadata() {
         return metadataService.getMetadata();
     }

@@ -1,5 +1,6 @@
 package org.finos.vuu.layoutserver.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
@@ -63,7 +64,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CreateLayoutResponseDTO createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
+    public CreateLayoutResponseDTO createLayout(@RequestBody @Valid LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
@@ -79,7 +80,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO newLayout) {
+    public void updateLayout(@PathVariable UUID id, @RequestBody @Valid LayoutRequestDTO newLayout) {
         // TODO I'm not sure about this, I think layoutService should be doing more logic, not the mapper here
         Layout layout = layoutService.getLayout(id);
 

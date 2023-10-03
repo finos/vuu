@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class Metadata {
     private UUID id;
 
     @OneToOne(mappedBy = "metadata")
+    @ToString.Exclude
     private Layout layout;
 
     private String name;
