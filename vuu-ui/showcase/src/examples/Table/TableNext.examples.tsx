@@ -43,12 +43,62 @@ export const DefaultTableNextArrayData = () => {
       config={config}
       height={645}
       onConfigChange={handleConfigChange}
-      renderBufferSize={0}
-      width={715}
+      renderBufferSize={5}
+      width={723}
     />
   );
 };
 DefaultTableNextArrayData.displaySequence = displaySequence++;
+
+export const EditableTableNextArrayData = () => {
+  const { config, dataSource } = useTableConfig({
+    columnConfig: {
+      bbg: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "input-cell",
+            rules: [
+              { name: "vuu-case", value: "upper" },
+              {
+                name: "vuu-pattern",
+                value: "^.{5,8}$",
+                message: "Value must contain between 5 and 8 characters",
+              },
+            ],
+          },
+        },
+      },
+      currency: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "dropdown-cell",
+            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
+          },
+        },
+      },
+    },
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  return (
+    <TableNext
+      config={{
+        ...config,
+        rowSeparators: true,
+      }}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={10}
+      width={723}
+    />
+  );
+};
+EditableTableNextArrayData.displaySequence = displaySequence++;
 
 export const TableNextVuuInstruments = () => {
   const { schemas } = useSchemas();
@@ -132,9 +182,7 @@ export const TableNextInLayoutWithContextPanel = () => {
   });
 
   const handleConfigChange = useCallback((tableConfig: TableConfig) => {
-    console.log("config changed", {
-      tableConfig,
-    });
+    console.log("config changed");
   }, []);
 
   return (
@@ -166,7 +214,6 @@ export const AutoTableNext = () => {
   const [config, setConfig] = useState(configProp);
 
   const handleConfigChange = (config: TableConfig) => {
-    console.log({ config });
     setConfig(config);
   };
 
@@ -182,6 +229,37 @@ export const AutoTableNext = () => {
   );
 };
 AutoTableNext.displaySequence = displaySequence++;
+
+export const AutoTableNextBasketDesign = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "delta",
+    table: { module: "SIMUL", table: "basketDesign" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <TableNext
+      {...props}
+      config={{
+        ...config,
+        rowSeparators: true,
+        zebraStripes: true,
+      }}
+      onConfigChange={handleConfigChange}
+      renderBufferSize={50}
+    />
+  );
+};
+AutoTableNextBasketDesign.displaySequence = displaySequence++;
 
 export const GroupHeaderCellNextOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {
@@ -206,9 +284,7 @@ export const GroupHeaderCellNextOneColumn = () => {
     };
   }, []);
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log("remove column");
   }, []);
 
   return (
@@ -258,9 +334,7 @@ export const GroupHeaderCellNextTwoColumn = () => {
     };
   }, []);
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (
@@ -316,9 +390,7 @@ export const GroupHeaderCellNextThreeColumn = () => {
     width: 250,
   });
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column", {
-      column,
-    });
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (
@@ -344,3 +416,54 @@ export const GroupHeaderCellNextThreeColumn = () => {
   );
 };
 GroupHeaderCellNextThreeColumn.displaySequence = displaySequence++;
+
+export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
+  const valueFormatter = defaultValueFormatter;
+
+  const [column, setColumn] = useState<GroupColumnDescriptor>({
+    groupConfirmed: true,
+    key: 0,
+    label: "group-column",
+    name: "group-column",
+    isGroup: true,
+    columns: [
+      {
+        key: 1,
+        name: "currency",
+        label: "currency",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 2,
+        name: "exchange",
+        label: "exchange",
+        valueFormatter,
+        width: 100,
+      },
+      {
+        key: 3,
+        name: "price",
+        label: "proce",
+        valueFormatter,
+        width: 100,
+      },
+    ],
+    valueFormatter,
+    width: 250,
+  });
+  const handleRemoveColumn = useCallback((column) => {
+    console.log(`remove column ${column.name}`);
+  }, []);
+
+  return (
+    <div data-resizeable style={{ width: 300, overflow: "hidden" }}>
+      <GroupHeaderCellNext
+        className="vuuFullWidthExample"
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
+    </div>
+  );
+};
+GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;

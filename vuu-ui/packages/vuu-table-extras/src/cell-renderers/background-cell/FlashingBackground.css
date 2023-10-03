@@ -1,6 +1,6 @@
 @keyframes reactbgup1 {
     from {
-      background-color: var(--salt-differential-positive-background);
+      background-color: green;
     }
     to {
       background-color: transparent;
@@ -9,7 +9,7 @@
   
   @keyframes reactbgup2 {
     from {
-      background-color: var(--salt-differential-positive-background);
+      background-color: green;
     }
     to {
       background-color: transparent;
@@ -18,7 +18,7 @@
   
   @keyframes reactbgdown1 {
     from {
-      background-color: var(--salt-differential-negative-background);
+      background-color: red;
     }
     to {
       background-color: transparent;
@@ -27,7 +27,7 @@
   
   @keyframes reactbgdown2 {
     from {
-      background-color: var(--salt-differential-negative-background);
+      background-color: red;
     }
     to {
       background-color: transparent;
@@ -36,7 +36,7 @@
   
   @keyframes reactarrowup1 {
     from {
-      color: var(--salt-differential-positive-foreground);
+      color: white;
     }
     to {
       color: transparent;
@@ -45,7 +45,7 @@
   
   @keyframes reactarrowup2 {
     from {
-      color: var(--salt-differential-positive-foreground);
+      color: white;
     }
     to {
       color: transparent;
@@ -54,7 +54,7 @@
   
   @keyframes reactarrowdown1 {
     from {
-      color: var(--salt-differential-negative-foreground);
+      color: white;
     }
     to {
       color: transparent;
@@ -63,7 +63,7 @@
   
   @keyframes reactarrowdown2 {
     from {
-      color: var(--salt-differential-negative-foreground);
+      color: white;
     }
     to {
       color: transparent;
@@ -72,11 +72,11 @@
   
   @keyframes reactbgarrowup1 {
     0% {
-      color: var(--salt-differential-positive-foreground);
-      background-color: var(--salt-differential-positive-background);
+      color: green;
+      background-color: green;
     }
     20% {
-      color: var(--salt-differential-positive-foreground);
+      color: green;
       background-color: transparent;
     }
     100% {
@@ -87,11 +87,11 @@
   
   @keyframes reactbgarrowup2 {
     0% {
-      color: var(--salt-differential-positive-foreground);
-      background-color: var(--salt-differential-positive-background);
+      color: green;
+      background-color: green;
     }
     20% {
-      color: var(--salt-differential-positive-foreground);
+      color: green;
       background-color: transparent;
     }
     100% {
@@ -102,11 +102,11 @@
   
   @keyframes reactbgarrowdown1 {
     0% {
-      color: var(--salt-differential-negative-foreground);
-      background-color: var(--salt-differential-negative-background);
+      color: red;
+      background-color: red;
     }
     20% {
-      color: var(--salt-differential-negative-foreground);
+      color: red;
       background-color: transparent;
     }
     100% {
@@ -117,11 +117,11 @@
   
   @keyframes reactbgarrowdown2 {
     0% {
-      color: var(--salt-differential-negative-foreground);
-      background-color: var(--salt-differential-negative-background);
+      color: red;
+      background-color: red;
     }
     20% {
-      color: var(--salt-differential-negative-foreground);
+      color: red;
       background-color: transparent;
     }
     100% {

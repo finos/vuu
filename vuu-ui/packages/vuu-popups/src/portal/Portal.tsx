@@ -1,10 +1,5 @@
-import {
-  forwardRef,
-  ReactNode,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useThemeAttributes } from "@finos/vuu-shell";
+import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import "./Portal.css";
@@ -32,43 +27,42 @@ function getContainer(container: PortalProps["container"]) {
   return typeof container === "function" ? container() : container;
 }
 
-const DEFAULT_ID = "portal-root";
+const DEFAULT_ID = "vuu-portal-root";
 
 /**
  * Portals provide a first-class way to render children into a DOM node
  * that exists outside the DOM hierarchy of the parent component.
  */
-export const Portal = forwardRef<HTMLElement, PortalProps>(function Portal(
-  { children, container: containerProp = document.body, id = DEFAULT_ID },
-  ref
-) {
+export const Portal = ({
+  children,
+  container: containerProp = document.body,
+  id = DEFAULT_ID,
+}: PortalProps) => {
   const [mounted, setMounted] = useState(false);
   const portalRef = useRef<HTMLElement | null>(null);
-
   const container = getContainer(containerProp) ?? document.body;
+  const [themeClass, densityClass, dataMode] = useThemeAttributes();
 
   useLayoutEffect(() => {
     const root = document.getElementById(id);
-
     if (root) {
       portalRef.current = root;
     } else {
       portalRef.current = document.createElement("div");
       portalRef.current.id = id;
     }
-
     const el = portalRef.current;
-
     if (!container.contains(el)) {
       container.appendChild(el);
     }
-
+    el.classList.add(themeClass, densityClass);
+    el.dataset.mode = dataMode;
     setMounted(true);
-  }, [id, container]);
+  }, [id, container, themeClass, densityClass, dataMode]);
 
   if (mounted && portalRef.current && children) {
     return createPortal(children, portalRef.current);
   }
 
   return null;
-});
+};

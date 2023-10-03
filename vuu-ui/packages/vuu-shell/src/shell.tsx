@@ -13,6 +13,10 @@ import {
   LayoutProvider,
   LayoutProviderProps,
 } from "@finos/vuu-layout";
+import {
+  LayoutChangeHandler,
+  LayoutJSON,
+} from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
@@ -62,10 +66,12 @@ export const Shell = ({
   const layoutId = useRef("latest");
   const { currentLayout, saveCurrentLayout, loadLayoutById } = useLayoutManager();
 
-  const handleLayoutChange = useCallback(
-    (layout) => {
+  const handleLayoutChange = useCallback<LayoutChangeHandler>(
+    (layout, layoutChangeReason) => {
       try {
         saveCurrentLayout(layout);
+        console.log(`handle layout changed ${layoutChangeReason}`);
+        // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");
       }

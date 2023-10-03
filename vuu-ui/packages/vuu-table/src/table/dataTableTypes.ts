@@ -25,6 +25,12 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   headerHeight?: number;
   height?: number;
   /**
+   * required if a fully featured column picker is to be available.
+   * Available columns can be changed by the addition or removal of
+   * one or more calculated columns.
+   */
+  onAvailableColumnsChange?: (columns: SchemaColumn[]) => void;
+  /**
    * This callback will be invoked any time a config attribute of TableConfig
    * is changed. By persisting this value and providing it to the Table as a
    * prop, table state can be persisted across sessions.
@@ -52,6 +58,11 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    */
   selectionBookendWidth?: number;
   selectionModel?: TableSelectionModel;
+  /**
+   * if false, table rendered without headers. Useful when table is being included in a
+   * composite component.
+   */
+  showColumnHeaders?: boolean;
   width?: number;
 }
 

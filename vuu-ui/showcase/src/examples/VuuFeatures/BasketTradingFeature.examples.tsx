@@ -11,7 +11,7 @@ registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
-  const schema = useTableSchema("instruments");
+  const schema = useTableSchema("basketDesign");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -44,7 +44,7 @@ export const DefaultBasketTradingFeature = () => {
         title="Instruments"
         style={{ width: 700, height: 500 }}
       >
-        <BasketTradingFeature tableSchema={schema} />
+        <BasketTradingFeature basketDesignSchema={schema} />
       </View>
     </LayoutProvider>
   );
@@ -65,9 +65,11 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const tableSchema = useTableSchema("instruments");
+  const basketDesignSchema = useTableSchema("basketDesign");
 
-  return <Feature ComponentProps={{ tableSchema }} url={url} css={css} />;
+  return (
+    <Feature ComponentProps={{ basketDesignSchema }} url={url} css={css} />
+  );
 };
 BasketTradingFeatureAsFeature.displayName = "BasketTrading";
 BasketTradingFeatureAsFeature.displaySequence = displaySequence++;

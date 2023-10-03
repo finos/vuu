@@ -1,9 +1,8 @@
-import { useIsomorphicLayoutEffect } from "@salt-ds/core";
-import { RefObject, useCallback, useMemo, useState } from "react";
+import { MeasuredSize } from "@finos/vuu-layout";
+import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
 
 export interface ListHeightHookProps {
-  borderless?: boolean;
   displayedItemCount: number;
   getItemHeight?: (index: number) => number;
   height?: number | string;
@@ -11,14 +10,15 @@ export interface ListHeightHookProps {
   itemGapSize: number;
   itemHeight?: number;
   rootRef: RefObject<HTMLElement>;
-  rowHeightRef: RefObject<HTMLElement | null>;
+  size: MeasuredSize | undefined;
 }
 
 export interface HeightHookResult {
+  computedListHeight: number | undefined;
   contentHeight: number;
   listClientHeight?: number;
   listItemHeight: number;
-  listHeight: number | string;
+  rowHeightProxyRef: (el: HTMLDivElement | null) => void;
 }
 
 const getContentHeight = (
@@ -36,31 +36,32 @@ const getContentHeight = (
 };
 
 export const useListHeight = ({
-  borderless,
   displayedItemCount,
   getItemHeight,
   // TODO no need to incur the cost of a resizeObserver if height is explicit
   height,
   itemCount,
   itemGapSize,
-  itemHeight: itemHeightProp,
-  rootRef,
-  rowHeightRef,
+  itemHeight: itemHeightProp = 36,
+  size,
 }: ListHeightHookProps): HeightHookResult => {
   // TODO default by density
-  const [measuredItemHeight, setMeasuredItemHeight] = useState<number>(36);
-  const [clientHeight, setClientHeight] = useState<number>();
+  const [measuredItemHeight, setMeasuredItemHeight] =
+    useState<number>(itemHeightProp);
+  // Not 100% sure why we need this forceUpdate
+  const [, forceUpdate] = useState({});
+  // This is a ref to the 'item proxy' a hiden list item used to detect css driven
+  // size changes (e.g. runtime density switch)
+  const proxyItemRef = useRef<HTMLDivElement | null>(null);
 
-  const [contentHeight, listHeight] = useMemo(() => {
-    let result = borderless ? 0 : 2;
-    const itemHeight = itemHeightProp ?? measuredItemHeight;
+  const [contentHeight, computedListHeight] = useMemo(() => {
+    let result = 0;
+    const itemHeight = measuredItemHeight ?? itemHeightProp;
     const contentHeight = getContentHeight(itemCount, itemHeight, itemGapSize);
-    if (
-      (height !== undefined && typeof height === "number") ||
-      typeof height === "string"
-    ) {
+    console.log(`contentHeight ${contentHeight}`);
+    if (height !== undefined) {
       // TODO if this is a percentage, convert to number
-      return [contentHeight, height];
+      return [contentHeight, undefined];
     }
 
     // if there are 0 items we render with the preferred count
@@ -85,10 +86,8 @@ export const useListHeight = ({
 
     const listHeight = result;
 
-    return [contentHeight, listHeight, clientHeight];
+    return [contentHeight, listHeight];
   }, [
-    borderless,
-    clientHeight,
     displayedItemCount,
     getItemHeight,
     height,
@@ -98,25 +97,24 @@ export const useListHeight = ({
     measuredItemHeight,
   ]);
 
-  useIsomorphicLayoutEffect(() => {
-    if (rootRef.current) {
-      const { clientHeight } = rootRef.current;
-      setClientHeight(clientHeight);
-    }
-  }, [rootRef]);
-
   const handleRowHeight: ResizeHandler = useCallback(({ height }) => {
     if (typeof height === "number") {
       setMeasuredItemHeight(height);
     }
   }, []);
 
-  useResizeObserver(rowHeightRef, HeightOnly, handleRowHeight, true);
+  const rowHeightProxyRef = useCallback((el: HTMLDivElement | null) => {
+    proxyItemRef.current = el;
+    forceUpdate({});
+  }, []);
+
+  useResizeObserver(proxyItemRef, HeightOnly, handleRowHeight, true);
 
   return {
+    computedListHeight,
     contentHeight,
-    listClientHeight: clientHeight,
+    listClientHeight: size?.height,
     listItemHeight: measuredItemHeight,
-    listHeight,
+    rowHeightProxyRef,
   };
 };

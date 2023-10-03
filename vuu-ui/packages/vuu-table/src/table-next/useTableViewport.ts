@@ -8,7 +8,7 @@ import {
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
 import { useCallback, useMemo, useRef } from "react";
-import { MeasuredSize, Size } from "./useMeasuredContainer";
+import { MeasuredSize } from "@finos/vuu-layout";
 import {
   actualRowPositioning,
   RowAtPositionFunc,
@@ -23,7 +23,7 @@ export interface TableViewportHookProps {
   headings: TableHeadings;
   rowCount: number;
   rowHeight: number;
-  size?: MeasuredSize;
+  size: MeasuredSize | undefined;
 }
 
 export interface ViewportMeasurements {

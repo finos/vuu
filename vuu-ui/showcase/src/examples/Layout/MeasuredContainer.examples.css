@@ -1,0 +1,5 @@
+.vuuMeasuredChildExample {
+    background-color: cornflowerblue;
+    height: var(--measured-px-height);
+    width: var(--measured-px-width);
+}

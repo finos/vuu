@@ -1,5 +1,8 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  DataCellEditHandler,
+  KeyedColumnDescriptor,
+} from "@finos/vuu-datagrid-types";
 import { RowClickHandler } from "@finos/vuu-table";
 import {
   ColumnMap,
@@ -23,6 +26,7 @@ export type RowProps = {
   row: DataSourceRow;
   offset?: number;
   onClick?: RowClickHandler;
+  onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
   style?: CSSProperties;
   zebraStripes?: boolean;
@@ -40,6 +44,7 @@ export const Row = memo(
     row,
     offset,
     onClick,
+    onDataEdited,
     onToggleGroup,
     zebraStripes = false,
     ...htmlAttributes
@@ -107,6 +112,7 @@ export const Row = memo(
               columnMap={columnMap}
               key={column.key}
               onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
+              onDataEdited={onDataEdited}
               row={row}
             />
           );

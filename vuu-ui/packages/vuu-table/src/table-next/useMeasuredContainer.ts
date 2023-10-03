@@ -138,8 +138,6 @@ export const useMeasuredContainer = ({
 
   useResizeObserver(containerRef, ClientWidthHeight, onResize, true);
 
-  console.log(JSON.stringify(size, null, 2));
-
   return {
     containerRef,
     cssSize: size.css,

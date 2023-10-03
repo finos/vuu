@@ -1,7 +1,11 @@
 import { useControlled, useForkRef } from "@salt-ds/core";
 import { KeyboardEvent, useCallback, useRef, useState } from "react";
 import { measurements, useResizeObserver, WidthOnly } from "../common-hooks";
-import { DropdownHookProps, DropdownHookResult } from "./dropdownTypes";
+import {
+  DropdownHookProps,
+  DropdownHookResult,
+  DropdownOpenKey,
+} from "./dropdownTypes";
 import { useClickAway } from "./useClickAway";
 
 const NO_OBSERVER: string[] = [];
@@ -15,6 +19,7 @@ export const useDropdownBase = ({
   isOpen: isOpenProp,
   onOpenChange,
   onKeyDown: onKeyDownProp,
+  openKeys = ["Enter", "ArrowDown", " "],
   openOnFocus,
   popupComponent,
   popupWidth: popupWidthProp,
@@ -92,17 +97,14 @@ export const useDropdownBase = ({
           evt.preventDefault();
         }
         hideDropdown();
-      } else if (
-        (evt.key === "Enter" || evt.key === "ArrowDown" || evt.key === " ") &&
-        !isOpen
-      ) {
+      } else if (openKeys.includes(evt.key as DropdownOpenKey) && !isOpen) {
         evt.preventDefault();
         showDropdown();
       } else {
         onKeyDownProp?.(evt);
       }
     },
-    [hideDropdown, isOpen, onKeyDownProp, showDropdown]
+    [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown]
   );
 
   const fullWidth = fullWidthProp ?? false;

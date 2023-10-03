@@ -1,20 +1,19 @@
 .vuuOverflowContainer {
-    --item-gap : 4px;
+    --item-gap : 2px;
     --overflow-direction: row; 
     --overflow-width: 0px;
     --border-size: calc((var(--overflow-container-height) - 24px) / 2);
     background-color: var(--vuuOverflowContainer-background, black);
     height: var(--overflow-container-height);
-    /* padding: 0 10px; */
 }
 
 .vuuOverflowContainer-horizontal {
     --item-align: center;
-    --item-margin: 0 0 0 var(--item-gap);
+    --item-margin: 0 var(--item-gap) 0 var(--item-gap);
 }
 .vuuOverflowContainer-vertical {
     --item-align: stretch;
-    --item-margin: var(--item-gap) 0 0 0;
+    --item-margin: var(--item-gap) 0 var(--item-gap) 0;
     --overflow-direction: column; 
  
 }
@@ -24,7 +23,6 @@
     display: flex;
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
-    /* gap: 4px; */
     height: var(--overflow-container-height);
     min-width: 44px;
     overflow: hidden;
@@ -38,14 +36,6 @@
     --overflow-left: auto;
     --overflow-position: relative;
     --overflow-width: auto;
-}
-
-.vuuOverflowContainer-item:first-child {
-    --item-gap: 0;
-}
-
-.vuuOverflowContainer-item:first-child {
-    --item-margin: 0;
 }
 
 .vuuOverflowContainer-item {

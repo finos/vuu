@@ -8,6 +8,7 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,
@@ -473,8 +474,15 @@ export type DataSourceEvents = {
   resize: (size: number) => void;
 };
 
+export type DataSourceEditHandler = (
+  rowIndex: number,
+  columnName: string,
+  value: VuuColumnDataType
+) => boolean;
+
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
+  applyEdit: DataSourceEditHandler;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig | undefined;

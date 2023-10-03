@@ -16,11 +16,13 @@ import "./VuuBasketTradingFeature.css";
 
 const classBase = "VuuBasketTradingFeature";
 
-export interface FilterTableFeatureProps {
-  tableSchema: TableSchema;
+export interface BasketTradingFeatureProps {
+  basketDesignSchema: TableSchema;
 }
 
-const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
+const VuuBasketTradingFeature = ({
+  basketDesignSchema,
+}: BasketTradingFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
   const [active, setActive] = useState(0);
 
@@ -34,7 +36,7 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     [save]
   );
 
-  const dataSource: DataSource = useMemo(() => {
+  const basketDesignDataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
       return ds;
@@ -43,29 +45,29 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     ds = new RemoteDataSource({
       bufferSize: 200,
       viewport: id,
-      table: tableSchema.table,
-      columns: tableSchema.columns.map((col) => col.name),
+      table: basketDesignSchema.table,
+      columns: basketDesignSchema.columns.map((col) => col.name),
       title,
     });
     ds.on("config", handleDataSourceConfigChange);
     saveSession?.(ds, "data-source");
     return ds;
   }, [
+    basketDesignSchema.columns,
+    basketDesignSchema.table,
     handleDataSourceConfigChange,
     id,
     loadSession,
     saveSession,
-    tableSchema.columns,
-    tableSchema.table,
     title,
   ]);
 
   useEffect(() => {
-    dataSource.resume?.();
+    basketDesignDataSource.resume?.();
     return () => {
-      dataSource.suspend?.();
+      basketDesignDataSource.suspend?.();
     };
-  }, [dataSource]);
+  }, [basketDesignDataSource]);
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu();
 
@@ -83,10 +85,13 @@ const VuuBasketTradingFeature = ({ tableSchema }: FilterTableFeatureProps) => {
           active={active}
           className={`${classBase}-stack`}
           onTabSelectionChanged={setActive}
+          style={{ flex: 1 }}
         >
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
+            dataSource={basketDesignDataSource}
+            tableSchema={basketDesignSchema}
           />
           <BasketTableLive data-tab-title="On Market" />
         </Stack>
