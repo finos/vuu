@@ -13,6 +13,7 @@ let displaySequence = 1;
 export const DefaultBasketTradingFeature = () => {
   const basketDefinitionsSchema = useTableSchema("basketDefinitions");
   const basketDesignSchema = useTableSchema("basketDesign");
+  const instrumentsSchema = useTableSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -52,6 +53,7 @@ export const DefaultBasketTradingFeature = () => {
         <BasketTradingFeature
           basketDefinitionsSchema={basketDefinitionsSchema}
           basketDesignSchema={basketDesignSchema}
+          instrumentsSchema={instrumentsSchema}
         />
       </View>
     </LayoutProvider>

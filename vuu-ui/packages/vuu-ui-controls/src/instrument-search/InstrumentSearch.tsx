@@ -29,8 +29,9 @@ const defaultTableConfig: TableConfig = {
 };
 
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
-  TableProps: Partial<TableProps>;
+  TableProps?: Partial<TableProps>;
   dataSource: DataSource;
+  searchColumn?: string;
 }
 
 const searchIcon = <span data-icon="search" />;
@@ -39,6 +40,7 @@ export const InstrumentSearch = ({
   TableProps,
   className,
   dataSource,
+  searchColumn = "description",
   ...htmlAttributes
 }: InstrumentSearchProps) => {
   const [searchState, setSearchState] = useState<{
@@ -58,12 +60,12 @@ export const InstrumentSearch = ({
         filter,
         filterStruct: {
           op: "starts",
-          column: "name",
+          column: searchColumn,
           value,
         },
       };
     },
-    [dataSource]
+    [dataSource, searchColumn]
   );
 
   return (

@@ -8,10 +8,9 @@ import { useTableConfig } from "../examples/utils";
 export const BasketTradingFeature = ({
   basketDesignSchema,
   basketDefinitionsSchema,
+  instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const { id, saveSession } = useViewContext();
-
-  console.log({ basketDesignSchema });
 
   const { dataSource: basketDesignDataSource } = useTableConfig({
     count: 1000,
@@ -21,9 +20,8 @@ export const BasketTradingFeature = ({
     table: basketDesignSchema.table,
     rangeChangeRowset: "delta",
   });
-  console.log({ basketDesignDataSource });
 
-  const { dataSource: basketDefinitionsDataSource } = useTableConfig({
+  const { dataSource: basketDefinitions } = useTableConfig({
     count: 5,
     dataSourceConfig: {
       columns: basketDefinitionsSchema.columns.map((column) => column.name),
@@ -32,15 +30,33 @@ export const BasketTradingFeature = ({
     rangeChangeRowset: "delta",
   });
 
-  console.log({ basketDefinitionsDataSource });
+  const { dataSource: basketDefinitionsSearch } = useTableConfig({
+    count: 5,
+    dataSourceConfig: {
+      columns: basketDefinitionsSchema.columns.map((column) => column.name),
+    },
+    table: basketDefinitionsSchema.table,
+    rangeChangeRowset: "delta",
+  });
+
+  const { dataSource: instrumentsDataSource } = useTableConfig({
+    dataSourceConfig: {
+      columns: instrumentsSchema.columns.map((column) => column.name),
+    },
+    table: instrumentsSchema.table,
+    rangeChangeRowset: "delta",
+  });
 
   saveSession?.(basketDesignDataSource, "basket-design-data-source");
-  saveSession?.(basketDefinitionsDataSource, "basket-definitions-data-source");
+  saveSession?.(basketDefinitions, "basket-definitions");
+  saveSession?.(basketDefinitionsSearch, "basket-definitions-search");
+  saveSession?.(instrumentsDataSource, "instruments-data-source");
 
   return (
     <VuuBasketTradingFeature
       basketDesignSchema={basketDesignSchema}
       basketDefinitionsSchema={basketDefinitionsSchema}
+      instrumentsSchema={instrumentsSchema}
     />
   );
 };

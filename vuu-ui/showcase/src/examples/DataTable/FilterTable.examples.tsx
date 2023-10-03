@@ -5,6 +5,8 @@ import { useCallback, useState } from "react";
 import { useSchemas, useTestDataSource } from "../utils";
 import { DataSourceFilter } from "packages/vuu-data-types";
 
+let displaySequence = 1;
+
 export const DefaultFilterTable = () => {
   const { schemas } = useSchemas();
   const { config, dataSource, error, tableSchema } = useTestDataSource({
@@ -58,3 +60,4 @@ export const DefaultFilterTable = () => {
     />
   );
 };
+DefaultFilterTable.displaySequence = displaySequence++;

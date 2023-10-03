@@ -170,6 +170,7 @@ export const BasketSelector = ({
             <InstrumentSearch
               TableProps={tableProps}
               dataSource={dataSourceBasketSearch}
+              searchColumn="name"
             />
           </div>
         </Popup>
