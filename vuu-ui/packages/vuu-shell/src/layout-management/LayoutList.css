@@ -1,5 +1,7 @@
 .vuuLayoutList {
     align-self: stretch;
+    height: 100%;
+    overflow: hidden;
 }
 
 .vuuLayoutList-header {

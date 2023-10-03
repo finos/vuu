@@ -41,25 +41,21 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                 source={Object.entries(layoutsByGroup)}
                 ListItem={({ item }) => <>
                     <div className={`${classBase}-groupName`}>{item?.[0]}</div>
-                    <List<LayoutMetadata>
-                        height='fit-content'
-                        source={item?.[1]}
-                        ListItem={({ item: layout }) =>
-                            <div
-                                className={`${classBase}-layoutContainer`}
-                                key={layout?.id}
-                                onClick={() => handleLoadLayout(layout?.id)}
-                            >
-                                <img className={`${classBase}-screenshot`} src={layout?.screenshot} />
-                                <div>
-                                    <div className={`${classBase}-layoutName`}>{layout?.name}</div>
-                                    <div className={`${classBase}-layoutDetails`}>
-                                        <div>{`${layout?.user}, ${layout?.date}`}</div>
-                                    </div>
+                    {item?.[1].map(layout =>
+                        <div
+                            className={`${classBase}-layoutContainer`}
+                            key={layout?.id}
+                            onClick={() => handleLoadLayout(layout?.id)}
+                        >
+                            <img className={`${classBase}-screenshot`} src={layout?.screenshot} />
+                            <div>
+                                <div className={`${classBase}-layoutName`}>{layout?.name}</div>
+                                <div className={`${classBase}-layoutDetails`}>
+                                    <div>{`${layout?.user}, ${layout?.date}`}</div>
                                 </div>
                             </div>
-                        }
-                    />
+                        </div>
+                    )}
                 </>
                 }
             />
