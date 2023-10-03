@@ -8,6 +8,7 @@ export * from "./expando-input";
 export * from "./inputs";
 export * from "./instrument-search";
 export * from "./list";
+export * from "./price-ticker";
 export * from "./tabstrip";
 export * from "./tree";
 export * from "./utils";

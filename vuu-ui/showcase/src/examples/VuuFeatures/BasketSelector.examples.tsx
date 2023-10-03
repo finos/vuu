@@ -1,6 +1,8 @@
 import { BasketSelector } from "feature-basket-trading";
 import { useSchema, useTableConfig } from "../utils";
 
+let displaySequence = 1;
+
 export const DefaultBasketSelector = () => {
   const schema = useSchema("basketDefinitions");
 
@@ -28,3 +30,4 @@ export const DefaultBasketSelector = () => {
     />
   );
 };
+DefaultBasketSelector.displaySequence = displaySequence++;

@@ -11,6 +11,23 @@ import "./InstrumentSearch.css";
 
 const classBase = "vuuInstrumentSearch";
 
+const defaultTableConfig: TableConfig = {
+  columns: [
+    { name: "bbg", hidden: true },
+    {
+      name: "description",
+      width: 200,
+      type: {
+        name: "string",
+        renderer: {
+          name: "search-cell",
+        },
+      },
+    },
+  ],
+  rowSeparators: true,
+};
+
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps: Partial<TableProps>;
   dataSource: DataSource;
@@ -28,22 +45,6 @@ export const InstrumentSearch = ({
     searchText: string;
     filter: string;
   }>({ searchText: "", filter: "" });
-  const tableConfig: TableConfig = TableProps?.config ?? {
-    columns: [
-      { name: "bbg", hidden: true },
-      {
-        name: "description",
-        width: 200,
-        type: {
-          name: "string",
-          renderer: {
-            name: "search-cell",
-          },
-        },
-      },
-    ],
-    rowSeparators: true,
-  };
 
   const handleChange = useCallback(
     (evt: FormEvent<HTMLInputElement>) => {
@@ -77,11 +78,12 @@ export const InstrumentSearch = ({
       </FormField>
 
       <TableNext
-        className={`${classBase}-list`}
-        config={tableConfig}
-        dataSource={dataSource}
-        renderBufferSize={100}
         rowHeight={25}
+        config={defaultTableConfig}
+        renderBufferSize={100}
+        {...TableProps}
+        className={`${classBase}-list`}
+        dataSource={dataSource}
         showColumnHeaders={false}
       />
     </div>

@@ -32,11 +32,11 @@ export const BasketDefinitionsColumnMap = {
 };
 
 const baskets = [
-  ["001", "FTSE 1", "Basket Name 1"],
-  ["002", "FTSE 2", "Basket Name 2"],
-  ["003", "FTSE 3", "Basket Name 3"],
-  ["004", "FTSE 4", "Basket Name 4"],
-  ["005", "FTSE 5", "Basket Name 5"],
+  ["001", "FTSE 1", "FTSE Basket Name 1"],
+  ["002", "ABCD 2", "ABCD Basket Name 2"],
+  ["003", "BBDF 3", "BBDF Basket Name 3"],
+  ["004", "MYCD 4", "MYCD Basket Name 4"],
+  ["005", "BIDO 5", "BIDO Basket Name 5"],
 ];
 
 const basketDefinitions: BasketDefinitionsDataRow[] = [];

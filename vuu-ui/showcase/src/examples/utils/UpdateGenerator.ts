@@ -1,6 +1,7 @@
-import { VuuRange, VuuRowDataItemType } from "packages/vuu-protocol-types";
+import { VuuRange } from "packages/vuu-protocol-types";
 import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
 import { random } from "./reference-data";
+import { ArrayDataSource, DataSource } from "@finos/vuu-data";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;
@@ -9,7 +10,7 @@ const getNewValue = (value: number) => {
 };
 
 export class BaseUpdateGenerator implements UpdateGenerator {
-  private data: ReadonlyArray<VuuRowDataItemType[]> = [];
+  private dataSource: ArrayDataSource | undefined;
   private range: VuuRange | undefined;
   private updateHandler: UpdateHandler | undefined;
   private updating = false;
@@ -27,8 +28,8 @@ export class BaseUpdateGenerator implements UpdateGenerator {
     }
   }
 
-  setData(data: ReadonlyArray<VuuRowDataItemType[]>) {
-    this.data = data;
+  setDataSource(dataSource: ArrayDataSource) {
+    this.dataSource = dataSource;
   }
 
   setUpdateHandler(updateHandler: UpdateHandler) {
@@ -54,30 +55,30 @@ export class BaseUpdateGenerator implements UpdateGenerator {
   update = () => {
     if (this.range && this.updateHandler) {
       const updates: RowUpdates[] = [];
-      for (
-        let rowIndex = this.range.from;
-        rowIndex < this.range.to;
-        rowIndex++
-      ) {
-        const shallUpdateRow = random(0, 10) < 2;
-        if (shallUpdateRow) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          const rowUpdates: RowUpdates = [rowIndex];
-          const row = this.data[rowIndex];
-          for (const colIdx of this.tickingColumns) {
-            const shallUpdateColumn = random(0, 10) < 5;
-            if (shallUpdateColumn) {
-              rowUpdates.push(colIdx, getNewValue(row[colIdx] as number));
+      const data = this.dataSource?.currentData;
+      if (data && data?.length > 0) {
+        const maxRange = Math.min(this.range.to, data.length);
+        for (let rowIndex = this.range.from; rowIndex < maxRange; rowIndex++) {
+          const shallUpdateRow = random(0, 10) < 2;
+          if (shallUpdateRow) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const rowUpdates: RowUpdates = [rowIndex];
+            const row = data[rowIndex];
+            for (const colIdx of this.tickingColumns) {
+              const shallUpdateColumn = random(0, 10) < 5;
+              if (shallUpdateColumn) {
+                rowUpdates.push(colIdx, getNewValue(row[colIdx] as number));
+              }
+            }
+            if (rowUpdates.length > 1) {
+              updates.push(rowUpdates);
             }
           }
-          if (rowUpdates.length > 1) {
-            updates.push(rowUpdates);
-          }
         }
-      }
-      if (updates.length > 0) {
-        this.updateHandler(updates);
+        if (updates.length > 0) {
+          this.updateHandler(updates);
+        }
       }
     }
 

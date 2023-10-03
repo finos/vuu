@@ -12,7 +12,7 @@ import {
   useState,
 } from "react";
 import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
-import { createArray } from "../utils/generate-data-utils";
+import { createArray } from "../utils/data-generators/generate-data-utils";
 
 let displaySequence = 1;
 

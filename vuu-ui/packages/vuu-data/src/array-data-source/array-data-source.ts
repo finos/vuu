@@ -132,7 +132,7 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
-  private processedData: readonly DataSourceRow[] | undefined = undefined;
+  protected processedData: readonly DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -191,15 +191,10 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (this.status !== "initialising") {
-      throw Error(
-        "ArrayDataSource subscribe should not be called more than once"
-      );
-    }
-
     this.clientCallback = callback;
     this.viewport = viewport;
     this.status = "subscribed";
+    this.lastRangeServed = { from: 0, to: 0 };
 
     if (aggregations || columns || filter || groupBy || sort) {
       if (range) {
@@ -239,7 +234,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    console.log("noop");
+    console.log("unsubscribe noop");
   }
 
   suspend() {
@@ -248,17 +243,17 @@ export class ArrayDataSource
   }
 
   resume() {
-    console.log("noop");
+    console.log("resume noop");
     return this;
   }
 
   disable() {
-    console.log("noop");
+    console.log("disable noop");
     return this;
   }
 
   enable() {
-    console.log("noop");
+    console.log("enable noop");
     return this;
   }
 
@@ -291,6 +286,11 @@ export class ArrayDataSource
 
   get data() {
     return this.#data;
+  }
+
+  // Only used by the UpdateGenerator
+  get currentData() {
+    return this.processedData ?? this.#data;
   }
 
   get config() {

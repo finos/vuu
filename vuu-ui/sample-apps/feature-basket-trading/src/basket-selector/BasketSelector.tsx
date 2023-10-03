@@ -1,12 +1,22 @@
-import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
+import { PriceTicker } from "@finos/vuu-ui-controls";
+import { Button } from "@salt-ds/core";
 // import { VuuDataRow } from "packages/vuu-protocol-types";
 import { DataSource, SubscribeCallback } from "@finos/vuu-data";
+import { useId } from "@finos/vuu-layout";
+import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 import { VuuDataRow } from "@finos/vuu-protocol-types";
+import { TableProps, TableRowClickHandler } from "@finos/vuu-table";
 import { InstrumentSearch } from "@finos/vuu-ui-controls";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { HTMLAttributes, useCallback, useMemo, useRef, useState } from "react";
-import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
-import { TableProps } from "@finos/vuu-table";
+import {
+  HTMLAttributes,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { BasketSelectorRow } from "./BasketSelectorRow";
 
 import "./BasketSelector.css";
 
@@ -26,7 +36,6 @@ export class Basket {
   symbolName: string;
 
   constructor(data: VuuDataRow, columnMap: ColumnMap) {
-    console.log(data.slice(8).join(","));
     this.currency = data[columnMap.currency] as string;
     this.exchangeRateToUSD = data[columnMap.exchangeRateToUSD] as number;
     this.name = data[columnMap.name] as string;
@@ -35,22 +44,25 @@ export class Basket {
 }
 
 export const BasketSelector = ({
-  basketId,
+  basketId: basketIdProp,
   dataSourceBasket,
   dataSourceBasketSearch,
+  id: idProp,
   ...htmlAttributes
 }: BasketSelectorProps) => {
   // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
   const rootRef = useRef<HTMLDivElement>(null);
-  const columnMap = useMemo(() => buildColumnMap(dataSourceBasket.columns), []);
+  const columnMap = useMemo(
+    () => buildColumnMap(dataSourceBasket.columns),
+    [dataSourceBasket.columns]
+  );
   const [open, setOpen] = useState(false);
+  const [basketId, setBasketId] = useState<string | undefined>(basketIdProp);
   const [basket, setBasket] = useState<Basket | undefined>();
-
+  const id = useId(idProp);
   const handleData = useCallback<SubscribeCallback>(
     (message) => {
-      console.log(message);
       if (message.type === "viewport-update" && message.rows?.length === 1) {
-        console.log("create a new basket");
         setBasket(new Basket(message.rows[0], columnMap));
       }
     },
@@ -62,60 +74,95 @@ export const BasketSelector = ({
   }, []);
 
   useMemo(() => {
+    console.log("subscribe to basket");
     dataSourceBasket.subscribe(
       {
-        filter: { filter: `id = "${basketId}"` },
         range: { from: 0, to: 1 },
+        filter: { filter: `id = "NONE"` },
       },
       handleData
     );
-  }, [basketId, dataSourceBasket, handleData]);
+  }, [dataSourceBasket, handleData]);
 
-  const tableProps: Partial<TableProps> = {
-    config: {
-      columns: [
-        { name: "id", hidden: true },
-        {
-          name: "name",
-          width: 200,
-          type: {
-            name: "string",
-            renderer: {
-              name: "search-cell",
+  useEffect(() => {
+    console.log(`apply filter id = ${basketId}`);
+    dataSourceBasket.filter = { filter: `id = "${basketId ?? "NONE"}"` };
+  }, [basketId, dataSourceBasket]);
+
+  const handleRowClick = useCallback<TableRowClickHandler>(
+    (row) => {
+      const { id } = columnMap;
+      const basketId = row[id] as string;
+      setBasketId(basketId);
+      setOpen(false);
+    },
+    [columnMap]
+  );
+
+  const tableProps: Partial<TableProps> = useMemo(
+    () => ({
+      Row: BasketSelectorRow,
+      config: {
+        columns: [
+          { name: "id", width: 300 },
+          {
+            hidden: true,
+            name: "name",
+            width: 200,
+          },
+          {
+            hidden: true,
+            name: "symbolName",
+            width: 100,
+            type: {
+              name: "string",
             },
           },
-        },
-        {
-          name: "symbolName",
-          width: 100,
-          type: {
-            name: "string",
-          },
-        },
-      ],
-    },
-  };
+        ],
+      },
+      onRowClick: handleRowClick,
+      rowHeight: 47,
+    }),
+    [handleRowClick]
+  );
 
   return (
     <div {...htmlAttributes} className={classBase} ref={rootRef}>
-      <FormField>
-        <FormFieldLabel>Basket Name</FormFieldLabel>
-        <span className={`${classBase}-basketName`}>{basket?.name}</span>
-      </FormField>
-      <FormField>
-        <FormFieldLabel>Symbol</FormFieldLabel>
-        <span className={`${classBase}-symbolName`}>{basket?.symbolName}</span>
-      </FormField>
-      <FormField>
-        <FormFieldLabel>GBP to USD</FormFieldLabel>
-        <span className={`${classBase}-symbolName`}>
-          {basket?.exchangeRateToUSD}
+      <div className={`${classBase}-basketDetails`}>
+        <label className={`${classBase}-label`} id={`${id}-name`}>
+          Basket Name
+        </label>
+        <label className={`${classBase}-label`} id={`${id}-symbol`}>
+          Symbol
+        </label>
+        <label className={`${classBase}-label`} id={`${id}-exchange`}>
+          GBP to USD
+        </label>
+        <span
+          className={`${classBase}-basketName`}
+          aria-labelledby={`${id}-name`}
+        >
+          {basket?.name}
         </span>
-      </FormField>
+        <span
+          className={`${classBase}-symbolName`}
+          aria-labelledby={`${id}-symbol`}
+        >
+          {basket?.symbolName}
+        </span>
+        <PriceTicker
+          aria-labelledby={`${id}-exchange`}
+          className={`${classBase}-exchangeRate`}
+          decimals={4}
+          price={basket?.exchangeRateToUSD}
+          showArrow
+        />
+      </div>
       <Button
         className={`${classBase}-trigger`}
         data-icon="chevron-down"
         onClick={toggleSearch}
+        variant="secondary"
       />
       <Portal open={open}>
         <Popup anchorElement={rootRef} placement="below">

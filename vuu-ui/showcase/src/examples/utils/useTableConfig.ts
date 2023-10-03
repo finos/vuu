@@ -99,8 +99,6 @@ export const useTableConfig = ({
       ? columnGenerator(dataSourceConfig?.columns ?? [], columnConfig)
       : columnGenerator(colCount, columnConfig);
 
-    console.log({ columns });
-
     // We use an ArrayProxy in the rare scenario that we want a large dataset with no
     // support for sorting etc. Normally, we want to use a data generator to produce
     // test data to populate an ArrayDataSource

@@ -1,3 +1,6 @@
 .vuuBasketToolbar {
+    display: flex;
     flex: 0 0 var(--basket-toolbar-height, 75px); 
+    gap: 12px;
+    padding: 8px 16px;
 }
