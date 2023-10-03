@@ -65,6 +65,14 @@ const featurePaths: Record<Environment, PathMap> = {
       url: "/features/TableNext.feature.js",
       css: "/features/TableNext.feature.css",
     },
+    InstrumentTiles: {
+      url: "/features/InstrumentTiles.feature.js",
+      css: "/features/InstrumentTiles.feature.css",
+    },
+    BasketTrading: {
+      url: "/features/BasketTrading.feature.js",
+      css: "/features/BasketTrading.feature.css",
+    },
   },
 };
 
@@ -73,7 +81,7 @@ const features: FeatureProps[] = [
     title: "Instrument Price Tiles",
     ...featurePaths[env].InstrumentTiles,
     ComponentProps: {
-      tableSchema: schemas.instruments,
+      tableSchema: schemas.instrumentPrices,
     },
   },
   {
@@ -81,6 +89,8 @@ const features: FeatureProps[] = [
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
       basketDesignSchema: schemas.basketDesign,
+      basketDefinitionsSchema: schemas.basketDefinitions,
+      instrumentsSchema: schemas.instruments,
     },
   },
 ];

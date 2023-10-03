@@ -3,9 +3,9 @@ import { buildColumnMap } from "@finos/vuu-utils/src";
 import {
   InstrumentPricesColumnMap,
   InstrumentPricesReferenceData,
-} from "./reference-data";
-import { BaseUpdateGenerator } from "./UpdateGenerator";
-import { schemas } from "./useSchemas";
+} from "../reference-data";
+import { BaseUpdateGenerator } from "../UpdateGenerator";
+import { schemas } from "../useSchemas";
 import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
 
 const { instrumentPrices: instrumentPriceSchema } = schemas;
@@ -17,9 +17,9 @@ export const InstrumentPricesRowGenerator: RowGenerator =
     }
     if (columnNames) {
       return columnNames.map(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         (name) =>
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           InstrumentPricesReferenceData[index][InstrumentPricesColumnMap[name]]
       );
     } else {

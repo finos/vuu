@@ -9,11 +9,27 @@ export type VuuTableName =
   | "childOrders"
   | "parentOrders"
   | "prices"
-  | "basketDesign";
+  | "basketDesign"
+  | "basketDefinitions";
 
 // These Schemas take the form of the schemas that we create
 // with TABLE_META returned by Vuu.
 export const schemas: Record<VuuTableName, TableSchema> = {
+  basketDefinitions: {
+    columns: [
+      { name: "id", serverDataType: "string" },
+      { name: "symbolName", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "units", serverDataType: "int" },
+      { name: "totalDollarNotional", serverDataType: "double" },
+      { name: "totalNotional", serverDataType: "double" },
+      { name: "currency", serverDataType: "string" },
+      { name: "exchangeRateToUSD", serverDataType: "double" },
+    ],
+    key: "id",
+    table: { module: "SIMUL", table: "basketDefinitions" },
+  },
+
   basketDesign: {
     columns: [
       { name: "ric", serverDataType: "string" },

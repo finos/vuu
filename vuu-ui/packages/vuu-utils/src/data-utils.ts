@@ -22,12 +22,15 @@ export const shallowEquals = (
 };
 
 export function getMovingValueDirection(
-  newValue: number,
+  newValue?: number,
   direction?: valueChangeDirection,
   prevValue?: number,
   /** the number of decimal places to take into account when highlighting a change  */
   decimalPlaces?: number
 ): valueChangeDirection {
+  if (newValue === undefined) {
+    return "";
+  }
   if (
     !isFinite(newValue) ||
     prevValue === undefined ||

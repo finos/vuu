@@ -1,10 +1,10 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
-import { schemas } from "./useSchemas";
+import { schemas } from "../useSchemas";
 import {
   BasketDesignReferenceData,
   BasketDesignColumnMap,
-} from "./reference-data";
+} from "../reference-data";
 
 export const BasketDesignRowGenerator: RowGenerator =
   (columnNames?: string[]) => (index: number) => {

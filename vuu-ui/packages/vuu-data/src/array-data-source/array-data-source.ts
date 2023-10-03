@@ -132,7 +132,7 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
-  private processedData: readonly DataSourceRow[] | undefined = undefined;
+  protected processedData: readonly DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -191,17 +191,16 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (this.status !== "initialising") {
-      throw Error(
-        "ArrayDataSource subscribe should not be called more than once"
-      );
-    }
-
     this.clientCallback = callback;
+    this.viewport = viewport;
+    this.status = "subscribed";
+    this.lastRangeServed = { from: 0, to: 0 };
 
     if (aggregations || columns || filter || groupBy || sort) {
-      //TODO use setter so we build the sorted/grouped etc dataset
-      this.#config = {
+      if (range) {
+        this.#range = range;
+      }
+      this.config = {
         ...this.#config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
@@ -209,37 +208,33 @@ export class ArrayDataSource
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
-    }
+    } else {
+      this.clientCallback?.({
+        ...this.#config,
+        type: "subscribed",
+        clientViewportId: this.viewport,
+        range: this.#range,
+        tableSchema: this.tableSchema,
+      });
 
-    this.viewport = viewport;
+      this.clientCallback({
+        clientViewportId: this.viewport,
+        mode: "size-only",
+        type: "viewport-update",
+        size: this.#data.length,
+      });
 
-    this.status = "subscribed";
-
-    this.clientCallback?.({
-      ...this.#config,
-      type: "subscribed",
-      clientViewportId: this.viewport,
-      range: this.#range,
-      tableSchema: this.tableSchema,
-    });
-
-    this.clientCallback({
-      clientViewportId: this.viewport,
-      mode: "size-only",
-      type: "viewport-update",
-      size: this.#data.length,
-    });
-
-    if (range) {
-      // set range and trigger dispatch of initial rows
-      this.range = range;
-    } else if (this.#range !== NULL_RANGE) {
-      this.sendRowsToClient();
+      if (range) {
+        // set range and trigger dispatch of initial rows
+        this.range = range;
+      } else if (this.#range !== NULL_RANGE) {
+        this.sendRowsToClient();
+      }
     }
   }
 
   unsubscribe() {
-    console.log("noop");
+    console.log("unsubscribe noop");
   }
 
   suspend() {
@@ -248,17 +243,17 @@ export class ArrayDataSource
   }
 
   resume() {
-    console.log("noop");
+    console.log("resume noop");
     return this;
   }
 
   disable() {
-    console.log("noop");
+    console.log("disable noop");
     return this;
   }
 
   enable() {
-    console.log("noop");
+    console.log("enable noop");
     return this;
   }
 
@@ -293,6 +288,11 @@ export class ArrayDataSource
     return this.#data;
   }
 
+  // Only used by the UpdateGenerator
+  get currentData() {
+    return this.processedData ?? this.#data;
+  }
+
   get config() {
     return this.#config;
   }
@@ -317,7 +317,7 @@ export class ArrayDataSource
         let processedData: DataSourceRow[] | undefined;
 
         if (hasFilter(config)) {
-          const { filterStruct } = config.filter;
+          const { filter, filterStruct = parseFilter(filter) } = config.filter;
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);

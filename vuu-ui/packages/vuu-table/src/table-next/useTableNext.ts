@@ -39,6 +39,7 @@ import {
 import {
   buildContextMenuDescriptors,
   MeasuredProps,
+  RowClickHandler,
   TableProps,
   useSelection,
   useTableContextMenu,
@@ -71,6 +72,7 @@ export interface TableHookProps
       | "onFeatureEnabled"
       | "onFeatureInvocation"
       | "onSelectionChange"
+      | "onRowClick"
       | "renderBufferSize"
     > {
   containerRef: RefObject<HTMLDivElement>;
@@ -99,12 +101,12 @@ export const useTable = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onRowClick: onRowClickProp,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel,
-}: // ...measuredProps
-TableHookProps) => {
+}: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -413,7 +415,7 @@ TableHookProps) => {
     onKeyDown: navigationKeyDown,
     ...containerProps
   } = useKeyboardNavigation({
-    columnCount: columns.length,
+    columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
     requestScroll,
     rowCount: dataSource?.size,
@@ -472,10 +474,18 @@ TableHookProps) => {
     [dataSource, onSelectionChange]
   );
 
-  const onRowClick = useSelection({
+  const selectionHookOnRowClick = useSelection({
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  const handleRowClick = useCallback<RowClickHandler>(
+    (row, rangeSelect, keepExistingSelection) => {
+      selectionHookOnRowClick(row, rangeSelect, keepExistingSelection);
+      onRowClickProp?.(row);
+    },
+    [onRowClickProp, selectionHookOnRowClick]
+  );
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
@@ -540,7 +550,7 @@ TableHookProps) => {
     onDataEdited: handleDataEdited,
     onRemoveGroupColumn,
     onResize: handleResize,
-    onRowClick,
+    onRowClick: handleRowClick,
     onToggleGroup,
     scrollProps,
     tableAttributes,

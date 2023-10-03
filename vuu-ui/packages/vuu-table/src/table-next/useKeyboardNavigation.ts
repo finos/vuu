@@ -9,7 +9,12 @@ import {
   useRef,
 } from "react";
 import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
-import { CellPos, getTableCell, headerCellQuery } from "./table-dom-utils";
+import {
+  CellPos,
+  dataCellQuery,
+  getTableCell,
+  headerCellQuery,
+} from "./table-dom-utils";
 
 const navigationKeys = new Set<NavigationKey>([
   "Home",
@@ -89,7 +94,7 @@ function nextCellPos(
       return [rowIdx + 1, colIdx];
     }
   } else if (key === "ArrowRight") {
-    if (colIdx < columnCount) {
+    if (colIdx < columnCount - 1) {
       return [rowIdx, colIdx + 1];
     } else {
       return [rowIdx, colIdx];
@@ -228,6 +233,7 @@ NavigationHookProps) => {
         // click handler.
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
+          console.log({ focusedCell });
           focusedCellPos.current = getTableCellPos(focusedCell);
         }
       }
@@ -236,9 +242,11 @@ NavigationHookProps) => {
 
   const navigateChildItems = useCallback(
     async (key: NavigationKey) => {
+      console.log(`navigate child items ${key}`);
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
         : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
+      console.log(`nextRowIdx ${nextRowIdx} nextColIdx ${nextColIdx}`);
 
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
@@ -291,12 +299,12 @@ NavigationHookProps) => {
   const fullyRendered = containerRef.current?.firstChild != null;
   useEffect(() => {
     if (fullyRendered && focusableCell.current === undefined) {
-      const headerCell = containerRef.current?.querySelector(
-        headerCellQuery(0)
-      ) as HTMLTableCellElement;
-      if (headerCell) {
-        headerCell.setAttribute("tabindex", "0");
-        focusableCell.current = headerCell;
+      const { current: container } = containerRef;
+      const cell = (container?.querySelector(headerCellQuery(0)) ||
+        container?.querySelector(dataCellQuery(0, 0))) as HTMLElement;
+      if (cell) {
+        cell.setAttribute("tabindex", "0");
+        focusableCell.current = cell;
       }
     }
   }, [containerRef, fullyRendered]);

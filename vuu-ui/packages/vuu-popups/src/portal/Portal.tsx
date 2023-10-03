@@ -21,6 +21,11 @@ export interface PortalProps {
    * If this node does not exist on the document, it will be created for you.
    */
   id?: string;
+  /**
+   * Allow conditional rendering of this Portal, if false, will render nothing.
+   * Defaults to true
+   */
+  open?: boolean;
 }
 
 function getContainer(container: PortalProps["container"]) {
@@ -37,6 +42,7 @@ export const Portal = ({
   children,
   container: containerProp = document.body,
   id = DEFAULT_ID,
+  open = true,
 }: PortalProps) => {
   const [mounted, setMounted] = useState(false);
   const portalRef = useRef<HTMLElement | null>(null);
@@ -60,7 +66,7 @@ export const Portal = ({
     setMounted(true);
   }, [id, container, themeClass, densityClass, dataMode]);
 
-  if (mounted && portalRef.current && children) {
+  if (open && mounted && portalRef.current && children) {
     return createPortal(children, portalRef.current);
   }
 

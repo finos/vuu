@@ -2,9 +2,9 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import { CSSProperties, useRef } from "react";
+import { CSSProperties, useEffect, useRef } from "react";
 import { GroupHeaderCell, HeaderCell } from "./header-cell";
-import { Row } from "./Row";
+import { Row as DefaultRow } from "./Row";
 import { useTable } from "./useTableNext";
 import { MeasuredContainer, useId } from "@finos/vuu-layout";
 
@@ -15,6 +15,7 @@ const classBase = "vuuTableNext";
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export const TableNext = ({
+  Row = DefaultRow,
   availableColumns,
   className: classNameProp,
   config,
@@ -24,6 +25,7 @@ export const TableNext = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onRowClick: onRowClickProp,
   onSelectionChange,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
@@ -36,6 +38,7 @@ export const TableNext = ({
 }: TableProps) => {
   const id = useId(idProp);
   const containerRef = useRef<HTMLDivElement>(null);
+  console.log(`TableNext rowHeight = ${rowHeight}`);
   const {
     columnMap,
     columns,
@@ -63,11 +66,19 @@ export const TableNext = ({
     onConfigChange,
     onFeatureEnabled,
     onFeatureInvocation,
+    onRowClick: onRowClickProp,
     onSelectionChange,
     renderBufferSize,
     rowHeight,
     selectionModel,
   });
+
+  useEffect(() => {
+    console.log("Table mounted");
+    return () => {
+      console.log("Table unmounted");
+    };
+  }, []);
 
   const getStyle = () => {
     return {

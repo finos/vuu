@@ -1,11 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
-import {
-  DropdownCell,
-  InputCell,
-  TableNext,
-  TableProps,
-} from "@finos/vuu-table";
+import { TableNext, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
 
 import "./BasketTableEdit.css";

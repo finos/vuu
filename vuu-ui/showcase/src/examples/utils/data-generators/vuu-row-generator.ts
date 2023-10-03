@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
-import { RowAtIndexFunc } from "./ArrayProxy";
+import { RowAtIndexFunc } from "../ArrayProxy";
 import {
   InstrumentRowGenerator,
   InstrumentColumnGenerator,
@@ -14,6 +14,11 @@ import {
   BasketDesignRowGenerator,
   BasketDesignColumnGenerator,
 } from "./basket-design-generator";
+import {
+  BasketDefinitionsRowGenerator,
+  BasketDefinitionsColumnGenerator,
+  createBasketDefinitionsUpdateGenerator,
+} from "./basket-definitions-generator";
 import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
 import {
   ChildOrderRowGenerator,
@@ -28,7 +33,7 @@ import {
   PricesColumnGenerator,
   createPriceUpdateGenerator,
 } from "./prices-generator";
-import { UpdateGenerator } from "./rowUpdates";
+import { UpdateGenerator } from "../rowUpdates";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
@@ -93,6 +98,12 @@ export const getColumnAndRowGenerator = (
         InstrumentPricesColumnGenerator,
         InstrumentPricesRowGenerator,
         createInstrumentPriceUpdateGenerator,
+      ];
+    case "basketDefinitions":
+      return [
+        BasketDefinitionsColumnGenerator,
+        BasketDefinitionsRowGenerator,
+        createBasketDefinitionsUpdateGenerator,
       ];
     case "basketDesign":
       return [BasketDesignColumnGenerator, BasketDesignRowGenerator];

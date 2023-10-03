@@ -19,18 +19,18 @@ import { TableCell, TableGroupCell } from "./table-cell";
 
 import "./Row.css";
 
-export type RowProps = {
+export interface RowProps {
   className?: string;
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
   row: DataSourceRow;
-  offset?: number;
+  offset: number;
   onClick?: RowClickHandler;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
   style?: CSSProperties;
   zebraStripes?: boolean;
-};
+}
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableNextRow";
@@ -74,10 +74,7 @@ export const Row = memo(
       [`${classBase}-selectedEnd`]: selectionStatus & Last,
     });
 
-    const style =
-      typeof offset === "number"
-        ? { transform: `translate3d(0px, ${offset}px, 0px)` }
-        : undefined;
+    const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: KeyedColumnDescriptor) => {

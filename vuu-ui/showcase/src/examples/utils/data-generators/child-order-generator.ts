@@ -1,7 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ExtendedColumnConfig } from "./useTableConfig";
+import { ExtendedColumnConfig } from "../useTableConfig";
 import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
-import { schemas } from "./useSchemas";
+import { schemas } from "../useSchemas";
 import { currencies, locations, suffixes } from "./generatedData";
 
 function random(min: number, max: number) {
