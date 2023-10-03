@@ -1,12 +1,8 @@
-import {
-  DataSource,
-  DataSourceConfig,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
+import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack, useViewContext } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
@@ -38,42 +34,53 @@ const VuuBasketTradingFeature = ({
   //   [save]
   // );
 
-  const [basketDefinitionsDataSource, basketDesignDataSource] = useMemo(() => {
-    // prettier-ignore
-    let ds1 = loadSession?.("basket-definitions-data-source") as RemoteDataSource;
-    let ds2 = loadSession?.("basket-design-data-source") as RemoteDataSource;
-    if (ds1 && ds2) {
-      return [ds1, ds2];
-    }
+  const [dataSourceBasket, dataSourceBasketSearch, basketDesignDataSource] =
+    useMemo(() => {
+      // prettier-ignore
+      let ds1 = loadSession?.("basket-definitions") as RemoteDataSource;
+      // prettier-ignore
+      let ds2 = loadSession?.("basket-definitions-search") as RemoteDataSource;
+      let ds3 = loadSession?.("basket-design-data-source") as RemoteDataSource;
+      if (ds1 && ds2) {
+        return [ds1, ds2, ds3];
+      }
 
-    ds1 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDefinitionsSchema.table,
-      columns: basketDefinitionsSchema.columns.map((col) => col.name),
+      ds1 = new RemoteDataSource({
+        bufferSize: 200,
+        viewport: id,
+        table: basketDefinitionsSchema.table,
+        columns: basketDefinitionsSchema.columns.map((col) => col.name),
+        title,
+      });
+      ds2 = new RemoteDataSource({
+        bufferSize: 200,
+        viewport: id,
+        table: basketDefinitionsSchema.table,
+        columns: basketDefinitionsSchema.columns.map((col) => col.name),
+        title,
+      });
+      ds3 = new RemoteDataSource({
+        bufferSize: 200,
+        viewport: id,
+        table: basketDesignSchema.table,
+        columns: basketDesignSchema.columns.map((col) => col.name),
+        title,
+      });
+      // ds.on("config", handleDataSourceConfigChange);
+      saveSession?.(ds1, "basket-definitions");
+      saveSession?.(ds2, "basket-definitions-search");
+      saveSession?.(ds3, "basket-design-data-source");
+      return [ds1, ds2, ds3];
+    }, [
+      basketDefinitionsSchema.columns,
+      basketDefinitionsSchema.table,
+      basketDesignSchema.columns,
+      basketDesignSchema.table,
+      id,
+      loadSession,
+      saveSession,
       title,
-    });
-    ds2 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDesignSchema.table,
-      columns: basketDesignSchema.columns.map((col) => col.name),
-      title,
-    });
-    // ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds1, "basket-definitions-data-source");
-    saveSession?.(ds2, "basket-design-data-source");
-    return [ds1, ds2];
-  }, [
-    basketDefinitionsSchema.columns,
-    basketDefinitionsSchema.table,
-    basketDesignSchema.columns,
-    basketDesignSchema.table,
-    id,
-    loadSession,
-    saveSession,
-    title,
-  ]);
+    ]);
 
   useEffect(() => {
     basketDesignDataSource.resume?.();
@@ -84,6 +91,15 @@ const VuuBasketTradingFeature = ({
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu();
 
+  const basketSelectorProps = useMemo<BasketSelectorProps>(
+    () => ({
+      basketId: "",
+      dataSourceBasket,
+      dataSourceBasketSearch,
+    }),
+    []
+  );
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -93,7 +109,7 @@ const VuuBasketTradingFeature = ({
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
       >
-        <BasketToolbar dataSource={basketDefinitionsDataSource} />
+        <BasketToolbar BasketSelectorProps={basketSelectorProps} />
         <Stack
           active={active}
           className={`${classBase}-stack`}
