@@ -1,7 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ExtendedColumnConfig } from "./useTableConfig";
+import { ExtendedColumnConfig } from "../useTableConfig";
 import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
-import { schemas } from "./useSchemas";
+import { schemas } from "../useSchemas";
 
 function random(min: number, max: number) {
   min = Math.ceil(min);

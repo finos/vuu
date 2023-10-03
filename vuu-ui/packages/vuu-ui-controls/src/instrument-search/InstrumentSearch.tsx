@@ -1,7 +1,7 @@
 import { DataSource } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-layout";
-import { TableNext } from "@finos/vuu-table";
+import { TableNext, TableProps } from "@finos/vuu-table";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import cx from "classnames";
 import { FormEvent, HTMLAttributes, useCallback, useState } from "react";
@@ -12,12 +12,14 @@ import "./InstrumentSearch.css";
 const classBase = "vuuInstrumentSearch";
 
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
+  TableProps: Partial<TableProps>;
   dataSource: DataSource;
 }
 
 const searchIcon = <span data-icon="search" />;
 
 export const InstrumentSearch = ({
+  TableProps,
   className,
   dataSource,
   ...htmlAttributes
@@ -26,7 +28,7 @@ export const InstrumentSearch = ({
     searchText: string;
     filter: string;
   }>({ searchText: "", filter: "" });
-  const tableConfig: TableConfig = {
+  const tableConfig: TableConfig = TableProps?.config ?? {
     columns: [
       { name: "bbg", hidden: true },
       {
@@ -46,7 +48,7 @@ export const InstrumentSearch = ({
   const handleChange = useCallback(
     (evt: FormEvent<HTMLInputElement>) => {
       const { value } = evt.target as HTMLInputElement;
-      const filter = `description starts "${value}"`;
+      const filter = `name starts "${value}"`;
       setSearchState({
         searchText: value,
         filter,
@@ -55,7 +57,7 @@ export const InstrumentSearch = ({
         filter,
         filterStruct: {
           op: "starts",
-          column: "description",
+          column: "name",
           value,
         },
       };

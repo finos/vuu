@@ -1,9 +1,11 @@
 import {
   ArrayDataSource,
   ArrayDataSourceConstructorProps,
+  SubscribeCallback,
+  SubscribeProps,
 } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { RowUpdates, UpdateGenerator } from "./rowUpdates";
 
 export interface TickingArrayDataSourceConstructorProps
@@ -21,6 +23,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#updateGenerator = updateGenerator;
     updateGenerator?.setData(super.data);
     updateGenerator?.setUpdateHandler(this.processUpdates);
+  }
+
+  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+    const subscription = super.subscribe(subscribeProps, callback);
+    if (subscribeProps.range) {
+      this.#updateGenerator?.setRange(subscribeProps.range);
+    }
+    return subscription;
   }
 
   set range(range: VuuRange) {

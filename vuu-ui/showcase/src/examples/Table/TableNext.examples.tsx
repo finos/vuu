@@ -261,6 +261,38 @@ export const AutoTableNextBasketDesign = () => {
 };
 AutoTableNextBasketDesign.displaySequence = displaySequence++;
 
+export const AutoTableNextBasketDefinitions = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    count: 5,
+    rangeChangeRowset: "delta",
+    table: { module: "SIMUL", table: "basketDefinitions" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <TableNext
+      {...props}
+      config={{
+        ...config,
+        rowSeparators: true,
+        zebraStripes: true,
+      }}
+      onConfigChange={handleConfigChange}
+      renderBufferSize={50}
+    />
+  );
+};
+AutoTableNextBasketDefinitions.displaySequence = displaySequence++;
+
 export const GroupHeaderCellNextOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {
     const valueFormatter = defaultValueFormatter;

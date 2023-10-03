@@ -17,45 +17,58 @@ import "./VuuBasketTradingFeature.css";
 const classBase = "VuuBasketTradingFeature";
 
 export interface BasketTradingFeatureProps {
+  basketDefinitionsSchema: TableSchema;
   basketDesignSchema: TableSchema;
 }
 
 const VuuBasketTradingFeature = ({
   basketDesignSchema,
+  basketDefinitionsSchema,
 }: BasketTradingFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
   const [active, setActive] = useState(0);
 
-  const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      // confirmed / unconfirmed messages are used for UI updates, not state saving
-      if (confirmed === undefined) {
-        save?.(config, "datasource-config");
-      }
-    },
-    [save]
-  );
+  // const handleDataSourceConfigChange = useCallback(
+  //   (config: DataSourceConfig | undefined, confirmed?: boolean) => {
+  //     // confirmed / unconfirmed messages are used for UI updates, not state saving
+  //     if (confirmed === undefined) {
+  //       save?.(config, "datasource-config");
+  //     }
+  //   },
+  //   [save]
+  // );
 
-  const basketDesignDataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
-    if (ds) {
-      return ds;
+  const [basketDefinitionsDataSource, basketDesignDataSource] = useMemo(() => {
+    // prettier-ignore
+    let ds1 = loadSession?.("basket-definitions-data-source") as RemoteDataSource;
+    let ds2 = loadSession?.("basket-design-data-source") as RemoteDataSource;
+    if (ds1 && ds2) {
+      return [ds1, ds2];
     }
 
-    ds = new RemoteDataSource({
+    ds1 = new RemoteDataSource({
+      bufferSize: 200,
+      viewport: id,
+      table: basketDefinitionsSchema.table,
+      columns: basketDefinitionsSchema.columns.map((col) => col.name),
+      title,
+    });
+    ds2 = new RemoteDataSource({
       bufferSize: 200,
       viewport: id,
       table: basketDesignSchema.table,
       columns: basketDesignSchema.columns.map((col) => col.name),
       title,
     });
-    ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds, "data-source");
-    return ds;
+    // ds.on("config", handleDataSourceConfigChange);
+    saveSession?.(ds1, "basket-definitions-data-source");
+    saveSession?.(ds2, "basket-design-data-source");
+    return [ds1, ds2];
   }, [
+    basketDefinitionsSchema.columns,
+    basketDefinitionsSchema.table,
     basketDesignSchema.columns,
     basketDesignSchema.table,
-    handleDataSourceConfigChange,
     id,
     loadSession,
     saveSession,
@@ -80,7 +93,7 @@ const VuuBasketTradingFeature = ({
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
       >
-        <BasketToolbar />
+        <BasketToolbar dataSource={basketDefinitionsDataSource} />
         <Stack
           active={active}
           className={`${classBase}-stack`}

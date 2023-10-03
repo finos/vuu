@@ -1,10 +1,10 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { PriceReferenceData } from "./reference-data";
-import { schemas } from "./useSchemas";
-import { ExtendedColumnConfig } from "./useTableConfig";
+import { PriceReferenceData } from "../reference-data";
+import { schemas } from "../useSchemas";
+import { ExtendedColumnConfig } from "../useTableConfig";
 import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
-import { BaseUpdateGenerator } from "./UpdateGenerator";
+import { BaseUpdateGenerator } from "../UpdateGenerator";
 
 export const PricesRowGenerator: RowGenerator = () => (index: number) => {
   if (index >= PriceReferenceData.length) {
@@ -15,10 +15,8 @@ export const PricesRowGenerator: RowGenerator = () => (index: number) => {
 };
 
 const { prices: pricesSchema } = schemas;
-
 const { bid, bidSize, ask, askSize } = buildColumnMap(pricesSchema.columns);
 const tickingColumns = [bid, bidSize, ask, askSize];
-
 export const createPriceUpdateGenerator = () =>
   new BaseUpdateGenerator(tickingColumns);
 

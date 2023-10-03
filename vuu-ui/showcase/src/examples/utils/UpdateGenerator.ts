@@ -76,7 +76,9 @@ export class BaseUpdateGenerator implements UpdateGenerator {
           }
         }
       }
-      this.updateHandler(updates);
+      if (updates.length > 0) {
+        this.updateHandler(updates);
+      }
     }
 
     if (this.updating) {

@@ -1,6 +1,13 @@
 .vuuBasketSelector {
     border: solid 1px var(--vuu-color-gray-45);
     border-radius: 6px;
+    display: flex;
     height: 61px;
+    width: 377px;
+}
+
+.vuuBasketSelector-searchContainer {
+    background-color: yellow;
+    height: 400px;
     width: 377px;
 }

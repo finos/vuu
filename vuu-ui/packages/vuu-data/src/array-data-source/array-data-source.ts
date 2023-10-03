@@ -198,10 +198,14 @@ export class ArrayDataSource
     }
 
     this.clientCallback = callback;
+    this.viewport = viewport;
+    this.status = "subscribed";
 
     if (aggregations || columns || filter || groupBy || sort) {
-      //TODO use setter so we build the sorted/grouped etc dataset
-      this.#config = {
+      if (range) {
+        this.#range = range;
+      }
+      this.config = {
         ...this.#config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
@@ -209,32 +213,28 @@ export class ArrayDataSource
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
-    }
+    } else {
+      this.clientCallback?.({
+        ...this.#config,
+        type: "subscribed",
+        clientViewportId: this.viewport,
+        range: this.#range,
+        tableSchema: this.tableSchema,
+      });
 
-    this.viewport = viewport;
+      this.clientCallback({
+        clientViewportId: this.viewport,
+        mode: "size-only",
+        type: "viewport-update",
+        size: this.#data.length,
+      });
 
-    this.status = "subscribed";
-
-    this.clientCallback?.({
-      ...this.#config,
-      type: "subscribed",
-      clientViewportId: this.viewport,
-      range: this.#range,
-      tableSchema: this.tableSchema,
-    });
-
-    this.clientCallback({
-      clientViewportId: this.viewport,
-      mode: "size-only",
-      type: "viewport-update",
-      size: this.#data.length,
-    });
-
-    if (range) {
-      // set range and trigger dispatch of initial rows
-      this.range = range;
-    } else if (this.#range !== NULL_RANGE) {
-      this.sendRowsToClient();
+      if (range) {
+        // set range and trigger dispatch of initial rows
+        this.range = range;
+      } else if (this.#range !== NULL_RANGE) {
+        this.sendRowsToClient();
+      }
     }
   }
 
@@ -317,7 +317,7 @@ export class ArrayDataSource
         let processedData: DataSourceRow[] | undefined;
 
         if (hasFilter(config)) {
-          const { filterStruct } = config.filter;
+          const { filter, filterStruct = parseFilter(filter) } = config.filter;
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);

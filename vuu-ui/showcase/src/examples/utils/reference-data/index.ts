@@ -8,6 +8,10 @@ export {
   InstrumentPricesColumnMap,
 } from "./instrument-prices";
 export {
+  default as BasketDefinitionsReferenceData,
+  BasketDefinitionsColumnMap,
+} from "./basket-definitions";
+export {
   default as BasketDesignReferenceData,
   BasketDesignColumnMap,
 } from "./basket-design";

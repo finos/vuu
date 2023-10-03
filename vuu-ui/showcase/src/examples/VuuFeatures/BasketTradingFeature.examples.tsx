@@ -11,7 +11,8 @@ registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
-  const schema = useTableSchema("basketDesign");
+  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
+  const basketDesignSchema = useTableSchema("basketDesign");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -48,7 +49,10 @@ export const DefaultBasketTradingFeature = () => {
         title="Instruments"
         style={{ width: 700, height: 500 }}
       >
-        <BasketTradingFeature basketDesignSchema={schema} />
+        <BasketTradingFeature
+          basketDefinitionsSchema={basketDefinitionsSchema}
+          basketDesignSchema={basketDesignSchema}
+        />
       </View>
     </LayoutProvider>
   );
