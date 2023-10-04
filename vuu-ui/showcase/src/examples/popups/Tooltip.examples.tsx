@@ -2,7 +2,7 @@ import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 import { Tooltip, useTooltip } from "@finos/vuu-popups";
 
-import "./Tooltip.css";
+import "./Tooltip.examples.css";
 
 let displaySequence = 1;
 
