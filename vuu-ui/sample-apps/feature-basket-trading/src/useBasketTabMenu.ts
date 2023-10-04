@@ -9,9 +9,9 @@ import { DataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export const useBasketTabMenu = ({
-  instrumentsDataSource,
+  dataSourceInstruments,
 }: {
-  instrumentsDataSource: DataSource;
+  dataSourceInstruments: DataSource;
 }) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
@@ -43,7 +43,7 @@ export const useBasketTabMenu = ({
               content: {
                 type: "InstrumentSearch",
                 props: {
-                  dataSource: instrumentsDataSource,
+                  dataSource: dataSourceInstruments,
                   //   columnName: action.column.name,
                   //   onConfigChange,
                   //   tableConfig,

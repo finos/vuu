@@ -2,7 +2,7 @@
     --col-gap: 32px;
     --basket-selector-height: 61px;
     align-items: center;
-    border: solid 1px var(--vuu-color-purple-10);
+    border: solid 1px var(--salt-editable-borderColor);
     border-radius: 6px;
     display: inline-flex;
     height: var(--basket-selector-height);
