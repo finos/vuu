@@ -8,23 +8,18 @@ import {
   writeMetaFile,
 } from "../../scripts/utils.mjs";
 import { build } from "../../scripts/esbuild.mjs";
+import { buildFileList } from "./build-file-list.mjs";
 import fs from "fs";
 import path from "path";
 
-const entryPoints = [
-  "src/index.tsx",
-  "src/features/BasketTrading.feature.tsx",
-  "src/features/FilterTable.feature.tsx",
-  "src/features/InstrumentTiles.feature.tsx",
-  "src/features/Test.feature.tsx",
-  "src/features/VuuBlotterMockData.feature.tsx",
-  "src/features/TableNext.feature.tsx",
-  // TODO automate addition of all example files
-  "src/examples/Table/TableArrayData.examples.tsx",
-  "src/examples/Table/TableVuuData.examples.tsx",
-  "src/examples/html/HtmlTable.examples.tsx",
-  "src/examples/Apps/index.ts",
-];
+const indexFiles = buildFileList("./src/examples", /index.ts$/);
+const examples = buildFileList("./src/examples", /examples.tsx$/);
+const features = buildFileList("./src/features", /feature.tsx$/);
+
+const entryPoints = ["src/index.tsx"]
+  .concat(indexFiles)
+  .concat(features)
+  .concat(examples);
 
 const HTML_TEMPLATE = `
 <!DOCTYPE html>
