@@ -10,7 +10,7 @@ import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
 import "./TabMenu.css";
 
-const classBase = "vuuBasketMenu";
+const classBase = "vuuTabMenu";
 
 export interface TabMenuProps {
   allowClose: boolean;

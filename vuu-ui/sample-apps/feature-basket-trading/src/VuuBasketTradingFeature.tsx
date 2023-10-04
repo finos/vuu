@@ -34,6 +34,7 @@ const VuuBasketTradingFeature = ({
     dataSourceBasketDesign,
     dataSourceInstruments,
     onSendToMarket,
+    onTakeOffMarket,
   } = useBasketTradingDataSources({
     basketDefinitionsSchema,
     basketDesignSchema,
@@ -83,6 +84,7 @@ const VuuBasketTradingFeature = ({
           BasketSelectorProps={basketSelectorProps}
           basketStatus={basketStatus[activeTabIndex]}
           onSendToMarket={onSendToMarket}
+          onTakeOffMarket={onTakeOffMarket}
         />
         <Stack
           active={activeTabIndex}
