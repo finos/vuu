@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ExtendedColumnConfig } from "../useTableConfig";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { schemas } from "../useSchemas";
 
 function random(min: number, max: number) {
@@ -29,7 +29,7 @@ const traders = ["Arkwright", "Enfield", "Bailey", "Cui", "Kohl"];
 
 const maxIndex = 20 * 20 * 20 * 20 * 8;
 
-export const OrderRowGenerator: RowGenerator = () => (index: number) => {
+export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   if (index > maxIndex) {
     throw Error("generateRow index val is too high");
   }
@@ -70,7 +70,7 @@ export const OrderRowGenerator: RowGenerator = () => (index: number) => {
   ];
 };
 
-export const OrderColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = [],
   columnConfig: ExtendedColumnConfig = {}
 ) => {

@@ -1,38 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { RowAtIndexFunc } from "../ArrayProxy";
-import {
-  InstrumentRowGenerator,
-  InstrumentColumnGenerator,
-} from "./instrument-generator";
-import {
-  createInstrumentPriceUpdateGenerator,
-  InstrumentPricesRowGenerator,
-  InstrumentPricesColumnGenerator,
-} from "./instrument-prices-generator";
-import {
-  BasketDesignRowGenerator,
-  BasketDesignColumnGenerator,
-} from "./basket-design-generator";
-import {
-  BasketDefinitionsRowGenerator,
-  BasketDefinitionsColumnGenerator,
-  createBasketDefinitionsUpdateGenerator,
-} from "./basket-definitions-generator";
-import { OrderRowGenerator, OrderColumnGenerator } from "./order-generator";
-import {
-  ChildOrderRowGenerator,
-  ChildOrderColumnGenerator,
-} from "./child-order-generator";
-import {
-  ParentOrderRowGenerator,
-  ParentOrderColumnGenerator,
-} from "./parent-order-generator";
-import {
-  PricesRowGenerator,
-  PricesColumnGenerator,
-  createPriceUpdateGenerator,
-} from "./prices-generator";
+import * as dataGenerators from ".";
 import { UpdateGenerator } from "../rowUpdates";
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
@@ -42,16 +11,16 @@ export const VuuColumnGenerator = (columnCount: number): string[] =>
       .map((_, i) => `Column ${i + 1}`)
   );
 
-export type RowGenerator<T = VuuRowDataItemType> = (
+export type RowGeneratorFactory<T = VuuRowDataItemType> = (
   columns: string[]
 ) => RowAtIndexFunc<T[]>;
 
-export type ColumnGenerator = (
+export type ColumnGeneratorFn = (
   columns?: number | string[],
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
-export const DefaultRowGenerator: RowGenerator<string> =
+export const DefaultRowGenerator: RowGeneratorFactory<string> =
   (columns: string[]) => (index) => {
     return [`row ${index + 1}`].concat(
       Array(columns.length)
@@ -60,7 +29,7 @@ export const DefaultRowGenerator: RowGenerator<string> =
     );
   };
 
-export const DefaultColumnGenerator: ColumnGenerator = (
+export const DefaultColumnGenerator: ColumnGeneratorFn = (
   columns,
   columnConfig = {}
 ) => {
@@ -78,56 +47,28 @@ export const DefaultColumnGenerator: ColumnGenerator = (
   }
 };
 
-export const getRowGenerator = (table?: VuuTable): RowGenerator => {
-  if (table?.table === "instruments") {
-    return InstrumentRowGenerator;
-  }
-  return DefaultRowGenerator;
+const defaultGenerators = {
+  ColumnGenerator: DefaultColumnGenerator,
+  RowGeneratorFactory: DefaultRowGenerator,
 };
 
 export const getColumnAndRowGenerator = (
   table?: VuuTable
 ):
-  | [ColumnGenerator, RowGenerator]
-  | [ColumnGenerator, RowGenerator, () => UpdateGenerator] => {
-  switch (table?.table) {
-    case "instruments":
-      return [InstrumentColumnGenerator, InstrumentRowGenerator];
-    case "instrumentPrices":
-      return [
-        InstrumentPricesColumnGenerator,
-        InstrumentPricesRowGenerator,
-        createInstrumentPriceUpdateGenerator,
-      ];
-    case "basketDefinitions":
-      return [
-        BasketDefinitionsColumnGenerator,
-        BasketDefinitionsRowGenerator,
-        createBasketDefinitionsUpdateGenerator,
-      ];
-    case "basketDesign":
-      return [BasketDesignColumnGenerator, BasketDesignRowGenerator];
-    case "orders":
-      return [OrderColumnGenerator, OrderRowGenerator];
-    case "childOrders":
-      return [ChildOrderColumnGenerator, ChildOrderRowGenerator];
-    case "parentOrders":
-      return [ParentOrderColumnGenerator, ParentOrderRowGenerator];
-    case "prices":
-      return [
-        PricesColumnGenerator,
-        PricesRowGenerator,
-        createPriceUpdateGenerator,
-      ];
-    default:
-      return [DefaultColumnGenerator, DefaultRowGenerator];
-  }
+  | [ColumnGeneratorFn, RowGeneratorFactory]
+  | [ColumnGeneratorFn, RowGeneratorFactory, () => UpdateGenerator] => {
+  const tableName = table?.table ?? "";
+  const { ColumnGenerator, RowGenerator, createUpdateGenerator } =
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    dataGenerators[tableName] ?? defaultGenerators;
+  return [ColumnGenerator, RowGenerator, createUpdateGenerator];
 };
 
 export const populateArray = (
   count: number,
-  colGen: ColumnGenerator,
-  rowGen: RowGenerator,
+  colGen: ColumnGeneratorFn,
+  rowGen: RowGeneratorFactory,
   columns?: number | string[]
 ) => {
   const columnDescriptors = colGen(columns);

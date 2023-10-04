@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { schemas } from "../useSchemas";
 import {
   InstrumentReferenceData,
@@ -8,7 +8,7 @@ import {
 import { getCalculatedColumnType, isCalculatedColumn } from "@finos/vuu-utils";
 import { ExtendedColumnConfig } from "../useTableConfig";
 
-export const InstrumentRowGenerator: RowGenerator =
+export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {
     if (index >= InstrumentReferenceData.length) {
       throw Error("generateRow index val is too high");
@@ -24,7 +24,7 @@ export const InstrumentRowGenerator: RowGenerator =
     }
   };
 
-export const InstrumentColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = [],
   columnConfig: ExtendedColumnConfig = {}
 ) => {

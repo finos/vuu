@@ -19,12 +19,14 @@ const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 export interface BasketTradingFeatureProps {
   basketDefinitionsSchema: TableSchema;
   basketDesignSchema: TableSchema;
+  basketOrdersSchema: TableSchema;
   instrumentsSchema: TableSchema;
 }
 
 const VuuBasketTradingFeature = ({
-  basketDesignSchema,
   basketDefinitionsSchema,
+  basketDesignSchema,
+  basketOrdersSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const {
@@ -32,12 +34,14 @@ const VuuBasketTradingFeature = ({
     dataSourceBasket,
     dataSourceBasketSearch,
     dataSourceBasketDesign,
+    dataSourceBasketOrders,
     dataSourceInstruments,
     onSendToMarket,
     onTakeOffMarket,
   } = useBasketTradingDataSources({
     basketDefinitionsSchema,
     basketDesignSchema,
+    basketOrdersSchema,
     instrumentsSchema,
   });
 
@@ -98,7 +102,11 @@ const VuuBasketTradingFeature = ({
             dataSource={dataSourceBasketDesign}
             tableSchema={basketDesignSchema}
           />
-          <BasketTableLive data-tab-title="On Market" />
+          <BasketTableLive
+            data-tab-title="On Market"
+            dataSource={dataSourceBasketOrders}
+            tableSchema={basketOrdersSchema}
+          />
         </Stack>
       </FlexboxLayout>
     </ContextMenuProvider>

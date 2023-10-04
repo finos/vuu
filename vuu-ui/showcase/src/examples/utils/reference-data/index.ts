@@ -15,6 +15,10 @@ export {
   default as BasketDesignReferenceData,
   BasketDesignColumnMap,
 } from "./basket-design";
+export {
+  default as BasketOrdersReferenceData,
+  BasketOrdersColumnMap,
+} from "./basket-orders";
 export { default as PriceReferenceData } from "./prices";
 export * from "./locations";
 export * from "./utils";

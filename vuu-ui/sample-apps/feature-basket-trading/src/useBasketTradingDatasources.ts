@@ -6,6 +6,7 @@ import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 export const useBasketTradingDataSources = ({
   basketDefinitionsSchema,
   basketDesignSchema,
+  basketOrdersSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -16,6 +17,7 @@ export const useBasketTradingDataSources = ({
     dataSourceBasket,
     dataSourceBasketSearch,
     dataSourceBasketDesign,
+    dataSourceBasketOrders,
     dataSourceInstruments,
   ] = useMemo(() => {
     // prettier-ignore
@@ -23,9 +25,10 @@ export const useBasketTradingDataSources = ({
     // prettier-ignore
     let ds2 = loadSession?.("basket-definitions-search") as RemoteDataSource;
     let ds3 = loadSession?.("basket-design-data-source") as RemoteDataSource;
-    let ds4 = loadSession?.("instruments-data-source") as RemoteDataSource;
-    if (ds1 && ds2 && ds3 && ds4) {
-      return [ds1, ds2, ds3, ds4];
+    let ds4 = loadSession?.("basket-orders-data-source") as RemoteDataSource;
+    let ds5 = loadSession?.("instruments-data-source") as RemoteDataSource;
+    if (ds1 && ds2 && ds3 && ds4 && ds5) {
+      return [ds1, ds2, ds3, ds4, ds5];
     }
 
     ds1 = new RemoteDataSource({
@@ -52,6 +55,13 @@ export const useBasketTradingDataSources = ({
     ds4 = new RemoteDataSource({
       bufferSize: 200,
       viewport: id,
+      table: basketOrdersSchema.table,
+      columns: basketOrdersSchema.columns.map((col) => col.name),
+      title,
+    });
+    ds5 = new RemoteDataSource({
+      bufferSize: 200,
+      viewport: id,
       table: instrumentsSchema.table,
       columns: instrumentsSchema.columns.map((col) => col.name),
       title,
@@ -61,12 +71,14 @@ export const useBasketTradingDataSources = ({
     saveSession?.(ds2, "basket-definitions-search");
     saveSession?.(ds3, "basket-design-data-source");
     saveSession?.(ds4, "instruments-data-source");
-    return [ds1, ds2, ds3, ds4];
+    return [ds1, ds2, ds3, ds4, ds5];
   }, [
     basketDefinitionsSchema.columns,
     basketDefinitionsSchema.table,
     basketDesignSchema.columns,
     basketDesignSchema.table,
+    basketOrdersSchema.columns,
+    basketOrdersSchema.table,
     id,
     instrumentsSchema.columns,
     instrumentsSchema.table,
@@ -88,6 +100,7 @@ export const useBasketTradingDataSources = ({
     dataSourceBasket,
     dataSourceBasketSearch,
     dataSourceBasketDesign,
+    dataSourceBasketOrders,
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
