@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/layout")
+@RequestMapping("/layouts")
 public class LayoutController {
 
     private final LayoutService layoutService;
