@@ -57,14 +57,13 @@ public class LayoutController {
     /**
      * Creates a new layout
      *
-     * @return the ID of the new layout
+     * @param layoutToCreate the layout to be created
+     * @return the generated ID of the new layout
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UUID createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
-
-        // TODO: Layout already created, updating instead
 
         return layoutService.createLayout(layout);
     }
@@ -72,14 +71,14 @@ public class LayoutController {
     /**
      * Updates the specified layout
      *
-     * @param id             ID of the layout to update
-     * @param layoutToUpdate the updated layout
+     * @param id        ID of the layout to update
+     * @param newLayout the new layout
      */
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layoutToUpdate) {
+    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO newLayout) {
         Layout layout = layoutService.getLayout(id);
-        mapper.map(layoutToUpdate, layout);
+        mapper.map(newLayout, layout);
 
         layoutService.updateLayout(layout);
     }
@@ -89,7 +88,7 @@ public class LayoutController {
      *
      * @param id ID of the layout to delete
      */
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteLayout(@PathVariable UUID id) {
         layoutService.deleteLayout(id);
