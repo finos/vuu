@@ -23,6 +23,42 @@ jobs:
         run: cd ./vuu-ui && npm install
       - run: cd ./vuu-ui && npm run test:vite
 
+  cypress-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-
+      - name: Install dependencies
+        run: cd ./vuu-ui && npm install
+      - name: Run end-to-end tests in Chrome
+        uses: cypress-io/github-action@v3
+        with:
+          install: false
+          working-directory: ./vuu-ui
+          browser: chrome
+          build: npm run build
+          start: npm run showcase
+          wait-on: "http://localhost:5173"
+      - name: Run end-to-end tests in Edge
+        uses: cypress-io/github-action@v3
+        with:
+          install: false
+          working-directory: ./vuu-ui
+          browser: edge
+          build: npm run build
+          start: npm run showcase
+          wait-on: "http://localhost:5173"
+
   # ensure the vuu example and showcase still build
   vuu-and-showcase-build:
     runs-on: ubuntu-latest

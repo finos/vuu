@@ -17,7 +17,7 @@ context("Screenshot", () => {
     cy.findByRole("menuitem", { name: "Save Layout" }).click();
 
     // TODO (#VUU24): Don't find by classname, use an accessible selector
-    cy.get(".vuuSaveLayoutPanel").then((dialog) => {
+    cy.get(".saveLayoutPanel-panelContainer").then((dialog) => {
       cy.wrap(dialog)
         .find("img")
         .should("be.visible")
