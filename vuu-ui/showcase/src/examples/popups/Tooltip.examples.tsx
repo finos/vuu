@@ -2,6 +2,8 @@ import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 import { Tooltip, useTooltip } from "@finos/vuu-popups";
 
+// import "./Tooltip.examples.css";
+
 let displaySequence = 1;
 
 type TooltipPlacement = "above" | "right" | "below" | "left";
@@ -54,99 +56,58 @@ export const DefaultTooltip = () => {
       tooltipContent === "text" ? "This is my tooltip" : tooltipChild,
   });
 
-  // Ran into a weird build issue when this css was in a separate css file, adding it inlie here temporarily
   return (
-    <>
-      <style>
-        {`
-    .box {
-      align-items: center;
-      background: rgba(0,0,0,.05);
-      display: flex;
-      height: 200px;
-      justify-content: center;
-      left: 200px;
-      position: absolute;
-      top: 200px;
-      width: 200px;
-    }
+    <div
+      style={{
+        height: "100vh",
+        width: "100vw",
+      }}
+    >
+      <div className="column" />
+      <div className="row" />
 
-    .column {
-        background-color: rgba(211, 211, 211, 0.5);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 300px;
-        height: 100vh;
-        z-index: -10;
-    }
+      <ToggleButtonGroup
+        value={tooltipPlacement}
+        onChange={handleChangePlacement}
+      >
+        <ToggleButton value="above">ABOVE</ToggleButton>
+        <ToggleButton value="right">RIGHT</ToggleButton>
+        <ToggleButton value="below">BELOW</ToggleButton>
+        <ToggleButton value="left">LEFT</ToggleButton>
+      </ToggleButtonGroup>
 
-    .row {
-        background-color: rgba(211, 211, 211, 0.5);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vh;
-        height: 300px;
-        z-index: -10;
-    }`}
-      </style>
+      <ToggleButtonGroup value={tooltipContent} onChange={handleChangeContent}>
+        <ToggleButton value="text">Text content</ToggleButton>
+        <ToggleButton value="child">Chid Component</ToggleButton>
+      </ToggleButtonGroup>
 
       <div
+        className="box"
         style={{
-          height: "100vh",
-          width: "100vw",
+          alignItems: "center",
+          background: "rgba(0,0,0,.05)",
+          display: "flex",
+          height: 200,
+          justifyContent: "center",
+          left: 200,
+          position: "absolute",
+          top: 200,
+          width: 200,
         }}
       >
-        <div className="column" />
-        <div className="row" />
-
-        <ToggleButtonGroup
-          value={tooltipPlacement}
-          onChange={handleChangePlacement}
-        >
-          <ToggleButton value="above">ABOVE</ToggleButton>
-          <ToggleButton value="right">RIGHT</ToggleButton>
-          <ToggleButton value="below">BELOW</ToggleButton>
-          <ToggleButton value="left">LEFT</ToggleButton>
-        </ToggleButtonGroup>
-
-        <ToggleButtonGroup
-          value={tooltipContent}
-          onChange={handleChangeContent}
-        >
-          <ToggleButton value="text">Text content</ToggleButton>
-          <ToggleButton value="child">Chid Component</ToggleButton>
-        </ToggleButtonGroup>
-
-        <div
-          className="box"
+        <Button
+          {...anchorProps}
+          ref={anchorRef}
           style={{
-            alignItems: "center",
-            background: "rgba(0,0,0,.05)",
-            display: "flex",
-            height: 200,
-            justifyContent: "center",
-            left: 200,
-            position: "absolute",
-            top: 200,
-            width: 200,
+            height: 30,
+            width: 160,
           }}
         >
-          <Button
-            {...anchorProps}
-            ref={anchorRef}
-            style={{
-              height: 30,
-              width: 160,
-            }}
-          >
-            anchor
-          </Button>
-          {tooltipProps ? <Tooltip {...tooltipProps} /> : null}
-        </div>
+          anchor
+        </Button>
+        {tooltipProps ? <Tooltip {...tooltipProps} /> : null}
       </div>
-    </>
+    </div>
   );
 };
 DefaultTooltip.displaySequence = displaySequence++;
