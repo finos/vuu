@@ -163,6 +163,9 @@ export const Dropdown = forwardRef(function Dropdown<
         id={id}
         isOpen={dropdownListHook.isOpen}
         onOpenChange={dropdownListHook.onOpenChange}
+        placement={
+          ListProps?.width === undefined ? "below-full-width" : "below"
+        }
         ref={forkedRef}
         width={width}
       >

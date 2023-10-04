@@ -36,7 +36,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
       onOpenChange,
       openKeys,
       openOnFocus,
-      placement = "bottom-start",
+      placement = "below",
       popupWidth,
       width,
       ...htmlAttributes
@@ -120,7 +120,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         {getTriggerComponent()}
         {isOpen && (
           <Portal>
-            <Popup anchorElement={rootRef} placement="below">
+            <Popup anchorElement={rootRef} placement={placement}>
               {getPopupComponent()}
             </Popup>
           </Portal>

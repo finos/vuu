@@ -1,5 +1,6 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenuProvider, PopupMenu } from "@finos/vuu-popups";
+import { useMemo } from "react";
 
 let displaySequence = 1;
 

@@ -5,7 +5,12 @@ import { useAnchoredPosition } from "./useAnchoredPosition";
 
 import "./Popup.css";
 
-export type PopupPlacement = "below" | "below-center" | "center" | "right";
+export type PopupPlacement =
+  | "below"
+  | "below-center"
+  | "below-full-width"
+  | "center"
+  | "right";
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
   placement: PopupPlacement;
