@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
 @Entity
 public class Metadata {
 

@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
 @Entity
 public class Layout {
 
