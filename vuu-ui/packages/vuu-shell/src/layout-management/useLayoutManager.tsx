@@ -55,7 +55,10 @@ export const LayoutManagementProvider = (props: LayoutManagementProviderProps) =
 
   const loadLayoutById = useCallback((id: string) => {
     persistenceManager.loadLayout(id).then((layoutJson) => {
-      setCurrentLayout(layoutJson)
+      setCurrentLayout(prev => ({
+        ...prev,
+        children: [...(prev.children || []), ...(layoutJson.children || [])]
+      }))
     })
   }, []);
 
