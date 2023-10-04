@@ -2,6 +2,7 @@ package org.finos.vuu.layoutserver.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
+import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
@@ -62,10 +63,12 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public UUID createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
+    public CreateLayoutResponseDTO createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
-        return layoutService.createLayout(layout);
+        Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
+
+        return mapper.map(createdLayout, CreateLayoutResponseDTO.class);
     }
 
     /**
