@@ -21,6 +21,7 @@ const classBase = "vuuPopupMenu";
 
 export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   icon?: string;
+  label?: string;
   menuActionHandler?: MenuActionHandler;
   menuBuilder?: MenuBuilder;
   menuLocation?: string;
@@ -37,7 +38,8 @@ const getPosition = (element: HTMLElement | null) => {
 
 export const PopupMenu = ({
   className,
-  icon = "more-vert",
+  label,
+  icon = label ? "chevron-down" : "more-vert",
   id: idProp,
   menuActionHandler,
   menuBuilder,
@@ -103,6 +105,7 @@ export const PopupMenu = ({
       aria-expanded={menuOpen}
       aria-haspopup="menu"
       className={cx(classBase, className, {
+        [`${classBase}-withCaption`]: label !== undefined,
         [`${classBase}-open`]: menuOpen,
       })}
       data-icon={icon}
@@ -111,6 +114,8 @@ export const PopupMenu = ({
       ref={rootRef}
       tabIndex={tabIndex}
       variant="secondary"
-    />
+    >
+      {label}
+    </Button>
   );
 };

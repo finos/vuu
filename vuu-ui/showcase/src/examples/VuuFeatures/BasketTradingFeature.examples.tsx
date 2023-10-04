@@ -48,7 +48,7 @@ export const DefaultBasketTradingFeature = () => {
         closeable
         header
         title="Instruments"
-        style={{ width: 700, height: 500 }}
+        style={{ width: 1060, height: 600 }}
       >
         <BasketTradingFeature
           basketDefinitionsSchema={basketDefinitionsSchema}

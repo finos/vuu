@@ -6,11 +6,11 @@ import {
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
 import cx from "classnames";
-
-import "./TabMenu.css";
 import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
-const classBase = "vuuTabMenu";
+import "./TabMenu.css";
+
+const classBase = "vuuBasketMenu";
 
 export interface TabMenuProps {
   allowClose: boolean;

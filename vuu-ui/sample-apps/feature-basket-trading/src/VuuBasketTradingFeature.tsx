@@ -1,16 +1,20 @@
-import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
-import { FlexboxLayout, Stack, useViewContext } from "@finos/vuu-layout";
+import { TableSchema } from "@finos/vuu-data";
+import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
+import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 
 import "./VuuBasketTradingFeature.css";
 
 const classBase = "VuuBasketTradingFeature";
+
+export type BasketStatus = "design" | "on-market";
+const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
 export interface BasketTradingFeatureProps {
   basketDefinitionsSchema: TableSchema;
@@ -23,8 +27,18 @@ const VuuBasketTradingFeature = ({
   basketDefinitionsSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
-  const { id, save, loadSession, saveSession, title } = useViewContext();
-  const [active, setActive] = useState(0);
+  const {
+    activeTabIndex,
+    dataSourceBasket,
+    dataSourceBasketSearch,
+    dataSourceBasketDesign,
+    dataSourceInstruments,
+    onSendToMarket,
+  } = useBasketTradingDataSources({
+    basketDefinitionsSchema,
+    basketDesignSchema,
+    instrumentsSchema,
+  });
 
   // const handleDataSourceConfigChange = useCallback(
   //   (config: DataSourceConfig | undefined, confirmed?: boolean) => {
@@ -36,78 +50,15 @@ const VuuBasketTradingFeature = ({
   //   [save]
   // );
 
-  const [
-    dataSourceBasket,
-    dataSourceBasketSearch,
-    basketDesignDataSource,
-    instrumentsDataSource,
-  ] = useMemo(() => {
-    // prettier-ignore
-    let ds1 = loadSession?.("basket-definitions") as RemoteDataSource;
-    // prettier-ignore
-    let ds2 = loadSession?.("basket-definitions-search") as RemoteDataSource;
-    let ds3 = loadSession?.("basket-design-data-source") as RemoteDataSource;
-    let ds4 = loadSession?.("instruments-data-source") as RemoteDataSource;
-    if (ds1 && ds2 && ds3 && ds4) {
-      return [ds1, ds2, ds3, ds4];
-    }
-
-    ds1 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDefinitionsSchema.table,
-      columns: basketDefinitionsSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds2 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDefinitionsSchema.table,
-      columns: basketDefinitionsSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds3 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDesignSchema.table,
-      columns: basketDesignSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds4 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: instrumentsSchema.table,
-      columns: instrumentsSchema.columns.map((col) => col.name),
-      title,
-    });
-    // ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds1, "basket-definitions");
-    saveSession?.(ds2, "basket-definitions-search");
-    saveSession?.(ds3, "basket-design-data-source");
-    saveSession?.(ds4, "instruments-data-source");
-    return [ds1, ds2, ds3, ds4];
-  }, [
-    basketDefinitionsSchema.columns,
-    basketDefinitionsSchema.table,
-    basketDesignSchema.columns,
-    basketDesignSchema.table,
-    id,
-    instrumentsSchema.columns,
-    instrumentsSchema.table,
-    loadSession,
-    saveSession,
-    title,
-  ]);
-
   useEffect(() => {
-    basketDesignDataSource.resume?.();
+    dataSourceBasketDesign.resume?.();
     return () => {
-      basketDesignDataSource.suspend?.();
+      dataSourceBasketDesign.suspend?.();
     };
-  }, [basketDesignDataSource]);
+  }, [dataSourceBasketDesign]);
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu({
-    instrumentsDataSource,
+    dataSourceInstruments,
   });
 
   const basketSelectorProps = useMemo<BasketSelectorProps>(
@@ -128,17 +79,21 @@ const VuuBasketTradingFeature = ({
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
       >
-        <BasketToolbar BasketSelectorProps={basketSelectorProps} />
+        <BasketToolbar
+          BasketSelectorProps={basketSelectorProps}
+          basketStatus={basketStatus[activeTabIndex]}
+          onSendToMarket={onSendToMarket}
+        />
         <Stack
-          active={active}
+          active={activeTabIndex}
           className={`${classBase}-stack`}
-          onTabSelectionChanged={setActive}
+          // onTabSelectionChanged={setActive}
           style={{ flex: 1 }}
         >
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
-            dataSource={basketDesignDataSource}
+            dataSource={dataSourceBasketDesign}
             tableSchema={basketDesignSchema}
           />
           <BasketTableLive data-tab-title="On Market" />
