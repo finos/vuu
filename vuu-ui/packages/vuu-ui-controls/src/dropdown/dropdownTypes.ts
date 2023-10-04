@@ -1,10 +1,5 @@
+import { PopupPlacement } from "packages/vuu-popups/src";
 import { HTMLAttributes, KeyboardEvent, ReactElement, RefObject } from "react";
-
-export type DropdownPlacement =
-  | "bottom-start"
-  | "bottom-end"
-  | "top-start"
-  | "top-end"; // do any others make sense ?
 
 export type DropdownOpenKey = "Enter" | "ArrowDown" | " ";
 
@@ -18,7 +13,7 @@ export interface DropdownBaseProps
   openKeys?: DropdownOpenKey[];
   onOpenChange?: (isOpen: boolean) => void;
   openOnFocus?: boolean;
-  placement?: DropdownPlacement;
+  placement?: PopupPlacement;
   popupWidth?: number;
   triggerComponent?: JSX.Element;
   width?: number | string;

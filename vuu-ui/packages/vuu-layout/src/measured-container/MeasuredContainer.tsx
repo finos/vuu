@@ -31,6 +31,7 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
     width,
   });
 
+  console.log(`MeasuredContainer ${width} * ${height}`);
   const { cssSize, innerSize } = containerMeasurements;
   const unmeasured = innerSize === undefined;
 
