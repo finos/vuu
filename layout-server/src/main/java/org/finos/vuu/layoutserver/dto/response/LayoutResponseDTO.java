@@ -8,6 +8,11 @@ import java.util.UUID;
 public class LayoutResponseDTO {
 
     private UUID id;
+
+    /**
+     * The definition of the layout as a string (e.g. stringified JSON structure containing components)
+     */
     private String definition;
+
     private MetadataResponseDTO metadata;
 }
