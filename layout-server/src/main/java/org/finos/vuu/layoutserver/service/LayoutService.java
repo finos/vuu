@@ -25,7 +25,9 @@ public class LayoutService {
 
     public List<Metadata> getMetadata() {
         List<Metadata> metadata = new ArrayList<>();
-        layoutRepository.findAll().forEach(layout -> metadata.add(layout.getMetadata()));
+
+        metadataRepository.findAll().forEach(metadata::add);
+
         return metadata;
     }
 
