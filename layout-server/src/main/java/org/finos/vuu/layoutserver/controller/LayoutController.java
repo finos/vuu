@@ -80,7 +80,9 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
     public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO newLayout) {
+        // TODO I'm not sure about this, I think layoutService should be doing more logic, not the mapper here
         Layout layout = layoutService.getLayout(id);
+
         mapper.map(newLayout, layout);
 
         layoutService.updateLayout(layout);
