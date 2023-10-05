@@ -27,14 +27,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     })
   }
 
-  updateLayout(id: string, metadata: Omit<LayoutMetadata, "id">, newLayoutJson: LayoutJSON): Promise<void> {
+  updateLayout(id: string, newMetadata: Omit<LayoutMetadata, "id">, newLayout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const newLayouts = existingLayouts.filter(layout => layout.id !== id);
-          const newMetadata = existingMetadata.filter(metadata => metadata.id !== id);
-          this.appendAndPersist(id, metadata, newLayoutJson, newLayouts, newMetadata);
+          const layouts = existingLayouts.filter(layout => layout.id !== id);
+          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
+          this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
         .catch(e => reject(e));
