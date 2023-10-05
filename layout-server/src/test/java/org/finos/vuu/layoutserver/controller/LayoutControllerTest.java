@@ -1,5 +1,14 @@
 package org.finos.vuu.layoutserver.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
@@ -17,16 +26,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class LayoutControllerTest {
 
@@ -41,7 +40,6 @@ class LayoutControllerTest {
     private LayoutController layoutController;
 
     private UUID validLayoutId;
-    private String invalidLayoutId;
     private UUID doesNotExistLayoutId;
     private Layout layout;
     private Metadata metadata;
@@ -52,7 +50,6 @@ class LayoutControllerTest {
     @BeforeEach
     public void setup() {
         validLayoutId = UUID.randomUUID();
-        invalidLayoutId = "invalidId";
         doesNotExistLayoutId = UUID.randomUUID();
         UUID metadataId = UUID.randomUUID();
         String layoutDefinition = "Test Definition";
@@ -131,7 +128,8 @@ class LayoutControllerTest {
     @Test
     void updateLayout_layoutDoesNotExist_returnsInvalidRequest() {
         when(layoutService.getLayout(layout.getId())).thenThrow(NoSuchElementException.class);
-        assertThrows(NoSuchElementException.class, () -> layoutController.updateLayout(layout.getId(), layoutRequest));
+        assertThrows(NoSuchElementException.class,
+            () -> layoutController.updateLayout(layout.getId(), layoutRequest));
     }
 
     // TODO I don't think this is a valid / worthwhile unit test?

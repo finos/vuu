@@ -1,14 +1,14 @@
 package org.finos.vuu.layoutserver.service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -18,7 +18,8 @@ public class LayoutService {
     private final MetadataService metadataService;
 
     public Layout getLayout(UUID id) {
-        return layoutRepository.findById(id).orElseThrow();
+        return layoutRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
 
