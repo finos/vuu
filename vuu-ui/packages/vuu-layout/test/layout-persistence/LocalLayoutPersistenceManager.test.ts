@@ -1,7 +1,7 @@
 import { Layout, LayoutMetadata } from "@finos/vuu-shell";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalLayoutPersistenceManager } from "../../src/layout-persistence";
-import { LayoutJSON } from "../../src";
+import { LayoutJSON } from "../../src/layout-reducer";
 import { getLocalEntity, saveLocalEntity } from "../../../vuu-filters/src/local-config";
 
 vi.mock("@finos/vuu-filters", async () => {
