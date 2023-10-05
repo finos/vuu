@@ -54,8 +54,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateId(id, "layout")
         .then(() => this.loadLayouts())
         .then(existingLayouts => {
-          const layouts = existingLayouts.filter(layout => layout.id === id);
-          resolve(layouts[0].json);
+          const layouts = existingLayouts.find(layout => layout.id === id) as Layout;
+          resolve(layouts.json);
         })
         .catch(e => reject(e));
     });
