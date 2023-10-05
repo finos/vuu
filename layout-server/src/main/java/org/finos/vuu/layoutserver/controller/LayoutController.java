@@ -98,6 +98,8 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteLayout(@PathVariable UUID id) {
+        // Generate a 404 if layout doesn't exist
+        layoutService.getLayout(id);
         layoutService.deleteLayout(id);
     }
 }
