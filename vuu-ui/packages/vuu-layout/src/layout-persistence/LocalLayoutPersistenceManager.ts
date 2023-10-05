@@ -9,7 +9,7 @@ const layoutsSaveLocation = "layouts/layouts";
 
 export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   createLayout(metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON): Promise<string> {
-    return new Promise(async (resolve) => {
+    return new Promise(resolve => {
       console.log(`Saving layout as ${metadata.name} to group ${metadata.group}...`);
 
       Promise.all([this.loadLayouts(), this.loadMetadata()])
@@ -28,7 +28,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   updateLayout(id: string, metadata: Omit<LayoutMetadata, "id">, newLayoutJson: LayoutJSON): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
@@ -42,7 +42,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   deleteLayout(id: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
@@ -68,14 +68,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   loadMetadata(): Promise<LayoutMetadata[]> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const metadata = getLocalEntity<LayoutMetadata[]>(metadataSaveLocation);
       resolve(metadata || []);
     })
   }
 
   private loadLayouts(): Promise<Layout[]> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
       resolve(layouts || []);
     });
