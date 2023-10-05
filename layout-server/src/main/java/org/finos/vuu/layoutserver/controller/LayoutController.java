@@ -52,9 +52,9 @@ public class LayoutController {
     public List<MetadataResponseDTO> getMetadata() {
 
         return layoutService.getMetadata()
-                .stream()
-                .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
-                .toList();
+            .stream()
+            .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
+            .toList();
     }
 
     /**

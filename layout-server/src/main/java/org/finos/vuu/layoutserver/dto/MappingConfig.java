@@ -18,19 +18,22 @@ public class MappingConfig {
         ModelMapper mapper = new ModelMapper();
 
         // LayoutRequestDTO to Layout
-        mapper.typeMap(LayoutRequestDTO.class, Layout.class).addMappings(m -> m.skip(Layout::setId));
+        mapper.typeMap(LayoutRequestDTO.class, Layout.class)
+            .addMappings(m -> m.skip(Layout::setId));
 
         // Layout to CreateLayoutResponseDTO
         mapper.typeMap(Layout.class, CreateLayoutResponseDTO.class)
-                .addMappings(m -> m.map(layout -> layout.getMetadata().getCreated(),
-                        CreateLayoutResponseDTO::setCreated));
+            .addMappings(m -> m.map(layout -> layout.getMetadata().getCreated(),
+                CreateLayoutResponseDTO::setCreated));
 
         // Metadata to MetadataResponseDTO
         mapper.typeMap(Metadata.class, MetadataResponseDTO.class)
-                .addMappings(m -> m.map(metadata -> metadata.getLayout().getId(), MetadataResponseDTO::setLayoutId));
+            .addMappings(m -> m.map(metadata -> metadata.getLayout().getId(),
+                MetadataResponseDTO::setLayoutId));
 
         // MetadataRequestDTO to Metadata
-        mapper.typeMap(MetadataRequestDTO.class, Metadata.class).addMappings(m -> m.skip(Metadata::setId));
+        mapper.typeMap(MetadataRequestDTO.class, Metadata.class)
+            .addMappings(m -> m.skip(Metadata::setId));
 
         return mapper;
     }
