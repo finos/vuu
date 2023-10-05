@@ -12,6 +12,7 @@ import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.service.LayoutService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/layouts")
+@Validated
 public class LayoutController {
 
     private final LayoutService layoutService;
