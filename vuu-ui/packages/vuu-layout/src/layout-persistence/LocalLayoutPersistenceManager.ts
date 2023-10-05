@@ -1,4 +1,4 @@
-import { Layout, LayoutMetadata } from "@finos/vuu-shell";
+import { Layout, LayoutMetadata, WithId } from "@finos/vuu-shell";
 import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
 
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
@@ -29,11 +29,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   updateLayout(id: string, newMetadata: Omit<LayoutMetadata, "id">, newLayout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.validateIds(id)
-        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
-        .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter(layout => layout.id !== id);
-          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
+      this.loadAndFilter(id)
+        .then(([layouts, metadata]) => {
           this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
@@ -43,11 +40,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   deleteLayout(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.validateIds(id)
-        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
-        .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter((layout) => layout.id !== id);
-          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
+      this.loadAndFilter(id)
+        .then(([layouts, metadata]) => {
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
         })
@@ -79,6 +73,22 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
       resolve(layouts || []);
     });
+  }
+
+  private async loadAndFilter(idToRemove: string): Promise<[Layout[], LayoutMetadata[]]> {
+    await this.validateIds(idToRemove);
+
+    const [existingLayouts, existingMetadata] =
+      await Promise.all([this.loadLayouts(), this.loadMetadata()]);
+
+    const layouts = this.removeId<Layout>(existingLayouts, idToRemove);
+    const metadata = this.removeId<LayoutMetadata>(existingMetadata, idToRemove);
+
+    return [layouts, metadata];
+  }
+
+  private removeId<T extends WithId>(array: T[], idToRemove: string): T[] {
+    return array.filter(element => element.id !== idToRemove);
   }
 
   private appendAndPersist(
@@ -126,7 +136,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
           case 1: {
             resolve();
             break;
-          };
+          }
           case 0: {
             reject(new Error(`No ${dataType} with ID ${id}`));
             break;
