@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
-import { LayoutJSON, LocalLayoutPersistenceManager } from "@finos/vuu-layout";
+import { LayoutJSON, LocalLayoutPersistenceManager, resolveJSONPath } from "@finos/vuu-layout";
 import { LayoutMetadata } from "./layoutTypes";
 import { defaultLayout } from "@finos/vuu-layout/";
 
@@ -8,14 +8,14 @@ const persistenceManager = new LocalLayoutPersistenceManager();
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[],
   saveLayout: (n: Omit<LayoutMetadata, "id">) => void,
-  currentLayout: LayoutJSON,
-  saveCurrentLayout: (layout: LayoutJSON) => void,
+  applicationLayout: LayoutJSON,
+  saveApplicationLayout: (layout: LayoutJSON) => void,
   loadLayoutById: (id: string) => void
 }>({
   layoutMetadata: [],
   saveLayout: () => { },
-  currentLayout: defaultLayout,
-  saveCurrentLayout: () => { },
+  applicationLayout: defaultLayout,
+  saveApplicationLayout: () => { },
   loadLayoutById: () => defaultLayout
 })
 
@@ -25,45 +25,50 @@ type LayoutManagementProviderProps = {
 
 export const LayoutManagementProvider = (props: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
-  const [currentLayout, setCurrentLayout] = useState<LayoutJSON>(defaultLayout);
+  const [applicationLayout, setApplicationLayout] = useState<LayoutJSON>(defaultLayout);
 
   useEffect(() => {
     persistenceManager.loadMetadata().then(metadata => {
       setLayoutMetadata(metadata)
     })
-    persistenceManager.loadCurrentLayout().then(layout => {
-      setCurrentLayout(layout);
+    persistenceManager.loadApplicationLayout().then(layout => {
+      setApplicationLayout(layout);
     })
   }, [])
 
-  const saveCurrentLayout = useCallback((layout: LayoutJSON) => {
-    setCurrentLayout(layout)
-    persistenceManager.saveCurrentLayout(layout)
+  const saveApplicationLayout = useCallback((layout: LayoutJSON) => {
+    setApplicationLayout(layout)
+    persistenceManager.saveApplicationLayout(layout)
   }, []);
 
   const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {
-    persistenceManager.createLayout(metadata, currentLayout).then(generatedId => {
 
-      const newMetadata: LayoutMetadata = {
-        ...metadata,
-        id: generatedId
-      };
+    const layoutToSave = resolveJSONPath(applicationLayout, "#main-tabs.ACTIVE_CHILD");
 
-      setLayoutMetadata(prev => [...prev, newMetadata]);
-    })
-  }, [currentLayout])
+    if (layoutToSave) {
+      persistenceManager.createLayout(metadata, layoutToSave).then(generatedId => {
+        const newMetadata: LayoutMetadata = {
+          ...metadata,
+          id: generatedId
+        };
+
+        setLayoutMetadata(prev => [...prev, newMetadata]);
+      })
+    }
+    //TODO else{ show error message}
+  }, [applicationLayout])
 
   const loadLayoutById = useCallback((id: string) => {
     persistenceManager.loadLayout(id).then((layoutJson) => {
-      setCurrentLayout(prev => ({
+      setApplicationLayout(prev => ({
         ...prev,
-        children: [...(prev.children || []), ...(layoutJson.children || [])]
+        children: [...(prev.children || []), layoutJson]
       }))
     })
   }, []);
 
   return (
-    <LayoutManagementContext.Provider value={{ layoutMetadata, saveLayout, currentLayout, saveCurrentLayout, loadLayoutById }} >
+    <LayoutManagementContext.Provider value={{ layoutMetadata, saveLayout, applicationLayout, saveApplicationLayout, loadLayoutById }} >
       {props.children}
     </LayoutManagementContext.Provider>
   )

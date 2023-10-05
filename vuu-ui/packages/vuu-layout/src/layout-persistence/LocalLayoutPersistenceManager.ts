@@ -102,7 +102,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  loadCurrentLayout(): Promise<LayoutJSON> {
+  loadApplicationLayout(): Promise<LayoutJSON> {
     return new Promise((resolve) => {
       const currentLayout = getLocalEntity<LayoutJSON>("api/vui");
       if (currentLayout) {
@@ -113,7 +113,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  saveCurrentLayout(layout: LayoutJSON): Promise<void> {
+  saveApplicationLayout(layout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) => {
       const savedLayout = saveLocalEntity<LayoutJSON>("api/vui", layout);
       if (savedLayout) {
