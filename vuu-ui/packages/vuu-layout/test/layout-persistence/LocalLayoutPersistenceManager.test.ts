@@ -133,7 +133,7 @@ describe("updateLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -148,7 +148,7 @@ describe("updateLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     await persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -162,7 +162,7 @@ describe("updateLayout", () => {
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existant_id";
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(requestedId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -178,7 +178,7 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -194,7 +194,7 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -210,7 +210,7 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -225,7 +225,7 @@ describe("updateLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -240,7 +240,7 @@ describe("updateLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
       .catch((err: Error) => {
@@ -271,7 +271,7 @@ describe("deleteLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -286,7 +286,7 @@ describe("deleteLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     await persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -300,7 +300,7 @@ describe("deleteLayout", () => {
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existant_id";
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(requestedId)
       .catch((err: Error) => {
@@ -316,7 +316,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -332,7 +332,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -348,7 +348,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -363,7 +363,7 @@ describe("deleteLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -378,7 +378,7 @@ describe("deleteLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.deleteLayout(existingId)
       .catch((err: Error) => {
@@ -413,7 +413,7 @@ describe("loadLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     await persistenceManager.loadLayout(existingId)
       .catch((err: Error) => {
@@ -427,7 +427,7 @@ describe("loadLayout", () => {
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existant_id";
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.loadLayout(requestedId)
       .catch((err: Error) => {
@@ -452,7 +452,7 @@ describe("loadLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.loadLayout(existingId)
       .catch((err: Error) => {
@@ -468,7 +468,7 @@ describe("loadLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.loadLayout(existingId)
       .catch((err: Error) => {
@@ -483,7 +483,7 @@ describe("loadLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.loadLayout(existingId)
       .catch((err: Error) => {
@@ -498,7 +498,7 @@ describe("loadLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    var exceptionCaught = false;
+    let exceptionCaught = false;
 
     persistenceManager.loadLayout(existingId)
       .catch((err: Error) => {
