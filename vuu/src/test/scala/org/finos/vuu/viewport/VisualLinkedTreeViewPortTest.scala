@@ -84,6 +84,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       When("we select some rows in the grid")
       viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
       viewPortContainer.runGroupByOnce()
+      viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()
 
       val combinedUpdates2 = combineQs(viewPortPricesGroupBy)
@@ -121,16 +122,16 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       Then("Check we still maintain the selection")
       assertVpEqWithMeta(filterByVpId(updates, viewPortOrders)) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544830L,100       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544840L,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544850L,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544860L,103       ),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544870L,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544880L,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544890L,102       ),
-          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544900L,103       ),
-          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544910L,104       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0003", "chris", "BT.L", 1311544830L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544840L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544850L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544860L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544870L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544880L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544890L, 102),
+          (0, "NYC-0010", "chris", "BP.L", 1311544900L, 103),
+          (0, "NYC-0011", "chris", "BP.L", 1311544910L, 104)
         )
       }
 
