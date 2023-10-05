@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
+import org.finos.vuu.layoutserver.dto.response.GetLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
@@ -44,7 +44,7 @@ class LayoutControllerTest {
     private Layout layout;
     private Metadata metadata;
     private LayoutRequestDTO layoutRequest;
-    private LayoutResponseDTO expectedLayoutResponse;
+    private GetLayoutResponseDTO expectedLayoutResponse;
     private List<MetadataResponseDTO> expectedMetadataResponse;
 
     @BeforeEach
@@ -76,7 +76,7 @@ class LayoutControllerTest {
         layoutRequest.setDefinition(layout.getDefinition());
         layoutRequest.setMetadata(metadataRequestDTO);
 
-        expectedLayoutResponse = new LayoutResponseDTO();
+        expectedLayoutResponse = new GetLayoutResponseDTO();
         expectedLayoutResponse.setId(layout.getId());
         expectedLayoutResponse.setDefinition(layout.getDefinition());
 
