@@ -57,7 +57,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   loadLayout(id: string): Promise<LayoutJSON> {
     return new Promise((resolve, reject) => {
-      this.validateId(id, false)
+      this.validateId(id, "layout")
         .then(() => this.loadLayouts())
         .then(existingLayouts => {
           const layouts = existingLayouts.filter(layout => layout.id === id);
@@ -105,8 +105,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   private async validateIds(id: string): Promise<void> {
     return Promise
       .all([
-        this.validateId(id, true).catch(error => error.message),
-        this.validateId(id, false).catch(error => error.message)
+        this.validateId(id, "metadata").catch(error => error.message),
+        this.validateId(id, "layout").catch(error => error.message)
       ])
       .then((errorMessages: string[]) => {
         const combinedMessage = errorMessages.filter(Boolean).join("; ");
@@ -116,9 +116,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       });
   }
 
-  private validateId(id: string, metadata: boolean): Promise<void> {
+  private validateId(id: string, dataType: "metadata" | "layout"): Promise<void> {
     return new Promise((resolve, reject) => {
-      const loadFunc = metadata ? this.loadMetadata : this.loadLayouts;
+      const loadFunc = dataType === "metadata" ? this.loadMetadata : this.loadLayouts;
+
       loadFunc().then(result => {
         const count = result.filter(x => x.id === id).length;
         switch (count) {
@@ -127,10 +128,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
             break;
           };
           case 0: {
-            reject(new Error(`No ${metadata ? "metadata" : "layout"} with ID ${id}`));
+            reject(new Error(`No ${dataType} with ID ${id}`));
             break;
           }
-          default: reject(new Error(`Non-unique ${metadata ? "metadata" : "layout"} with ID ${id}`));
+          default: reject(new Error(`Non-unique ${dataType} with ID ${id}`));
         }
       });
     })
