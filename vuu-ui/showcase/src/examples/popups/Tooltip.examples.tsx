@@ -1,6 +1,7 @@
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 import { Tooltip, useTooltip } from "@finos/vuu-popups";
+import { useId } from "@finos/vuu-layout";
 
 // import "./Tooltip.examples.css";
 
@@ -15,6 +16,8 @@ export const DefaultTooltip = () => {
   const [tooltipContent, setTooltipContent] = useState<"child" | "text">(
     "text"
   );
+
+  const id = useId();
 
   const handleChangePlacement = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
@@ -51,6 +54,7 @@ export const DefaultTooltip = () => {
   );
 
   const { anchorProps, tooltipProps } = useTooltip({
+    id,
     placement: tooltipPlacement,
     tooltipContent:
       tooltipContent === "text" ? "This is my tooltip" : tooltipChild,

@@ -18,39 +18,8 @@ export const DefaultFilterBar = ({
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const handleAddFilter = useCallback((filter: Filter) => {
-    filtersRef.current.push(filter);
-    console.log(`add`);
-  }, []);
-
-  const handleDeleteFilter = useCallback(
-    (/*filter: Filter*/) => {
-      console.log(`delete filter `);
-    },
-    []
-  );
-
-  const handleRemoveFilter = useCallback(
-    (/*filter: Filter*/) => {
-      console.log(`remove filter `);
-    },
-    []
-  );
-
-  const handleRenameFilter = useCallback((filter: Filter, name: string) => {
-    filtersRef.current = filtersRef.current.map((f) =>
-      f === filter ? { ...f, name } : f
-    );
-  }, []);
-
   const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
     console.log(`apply filter ${filter.filter}`);
-  }, []);
-
-  const handleChangeFilter = useCallback((filter: Filter) => {
-    filtersRef.current = filtersRef.current.map((f) =>
-      f === filter ? filter : f
-    );
   }, []);
 
   return (
@@ -59,12 +28,7 @@ export const DefaultFilterBar = ({
         suggestionProvider: typeaheadHook,
       }}
       filters={filtersRef.current}
-      onAddFilter={handleAddFilter}
       onApplyFilter={handleApplyFilter}
-      onChangeFilter={handleChangeFilter}
-      onDeleteFilter={handleDeleteFilter}
-      onRemoveFilter={handleRemoveFilter}
-      onRenameFilter={handleRenameFilter}
       tableSchema={tableSchema}
     />
   );
