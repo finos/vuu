@@ -69,6 +69,8 @@ export const List = forwardRef(function List<
     maxWidth,
     minHeight,
     minWidth,
+    onDragStart,
+    onDrop,
     onMoveListItem,
     onSelect,
     onSelectionChange,
@@ -164,6 +166,8 @@ export const List = forwardRef(function List<
     id,
     label: "List",
     listHandlers: listHandlersProp, // should this be in context ?
+    onDragStart,
+    onDrop,
     onMoveListItem,
     onSelect,
     onSelectionChange,

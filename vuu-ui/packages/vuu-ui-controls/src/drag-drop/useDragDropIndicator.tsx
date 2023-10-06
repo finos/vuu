@@ -116,9 +116,7 @@ export const useDragDropIndicator = ({
   );
 
   const beginDrag = useCallback(
-    (evt: MouseEvent) => {
-      const evtTarget = evt.target as HTMLElement;
-      const dragElement = evtTarget.closest(itemQuery) as HTMLElement;
+    (dragElement: HTMLElement) => {
       if (
         dragElement.ariaSelected &&
         Array.isArray(selected) &&
@@ -204,13 +202,11 @@ export const useDragDropIndicator = ({
       }
     },
     [
-      itemQuery,
       selected,
       containerRef,
       orientation,
       fullItemQuery,
       viewportRange,
-      // setVizData,
       positionDropIndicator,
     ]
   );
