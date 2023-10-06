@@ -174,7 +174,7 @@ span[data-icon]{
 }
 
 [data-icon='error'] {
-  --vuu-icon-color: var(--salt-status-error-foreground);
+  --vuu-icon-color: var(--vuuIcon-color, var(--salt-status-error-foreground));
   --vuu-icon-svg: var(--vuu-svg-alert-circle);
 }
 [data-icon='filter'] {

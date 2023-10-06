@@ -1,6 +1,6 @@
 export const priceStrategies = [
-  "Strategy 1",
-  "Strategy 2",
+  "Peg to near touch",
+  "Limit",
   "Strategy 3",
   "Strategy 4",
   "Strategy 5",

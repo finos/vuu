@@ -6,9 +6,9 @@ import {
 } from "../reference-data";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
 import { schemas } from "../useSchemas";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
-export const BasketDefinitionsRowGenerator: RowGenerator =
+export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {
     if (index >= BasketDefinitionsReferenceData.length) {
       throw Error("generateRow index val is too high");
@@ -30,11 +30,12 @@ export const BasketDefinitionsRowGenerator: RowGenerator =
 const { basketDefinitions: basketDefinitionsSchema } = schemas;
 const { exchangeRateToUSD } = buildColumnMap(basketDefinitionsSchema.columns);
 const tickingColumns = [exchangeRateToUSD];
-export const createBasketDefinitionsUpdateGenerator = () => {
+
+export const createUpdateGenerator = () => {
   return new BaseUpdateGenerator(tickingColumns);
 };
 
-export const BasketDefinitionsColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = []
   //columnConfig: ExtendedColumnConfig = {}
 ) => {

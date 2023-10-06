@@ -3,10 +3,10 @@ import { buildColumnMap } from "@finos/vuu-utils";
 import { PriceReferenceData } from "../reference-data";
 import { schemas } from "../useSchemas";
 import { ExtendedColumnConfig } from "../useTableConfig";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
 
-export const PricesRowGenerator: RowGenerator = () => (index: number) => {
+export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   if (index >= PriceReferenceData.length) {
     throw Error("generateRow index val is too high");
   }
@@ -17,10 +17,10 @@ export const PricesRowGenerator: RowGenerator = () => (index: number) => {
 const { prices: pricesSchema } = schemas;
 const { bid, bidSize, ask, askSize } = buildColumnMap(pricesSchema.columns);
 const tickingColumns = [bid, bidSize, ask, askSize];
-export const createPriceUpdateGenerator = () =>
+export const createUpdateGenerator = () =>
   new BaseUpdateGenerator(tickingColumns);
 
-export const PricesColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = [],
   columnConfig: ExtendedColumnConfig = {}
 ) => {

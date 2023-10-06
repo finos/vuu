@@ -10,11 +10,9 @@ import { CSSProperties } from "react";
 
 import "./ProgressCell.css";
 
-const classBase = "vuuProgressCell";
+const classBase = "vuuBasketProgressCell";
 
 const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
-  //TODO what about click handling
-
   const { type } = column;
   const value = row[column.key];
   let showProgress = false;
@@ -24,9 +22,8 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
     const { associatedField } = type.renderer;
     if (associatedField) {
       const associatedValue = row[columnMap[associatedField]];
-      if (typeof isValidNumber(value) && isValidNumber(associatedValue)) {
-        percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
-        percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
+      if (isValidNumber(value) && isValidNumber(associatedValue)) {
+        percentage = Math.min((value / associatedValue) * 100, 100);
         showProgress = isFinite(percentage);
       } else {
         // Temp workaround for bug on server that sends aggregated values as strings
@@ -52,22 +49,19 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
   return (
     <div className={className} tabIndex={-1}>
       {showProgress ? (
-        <span className={`${classBase}-track`}>
-          <span className={`${classBase}-bg`} />
-          <span
-            className={`${classBase}-bar`}
-            style={
-              { "--progress-bar-pct": `-${100 - percentage}%` } as CSSProperties
-            }
-          />
-        </span>
+        <span
+          className={`${classBase}-progressBar`}
+          style={{ "--progress-bar-pct": `${percentage}%` } as CSSProperties}
+        />
       ) : null}
-      <span className={`${classBase}-text`}>{`${percentage} %`}</span>
+      <span className={`${classBase}-text`}>{`${percentage.toFixed(
+        2
+      )} %`}</span>
     </div>
   );
 };
 
-registerComponent("vuu.progress", ProgressCell, "cell-renderer", {
+registerComponent("basket-progress", ProgressCell, "cell-renderer", {
   description: "Progress formatter",
   label: "Progress formatter",
   serverDataType: ["long", "int", "double"],

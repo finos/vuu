@@ -6,11 +6,11 @@ import {
 } from "../reference-data";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
 import { schemas } from "../useSchemas";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
 const { instrumentPrices: instrumentPriceSchema } = schemas;
 
-export const InstrumentPricesRowGenerator: RowGenerator =
+export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {
     if (index >= InstrumentPricesReferenceData.length) {
       throw Error("generateRow index val is too high");
@@ -31,10 +31,10 @@ const { bid, bidSize, ask, askSize } = buildColumnMap(
   instrumentPriceSchema.columns
 );
 
-export const createInstrumentPriceUpdateGenerator = () =>
+export const createUpdateGenerator = () =>
   new BaseUpdateGenerator([bid, bidSize, ask, askSize]);
 
-export const InstrumentPricesColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = []
   //columnConfig: ExtendedColumnConfig = {}
 ) => {

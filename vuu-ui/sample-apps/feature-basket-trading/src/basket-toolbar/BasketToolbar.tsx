@@ -28,48 +28,53 @@ export const BasketToolbar = ({
     return true;
   };
 
-  const basketSelector = <BasketSelector {...BasketSelectorProps} />;
-  const statusIndicator = <span className={`${classBase}-statusIndicator`} />;
+  const basketSelector = (
+    <BasketSelector {...BasketSelectorProps} key="selector" />
+  );
+  const statusIndicator = (
+    <span key="status" className={`${classBase}-statusIndicator`} />
+  );
   const inputUnits = (
-    <FormField>
+    <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
       <ExpandoInput className={`${classBase}-units`} value={100} />
     </FormField>
   );
   const readOnlyUnits = (
-    <FormField>
+    <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
       <span className={`${classBase}-units`}>100</span>
     </FormField>
   );
   const notionalUSD = (
-    <FormField>
+    <FormField key="usd">
       <FormFieldLabel>Total USD Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>1,235,789</span>
     </FormField>
   );
 
   const notional = (
-    <FormField>
+    <FormField key="notional">
       <FormFieldLabel>Total Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>2,345,678</span>
     </FormField>
   );
 
   const pctFilled = (
-    <FormField>
+    <FormField key="filled">
       <FormFieldLabel>% Filled</FormFieldLabel>
       <span className={`${classBase}-notional`}>25%</span>
     </FormField>
   );
 
-  const basketMenu = <BasketMenu onMenuAction={handleMenuAction} />;
+  const basketMenu = <BasketMenu key="menu" onMenuAction={handleMenuAction} />;
 
   const sendToMarket = (
     <Button
       className={`${classBase}-sendToMarket`}
-      variant="cta"
+      key="to-market"
       onClick={onSendToMarket}
+      variant="cta"
     >
       send to market
       <span data-icon="arrow-right" />
@@ -79,8 +84,9 @@ export const BasketToolbar = ({
   const takeOffMarket = (
     <Button
       className={`${classBase}-takeOffMarket`}
-      variant="primary"
+      key="off-market"
       onClick={onTakeOffMarket}
+      variant="primary"
     >
       off market
     </Button>

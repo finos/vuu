@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ExtendedColumnConfig } from "../useTableConfig";
-import { ColumnGenerator, RowGenerator } from "./vuu-row-generator";
+import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { schemas } from "../useSchemas";
 import { currencies, locations, suffixes } from "./generatedData";
 
@@ -29,7 +29,7 @@ const algos = ["Algo 1", "Algo 2", "Algo 3", "Algo 4", "Algo 5"];
 
 const maxIndex = 20 * 20 * 20 * 20 * 8;
 
-export const ChildOrderRowGenerator: RowGenerator = () => (index: number) => {
+export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   if (index > maxIndex) {
     throw Error("generateRow index val is too high");
   }
@@ -75,7 +75,7 @@ export const ChildOrderRowGenerator: RowGenerator = () => (index: number) => {
   ];
 };
 
-export const ChildOrderColumnGenerator: ColumnGenerator = (
+export const ColumnGenerator: ColumnGeneratorFn = (
   columns = [],
   columnConfig: ExtendedColumnConfig = {}
 ) => {

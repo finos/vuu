@@ -70,9 +70,10 @@ const applyColumnDefaults = (tableSchema: TableSchema) =>
             name: "string",
             renderer: {
               name: "dropdown-cell",
+              // TODO how do we get these
               values: [
-                "Strategy 1",
-                "Strategy 2",
+                "Peg to near touch",
+                "Limit",
                 "Strategy 3",
                 "Strategy 4",
                 "Strategy 5",

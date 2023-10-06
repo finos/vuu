@@ -2,23 +2,23 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { schemas } from "../useSchemas";
 import {
-  BasketDesignReferenceData,
-  BasketDesignColumnMap,
+  BasketOrdersReferenceData,
+  BasketOrdersColumnMap,
 } from "../reference-data";
 
 export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {
-    if (index >= BasketDesignReferenceData.length) {
+    if (index >= BasketOrdersReferenceData.length) {
       throw Error("generateRow index val is too high");
     }
     if (columnNames) {
       return columnNames.map(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        (name) => BasketDesignReferenceData[index][BasketDesignColumnMap[name]]
+        (name) => BasketOrdersReferenceData[index][BasketOrdersColumnMap[name]]
       );
     } else {
-      return BasketDesignReferenceData[index].slice(0, 7);
+      return BasketOrdersReferenceData[index].slice(0, 7);
     }
   };
 
@@ -26,18 +26,18 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   columns = []
   //columnConfig: ExtendedColumnConfig = {}
 ) => {
-  const basketDesignColumns: ColumnDescriptor[] = schemas.basketDesign.columns;
+  const basketOrdersColumns: ColumnDescriptor[] = schemas.basketOrders.columns;
   if (typeof columns === "number") {
-    throw Error("InstrumentColumnGenerator must be passed columns (strings)");
+    throw Error("basketOrdersColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {
-    return basketDesignColumns;
+    return basketOrdersColumns;
   } else {
     return columns.map<ColumnDescriptor>((name) => {
-      const column = basketDesignColumns.find((col) => col.name === name);
+      const column = basketOrdersColumns.find((col) => col.name === name);
       if (column) {
         return column;
       } else {
-        throw Error(`InstrumentColumnGenerator no column ${name}`);
+        throw Error(`basketOrdersColumnGenerator no column ${name}`);
       }
     });
   }
