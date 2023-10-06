@@ -1,58 +1,89 @@
+import { boxContainsPoint } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
+import { MeasuredTarget } from "./DragDropProvider";
+import { DragDropState } from "./DragDropState";
 import { MouseOffset } from "./dragDropTypesNext";
 
-export const useGlobalDragDrop = () => {
-  // A ref to the draggable element
-  const draggableRef = useRef<HTMLElement | null>(null);
+export type ResumeDragHandler = (dragDropState: DragDropState) => boolean;
+
+export const useGlobalDragDrop = ({
+  onDragOverDropTarget,
+}: {
+  onDragOverDropTarget: (
+    dropTargetId: string,
+    dragDropState: DragDropState
+  ) => boolean;
+}) => {
+  const measuredDropTargetsRef = useRef<Record<string, MeasuredTarget>>();
+
+  const dragDropStateRef = useRef<DragDropState | null>(null);
   /** current mouse position */
   const mousePosRef = useRef<MouseOffset>({ x: 0, y: 0 });
-  /** Distance between start (top | left) of dragged element and point where user pressed to drag */
-  const mouseOffsetRef = useRef<MouseOffset>({ x: 0, y: 0 });
+
+  const overDropTarget = useCallback((x: number, y: number) => {
+    const { current: dropTargets } = measuredDropTargetsRef;
+    if (dropTargets) {
+      for (const [id, measuredTarget] of Object.entries(dropTargets)) {
+        if (boxContainsPoint(measuredTarget, x, y)) {
+          return id;
+        }
+      }
+    }
+    return undefined;
+  }, []);
 
   const dragMouseMoveHandler = useCallback(
     (evt: MouseEvent) => {
       const { clientX, clientY } = evt;
+      const { current: dragDropState } = dragDropStateRef;
 
       mousePosRef.current.x = clientX;
       mousePosRef.current.y = clientY;
 
-      if (draggableRef.current) {
-        const dragPosX = mousePosRef.current.x - mouseOffsetRef.current.x;
-        const dragPosY = mousePosRef.current.y - mouseOffsetRef.current.y;
-        draggableRef.current.style.top = `${dragPosY}px`;
-        draggableRef.current.style.left = `${dragPosX}px`;
+      if (dragDropState?.draggableElement) {
+        const { draggableElement, mouseOffset } = dragDropState;
+
+        const dragPosX = mousePosRef.current.x - mouseOffset.x;
+        const dragPosY = mousePosRef.current.y - mouseOffset.y;
+        draggableElement.style.top = `${dragPosY}px`;
+        draggableElement.style.left = `${dragPosX}px`;
+
+        const dropTarget = overDropTarget(dragPosX, dragPosY);
+        if (dropTarget) {
+          if (onDragOverDropTarget(dropTarget, dragDropState)) {
+            // prettier-ignore
+            document.removeEventListener("mousemove", dragMouseMoveHandler, false);
+            document.removeEventListener("mouseup", dragMouseUpHandler, false);
+            dragDropStateRef.current = null;
+          }
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
-  const dragMouseUpHandler = useCallback(
-    (evt: MouseEvent) => {
-      document.removeEventListener("mousemove", dragMouseMoveHandler, false);
-      document.removeEventListener("mouseup", dragMouseUpHandler, false);
-    },
-    [dragMouseMoveHandler]
-  );
+  const dragMouseUpHandler = useCallback(() => {
+    document.removeEventListener("mousemove", dragMouseMoveHandler, false);
+    document.removeEventListener("mouseup", dragMouseUpHandler, false);
+  }, [dragMouseMoveHandler]);
 
-  const resumeDrag = useCallback(
-    (draggedElement: HTMLElement, mouseOffset?: MouseOffset) => {
+  const resumeDrag = useCallback<ResumeDragHandler>(
+    (dragDropState) => {
       console.log(`resume drag of `, {
-        draggedElement,
+        el: dragDropState.draggableElement,
       });
-      draggableRef.current = draggedElement;
-      if (mouseOffset) {
-        mouseOffsetRef.current = mouseOffset;
-      }
+      dragDropStateRef.current = dragDropState;
       document.addEventListener("mousemove", dragMouseMoveHandler, false);
       document.addEventListener("mouseup", dragMouseUpHandler, false);
 
-      // identify and measure drop targets
+      return true;
     },
     [dragMouseMoveHandler, dragMouseUpHandler]
   );
 
   return {
+    measuredDropTargetsRef,
     resumeDrag,
   };
 };

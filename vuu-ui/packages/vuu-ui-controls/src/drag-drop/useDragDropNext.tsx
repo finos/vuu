@@ -124,15 +124,35 @@ export const useDragDropNext: DragDropHook = ({
 
   const handleScrollStopRef = useRef<ScrollStopHandler>();
 
-  const { isDragSource, isDropTarget, onDragOut, register } =
-    useDragDropProvider(id);
-  console.log(
-    `#${id} is drag source ${isDragSource} isDropTarget ${isDropTarget}`
-  );
+  const {
+    isDragSource,
+    isDropTarget,
+    onDragOut,
+    onEndOfDragOperation,
+    register,
+  } = useDragDropProvider(id);
 
-  useEffect(() => {
-    if (id && (isDragSource || isDropTarget)) {
-      register(id);
+  type NativeMouseHandler = (evt: MouseEvent) => void;
+  /** refs for drag handlers to avoid circular dependency issues  */
+  const dragMouseMoveHandlerRef = useRef<NativeMouseHandler>();
+  const dragMouseUpHandlerRef = useRef<NativeMouseHandler>();
+
+  const attachDragHandlers = useCallback(() => {
+    const { current: dragMove } = dragMouseMoveHandlerRef;
+    const { current: dragUp } = dragMouseUpHandlerRef;
+    if (dragMove && dragUp) {
+      // prettier-ignore
+      document.addEventListener("mousemove", dragMove, false);
+      document.addEventListener("mouseup", dragUp, false);
+    }
+  }, []);
+  const removeDragHandlers = useCallback(() => {
+    const { current: dragMove } = dragMouseMoveHandlerRef;
+    const { current: dragUp } = dragMouseUpHandlerRef;
+    if (dragMove && dragUp) {
+      // prettier-ignore
+      document.removeEventListener("mousemove", dragMove, false);
+      document.removeEventListener("mouseup", dragUp, false);
     }
   }, []);
 
@@ -247,9 +267,7 @@ export const useDragDropNext: DragDropHook = ({
         onDrop?.(fromIndex, toIndex, options);
       }
       dropIndexRef.current = toIndex;
-      if (id) {
-        onEndOfDragOperation?.(id);
-      }
+      onEndOfDragOperation?.(id);
       dragDropStateRef.current = null;
     },
     [id, onDrop, onEndOfDragOperation]
@@ -285,27 +303,19 @@ export const useDragDropNext: DragDropHook = ({
         ? Math.abs(lastClientContraPos - clientContraPos)
         : 0;
 
-      console.log(`dragOutDistance ${dragOutDistance} `);
-
-      if (dragOutDistance - dragDistance > 5) {
-        if (
-          onDragOut?.(
-            id as string,
-            draggableRef.current as HTMLElement,
-            mouseOffsetRef.current
-          )
-        ) {
-          console.log(`drag handed over to provider`);
-          // prettier-ignore
-          document.removeEventListener("mousemove", dragMouseMoveHandler, false);
-          document.removeEventListener("mouseup", dragMouseUpHandler, false);
+      if (dragDropStateRef.current && dragOutDistance - dragDistance > 5) {
+        if (onDragOut?.(id as string, dragDropStateRef.current)) {
+          // TODO create a cleanup function
+          removeDragHandlers();
+          releaseDrag();
+          dragDropStateRef.current = null;
         }
         // remove the drag boundaries
         dragBoundaries.current = UNBOUNDED;
         return true;
       }
     },
-    [id, isDragSource, onDragOut, orientation, releaseDrag, removeDragHandlers]
+    [id, isDragSource, onDragOut, orientation, removeDragHandlers]
   );
 
   const dragMouseMoveHandler = useCallback(
@@ -403,6 +413,8 @@ export const useDragDropNext: DragDropHook = ({
       const { draggableElement, mouseOffset, initialDragElement } =
         dragDropState;
       const { current: container } = containerRef;
+
+      console.log({ container, draggableElement, initialDragElement });
 
       if (container && draggableElement) {
         const containerRect = container.getBoundingClientRect();

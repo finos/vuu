@@ -16,7 +16,7 @@ export class DragDropState {
   }
 
   /** Used to capture a ref to the Draggable JSX.Element */
-  setDraggable = (el: HTMLElement | null) => {
+  setDraggable = (el: HTMLElement) => {
     this.draggableElement = el;
   };
 
