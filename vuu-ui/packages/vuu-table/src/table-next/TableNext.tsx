@@ -38,7 +38,6 @@ export const TableNext = ({
 }: TableProps) => {
   const id = useId(idProp);
   const containerRef = useRef<HTMLDivElement>(null);
-  console.log(`TableNext rowHeight = ${rowHeight}`);
   const {
     columnMap,
     columns,
@@ -72,13 +71,6 @@ export const TableNext = ({
     rowHeight,
     selectionModel,
   });
-
-  useEffect(() => {
-    console.log("Table mounted");
-    return () => {
-      console.log("Table unmounted");
-    };
-  }, []);
 
   const getStyle = () => {
     return {

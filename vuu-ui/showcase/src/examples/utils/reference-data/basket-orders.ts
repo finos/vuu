@@ -1,7 +1,7 @@
 import InstrumentReferenceData from "./instruments";
 import PriceReferenceData from "./prices";
 import { priceStrategies } from "./priceStrategies";
-import { random } from "./utils";
+import { random, randomPercentage } from "./utils";
 
 export type ric = string;
 export type status = string;
@@ -65,6 +65,24 @@ const orderStatus = ["on market", "fully filled", "rejected", "cancelled"];
 
 const basketOrders: BasketOrdersDataRow[] = [];
 
+const generateLimitPrice = (bid: number, ask: number) => {
+  // low price
+  if (random(0, 11) > 10) {
+    return bid * 0.995;
+  }
+  if (random(0, 11) > 10) {
+    return bid;
+  }
+  // high price
+  if (random(0, 11) > 10) {
+    return ask * 1.005;
+  }
+  if (random(0, 11) > 10) {
+    return ask;
+  }
+  return bid + randomPercentage(ask - bid);
+};
+
 // const start = performance.now();
 // Create 100_000 Instruments
 
@@ -74,10 +92,10 @@ for (let i = 0; i < InstrumentReferenceData.length; i++) {
   const [ask, , bid, , , last] = PriceReferenceData[i];
   const status = orderStatus[random(0, orderStatus.length - 1)];
 
-  const quantity = 0;
-  const filled = 0;
+  const quantity = random(1000, 100000);
+  const filled = status === "rejected" ? 0 : random(0, quantity);
   const weighting = 1;
-  const limitPrice = bid * 0.995;
+  const limitPrice = generateLimitPrice(bid, ask);
   const priceSpread = 0;
   const priceStrategy = priceStrategies[random(0, priceStrategies.length - 1)];
 

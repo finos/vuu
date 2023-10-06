@@ -7,6 +7,7 @@ import type {
 } from "@finos/vuu-protocol-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
+import type { ColumnMap } from "@finos/vuu-utils";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 

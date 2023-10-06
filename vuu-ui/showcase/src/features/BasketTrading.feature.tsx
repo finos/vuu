@@ -23,23 +23,19 @@ export const BasketTradingFeature = ({
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const { id, saveSession } = useViewContext();
-
+  console.log({ saveSession });
   const { dataSource: basketDesignDataSource } =
     useTableConfigTable(basketDesignSchema);
-
   const { dataSource: basketOrdersDataSource } =
     useTableConfigTable(basketOrdersSchema);
-
   const { dataSource: basketDefinitions } = useTableConfigTable(
     basketDefinitionsSchema,
     5
   );
-
   const { dataSource: basketDefinitionsSearch } = useTableConfigTable(
     basketDefinitionsSchema,
     5
   );
-
   const { dataSource: instrumentsDataSource } =
     useTableConfigTable(instrumentsSchema);
 
@@ -51,9 +47,9 @@ export const BasketTradingFeature = ({
 
   return (
     <VuuBasketTradingFeature
+      basketDefinitionsSchema={basketDefinitionsSchema}
       basketDesignSchema={basketDesignSchema}
       basketOrdersSchema={basketOrdersSchema}
-      basketDefinitionsSchema={basketDefinitionsSchema}
       instrumentsSchema={instrumentsSchema}
     />
   );
