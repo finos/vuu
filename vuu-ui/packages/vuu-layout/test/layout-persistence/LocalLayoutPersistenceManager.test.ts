@@ -133,123 +133,60 @@ describe("updateLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${existingId}`));
   });
 
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    let exceptionCaught = false;
-
-    await persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`No layout with ID ${existingId}`));
   });
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
-    const requestedId = "non_existant_id";
-    let exceptionCaught = false;
+    const requestedId = "non_existent_id";
 
-    persistenceManager.updateLayout(requestedId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${requestedId}; No layout with ID ${requestedId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(requestedId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${requestedId}; No layout with ID ${requestedId}`));
   });
 
   it("errors if there are multiple metadata entries in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}`));
   });
 
   it("errors if there are multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`));
   });
 
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`));
   });
 });
 
@@ -271,123 +208,59 @@ describe("deleteLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${existingId}`));
   });
 
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    let exceptionCaught = false;
-
-    await persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`No layout with ID ${existingId}`));
   });
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
-    const requestedId = "non_existant_id";
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(requestedId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${requestedId}; No layout with ID ${requestedId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    const requestedId = "non_existent_id";
+    expect(persistenceManager.deleteLayout(requestedId))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${requestedId}; No layout with ID ${requestedId}`));
   });
 
   it("errors if there are multiple metadata entries in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}`));
   });
 
   it("errors if there are multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`));
   });
 
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.deleteLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.deleteLayout(existingId))
+      .rejects.toStrictEqual(new Error(`No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`));
   });
 });
 
@@ -413,30 +286,14 @@ describe("loadLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    let exceptionCaught = false;
-
-    await persistenceManager.loadLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.loadLayout(existingId))
+      .rejects.toStrictEqual(new Error(`No layout with ID ${existingId}`));
   });
 
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
-    const requestedId = "non_existant_id";
-    let exceptionCaught = false;
-
-    persistenceManager.loadLayout(requestedId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No layout with ID ${requestedId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    const requestedId = "non_existent_id";
+    expect(persistenceManager.loadLayout(requestedId))
+      .rejects.toStrictEqual(new Error(`No layout with ID ${requestedId}`));
   });
 
   it("retrieves layout if there are multiple metadata entries in local storage with requested ID ", async () => {
@@ -452,62 +309,30 @@ describe("loadLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.loadLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.loadLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.loadLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.loadLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique layout with ID ${existingId}`));
   });
 
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.loadLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`No layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.loadLayout(existingId))
+      .rejects.toStrictEqual(new Error(`No layout with ID ${existingId}`));
   });
 
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    let exceptionCaught = false;
-
-    persistenceManager.loadLayout(existingId)
-      .catch((err: Error) => {
-        exceptionCaught = true;
-        expect(err.message).toEqual(`Non-unique layout with ID ${existingId}`);
-      })
-      .finally(() => {
-        expect(exceptionCaught).toEqual(true);
-      });
+    expect(persistenceManager.loadLayout(existingId))
+      .rejects.toStrictEqual(new Error(`Non-unique layout with ID ${existingId}`));
   });
 });
 
