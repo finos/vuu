@@ -119,6 +119,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
         this.validateId(id, "layout").catch(error => error.message)
       ])
       .then((errorMessages: string[]) => {
+        // filter(Boolean) is used to remove any blank messages before joining.
+        // Avoids orphaned delimiters in combined messages, e.g. "; " or "; error 2"
         const combinedMessage = errorMessages.filter(Boolean).join("; ");
         if (combinedMessage) {
           throw new Error(combinedMessage);
