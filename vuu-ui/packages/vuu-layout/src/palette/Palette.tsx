@@ -54,7 +54,10 @@ export const PaletteItem = memo(
 PaletteItem.displayName = "PaletteItem";
 
 export interface PaletteProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+  extends Omit<
+    HTMLAttributes<HTMLDivElement>,
+    "onDragStart" | "onDrop" | "onSelect"
+  > {
   children: ReactElement[];
   itemHeight?: number;
   orientation: "horizontal" | "vertical";

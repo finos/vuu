@@ -1,4 +1,4 @@
-import { rect, rectTuple } from "../common-types";
+import { rect, rectTuple } from "@finos/vuu-utils";
 import { LayoutModel } from "../layout-reducer";
 import { getProps, typeOf } from "../utils";
 import {

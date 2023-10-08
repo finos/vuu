@@ -14,7 +14,7 @@ import "./Draggable.css";
 const makeClassNames = (classNames: string) =>
   classNames.split(" ").map((className) => `vuuDraggable-${className}`);
 export const Draggable = forwardRef<
-  HTMLElement,
+  HTMLDivElement,
   {
     wrapperClassName: string;
     element: HTMLElement;

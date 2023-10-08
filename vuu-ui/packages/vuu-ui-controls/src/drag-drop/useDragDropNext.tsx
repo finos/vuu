@@ -528,6 +528,9 @@ export const useDragDropNext: DragDropHook = ({
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
       const { current: container } = containerRef;
+      // We don't want to prevent other handlers on this element from working
+      // but we do want to stop a drag drop being initiated on a bubbled event.
+      evt.stopPropagation();
       if (container && !evt.defaultPrevented) {
         const { clientX, clientY } = evt;
         mousePosRef.current.x = startPosRef.current.x = clientX;

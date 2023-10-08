@@ -3,7 +3,10 @@ import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
 import { CSSProperties, useEffect, useRef } from "react";
-import { GroupHeaderCell, HeaderCell } from "./header-cell";
+import {
+  GroupHeaderCellNext as GroupHeaderCell,
+  HeaderCell,
+} from "./header-cell";
 import { Row as DefaultRow } from "./Row";
 import { useTable } from "./useTableNext";
 import { MeasuredContainer, useId } from "@finos/vuu-layout";

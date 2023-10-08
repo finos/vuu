@@ -107,7 +107,10 @@ export const useOverflowContainer = ({
     let currentSize = 0;
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
-        const { [sizeProp]: size } = entry.contentRect;
+        const { [sizeProp]: actualSize } = entry.contentRect;
+        // This is important. Sometimes tiny sub-pixel differeces
+        // can be reported, which break the layout assumptions
+        const size = Math.round(actualSize as number);
         if (isValidNumber(size) && currentSize !== size) {
           currentSize = size;
           handleResize();

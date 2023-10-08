@@ -24,7 +24,6 @@ const NOT_OVERFLOWED = ':not([data-overflowed="true"])';
 const NOT_HIDDEN = ':not([aria-hidden="true"])';
 
 export const useDragDropIndicator = ({
-  draggableRef,
   onDrop,
   orientation = "horizontal",
   containerRef,
@@ -94,7 +93,12 @@ export const useDragDropIndicator = ({
         const dragPos = dragPosRef.current;
         const midPos = dragPos + size / 2;
         const { current: dropTargets } = measuredDropTargets;
-        const nextDropTarget = getNextDropTarget(dropTargets, midPos, "fwd");
+        const nextDropTarget = getNextDropTarget(
+          dropTargets,
+          midPos,
+          size,
+          "fwd"
+        );
         if (nextDropTarget) {
           if (atEnd && scrollDirection === "fwd") {
             positionDropIndicator(dropTargets[dropTargets.length - 1], "start");
@@ -217,7 +221,7 @@ export const useDragDropIndicator = ({
       const { current: draggedItem } = draggedItemRef;
 
       if (draggedItem) {
-        if (draggableRef.current && containerRef.current) {
+        if (containerRef.current) {
           const START = orientation === "horizontal" ? "left" : "top";
           dragPosRef.current = dragPos;
 
@@ -225,6 +229,7 @@ export const useDragDropIndicator = ({
           const nextDropTarget = getNextDropTarget(
             dropTargets,
             dragPos,
+            draggedItem.size,
             mouseMoveDirection
           );
 
@@ -273,7 +278,7 @@ export const useDragDropIndicator = ({
         }
       }
     },
-    [draggableRef, containerRef, orientation, positionDropIndicator]
+    [containerRef, orientation, positionDropIndicator]
   );
 
   const drop = useCallback(() => {
@@ -297,17 +302,32 @@ export const useDragDropIndicator = ({
 
       //TODO why is this different from Natural Movement ?
       if (overflowMenuShowingRef.current) {
-        onDrop(fromIndex, -1);
+        onDrop(fromIndex, -1, {
+          fromIndex,
+          roIndex: -1,
+        });
       } else {
         if (fromIndex < originalDropTargetIndex) {
           onDrop(
             fromIndex,
-            dropBefore ? currentDropTargetIndex : currentDropTargetIndex + 1
+            dropBefore ? currentDropTargetIndex : currentDropTargetIndex + 1,
+            {
+              fromIndex,
+              toIndex: dropBefore
+                ? currentDropTargetIndex
+                : currentDropTargetIndex + 1,
+            }
           );
         } else {
           onDrop(
             fromIndex,
-            dropBefore ? originalDropTargetIndex : originalDropTargetIndex + 1
+            dropBefore ? originalDropTargetIndex : originalDropTargetIndex + 1,
+            {
+              fromIndex,
+              toIndex: dropBefore
+                ? originalDropTargetIndex
+                : originalDropTargetIndex + 1,
+            }
           );
         }
       }
@@ -316,6 +336,10 @@ export const useDragDropIndicator = ({
     setShowOverflow(false);
   }, [clearSpacer, onDrop]);
 
+  const releaseDrag = useCallback(() => {
+    // TODO
+  }, []);
+
   return {
     beginDrag,
     drag,
@@ -323,6 +347,7 @@ export const useDragDropIndicator = ({
     dropIndicator,
     handleScrollStart,
     handleScrollStop,
+    releaseDrag,
     revealOverflowedItems: showOverflow,
   };
 };

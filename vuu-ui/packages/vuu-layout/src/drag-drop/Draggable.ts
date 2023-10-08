@@ -1,5 +1,5 @@
+import { rect } from "@finos/vuu-utils";
 import { ReactElement } from "react";
-import { rect } from "../common-types";
 import { LayoutModel } from "../layout-reducer";
 import { findTarget, followPath, getProps } from "../utils";
 import { BoxModel, Measurements, Position } from "./BoxModel";
