@@ -1,6 +1,5 @@
 import { Flexbox } from "@finos/vuu-layout";
 import {
-  DragDropProvider,
   dragStrategy,
   List,
   ListItem,
@@ -317,38 +316,6 @@ export const DraggableListItemsDropIndicator = () => {
   );
 };
 DraggableListItemsDropIndicator.displaySequence = displaySequence++;
-
-export const DraggableLists = () => {
-  const dragSource = useMemo(
-    () => ({
-      list1: { dropTargets: "list2" },
-    }),
-    []
-  );
-
-  return (
-    <DragDropProvider dragSources={dragSource}>
-      <Flexbox>
-        <List
-          aria-label="Listbox example"
-          id="list1"
-          maxWidth={292}
-          source={usa_states}
-          allowDragDrop
-        />
-        <div style={{ flexBasis: 24, flexShrink: 0, flexGrow: 0 }} />
-        <List
-          aria-label="Listbox example"
-          id="list2"
-          maxWidth={292}
-          source={usa_states}
-          allowDragDrop
-        />
-      </Flexbox>
-    </DragDropProvider>
-  );
-};
-DraggableLists.displaySequence = displaySequence++;
 
 export const ListWithinFlexLayout = () => {
   const handleSelect = useCallback((evt, selected) => {

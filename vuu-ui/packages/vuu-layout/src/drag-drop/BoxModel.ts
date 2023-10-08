@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { rect } from "../common-types";
+import { boxContainsPoint } from "@finos/vuu-utils";
 import { LayoutModel } from "../layout-reducer";
 import { isContainer } from "../registry/ComponentRegistry";
 import { getProps, typeOf } from "../utils";
@@ -132,7 +132,7 @@ export function getPosition(
 
   if (targetOrientation === "row") {
     position = pctX < 0.5 ? WEST : EAST;
-  } else if (rect.header && containsPoint(rect.header, x, y)) {
+  } else if (rect.header && boxContainsPoint(rect.header, x, y)) {
     position = HEADER;
 
     if (rect.Stack) {
@@ -199,7 +199,7 @@ function getPositionWithinBox(
   pctY: number
 ) {
   const centerBox = getCenteredBox(rect, 0.2);
-  if (containsPoint(centerBox, x, y)) {
+  if (boxContainsPoint(centerBox, x, y)) {
     return CENTRE;
   } else {
     const quadrant = `${pctY < 0.5 ? "north" : "south"}${
@@ -474,7 +474,7 @@ function allBoxesContainingPoint(
 
   const type = typeOf(component) as string;
   const rect = measurements[path];
-  if (!containsPoint(rect, x, y)) return boxes;
+  if (!boxContainsPoint(rect, x, y)) return boxes;
 
   if (dropTargets && dropTargets.length) {
     if (dropTargets.includes(path)) {
@@ -494,7 +494,7 @@ function allBoxesContainingPoint(
     return boxes;
   }
 
-  if (rect.header && containsPoint(rect.header, x, y)) {
+  if (rect.header && boxContainsPoint(rect.header, x, y)) {
     return boxes;
   }
 
@@ -518,12 +518,6 @@ function allBoxesContainingPoint(
     }
   }
   return boxes;
-}
-
-function containsPoint(rect: rect, x: number, y: number) {
-  if (rect) {
-    return x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
-  }
 }
 
 function scrollIntoViewIfNeccesary(

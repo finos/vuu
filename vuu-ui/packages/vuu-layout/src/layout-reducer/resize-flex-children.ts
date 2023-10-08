@@ -1,5 +1,5 @@
+import { dimension } from "@finos/vuu-utils";
 import React, { CSSProperties, ReactElement } from "react";
-import { dimension } from "../common-types";
 import { followPath, getProps } from "../utils";
 import { LayoutResizeAction, SplitterResizeAction } from "./layoutTypes";
 import { swapChild } from "./replace-layout-element";
