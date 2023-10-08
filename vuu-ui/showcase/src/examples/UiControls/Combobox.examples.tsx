@@ -138,7 +138,6 @@ export const MultiSelectCombobox = () => {
       selectionStrategy="multiple"
       style={{ background: "yellow" }}
       defaultValue=""
-      width={120}
     />
   );
 };

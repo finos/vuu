@@ -1,5 +1,4 @@
 import {
-  ChangeEventHandler,
   FormEvent,
   ForwardedRef,
   forwardRef,
@@ -10,7 +9,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
@@ -36,7 +34,6 @@ export const TextInput = forwardRef(function TextInput(
     InputProps: InputPropsProp = {},
     className,
     column,
-    filterClause,
     onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
@@ -114,6 +111,7 @@ export const TextInput = forwardRef(function TextInput(
         return (
           <ExpandoCombobox<string>
             InputProps={InputProps}
+            allowMultipleSelection
             className={className}
             initialHighlightedIndex={0}
             source={typeaheadValues}

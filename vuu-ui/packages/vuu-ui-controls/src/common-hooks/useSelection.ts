@@ -149,6 +149,14 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
       const { current: container } = containerRef;
       const { id } = getElementByDataIndex(container, idx, true);
 
+      console.log(
+        `selectItemAtIndex ${idx} existing selection ${JSON.stringify(
+          selected,
+          null,
+          2
+        )}`
+      );
+
       let newSelected: returnType;
       if (isMultipleSelect) {
         newSelected = selectMultiple(id) as returnType;

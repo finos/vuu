@@ -2,7 +2,6 @@ import { itemToString as defaultToString } from "@finos/vuu-utils";
 import { ComboBox, ComboBoxProps } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
-  ChangeEvent,
   FormEvent,
   ForwardedRef,
   forwardRef,
@@ -36,6 +35,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     ListProps: ListPropsProp,
     onInputChange,
     onSelectionChange,
+    style,
     value = "",
     ...props
   }: ExpandoComboboxProps<Item>,
@@ -54,7 +54,9 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [onInputChange]
   );
 
+  console.log({ style });
   const [InputProps, ListProps] = useMemo<
+    // [ComboBoxProps["InputProps"], ComboBoxProps["ListProps"]]
     [ComboBoxProps["InputProps"], any]
   >(() => {
     const { inputProps, ...restInputProps } = InputPropsProp;
@@ -95,6 +97,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
 
   const [selected, setSelected] = useState<any[]>([]);
   const handleMultiSelectChange = useCallback((evt, selected) => {
+    console.log(`handle Multi Sellect change`);
     setSelected(selected);
   }, []);
 
@@ -103,15 +106,16 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       className={cx(classBase, classNameProp)}
       data-text={text}
       ref={forwardedRef}
+      style={style}
     >
       {allowMultipleSelection ? (
-        <ComboBox<Item>
+        <ComboBox<Item, "multiple">
           {...props}
           defaultValue={initialValue.current}
-          // ListItem={() => <span>{"blah"}</span>}
           ListProps={ListProps}
           InputProps={InputProps}
-          onSelectionChange={handleSelectionChange}
+          onSelectionChange={handleMultiSelectChange}
+          selectionStrategy="multiple"
         />
       ) : (
         <ComboBox<Item>

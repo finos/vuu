@@ -36,7 +36,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
       onOpenChange,
       openKeys,
       openOnFocus,
-      placement = "below",
+      placement = "below-full-width",
       popupWidth,
       width,
       ...htmlAttributes
