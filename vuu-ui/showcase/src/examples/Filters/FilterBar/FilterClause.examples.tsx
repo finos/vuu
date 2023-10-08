@@ -7,7 +7,7 @@ import {
 } from "@finos/vuu-filters";
 import { ExpandoInput } from "@finos/vuu-ui-controls";
 import { SelectionChangeHandler } from "@salt-ds/lab";
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
   useAutoLoginToVuuServer,
@@ -25,6 +25,7 @@ export const DefaultExpandoInput = () => {
   const [value, setValuue] = useState("Enter value");
 
   const handleChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
+    console.log(`change`);
     const target = evt.target as HTMLInputElement;
     setValuue(target.value);
   }, []);
@@ -69,8 +70,9 @@ export const DefaultExpandoComboBox = (
     <ExpandoCombobox<ColumnDescriptor>
       {...props}
       itemToString={getColumnName}
-      source={columns}
       onSelectionChange={handleSelectionChange}
+      source={columns}
+      style={{ border: "solid 2px black", minWidth: 20 }}
     />
   );
 };
@@ -190,8 +192,9 @@ export const MultiSelectExpandoComboBox = () => {
     <ExpandoCombobox<ColumnDescriptor>
       allowMultipleSelection
       itemToString={getColumnName}
-      source={columns}
       onSelectionChange={handleSelectionChange}
+      source={columns}
+      style={{ border: "solid 2px black", minWidth: 20 }}
     />
   );
 };

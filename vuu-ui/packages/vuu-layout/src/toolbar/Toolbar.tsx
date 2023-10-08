@@ -16,10 +16,12 @@ import "./Toolbar.css";
 
 const classBase = "vuuToolbar";
 
+export type ActiveItemChangeHandler = (itemIndex: number[]) => void;
+
 export interface ToolbarProps extends OverflowContainerProps {
   activeItemIndex?: number[];
   defaultActiveItemIndex?: number[];
-  onActiveChange?: (tabIndex: number[]) => void;
+  onActiveChange?: ActiveItemChangeHandler;
   selectionStrategy?: SelectionStrategy | SpecialKeyMultipleSelection;
 }
 
