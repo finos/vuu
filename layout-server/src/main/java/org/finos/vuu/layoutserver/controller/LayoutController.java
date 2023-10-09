@@ -1,5 +1,7 @@
 package org.finos.vuu.layoutserver.controller;
 
+import java.util.List;
+import java.util.UUID;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +56,7 @@ public class LayoutController {
         return layoutService.getMetadata()
             .stream()
             .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
-            .toList();
+            .collect(java.util.stream.Collectors.toList());
     }
 
     /**
@@ -82,7 +84,8 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
     public void updateLayout(@PathVariable UUID id, @RequestBody @Valid LayoutRequestDTO newLayout) {
-        // TODO I'm not sure about this, I think layoutService should be doing more logic, not the mapper here
+        // TODO I'm not sure about this, I think layoutService should be doing more logic, not
+        //  the mapper here
         Layout layout = layoutService.getLayout(id);
 
         mapper.map(newLayout, layout);
