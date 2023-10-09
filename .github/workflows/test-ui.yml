@@ -24,6 +24,9 @@ jobs:
       - run: cd ./vuu-ui && npm run test:vite
 
   cypress-e2e:
+    # As a third party action, cypress-io is pinned to a full length commit SHA for security purposes.
+    # This is also a requirement for the semgrep (static code analysis) scan to pass.
+    # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
