@@ -1,4 +1,4 @@
-package org.finos.vuu.layoutserver.dto;
+package org.finos.vuu.layoutserver.config;
 
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;

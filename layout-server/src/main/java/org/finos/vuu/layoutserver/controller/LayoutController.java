@@ -1,5 +1,7 @@
 package org.finos.vuu.layoutserver.controller;
 
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
@@ -18,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -50,9 +49,9 @@ public class LayoutController {
     public List<MetadataResponseDTO> getMetadata() {
 
         return layoutService.getMetadata()
-                .stream()
-                .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
-                .toList();
+            .stream()
+            .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
+            .collect(java.util.stream.Collectors.toList());
     }
 
     /**
@@ -80,7 +79,8 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
     public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO newLayout) {
-        // TODO I'm not sure about this, I think layoutService should be doing more logic, not the mapper here
+        // TODO I'm not sure about this, I think layoutService should be doing more logic, not
+        //  the mapper here
         Layout layout = layoutService.getLayout(id);
 
         mapper.map(newLayout, layout);
