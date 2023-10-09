@@ -104,9 +104,9 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   loadApplicationLayout(): Promise<LayoutJSON> {
     return new Promise((resolve) => {
-      const currentLayout = getLocalEntity<LayoutJSON>("api/vui");
-      if (currentLayout) {
-        resolve(currentLayout);
+      const applicationLayout = getLocalEntity<LayoutJSON>("api/vui");
+      if (applicationLayout) {
+        resolve(applicationLayout);
       } else {
         resolve(defaultLayout);
       }

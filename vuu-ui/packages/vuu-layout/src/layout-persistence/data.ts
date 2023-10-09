@@ -25,6 +25,7 @@ export const defaultLayout: LayoutJSON = {
       allowRenameTab: true,
       animateSelectionThumb: false,
       location: "main-tab",
+      allowCloseTab: true
     },
     preserve: true,
     active: 0,
