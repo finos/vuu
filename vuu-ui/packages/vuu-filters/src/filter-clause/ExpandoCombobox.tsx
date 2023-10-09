@@ -1,12 +1,15 @@
 import { itemToString as defaultToString } from "@finos/vuu-utils";
-import { ComboBox, ComboBoxProps } from "@finos/vuu-ui-controls";
+import {
+  ComboBox,
+  ComboBoxProps,
+  SelectionChangeHandler,
+} from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
   FormEvent,
   ForwardedRef,
   forwardRef,
   ReactElement,
-  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
@@ -86,16 +89,20 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     ];
   }, [InputPropsProp, handleInputChange, ListPropsProp]);
 
-  const handleSelectionChange = useCallback(
-    (evt: SyntheticEvent, item: Item | null) => {
-      const selectedValue = item === null ? "" : itemToString(item);
-      setText(selectedValue);
-      onSelectionChange?.(evt, item);
+  const handleSelectionChange = useCallback<SelectionChangeHandler<Item>>(
+    (evt, selected) => {
+      if (Array.isArray(selected)) {
+        if (selected.length === 1) {
+          const selectedValue = itemToString(selected[0]);
+          setText(selectedValue);
+          onSelectionChange?.(evt, selected);
+        }
+      }
     },
     [itemToString, onSelectionChange]
   );
 
-  const [selected, setSelected] = useState<any[]>([]);
+  const [selected, setSelected] = useState<Item[]>([]);
   const handleMultiSelectChange = useCallback((evt, selected) => {
     console.log(`handle Multi Sellect change`);
     setSelected(selected);
@@ -109,7 +116,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       style={style}
     >
       {allowMultipleSelection ? (
-        <ComboBox<Item, "multiple">
+        <ComboBox<Item>
           {...props}
           defaultValue={initialValue.current}
           ListProps={ListProps}

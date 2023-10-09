@@ -61,6 +61,27 @@ export const FixedWidthList = () => {
 };
 FixedWidthList.displaySequence = displaySequence++;
 
+export const DefaultSelectedItem = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+  return (
+    <List
+      aria-label="Listbox example"
+      itemHeight={36}
+      defaultSelected={usa_states[3]}
+      width={200}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states}
+    />
+  );
+};
+DefaultSelectedItem.displaySequence = displaySequence++;
+
 export const InlineListItems = () => {
   const handleSelect = useCallback((evt, selected) => {
     console.log(`handleSelect`, { selected });
@@ -166,14 +187,23 @@ export const DefaultVirtualisedList = () => {
 DefaultVirtualisedList.displaySequence = displaySequence++;
 
 export const MultiSelectionList = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+
   return (
     <div style={{ display: "flex", gap: 24, width: 700, height: 600 }}>
       <List
         aria-label="MultiSelection Listbox example"
         checkable={false}
-        width={292}
+        onSelect={handleSelect}
+        onSelectionChange={handleSelectionChange}
         selectionStrategy="multiple"
         source={usa_states}
+        width={292}
       />
       <List
         aria-label="MultiSelection Listbox example"

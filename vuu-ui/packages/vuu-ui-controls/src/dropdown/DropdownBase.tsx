@@ -109,7 +109,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         className: cx(className, `${classBase}-popup-component`),
         id,
         ref: popupComponentRef,
-        width: ownWidth ?? width,
+        width: placement.endsWith("full-width") ? "100%" : ownWidth ?? width,
       });
     };
 

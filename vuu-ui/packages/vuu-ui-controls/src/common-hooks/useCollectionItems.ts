@@ -21,7 +21,6 @@ import {
 } from "../list/common-hooks/utils";
 import { itemToString as defaultItemToString } from "./itemToString";
 
-import { SelectionStrategy, SingleSelectionStrategy } from "./selectionTypes";
 import { useCollection } from "./collectionProvider";
 
 const defaultCollectionOptions = {};
@@ -249,9 +248,6 @@ export const useCollectionItems = <Item>({
     (item: Item): CollectionItem<Item> | never => {
       // TODO what about Tree structures, we need to search flattened source
       const collectionItem = flattenedDataRef.current.find((i) =>
-        // const collectionItem = collectionItemsRef.current.find((i) =>
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
         isValidElement(i.value) ? i.label === item : i.value === item
       );
       if (collectionItem) {
@@ -265,75 +261,45 @@ export const useCollectionItems = <Item>({
   // TODO types need more work, these are correct but we
   // don't really want references to Selection in here
   const itemToCollectionItem = useCallback(
-    <
-      Selection extends SelectionStrategy,
-      U extends Item | Item[] | null | undefined
-    >(
-      sel: U
-    ): Selection extends SingleSelectionStrategy
-      ? CollectionItem<Item> | null
-      : CollectionItem<Item>[] => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? CollectionItem<Item> | null
-        : CollectionItem<Item>[];
-
+    (sel: Item) => {
       if (sel === null) {
-        return null as returnType;
+        return null;
       } else if (Array.isArray(sel)) {
         const result: CollectionItem<Item>[] = [];
         for (const item of sel) {
           const collectionItem = toCollectionItem(item);
           result.push(collectionItem);
         }
-        return result as returnType;
+        return result;
       } else if (sel !== undefined) {
-        return toCollectionItem(sel as Item) as returnType;
+        return toCollectionItem(sel as Item);
       }
 
-      return undefined as unknown as returnType;
+      return undefined;
     },
     [toCollectionItem]
   );
 
   const itemToCollectionItemId = useCallback(
-    <
-      Selection extends SelectionStrategy,
-      U extends Item | Item[] | null | undefined
-    >(
-      sel: U
-    ): Selection extends SingleSelectionStrategy
-      ? string | null | undefined
-      : string[] | undefined => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? string | null
-        : string[];
-
+    (sel) => {
       if (sel === undefined) {
         return undefined;
       }
 
       const selectedCollectionItem = itemToCollectionItem(sel);
       if (Array.isArray(selectedCollectionItem)) {
-        return selectedCollectionItem.map((i) => i.id) as returnType;
+        return selectedCollectionItem.map((i) => i.id);
       } else if (selectedCollectionItem) {
-        return selectedCollectionItem.id as returnType;
+        return [selectedCollectionItem.id];
       } else {
-        return null as returnType;
+        return [];
       }
     },
     [itemToCollectionItem]
   );
 
   const stringToCollectionItem = useCallback(
-    <Selection extends SelectionStrategy>(
-      value: string | null | undefined
-    ): Selection extends SingleSelectionStrategy
-      ? CollectionItem<Item> | null
-      : CollectionItem<Item>[] => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? CollectionItem<Item> | null
-        : CollectionItem<Item>[];
-
+    (value: string | null | undefined) => {
       const toCollectionItem = (
         item: string
       ): undefined | CollectionItem<Item> | never => {
@@ -352,7 +318,7 @@ export const useCollectionItems = <Item>({
       };
 
       if (value === null) {
-        return null as returnType;
+        return null;
       } else if (Array.isArray(value)) {
         const result: CollectionItem<Item>[] = [];
         for (const item of value) {
@@ -361,12 +327,12 @@ export const useCollectionItems = <Item>({
             result.push(collectionItem);
           }
         }
-        return result as returnType;
+        return result;
       } else if (value !== undefined) {
-        return toCollectionItem(value) as returnType;
+        return toCollectionItem(value);
       }
 
-      return undefined as unknown as returnType;
+      return undefined;
     },
     [itemToString]
   );

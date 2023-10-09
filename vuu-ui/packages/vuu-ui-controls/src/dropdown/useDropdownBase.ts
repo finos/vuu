@@ -2,6 +2,7 @@ import { useControlled, useForkRef } from "@salt-ds/core";
 import { KeyboardEvent, useCallback, useRef, useState } from "react";
 import { measurements, useResizeObserver, WidthOnly } from "../common-hooks";
 import {
+  CloseReason,
   DropdownHookProps,
   DropdownHookResult,
   DropdownOpenKey,
@@ -47,10 +48,13 @@ export const useDropdownBase = ({
     onOpenChange?.(true);
   }, [onOpenChange, setIsOpen]);
 
-  const hideDropdown = useCallback(() => {
-    setIsOpen(false);
-    onOpenChange?.(false);
-  }, [onOpenChange, setIsOpen]);
+  const hideDropdown = useCallback(
+    (reason: CloseReason) => {
+      setIsOpen(false);
+      onOpenChange?.(false, reason);
+    },
+    [onOpenChange, setIsOpen]
+  );
 
   useClickAway({
     popperRef,
@@ -96,7 +100,7 @@ export const useDropdownBase = ({
           evt.stopPropagation();
           evt.preventDefault();
         }
-        hideDropdown();
+        hideDropdown(evt.key);
       } else if (openKeys.includes(evt.key as DropdownOpenKey) && !isOpen) {
         evt.preventDefault();
         showDropdown();
@@ -130,7 +134,7 @@ export const useDropdownBase = ({
     width: popup.width,
   };
 
-  const popupComponentRef = useForkRef(popperCallbackRef, popperRef);
+  const popupComponentRef = useForkRef(popperCallbackRef, popupComponent.ref);
 
   return {
     componentProps: dropdownComponentProps,

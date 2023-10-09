@@ -6,29 +6,23 @@ import {
   itemToString as defaultItemToString,
   SelectionChangeHandler,
   SelectHandler,
-  SelectionStrategy,
 } from "../common-hooks";
 
-export interface DropdownListHookProps<Item, Strategy extends SelectionStrategy>
+export interface DropdownListHookProps<Item>
   extends Partial<Omit<DropdownHookProps, "onKeyDown">>,
-    Omit<ListHookProps<Item, Strategy>, "containerRef"> {
+    Omit<ListHookProps<Item>, "containerRef"> {
   itemToString?: (item: Item) => string;
   listRef: RefObject<HTMLDivElement>;
 }
 
-export interface DropdownListHookResult<
-  Item,
-  Selection extends SelectionStrategy
-> extends Partial<ListHookResult<Item, Selection>>,
+export interface DropdownListHookResult<Item>
+  extends Partial<ListHookResult<Item>>,
     Partial<DropdownHookResult> {
   onOpenChange: any;
   triggerLabel?: string;
 }
 
-export const useDropdown = <
-  Item,
-  Selection extends SelectionStrategy = "default"
->({
+export const useDropdown = <Item>({
   collectionHook,
   defaultHighlightedIndex: defaultHighlightedIndexProp,
   defaultIsOpen,
@@ -43,10 +37,7 @@ export const useDropdown = <
   onSelect,
   selected,
   selectionStrategy,
-}: DropdownListHookProps<Item, Selection>): DropdownListHookResult<
-  Item,
-  Selection
-> => {
+}: DropdownListHookProps<Item>): DropdownListHookResult<Item> => {
   const isMultiSelect =
     selectionStrategy === "multiple" || selectionStrategy === "extended";
 
@@ -56,10 +47,11 @@ export const useDropdown = <
     name: "useDropdownList",
   });
 
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<Item, Selection>
-  >(
+  const handleSelectionChange = useCallback<SelectionChangeHandler<Item>>(
     (evt, selected) => {
+      console.log(`useDropdown onSelectionChange`, {
+        selected,
+      });
       if (!isMultiSelect) {
         setIsOpen(false);
         onOpenChange?.(false);
@@ -80,7 +72,7 @@ export const useDropdown = <
     [isMultiSelect, onOpenChange, onSelect, setIsOpen]
   );
 
-  const listHook = useList<Item, Selection>({
+  const listHook = useList<Item>({
     collectionHook,
     defaultHighlightedIndex:
       defaultHighlightedIndexProp ?? highlightedIndexProp === undefined
@@ -107,7 +99,7 @@ export const useDropdown = <
   );
 
   const triggerLabel = useMemo(() => {
-    if (isMultiSelect && Array.isArray(listHook.selected)) {
+    if (Array.isArray(listHook.selected)) {
       const selectedItems = listHook.selected.map((id) =>
         collectionHook.itemById(id)
       );
@@ -119,13 +111,8 @@ export const useDropdown = <
       } else {
         return `${selectedItems.length} items selected`;
       }
-    } else {
-      const selectedItem = listHook.selected as string;
-      return selectedItem == null
-        ? undefined
-        : itemToString(collectionHook.itemById(selectedItem));
     }
-  }, [collectionHook, isMultiSelect, itemToString, listHook.selected]);
+  }, [collectionHook, itemToString, listHook.selected]);
 
   return {
     isOpen,

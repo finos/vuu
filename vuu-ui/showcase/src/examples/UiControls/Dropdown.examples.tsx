@@ -8,13 +8,13 @@ import { usa_states } from "./List.data";
 let displaySequence = 1;
 
 export const DefaultDropdown = () => {
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
-    console.log("selection changed", selectedItem);
+  const handleSelectionChange: SelectionChangeHandler = (event, selected) => {
+    console.log("selection changed", selected);
   };
   return (
     <Dropdown
       defaultSelected={usa_states[0]}
-      onSelectionChange={handleChange}
+      onSelectionChange={handleSelectionChange}
       source={usa_states}
     />
   );
@@ -188,13 +188,14 @@ export const SwitchDataSource = () => {
 SwitchDataSource.displaySequence = displaySequence++;
 
 export const MultiSelectDropdown = () => {
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<string, "multiple">
-  >((event, selectedItem) => {
-    // nothing to see
-  }, []);
+  const handleSelectionChange = useCallback<SelectionChangeHandler<string>>(
+    (event, selected) => {
+      console.log(`selectionChange ${JSON.stringify(selected)}`);
+    },
+    []
+  );
   return (
-    <Dropdown<string, "multiple">
+    <Dropdown<string>
       defaultSelected={[usa_states[0]]}
       onSelectionChange={handleSelectionChange}
       selectionStrategy="multiple"

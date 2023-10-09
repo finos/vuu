@@ -21,7 +21,6 @@ import {
   CollectionIndexer,
   CollectionItem,
   itemToString as defaultItemToString,
-  SelectionStrategy,
 } from "../common-hooks";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
@@ -36,10 +35,7 @@ const defaultEmptyMessage = "No data to display";
 
 const classBase = "vuuList";
 
-export const List = forwardRef(function List<
-  Item = string,
-  Selection extends SelectionStrategy = "default"
->(
+export const List = forwardRef(function List<Item = string>(
   {
     ListItem = DefaultListItem,
     ListPlaceholder,
@@ -88,7 +84,7 @@ export const List = forwardRef(function List<
     stickyHeaders,
     tabToSelect,
     ...htmlAttributes
-  }: ListProps<Item, Selection>,
+  }: ListProps<Item>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -149,17 +145,14 @@ export const List = forwardRef(function List<
     listItemHeaderHandlers,
     scrollIntoView,
     selected,
-  } = useList<Item, Selection>({
+  } = useList<Item>({
     allowDragDrop,
     collapsibleHeaders,
     collectionHook,
     containerRef,
     contentRef: contentContainerRef,
     defaultHighlightedIndex,
-    defaultSelected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof defaultSelected
-    >(defaultSelected),
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disabled: listDisabled,
     disableTypeToSelect,
     highlightedIndex: highlightedIndexProp,
@@ -174,10 +167,7 @@ export const List = forwardRef(function List<
     onHighlight,
     restoreLastFocus,
     scrollContainerRef,
-    selected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof selectedProp
-    >(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,
@@ -399,8 +389,8 @@ export const List = forwardRef(function List<
       )}
     </MeasuredContainer>
   );
-}) as <Item = string, Selection extends SelectionStrategy = "default">(
-  props: ListProps<Item, Selection> & {
+}) as <Item = string>(
+  props: ListProps<Item> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<ListProps<Item, Selection>>;
+) => ReactElement<ListProps<Item>>;

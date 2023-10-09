@@ -18,7 +18,13 @@ export const DefaultCombobox = () => {
 
 DefaultCombobox.displaySequence = displaySequence++;
 
-export const DefaultComboboxDefaultHighlightedIndex = () => {
+export const ComboboxAllowFreeText = () => {
+  return <ComboBox allowFreeText source={usa_states} width={120} />;
+};
+
+ComboboxAllowFreeText.displaySequence = displaySequence++;
+
+export const ComboboxDefaultHighlightedIndex = () => {
   return (
     <ComboBox
       initialHighlightedIndex={0}
@@ -28,7 +34,7 @@ export const DefaultComboboxDefaultHighlightedIndex = () => {
     />
   );
 };
-DefaultComboboxDefaultHighlightedIndex.displaySequence = displaySequence++;
+ComboboxDefaultHighlightedIndex.displaySequence = displaySequence++;
 
 export const ComboboxEmptyDefaultValue = () => {
   const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {

@@ -14,7 +14,6 @@ import {
   ListHandlers,
   SelectHandler,
   SelectionChangeHandler,
-  SelectionStrategy,
 } from "../common-hooks";
 import {
   DragStartHandler,
@@ -32,7 +31,7 @@ import {
 
 import { ListControlProps, ListHookProps, ListHookResult } from "./listTypes";
 
-export const useList = <Item, Selection extends SelectionStrategy = "default">({
+export const useList = <Item>({
   allowDragDrop = false,
   collapsibleHeaders,
   collectionHook: dataHook,
@@ -64,10 +63,12 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   stickyHeaders,
   tabToSelect,
   viewportRange,
-}: ListHookProps<Item, Selection>): ListHookResult<Item, Selection> => {
+}: ListHookProps<Item>): ListHookResult<Item> => {
   // Used to preserve selection across a drop event.
-  const selectedByIndexRef = useRef<number | null | number[]>(null);
-  const lastSelection = useRef<typeof selected>(selected || defaultSelected);
+  const selectedByIndexRef = useRef<number[]>([]);
+  const lastSelection = useRef<string[] | undefined>(
+    selected || defaultSelected
+  );
   const handleKeyboardNavigation = (evt: KeyboardEvent, nextIndex: number) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIndex);
     onKeyboardNavigation?.(evt, nextIndex);
@@ -95,21 +96,16 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
           null,
       };
     }
-  }, []);
+  }, [containerRef, scrollContainerRef]);
 
   // TODO should we leave the id to item conversion to List ?
   // consider the use case where we use this hook from dropdown etc
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<string, Selection>
-  >(
+  const handleSelectionChange = useCallback<SelectionChangeHandler<string>>(
     (evt, selected) => {
       if (onSelectionChange) {
         if (Array.isArray(selected)) {
           const selectedItems = selected.map((id) => dataHook.itemById(id));
-          onSelectionChange(evt, selectedItems as any);
-        } else if (selected) {
-          const item = dataHook.itemById(selected);
-          onSelectionChange(evt, item as any);
+          onSelectionChange(evt, selectedItems);
         }
       }
     },
@@ -125,7 +121,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     },
     setHighlightedIndex,
     ...keyboardHook
-  } = useKeyboardNavigation<Item, Selection>({
+  } = useKeyboardNavigation<Item>({
     containerRef: scrollContainer,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
@@ -154,7 +150,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     [onDragStart, setHighlightedIndex]
   );
 
-  const selectionHook = useSelection<Selection>({
+  const selectionHook = useSelection({
     containerRef,
     defaultSelected,
     highlightedIdx: highlightedIndex,
@@ -190,16 +186,8 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
 
   // Used after a drop event, to calculate wht the new selected indices will be
   const reorderSelectedIndices = useCallback(
-    (selected: string | string[], fromIndex: number, toIndex: number) => {
-      if (Array.isArray(selected)) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
-      } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return adjustIndex(selected, fromIndex, toIndex);
-      }
+    (selected: string[], fromIndex: number, toIndex: number) => {
+      return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
     },
     [adjustIndex]
   );
@@ -244,7 +232,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
         ? selectedByIndex.map((i) => dataHook.data[i])
         : dataHook.data[selectedByIndex];
 
-      selectedByIndexRef.current = null;
+      selectedByIndexRef.current = [];
       // TODO gave up trying to figure out how to type this correctly
       setSelected(postDropSelected as any);
     }

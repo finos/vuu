@@ -7,40 +7,31 @@ import {
   useCallback,
   useRef,
 } from "react";
-import {
-  CollectionItem,
-  CollectionProvider,
-  SelectionProps,
-  SelectionStrategy,
-  SingleSelectionStrategy,
-  useCollectionItems,
-} from "../common-hooks";
+import { CollectionProvider, useCollectionItems } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
 import { List, ListProps } from "../list";
 import { useCombobox } from "./useCombobox";
 import { ChevronIcon } from "../list/ChevronIcon";
 
-export interface ComboBoxProps<
-  Item = string,
-  Selection extends SelectionStrategy = "default"
-> extends Omit<
+export interface ComboBoxProps<Item = string>
+  extends Omit<
       DropdownBaseProps,
       "triggerComponent" | "onBlur" | "onChange" | "onFocus"
     >,
     Pick<InputProps, "onBlur" | "onChange" | "onFocus" | "onSelect">,
     Pick<
-      ListProps<Item, Selection>,
-      "ListItem" | "itemToString" | "source" | "width"
-    >,
-    Pick<
-      SelectionProps<Item, Selection>,
-      "onSelectionChange" | "selectionStrategy"
+      ListProps<Item>,
+      | "ListItem"
+      | "defaultSelected"
+      | "itemToString"
+      | "onSelectionChange"
+      | "selected"
+      | "selectionStrategy"
+      | "source"
+      | "width"
     > {
   InputProps?: InputProps;
-  ListProps?: Omit<
-    ListProps<Item, Selection>,
-    "ListItem" | "itemToString" | "source"
-  >;
+  ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
@@ -51,10 +42,7 @@ export interface ComboBoxProps<
 
 //TODO does not cutrrently support controlled vallue
 
-export const ComboBox = forwardRef(function Combobox<
-  Item = string,
-  Selection extends SelectionStrategy = "default"
->(
+export const ComboBox = forwardRef(function Combobox<Item = string>(
   {
     InputProps,
     ListProps,
@@ -63,6 +51,7 @@ export const ComboBox = forwardRef(function Combobox<
     allowFreeText,
     children,
     defaultIsOpen,
+    defaultSelected,
     defaultValue,
     disabled,
     onBlur,
@@ -76,13 +65,14 @@ export const ComboBox = forwardRef(function Combobox<
     itemToString,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
+    selected: selectedProp,
     selectionStrategy,
     source,
     stringToItem,
     value: valueProp,
     width = 180,
     ...props
-  }: ComboBoxProps<Item, Selection>,
+  }: ComboBoxProps<Item>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -108,15 +98,17 @@ export const ComboBox = forwardRef(function Combobox<
     listControlProps: controlProps,
     onOpenChange,
     selected,
-  } = useCombobox<Item, Selection>({
+  } = useCombobox<Item>({
     InputProps,
     allowFreeText,
     ariaLabel,
     collectionHook,
     defaultIsOpen,
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     defaultValue,
     disabled,
     initialHighlightedIndex,
+    itemCount: collectionHook.data.length,
     listRef,
     onBlur,
     onFocus,
@@ -128,38 +120,36 @@ export const ComboBox = forwardRef(function Combobox<
     label: "ComboBox",
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
+    selected: collectionHook.itemToCollectionItemId(selectedProp),
     selectionStrategy,
     stringToItem,
     value: valueProp,
   });
 
   const collectionItemsToItem = useCallback(
-    (
-      sel?: CollectionItem<Item> | null | CollectionItem<Item>[]
-    ):
-      | undefined
-      | (Selection extends SingleSelectionStrategy ? Item | null : Item[]) => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? Item | null
-        : Item[];
-      if (Array.isArray(sel)) {
-        return sel.map((i) => i.value) as returnType;
-      } else if (sel) {
-        return sel.value as returnType;
-      } else {
-        return sel as returnType;
+    (itemIdOrItemIds?: any) => {
+      if (Array.isArray(itemIdOrItemIds)) {
+        return itemIdOrItemIds.map((id) => collectionHook.itemById(id));
+      } else if (itemIdOrItemIds) {
+        return collectionHook.itemById(itemIdOrItemIds);
       }
     },
-    []
+    [collectionHook]
   );
+
+  const handleDropdownIconClick = useCallback(() => {
+    if (isOpen) {
+      onOpenChange(false, "toggle");
+    } else {
+      onOpenChange(true);
+    }
+  }, [isOpen, onOpenChange]);
 
   const endAdornment =
     endAdornmentProp === null ? null : (
       <ChevronIcon
         direction={isOpen ? "up" : "down"}
-        onClick={() => {
-          onOpenChange(!isOpen);
-        }}
+        onClick={handleDropdownIconClick}
       />
     );
 
@@ -183,7 +173,7 @@ export const ComboBox = forwardRef(function Combobox<
           endAdornment={endAdornment}
         />
 
-        <List<Item, Selection>
+        <List<Item>
           {...ListProps}
           ListItem={ListItem}
           focusVisible={focusVisible}
@@ -199,8 +189,8 @@ export const ComboBox = forwardRef(function Combobox<
       </DropdownBase>
     </CollectionProvider>
   );
-}) as <Item, Selection extends SelectionStrategy = "default">(
-  props: ComboBoxProps<Item, Selection> & {
+}) as <Item>(
+  props: ComboBoxProps<Item> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<ComboBoxProps<Item, Selection>>;
+) => ReactElement<ComboBoxProps<Item>>;
