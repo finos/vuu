@@ -11,7 +11,10 @@ registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
-  const schema = useTableSchema("basketDesign");
+  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
+  const basketDesignSchema = useTableSchema("basketDesign");
+  const basketOrdersSchema = useTableSchema("basketOrders");
+  const instrumentsSchema = useTableSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -46,9 +49,14 @@ export const DefaultBasketTradingFeature = () => {
         closeable
         header
         title="Instruments"
-        style={{ width: 700, height: 500 }}
+        style={{ width: 1260, height: 600 }}
       >
-        <BasketTradingFeature basketDesignSchema={schema} />
+        <BasketTradingFeature
+          basketDefinitionsSchema={basketDefinitionsSchema}
+          basketDesignSchema={basketDesignSchema}
+          basketOrdersSchema={basketOrdersSchema}
+          instrumentsSchema={instrumentsSchema}
+        />
       </View>
     </LayoutProvider>
   );
@@ -69,10 +77,32 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
+  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
   const basketDesignSchema = useTableSchema("basketDesign");
+  const basketOrdersSchema = useTableSchema("basketOrders");
+  const instrumentsSchema = useTableSchema("instruments");
 
   return (
-    <Feature ComponentProps={{ basketDesignSchema }} url={url} css={css} />
+    <View
+      Header={VuuBlotterHeader}
+      id="table-next-feature"
+      className="vuuTableNextFeature"
+      closeable
+      header
+      title="Instruments"
+      style={{ width: 1260, height: 600 }}
+    >
+      <Feature
+        ComponentProps={{
+          basketDefinitionsSchema,
+          basketDesignSchema,
+          basketOrdersSchema,
+          instrumentsSchema,
+        }}
+        url={url}
+        css={css}
+      />
+    </View>
   );
 };
 BasketTradingFeatureAsFeature.displayName = "BasketTrading";

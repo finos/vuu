@@ -1,0 +1,5 @@
+.vuuBasketTableLive .vuuTableNextCell:has(.vuuBasketSpreadCell),
+.vuuBasketTableLive .vuuTableNextCell:has(.vuuBasketTradingStatusCell){
+    align-items: center;;
+    display: inline-flex;
+}

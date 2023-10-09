@@ -10,7 +10,10 @@ import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
 import { makeSuggestions } from "./makeSuggestions";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
-import { getColumnAndRowGenerator, populateArray } from "./vuu-row-generator";
+import {
+  getColumnAndRowGenerator,
+  populateArray,
+} from "./data-generators/vuu-row-generator";
 
 const NO_CONFIG = {} as const;
 const NO_COLUMNS: number[] = [];
@@ -79,7 +82,6 @@ export const useTableConfig = ({
         for that table`
       );
     }
-
     // Get custom data and column generators (if a table is available) otw the default
     // data generators will be returned
     const [columnGenerator, rowGenerator, createUpdateGenerator] =
@@ -96,8 +98,6 @@ export const useTableConfig = ({
     const columns = table
       ? columnGenerator(dataSourceConfig?.columns ?? [], columnConfig)
       : columnGenerator(colCount, columnConfig);
-
-    console.log({ columns });
 
     // We use an ArrayProxy in the rare scenario that we want a large dataset with no
     // support for sorting etc. Normally, we want to use a data generator to produce

@@ -1,0 +1,38 @@
+.vuuBasketTradingStatusCell {
+    align-items: center;
+background-color: var(--status-background, inherit);
+border: solid 1px var(--status-borderColor, transparent);
+border-radius: 10px;
+color: var(--status-color, inherit);
+display: inline-flex;
+font-size: 10px;
+gap: 3px;
+height: 16px;
+justify-content: center; 
+line-height: 16px;
+padding: 0 4px;
+text-transform: uppercase;
+width: 80px;
+}
+
+.vuuBasketTradingStatusCell-live {
+    --status-background: var(--vuu-color-green-60);
+    --status-color: white;
+}
+
+.vuuBasketTradingStatusCell-filled {
+    --status-borderColor: var(--vuu-color-green-60);
+    --status-color: var(--vuu-color-green-60);
+}
+
+.vuuBasketTradingStatusCell-cancelled {
+    --status-borderColor: var(--vuu-color-red-50);
+    --status-color: var(--vuu-color-red-50);
+}
+
+.vuuBasketTradingStatusCell-rejected {
+    --vuuIcon-color: white;
+    --vuu-icon-size: 14px;
+    --status-background: var(--vuu-color-red-50);
+    --status-color: white;
+}

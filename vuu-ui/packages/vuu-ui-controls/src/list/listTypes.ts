@@ -22,7 +22,12 @@ import {
   SelectionProps,
   SelectionStrategy,
 } from "../common-hooks";
-import { DragHookResult, dragStrategy } from "../drag-drop";
+import {
+  DragHookResult,
+  DragStartHandler,
+  dragStrategy,
+  DropHandler,
+} from "../drag-drop";
 import { ViewportRange } from "./useScrollPosition";
 
 export type ComponentType<T = unknown> = (
@@ -32,6 +37,8 @@ export type ComponentType<T = unknown> = (
 export type ListItemType<T = unknown> = ComponentType<
   ListItemProps<T> & { ref?: Ref<HTMLDivElement> }
 >;
+
+export type MoveItemHandler = (fromIndex: number, toIndex: number) => void;
 
 export interface ListItemProps<T = unknown>
   extends HTMLAttributes<HTMLDivElement> {
@@ -173,9 +180,17 @@ export interface ListProps<
    */
   minWidth?: number | string;
 
+  // TODO implement a DragDrop interface
+  onDragStart?: DragStartHandler;
+  /**
+   * Handle item dropped onto list. Note, this will not be triggered if a list item is
+   * dragged within its owning list - this will trigger the onMoveListItem callback.
+   */
+  onDrop?: DropHandler;
+
   onHighlight?: (index: number) => void;
 
-  onMoveListItem?: (fromIndex: number, toIndex: number) => void;
+  onMoveListItem?: MoveItemHandler;
 
   onViewportScroll?: (
     firstVisibleRowIndex: number,
@@ -223,38 +238,43 @@ export interface ListControlProps {
 
 export interface ListHookProps<Item, Selection extends SelectionStrategy>
   extends Omit<
-    SelectionProps<string, Selection>,
-    "onSelect" | "onSelectionChange"
-  > {
-  allowDragDrop?: boolean | dragStrategy;
-  collapsibleHeaders?: boolean;
+      SelectionProps<string, Selection>,
+      "onSelect" | "onSelectionChange"
+    >,
+    Pick<
+      ListProps,
+      | "allowDragDrop"
+      | "collapsibleHeaders"
+      | "disabled"
+      | "id"
+      | "onDragStart"
+      | "onDrop"
+      | "onHighlight"
+      | "onMoveListItem"
+      | "restoreLastFocus"
+      | "stickyHeaders"
+      | "tabToSelect"
+    > {
   collectionHook: CollectionHookResult<Item>;
   containerRef: RefObject<HTMLElement>;
   contentRef?: RefObject<HTMLElement>;
   defaultHighlightedIndex?: number;
-  disabled?: boolean;
   disableAriaActiveDescendant?: boolean;
   disableHighlightOnFocus?: boolean;
   disableTypeToSelect?: boolean;
   focusVisible?: boolean;
   highlightedIndex?: number;
-  id?: string;
   label?: string;
   listHandlers?: ListHandlers;
-  onHighlight?: (index: number) => void;
   onKeyboardNavigation?: (
     event: React.KeyboardEvent,
     currentIndex: number
   ) => void;
   onKeyDown?: (evt: KeyboardEvent) => void;
-  onMoveListItem?: (fromIndex: number, toIndex: number) => void;
   onSelect?: SelectHandler<Item>;
   onSelectionChange?: SelectionChangeHandler<Item, Selection>;
-  restoreLastFocus?: boolean;
   scrollContainerRef?: RefObject<HTMLElement>;
   selectionKeys?: string[];
-  stickyHeaders?: boolean;
-  tabToSelect?: boolean;
   viewportRange?: ViewportRange;
 }
 

@@ -1,7 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
+import { PriceTicker } from "@finos/vuu-ui-controls";
 import { ColumnMap, numericFormatter } from "@finos/vuu-utils";
 import { HTMLAttributes, memo } from "react";
-import { PriceTicker } from "./PriceTicker";
 
 import "./InstrumentTile.css";
 

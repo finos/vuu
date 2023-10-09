@@ -1,29 +1,58 @@
 import VuuBasketTradingFeature, {
   BasketTradingFeatureProps,
-} from "feature-vuu-basket-trading";
+} from "feature-basket-trading";
 
 import { useViewContext } from "@finos/vuu-layout";
 import { useTableConfig } from "../examples/utils";
+import { TableSchema } from "@finos/vuu-data";
 
-export const BasketTradingFeature = ({
-  basketDesignSchema,
-}: BasketTradingFeatureProps) => {
-  const { id, saveSession } = useViewContext();
-
-  console.log({ basketDesignSchema });
-
-  const { dataSource } = useTableConfig({
-    count: 1000,
+const useTableConfigTable = (schema: TableSchema, count = 1000) =>
+  useTableConfig({
+    count,
     dataSourceConfig: {
-      columns: basketDesignSchema.columns.map((column) => column.name),
+      columns: schema.columns.map((column) => column.name),
     },
-    table: basketDesignSchema.table,
+    table: schema.table,
     rangeChangeRowset: "delta",
   });
 
-  saveSession?.(dataSource, "data-source");
+export const BasketTradingFeature = ({
+  basketDefinitionsSchema,
+  basketDesignSchema,
+  basketOrdersSchema,
+  instrumentsSchema,
+}: BasketTradingFeatureProps) => {
+  const { id, saveSession } = useViewContext();
+  console.log({ saveSession });
+  const { dataSource: basketDesignDataSource } =
+    useTableConfigTable(basketDesignSchema);
+  const { dataSource: basketOrdersDataSource } =
+    useTableConfigTable(basketOrdersSchema);
+  const { dataSource: basketDefinitions } = useTableConfigTable(
+    basketDefinitionsSchema,
+    5
+  );
+  const { dataSource: basketDefinitionsSearch } = useTableConfigTable(
+    basketDefinitionsSchema,
+    5
+  );
+  const { dataSource: instrumentsDataSource } =
+    useTableConfigTable(instrumentsSchema);
 
-  return <VuuBasketTradingFeature basketDesignSchema={basketDesignSchema} />;
+  saveSession?.(basketDesignDataSource, "basket-design-data-source");
+  saveSession?.(basketOrdersDataSource, "basket-orders-data-source");
+  saveSession?.(basketDefinitions, "basket-definitions");
+  saveSession?.(basketDefinitionsSearch, "basket-definitions-search");
+  saveSession?.(instrumentsDataSource, "instruments-data-source");
+
+  return (
+    <VuuBasketTradingFeature
+      basketDefinitionsSchema={basketDefinitionsSchema}
+      basketDesignSchema={basketDesignSchema}
+      basketOrdersSchema={basketOrdersSchema}
+      instrumentsSchema={instrumentsSchema}
+    />
+  );
 };
 
 export default BasketTradingFeature;

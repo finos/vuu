@@ -1,6 +1,77 @@
 .vuuBasketSelector {
-    border: solid 1px var(--vuu-color-gray-45);
+    --col-gap: 32px;
+    --basket-selector-height: 61px;
+    align-items: center;
+    border: solid 1px var(--salt-editable-borderColor);
     border-radius: 6px;
-    height: 61px;
+    display: inline-flex;
+    height: var(--basket-selector-height);
+    padding: 8px;
+}
+
+.vuuBasketSelector-basketDetails {
+    display: grid;
+    flex: 1 1 auto;
+    gap: 0px var(--col-gap);
+    grid-template-columns: max-content min-content min-content;
+    grid-template-rows: 18px 1fr;
+}
+.vuuBasketSelector-label {
+    color: var(--vuu-color-gray-50);
+    position: relative;
+}
+
+.vuuBasketSelector-label:not(:first-child):before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * calc(var(--col-gap) / 2));
+    top: 0px;
+    width: 1px;
+    height: calc(var(--basket-selector-height) - 16px);
+    background-color: var(--vuu-color-gray-05);
+}
+
+.vuuBasketSelector-basketName {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.vuuBasketSelector-symbolName {
+    font-size: 20px;
+    font-weight: 400;
+    line-height: normal;
+    overflow: hidden;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vuuBasketSelector-exchangeRate {
+    --vuu-icon-height: 24px;
+    --vuu-icon-size: 24px;
+    --vuu-icon-top: 0px;
+    --vuu-icon-width: 24px;
+    --vuuPriceTicker-fontSize: 20px;
+    --vuuPriceTicker-fontWeight: 400;
+    line-height: 1.5;
+}
+
+.vuuBasketSelector-trigger {
+    --saltButton-height: 24px;
+    --saltButton-width: 24px;
+    --vuu-icon-height: 24px;
+    --vuu-icon-size: 24px;
+    --vuu-icon-width: 24px;
+    flex: 0 0 auto;
+    margin-left: 16px;
+}
+
+.vuuBasketSelector-searchContainer {
+    height: 400px;
     width: 377px;
 }

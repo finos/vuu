@@ -39,7 +39,7 @@ export const useDataSource = ({
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  const rafHandle = useRef<number | null>(null);
+  // const rafHandle = useRef<number | null>(null);
   const rangeRef = useRef<VuuRange>(NULL_RANGE);
 
   const dataWindow = useMemo(
@@ -54,9 +54,10 @@ export const useDataSource = ({
         dataWindow.add(row);
       }
       data.current = dataWindow.data;
-      // hasUpdated.current = true;
-
-      forceUpdate({});
+      if (isMounted.current) {
+        // TODO do we ever need to worry about missing updates here ?
+        forceUpdate({});
+      }
     },
     [dataWindow]
   );
@@ -96,10 +97,11 @@ export const useDataSource = ({
 
   useEffect(
     () => () => {
-      if (rafHandle.current) {
-        cancelAnimationFrame(rafHandle.current);
-        rafHandle.current = null;
-      }
+      isMounted.current = true;
+      // if (rafHandle.current) {
+      //   cancelAnimationFrame(rafHandle.current);
+      //   rafHandle.current = null;
+      // }
       isMounted.current = false;
     },
     []

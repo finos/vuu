@@ -9,7 +9,7 @@ import {
   ToggleButtonGroup,
 } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
-import { ColumnFormattingPanel } from "../column-formatting-settings/ColumnFormattingPanel";
+import { ColumnFormattingPanel } from "../column-formatting-settings";
 import { useColumnSettings } from "./useColumnSettings";
 import { ColumnExpressionPanel } from "../column-expression-panel";
 import { VuuInput } from "@finos/vuu-ui-controls";

@@ -8,11 +8,22 @@ import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { HeaderCellProps } from "./HeaderCell";
 import { useCell } from "../useCell";
 import { ColumnHeaderPill, GroupColumnPill } from "../column-header-pill";
-import { OverflowContainer } from "@finos/vuu-layout";
+import { OverflowContainer, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 
 import "./GroupHeaderCell.css";
 
 const classBase = "vuuTableNextGroupHeaderCell";
+
+const switchIfChanged = (
+  columns: KeyedColumnDescriptor[],
+  newColumns: KeyedColumnDescriptor[]
+) => {
+  if (columns === newColumns) {
+    return columns;
+  } else {
+    return newColumns;
+  }
+};
 
 export interface GroupHeaderCellNextProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
@@ -27,7 +38,6 @@ export const GroupHeaderCellNext = ({
   onResize,
   ...htmlAttributes
 }: GroupHeaderCellNextProps) => {
-  console.log({ groupColumn });
   const rootRef = useRef<HTMLTableCellElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
     column: groupColumn,
@@ -36,9 +46,7 @@ export const GroupHeaderCellNext = ({
   });
 
   const [columns, setColumns] = useState(groupColumn.columns);
-
   const { className, style } = useCell(groupColumn, classBase, true);
-
   const columnPillProps =
     columns.length > 1
       ? {
@@ -47,8 +55,7 @@ export const GroupHeaderCellNext = ({
         }
       : undefined;
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
-    console.log(`handle drop from ${fromIndex} to ${toIndex}`);
+  const handleMoveItem = useCallback((fromIndex, toIndex) => {
     setColumns((cols) => {
       const newCols = cols.slice();
       const [tab] = newCols.splice(fromIndex, 1);
@@ -60,6 +67,10 @@ export const GroupHeaderCellNext = ({
       }
     });
   }, []);
+
+  useLayoutEffectSkipFirst(() => {
+    setColumns((cols) => switchIfChanged(cols, groupColumn.columns));
+  }, [groupColumn.columns]);
 
   return (
     <div
@@ -75,7 +86,7 @@ export const GroupHeaderCellNext = ({
         allowDragDrop
         className={`${classBase}-inner`}
         height={24}
-        onMoveItem={handleDrop}
+        onMoveItem={handleMoveItem}
         overflowPosition="start"
       >
         {columns.map((column) => {

@@ -1,4 +1,4 @@
-import { TableCellProps } from "@finos/vuu-datagrid-types";
+import { TableCellRendererProps } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-utils";
 
 import "./SearchCell.css";
@@ -6,10 +6,14 @@ import "./SearchCell.css";
 const classBase = "vuuSearchCell";
 
 // export to avoid tree shaking, component is not consumed directly
-export const SearchCell = ({ column, row }: TableCellProps) => {
+export const SearchCell = ({
+  column,
+  columnMap,
+  row,
+}: TableCellRendererProps) => {
   //TODO what about click handling
 
-  const { key } = column;
+  const key = columnMap[column.name];
   const value = row[key];
 
   return (
