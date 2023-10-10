@@ -52,7 +52,7 @@ export interface LayoutPersistenceManager {
   loadApplicationLayout: () => Promise<LayoutJSON>;
 
   /**
-  * Saves the current layout which includes all layouts on screen
+  * Saves the application layout which includes all layouts on screen
   *   
   * @param layout - Full JSON representation of the application layout to be saved
   */
