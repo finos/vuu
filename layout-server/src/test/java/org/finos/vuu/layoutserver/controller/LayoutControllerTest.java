@@ -15,7 +15,6 @@ import org.finos.vuu.layoutserver.dto.response.GetLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
-import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.finos.vuu.layoutserver.service.LayoutService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,6 @@ class LayoutControllerTest {
 
     @Mock
     private LayoutService layoutService;
-    @Mock
-    private LayoutRepository layoutRepository;
     // TODO Should modelmapper be mocked out?
     @Spy
     private ModelMapper modelMapper;
@@ -97,9 +94,8 @@ class LayoutControllerTest {
     @Test
     void getLayout_layoutDoesNotExist_throwsNotFoundAndReturns404() {
         when(layoutService.getLayout(doesNotExistLayoutId)).thenThrow(NoSuchElementException.class);
-        assertThrows(NoSuchElementException.class, () -> {
-            layoutController.getLayout(doesNotExistLayoutId);
-        });
+        assertThrows(NoSuchElementException.class,
+            () -> layoutController.getLayout(doesNotExistLayoutId));
     }
 
     @Test
@@ -117,12 +113,8 @@ class LayoutControllerTest {
     @Test
     void createLayout_validLayout_createsLayout() {
         when(layoutService.createLayout(any(Layout.class))).thenReturn(layout.getId());
-        assertThat(layoutController.createLayout(layoutRequest)).isEqualTo(layout.getId());
-    }
-
-    // TODO I don't think this is a valid / worthwhile unit test?
-    @Test
-    void updateLayout_validLayout_doesNothing() {
+        when(layoutService.getLayout(layout.getId())).thenReturn(layout);
+        assertThat(layoutController.createLayout(layoutRequest).getId()).isEqualTo(layout.getId());
     }
 
     @Test
@@ -130,16 +122,6 @@ class LayoutControllerTest {
         when(layoutService.getLayout(layout.getId())).thenThrow(NoSuchElementException.class);
         assertThrows(NoSuchElementException.class,
             () -> layoutController.updateLayout(layout.getId(), layoutRequest));
-    }
-
-    // TODO I don't think this is a valid / worthwhile unit test?
-    @Test
-    void deleteLayout_validId_returnsSuccess() {
-    }
-
-    // TODO I don't think this is a valid / worthwhile unit test?
-    @Test
-    void deleteLayout_layoutDoesNotExist_doesNothing() {
     }
 
     private MetadataResponseDTO getMetadataResponseDTO() {
