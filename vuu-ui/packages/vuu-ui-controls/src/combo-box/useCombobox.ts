@@ -376,7 +376,11 @@ export const useCombobox = <
         if (selectedCollectionItem) {
           if (Array.isArray(selectedCollectionItem)) {
             // TODO multi select
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
           } else if (selectedCollectionItem !== selected) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             setSelectedRef.current?.(selectedCollectionItem);
             onSelectionChange?.(
               evt,

@@ -193,7 +193,7 @@ export const ComboBox = forwardRef(function Combobox<
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           ref={listRef}
-          selected={collectionItemsToItem(selected)}
+          selected={collectionItemsToItem(selected as any)}
           selectionStrategy={selectionStrategy}
         />
       </DropdownBase>

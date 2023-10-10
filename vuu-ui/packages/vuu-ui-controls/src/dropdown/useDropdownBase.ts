@@ -130,7 +130,7 @@ export const useDropdownBase = ({
     width: popup.width,
   };
 
-  const popupComponentRef = useForkRef(popperCallbackRef, popupComponent.ref);
+  const popupComponentRef = useForkRef(popperCallbackRef, popperRef);
 
   return {
     componentProps: dropdownComponentProps,

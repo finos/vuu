@@ -71,7 +71,10 @@ export interface ListProps<
   Item = string,
   Selection extends SelectionStrategy = "default"
 > extends SelectionProps<Item, Selection>,
-    Omit<HTMLAttributes<HTMLDivElement>, "onSelect" | "defaultValue"> {
+    Omit<
+      HTMLAttributes<HTMLDivElement>,
+      "onDragStart" | "onDrop" | "onSelect" | "defaultValue"
+    > {
   /**
    * The component used to render a ListItem instead of the default. This must itself render a ListItem,
    * must implement props that extend ListItemProps and must forward ListItem props to the ListItem.

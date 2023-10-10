@@ -205,6 +205,8 @@ export const useKeyboardNavigation = <
       } else {
         const indexOfSelectedItem = getIndexOfSelectedItem(
           indexPositions,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           selected
         );
         // The start index is generally the highlightedIdx (passed in as idx).
@@ -260,6 +262,8 @@ export const useKeyboardNavigation = <
         } else {
           const selectedItemIdx = getIndexOfSelectedItem(
             indexPositions,
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             selected
           );
           if (selectedItemIdx !== -1) {
@@ -271,6 +275,8 @@ export const useKeyboardNavigation = <
       } else if (hasSelection(selected)) {
         const selectedItemIdx = getIndexOfSelectedItem(
           indexPositions,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           selected
         );
         setHighlightedIndex(selectedItemIdx);

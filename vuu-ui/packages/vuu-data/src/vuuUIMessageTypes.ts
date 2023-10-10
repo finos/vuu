@@ -167,6 +167,8 @@ export interface VuuUIMessageOutConnect {
   token: string;
   url: string;
   username?: string;
+  retryLimitDisconnect?: number;
+  retryLimitStartup?: number;
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
