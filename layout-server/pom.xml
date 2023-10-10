@@ -12,7 +12,7 @@
     <artifactId>layout-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>layout-server</name>
-    <description>layout-server</description>
+    <description>A remote server to persist layouts for the Vuu client</description>
     <properties>
         <java.version>11</java.version>
     </properties>

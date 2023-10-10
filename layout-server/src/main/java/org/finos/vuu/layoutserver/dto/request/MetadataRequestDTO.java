@@ -5,9 +5,10 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
+import org.finos.vuu.layoutserver.dto.MetadataDTO;
 
 @Data
-public class MetadataRequestDTO {
+public class MetadataRequestDTO implements MetadataDTO {
 
     @JsonProperty(value = "name", required = true)
     @NotNull(message = "Please provide a valid name")
