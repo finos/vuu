@@ -1,6 +1,6 @@
 package org.finos.vuu.layoutserver.integration;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Date;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
@@ -104,15 +103,7 @@ public class LayoutIntegrationTest {
 
     @Test
     void createLayout_validLayout_returnsLayoutCreatedWithIDAndCreatedDate() throws Exception {
-        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
-        metadataRequest.setName(defaultName);
-        metadataRequest.setGroup(defaultGroup);
-        metadataRequest.setScreenshot(defaultScreenshot);
-        metadataRequest.setUser(defaultUser);
-
-        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
-        layoutRequest.setDefinition(defaultDefinition);
-        layoutRequest.setMetadata(metadataRequest);
+        LayoutRequestDTO layoutRequest = createValidCreateRequest();
 
         mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -122,6 +113,7 @@ public class LayoutIntegrationTest {
             .andExpect(jsonPath("$.created").isNotEmpty());
     }
 
+
     @Test
     void createLayout_invalidLayout_returns400() throws Exception {
         String invalidLayout = "invalidLayout";
@@ -130,6 +122,20 @@ public class LayoutIntegrationTest {
                 .content(invalidLayout)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createLayout_validLayoutButInvalidMetadata_returns400AndDoesNotCreateLayout()
+        throws Exception {
+        LayoutRequestDTO layoutRequest = createValidCreateRequest();
+        layoutRequest.setMetadata(null);
+
+        mockMvc.perform(post("/layouts")
+                .content(objectMapper.writeValueAsString(layoutRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        assertThat(layoutRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -215,30 +221,25 @@ public class LayoutIntegrationTest {
     void deleteLayout_validIDLayoutExists_returnsSuccessAndLayoutIsDeleted() throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
 
-        mockMvc.perform(get("/layouts/{id}", layout.getId()))
-            .andExpect(status().isOk());
+        mockMvc.perform(get("/layouts/{id}", layout.getId())).andExpect(status().isOk());
 
-        mockMvc.perform(delete("/layouts/{id}", layout.getId()))
-            .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/layouts/{id}", layout.getId())).andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/layouts/{id}", layout.getId()))
-            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/layouts/{id}", layout.getId())).andExpect(status().isNotFound());
     }
 
     @Test
     void deleteLayout_validIDLayoutDoesNotExist_returnsNotFound() throws Exception {
         UUID layoutID = UUID.randomUUID();
 
-        mockMvc.perform(delete("/layouts/{id}", layoutID))
-            .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/layouts/{id}", layoutID)).andExpect(status().isNotFound());
     }
 
     @Test
     void deleteLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
 
-        mockMvc.perform(delete("/layouts/{id}", layoutID))
-            .andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/layouts/{id}", layoutID)).andExpect(status().isBadRequest());
     }
 
     private Layout createDefaultLayoutInDatabase() {
@@ -276,4 +277,16 @@ public class LayoutIntegrationTest {
         return layoutRequest;
     }
 
+    private LayoutRequestDTO createValidCreateRequest() {
+        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
+        metadataRequest.setName(defaultName);
+        metadataRequest.setGroup(defaultGroup);
+        metadataRequest.setScreenshot(defaultScreenshot);
+        metadataRequest.setUser(defaultUser);
+
+        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
+        layoutRequest.setDefinition(defaultDefinition);
+        layoutRequest.setMetadata(metadataRequest);
+        return layoutRequest;
+    }
 }
