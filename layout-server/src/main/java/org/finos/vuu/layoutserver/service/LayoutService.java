@@ -22,8 +22,6 @@ public class LayoutService {
             .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
-
-    // TODO Refactor to use a metadatarepository.findAll method
     public List<Metadata> getMetadata() {
         return metadataService.getMetadata();
     }
