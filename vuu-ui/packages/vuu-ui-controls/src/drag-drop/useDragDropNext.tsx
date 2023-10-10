@@ -267,7 +267,9 @@ export const useDragDropNext: DragDropHook = ({
         onDrop?.(fromIndex, toIndex, options);
       }
       dropIndexRef.current = toIndex;
-      onEndOfDragOperation?.(id);
+      if (id) {
+        onEndOfDragOperation?.(id);
+      }
       dragDropStateRef.current = null;
     },
     [id, onDrop, onEndOfDragOperation]
@@ -307,7 +309,7 @@ export const useDragDropNext: DragDropHook = ({
         if (onDragOut?.(id as string, dragDropStateRef.current)) {
           // TODO create a cleanup function
           removeDragHandlers();
-          releaseDrag();
+          releaseDrag?.();
           dragDropStateRef.current = null;
         }
         // remove the drag boundaries
@@ -315,7 +317,7 @@ export const useDragDropNext: DragDropHook = ({
         return true;
       }
     },
-    [id, isDragSource, onDragOut, orientation, removeDragHandlers]
+    [id, isDragSource, onDragOut, orientation, releaseDrag, removeDragHandlers]
   );
 
   const dragMouseMoveHandler = useCallback(

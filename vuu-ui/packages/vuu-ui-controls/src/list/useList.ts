@@ -192,8 +192,12 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   const reorderSelectedIndices = useCallback(
     (selected: string | string[], fromIndex: number, toIndex: number) => {
       if (Array.isArray(selected)) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
       } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return adjustIndex(selected, fromIndex, toIndex);
       }
     },
