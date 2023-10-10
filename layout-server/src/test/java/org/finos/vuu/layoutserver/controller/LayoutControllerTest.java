@@ -2,7 +2,6 @@ package org.finos.vuu.layoutserver.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
+import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.GetLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
@@ -30,9 +29,10 @@ class LayoutControllerTest {
 
     @Mock
     private LayoutService layoutService;
-    // TODO Should modelmapper be mocked out?
-    @Spy
+
+    @Mock
     private ModelMapper modelMapper;
+
     @InjectMocks
     private LayoutController layoutController;
 
@@ -88,6 +88,8 @@ class LayoutControllerTest {
     @Test
     void getLayout_validIdAndLayoutExists_returnsLayout() {
         when(layoutService.getLayout(validLayoutId)).thenReturn(layout);
+        when(modelMapper.map(layout, GetLayoutResponseDTO.class)).thenReturn(
+            expectedLayoutResponse);
         assertThat(layoutController.getLayout(validLayoutId)).isEqualTo(expectedLayoutResponse);
     }
 
@@ -101,6 +103,8 @@ class LayoutControllerTest {
     @Test
     void getMetadata_metadataExists_returnsMetadata() {
         when(layoutService.getMetadata()).thenReturn(List.of(metadata));
+        when(modelMapper.map(metadata, MetadataResponseDTO.class)).thenReturn(
+            getMetadataResponseDTO());
         assertThat(layoutController.getMetadata()).isEqualTo(expectedMetadataResponse);
     }
 
@@ -112,9 +116,23 @@ class LayoutControllerTest {
 
     @Test
     void createLayout_validLayout_createsLayout() {
-        when(layoutService.createLayout(any(Layout.class))).thenReturn(layout.getId());
+        Layout layoutWithoutIds = layout;
+        layoutWithoutIds.setId(null);
+        layoutWithoutIds.getMetadata().setId(null);
+
+        CreateLayoutResponseDTO expectedResponse = new CreateLayoutResponseDTO();
+        expectedResponse.setId(layout.getId());
+        expectedResponse.setCreated(layout.getMetadata().getCreated());
+
+        when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layoutWithoutIds);
+        when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout.getId());
         when(layoutService.getLayout(layout.getId())).thenReturn(layout);
-        assertThat(layoutController.createLayout(layoutRequest).getId()).isEqualTo(layout.getId());
+        when(modelMapper.map(layout, CreateLayoutResponseDTO.class)).thenReturn(expectedResponse);
+
+        assertThat(layoutController.createLayout(layoutRequest).getId())
+            .isEqualTo(layout.getId());
+        assertThat(layoutController.createLayout(layoutRequest).getCreated())
+            .isEqualTo(layout.getMetadata().getCreated());
     }
 
     @Test
