@@ -36,8 +36,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = this.removeEntry(existingLayouts, id);
-          const metadata = this.removeEntry(existingMetadata, id);
+          const layouts = existingLayouts.filter(layout => layout.id !== id);
+          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
           this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
@@ -50,8 +50,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = this.removeEntry(existingLayouts, id);
-          const metadata = this.removeEntry(existingMetadata, id);
+          const layouts = existingLayouts.filter(layout => layout.id !== id);
+          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
         })
@@ -85,13 +85,6 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  // Takes an array of Layouts or Metadata and returns a new array with one
-  // element (corresponding to the provided ID) removed. Should be used in
-  // conjunction with validateId(s) to ensure exactly one element is removed.
-  private removeEntry<T extends WithId>(array: T[], idToRemove: string): T[] {
-    return array.filter(element => element.id !== idToRemove);
-  }
-
   private appendAndPersist(
     newId: string,
     newMetadata: Omit<LayoutMetadata, "id">,
@@ -122,9 +115,9 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
         this.validateId(id, "layout").catch(error => error.message)
       ])
       .then((errorMessages: string[]) => {
-        // filter(Boolean) is used to remove any blank messages before joining.
+        // filter() is used to remove any blank messages before joining.
         // Avoids orphaned delimiters in combined messages, e.g. "; " or "; error 2"
-        const combinedMessage = errorMessages.filter(Boolean).join("; ");
+        const combinedMessage = errorMessages.filter(msg => msg !== undefined).join("; ");
         if (combinedMessage) {
           throw new Error(combinedMessage);
         }
