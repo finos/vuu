@@ -27,10 +27,17 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     })
   }
 
-  updateLayout(id: string, newMetadata: Omit<LayoutMetadata, "id">, newLayout: LayoutJSON): Promise<void> {
+  updateLayout(
+    id: string,
+    newMetadata: Omit<LayoutMetadata, "id">,
+    newLayout: LayoutJSON
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.loadAndFilter(id)
-        .then(([layouts, metadata]) => {
+      this.validateIds(id)
+        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
+        .then(([existingLayouts, existingMetadata]) => {
+          const layouts = this.removeEntry(existingLayouts, id);
+          const metadata = this.removeEntry(existingMetadata, id);
           this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
@@ -40,8 +47,11 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   deleteLayout(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.loadAndFilter(id)
-        .then(([layouts, metadata]) => {
+      this.validateIds(id)
+        .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
+        .then(([existingLayouts, existingMetadata]) => {
+          const layouts = this.removeEntry(existingLayouts, id);
+          const metadata = this.removeEntry(existingMetadata, id);
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
         })
@@ -75,19 +85,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  private async loadAndFilter(idToRemove: string): Promise<[Layout[], LayoutMetadata[]]> {
-    await this.validateIds(idToRemove);
-
-    const [existingLayouts, existingMetadata] =
-      await Promise.all([this.loadLayouts(), this.loadMetadata()]);
-
-    const layouts = this.removeId<Layout>(existingLayouts, idToRemove);
-    const metadata = this.removeId<LayoutMetadata>(existingMetadata, idToRemove);
-
-    return [layouts, metadata];
-  }
-
-  private removeId<T extends WithId>(array: T[], idToRemove: string): T[] {
+  // Takes an array of Layouts or Metadata and returns a new array with one
+  // element (corresponding to the provided ID) removed. Should be used in
+  // conjunction with validateId(s) to ensure exactly one element is removed.
+  private removeEntry<T extends WithId>(array: T[], idToRemove: string): T[] {
     return array.filter(element => element.id !== idToRemove);
   }
 
@@ -112,6 +113,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     saveLocalEntity<LayoutMetadata[]>(metadataSaveLocation, metadata);
   }
 
+  // Ensures that there is exactly one Layout entry and exactly one Metadata
+  // entry in local storage corresponding to the provided ID.
   private async validateIds(id: string): Promise<void> {
     return Promise
       .all([
@@ -128,6 +131,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       });
   }
 
+  // Ensures that there is exactly one element (Layout or Metadata) in local
+  // storage corresponding to the provided ID.
   private validateId(id: string, dataType: "metadata" | "layout"): Promise<void> {
     return new Promise((resolve, reject) => {
       const loadFunc = dataType === "metadata" ? this.loadMetadata : this.loadLayouts;
