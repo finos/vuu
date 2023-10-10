@@ -1,4 +1,4 @@
-import { BasketSelector } from "feature-basket-trading";
+import { BasketSelector } from "feature-vuu-basket-trading";
 import { useSchema, useTableConfig } from "../utils";
 
 let displaySequence = 1;

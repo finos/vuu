@@ -13,3 +13,4 @@ export * from "./ShellContextProvider";
 export * from "./theme-provider";
 export * from "./feature-list";
 export * from "./theme-switch";
+export * from "./notifications"

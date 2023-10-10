@@ -1,0 +1,68 @@
+.toast-container {
+    --vuu-icon-size: 24px;
+    position: absolute;
+    z-index: 100000;
+    right: 50px;
+    top: 60px;
+}
+
+.toast {
+    display: flex;
+    width: 300px;
+    padding: 8px 32px 8px 8px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    border-width: 0;
+    box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.40);
+}
+
+.error {
+    background: var(--status-error-background-emphasize, #E23434);
+}
+
+.success {
+    background: var(--status-success-background-emphasize, #248913);
+}
+
+.info {
+    background: var(--status-info-background-emphasize, #017CB1);
+}
+
+.warning {
+    background: var(--status-warning-background-emphasize, #F4CA33);
+}
+
+.error,
+.success,
+.info {
+    color: white;
+}
+
+.toast-icon {
+    height: var(--vuu-icon-height, var(--vuu-icon-size, 24px));
+    width: var(--vuu-icon-width, var(--vuu-icon-size, 24px));
+    -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask-repeat: no-repeat;
+}
+
+.success-icon{
+    --vuu-icon-svg: var(--vuu-svg-tick);
+}
+
+.warning-icon{
+    --vuu-icon-svg: var(--vuu-svg-warn-triangle);
+    background-color: #000000;
+}
+
+.info-icon {
+    --vuu-icon-svg: var(--vuu-svg-info-circle);
+}
+.error-icon{
+    --vuu-icon-svg: var(--vuu-svg-alert-circle);
+}
+
+.success-icon, .info-icon, .error-icon{
+    background-color: #ffffff;
+}
