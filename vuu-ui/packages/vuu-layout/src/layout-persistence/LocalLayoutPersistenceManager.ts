@@ -3,7 +3,7 @@ import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { getUniqueId } from "@finos/vuu-utils";
 
-import { defaultLayout, warningLayout } from "./data";
+import { defaultLayout } from "./data";
 
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts/layouts";
