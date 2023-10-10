@@ -33,6 +33,7 @@ export const defaultLayout: LayoutJSON = {
   children: [
     {
       props: {
+        id: "tab1",
         className: "vuuShell-Placeholder",
       },
       type: "Placeholder",
