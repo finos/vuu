@@ -13,7 +13,7 @@ const getPositionRelativeToAnchor = (
   placement: PopupPlacement,
   offsetLeft: number,
   offsetTop: number
-): { left: number; top: number } => {
+): { left: number; top: number; width?: number } => {
   const { bottom, left, right, top, width } =
     anchorElement.getBoundingClientRect();
   switch (placement) {
@@ -23,6 +23,8 @@ const getPositionRelativeToAnchor = (
       return { left: right + offsetLeft, top: top + offsetTop };
     case "below-center":
       return { left: left + width / 2 + offsetLeft, top: bottom + offsetTop };
+    case "below-full-width":
+      return { left: left + offsetLeft, top: bottom + offsetTop, width };
     default:
       throw Error(
         "Popup getPositionRelativeToAnchor only supported placement values are below and right"

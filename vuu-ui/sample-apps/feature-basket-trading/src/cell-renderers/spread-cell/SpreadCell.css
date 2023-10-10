@@ -1,0 +1,35 @@
+.vuuBasketSpreadCell {
+   align-items: center;
+   display: flex;
+   padding: 0 20px;
+   width: 100%
+}
+
+.vuuBasketSpreadCell-track {
+    background-color: var(--vuu-color-gray-05);
+    border-radius: 4px;
+    display: flex;
+    height: 4px;
+    justify-content: space-between;
+    position: relative;
+    width: var(--spread-width, 40px);
+}
+
+.vuuBasketSpreadCell-track-end,
+.vuuBasketSpreadCell-track-start {
+    background-color: var(--vuu-color-gray-42);
+    border-radius: 4px;
+    width: 4px;
+}
+
+.vuuBasketSpreadCell-pointer {
+  border-top: 6px solid var(--vuu-color-green-60);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  height: 0; 
+  transform: translate(var(--spread-offset,0), -6px);
+  width: 0; 
+}
+
+
+

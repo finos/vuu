@@ -28,7 +28,7 @@ export const ColumnFormattingPanel = ({
   column,
   onChangeFormatting,
   onChangeRenderer,
-  ...props
+  ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
   const content = useMemo(() => {
     switch (column.serverDataType) {
@@ -49,7 +49,7 @@ export const ColumnFormattingPanel = ({
   const { serverDataType = "string" } = column;
 
   return (
-    <div className={`vuuColumnSettingsPanel-header`}>
+    <div {...htmlAttributes} className={`vuuColumnSettingsPanel-header`}>
       <div>Formatting</div>
 
       <FormField>
@@ -64,7 +64,6 @@ export const ColumnFormattingPanel = ({
         />
       </FormField>
       <div
-        {...props}
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
         {content}

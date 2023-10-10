@@ -35,7 +35,6 @@ const classBase = "VuuFilterTableFeature";
 export interface FilterTableFeatureProps {
   tableSchema: TableSchema;
 }
-
 type FilterTableConfig = {
   "available-columns"?: SchemaColumn[];
   "datasource-config"?: DataSourceConfig;
@@ -145,6 +144,11 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
+      console.log(
+        "%cFilterTableFeature DATA SOURCE IN SESSION STATE",
+        "color:red;font-weight:bold;"
+      );
+
       return ds;
     }
     const columns =

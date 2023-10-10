@@ -1,6 +1,5 @@
-import { uuid } from "@finos/vuu-utils";
+import { dimension, rect, rectTuple, uuid } from "@finos/vuu-utils";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
-import { dimension, rect, rectTuple } from "../common-types";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { ComponentRegistry } from "../registry/ComponentRegistry";
 import { getProps, resetPath } from "../utils";
@@ -91,13 +90,14 @@ export function getFlexStyle(
 }
 
 export function hasUnboundedFlexStyle(component: ReactElement) {
-  const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } = component.props;
+  const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } =
+    component.props;
   if (typeof flex === "number") {
     return true;
-  } 
+  }
   if (flexBasis === 0 && flexGrow === 1 && flexShrink === 1) {
     return true;
-  } 
+  }
   if (typeof flexBasis === "number") {
     return false;
   }
@@ -212,11 +212,14 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
   );
 }
 
-const getFlexValue = (flexBasis: number, flexFill: boolean): number | undefined => {
+const getFlexValue = (
+  flexBasis: number,
+  flexFill: boolean
+): number | undefined => {
   if (flexFill) {
     return undefined;
   }
-  return flexBasis === 0 ? 1 : 0
+  return flexBasis === 0 ? 1 : 0;
 };
 
 export function createFlexbox(

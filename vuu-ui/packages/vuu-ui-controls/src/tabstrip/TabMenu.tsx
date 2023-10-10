@@ -6,9 +6,9 @@ import {
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
 import cx from "classnames";
+import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
 import "./TabMenu.css";
-import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
 const classBase = "vuuTabMenu";
 

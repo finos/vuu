@@ -1,11 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
-import {
-  DropdownCell,
-  InputCell,
-  TableNext,
-  TableProps,
-} from "@finos/vuu-table";
+import { TableNext, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
 
 import "./BasketTableEdit.css";
@@ -75,9 +70,10 @@ const applyColumnDefaults = (tableSchema: TableSchema) =>
             name: "string",
             renderer: {
               name: "dropdown-cell",
+              // TODO how do we get these
               values: [
-                "Strategy 1",
-                "Strategy 2",
+                "Peg to near touch",
+                "Limit",
                 "Strategy 3",
                 "Strategy 4",
                 "Strategy 5",

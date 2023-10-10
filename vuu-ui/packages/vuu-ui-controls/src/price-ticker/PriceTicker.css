@@ -1,0 +1,41 @@
+@property --price-ticker-color {
+    syntax: '<color>'; /* <- defined as type number for the transition to work */
+    initial-value: #15171B;
+    inherits: false;
+}
+  
+.vuuPriceTicker {
+  align-items: center;
+  display: flex;
+  font-size: var(--vuuPriceTicker-fontSize, var(--salt-text-fontSize));
+  font-weight: var(--vuuPriceTicker-fontWeight, 700);
+  transition-property: color;
+  transition-duration: .3s;;
+}
+
+.vuuPriceTicker.up1 {
+  --vuu-icon-color: var(--vuu-color-green-50);
+  color: var(--vuu-color-green-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.up2 {
+    --vuu-icon-color: var(--vuu-color-green-50);
+    color: var(--vuu-color-green-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.down1 {
+    --vuu-icon-transform: rotate(180deg);
+  --vuu-icon-color: var(--vuu-color-red-50);
+    color: var(--vuu-color-red-50);
+    animation-duration: 30s;
+  }
+  
+  .vuuPriceTicker.down2 {
+    --vuu-icon-transform: rotate(180deg);
+    --vuu-icon-color: var(--vuu-color-red-50);
+    color: var(--vuu-color-red-50);
+    animation-duration: 30s;
+  }
+  

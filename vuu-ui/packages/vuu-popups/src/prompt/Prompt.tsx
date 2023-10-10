@@ -1,7 +1,7 @@
 import { useThemeAttributes } from "@finos/vuu-shell";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
-import { HTMLAttributes, useCallback, useLayoutEffect, useRef } from "react";
+import { HTMLAttributes, useLayoutEffect, useRef } from "react";
 import { PopupComponentProps, useAnchoredPosition } from "../popup";
 
 import "./Prompt.css";

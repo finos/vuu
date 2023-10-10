@@ -67,7 +67,19 @@ export const FilterTableFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
   const tableSchema = useTableSchema("instruments");
 
-  return <Feature ComponentProps={{ tableSchema }} url={url} css={css} />;
+  return (
+    <View
+      Header={VuuBlotterHeader}
+      id="table-next-feature"
+      className="vuuTableNextFeature"
+      closeable
+      header
+      title="Instruments"
+      style={{ width: 700, height: 500 }}
+    >
+      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+    </View>
+  );
 };
 FilterTableFeatureAsFeature.displayName = "FilterTable";
 FilterTableFeatureAsFeature.displaySequence = displaySequence++;

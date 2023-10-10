@@ -12,9 +12,14 @@ import {
   TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { HTMLAttributes, MouseEvent } from "react";
+import { VuuDataRow } from "packages/vuu-protocol-types";
+import { FC, HTMLAttributes, MouseEvent } from "react";
+import { RowProps } from "../table-next/Row";
+
+export type TableRowClickHandler = (row: VuuDataRow) => void;
 
 export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+  Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
   /**
    * required if a fully featured column picker is to be available
@@ -47,6 +52,12 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    * response must be handled. This callback provides that response.
    */
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+
+  /**
+   * callback invoked when user 'clicks' a table row. CLick triggered either
+   * via mouse click or keyboard (default ENTER);
+   */
+  onRowClick?: TableRowClickHandler;
   onShowConfigEditor?: () => void;
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;

@@ -5,9 +5,14 @@ import {
 } from "@finos/vuu-data-types";
 import { SetPropsAction, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { MenuActionClosePopup } from "@finos/vuu-popups";
+import { DataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 
-export const useBasketTabMenu = () => {
+export const useBasketTabMenu = ({
+  dataSourceInstruments,
+}: {
+  dataSourceInstruments: DataSource;
+}) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
   return useMemo<[MenuBuilder, MenuActionHandler]>(() => {
@@ -38,6 +43,7 @@ export const useBasketTabMenu = () => {
               content: {
                 type: "InstrumentSearch",
                 props: {
+                  dataSource: dataSourceInstruments,
                   //   columnName: action.column.name,
                   //   onConfigChange,
                   //   tableConfig,

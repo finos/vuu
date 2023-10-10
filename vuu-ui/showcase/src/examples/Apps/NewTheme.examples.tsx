@@ -31,13 +31,11 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TableNextFeatureProps } from "showcase/src/features/TableNext.feature";
+import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { schemas } from "../utils";
-import { TableNextFeatureAsFeature as FilterTable } from "../VuuFeatures/TableNextFeature.examples";
 
 import "./NewTheme.examples.css";
 
-registerComponent("FilterTable", FilterTable, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
@@ -50,8 +48,8 @@ type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
 const featurePaths: Record<Environment, PathMap> = {
   development: {
-    TableNextFeature: {
-      url: "/src/features/TableNext.feature",
+    FilterTableFeature: {
+      url: "/src/features/FilterTable.feature",
     },
     InstrumentTiles: {
       url: "/src/features/InstrumentTiles.feature",
@@ -61,9 +59,17 @@ const featurePaths: Record<Environment, PathMap> = {
     },
   },
   production: {
-    TableNextFeature: {
-      url: "/features/TableNext.feature.js",
-      css: "/features/TableNext.feature.css",
+    FilterTableFeature: {
+      url: "/features/FilterTable.feature.js",
+      css: "/features/FilterTable.feature.css",
+    },
+    InstrumentTiles: {
+      url: "/features/InstrumentTiles.feature.js",
+      css: "/features/InstrumentTiles.feature.css",
+    },
+    BasketTrading: {
+      url: "/features/BasketTrading.feature.js",
+      css: "/features/BasketTrading.feature.css",
     },
   },
 };
@@ -73,28 +79,31 @@ const features: FeatureProps[] = [
     title: "Instrument Price Tiles",
     ...featurePaths[env].InstrumentTiles,
     ComponentProps: {
-      tableSchema: schemas.instruments,
+      tableSchema: schemas.instrumentPrices,
     },
   },
   {
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
+      basketDefinitionsSchema: schemas.basketDefinitions,
       basketDesignSchema: schemas.basketDesign,
+      basketOrdersSchema: schemas.basketOrders,
+      instrumentsSchema: schemas.instruments,
     },
   },
 ];
 
-const tableFeatures: FeatureProps<TableNextFeatureProps>[] = Object.values(
+const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = Object.values(
   schemas
 )
   .sort(byModule)
   .map((schema) => ({
     ComponentProps: {
-      schema,
+      tableSchema: schema,
     },
     title: `${schema.table.module} ${schema.table.table}`,
-    ...featurePaths[env].TableNextFeature,
+    ...featurePaths[env].FilterTableFeature,
   }));
 
 const ShellWithNewTheme = () => {

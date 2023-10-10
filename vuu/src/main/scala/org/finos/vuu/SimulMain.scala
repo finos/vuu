@@ -16,6 +16,7 @@ import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.auths.PermissionModule
+import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.editable.EditableModule
 
 /*
@@ -77,6 +78,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(AuthNModule(authenticator, loginTokenValidator))
     .withModule(EditableModule())
     .withModule(PermissionModule())
+    .withModule(BasketModule())
 
 
   val vuuServer = new VuuServer(config)

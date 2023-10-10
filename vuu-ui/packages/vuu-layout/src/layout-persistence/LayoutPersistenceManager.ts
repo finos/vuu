@@ -13,7 +13,7 @@ export interface LayoutPersistenceManager {
   createLayout: (metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => Promise<string>;
 
   /**
-   * Overwrites an existing layout and its corresponding metadata with the provided infromation
+   * Overwrites an existing layout and its corresponding metadata with the provided information
    *
    * @param id       - Unique identifier of the existing layout to be updated
    * @param metadata - Metadata describing the new layout to overwrite with

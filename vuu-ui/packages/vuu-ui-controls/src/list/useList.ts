@@ -16,7 +16,11 @@ import {
   SelectionChangeHandler,
   SelectionStrategy,
 } from "../common-hooks";
-import { useDragDropNext as useDragDrop } from "../drag-drop";
+import {
+  DragStartHandler,
+  DropHandler,
+  useDragDropNext as useDragDrop,
+} from "../drag-drop";
 import {
   closestListItemIndex,
   useCollapsibleGroups,
@@ -44,6 +48,8 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   id,
   label = "",
   listHandlers: listHandlersProp,
+  onDragStart,
+  onDrop,
   onHighlight,
   onKeyboardNavigation,
   onKeyDown,
@@ -140,9 +146,13 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     collectionHook: dataHook,
   });
 
-  const handleDragStart = useCallback(() => {
-    setHighlightedIndex(-1);
-  }, [setHighlightedIndex]);
+  const handleDragStart = useCallback<DragStartHandler>(
+    (dragDropState) => {
+      setHighlightedIndex(-1);
+      onDragStart?.(dragDropState);
+    },
+    [onDragStart, setHighlightedIndex]
+  );
 
   const selectionHook = useSelection<Selection>({
     containerRef,
@@ -190,8 +200,8 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     [adjustIndex]
   );
 
-  const handleDrop = useCallback(
-    (fromIndex: number, toIndex: number) => {
+  const handleDrop = useCallback<DropHandler>(
+    (fromIndex, toIndex, options) => {
       if (hasSelection(selectionHook.selected)) {
         selectedByIndexRef.current = reorderSelectedIndices(
           selectionHook.selected,
@@ -199,14 +209,19 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
           toIndex
         );
       }
-      onMoveListItem?.(fromIndex, toIndex);
+      if (options.isExternal) {
+        onDrop?.(fromIndex, toIndex, options);
+      } else {
+        onMoveListItem?.(fromIndex, toIndex);
+      }
       setHighlightedIndex(-1);
     },
     [
       selectionHook.selected,
-      onMoveListItem,
       setHighlightedIndex,
       reorderSelectedIndices,
+      onDrop,
+      onMoveListItem,
     ]
   );
 
