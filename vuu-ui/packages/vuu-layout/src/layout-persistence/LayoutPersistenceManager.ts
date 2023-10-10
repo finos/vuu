@@ -43,4 +43,18 @@ export interface LayoutPersistenceManager {
    * @returns an array of all persisted layout metadata
    */
   loadMetadata: () => Promise<LayoutMetadata[]>;
+
+  /**
+   * Retrieves the application layout which includes all layouts on screen
+   *
+   * @returns Full JSON representation of the application layout
+   */
+  loadApplicationLayout: () => Promise<LayoutJSON>;
+
+  /**
+  * Saves the application layout which includes all layouts on screen
+  *   
+  * @param layout - Full JSON representation of the application layout to be saved
+  */
+   saveApplicationLayout: (layout: LayoutJSON) => Promise<void>
 }

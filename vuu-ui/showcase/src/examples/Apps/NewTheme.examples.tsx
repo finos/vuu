@@ -166,43 +166,6 @@ const ShellWithNewTheme = () => {
     ];
   }, [handleCloseDialog, handleSave]);
 
-  //TODO what the App actually receives is an array of layouts
-  const layout = useMemo(() => {
-    return {
-      type: "Stack",
-      id: "main-tabs",
-      props: {
-        className: "vuuShell-mainTabs",
-        TabstripProps: {
-          allowAddTab: true,
-          allowRenameTab: true,
-          animateSelectionThumb: false,
-          location: "main-tab",
-        },
-        preserve: true,
-        active: 0,
-      },
-      children: [
-        {
-          type: "Stack",
-          props: {
-            active: 0,
-            title: "Tab 1",
-            TabstripProps: {
-              allowRenameTab: true,
-              allowCloseTab: true,
-            },
-          },
-          children: [
-            {
-              type: "Placeholder",
-            },
-          ],
-        },
-      ],
-    };
-  }, []);
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -212,7 +175,6 @@ const ShellWithNewTheme = () => {
         LayoutProps={{
           pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
         }}
-        defaultLayout={layout}
         leftSidePanelLayout="full-height"
         leftSidePanel={
           <LeftNav
@@ -223,7 +185,6 @@ const ShellWithNewTheme = () => {
         }
         loginUrl={window.location.toString()}
         user={user}
-        saveLocation="local"
         style={
           {
             "--vuuShell-height": "100vh",

@@ -9,7 +9,7 @@ context("Screenshot", () => {
   // TODO (#VUU24): Improve test alignment with the user flow
   it("Takes a screenshot of the current layout and displays it in the save layout dialog", () => {
     // TODO (#VUU24): Improve selector
-    cy.findByRole("tab", { name: "My Instruments" }).then((tab) => {
+    cy.get("#tab1-tab").then((tab) => {
       cy.wrap(tab).findByRole("button").click();
     });
 

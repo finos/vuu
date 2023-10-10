@@ -1,8 +1,9 @@
 import { Layout, LayoutMetadata, WithId } from "@finos/vuu-shell";
 import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
-
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { getUniqueId } from "@finos/vuu-utils";
+
+import { defaultLayout } from "./data";
 
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts/layouts";
@@ -72,10 +73,32 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   loadMetadata(): Promise<LayoutMetadata[]> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const metadata = getLocalEntity<LayoutMetadata[]>(metadataSaveLocation);
       resolve(metadata || []);
-    })
+    });
+  }
+
+  loadApplicationLayout(): Promise<LayoutJSON> {
+    return new Promise((resolve) => {
+      const applicationLayout = getLocalEntity<LayoutJSON>("api/vui");
+      if (applicationLayout) {
+        resolve(applicationLayout);
+      } else {
+        resolve(defaultLayout);
+      }
+    });
+  }
+
+  saveApplicationLayout(layout: LayoutJSON): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const savedLayout = saveLocalEntity<LayoutJSON>("api/vui", layout);
+      if (savedLayout) {
+        resolve();
+      } else {
+        reject(new Error("Layout failed to save"));
+      }
+    });
   }
 
   private loadLayouts(): Promise<Layout[]> {
