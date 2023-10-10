@@ -1,12 +1,12 @@
 package org.finos.vuu.layoutserver.dto.response;
 
-import lombok.Data;
-
 import java.util.Date;
 import java.util.UUID;
+import lombok.Data;
+import org.finos.vuu.layoutserver.dto.MetadataDTO;
 
 @Data
-public class MetadataResponseDTO {
+public class MetadataResponseDTO implements MetadataDTO {
 
     private UUID layoutId;
     private String name;

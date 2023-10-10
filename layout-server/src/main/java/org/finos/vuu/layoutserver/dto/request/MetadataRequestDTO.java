@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Date;
+import org.finos.vuu.layoutserver.dto.MetadataDTO;
 
 @Data
-public class MetadataRequestDTO {
+public class MetadataRequestDTO implements MetadataDTO {
 
     private String name;
     private String group;
