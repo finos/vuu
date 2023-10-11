@@ -194,7 +194,6 @@ public class LayoutIntegrationTest {
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
 
-    //    TODO Update layout, invalid ID, returns 400
     @Test
     void updateLayout_validIdButLayoutDoesNotExist_returnsNotFound() throws Exception {
         UUID layoutID = UUID.randomUUID();
