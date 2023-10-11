@@ -1,14 +1,14 @@
 package org.finos.vuu.layoutserver.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -34,6 +34,7 @@ public class LayoutService {
     }
 
     public void updateLayout(Layout updatedLayout) {
+        updatedLayout.getMetadata().setUpdated(new Date());
         layoutRepository.save(updatedLayout);
     }
 
