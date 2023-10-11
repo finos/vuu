@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -102,15 +104,36 @@ public class LayoutIntegrationTest {
     }
 
     @Test
-    void createLayout_validLayout_returnsLayoutCreatedWithIDAndCreatedDate() throws Exception {
+    void createLayout_validLayout_returnsLayoutCreatedWithIDAndCreatedDateAndLayoutIsCreated()
+        throws Exception {
         LayoutRequestDTO layoutRequest = createValidCreateRequest();
 
-        mockMvc.perform(post("/layouts")
+        MvcResult result = mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").isNotEmpty())
-            .andExpect(jsonPath("$.created").isNotEmpty());
+            .andExpect(jsonPath("$.created").isNotEmpty())
+            .andReturn();
+
+        UUID createdLayoutId = UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
+        Layout createdLayout = layoutRepository.findById(createdLayoutId).orElseThrow();
+        Metadata createdMetadata = metadataRepository.findById(createdLayout.getMetadata().getId()).orElseThrow();
+
+        // Check that the one-to-one relationship isn't causing duplicate/unexpected entries in the DB
+        assertThat(layoutRepository.findAll()).containsExactly(createdLayout);
+        assertThat(metadataRepository.findAll()).containsExactly(createdMetadata);
+
+        assertThat(createdLayout.getDefinition())
+            .isEqualTo(layoutRequest.getDefinition());
+        assertThat(createdMetadata.getName())
+            .isEqualTo(layoutRequest.getMetadata().getName());
+        assertThat(createdMetadata.getGroup())
+            .isEqualTo(layoutRequest.getMetadata().getGroup());
+        assertThat(createdMetadata.getScreenshot())
+            .isEqualTo(layoutRequest.getMetadata().getScreenshot());
+        assertThat(createdMetadata.getUser())
+            .isEqualTo(layoutRequest.getMetadata().getUser());
     }
 
 
