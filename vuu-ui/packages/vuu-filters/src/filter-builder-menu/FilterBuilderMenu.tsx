@@ -46,6 +46,7 @@ export const FilterBuilderMenu = ({ onMenuAction }: FilterBuilderMenuProps) => {
             ref={listRef}
             onSelect={handleSelect}
             style={{ position: "relative" }}
+            width={100}
           >
             <ListItem data-action="apply-save" className="vuuMenuButton">
               APPLY AND SAVE

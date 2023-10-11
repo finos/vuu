@@ -1,8 +1,9 @@
 package org.finos.vuu.layoutserver.service;
 
+import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
@@ -34,8 +35,18 @@ public class LayoutService {
         return layoutRepository.save(layout).getId();
     }
 
-    public void updateLayout(Layout updatedLayout) {
-        layoutRepository.save(updatedLayout);
+    public void updateLayout(UUID layoutId, Layout newLayout) {
+        Layout layoutToUpdate = getLayout(layoutId);
+        layoutToUpdate.setDefinition(newLayout.getDefinition());
+
+        Metadata metadataToUpdate = layoutToUpdate.getMetadata();
+        metadataToUpdate.setName(newLayout.getMetadata().getName());
+        metadataToUpdate.setGroup(newLayout.getMetadata().getGroup());
+        metadataToUpdate.setScreenshot(newLayout.getMetadata().getScreenshot());
+        metadataToUpdate.setUser(newLayout.getMetadata().getUser());
+        metadataToUpdate.setUpdated(new Date());
+
+        layoutRepository.save(layoutToUpdate);
     }
 
     public void deleteLayout(UUID id) {

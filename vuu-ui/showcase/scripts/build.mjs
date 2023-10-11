@@ -13,6 +13,9 @@ import path from "path";
 
 const entryPoints = [
   "src/index.tsx",
+  "src/features/BasketTrading.feature.tsx",
+  "src/features/FilterTable.feature.tsx",
+  "src/features/InstrumentTiles.feature.tsx",
   "src/features/Test.feature.tsx",
   "src/features/VuuBlotterMockData.feature.tsx",
   "src/features/TableNext.feature.tsx",

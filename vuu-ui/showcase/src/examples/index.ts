@@ -1,6 +1,6 @@
 export * as Apps from "./Apps";
 export * as AppComponents from "./AppComponents";
-export * as ColumnConfiguration from "./ColumnConfiguration";
+export * as TableExtras from "./TableExtras";
 export * as DataGrid from "./DataGrid";
 export * as DataTable from "./DataTable";
 export * as Filters from "./Filters";

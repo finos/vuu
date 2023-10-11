@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from "react";
+import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
 import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
-import { Button } from "@salt-ds/core";
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
 
@@ -130,6 +130,62 @@ export const DataOnDemand = () => {
 };
 
 DataOnDemand.displaySequence = displaySequence++;
+
+export const SwitchDataSource = () => {
+  const [index, setIndex] = useState(0);
+  const [, forceUpdate] = useState({});
+  const selectedRef = useRef<string | null>("CHF");
+  const data = useMemo(
+    () => [
+      ["AUD", "CHF", "EUR", "GBP", "USD"],
+      ["Red", "Orange", "Yellow", "Green", "Blue", "Indigo", "Violet"],
+      ["Audi", "BMW", "Chrysler", "Dodge", "Eagle", "Fiat"],
+    ],
+    []
+  );
+  const source = useMemo(() => data[index], [data, index]);
+
+  const handleOpenChange = useCallback((isOpen) => {
+    if (isOpen) {
+      console.log("its open");
+    }
+  }, []);
+
+  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+    (evt, value) => {
+      if (value !== null) {
+        selectedRef.current = value;
+        forceUpdate({});
+      }
+    },
+    []
+  );
+
+  const handleChange = useCallback((evt: SyntheticEvent<HTMLButtonElement>) => {
+    const { value } = evt.target as HTMLButtonElement;
+    selectedRef.current = null;
+    setIndex(parseInt(value));
+  }, []);
+
+  return (
+    <>
+      <ToggleButtonGroup value={index} onChange={handleChange}>
+        <ToggleButton value={0}>Currencies</ToggleButton>
+        <ToggleButton value={1}>Colours</ToggleButton>
+        <ToggleButton value={2}>Car Manufacturers</ToggleButton>
+      </ToggleButtonGroup>
+      <Dropdown
+        selected={selectedRef.current}
+        fullWidth
+        onOpenChange={handleOpenChange}
+        onSelectionChange={handleSelectionChange}
+        source={source}
+      />
+    </>
+  );
+};
+
+SwitchDataSource.displaySequence = displaySequence++;
 
 export const MultiSelectDropdown = () => {
   const handleSelectionChange = useCallback<

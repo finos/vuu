@@ -44,6 +44,14 @@ const isOperator = (node?: SyntaxNode): node is SyntaxNode =>
     ? false
     : ["Times", "Divide", "Plus", "Minus"].includes(node.name);
 
+const completionDone = (onSubmit?: () => void): Completion => ({
+  apply: () => {
+    onSubmit?.();
+  },
+  label: "Done",
+  boost: 10,
+});
+
 const getLastChild = (node: SyntaxNode, context: CompletionContext) => {
   let { lastChild: childNode } = node;
   const { pos } = context;
@@ -145,30 +153,14 @@ const handleConditionalExpression = (
       });
     case "CloseBrace":
       if (maybeComplete) {
-        const options: Completion[] = [
-          {
-            apply: () => {
-              onSubmit?.();
-            },
-            label: "Save Expression",
-            boost: 10,
-          },
-        ];
+        const options: Completion[] = [completionDone(onSubmit)];
         return { from: context.pos, options };
       }
   }
 };
 
 const promptToSave = (context: CompletionContext, onSubmit: () => void) => {
-  const options: Completion[] = [
-    {
-      apply: () => {
-        onSubmit?.();
-      },
-      label: "Save Expression",
-      boost: 10,
-    },
-  ];
+  const options: Completion[] = [completionDone(onSubmit)];
   return { from: context.pos, options };
 };
 
@@ -206,8 +198,6 @@ export const useColumnAutoComplete = (
       const text = state.doc.toString();
       const maybeComplete = isCompleteExpression(text);
 
-      console.log({ nodeBeforeName: nodeBefore.name });
-
       switch (nodeBefore.name) {
         case "If": {
           console.log(`conditional expression  If`);
@@ -224,9 +214,6 @@ export const useColumnAutoComplete = (
                   columnName: getValue(lastChild, state),
                 });
               }
-              console.log(
-                `Condition last child Column, prev child ${prevChild?.name}`
-              );
             } else if (lastChild?.name === "RelationalOperator") {
               // we need the type of the expression on the other side of the operator
               return makeSuggestions(context, "expression");
@@ -297,9 +284,6 @@ export const useColumnAutoComplete = (
                 prefix: ", ",
               });
             }
-            console.log(
-              `we have a string, column is ${columnName} ${from} ${to}`
-            );
           }
           break;
 
@@ -362,13 +346,7 @@ export const useColumnAutoComplete = (
               if (maybeComplete) {
                 // We come in here is the columns IS complete, too (ie has space after)
                 const options: Completion[] = [
-                  {
-                    apply: () => {
-                      onSubmit.current();
-                    },
-                    label: "Save Expression",
-                    boost: 10,
-                  },
+                  completionDone(onSubmit.current),
                 ];
                 const columnName = getValue(lastChild, state);
                 const columnOptions: Completion[] =
@@ -383,31 +361,14 @@ export const useColumnAutoComplete = (
               }
             } else if (lastChild?.name === "CallExpression") {
               if (maybeComplete) {
-                const options = [
-                  {
-                    apply: () => {
-                      onSubmit.current();
-                    },
-                    label: "Save Expression",
-                    boost: 10,
-                  },
-                ];
                 return {
                   from: context.pos,
-                  options,
+                  options: [completionDone(onSubmit.current)],
                 };
               }
             } else if (lastChild?.name === "ArithmeticExpression") {
               if (maybeComplete) {
-                let options: Completion[] = [
-                  {
-                    apply: () => {
-                      onSubmit.current();
-                    },
-                    label: "Save Expression",
-                    boost: 10,
-                  },
-                ];
+                let options: Completion[] = [completionDone(onSubmit.current)];
 
                 const lastExpressionChild = getLastChild(lastChild, context);
                 if (lastExpressionChild?.name === "Column") {
@@ -477,9 +438,6 @@ export const useColumnAutoComplete = (
                 return promptToSave(context, onSubmit.current);
               }
             }
-            console.log(
-              `does closebrace denote an ARgList or a parenthetised expression ? ${parentNode}`
-            );
           }
           break;
 

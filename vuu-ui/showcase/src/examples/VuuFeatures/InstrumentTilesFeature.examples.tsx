@@ -11,7 +11,7 @@ registerComponent("InstrumentTilesFeature", InstrumentTilesFeature, "view");
 let displaySequence = 1;
 
 export const DefaultInstrumentTilesFeature = () => {
-  const schema = useTableSchema("instruments");
+  const schema = useTableSchema("instrumentPrices");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -41,7 +41,7 @@ export const DefaultInstrumentTilesFeature = () => {
     <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
       <View
         Header={VuuBlotterHeader}
-        id="table-next-feature"
+        id="instrument-tiles-feature"
         className="vuuTableNextFeature"
         closeable
         header
@@ -69,9 +69,21 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const InstrumentTilesFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const tableSchema = useTableSchema("instruments");
+  const tableSchema = useTableSchema("instrumentPrices");
 
-  return <Feature ComponentProps={{ tableSchema }} url={url} css={css} />;
+  return (
+    <View
+      Header={VuuBlotterHeader}
+      id="instrument-tiles-feature"
+      className="vuuTableNextFeature"
+      closeable
+      header
+      title="Instruments"
+      style={{ width: 700, height: 500 }}
+    >
+      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+    </View>
+  );
 };
 InstrumentTilesFeatureAsFeature.displayName = "InstrumentTiles";
 InstrumentTilesFeatureAsFeature.displaySequence = displaySequence++;

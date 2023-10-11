@@ -17,7 +17,7 @@ export const ListItemProxy = forwardRef(function ListItemNextProxy(
     height,
     ...htmlAttributes
   }: HTMLAttributes<HTMLDivElement> & {
-    height: number;
+    height?: number;
   },
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {

@@ -1,4 +1,4 @@
-import { useId } from "@finos/vuu-layout";
+import { MeasuredContainer, MeasuredSize, useId } from "@finos/vuu-layout";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
@@ -7,7 +7,9 @@ import {
   forwardRef,
   isValidElement,
   ReactElement,
+  useCallback,
   useRef,
+  useState,
 } from "react";
 import {
   isSelected,
@@ -42,7 +44,6 @@ export const List = forwardRef(function List<
     ListItem = DefaultListItem,
     ListPlaceholder,
     allowDragDrop,
-    borderless,
     children,
     className,
     collapsibleHeaders = false,
@@ -84,15 +85,18 @@ export const List = forwardRef(function List<
     style: styleProp,
     stickyHeaders,
     tabToSelect,
-    width,
     ...htmlAttributes
   }: ListProps<Item, Selection>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const rowHeightProxyRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const contentContainerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState<MeasuredSize | undefined>();
+  const handleResize = useCallback((size: MeasuredSize) => {
+    setSize(size);
+  }, []);
 
   const collectionHook = useCollectionItems<Item>({
     id,
@@ -107,22 +111,26 @@ export const List = forwardRef(function List<
     },
   });
 
-  const { listClientHeight, listHeight, listItemHeight } = useListHeight({
-    borderless,
+  const {
+    listClientHeight,
+    computedListHeight,
+    listItemHeight,
+    rowHeightProxyRef,
+  } = useListHeight({
     displayedItemCount,
     getItemHeight: getItemHeightProp,
     height,
     itemCount: collectionHook.data.length,
     itemGapSize,
     itemHeight: itemHeightProp,
-    rootRef,
-    rowHeightRef: rowHeightProxyRef,
+    rootRef: containerRef,
+    size,
   });
 
   const { onVerticalScroll, viewportRange } = useScrollPosition({
     containerSize:
       // TODO whats the right way to handle string values - ie percentages
-      listClientHeight ?? (typeof listHeight === "number" ? listHeight : 0),
+      listClientHeight ?? computedListHeight ?? size?.height ?? 0,
     itemCount: collectionHook.data.length,
     itemGapSize: itemGapSize,
     itemSize: listItemHeight,
@@ -143,8 +151,8 @@ export const List = forwardRef(function List<
     allowDragDrop,
     collapsibleHeaders,
     collectionHook,
-    containerRef: rootRef,
-    contentRef,
+    containerRef,
+    contentRef: contentContainerRef,
     defaultHighlightedIndex,
     defaultSelected: collectionHook.itemToCollectionItemId<
       Selection,
@@ -161,6 +169,7 @@ export const List = forwardRef(function List<
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
+    scrollContainerRef,
     selected: collectionHook.itemToCollectionItemId<
       Selection,
       typeof selectedProp
@@ -175,7 +184,7 @@ export const List = forwardRef(function List<
   useImperativeScrollingAPI({
     collectionHook,
     forwardedRef: scrollingApiRef,
-    scrollableRef: rootRef,
+    scrollableRef: containerRef,
     scrollIntoView,
   });
 
@@ -331,16 +340,18 @@ export const List = forwardRef(function List<
 
   const contentHeight = "auto";
   const sizeStyles = {
+    "--list-borderWidth":
+      "var(--vuuList-borderWidth, var(--salt-size-border, 0))",
     "--list-item-gap": itemGapSize ? `${itemGapSize}px` : undefined,
+    "--computed-list-height":
+      computedListHeight === undefined ? undefined : `${computedListHeight}px`,
     minWidth,
     minHeight,
-    width: width ?? "100%",
-    height: height ?? "100%",
-    maxWidth: maxWidth ?? width,
-    maxHeight: maxHeight ?? listHeight,
+    maxWidth,
+    maxHeight,
   };
   return (
-    <div
+    <MeasuredContainer
       aria-multiselectable={
         selectionStrategy === "multiple" ||
         selectionStrategy === "extended" ||
@@ -352,10 +363,13 @@ export const List = forwardRef(function List<
       {...listControlProps}
       className={cx(classBase, className, {
         [`${classBase}-collapsible`]: collapsibleHeaders,
+        [`${classBase}-contentSized`]: computedListHeight !== undefined,
         vuuFocusVisible: highlightedIndex === LIST_FOCUS_VISIBLE,
       })}
+      height={computedListHeight ?? height}
       id={`${id}`}
-      ref={useForkRef<HTMLDivElement>(rootRef, forwardedRef)}
+      onResize={handleResize}
+      ref={useForkRef<HTMLDivElement>(containerRef, forwardedRef)}
       role="listbox"
       onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
@@ -367,17 +381,19 @@ export const List = forwardRef(function List<
           <ListPlaceholder />
         </>
       ) : (
-        <div
-          className={`${classBase}-scrollingContentContainer`}
-          ref={contentRef}
-          style={{ height: contentHeight }}
-        >
-          {renderContent()}
-          {dropIndicator}
-          {draggable}
+        <div className={`${classBase}-viewport`} ref={scrollContainerRef}>
+          <div
+            className={`${classBase}-scrollingContentContainer`}
+            ref={contentContainerRef}
+            style={{ height: contentHeight }}
+          >
+            {renderContent()}
+            {dropIndicator}
+            {draggable}
+          </div>
         </div>
       )}
-    </div>
+    </MeasuredContainer>
   );
 }) as <Item = string, Selection extends SelectionStrategy = "default">(
   props: ListProps<Item, Selection> & {

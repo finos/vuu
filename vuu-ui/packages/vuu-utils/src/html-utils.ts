@@ -47,8 +47,10 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
   return -1;
 };
 
-export const getClosestIndexItem = (el: HTMLElement) =>
-  el.closest("[data-index]") as HTMLElement;
+export const getClosest = (el: HTMLElement, dataProperty: string) =>
+  el.closest(`[data-${dataProperty}]`) as HTMLElement;
+
+export const getClosestIndexItem = (el: HTMLElement) => getClosest(el, "index");
 
 export function getElementByDataIndex(
   c: HTMLElement | null,

@@ -5,6 +5,7 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuColumnDataType,
   VuuGroupBy,
   VuuRange,
   VuuSort,
@@ -595,5 +596,10 @@ export class RemoteDataSource
         ...rpcRequest,
       } as ClientToServerMenuRPC);
     }
+  }
+
+  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+    return true;
   }
 }
