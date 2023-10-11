@@ -2,9 +2,11 @@ package org.finos.vuu.layoutserver.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.finos.vuu.layoutserver.model.Metadata;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,14 +80,23 @@ class LayoutServiceTest {
     }
 
     @Test
-    void updateLayout_returnsNothing() {
-        layoutService.updateLayout(layout);
+    void updateLayout_layoutExists_callsRepository() {
+        when(layoutRepository.findById(layoutId)).thenReturn(Optional.of(layout));
+
+        layoutService.updateLayout(layoutId, layout);
 
         verify(layoutRepository, times(1)).save(layout);
     }
 
     @Test
-    void deleteLayout_returnsNothing() {
+    void updateLayout_layoutDoesNotExist_throwsNoSuchElementException() {
+        when(layoutRepository.findById(layoutId)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> layoutService.updateLayout(layoutId, layout));
+    }
+
+    @Test
+    void deleteLayout_callsRepository() {
         layoutService.deleteLayout(layoutId);
 
         verify(layoutRepository, times(1)).deleteById(layoutId);

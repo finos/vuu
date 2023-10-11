@@ -2,6 +2,7 @@ package org.finos.vuu.layoutserver.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -136,10 +137,23 @@ class LayoutControllerTest {
     }
 
     @Test
-    void updateLayout_layoutDoesNotExist_returnsInvalidRequest() {
-        when(layoutService.getLayout(layout.getId())).thenThrow(NoSuchElementException.class);
-        assertThrows(NoSuchElementException.class,
-            () -> layoutController.updateLayout(layout.getId(), layoutRequest));
+    void updateLayout_callsLayoutService() {
+        layout.setId(null);
+        layout.getMetadata().setId(null);
+
+        when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layout);
+
+        layoutController.updateLayout(validLayoutId, layoutRequest);
+
+        verify(layoutService).updateLayout(validLayoutId, layout);
+    }
+
+    @Test
+    void deleteLayout_callsLayoutService() {
+        layoutController.deleteLayout(validLayoutId);
+
+        verify(layoutService).getLayout(validLayoutId);
+        verify(layoutService).deleteLayout(validLayoutId);
     }
 
     private MetadataResponseDTO getMetadataResponseDTO() {
