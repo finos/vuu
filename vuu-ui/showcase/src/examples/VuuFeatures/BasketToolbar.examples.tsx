@@ -1,4 +1,4 @@
-import { BasketToolbar } from "feature-vuu-basket-trading";
+import { BasketToolbar } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/basket-selector";
 import { BasketStatus } from "sample-apps/feature-basket-trading/src/VuuBasketTradingFeature";

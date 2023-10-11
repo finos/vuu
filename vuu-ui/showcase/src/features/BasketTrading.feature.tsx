@@ -1,6 +1,6 @@
 import VuuBasketTradingFeature, {
   BasketTradingFeatureProps,
-} from "feature-vuu-basket-trading";
+} from "feature-basket-trading";
 
 import { useViewContext } from "@finos/vuu-layout";
 import { useTableConfig } from "../examples/utils";
