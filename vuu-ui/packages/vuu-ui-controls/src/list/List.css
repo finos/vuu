@@ -10,18 +10,20 @@
   --vuuDraggable-spacer-height: 0;
   --vuuDraggable-spacer-width: 100%;
   --vuuDraggable-transitionProp: height;
+  --vuuMeasuredContainer-height: var(--computed-list-height);
 
   background: var(--list-background);
-  border-color: var(--salt-container-primary-borderColor);
-  border-style: var(--list-borderStyle);
-  border-width: var(--list-borderWidth);
   height: var(--saltList-height, var(--list-height));
   max-height: var(--list-maxHeight);
   outline: none;
-  overflow-y: auto;
   position: relative;
   user-select: none;
   width: var(--saltList-width, auto);
+  padding: 0 1px;
+}
+
+.vuuList-contentSized {
+  box-sizing: content-box;
 }
 
 .vuuList-borderless {
@@ -30,9 +32,9 @@
 
 /* virtualised list */
 .vuuList-viewport {
-  --list-item-height: 30px;
-  max-height: calc(var(--list-maxHeight) - 2 * var(--list-borderWidth));
+  height: var(--computed-list-height, var(--measured-px-height));
   overflow: auto;
+  width: var(--measured-px-width);
 }
 
 .vuuListItemHeader {

@@ -1,4 +1,10 @@
-import { RefObject, useCallback, useEffect, useRef } from "react";
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 
 export const WidthHeight = ["height", "width"];
 export const WidthOnly = ["width"];
@@ -101,6 +107,7 @@ export function useResizeObserver(
   reportInitialSize = false
 ) {
   const dimensionsRef = useRef(dimensions);
+  const target = ref.current as HTMLElement;
 
   const measure = useCallback((target: HTMLElement): measurements<number> => {
     const { width, height } = target.getBoundingClientRect();
@@ -126,8 +133,8 @@ export function useResizeObserver(
   // Keep this effect separate in case user inadvertently passes different
   // dimensions or callback instance each time - we only ever want to
   // initiate new observation when ref changes.
-  useEffect(() => {
-    const target = ref.current as HTMLElement;
+  useLayoutEffect(() => {
+    // const target = ref.current as HTMLElement;
     async function registerObserver() {
       // Create the map entry immediately. useEffect may fire below
       // before fonts are ready and attempt to update entry
@@ -152,9 +159,13 @@ export function useResizeObserver(
     if (target) {
       // TODO might we want multiple callers to attach a listener to the same element ?
       if (observedMap.has(target)) {
-        throw Error(
-          "useResizeObserver attemping to observe same element twice"
+        console.log(
+          "useResizeObserver attemping to observe same element twice",
+          { target }
         );
+        // throw Error(
+        //   "useResizeObserver attemping to observe same element twice"
+        // );
       }
       // TODO set a pending entry on map
       registerObserver();
@@ -166,7 +177,7 @@ export function useResizeObserver(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [measure, ref]);
+  }, [measure, target]);
 
   useEffect(() => {
     const target = ref.current as HTMLElement;

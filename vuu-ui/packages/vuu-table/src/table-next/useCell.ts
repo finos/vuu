@@ -16,6 +16,7 @@ export const useCell = (
       vuuPinRight: column.pin === "right",
       vuuEndPin: isHeader && column.endPin,
       // [`${classBase}-resizing`]: column.resizing,
+      [`${classBase}-editable`]: column.editable,
       [`${classBase}-right`]: column.align === "right",
     });
 

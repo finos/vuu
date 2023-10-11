@@ -1,5 +1,5 @@
 import React, { isValidElement, ReactElement } from "react";
-import { LayoutModel } from "../layout-reducer";
+import { LayoutJSON, LayoutModel, WithActive } from "../layout-reducer";
 import { isContainer } from "../registry/ComponentRegistry";
 import { getProp, getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
@@ -40,6 +40,30 @@ export const resolvePath = (source: ReactElement, path = ""): string => {
   }
 
   return "";
+};
+
+/**
+ * Similar to resolvePath but operates on a JSON
+ * layout structure and returns the matching JSON node.
+ */
+export const resolveJSONPath = (
+  source: LayoutJSON,
+  path = ""
+): LayoutJSON | undefined => {
+  const [step1, ...steps] = path.split(".");
+  if (step1?.startsWith("#")) {
+    const node = findTargetJSONById(source, step1.slice(1), true);
+    if (node && steps.length) {
+      return resolveJSONPath(node, steps.join("."));
+    }
+  } else if (step1 === "ACTIVE_CHILD") {
+    const { children, props } = source;
+    const { active } = props as WithActive;
+    if (typeof active === "number" && children?.[active]) {
+      return children[active];
+    }
+  }
+  return;
 };
 
 export function followPathToParent(
@@ -143,6 +167,32 @@ const findTargetById = (
 
   if (throwIfNotFound === true) {
     throw Error(`pathUtils.findTargetById id #${id} not found in source`);
+  }
+};
+
+const findTargetJSONById = (
+  source: LayoutJSON,
+  id: string,
+  throwIfNotFound = true
+): LayoutJSON | undefined => {
+  const { children, id: idProp } = source;
+  if (idProp === id) {
+    return source;
+  }
+
+  if (Array.isArray(children) && children.length > 0) {
+    for (const child of children) {
+      if (child !== null && typeof child === "object") {
+        const target = findTargetJSONById(child, id, false);
+        if (target) {
+          return target;
+        }
+      }
+    }
+  }
+
+  if (throwIfNotFound === true) {
+    throw Error(`pathUtils.findTargetJSONById id #${id} not found in source`);
   }
 };
 

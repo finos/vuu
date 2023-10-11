@@ -6,6 +6,7 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuColumnDataType,
   VuuGroupBy,
   VuuRange,
   VuuRowDataItemType,
@@ -429,11 +430,14 @@ export class ArrayDataSource
   }
 
   get columns() {
-    return this.#columns;
+    return this.#config.columns;
   }
 
   set columns(columns: string[]) {
-    this.#columns = columns;
+    this.config = {
+      ...this.#config,
+      columns,
+    };
   }
 
   get aggregations() {
@@ -544,6 +548,11 @@ export class ArrayDataSource
   ) {
     const row = this.findRow(parseInt(rowKey));
     console.log({ row, colName, value });
+  }
+
+  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+    return true;
   }
 
   async menuRpcCall(

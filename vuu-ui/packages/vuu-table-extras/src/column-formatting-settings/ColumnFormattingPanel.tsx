@@ -1,6 +1,7 @@
 import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
 import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
 import { CellRendererDescriptor } from "@finos/vuu-utils";
+import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useMemo } from "react";
 import { NumericFormattingSettings } from "./NumericFormattingSettings";
@@ -12,17 +13,17 @@ const classBase = "vuuColumnFormattingPanel";
 export interface ColumnFormattingPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableRenderers: CellRendererDescriptor[];
-  cellRenderer: CellRendererDescriptor;
+  selectedCellRenderer: CellRendererDescriptor | null;
   column: ColumnDescriptor;
   onChangeFormatting: (formatting: TypeFormatting) => void;
   onChangeRenderer: SelectionChangeHandler<CellRendererDescriptor>;
 }
 
-const itemToString = (item: CellRendererDescriptor) => item.label;
+const itemToString = (item: CellRendererDescriptor) => item.label ?? item.name;
 
 export const ColumnFormattingPanel = ({
   availableRenderers,
-  cellRenderer,
+  selectedCellRenderer,
   className,
   column,
   onChangeFormatting,
@@ -45,22 +46,23 @@ export const ColumnFormattingPanel = ({
     }
   }, [column, onChangeFormatting]);
 
-  console.log({ cellRenderer });
-
   const { serverDataType = "string" } = column;
 
   return (
-    <div className={`${classBase}-header`}>
+    <div className={`vuuColumnSettingsPanel-header`}>
       <div>Formatting</div>
 
-      <Dropdown<CellRendererDescriptor>
-        className={cx(`${classBase}-renderer`)}
-        itemToString={itemToString}
-        onSelectionChange={onChangeRenderer}
-        selected={cellRenderer}
-        source={availableRenderers}
-        width="100%"
-      />
+      <FormField>
+        <FormFieldLabel>Renderer</FormFieldLabel>
+        <Dropdown<CellRendererDescriptor>
+          className={cx(`${classBase}-renderer`)}
+          itemToString={itemToString}
+          onSelectionChange={onChangeRenderer}
+          selected={selectedCellRenderer}
+          source={availableRenderers}
+          width="100%"
+        />
+      </FormField>
       <div
         {...props}
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}

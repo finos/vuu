@@ -1,4 +1,5 @@
 import {
+  Button,
   FormField,
   FormFieldLabel,
   Input,
@@ -17,6 +18,7 @@ const classBase = "vuuTableSettingsPanel";
 
 export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
   availableColumns: SchemaColumn[];
+  onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
   onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
   tableConfig: TableConfig;
@@ -29,12 +31,12 @@ export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
  */
 export const TableSettingsPanel = ({
   availableColumns,
+  onAddCalculatedColumn,
   onConfigChange,
   onDataSourceConfigChange,
   tableConfig: tableConfigProp,
   ...htmlAttributes
 }: TableSettingsProps) => {
-  console.log({ availableColumns });
   const {
     columnItems,
     columnLabelsValue,
@@ -49,8 +51,6 @@ export const TableSettingsPanel = ({
     onDataSourceConfigChange,
     tableConfig: tableConfigProp,
   });
-
-  console.log({ columnItems });
 
   return (
     <div {...htmlAttributes} className={classBase}>
@@ -116,6 +116,13 @@ export const TableSettingsPanel = ({
         onChange={onColumnChange}
         onMoveListItem={onMoveListItem}
       />
+
+      <div className={`${classBase}-calculatedButtonbar`}>
+        <Button data-icon="plus" onClick={onAddCalculatedColumn} />
+        <span className={`${classBase}-calculatedLabel`}>
+          Add calculated column
+        </span>
+      </div>
     </div>
   );
 };

@@ -53,6 +53,12 @@ const featurePaths: Record<Environment, PathMap> = {
     TableNextFeature: {
       url: "/src/features/TableNext.feature",
     },
+    InstrumentTiles: {
+      url: "/src/features/InstrumentTiles.feature",
+    },
+    BasketTrading: {
+      url: "/src/features/BasketTrading.feature",
+    },
   },
   production: {
     TableNextFeature: {
@@ -62,7 +68,26 @@ const featurePaths: Record<Environment, PathMap> = {
   },
 };
 
-const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
+const features: FeatureProps[] = [
+  {
+    title: "Instrument Price Tiles",
+    ...featurePaths[env].InstrumentTiles,
+    ComponentProps: {
+      tableSchema: schemas.instruments,
+    },
+  },
+  {
+    title: "Basket Trading",
+    ...featurePaths[env].BasketTrading,
+    ComponentProps: {
+      basketDesignSchema: schemas.basketDesign,
+    },
+  },
+];
+
+const tableFeatures: FeatureProps<TableNextFeatureProps>[] = Object.values(
+  schemas
+)
   .sort(byModule)
   .map((schema) => ({
     ComponentProps: {
@@ -71,8 +96,6 @@ const features: FeatureProps<TableNextFeatureProps>[] = Object.values(schemas)
     title: `${schema.table.module} ${schema.table.table}`,
     ...featurePaths[env].TableNextFeature,
   }));
-
-console.log({ features });
 
 const ShellWithNewTheme = () => {
   const [dialogContent, setDialogContent] = useState<ReactElement>();
@@ -85,9 +108,6 @@ const ShellWithNewTheme = () => {
 
   const handleSave = useCallback(
     (layoutMetadata: Omit<LayoutMetadata, "id">) => {
-      console.log(
-        `Save layout as ${layoutMetadata.name} to group ${layoutMetadata.group}`
-      );
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },
@@ -208,8 +228,8 @@ const ShellWithNewTheme = () => {
         leftSidePanelLayout="full-height"
         leftSidePanel={
           <LeftNav
-            features={[]}
-            tableFeatures={features}
+            features={features}
+            tableFeatures={tableFeatures}
             style={{ width: 240 }}
           />
         }
@@ -229,7 +249,6 @@ const ShellWithNewTheme = () => {
           style={{ maxHeight: 500, borderColor: "#6d188b" }}
           title={"Save Layout"}
           hideCloseButton
-          headerProps={{ className: "dialogHeader" }}
         >
           {dialogContent}
         </Dialog>

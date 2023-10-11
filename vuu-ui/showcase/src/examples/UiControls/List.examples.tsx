@@ -7,7 +7,7 @@ import {
   VirtualizedList,
 } from "@finos/vuu-ui-controls";
 
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 
 import {
   SyntheticEvent,
@@ -19,7 +19,6 @@ import {
   useState,
 } from "react";
 import { usa_states } from "./List.data";
-import { ListVisualizer } from "./ListVisualizer";
 
 let displaySequence = 1;
 
@@ -33,6 +32,7 @@ export const DefaultList = () => {
   return (
     <List
       aria-label="Listbox example"
+      itemHeight={36}
       maxWidth={292}
       onSelect={handleSelect}
       onSelectionChange={handleSelectionChange}
@@ -41,6 +41,26 @@ export const DefaultList = () => {
   );
 };
 DefaultList.displaySequence = displaySequence++;
+
+export const FixedWidthList = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+  return (
+    <List
+      aria-label="Listbox example"
+      itemHeight={36}
+      width={200}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states}
+    />
+  );
+};
+FixedWidthList.displaySequence = displaySequence++;
 
 export const InlineListItems = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -191,17 +211,15 @@ export const DraggableListItemsNoScroll = () => {
   }, []);
 
   return (
-    <ListVisualizer>
-      <List
-        aria-label="Drag Drop Listbox example"
-        allowDragDrop
-        onSelect={handleSelect}
-        maxWidth={292}
-        onMoveListItem={handleDrop}
-        selectionStrategy="multiple"
-        source={data}
-      />
-    </ListVisualizer>
+    <List
+      aria-label="Drag Drop Listbox example"
+      allowDragDrop
+      onSelect={handleSelect}
+      maxWidth={292}
+      onMoveListItem={handleDrop}
+      selectionStrategy="multiple"
+      source={data}
+    />
   );
 };
 DraggableListItemsNoScroll.displaySequence = displaySequence++;
@@ -230,17 +248,16 @@ export const DraggableListItems = () => {
   }, []);
 
   return (
-    <ListVisualizer>
-      <List
-        aria-label="Drag Drop Listbox example"
-        allowDragDrop
-        onSelect={handleSelect}
-        maxWidth={292}
-        onMoveListItem={handleDrop}
-        selectionStrategy="multiple"
-        source={data}
-      />
-    </ListVisualizer>
+    <List
+      aria-label="Drag Drop Listbox example"
+      allowDragDrop
+      // itemHeight={24}
+      onSelect={handleSelect}
+      maxWidth={292}
+      onMoveListItem={handleDrop}
+      selectionStrategy="multiple"
+      source={data}
+    />
   );
 };
 DraggableListItems.displaySequence = displaySequence++;
@@ -286,18 +303,16 @@ export const DraggableListItemsDropIndicator = () => {
         <ToggleButton value={1}>Drop Indicator</ToggleButton>
       </ToggleButtonGroup>
 
-      <ListVisualizer>
-        <List
-          aria-label="Drag Drop Listbox example"
-          allowDragDrop={dragStrategies[selectedIndex]}
-          key={dragStrategies[selectedIndex]}
-          onSelect={handleSelect}
-          maxWidth={292}
-          onMoveListItem={handleDrop}
-          selectionStrategy="default"
-          source={data}
-        />
-      </ListVisualizer>
+      <List
+        aria-label="Drag Drop Listbox example"
+        allowDragDrop={dragStrategies[selectedIndex]}
+        key={dragStrategies[selectedIndex]}
+        onSelect={handleSelect}
+        maxWidth={292}
+        onMoveListItem={handleDrop}
+        selectionStrategy="default"
+        source={data}
+      />
     </>
   );
 };
@@ -334,3 +349,63 @@ export const DraggableLists = () => {
   );
 };
 DraggableLists.displaySequence = displaySequence++;
+
+export const ListWithinFlexLayout = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+
+  return (
+    <div
+      style={{
+        border: "solid 1px black",
+        display: "flex",
+        flexDirection: "column",
+        height: 602,
+        width: 402,
+      }}
+    >
+      <div style={{ flex: "0 0 50px", background: "red" }} />
+      <div style={{ flex: "1 1 0" }}>
+        <List
+          aria-label="Listbox example"
+          height="100%"
+          maxWidth={292}
+          onSelect={handleSelect}
+          onSelectionChange={handleSelectionChange}
+          source={usa_states}
+          width="100%"
+        />
+      </div>
+      <div style={{ flex: "0 0 50px", background: "green" }} />
+    </div>
+  );
+};
+ListWithinFlexLayout.displaySequence = displaySequence++;
+
+export const DefaultSelectedWithinViewport = () => {
+  const handleSelect = useCallback((evt, selected) => {
+    console.log(`handleSelect`, { selected });
+  }, []);
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`handleSelectionChange`, { selected });
+  }, []);
+  return (
+    <>
+      <Input />
+      <List
+        aria-label="Listbox example"
+        defaultSelected="Arizona"
+        itemHeight={36}
+        maxWidth={292}
+        onSelect={handleSelect}
+        onSelectionChange={handleSelectionChange}
+        source={usa_states}
+      />
+    </>
+  );
+};
+DefaultList.displaySequence = displaySequence++;

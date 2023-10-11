@@ -7,6 +7,7 @@ import {
   VuuSort,
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
+  VuuColumnDataType,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -372,6 +373,11 @@ export class JsonDataSource
       rpcRequest,
     });
     return undefined;
+  }
+
+  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+    return true;
   }
 
   getChildRows(rowKey: string) {
