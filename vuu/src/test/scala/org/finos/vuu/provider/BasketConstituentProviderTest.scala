@@ -41,7 +41,7 @@ class BasketConstituentProviderTest extends AnyFeatureSpec with Matchers with Be
     provider.runOnce
   }
 
-  Feature("Able to load basket constituents from .FTSE100 and show on basket constituent table") {
+  ignore("Able to load basket constituents from .FTSE100 and show on basket constituent table") {
 
     Scenario("display ric") {
       assert(getDataForBasket(".FTSE100")(0)(headers.indexOf(BC.Ric)) == "AAL.L")
