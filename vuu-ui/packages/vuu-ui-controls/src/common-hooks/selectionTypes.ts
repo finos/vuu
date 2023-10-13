@@ -34,21 +34,6 @@ export type SelectHandler<Item = string> = (
   selectedItem: Item
 ) => void;
 
-export type SingleSelectionChangeHandler<Item = string> = (
-  event: SyntheticEvent,
-  selected: Item
-) => void;
-
-export type MultiSelectionChangeHandler<Item = string> = (
-  event: SyntheticEvent,
-  selected: Item[]
-) => void;
-
-export type SelectionChangeHandler<Item = string> = (
-  event: SyntheticEvent,
-  selected: Item[]
-) => void;
-
 export const selectionIsDisallowed = (
   selection?: SelectionStrategy | SpecialKeyMultipleSelection
 ): selection is SelectionDisallowed => selection === "none";
@@ -71,10 +56,10 @@ export const hasSelection = <Item = unknown>(selected?: Item[]) =>
 export const getFirstSelectedItem = <Item = unknown>(selected: Item[]) =>
   selected[0];
 
-export interface SelectionProps {
+interface SelectionProps {
   defaultSelected?: string[];
   onSelect?: SelectHandler;
-  onSelectionChange?: SelectionChangeHandler;
+  onSelectionChange?: MultiSelectionHandler;
   selected?: string[];
   selectionStrategy?: SelectionStrategy;
 }

@@ -138,6 +138,7 @@ export const useDragDropNext: DragDropHook = ({
   const dragMouseUpHandlerRef = useRef<NativeMouseHandler>();
 
   const attachDragHandlers = useCallback(() => {
+    console.log("attach drag handlers");
     const { current: dragMove } = dragMouseMoveHandlerRef;
     const { current: dragUp } = dragMouseUpHandlerRef;
     if (dragMove && dragUp) {
@@ -147,9 +148,11 @@ export const useDragDropNext: DragDropHook = ({
     }
   }, []);
   const removeDragHandlers = useCallback(() => {
+    console.log("remove drag handlers");
     const { current: dragMove } = dragMouseMoveHandlerRef;
     const { current: dragUp } = dragMouseUpHandlerRef;
     if (dragMove && dragUp) {
+      console.log("... we have both handlers");
       // prettier-ignore
       document.removeEventListener("mousemove", dragMove, false);
       document.removeEventListener("mouseup", dragUp, false);
@@ -407,6 +410,17 @@ export const useDragDropNext: DragDropHook = ({
 
   dragMouseMoveHandlerRef.current = dragMouseMoveHandler;
   dragMouseUpHandlerRef.current = dragMouseUpHandler;
+
+  useEffect(() => {
+    console.log(`dragMouseMoveHandler has changed`);
+  }, [dragMouseMoveHandler]);
+
+  useEffect(() => {
+    console.log(`dragMouseUpHandler has changed`);
+  }, [dragMouseUpHandler]);
+  useEffect(() => {
+    console.log(`drop has changed`);
+  }, [drop]);
 
   const resumeDrag = useCallback<ResumeDragHandler>(
     (dragDropState: DragDropState) => {

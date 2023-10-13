@@ -244,6 +244,23 @@ export const useCollectionItems = <Item>({
     [flattenedSource, collectionItems]
   );
 
+  const indexOfItemById = useCallback(
+    (
+      id: string,
+      target: CollectionItem<Item>[] = collectionItems
+    ): number | never => {
+      const sourceWithId = target.find(
+        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
+      );
+      const idx = sourceWithId ? dataRef.current.indexOf(sourceWithId) : -1;
+      if (idx !== -1) {
+        return idx;
+      }
+      throw Error(`useCollectionData indexOfItemById, id ${id} not found `);
+    },
+    [collectionItems]
+  );
+
   const toCollectionItem = useCallback(
     (item: Item): CollectionItem<Item> | never => {
       // TODO what about Tree structures, we need to search flattened source
@@ -384,6 +401,7 @@ export const useCollectionItems = <Item>({
       data: dataRef.current,
       expandGroupItem, // why not toggle, or just rely on setdata ?
       setFilterPattern,
+      indexOfItemById,
       itemById,
       itemToId,
       toCollectionItem,

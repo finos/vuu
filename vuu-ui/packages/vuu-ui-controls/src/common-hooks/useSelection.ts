@@ -66,6 +66,13 @@ export const useSelection = ({
     state: "selected",
   });
 
+  // console.log(
+  //   `useSelection
+  //   defaultSelected ${JSON.stringify(defaultSelected)}
+  //   selectedProp ${JSON.stringify(selectedProp)}
+  //   selected ${JSON.stringify(selected)}`
+  // );
+
   const isItemSelected = useCallback(
     (itemId: string) => selected.includes(itemId),
     [selected]

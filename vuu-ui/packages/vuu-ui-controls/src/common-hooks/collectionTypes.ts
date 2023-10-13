@@ -56,6 +56,7 @@ export type CollectionHookResult<T> = {
   /** set expanded to true for target */
   expandGroupItem: (item: CollectionItem<T>) => void;
   setFilterPattern: (pattern: undefined | string) => void;
+  indexOfItemById: (id: string) => number;
   itemById: (id: string) => T | never;
   itemToCollectionItem: (
     item: T

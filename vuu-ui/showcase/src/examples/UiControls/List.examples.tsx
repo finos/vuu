@@ -5,7 +5,7 @@ import {
   ListItem,
   MultiSelectionChangeHandler,
   SelectHandler,
-  SingleSelectionChangeHandler,
+  SingleSelectionHandler,
   VirtualizedList,
 } from "@finos/vuu-ui-controls";
 
@@ -28,7 +28,7 @@ export const DefaultList = () => {
   const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback<SingleSelectionChangeHandler>(
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, selected) => {
       console.log(`handleSelectionChange`, { selected });
     },
