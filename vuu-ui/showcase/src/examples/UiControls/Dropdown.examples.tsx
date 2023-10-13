@@ -1,6 +1,10 @@
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
-import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import {
+  Dropdown,
+  SelectionChangeHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
@@ -8,9 +12,12 @@ import { usa_states } from "./List.data";
 let displaySequence = 1;
 
 export const DefaultDropdown = () => {
-  const handleSelectionChange: SelectionChangeHandler = (event, selected) => {
-    console.log("selection changed", selected);
-  };
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (event, selected) => {
+      console.log(`selection changed ${selected}`);
+    },
+    []
+  );
   return (
     <Dropdown
       defaultSelected={usa_states[0]}

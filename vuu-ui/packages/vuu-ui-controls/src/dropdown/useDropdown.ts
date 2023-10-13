@@ -4,13 +4,18 @@ import { ListHookProps, ListHookResult, useList } from "../list";
 import { DropdownHookResult, DropdownHookProps } from "./dropdownTypes";
 import {
   itemToString as defaultItemToString,
-  SelectionChangeHandler,
   SelectHandler,
+  SelectionStrategy,
+  isMultiSelection,
+  MultiSelectionHandler,
+  SingleSelectionHandler,
 } from "../common-hooks";
 
-export interface DropdownListHookProps<Item>
-  extends Partial<Omit<DropdownHookProps, "onKeyDown">>,
-    Omit<ListHookProps<Item>, "containerRef"> {
+export interface DropdownListHookProps<
+  Item,
+  S extends SelectionStrategy = "default"
+> extends Partial<Omit<DropdownHookProps, "onKeyDown">>,
+    Omit<ListHookProps<Item, S>, "containerRef"> {
   itemToString?: (item: Item) => string;
   listRef: RefObject<HTMLDivElement>;
 }
@@ -22,7 +27,7 @@ export interface DropdownListHookResult<Item>
   triggerLabel?: string;
 }
 
-export const useDropdown = <Item>({
+export const useDropdown = <Item, S extends SelectionStrategy>({
   collectionHook,
   defaultHighlightedIndex: defaultHighlightedIndexProp,
   defaultIsOpen,
@@ -37,9 +42,8 @@ export const useDropdown = <Item>({
   onSelect,
   selected,
   selectionStrategy,
-}: DropdownListHookProps<Item>): DropdownListHookResult<Item> => {
-  const isMultiSelect =
-    selectionStrategy === "multiple" || selectionStrategy === "extended";
+}: DropdownListHookProps<Item, S>): DropdownListHookResult<Item> => {
+  const isMultiSelect = isMultiSelection(selectionStrategy);
 
   const [isOpen, setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
@@ -47,7 +51,7 @@ export const useDropdown = <Item>({
     name: "useDropdownList",
   });
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler<Item>>(
+  const handleSelectionChange = useCallback(
     (evt, selected) => {
       console.log(`useDropdown onSelectionChange`, {
         selected,
@@ -56,7 +60,17 @@ export const useDropdown = <Item>({
         setIsOpen(false);
         onOpenChange?.(false);
       }
-      onSelectionChange?.(evt, selected);
+      if (Array.isArray(selected)) {
+        (onSelectionChange as MultiSelectionHandler<Item>)?.(
+          null,
+          selected as Item[]
+        );
+      } else if (selected) {
+        (onSelectionChange as SingleSelectionHandler<Item>)?.(
+          null,
+          selected as Item
+        );
+      }
     },
     [isMultiSelect, onOpenChange, onSelectionChange, setIsOpen]
   );
@@ -72,7 +86,7 @@ export const useDropdown = <Item>({
     [isMultiSelect, onOpenChange, onSelect, setIsOpen]
   );
 
-  const listHook = useList<Item>({
+  const listHook = useList<Item, S>({
     collectionHook,
     defaultHighlightedIndex:
       defaultHighlightedIndexProp ?? highlightedIndexProp === undefined

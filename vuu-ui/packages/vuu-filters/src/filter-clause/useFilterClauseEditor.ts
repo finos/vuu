@@ -14,6 +14,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { SingleSelectionHandler } from "packages/vuu-ui-controls/src";
 
 const cursorAtTextStart = (input: HTMLInputElement) =>
   input.selectionStart === 0;
@@ -35,7 +36,6 @@ const focusNextElement = () => {
   const filterClause = filterClauseField?.closest(".vuuFilterClause");
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
-      console.log("focus on clear button");
       const clearButton = filterClause.querySelector(
         ".vuuFilterClause-closeButton"
       ) as HTMLButtonElement;
@@ -134,18 +134,17 @@ export const useFilterClauseEditor = ({
     getFilterClauseValue(filterClause)
   );
 
-  const handleSelectionChangeColumn = useCallback(
-    (evt: SyntheticEvent, column: ColumnDescriptor | null) => {
-      setSelectedColumn(column ?? undefined);
-      setOperator(undefined);
-      setValue(undefined);
-    },
-    []
-  );
+  const handleSelectionChangeColumn = useCallback<
+    SingleSelectionHandler<ColumnDescriptor>
+  >((evt, column) => {
+    setSelectedColumn(column ?? undefined);
+    setOperator(undefined);
+    setValue(undefined);
+  }, []);
 
-  const handleSelectionChangeOperator = useCallback(
-    (evt: SyntheticEvent, operator: string | null) => {
-      const op = operator ?? undefined;
+  const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      const op = selected;
       if (op === undefined || isValidFilterClauseOp(op)) {
         setOperator(op);
       } else {
@@ -158,14 +157,22 @@ export const useFilterClauseEditor = ({
   );
 
   const handleChangeValue = useCallback(
-    (value: string | number) => {
+    (value: string | string[] | number | number[]) => {
       setValue(value);
       if (value !== null && value !== "") {
-        onChange({
-          column: selectedColumn?.name,
-          op: operator,
-          value,
-        });
+        if (Array.isArray(value)) {
+          onChange({
+            column: selectedColumn?.name,
+            op: operator,
+            values: value,
+          });
+        } else {
+          onChange({
+            column: selectedColumn?.name,
+            op: operator,
+            value,
+          });
+        }
         // This have no effect if we are inside a FilterBar
         requestAnimationFrame(() => {
           focusNextElement();

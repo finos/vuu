@@ -14,10 +14,9 @@ import { ScrollingAPI, ViewportTrackingResult } from "./common-hooks";
 
 import {
   CollectionHookResult,
+  ComponentSelectionProps,
   ListHandlers,
   NavigationHookResult,
-  SelectHandler,
-  SelectionChangeHandler,
   SelectionHookResult,
   SelectionStrategy,
 } from "../common-hooks";
@@ -66,11 +65,14 @@ export interface ListScrollHandles<Item> {
   scrollTo: (scrollOffset: number) => void;
 }
 
-export interface ListProps<Item = string>
-  extends Omit<
-    HTMLAttributes<HTMLDivElement>,
-    "onDragStart" | "onDrop" | "onSelect" | "defaultValue"
-  > {
+export interface ListProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends ComponentSelectionProps<Item, S>,
+    Omit<
+      HTMLAttributes<HTMLDivElement>,
+      "onDragStart" | "onDrop" | "onSelect" | "defaultValue"
+    > {
   /**
    * The component used to render a ListItem instead of the default. This must itself render a ListItem,
    * must implement props that extend ListItemProps and must forward ListItem props to the ListItem.
@@ -96,7 +98,6 @@ export interface ListProps<Item = string>
   className?: string;
   collapsibleHeaders?: boolean;
   defaultHighlightedIndex?: number;
-  defaultSelected?: Item | Item[];
   disabled?: boolean;
   disableFocus?: boolean;
   /**
@@ -192,9 +193,6 @@ export interface ListProps<Item = string>
 
   onMoveListItem?: MoveItemHandler;
 
-  onSelect?: SelectHandler<Item>;
-  onSelectionChange?: SelectionChangeHandler<Item>;
-
   onViewportScroll?: (
     firstVisibleRowIndex: number,
     lastVisibleRowIndex: number
@@ -207,14 +205,7 @@ export interface ListProps<Item = string>
   restoreLastFocus?: boolean;
 
   scrollingApiRef?: ForwardedRef<ScrollingAPI<Item>>;
-  selected?: Item | Item[];
 
-  /**
-   * The keyboard keys used to effect selection, defaults to SPACE and ENTER
-   * TODO maybe this belongs on the SelectionProps interface ?
-   */
-  selectionKeys?: string[];
-  selectionStrategy?: SelectionStrategy;
   showEmptyMessage?: boolean;
   source?: ReadonlyArray<Item>;
   stickyHeaders?: boolean;
@@ -242,9 +233,11 @@ export interface ListControlProps {
   onMouseLeave: MouseEventHandler;
 }
 
-export interface ListHookProps<Item>
-  extends Pick<
-    ListProps<Item>,
+export interface ListHookProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends Pick<
+    ListProps<Item, S>,
     | "allowDragDrop"
     | "collapsibleHeaders"
     | "disabled"
@@ -256,6 +249,7 @@ export interface ListHookProps<Item>
     | "onSelect"
     | "onSelectionChange"
     | "restoreLastFocus"
+    | "selectionKeys"
     | "selectionStrategy"
     | "stickyHeaders"
     | "tabToSelect"
@@ -279,7 +273,7 @@ export interface ListHookProps<Item>
   onKeyDown?: (evt: KeyboardEvent) => void;
   scrollContainerRef?: RefObject<HTMLElement>;
   selected?: string[];
-  selectionKeys?: string[];
+  // selectionStrategy: S;
   viewportRange?: ViewportRange;
 }
 

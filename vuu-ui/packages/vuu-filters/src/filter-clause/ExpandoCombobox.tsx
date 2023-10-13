@@ -2,7 +2,9 @@ import { itemToString as defaultToString } from "@finos/vuu-utils";
 import {
   ComboBox,
   ComboBoxProps,
-  SelectionChangeHandler,
+  MultiSelectionHandler,
+  SelectionStrategy,
+  SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
@@ -22,42 +24,61 @@ const classBase = "vuuExpandoCombobox";
 
 const NO_INPUT_PROPS = {};
 
-export interface ExpandoComboboxProps<Item = string>
-  extends ComboBoxProps<Item> {
-  allowMultipleSelection?: boolean;
+export interface ExpandoComboboxProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends ComboBoxProps<Item, S> {
   onInputChange?: (evt: FormEvent<HTMLInputElement>) => void;
 }
 
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
-  Item = string
+  Item = string,
+  S extends SelectionStrategy = "default"
 >(
   {
-    allowMultipleSelection = false,
     className: classNameProp,
     InputProps: InputPropsProp = NO_INPUT_PROPS,
     ListProps: ListPropsProp,
     onInputChange,
     onSelectionChange,
+    selectionStrategy,
     style,
     value = "",
     ...props
-  }: ExpandoComboboxProps<Item>,
+  }: ExpandoComboboxProps<Item, S>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const [text, setText] = useState(value);
   const { itemToString = defaultToString } = props;
   const initialValue = useRef(value);
 
+  const itemsToString = useCallback(
+    (items: Item[]) => {
+      const [first, ...rest] = items;
+      if (rest.length) {
+        return `${itemToString(first)} + ${rest.length}`;
+      } else {
+        return itemToString(first);
+      }
+    },
+    [itemToString]
+  );
+
   const handleInputChange = useCallback(
     (evt: FormEvent<HTMLInputElement>) => {
       const { value } = evt.target as HTMLInputElement;
+      console.log(`onInputChange ${value}`);
       setText(value);
       onInputChange?.(evt);
     },
     [onInputChange]
   );
 
-  console.log({ style });
+  const handleSetSelectedText = useCallback((text: string) => {
+    console.log(`handleSetSelectedText ${text}`);
+    setText(text);
+  }, []);
+
   const [InputProps, ListProps] = useMemo<
     // [ComboBoxProps["InputProps"], ComboBoxProps["ListProps"]]
     [ComboBoxProps["InputProps"], any]
@@ -89,24 +110,27 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     ];
   }, [InputPropsProp, handleInputChange, ListPropsProp]);
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler<Item>>(
+  const handleSelectionChange = useCallback(
     (evt, selected) => {
       if (Array.isArray(selected)) {
-        if (selected.length === 1) {
-          const selectedValue = itemToString(selected[0]);
-          setText(selectedValue);
-          onSelectionChange?.(evt, selected);
-        }
+        (onSelectionChange as MultiSelectionHandler<Item>)?.(
+          null,
+          selected as Item[]
+        );
+      } else if (selected) {
+        setText(itemToString(selected));
+        (onSelectionChange as SingleSelectionHandler<Item>)?.(
+          null,
+          selected as Item
+        );
       }
     },
     [itemToString, onSelectionChange]
   );
 
-  const [selected, setSelected] = useState<Item[]>([]);
-  const handleMultiSelectChange = useCallback((evt, selected) => {
-    console.log(`handle Multi Sellect change`);
-    setSelected(selected);
-  }, []);
+  const popupProps = {
+    minWidth: 102,
+  };
 
   return (
     <div
@@ -115,29 +139,22 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       ref={forwardedRef}
       style={style}
     >
-      {allowMultipleSelection ? (
-        <ComboBox<Item>
-          {...props}
-          defaultValue={initialValue.current}
-          ListProps={ListProps}
-          InputProps={InputProps}
-          onSelectionChange={handleMultiSelectChange}
-          selectionStrategy="multiple"
-        />
-      ) : (
-        <ComboBox<Item>
-          {...props}
-          defaultValue={initialValue.current}
-          // ListItem={() => <span>{"blah"}</span>}
-          ListProps={ListProps}
-          InputProps={InputProps}
-          onSelectionChange={handleSelectionChange}
-        />
-      )}
+      <ComboBox<Item, S>
+        {...props}
+        PopupProps={popupProps}
+        defaultValue={initialValue.current}
+        fullWidth
+        ListProps={ListProps}
+        InputProps={InputProps}
+        itemsToString={itemsToString}
+        onSelectionChange={handleSelectionChange}
+        onSetSelectedText={handleSetSelectedText}
+        selectionStrategy={selectionStrategy}
+      />
     </div>
   );
-}) as <Item>(
-  props: ExpandoComboboxProps<Item> & {
+}) as <Item, S extends SelectionStrategy = "default">(
+  props: ExpandoComboboxProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<ExpandoComboboxProps<Item>>;
+) => ReactElement<ExpandoComboboxProps<Item, S>>;

@@ -24,6 +24,7 @@ const classBase = "vuuDropdown";
 export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
   function Dropdown(
     {
+      PopupProps,
       "aria-labelledby": ariaLabelledByProp,
       children,
       className: classNameProp,
@@ -120,7 +121,11 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         {getTriggerComponent()}
         {isOpen && (
           <Portal>
-            <Popup anchorElement={rootRef} placement={placement}>
+            <Popup
+              {...PopupProps}
+              anchorElement={rootRef}
+              placement={placement}
+            >
               {getPopupComponent()}
             </Popup>
           </Portal>

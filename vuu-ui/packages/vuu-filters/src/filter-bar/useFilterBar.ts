@@ -322,6 +322,7 @@ export const useFilterBar = ({
   };
 
   const handleChangeFilterClause = (filterClause: Partial<FilterClause>) => {
+    console.log({ filterClause });
     if (filterClause !== undefined) {
       setEditFilter((filter) => replaceClause(filter, filterClause));
       setShowMenu(true);

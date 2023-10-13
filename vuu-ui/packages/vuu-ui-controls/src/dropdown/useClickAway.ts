@@ -40,7 +40,7 @@ export const useClickAway: ClickawayHook = ({
           (e: KeyboardEvent) => {
             if (e.key === "Escape") {
               if (openRef.current) {
-                onClose("escape");
+                onClose("Escape");
                 e.stopPropagation();
               }
             }

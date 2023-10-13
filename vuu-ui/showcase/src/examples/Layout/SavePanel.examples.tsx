@@ -1,9 +1,14 @@
 import { SaveLayoutPanel } from "@finos/vuu-shell";
 import { Dialog } from "@finos/vuu-popups";
+import { useCallback } from "react";
 
 let displaySequence = 1;
 
 export const SavePanel = () => {
+  const handleSave = useCallback((layoutMeta) => {
+    console.log(JSON.stringify(layoutMeta, null, 2));
+  }, []);
+
   return (
     <Dialog
       isOpen
@@ -11,7 +16,7 @@ export const SavePanel = () => {
       title={"Save Layout"}
       hideCloseButton
     >
-      <SaveLayoutPanel onCancel={() => {}} onSave={() => {}} />
+      <SaveLayoutPanel onCancel={() => {}} onSave={handleSave} />
     </Dialog>
   );
 };

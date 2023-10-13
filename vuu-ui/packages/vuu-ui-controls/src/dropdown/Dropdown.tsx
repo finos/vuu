@@ -12,6 +12,8 @@ import { useId } from "@finos/vuu-layout";
 import {
   CollectionProvider,
   itemToString as defaultItemToString,
+  SelectionStrategy,
+  SelectionType,
   useCollectionItems,
 } from "../common-hooks";
 import { List, ListProps } from "../list";
@@ -21,10 +23,12 @@ import { DropdownBaseProps } from "./dropdownTypes";
 import { forwardCallbackProps } from "../utils";
 import { useDropdown } from "./useDropdown";
 
-export interface DropdownProps<Item = string>
-  extends DropdownBaseProps,
+export interface DropdownProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends DropdownBaseProps,
     Pick<
-      ListProps<Item>,
+      ListProps<Item, S>,
       | "ListItem"
       | "defaultSelected"
       | "itemToString"
@@ -35,10 +39,14 @@ export interface DropdownProps<Item = string>
       | "source"
       | "width"
     > {
-  ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
+  // TODO There is overlap here between ListProps and top level List props
+  ListProps?: Omit<ListProps<Item, S>, "ListItem" | "itemToString" | "source">;
 }
 
-export const Dropdown = forwardRef(function Dropdown<Item = string>(
+export const Dropdown = forwardRef(function Dropdown<
+  Item = string,
+  S extends SelectionStrategy = "default"
+>(
   {
     "aria-label": ariaLabel,
     children,
@@ -58,7 +66,7 @@ export const Dropdown = forwardRef(function Dropdown<Item = string>(
     ListProps,
     width = 180,
     ...props
-  }: DropdownProps<Item>,
+  }: DropdownProps<Item, S>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -82,7 +90,7 @@ export const Dropdown = forwardRef(function Dropdown<Item = string>(
     listControlProps,
     selected,
     ...dropdownListHook
-  } = useDropdown<Item>({
+  } = useDropdown<Item, S>({
     collectionHook,
     defaultHighlightedIndex: ListProps?.defaultHighlightedIndex,
     defaultIsOpen,
@@ -99,12 +107,13 @@ export const Dropdown = forwardRef(function Dropdown<Item = string>(
     selectionStrategy,
   });
 
-  const collectionItemsToItem = useCallback(
-    (itemIdOrItemIds?: any) => {
-      if (Array.isArray(itemIdOrItemIds)) {
-        return itemIdOrItemIds.map((id) => collectionHook.itemById(id));
-      } else if (itemIdOrItemIds) {
-        return collectionHook.itemById(itemIdOrItemIds);
+  const itemIdToItem = useCallback(
+    (itemId: string | string[]) => {
+      if (Array.isArray(itemId)) {
+        const items = itemId.map((id) => collectionHook.itemById(id));
+        return items as SelectionType<Item, S>;
+      } else {
+        return collectionHook.itemById(itemId) as SelectionType<Item, S>;
       }
     },
     [collectionHook]
@@ -150,7 +159,7 @@ export const Dropdown = forwardRef(function Dropdown<Item = string>(
         width={width}
       >
         {getTriggerComponent()}
-        <List<Item>
+        <List<Item, S>
           ListItem={ListItem}
           itemToString={itemToString}
           {...ListProps}
@@ -159,14 +168,14 @@ export const Dropdown = forwardRef(function Dropdown<Item = string>(
           onSelectionChange={onSelectionChange}
           onSelect={onSelect}
           ref={listRef}
-          selected={collectionItemsToItem(selected)}
+          selected={selected === undefined ? undefined : itemIdToItem(selected)}
           selectionStrategy={selectionStrategy}
         />
       </DropdownBase>
     </CollectionProvider>
   );
-}) as <Item>(
-  props: DropdownProps<Item> & {
+}) as <Item, S extends SelectionStrategy = "default">(
+  props: DropdownProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
 ) => ReactElement<DropdownProps<Item>>;

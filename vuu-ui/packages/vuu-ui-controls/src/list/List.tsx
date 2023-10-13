@@ -21,6 +21,7 @@ import {
   CollectionIndexer,
   CollectionItem,
   itemToString as defaultItemToString,
+  SelectionStrategy,
 } from "../common-hooks";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
@@ -35,7 +36,10 @@ const defaultEmptyMessage = "No data to display";
 
 const classBase = "vuuList";
 
-export const List = forwardRef(function List<Item = string>(
+export const List = forwardRef(function List<
+  Item = string,
+  S extends SelectionStrategy = "default"
+>(
   {
     ListItem = DefaultListItem,
     ListPlaceholder,
@@ -84,7 +88,7 @@ export const List = forwardRef(function List<Item = string>(
     stickyHeaders,
     tabToSelect,
     ...htmlAttributes
-  }: ListProps<Item>,
+  }: ListProps<Item, S>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -145,7 +149,7 @@ export const List = forwardRef(function List<Item = string>(
     listItemHeaderHandlers,
     scrollIntoView,
     selected,
-  } = useList<Item>({
+  } = useList<Item, S>({
     allowDragDrop,
     collapsibleHeaders,
     collectionHook,
@@ -318,8 +322,10 @@ export const List = forwardRef(function List<Item = string>(
     }
   }
 
+  const isEmpty = collectionHook.data.length === 0;
+
   const renderContent = () => {
-    if (collectionHook.data.length) {
+    if (!isEmpty) {
       // const itemsToRender =
       //   typeof draggedItemIndex === "number" && draggedItemIndex >= 0
       //     ? collectionHook.data.filter((d) => d.index !== draggedItemIndex)
@@ -331,7 +337,6 @@ export const List = forwardRef(function List<Item = string>(
       renderEmpty();
     }
   };
-
   const contentHeight = "auto";
   const sizeStyles = {
     "--list-borderWidth":
@@ -358,6 +363,7 @@ export const List = forwardRef(function List<Item = string>(
       className={cx(classBase, className, {
         [`${classBase}-collapsible`]: collapsibleHeaders,
         [`${classBase}-contentSized`]: computedListHeight !== undefined,
+        [`${classBase}-empty`]: isEmpty,
         vuuFocusVisible: highlightedIndex === LIST_FOCUS_VISIBLE,
       })}
       height={computedListHeight ?? height}
@@ -389,8 +395,8 @@ export const List = forwardRef(function List<Item = string>(
       )}
     </MeasuredContainer>
   );
-}) as <Item = string>(
-  props: ListProps<Item> & {
+}) as <Item = string, S extends SelectionStrategy = "default">(
+  props: ListProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
 ) => ReactElement<ListProps<Item>>;

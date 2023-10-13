@@ -5,7 +5,6 @@ import {
   HTMLAttributes,
   KeyboardEvent,
   RefObject,
-  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -16,7 +15,11 @@ import {
   SuggestionFetcher,
   useTypeaheadSuggestions,
 } from "@finos/vuu-data-react";
-import { ExpandoInput } from "@finos/vuu-ui-controls";
+import {
+  ExpandoInput,
+  MultiSelectionHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
@@ -49,10 +52,18 @@ export const TextInput = forwardRef(function TextInput(
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
   const getSuggestions = suggestionProvider();
 
-  const handleValueSelectionChange = useCallback(
-    (evt: SyntheticEvent, value: string | null) => {
-      // setOperator(operator ?? undefined);
-      onInputComplete(value ?? "");
+  const handleSingleValueSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, value) => onInputComplete(value),
+    [onInputComplete]
+  );
+
+  const handleMultiValueSelectionChange = useCallback<MultiSelectionHandler>(
+    (evt, value) => {
+      if (value.length === 1) {
+        onInputComplete(value[0]);
+      } else if (value.length > 1) {
+        onInputComplete(value);
+      }
     },
     [onInputComplete]
   );
@@ -109,15 +120,15 @@ export const TextInput = forwardRef(function TextInput(
       case "in":
         //TODO multiselect
         return (
-          <ExpandoCombobox<string>
+          <ExpandoCombobox
             InputProps={InputProps}
-            allowMultipleSelection
             className={className}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
-            onSelectionChange={handleValueSelectionChange}
+            onSelectionChange={handleMultiValueSelectionChange}
             ref={forwardedRef}
+            selectionStrategy="multiple"
             value={value}
           />
         );
@@ -134,7 +145,7 @@ export const TextInput = forwardRef(function TextInput(
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
-            onSelectionChange={handleValueSelectionChange}
+            onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
           />
@@ -160,7 +171,7 @@ export const TextInput = forwardRef(function TextInput(
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
-            onSelectionChange={handleValueSelectionChange}
+            onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
           />
@@ -172,9 +183,10 @@ export const TextInput = forwardRef(function TextInput(
     className,
     typeaheadValues,
     handleInputChange,
-    handleValueSelectionChange,
+    handleMultiValueSelectionChange,
     forwardedRef,
     value,
+    handleSingleValueSelectionChange,
     valueInputValue,
   ]);
 

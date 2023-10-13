@@ -58,7 +58,6 @@ export const useListHeight = ({
     let result = 0;
     const itemHeight = measuredItemHeight ?? itemHeightProp;
     const contentHeight = getContentHeight(itemCount, itemHeight, itemGapSize);
-    console.log(`contentHeight ${contentHeight}`);
     if (height !== undefined) {
       // TODO if this is a percentage, convert to number
       return [contentHeight, undefined];

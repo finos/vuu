@@ -3,6 +3,9 @@ import {
   dragStrategy,
   List,
   ListItem,
+  MultiSelectionChangeHandler,
+  SelectHandler,
+  SingleSelectionChangeHandler,
   VirtualizedList,
 } from "@finos/vuu-ui-controls";
 
@@ -22,12 +25,15 @@ import { usa_states } from "./List.data";
 let displaySequence = 1;
 
 export const DefaultList = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionChangeHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    []
+  );
   return (
     <List
       aria-label="Listbox example"
@@ -105,10 +111,17 @@ export const InlineListItems = () => {
 InlineListItems.displaySequence = displaySequence++;
 
 export const ListExtendedSelection = () => {
+  const handleSelectionChange = useCallback<MultiSelectionChangeHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    []
+  );
   return (
-    <List<string, "extended">
+    <List
       aria-label="Listbox example"
       maxWidth={292}
+      onSelectionChange={handleSelectionChange}
       selectionStrategy="extended"
       source={usa_states}
     />

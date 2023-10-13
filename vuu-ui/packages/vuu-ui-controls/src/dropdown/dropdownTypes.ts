@@ -1,4 +1,4 @@
-import { PopupPlacement } from "packages/vuu-popups/src";
+import { PopupComponentProps, PopupPlacement } from "packages/vuu-popups/src";
 import {
   HTMLAttributes,
   KeyboardEvent,
@@ -17,6 +17,7 @@ export type OpenChangeHandler = <T extends boolean>(
 
 export interface DropdownBaseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+  PopupProps?: Pick<PopupComponentProps, "minWidth">;
   defaultIsOpen?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;

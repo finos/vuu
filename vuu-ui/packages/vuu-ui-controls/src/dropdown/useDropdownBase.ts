@@ -38,7 +38,6 @@ export const useDropdownBase = ({
     name: "useDropdown",
     state: "isOpen",
   });
-
   const [popup, setPopup] = useState<measurements>({
     width: popupWidthProp ?? width ?? 0,
   });
@@ -64,6 +63,7 @@ export const useDropdownBase = ({
   });
 
   const handleTriggerFocus = useCallback(() => {
+    console.log(`handleTriggerFocus ${openOnFocus}`);
     if (!disabled) {
       if (openOnFocus) {
         setIsOpen(true);

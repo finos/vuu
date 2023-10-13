@@ -173,13 +173,8 @@ export const useSelection = ({
     (evt: KeyboardEvent) => {
       const { current: container } = containerRef;
       const element = getElementByDataIndex(container, highlightedIdx);
-      console.log(`element at ${highlightedIdx}`, {
-        container,
-        element,
-      });
       if (isSelectableElement(element)) {
         if (isSelectionEvent(evt) || (tabToSelect && evt.key === "Tab")) {
-          console.log(`select that sucker`);
           // We do not inhibit Tab behaviour, if we are selecting on Tab then we apply
           // selection as a side effect of the Tab, not as a replacement for Tabbing.
           if (evt.key !== "Tab") {

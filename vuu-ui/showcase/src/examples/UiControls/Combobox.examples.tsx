@@ -1,5 +1,9 @@
-import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { ComboBox } from "@finos/vuu-ui-controls";
+import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import {
+  ComboBox,
+  MultiSelectionHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 
 import { usa_states } from "./List.data";
 import { FormEvent, useCallback, useMemo } from "react";
@@ -7,9 +11,16 @@ import { FormEvent, useCallback, useMemo } from "react";
 let displaySequence = 1;
 
 export const DefaultCombobox = () => {
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
   return (
     <ComboBox
       source={usa_states}
+      onSelectionChange={handleSelectionChange}
       style={{ background: "yellow" }}
       width={120}
     />
@@ -18,8 +29,73 @@ export const DefaultCombobox = () => {
 
 DefaultCombobox.displaySequence = displaySequence++;
 
+export const OpenOnFocus = () => {
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
+  return (
+    <div
+      style={{
+        alignItems: "flex-start",
+        height: 500,
+        display: "flex",
+        gap: 20,
+      }}
+    >
+      <Input style={{ width: 100 }} />
+      <ComboBox
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        style={{ background: "yellow" }}
+        width={200}
+      />
+      <ComboBox
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        style={{ background: "green" }}
+        width={200}
+      />
+    </div>
+  );
+};
+
+OpenOnFocus.displaySequence = displaySequence++;
+
+export const ComboboxDefaultSelection = () => {
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
+  return (
+    <ComboBox
+      defaultSelected={"Texas"}
+      source={usa_states}
+      onSelectionChange={handleSelectionChange}
+      style={{ background: "yellow" }}
+      width={120}
+    />
+  );
+};
+
+ComboboxDefaultSelection.displaySequence = displaySequence++;
+
 export const ComboboxAllowFreeText = () => {
-  return <ComboBox allowFreeText source={usa_states} width={120} />;
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`selectionChange ${selected}`);
+  }, []);
+  return (
+    <ComboBox
+      allowFreeText
+      source={usa_states}
+      onSelectionChange={handleSelectionChange}
+      width={120}
+    />
+  );
 };
 
 ComboboxAllowFreeText.displaySequence = displaySequence++;
@@ -122,9 +198,53 @@ export const ComboboxFormFieldNoAdornment = () => {
 ComboboxFormFieldNoAdornment.displaySequence = displaySequence++;
 
 export const MultiSelectCombobox = () => {
+  const itemsToString = (items: string[]) => {
+    return `${items.length} items`;
+  };
+
   const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {
     const { value } = evt.target as HTMLInputElement;
     console.log(`value = ${value}`);
+  }, []);
+
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected.join(",")}`);
+    },
+    []
+  );
+
+  const InputProps = useMemo(
+    () => ({
+      inputProps: {
+        autoComplete: "off",
+        onInput: handleInputChange,
+      },
+    }),
+    [handleInputChange]
+  );
+
+  return (
+    <ComboBox
+      InputProps={InputProps}
+      itemsToString={itemsToString}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states}
+      selectionStrategy="multiple"
+      style={{ background: "yellow" }}
+    />
+  );
+};
+MultiSelectCombobox.displaySequence = displaySequence++;
+
+export const MultiSelectComboboxDefaultSelected = () => {
+  const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {
+    const { value } = evt.target as HTMLInputElement;
+    console.log(`value = ${value}`);
+  }, []);
+
+  const handleSelectionChange = useCallback((evt, selected) => {
+    console.log(`selectionChange ${selected.join(",")}`);
   }, []);
 
   const InputProps = useMemo(
@@ -140,11 +260,12 @@ export const MultiSelectCombobox = () => {
   return (
     <ComboBox
       InputProps={InputProps}
+      defaultSelected={["Alabama", "Texas"]}
+      onSelectionChange={handleSelectionChange}
       source={usa_states}
       selectionStrategy="multiple"
       style={{ background: "yellow" }}
-      defaultValue=""
     />
   );
 };
-MultiSelectCombobox.displaySequence = displaySequence++;
+MultiSelectComboboxDefaultSelected.displaySequence = displaySequence++;

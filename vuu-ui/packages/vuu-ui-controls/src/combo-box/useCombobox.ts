@@ -3,7 +3,6 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   ChangeEvent,
   FocusEvent,
-  KeyboardEvent,
   MouseEvent,
   RefObject,
   SyntheticEvent,
@@ -12,9 +11,14 @@ import {
   useState,
 } from "react";
 import {
+  ComponentSelectionProps,
   hasSelection,
+  isMultiSelection,
   itemToString as defaultItemToString,
-  SelectionChangeHandler,
+  MultiSelectionHandler,
+  SelectionStrategy,
+  SelectionType,
+  SingleSelectionHandler,
 } from "../common-hooks";
 import {
   DropdownHookProps,
@@ -25,10 +29,16 @@ import { ListHookProps, ListHookResult, useList } from "../list";
 
 const EnterOnly = ["Enter"];
 
-export interface ComboboxHookProps<Item>
-  extends Partial<Omit<DropdownHookProps, "id" | "onKeyDown">>,
+export interface ComboboxHookProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends Partial<Omit<DropdownHookProps, "id" | "onKeyDown">>,
     Pick<InputProps, "onBlur" | "onChange" | "onFocus" | "onSelect">,
-    Omit<ListHookProps<Item>, "containerRef" | "onSelect"> {
+    Omit<ComponentSelectionProps<Item, S>, "onSelect">,
+    Omit<
+      ListHookProps<Item, S>,
+      "containerRef" | "defaultSelected" | "onSelect" | "selected"
+    > {
   InputProps?: InputProps;
   allowFreeText?: boolean;
   ariaLabel?: string;
@@ -36,9 +46,10 @@ export interface ComboboxHookProps<Item>
   id: string;
   initialHighlightedIndex?: number;
   itemCount: number;
+  itemsToString?: (items: Item[]) => string;
   itemToString?: (item: Item) => string;
   listRef: RefObject<HTMLDivElement>;
-  stringToItem?: (value?: string) => Item | null | undefined;
+  onSetSelectedText?: (text: string) => void;
   value?: string;
 }
 
@@ -56,7 +67,7 @@ export interface ComboboxHookResult<Item>
   onOpenChange: OpenChangeHandler;
 }
 
-export const useCombobox = <Item>({
+export const useCombobox = <Item, S extends SelectionStrategy>({
   allowFreeText,
   ariaLabel,
   collectionHook,
@@ -71,13 +82,14 @@ export const useCombobox = <Item>({
   initialHighlightedIndex = -1,
   isOpen: isOpenProp,
   itemCount,
+  itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
   listRef,
   onOpenChange,
   onSelectionChange,
+  onSetSelectedText,
   selected: selectedProp,
   selectionStrategy,
-  stringToItem,
   value: valueProp,
   InputProps: inputProps = {
     onBlur,
@@ -85,14 +97,13 @@ export const useCombobox = <Item>({
     onChange,
     onSelect,
   },
-}: ComboboxHookProps<Item>): ComboboxHookResult<Item> => {
-  const isMultiSelect =
-    selectionStrategy === "multiple" || selectionStrategy === "extended";
+}: ComboboxHookProps<Item, S>): ComboboxHookResult<Item> => {
+  const isMultiSelect = isMultiSelection(selectionStrategy);
 
-  const { setFilterPattern, stringToCollectionItem } = collectionHook;
+  const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
   // used to track multi selection
-  const selectedRef = useRef<Item[]>();
+  const selectedRef = useRef<SelectionType<Item, S>>();
   const setSelectedRef = useRef<null | ListHookResult<Item>["setSelected"]>(
     null
   );
@@ -111,7 +122,7 @@ export const useCombobox = <Item>({
 
   const [value, setValue] = useControlled({
     controlled: undefined,
-    default: defaultValue ?? "",
+    default: defaultValue ?? valueProp,
     name: "ComboBox",
     state: "value",
   });
@@ -120,66 +131,86 @@ export const useCombobox = <Item>({
     useState(true);
 
   const highlightSelectedItem = useCallback((selected) => {
-    console.log("highlightSelectedItem");
     if (Array.isArray(selected)) {
       console.log("TODO multi selection");
     } else if (selected == null) {
       setHighlightedIndexRef.current?.(-1);
-    } else {
-      // const indexOfSelectedItem = indexPositions.indexOf(selected);
-      // setHighlightedIndexRef.current?.(indexOfSelectedItem);
     }
   }, []);
 
   const setTextValue = useCallback(
-    (value: string) => {
+    (value: string, applyFilter = true) => {
       setValue(value);
-      setFilterPattern(value === "" ? undefined : value);
+      if (applyFilter) {
+        setFilterPattern(value === "" ? undefined : value);
+      }
     },
     [setFilterPattern, setValue]
   );
 
   const reconcileInput = useCallback(
-    (selected?: Item[]) => {
-      console.log(`reconcile input`, {
-        selected,
-      });
-      let value = "";
+    (selected?: SelectionType<Item, S>) => {
+      let newValue = allowFreeText ? value ?? "" : "";
       if (Array.isArray(selected)) {
         if (selected.length === 1) {
-          value = itemToString(selected[0]);
-        } else {
-          value = `${selected.length} items selected`;
+          newValue = itemToString(selected[0]);
+        } else if (selected.length > 1) {
+          newValue = itemsToString?.(selected) || "";
         }
+      } else if (selected) {
+        newValue = itemToString(selected as Item);
       }
-      setTextValue(value);
-      // if (value === "") {
-      //   setHighlightedIndexRef.current?.(-1);
-      // } else {
-      //   highlightSelectedItem(selected);
-      // }
+      if (newValue !== value) {
+        setTextValue(newValue, !isMultiSelect);
+        onSetSelectedText?.(newValue);
+      }
     },
-    [itemToString, setTextValue]
+    [
+      allowFreeText,
+      isMultiSelect,
+      itemToString,
+      itemsToString,
+      onSetSelectedText,
+      setTextValue,
+      value,
+    ]
   );
 
   const applySelection = useCallback(() => {
     const { current: selected } = selectedRef;
     reconcileInput(selected);
-    onSelectionChange?.(null, selected);
+    if (selected) {
+      // selected ref will be undefined if user has changed nothing
+      if (Array.isArray(selected)) {
+        (onSelectionChange as MultiSelectionHandler<Item>)?.(
+          null,
+          selected as Item[]
+        );
+      } else if (selected) {
+        (onSelectionChange as SingleSelectionHandler<Item>)?.(
+          null,
+          selected as Item
+        );
+      }
+    }
   }, [onSelectionChange, reconcileInput]);
 
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
+      console.log(`handleOpenChange ${open} ${closeReason}`);
+      if (open && isMultiSelect) {
+        setTextValue("", false);
+      }
       setIsOpen(open);
       onOpenChange?.(open);
       if (!open && closeReason !== "Escape") {
         applySelection();
       }
     },
-    [applySelection, onOpenChange, setIsOpen]
+    [applySelection, isMultiSelect, onOpenChange, setIsOpen, setTextValue]
   );
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler<Item>>(
+  const handleSelectionChange = useCallback(
     (evt, selected) => {
       selectedRef.current = selected;
       if (!isMultiSelect) {
@@ -187,26 +218,6 @@ export const useCombobox = <Item>({
       }
     },
     [handleOpenChange, isMultiSelect]
-  );
-
-  const handleInputKeyDown = useCallback(
-    (evt: KeyboardEvent) => {
-      if ("Escape" === evt.key) {
-        if (allowFreeText) {
-          setTextValue("");
-        } else {
-          console.log(`call reconcile input from handleInputKeyDown`);
-
-          reconcileInput();
-        }
-      } else if ("Tab" === evt.key) {
-        if (!allowFreeText) {
-          console.log(`call reconcile input from handleInputKeyDown`);
-          reconcileInput();
-        }
-      }
-    },
-    [allowFreeText, reconcileInput, setTextValue]
   );
 
   const handleKeyboardNavigation = useCallback(() => {
@@ -221,19 +232,18 @@ export const useCombobox = <Item>({
     listHandlers: listHookListHandlers,
     selected,
     setSelected,
-  } = useList<Item>({
+  } = useList<Item, S>({
     collectionHook,
     containerRef: listRef,
     defaultHighlightedIndex: initialHighlightedIndex,
-    defaultSelected,
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disableAriaActiveDescendant,
     disableHighlightOnFocus: true,
     disableTypeToSelect: true,
-    label: "useComboBox",
     onKeyboardNavigation: handleKeyboardNavigation,
-    onKeyDown: handleInputKeyDown,
+    // onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
-    selected: selectedProp,
+    selected: collectionHook.itemToCollectionItemId(selectedProp),
     selectionKeys: EnterOnly,
     selectionStrategy,
     tabToSelect: !isMultiSelect,
@@ -245,17 +255,8 @@ export const useCombobox = <Item>({
   const { onClick: listHandlersOnClick } = listHookListHandlers;
   const handleListClick = useCallback(
     (evt: MouseEvent) => {
-      //TODO use ref
       document.getElementById(`${id}-input`)?.focus();
-      // const inputEl = inputRef.current;
       listHandlersOnClick?.(evt);
-      // if (inputEl != null) {
-      //   inputEl.focus();
-      // }
-
-      // if (restListProps.onClick) {
-      //   restListProps.onClick(event as MouseEvent<HTMLDivElement>);
-      // }
     },
     [id, listHandlersOnClick]
   );
@@ -269,12 +270,12 @@ export const useCombobox = <Item>({
         setFilterPattern(newValue);
       } else {
         setFilterPattern(undefined);
-        onSelectionChange?.(evt, []);
+        //        onSelectionChange?.(evt, []);
       }
 
       setIsOpen(true);
     },
-    [onSelectionChange, setFilterPattern, setIsOpen, setValue]
+    [setFilterPattern, setIsOpen, setValue]
   );
 
   const { onFocus: inputOnFocus = onFocus } = inputProps;
@@ -298,34 +299,24 @@ export const useCombobox = <Item>({
 
   // When focus leaves a free text combo, check to see if the entered text is
   // a valid selection, if so fire a change event
-  const selectInputValue = useCallback(
-    (evt: ChangeEvent) => {
-      const text = value.trim();
-      if (text) {
-        const selectedCollectionItem = stringToCollectionItem(text);
-        if (selectedCollectionItem) {
-          if (Array.isArray(selectedCollectionItem)) {
-            // TODO multi select
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-          } else if (selectedCollectionItem !== selected) {
-            // given that this happens on blur, do we ned to worry aboyut setting the list vaue ?
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            setSelectedRef.current?.(selectedCollectionItem);
-            onSelectionChange?.(evt, selectedCollectionItem.value);
-          }
-        } else if (stringToItem) {
-          const item = stringToItem(text);
-          if (item) {
-            console.log("we have a new item");
-          }
+  const selectFreeTextInputValue = useCallback(() => {
+    const text = value?.trim();
+    const { current: selected } = selectedRef;
+    if (text) {
+      if (itemCount === 0 && text) {
+        // TODO should this be a different event ?
+        if (isMultiSelect) {
+          (onSelectionChange as MultiSelectionHandler<string>)?.(null, [text]);
+        } else {
+          (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
         }
-        // Hoiw do we check if string is Item
+      } else if (selected && !isMultiSelect) {
+        if (selected === text) {
+          // it has already been selected, nothing to do
+        }
       }
-    },
-    [onSelectionChange, selected, stringToItem, stringToCollectionItem, value]
-  );
+    }
+  }, [value, itemCount, isMultiSelect, onSelectionChange]);
 
   const { onBlur: inputOnBlur = onBlur } = inputProps;
   const { onBlur: listOnBlur } = listControlProps;
@@ -337,13 +328,19 @@ export const useCombobox = <Item>({
         listOnBlur?.(evt);
         inputOnBlur?.(evt);
         if (allowFreeText) {
-          selectInputValue(evt as ChangeEvent);
+          selectFreeTextInputValue();
         }
         setDisableAriaActiveDescendant(true);
         ignoreSelectOnFocus.current = true;
       }
     },
-    [listFocused, listOnBlur, inputOnBlur, allowFreeText, selectInputValue]
+    [
+      listFocused,
+      listOnBlur,
+      inputOnBlur,
+      allowFreeText,
+      selectFreeTextInputValue,
+    ]
   );
 
   const { onSelect: inputOnSelect } = inputProps;
@@ -371,9 +368,9 @@ export const useCombobox = <Item>({
       setHighlightedIndex(initialHighlightedIndex);
     }
     // TODO may need to scrollIntoView
-    if (itemCount === 0) {
-      setIsOpen(false);
-    }
+    // if (itemCount === 0) {
+    //   setIsOpen(false);
+    // }
   }, [
     highlightSelectedItem,
     itemCount,

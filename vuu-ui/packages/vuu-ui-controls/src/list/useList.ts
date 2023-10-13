@@ -11,9 +11,14 @@ import {
 import {
   CollectionItem,
   hasSelection,
+  isMultiSelection,
+  isSingleSelection,
   ListHandlers,
+  MultiSelectionChangeHandler,
   SelectHandler,
   SelectionChangeHandler,
+  SelectionStrategy,
+  SingleSelectionChangeHandler,
 } from "../common-hooks";
 import {
   DragStartHandler,
@@ -31,7 +36,7 @@ import {
 
 import { ListControlProps, ListHookProps, ListHookResult } from "./listTypes";
 
-export const useList = <Item>({
+export const useList = <Item, S extends SelectionStrategy>({
   allowDragDrop = false,
   collapsibleHeaders,
   collectionHook: dataHook,
@@ -63,7 +68,7 @@ export const useList = <Item>({
   stickyHeaders,
   tabToSelect,
   viewportRange,
-}: ListHookProps<Item>): ListHookResult<Item> => {
+}: ListHookProps<Item, S>): ListHookResult<Item> => {
   // Used to preserve selection across a drop event.
   const selectedByIndexRef = useRef<number[]>([]);
   const lastSelection = useRef<string[] | undefined>(
@@ -102,14 +107,24 @@ export const useList = <Item>({
   // consider the use case where we use this hook from dropdown etc
   const handleSelectionChange = useCallback<SelectionChangeHandler<string>>(
     (evt, selected) => {
+      // TODO what about empty selection
       if (onSelectionChange) {
-        if (Array.isArray(selected)) {
+        if (isSingleSelection(selectionStrategy)) {
+          const [selectedItem] = selected;
+          (onSelectionChange as SingleSelectionChangeHandler<Item>)(
+            evt,
+            dataHook.itemById(selectedItem)
+          );
+        } else if (isMultiSelection(selectionStrategy)) {
           const selectedItems = selected.map((id) => dataHook.itemById(id));
-          onSelectionChange(evt, selectedItems);
+          (onSelectionChange as MultiSelectionChangeHandler<Item>)(
+            evt,
+            selectedItems
+          );
         }
       }
     },
-    [dataHook, onSelectionChange]
+    [dataHook, onSelectionChange, selectionStrategy]
   );
 
   const {

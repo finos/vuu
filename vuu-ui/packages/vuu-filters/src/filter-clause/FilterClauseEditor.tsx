@@ -68,7 +68,6 @@ export const FilterClauseEditor = ({
 
   useEffect(() => {
     if (operator !== undefined && value === undefined && valueRef.current) {
-      console.log(`Looks like operator has changed, is now ${operator}`);
       const valueInput = valueRef.current.querySelector("input");
       valueInput?.focus();
     }

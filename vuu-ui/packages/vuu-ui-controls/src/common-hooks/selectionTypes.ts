@@ -19,9 +19,29 @@ export type SelectionStrategy =
   | SingleSelectionStrategy
   | MultiSelectionStrategy;
 
+export const isSingleSelection = (
+  s?: SelectionStrategy
+): s is SingleSelectionStrategy =>
+  s === undefined || s === "default" || s === "deselectable";
+
+export const isMultiSelection = (
+  s?: SelectionStrategy
+): s is MultiSelectionStrategy =>
+  s === "multiple" || s?.startsWith("extended") === true;
+
 export type SelectHandler<Item = string> = (
   event: SyntheticEvent,
   selectedItem: Item
+) => void;
+
+export type SingleSelectionChangeHandler<Item = string> = (
+  event: SyntheticEvent,
+  selected: Item
+) => void;
+
+export type MultiSelectionChangeHandler<Item = string> = (
+  event: SyntheticEvent,
+  selected: Item[]
 ) => void;
 
 export type SelectionChangeHandler<Item = string> = (
@@ -82,4 +102,36 @@ export interface SelectionHookResult {
   listHandlers: ListHandlers;
   selected: string[];
   setSelected: (selected: string[]) => void;
+}
+
+export type MultiSelectionHandler<Item = string> = (
+  event: SyntheticEvent | null,
+  selected: Item[]
+) => void;
+export type SingleSelectionHandler<Item = string> = (
+  event: SyntheticEvent | null,
+  selected: Item
+) => void;
+
+export type SelectionType<
+  I,
+  S extends SelectionStrategy
+> = S extends MultiSelectionStrategy ? I[] : I;
+
+export interface ComponentSelectionProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> {
+  defaultSelected?: S extends MultiSelectionStrategy ? Item[] : Item;
+  onSelect?: SelectHandler<Item>;
+  onSelectionChange?: S extends MultiSelectionStrategy
+    ? MultiSelectionHandler<Item>
+    : SingleSelectionHandler<Item>;
+  selected?: SelectionType<Item, S>;
+  selectionStrategy?: S;
+  /**
+   * The keyboard keys used to effect selection, defaults to SPACE and ENTER
+   * TODO maybe this belongs on the SelectionProps interface ?
+   */
+  selectionKeys?: string[];
 }
