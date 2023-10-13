@@ -5,7 +5,7 @@ import { getUniqueId } from "@finos/vuu-utils";
 import "./notifications.css"
 
 // animation times in milliseconds
-const toastDisplayDuration = 3000;
+const toastDisplayDuration = 6000;
 const exitAnimationDuration = 1000;
 const verticalTransitionTime = 300
 
