@@ -17,10 +17,15 @@ const leftGap = 10;
 
 const classBase = "vuuToastNotifications";
 
-export type ToastTypes = "warning" | "error" | "info" | "success"
+export enum NotificationLevel {
+  Info = "info",
+  Success = "success",
+  Warning = "warning",
+  Error = "error",
+}
 
 type Notification = {
-  type: ToastTypes,
+  type: NotificationLevel,
   header: string,
   body: string,
   id: string

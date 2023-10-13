@@ -1,14 +1,13 @@
 import { ChangeEvent, useState } from "react";
 import { Dropdown } from "@finos/vuu-ui-controls";
-import { NotificationsProvider, ToastTypes, ToastNotification, useNotifications } from "@finos/vuu-popups";
+import { NotificationsProvider, NotificationLevel, ToastNotification, useNotifications } from "@finos/vuu-popups";
 import { Input } from "@salt-ds/core";
 
 let displaySequence = 1;
 
-const notificationTypes: ToastTypes[] = ["warning", "error", "info", "success"]
 
 const Notifications = () => {
-    const [type, setType] = useState<ToastTypes>(notificationTypes[0])
+    const [type, setType] = useState<NotificationLevel>(NotificationLevel.Info)
     const [header, setHeader] = useState<string>("Header")
     const [body, setBody] = useState<string>("Body")
 
@@ -27,9 +26,13 @@ const Notifications = () => {
             <div style={{ display: 'flex' }}>
                 <label>Notification Type</label>
                 <Dropdown
-                    defaultSelected={notificationTypes[0]}
-                    onSelectionChange={(_, selectedItem) => setType(selectedItem as ToastTypes)}
-                    source={notificationTypes}
+                    defaultSelected={NotificationLevel.Info}
+                    onSelectionChange={(_, selectedItem) => {
+                        if (selectedItem) {
+                            setType(selectedItem)
+                        }
+                    }}
+                    source={Object.values(NotificationLevel)}
                 />
             </div>
             <div style={{ display: 'flex' }}>
@@ -58,10 +61,10 @@ NotificationsWithContext.displaySequence = displaySequence++;
 
 export const SuccessNotificationToast = () =>
     <ToastNotification
-        top={0}
+        top={20}
         animated={false}
         notification={{
-            type: "success",
+            type: NotificationLevel.Success,
             header: "Layout Saved Successfully",
             body: "[Layout Name] Saved Successfully",
             id: "0"
@@ -75,7 +78,7 @@ export const ErrorNotificationToast = () =>
         top={20}
         animated={false}
         notification={{
-            type: "error",
+            type: NotificationLevel.Error,
             header: "This Didn't Work",
             body: "This didn't work",
             id: "0"
@@ -89,7 +92,7 @@ export const WarningNotificationToast = () =>
         top={20}
         animated={false}
         notification={{
-            type: "warning",
+            type: NotificationLevel.Warning,
             header: "This probably won't work",
             body: "This probably won't work",
             id: "0"
@@ -103,7 +106,7 @@ export const InfoNotificationToast = () =>
         top={20}
         animated={false}
         notification={{
-            type: "info",
+            type: NotificationLevel.Info,
             header: "This is Info Title",
             body: "This is Info Body",
             id: "0"
