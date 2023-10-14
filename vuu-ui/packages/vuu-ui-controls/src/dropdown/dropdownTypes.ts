@@ -9,7 +9,13 @@ import {
 
 export type DropdownOpenKey = "Enter" | "ArrowDown" | " ";
 
-export type CloseReason = "Escape" | "click-away" | "select" | "Tab" | "toggle";
+export type CloseReason =
+  | "blur"
+  | "Escape"
+  | "click-away"
+  | "select"
+  | "Tab"
+  | "toggle";
 export type OpenChangeHandler = <T extends boolean>(
   open: T,
   closeReason?: T extends false ? CloseReason : never

@@ -197,7 +197,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
-      console.log(`handleOpenChange ${open} ${closeReason}`);
+      console.log(`openCHange ${open} ${closeReason}`);
       if (open && isMultiSelect) {
         setTextValue("", false);
       }
@@ -322,6 +322,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   const { onBlur: listOnBlur } = listControlProps;
   const handleInputBlur = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {
+      console.log("input blur");
       if (listFocused(evt)) {
         // nothing doing
       } else {

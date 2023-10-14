@@ -1,5 +1,11 @@
 import { useControlled, useForkRef } from "@salt-ds/core";
-import { KeyboardEvent, useCallback, useRef, useState } from "react";
+import {
+  FocusEvent,
+  KeyboardEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { measurements, useResizeObserver, WidthOnly } from "../common-hooks";
 import {
   CloseReason,
@@ -63,7 +69,6 @@ export const useDropdownBase = ({
   });
 
   const handleTriggerFocus = useCallback(() => {
-    console.log(`handleTriggerFocus ${openOnFocus}`);
     if (!disabled) {
       if (openOnFocus) {
         setIsOpen(true);
@@ -94,7 +99,7 @@ export const useDropdownBase = ({
 
   const handleKeydown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
-      if ((evt.key === "Tab" || evt.key === "Escape") && isOpen) {
+      if (/* evt.key === "Tab" || */ evt.key === "Escape" && isOpen) {
         // No preventDefault for Tab, but if we've handled Escape, we should own it
         if (evt.key === "Escape") {
           evt.stopPropagation();
@@ -111,6 +116,20 @@ export const useDropdownBase = ({
     [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown]
   );
 
+  const handleBlur = useCallback(
+    (evt: FocusEvent<HTMLElement>) => {
+      console.log("blue blur");
+      if (isOpen) {
+        if (popperRef.current?.contains(evt.relatedTarget)) {
+          // ignore
+        } else {
+          hideDropdown("blur");
+        }
+      }
+    },
+    [hideDropdown, isOpen]
+  );
+
   const fullWidth = fullWidthProp ?? false;
   const measurements = fullWidth ? WidthOnly : NO_OBSERVER;
   useResizeObserver(rootRef, measurements, setPopup, fullWidth);
@@ -125,6 +144,7 @@ export const useDropdownBase = ({
     onClick: disabled || openOnFocus ? undefined : handleTriggerToggle,
     onFocus: handleTriggerFocus,
     role: "listbox",
+    onBlur: handleBlur,
     onKeyDown: disabled ? undefined : handleKeydown,
     style: { width: fullWidth ? undefined : width },
   };

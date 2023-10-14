@@ -411,17 +411,6 @@ export const useDragDropNext: DragDropHook = ({
   dragMouseMoveHandlerRef.current = dragMouseMoveHandler;
   dragMouseUpHandlerRef.current = dragMouseUpHandler;
 
-  useEffect(() => {
-    console.log(`dragMouseMoveHandler has changed`);
-  }, [dragMouseMoveHandler]);
-
-  useEffect(() => {
-    console.log(`dragMouseUpHandler has changed`);
-  }, [dragMouseUpHandler]);
-  useEffect(() => {
-    console.log(`drop has changed`);
-  }, [drop]);
-
   const resumeDrag = useCallback<ResumeDragHandler>(
     (dragDropState: DragDropState) => {
       dragDropStateRef.current = dragDropState;
@@ -429,8 +418,6 @@ export const useDragDropNext: DragDropHook = ({
       const { draggableElement, mouseOffset, initialDragElement } =
         dragDropState;
       const { current: container } = containerRef;
-
-      console.log({ container, draggableElement, initialDragElement });
 
       if (container && draggableElement) {
         const containerRect = container.getBoundingClientRect();
