@@ -204,9 +204,6 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`useTableNext handleConfigChanged`, {
-        tableConfig,
-      });
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -219,9 +216,6 @@ export const useTable = ({
 
   const handleDataSourceConfigChanged = useCallback(
     (dataSourceConfig: DataSourceConfig) => {
-      console.log("config changed", {
-        dataSourceConfig,
-      });
       dataSource.config = {
         ...dataSource.config,
         ...dataSourceConfig,
@@ -232,9 +226,6 @@ export const useTable = ({
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
-      console.log(`useTableNext handleCreateCalculatedColumn`, {
-        column,
-      });
       dataSource.columns = dataSource.columns.concat(column.name);
       const newTableConfig = addColumn(tableConfig, column);
       dispatchColumnAction({

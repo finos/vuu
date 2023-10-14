@@ -61,6 +61,7 @@ export const Table = ({
     width,
   });
 
+  console.log({ tableProps });
   const style = {
     ...outerSize,
     "--content-height": `${viewportMeasurements.contentHeight}px`,

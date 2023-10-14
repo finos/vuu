@@ -80,7 +80,6 @@ export const TableNext = forwardRef(function TableNext(
     rowHeight,
     selectionModel,
   });
-
   const getStyle = () => {
     return {
       ...styleProp,
