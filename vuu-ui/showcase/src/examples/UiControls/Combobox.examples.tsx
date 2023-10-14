@@ -269,3 +269,36 @@ export const MultiSelectComboboxDefaultSelected = () => {
   );
 };
 MultiSelectComboboxDefaultSelected.displaySequence = displaySequence++;
+
+export const ComboboxBlurBehaviour = () => {
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
+  return (
+    <div
+      style={{
+        alignItems: "center",
+        background: "lightgray",
+        display: "flex",
+        gap: 24,
+        height: 60,
+        padding: "0px 12px",
+      }}
+    >
+      {" "}
+      <Input style={{ width: 100 }} />
+      <ComboBox
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        style={{ background: "yellow" }}
+        width={120}
+      />
+      <Input style={{ width: 100 }} />
+    </div>
+  );
+};
+
+ComboboxBlurBehaviour.displaySequence = displaySequence++;

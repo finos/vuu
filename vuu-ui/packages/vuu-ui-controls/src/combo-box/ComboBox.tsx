@@ -146,6 +146,7 @@ export const ComboBox = forwardRef(function Combobox<
     disabled,
     initialHighlightedIndex,
     itemCount: collectionHook.data.length,
+    label: props.title,
     listRef,
     onBlur,
     onFocus,

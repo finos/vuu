@@ -28,7 +28,6 @@ import {
 import { ListHookProps, ListHookResult, useList } from "../list";
 
 const EnterOnly = ["Enter"];
-
 export interface ComboboxHookProps<
   Item = string,
   S extends SelectionStrategy = "default"
@@ -84,6 +83,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   itemCount,
   itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
+  label,
   listRef,
   onOpenChange,
   onSelectionChange,
@@ -163,6 +163,9 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       if (newValue !== value) {
         setTextValue(newValue, !isMultiSelect);
         onSetSelectedText?.(newValue);
+        return true;
+      } else {
+        return false;
       }
     },
     [
@@ -178,26 +181,28 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const applySelection = useCallback(() => {
     const { current: selected } = selectedRef;
-    reconcileInput(selected);
-    if (selected) {
-      // selected ref will be undefined if user has changed nothing
-      if (Array.isArray(selected)) {
-        (onSelectionChange as MultiSelectionHandler<Item>)?.(
-          null,
-          selected as Item[]
-        );
-      } else if (selected) {
-        (onSelectionChange as SingleSelectionHandler<Item>)?.(
-          null,
-          selected as Item
-        );
+    if (reconcileInput(selected)) {
+      if (selected) {
+        // selected ref will be undefined if user has changed nothing
+        if (Array.isArray(selected)) {
+          (onSelectionChange as MultiSelectionHandler<Item>)?.(
+            null,
+            selected as Item[]
+          );
+        } else if (selected) {
+          console.log(`onSelectionCHange`);
+          (onSelectionChange as SingleSelectionHandler<Item>)?.(
+            null,
+            selected as Item
+          );
+        }
       }
     }
   }, [onSelectionChange, reconcileInput]);
 
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
-      console.log(`openCHange ${open} ${closeReason}`);
+      console.log(`openChange<${open}> ${label}  ${closeReason}`);
       if (open && isMultiSelect) {
         setTextValue("", false);
       }
@@ -207,7 +212,14 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
         applySelection();
       }
     },
-    [applySelection, isMultiSelect, onOpenChange, setIsOpen, setTextValue]
+    [
+      applySelection,
+      isMultiSelect,
+      label,
+      onOpenChange,
+      setIsOpen,
+      setTextValue,
+    ]
   );
 
   const handleSelectionChange = useCallback(
@@ -322,7 +334,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   const { onBlur: listOnBlur } = listControlProps;
   const handleInputBlur = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {
-      console.log("input blur");
       if (listFocused(evt)) {
         // nothing doing
       } else {

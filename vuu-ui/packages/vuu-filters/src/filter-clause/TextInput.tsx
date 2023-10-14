@@ -170,6 +170,7 @@ export const TextInput = forwardRef(function TextInput(
             className={className}
             initialHighlightedIndex={0}
             source={typeaheadValues}
+            title="value"
             onInputChange={handleInputChange}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
