@@ -37,9 +37,6 @@ export const NewBasketPanel = ({
   onSaveBasket,
   ...htmlAttributes
 }: NewBasketPanelProps) => {
-  console.log(`dataSource size ${basketDataSource.size}`, {
-    basketDataSource,
-  });
   const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(
     () => ({
       config: {
