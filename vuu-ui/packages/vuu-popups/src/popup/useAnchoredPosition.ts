@@ -1,4 +1,10 @@
-import { RefObject, useLayoutEffect, useState } from "react";
+import {
+  RefObject,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { PopupPlacement } from "./Popup";
 
 export interface AnchoredPositionHookProps {
@@ -9,14 +15,23 @@ export interface AnchoredPositionHookProps {
   placement: PopupPlacement;
 }
 
+export type Visibility = "hidden" | "visible";
+
 const getPositionRelativeToAnchor = (
   anchorElement: HTMLElement,
   placement: PopupPlacement,
   offsetLeft: number,
   offsetTop: number,
-  minWidth?: number
-): { left: number; minWidth?: number; top: number; width?: number } => {
-  const { bottom, left, right, top, width } =
+  minWidth?: number,
+  dimensions?: { height: number; width: number }
+): {
+  left: number;
+  minWidth?: number;
+  top: number;
+  visibility?: Visibility;
+  width?: number;
+} => {
+  const { bottom, height, left, right, top, width } =
     anchorElement.getBoundingClientRect();
   switch (placement) {
     case "below":
@@ -32,6 +47,20 @@ const getPositionRelativeToAnchor = (
         top: bottom + offsetTop,
         width,
       };
+    case "center":
+      if (dimensions) {
+        return {
+          left: width / 2 - dimensions.width / 2 + offsetLeft,
+          top: height / 2 - dimensions.height / 2 + offsetTop,
+          visibility: "visible",
+        };
+      } else {
+        return {
+          left: width / 2 + offsetLeft,
+          top: height / 2 + offsetTop,
+          visibility: "hidden",
+        };
+      }
     default:
       throw Error(
         "Popup getPositionRelativeToAnchor only supported placement values are below and right"
@@ -46,22 +75,52 @@ export const useAnchoredPosition = ({
   offsetTop = 0,
   placement,
 }: AnchoredPositionHookProps) => {
+  const popupRef = useRef<HTMLElement | null>(null);
   const [position, setPosition] = useState<
     { left: number; top: number } | undefined
   >();
+
   // maybe better as useMemo ?
   useLayoutEffect(() => {
     if (anchorElement.current) {
+      const dimensions =
+        popupRef.current === null
+          ? undefined
+          : popupRef.current.getBoundingClientRect();
       const position = getPositionRelativeToAnchor(
         anchorElement.current,
         placement,
         offsetLeft,
         offsetTop,
-        minWidth
+        minWidth,
+        dimensions
       );
       setPosition(position);
     }
   }, [anchorElement, minWidth, offsetLeft, offsetTop, placement]);
 
-  return position;
+  const popupCallbackRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      popupRef.current = el;
+      if (el && placement === "center" && anchorElement.current) {
+        const { height, width } = el.getBoundingClientRect();
+        setPosition(
+          getPositionRelativeToAnchor(
+            anchorElement.current,
+            placement,
+            offsetLeft,
+            offsetTop,
+            undefined,
+            { height, width }
+          )
+        );
+      }
+    },
+    [anchorElement, offsetLeft, offsetTop, placement]
+  );
+
+  return {
+    position,
+    popupRef: placement === "center" ? popupCallbackRef : undefined,
+  };
 };

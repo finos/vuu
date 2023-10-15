@@ -28,11 +28,16 @@ export const PopupComponent = ({
   placement,
 }: PopupComponentProps) => {
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
-  const position = useAnchoredPosition({ anchorElement, minWidth, placement });
+  const { popupRef, position } = useAnchoredPosition({
+    anchorElement,
+    minWidth,
+    placement,
+  });
   return position === undefined ? null : (
     <div
       className={cx(`vuuPortal`, className, themeClass, densityClass)}
       data-mode={dataMode}
+      ref={popupRef}
       style={position}
     >
       {children}

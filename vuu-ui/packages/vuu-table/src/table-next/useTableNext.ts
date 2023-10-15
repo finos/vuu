@@ -71,6 +71,7 @@ export interface TableHookProps
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
+      | "onSelect"
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
@@ -102,6 +103,7 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onRowClick: onRowClickProp,
+  onSelect,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
@@ -475,6 +477,7 @@ export const useTable = ({
   );
 
   const selectionHookOnRowClick = useSelection({
+    onSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });

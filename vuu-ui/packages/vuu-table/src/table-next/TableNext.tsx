@@ -2,7 +2,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import { CSSProperties, useEffect, useRef } from "react";
+import { CSSProperties, ForwardedRef, forwardRef, useRef } from "react";
 import {
   GroupHeaderCellNext as GroupHeaderCell,
   HeaderCell,
@@ -10,6 +10,7 @@ import {
 import { Row as DefaultRow } from "./Row";
 import { useTable } from "./useTableNext";
 import { MeasuredContainer, useId } from "@finos/vuu-layout";
+import { useForkRef } from "@salt-ds/core";
 
 import "./TableNext.css";
 
@@ -17,28 +18,32 @@ const classBase = "vuuTableNext";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-export const TableNext = ({
-  Row = DefaultRow,
-  availableColumns,
-  className: classNameProp,
-  config,
-  dataSource,
-  id: idProp,
-  onAvailableColumnsChange,
-  onConfigChange,
-  onFeatureEnabled,
-  onFeatureInvocation,
-  onRowClick: onRowClickProp,
-  onSelectionChange,
-  onShowConfigEditor: onShowSettings,
-  renderBufferSize = 0,
-  rowHeight = 20,
-  selectionModel = "extended",
-  showColumnHeaders = true,
-  headerHeight = showColumnHeaders ? 25 : 0,
-  style: styleProp,
-  ...htmlAttributes
-}: TableProps) => {
+export const TableNext = forwardRef(function TableNext(
+  {
+    Row = DefaultRow,
+    availableColumns,
+    className: classNameProp,
+    config,
+    dataSource,
+    id: idProp,
+    onAvailableColumnsChange,
+    onConfigChange,
+    onFeatureEnabled,
+    onFeatureInvocation,
+    onRowClick: onRowClickProp,
+    onSelect,
+    onSelectionChange,
+    onShowConfigEditor: onShowSettings,
+    renderBufferSize = 0,
+    rowHeight = 20,
+    selectionModel = "extended",
+    showColumnHeaders = true,
+    headerHeight = showColumnHeaders ? 25 : 0,
+    style: styleProp,
+    ...htmlAttributes
+  }: TableProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>
+) {
   const id = useId(idProp);
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -69,6 +74,7 @@ export const TableNext = ({
     onFeatureEnabled,
     onFeatureInvocation,
     onRowClick: onRowClickProp,
+    onSelect,
     onSelectionChange,
     renderBufferSize,
     rowHeight,
@@ -106,7 +112,7 @@ export const TableNext = ({
         {...htmlAttributes}
         className={className}
         onResize={onResize}
-        ref={containerRef}
+        ref={useForkRef(containerRef, forwardedRef)}
         style={getStyle()}
       >
         <div
@@ -170,4 +176,4 @@ export const TableNext = ({
       </MeasuredContainer>
     </ContextMenuProvider>
   );
-};
+});

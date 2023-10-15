@@ -261,6 +261,40 @@ export const AutoTableNextBasketDesign = () => {
 };
 AutoTableNextBasketDesign.displaySequence = displaySequence++;
 
+export const AutoTableNextBasket = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    count: 4,
+    rangeChangeRowset: "delta",
+    table: { module: "SIMUL", table: "basket" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  console.log({ config });
+
+  return (
+    <TableNext
+      {...props}
+      config={{
+        ...config,
+        rowSeparators: true,
+        zebraStripes: true,
+      }}
+      onConfigChange={handleConfigChange}
+      renderBufferSize={50}
+    />
+  );
+};
+AutoTableNextBasket.displaySequence = displaySequence++;
+
 export const AutoTableNextBasketOrders = () => {
   const {
     typeaheadHook: _,

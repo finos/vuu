@@ -1,0 +1,14 @@
+
+.vuuSearchCell {
+  --vuu-icon-left: 0;
+  --vuu-icon-size: 16px;
+  --vuu-icon-top: 0px;
+  align-items: center;
+  color: var(--background-cell-color);
+  display: flex;
+  gap: 4px;
+  padding: 0 8px 0 8px;
+  position: relative;
+  z-index: -1;
+}
+

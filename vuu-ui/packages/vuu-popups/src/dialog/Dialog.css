@@ -8,32 +8,3 @@
   width: var(--vuuDialog-width, fit-content);
 }
 
-.vuuDialog-header {
-  --saltButton-height: 28px;
-  --saltButton-width: 28px;
-
-  --saltToolbar-background: transparent;
-  --saltToolbar-height: calc(var(--salt-size-base) + 5px);
-}
-
-.vuuDialog-header > .Responsive-inner {
-  align-items: center;
-}
-
-.vuuDialog-header > .Responsive-inner > :last-child{
-  right: 2px;
-}
-
-.dialogHeader {
-  display: flex;
-  padding-bottom: 0px;
-  padding-top: 16px;
-  padding-left: 16px;
-  flex-direction: column;
-  align-items: flex-start;
-  align-self: stretch;
-  color: var(--light-text-primary, #15171B);
-  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
-  font-size: 16px;
-  font-weight: 600;
-}

@@ -1,0 +1,22 @@
+.vuuBasketNewBasketPanel {
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+    width: 300px;
+}
+
+.vuuBasketNewBasketPanel-body {
+    padding: 12px;
+}
+
+.vuuBasketNewBasketPanel-buttonBar {
+    --saltButton-borderRadius: 6px;
+    --saltButton-padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    justify-content: flex-end;
+    padding: 0 16px;
+
+}

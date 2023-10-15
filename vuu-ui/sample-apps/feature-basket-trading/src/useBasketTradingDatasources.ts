@@ -1,9 +1,18 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { useCallback, useMemo, useState } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 
+export type basketDataSourceKey =
+  | "data-source-basket"
+  | "data-source-basket-definitions"
+  | "data-source-basket-definitions-search"
+  | "data-source-basket-design"
+  | "data-source-basket-orders"
+  | "data-source-instruments";
+
 export const useBasketTradingDataSources = ({
+  basketSchema,
   basketDefinitionsSchema,
   basketDesignSchema,
   basketOrdersSchema,
@@ -11,79 +20,48 @@ export const useBasketTradingDataSources = ({
 }: BasketTradingFeatureProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
-  const { id, save, loadSession, saveSession, title } = useViewContext();
+  const { id, loadSession, saveSession, title } = useViewContext();
 
   const [
     dataSourceBasket,
-    dataSourceBasketSearch,
+    dataSourceBasketDefinitions,
+    dataSourceBasketDefinitionsSearch,
     dataSourceBasketDesign,
     dataSourceBasketOrders,
     dataSourceInstruments,
   ] = useMemo(() => {
-    // prettier-ignore
-    let ds1 = loadSession?.("basket-definitions") as RemoteDataSource;
-    let ds2 = loadSession?.("basket-definitions-search") as RemoteDataSource;
-    // prettier-ignore
-    let ds3 = loadSession?.("basket-design-data-source") as RemoteDataSource;
-    let ds4 = loadSession?.("basket-orders-data-source") as RemoteDataSource;
-    let ds5 = loadSession?.("instruments-data-source") as RemoteDataSource;
-    if (ds1 && ds2 && ds3 && ds4 && ds5) {
-      console.log("all datasources found in session state");
-      return [ds1, ds2, ds3, ds4, ds5];
-    }
+    const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
+      ["data-source-basket", basketSchema],
+      ["data-source-basket-definitions", basketDefinitionsSchema],
+      ["data-source-basket-definitions-search", basketDefinitionsSchema],
+      ["data-source-basket-design", basketDesignSchema],
+      ["data-source-basket-orders", basketOrdersSchema],
+      ["data-source-instruments", instrumentsSchema],
+    ];
 
-    ds1 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDefinitionsSchema.table,
-      columns: basketDefinitionsSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds2 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDefinitionsSchema.table,
-      columns: basketDefinitionsSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds3 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDesignSchema.table,
-      columns: basketDesignSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds4 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketOrdersSchema.table,
-      columns: basketOrdersSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds5 = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: instrumentsSchema.table,
-      columns: instrumentsSchema.columns.map((col) => col.name),
-      title,
-    });
-    // ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds1, "basket-definitions");
-    saveSession?.(ds2, "basket-definitions-search");
-    saveSession?.(ds3, "basket-design-data-source");
-    saveSession?.(ds4, "basket-orders-data-source");
-    saveSession?.(ds5, "instruments-data-source");
-    return [ds1, ds2, ds3, ds4, ds5];
+    const dataSources: DataSource[] = [];
+    for (const [key, schema] of dataSourceConfig) {
+      let dataSource = loadSession?.(key) as RemoteDataSource;
+      if (dataSource === undefined) {
+        dataSource = new RemoteDataSource({
+          bufferSize: 200,
+          viewport: id,
+          table: schema.table,
+          columns: schema.columns.map((col) => col.name),
+          title,
+        });
+        saveSession?.(dataSource, key);
+      }
+      dataSources.push(dataSource);
+    }
+    return dataSources;
   }, [
-    basketDefinitionsSchema.columns,
-    basketDefinitionsSchema.table,
-    basketDesignSchema.columns,
-    basketDesignSchema.table,
-    basketOrdersSchema.columns,
-    basketOrdersSchema.table,
+    basketDefinitionsSchema,
+    basketDesignSchema,
+    basketOrdersSchema,
+    basketSchema,
     id,
-    instrumentsSchema.columns,
-    instrumentsSchema.table,
+    instrumentsSchema,
     loadSession,
     saveSession,
     title,
@@ -97,14 +75,20 @@ export const useBasketTradingDataSources = ({
     setActiveTabIndex(0);
   }, []);
 
+  const saveNewBasket = useCallback((basketName: string, basketId: string) => {
+    console.log(`save new baskert ${basketName}, ${basketId}`);
+  }, []);
+
   return {
     activeTabIndex,
     dataSourceBasket,
-    dataSourceBasketSearch,
+    dataSourceBasketDefinitions,
+    dataSourceBasketDefinitionsSearch,
     dataSourceBasketDesign,
     dataSourceBasketOrders,
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
+    saveNewBasket,
   };
 };
