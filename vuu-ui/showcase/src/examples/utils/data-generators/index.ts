@@ -1,3 +1,4 @@
+export * as basket from "./basket-generator";
 export * as basketDefinitions from "./basket-definitions-generator";
 export * as basketDesign from "./basket-design-generator";
 export * as basketOrders from "./basket-orders-generator";

@@ -8,7 +8,7 @@ import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
 import { createArrayDataSource } from "../examples/utils/createArrayDataSource";
 
-export const BasketTradingFeature = ({
+export const BasketTradingNoBasketsFeature = ({
   basketSchema,
   basketDefinitionsSchema,
   basketDesignSchema,
@@ -20,8 +20,8 @@ export const BasketTradingFeature = ({
   useMemo(() => {
     const dataSourceConfig: [basketDataSourceKey, TableSchema, number?][] = [
       ["data-source-basket", basketSchema, 4],
-      ["data-source-basket-definitions", basketDefinitionsSchema, 5],
-      ["data-source-basket-definitions-search", basketDefinitionsSchema, 5],
+      ["data-source-basket-definitions", basketDefinitionsSchema, 0],
+      ["data-source-basket-definitions-search", basketDefinitionsSchema, 0],
       ["data-source-basket-design", basketDesignSchema],
       ["data-source-basket-orders", basketOrdersSchema],
       ["data-source-instruments", instrumentsSchema],
@@ -50,4 +50,4 @@ export const BasketTradingFeature = ({
   );
 };
 
-export default BasketTradingFeature;
+export default BasketTradingNoBasketsFeature;

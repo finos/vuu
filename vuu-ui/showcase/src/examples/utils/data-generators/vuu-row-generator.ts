@@ -58,6 +58,13 @@ export const getColumnAndRowGenerator = (
   | [ColumnGeneratorFn, RowGeneratorFactory]
   | [ColumnGeneratorFn, RowGeneratorFactory, () => UpdateGenerator] => {
   const tableName = table?.table ?? "";
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  if (table?.table && dataGenerators[table?.table] === undefined) {
+    throw Error(
+      `vuu-row-gererator table ${table.table} was requested but no generator is registered`
+    );
+  }
   const { ColumnGenerator, RowGenerator, createUpdateGenerator } =
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
