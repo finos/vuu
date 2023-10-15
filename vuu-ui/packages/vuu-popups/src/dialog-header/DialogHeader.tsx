@@ -2,7 +2,7 @@ import { Button, Text } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
 import cx from "classnames";
 
-import "./DialogHeaderX.css";
+import "./DialogHeader.css";
 
 const classBase = "vuuDialogHeader";
 
