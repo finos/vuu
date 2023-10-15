@@ -56,7 +56,11 @@ export const DefaultJsonTable = () => {
         renderBufferSize={20}
         selectionModel="none"
         width={500}
-        zebraStripes
+        config={{
+          columnSeparators: true,
+          rowSeparators: true,
+          zebraStripes: true,
+        }}
       />
     </>
   );
