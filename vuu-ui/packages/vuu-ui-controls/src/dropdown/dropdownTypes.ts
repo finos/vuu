@@ -1,17 +1,36 @@
-import { PopupPlacement } from "packages/vuu-popups/src";
-import { HTMLAttributes, KeyboardEvent, ReactElement, RefObject } from "react";
+import { PopupComponentProps, PopupPlacement } from "packages/vuu-popups/src";
+import {
+  HTMLAttributes,
+  KeyboardEvent,
+  ReactElement,
+  Ref,
+  RefObject,
+} from "react";
 
 export type DropdownOpenKey = "Enter" | "ArrowDown" | " ";
 
+export type CloseReason =
+  | "blur"
+  | "Escape"
+  | "click-away"
+  | "select"
+  | "Tab"
+  | "toggle";
+export type OpenChangeHandler = <T extends boolean>(
+  open: T,
+  closeReason?: T extends false ? CloseReason : never
+) => void;
+
 export interface DropdownBaseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+  PopupProps?: Pick<PopupComponentProps, "minWidth">;
   defaultIsOpen?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
   isOpen?: boolean;
   onKeyDown?: (e: KeyboardEvent<HTMLElement>) => void;
   openKeys?: DropdownOpenKey[];
-  onOpenChange?: (isOpen: boolean) => void;
+  onOpenChange?: OpenChangeHandler;
   openOnFocus?: boolean;
   placement?: PopupPlacement;
   popupWidth?: number;
@@ -35,7 +54,7 @@ export interface DropdownHookProps
   > {
   ariaLabelledBy?: string;
   id: string;
-  popupComponent: ReactElement;
+  popupComponent: ReactElement & { ref?: Ref<any> };
   rootRef: RefObject<HTMLDivElement>;
 }
 

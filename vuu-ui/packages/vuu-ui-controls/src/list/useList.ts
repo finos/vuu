@@ -11,10 +11,13 @@ import {
 import {
   CollectionItem,
   hasSelection,
+  isMultiSelection,
+  isSingleSelection,
   ListHandlers,
+  MultiSelectionHandler,
   SelectHandler,
-  SelectionChangeHandler,
   SelectionStrategy,
+  SingleSelectionHandler,
 } from "../common-hooks";
 import {
   DragStartHandler,
@@ -31,8 +34,9 @@ import {
 } from "./common-hooks";
 
 import { ListControlProps, ListHookProps, ListHookResult } from "./listTypes";
+import { useListDrop } from "./useListDrop";
 
-export const useList = <Item, Selection extends SelectionStrategy = "default">({
+export const useList = <Item, S extends SelectionStrategy>({
   allowDragDrop = false,
   collapsibleHeaders,
   collectionHook: dataHook,
@@ -64,14 +68,20 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
   stickyHeaders,
   tabToSelect,
   viewportRange,
-}: ListHookProps<Item, Selection>): ListHookResult<Item, Selection> => {
-  // Used to preserve selection across a drop event.
-  const selectedByIndexRef = useRef<number | null | number[]>(null);
-  const lastSelection = useRef<typeof selected>(selected || defaultSelected);
+}: ListHookProps<Item, S>): ListHookResult<Item> => {
+  const lastSelection = useRef<string[] | undefined>(
+    selected || defaultSelected
+  );
   const handleKeyboardNavigation = (evt: KeyboardEvent, nextIndex: number) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIndex);
     onKeyboardNavigation?.(evt, nextIndex);
   };
+
+  // console.log(
+  //   `useList
+  //   defaultSelected ${JSON.stringify(defaultSelected)}
+  //   selectedProp ${JSON.stringify(selected)} `
+  // );
 
   // TODO where do these belong ?
   const handleSelect = useCallback<SelectHandler>(
@@ -95,25 +105,28 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
           null,
       };
     }
-  }, []);
+  }, [containerRef, scrollContainerRef]);
 
-  // TODO should we leave the id to item conversion to List ?
-  // consider the use case where we use this hook from dropdown etc
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<string, Selection>
-  >(
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, selected) => {
+      // TODO what about empty selection
       if (onSelectionChange) {
-        if (Array.isArray(selected)) {
+        if (isSingleSelection(selectionStrategy)) {
+          const [selectedItem] = selected;
+          (onSelectionChange as SingleSelectionHandler<Item>)(
+            evt,
+            dataHook.itemById(selectedItem)
+          );
+        } else if (isMultiSelection(selectionStrategy)) {
           const selectedItems = selected.map((id) => dataHook.itemById(id));
-          onSelectionChange(evt, selectedItems as any);
-        } else if (selected) {
-          const item = dataHook.itemById(selected);
-          onSelectionChange(evt, item as any);
+          (onSelectionChange as MultiSelectionHandler<Item>)(
+            evt,
+            selectedItems
+          );
         }
       }
     },
-    [dataHook, onSelectionChange]
+    [dataHook, onSelectionChange, selectionStrategy]
   );
 
   const {
@@ -125,7 +138,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     },
     setHighlightedIndex,
     ...keyboardHook
-  } = useKeyboardNavigation<Item, Selection>({
+  } = useKeyboardNavigation<Item>({
     containerRef: scrollContainer,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
@@ -154,7 +167,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     [onDragStart, setHighlightedIndex]
   );
 
-  const selectionHook = useSelection<Selection>({
+  const selectionHook = useSelection({
     containerRef,
     defaultSelected,
     highlightedIdx: highlightedIndex,
@@ -168,95 +181,21 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     tabToSelect,
   });
 
-  const adjustIndex = useCallback(
-    (item: CollectionItem<Item>, fromIndex: number, toIndex: number) => {
-      const index = dataHook.data.indexOf(item);
-      if (index === fromIndex) {
-        return toIndex;
-      } else if (
-        index < Math.min(fromIndex, toIndex) ||
-        index > Math.max(fromIndex, toIndex)
-      ) {
-        return index;
-      }
-      if (fromIndex < index) {
-        return index - 1;
-      } else {
-        return index + 1;
-      }
-    },
-    [dataHook.data]
-  );
-
-  // Used after a drop event, to calculate wht the new selected indices will be
-  const reorderSelectedIndices = useCallback(
-    (selected: string | string[], fromIndex: number, toIndex: number) => {
-      if (Array.isArray(selected)) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
-      } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return adjustIndex(selected, fromIndex, toIndex);
-      }
-    },
-    [adjustIndex]
-  );
-
-  const handleDrop = useCallback<DropHandler>(
-    (fromIndex, toIndex, options) => {
-      if (hasSelection(selectionHook.selected)) {
-        selectedByIndexRef.current = reorderSelectedIndices(
-          selectionHook.selected,
-          fromIndex,
-          toIndex
-        );
-      }
-      if (options.isExternal) {
-        onDrop?.(fromIndex, toIndex, options);
-      } else {
-        onMoveListItem?.(fromIndex, toIndex);
-      }
-      setHighlightedIndex(-1);
-    },
-    [
-      selectionHook.selected,
-      setHighlightedIndex,
-      reorderSelectedIndices,
-      onDrop,
-      onMoveListItem,
-    ]
-  );
-
-  const handleDropSettle = useCallback(
-    (toIndex: number) => {
-      setHighlightedIndex(toIndex);
-    },
-    [setHighlightedIndex]
-  );
+  const { handleDrop, onDropSettle } = useListDrop<Item>({
+    dataHook,
+    onDrop,
+    onMoveListItem,
+    selected: selectionHook.selected,
+    setHighlightedIndex,
+    setSelected: selectionHook.setSelected,
+  });
 
   const { setSelected } = selectionHook;
-  useEffect(() => {
-    const { current: selectedByIndex } = selectedByIndexRef;
-    if (hasSelection(selectedByIndex)) {
-      const postDropSelected = Array.isArray(selectedByIndex)
-        ? selectedByIndex.map((i) => dataHook.data[i])
-        : dataHook.data[selectedByIndex];
-
-      selectedByIndexRef.current = null;
-      // TODO gave up trying to figure out how to type this correctly
-      setSelected(postDropSelected as any);
-    }
-  }, [dataHook.data, setSelected]);
-
   useLayoutEffectSkipFirst(() => {
     if (hasSelection(lastSelection.current)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      setSelected(Array.isArray(lastSelection.current) ? [] : null);
+      setSelected([]);
     }
-  }, [setSelected, dataHook.data]);
+  }, [selected, dataHook.data, setSelected]);
 
   const {
     onMouseDown,
@@ -272,8 +211,7 @@ export const useList = <Item, Selection extends SelectionStrategy = "default">({
     itemQuery: ".vuuListItem",
     onDragStart: handleDragStart,
     onDrop: handleDrop,
-    onDropSettle: handleDropSettle,
-    // selected: selectionHook.selected,
+    onDropSettle,
     viewportRange,
   });
 

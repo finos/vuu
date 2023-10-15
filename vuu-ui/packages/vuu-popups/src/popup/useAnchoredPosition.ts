@@ -3,6 +3,7 @@ import { PopupPlacement } from "./Popup";
 
 export interface AnchoredPositionHookProps {
   anchorElement: RefObject<HTMLElement>;
+  minWidth?: number;
   offsetLeft?: number;
   offsetTop?: number;
   placement: PopupPlacement;
@@ -12,8 +13,9 @@ const getPositionRelativeToAnchor = (
   anchorElement: HTMLElement,
   placement: PopupPlacement,
   offsetLeft: number,
-  offsetTop: number
-): { left: number; top: number; width?: number } => {
+  offsetTop: number,
+  minWidth?: number
+): { left: number; minWidth?: number; top: number; width?: number } => {
   const { bottom, left, right, top, width } =
     anchorElement.getBoundingClientRect();
   switch (placement) {
@@ -24,7 +26,12 @@ const getPositionRelativeToAnchor = (
     case "below-center":
       return { left: left + width / 2 + offsetLeft, top: bottom + offsetTop };
     case "below-full-width":
-      return { left: left + offsetLeft, top: bottom + offsetTop, width };
+      return {
+        left: left + offsetLeft,
+        minWidth,
+        top: bottom + offsetTop,
+        width,
+      };
     default:
       throw Error(
         "Popup getPositionRelativeToAnchor only supported placement values are below and right"
@@ -34,6 +41,7 @@ const getPositionRelativeToAnchor = (
 
 export const useAnchoredPosition = ({
   anchorElement,
+  minWidth,
   offsetLeft = 0,
   offsetTop = 0,
   placement,
@@ -41,7 +49,6 @@ export const useAnchoredPosition = ({
   const [position, setPosition] = useState<
     { left: number; top: number } | undefined
   >();
-
   // maybe better as useMemo ?
   useLayoutEffect(() => {
     if (anchorElement.current) {
@@ -49,11 +56,12 @@ export const useAnchoredPosition = ({
         anchorElement.current,
         placement,
         offsetLeft,
-        offsetTop
+        offsetTop,
+        minWidth
       );
       setPosition(position);
     }
-  }, [anchorElement, offsetLeft, offsetTop, placement]);
+  }, [anchorElement, minWidth, offsetLeft, offsetTop, placement]);
 
   return position;
 };

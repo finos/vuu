@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { SelectionStrategy, SingleSelectionStrategy } from "./selectionTypes";
 
 export interface CollectionIndexer {
   value: number;
@@ -57,29 +56,16 @@ export type CollectionHookResult<T> = {
   /** set expanded to true for target */
   expandGroupItem: (item: CollectionItem<T>) => void;
   setFilterPattern: (pattern: undefined | string) => void;
+  indexOfItemById: (id: string) => number;
   itemById: (id: string) => T | never;
-  itemToCollectionItem: <
-    Selection extends SelectionStrategy,
-    U extends T | T[] | null | undefined
-  >(
-    item: U
-  ) => Selection extends SingleSelectionStrategy
-    ? CollectionItem<T> | null
-    : CollectionItem<T>[];
-  itemToCollectionItemId: <
-    Selection extends SelectionStrategy,
-    U extends T | T[] | null | undefined
-  >(
-    item: U
-  ) =>
-    | (Selection extends SingleSelectionStrategy ? string | null : string[])
-    | undefined;
+  itemToCollectionItem: (
+    item: T
+  ) => CollectionItem<T> | CollectionItem<T>[] | null | undefined;
+  itemToCollectionItemId: (item?: T | T[]) => string[] | undefined;
 
-  stringToCollectionItem: <Selection extends SelectionStrategy>(
+  stringToCollectionItem: (
     item: string | null | undefined
-  ) => Selection extends SingleSelectionStrategy
-    ? CollectionItem<T> | null
-    : CollectionItem<T>[];
+  ) => CollectionItem<T> | null | CollectionItem<T>[] | undefined;
   toCollectionItem: (item: T) => CollectionItem<T>;
   itemToId: (item: T) => string;
 };

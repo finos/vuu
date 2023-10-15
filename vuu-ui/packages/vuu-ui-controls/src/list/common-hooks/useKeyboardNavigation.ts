@@ -23,7 +23,6 @@ import {
   NavigationHookResult,
   getFirstSelectedItem,
   hasSelection,
-  SelectionStrategy,
 } from "../../common-hooks";
 import { getElementByDataIndex } from "@finos/vuu-utils";
 
@@ -49,11 +48,13 @@ function nextItemIdx(count: number, key: string, idx: number) {
 
 const getIndexOfSelectedItem = (
   items: CollectionItem<unknown>[],
-  selected?: CollectionItem<unknown> | null | CollectionItem<unknown>[]
+  selected?: string[]
 ) => {
-  const selectedItem = getFirstSelectedItem(selected);
-  if (selectedItem) {
-    return items.indexOf(selectedItem);
+  const selectedItemId = Array.isArray(selected)
+    ? getFirstSelectedItem(selected)
+    : undefined;
+  if (selectedItemId) {
+    return items.findIndex((item) => item.id === selectedItemId);
   } else {
     return -1;
   }
@@ -141,10 +142,7 @@ const isLeaf = <Item>(item: CollectionItem<Item>): boolean =>
 const isFocusable = <Item>(item: CollectionItem<Item>) =>
   isLeaf(item) || item.expanded !== undefined;
 
-export const useKeyboardNavigation = <
-  Item,
-  Selection extends SelectionStrategy
->({
+export const useKeyboardNavigation = <Item>({
   containerRef,
   defaultHighlightedIndex = -1,
   disableHighlightOnFocus,
@@ -156,7 +154,7 @@ export const useKeyboardNavigation = <
   restoreLastFocus,
   selected,
   viewportItemCount,
-}: NavigationHookProps<Item, Selection>): NavigationHookResult => {
+}: NavigationHookProps<Item>): NavigationHookResult => {
   const lastFocus = useRef(-1);
   const [, forceRender] = useState({});
   const [highlightedIndex, setHighlightedIdx, isControlledHighlighting] =

@@ -24,7 +24,7 @@
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
     height: var(--overflow-container-height);
-    min-width: 44px;
+    min-width: var(--vuuOverflowContainer-minWidth, 44px);
     overflow: hidden;
     position: relative;
     width: 100%;

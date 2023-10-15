@@ -117,12 +117,7 @@ export const VirtualizedList = forwardRef(function List<
     collectionHook,
     containerRef: rootRef,
     defaultHighlightedIndex: defaultHighlightedIdx,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    defaultSelected: collectionHook.itemToCollectionItem<
-      Selection,
-      typeof defaultSelected
-    >(defaultSelected),
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disabled: listDisabled,
     disableTypeToSelect,
     highlightedIndex: highlightedIdxProp,
@@ -131,12 +126,7 @@ export const VirtualizedList = forwardRef(function List<
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    selected: collectionHook.itemToCollectionItem<
-      Selection,
-      typeof defaultSelected
-    >(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,

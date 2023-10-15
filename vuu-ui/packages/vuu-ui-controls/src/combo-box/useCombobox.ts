@@ -3,7 +3,6 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   ChangeEvent,
   FocusEvent,
-  KeyboardEvent,
   MouseEvent,
   RefObject,
   SyntheticEvent,
@@ -12,24 +11,32 @@ import {
   useState,
 } from "react";
 import {
-  CollectionItem,
+  ComponentSelectionProps,
   hasSelection,
+  isMultiSelection,
   itemToString as defaultItemToString,
-  SelectionChangeHandler,
+  MultiSelectionHandler,
   SelectionStrategy,
-  SingleSelectionStrategy,
+  SelectionType,
+  SingleSelectionHandler,
 } from "../common-hooks";
-import { DropdownHookProps, DropdownHookResult } from "../dropdown";
+import {
+  DropdownHookProps,
+  DropdownHookResult,
+  OpenChangeHandler,
+} from "../dropdown";
 import { ListHookProps, ListHookResult, useList } from "../list";
 
 const EnterOnly = ["Enter"];
-
-export interface ComboboxHookProps<Item, Strategy extends SelectionStrategy>
-  extends Partial<Omit<DropdownHookProps, "id" | "onKeyDown">>,
+export interface ComboboxHookProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends Partial<Omit<DropdownHookProps, "id" | "onKeyDown">>,
     Pick<InputProps, "onBlur" | "onChange" | "onFocus" | "onSelect">,
+    Omit<ComponentSelectionProps<Item, S>, "onSelect">,
     Omit<
-      ListHookProps<Item, Strategy>,
-      "containerRef" | "defaultSelected" | "selected" | "onSelect"
+      ListHookProps<Item, S>,
+      "containerRef" | "defaultSelected" | "onSelect" | "selected"
     > {
   InputProps?: InputProps;
   allowFreeText?: boolean;
@@ -37,15 +44,17 @@ export interface ComboboxHookProps<Item, Strategy extends SelectionStrategy>
   defaultValue?: string;
   id: string;
   initialHighlightedIndex?: number;
+  itemCount: number;
+  itemsToString?: (items: Item[]) => string;
   itemToString?: (item: Item) => string;
   listRef: RefObject<HTMLDivElement>;
-  stringToItem?: (value?: string) => Item | null | undefined;
+  onSetSelectedText?: (text: string) => void;
   value?: string;
 }
 
-export interface ComboboxHookResult<Item, Selection extends SelectionStrategy>
+export interface ComboboxHookResult<Item>
   extends Pick<
-      ListHookResult<Item, Selection>,
+      ListHookResult<Item>,
       | "focusVisible"
       | "highlightedIndex"
       | "listControlProps"
@@ -54,17 +63,15 @@ export interface ComboboxHookResult<Item, Selection extends SelectionStrategy>
     >,
     Partial<DropdownHookResult> {
   inputProps: InputProps;
-  onOpenChange: (isOpen: boolean) => void;
+  onOpenChange: OpenChangeHandler;
 }
 
-export const useCombobox = <
-  Item,
-  Selection extends SelectionStrategy = "default"
->({
+export const useCombobox = <Item, S extends SelectionStrategy>({
   allowFreeText,
   ariaLabel,
   collectionHook,
   defaultIsOpen,
+  defaultSelected,
   defaultValue,
   onBlur,
   onFocus,
@@ -73,12 +80,16 @@ export const useCombobox = <
   id,
   initialHighlightedIndex = -1,
   isOpen: isOpenProp,
+  itemCount,
+  itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
+  label,
   listRef,
   onOpenChange,
   onSelectionChange,
+  onSetSelectedText,
+  selected: selectedProp,
   selectionStrategy,
-  stringToItem,
   value: valueProp,
   InputProps: inputProps = {
     onBlur,
@@ -86,32 +97,22 @@ export const useCombobox = <
     onChange,
     onSelect,
   },
-}: ComboboxHookProps<Item, Selection>): ComboboxHookResult<Item, Selection> => {
-  type selectedCollectionType = Selection extends SingleSelectionStrategy
-    ? CollectionItem<Item> | null
-    : CollectionItem<Item>[];
-  const isMultiSelect =
-    selectionStrategy === "multiple" || selectionStrategy === "extended";
+}: ComboboxHookProps<Item, S>): ComboboxHookResult<Item> => {
+  const isMultiSelect = isMultiSelection(selectionStrategy);
 
-  const selectedValue =
-    collectionHook.stringToCollectionItem<Selection>(
-      valueProp ?? defaultValue
-    ) ?? null;
-
-  const {
-    data: indexPositions,
-    itemToCollectionItem,
-    setFilterPattern,
-    stringToCollectionItem,
-  } = collectionHook;
+  const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
-  const setSelectedRef = useRef<
-    null | ListHookResult<Item, Selection>["setSelected"]
-  >(null);
+  // used to track multi selection
+  const selectedRef = useRef<SelectionType<Item, S>>();
+  const setSelectedRef = useRef<null | ListHookResult<Item>["setSelected"]>(
+    null
+  );
   // Input select events are used to identify user navigation within the input text.
   // The initial select event fired on focus is an exception that we ignore.
   const ignoreSelectOnFocus = useRef(true);
-  const selectedRef = useRef<selectedCollectionType | null>(selectedValue);
+  // const selectedRef = useRef<Item[] | undefined>(
+  //   selected ?? defaultSelected ?? []
+  // );
 
   const [isOpen, setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
@@ -121,138 +122,114 @@ export const useCombobox = <
 
   const [value, setValue] = useControlled({
     controlled: undefined,
-    default: defaultValue ?? "",
+    default: defaultValue ?? valueProp,
     name: "ComboBox",
     state: "value",
   });
 
-  // TODO repeated in ComboboxNext, move to utils
-  const collectionItemsToItem = useCallback(
-    (
-      sel: CollectionItem<Item> | null | CollectionItem<Item>[]
-    ): Selection extends SingleSelectionStrategy ? Item | null : Item[] => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? Item | null
-        : Item[];
-      if (Array.isArray(sel)) {
-        return sel.map((i) => i.value) as returnType;
-      } else if (sel) {
-        return sel.value as returnType;
-      } else {
-        return sel as returnType;
-      }
-    },
-    []
-  );
-
   const [disableAriaActiveDescendant, setDisableAriaActiveDescendant] =
     useState(true);
-  const [quickSelection, setQuickSelection] = useState(false);
 
-  const highlightSelectedItem = useCallback(
-    (selected: selectedCollectionType | null = selectedRef.current) => {
-      if (Array.isArray(selected)) {
-        console.log("TODO multi selection");
-      } else if (selected == null) {
-        setHighlightedIndexRef.current?.(-1);
-      } else {
-        const indexOfSelectedItem = indexPositions.indexOf(selected);
-        setHighlightedIndexRef.current?.(indexOfSelectedItem);
-      }
-    },
-    [indexPositions]
-  );
+  const highlightSelectedItem = useCallback((selected) => {
+    if (Array.isArray(selected)) {
+      console.log("TODO multi selection");
+    } else if (selected == null) {
+      setHighlightedIndexRef.current?.(-1);
+    }
+  }, []);
 
   const setTextValue = useCallback(
-    (value: string) => {
+    (value: string, applyFilter = true) => {
       setValue(value);
-      setFilterPattern(value === "" ? undefined : value);
+      if (applyFilter) {
+        setFilterPattern(value === "" ? undefined : value);
+      }
     },
     [setFilterPattern, setValue]
   );
 
   const reconcileInput = useCallback(
-    (selected: selectedCollectionType | null = selectedRef.current) => {
-      let value = "";
+    (selected?: SelectionType<Item, S>) => {
+      let newValue = allowFreeText ? value ?? "" : "";
       if (Array.isArray(selected)) {
-        console.log("TODO multi selection");
-      } else if (selected != null && selected.value !== null) {
-        value = itemToString(selected.value);
+        if (selected.length === 1) {
+          newValue = itemToString(selected[0]);
+        } else if (selected.length > 1) {
+          newValue = itemsToString?.(selected) || "";
+        }
+      } else if (selected) {
+        newValue = itemToString(selected as Item);
       }
-      setTextValue(value);
-      if (value === "") {
-        setHighlightedIndexRef.current?.(-1);
+      if (newValue !== value) {
+        setTextValue(newValue, !isMultiSelect);
+        onSetSelectedText?.(newValue);
+        return true;
       } else {
-        highlightSelectedItem(selected);
+        return false;
       }
-    },
-    [highlightSelectedItem, itemToString, setTextValue]
-  );
-
-  const applySelection = useCallback(
-    (evt: any, selected: selectedCollectionType) => {
-      if (!isMultiSelect) {
-        setIsOpen(false);
-      }
-      selectedRef.current = selected;
-      reconcileInput(selected);
-      onSelectionChange?.(evt, collectionItemsToItem(selected ?? null));
     },
     [
-      collectionItemsToItem,
+      allowFreeText,
       isMultiSelect,
-      onSelectionChange,
-      reconcileInput,
-      setIsOpen,
+      itemToString,
+      itemsToString,
+      onSetSelectedText,
+      setTextValue,
+      value,
     ]
   );
 
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<Item, Selection>
-  >(
+  const applySelection = useCallback(() => {
+    const { current: selected } = selectedRef;
+    if (reconcileInput(selected)) {
+      if (selected) {
+        // selected ref will be undefined if user has changed nothing
+        if (Array.isArray(selected)) {
+          (onSelectionChange as MultiSelectionHandler<Item>)?.(
+            null,
+            selected as Item[]
+          );
+        } else if (selected) {
+          console.log(`onSelectionCHange`);
+          (onSelectionChange as SingleSelectionHandler<Item>)?.(
+            null,
+            selected as Item
+          );
+        }
+      }
+    }
+  }, [onSelectionChange, reconcileInput]);
+
+  const handleOpenChange = useCallback<OpenChangeHandler>(
+    (open, closeReason) => {
+      console.log(`openChange<${open}> ${label}  ${closeReason}`);
+      if (open && isMultiSelect) {
+        setTextValue("", false);
+      }
+      setIsOpen(open);
+      onOpenChange?.(open);
+      if (!open && closeReason !== "Escape") {
+        applySelection();
+      }
+    },
+    [
+      applySelection,
+      isMultiSelect,
+      label,
+      onOpenChange,
+      setIsOpen,
+      setTextValue,
+    ]
+  );
+
+  const handleSelectionChange = useCallback(
     (evt, selected) => {
+      selectedRef.current = selected;
       if (!isMultiSelect) {
-        const selectedCollectionItem = itemToCollectionItem<
-          Selection,
-          typeof selected
-        >(selected);
-        applySelection(evt, selectedCollectionItem);
+        handleOpenChange(false, "select");
       }
     },
-    [applySelection, isMultiSelect, itemToCollectionItem]
-  );
-
-  const handleFirstItemSelection = useCallback(
-    (evt: KeyboardEvent | ChangeEvent) => {
-      if (
-        !allowFreeText &&
-        (evt as KeyboardEvent).key === "Enter" &&
-        quickSelection
-      ) {
-        const [firstItem] = indexPositions;
-        applySelection(evt, firstItem as selectedCollectionType);
-      }
-    },
-    [allowFreeText, applySelection, indexPositions, quickSelection]
-  );
-
-  const handleInputKeyDown = useCallback(
-    (evt: KeyboardEvent) => {
-      if ("Escape" === evt.key) {
-        if (allowFreeText) {
-          setTextValue("");
-        } else {
-          reconcileInput();
-        }
-      } else if ("Tab" === evt.key) {
-        if (!allowFreeText) {
-          reconcileInput();
-        }
-      }
-
-      handleFirstItemSelection(evt);
-    },
-    [allowFreeText, handleFirstItemSelection, reconcileInput, setTextValue]
+    [handleOpenChange, isMultiSelect]
   );
 
   const handleKeyboardNavigation = useCallback(() => {
@@ -267,21 +244,18 @@ export const useCombobox = <
     listHandlers: listHookListHandlers,
     selected,
     setSelected,
-  } = useList<Item, Selection>({
+  } = useList<Item, S>({
     collectionHook,
     containerRef: listRef,
     defaultHighlightedIndex: initialHighlightedIndex,
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disableAriaActiveDescendant,
     disableHighlightOnFocus: true,
     disableTypeToSelect: true,
-    label: "useComboBox",
     onKeyboardNavigation: handleKeyboardNavigation,
-    onKeyDown: handleInputKeyDown,
+    // onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
-    // we are controlling selection from a ref value - is this right ?
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    selected: selectedRef.current,
+    selected: collectionHook.itemToCollectionItemId(selectedProp),
     selectionKeys: EnterOnly,
     selectionStrategy,
     tabToSelect: !isMultiSelect,
@@ -289,33 +263,12 @@ export const useCombobox = <
 
   setHighlightedIndexRef.current = setHighlightedIndex;
   setSelectedRef.current = setSelected;
-  // selectedRef.current = selected;
-
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      setIsOpen(open);
-      if (!open) {
-        setQuickSelection(false);
-      }
-      onOpenChange?.(open);
-    },
-    [onOpenChange, setIsOpen]
-  );
 
   const { onClick: listHandlersOnClick } = listHookListHandlers;
   const handleListClick = useCallback(
     (evt: MouseEvent) => {
-      //TODO use ref
       document.getElementById(`${id}-input`)?.focus();
-      // const inputEl = inputRef.current;
       listHandlersOnClick?.(evt);
-      // if (inputEl != null) {
-      //   inputEl.focus();
-      // }
-
-      // if (restListProps.onClick) {
-      //   restListProps.onClick(event as MouseEvent<HTMLDivElement>);
-      // }
     },
     [id, listHandlersOnClick]
   );
@@ -329,20 +282,12 @@ export const useCombobox = <
         setFilterPattern(newValue);
       } else {
         setFilterPattern(undefined);
-        selectedRef.current = null as selectedCollectionType;
-        onSelectionChange?.(
-          evt,
-          null as Selection extends SingleSelectionStrategy
-            ? Item | null
-            : Item[]
-        );
+        //        onSelectionChange?.(evt, []);
       }
 
       setIsOpen(true);
-
-      setQuickSelection(newValue.length > 0 && !allowFreeText);
     },
-    [allowFreeText, onSelectionChange, setFilterPattern, setIsOpen, setValue]
+    [setFilterPattern, setIsOpen, setValue]
   );
 
   const { onFocus: inputOnFocus = onFocus } = inputProps;
@@ -366,40 +311,24 @@ export const useCombobox = <
 
   // When focus leaves a free text combo, check to see if the entered text is
   // a valid selection, if so fire a change event
-  const selectInputValue = useCallback(
-    (evt: ChangeEvent) => {
-      const text = value.trim();
-      if (text) {
-        const selectedCollectionItem = stringToCollectionItem<"default">(
-          text
-        ) as selectedCollectionType;
-        if (selectedCollectionItem) {
-          if (Array.isArray(selectedCollectionItem)) {
-            // TODO multi select
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-          } else if (selectedCollectionItem !== selected) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            setSelectedRef.current?.(selectedCollectionItem);
-            onSelectionChange?.(
-              evt,
-              selectedCollectionItem.value as Selection extends SingleSelectionStrategy
-                ? Item | null
-                : Item[]
-            );
-          }
-        } else if (stringToItem) {
-          const item = stringToItem(text);
-          if (item) {
-            console.log("we have a new item");
-          }
+  const selectFreeTextInputValue = useCallback(() => {
+    const text = value?.trim();
+    const { current: selected } = selectedRef;
+    if (text) {
+      if (itemCount === 0 && text) {
+        // TODO should this be a different event ?
+        if (isMultiSelect) {
+          (onSelectionChange as MultiSelectionHandler<string>)?.(null, [text]);
+        } else {
+          (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
         }
-        // Hoiw do we check if string is Item
+      } else if (selected && !isMultiSelect) {
+        if (selected === text) {
+          // it has already been selected, nothing to do
+        }
       }
-    },
-    [onSelectionChange, selected, stringToItem, stringToCollectionItem, value]
-  );
+    }
+  }, [value, itemCount, isMultiSelect, onSelectionChange]);
 
   const { onBlur: inputOnBlur = onBlur } = inputProps;
   const { onBlur: listOnBlur } = listControlProps;
@@ -411,13 +340,10 @@ export const useCombobox = <
         listOnBlur?.(evt);
         inputOnBlur?.(evt);
         if (allowFreeText) {
-          selectInputValue(evt as ChangeEvent);
-        } else {
-          reconcileInput();
+          selectFreeTextInputValue();
         }
         setDisableAriaActiveDescendant(true);
         ignoreSelectOnFocus.current = true;
-        setIsOpen(false);
       }
     },
     [
@@ -425,9 +351,7 @@ export const useCombobox = <
       listOnBlur,
       inputOnBlur,
       allowFreeText,
-      setIsOpen,
-      selectInputValue,
-      reconcileInput,
+      selectFreeTextInputValue,
     ]
   );
 
@@ -451,17 +375,17 @@ export const useCombobox = <
   // item.
   useLayoutEffectSkipFirst(() => {
     if (hasSelection(selected)) {
-      highlightSelectedItem();
+      highlightSelectedItem(selected);
     } else {
       setHighlightedIndex(initialHighlightedIndex);
     }
     // TODO may need to scrollIntoView
-    if (indexPositions.length === 0) {
-      setIsOpen(false);
-    }
+    // if (itemCount === 0) {
+    //   setIsOpen(false);
+    // }
   }, [
     highlightSelectedItem,
-    indexPositions.length,
+    itemCount,
     initialHighlightedIndex,
     selected,
     setHighlightedIndex,
@@ -475,6 +399,7 @@ export const useCombobox = <
     ...inputProps.inputProps,
     // "aria-owns": listId,
     "aria-label": ariaLabel,
+    autoComplete: "off",
   };
 
   return {
@@ -492,7 +417,6 @@ export const useCombobox = <
       role: "combobox",
       value,
     },
-    // listControlProps,
     listControlProps: {
       ...listControlProps,
       onBlur: handleInputBlur,

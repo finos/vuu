@@ -5,9 +5,13 @@ import {
   FilterClauseEditor,
   TextInput,
 } from "@finos/vuu-filters";
-import { ExpandoInput } from "@finos/vuu-ui-controls";
+import {
+  ExpandoInput,
+  MultiSelectionHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { SelectionChangeHandler } from "@salt-ds/lab";
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
   useAutoLoginToVuuServer,
@@ -58,19 +62,18 @@ export const DefaultExpandoComboBox = (
     []
   );
 
-  const handleSelectionChange: SelectionChangeHandler<ColumnDescriptor> =
+  const handleSelectionChange: SingleSelectionHandler<ColumnDescriptor> =
     useCallback((evt, column) => {
-      console.log("select column", {
-        column,
-      });
+      console.log(`select column ${column.name}`);
     }, []);
 
   return (
     <ExpandoCombobox<ColumnDescriptor>
       {...props}
       itemToString={getColumnName}
-      source={columns}
       onSelectionChange={handleSelectionChange}
+      source={columns}
+      style={{ border: "solid 1px black", margin: 10, minWidth: 20 }}
     />
   );
 };
@@ -157,41 +160,24 @@ export const DataBoundTextInputLoaded = () => {
 DataBoundTextInputLoaded.displaySequence = displaySequence++;
 
 export const MultiSelectExpandoComboBox = () => {
-  const columns: ColumnDescriptor[] = useMemo(
-    () => [
-      { name: "ccy", serverDataType: "string" },
-      { name: "exchange", serverDataType: "string" },
-      { name: "ric", serverDataType: "string" },
-      { name: "lotSize", serverDataType: "int" },
-      { name: "price", serverDataType: "double" },
-      { name: "quantity", serverDataType: "double" },
-      { name: "bid", serverDataType: "double" },
-      { name: "offer", serverDataType: "double" },
-      { name: "pctComplete", serverDataType: "double" },
-      { name: "trader", serverDataType: "string" },
-      { name: "book", serverDataType: "string" },
-    ],
+  const currencies: string[] = useMemo(
+    () => ["EUR", "GBP", "USD", "CAD", "JPY"],
     []
   );
 
-  const getColumnName = useCallback(
-    (column: ColumnDescriptor) => column.name,
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
+    (evt, ccy) => {
+      console.log(`select ccy ${ccy.join(",")}`);
+    },
     []
   );
-
-  const handleSelectionChange: SelectionChangeHandler<ColumnDescriptor> =
-    useCallback((evt, column) => {
-      console.log("select column", {
-        column,
-      });
-    }, []);
 
   return (
-    <ExpandoCombobox<ColumnDescriptor>
-      allowMultipleSelection
-      itemToString={getColumnName}
-      source={columns}
+    <ExpandoCombobox
       onSelectionChange={handleSelectionChange}
+      selectionStrategy="multiple"
+      source={currencies}
+      style={{ border: "solid 2px black", minWidth: 20 }}
     />
   );
 };

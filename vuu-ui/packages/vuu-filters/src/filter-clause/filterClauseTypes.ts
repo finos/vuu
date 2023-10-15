@@ -7,6 +7,6 @@ export interface FilterClauseValueEditor<T = string> {
   InputProps?: InputProps;
   filterClause: Partial<FilterClause>;
   column: ColumnDescriptor;
-  onInputComplete: (value: T) => void;
+  onInputComplete: (value: T | T[]) => void;
   table?: VuuTable;
 }
