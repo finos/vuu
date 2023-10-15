@@ -1,1 +1,1 @@
-export * from "./JsonTableNext";
+export * from "./JsonTable";

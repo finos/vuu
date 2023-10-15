@@ -1,4 +1,4 @@
-import { JsonTableNext } from "@finos/vuu-datatable";
+import { JsonTable } from "@finos/vuu-datatable";
 import { JsonData } from "@finos/vuu-utils";
 import packageJson from "../../../../package.json";
 
@@ -50,7 +50,7 @@ const json: JsonData = {
 export const DefaultJsonTable = () => {
   return (
     <>
-      <JsonTableNext
+      <JsonTable
         source={json}
         height={700}
         renderBufferSize={20}
@@ -70,7 +70,7 @@ DefaultJsonTable.displaySequence = displaySequence++;
 export const PackageJsonTable = () => {
   return (
     <>
-      <JsonTableNext
+      <JsonTable
         source={packageJson}
         height={700}
         renderBufferSize={20}

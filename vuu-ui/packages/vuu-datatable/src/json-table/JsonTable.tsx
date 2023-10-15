@@ -5,7 +5,7 @@ import { JsonDataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 
-export interface JsonTableNextProps
+export interface JsonTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
   config: Pick<
     TableConfig,
@@ -14,13 +14,13 @@ export interface JsonTableNextProps
   source: JsonData | undefined;
 }
 
-export const JsonTableNext = ({
+export const JsonTable = ({
   config,
   source = { "": "" },
   ...tableProps
-}: JsonTableNextProps) => {
+}: JsonTableProps) => {
   const [dataSource, tableConfig] = useMemo<
-    [JsonDataSource, JsonTableNextProps["config"]]
+    [JsonDataSource, JsonTableProps["config"]]
   >(() => {
     const ds = new JsonDataSource({
       data: source,
