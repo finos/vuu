@@ -102,10 +102,6 @@ export const useListDrop = <Item>({
 
       selectedByIndexRef.current = [];
       // TODO gave up trying to figure out how to type this correctly
-      console.log(
-        `%cset PostDrop selected ${JSON.stringify(postDropSelected)}`,
-        "color:red;font-weight:bold"
-      );
       setSelected(postDropSelected as any);
     }
   }, [dataHook.data, setSelected]);
