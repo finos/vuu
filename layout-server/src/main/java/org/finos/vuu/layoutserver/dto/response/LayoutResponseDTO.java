@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class GetLayoutResponseDTO {
+public class LayoutResponseDTO {
 
     private UUID id;
 

@@ -5,7 +5,7 @@ import java.util.UUID;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.GetLayoutResponseDTO;
+import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.service.LayoutService;
@@ -38,8 +38,8 @@ public class LayoutController {
      * @return the layout
      */
     @GetMapping("/{id}")
-    public GetLayoutResponseDTO getLayout(@PathVariable UUID id) {
-        return mapper.map(layoutService.getLayout(id), GetLayoutResponseDTO.class);
+    public LayoutResponseDTO getLayout(@PathVariable UUID id) {
+        return mapper.map(layoutService.getLayout(id), LayoutResponseDTO.class);
     }
 
     /**

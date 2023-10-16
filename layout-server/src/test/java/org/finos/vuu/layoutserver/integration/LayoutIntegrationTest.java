@@ -104,16 +104,20 @@ public class LayoutIntegrationTest {
     }
 
     @Test
-    void createLayout_validLayout_returnsLayoutCreatedWithIDAndCreatedDateAndLayoutIsCreated()
+    void createLayout_validLayout_returnsCreatedLayoutAndLayoutIsPersisted()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateRequest();
+        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
 
         MvcResult result = mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").isNotEmpty())
-            .andExpect(jsonPath("$.created").isNotEmpty())
+            .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
+            .andExpect(jsonPath("$.metadata.name", is(layoutRequest.getMetadata().getName())))
+            .andExpect(jsonPath("$.metadata.group", is(layoutRequest.getMetadata().getGroup())))
+            .andExpect(jsonPath("$.metadata.screenshot", is(layoutRequest.getMetadata().getScreenshot())))
+            .andExpect(jsonPath("$.metadata.user", is(layoutRequest.getMetadata().getUser())))
             .andReturn();
 
         UUID createdLayoutId = UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
@@ -150,7 +154,7 @@ public class LayoutIntegrationTest {
     @Test
     void createLayout_validLayoutButInvalidMetadata_returns400AndDoesNotCreateLayout()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateRequest();
+        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
         layoutRequest.setMetadata(null);
 
         mockMvc.perform(post("/layouts")
@@ -299,7 +303,7 @@ public class LayoutIntegrationTest {
         return layoutRequest;
     }
 
-    private LayoutRequestDTO createValidCreateRequest() {
+    private LayoutRequestDTO createValidCreateLayoutRequest() {
         MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
         metadataRequest.setName(defaultName);
         metadataRequest.setGroup(defaultGroup);

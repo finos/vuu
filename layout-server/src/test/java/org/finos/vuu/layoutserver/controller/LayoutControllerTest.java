@@ -11,8 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
-import org.finos.vuu.layoutserver.dto.response.GetLayoutResponseDTO;
+import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
@@ -42,7 +41,7 @@ class LayoutControllerTest {
     private Layout layout;
     private Metadata metadata;
     private LayoutRequestDTO layoutRequest;
-    private GetLayoutResponseDTO expectedLayoutResponse;
+    private LayoutResponseDTO expectedLayoutResponse;
     private List<MetadataResponseDTO> expectedMetadataResponse;
 
     @BeforeEach
@@ -74,7 +73,7 @@ class LayoutControllerTest {
         layoutRequest.setDefinition(layout.getDefinition());
         layoutRequest.setMetadata(metadataRequestDTO);
 
-        expectedLayoutResponse = new GetLayoutResponseDTO();
+        expectedLayoutResponse = new LayoutResponseDTO();
         expectedLayoutResponse.setId(layout.getId());
         expectedLayoutResponse.setDefinition(layout.getDefinition());
 
@@ -89,7 +88,7 @@ class LayoutControllerTest {
     @Test
     void getLayout_validIdAndLayoutExists_returnsLayout() {
         when(layoutService.getLayout(validLayoutId)).thenReturn(layout);
-        when(modelMapper.map(layout, GetLayoutResponseDTO.class)).thenReturn(
+        when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(
             expectedLayoutResponse);
         assertThat(layoutController.getLayout(validLayoutId)).isEqualTo(expectedLayoutResponse);
     }
@@ -116,24 +115,18 @@ class LayoutControllerTest {
     }
 
     @Test
-    void createLayout_validLayout_createsLayout() {
+    void createLayout_validLayout_returnsCreatedLayout() {
         Layout layoutWithoutIds = layout;
         layoutWithoutIds.setId(null);
         layoutWithoutIds.getMetadata().setId(null);
 
-        CreateLayoutResponseDTO expectedResponse = new CreateLayoutResponseDTO();
-        expectedResponse.setId(layout.getId());
-        expectedResponse.setCreated(layout.getMetadata().getCreated());
-
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layoutWithoutIds);
         when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout.getId());
         when(layoutService.getLayout(layout.getId())).thenReturn(layout);
-        when(modelMapper.map(layout, CreateLayoutResponseDTO.class)).thenReturn(expectedResponse);
+        when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(expectedLayoutResponse);
 
-        assertThat(layoutController.createLayout(layoutRequest).getId())
-            .isEqualTo(layout.getId());
-        assertThat(layoutController.createLayout(layoutRequest).getCreated())
-            .isEqualTo(layout.getMetadata().getCreated());
+        assertThat(layoutController.createLayout(layoutRequest))
+            .isEqualTo(expectedLayoutResponse);
     }
 
     @Test
