@@ -63,6 +63,6 @@ export class MovingWindow {
   }
 
   getSelectedRows() {
-    return this.data.filter((row) => row[SELECTED] === 1);
+    return this.data.filter((row) => row[SELECTED] !== 0);
   }
 }
