@@ -110,6 +110,13 @@ export class CustomProperty {
     }
   }
 
+  toJSON() {
+    return {
+      name: this.name,
+      value: this.#value,
+    };
+  }
+
   toString() {
     if (Array.isArray(this.#value)) {
       return `${this.name} = ${this.#value.map((v) => v.toString()).join(" ")}`;

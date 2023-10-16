@@ -18,7 +18,7 @@ export const parseTheme = (cssString) => {
   console.timeEnd("parse");
 
   let currentSelectorList;
-  const scopes = new Map();
+  const scopes = {};
   const customPropertyMap = {};
   const currentScope = [];
 
@@ -31,12 +31,12 @@ export const parseTheme = (cssString) => {
           currentScope.length = 0;
           currentSelectorList.selectors.forEach((selector) => {
             const selectorName = selector.toString();
-            if (!scopes.has(selectorName)) {
-              scopes.set(selectorName, []);
+            if (!scopes[selectorName]) {
+              scopes[selectorName] = [];
             }
             currentScope.push({
               selectorName,
-              variables: scopes.get(selector.toString()),
+              variables: scopes[selector.toString()],
             });
           });
           return walk.skip;
@@ -47,6 +47,9 @@ export const parseTheme = (cssString) => {
             const customProperty = CustomProperty.from(node);
             const name = customProperty.name;
             currentScope.forEach(({ selectorName, variables }) => {
+              console.log(`add custom propert to scope`, {
+                cp: customProperty.toJSON(),
+              });
               variables.push(customProperty);
               if (!customPropertyMap[name]) {
                 const tags = getVariableGroups(name);
