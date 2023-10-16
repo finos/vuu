@@ -103,7 +103,7 @@ export const Dropdown = forwardRef(function Dropdown<
     onOpenChange,
     onSelectionChange,
     onSelect,
-    selected: collectionHook.itemToCollectionItemId(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
   });
 

@@ -16,6 +16,7 @@ import {
   isMultiSelection,
   itemToString as defaultItemToString,
   MultiSelectionHandler,
+  MultiSelectionStrategy,
   SelectionStrategy,
   SelectionType,
   SingleSelectionHandler,
@@ -52,18 +53,15 @@ export interface ComboboxHookProps<
   value?: string;
 }
 
-export interface ComboboxHookResult<Item>
+export interface ComboboxHookResult<Item, S extends SelectionStrategy>
   extends Pick<
       ListHookResult<Item>,
-      | "focusVisible"
-      | "highlightedIndex"
-      | "listControlProps"
-      | "listHandlers"
-      | "selected"
+      "focusVisible" | "highlightedIndex" | "listControlProps" | "listHandlers"
     >,
     Partial<DropdownHookResult> {
   inputProps: InputProps;
   onOpenChange: OpenChangeHandler;
+  selected?: S extends MultiSelectionStrategy ? Item[] : Item | null;
 }
 
 export const useCombobox = <Item, S extends SelectionStrategy>({
@@ -83,7 +81,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   itemCount,
   itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
-  label,
   listRef,
   onOpenChange,
   onSelectionChange,
@@ -97,22 +94,16 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     onChange,
     onSelect,
   },
-}: ComboboxHookProps<Item, S>): ComboboxHookResult<Item> => {
+}: ComboboxHookProps<Item, S>): ComboboxHookResult<Item, S> => {
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
   const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
   // used to track multi selection
-  const selectedRef = useRef<SelectionType<Item, S>>();
-  const setSelectedRef = useRef<null | ListHookResult<Item>["setSelected"]>(
-    null
-  );
+  const selectedRef = useRef<Item | null | Item[]>(isMultiSelect ? [] : null);
   // Input select events are used to identify user navigation within the input text.
   // The initial select event fired on focus is an exception that we ignore.
   const ignoreSelectOnFocus = useRef(true);
-  // const selectedRef = useRef<Item[] | undefined>(
-  //   selected ?? defaultSelected ?? []
-  // );
 
   const [isOpen, setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
@@ -181,7 +172,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const applySelection = useCallback(() => {
     const { current: selected } = selectedRef;
-    if (reconcileInput(selected)) {
+    if (reconcileInput(selected as any)) {
       if (selected) {
         // selected ref will be undefined if user has changed nothing
         if (Array.isArray(selected)) {
@@ -190,7 +181,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
             selected as Item[]
           );
         } else if (selected) {
-          console.log(`onSelectionCHange`);
           (onSelectionChange as SingleSelectionHandler<Item>)?.(
             null,
             selected as Item
@@ -200,23 +190,62 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     }
   }, [onSelectionChange, reconcileInput]);
 
+  const selectFreeTextInputValue = useCallback(() => {
+    if (allowFreeText) {
+      const text = value?.trim();
+      const { current: selected } = selectedRef;
+      if (text) {
+        if (itemCount === 0 && text) {
+          // TODO should this be a different event ?
+          if (isMultiSelect) {
+            (onSelectionChange as MultiSelectionHandler<string>)?.(null, [
+              text,
+            ]);
+          } else {
+            (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
+          }
+          selectedRef.current = null;
+          return true;
+        } else if (selected && !isMultiSelect) {
+          if (
+            selected &&
+            !Array.isArray(selected) &&
+            itemToString(selected) === text
+          ) {
+            // it has already been selected, nothing to do
+          }
+        }
+      }
+    }
+    return false;
+  }, [
+    allowFreeText,
+    value,
+    itemCount,
+    isMultiSelect,
+    onSelectionChange,
+    itemToString,
+  ]);
+
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
-      console.log(`openChange<${open}> ${label}  ${closeReason}`);
+      // console.log(`openChange<${open}> ${label}  ${closeReason}`);
       if (open && isMultiSelect) {
         setTextValue("", false);
       }
       setIsOpen(open);
       onOpenChange?.(open);
       if (!open && closeReason !== "Escape") {
-        applySelection();
+        if (!selectFreeTextInputValue()) {
+          applySelection();
+        }
       }
     },
     [
       applySelection,
       isMultiSelect,
-      label,
       onOpenChange,
+      selectFreeTextInputValue,
       setIsOpen,
       setTextValue,
     ]
@@ -243,7 +272,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     listControlProps,
     listHandlers: listHookListHandlers,
     selected,
-    setSelected,
   } = useList<Item, S>({
     collectionHook,
     containerRef: listRef,
@@ -255,14 +283,13 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     onKeyboardNavigation: handleKeyboardNavigation,
     // onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
-    selected: collectionHook.itemToCollectionItemId(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionKeys: EnterOnly,
     selectionStrategy,
     tabToSelect: !isMultiSelect,
   });
 
   setHighlightedIndexRef.current = setHighlightedIndex;
-  setSelectedRef.current = setSelected;
 
   const { onClick: listHandlersOnClick } = listHookListHandlers;
   const handleListClick = useCallback(
@@ -309,29 +336,9 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     [id]
   );
 
-  // When focus leaves a free text combo, check to see if the entered text is
-  // a valid selection, if so fire a change event
-  const selectFreeTextInputValue = useCallback(() => {
-    const text = value?.trim();
-    const { current: selected } = selectedRef;
-    if (text) {
-      if (itemCount === 0 && text) {
-        // TODO should this be a different event ?
-        if (isMultiSelect) {
-          (onSelectionChange as MultiSelectionHandler<string>)?.(null, [text]);
-        } else {
-          (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
-        }
-      } else if (selected && !isMultiSelect) {
-        if (selected === text) {
-          // it has already been selected, nothing to do
-        }
-      }
-    }
-  }, [value, itemCount, isMultiSelect, onSelectionChange]);
-
   const { onBlur: inputOnBlur = onBlur } = inputProps;
   const { onBlur: listOnBlur } = listControlProps;
+  // TODO do we need this check at all, given that DropdownV=BAse will close dropdown
   const handleInputBlur = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {
       if (listFocused(evt)) {
@@ -339,20 +346,11 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       } else {
         listOnBlur?.(evt);
         inputOnBlur?.(evt);
-        if (allowFreeText) {
-          selectFreeTextInputValue();
-        }
         setDisableAriaActiveDescendant(true);
         ignoreSelectOnFocus.current = true;
       }
     },
-    [
-      listFocused,
-      listOnBlur,
-      inputOnBlur,
-      allowFreeText,
-      selectFreeTextInputValue,
-    ]
+    [listFocused, listOnBlur, inputOnBlur]
   );
 
   const { onSelect: inputOnSelect } = inputProps;
@@ -426,6 +424,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       ...listHookListHandlers,
       onClick: handleListClick,
     },
-    selected,
+    selected: selectedRef.current as SelectionType<Item, S>,
   };
 };

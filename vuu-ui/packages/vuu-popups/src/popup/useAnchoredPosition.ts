@@ -68,6 +68,14 @@ const getPositionRelativeToAnchor = (
   }
 };
 
+export type Position = {
+  left: number;
+  minWidth?: number;
+  top: number;
+  visibility?: Visibility;
+  width?: number;
+};
+
 export const useAnchoredPosition = ({
   anchorElement,
   minWidth,
@@ -76,9 +84,7 @@ export const useAnchoredPosition = ({
   placement,
 }: AnchoredPositionHookProps) => {
   const popupRef = useRef<HTMLElement | null>(null);
-  const [position, setPosition] = useState<
-    { left: number; top: number } | undefined
-  >();
+  const [position, setPosition] = useState<Position | undefined>();
 
   // maybe better as useMemo ?
   useLayoutEffect(() => {

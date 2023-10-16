@@ -126,7 +126,7 @@ export const VirtualizedList = forwardRef(function List<
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
-    selected: collectionHook.itemToCollectionItemId(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,

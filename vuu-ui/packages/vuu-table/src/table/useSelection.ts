@@ -19,7 +19,7 @@ const NO_SELECTION: Selection = [];
 
 export interface SelectionHookProps {
   selectionModel: TableSelectionModel;
-  onSelect: (row: DataSourceRow) => void;
+  onSelect?: (row: DataSourceRow) => void;
   onSelectionChange: SelectionChangeHandler;
 }
 

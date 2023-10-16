@@ -26,6 +26,7 @@ export const Table = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelect,
   onSelectionChange,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,

@@ -43,7 +43,7 @@ export const Prompt = ({
     placement = "below",
   } = PopupProps;
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
-  const position = useAnchoredPosition({
+  const { position } = useAnchoredPosition({
     anchorElement,
     offsetLeft,
     offsetTop,

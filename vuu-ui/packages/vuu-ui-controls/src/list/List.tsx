@@ -86,6 +86,7 @@ export const List = forwardRef(function List<
     source,
     style: styleProp,
     stickyHeaders,
+    tabIndex = 0,
     tabToSelect,
     ...htmlAttributes
   }: ListProps<Item, S>,
@@ -171,7 +172,7 @@ export const List = forwardRef(function List<
     onHighlight,
     restoreLastFocus,
     scrollContainerRef,
-    selected: collectionHook.itemToCollectionItemId(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,
@@ -373,7 +374,7 @@ export const List = forwardRef(function List<
       role="listbox"
       onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
-      tabIndex={listDisabled || disableFocus ? undefined : 0}
+      tabIndex={listDisabled || disableFocus ? undefined : tabIndex}
     >
       <ListItemProxy ref={rowHeightProxyRef} height={itemHeightProp} />
       {collectionHook.data.length === 0 && ListPlaceholder !== undefined ? (

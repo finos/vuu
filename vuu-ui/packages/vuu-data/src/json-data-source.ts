@@ -102,7 +102,10 @@ export class JsonDataSource
       this.#aggregations = aggregations;
     }
     if (this.columnDescriptors) {
-      this.#config.columns = this.columnDescriptors.map((c) => c.name);
+      this.#config = {
+        ...this.#config,
+        columns: this.columnDescriptors.map((c) => c.name),
+      };
     }
     if (filter) {
       this.#filter = filter;
@@ -136,7 +139,10 @@ export class JsonDataSource
       this.#aggregations = aggregations;
     }
     if (columns) {
-      this.#config.columns = columns;
+      this.#config = {
+        ...this.#config,
+        columns,
+      };
     }
     if (filter) {
       this.#filter = filter;

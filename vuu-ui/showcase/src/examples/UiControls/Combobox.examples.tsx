@@ -21,7 +21,6 @@ export const DefaultCombobox = () => {
     <ComboBox
       source={usa_states}
       onSelectionChange={handleSelectionChange}
-      style={{ background: "yellow" }}
       width={120}
     />
   );
@@ -49,7 +48,6 @@ export const OpenOnFocus = () => {
       <ComboBox
         source={usa_states}
         onSelectionChange={handleSelectionChange}
-        style={{ background: "yellow" }}
         width={200}
       />
       <ComboBox
@@ -231,7 +229,6 @@ export const MultiSelectCombobox = () => {
       onSelectionChange={handleSelectionChange}
       source={usa_states}
       selectionStrategy="multiple"
-      style={{ background: "yellow" }}
     />
   );
 };
@@ -264,7 +261,6 @@ export const MultiSelectComboboxDefaultSelected = () => {
       onSelectionChange={handleSelectionChange}
       source={usa_states}
       selectionStrategy="multiple"
-      style={{ background: "yellow" }}
     />
   );
 };
@@ -293,7 +289,6 @@ export const ComboboxBlurBehaviour = () => {
       <ComboBox
         source={usa_states}
         onSelectionChange={handleSelectionChange}
-        style={{ background: "yellow" }}
         width={120}
       />
       <Input style={{ width: 100 }} />
