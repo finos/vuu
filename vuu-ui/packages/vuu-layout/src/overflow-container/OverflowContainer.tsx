@@ -103,6 +103,7 @@ const WrapContainer = React.memo(
           icon={overflowIcon}
           menuBuilder={menuBuilder}
           menuActionHandler={menuActionHandler}
+          tabIndex={-1}
         />
       </div>
     );
