@@ -1,5 +1,4 @@
 import cx from "classnames";
-import { escape } from "querystring";
 import React, {
   createElement,
   CSSProperties,

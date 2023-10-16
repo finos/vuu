@@ -35,8 +35,20 @@ export interface MenuItemProps extends HTMLAttributes<HTMLDivElement> {
 // Purely used as markers, props will be extracted
 export const MenuItemGroup: FC<MenuItemGroupProps> = () => null;
 // eslint-disable-next-line no-unused-vars
-export const MenuItem = ({ children, idx, ...props }: MenuItemProps) => {
-  return <div {...props}>{children}</div>;
+export const MenuItem = ({
+  children,
+  idx,
+  options,
+  ...props
+}: MenuItemProps) => {
+  const handleClick = () => {
+    console.log("click within menuItem");
+  };
+  return (
+    <div {...props} onClick={handleClick}>
+      {children}
+    </div>
+  );
 };
 
 export interface MenuItemLabelProps {
@@ -62,6 +74,10 @@ export const isMenuItemLabel = (
 
 const hasIcon = (child: ReactElement) => child.props["data-icon"];
 
+export type MenuOpenHandler = (
+  menuItemEl: HTMLElement,
+  immediate?: boolean
+) => void;
 export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   activatedByKeyboard?: boolean;
   children: ReactElement[];
@@ -72,7 +88,7 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   listItemProps?: Partial<MenuItemProps>;
   onActivate?: (menuId: string) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu?: (menuItemEl: HTMLElement) => void;
+  onOpenMenu?: MenuOpenHandler;
   onHighlightMenuItem?: (idx: number) => void;
 }
 
@@ -99,7 +115,7 @@ export const MenuList = ({
   const mapIdxToId = useMemo(() => new Map(), []);
 
   const handleActivate = (idx: number) => {
-    const el = root.current?.querySelector(`:scope > [data-idx='${idx}']`);
+    const el = root.current?.querySelector(`:scope > [data-index='${idx}']`);
     el?.id && onActivate?.(el.id);
   };
 
@@ -232,7 +248,7 @@ const getMenuItemProps = (
 ) => ({
   id: `menuitem-${itemId}`,
   key: key ?? idx,
-  "data-idx": idx,
+  "data-index": idx,
   "data-highlighted": idx === highlightedIdx || undefined,
   className: cx("vuuMenuItem", className, {
     "vuuMenuItem-separator": hasSeparator,

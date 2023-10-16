@@ -6,7 +6,7 @@
   --context-menu-padding: var(--hw-list-item-padding, 0 6px);
   --context-menu-shadow: var(--hw-dialog-shadow, 0 6px 12px rgba(0, 0, 0, 0.175));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
-  --context-menu-highlight-bg: var(--vuu-color-gray-10);
+  --context-menu-highlight-bg: var(--salt-selectable-background-hover);
   --context-menu-blur-focus-bg: #e0e4e9;
   --menu-item-icon-color: black;
   --menu-item-twisty-color: black;

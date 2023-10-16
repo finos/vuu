@@ -22,6 +22,11 @@ export interface PortalProps {
    */
   id?: string;
   /**
+   * Callback invoked immediately after render (in layoutEffect). Can be
+   * used to check position vis-a-vis viewport and adjust if out of bounds
+   */
+  onRender?: () => void;
+  /**
    * Allow conditional rendering of this Portal, if false, will render nothing.
    * Defaults to true
    */
@@ -42,6 +47,7 @@ export const Portal = ({
   children,
   container: containerProp = document.body,
   id = DEFAULT_ID,
+  onRender,
   open = true,
 }: PortalProps) => {
   const [mounted, setMounted] = useState(false);
@@ -65,6 +71,10 @@ export const Portal = ({
     el.dataset.mode = dataMode;
     setMounted(true);
   }, [id, container, themeClass, densityClass, dataMode]);
+
+  useLayoutEffect(() => {
+    onRender?.();
+  }, [onRender]);
 
   if (open && mounted && portalRef.current && children) {
     return createPortal(children, portalRef.current);

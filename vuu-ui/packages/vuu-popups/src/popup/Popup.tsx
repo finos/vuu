@@ -1,11 +1,12 @@
 import cx from "classnames";
 import { useThemeAttributes } from "@finos/vuu-shell";
 import { HTMLAttributes, RefObject } from "react";
-import { useAnchoredPosition } from "./useAnchoredPosition";
+import { Position, useAnchoredPosition } from "./useAnchoredPosition";
 
 import "./Popup.css";
 
 export type PopupPlacement =
+  | "absolute"
   | "below"
   | "below-center"
   | "below-full-width"
@@ -13,11 +14,12 @@ export type PopupPlacement =
   | "right";
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
-  placement: PopupPlacement;
   anchorElement: RefObject<HTMLElement>;
   minWidth?: number;
   offsetLeft?: number;
   offsetTop?: number;
+  placement: PopupPlacement;
+  position?: Position;
 }
 
 export const PopupComponent = ({
@@ -26,12 +28,14 @@ export const PopupComponent = ({
   anchorElement,
   minWidth,
   placement,
+  position: positionProp,
 }: PopupComponentProps) => {
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
   const { popupRef, position } = useAnchoredPosition({
     anchorElement,
     minWidth,
     placement,
+    position: positionProp,
   });
   return position === undefined ? null : (
     <div

@@ -1,19 +1,15 @@
-import {
-  RefObject,
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
-import { PopupPlacement } from "./Popup";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { PopupComponentProps, PopupPlacement } from "./Popup";
 
-export interface AnchoredPositionHookProps {
-  anchorElement: RefObject<HTMLElement>;
-  minWidth?: number;
-  offsetLeft?: number;
-  offsetTop?: number;
-  placement: PopupPlacement;
-}
+export type AnchoredPositionHookProps = Pick<
+  PopupComponentProps,
+  | "anchorElement"
+  | "minWidth"
+  | "offsetLeft"
+  | "offsetTop"
+  | "placement"
+  | "position"
+>;
 
 export type Visibility = "hidden" | "visible";
 
@@ -82,13 +78,16 @@ export const useAnchoredPosition = ({
   offsetLeft = 0,
   offsetTop = 0,
   placement,
+  position: positionProp,
 }: AnchoredPositionHookProps) => {
   const popupRef = useRef<HTMLElement | null>(null);
-  const [position, setPosition] = useState<Position | undefined>();
+  const [position, setPosition] = useState<Position | undefined>(positionProp);
 
   // maybe better as useMemo ?
   useLayoutEffect(() => {
-    if (anchorElement.current) {
+    if (placement === "absolute" && positionProp) {
+      setPosition(positionProp);
+    } else if (anchorElement.current) {
       const dimensions =
         popupRef.current === null
           ? undefined
@@ -103,7 +102,7 @@ export const useAnchoredPosition = ({
       );
       setPosition(position);
     }
-  }, [anchorElement, minWidth, offsetLeft, offsetTop, placement]);
+  }, [anchorElement, minWidth, offsetLeft, offsetTop, placement, positionProp]);
 
   const popupCallbackRef = useCallback(
     (el: HTMLDivElement | null) => {

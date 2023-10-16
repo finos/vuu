@@ -1,7 +1,7 @@
 import { Scrim } from "@salt-ds/lab";
 import cx from "classnames";
 import { HTMLAttributes, useCallback, useRef, useState } from "react";
-import { PortalDeprecated } from "../portal-deprecated";
+import { Portal } from "../portal";
 import { DialogHeader } from "../dialog-header";
 
 import "./Dialog.css";
@@ -47,7 +47,7 @@ export const Dialog = ({
   }
 
   return (
-    <PortalDeprecated onRender={handleRender} x={posX} y={posY}>
+    <Portal onRender={handleRender} x={posX} y={posY}>
       <Scrim className={`${classBase}-scrim`} open={isOpen} autoFocusRef={root}>
         <div {...props} className={cx(classBase, className)} ref={root}>
           <DialogHeader
@@ -58,6 +58,6 @@ export const Dialog = ({
           {children}
         </div>
       </Scrim>
-    </PortalDeprecated>
+    </Portal>
   );
 };
