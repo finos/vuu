@@ -5,12 +5,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 
 import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
-import lombok.ToString;
 
 @Data
 @Entity
@@ -18,11 +16,8 @@ public class Metadata {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
-
-    @OneToOne(mappedBy = "metadata")
-    @ToString.Exclude
-    private Layout layout;
 
     private String name;
 

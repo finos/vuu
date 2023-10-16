@@ -62,7 +62,6 @@ class LayoutControllerTest {
         layout.setId(validLayoutId);
         layout.setDefinition(layoutDefinition);
         layout.setMetadata(metadata);
-        metadata.setLayout(layout);
 
         layoutRequest = new LayoutRequestDTO();
         MetadataRequestDTO metadataRequestDTO = new MetadataRequestDTO();

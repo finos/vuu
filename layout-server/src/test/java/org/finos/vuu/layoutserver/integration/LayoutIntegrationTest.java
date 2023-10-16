@@ -275,7 +275,6 @@ public class LayoutIntegrationTest {
         layout.setDefinition(defaultDefinition);
         layout.setMetadata(metadata);
 
-        metadata.setLayout(layout);
         metadata.setName(defaultName);
         metadata.setGroup(defaultGroup);
         metadata.setScreenshot(defaultScreenshot);

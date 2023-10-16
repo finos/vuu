@@ -9,7 +9,6 @@ import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -27,11 +26,7 @@ public class LayoutService {
         return metadataService.getMetadata();
     }
 
-    @Transactional
     public UUID createLayout(Layout layout) {
-        Metadata metadata = metadataService.createMetadata(layout.getMetadata());
-        metadata.setLayout(layout);
-        layout.setMetadata(metadata);
         return layoutRepository.save(layout).getId();
     }
 

@@ -48,7 +48,6 @@ class LayoutServiceTest {
         layout.setDefinition("");
         layout.setMetadata(metadata);
         metadata.setId(metadataId);
-        metadata.setLayout(layout);
         metadata.setName("");
         metadata.setGroup("");
         metadata.setScreenshot("");
@@ -73,7 +72,6 @@ class LayoutServiceTest {
 
     @Test
     void createLayout() {
-        when(metadataService.createMetadata(metadata)).thenReturn(metadata);
         when(layoutRepository.save(layout)).thenReturn(layout);
 
         assertThat(layoutService.createLayout(layout)).isEqualTo(layoutId);

@@ -20,8 +20,4 @@ public class MetadataService {
 
         return metadata;
     }
-
-    public Metadata createMetadata(Metadata metadata) {
-        return metadataRepository.save(metadata);
-    }
 }
