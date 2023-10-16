@@ -2,7 +2,7 @@ package org.finos.vuu.layoutserver.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import org.finos.vuu.layoutserver.dto.ApplicationLayoutDto;
+import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -42,7 +42,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public void createLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
+    public void createApplicationLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
         service.createApplicationLayout(username, layoutDefinition);
     }
 
@@ -54,7 +54,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping
-    public void updateLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
+    public void updateApplicationLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
         service.updateApplicationLayout(username, layoutDefinition);
     }
 
@@ -65,7 +65,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping
-    public void deleteLayout(@RequestHeader("user") String username) {
+    public void deleteApplicationLayout(@RequestHeader("user") String username) {
         service.deleteApplicationLayout(username);
     }
 }

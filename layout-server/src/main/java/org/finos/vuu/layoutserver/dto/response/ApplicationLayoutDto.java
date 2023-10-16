@@ -1,4 +1,4 @@
-package org.finos.vuu.layoutserver.dto;
+package org.finos.vuu.layoutserver.dto.response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

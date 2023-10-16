@@ -2,7 +2,7 @@ package org.finos.vuu.layoutserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.vuu.layoutserver.dto.ApplicationLayoutDto;
+import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.junit.jupiter.api.BeforeEach;
