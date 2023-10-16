@@ -38,7 +38,8 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
           LastTrade -> lastTrade,
           Change -> change,
           Weighting -> weighting,
-          Volume -> volume
+          Volume -> volume,
+          Description -> name
         )), clock.now())
       }
     })
