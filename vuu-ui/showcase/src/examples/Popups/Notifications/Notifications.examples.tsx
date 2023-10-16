@@ -1,11 +1,11 @@
 import { ChangeEvent, useState } from "react";
 import { Dropdown } from "@finos/vuu-ui-controls";
 import { NotificationsProvider, NotificationLevel, ToastNotification, useNotifications } from "@finos/vuu-popups";
-import { Input } from "@salt-ds/core";
+import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 let displaySequence = 1;
 
-
+// this example allows to fire notifications dynamically when wrapped in NotificationsProvider
 const Notifications = () => {
     const [type, setType] = useState<NotificationLevel>(NotificationLevel.Info)
     const [header, setHeader] = useState<string>("Header")
@@ -22,11 +22,12 @@ const Notifications = () => {
     }
 
     return (
-        <div style={{ maxWidth: 500, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex' }}>
-                <label>Notification Type</label>
+        <div style={{ maxWidth: 300 }}>
+            <FormField>
+                <FormFieldLabel>Notification Type</FormFieldLabel>
                 <Dropdown
                     defaultSelected={NotificationLevel.Info}
+                    selected={type}
                     onSelectionChange={(_, selectedItem) => {
                         if (selectedItem) {
                             setType(selectedItem)
@@ -34,19 +35,19 @@ const Notifications = () => {
                     }}
                     source={Object.values(NotificationLevel)}
                 />
-            </div>
-            <div style={{ display: 'flex' }}>
-                <label>Notification Title/Action</label>
+            </FormField>
+            <FormField>
+                <FormFieldLabel>Notification Header</FormFieldLabel>
                 <Input
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setHeader(event.target.value)}
                     value={header} />
-            </div>
-            <div style={{ display: 'flex' }}>
-                <label>Notification Message</label>
+            </FormField>
+            <FormField>
+                <FormFieldLabel>Notification Body</FormFieldLabel>
                 <Input
                     onChange={(event: ChangeEvent<HTMLInputElement>) => setBody(event.target.value)}
                     value={body} />
-            </div>
+            </FormField>
             <button onClick={handleNotification}>trigger notifications</button>
         </div>
     );

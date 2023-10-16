@@ -6,14 +6,18 @@ import "./notifications.css"
 
 // animation times in milliseconds
 const toastDisplayDuration = 6000;
-const exitAnimationDuration = 1000;
-const verticalTransitionTime = 300
+const horizontalTransitionDuration = 1000;
+const verticalTransitionDuration = 300;
 
+// toast size in pixels
 const toastHeight = 56;
 const toastWidth = 300;
-const rightGap = 50;
-const topGap = 10;
-const leftGap = 10;
+const toastContainerContentGap = 10;
+const toastContainerLeftPadding = 10;
+// rightPadding is used together with the toastWidth to compute the toast position 
+// at the beginning and at the end of the animation
+const toastContainerRightPadding = 50;
+
 
 const classBase = "vuuToastNotifications";
 
@@ -49,20 +53,19 @@ export const NotificationsProvider = (props: {
 
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n !== newNotification))
-    }, toastDisplayDuration + exitAnimationDuration * 2)
-  }, [],
-  )
+    }, toastDisplayDuration + horizontalTransitionDuration * 2)
+  }, [])
 
   return (
     <NotificationsContext.Provider value={{ notify }}>
       <div
         className={`${classBase}-toastContainer`}
-        style={{ width: toastWidth + rightGap + leftGap }}
+        style={{ width: toastWidth + toastContainerRightPadding + toastContainerLeftPadding }}
       >
         {
           notifications.map((notification, i) =>
             <ToastNotification
-              top={(toastHeight + topGap) * i}
+              top={(toastHeight + toastContainerContentGap) * i}
               notification={notification}
               key={notification.id}
             />
@@ -91,12 +94,12 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     animated = true
   } = props;
 
-  const [right, setRight] = useState(-toastWidth - rightGap)
+  const [right, setRight] = useState(-toastWidth - toastContainerRightPadding)
 
   useEffect(() => {
-    setRight(rightGap)
+    setRight(toastContainerRightPadding)
     if (animated) {
-      setTimeout(() => setRight(-toastWidth - rightGap), toastDisplayDuration + exitAnimationDuration)
+      setTimeout(() => setRight(-toastWidth - toastContainerRightPadding), toastDisplayDuration + horizontalTransitionDuration)
     }
   }, [animated])
 
@@ -108,7 +111,7 @@ export const ToastNotification = (props: ToastNotificationProps) => {
         right,
         width: toastWidth,
         top,
-        transition: animated ? `right ${exitAnimationDuration / 1000}s, top ${verticalTransitionTime / 1000}s ` : 'none'
+        transition: animated ? `right ${horizontalTransitionDuration}ms, top ${verticalTransitionDuration}ms ` : 'none'
       }}
     >
       <div className={classNames(`${classBase}-toastIcon`, `${notification.type}-icon`)} />
