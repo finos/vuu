@@ -101,7 +101,7 @@ export type SingleSelectionHandler<Item = string> = (
 export type SelectionType<
   I,
   S extends SelectionStrategy
-> = S extends MultiSelectionStrategy ? I[] : I;
+> = S extends MultiSelectionStrategy ? I[] : I | null;
 
 export interface ComponentSelectionProps<
   Item = string,

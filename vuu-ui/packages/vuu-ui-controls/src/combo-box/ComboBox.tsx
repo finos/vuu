@@ -12,7 +12,6 @@ import {
   ComponentSelectionProps,
   itemToString as defaultItemToString,
   SelectionStrategy,
-  SelectionType,
   useCollectionItems,
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
@@ -85,22 +84,14 @@ export const ComboBox = forwardRef(function Combobox<
   const id = useId(idProp);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const isSingleItem = (item?: Item | Item[]): item is Item =>
-    item !== undefined && !Array.isArray(item);
-
-  const asArray = (item?: Item | Item[]) => {
-    if (isSingleItem(item)) {
-      return [item];
-    } else {
-      return item;
-    }
-  };
-
-  const valueFromSelected = (item: Item[]) => {
+  const valueFromSelected = (item: Item | null | Item[]) => {
     return Array.isArray(item) && item.length > 0 ? item[0] : undefined;
   };
 
-  const getInitialValue = (items1?: Item[], items2?: Item[]) => {
+  const getInitialValue = (
+    items1?: ComboBoxProps<Item, S>["selected"],
+    items2?: ComboBoxProps<Item, S>["defaultSelected"]
+  ) => {
     const item = items1
       ? valueFromSelected(items1)
       : items2
@@ -110,10 +101,7 @@ export const ComboBox = forwardRef(function Combobox<
     return item ? itemToString(item) : "";
   };
 
-  const initialValue = getInitialValue(
-    asArray(selectedProp),
-    asArray(defaultSelected)
-  );
+  const initialValue = getInitialValue(selectedProp, defaultSelected);
 
   const collectionHook = useCollectionItems<Item>({
     id,
@@ -164,18 +152,6 @@ export const ComboBox = forwardRef(function Combobox<
     value: initialValue,
   });
 
-  const itemIdToItem = useCallback(
-    (itemId: string | string[]) => {
-      if (Array.isArray(itemId)) {
-        const items = itemId.map((id) => collectionHook.itemById(id));
-        return items as SelectionType<Item, S>;
-      } else {
-        return collectionHook.itemById(itemId) as SelectionType<Item, S>;
-      }
-    },
-    [collectionHook]
-  );
-
   const handleDropdownIconClick = useCallback(() => {
     if (isOpen) {
       onOpenChange(false, "toggle");
@@ -223,8 +199,9 @@ export const ComboBox = forwardRef(function Combobox<
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           ref={listRef}
-          selected={selected === undefined ? undefined : itemIdToItem(selected)}
+          selected={selected}
           selectionStrategy={selectionStrategy}
+          tabIndex={-1}
         />
       </DropdownBase>
     </CollectionProvider>

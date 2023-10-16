@@ -4,12 +4,10 @@ import {
   MouseEvent,
   RefObject,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
 } from "react";
 import {
-  CollectionItem,
   hasSelection,
   isMultiSelection,
   isSingleSelection,
@@ -19,11 +17,7 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "../common-hooks";
-import {
-  DragStartHandler,
-  DropHandler,
-  useDragDropNext as useDragDrop,
-} from "../drag-drop";
+import { DragStartHandler, useDragDropNext as useDragDrop } from "../drag-drop";
 import {
   closestListItemIndex,
   useCollapsibleGroups,
@@ -77,11 +71,11 @@ export const useList = <Item, S extends SelectionStrategy>({
     onKeyboardNavigation?.(evt, nextIndex);
   };
 
-  // console.log(
-  //   `useList
-  //   defaultSelected ${JSON.stringify(defaultSelected)}
-  //   selectedProp ${JSON.stringify(selected)} `
-  // );
+  console.log(
+    `useList
+    defaultSelected ${JSON.stringify(defaultSelected)}
+    selectedProp ${JSON.stringify(selected)} `
+  );
 
   // TODO where do these belong ?
   const handleSelect = useCallback<SelectHandler>(
@@ -330,6 +324,7 @@ export const useList = <Item, S extends SelectionStrategy>({
     listItemHeaderHandlers: collapsibleHook,
     listControlProps,
     scrollIntoView,
+    //TODO given that we firs onSelect and onSelectionCHange with Item(s), should we return Item(s) here ?
     selected: selectionHook.selected,
     setHighlightedIndex,
     setIgnoreFocus: keyboardHook.setIgnoreFocus,
