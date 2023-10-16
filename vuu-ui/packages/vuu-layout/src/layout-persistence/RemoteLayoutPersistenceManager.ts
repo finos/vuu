@@ -3,7 +3,7 @@ import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
 import { defaultLayout } from "./data";
 
-const baseURL = "http://127.0.0.1:8081/api";
+const baseURL = "https://127.0.0.1:8081/api";
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts";
 
