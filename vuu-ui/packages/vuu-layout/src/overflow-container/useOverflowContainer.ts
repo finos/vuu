@@ -38,6 +38,14 @@ export const useOverflowContainer = ({
   // Drag drop needs a ref to container
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const setOverflowTabIndex = useCallback((tabIndex: "0" | "-1") => {
+    if (containerRef.current) {
+      containerRef.current
+        .querySelector(".vuuOverflowContainer-OverflowIndicator button")
+        ?.setAttribute("tabindex", tabIndex);
+    }
+  }, []);
+
   const handleResize = useCallback(async () => {
     if (container) {
       let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(
@@ -62,9 +70,16 @@ export const useOverflowContainer = ({
           wrapped = NO_WRAPPED_ITEMS;
         }
       }
+
+      if (wrappedItemsRef.current.length === 0 && wrapped.length > 0) {
+        setOverflowTabIndex("0");
+      } else if (wrappedItemsRef.current.length > 0 && wrapped.length === 0) {
+        setOverflowTabIndex("-1");
+      }
+
       wrappedItemsRef.current = wrapped;
     }
-  }, [container, orientation]);
+  }, [container, orientation, setOverflowTabIndex]);
 
   const hasOverflowItem = (
     opt: unknown
