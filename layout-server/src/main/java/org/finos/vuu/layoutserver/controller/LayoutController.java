@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.CreateLayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
 import org.finos.vuu.layoutserver.model.Layout;
@@ -58,16 +57,16 @@ public class LayoutController {
      * Creates a new layout
      *
      * @param layoutToCreate the layout to be created
-     * @return the generated ID of the new layout
+     * @return the layout that has been created
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CreateLayoutResponseDTO createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
+    public LayoutResponseDTO createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
 
-        return mapper.map(createdLayout, CreateLayoutResponseDTO.class);
+        return mapper.map(createdLayout, LayoutResponseDTO.class);
     }
 
     /**
