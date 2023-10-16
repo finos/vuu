@@ -86,7 +86,7 @@ class LayoutControllerTest {
 
 
     @Test
-    void getLayout_validIdAndLayoutExists_returnsLayout() {
+    void getLayout_layoutExists_returnsLayout() {
         when(layoutService.getLayout(validLayoutId)).thenReturn(layout);
         when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(
             expectedLayoutResponse);
