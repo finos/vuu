@@ -9,7 +9,7 @@ export interface LayoutMetadata extends WithId {
   group: string;
   screenshot: string;
   user: string;
-  date: string;
+  created: string;
 }
 
 export interface Layout extends WithId {

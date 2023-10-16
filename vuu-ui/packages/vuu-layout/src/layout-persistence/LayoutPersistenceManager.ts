@@ -10,7 +10,7 @@ export interface LayoutPersistenceManager {
    *
    * @returns Unique identifier assigned to the saved layout
    */
-  createLayout: (metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => Promise<string>;
+  createLayout: (metadata: Omit<LayoutMetadata, "id" | "created">, layout: LayoutJSON) => Promise<LayoutMetadata>;
 
   /**
    * Overwrites an existing layout and its corresponding metadata with the provided information

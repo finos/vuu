@@ -1,7 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Input, Button, FormField, FormFieldLabel, Text } from "@salt-ds/core";
 import { ComboBox, Checkbox, RadioButton } from "@finos/vuu-ui-controls";
-import { formatDate, takeScreenshot } from "@finos/vuu-utils";
+import { takeScreenshot } from "@finos/vuu-utils";
 import { LayoutMetadata } from "./layoutTypes";
 
 import "./SaveLayoutPanel.css";
@@ -33,7 +33,7 @@ type RadioValue = typeof radioValues[number];
 
 type SaveLayoutPanelProps = {
   onCancel: () => void;
-  onSave: (layoutMetadata: Omit<LayoutMetadata, "id">) => void;
+  onSave: (layoutMetadata: Omit<LayoutMetadata, "id" | "created">) => void;
   componentId?: string
 };
 
@@ -59,8 +59,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       name: layoutName,
       group,
       screenshot: screenshot ?? "",
-      user: "User",
-      date: formatDate(new Date(), "dd.mm.yyyy")
+      user: "User"
     })
   }
 
