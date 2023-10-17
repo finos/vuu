@@ -22,6 +22,7 @@ import java.util.Optional;
 public class ApplicationLayoutService {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationLayoutService.class);
+    private static final String DEFAULT_LAYOUT_FILE = "defaultLayout.json";
     private static ApplicationLayoutDto defaultLayout;
     private final ApplicationLayoutRepository repository;
 
@@ -72,7 +73,7 @@ public class ApplicationLayoutService {
     private JsonNode loadJsonFile() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            ClassPathResource resource = new ClassPathResource("defaultLayout.json");
+            ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
             return objectMapper.readTree(resource.getInputStream());
         } catch (IOException e) {
             logger.warn("Failed to read default application layout, returning empty node");
