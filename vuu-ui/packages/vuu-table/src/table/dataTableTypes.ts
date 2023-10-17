@@ -17,8 +17,11 @@ import { FC, HTMLAttributes, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 
 export type TableRowClickHandler = (row: VuuDataRow) => void;
+// TODO implement a Model object to represent a row data for better API
+export type TableRowSelectHandler = (row: DataSourceRow) => void;
 
-export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+export interface TableProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
   /**
@@ -59,6 +62,7 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    */
   onRowClick?: TableRowClickHandler;
   onShowConfigEditor?: () => void;
+  onSelect?: TableRowSelectHandler;
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight?: number;

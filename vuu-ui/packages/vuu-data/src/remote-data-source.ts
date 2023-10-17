@@ -371,7 +371,7 @@ export class RemoteDataSource
     return this.#config;
   }
 
-  set config(config: DataSourceConfig | undefined) {
+  set config(config: DataSourceConfig) {
     if (configChanged(this.#config, config)) {
       if (config) {
         const newConfig: DataSourceConfig =

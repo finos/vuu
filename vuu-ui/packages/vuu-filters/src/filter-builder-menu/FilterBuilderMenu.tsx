@@ -1,6 +1,6 @@
 import { ContextMenuProps } from "@finos/vuu-popups";
 import { MenuActionHandler } from "packages/vuu-data-types";
-import { ReactElement, useCallback, useRef } from "react";
+import { ReactElement, useCallback, useEffect, useRef } from "react";
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 import { List, ListItem } from "@finos/vuu-ui-controls";
 
@@ -17,15 +17,14 @@ export const FilterBuilderMenu = ({ onMenuAction }: FilterBuilderMenuProps) => {
   const ref = useRef<HTMLSpanElement>(null);
   const listRef = useCallback((el: HTMLDivElement | null) => {
     if (el) {
-      el.focus();
+      requestAnimationFrame(() => {
+        el.focus();
+      });
     }
   }, []);
 
   const handleSelect = useCallback(
     (evt, selected: ReactElement) => {
-      console.log({
-        selected,
-      });
       const {
         props: { "data-action": action },
       } = selected;

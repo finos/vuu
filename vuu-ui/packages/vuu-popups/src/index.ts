@@ -1,4 +1,5 @@
 export * from "./dialog";
+export * from "./dialog-header";
 export * from "./menu";
 export * from "./popup";
 export * from "./popup-menu";

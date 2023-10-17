@@ -30,7 +30,7 @@ export interface ViewportScrollApi {
 
 // Temp, until we manage selection properly
 const getSelectedRows = (data: DataSourceRow[]) => {
-  return data.filter((d) => d[metadataKeys.SELECTED] === 1);
+  return data.filter((d) => d[metadataKeys.SELECTED] !== 0);
 };
 
 export const Viewport = forwardRef(function Viewport(

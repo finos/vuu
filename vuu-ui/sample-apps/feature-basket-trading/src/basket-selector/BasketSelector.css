@@ -72,6 +72,18 @@
 }
 
 .vuuBasketSelector-searchContainer {
+    display: flex;
+    flex-direction: column;
     height: 400px;
     width: 377px;
+}
+
+.vuuBasketSelector-instrumentSearch {
+    flex: 1 1 auto;
+}
+.vuuBasketSelector-buttonBar {
+    align-items: center;
+    display: flex;
+    flex: 0 0 36px;
+    justify-content: center;
 }

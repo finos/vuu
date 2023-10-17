@@ -27,6 +27,7 @@ export interface BasketSelectorProps extends HTMLAttributes<HTMLDivElement> {
   dataSourceBasket: DataSource;
   dataSourceBasketSearch: DataSource;
   label?: string;
+  onClickAddBasket: () => void;
 }
 
 export class Basket {
@@ -48,6 +49,7 @@ export const BasketSelector = ({
   dataSourceBasket,
   dataSourceBasketSearch,
   id: idProp,
+  onClickAddBasket,
   ...htmlAttributes
 }: BasketSelectorProps) => {
   // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
@@ -126,6 +128,11 @@ export const BasketSelector = ({
     [handleRowClick]
   );
 
+  const handleClickAddBasket = useCallback(() => {
+    setOpen(false);
+    onClickAddBasket();
+  }, [onClickAddBasket]);
+
   return (
     <div {...htmlAttributes} className={classBase} ref={rootRef}>
       <div className={`${classBase}-basketDetails`}>
@@ -168,10 +175,16 @@ export const BasketSelector = ({
         <Popup anchorElement={rootRef} placement="below">
           <div className={`${classBase}-searchContainer`}>
             <InstrumentSearch
+              className={`${classBase}-instrumentSearch`}
               TableProps={tableProps}
               dataSource={dataSourceBasketSearch}
               searchColumn="name"
             />
+            <div className={`${classBase}-buttonBar`}>
+              <Button onClick={handleClickAddBasket} variant="secondary">
+                Add New Basket
+              </Button>
+            </div>
           </div>
         </Popup>
       </Portal>

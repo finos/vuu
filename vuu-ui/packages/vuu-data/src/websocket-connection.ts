@@ -27,9 +27,21 @@ const WS = "ws"; // to stop semGrep complaining
 const isWebsocketUrl = (url: string) =>
   url.startsWith(WS + "://") || url.startsWith(WS + "s://");
 
-const connectionAttempts: {
-  [key: string]: { attemptsRemaining: number; status: ConnectionStatus };
-} = {};
+type ConnectionTracking = {
+  [key: string]: {
+    connect: {
+      allowed: number;
+      remaining: number;
+    };
+    reconnect: {
+      allowed: number;
+      remaining: number;
+    };
+    status: ConnectionStatus;
+  };
+};
+
+const connectionAttemptStatus: ConnectionTracking = {};
 
 const setWebsocket = Symbol("setWebsocket");
 const connectionCallback = Symbol("connectionCallback");
@@ -37,8 +49,21 @@ const connectionCallback = Symbol("connectionCallback");
 export async function connect(
   connectionString: string,
   protocol: WebSocketProtocol,
-  callback: ConnectionCallback
+  callback: ConnectionCallback,
+  retryLimitDisconnect = 10,
+  retryLimitStartup = 5
 ): Promise<Connection> {
+  connectionAttemptStatus[connectionString] = {
+    status: "connecting",
+    connect: {
+      allowed: retryLimitStartup,
+      remaining: retryLimitStartup,
+    },
+    reconnect: {
+      allowed: retryLimitDisconnect,
+      remaining: retryLimitDisconnect,
+    },
+  };
   return makeConnection(connectionString, protocol, callback);
 }
 
@@ -58,12 +83,14 @@ async function makeConnection(
   callback: ConnectionCallback,
   connection?: WebsocketConnection
 ): Promise<Connection> {
-  const connectionStatus =
-    connectionAttempts[url] ||
-    (connectionAttempts[url] = {
-      attemptsRemaining: 5,
-      status: "disconnected",
-    });
+  const {
+    status: currentStatus,
+    connect: connectStatus,
+    reconnect: reconnectStatus,
+  } = connectionAttemptStatus[url];
+
+  const trackedStatus =
+    currentStatus === "connecting" ? connectStatus : reconnectStatus;
 
   try {
     callback({ type: "connection-status", status: "connecting" });
@@ -89,10 +116,12 @@ async function makeConnection(
     callback({ type: "connection-status", status });
     websocketConnection.status = status;
 
+    // reset the retry attempts for subsequent disconnections
+    trackedStatus.remaining = trackedStatus.allowed;
+
     return websocketConnection as Connection;
-  } catch (evt) {
-    console.log({ evt });
-    const retry = --connectionStatus.attemptsRemaining > 0;
+  } catch (err) {
+    const retry = --trackedStatus.remaining > 0;
     callback({
       type: "connection-status",
       status: "disconnected",
@@ -100,7 +129,7 @@ async function makeConnection(
       retry,
     });
     if (retry) {
-      return makeConnectionIn(url, protocol, callback, connection, 10000);
+      return makeConnectionIn(url, protocol, callback, connection, 2000);
     } else {
       throw Error("Failed to establish connection");
     }
@@ -204,7 +233,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
         messagesLength: this.messagesCount,
       });
       this.messagesCount = 0;
-    }, 1000);
+    }, 2000);
 
     ws.onerror = () => {
       error(`⚡ connection error`);

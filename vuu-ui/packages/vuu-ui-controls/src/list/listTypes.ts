@@ -14,12 +14,10 @@ import { ScrollingAPI, ViewportTrackingResult } from "./common-hooks";
 
 import {
   CollectionHookResult,
+  ComponentSelectionProps,
   ListHandlers,
   NavigationHookResult,
-  SelectHandler,
-  SelectionChangeHandler,
   SelectionHookResult,
-  SelectionProps,
   SelectionStrategy,
 } from "../common-hooks";
 import {
@@ -69,9 +67,12 @@ export interface ListScrollHandles<Item> {
 
 export interface ListProps<
   Item = string,
-  Selection extends SelectionStrategy = "default"
-> extends SelectionProps<Item, Selection>,
-    Omit<HTMLAttributes<HTMLDivElement>, "onSelect" | "defaultValue"> {
+  S extends SelectionStrategy = "default"
+> extends ComponentSelectionProps<Item, S>,
+    Omit<
+      HTMLAttributes<HTMLDivElement>,
+      "onDragStart" | "onDrop" | "onSelect" | "defaultValue"
+    > {
   /**
    * The component used to render a ListItem instead of the default. This must itself render a ListItem,
    * must implement props that extend ListItemProps and must forward ListItem props to the ListItem.
@@ -204,11 +205,7 @@ export interface ListProps<
   restoreLastFocus?: boolean;
 
   scrollingApiRef?: ForwardedRef<ScrollingAPI<Item>>;
-  /**
-   * The keyboard keys used to effect selection, defaults to SPACE and ENTER
-   * TODO maybe this belongs on the SelectionProps interface ?
-   */
-  selectionKeys?: string[];
+
   showEmptyMessage?: boolean;
   source?: ReadonlyArray<Item>;
   stickyHeaders?: boolean;
@@ -236,29 +233,32 @@ export interface ListControlProps {
   onMouseLeave: MouseEventHandler;
 }
 
-export interface ListHookProps<Item, Selection extends SelectionStrategy>
-  extends Omit<
-      SelectionProps<string, Selection>,
-      "onSelect" | "onSelectionChange"
-    >,
-    Pick<
-      ListProps,
-      | "allowDragDrop"
-      | "collapsibleHeaders"
-      | "disabled"
-      | "id"
-      | "onDragStart"
-      | "onDrop"
-      | "onHighlight"
-      | "onMoveListItem"
-      | "restoreLastFocus"
-      | "stickyHeaders"
-      | "tabToSelect"
-    > {
+export interface ListHookProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> extends Pick<
+    ListProps<Item, S>,
+    | "allowDragDrop"
+    | "collapsibleHeaders"
+    | "disabled"
+    | "id"
+    | "onDragStart"
+    | "onDrop"
+    | "onHighlight"
+    | "onMoveListItem"
+    | "onSelect"
+    | "onSelectionChange"
+    | "restoreLastFocus"
+    | "selectionKeys"
+    | "selectionStrategy"
+    | "stickyHeaders"
+    | "tabToSelect"
+  > {
   collectionHook: CollectionHookResult<Item>;
   containerRef: RefObject<HTMLElement>;
   contentRef?: RefObject<HTMLElement>;
   defaultHighlightedIndex?: number;
+  defaultSelected?: string[];
   disableAriaActiveDescendant?: boolean;
   disableHighlightOnFocus?: boolean;
   disableTypeToSelect?: boolean;
@@ -271,16 +271,15 @@ export interface ListHookProps<Item, Selection extends SelectionStrategy>
     currentIndex: number
   ) => void;
   onKeyDown?: (evt: KeyboardEvent) => void;
-  onSelect?: SelectHandler<Item>;
-  onSelectionChange?: SelectionChangeHandler<Item, Selection>;
   scrollContainerRef?: RefObject<HTMLElement>;
-  selectionKeys?: string[];
+  selected?: string[];
+  // selectionStrategy: S;
   viewportRange?: ViewportRange;
 }
 
-export interface ListHookResult<Item, Selection extends SelectionStrategy>
+export interface ListHookResult<Item>
   extends Partial<ViewportTrackingResult<Item>>,
-    Pick<SelectionHookResult<Selection>, "selected" | "setSelected">,
+    Pick<SelectionHookResult, "selected" | "setSelected">,
     Partial<Omit<NavigationHookResult, "listProps">>,
     Omit<DragHookResult, "isDragging" | "isScrolling"> {
   keyboardNavigation: RefObject<boolean>;

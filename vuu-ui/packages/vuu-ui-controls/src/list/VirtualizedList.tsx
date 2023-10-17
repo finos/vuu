@@ -2,12 +2,11 @@ import { makePrefixer, useForkRef, useIdMemo } from "@salt-ds/core";
 import { clsx } from "clsx";
 import { ForwardedRef, forwardRef, memo, ReactElement, useRef } from "react";
 import {
-  CollectionIndexer,
   isSelected,
   useCollectionItems,
   useImperativeScrollingAPI,
 } from "./common-hooks";
-import { SelectionStrategy } from "../common-hooks";
+import { CollectionIndexer, SelectionStrategy } from "../common-hooks";
 import { useListHeight } from "./useListHeight";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
@@ -53,6 +52,8 @@ export const VirtualizedList = forwardRef(function List<
     maxWidth,
     minHeight,
     minWidth,
+    onDragStart,
+    onDrop,
     onSelect,
     onSelectionChange,
     onViewportScroll,
@@ -89,7 +90,11 @@ export const VirtualizedList = forwardRef(function List<
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const { contentHeight, listItemHeight, listHeight } = useListHeight({
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     borderless,
     displayedItemCount,
     height,
@@ -112,10 +117,7 @@ export const VirtualizedList = forwardRef(function List<
     collectionHook,
     containerRef: rootRef,
     defaultHighlightedIndex: defaultHighlightedIdx,
-    defaultSelected: collectionHook.itemToCollectionItem<
-      Selection,
-      typeof defaultSelected
-    >(defaultSelected),
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disabled: listDisabled,
     disableTypeToSelect,
     highlightedIndex: highlightedIdxProp,
@@ -124,10 +126,7 @@ export const VirtualizedList = forwardRef(function List<
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
-    selected: collectionHook.itemToCollectionItem<
-      Selection,
-      typeof defaultSelected
-    >(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,

@@ -8,11 +8,10 @@ import {
   useRef,
 } from "react";
 import {
-  CollectionItem,
   CollectionProvider,
-  SelectionProps,
+  ComponentSelectionProps,
+  itemToString as defaultItemToString,
   SelectionStrategy,
-  SingleSelectionStrategy,
   useCollectionItems,
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
@@ -20,32 +19,25 @@ import { List, ListProps } from "../list";
 import { useCombobox } from "./useCombobox";
 import { ChevronIcon } from "../list/ChevronIcon";
 
+//TODO why do we need onSelect from input ?
 export interface ComboBoxProps<
   Item = string,
-  Selection extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default"
 > extends Omit<
       DropdownBaseProps,
       "triggerComponent" | "onBlur" | "onChange" | "onFocus"
     >,
     Pick<InputProps, "onBlur" | "onChange" | "onFocus" | "onSelect">,
-    Pick<
-      ListProps<Item, Selection>,
-      "ListItem" | "itemToString" | "source" | "width"
-    >,
-    Pick<
-      SelectionProps<Item, Selection>,
-      "onSelectionChange" | "selectionStrategy"
-    > {
+    Omit<ComponentSelectionProps<Item, S>, "onSelect">,
+    Pick<ListProps<Item, S>, "ListItem" | "itemToString" | "source" | "width"> {
   InputProps?: InputProps;
-  ListProps?: Omit<
-    ListProps<Item, Selection>,
-    "ListItem" | "itemToString" | "source"
-  >;
+  ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
   initialHighlightedIndex?: number;
-  stringToItem?: (value?: string) => Item | null | undefined;
+  itemsToString?: (items: Item[]) => string;
+  onSetSelectedText?: (text: string) => void;
   value?: string;
 }
 
@@ -53,47 +45,70 @@ export interface ComboBoxProps<
 
 export const ComboBox = forwardRef(function Combobox<
   Item = string,
-  Selection extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default"
 >(
   {
     InputProps,
     ListProps,
+    PopupProps,
     ListItem,
     "aria-label": ariaLabel,
     allowFreeText,
     children,
     defaultIsOpen,
+    defaultSelected,
     defaultValue,
     disabled,
     onBlur,
     onFocus,
     onChange,
     onSelect,
+    onSetSelectedText,
     getFilterRegex,
     id: idProp,
     initialHighlightedIndex = -1,
     isOpen: isOpenProp,
-    itemToString,
+    itemToString = defaultItemToString,
+    itemsToString,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
+    selected: selectedProp,
     selectionStrategy,
     source,
-    stringToItem,
     value: valueProp,
     width = 180,
     ...props
-  }: ComboBoxProps<Item, Selection>,
+  }: ComboBoxProps<Item, S>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const valueFromSelected = (item: Item | null | Item[]) => {
+    return Array.isArray(item) && item.length > 0 ? item[0] : undefined;
+  };
+
+  const getInitialValue = (
+    items1?: ComboBoxProps<Item, S>["selected"],
+    items2?: ComboBoxProps<Item, S>["defaultSelected"]
+  ) => {
+    const item = items1
+      ? valueFromSelected(items1)
+      : items2
+      ? valueFromSelected(items2)
+      : undefined;
+
+    return item ? itemToString(item) : "";
+  };
+
+  const initialValue = getInitialValue(selectedProp, defaultSelected);
 
   const collectionHook = useCollectionItems<Item>({
     id,
     source,
     children,
     options: {
-      filterPattern: valueProp ?? defaultValue,
+      filterPattern: initialValue,
       getFilterRegex,
       itemToString,
     },
@@ -108,15 +123,18 @@ export const ComboBox = forwardRef(function Combobox<
     listControlProps: controlProps,
     onOpenChange,
     selected,
-  } = useCombobox<Item, Selection>({
+  } = useCombobox<Item, S>({
     InputProps,
     allowFreeText,
     ariaLabel,
     collectionHook,
     defaultIsOpen,
+    defaultSelected,
     defaultValue,
     disabled,
     initialHighlightedIndex,
+    itemCount: collectionHook.data.length,
+    label: props.title,
     listRef,
     onBlur,
     onFocus,
@@ -125,41 +143,28 @@ export const ComboBox = forwardRef(function Combobox<
     id,
     isOpen: isOpenProp,
     itemToString,
-    label: "ComboBox",
+    itemsToString,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
+    onSetSelectedText,
+    selected: selectedProp,
     selectionStrategy,
-    stringToItem,
-    value: valueProp,
+    value: initialValue,
   });
 
-  const collectionItemsToItem = useCallback(
-    (
-      sel?: CollectionItem<Item> | null | CollectionItem<Item>[]
-    ):
-      | undefined
-      | (Selection extends SingleSelectionStrategy ? Item | null : Item[]) => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? Item | null
-        : Item[];
-      if (Array.isArray(sel)) {
-        return sel.map((i) => i.value) as returnType;
-      } else if (sel) {
-        return sel.value as returnType;
-      } else {
-        return sel as returnType;
-      }
-    },
-    []
-  );
+  const handleDropdownIconClick = useCallback(() => {
+    if (isOpen) {
+      onOpenChange(false, "toggle");
+    } else {
+      onOpenChange(true);
+    }
+  }, [isOpen, onOpenChange]);
 
   const endAdornment =
     endAdornmentProp === null ? null : (
       <ChevronIcon
         direction={isOpen ? "up" : "down"}
-        onClick={() => {
-          onOpenChange(!isOpen);
-        }}
+        onClick={handleDropdownIconClick}
       />
     );
 
@@ -167,7 +172,7 @@ export const ComboBox = forwardRef(function Combobox<
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
         {...props}
-        fullWidth
+        PopupProps={PopupProps}
         id={id}
         isOpen={isOpen}
         onOpenChange={onOpenChange}
@@ -183,9 +188,10 @@ export const ComboBox = forwardRef(function Combobox<
           endAdornment={endAdornment}
         />
 
-        <List<Item, Selection>
+        <List<Item, S>
           {...ListProps}
           ListItem={ListItem}
+          defaultSelected={undefined}
           focusVisible={focusVisible}
           highlightedIndex={highlightedIndex}
           itemTextHighlightPattern={String(inputProps.value) || undefined}
@@ -193,14 +199,15 @@ export const ComboBox = forwardRef(function Combobox<
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           ref={listRef}
-          selected={collectionItemsToItem(selected)}
+          selected={selected}
           selectionStrategy={selectionStrategy}
+          tabIndex={-1}
         />
       </DropdownBase>
     </CollectionProvider>
   );
-}) as <Item, Selection extends SelectionStrategy = "default">(
-  props: ComboBoxProps<Item, Selection> & {
+}) as <Item, S extends SelectionStrategy = "default">(
+  props: ComboBoxProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<ComboBoxProps<Item, Selection>>;
+) => ReactElement<ComboBoxProps<Item>>;

@@ -18,7 +18,6 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
   activeFilterIndex?: number[];
   filters: Filter[];
-  onActiveChange?: (itemIndex: number[]) => void;
   onApplyFilter: (filter: DataSourceFilter) => void;
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
@@ -28,11 +27,10 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
-  activeFilterIndex: activeFilterIndexProp,
+  activeFilterIndex: activeFilterIndexProp = [],
   FilterClauseEditorProps,
   className: classNameProp,
   filters: filtersProp,
-  onActiveChange,
   onApplyFilter,
   onFiltersChanged,
   showMenu: showMenuProp = false,
@@ -47,7 +45,7 @@ export const FilterBar = ({
     onClickAddFilter,
     onClickRemoveFilter,
     onChangeFilterClause,
-    onFilterActivation,
+    onChangeActiveFilterIndex,
     onKeyDown,
     onMenuAction,
     pillProps,
@@ -57,7 +55,6 @@ export const FilterBar = ({
     activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
     filters: filtersProp,
-    onActiveChange,
     onApplyFilter,
     onFiltersChanged,
     showMenu: showMenuProp,
@@ -78,16 +75,6 @@ export const FilterBar = ({
           <FilterPill {...pillProps} filter={filter} key={`filter-${i}`} />
         );
       });
-      items.push(
-        <Button
-          className={`${classBase}-add`}
-          data-icon="plus"
-          data-selectable={false}
-          key="filter-add"
-          onClick={onClickAddFilter}
-          variant="primary"
-        />
-      );
       return items;
     } else if (editFilter) {
       // TODO what about the relationship between these clauses,which will no longer be self-evident
@@ -136,11 +123,23 @@ export const FilterBar = ({
       <Toolbar
         activeItemIndex={activeFilterIndex}
         height={26}
-        onActiveChange={onFilterActivation}
+        onActiveChange={onChangeActiveFilterIndex}
         selectionStrategy="multiple-special-key"
       >
         {getChildren()}
       </Toolbar>
+      {editFilter === undefined ? (
+        <Button
+          className={`${classBase}-add`}
+          data-icon="plus"
+          data-selectable={false}
+          key="filter-add"
+          onClick={onClickAddFilter}
+          tabIndex={0}
+          variant="primary"
+        />
+      ) : null}
+
       {promptProps ? (
         <Prompt
           {...promptProps}

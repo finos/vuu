@@ -138,6 +138,7 @@ export const useDragDropNext: DragDropHook = ({
   const dragMouseUpHandlerRef = useRef<NativeMouseHandler>();
 
   const attachDragHandlers = useCallback(() => {
+    console.log("attach drag handlers");
     const { current: dragMove } = dragMouseMoveHandlerRef;
     const { current: dragUp } = dragMouseUpHandlerRef;
     if (dragMove && dragUp) {
@@ -147,9 +148,11 @@ export const useDragDropNext: DragDropHook = ({
     }
   }, []);
   const removeDragHandlers = useCallback(() => {
+    console.log("remove drag handlers");
     const { current: dragMove } = dragMouseMoveHandlerRef;
     const { current: dragUp } = dragMouseUpHandlerRef;
     if (dragMove && dragUp) {
+      console.log("... we have both handlers");
       // prettier-ignore
       document.removeEventListener("mousemove", dragMove, false);
       document.removeEventListener("mouseup", dragUp, false);
@@ -267,7 +270,9 @@ export const useDragDropNext: DragDropHook = ({
         onDrop?.(fromIndex, toIndex, options);
       }
       dropIndexRef.current = toIndex;
-      onEndOfDragOperation?.(id);
+      if (id) {
+        onEndOfDragOperation?.(id);
+      }
       dragDropStateRef.current = null;
     },
     [id, onDrop, onEndOfDragOperation]
@@ -307,7 +312,7 @@ export const useDragDropNext: DragDropHook = ({
         if (onDragOut?.(id as string, dragDropStateRef.current)) {
           // TODO create a cleanup function
           removeDragHandlers();
-          releaseDrag();
+          releaseDrag?.();
           dragDropStateRef.current = null;
         }
         // remove the drag boundaries
@@ -315,7 +320,7 @@ export const useDragDropNext: DragDropHook = ({
         return true;
       }
     },
-    [id, isDragSource, onDragOut, orientation, removeDragHandlers]
+    [id, isDragSource, onDragOut, orientation, releaseDrag, removeDragHandlers]
   );
 
   const dragMouseMoveHandler = useCallback(
@@ -413,8 +418,6 @@ export const useDragDropNext: DragDropHook = ({
       const { draggableElement, mouseOffset, initialDragElement } =
         dragDropState;
       const { current: container } = containerRef;
-
-      console.log({ container, draggableElement, initialDragElement });
 
       if (container && draggableElement) {
         const containerRect = container.getBoundingClientRect();
