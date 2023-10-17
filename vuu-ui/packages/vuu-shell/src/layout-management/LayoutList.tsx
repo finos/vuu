@@ -12,14 +12,12 @@ type LayoutGroups = {
 const classBase = "vuuLayoutList";
 
 export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
-    const { layouts } = useLayoutManager();
-
-    const layoutMetadata = layouts.map(layout => layout.metadata)
+    const { layoutMetadata, loadLayoutById } = useLayoutManager();
 
     const handleLoadLayout = (layoutId?: string) => {
-        // TODO load layout
-        console.log("loading layout with id", layoutId)
-        console.log("json:", layouts.find(layout => layout.metadata.id === layoutId))
+        if (layoutId) {
+            loadLayoutById(layoutId)
+        }
     }
 
     const layoutsByGroup = layoutMetadata.reduce((acc: LayoutGroups, cur) => {
@@ -41,12 +39,12 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
             <List<[string, LayoutMetadata[]]>
                 height='fit-content'
                 source={Object.entries(layoutsByGroup)}
-                ListItem={({ item }) => <>
-                    <div className={`${classBase}-groupName`}>{item?.[0]}</div>
-                    <List<LayoutMetadata>
-                        height='fit-content'
-                        source={item?.[1]}
-                        ListItem={({ item: layout }) =>
+                ListItem={({ item }) => {
+                    if (!item) return <></>
+                    const [groupName, layouts] = item
+                    return <>
+                        <div className={`${classBase}-groupName`}>{groupName}</div>
+                        {layouts.map(layout =>
                             <div
                                 className={`${classBase}-layoutContainer`}
                                 key={layout?.id}
@@ -60,9 +58,9 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                                     </div>
                                 </div>
                             </div>
-                        }
-                    />
-                </>
+                        )}
+                    </>
+                }
                 }
             />
         </div>

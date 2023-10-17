@@ -9,7 +9,7 @@ context("Screenshot", () => {
   // TODO (#VUU24): Improve test alignment with the user flow
   it("Takes a screenshot of the current layout and displays it in the save layout dialog", () => {
     // TODO (#VUU24): Improve selector
-    cy.findByRole("tab", { name: "My Instruments" }).then((tab) => {
+    cy.get("#tab1-tab").then((tab) => {
       cy.wrap(tab).findByRole("button").click();
     });
 
@@ -17,7 +17,7 @@ context("Screenshot", () => {
     cy.findByRole("menuitem", { name: "Save Layout" }).click();
 
     // TODO (#VUU24): Don't find by classname, use an accessible selector
-    cy.get(".vuuSaveLayoutPanel").then((dialog) => {
+    cy.get(".saveLayoutPanel-panelContainer").then((dialog) => {
       cy.wrap(dialog)
         .find("img")
         .should("be.visible")

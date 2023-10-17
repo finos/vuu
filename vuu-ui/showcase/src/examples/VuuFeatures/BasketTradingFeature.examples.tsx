@@ -1,5 +1,5 @@
 import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, FeatureProps, useLayoutConfig } from "@finos/vuu-shell";
+import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeature } from "../../features/BasketTrading.feature";
 import { BasketTradingNoBasketsFeature } from "../../features/BasketTradingNoBaskets.feature";
@@ -24,27 +24,23 @@ export const DefaultBasketTradingFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const [layout, saveLayoutConfig] = useLayoutConfig({
-    // save to local storage. Use browser devtools to purge this
-    saveLocation: "local",
-    saveUrl: "table-next-feature",
-  });
+  const { applicationLayout, saveApplicationLayout} = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [layout]);
+  }, [applicationLayout]);
 
   const handleLayoutChange = useCallback(
     (layout) => {
       console.log("layout change");
-      saveLayoutConfig(layout);
+      saveApplicationLayout(layout);
     },
-    [saveLayoutConfig]
+    [saveApplicationLayout]
   );
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider layout={applicationLayout} onLayoutChange={handleLayoutChange}>
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
