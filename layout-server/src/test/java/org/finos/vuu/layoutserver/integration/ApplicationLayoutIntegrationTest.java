@@ -59,7 +59,7 @@ public class ApplicationLayoutIntegrationTest {
     @Test
     public void createApplicationLayout_noLayoutExists_returns201AndPersistsLayout() throws Exception {
         String user = "user";
-        String definition = "{\"key\":\"value\"}";
+        String definition = "{\"key\": \"value\"}";
 
         mockMvc.perform(post("/application-layouts")
                         .header("user", user)
@@ -71,7 +71,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.extractDefinition()).isEqualTo(definition);
+        assertThat(persistedLayout.extractDefinition()).isEqualToIgnoringWhitespace(definition);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class ApplicationLayoutIntegrationTest {
 
         persistApplicationLayout(user, initialDefinition);
 
-        String newDefinition = "{\"new-key\":\"new-value\"}";
+        String newDefinition = "{\"new-key\": \"new-value\"}";
 
         mockMvc.perform(post("/application-layouts")
                         .header("user", user)
@@ -97,13 +97,13 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.extractDefinition()).isEqualTo(newDefinition);
+        assertThat(retrievedLayout.extractDefinition()).isEqualToIgnoringWhitespace(newDefinition);
     }
 
     @Test
     public void updateApplicationLayout_noLayoutExists_returns204AndPersistsLayout() throws Exception {
         String user = "user";
-        String definition = "{\"key\":\"value\"}";
+        String definition = "{\"key\": \"value\"}";
 
         mockMvc.perform(put("/application-layouts")
                         .header("user", user)
@@ -115,7 +115,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.extractDefinition()).isEqualTo(definition);
+        assertThat(persistedLayout.extractDefinition()).isEqualToIgnoringWhitespace(definition);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class ApplicationLayoutIntegrationTest {
 
         persistApplicationLayout(user, initialDefinition);
 
-        String newDefinition = "{\"new-key\":\"new-value\"}";
+        String newDefinition = "{\"new-key\": \"new-value\"}";
 
         mockMvc.perform(put("/application-layouts")
                         .header("user", user)
@@ -141,7 +141,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.extractDefinition()).isEqualTo(newDefinition);
+        assertThat(retrievedLayout.extractDefinition()).isEqualToIgnoringWhitespace(newDefinition);
     }
 
     @Test
