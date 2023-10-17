@@ -41,14 +41,7 @@ export const MenuItem = ({
   options,
   ...props
 }: MenuItemProps) => {
-  const handleClick = () => {
-    console.log("click within menuItem");
-  };
-  return (
-    <div {...props} onClick={handleClick}>
-      {children}
-    </div>
-  );
+  return <div {...props}>{children}</div>;
 };
 
 export interface MenuItemLabelProps {
@@ -88,7 +81,7 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   listItemProps?: Partial<MenuItemProps>;
   onActivate?: (menuId: string) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu?: MenuOpenHandler;
+  openMenu?: MenuOpenHandler;
   onHighlightMenuItem?: (idx: number) => void;
 }
 
@@ -105,7 +98,7 @@ export const MenuList = ({
   onHighlightMenuItem,
   onActivate,
   onCloseMenu,
-  onOpenMenu,
+  openMenu: onOpenMenu,
   ...props
 }: MenuListProps) => {
   const id = useId(idProp);

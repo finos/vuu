@@ -106,7 +106,7 @@ export interface CascadeHooksResult {
   closeMenu: () => void;
   handleRender: () => void;
   listItemProps: Partial<MenuItemProps>;
-  onOpenMenu: MenuOpenHandler;
+  openMenu: MenuOpenHandler;
   openMenus: RuntimeMenuDescriptor[];
 }
 
@@ -275,8 +275,9 @@ export const useCascade = ({
 
   const handleRender = useCallback(() => {
     const { current: menus } = openMenus;
-    const [menu] = menus.slice(-1);
-    const el = document.getElementById(menu.id);
+    const menu = menus.at(-1);
+    const el = menu ? document.getElementById(menu.id) : undefined;
+    console.log({ menu, el });
     if (el) {
       const { right, bottom } = el.getBoundingClientRect();
       const { clientHeight, clientWidth } = document.body;
@@ -437,7 +438,7 @@ export const useCascade = ({
     closeMenu,
     handleRender,
     listItemProps,
-    onOpenMenu: triggerChildMenu,
+    openMenu: triggerChildMenu,
     openMenus: openMenus.current,
   };
 };

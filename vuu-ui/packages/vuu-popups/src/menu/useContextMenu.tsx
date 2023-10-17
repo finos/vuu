@@ -108,11 +108,6 @@ export const useContextMenu = (
         if (menuItemDescriptors.length && menuHandler) {
           showContextMenu(e, menuItemDescriptors, menuHandler, {
             ...ContextMenuProps,
-            className: cx(
-              ContextMenuProps?.className,
-              themeClass,
-              densityClass
-            ),
             "data-mode": dataMode,
           });
         }
@@ -122,15 +117,7 @@ export const useContextMenu = (
         );
       }
     },
-    [
-      buildMenuOptions,
-      ctx,
-      dataMode,
-      densityClass,
-      menuActionHandler,
-      menuBuilder,
-      themeClass,
-    ]
+    [buildMenuOptions, ctx, dataMode, menuActionHandler, menuBuilder]
   );
 
   const hideContextMenu = useCallback(() => {
@@ -163,6 +150,7 @@ const showContextMenu = (
     ...contextMenuProps
   }: ContextMenuOptions["ContextMenuProps"] = NO_OPTIONS
 ) => {
+  console.log(contextMenuProps);
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
     const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
       isGroupMenuItemDescriptor(menuItem) ? (

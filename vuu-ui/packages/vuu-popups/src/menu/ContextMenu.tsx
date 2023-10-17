@@ -50,14 +50,19 @@ export const ContextMenu = ({
     [actions, id, onClose]
   );
 
-  const { closeMenu, listItemProps, onOpenMenu, openMenus, handleRender } =
-    useCascade({
-      // FIXME
-      id: `${id}`,
-      onActivate: handleActivate,
-      onMouseEnterItem: handleMouseEnterItem,
-      position,
-    });
+  const {
+    closeMenu,
+    listItemProps,
+    openMenu: onOpenMenu,
+    openMenus,
+    handleRender,
+  } = useCascade({
+    // FIXME
+    id: `${id}`,
+    onActivate: handleActivate,
+    onMouseEnterItem: handleMouseEnterItem,
+    position,
+  });
   closeMenuRef.current = closeMenu;
 
   const handleCloseMenu = () => {
@@ -104,7 +109,7 @@ export const ContextMenu = ({
                 onActivate={handleActivate}
                 onHighlightMenuItem={handleHighlightMenuItem}
                 onCloseMenu={handleCloseMenu}
-                onOpenMenu={onOpenMenu}
+                openMenu={onOpenMenu}
                 style={style}
                 tabIndex={i === all.length - 1 ? 0 : undefined}
               >

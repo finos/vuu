@@ -73,7 +73,9 @@ export const Portal = ({
   }, [id, container, themeClass, densityClass, dataMode]);
 
   useLayoutEffect(() => {
-    onRender?.();
+    requestAnimationFrame(() => {
+      onRender?.();
+    });
   }, [onRender]);
 
   if (open && mounted && portalRef.current && children) {
