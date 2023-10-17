@@ -1,6 +1,7 @@
 package org.finos.vuu.layoutserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
@@ -27,30 +28,6 @@ class ApplicationLayoutServiceTest {
     private static ApplicationLayoutService service;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String defaultLayout =
-            "{" +
-            "  \"id\": \"main-tabs\"," +
-            "  \"type\": \"Stack\"," +
-            "  \"props\": {" +
-            "    \"className\": \"vuuShell-mainTabs\"," +
-            "    \"TabstripProps\": {" +
-            "      \"allowAddTab\": true," +
-            "      \"allowRenameTab\": true," +
-            "      \"animateSelectionThumb\": false," +
-            "      \"className\": \"vuuShellMainTabstrip\"," +
-            "      \"location\": \"main-tab\"" +
-            "    }," +
-            "    \"preserve\": true," +
-            "    \"active\": 0" +
-            "  }," +
-            "  \"children\": [" +
-            "    {" +
-            "      \"type\": \"Placeholder\"," +
-            "      \"title\": \"Page 1\"" +
-            "    }" +
-            "  ]" +
-            "}";
-
     @BeforeEach
     public void setup() {
         mockRepo = Mockito.mock(ApplicationLayoutRepository.class);
@@ -58,13 +35,15 @@ class ApplicationLayoutServiceTest {
     }
 
     @Test
-    public void getApplicationLayout_noLayout_returnsDefault() {
+    public void getApplicationLayout_noLayout_returnsDefault() throws JsonProcessingException {
         when(mockRepo.findById(anyString())).thenReturn(Optional.empty());
 
         ApplicationLayoutDto actualLayout = service.getApplicationLayout("new user");
+        // Expecting application layout as defined in /test/resources/defaultLayout.json
+        JsonNode expectedDefinition = objectMapper.readTree("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
         assertThat(actualLayout.getUser()).isNull();
-        assertThat(actualLayout.getDefinition().toString()).isEqualToIgnoringWhitespace(defaultLayout);
+        assertThat(actualLayout.getDefinition()).isEqualTo(expectedDefinition);
     }
 
     @Test

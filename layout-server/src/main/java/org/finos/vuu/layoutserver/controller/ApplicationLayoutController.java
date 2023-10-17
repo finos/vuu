@@ -29,6 +29,7 @@ public class ApplicationLayoutController {
      *
      * @return the application layout
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ApplicationLayoutDto getApplicationLayout(@RequestHeader("user") String username) {
         return service.getApplicationLayout(username);
