@@ -3,10 +3,8 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
-import { useThemeAttributes } from "@finos/vuu-shell";
 import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
-import cx from "classnames";
-import { cloneElement, useCallback, useContext } from "react";
+import { cloneElement, useCallback, useContext, useMemo } from "react";
 import {
   MenuActionClosePopup,
   PopupCloseReason,
@@ -16,13 +14,13 @@ import {
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
 import { ContextMenuContext } from "./context-menu-provider";
+import { useThemeAttributes } from "packages/vuu-shell/src";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;
   contextMenu?: JSX.Element;
   ContextMenuProps?: Partial<ContextMenuProps> & {
     className?: string;
-    "data-mode"?: string;
   };
   controlledComponentId?: string;
 };
@@ -46,7 +44,16 @@ export const useContextMenu = (
   menuActionHandler?: MenuActionHandler
 ): [ShowContextMenu, () => void] => {
   const ctx = useContext(ContextMenuContext);
+
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const themeAttributes = useMemo(
+    () => ({
+      themeClass,
+      densityClass,
+      dataMode,
+    }),
+    [dataMode, densityClass, themeClass]
+  );
 
   const buildMenuOptions = useCallback(
     (menuBuilders: MenuBuilder[], location, options) => {
@@ -106,9 +113,13 @@ export const useContextMenu = (
         };
 
         if (menuItemDescriptors.length && menuHandler) {
+          // because showPopup is going to be used to render the context menu, it will not
+          // have access to the ContextMenuContext. Pass the theme attributes here
           showContextMenu(e, menuItemDescriptors, menuHandler, {
+            PortalProps: {
+              themeAttributes,
+            },
             ...ContextMenuProps,
-            "data-mode": dataMode,
           });
         }
       } else {
@@ -117,11 +128,11 @@ export const useContextMenu = (
         );
       }
     },
-    [buildMenuOptions, ctx, dataMode, menuActionHandler, menuBuilder]
+    [buildMenuOptions, ctx, menuActionHandler, menuBuilder, themeAttributes]
   );
 
   const hideContextMenu = useCallback(() => {
-    console.log("hide comnytext menu");
+    console.log("hide context menu");
   }, []);
 
   return [handleShowContextMenu, hideContextMenu];
@@ -150,7 +161,6 @@ const showContextMenu = (
     ...contextMenuProps
   }: ContextMenuOptions["ContextMenuProps"] = NO_OPTIONS
 ) => {
-  console.log(contextMenuProps);
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
     const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
       isGroupMenuItemDescriptor(menuItem) ? (

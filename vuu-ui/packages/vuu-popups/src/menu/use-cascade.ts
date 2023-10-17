@@ -277,7 +277,6 @@ export const useCascade = ({
     const { current: menus } = openMenus;
     const menu = menus.at(-1);
     const el = menu ? document.getElementById(menu.id) : undefined;
-    console.log({ menu, el });
     if (el) {
       const { right, bottom } = el.getBoundingClientRect();
       const { clientHeight, clientWidth } = document.body;
@@ -296,7 +295,7 @@ export const useCascade = ({
         el.focus();
       }
     } else {
-      console.log(`no element found with if ${menu.id}`);
+      console.log(`useCascade no element found with if ${menu?.id}`);
     }
   }, [rootId, setOpenMenus]);
 

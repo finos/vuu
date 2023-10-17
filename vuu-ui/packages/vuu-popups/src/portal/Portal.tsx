@@ -1,4 +1,4 @@
-import { useThemeAttributes } from "@finos/vuu-shell";
+import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-shell";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -31,6 +31,11 @@ export interface PortalProps {
    * Defaults to true
    */
   open?: boolean;
+  /**
+   * ThemeAttributes can be passed in for cases where ContextMenu is
+   * rendered via popup-service showPopup, outside the Context hierarchy.
+   */
+  themeAttributes?: ThemeAttributes;
 }
 
 function getContainer(container: PortalProps["container"]) {
@@ -49,11 +54,13 @@ export const Portal = ({
   id = DEFAULT_ID,
   onRender,
   open = true,
+  themeAttributes,
 }: PortalProps) => {
   const [mounted, setMounted] = useState(false);
   const portalRef = useRef<HTMLElement | null>(null);
   const container = getContainer(containerProp) ?? document.body;
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const [themeClass, densityClass, dataMode] =
+    useThemeAttributes(themeAttributes);
 
   useLayoutEffect(() => {
     const root = document.getElementById(id);

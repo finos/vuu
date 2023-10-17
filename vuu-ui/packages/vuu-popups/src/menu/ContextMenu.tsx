@@ -5,9 +5,14 @@ import { useItemsWithIdsNext } from "./use-items-with-ids-next";
 import { useId } from "@finos/vuu-layout";
 import { PopupCloseCallback } from "../popup";
 import { ContextMenuOptions } from "./useContextMenu";
-import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
+import {
+  PopupComponent as Popup,
+  Portal,
+  PortalProps,
+} from "@finos/vuu-popups";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
+  PortalProps?: Partial<PortalProps>;
   onClose?: PopupCloseCallback;
   position?: { x: number; y: number };
   withPortal?: boolean;
@@ -16,6 +21,7 @@ export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
 const noop = () => undefined;
 
 export const ContextMenu = ({
+  PortalProps,
   activatedByKeyboard,
   children: childrenProp,
   className,
@@ -89,9 +95,8 @@ export const ContextMenu = ({
     <>
       {openMenus.map(({ id: menuId, left, top }, i, all) => {
         const childMenuId = getChildMenuId(i);
-        // TODO don't need the portal here, vuu popup service takes care of this
         return (
-          <Portal key={i} onRender={handleRender}>
+          <Portal {...PortalProps} key={i} onRender={handleRender}>
             <Popup
               anchorElement={{ current: document.body }}
               placement="absolute"
