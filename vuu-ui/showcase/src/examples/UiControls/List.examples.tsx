@@ -3,7 +3,7 @@ import {
   dragStrategy,
   List,
   ListItem,
-  MultiSelectionChangeHandler,
+  MultiSelectionHandler,
   SelectHandler,
   SingleSelectionHandler,
   VirtualizedList,
@@ -111,7 +111,7 @@ export const InlineListItems = () => {
 InlineListItems.displaySequence = displaySequence++;
 
 export const ListExtendedSelection = () => {
-  const handleSelectionChange = useCallback<MultiSelectionChangeHandler>(
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, selected) => {
       console.log(`handleSelectionChange`, { selected });
     },

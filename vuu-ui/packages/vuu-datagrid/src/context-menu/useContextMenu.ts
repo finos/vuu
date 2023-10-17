@@ -2,8 +2,8 @@
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { MenuActionClosePopup } from "@finos/vuu-popups";
 import { removeColumnFromFilter, setAggregations } from "@finos/vuu-utils";
-import { MenuActionClosePopup } from "packages/vuu-popups/src";
 import { AggregationType } from "../constants";
 import { GridModelDispatch } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";

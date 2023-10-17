@@ -99,7 +99,6 @@ export class ArrayBackedMovingWindow {
     const internalIndex = index - this.#range.from;
     //TODO measure the performance impact of this check
     if (dataIsUnchanged(row, this.internalData[internalIndex])) {
-      console.log("data unchanged");
       return false;
     }
     const isWithinClientRange = this.isWithinClientRange(index);

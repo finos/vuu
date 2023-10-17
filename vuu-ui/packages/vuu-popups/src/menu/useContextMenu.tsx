@@ -14,7 +14,7 @@ import {
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
 import { ContextMenuContext } from "./context-menu-provider";
-import { useThemeAttributes } from "packages/vuu-shell/src";
+import { useThemeAttributes } from "@finos/vuu-shell";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;
