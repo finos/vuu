@@ -7,3 +7,4 @@ export * from "./portal";
 export * from "./portal-deprecated";
 export * from "./prompt";
 export * from "./tooltip";
+export * from "./notifications"
