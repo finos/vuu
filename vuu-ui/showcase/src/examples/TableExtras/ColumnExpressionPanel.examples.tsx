@@ -1,5 +1,5 @@
 import { ColumnExpressionPanel } from "@finos/vuu-table-extras";
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useCallback } from "react";
 import { useTableConfig } from "../utils";
 

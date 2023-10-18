@@ -1,7 +1,7 @@
-import { ColumnFormattingPanel } from "@finos/vuu-table-extras";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnFormattingPanel } from "@finos/vuu-table-extras";
+import { CellRendererDescriptor } from "@finos/vuu-utils";
 import { useMemo } from "react";
-import { CellRendererDescriptor } from "packages/vuu-utils/src";
 
 let displaySequence = 1;
 
@@ -29,6 +29,8 @@ export const ColumnFormattingPanelDouble = () => {
     <ColumnFormattingPanel
       availableRenderers={availableRenderers}
       column={column}
+      onChangeFormatting={() => console.log("onChangeFormatting")}
+      onChangeRenderer={() => console.log("onChangeRenderer")}
       selectedCellRenderer={availableRenderers[0]}
       style={{
         border: "solid 1px lightgray",

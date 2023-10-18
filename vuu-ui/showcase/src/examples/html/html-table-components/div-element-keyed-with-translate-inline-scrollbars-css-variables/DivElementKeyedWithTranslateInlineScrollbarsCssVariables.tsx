@@ -22,6 +22,7 @@ export const DivElementKeyedWithTranslateInlineScrollbarsCssVariables = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelect,
   onSelectionChange,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,

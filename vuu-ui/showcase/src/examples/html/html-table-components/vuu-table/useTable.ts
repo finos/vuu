@@ -3,13 +3,17 @@ import {
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   GridConfig,
   KeyedColumnDescriptor,
   SelectionChangeHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
+import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
+import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
+  buildContextMenuDescriptors,
   MeasuredProps,
   TableColumnResizeHandler,
   useMeasuredContainer,
@@ -18,7 +22,11 @@ import {
   useTableModel,
   useTableViewport,
 } from "@finos/vuu-table";
-import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
+import {
+  isShowColumnSettings,
+  isShowTableSettings,
+  PersistentColumnAction,
+} from "@finos/vuu-table/src/table/useTableModel";
 import {
   applySort,
   buildColumnMap,
@@ -29,17 +37,9 @@ import {
 } from "@finos/vuu-utils";
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDataSource } from "./useDataSource";
-import { useTableScroll } from "./useTableScroll";
-import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
-import {
-  isShowColumnSettings,
-  isShowTableSettings,
-  PersistentColumnAction,
-} from "@finos/vuu-table/src/table/useTableModel";
 import { useInitialValue } from "./useInitialValue";
+import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
-import { buildContextMenuDescriptors } from "@finos/vuu-table";
-import { DataSourceRow } from "packages/vuu-data-types";
 
 const { KEY, IS_EXPANDED } = metadataKeys;
 

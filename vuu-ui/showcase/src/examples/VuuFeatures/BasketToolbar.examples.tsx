@@ -1,5 +1,5 @@
 import { BasketToolbar } from "feature-basket-trading";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/basket-selector";
 import { BasketStatus } from "sample-apps/feature-basket-trading/src/VuuBasketTradingFeature";
 import { useSchema, useTableConfig } from "../utils";
@@ -31,6 +31,7 @@ export const BasketToolbarDesign = () => {
       basketId: "001",
       dataSourceBasket,
       dataSourceBasketSearch,
+      onClickAddBasket: () => console.log("Add Basket"),
     }),
     [dataSourceBasket, dataSourceBasketSearch]
   );
@@ -71,6 +72,7 @@ export const BasketToolbarOnMarket = () => {
       basketId: "001",
       dataSourceBasket,
       dataSourceBasketSearch,
+      onClickAddBasket: () => console.log("Add Basket"),
     }),
     [dataSourceBasket, dataSourceBasketSearch]
   );

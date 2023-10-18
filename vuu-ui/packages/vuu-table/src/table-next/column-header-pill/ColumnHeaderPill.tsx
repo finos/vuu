@@ -1,5 +1,5 @@
 import cx from "classnames";
-import { KeyedColumnDescriptor } from "packages/vuu-datagrid-types";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 
 import "./ColumnHeaderPill.css";

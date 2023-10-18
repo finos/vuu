@@ -14,7 +14,7 @@ import { SortIndicator, sortStatus } from "./sort-indicator";
 import { useCellResize } from "./useCellResize";
 
 import "./HeaderCell.css";
-import { DataSourceFilter } from "packages/vuu-data-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 const classBase = "hwHeaderCell";
 const NO_AGGREGATION = { aggType: -1 };

@@ -418,4 +418,4 @@ export const DefaultSelectedWithinViewport = () => {
     </>
   );
 };
-DefaultList.displaySequence = displaySequence++;
+DefaultSelectedWithinViewport.displaySequence = displaySequence++;

@@ -15,7 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { SingleSelectionHandler } from "packages/vuu-ui-controls/src";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls/src";
 
 const cursorAtTextStart = (input: HTMLInputElement) =>
   input.selectionStart === 0;
