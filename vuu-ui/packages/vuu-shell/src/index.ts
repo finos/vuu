@@ -1,7 +1,6 @@
 export * from "./connection-status";
 export * from "./density-switch";
 export * from "./feature";
-export * from "./layout-config";
 export * from "./layout-management";
 export * from "./left-nav";
 export * from "./login";

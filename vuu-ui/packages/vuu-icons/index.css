@@ -61,19 +61,13 @@
   --vuu-svg-search: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M10.3333 9.33332H9.8066L9.61993 9.15332C10.4199 8.21999 10.8333 6.94666 10.6066 5.59332C10.2933 3.73999 8.7466 2.25999 6.87993 2.03332C4.05993 1.68666 1.6866 4.05999 2.03326 6.87999C2.25993 8.74666 3.73993 10.2933 5.59326 10.6067C6.9466 10.8333 8.21993 10.42 9.15326 9.61999L9.33326 9.80666V10.3333L12.1666 13.1667C12.4399 13.44 12.8866 13.44 13.1599 13.1667C13.4333 12.8933 13.4333 12.4467 13.1599 12.1733L10.3333 9.33332ZM6.33326 9.33332C4.67326 9.33332 3.33326 7.99332 3.33326 6.33332C3.33326 4.67332 4.67326 3.33332 6.33326 3.33332C7.99326 3.33332 9.33326 4.67332 9.33326 6.33332C9.33326 7.99332 7.99326 9.33332 6.33326 9.33332Z"/></svg>');
   --vuu-svg-tick: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><path d="M5.2161 8.8169C4.97911 9.06103 4.59628 9.06103 4.35929 8.8169L2.17774 6.56964C1.94075 6.32551 1.94075 5.93114 2.17774 5.68701C2.41474 5.44288 2.79757 5.44288 3.03456 5.68701L4.78466 7.48983L8.96544 3.1831C9.20243 2.93897 9.58526 2.93897 9.82226 3.1831C10.0592 3.42723 10.0592 3.8216 9.82226 4.06573L5.2161 8.8169Z"/></svg>');
   --vuu-svg-triangle-right: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 16"><path d="M3.807 10.1933L5.53 8.46665C5.79333 8.20665 5.79333 7.78665 5.53333 7.52665L3.807 5.79998C3.387 5.38665 2.66666 5.67998 2.7 6.27331V9.71998C2.7 10.32 3.3876 10.6133 3.807 10.1933Z"/></svg>');
-  
+  --vuu-svg-info-circle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 17C11.45 17 11 16.55 11 16V12C11 11.45 11.45 11 12 11C12.55 11 13 11.45 13 12V16C13 16.55 12.55 17 12 17ZM13 9H11V7H13V9Z" fill="white"/>  </svg>');
   --vuu-svg-warn-triangle: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4.47 21H19.53C21.07 21 22.03 19.33 21.26 18L13.73 4.98999C12.96 3.65999 11.04 3.65999 10.27 4.98999L2.74 18C1.97 19.33 2.93 21 4.47 21ZM12 14C11.45 14 11 13.55 11 13V11C11 10.45 11.45 9.99999 12 9.99999C12.55 9.99999 13 10.45 13 11V13C13 13.55 12.55 14 12 14ZM13 18H11V16H13V18Z"/></svg>');
 }
 
-
-
-
-
-
-
-span[data-icon]{
+span[data-icon] {
   display: inline-block;
-  height: var(--vuu-icon-height, var(--vuu-icon-size,18px));
+  height: var(--vuu-icon-height, var(--vuu-icon-size, 18px));
   position: relative;
   width: var(--vuu-icon-width, var(--vuu-icon-size, 18px));
 }
@@ -124,9 +118,11 @@ span[data-icon]{
 [data-icon='arrow-left'] {
   --vuu-icon-svg: var(--vuu-svg-arrow-left);
 }
+
 [data-icon='arrow-right'] {
   --vuu-icon-svg: var(--vuu-svg-arrow-right);
 }
+
 [data-icon='arrow-up'] {
   --vuu-icon-svg: var(--vuu-svg-arrow-up);
 }
@@ -146,9 +142,11 @@ span[data-icon]{
 [data-icon='chevron-down'] {
   --vuu-icon-svg: var(--vuu-svg-chevron-down);
 }
+
 [data-icon='chevron-left'] {
   --vuu-icon-svg: var(--vuu-svg-chevron-left);
 }
+
 [data-icon='chevron-right'] {
   --vuu-icon-svg: var(--vuu-svg-chevron-right);
 }
@@ -177,6 +175,7 @@ span[data-icon]{
   --vuu-icon-color: var(--vuuIcon-color, var(--salt-status-error-foreground));
   --vuu-icon-svg: var(--vuu-svg-alert-circle);
 }
+
 [data-icon='filter'] {
   --vuu-icon-svg: var(--svg-filter);
 }
@@ -213,12 +212,15 @@ span[data-icon]{
 [data-icon='plus-box'] {
   --vuu-icon-svg: var(--svg-plus-box);
 }
+
 [data-icon='minus-box'] {
   --vuu-icon-svg: var(--svg-minus-box);
 }
+
 [data-icon='more-vert'] {
   --vuu-icon-svg: var(--vuu-svg-more-vert);
 }
+
 [data-icon='more-horiz'] {
   --vuu-icon-svg: var(--vuu-svg-more-horiz);
 }
@@ -226,6 +228,7 @@ span[data-icon]{
 [data-icon='search'] {
   --vuu-icon-svg: var(--vuu-svg-search);
 }
+
 [data-icon='settings'] {
   --vuu-icon-svg: var(--svg-settings);
 }
@@ -269,6 +272,7 @@ span[data-icon]{
 [data-icon='triangle-right'] {
   --vuu-icon-svg: var(--vuu-svg-triangle-right);
 }
+
 [data-icon='warn-triangle'] {
   --vuu-icon-svg: var(--vuu-svg-warn-triangle);
 }
