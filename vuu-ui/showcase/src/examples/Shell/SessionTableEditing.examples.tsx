@@ -2,7 +2,6 @@ import {
   ContextMenuProvider,
   Dialog,
   MenuActionClosePopup,
-  PopupCloseReason,
   useContextMenu,
 } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
@@ -14,7 +13,7 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "packages/vuu-data-types";
+} from "@finos/vuu-data-types";
 
 let displaySequence = 0;
 

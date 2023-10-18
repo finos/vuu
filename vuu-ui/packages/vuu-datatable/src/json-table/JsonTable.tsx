@@ -7,9 +7,9 @@ import { TableConfig } from "@finos/vuu-datagrid-types";
 
 export interface JsonTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
-  config: Pick<
+  config?: Pick<
     TableConfig,
-    "columns" | "columnSeparators" | "rowSeparators" | "zebraStripes"
+    "columnSeparators" | "rowSeparators" | "zebraStripes"
   >;
   source: JsonData | undefined;
 }
@@ -20,7 +20,7 @@ export const JsonTable = ({
   ...tableProps
 }: JsonTableProps) => {
   const [dataSource, tableConfig] = useMemo<
-    [JsonDataSource, JsonTableProps["config"]]
+    [JsonDataSource, TableConfig]
   >(() => {
     const ds = new JsonDataSource({
       data: source,

@@ -3,7 +3,7 @@ import { TableConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useState } from "react";
 import { useSchemas, useTestDataSource } from "../utils";
-import { DataSourceFilter } from "packages/vuu-data-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 let displaySequence = 1;
 

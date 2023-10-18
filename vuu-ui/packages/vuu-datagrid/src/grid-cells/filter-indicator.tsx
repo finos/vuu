@@ -5,7 +5,7 @@ import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 
 import "./filter-indicator.css";
-import { KeyedColumnDescriptor } from "packages/vuu-datagrid-types";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 export const Direction = {
   ASC: "asc",

@@ -1,7 +1,7 @@
-import { VuuRange } from "packages/vuu-protocol-types";
-import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
+import { ArrayDataSource } from "@finos/vuu-data";
+import { VuuRange } from "@finos/vuu-protocol-types";
 import { random } from "./reference-data";
-import { ArrayDataSource, DataSource } from "@finos/vuu-data";
+import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;

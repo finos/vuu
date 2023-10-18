@@ -83,14 +83,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     filterbarConfigFromState?.filters ?? []
   );
 
-  const handleActiveChange = useCallback(
-    (activeFilterIndex: number[]) => {
-      activeRef.current = activeFilterIndex;
-      save?.({ filters, activeFilterIndex }, "filterbar-config");
-    },
-    [filters, save]
-  );
-
   const handleFiltersChanged = useCallback(
     (filters: Filter[]) => {
       save?.(
@@ -257,7 +249,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
     filters,
     onApplyFilter: handleApplyFilter,
-    onActiveChange: handleActiveChange,
     onFiltersChanged: handleFiltersChanged,
     tableSchema,
   };

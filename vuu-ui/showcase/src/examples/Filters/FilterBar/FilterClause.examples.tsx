@@ -10,7 +10,6 @@ import {
   MultiSelectionHandler,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
-import { SelectionChangeHandler } from "@salt-ds/lab";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import {
@@ -103,7 +102,7 @@ export const DataBoundTextInputEmpty = () => {
     op: "=",
   });
 
-  const handleValueChange = useCallback((value: string | number) => {
+  const handleInputComplete = useCallback((value: string | string[]) => {
     setValue(String(value));
   }, []);
 
@@ -111,7 +110,7 @@ export const DataBoundTextInputEmpty = () => {
     <TextInput
       column={column}
       filterClause={filterClause}
-      onInputComplete={handleValueChange}
+      onInputComplete={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
       table={tableSchema.table}
@@ -141,7 +140,7 @@ export const DataBoundTextInputLoaded = () => {
     value: "EUR",
   });
 
-  const handleValueChange = useCallback((value: string | number) => {
+  const handleInputComplete = useCallback((value: string | string[]) => {
     setValue(String(value));
   }, []);
 
@@ -149,7 +148,7 @@ export const DataBoundTextInputLoaded = () => {
     <TextInput
       column={column}
       filterClause={filterClause}
-      onValueChange={handleValueChange}
+      onInputComplete={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
       table={tableSchema.table}

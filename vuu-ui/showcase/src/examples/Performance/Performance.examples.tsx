@@ -5,7 +5,7 @@ import { Button } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
 import { metadataKeys } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 
 import "./Performance.examples.css";
 

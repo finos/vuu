@@ -54,7 +54,7 @@ export const DefaultColumnExpressionInput = () => {
     }, []);
 
   const handleChange: ColumnExpressionInputProps["onChange"] = useCallback(
-    (source: string, expression: Expression | undefined) => {
+    (source: string) => {
       console.log(`source ${source}, expression ${expression}`);
       // const isValidExpression = isCompleteExpression(source);
       // console.log(`is valid ${isValidExpression}`);
