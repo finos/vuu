@@ -1,36 +1,21 @@
 import { byModule } from "@finos/vuu-data";
 import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@finos/vuu-data-types";
-import { registerComponent } from "@finos/vuu-layout";
-import {
-  ContextMenuProvider,
-  Dialog,
-  MenuActionClosePopup,
-} from "@finos/vuu-popups";
+  registerComponent,
+  useLayoutContextMenuItems,
+} from "@finos/vuu-layout";
+import { ContextMenuProvider, Dialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
   LayoutManagementProvider,
-  LayoutMetadata,
   LeftNav,
-  SaveLayoutPanel,
   Shell,
-  useLayoutManager,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import {
-  CSSProperties,
-  ReactElement,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { CSSProperties } from "react";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { schemas } from "../utils";
 
@@ -107,64 +92,12 @@ const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = Object.values(
   }));
 
 const ShellWithNewTheme = () => {
-  const [dialogContent, setDialogContent] = useState<ReactElement>();
-
-  const handleCloseDialog = useCallback(() => {
-    setDialogContent(undefined);
-  }, []);
-
-  const { saveLayout } = useLayoutManager();
-
-  const handleSave = useCallback(
-    (layoutMetadata: Omit<LayoutMetadata, "id">) => {
-      saveLayout(layoutMetadata);
-      setDialogContent(undefined);
-    },
-    [saveLayout]
-  );
-
-  const [buildMenuOptions, handleMenuAction] = useMemo<
-    [MenuBuilder, MenuActionHandler]
-  >(() => {
-    return [
-      (location, options) => {
-        console.log({ options });
-        const locations = location.split(" ");
-        const menuDescriptors: ContextMenuItemDescriptor[] = [];
-        if (locations.includes("main-tab")) {
-          menuDescriptors.push(
-            {
-              label: "Save Layout",
-              action: "save-layout",
-              options,
-            },
-            {
-              label: "Layout Settings",
-              action: "layout-settings",
-              options,
-            }
-          );
-        }
-        return menuDescriptors;
-      },
-      (action: MenuActionClosePopup) => {
-        console.log("menu action", {
-          action,
-        });
-        if (action.menuId === "save-layout") {
-          setDialogContent(
-            <SaveLayoutPanel
-              onCancel={handleCloseDialog}
-              onSave={handleSave}
-              componentId={action.options.controlledComponentId}
-            />
-          );
-          return true;
-        }
-        return false;
-      },
-    ];
-  }, [handleCloseDialog, handleSave]);
+  const {
+    buildMenuOptions,
+    dialogContent,
+    handleCloseDialog,
+    handleMenuAction,
+  } = useLayoutContextMenuItems();
 
   return (
     <ContextMenuProvider

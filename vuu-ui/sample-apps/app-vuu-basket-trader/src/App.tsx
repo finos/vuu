@@ -1,4 +1,4 @@
-import { Dialog } from "@finos/vuu-popups";
+import { ContextMenuProvider, Dialog } from "@finos/vuu-popups";
 import {
   LeftNav,
   Shell,
@@ -6,16 +6,18 @@ import {
   ShellProps,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useRef, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
-import { defaultLayout } from "./defaultLayout";
 import { useFeatures } from "./useFeatures";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { registerComponent } from "@finos/vuu-layout";
+import {
+  registerComponent,
+  useLayoutContextMenuItems,
+} from "@finos/vuu-layout";
 
 import "./App.css";
 
@@ -40,9 +42,6 @@ const {
 export const App = ({ user }: { user: VuuUser }) => {
   const dialogTitleRef = useRef("");
   const [dialogContent, setDialogContent] = useState<ReactElement>();
-  const handleClose = () => {
-    setDialogContent(undefined);
-  };
 
   const [features, tableFeatures] = useFeatures({
     features: configuredFeatures,
@@ -50,35 +49,53 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   console.log({ features, tableFeatures });
 
+  const {
+    buildMenuOptions,
+    dialogContent: saveLayoutDialog,
+    handleCloseDialog,
+    handleMenuAction,
+  } = useLayoutContextMenuItems();
+
+  const handleClose = useCallback(() => {
+    setDialogContent(undefined);
+    handleCloseDialog?.();
+  }, [handleCloseDialog]);
+
   // TODO get Context from Shell
   return (
-    <ShellContextProvider value={{ getDefaultColumnConfig }}>
-      <Shell
-        LayoutProps={layoutProps}
-        className="App"
-        defaultLayout={defaultLayout}
-        leftSidePanelLayout="full-height"
-        leftSidePanel={
-          <LeftNav
-            features={features}
-            tableFeatures={tableFeatures}
-            style={{ width: 240 }}
-          />
-        }
-        saveUrl="https://localhost:8443/api/vui"
-        serverUrl={serverUrl}
-        user={user}
-      >
-        <Dialog
-          className="vuDialog"
-          isOpen={dialogContent !== undefined}
-          onClose={handleClose}
-          style={{ maxHeight: 500 }}
-          title={dialogTitleRef.current}
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildMenuOptions}
+    >
+      <ShellContextProvider value={{ getDefaultColumnConfig }}>
+        <Shell
+          LayoutProps={layoutProps}
+          className="App"
+          leftSidePanelLayout="full-height"
+          leftSidePanel={
+            <LeftNav
+              features={features}
+              tableFeatures={tableFeatures}
+              style={{ width: 240 }}
+            />
+          }
+          saveUrl="https://localhost:8443/api/vui"
+          serverUrl={serverUrl}
+          user={user}
         >
-          {dialogContent}
-        </Dialog>
-      </Shell>
-    </ShellContextProvider>
+          <Dialog
+            className="vuDialog"
+            isOpen={
+              dialogContent !== undefined || saveLayoutDialog !== undefined
+            }
+            onClose={handleClose}
+            style={{ maxHeight: 500 }}
+            title={dialogTitleRef.current}
+          >
+            {dialogContent ?? saveLayoutDialog}
+          </Dialog>
+        </Shell>
+      </ShellContextProvider>
+    </ContextMenuProvider>
   );
 };
