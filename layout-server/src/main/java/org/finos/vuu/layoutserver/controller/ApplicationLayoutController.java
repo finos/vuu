@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ApplicationLayoutController {
 
     private final ApplicationLayoutService service;
+    private final ModelMapper mapper;
 
     /**
      * Gets the application layout for the requesting user. Returns a default layout if none exists.
@@ -32,7 +34,7 @@ public class ApplicationLayoutController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ApplicationLayoutDto getApplicationLayout(@RequestHeader("user") String username) {
-        return service.getApplicationLayout(username);
+        return mapper.map(service.getApplicationLayout(username), ApplicationLayoutDto.class);
     }
 
     /**

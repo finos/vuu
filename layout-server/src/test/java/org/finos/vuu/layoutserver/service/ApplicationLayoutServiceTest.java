@@ -3,7 +3,6 @@ package org.finos.vuu.layoutserver.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,37 +37,38 @@ class ApplicationLayoutServiceTest {
     public void getApplicationLayout_noLayout_returnsDefault() throws JsonProcessingException {
         when(mockRepo.findById(anyString())).thenReturn(Optional.empty());
 
-        ApplicationLayoutDto actualLayout = service.getApplicationLayout("new user");
+        ApplicationLayout actualLayout = service.getApplicationLayout("new user");
+
         // Expecting application layout as defined in /test/resources/defaultLayout.json
         JsonNode expectedDefinition = objectMapper.readTree("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
-        assertThat(actualLayout.getUser()).isNull();
+        assertThat(actualLayout.getUsername()).isNull();
         assertThat(actualLayout.getDefinition()).isEqualTo(expectedDefinition);
     }
 
     @Test
-    public void getApplicationLayout_layoutExists_returnsLayout() {
-        String expectedDefinition = "{\"id\":\"main-tabs\"}";
+    public void getApplicationLayout_layoutExists_returnsLayout() throws JsonProcessingException {
         String user = "user";
+
+        JsonNode expectedDefinition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
         ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition);
 
         when(mockRepo.findById(user)).thenReturn(Optional.of(expectedLayout));
 
-        ApplicationLayoutDto actualLayout = service.getApplicationLayout(user);
+        ApplicationLayout actualLayout = service.getApplicationLayout(user);
 
-        assertThat(actualLayout.getUser()).isEqualTo(user);
-        assertThat(actualLayout.getDefinition().toString()).isEqualToIgnoringWhitespace(expectedDefinition);
+        assertThat(actualLayout).isEqualTo(expectedLayout);
     }
 
     @Test
     public void createApplicationLayout_validDefinition_callsRepoSave() throws JsonProcessingException {
-        String definition = "{\"id\":\"main-tabs\"}";
         String user = "user";
+        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
-        service.createApplicationLayout(user, objectMapper.readTree(definition));
+        service.createApplicationLayout(user, definition);
 
-        ApplicationLayout expectedLayout = new ApplicationLayout(user, definition);
-        verify(mockRepo, times(1)).save(expectedLayout);
+        verify(mockRepo, times(1))
+                .save(new ApplicationLayout(user, definition));
     }
 
     @Test
@@ -82,13 +82,13 @@ class ApplicationLayoutServiceTest {
 
     @Test
     public void updateApplicationLayout_validDefinition_callsRepoSave() throws JsonProcessingException {
-        String definition = "{\"id\":\"main-tabs\"}";
         String user = "user";
+        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
-        service.updateApplicationLayout(user, objectMapper.readTree(definition));
+        service.updateApplicationLayout(user, definition);
 
-        ApplicationLayout expectedLayout = new ApplicationLayout(user, definition);
-        verify(mockRepo, times(1)).save(expectedLayout);
+        verify(mockRepo, times(1))
+                .save(new ApplicationLayout(user, definition));
     }
 
     @Test

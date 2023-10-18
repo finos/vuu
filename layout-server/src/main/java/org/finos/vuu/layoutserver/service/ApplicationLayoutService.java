@@ -1,10 +1,8 @@
 package org.finos.vuu.layoutserver.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.slf4j.Logger;
@@ -23,14 +21,14 @@ public class ApplicationLayoutService {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationLayoutService.class);
     private static final String DEFAULT_LAYOUT_FILE = "defaultLayout.json";
-    private static ApplicationLayoutDto defaultLayout;
+    private static ApplicationLayout defaultLayout;
     private final ApplicationLayoutRepository repository;
 
     public void createApplicationLayout(String username, JsonNode layoutDefinition) {
-        repository.save(new ApplicationLayout(username, layoutDefinition.toString()));
+        repository.save(new ApplicationLayout(username, layoutDefinition));
     }
 
-    public ApplicationLayoutDto getApplicationLayout(String username) {
+    public ApplicationLayout getApplicationLayout(String username) {
         Optional<ApplicationLayout> layout = repository.findById(username);
 
         if (layout.isEmpty()) {
@@ -38,12 +36,7 @@ public class ApplicationLayoutService {
             return getDefaultLayout();
         }
 
-        try {
-            return ApplicationLayoutDto.fromEntity(layout.get());
-        } catch (JsonProcessingException e) {
-            logger.warn("Failed to read user's application layout, returning default");
-            return getDefaultLayout();
-        }
+        return layout.get();
     }
 
     public void updateApplicationLayout(String username, JsonNode layoutDefinition) {
@@ -58,7 +51,7 @@ public class ApplicationLayoutService {
         }
     }
 
-    private ApplicationLayoutDto getDefaultLayout() {
+    private ApplicationLayout getDefaultLayout() {
         if (defaultLayout == null) {
             loadDefaultLayout();
         }
@@ -67,7 +60,7 @@ public class ApplicationLayoutService {
 
     private void loadDefaultLayout() {
         JsonNode definition = loadJsonFile();
-        defaultLayout = ApplicationLayoutDto.builder().definition(definition).build();
+        defaultLayout = new ApplicationLayout(null, definition);
     }
 
     private JsonNode loadJsonFile() {

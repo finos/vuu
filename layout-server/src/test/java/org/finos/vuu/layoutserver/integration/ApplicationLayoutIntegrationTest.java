@@ -1,5 +1,7 @@
 package org.finos.vuu.layoutserver.integration;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ApplicationLayoutIntegrationTest {
+    public static final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -36,7 +39,7 @@ public class ApplicationLayoutIntegrationTest {
     public void getApplicationLayout_noLayoutExists_returns200WithDefaultLayout() throws Exception {
         mockMvc.perform(get("/application-layouts").header("user", "new user"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user", nullValue()))
+                .andExpect(jsonPath("$.username", nullValue()))
                 // Expecting application layout as defined in /test/resources/defaultLayout.json
                 .andExpect(jsonPath("$.definition.defaultLayoutKey", is("default-layout-value")));
     }
@@ -52,7 +55,7 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(get("/application-layouts").header("user", user))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user", is(user)))
+                .andExpect(jsonPath("$.username", is(user)))
                 .andExpect(jsonPath("$.definition", is(definition)));
     }
 
@@ -71,7 +74,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.extractDefinition()).isEqualToIgnoringWhitespace(definition);
+        assertThat(persistedLayout.getDefinition()).isEqualTo(objectMapper.readTree(definition));
     }
 
     @Test
@@ -97,7 +100,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.extractDefinition()).isEqualToIgnoringWhitespace(newDefinition);
+        assertThat(retrievedLayout.getDefinition()).isEqualTo(objectMapper.readTree(newDefinition));
     }
 
     @Test
@@ -115,7 +118,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.extractDefinition()).isEqualToIgnoringWhitespace(definition);
+        assertThat(persistedLayout.getDefinition()).isEqualTo(objectMapper.readTree(definition));
     }
 
     @Test
@@ -141,7 +144,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.extractDefinition()).isEqualToIgnoringWhitespace(newDefinition);
+        assertThat(retrievedLayout.getDefinition()).isEqualTo(objectMapper.readTree(newDefinition));
     }
 
     @Test
@@ -174,11 +177,6 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     private void persistApplicationLayout(String user, Map<String, String> definition) {
-        StringBuilder defBuilder = new StringBuilder("{");
-        definition.forEach((k, v) -> defBuilder.append("\"").append(k).append("\":\"").append(v).append("\""));
-        defBuilder.append("}");
-
-        ApplicationLayout appLayout = new ApplicationLayout(user, defBuilder.toString());
-        repository.save(appLayout);
+        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, JsonNode.class)));
     }
 }

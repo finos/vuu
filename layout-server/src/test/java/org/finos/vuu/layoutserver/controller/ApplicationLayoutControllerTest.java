@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
+import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -17,26 +19,26 @@ import static org.mockito.Mockito.when;
 class ApplicationLayoutControllerTest {
     private static ApplicationLayoutService mockService;
     private static ApplicationLayoutController controller;
+    private static final ModelMapper modelMapper = new ModelMapper();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setup() {
         mockService = Mockito.mock(ApplicationLayoutService.class);
-        controller = new ApplicationLayoutController(mockService);
+        controller = new ApplicationLayoutController(mockService, modelMapper);
     }
 
     @Test
     public void getApplicationLayout_validUser_returnsLayoutFromService() throws JsonProcessingException {
         String user = "user";
+        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
-        ApplicationLayoutDto expectedDto = ApplicationLayoutDto.builder()
-                .user(user)
-                .definition(objectMapper.readTree("{\"id\":\"main-tabs\"}"))
-                .build();
+        when(mockService.getApplicationLayout(user))
+                .thenReturn(new ApplicationLayout(user, definition));
 
-        when(mockService.getApplicationLayout(user)).thenReturn(expectedDto);
+        assertThat(controller.getApplicationLayout(user))
+                .isEqualTo(new ApplicationLayoutDto(user, definition));
 
-        assertThat(controller.getApplicationLayout(user)).isEqualTo(expectedDto);
         verify(mockService, times(1)).getApplicationLayout(user);
     }
 
