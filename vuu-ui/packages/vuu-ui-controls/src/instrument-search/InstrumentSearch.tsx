@@ -92,4 +92,4 @@ export const InstrumentSearch = ({
   );
 };
 
-registerComponent("InstrumentSearch", InstrumentSearch, "view");
+registerComponent?.("InstrumentSearch", InstrumentSearch, "view");
