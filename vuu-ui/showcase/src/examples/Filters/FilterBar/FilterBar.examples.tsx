@@ -47,6 +47,7 @@ export const DefaultFilterBar = ({
         tableSchema={tableSchema}
       />
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
+      <Input style={{ margin: 20, width: 100 }} />
     </>
   );
 };

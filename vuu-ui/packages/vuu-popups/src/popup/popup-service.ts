@@ -1,12 +1,9 @@
 import cx from "classnames";
-import { escape } from "querystring";
 import React, {
   createElement,
   CSSProperties,
   HTMLAttributes,
   ReactElement,
-  useEffect,
-  useRef,
 } from "react";
 import ReactDOM from "react-dom";
 import { ContextMenuOptions } from "../menu";
@@ -63,7 +60,9 @@ function specialKeyHandler(e: KeyboardEvent) {
 
 function outsideClickHandler(e: MouseEvent) {
   if (_popups.length) {
-    const popupContainers = document.body.querySelectorAll(".vuuPopup");
+    const popupContainers = document.body.querySelectorAll(
+      ".vuuPopup,#vuu-portal-root"
+    );
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target as HTMLElement)) {
         return;
@@ -293,78 +292,3 @@ export class DialogService {
     }
   }
 }
-
-export interface PopupProps {
-  children: ReactElement;
-  close?: boolean;
-  depth: number;
-  group?: string;
-  name: string;
-  position?: "above" | "below" | "";
-  width: number;
-}
-
-export const Popup = (props: PopupProps) => {
-  const pendingTask = useRef<number | undefined>();
-  const ref = useRef<HTMLElement>(null);
-
-  const show = (props: PopupProps, boundingClientRect: DOMRect) => {
-    const { name, group, depth, width } = props;
-    let left: number | undefined;
-    let top: number | undefined;
-
-    if (pendingTask.current) {
-      window.clearTimeout(pendingTask.current);
-      pendingTask.current = undefined;
-    }
-
-    if (props.close === true) {
-      PopupService.hidePopup(undefined, name, group);
-    } else {
-      const { position, children: component } = props;
-      const {
-        left: targetLeft,
-        top: targetTop,
-        width: clientWidth,
-        bottom: targetBottom,
-      } = boundingClientRect;
-
-      if (position === "below") {
-        left = targetLeft;
-        top = targetBottom;
-      } else if (position === "above") {
-        left = targetLeft;
-        top = targetTop;
-      }
-
-      pendingTask.current = window.setTimeout(() => {
-        PopupService.showPopup({
-          name,
-          group,
-          depth,
-          position,
-          left,
-          top,
-          width: width || clientWidth,
-          component,
-        });
-      }, 10);
-    }
-  };
-
-  useEffect(() => {
-    if (ref.current) {
-      const el = ref.current.parentElement;
-      const boundingClientRect = el?.getBoundingClientRect();
-      if (boundingClientRect) {
-        show(props, boundingClientRect);
-      }
-    }
-
-    return () => {
-      PopupService.hidePopup(undefined, props.name, props.group);
-    };
-  }, [props]);
-
-  return React.createElement("div", { className: "popup-proxy", ref });
-};

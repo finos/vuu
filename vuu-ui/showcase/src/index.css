@@ -25,3 +25,12 @@ body {
 
 /* .vuuTooltrayProxy {
 } */
+
+.vuuShowcase-StandaloneRoot {
+  height: 100vh;
+  /** this prevents root being displaced by component margin */
+  position:absolute;
+  left:0;
+  top:0;
+  width: 100vw;
+}

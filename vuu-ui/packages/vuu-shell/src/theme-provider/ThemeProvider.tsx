@@ -28,17 +28,31 @@ export const ThemeContext = createContext<ThemeContextProps>({
   themeMode: "light",
 });
 
-export type ThemeClasses = [string, string, string];
+export type ThemeClasses = [string, string, ThemeMode];
 
 const DEFAULT_THEME_ATTRIBUTES: ThemeClasses = [
   "vuu",
   "vuu-density-high",
-  "light",
+  "light" as ThemeMode,
 ];
 
-export const useThemeAttributes = (): [string, string, string] => {
+export type ThemeAttributes = {
+  themeClass: string;
+  densityClass: string;
+  dataMode: ThemeMode;
+};
+
+export const useThemeAttributes = (
+  themeAttributes?: ThemeAttributes
+): [string, string, ThemeMode] => {
   const context = useContext(ThemeContext);
-  if (context) {
+  if (themeAttributes) {
+    return [
+      themeAttributes.themeClass,
+      themeAttributes.densityClass,
+      themeAttributes.dataMode,
+    ];
+  } else if (context) {
     return [
       `${context.theme}-theme`,
       `${context.theme}-density-${context.density}`,

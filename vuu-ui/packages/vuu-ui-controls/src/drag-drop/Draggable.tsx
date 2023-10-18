@@ -6,8 +6,9 @@ import {
   MutableRefObject,
   TransitionEventHandler,
   useCallback,
+  useMemo,
 } from "react";
-import { PortalDeprecated } from "@finos/vuu-popups";
+import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 
 import "./Draggable.css";
 
@@ -40,15 +41,29 @@ export const Draggable = forwardRef<
   );
   const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
 
+  const position = useMemo(
+    () => ({
+      left: 0,
+      top: 0,
+    }),
+    []
+  );
+
   return (
-    <PortalDeprecated>
-      <div
-        className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
-        ref={forkedRef}
-        onTransitionEnd={onTransitionEnd}
-        style={style}
-      />
-    </PortalDeprecated>
+    <Portal>
+      <Popup
+        anchorElement={{ current: document.body }}
+        placement="absolute"
+        position={position}
+      >
+        <div
+          className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
+          ref={forkedRef}
+          onTransitionEnd={onTransitionEnd}
+          style={style}
+        />
+      </Popup>
+    </Portal>
   );
 });
 

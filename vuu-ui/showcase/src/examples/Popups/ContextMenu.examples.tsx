@@ -83,7 +83,12 @@ export const DefaultContextMenu = () => {
   return (
     <div
       ref={ref}
-      style={{ background: "ivory", height: "100vh", width: "100vw" }}
+      style={{
+        background: "ivory",
+        height: 300,
+        width: 300,
+        margin: 100,
+      }}
     >
       {position.x !== -1 && position.y !== -1 ? (
         <SampleContextMenu position={position} onClose={handleClose} />

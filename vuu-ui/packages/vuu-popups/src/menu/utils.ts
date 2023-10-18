@@ -3,5 +3,5 @@ export const isRoot = (el: HTMLElement) =>
 
 export const hasPopup = (el: HTMLElement, idx: number) =>
   (el.ariaHasPopup === "true" && el.dataset?.idx === `${idx}`) ||
-  el.querySelector(`:scope > [data-idx='${idx}'][aria-haspopup='true']`) !==
+  el.querySelector(`:scope > [data-index='${idx}'][aria-haspopup='true']`) !==
     null;

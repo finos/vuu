@@ -9,6 +9,7 @@ import {
 import { hasPopup, isRoot } from "./utils";
 import { isNavigationKey } from "./key-code";
 import { isValidNumber } from "@finos/vuu-utils";
+import { MenuOpenHandler } from "./MenuList";
 
 export interface KeyboardNavigationProps {
   autoHighlightFirstItem?: boolean;
@@ -18,7 +19,7 @@ export interface KeyboardNavigationProps {
   onActivate: (idx: number) => void;
   onHighlight?: (idx: number) => void;
   onCloseMenu: (idx: number) => void;
-  onOpenMenu?: (menuItemEl: HTMLElement) => void;
+  onOpenMenu?: MenuOpenHandler;
 }
 
 export interface KeyboardHookListProps {
@@ -121,11 +122,11 @@ export const useKeyboardNavigation = ({
       ) {
         const menuEl = e.target as HTMLElement;
         const menuItemEl = menuEl.querySelector(
-          `:scope > [data-idx='${highlightedIndex}']`
+          `:scope > [data-index='${highlightedIndex}']`
         ) as HTMLElement;
 
         if (menuItemEl) {
-          onOpenMenu?.(menuItemEl);
+          onOpenMenu?.(menuItemEl, true);
         }
       } else if (e.key === "ArrowLeft" && !isRoot(e.target as HTMLElement)) {
         onCloseMenu(highlightedIndex);

@@ -10,16 +10,6 @@
     z-index: var(--salt-zIndex-modal);
 }
 
-.vuuPopupMenuList {
-    border-radius:4px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    position: absolute;
-    border-color: var(--vuuMenuList-borderColor, var(--salt-container-primary-borderColor));
-    border-style: solid !important;
-    border-width: 1px;
-    padding: 4px 0;
-}
-
 
 .vuuPortal:has(.vuuDropdown-popup-component.vuuList-empty){
     display: none;
