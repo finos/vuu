@@ -3,7 +3,7 @@ import { Filter } from "@finos/vuu-filter-types";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
 import { filterAsQuery, isMultiClauseFilter } from "@finos/vuu-utils";
 import cx from "classnames";
-import { PopupCloseCallback } from "packages/vuu-popups/src";
+import { PopupCloseCallback } from "@finos/vuu-popups/src";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
 import { filterClauses } from "../filter-utils";

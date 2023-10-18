@@ -24,7 +24,8 @@
     "sample-apps/*/src", 
     "showcase/src", 
     "sample-apps/*/index.ts",
-    "sample-apps/*/src"
+    "sample-apps/*/src",
+    "global.d.ts"
   ],
   "exclude": ["**/*.cy.*", "**/*.test.*"]
 }

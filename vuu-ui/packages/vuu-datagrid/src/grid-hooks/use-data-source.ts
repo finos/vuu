@@ -7,7 +7,7 @@ import {
   toColumnDescriptor,
   WindowRange,
 } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGridContext } from "../grid-context";
 import { GridModelType } from "../grid-model/gridModelTypes";

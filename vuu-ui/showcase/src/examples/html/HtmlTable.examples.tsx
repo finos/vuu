@@ -3,7 +3,7 @@ import { Flexbox, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { SetPropsAction } from "@finos/vuu-layout/src/layout-reducer";
 import { TableNext } from "@finos/vuu-table";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { RowProps } from "packages/vuu-table/src/table/TableRow";
+import { RowProps } from "@finos/vuu-table";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { useTableConfig } from "../utils";
 import {
@@ -366,15 +366,7 @@ export const VuuTableTwentyColumns = () => {
     rangeChangeRowset: "full",
   });
 
-  return (
-    <VuuTable
-      {...config}
-      height={645}
-      renderBufferSize={0}
-      width={750}
-      zebraStripes
-    />
-  );
+  return <VuuTable {...config} height={645} renderBufferSize={0} width={750} />;
 };
 VuuTableTwentyColumns.displaySequence = displaySequence++;
 

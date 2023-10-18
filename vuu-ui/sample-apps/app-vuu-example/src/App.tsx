@@ -19,7 +19,7 @@ import { getFormConfig } from "./session-editing";
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
 import "./app-sidepanel/AppSidePanel.css";
-import { VuuTable } from "packages/vuu-protocol-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 
 const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
 const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =

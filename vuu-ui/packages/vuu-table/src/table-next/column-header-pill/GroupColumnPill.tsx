@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "packages/vuu-datagrid-types";
+import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnHeaderPill, ColumnHeaderPillProps } from "./ColumnHeaderPill";
 
 import "./GroupColumnPill.css";
