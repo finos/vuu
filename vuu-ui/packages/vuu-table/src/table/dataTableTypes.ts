@@ -12,7 +12,7 @@ import {
   TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { VuuDataRow } from "packages/vuu-protocol-types";
+import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { FC, HTMLAttributes, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 

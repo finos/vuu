@@ -101,7 +101,7 @@ if (hasUrlParameter("standalone")) {
           density="high"
           themeMode="light"
         >
-          <div style={{ height: "100vh", width: "100vw" }}>
+          <div className="vuuShowcase-StandaloneRoot">
             <Component />
           </div>
         </ThemeProvider>,

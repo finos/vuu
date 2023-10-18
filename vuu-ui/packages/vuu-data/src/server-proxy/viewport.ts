@@ -258,7 +258,6 @@ export class Viewport {
 
     if (lastMode === mode) {
       const ts = Date.now();
-      console.log(`read data now ${ts}`);
       this.lastUpdateStatus.count += 1;
       this.lastUpdateStatus.ts = ts;
       elapsedTime = lastTS === 0 ? 0 : ts - lastTS;
@@ -930,7 +929,7 @@ export class Viewport {
 
   private throttleMessage = (mode: DataUpdateMode) => {
     if (this.shouldThrottleMessage(mode)) {
-      console.log("throttling updates setTimeout to 2000");
+      info?.("throttling updates setTimeout to 2000");
       if (this.updateThrottleTimer === undefined) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

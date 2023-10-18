@@ -1,16 +1,18 @@
 import { useCallback, useRef } from "react";
-import { PortalDeprecated } from "../portal-deprecated";
 import { MenuList, MenuListProps } from "./MenuList";
 import { useCascade } from "./use-cascade";
-// import { useClickAway } from "./use-click-away";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
 import { useId } from "@finos/vuu-layout";
 import { PopupCloseCallback } from "../popup";
 import { ContextMenuOptions } from "./useContextMenu";
-
-import "./ContextMenu.css";
+import {
+  PopupComponent as Popup,
+  Portal,
+  PortalProps,
+} from "@finos/vuu-popups";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
+  PortalProps?: Partial<PortalProps>;
   onClose?: PopupCloseCallback;
   position?: { x: number; y: number };
   withPortal?: boolean;
@@ -19,6 +21,7 @@ export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
 const noop = () => undefined;
 
 export const ContextMenu = ({
+  PortalProps,
   activatedByKeyboard,
   children: childrenProp,
   className,
@@ -53,14 +56,19 @@ export const ContextMenu = ({
     [actions, id, onClose]
   );
 
-  const { closeMenu, listItemProps, openMenu, openMenus, handleRender } =
-    useCascade({
-      // FIXME
-      id: `${id}`,
-      onActivate: handleActivate,
-      onMouseEnterItem: handleMouseEnterItem,
-      position,
-    });
+  const {
+    closeMenu,
+    listItemProps,
+    openMenu: onOpenMenu,
+    openMenus,
+    handleRender,
+  } = useCascade({
+    // FIXME
+    id: `${id}`,
+    onActivate: handleActivate,
+    onMouseEnterItem: handleMouseEnterItem,
+    position,
+  });
   closeMenuRef.current = closeMenu;
 
   const handleCloseMenu = () => {
@@ -87,28 +95,33 @@ export const ContextMenu = ({
     <>
       {openMenus.map(({ id: menuId, left, top }, i, all) => {
         const childMenuId = getChildMenuId(i);
-        // TODO don't need the portal here, vuu popup service takes care of this
         return (
-          <PortalDeprecated key={i} x={left} y={top} onRender={handleRender}>
-            <MenuList
-              {...menuListProps}
-              activatedByKeyboard={navigatingWithKeyboard.current}
-              childMenuShowing={childMenuId}
-              className={className}
-              id={menuId}
-              isRoot={i === 0}
-              key={i}
-              listItemProps={listItemProps}
-              onActivate={handleActivate}
-              onHighlightMenuItem={handleHighlightMenuItem}
-              onCloseMenu={handleCloseMenu}
-              onOpenMenu={openMenu}
-              style={style}
-              tabIndex={i === all.length - 1 ? 0 : undefined}
+          <Portal {...PortalProps} key={i} onRender={handleRender}>
+            <Popup
+              anchorElement={{ current: document.body }}
+              placement="absolute"
+              position={{ left, top }}
             >
-              {menus[menuId]}
-            </MenuList>
-          </PortalDeprecated>
+              <MenuList
+                {...menuListProps}
+                activatedByKeyboard={navigatingWithKeyboard.current}
+                childMenuShowing={childMenuId}
+                className={className}
+                id={menuId}
+                isRoot={i === 0}
+                key={i}
+                listItemProps={listItemProps}
+                onActivate={handleActivate}
+                onHighlightMenuItem={handleHighlightMenuItem}
+                onCloseMenu={handleCloseMenu}
+                openMenu={onOpenMenu}
+                style={style}
+                tabIndex={i === all.length - 1 ? 0 : undefined}
+              >
+                {menus[menuId]}
+              </MenuList>
+            </Popup>
+          </Portal>
         );
       })}
     </>

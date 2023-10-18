@@ -41,7 +41,6 @@ export const ColumnMenu = ({
       showContextMenu(e, "column-menu", {
         column,
         ContextMenuProps: {
-          className: "vuuColumnMenuList",
           onClose: handleMenuClose,
           position: getPosition(rootRef.current),
         },

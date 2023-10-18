@@ -241,6 +241,7 @@ export const useKeyboardNavigation = <Item>({
   const setIgnoreFocus = (value: boolean) => (ignoreFocus.current = value);
 
   const handleFocus = useCallback(() => {
+    console.trace(`List useKeyboard focus`);
     // Ignore focus if mouse has been used
     if (ignoreFocus.current) {
       ignoreFocus.current = false;
@@ -318,6 +319,7 @@ export const useKeyboardNavigation = <Item>({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      console.log("handleKeyDown");
       if (itemCount > 0 && isNavigationKey(e)) {
         e.preventDefault();
         e.stopPropagation();

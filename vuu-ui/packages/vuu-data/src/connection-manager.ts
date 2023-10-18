@@ -164,6 +164,7 @@ function handleMessageFromWorker({
   } else if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit("connection-status", message);
   } else if (isConnectionQualityMetrics(message)) {
+    console.log({ message });
     ConnectionManager.emit("connection-metrics", message);
   } else {
     const requestId = (message as VuuUIMessageInRPC).requestId;
