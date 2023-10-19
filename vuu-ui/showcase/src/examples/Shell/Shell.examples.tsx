@@ -31,37 +31,8 @@ export const EmptyShell = () => {
 EmptyShell.displaySequence = displaySequence++;
 
 export const ShellWithDefaultLayout = () => {
-  const defaultLayout = useMemo(() => {
-    return {
-      type: "Stack",
-      props: {
-        style: {
-          width: "100%",
-          height: "100%",
-        },
-        showTabs: true,
-        enableAddTab: true,
-        preserve: true,
-        active: 0,
-      },
-      children: [
-        {
-          type: "View",
-          title: "Page 1",
-          style: { height: "calc(100% - 6px)" },
-          children: [
-            {
-              type: "Placeholder",
-            },
-          ],
-        },
-      ],
-    };
-  }, []);
-
   return (
     <Shell
-      defaultLayout={defaultLayout}
       loginUrl={window.location.toString()}
       user={user}
       style={
@@ -99,33 +70,6 @@ export const ShellWithDefaultLayoutAndLeftPanel = () => {
   const error = useAutoLoginToVuuServer();
 
   const { features, schemas } = useMockFeatureData();
-  const defaultLayout = useMemo(() => {
-    return {
-      type: "Stack",
-      props: {
-        style: {
-          width: "100%",
-          height: "100%",
-        },
-        showTabs: true,
-        enableAddTab: true,
-        preserve: true,
-        active: 0,
-      },
-      children: [
-        {
-          type: "View",
-          title: "Page 1",
-          style: { height: "calc(100% - 6px)" },
-          children: [
-            {
-              type: "Placeholder",
-            },
-          ],
-        },
-      ],
-    };
-  }, []);
 
   if (error) {
     return error;
@@ -133,7 +77,6 @@ export const ShellWithDefaultLayoutAndLeftPanel = () => {
 
   return (
     <Shell
-      defaultLayout={defaultLayout}
       leftSidePanel={<AppSidePanel features={features} tables={schemas} />}
       loginUrl={window.location.toString()}
       user={user}
