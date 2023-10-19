@@ -36,8 +36,10 @@ class ApplicationLayoutControllerTest {
         when(mockService.getApplicationLayout(user))
                 .thenReturn(new ApplicationLayout(user, definition));
 
-        assertThat(controller.getApplicationLayout(user))
-                .isEqualTo(new ApplicationLayoutDto(user, definition));
+        ApplicationLayoutDto response = controller.getApplicationLayout(user);
+
+        assertThat(response.getUsername()).isEqualTo(user);
+        assertThat(response.getDefinition()).isEqualTo(definition);
 
         verify(mockService, times(1)).getApplicationLayout(user);
     }
