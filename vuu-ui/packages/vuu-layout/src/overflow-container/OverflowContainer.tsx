@@ -57,6 +57,10 @@ const WrapContainer = React.memo(
       orientation,
     });
 
+    console.log(
+      `Overflow container WRAPPER ${React.Children.count(children)} children`
+    );
+
     const height = orientation === "vertical" ? "100%" : `${heightProp}px`;
     // TODO measure the height, if not provided
     const style = {

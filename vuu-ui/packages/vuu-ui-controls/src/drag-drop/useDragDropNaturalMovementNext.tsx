@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Direction,
@@ -157,7 +157,7 @@ export const useDragDropNaturalMovement = ({
 
           // need to compute the correct position of this
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
+          // @ts-ignore
           const draggedItem = (draggedItemRef.current = {
             end,
             mid,
@@ -168,9 +168,8 @@ export const useDragDropNaturalMovement = ({
           });
 
           const indexOfDropTarget = dropTargets.indexOf(dropTarget);
-          console.log({ indexOfDropTarget });
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
+          // @ts-ignore
           dropTargets.splice(indexOfDropTarget, 0, draggedItem);
           for (let i = index + 1; i < dropTargets.length; i++) {
             const target = dropTargets[i];
