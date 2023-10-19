@@ -17,11 +17,7 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "../common-hooks";
-import {
-  DragStartHandler,
-  DropHandler,
-  useDragDropNext as useDragDrop,
-} from "../drag-drop";
+import { DragStartHandler, useDragDropNext as useDragDrop } from "../drag-drop";
 import {
   closestListItemIndex,
   useCollapsibleGroups,
@@ -179,69 +175,14 @@ export const useList = <Item, S extends SelectionStrategy>({
     tabToSelect,
   });
 
-  const adjustIndex = useCallback(
-    (item: CollectionItem<Item>, fromIndex: number, toIndex: number) => {
-      const index = dataHook.data.indexOf(item);
-      if (index === fromIndex) {
-        return toIndex;
-      } else if (
-        index < Math.min(fromIndex, toIndex) ||
-        index > Math.max(fromIndex, toIndex)
-      ) {
-        return index;
-      }
-      if (fromIndex < index) {
-        return index - 1;
-      } else {
-        return index + 1;
-      }
-    },
-    [dataHook.data]
-  );
-
-  // Used after a drop event, to calculate wht the new selected indices will be
-  const reorderSelectedIndices = useCallback(
-    (selected: string | string[], fromIndex: number, toIndex: number) => {
-      if (Array.isArray(selected)) {
-        return selected.map((item) => adjustIndex(item, fromIndex, toIndex));
-      } else {
-        return adjustIndex(selected, fromIndex, toIndex);
-      }
-    },
-    [adjustIndex]
-  );
-
-  const handleDrop = useCallback<DropHandler>(
-    (fromIndex, toIndex, options) => {
-      if (hasSelection(selectionHook.selected)) {
-        selectedByIndexRef.current = reorderSelectedIndices(
-          selectionHook.selected,
-          fromIndex,
-          toIndex
-        );
-      }
-      if (options.isExternal) {
-        onDrop?.(fromIndex, toIndex, options);
-      } else {
-        onMoveListItem?.(fromIndex, toIndex);
-      }
-      setHighlightedIndex(-1);
-    },
-    [
-      selectionHook.selected,
-      setHighlightedIndex,
-      reorderSelectedIndices,
-      onDrop,
-      onMoveListItem,
-    ]
-  );
-
-  const handleDropSettle = useCallback(
-    (toIndex: number) => {
-      setHighlightedIndex(toIndex);
-    },
-    [setHighlightedIndex]
-  );
+  const { handleDrop, onDropSettle } = useListDrop<Item>({
+    dataHook,
+    onDrop,
+    onMoveListItem,
+    selected: selectionHook.selected,
+    setHighlightedIndex,
+    setSelected: selectionHook.setSelected,
+  });
 
   const { setSelected } = selectionHook;
   useLayoutEffectSkipFirst(() => {

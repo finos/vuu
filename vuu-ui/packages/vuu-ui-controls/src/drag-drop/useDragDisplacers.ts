@@ -6,9 +6,6 @@ import {
   MeasuredDropTarget,
   mutateDropTargetsSwitchDropTargetPosition,
 } from "./drop-target-utils";
-import { createDragSpacer as createDragDisplacer } from "./Draggable";
-import { Direction } from "./dragDropTypesNext";
-import { orientationType } from "packages/vuu-utils/src";
 
 export type DragDisplacersHookResult = {
   displaceItem: (

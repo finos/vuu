@@ -39,7 +39,7 @@
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "pub:debug": "node ./scripts/publish.mjs --debug",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
     "@types/jest": "^26.0.20",

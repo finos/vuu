@@ -24,7 +24,7 @@ export const DefaultBasketTradingFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationLayout, saveApplicationLayout} = useLayoutManager();
+  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
@@ -40,7 +40,10 @@ export const DefaultBasketTradingFeature = () => {
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={applicationLayout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider
+      layout={applicationLayout}
+      onLayoutChange={handleLayoutChange}
+    >
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
