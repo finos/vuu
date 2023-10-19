@@ -59,11 +59,11 @@ public class ApplicationLayoutService {
     }
 
     private void loadDefaultLayout() {
-        JsonNode definition = loadJsonFile();
+        JsonNode definition = loadDefaultLayoutJsonFile();
         defaultLayout = new ApplicationLayout(null, definition);
     }
 
-    private JsonNode loadJsonFile() {
+    private JsonNode loadDefaultLayoutJsonFile() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
