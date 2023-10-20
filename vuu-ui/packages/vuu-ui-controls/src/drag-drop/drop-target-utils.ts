@@ -9,17 +9,18 @@ const TOP_BOTTOM = ["top", "bottom"];
 export const NOT_OVERFLOWED = ":not(.wrapped)";
 export const NOT_HIDDEN = ':not([aria-hidden="true"])';
 
+// TODO figure out which of these sttributes we no longer need
 export type MeasuredDropTarget = {
   /** 
     The index position currently occupied by this item. If draggable 
     is dropped here, this will be the destination drop position.
   */
   currentIndex: number;
-  dataIndex?: number;
   element: HTMLElement;
   id: string;
   index: number;
   isDraggedItem: boolean;
+  isExternal?: boolean;
   isLast?: boolean;
   isOverflowIndicator?: boolean;
   start: number;
@@ -180,11 +181,8 @@ export const measureDropTargets = (
     const isLast = index === itemCount - 1;
     const id = element.id;
 
-    const dataIndex = parseInt(element.dataset.index ?? "-1");
-
     dragThresholds.push({
       currentIndex: index,
-      dataIndex: isNaN(dataIndex) ? -1 : dataIndex,
       id,
       index,
       isDraggedItem: draggedItemId === id,
@@ -214,8 +212,8 @@ export const getIndexOfDraggedItem = (
   absoluteIndex = false
 ) => {
   const indexOfDraggedItem = dropTargets.findIndex((d) => d.isDraggedItem);
-  const { index: draggedItemOriginalIndex } = dropTargets[indexOfDraggedItem];
   if (absoluteIndex) {
+    const { index: draggedItemOriginalIndex } = dropTargets[indexOfDraggedItem];
     const minIndex = dropTargets
       .filter((d) => !d.isDraggedItem)
       .reduce((min, d) => Math.min(min, d.index), Number.MAX_SAFE_INTEGER);
@@ -234,9 +232,6 @@ export const mutateDropTargetsSwitchDropTargetPosition = (
   dropTargets: MeasuredDropTarget[],
   direction: Direction
 ) => {
-  // console.log(`switchDropTargetPosition
-  //   direction: ${direction} ${dropTargetsDebugString(dropTargets)}`);
-
   const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
   const indexOfTarget =
     direction === "fwd" ? indexOfDraggedItem + 1 : indexOfDraggedItem - 1;
@@ -293,25 +288,24 @@ export const mutateDropTargetsSwitchDropTargetPosition = (
     } as MeasuredDropTarget;
     dropTargets.splice(indexOfTarget, 2, newDraggedItem, newTargetItem);
   }
-
-  // console.log(`${direction} ${dropTargetsDebugString(dropTargets)}`);
 };
 
 export const getNextDropTarget = (
   dropTargets: MeasuredDropTarget[],
   pos: number,
+  draggedItemSize: number,
   mouseMoveDirection: Direction
 ): MeasuredDropTarget => {
   const len = dropTargets.length;
   const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
+  // draggedItem will be undefined if we are handling an external drag
   const draggedItem = dropTargets[indexOfDraggedItem];
-
   if (mouseMoveDirection === "fwd") {
-    const leadingEdge = Math.round(pos + draggedItem.size);
+    const leadingEdge = Math.round(pos + draggedItemSize);
     for (let index = len - 1; index >= 0; index--) {
       const dropTarget = dropTargets[index];
       if (leadingEdge > dropTarget.mid) {
-        if (index < indexOfDraggedItem) {
+        if (draggedItem && index < indexOfDraggedItem) {
           return draggedItem;
         } else {
           return dropTarget;
@@ -358,6 +352,6 @@ export const dropTargetsDebugString = (dropTargets: MeasuredDropTarget[]) =>
           d.size
         )}    ${Math.floor(d.start)} - ${Math.floor(d.end)} (mid ${Math.floor(
           d.mid
-        )})`
+        )})  ${d.element?.textContent} `
     )
     .join("");

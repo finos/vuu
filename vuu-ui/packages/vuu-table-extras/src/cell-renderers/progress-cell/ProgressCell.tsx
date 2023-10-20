@@ -2,6 +2,7 @@ import { TableCellProps } from "@finos/vuu-datagrid-types";
 import {
   isColumnTypeRenderer,
   isTypeDescriptor,
+  isValidNumber,
   registerComponent,
 } from "@finos/vuu-utils";
 import cx from "classnames";
@@ -21,23 +22,28 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
 
   if (isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer)) {
     const { associatedField } = type.renderer;
-    const associatedValue = row[columnMap[associatedField]];
-    if (typeof value === "number" && typeof associatedValue === "number") {
-      percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
-      showProgress = isFinite(percentage);
-    } else {
-      // Temp workaround for bug on server that sends aggregated values as strings
-      const floatValue = parseFloat(value as string);
-      if (Number.isFinite(floatValue)) {
-        const floatOtherValue = parseFloat(associatedValue as string);
-        if (Number.isFinite(floatOtherValue)) {
-          percentage = Math.min(
-            Math.round((floatValue / floatOtherValue) * 100),
-            100
-          );
-          showProgress = isFinite(percentage);
+    if (associatedField) {
+      const associatedValue = row[columnMap[associatedField]];
+      if (typeof isValidNumber(value) && isValidNumber(associatedValue)) {
+        percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
+        percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
+        showProgress = isFinite(percentage);
+      } else {
+        // Temp workaround for bug on server that sends aggregated values as strings
+        const floatValue = parseFloat(value as string);
+        if (Number.isFinite(floatValue)) {
+          const floatOtherValue = parseFloat(associatedValue as string);
+          if (Number.isFinite(floatOtherValue)) {
+            percentage = Math.min(
+              Math.round((floatValue / floatOtherValue) * 100),
+              100
+            );
+            showProgress = isFinite(percentage);
+          }
         }
       }
+    } else {
+      throw Error("ProgressCell associatedField is required to render");
     }
   }
 

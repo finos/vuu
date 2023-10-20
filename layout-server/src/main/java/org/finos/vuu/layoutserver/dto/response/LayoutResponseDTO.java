@@ -10,7 +10,8 @@ public class LayoutResponseDTO {
     private UUID id;
 
     /**
-     * The definition of the layout as a string (e.g. stringified JSON structure containing components)
+     * The definition of the layout as a string (e.g. stringified JSON structure containing
+     * components)
      */
     private String definition;
 

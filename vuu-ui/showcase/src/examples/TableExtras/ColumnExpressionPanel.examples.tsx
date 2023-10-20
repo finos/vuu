@@ -5,6 +5,8 @@ import { useTableConfig } from "../utils";
 
 const instrumentPrices = { module: "SIMUL", table: "instrumentPrices" };
 
+let displaySequence = 1;
+
 export const DefaultColumnExpressionPanel = () => {
   const { config: tableConfig } = useTableConfig({
     rangeChangeRowset: "full",
@@ -26,3 +28,4 @@ export const DefaultColumnExpressionPanel = () => {
     </div>
   );
 };
+DefaultColumnExpressionPanel.displaySequence = displaySequence++;

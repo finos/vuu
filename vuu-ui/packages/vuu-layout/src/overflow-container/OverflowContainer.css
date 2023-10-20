@@ -3,7 +3,7 @@
     --overflow-direction: row; 
     --overflow-width: 0px;
     --border-size: calc((var(--overflow-container-height) - 24px) / 2);
-    background-color: var(--vuuOverflowContainer-background, black);
+    background-color: var(--vuuOverflowContainer-background);
     height: var(--overflow-container-height);
 }
 
@@ -24,7 +24,7 @@
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
     height: var(--overflow-container-height);
-    min-width: 44px;
+    min-width: var(--vuuOverflowContainer-minWidth, 44px);
     overflow: hidden;
     position: relative;
     width: 100%;

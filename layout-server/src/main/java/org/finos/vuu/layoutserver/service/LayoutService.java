@@ -1,8 +1,8 @@
 package org.finos.vuu.layoutserver.service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
+import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
@@ -22,6 +22,10 @@ public class LayoutService {
             .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
+    public Layout getLayoutByMetadataId(UUID id) {
+        return layoutRepository.findLayoutByMetadataId(id);
+    }
+
     public List<Metadata> getMetadata() {
         return metadataService.getMetadata();
     }
@@ -32,14 +36,15 @@ public class LayoutService {
 
     public void updateLayout(UUID layoutId, Layout newLayout) {
         Layout layoutToUpdate = getLayout(layoutId);
-        layoutToUpdate.setDefinition(newLayout.getDefinition());
+        Metadata newMetadata = newLayout.getMetadata();
 
-        Metadata metadataToUpdate = layoutToUpdate.getMetadata();
-        metadataToUpdate.setName(newLayout.getMetadata().getName());
-        metadataToUpdate.setGroup(newLayout.getMetadata().getGroup());
-        metadataToUpdate.setScreenshot(newLayout.getMetadata().getScreenshot());
-        metadataToUpdate.setUser(newLayout.getMetadata().getUser());
-        metadataToUpdate.setUpdated(new Date());
+        Metadata updatedMetadata = Metadata.builder()
+            .baseMetadata(newMetadata.getBaseMetadata())
+            .updated(new Date())
+            .build();
+
+        layoutToUpdate.setDefinition(newLayout.getDefinition());
+        layoutToUpdate.setMetadata(updatedMetadata);
 
         layoutRepository.save(layoutToUpdate);
     }

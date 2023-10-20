@@ -1,4 +1,5 @@
 export * from "./array-utils";
+export * from "./box-utils";
 export * from "./column-utils";
 export * from "./cookie-utils";
 export * from "./component-registry";
@@ -30,4 +31,4 @@ export * from "./selection-utils";
 export * from "./sort-utils";
 export * from "./text-utils";
 export * from "./url-utils";
-export * from "./screenshot-utils"
+export * from "./screenshot-utils";

@@ -4,6 +4,11 @@
 
 .saltInput-primary {
     --saltInput-height: 24px;
-    border: solid 1px var(--salt-editable-borderColor);
+    border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
     border-radius: 6px;
+}
+
+.saltInput-focused:hover, 
+.saltInput-focused {
+    --input-borderColor: var(--vuu-color-purple-10);
 }

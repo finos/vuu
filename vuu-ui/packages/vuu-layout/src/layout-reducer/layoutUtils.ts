@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { uuid } from "@finos/vuu-utils";
+import { dimension, uuid } from "@finos/vuu-utils";
 import React, { cloneElement, CSSProperties, ReactElement } from "react";
-import { dimension } from "../common-types";
 import {
   ComponentWithId,
   ComponentRegistry,

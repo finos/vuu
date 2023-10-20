@@ -1,8 +1,9 @@
 import { FilterBar } from "@finos/vuu-filters";
 import { Filter } from "@finos/vuu-filter-types";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSchema, useTableConfig } from "../../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { Input } from "@salt-ds/core";
 
 let displaySequence = 1;
 
@@ -11,62 +12,42 @@ export const DefaultFilterBar = ({
 }: {
   filters?: Filter[];
 }) => {
-  const filtersRef = useRef<Filter[]>(filtersProp);
+  const [filters, setFilters] = useState<Filter[]>(filtersProp);
+  const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const tableSchema = useSchema("instruments");
   const { typeaheadHook } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const handleAddFilter = useCallback((filter: Filter) => {
-    filtersRef.current.push(filter);
-    console.log(`add`);
-  }, []);
-
-  const handleDeleteFilter = useCallback(
-    (/*filter: Filter*/) => {
-      console.log(`delete filter `);
-    },
-    []
-  );
-
-  const handleRemoveFilter = useCallback(
-    (/*filter: Filter*/) => {
-      console.log(`remove filter `);
-    },
-    []
-  );
-
-  const handleRenameFilter = useCallback((filter: Filter, name: string) => {
-    filtersRef.current = filtersRef.current.map((f) =>
-      f === filter ? { ...f, name } : f
-    );
-  }, []);
-
   const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
-    console.log(`apply filter ${filter.filter}`);
+    setFilterStruct(filter.filterStruct ?? null);
   }, []);
 
-  const handleChangeFilter = useCallback((filter: Filter) => {
-    filtersRef.current = filtersRef.current.map((f) =>
-      f === filter ? filter : f
-    );
+  const handleFiltersChanged = useCallback((filters: Filter[]) => {
+    console.log("filters changed");
+    setFilters(filters);
+  }, []);
+
+  useEffect(() => {
+    inputRef.current?.querySelector("input")?.focus();
   }, []);
 
   return (
-    <FilterBar
-      FilterClauseEditorProps={{
-        suggestionProvider: typeaheadHook,
-      }}
-      filters={filtersRef.current}
-      onAddFilter={handleAddFilter}
-      onApplyFilter={handleApplyFilter}
-      onChangeFilter={handleChangeFilter}
-      onDeleteFilter={handleDeleteFilter}
-      onRemoveFilter={handleRemoveFilter}
-      onRenameFilter={handleRenameFilter}
-      tableSchema={tableSchema}
-    />
+    <>
+      <Input style={{ margin: 20, width: 100 }} ref={inputRef} />
+      <FilterBar
+        FilterClauseEditorProps={{
+          suggestionProvider: typeaheadHook,
+        }}
+        filters={filters}
+        onApplyFilter={handleApplyFilter}
+        onFiltersChanged={handleFiltersChanged}
+        tableSchema={tableSchema}
+      />
+      <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
+    </>
   );
 };
 DefaultFilterBar.displaySequence = displaySequence++;

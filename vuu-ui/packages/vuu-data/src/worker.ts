@@ -25,7 +25,9 @@ async function connectToServer(
   protocol: WebSocketProtocol,
   token: string,
   username: string | undefined,
-  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
+  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void,
+  retryLimitDisconnect?: number,
+  retryLimitStartup?: number
 ) {
   const connection = await connectWebsocket(
     url,
@@ -44,7 +46,9 @@ async function connectToServer(
       } else {
         server.handleMessageFromServer(msg);
       }
-    }
+    },
+    retryLimitDisconnect,
+    retryLimitStartup
   );
 
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
@@ -72,7 +76,9 @@ const handleMessageFromClient = async ({
         message.protocol,
         message.token,
         message.username,
-        postMessage
+        postMessage,
+        message.retryLimitDisconnect,
+        message.retryLimitStartup
       );
       postMessage({ type: "connected" });
       break;

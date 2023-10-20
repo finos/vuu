@@ -1,3 +1,50 @@
 .vuuBasketToolbar {
+    --saltFormField-width: fit-content;
+    align-items: center;
+    display: flex;
     flex: 0 0 var(--basket-toolbar-height, 75px); 
+    gap: 12px;
+    padding: 8px 16px;
+}
+
+.vuuBasketToolbar-units {
+    --vuuExpandoInput-border: solid 1px var(--salt-editable-borderColor);
+    --vuuExpandoInput-borderRadius: 6px;
+    --vuuExpandoInput-height: 32px;
+    min-width: 80px;
+
+}
+.vuuBasketToolbar-filled,
+.vuuBasketToolbar-notional {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.saltFormField:has(.vuuBasketToolbar-notional){
+    margin: 0 24px;
+
+}
+
+.saltFormField:has(.vuuBasketToolbar-notional):before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: -12px;
+    width: 1px;
+    height: 60px;
+    background-color: var(--vuu-color-gray-05);
+
+}
+
+.vuuBasketToolbar-takeOffMarket,
+.vuuBasketToolbar-sendToMarket {
+    --saltButton-borderRadius: 6px;
+    --saltButton-height: 24px;
+    --saltButton-padding: 16px;
+}
+    
+
+.vuuBasketToolbar-sendToMarket {
+    --vuu-icon-size: 16px;
+    margin-left: auto;
 }

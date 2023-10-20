@@ -12,9 +12,8 @@ import { useId } from "@finos/vuu-layout";
 import {
   CollectionProvider,
   itemToString as defaultItemToString,
-  SelectionProps,
   SelectionStrategy,
-  SingleSelectionStrategy,
+  SelectionType,
   useCollectionItems,
 } from "../common-hooks";
 import { List, ListProps } from "../list";
@@ -26,22 +25,27 @@ import { useDropdown } from "./useDropdown";
 
 export interface DropdownProps<
   Item = string,
-  Selection extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default"
 > extends DropdownBaseProps,
     Pick<
-      ListProps<Item, Selection>,
-      "ListItem" | "itemToString" | "source" | "width"
-    >,
-    SelectionProps<Item, Selection> {
-  ListProps?: Omit<
-    ListProps<Item, Selection>,
-    "ListItem" | "itemToString" | "source"
-  >;
+      ListProps<Item, S>,
+      | "ListItem"
+      | "defaultSelected"
+      | "itemToString"
+      | "onSelect"
+      | "onSelectionChange"
+      | "selected"
+      | "selectionStrategy"
+      | "source"
+      | "width"
+    > {
+  // TODO There is overlap here between ListProps and top level List props
+  ListProps?: Omit<ListProps<Item, S>, "ListItem" | "itemToString" | "source">;
 }
 
 export const Dropdown = forwardRef(function Dropdown<
   Item = string,
-  Selection extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default"
 >(
   {
     "aria-label": ariaLabel,
@@ -62,7 +66,7 @@ export const Dropdown = forwardRef(function Dropdown<
     ListProps,
     width = 180,
     ...props
-  }: DropdownProps<Item, Selection>,
+  }: DropdownProps<Item, S>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -86,45 +90,30 @@ export const Dropdown = forwardRef(function Dropdown<
     listControlProps,
     selected,
     ...dropdownListHook
-  } = useDropdown<Item, Selection>({
+  } = useDropdown<Item, S>({
     collectionHook,
     defaultHighlightedIndex: ListProps?.defaultHighlightedIndex,
     defaultIsOpen,
-    defaultSelected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof defaultSelected
-    >(defaultSelected),
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     highlightedIndex: ListProps?.highlightedIndex,
     isOpen: isOpenProp,
     itemToString,
-    label: "Dropdown",
     listRef,
     onHighlight: ListProps?.onHighlight,
     onOpenChange,
     onSelectionChange,
     onSelect,
-    selected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof selectedProp
-    >(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
   });
 
-  const collectionItemsToItem = useCallback(
-    (
-      itemIdOrItemIds?: string | null | string[]
-    ):
-      | undefined
-      | (Selection extends SingleSelectionStrategy ? Item | null : Item[]) => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? Item | null
-        : Item[];
-      if (Array.isArray(itemIdOrItemIds)) {
-        return itemIdOrItemIds.map((id) =>
-          collectionHook.itemById(id)
-        ) as returnType;
-      } else if (itemIdOrItemIds) {
-        return collectionHook.itemById(itemIdOrItemIds) as returnType;
+  const itemIdToItem = useCallback(
+    (itemId: string | string[]) => {
+      if (Array.isArray(itemId)) {
+        const items = itemId.map((id) => collectionHook.itemById(id));
+        return items as SelectionType<Item, S>;
+      } else {
+        return collectionHook.itemById(itemId) as SelectionType<Item, S>;
       }
     },
     [collectionHook]
@@ -163,11 +152,14 @@ export const Dropdown = forwardRef(function Dropdown<
         id={id}
         isOpen={dropdownListHook.isOpen}
         onOpenChange={dropdownListHook.onOpenChange}
+        placement={
+          ListProps?.width === undefined ? "below-full-width" : "below"
+        }
         ref={forkedRef}
         width={width}
       >
         {getTriggerComponent()}
-        <List<Item, Selection>
+        <List<Item, S>
           ListItem={ListItem}
           itemToString={itemToString}
           {...ListProps}
@@ -176,14 +168,14 @@ export const Dropdown = forwardRef(function Dropdown<
           onSelectionChange={onSelectionChange}
           onSelect={onSelect}
           ref={listRef}
-          selected={collectionItemsToItem(selected)}
+          selected={selected === undefined ? undefined : itemIdToItem(selected)}
           selectionStrategy={selectionStrategy}
         />
       </DropdownBase>
     </CollectionProvider>
   );
-}) as <Item, Selection extends SelectionStrategy = "default">(
-  props: DropdownProps<Item, Selection> & {
+}) as <Item, S extends SelectionStrategy = "default">(
+  props: DropdownProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<DropdownProps<Item, Selection>>;
+) => ReactElement<DropdownProps<Item>>;

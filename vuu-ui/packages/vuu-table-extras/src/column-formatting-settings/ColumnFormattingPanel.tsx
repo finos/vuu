@@ -1,5 +1,5 @@
 import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
-import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import { CellRendererDescriptor } from "@finos/vuu-utils";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
@@ -13,10 +13,10 @@ const classBase = "vuuColumnFormattingPanel";
 export interface ColumnFormattingPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableRenderers: CellRendererDescriptor[];
-  selectedCellRenderer: CellRendererDescriptor | null;
+  selectedCellRenderer?: CellRendererDescriptor;
   column: ColumnDescriptor;
   onChangeFormatting: (formatting: TypeFormatting) => void;
-  onChangeRenderer: SelectionChangeHandler<CellRendererDescriptor>;
+  onChangeRenderer: SingleSelectionHandler<CellRendererDescriptor>;
 }
 
 const itemToString = (item: CellRendererDescriptor) => item.label ?? item.name;
@@ -28,7 +28,7 @@ export const ColumnFormattingPanel = ({
   column,
   onChangeFormatting,
   onChangeRenderer,
-  ...props
+  ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
   const content = useMemo(() => {
     switch (column.serverDataType) {
@@ -49,7 +49,7 @@ export const ColumnFormattingPanel = ({
   const { serverDataType = "string" } = column;
 
   return (
-    <div className={`vuuColumnSettingsPanel-header`}>
+    <div {...htmlAttributes} className={`vuuColumnSettingsPanel-header`}>
       <div>Formatting</div>
 
       <FormField>
@@ -64,7 +64,6 @@ export const ColumnFormattingPanel = ({
         />
       </FormField>
       <div
-        {...props}
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
         {content}

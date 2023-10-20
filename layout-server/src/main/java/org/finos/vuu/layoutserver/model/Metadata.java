@@ -1,16 +1,24 @@
 package org.finos.vuu.layoutserver.model;
 
 import javax.persistence.Column;
+import java.util.Date;
+import java.util.UUID;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import java.util.Date;
-import java.util.UUID;
 import lombok.Data;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Metadata {
 
@@ -19,14 +27,8 @@ public class Metadata {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    private String name;
-
-    private String group;
-
-    @Column(length = 16384)
-    private String screenshot;
-
-    private String user;
+    @Embedded
+    private BaseMetadata baseMetadata;
 
     private Date created = new Date();
 

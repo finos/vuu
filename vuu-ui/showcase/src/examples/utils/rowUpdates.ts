@@ -1,7 +1,8 @@
 import { VuuRange, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { ArrayDataSource } from "packages/vuu-data/src";
 
 export interface UpdateGenerator {
-  setData: (data: ReadonlyArray<VuuRowDataItemType[]>) => void;
+  setDataSource: (dataSource: ArrayDataSource) => void;
   setRange: (range: VuuRange) => void;
   setUpdateHandler: (updateHandler: UpdateHandler) => void;
 }

@@ -9,11 +9,13 @@ import { getColumnByName, TableSchema } from "@finos/vuu-data";
 
 import {
   KeyboardEvent,
-  SyntheticEvent,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { SingleSelectionHandler } from "packages/vuu-ui-controls/src";
 
 const cursorAtTextStart = (input: HTMLInputElement) =>
   input.selectionStart === 0;
@@ -28,18 +30,40 @@ const getFieldName = (field: HTMLElement) =>
     ? "operator"
     : "value";
 
+const getFocusedField = () =>
+  document.activeElement?.closest(".vuuFilterClauseField") as HTMLElement;
+
+const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
+  const activeField = getFocusedField();
+  console.log(`activeField = ${activeField?.className}`);
+  const filterClause = activeField?.closest(".vuuFilterClause");
+  if (filterClause?.lastChild === activeField) {
+    requestAnimationFrame(() => {
+      console.log("enmd o the line, baby, wait, then try again");
+      focusNextFocusableElement();
+    });
+  } else {
+    console.log("go ahead and focus next field");
+    const nextField =
+      direction === "fwd"
+        ? (activeField.nextElementSibling as HTMLElement)
+        : (activeField.previousElementSibling as HTMLElement);
+
+    nextField?.querySelector("input")?.focus();
+  }
+};
+
 const focusNextElement = () => {
-  const filterClauseField = document.activeElement?.closest(
-    ".vuuFilterClauseField"
-  );
+  const filterClauseField = getFocusedField();
   const filterClause = filterClauseField?.closest(".vuuFilterClause");
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
-      console.log("focus on clear button");
       const clearButton = filterClause.querySelector(
         ".vuuFilterClause-closeButton"
       ) as HTMLButtonElement;
       clearButton?.focus();
+    } else {
+      focusNextFocusableElement();
     }
   }
 };
@@ -63,6 +87,8 @@ const navigateToNextInputIfAtBoundary = (
         const nextField = field.previousSibling as HTMLElement;
         const nextInput = nextField?.querySelector("input");
         evt.preventDefault();
+        console.log("%cfocus nextInput", "color:green;font-weight:bold");
+
         nextInput?.focus();
         requestAnimationFrame(() => {
           nextInput?.select();
@@ -81,6 +107,7 @@ const navigateToNextInputIfAtBoundary = (
         const nextField = field.nextSibling as HTMLElement;
         const nextInput = nextField?.querySelector("input");
         evt.preventDefault();
+        console.log("%cfocus nextInput", "color:green;font-weight:bold");
         nextInput?.focus();
         requestAnimationFrame(() => {
           nextInput?.select();
@@ -124,30 +151,42 @@ export const useFilterClauseEditor = ({
   onChange,
   tableSchema,
 }: FilterClauseEditorHookProps) => {
+  const columnRef = useRef<HTMLDivElement>(null);
+  const operatorRef = useRef<HTMLDivElement>(null);
+  const valueRef = useRef<HTMLDivElement>(null);
+
   const [selectedColumn, setSelectedColumn] = useState<
     ColumnDescriptor | undefined
   >(getColumnByName(tableSchema, filterClause.column));
-  const [operator, setOperator] = useState<FilterClauseOp | undefined>(
+  const [operator, _setOperator] = useState<FilterClauseOp | undefined>(
     filterClause.op
   );
+
+  const setOperator = useCallback((op) => {
+    console.log(`setOperator ${op}`);
+    _setOperator(op);
+  }, []);
+
   const [value, setValue] = useState<FilterClauseValue | undefined>(
     getFilterClauseValue(filterClause)
   );
 
-  const handleSelectionChangeColumn = useCallback(
-    (evt: SyntheticEvent, column: ColumnDescriptor | null) => {
-      setSelectedColumn(column ?? undefined);
-      setOperator(undefined);
-      setValue(undefined);
-    },
-    []
-  );
+  const handleSelectionChangeColumn = useCallback<
+    SingleSelectionHandler<ColumnDescriptor>
+  >((evt, column) => {
+    console.log(`handleSelectionChangeColumn ${column.name}`);
+    setSelectedColumn(column ?? undefined);
+    setOperator(undefined);
+    setValue(undefined);
+    focusNextElement();
+  }, []);
 
-  const handleSelectionChangeOperator = useCallback(
-    (evt: SyntheticEvent, operator: string | null) => {
-      const op = operator ?? undefined;
+  const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      const op = selected;
       if (op === undefined || isValidFilterClauseOp(op)) {
         setOperator(op);
+        focusNextElement();
       } else {
         throw Error(
           `FilterClauseEditor, invalid value ${op} for filter clause`
@@ -158,14 +197,22 @@ export const useFilterClauseEditor = ({
   );
 
   const handleChangeValue = useCallback(
-    (value: string | number) => {
+    (value: string | string[] | number | number[]) => {
       setValue(value);
       if (value !== null && value !== "") {
-        onChange({
-          column: selectedColumn?.name,
-          op: operator,
-          value,
-        });
+        if (Array.isArray(value)) {
+          onChange({
+            column: selectedColumn?.name,
+            op: operator,
+            values: value,
+          });
+        } else {
+          onChange({
+            column: selectedColumn?.name,
+            op: operator,
+            value,
+          });
+        }
         // This have no effect if we are inside a FilterBar
         requestAnimationFrame(() => {
           focusNextElement();
@@ -199,13 +246,21 @@ export const useFilterClauseEditor = ({
     [handleKeyDownInput]
   );
 
+  useEffect(() => {
+    const columnInput = columnRef.current?.querySelector("input");
+    columnInput?.focus();
+  }, []);
+
   return {
     InputProps,
+    columnRef,
     onChangeValue: handleChangeValue,
     onSelectionChangeColumn: handleSelectionChangeColumn,
     onSelectionChangeOperator: handleSelectionChangeOperator,
     operator,
+    operatorRef,
     selectedColumn,
     value,
+    valueRef,
   };
 };

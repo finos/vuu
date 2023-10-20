@@ -485,7 +485,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   applyEdit: DataSourceEditHandler;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
-  config: DataSourceConfig | undefined;
+  config: DataSourceConfig;
   suspend?: () => void;
   resume?: () => void;
   enable?: () => void;

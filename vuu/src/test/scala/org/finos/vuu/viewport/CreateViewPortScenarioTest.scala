@@ -28,9 +28,9 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
 
     def loadStatic: Array[Array[String]] = {
 
-      println(new java.io.File("./src/main/resources/static/ftse.csv").getCanonicalPath())
+      println(new java.io.File("./src/main/resources/static/ftse100.csv").getCanonicalPath())
 
-      val bufferedSource = Source.fromFile(new java.io.File("./src/main/resources/static/ftse.csv"))
+      val bufferedSource = Source.fromFile(new java.io.File("./src/main/resources/static/ftse100.csv"))
       val csv = for (line <- bufferedSource.getLines) yield line.split(",").map(_.trim)
       val array = csv.toArray
       bufferedSource.close

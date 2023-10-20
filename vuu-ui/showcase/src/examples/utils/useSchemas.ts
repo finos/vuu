@@ -9,11 +9,39 @@ export type VuuTableName =
   | "childOrders"
   | "parentOrders"
   | "prices"
-  | "basketDesign";
+  | "basket"
+  | "basketDesign"
+  | "basketDefinitions"
+  | "basketOrders";
 
 // These Schemas take the form of the schemas that we create
 // with TABLE_META returned by Vuu.
 export const schemas: Record<VuuTableName, TableSchema> = {
+  basket: {
+    columns: [
+      { name: "ID", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "notionalValue", serverDataType: "double" },
+      { name: "notionalValueUsd", serverDataType: "double" },
+    ],
+    key: "id",
+    table: { module: "BASKET", table: "basket" },
+  },
+  basketDefinitions: {
+    columns: [
+      { name: "id", serverDataType: "string" },
+      { name: "symbolName", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "units", serverDataType: "int" },
+      { name: "totalDollarNotional", serverDataType: "double" },
+      { name: "totalNotional", serverDataType: "double" },
+      { name: "currency", serverDataType: "string" },
+      { name: "exchangeRateToUSD", serverDataType: "double" },
+    ],
+    key: "id",
+    table: { module: "BASKET", table: "basketDefinitions" },
+  },
+
   basketDesign: {
     columns: [
       { name: "ric", serverDataType: "string" },
@@ -32,7 +60,30 @@ export const schemas: Record<VuuTableName, TableSchema> = {
       { name: "algoParams", serverDataType: "string" },
     ],
     key: "ric",
-    table: { module: "SIMUL", table: "basketDesign" },
+    table: { module: "BASKET", table: "basketDesign" },
+  },
+  basketOrders: {
+    columns: [
+      { name: "ric", serverDataType: "string" },
+      { name: "status", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "quantity", serverDataType: "double" },
+      { name: "filled", serverDataType: "double" },
+      { name: "weighting", serverDataType: "double" },
+      { name: "last", serverDataType: "double" },
+      { name: "bid", serverDataType: "double" },
+      { name: "ask", serverDataType: "double" },
+      { name: "limitPrice", serverDataType: "double" },
+      { name: "priceSpread", serverDataType: "double" },
+      { name: "priceStrategy", serverDataType: "string" },
+      { name: "dollarNotional", serverDataType: "double" },
+      { name: "localNotional", serverDataType: "double" },
+      { name: "venue", serverDataType: "string" },
+      { name: "algo", serverDataType: "string" },
+      { name: "algoParams", serverDataType: "string" },
+    ],
+    key: "ric",
+    table: { module: "BASKET", table: "basketOrders" },
   },
   instruments: {
     columns: [

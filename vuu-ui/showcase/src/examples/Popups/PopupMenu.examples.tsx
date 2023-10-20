@@ -1,5 +1,6 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { ContextMenuProvider, PopupMenu } from "@finos/vuu-popups";
+import { useMemo } from "react";
 
 let displaySequence = 1;
 
@@ -50,6 +51,58 @@ export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
 };
 
 DefaultPopupMenu.displaySequence = displaySequence++;
+
+export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
+  const menuBuilder = useMemo<MenuBuilder>(
+    () => () =>
+      [
+        {
+          action: "action-1",
+          label: "Menu Item 1",
+        },
+        {
+          action: "action-2",
+          label: "Menu Item 2",
+        },
+      ],
+    []
+  );
+
+  const menuHandler = useMemo<MenuActionHandler>(
+    () =>
+      ({ menuId }) => {
+        console.log(`Menu Action ${menuId} invoked`);
+        if (menuId === "action-1" || menuId === "action-1") {
+          // invoke our action here
+          return true;
+        }
+      },
+    []
+  );
+
+  return (
+    <div
+      style={{
+        border: "solid 1px #ccc",
+        gap: 24,
+        height,
+        padding: 12,
+        width,
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <input defaultValue="test" />
+      <PopupMenu
+        label="actions"
+        menuBuilder={menuBuilder}
+        menuActionHandler={menuHandler}
+      />
+    </div>
+  );
+};
+
+PopupMenuWithLabel.displaySequence = displaySequence++;
 
 export const PopupMenuWithMenuOptions = () => {
   const menuBuilder = useMemo<MenuBuilder>(

@@ -103,6 +103,7 @@ const WrapContainer = React.memo(
           icon={overflowIcon}
           menuBuilder={menuBuilder}
           menuActionHandler={menuActionHandler}
+          tabIndex={-1}
         />
       </div>
     );
@@ -137,6 +138,7 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
+
   return (
     <div
       {...htmlAttributes}

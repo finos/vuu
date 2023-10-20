@@ -1,10 +1,11 @@
 import { RefObject, useEffect, useRef } from "react";
+import { CloseReason } from "./dropdownTypes";
 
 export type ClickawayHook = (props: {
   popperRef: RefObject<HTMLElement>;
   rootRef: RefObject<HTMLElement>;
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (reason: CloseReason) => void;
 }) => void;
 
 type MouseEventHandler = (e: MouseEvent) => void;
@@ -33,13 +34,13 @@ export const useClickAway: ClickawayHook = ({
               !popperRef.current?.contains(targetElement) &&
               !rootRef.current?.contains(targetElement)
             ) {
-              onClose();
+              onClose("click-away");
             }
           },
           (e: KeyboardEvent) => {
             if (e.key === "Escape") {
               if (openRef.current) {
-                onClose();
+                onClose("Escape");
                 e.stopPropagation();
               }
             }

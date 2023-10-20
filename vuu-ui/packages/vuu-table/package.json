@@ -13,8 +13,12 @@
     "@salt-ds/icons": "1.5.1",
     "@salt-ds/lab": "1.0.0-alpha.15",
     "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-data-react": "0.0.26",
     "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
+    "@finos/vuu-table-extras": "0.0.26",
+    "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26"
   },
   "peerDependencies": {

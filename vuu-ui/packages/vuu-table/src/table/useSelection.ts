@@ -9,6 +9,7 @@ import {
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 import { useCallback, useRef } from "react";
 import { RowClickHandler } from "./dataTableTypes";
 
@@ -18,11 +19,13 @@ const NO_SELECTION: Selection = [];
 
 export interface SelectionHookProps {
   selectionModel: TableSelectionModel;
+  onSelect?: (row: DataSourceRow) => void;
   onSelectionChange: SelectionChangeHandler;
 }
 
 export const useSelection = ({
   selectionModel,
+  onSelect,
   onSelectionChange,
 }: SelectionHookProps) => {
   selectionModel === "extended" || selectionModel === "checkbox";
@@ -49,11 +52,10 @@ export const useSelection = ({
       selectedRef.current = newSelected;
       lastActiveRef.current = idx;
 
-      if (onSelectionChange) {
-        onSelectionChange(newSelected);
-      }
+      onSelect?.(row);
+      onSelectionChange?.(newSelected);
     },
-    [onSelectionChange, selectionModel]
+    [onSelect, onSelectionChange, selectionModel]
   );
 
   return handleSelectionChange;

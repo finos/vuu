@@ -11,7 +11,7 @@ import org.finos.vuu.provider.Provider
 
 class PermissionsProvider(val table: DataTable, val sessionsContainer: ClientSessionContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
-  private val runner = new LifeCycleRunner("PermissionsProvider", () => runOnce)
+  private val runner = new LifeCycleRunner("PermissionsProvider", () => runOnce(), minCycleTime = 10_000)
 
   lifecycleContainer(this).dependsOn(runner)
 
@@ -27,6 +27,10 @@ class PermissionsProvider(val table: DataTable, val sessionsContainer: ClientSes
             Map(User -> session.user, Bitmask -> PermissionSet.NoPermissions, BitmaskAsString ->  PermissionSet.toBinaryString(PermissionSet.NoPermissions),  BitmaskAsRoles -> PermissionSet.rolesToString(PermissionSet.NoPermissions) ))
         , clock.now())
         case row: RowWithData =>
+//          if(!table.hasChanged(row)){
+//
+//          }
+
           val newData = row.data ++ Map(BitmaskAsString ->  PermissionSet.toBinaryString(row.get(Bitmask).asInstanceOf[Int]),  BitmaskAsRoles -> PermissionSet.rolesToString(row.get(Bitmask).asInstanceOf[Int]))
           table.processUpdate(session.user, RowWithData(session.user, newData), clock.now())
       }

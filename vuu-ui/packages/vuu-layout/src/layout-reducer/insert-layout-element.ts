@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { uuid } from "@finos/vuu-utils";
+import { rectTuple, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
-import { rectTuple } from "../common-types";
 import { DropPos } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
@@ -11,7 +10,7 @@ import {
   getFlexDimensions,
   getFlexOrIntrinsicStyle,
   getIntrinsicSize,
-  wrapIntrinsicSizeComponentWithFlexbox
+  wrapIntrinsicSizeComponentWithFlexbox,
 } from "./flexUtils";
 import { LayoutModel } from "./layoutTypes";
 import { getManagedDimension, LayoutProps } from "./layoutUtils";
@@ -325,12 +324,14 @@ function getStyledComponents(
   newComponent: ReactElement,
   targetRect: DropTarget["clientRect"]
 ): [ReactElement, ReactElement] {
-  const id = uuid()
+  const id = uuid();
   let { version = 0 } = getProps(newComponent);
   version += 1;
   if (typeOf(container) === "Flexbox") {
     const [dim] = getManagedDimension(container.props.style);
     const splitterSize = 6;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const size = { [dim]: (targetRect[dim] - splitterSize) / 2 };
     const existingComponentStyle = getFlexOrIntrinsicStyle(
       existingComponent,

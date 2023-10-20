@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Direction,
@@ -10,6 +10,7 @@ import { useDragDisplacers } from "./useDragDisplacers";
 import { dispatchMouseEvent } from "@finos/vuu-utils";
 import {
   dimensions,
+  dropTargetsDebugString,
   getIndexOfDraggedItem,
   getNextDropTarget,
   MeasuredDropTarget,
@@ -19,7 +20,6 @@ import {
 } from "./drop-target-utils";
 
 export const useDragDropNaturalMovement = ({
-  draggableRef,
   onDrop,
   orientation = "horizontal",
   containerRef,
@@ -37,7 +37,8 @@ export const useDragDropNaturalMovement = ({
 
   const [showOverflow, setShowOverflow] = useState(false);
 
-  const { clearSpacers, displaceItem, displaceLastItem } = useDragDisplacers();
+  const { clearSpacers, displaceItem, displaceLastItem } =
+    useDragDisplacers(orientation);
 
   const draggedItemRef = useRef<MeasuredDropTarget>();
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},.vuuOverflowContainer-OverflowIndicator)`;
@@ -73,13 +74,11 @@ export const useDragDropNaturalMovement = ({
           measuredDropTargets.current.unshift(draggedItem);
         }
 
-        // setVizData?.(measuredDropTargets.current);
-
         const { size } = draggedItem;
         const dragPos = dragPosRef.current;
         const midPos = dragPos + size / 2;
         const { current: dropTargets } = measuredDropTargets;
-        const dropTarget = getNextDropTarget(dropTargets, midPos, "fwd");
+        const dropTarget = getNextDropTarget(dropTargets, midPos, size, "fwd");
 
         if (dropTarget) {
           const targetIndex = indexOf(dropTarget);
@@ -92,41 +91,19 @@ export const useDragDropNaturalMovement = ({
               dropTargets[dropTargets.length - 1],
               size,
               false,
-              "static",
-              orientation
+              "static"
             );
           } else {
-            displaceItem(
-              dropTargets,
-              nextDropTarget,
-              size,
-              true,
-              "static",
-              orientation
-            );
+            displaceItem(dropTargets, nextDropTarget, size, true, "static");
           }
-          // setVizData?.(
-          //   measuredDropTargets.current,
-          //   nextDropTarget,
-          //   dropZoneRef.current
-          // );
         }
       }
     },
-    [
-      containerRef,
-      displaceItem,
-      displaceLastItem,
-      fullItemQuery,
-      orientation,
-      // setVizData,
-    ]
+    [containerRef, displaceItem, displaceLastItem, fullItemQuery, orientation]
   );
 
   const beginDrag = useCallback(
-    (evt: MouseEvent) => {
-      const evtTarget = evt.target as HTMLElement;
-      const dragElement = evtTarget.closest(itemQuery) as HTMLElement;
+    (dragElement: HTMLElement) => {
       if (
         //TODO need a different check for selected
         dragElement.ariaSelected &&
@@ -137,9 +114,9 @@ export const useDragDropNaturalMovement = ({
       }
       const { current: container } = containerRef;
       if (container && dragElement) {
+        const internalDrag = container.contains(dragElement);
         const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
         const { id: draggedItemId } = dragElement;
-
         const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } =
           container;
         isScrollable.current = scrollSize > clientSize;
@@ -151,29 +128,69 @@ export const useDragDropNaturalMovement = ({
           draggedItemId
         ));
 
-        console.log({ dropTargets });
+        if (internalDrag) {
+          console.log(dropTargetsDebugString(dropTargets));
+          const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
+          const draggedItem = dropTargets[indexOfDraggedItem];
+          if (draggedItem && container) {
+            draggedItemRef.current = draggedItem;
+            const displaceFunction = draggedItem.isLast
+              ? displaceLastItem
+              : displaceItem;
+            displaceFunction(
+              dropTargets,
+              draggedItem,
+              draggedItem.size,
+              false,
+              "static"
+            );
+          }
+        } else {
+          // prettier-ignore
+          const { top: dragPos, height: size } = dragElement.getBoundingClientRect();
+          // prettier-ignore
+          const dropTarget = getNextDropTarget( dropTargets, dragPos, size, "fwd");
+          const index = dropTargets.indexOf(dropTarget);
+          const { start, end, mid } = dropTarget;
 
-        const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
-        const draggedItem = dropTargets[indexOfDraggedItem];
+          console.log(`nextDropTarget ${dropTarget.element.textContent}`);
 
-        if (draggedItem && container) {
-          draggedItemRef.current = draggedItem;
+          // need to compute the correct position of this
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const draggedItem = (draggedItemRef.current = {
+            end,
+            mid,
+            start,
+            isDraggedItem: true,
+            isExternal: true,
+            size,
+          });
 
-          const displaceFunction = draggedItem.isLast
+          const indexOfDropTarget = dropTargets.indexOf(dropTarget);
+          console.log({ indexOfDropTarget });
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          dropTargets.splice(indexOfDropTarget, 0, draggedItem);
+          for (let i = index + 1; i < dropTargets.length; i++) {
+            const target = dropTargets[i];
+            target.mid += size;
+            target.end += size;
+            target.start += size;
+          }
+
+          console.log(dropTargetsDebugString(dropTargets));
+
+          const displaceFunction = dropTarget.isLast
             ? displaceLastItem
             : displaceItem;
 
-          // setVizData?.(dropTargets, displacedItem, dropZone);
-
-          console.log({ indexOfDraggedItem, draggedItem });
-
           displaceFunction(
             dropTargets,
-            draggedItem,
-            draggedItem.size,
-            false,
-            "static",
-            orientation
+            dropTarget,
+            dropTarget.size,
+            true,
+            "static"
           );
         }
       }
@@ -183,10 +200,8 @@ export const useDragDropNaturalMovement = ({
       displaceItem,
       displaceLastItem,
       fullItemQuery,
-      itemQuery,
       orientation,
       selected,
-      // setVizData,
       viewportRange,
     ]
   );
@@ -225,13 +240,14 @@ export const useDragDropNaturalMovement = ({
       const { current: draggedItem } = draggedItemRef;
 
       if (draggedItem) {
-        if (draggableRef.current && containerRef.current) {
+        if (containerRef.current) {
           dragPosRef.current = dragPos;
 
           const { current: dropTargets } = measuredDropTargets;
           const nextDropTarget = getNextDropTarget(
             dropTargets,
             dragPos,
+            draggedItem.size,
             mouseMoveDirection
           );
 
@@ -254,11 +270,8 @@ export const useDragDropNaturalMovement = ({
                 nextDropTarget,
                 size,
                 true,
-                mouseMoveDirection,
-                orientation
+                mouseMoveDirection
               );
-
-              // setVizData?.(dropTargets, nextDropTarget, nextDropZone);
 
               const overflowIndicator = dropTargets.at(
                 -1
@@ -272,15 +285,7 @@ export const useDragDropNaturalMovement = ({
         }
       }
     },
-    [
-      containerRef,
-      displaceItem,
-      displaceLastItem,
-      draggableRef,
-      hidePopup,
-      orientation,
-      showPopup,
-    ]
+    [containerRef, displaceItem, displaceLastItem, hidePopup, showPopup]
   );
 
   const drop = useCallback(() => {
@@ -292,13 +297,21 @@ export const useDragDropNaturalMovement = ({
       dragDirectionRef.current = undefined;
 
       if (overflowMenuShowingRef.current) {
-        onDrop(draggedItem.index, -1);
+        onDrop(draggedItem.index, -1, {
+          fromIndex: draggedItem.index,
+          toIndex: -1,
+          isExternal: draggedItem.isExternal,
+        });
       } else {
         const absoluteIndexDraggedItem = getIndexOfDraggedItem(
           dropTargets,
           true
         );
-        onDrop(draggedItem.index, absoluteIndexDraggedItem);
+        onDrop(draggedItem.index, absoluteIndexDraggedItem, {
+          fromIndex: draggedItem.index,
+          toIndex: absoluteIndexDraggedItem,
+          isExternal: draggedItem.isExternal,
+        });
       }
     }
     setShowOverflow(false);
@@ -313,12 +326,17 @@ export const useDragDropNaturalMovement = ({
     }
   }, [clearSpacers, containerRef, onDrop]);
 
+  const releaseDrag = useCallback(() => {
+    clearSpacers(true);
+  }, [clearSpacers]);
+
   return {
     beginDrag,
     drag,
     drop,
     handleScrollStart,
     handleScrollStop,
+    releaseDrag,
     revealOverflowedItems: showOverflow,
   };
 };

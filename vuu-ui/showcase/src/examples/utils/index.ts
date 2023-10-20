@@ -5,4 +5,4 @@ export * from "./useAutoLoginToVuuServer";
 export * from "./useSchemas";
 export * from "./useTableConfig";
 export * from "./useTestDataSource";
-export * from "./vuu-row-generator";
+export * from "./data-generators/vuu-row-generator";

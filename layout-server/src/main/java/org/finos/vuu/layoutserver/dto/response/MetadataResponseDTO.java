@@ -1,18 +1,19 @@
 package org.finos.vuu.layoutserver.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import java.util.Date;
 import java.util.UUID;
 import lombok.Data;
-import org.finos.vuu.layoutserver.dto.MetadataDTO;
+import org.finos.vuu.layoutserver.model.BaseMetadata;
 
 @Data
-public class MetadataResponseDTO implements MetadataDTO {
+public class MetadataResponseDTO {
 
     private UUID layoutId;
-    private String name;
-    private String group;
-    private String screenshot;
-    private String user;
+
+    @JsonUnwrapped
+    BaseMetadata baseMetadata;
+
     private Date created;
     private Date updated;
 }

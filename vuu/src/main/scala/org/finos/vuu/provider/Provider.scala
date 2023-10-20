@@ -25,3 +25,16 @@ trait Provider extends LifecycleEnabled {
   //def processDelete(key: String, data: Map[String, Any])
 
 }
+
+trait DefaultProvider extends Provider {
+  override def subscribe(key: String): Unit = {}
+  override def doStart(): Unit = {}
+
+  override def doStop(): Unit = {}
+
+  override def doInitialize(): Unit = {}
+
+  override def doDestroy(): Unit = {}
+
+}
+
