@@ -64,8 +64,7 @@ public class ApplicationLayoutService {
             ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
             return objectMapper.readTree(resource.getInputStream());
         } catch (IOException e) {
-            logger.warn("Failed to read default application layout, returning empty node");
-            return objectMapper.createObjectNode();
+            throw new RuntimeException("Failed to read default application layout");
         }
     }
 }
