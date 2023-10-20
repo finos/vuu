@@ -21,8 +21,8 @@ export class RemoteLayoutPersistenceManager
         },
         method: "POST",
         body: JSON.stringify({
-          metadata: { ...metadata },
-          definition: JSON.stringify(layout),
+          metadata,
+          definition: layout,
         }),
       })
         .then((response) => {
@@ -31,7 +31,7 @@ export class RemoteLayoutPersistenceManager
           }
           response.json().then(({ metadata }: { metadata: LayoutMetadata }) => {
             if (!metadata) {
-              reject(new Error("invalid metadata"));
+              reject(new Error("Response did not contain valid metadata"));
             }
             resolve(metadata);
           });
@@ -93,7 +93,7 @@ export class RemoteLayoutPersistenceManager
           }
           response.json().then((layout) => {
             if (!layout) {
-              reject(new Error("invalid layout"));
+              reject(new Error("Response did not contain a valid layout"));
             }
             resolve(layout);
           });
