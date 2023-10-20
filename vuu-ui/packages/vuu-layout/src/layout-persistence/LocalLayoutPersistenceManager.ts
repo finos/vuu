@@ -1,4 +1,4 @@
-import { Layout, LayoutMetadata, WithId } from "@finos/vuu-shell";
+import { Layout, LayoutMetadata, LayoutMetadataDto, WithId } from "@finos/vuu-shell";
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
@@ -11,7 +11,7 @@ const layoutsSaveLocation = "layouts/layouts";
 
 export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   createLayout(
-    metadata: Omit<LayoutMetadata, "id" | "created">,
+    metadata: LayoutMetadataDto,
     layout: LayoutJSON
   ): Promise<LayoutMetadata> {
     return new Promise((resolve) => {

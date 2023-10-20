@@ -14,7 +14,7 @@ import {
   FeatureConfig,
   FeatureProps,
   LayoutManagementProvider,
-  LayoutMetadata,
+  LayoutMetadataDto,
   LeftNav,
   SaveLayoutPanel,
   Shell,
@@ -116,7 +116,7 @@ const ShellWithNewTheme = () => {
   const { saveLayout } = useLayoutManager();
 
   const handleSave = useCallback(
-    (layoutMetadata: Omit<LayoutMetadata, "id" | "created">) => {
+    (layoutMetadata: LayoutMetadataDto) => {
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },

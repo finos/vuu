@@ -1,4 +1,4 @@
-import { Layout, LayoutMetadata } from "@finos/vuu-shell";
+import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalLayoutPersistenceManager } from "../../src/layout-persistence";
 import { LayoutJSON } from "../../src/layout-reducer";
@@ -43,7 +43,7 @@ const existingLayout: Layout = {
   json: { type: "t0" },
 };
 
-const metadataToAdd: Omit<LayoutMetadata, "id" | "created"> = {
+const metadataToAdd: LayoutMetadataDto = {
   name: "New Layout",
   group: "Group 1",
   screenshot: "screenshot",

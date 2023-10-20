@@ -12,6 +12,8 @@ export interface LayoutMetadata extends WithId {
   created: string;
 }
 
+export type LayoutMetadataDto = Omit<LayoutMetadata, "id" | "created">;
+
 export interface Layout extends WithId {
   json: LayoutJSON;
 }

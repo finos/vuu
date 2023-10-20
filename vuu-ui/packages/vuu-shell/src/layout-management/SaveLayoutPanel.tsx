@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { Input, Button, FormField, FormFieldLabel, Text } from "@salt-ds/core";
 import { ComboBox, Checkbox, RadioButton } from "@finos/vuu-ui-controls";
 import { takeScreenshot } from "@finos/vuu-utils";
-import { LayoutMetadata } from "./layoutTypes";
+import { LayoutMetadataDto } from "./layoutTypes";
 
 import "./SaveLayoutPanel.css";
 
@@ -33,7 +33,7 @@ type RadioValue = typeof radioValues[number];
 
 type SaveLayoutPanelProps = {
   onCancel: () => void;
-  onSave: (layoutMetadata: Omit<LayoutMetadata, "id" | "created">) => void;
+  onSave: (layoutMetadata: LayoutMetadataDto) => void;
   componentId?: string
 };
 

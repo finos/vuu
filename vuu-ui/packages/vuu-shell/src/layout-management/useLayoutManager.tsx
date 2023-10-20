@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
 import { LayoutJSON, LocalLayoutPersistenceManager, resolveJSONPath, RemoteLayoutPersistenceManager } from "@finos/vuu-layout";
-import { LayoutMetadata } from "./layoutTypes";
+import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import { defaultLayout } from "@finos/vuu-layout/";
 
 const local = process.env.LOCAL || false;
@@ -9,7 +9,7 @@ const persistenceManager = local ? new LocalLayoutPersistenceManager() : new Rem
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[],
-  saveLayout: (n: Omit<LayoutMetadata, "id" | "created">) => void,
+  saveLayout: (n: LayoutMetadataDto) => void,
   applicationLayout: LayoutJSON,
   saveApplicationLayout: (layout: LayoutJSON) => void,
   loadLayoutById: (id: string) => void
@@ -47,7 +47,7 @@ export const LayoutManagementProvider = (props: LayoutManagementProviderProps) =
     persistenceManager.saveApplicationLayout(layout)
   }, []);
 
-  const saveLayout = useCallback((metadata:Omit<LayoutMetadata, "id" | "created">) => {
+  const saveLayout = useCallback((metadata:LayoutMetadataDto) => {
 
     const layoutToSave = resolveJSONPath(applicationLayout, "#main-tabs.ACTIVE_CHILD");
 

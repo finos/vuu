@@ -1,4 +1,4 @@
-import { LayoutMetadata } from "@finos/vuu-shell";
+import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
 import { defaultLayout } from "./data";
@@ -11,7 +11,7 @@ export class RemoteLayoutPersistenceManager
   implements LayoutPersistenceManager
 {
   createLayout(
-    metadata: Omit<LayoutMetadata, "id" | "created">,
+    metadata: LayoutMetadataDto,
     layout: LayoutJSON
   ): Promise<LayoutMetadata> {
     return new Promise((resolve, reject) =>

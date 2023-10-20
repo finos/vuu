@@ -90,7 +90,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.createLayout(metadata[0], layout),
-        "invalid metadata"
+        "Response did not contain valid metadata"
       );
     });
 
@@ -229,7 +229,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadMetadata(),
-        "invalid metadata"
+        "Response did not contain valid metadata"
       );
     });
 
@@ -293,7 +293,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadLayout(uniqueId),
-        "invalid layout"
+        "Response did not contain a valid layout"
       );
     });
 
