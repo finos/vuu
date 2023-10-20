@@ -1,19 +1,9 @@
 package org.finos.vuu.layoutserver.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import java.util.UUID;
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
@@ -28,6 +18,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -106,7 +107,7 @@ public class LayoutIntegrationTest {
     @Test
     void createLayout_validLayout_returnsCreatedLayoutAndLayoutIsPersisted()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
+        LayoutRequestDto layoutRequest = createValidCreateLayoutRequest();
 
         MvcResult result = mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -154,7 +155,7 @@ public class LayoutIntegrationTest {
     @Test
     void createLayout_validLayoutButInvalidMetadata_returns400AndDoesNotCreateLayout()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
+        LayoutRequestDto layoutRequest = createValidCreateLayoutRequest();
         layoutRequest.setMetadata(null);
 
         mockMvc.perform(post("/layouts")
@@ -168,7 +169,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_validIDAndValidRequest_returns204AndLayoutHasChanged() throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDto layoutRequest = createValidUpdateRequest();
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -195,7 +196,7 @@ public class LayoutIntegrationTest {
         throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
 
-        LayoutRequestDTO request = new LayoutRequestDTO();
+        LayoutRequestDto request = new LayoutRequestDto();
         request.setDefinition("");
         request.setMetadata(null);
 
@@ -224,7 +225,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_validIdButLayoutDoesNotExist_returnsNotFound() throws Exception {
         UUID layoutID = UUID.randomUUID();
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDto layoutRequest = createValidUpdateRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -235,7 +236,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDto layoutRequest = createValidUpdateRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -289,27 +290,27 @@ public class LayoutIntegrationTest {
         return createdLayout;
     }
 
-    private LayoutRequestDTO createValidUpdateRequest() {
-        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
+    private LayoutRequestDto createValidUpdateRequest() {
+        MetadataRequestDto metadataRequest = new MetadataRequestDto();
         metadataRequest.setName("Updated name");
         metadataRequest.setGroup("Updated group");
         metadataRequest.setScreenshot("Updated screenshot");
         metadataRequest.setUser("Updated user");
 
-        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
+        LayoutRequestDto layoutRequest = new LayoutRequestDto();
         layoutRequest.setDefinition("Updated definition");
         layoutRequest.setMetadata(metadataRequest);
         return layoutRequest;
     }
 
-    private LayoutRequestDTO createValidCreateLayoutRequest() {
-        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
+    private LayoutRequestDto createValidCreateLayoutRequest() {
+        MetadataRequestDto metadataRequest = new MetadataRequestDto();
         metadataRequest.setName(defaultName);
         metadataRequest.setGroup(defaultGroup);
         metadataRequest.setScreenshot(defaultScreenshot);
         metadataRequest.setUser(defaultUser);
 
-        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
+        LayoutRequestDto layoutRequest = new LayoutRequestDto();
         layoutRequest.setDefinition(defaultDefinition);
         layoutRequest.setMetadata(metadataRequest);
         return layoutRequest;

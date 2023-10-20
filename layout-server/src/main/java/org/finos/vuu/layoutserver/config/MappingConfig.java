@@ -1,7 +1,7 @@
 package org.finos.vuu.layoutserver.config;
 
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.modelmapper.ModelMapper;
@@ -15,10 +15,10 @@ public class MappingConfig {
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
 
-        mapper.typeMap(LayoutRequestDTO.class, Layout.class)
+        mapper.typeMap(LayoutRequestDto.class, Layout.class)
             .addMappings(m -> m.skip(Layout::setId));
 
-        mapper.typeMap(MetadataRequestDTO.class, Metadata.class)
+        mapper.typeMap(MetadataRequestDto.class, Metadata.class)
             .addMappings(m -> m.skip(Metadata::setId));
 
         return mapper;

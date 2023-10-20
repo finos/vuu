@@ -1,12 +1,13 @@
 package org.finos.vuu.layoutserver.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.finos.vuu.layoutserver.dto.MetadataDTO;
+import org.finos.vuu.layoutserver.dto.MetadataDto;
+
+import javax.validation.constraints.NotNull;
 
 @Data
-public class MetadataRequestDTO implements MetadataDTO {
+public class MetadataRequestDto implements MetadataDto {
 
     @JsonProperty(value = "name", required = true)
     @NotNull(message = "Please provide a valid name")

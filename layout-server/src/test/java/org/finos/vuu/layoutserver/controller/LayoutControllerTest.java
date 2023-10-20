@@ -1,18 +1,9 @@
 package org.finos.vuu.layoutserver.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
-import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
+import org.finos.vuu.layoutserver.dto.response.LayoutResponseDto;
+import org.finos.vuu.layoutserver.dto.response.MetadataResponseDto;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.service.LayoutService;
@@ -23,6 +14,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LayoutControllerTest {
@@ -40,9 +41,9 @@ class LayoutControllerTest {
     private UUID doesNotExistLayoutId;
     private Layout layout;
     private Metadata metadata;
-    private LayoutRequestDTO layoutRequest;
-    private LayoutResponseDTO expectedLayoutResponse;
-    private List<MetadataResponseDTO> expectedMetadataResponse;
+    private LayoutRequestDto layoutRequest;
+    private LayoutResponseDto expectedLayoutResponse;
+    private List<MetadataResponseDto> expectedMetadataResponse;
 
     @BeforeEach
     public void setup() {
@@ -63,8 +64,8 @@ class LayoutControllerTest {
         layout.setDefinition(layoutDefinition);
         layout.setMetadata(metadata);
 
-        layoutRequest = new LayoutRequestDTO();
-        MetadataRequestDTO metadataRequestDTO = new MetadataRequestDTO();
+        layoutRequest = new LayoutRequestDto();
+        MetadataRequestDto metadataRequestDTO = new MetadataRequestDto();
         metadataRequestDTO.setName(metadata.getName());
         metadataRequestDTO.setUser(metadata.getUser());
         metadataRequestDTO.setGroup(metadata.getGroup());
@@ -72,11 +73,11 @@ class LayoutControllerTest {
         layoutRequest.setDefinition(layout.getDefinition());
         layoutRequest.setMetadata(metadataRequestDTO);
 
-        expectedLayoutResponse = new LayoutResponseDTO();
+        expectedLayoutResponse = new LayoutResponseDto();
         expectedLayoutResponse.setId(layout.getId());
         expectedLayoutResponse.setDefinition(layout.getDefinition());
 
-        MetadataResponseDTO metadataResponse = getMetadataResponseDTO();
+        MetadataResponseDto metadataResponse = getMetadataResponseDTO();
         expectedLayoutResponse.setMetadata(metadataResponse);
 
         expectedMetadataResponse = new ArrayList<>();
@@ -87,7 +88,7 @@ class LayoutControllerTest {
     @Test
     void getLayout_layoutExists_returnsLayout() {
         when(layoutService.getLayout(validLayoutId)).thenReturn(layout);
-        when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(
+        when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(
             expectedLayoutResponse);
         assertThat(layoutController.getLayout(validLayoutId)).isEqualTo(expectedLayoutResponse);
     }
@@ -102,7 +103,7 @@ class LayoutControllerTest {
     @Test
     void getMetadata_metadataExists_returnsMetadata() {
         when(layoutService.getMetadata()).thenReturn(List.of(metadata));
-        when(modelMapper.map(metadata, MetadataResponseDTO.class)).thenReturn(
+        when(modelMapper.map(metadata, MetadataResponseDto.class)).thenReturn(
             getMetadataResponseDTO());
         assertThat(layoutController.getMetadata()).isEqualTo(expectedMetadataResponse);
     }
@@ -122,7 +123,7 @@ class LayoutControllerTest {
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layoutWithoutIds);
         when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout.getId());
         when(layoutService.getLayout(layout.getId())).thenReturn(layout);
-        when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(expectedLayoutResponse);
+        when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(expectedLayoutResponse);
 
         assertThat(layoutController.createLayout(layoutRequest))
             .isEqualTo(expectedLayoutResponse);
@@ -148,8 +149,8 @@ class LayoutControllerTest {
         verify(layoutService).deleteLayout(validLayoutId);
     }
 
-    private MetadataResponseDTO getMetadataResponseDTO() {
-        MetadataResponseDTO metadataResponse = new MetadataResponseDTO();
+    private MetadataResponseDto getMetadataResponseDTO() {
+        MetadataResponseDto metadataResponse = new MetadataResponseDto();
         metadataResponse.setLayoutId(layout.getId());
         metadataResponse.setName(layout.getMetadata().getName());
         metadataResponse.setUser(layout.getMetadata().getUser());

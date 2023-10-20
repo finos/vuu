@@ -1,6 +1,6 @@
 package org.finos.vuu.layoutserver.dto;
 
-public interface MetadataDTO {
+public interface MetadataDto {
 
     String getName();
 
