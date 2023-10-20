@@ -86,7 +86,9 @@ export class RemoteLayoutPersistenceManager
 
   loadLayout(id: string): Promise<LayoutJSON> {
     return new Promise((resolve, reject) => {
-      fetch(`${baseURL}/${layoutsSaveLocation}/${id}`, {})
+      fetch(`${baseURL}/${layoutsSaveLocation}/${id}`, {
+        method: "GET",
+      })
         .then((response) => {
           if (!response.ok) {
             reject(new Error(response.statusText));
@@ -106,8 +108,10 @@ export class RemoteLayoutPersistenceManager
 
   loadMetadata(): Promise<LayoutMetadata[]> {
     return new Promise((resolve, reject) =>
-      fetch(`${baseURL}/${metadataSaveLocation}`, {})
-        .then(async (response) => {
+      fetch(`${baseURL}/${metadataSaveLocation}`, {
+        method: "GET",
+      })
+        .then((response) => {
           if (!response.ok) {
             reject(new Error(response.statusText));
           }
