@@ -44,7 +44,7 @@ export class RemoteLayoutPersistenceManager
 
   updateLayout(
     id: string,
-    metadata: Omit<LayoutMetadata, "id">,
+    metadata: LayoutMetadataDto,
     newLayoutJson: LayoutJSON
   ): Promise<void> {
     return new Promise((resolve, reject) =>

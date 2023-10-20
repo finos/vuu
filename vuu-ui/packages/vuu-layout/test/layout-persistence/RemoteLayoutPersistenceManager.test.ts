@@ -34,7 +34,7 @@ const layout: LayoutJSON = {
 
 const uniqueId = uuidv4();
 const dateString = new Date().toISOString();
-const fetchError = new Error("Something went wrong with your request")
+const fetchError = new Error("Something went wrong with your request");
 
 describe("RemoteLayoutPersistenceManager", () => {
   beforeEach(() => {
@@ -184,8 +184,6 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("loadMetadata", () => {
     it("resolves with array of metadata when response is ok", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const fetchResponse = {
         json: () => new Promise((resolve) => resolve(metadata)),
         ok: true,
@@ -199,8 +197,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when response is not ok", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const errorMessage = "Not Found";
 
       const fetchResponse = {
@@ -218,8 +214,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when metadata is falsey in response", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const fetchResponse = {
         json: () => new Promise((resolve) => resolve(undefined)),
         ok: true,
@@ -234,8 +228,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when fetch rejects", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       mockFetch.mockRejectedValue(fetchError);
 
       expectPromiseRejectsWithError(
@@ -247,8 +239,6 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("loadLayout", () => {
     it("resolves with array of metadata when response is ok", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const fetchResponse = {
         json: () => new Promise((resolve) => resolve(layout)),
         ok: true,
@@ -262,8 +252,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when response is not ok", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const errorMessage = "Not Found";
 
       const fetchResponse = {
@@ -281,8 +269,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when metadata is falsey in response", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       const fetchResponse = {
         json: () =>
           new Promise((resolve: (value?: unknown) => void) => resolve()),
@@ -298,8 +284,6 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when fetch rejects", () => {
-      const persistence = new RemoteLayoutPersistenceManager();
-
       mockFetch.mockRejectedValue(fetchError);
 
       expectPromiseRejectsWithError(
