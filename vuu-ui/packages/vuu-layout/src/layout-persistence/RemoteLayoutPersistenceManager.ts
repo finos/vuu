@@ -113,7 +113,7 @@ export class RemoteLayoutPersistenceManager
           }
           response.json().then((metadata: LayoutMetadata[]) => {
             if (!metadata) {
-              reject(new Error("invalid metadata"));
+              reject(new Error("Response did not contain valid metadata"));
             }
             resolve(metadata);
           });
