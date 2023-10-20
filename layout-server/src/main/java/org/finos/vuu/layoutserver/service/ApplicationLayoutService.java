@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -29,14 +28,10 @@ public class ApplicationLayoutService {
     }
 
     public ApplicationLayout getApplicationLayout(String username) {
-        Optional<ApplicationLayout> layout = repository.findById(username);
-
-        if (layout.isEmpty()) {
+        return repository.findById(username).orElseGet(() -> {
             logger.info("No application layout for user, returning default");
             return getDefaultLayout();
-        }
-
-        return layout.get();
+        });
     }
 
     public void updateApplicationLayout(String username, JsonNode layoutDefinition) {
