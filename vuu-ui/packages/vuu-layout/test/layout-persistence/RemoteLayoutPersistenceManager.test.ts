@@ -24,17 +24,27 @@ const metadata: LayoutMetadata[] = [
 const metadataToAdd: Omit<LayoutMetadata, "id" | "created"> = {
   name: "layout 1",
   group: "group 1",
-  screenshot: "",
+  screenshot: "screenshot",
   user: "username",
 };
 
 const layout: LayoutJSON = {
-  type: "",
+  type: "View",
 };
 
 const uniqueId = uuidv4();
 const dateString = new Date().toISOString();
 const fetchError = new Error("Something went wrong with your request");
+
+type FetchResponse<T> = {
+  json?: () => Promise<T>;
+  ok: boolean;
+  statusText?: string;
+};
+
+type CreateLayoutResponseJSON = {
+  metadata: LayoutMetadata;
+};
 
 describe("RemoteLayoutPersistenceManager", () => {
   beforeEach(() => {
@@ -42,7 +52,7 @@ describe("RemoteLayoutPersistenceManager", () => {
   });
 
   describe("createLayout", () => {
-    const responseJSON = {
+    const responseJSON: CreateLayoutResponseJSON = {
       metadata: {
         ...metadataToAdd,
         id: uniqueId,
@@ -51,7 +61,7 @@ describe("RemoteLayoutPersistenceManager", () => {
     };
 
     it("resolves with metadata when fetch resolves, response is ok and contains metadata", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<CreateLayoutResponseJSON> = {
         json: () => new Promise((resolve) => resolve(responseJSON)),
         ok: true,
       };
@@ -66,7 +76,7 @@ describe("RemoteLayoutPersistenceManager", () => {
     it("rejects with error when response is not ok", () => {
       const errorMessage = "Not Found";
 
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<CreateLayoutResponseJSON> = {
         json: () => new Promise((resolve) => resolve(responseJSON)),
         ok: false,
         statusText: errorMessage,
@@ -81,7 +91,7 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when metadata in response is falsey", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<object> = {
         json: () => new Promise((resolve) => resolve({})),
         ok: true,
       };
@@ -106,7 +116,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("updateLayout", () => {
     it("resolves when fetch resolves and response is ok", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<void> = {
         ok: true,
       };
 
@@ -120,7 +130,7 @@ describe("RemoteLayoutPersistenceManager", () => {
     it("rejects with error when response is not ok", () => {
       const errorMessage = "Not Found";
 
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<void> = {
         ok: false,
         statusText: errorMessage,
       };
@@ -145,7 +155,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("deleteLayout", () => {
     it("resolves when fetch resolves and response is ok", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<void> = {
         ok: true,
       };
 
@@ -159,7 +169,7 @@ describe("RemoteLayoutPersistenceManager", () => {
     it("rejects with error when response is not ok", () => {
       const errorMessage = "Not Found";
 
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<void> = {
         ok: false,
         statusText: errorMessage,
       };
@@ -184,7 +194,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("loadMetadata", () => {
     it("resolves with array of metadata when response is ok", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<LayoutMetadata[]> = {
         json: () => new Promise((resolve) => resolve(metadata)),
         ok: true,
       };
@@ -199,8 +209,8 @@ describe("RemoteLayoutPersistenceManager", () => {
     it("rejects with error when response is not ok", () => {
       const errorMessage = "Not Found";
 
-      const fetchResponse = {
-        json: () => new Promise((resolve) => resolve(undefined)),
+      const fetchResponse: FetchResponse<void> = {
+        json: () => new Promise((resolve) => resolve()),
         ok: false,
         statusText: errorMessage,
       };
@@ -214,8 +224,8 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when metadata is falsey in response", () => {
-      const fetchResponse = {
-        json: () => new Promise((resolve) => resolve(undefined)),
+      const fetchResponse: FetchResponse<void> = {
+        json: () => new Promise((resolve) => resolve()),
         ok: true,
       };
 
@@ -239,7 +249,7 @@ describe("RemoteLayoutPersistenceManager", () => {
 
   describe("loadLayout", () => {
     it("resolves with array of metadata when response is ok", () => {
-      const fetchResponse = {
+      const fetchResponse: FetchResponse<LayoutJSON> = {
         json: () => new Promise((resolve) => resolve(layout)),
         ok: true,
       };
@@ -254,8 +264,8 @@ describe("RemoteLayoutPersistenceManager", () => {
     it("rejects with error when response is not ok", () => {
       const errorMessage = "Not Found";
 
-      const fetchResponse = {
-        json: () => new Promise((resolve) => resolve(undefined)),
+      const fetchResponse: FetchResponse<void> = {
+        json: () => new Promise((resolve) => resolve()),
         ok: false,
         statusText: errorMessage,
       };
@@ -269,9 +279,8 @@ describe("RemoteLayoutPersistenceManager", () => {
     });
 
     it("rejects with error when metadata is falsey in response", () => {
-      const fetchResponse = {
-        json: () =>
-          new Promise((resolve: (value?: unknown) => void) => resolve()),
+      const fetchResponse: FetchResponse<void> = {
+        json: () => new Promise((resolve) => resolve()),
         ok: true,
       };
 
