@@ -184,20 +184,24 @@ export const OverflowContainerHighPriorityItem = () => {
 
 OverflowContainerHighPriorityItem.displaySequence = displaySequence++;
 
-export const TestFixtureSimpleOverflowContainer = ({ width = 700 }) => {
+export const TestFixtureSimpleOverflowContainer = ({ width = 600 }) => {
   return (
-    <OverflowContainer
-      data-testid="overflow-container"
-      height={44}
-      style={{ width, height: 44 }}
-    >
-      <div className="Item" style={{ width: 100 }}></div>
-      <div className="Item" style={{ width: 100 }}></div>
-      <div className="Item" style={{ width: 100 }}></div>
-      <div className="Item" style={{ width: 100 }}></div>
-      <div className="Item" style={{ width: 100 }}></div>
-      <div className="Item" style={{ width: 100 }}></div>
-    </OverflowContainer>
+    <>
+      <input data-testid="input-1" />
+      <OverflowContainer
+        data-testid="overflow-container"
+        height={44}
+        style={{ width, height: 44 }}
+      >
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+        <div className="Item" style={{ width: 100 }}></div>
+      </OverflowContainer>
+      <input data-testid="input-2" />
+    </>
   );
 };
 

@@ -40,12 +40,14 @@ export const FilterBar = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeFilterIndex,
+    addButtonProps,
     editFilter,
     filters,
     onClickAddFilter,
     onClickRemoveFilter,
     onChangeFilterClause,
     onChangeActiveFilterIndex,
+    onNavigateOutOfBounds,
     onKeyDown,
     onMenuAction,
     pillProps,
@@ -122,14 +124,16 @@ export const FilterBar = ({
       <span className={`${classBase}-icon`} data-icon="tune" />
       <Toolbar
         activeItemIndex={activeFilterIndex}
-        height={26}
+        height={28}
         onActiveChange={onChangeActiveFilterIndex}
+        onNavigateOutOfBounds={onNavigateOutOfBounds}
         selectionStrategy="multiple-special-key"
       >
         {getChildren()}
       </Toolbar>
       {editFilter === undefined ? (
         <Button
+          {...addButtonProps}
           className={`${classBase}-add`}
           data-icon="plus"
           data-selectable={false}

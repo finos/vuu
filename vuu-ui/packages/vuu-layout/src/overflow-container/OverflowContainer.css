@@ -2,7 +2,6 @@
     --item-gap : 2px;
     --overflow-direction: row; 
     --overflow-width: 0px;
-    --border-size: calc((var(--overflow-container-height) - 24px) / 2);
     background-color: var(--vuuOverflowContainer-background);
     height: var(--overflow-container-height);
 }
@@ -31,7 +30,7 @@
 
 }
 
-.vuuOverflowContainer-wrapContainer.overflowed {
+.vuuOverflowContainer-wrapContainer-overflowed {
     --overflow-order: 2;
     --overflow-left: auto;
     --overflow-position: relative;
