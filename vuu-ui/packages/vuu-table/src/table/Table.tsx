@@ -26,6 +26,7 @@ export const Table = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelect,
   onSelectionChange,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
@@ -61,6 +62,7 @@ export const Table = ({
     width,
   });
 
+  console.log({ tableProps });
   const style = {
     ...outerSize,
     "--content-height": `${viewportMeasurements.contentHeight}px`,

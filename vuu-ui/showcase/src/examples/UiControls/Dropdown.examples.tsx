@@ -1,6 +1,10 @@
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
-import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import {
+  Dropdown,
+  SelectionChangeHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
@@ -8,13 +12,16 @@ import { usa_states } from "./List.data";
 let displaySequence = 1;
 
 export const DefaultDropdown = () => {
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
-    console.log("selection changed", selectedItem);
-  };
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (event, selected) => {
+      console.log(`selection changed ${selected}`);
+    },
+    []
+  );
   return (
     <Dropdown
       defaultSelected={usa_states[0]}
-      onSelectionChange={handleChange}
+      onSelectionChange={handleSelectionChange}
       source={usa_states}
     />
   );
@@ -188,13 +195,14 @@ export const SwitchDataSource = () => {
 SwitchDataSource.displaySequence = displaySequence++;
 
 export const MultiSelectDropdown = () => {
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<string, "multiple">
-  >((event, selectedItem) => {
-    // nothing to see
-  }, []);
+  const handleSelectionChange = useCallback<SelectionChangeHandler<string>>(
+    (event, selected) => {
+      console.log(`selectionChange ${JSON.stringify(selected)}`);
+    },
+    []
+  );
   return (
-    <Dropdown<string, "multiple">
+    <Dropdown<string>
       defaultSelected={[usa_states[0]]}
       onSelectionChange={handleSelectionChange}
       selectionStrategy="multiple"

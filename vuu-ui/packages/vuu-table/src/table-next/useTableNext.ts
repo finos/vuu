@@ -71,6 +71,7 @@ export interface TableHookProps
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
+      | "onSelect"
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
@@ -102,6 +103,7 @@ export const useTable = ({
   onFeatureEnabled,
   onFeatureInvocation,
   onRowClick: onRowClickProp,
+  onSelect,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
@@ -202,9 +204,6 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`useTableNext handleConfigChanged`, {
-        tableConfig,
-      });
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -217,9 +216,6 @@ export const useTable = ({
 
   const handleDataSourceConfigChanged = useCallback(
     (dataSourceConfig: DataSourceConfig) => {
-      console.log("config changed", {
-        dataSourceConfig,
-      });
       dataSource.config = {
         ...dataSource.config,
         ...dataSourceConfig,
@@ -230,9 +226,6 @@ export const useTable = ({
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
-      console.log(`useTableNext handleCreateCalculatedColumn`, {
-        column,
-      });
       dataSource.columns = dataSource.columns.concat(column.name);
       const newTableConfig = addColumn(tableConfig, column);
       dispatchColumnAction({
@@ -475,6 +468,7 @@ export const useTable = ({
   );
 
   const selectionHookOnRowClick = useSelection({
+    onSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });

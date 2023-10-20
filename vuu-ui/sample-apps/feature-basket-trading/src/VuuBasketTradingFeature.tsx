@@ -1,15 +1,17 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
+import { NewBasketPanel } from "./new-basket-panel";
 
 import "./VuuBasketTradingFeature.css";
+import { EmptyBasketsPanel } from "./empty-baskets-panel";
 
 const classBase = "VuuBasketTradingFeature";
 
@@ -17,6 +19,7 @@ export type BasketStatus = "design" | "on-market";
 const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
 export interface BasketTradingFeatureProps {
+  basketSchema: TableSchema;
   basketDefinitionsSchema: TableSchema;
   basketDesignSchema: TableSchema;
   basketOrdersSchema: TableSchema;
@@ -24,36 +27,31 @@ export interface BasketTradingFeatureProps {
 }
 
 const VuuBasketTradingFeature = ({
+  basketSchema,
   basketDefinitionsSchema,
   basketDesignSchema,
   basketOrdersSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
+  const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const {
     activeTabIndex,
     dataSourceBasket,
-    dataSourceBasketSearch,
+    dataSourceBasketDefinitions,
+    dataSourceBasketDefinitionsSearch,
     dataSourceBasketDesign,
     dataSourceBasketOrders,
     dataSourceInstruments,
     onSendToMarket,
     onTakeOffMarket,
+    saveNewBasket,
   } = useBasketTradingDataSources({
+    basketSchema,
     basketDefinitionsSchema,
     basketDesignSchema,
     basketOrdersSchema,
     instrumentsSchema,
   });
-
-  // const handleDataSourceConfigChange = useCallback(
-  //   (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-  //     // confirmed / unconfirmed messages are used for UI updates, not state saving
-  //     if (confirmed === undefined) {
-  //       save?.(config, "datasource-config");
-  //     }
-  //   },
-  //   [save]
-  // );
 
   useEffect(() => {
     dataSourceBasketDesign.resume?.();
@@ -66,14 +64,52 @@ const VuuBasketTradingFeature = ({
     dataSourceInstruments,
   });
 
+  const handleClose = useCallback(() => {
+    setDialog(null);
+  }, []);
+
+  const handleSaveNewBasket = useCallback(
+    (basketName, basketId) => {
+      saveNewBasket(basketName, basketId);
+      setDialog(null);
+    },
+    [saveNewBasket]
+  );
+
+  const handleAddBasket = useCallback(() => {
+    console.log("add a basket");
+    setDialog(
+      <NewBasketPanel
+        basketDataSource={dataSourceBasket}
+        basketSchema={basketSchema}
+        onClose={handleClose}
+        onSaveBasket={handleSaveNewBasket}
+      />
+    );
+  }, [basketSchema, dataSourceBasket, handleClose, handleSaveNewBasket]);
+
   const basketSelectorProps = useMemo<BasketSelectorProps>(
     () => ({
       basketId: "001",
-      dataSourceBasket,
-      dataSourceBasketSearch,
+      dataSourceBasket: dataSourceBasketDefinitions,
+      dataSourceBasketSearch: dataSourceBasketDefinitionsSearch,
+      onClickAddBasket: handleAddBasket,
     }),
-    [dataSourceBasket, dataSourceBasketSearch]
+    [
+      dataSourceBasketDefinitions,
+      dataSourceBasketDefinitionsSearch,
+      handleAddBasket,
+    ]
   );
+
+  if (dataSourceBasketDefinitions.size === 0) {
+    return (
+      <>
+        <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
+        {dialog}
+      </>
+    );
+  }
 
   return (
     <ContextMenuProvider
@@ -109,6 +145,7 @@ const VuuBasketTradingFeature = ({
           />
         </Stack>
       </FlexboxLayout>
+      {dialog}
     </ContextMenuProvider>
   );
 };

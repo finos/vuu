@@ -1,7 +1,14 @@
 import { useControlled, useForkRef } from "@salt-ds/core";
-import { KeyboardEvent, useCallback, useRef, useState } from "react";
+import {
+  FocusEvent,
+  KeyboardEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { measurements, useResizeObserver, WidthOnly } from "../common-hooks";
 import {
+  CloseReason,
   DropdownHookProps,
   DropdownHookResult,
   DropdownOpenKey,
@@ -37,7 +44,6 @@ export const useDropdownBase = ({
     name: "useDropdown",
     state: "isOpen",
   });
-
   const [popup, setPopup] = useState<measurements>({
     width: popupWidthProp ?? width ?? 0,
   });
@@ -47,10 +53,13 @@ export const useDropdownBase = ({
     onOpenChange?.(true);
   }, [onOpenChange, setIsOpen]);
 
-  const hideDropdown = useCallback(() => {
-    setIsOpen(false);
-    onOpenChange?.(false);
-  }, [onOpenChange, setIsOpen]);
+  const hideDropdown = useCallback(
+    (reason: CloseReason) => {
+      setIsOpen(false);
+      onOpenChange?.(false, reason);
+    },
+    [onOpenChange, setIsOpen]
+  );
 
   useClickAway({
     popperRef,
@@ -90,13 +99,13 @@ export const useDropdownBase = ({
 
   const handleKeydown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
-      if ((evt.key === "Tab" || evt.key === "Escape") && isOpen) {
+      if (/* evt.key === "Tab" || */ evt.key === "Escape" && isOpen) {
         // No preventDefault for Tab, but if we've handled Escape, we should own it
         if (evt.key === "Escape") {
           evt.stopPropagation();
           evt.preventDefault();
         }
-        hideDropdown();
+        hideDropdown(evt.key);
       } else if (openKeys.includes(evt.key as DropdownOpenKey) && !isOpen) {
         evt.preventDefault();
         showDropdown();
@@ -105,6 +114,24 @@ export const useDropdownBase = ({
       }
     },
     [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown]
+  );
+
+  const handleBlur = useCallback(
+    (evt: FocusEvent<HTMLElement>) => {
+      console.log("useDropdownBase blur", {
+        popperRef: popperRef.current,
+        relatedTarget: evt.relatedTarget,
+      });
+      if (isOpen) {
+        if (popperRef.current?.contains(evt.relatedTarget)) {
+          // ignore
+        } else {
+          console.log("hide dropdown");
+          hideDropdown("blur");
+        }
+      }
+    },
+    [hideDropdown, isOpen]
   );
 
   const fullWidth = fullWidthProp ?? false;
@@ -121,6 +148,7 @@ export const useDropdownBase = ({
     onClick: disabled || openOnFocus ? undefined : handleTriggerToggle,
     onFocus: handleTriggerFocus,
     role: "listbox",
+    onBlur: handleBlur,
     onKeyDown: disabled ? undefined : handleKeydown,
     style: { width: fullWidth ? undefined : width },
   };

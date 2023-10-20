@@ -6,6 +6,7 @@ export * from "./editable";
 export * from "./editable-label";
 export * from "./expando-input";
 export * from "./inputs";
+export * from "./instrument-picker";
 export * from "./instrument-search";
 export * from "./list";
 export * from "./price-ticker";

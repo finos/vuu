@@ -304,7 +304,7 @@ export const useDragDropIndicator = ({
       if (overflowMenuShowingRef.current) {
         onDrop(fromIndex, -1, {
           fromIndex,
-          roIndex: -1,
+          toIndex: -1,
         });
       } else {
         if (fromIndex < originalDropTargetIndex) {

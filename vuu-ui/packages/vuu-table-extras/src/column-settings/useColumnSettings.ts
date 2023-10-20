@@ -15,7 +15,7 @@ import {
   updateColumnRenderer,
   updateColumnType,
 } from "@finos/vuu-utils";
-import { SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   useCallback,
@@ -135,7 +135,7 @@ export const useColumnSettings = ({
     return getAvailableCellRenderers(column);
   }, [column]);
 
-  const selectedCellRendererRef = useRef<CellRendererDescriptor | null>(
+  const selectedCellRendererRef = useRef<CellRendererDescriptor | undefined>(
     getCellRendererDescriptor(availableRenderers, column)
   );
 
@@ -185,7 +185,7 @@ export const useColumnSettings = ({
   );
 
   const handleChangeRenderer = useCallback<
-    SelectionChangeHandler<CellRendererDescriptor>
+    SingleSelectionHandler<CellRendererDescriptor>
   >(
     (evt, cellRenderer) => {
       if (cellRenderer) {

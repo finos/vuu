@@ -1,7 +1,7 @@
 import {
   Dropdown,
   DropdownOpenKey,
-  SelectionChangeHandler,
+  SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
 import {
   isColumnTypeRenderer,
@@ -27,7 +27,7 @@ export const DropdownCell = ({ column, columnMap, row }: TableCellProps) => {
   const dataIdx = columnMap[column.name];
   const [value, setValue] = useState(row[dataIdx]);
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, selectedItem) => {
       if (selectedItem) {
         setValue(selectedItem);

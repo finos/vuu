@@ -9,27 +9,13 @@ import "./SaveLayoutPanel.css";
 const classBase = "saveLayoutPanel";
 const formField = `${classBase}-formField`;
 
-const groups = [
-  "Group 1",
-  "Group 2",
-  "Group 3",
-  "Group 4",
-  "Group 5"
-];
+const groups = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
 
-const checkboxValues = [
-  "Value 1",
-  "Value 2",
-  "Value 3"
-];
+const checkboxValues = ["Value 1", "Value 2", "Value 3"];
 
-const radioValues = [
-  "Value 1",
-  "Value 2",
-  "Value 3"
-] as const;
+const radioValues = ["Value 1", "Value 2", "Value 3"] as const;
 
-type RadioValue = typeof radioValues[number];
+type RadioValue = (typeof radioValues)[number];
 
 type SaveLayoutPanelProps = {
   onCancel: () => void;
@@ -48,11 +34,11 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
 
   useEffect(() => {
     if (componentId) {
-      takeScreenshot(document.getElementById(componentId) as HTMLElement).then(screenshot =>
-        setScreenshot(screenshot)
-      )
+      takeScreenshot(document.getElementById(componentId) as HTMLElement).then(
+        (screenshot) => setScreenshot(screenshot)
+      );
     }
-  }, [])
+  }, [componentId]);
 
   const handleSubmit = () => {
     onSave({
@@ -71,12 +57,13 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             <FormFieldLabel>Group</FormFieldLabel>
             <ComboBox
               source={groups}
-              allowFreeText={true}
+              allowFreeText
               InputProps={{
                 inputProps: {
                   className: `${classBase}-inputText`,
                   placeholder: "Select Group or Enter New Name",
-                  onChange: (event: ChangeEvent<HTMLInputElement>) => setGroup(event.target.value),
+                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                    setGroup(event.target.value),
                 },
               }}
               width={120}
@@ -88,29 +75,37 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
             <Input
               inputProps={{
                 className: `${classBase}-inputText`,
-                placeholder: "Enter Layout Name"
+                placeholder: "Enter Layout Name",
               }}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => setLayoutName(event.target.value)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setLayoutName(event.target.value)
+              }
               value={layoutName}
             />
           </FormField>
           <FormField className={formField}>
             <FormFieldLabel>Some Layout Setting</FormFieldLabel>
             <div className={`${classBase}-settingsGroup`}>
-              {checkboxValues.map((value, i) =>
+              {checkboxValues.map((value, i) => (
                 <Checkbox
                   key={i}
-                  onToggle={() => setCheckValues((prev) => prev.includes(value) ? prev.filter(entry => entry !== value) : [...prev, value])}
+                  onToggle={() =>
+                    setCheckValues((prev) =>
+                      prev.includes(value)
+                        ? prev.filter((entry) => entry !== value)
+                        : [...prev, value]
+                    )
+                  }
                   checked={checkValues.includes(value)}
                   label={value}
                 />
-              )}
+              ))}
             </div>
           </FormField>
           <FormField className={formField}>
             <FormFieldLabel>Some Layout Setting</FormFieldLabel>
             <div className={`${classBase}-settingsGroup`}>
-              {radioValues.map((value, i) =>
+              {radioValues.map((value, i) => (
                 <RadioButton
                   key={i}
                   onClick={() => setRadioValue(value)}
@@ -118,7 +113,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
                   label={value}
                   groupName="radioGroup"
                 />
-              )}
+              ))}
             </div>
           </FormField>
         </div>
@@ -135,16 +130,15 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
         </div>
       </div>
       <div className={`${classBase}-buttonsContainer`}>
-        <Button
-          className={`${classBase}-cancelButton`}
-          onClick={onCancel}
-        >Cancel
+        <Button className={`${classBase}-cancelButton`} onClick={onCancel}>
+          Cancel
         </Button>
         <Button
           className={`${classBase}-saveButton`}
           onClick={handleSubmit}
           disabled={layoutName === "" || group === ""}
-        >Save
+        >
+          Save
         </Button>
       </div>
     </div>

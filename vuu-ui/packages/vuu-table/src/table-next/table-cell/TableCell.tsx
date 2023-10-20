@@ -1,7 +1,7 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { VuuColumnDataType } from "packages/vuu-protocol-types";
-import { useCallback } from "react";
+import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 
 import "./TableCell.css";
@@ -12,6 +12,7 @@ const classBase = "vuuTableNextCell";
 export const TableCell = ({
   column,
   columnMap,
+  onClick,
   onDataEdited,
   row,
 }: TableCellProps) => {
@@ -28,8 +29,20 @@ export const TableCell = ({
     [name, onDataEdited, row]
   );
 
+  const handleClick = useCallback<MouseEventHandler>(
+    (evt) => {
+      onClick?.(evt, column);
+    },
+    [column, onClick]
+  );
+
   return (
-    <div className={className} role="cell" style={style}>
+    <div
+      className={className}
+      onClick={onClick ? handleClick : undefined}
+      role="cell"
+      style={style}
+    >
       {CellRenderer ? (
         <CellRenderer
           column={column}

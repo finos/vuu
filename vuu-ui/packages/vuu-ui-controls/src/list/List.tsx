@@ -38,7 +38,7 @@ const classBase = "vuuList";
 
 export const List = forwardRef(function List<
   Item = string,
-  Selection extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default"
 >(
   {
     ListItem = DefaultListItem,
@@ -86,9 +86,10 @@ export const List = forwardRef(function List<
     source,
     style: styleProp,
     stickyHeaders,
+    tabIndex = 0,
     tabToSelect,
     ...htmlAttributes
-  }: ListProps<Item, Selection>,
+  }: ListProps<Item, S>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
@@ -149,17 +150,14 @@ export const List = forwardRef(function List<
     listItemHeaderHandlers,
     scrollIntoView,
     selected,
-  } = useList<Item, Selection>({
+  } = useList<Item, S>({
     allowDragDrop,
     collapsibleHeaders,
     collectionHook,
     containerRef,
     contentRef: contentContainerRef,
     defaultHighlightedIndex,
-    defaultSelected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof defaultSelected
-    >(defaultSelected),
+    defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disabled: listDisabled,
     disableTypeToSelect,
     highlightedIndex: highlightedIndexProp,
@@ -174,10 +172,7 @@ export const List = forwardRef(function List<
     onHighlight,
     restoreLastFocus,
     scrollContainerRef,
-    selected: collectionHook.itemToCollectionItemId<
-      Selection,
-      typeof selectedProp
-    >(selectedProp),
+    selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
     selectionKeys,
     stickyHeaders,
@@ -328,8 +323,10 @@ export const List = forwardRef(function List<
     }
   }
 
+  const isEmpty = collectionHook.data.length === 0;
+
   const renderContent = () => {
-    if (collectionHook.data.length) {
+    if (!isEmpty) {
       // const itemsToRender =
       //   typeof draggedItemIndex === "number" && draggedItemIndex >= 0
       //     ? collectionHook.data.filter((d) => d.index !== draggedItemIndex)
@@ -341,7 +338,6 @@ export const List = forwardRef(function List<
       renderEmpty();
     }
   };
-
   const contentHeight = "auto";
   const sizeStyles = {
     "--list-borderWidth":
@@ -368,6 +364,7 @@ export const List = forwardRef(function List<
       className={cx(classBase, className, {
         [`${classBase}-collapsible`]: collapsibleHeaders,
         [`${classBase}-contentSized`]: computedListHeight !== undefined,
+        [`${classBase}-empty`]: isEmpty,
         vuuFocusVisible: highlightedIndex === LIST_FOCUS_VISIBLE,
       })}
       height={computedListHeight ?? height}
@@ -377,7 +374,7 @@ export const List = forwardRef(function List<
       role="listbox"
       onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
-      tabIndex={listDisabled || disableFocus ? undefined : 0}
+      tabIndex={listDisabled || disableFocus ? undefined : tabIndex}
     >
       <ListItemProxy ref={rowHeightProxyRef} height={itemHeightProp} />
       {collectionHook.data.length === 0 && ListPlaceholder !== undefined ? (
@@ -399,8 +396,8 @@ export const List = forwardRef(function List<
       )}
     </MeasuredContainer>
   );
-}) as <Item = string, Selection extends SelectionStrategy = "default">(
-  props: ListProps<Item, Selection> & {
+}) as <Item = string, S extends SelectionStrategy = "default">(
+  props: ListProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
   }
-) => ReactElement<ListProps<Item, Selection>>;
+) => ReactElement<ListProps<Item>>;

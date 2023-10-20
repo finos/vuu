@@ -1,6 +1,5 @@
 import { FocusEvent, KeyboardEvent, RefObject } from "react";
 import { CollectionItem } from "./collectionTypes";
-import { SelectionStrategy, SingleSelectionStrategy } from "./selectionTypes";
 
 export interface NavigationProps<Item = unknown> {
   cycleFocus?: boolean;
@@ -17,13 +16,10 @@ export interface NavigationProps<Item = unknown> {
   viewportItemCount: number;
 }
 
-export interface NavigationHookProps<Item, Selection extends SelectionStrategy>
-  extends NavigationProps<Item> {
+export interface NavigationHookProps<Item> extends NavigationProps<Item> {
   containerRef: RefObject<HTMLElement>;
   label?: string;
-  selected?: Selection extends SingleSelectionStrategy
-    ? string | null
-    : string[];
+  selected?: string[];
 }
 
 export interface KeyboardHookContainerProps {

@@ -19,3 +19,8 @@
     border-width: 1px;
     padding: 4px 0;
 }
+
+
+.vuuPortal:has(.vuuDropdown-popup-component.vuuList-empty){
+    display: none;
+}

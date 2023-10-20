@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { CollectionItem } from "../common-hooks";
 import { KeySet } from "./keyset";
-import { CollectionItem } from "./common-hooks";
 import { ViewportRange } from "./useScrollPosition";
 
 /**
