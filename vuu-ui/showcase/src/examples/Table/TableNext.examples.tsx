@@ -230,6 +230,48 @@ export const AutoTableNext = () => {
 };
 AutoTableNext.displaySequence = displaySequence++;
 
+export const AutoTableNextAsFlexChild = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 100px)",
+        marginLeft: 50,
+        marginTop: 50,
+        width: "calc(100vw - 100px)",
+      }}
+    >
+      <div style={{ flex: "1 1 auto" }}>
+        <TableNext
+          {...props}
+          config={{
+            ...config,
+          }}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={0}
+        />
+      </div>
+    </div>
+  );
+};
+AutoTableNextAsFlexChild.displaySequence = displaySequence++;
+
 export const AutoTableNextBasketDesign = () => {
   const {
     typeaheadHook: _,

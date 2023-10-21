@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -103,20 +104,29 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const dispatchLayoutAction = useCallback(
     (action: LayoutReducerAction, suppressSave = false) => {
+      console.log(
+        `%cdispatchLayoutAction ${action.type}`,
+        "color:blue;font-weight:bold"
+      );
       const nextState = layoutReducer(state.current as ReactElement, action);
       if (nextState !== state.current) {
+        console.log({ nextState });
         state.current = nextState;
         forceRefresh({});
         if (!suppressSave && shouldSave(action)) {
+          console.log(`persist this layout change`);
           serializeState(nextState, getLayoutChangeReason(action));
+        } else {
+          console.log("do not persist this layout change");
         }
       }
     },
     [forceRefresh, serializeState]
   );
 
-  const layoutActionDispatcher: LayoutProviderDispatch = useCallback(
+  const layoutActionDispatcher = useCallback<LayoutProviderDispatch>(
     (action) => {
+      console.log(`dispatch layout action ${action.type}`);
       switch (action.type) {
         case "drag-start": {
           prepareToDragLayout(action);
@@ -142,11 +152,14 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
     pathToDropTarget
   );
 
+  useMemo(() => {
+    console.log("layout has changed", {
+      layout,
+    });
+  }, [layout]);
+
   useEffect(() => {
     if (layout) {
-      // If we have a layout container with the dropTarget attribute we're going to inject the loaded layout there
-      // TODO make this a bit more robust/configurable than just using this magic attribute, that sounds like something
-      // else.
       const targetContainer = findTarget(
         state.current as never,
         withDropTarget
@@ -184,6 +197,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   if (state.current === undefined) {
     state.current = processLayoutElement(children);
   } else if (children !== childrenRef.current) {
+    console.log(`children have changed`);
     state.current = processLayoutElement(children, state.current);
     childrenRef.current = children;
   }

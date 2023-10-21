@@ -11,6 +11,7 @@
     background-color: var(--salt-container-secondary-background);
     border-bottom: solid 1px #D6D7DA;
     display: flex;
+    flex: var(--vuuFilterBar-flex);
     gap: 4px;
     height: 33px;
     padding: 0px 8px;

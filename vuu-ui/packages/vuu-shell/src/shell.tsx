@@ -6,6 +6,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import {
@@ -63,6 +64,12 @@ export const Shell = ({
   const layoutId = useRef("latest");
   const { applicationLayout, saveApplicationLayout, loadLayoutById } =
     useLayoutManager();
+
+  useMemo(() => {
+    console.log("the application layout has changed", {
+      applicationLayout,
+    });
+  }, [applicationLayout]);
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {

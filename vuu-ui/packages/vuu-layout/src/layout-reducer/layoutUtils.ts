@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { dimension, uuid } from "@finos/vuu-utils";
 import React, { cloneElement, CSSProperties, ReactElement } from "react";
 import {
