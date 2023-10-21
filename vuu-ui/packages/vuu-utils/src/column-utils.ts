@@ -422,8 +422,6 @@ export const getTableHeadings = (
       tableHeadings.push(tableHeadingsRow);
     }
 
-    console.log({ maxHeadingDepth, tableHeadings });
-
     return tableHeadings;
   }
   return NO_HEADINGS;

@@ -130,7 +130,9 @@ export const useColumnSettings = ({
   const [column, setColumn] = useState<ColumnDescriptor>(
     getColumn(tableConfig.columns, columnProp)
   );
-
+  const [editCalculatedColumn, setEditCalculatedColumn] = useState(
+    column.name === "::"
+  );
   const availableRenderers = useMemo(() => {
     return getAvailableCellRenderers(column);
   }, [column]);
@@ -183,6 +185,10 @@ export const useColumnSettings = ({
     },
     [column, onConfigChange, tableConfig]
   );
+
+  const handleChangeCalculatedColumnName = useCallback((name: string) => {
+    setColumn((state) => ({ ...state, name }));
+  }, []);
 
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
@@ -246,11 +252,13 @@ export const useColumnSettings = ({
 
   return {
     availableRenderers,
+    editCalculatedColumn,
     selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange: handleChange,
+    onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
     onInputCommit: handleInputCommit,
