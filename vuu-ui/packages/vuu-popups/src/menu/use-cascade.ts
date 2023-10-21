@@ -67,7 +67,6 @@ export type RuntimeMenuDescriptor = {
 
 /**  menuitem-vuu-1-0   vuu-1 */
 export const getHostMenuId = (id: string, rootId: string) => {
-  console.log(`getHostMenuId from ${id} and ${rootId}`);
   const pos = id.lastIndexOf("-");
   if (id.startsWith("menuitem")) {
     return pos > -1 ? id.slice(9, pos) : rootId;
@@ -139,9 +138,6 @@ export const useCascade = ({
   }, []);
 
   const setOpenMenus = useCallback((menus: RuntimeMenuDescriptor[]) => {
-    console.log(`setOpenMenus`, {
-      menus,
-    });
     openMenus.current = menus;
     forceRefresh({});
   }, []);
@@ -155,13 +151,9 @@ export const useCascade = ({
 
   const openMenu = useCallback(
     (hostMenuId = rootId, targetMenuId: string, itemId = null) => {
-      console.log(
-        `open menu hostMenuId ${hostMenuId} targetMenuId ${targetMenuId} itemId ${itemId}`
-      );
       if (hostMenuId === rootId && itemId === null) {
         setOpenMenus([{ id: rootId, left: posX, top: posY }]);
       } else {
-        console.log(`openMenu set ${hostMenuId} status to popup-open`);
         menuState.current[hostMenuId] = "popup-open";
         const el = document.getElementById(itemId) as HTMLElement;
         if (el !== null) {
@@ -179,9 +171,7 @@ export const useCascade = ({
 
   const closeMenu = useCallback(
     (menuId?: string) => {
-      console.log(`closeMenu ${menuId}`);
       if (menuId === rootId) {
-        console.log("close child menu of root");
         setOpenMenus([]);
       } else {
         const menus = openMenus.current.slice();
@@ -191,9 +181,6 @@ export const useCascade = ({
         if (parentMenu) {
           menuState.current[parentMenu.id] = "no-popup";
         }
-        console.log(`closeMenu setOpenMenus`, {
-          menus,
-        });
         setOpenMenus(menus);
       }
     },
@@ -202,27 +189,17 @@ export const useCascade = ({
 
   const closeMenus = useCallback(
     (menuItemId) => {
-      console.log(`closeMenus ${menuItemId}`);
       const menus = openMenus.current.slice();
       const menuItemMenuId = menuItemId.slice(9);
       let { id: lastMenuId } = menus.at(-1) as RuntimeMenuDescriptor;
       while (menus.length > 1 && !menuItemMenuId.startsWith(lastMenuId)) {
         const parentMenuId = getHostMenuId(lastMenuId, rootId);
-        console.log(
-          `parentMenuId of lastMenuId ${lastMenuId} and rootId ${rootId} is ${parentMenuId}`
-        );
         menus.pop();
-        console.log(
-          `set state to no-popup for ${lastMenuId} and ${parentMenuId}`
-        );
         menuState.current[lastMenuId] = "no-popup";
         menuState.current[parentMenuId] = "no-popup";
         ({ id: lastMenuId } = menus[menus.length - 1]);
       }
       if (menus.length < openMenus.current.length) {
-        console.log(`closeMenus setOpenMenus`, {
-          menus,
-        });
         setOpenMenus(menus);
       }
     },
@@ -294,8 +271,6 @@ export const useCascade = ({
       if (typeof el.tabIndex === "number") {
         el.focus();
       }
-    } else {
-      console.log(`useCascade no element found with if ${menu?.id}`);
     }
   }, [rootId, setOpenMenus]);
 
@@ -356,11 +331,6 @@ export const useCascade = ({
           // TODO review the below, suspectb it's over complicating things
           const [parentOfLastOpenedMenu, lastOpenedMenu] =
             openMenus.current.slice(-2);
-          console.log(`about to check id on `, {
-            openMenus,
-            parentOfLastOpenedMenu,
-            lastOpenedMenu,
-          });
           if (
             parentOfLastOpenedMenu.id === hostMenuId &&
             menuState.current[lastOpenedMenu.id] !== "pending-close" /*&&
@@ -414,13 +384,11 @@ export const useCascade = ({
     () => ({
       onMouseEnter: (evt: MouseEvent) => {
         const menuItemEl = closestListItem(evt.target as HTMLElement);
-        console.log(`onMouseEnter ${menuItemEl?.id}`);
         triggerChildMenu(menuItemEl);
         onMouseEnterItem(evt, menuItemEl.id);
       },
 
       onClick: (evt: SyntheticEvent) => {
-        console.log("click");
         const listItemEl = closestListItem(evt.target as HTMLElement);
         const { isGroup, menuItemId } = getMenuItemDetails(listItemEl, rootId);
         if (isGroup) {

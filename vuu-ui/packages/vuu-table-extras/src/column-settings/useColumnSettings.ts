@@ -28,14 +28,14 @@ import { ColumnSettingsProps } from "./ColumnSettingsPanel";
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type integer",
-    label: "Default Renderer (data type int, long)",
+    label: "Default Renderer (int, long)",
     name: "default-int",
   },
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type double",
-    label: "Default Renderer (data type double)",
+    label: "Default Renderer (double)",
     name: "default-double",
   },
   ...getRegisteredCellRenderers("double"),
@@ -44,7 +44,7 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
 const stringCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type string",
-    label: "Default Renderer (data type string)",
+    label: "Default Renderer (string)",
     name: "default-string",
   },
 ];

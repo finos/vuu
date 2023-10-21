@@ -65,17 +65,11 @@ export const Shell = ({
   const { applicationLayout, saveApplicationLayout, loadLayoutById } =
     useLayoutManager();
 
-  useMemo(() => {
-    console.log("the application layout has changed", {
-      applicationLayout,
-    });
-  }, [applicationLayout]);
-
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
       try {
-        saveApplicationLayout(layout);
         console.log(`handle layout changed ${layoutChangeReason}`);
+        saveApplicationLayout(layout);
         // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");

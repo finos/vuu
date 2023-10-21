@@ -87,7 +87,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const serializeState = useCallback(
     (source, layoutChangeReason: LayoutChangeReason) => {
-      console.log(`serialize state ${layoutChangeReason}`);
       if (onLayoutChange) {
         const targetContainer =
           findTarget(source, withDropTarget) || state.current;
@@ -104,20 +103,12 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const dispatchLayoutAction = useCallback(
     (action: LayoutReducerAction, suppressSave = false) => {
-      console.log(
-        `%cdispatchLayoutAction ${action.type}`,
-        "color:blue;font-weight:bold"
-      );
       const nextState = layoutReducer(state.current as ReactElement, action);
       if (nextState !== state.current) {
-        console.log({ nextState });
         state.current = nextState;
         forceRefresh({});
         if (!suppressSave && shouldSave(action)) {
-          console.log(`persist this layout change`);
           serializeState(nextState, getLayoutChangeReason(action));
-        } else {
-          console.log("do not persist this layout change");
         }
       }
     },
@@ -126,7 +117,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const layoutActionDispatcher = useCallback<LayoutProviderDispatch>(
     (action) => {
-      console.log(`dispatch layout action ${action.type}`);
       switch (action.type) {
         case "drag-start": {
           prepareToDragLayout(action);
@@ -151,12 +141,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
     layoutActionDispatcher,
     pathToDropTarget
   );
-
-  useMemo(() => {
-    console.log("layout has changed", {
-      layout,
-    });
-  }, [layout]);
 
   useEffect(() => {
     if (layout) {
@@ -197,7 +181,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   if (state.current === undefined) {
     state.current = processLayoutElement(children);
   } else if (children !== childrenRef.current) {
-    console.log(`children have changed`);
     state.current = processLayoutElement(children, state.current);
     childrenRef.current = children;
   }
