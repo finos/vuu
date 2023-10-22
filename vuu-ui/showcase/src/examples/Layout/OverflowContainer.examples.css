@@ -4,6 +4,10 @@
     height: 32px;
 }
 
+.vuuOverflowContainer-vertical .Item {
+    width: 100%;
+}
+
 [data-overflow-priority="1"].Item {
     background-color: pink;
 }

@@ -35,6 +35,7 @@
     "showcase:build": " cd showcase && node scripts/build.mjs",
     "test:cypress": "cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
+    "test:cypress:e2e": "cypress run --browser chrome",
     "test:vite": "vitest run",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",

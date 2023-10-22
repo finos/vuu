@@ -33,7 +33,6 @@ export const useLayoutContextMenuItems = () => {
   >(() => {
     return [
       (location, options) => {
-        console.log({ options });
         const locations = location.split(" ");
         const menuDescriptors: ContextMenuItemDescriptor[] = [];
         if (locations.includes("main-tab")) {

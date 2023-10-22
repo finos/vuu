@@ -1,6 +1,9 @@
 import { getElementDataIndex } from "@finos/vuu-utils";
 
-const getIndexOfItem = (container: HTMLElement | null, query: string) => {
+export const getIndexOfItem = (
+  container: HTMLElement | null,
+  query: string
+) => {
   if (container) {
     const targetTab = container.querySelector(
       `[data-index]:has(${query})`

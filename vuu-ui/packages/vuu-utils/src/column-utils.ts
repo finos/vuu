@@ -78,7 +78,7 @@ export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
   v === "left" || v === "right";
 
 export const isValidPinLocation = (v: string): v is PinLocation =>
-  isValidColumnAlignment(v) || v === "floating";
+  isValidColumnAlignment(v) || v === "floating" || v === "";
 
 export const isKeyedColumn = (
   column: ColumnDescriptor
@@ -421,8 +421,6 @@ export const getTableHeadings = (
       });
       tableHeadings.push(tableHeadingsRow);
     }
-
-    console.log({ maxHeadingDepth, tableHeadings });
 
     return tableHeadings;
   }

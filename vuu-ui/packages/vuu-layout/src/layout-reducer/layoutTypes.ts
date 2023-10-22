@@ -21,6 +21,7 @@ export interface LayoutRoot extends WithProps {
 }
 
 export interface LayoutJSON extends WithType {
+  active?: number;
   children?: LayoutJSON[];
   id?: string;
   props?: { [key: string]: any };

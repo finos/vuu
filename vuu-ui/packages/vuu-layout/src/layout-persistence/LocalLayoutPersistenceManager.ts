@@ -9,12 +9,17 @@ const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts/layouts";
 
 export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
-  createLayout(metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON): Promise<string> {
-    return new Promise(resolve => {
-      console.log(`Saving layout as ${metadata.name} to group ${metadata.group}...`);
+  createLayout(
+    metadata: Omit<LayoutMetadata, "id">,
+    layout: LayoutJSON
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      console.log(
+        `Saving layout as ${metadata.name} to group ${metadata.group}...`
+      );
 
-      Promise.all([this.loadLayouts(), this.loadMetadata()])
-        .then(([existingLayouts, existingMetadata]) => {
+      Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
+        ([existingLayouts, existingMetadata]) => {
           const id = getUniqueId();
           this.appendAndPersist(
             id,
@@ -24,8 +29,9 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
             existingMetadata
           );
           resolve(id);
-        });
-    })
+        }
+      );
+    });
   }
 
   updateLayout(
@@ -37,12 +43,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter(layout => layout.id !== id);
-          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
+          const layouts = existingLayouts.filter((layout) => layout.id !== id);
+          const metadata = existingMetadata.filter(
+            (metadata) => metadata.id !== id
+          );
           this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
-        .catch(e => reject(e));
+        .catch((e) => reject(e));
     });
   }
 
@@ -51,12 +59,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter(layout => layout.id !== id);
-          const metadata = existingMetadata.filter(metadata => metadata.id !== id);
+          const layouts = existingLayouts.filter((layout) => layout.id !== id);
+          const metadata = existingMetadata.filter(
+            (metadata) => metadata.id !== id
+          );
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
         })
-        .catch(e => reject(e));
+        .catch((e) => reject(e));
     });
   }
 
@@ -64,11 +74,13 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     return new Promise((resolve, reject) => {
       this.validateId(id, "layout")
         .then(() => this.loadLayouts())
-        .then(existingLayouts => {
-          const layouts = existingLayouts.find(layout => layout.id === id) as Layout;
+        .then((existingLayouts) => {
+          const layouts = existingLayouts.find(
+            (layout) => layout.id === id
+          ) as Layout;
           resolve(layouts.json);
         })
-        .catch(e => reject(e));
+        .catch((e) => reject(e));
     });
   }
 
@@ -80,11 +92,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   loadApplicationLayout(): Promise<LayoutJSON> {
+    console.log("loadApplicationLAyout");
     return new Promise((resolve) => {
       const applicationLayout = getLocalEntity<LayoutJSON>("api/vui");
       if (applicationLayout) {
+        console.log(applicationLayout);
         resolve(applicationLayout);
       } else {
+        console.log(defaultLayout);
         resolve(defaultLayout);
       }
     });
@@ -102,7 +117,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   private loadLayouts(): Promise<Layout[]> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
       resolve(layouts || []);
     });
@@ -132,29 +147,33 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   // Ensures that there is exactly one Layout entry and exactly one Metadata
   // entry in local storage corresponding to the provided ID.
   private async validateIds(id: string): Promise<void> {
-    return Promise
-      .all([
-        this.validateId(id, "metadata").catch(error => error.message),
-        this.validateId(id, "layout").catch(error => error.message)
-      ])
-      .then((errorMessages: string[]) => {
-        // filter() is used to remove any blank messages before joining.
-        // Avoids orphaned delimiters in combined messages, e.g. "; " or "; error 2"
-        const combinedMessage = errorMessages.filter(msg => msg !== undefined).join("; ");
-        if (combinedMessage) {
-          throw new Error(combinedMessage);
-        }
-      });
+    return Promise.all([
+      this.validateId(id, "metadata").catch((error) => error.message),
+      this.validateId(id, "layout").catch((error) => error.message),
+    ]).then((errorMessages: string[]) => {
+      // filter() is used to remove any blank messages before joining.
+      // Avoids orphaned delimiters in combined messages, e.g. "; " or "; error 2"
+      const combinedMessage = errorMessages
+        .filter((msg) => msg !== undefined)
+        .join("; ");
+      if (combinedMessage) {
+        throw new Error(combinedMessage);
+      }
+    });
   }
 
   // Ensures that there is exactly one element (Layout or Metadata) in local
   // storage corresponding to the provided ID.
-  private validateId(id: string, dataType: "metadata" | "layout"): Promise<void> {
+  private validateId(
+    id: string,
+    dataType: "metadata" | "layout"
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
-      const loadFunc = dataType === "metadata" ? this.loadMetadata : this.loadLayouts;
+      const loadFunc =
+        dataType === "metadata" ? this.loadMetadata : this.loadLayouts;
 
       loadFunc().then((array: WithId[]) => {
-        const count = array.filter(element => element.id === id).length;
+        const count = array.filter((element) => element.id === id).length;
         switch (count) {
           case 1: {
             resolve();
@@ -164,9 +183,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
             reject(new Error(`No ${dataType} with ID ${id}`));
             break;
           }
-          default: reject(new Error(`Non-unique ${dataType} with ID ${id}`));
+          default:
+            reject(new Error(`Non-unique ${dataType} with ID ${id}`));
         }
       });
-    })
+    });
   }
 }

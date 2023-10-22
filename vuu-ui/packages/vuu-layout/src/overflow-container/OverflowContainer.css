@@ -1,8 +1,9 @@
 .vuuOverflowContainer {
     --item-gap : 2px;
     --overflow-direction: row; 
+    --overflow-height: var(--item-height);
+    --overflow-top:top:0;
     --overflow-width: 0px;
-    --border-size: calc((var(--overflow-container-height) - 24px) / 2);
     background-color: var(--vuuOverflowContainer-background);
     height: var(--overflow-container-height);
 }
@@ -13,17 +14,23 @@
 }
 .vuuOverflowContainer-vertical {
     --item-align: stretch;
+    --item-height: auto;
     --item-margin: var(--item-gap) 0 var(--item-gap) 0;
     --overflow-direction: column; 
+    --overflow-height: 0;
+    --overflow-left: 0;
+    --overflow-top: 100%;
+    --overflow-width: auto;
  
 }
 
 .vuuOverflowContainer-wrapContainer {
+    --item-height: var(--overflow-container-height);
     align-items: var(--item-align);
     display: flex;
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
-    height: var(--overflow-container-height);
+    height: var(--item-height);
     min-width: var(--vuuOverflowContainer-minWidth, 44px);
     overflow: hidden;
     position: relative;
@@ -31,11 +38,15 @@
 
 }
 
-.vuuOverflowContainer-wrapContainer.overflowed {
+.vuuOverflowContainer-wrapContainer-overflowed {
     --overflow-order: 2;
     --overflow-left: auto;
     --overflow-position: relative;
     --overflow-width: auto;
+}
+
+.vuuOverflowContainer-vertical.vuuOverflowContainer-wrapContainer-overflowed {
+    --overflow-height: auto;
 }
 
 .vuuOverflowContainer-item {
@@ -43,7 +54,7 @@
     display: flex;
     order: 1;
     position: relative;
-    height: var(--overflow-container-height);
+    height: var(--item-height);
     margin: var(--item-margin);
 }
 
@@ -70,11 +81,11 @@
     align-items: center;
     background-color: transparent;
     display: flex;
-    height: var(--overflow-container-height);
-    height: var(--overflow-container-height);
+    height: var(--overflow-height);
     order: var(--overflow-order, 99);
     overflow: hidden;
     left: var(--overflow-left, 100%);
+    top: var(--overflow-top, 100%);
     position: var(--overflow-position, absolute);
     width: var(--overflow-width);
 

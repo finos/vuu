@@ -53,7 +53,9 @@ export const ColumnFormattingPanel = ({
       <div>Formatting</div>
 
       <FormField>
-        <FormFieldLabel>Renderer</FormFieldLabel>
+        <FormFieldLabel>
+          {`Renderer (data type ${column.serverDataType})`}
+        </FormFieldLabel>
         <Dropdown<CellRendererDescriptor>
           className={cx(`${classBase}-renderer`)}
           itemToString={itemToString}
