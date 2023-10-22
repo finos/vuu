@@ -14,6 +14,7 @@
     "@salt-ds/icons": "1.5.1",
     "@salt-ds/lab": "1.0.0-alpha.15",
     "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-icons": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-table": "0.0.26",

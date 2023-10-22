@@ -1,14 +1,4 @@
-import {
-  DragDropHook,
-  DropHandler,
-  InternalDragDropProps,
-  InternalDragHookResult,
-  MouseOffset,
-} from "./dragDropTypesNext";
-import { DragDropState } from "./DragDropState";
-import { useDragDropNaturalMovement } from "./useDragDropNaturalMovementNext";
-import { useDragDropIndicator } from "./useDragDropIndicator";
-import { useDragDropProvider } from "./DragDropProvider";
+import { isOverflowElement } from "@finos/vuu-layout";
 import {
   MouseEventHandler,
   useCallback,
@@ -17,14 +7,25 @@ import {
   useRef,
   useState,
 } from "react";
+import { useDragDropProvider } from "./DragDropProvider";
+import { DragDropState } from "./DragDropState";
+import {
+  DragDropHook,
+  DropHandler,
+  InternalDragDropProps,
+  InternalDragHookResult,
+  MouseOffset,
+} from "./dragDropTypesNext";
+import { Draggable } from "./Draggable";
 import {
   cloneElement,
   constrainRect,
   dimensions,
   NOT_OVERFLOWED,
 } from "./drop-target-utils";
-import { useAutoScroll, ScrollStopHandler } from "./useAutoScroll";
-import { Draggable } from "./Draggable";
+import { ScrollStopHandler, useAutoScroll } from "./useAutoScroll";
+import { useDragDropIndicator } from "./useDragDropIndicator";
+import { useDragDropNaturalMovement } from "./useDragDropNaturalMovementNext";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
 
 const NULL_DRAG_DROP_RESULT = {
@@ -67,11 +68,6 @@ const getDraggableElement = (
   el: EventTarget | null,
   query: string
 ): HTMLElement => (el as HTMLElement).closest(query) as HTMLElement;
-
-const isOverflowElement = (element: HTMLElement) =>
-  element.dataset.index === "overflow" &&
-  element.parentElement !== null &&
-  element.parentElement.classList.contains("overflowed");
 
 const getLastElement = (
   container: HTMLElement,

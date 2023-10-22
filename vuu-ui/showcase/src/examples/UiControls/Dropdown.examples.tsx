@@ -22,7 +22,7 @@ export const DefaultDropdown = () => {
     <Dropdown
       defaultSelected={usa_states[0]}
       onSelectionChange={handleSelectionChange}
-      source={usa_states}
+      source={usa_states.slice(0, 10)}
     />
   );
 };

@@ -20,18 +20,25 @@ export interface ColumnExpressionPanelProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<ColumnSettingsProps, "tableConfig" | "vuuTable"> {
   column: ColumnDescriptor;
+  onChangeName?: (name: string) => void;
   onSave: (column: ColumnDescriptor) => void;
 }
 
 export const ColumnExpressionPanel = ({
   column: columnProp,
+  onChangeName: onChangeNameProp,
   onSave: onSaveProp,
   tableConfig,
   vuuTable,
 }: ColumnExpressionPanelProps) => {
   const typeRef = useRef<HTMLDivElement>(null);
   const { column, onChangeExpression, onChangeName, onChangeType, onSave } =
-    useColumnExpression({ column: columnProp, onSave: onSaveProp });
+    useColumnExpression({
+      column: columnProp,
+      onChangeName: onChangeNameProp,
+      onSave: onSaveProp,
+    });
+  const expressionRef = useRef<string>(getCalculatedColumnExpression(column));
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns: tableConfig.columns,
@@ -65,7 +72,7 @@ export const ColumnExpressionPanel = ({
         <ColumnExpressionInput
           onChange={onChangeExpression}
           onSubmitExpression={handleSubmitExpression}
-          source={getCalculatedColumnExpression(column)}
+          source={expressionRef.current}
           suggestionProvider={suggestionProvider}
         />
       </FormField>

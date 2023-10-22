@@ -180,7 +180,6 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        // expectConfigChangeRef.current = true;
         // dispatchColumnAction({
         //   type: "setTableSchema",
         //   tableSchema,
@@ -240,7 +239,6 @@ export const useTable = ({
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,

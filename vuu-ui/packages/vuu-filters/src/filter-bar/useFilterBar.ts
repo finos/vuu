@@ -7,9 +7,13 @@ import {
 import { PromptProps } from "@finos/vuu-popups";
 import { dispatchMouseEvent, filterAsQuery } from "@finos/vuu-utils";
 import { EditableLabelProps } from "@salt-ds/lab";
-import { ActiveItemChangeHandler } from "@finos/vuu-layout";
+import {
+  ActiveItemChangeHandler,
+  NavigationOutOfBoundsHandler,
+} from "@finos/vuu-layout";
 import {
   KeyboardEvent,
+  KeyboardEventHandler,
   RefObject,
   useCallback,
   useEffect,
@@ -45,6 +49,7 @@ export const useFilterBar = ({
   onFiltersChanged,
   showMenu: showMenuProp,
 }: FilterBarHookProps) => {
+  const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
   const [activeFilterIndex, setActiveFilterIndex] =
     useState<number[]>(activeFilterIdexProp);
@@ -342,8 +347,27 @@ export const useFilterBar = ({
     [editFilter]
   );
 
+  const handleAddButtonKeyDown = useCallback<KeyboardEventHandler>((evt) => {
+    if (evt.key === "ArrowLeft") {
+      console.log("navgiate to the Toolbar");
+    }
+  }, []);
+
+  const handlePillNavigationOutOfBounds =
+    useCallback<NavigationOutOfBoundsHandler>((direction) => {
+      if (direction === "end") {
+        addButtonRef.current?.focus();
+      }
+    }, []);
+
+  const addButtonProps = {
+    ref: addButtonRef,
+    onKeyDown: handleAddButtonKeyDown,
+  };
+
   return {
     activeFilterIndex,
+    addButtonProps,
     editFilter,
     filters,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
@@ -352,6 +376,7 @@ export const useFilterBar = ({
     onChangeFilterClause: handleChangeFilterClause,
     onKeyDown,
     onMenuAction: handleMenuAction,
+    onNavigateOutOfBounds: handlePillNavigationOutOfBounds,
     pillProps,
     promptProps,
     showMenu,

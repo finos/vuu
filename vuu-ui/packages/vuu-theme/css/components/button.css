@@ -13,3 +13,10 @@
 .saltButton-primary:hover {
     --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
 }
+
+.saltButton:focus-visible {
+    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple-10));
+    outline-style: dashed;
+    outline-width: 1px;
+    outline-offset: -1px;
+}

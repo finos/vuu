@@ -34,7 +34,6 @@
 .vuuList-viewport {
   height: var(--computed-list-height, var(--measured-px-height));
   overflow: auto;
-  width: var(--measured-px-width);
 }
 
 .vuuListItemHeader {

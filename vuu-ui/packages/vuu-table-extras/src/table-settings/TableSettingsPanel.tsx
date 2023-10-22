@@ -85,21 +85,21 @@ export const TableSettingsPanel = ({
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="row-striping"
-            selected={tableConfig.zebraStripes}
+            selected={tableConfig.zebraStripes ?? false}
             onChange={onChangeTableAttribute}
             value="zebraStripes"
           />
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="row-lines"
-            selected={tableConfig.rowSeparators}
+            selected={tableConfig.rowSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="rowSeparators"
           />
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="col-lines"
-            selected={tableConfig.columnSeparators}
+            selected={tableConfig.columnSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="columnSeparators"
           />

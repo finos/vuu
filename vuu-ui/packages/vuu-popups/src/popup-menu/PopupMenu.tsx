@@ -7,6 +7,7 @@ import {
 } from "react";
 import {
   MenuOpenHandler,
+  PopupCloseCallback,
   PopupCloseReason,
   reasonIsClickAway,
   useContextMenu,
@@ -62,7 +63,7 @@ export const PopupMenu = ({
     });
   }, []);
 
-  const handleMenuClose = useCallback(
+  const handleMenuClose = useCallback<PopupCloseCallback>(
     (reason?: PopupCloseReason) => {
       setMenuOpen(false);
       // If user has clicked the MenuButton whilst menu is open, we want to close it.

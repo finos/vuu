@@ -6,6 +6,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import {
@@ -67,8 +68,8 @@ export const Shell = ({
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
       try {
-        saveApplicationLayout(layout);
         console.log(`handle layout changed ${layoutChangeReason}`);
+        saveApplicationLayout(layout);
         // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");

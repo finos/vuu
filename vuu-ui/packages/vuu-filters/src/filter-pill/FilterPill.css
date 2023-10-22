@@ -1,17 +1,19 @@
 .vuuFilterPill {
-    --vuuToolbarItem-outlineColor: white;
     align-items: center;
     background: var(--salt-taggable-background);
     border: solid 1px var(--salt-taggable-foreground);
     border-radius: 26px;
     color: var(--vuu-color-gray-50);
     display: inline-flex;
-    height: 26px;
     max-width: var(--vuuFilterPill-maxWidth, 200px);
     padding: 0 8px;
     position: relative;
     user-select: none;
     outline: none;
+}
+
+.vuuFilterPill.vuuToolbarItem {
+    height: 26px;
 }
 
 .vuuFilterPill[aria-selected="true"]{
@@ -30,3 +32,4 @@
     border-color: var(--salt-taggable-background-hover);
     color: var(--vuu-color-gray-80);
 }
+
