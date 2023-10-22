@@ -44,9 +44,6 @@ export const LayoutManagementProvider = (
 
   const setApplicationLayout = useCallback(
     (layout: LayoutJSON, rerender = true) => {
-      console.log(`save application layout rerender ${rerender}`, {
-        layout,
-      });
       applicationLayoutRef.current = layout;
       if (rerender) {
         forceRefresh({});
