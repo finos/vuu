@@ -3,7 +3,8 @@ import { Table } from "@finos/vuu-table";
 import { DragVisualizer } from "@finos/vuu-table/src/table/DragVisualizer";
 import { Checkbox, ToggleButton } from "@salt-ds/core";
 import { ChangeEvent, CSSProperties, useCallback, useState } from "react";
-import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { useTableConfig, useTestDataSource } from "../utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
@@ -134,7 +135,7 @@ export const DefaultTable200C0lumns = () => {
 DefaultTable200C0lumns.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource } = useTestDataSource({
     columnConfig: {
       bbg: { heading: ["Instrument"] },

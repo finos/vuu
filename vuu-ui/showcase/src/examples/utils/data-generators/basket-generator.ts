@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { BasketColumnMap, BasketReferenceData } from "../reference-data";
-import { schemas } from "../useSchemas";
+import { getSchema } from "@finos/vuu-data-test";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
 export const RowGenerator: RowGeneratorFactory =
@@ -26,7 +26,8 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   columns = []
   //columnConfig: ExtendedColumnConfig = {}
 ) => {
-  const basketColumns: ColumnDescriptor[] = schemas.basket.columns;
+  const schema = getSchema("basket");
+  const basketColumns: ColumnDescriptor[] = schema.columns;
   if (typeof columns === "number") {
     throw Error("BasketColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {

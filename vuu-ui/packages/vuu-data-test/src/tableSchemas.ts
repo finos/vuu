@@ -1,6 +1,5 @@
-import { TableSchema } from "@finos/vuu-data";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { Reducer, useReducer } from "react";
+import type { TableSchema } from "@finos/vuu-data";
+import type { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 export type VuuTableName =
   | "instruments"
@@ -16,7 +15,7 @@ export type VuuTableName =
 
 // These Schemas take the form of the schemas that we create
 // with TABLE_META returned by Vuu.
-export const schemas: Record<VuuTableName, TableSchema> = {
+export const schemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
   basket: {
     columns: [
       { name: "ID", serverDataType: "string" },
@@ -208,34 +207,11 @@ export interface ColumnActionUpdate {
 
 export type ColumnAction = ColumnActionUpdate;
 
-export type ColumnReducer = Reducer<ColumnState, ColumnAction>;
+export const getAllSchemas = () => schemas;
 
-const columnReducer: ColumnReducer = (state, action) => {
-  switch (action.type) {
-    case "updateColumn":
-      return state;
-    default:
-      return state;
-  }
-};
-
-export const useSchemas = () => {
-  const [state, dispatch] = useReducer<ColumnReducer>(columnReducer, schemas);
-
-  return {
-    schemas: state,
-    dispatch,
-  };
-};
-
-export const useSchema = (tableName: VuuTableName) => {
-  const { schemas } = useSchemas();
+export const getSchema = (tableName: VuuTableName) => {
   if (schemas[tableName]) {
     return schemas[tableName];
   }
-  throw Error(`useSchema no schema for table ${tableName}`);
-};
-
-export const useTableSchema = (tableName: VuuTableName): TableSchema => {
-  return useSchema(tableName);
+  throw Error(`getSchema no schema for table ${tableName}`);
 };

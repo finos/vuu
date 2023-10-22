@@ -1,7 +1,7 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FeatureConfig, Features } from "@finos/vuu-shell";
 import { useMemo } from "react";
-import { useSchemas } from "./useSchemas";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
 
@@ -38,7 +38,7 @@ const MOCK_FEATURES: Features = {
 };
 
 export const useMockFeatureData = () => {
-  const { schemas: vuuSchemas } = useSchemas();
+  const vuuSchemas = getAllSchemas();
 
   console.log({ vuuSchemas });
   const schemas = useMemo(() => {

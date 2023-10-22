@@ -1,7 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ExtendedColumnConfig } from "../useTableConfig";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { schemas } from "../useSchemas";
+import { getSchema } from "@finos/vuu-data-test";
 import { currencies, locations, suffixes } from "./generatedData";
 
 function random(min: number, max: number) {
@@ -72,7 +72,8 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   columnConfig: ExtendedColumnConfig = {}
 ) => {
   console.log({ columnConfig });
-  const schemaColumns: ColumnDescriptor[] = schemas.parentOrders.columns;
+  const schema = getSchema("parentOrders");
+  const schemaColumns: ColumnDescriptor[] = schema.columns;
   if (typeof columns === "number") {
     throw Error("ParentOrderColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {

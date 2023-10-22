@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { schemas } from "../useSchemas";
+import { getSchema } from "@finos/vuu-data-test";
 import {
   InstrumentReferenceData,
   InstrumentColumnMap,
@@ -28,7 +28,8 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   columns = [],
   columnConfig: ExtendedColumnConfig = {}
 ) => {
-  const instrumentColumns: ColumnDescriptor[] = schemas.instruments.columns;
+  const schema = getSchema("instruments");
+  const instrumentColumns: ColumnDescriptor[] = schema.columns;
   if (typeof columns === "number") {
     throw Error("InstrumentColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {

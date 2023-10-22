@@ -1,11 +1,11 @@
+import { getSchema } from "@finos/vuu-data-test";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import {
   ColumnFormattingPanel,
   ColumnSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CellRendererDescriptor, isCalculatedColumn } from "@finos/vuu-utils";
+import { CellRendererDescriptor } from "@finos/vuu-utils";
 import { useMemo, useState } from "react";
-import { useSchema } from "../../utils";
 
 let displaySequence = 1;
 
@@ -49,7 +49,7 @@ export const ColumnFormattingPanelDouble = () => {
 ColumnFormattingPanelDouble.displaySequence = displaySequence++;
 
 export const NewCalculatedColumnSettingsPanel = () => {
-  const schema = useSchema("parentOrders");
+  const schema = getSchema("parentOrders");
   const [{ column, tableConfig }, setState] = useState<{
     column: ColumnDescriptor;
     tableConfig: TableConfig;
@@ -106,7 +106,7 @@ export const CalculatedColumnSettingsPanel = () => {
     }),
     []
   );
-  const schema = useSchema("parentOrders");
+  const schema = getSchema("parentOrders");
   const [{ column, tableConfig }, setState] = useState<{
     column: ColumnDescriptor;
     tableConfig: TableConfig;

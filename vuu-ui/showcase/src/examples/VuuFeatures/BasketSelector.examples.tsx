@@ -1,11 +1,12 @@
 import { BasketSelector } from "feature-basket-trading";
 import { useCallback } from "react";
-import { useSchema, useTableConfig } from "../utils";
+import { useTableConfig } from "../utils";
+import { getSchema } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
 export const DefaultBasketSelector = () => {
-  const schema = useSchema("basketDefinitions");
+  const schema = getSchema("basketDefinitions");
 
   const { dataSource: dataSourceBasket } = useTableConfig({
     count: 5,
