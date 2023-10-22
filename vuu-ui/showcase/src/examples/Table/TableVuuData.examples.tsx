@@ -4,6 +4,7 @@ import {
   RemoteDataSource,
   TableSchema,
 } from "@finos/vuu-data";
+import { getAllSchemas } from "@finos/vuu-data-test";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
@@ -24,7 +25,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 
@@ -55,7 +56,7 @@ export const VuuDataTable = () => {
   const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(-1);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
 
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, config, dataSource, error } = useTestDataSource({
     columnConfig,
     schemas,
@@ -278,7 +279,7 @@ export const VuuDataTable = () => {
 VuuDataTable.displaySequence = displaySequence++;
 
 export const FlexLayoutVuuTables = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config: conf1, dataSource: ds1 } = useTestDataSource({ schemas });
   const { config: conf2, dataSource: ds2 } = useTestDataSource({ schemas });
   const { config: conf3, dataSource: ds3 } = useTestDataSource({ schemas });
@@ -366,7 +367,7 @@ export const VuuTableCalculatedColumns = () => {
     []
   );
 
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, config, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "parentOrders",
@@ -492,7 +493,7 @@ const ConfigurableDataTable = ({
 }) => {
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
   const { save } = useViewContext();
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
 
   // const handleDataSourceConfigChange = useCallback(
   //   (config?: DataSourceConfig) => {
@@ -605,7 +606,7 @@ export const VuuTablePersistedConfig = () => {
 VuuTablePersistedConfig.displaySequence = displaySequence++;
 
 export const VuuTablePredefinedConfig = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const sort: VuuSort = { sortDefs: [{ column: "lotSize", sortType: "D" }] };
   const filter: DataSourceFilter = {
     filter: 'currency="EUR"',
@@ -629,7 +630,7 @@ export const VuuTablePredefinedConfig = () => {
 VuuTablePredefinedConfig.displaySequence = displaySequence++;
 
 export const VuuTablePredefinedGroupBy = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const groupBy: VuuGroupBy = ["exchange", "currency"];
   const { config, dataSource } = useTestDataSource({ groupBy, schemas });
 
@@ -650,7 +651,7 @@ export const HiddenColumns = () => {
     []
   );
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, config, dataSource, error } = useTestDataSource({
     columnConfig,
     schemas,
@@ -742,7 +743,7 @@ export const SwitchColumns = () => {
     _setSelectedIndex((selectedIndexRef.current = value));
   }, []);
 
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { parentOrders: parentOrdersSchema } = schemas;
 
   const [namedConfigurations, setConfig] = useMemo<[SavedConfig, any]>(() => {

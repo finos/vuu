@@ -1,9 +1,10 @@
 import { FilterBar } from "@finos/vuu-filters";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSchema, useTableConfig } from "../../utils";
+import { useTableConfig } from "../../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input } from "@salt-ds/core";
+import { getSchema } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
@@ -15,7 +16,7 @@ export const DefaultFilterBar = ({
   const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
   const { typeaheadHook } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },

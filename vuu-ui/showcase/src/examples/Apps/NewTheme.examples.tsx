@@ -15,9 +15,9 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CSSProperties, useMemo } from "react";
+import { CSSProperties } from "react";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
-import { schemas } from "../utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./NewTheme.examples.css";
 
@@ -25,6 +25,7 @@ registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "test-user", token: "test-token" };
+const schemas = getAllSchemas();
 
 let displaySequence = 1;
 
