@@ -99,12 +99,6 @@ const ShellWithNewTheme = () => {
     handleMenuAction,
   } = useLayoutContextMenuItems();
 
-  useMemo(() => {
-    window.addEventListener("error", (err) => {
-      console.log(`%cERROR ${err.message}`, "color:red");
-    });
-  }, []);
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
