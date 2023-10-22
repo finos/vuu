@@ -1,23 +1,36 @@
 import { DataSource } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useControlled } from "../common-hooks";
+import { InstrumentPickerProps } from "./InstrumentPicker";
 
-export interface InstrumentPickerHookProps {
-  columnMap: ColumnMap;
+export interface InstrumentPickerHookProps
+  extends Pick<
+    InstrumentPickerProps,
+    "columnMap" | "itemToString" | "onSelect" | "searchColumns"
+  > {
+  columns: ColumnDescriptor[];
   dataSource: DataSource;
   defaultIsOpen?: boolean;
   isOpen?: boolean;
-  onSelect: TableRowSelectHandler;
-  searchColumns: string[];
 }
+
+const defaultItemToString =
+  (columns: ColumnDescriptor[], columnMap: ColumnMap) =>
+  (row: DataSourceRow) => {
+    return columns.map(({ name }) => row[columnMap[name]]).join(" ");
+  };
 
 export const useInstrumentPicker = ({
   columnMap,
+  columns,
   dataSource,
   defaultIsOpen,
   isOpen: isOpenProp,
+  itemToString = defaultItemToString(columns, columnMap),
   onSelect,
   searchColumns,
 }: InstrumentPickerHookProps) => {
@@ -65,13 +78,12 @@ export const useInstrumentPicker = ({
 
   const handleSelectRow = useCallback<TableRowSelectHandler>(
     (row) => {
-      const { name } = columnMap;
-      const { [name]: value } = row;
-      setValue(value as string);
+      const value = itemToString(row);
+      setValue(value);
       setIsOpen(false);
       onSelect(row);
     },
-    [columnMap, onSelect, setIsOpen]
+    [itemToString, onSelect, setIsOpen]
   );
 
   const inputProps = {
