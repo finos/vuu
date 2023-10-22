@@ -67,7 +67,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
                     setGroup(event.target.value),
                 },
               }}
-              width={120}
+              width="100%"
               onSelectionChange={(_, value) => setGroup(value || "")}
             />
           </FormField>
