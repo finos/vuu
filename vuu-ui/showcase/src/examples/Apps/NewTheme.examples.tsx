@@ -15,7 +15,7 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CSSProperties } from "react";
+import { CSSProperties, useMemo } from "react";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { schemas } from "../utils";
 
@@ -98,6 +98,12 @@ const ShellWithNewTheme = () => {
     handleCloseDialog,
     handleMenuAction,
   } = useLayoutContextMenuItems();
+
+  useMemo(() => {
+    window.addEventListener("error", (err) => {
+      console.log(`%cERROR ${err.message}`, "color:red");
+    });
+  }, []);
 
   return (
     <ContextMenuProvider

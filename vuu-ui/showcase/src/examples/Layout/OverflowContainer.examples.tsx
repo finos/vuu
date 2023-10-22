@@ -254,3 +254,55 @@ export const SortableOverflowContainer = () => {
 };
 
 SortableOverflowContainer.displaySequence = displaySequence++;
+
+export const VerticalOverflowContainerFlexLayout = () => {
+  return (
+    <div
+      style={
+        {
+          "--vuuOverflowContainer-background": "white",
+          height: "100vh",
+          padding: 100,
+          width: "100vw",
+          background: "ivory",
+        } as CSSProperties
+      }
+    >
+      <Flexbox
+        style={{
+          background: "white",
+          border: "solid var(--salt-container-primary-borderColor) 1px",
+          flexDirection: "column",
+          width: 400,
+          height: 800,
+        }}
+      >
+        <div
+          data-resizeable
+          style={{ background: "lightcyan", flex: 1, overflow: "hidden" }}
+        >
+          {/* prettier-ignore */}
+          <OverflowContainer orientation="vertical" >
+              <div className="Item" style={{ height: 60 }}>1</div>
+              <div className="Item" style={{ height: 60 }}>2</div>
+              <div className="Item" style={{ height: 60 }}>3</div>
+              <div className="Item" style={{ height: 60 }}>4</div>
+              <div className="Item" style={{ height: 60 }}>5</div>
+              <div className="Item" style={{ height: 60 }}>6</div>
+            </OverflowContainer>
+        </div>
+        <div
+          data-resizeable
+          style={{
+            background: "palegreen",
+            flexBasis: 200,
+            flexGrow: 0,
+            flexShrink: 0,
+          }}
+        />
+      </Flexbox>
+    </div>
+  );
+};
+
+VerticalOverflowContainerFlexLayout.displaySequence = displaySequence++;
