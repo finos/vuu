@@ -1,24 +1,23 @@
-import { LayoutProvider, View } from "@finos/vuu-layout";
+import { getSchema } from "@finos/vuu-data-test";
+import { LayoutProvider, registerComponent, View } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
-import { useTableSchema } from "../utils";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
-import { registerComponent } from "@finos/vuu-layout";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
 let displaySequence = 1;
 
 export const DefaultFilterTableFeature = () => {
-  const schema = useTableSchema("instruments");
+  const schema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationLayout, saveApplicationLayout} = useLayoutManager();
+  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
@@ -34,7 +33,10 @@ export const DefaultFilterTableFeature = () => {
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={applicationLayout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider
+      layout={applicationLayout}
+      onLayoutChange={handleLayoutChange}
+    >
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
@@ -65,7 +67,7 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const FilterTableFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const tableSchema = useTableSchema("instruments");
+  const tableSchema = getSchema("instruments");
 
   return (
     <View

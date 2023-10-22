@@ -1,0 +1,15 @@
+{
+  "name": "@finos/vuu-data-test",
+  "version": "0.0.26",
+  "main": "src/index.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "devDependencies": {
+    "@finos/vuu-data": "0.0.26",
+    "@finos/vuu-datagrid-types": "0.0.26"
+  }
+}

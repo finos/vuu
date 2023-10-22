@@ -5,7 +5,7 @@ import {
   BasketDefinitionsReferenceData,
 } from "../reference-data";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { schemas } from "../useSchemas";
+import { getSchema } from "@finos/vuu-data-test";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
 export const RowGenerator: RowGeneratorFactory =
@@ -27,7 +27,7 @@ export const RowGenerator: RowGeneratorFactory =
     }
   };
 
-const { basketDefinitions: basketDefinitionsSchema } = schemas;
+const basketDefinitionsSchema = getSchema("basketDefinitions");
 const { exchangeRateToUSD } = buildColumnMap(basketDefinitionsSchema.columns);
 const tickingColumns = [exchangeRateToUSD];
 
@@ -39,8 +39,8 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   columns = []
   //columnConfig: ExtendedColumnConfig = {}
 ) => {
-  const basketDefinitionsColumns: ColumnDescriptor[] =
-    schemas.basketDefinitions.columns;
+  const schema = getSchema("basketDefinitions");
+  const basketDefinitionsColumns: ColumnDescriptor[] = schema.columns;
   if (typeof columns === "number") {
     throw Error(
       "BasketDefinitionsColumnGenerator must be passed columns (strings)"

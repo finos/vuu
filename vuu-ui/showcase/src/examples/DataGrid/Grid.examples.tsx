@@ -3,6 +3,7 @@ import { Grid } from "@finos/vuu-datagrid";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
+import { getAllSchemas } from "@finos/vuu-data-test";
 import {
   Button,
   FormField,
@@ -20,7 +21,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 import { instrumentSchema } from "./columnMetaData";
 
 import "./Grid.examples.css";
@@ -105,7 +106,7 @@ export const DefaultGrid = () => {
   );
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     bufferSize: gridBufferOptions.renderBufferSize,
     calculatedColumns: selectedIndex === 2 ? calculatedColumns : undefined,
@@ -208,7 +209,7 @@ export const DefaultGrid = () => {
 DefaultGrid.displaySequence = displaySequence++;
 
 export const BasicGrid = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "instruments",
@@ -312,7 +313,7 @@ export const PersistConfig = () => {
     setConfig(configRef.current);
   };
 
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "instruments",
@@ -369,7 +370,7 @@ export const PersistConfig = () => {
 PersistConfig.displaySequence = displaySequence++;
 
 export const BasicGridColumnFixedCols = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "parentOrders",
@@ -412,7 +413,7 @@ export const BasicGridColumnFixedCols = () => {
 BasicGridColumnFixedCols.displaySequence = displaySequence++;
 
 export const ColumnHeaders1Level = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
 
   const { columns, dataSource, error } = useTestDataSource({
     columnConfig: {
@@ -460,7 +461,7 @@ export const ColumnHeaders1Level = () => {
 ColumnHeaders1Level.displaySequence = displaySequence++;
 
 export const SizeSpecifiedInProps = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     schemas,
     tablename: "instruments",
@@ -490,7 +491,7 @@ export const SizeSpecifiedInProps = () => {
 SizeSpecifiedInProps.displaySequence = displaySequence++;
 
 export const GridResize = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const {
     columns: cols1,
     dataSource: ds1,
@@ -544,7 +545,7 @@ export const GridResize = () => {
 GridResize.displaySequence = displaySequence++;
 
 export const ColumnHeaders2Levels = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     columnConfig: {
       bbg: { heading: ["BBG", "Group 1", "Instrument"] },
@@ -582,7 +583,7 @@ export const ColumnHeaders2Levels = () => {
 ColumnHeaders2Levels.displaySequence = displaySequence++;
 
 export const BufferVariations = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { columns, dataSource, error } = useTestDataSource({
     bufferSize: 10,
     schemas,

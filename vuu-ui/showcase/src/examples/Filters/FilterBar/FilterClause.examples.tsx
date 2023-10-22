@@ -1,3 +1,5 @@
+import { getSchema } from "@finos/vuu-data-test";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import {
   ExpandoCombobox,
@@ -10,13 +12,8 @@ import {
   MultiSelectionHandler,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
-import {
-  useAutoLoginToVuuServer,
-  useSchema,
-  useTableConfig,
-} from "../../utils";
+import { useAutoLoginToVuuServer, useTableConfig } from "../../utils";
 
 import "./FilterClause.examples.css";
 
@@ -84,7 +81,7 @@ export const DefaultExpandoComboBoxHighlightFirstRow = () => {
 DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
 
 export const DataBoundTextInputEmpty = () => {
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
   const { typeaheadHook } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
@@ -121,7 +118,7 @@ export const DataBoundTextInputEmpty = () => {
 DataBoundTextInputEmpty.displaySequence = displaySequence++;
 
 export const DataBoundTextInputLoaded = () => {
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
   const { typeaheadHook } = useTableConfig({
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
@@ -183,7 +180,7 @@ export const MultiSelectExpandoComboBox = () => {
 MultiSelectExpandoComboBox.displaySequence = displaySequence++;
 
 export const NewFilterClause = () => {
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
 
   const { typeaheadHook } = useTableConfig({
     count: 100_000,
@@ -212,7 +209,7 @@ NewFilterClause.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnOnly = () => {
   useAutoLoginToVuuServer();
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
   const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
   });
@@ -236,7 +233,7 @@ PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnAndOperator = () => {
   useAutoLoginToVuuServer();
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
   const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",
     op: "=",
@@ -262,7 +259,7 @@ PartialFilterClauseColumnAndOperator.displaySequence = displaySequence++;
 
 export const CompleteFilterClauseTextEquals = () => {
   useAutoLoginToVuuServer();
-  const tableSchema = useSchema("instruments");
+  const tableSchema = getSchema("instruments");
 
   const [filterClause] = useState<Partial<FilterClause>>({
     column: "currency",

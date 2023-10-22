@@ -13,9 +13,10 @@ import {
 } from "@finos/vuu-table-extras";
 import { GroupColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { useTableConfig, useTestDataSource } from "../utils";
 import { GroupHeaderCellNext } from "@finos/vuu-table";
 import { defaultValueFormatter } from "@finos/vuu-utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./TableNext.examples.css";
 
@@ -101,7 +102,7 @@ export const EditableTableNextArrayData = () => {
 EditableTableNextArrayData.displaySequence = displaySequence++;
 
 export const TableNextVuuInstruments = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource, error } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
