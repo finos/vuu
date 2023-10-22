@@ -42,7 +42,7 @@ interface MeasuredState {
 
 const isNumber = (val: unknown): val is number => Number.isFinite(val);
 
-const FULL_SIZE: CssSize = { height: "100%", width: "100%" };
+const FULL_SIZE: CssSize = { height: "100%", width: "auto" };
 
 export interface MeasuredContainerHookResult {
   containerRef: RefObject<HTMLDivElement>;
@@ -96,7 +96,7 @@ export const useMeasuredContainer = ({
     inner: getInitialInnerSize(height, width),
     outer: {
       height: height ?? "100%",
-      width: width ?? "100%",
+      width: width ?? "auto",
     },
   });
   const fixedHeight = typeof height === "number";
