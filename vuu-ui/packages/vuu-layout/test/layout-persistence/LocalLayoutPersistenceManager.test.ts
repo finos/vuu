@@ -70,7 +70,7 @@ afterEach(() => {
 })
 
 describe("createLayout", () => {
-  it("persists to local storage with a unique ID", async () => {
+  it("persists to local storage with a unique ID and current date", async () => {
     const { id, created } = await persistenceManager.createLayout(
       metadataToAdd,
       layoutToAdd
@@ -91,6 +91,7 @@ describe("createLayout", () => {
       id,
     };
 
+    expect(created).toEqual(formatDate(new Date(), "dd.mm.yyyy"));
     expect(persistedMetadata).toEqual([expectedMetadata]);
     expect(persistedLayout).toEqual([expectedLayout]);
   });
