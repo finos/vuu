@@ -14,6 +14,7 @@ import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
+import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
@@ -40,7 +41,9 @@ public class LayoutIntegrationTest {
     private static String defaultGroup;
     private static String defaultScreenshot;
     private static String defaultUser;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -63,11 +66,16 @@ public class LayoutIntegrationTest {
 
         mockMvc.perform(get("/layouts/{id}", layout.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.definition", is(layout.getDefinition())))
-            .andExpect(jsonPath("$.metadata.name", is(layout.getMetadata().getName())))
-            .andExpect(jsonPath("$.metadata.group", is(layout.getMetadata().getGroup())))
-            .andExpect(jsonPath("$.metadata.screenshot", is(layout.getMetadata().getScreenshot())))
-            .andExpect(jsonPath("$.metadata.user", is(layout.getMetadata().getUser())));
+            .andExpect(jsonPath("$.definition",
+                is(layout.getDefinition())))
+            .andExpect(jsonPath("$.metadata.name",
+                is(layout.getMetadata().getBaseMetadata().getName())))
+            .andExpect(jsonPath("$.metadata.group",
+                is(layout.getMetadata().getBaseMetadata().getGroup())))
+            .andExpect(jsonPath("$.metadata.screenshot",
+                is(layout.getMetadata().getBaseMetadata().getScreenshot())))
+            .andExpect(jsonPath("$.metadata.user",
+                is(layout.getMetadata().getBaseMetadata().getUser())));
     }
 
     @Test
@@ -90,10 +98,14 @@ public class LayoutIntegrationTest {
 
         mockMvc.perform(get("/layouts/metadata"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].name", is(layout.getMetadata().getName())))
-            .andExpect(jsonPath("$[0].group", is(layout.getMetadata().getGroup())))
-            .andExpect(jsonPath("$[0].screenshot", is(layout.getMetadata().getScreenshot())))
-            .andExpect(jsonPath("$[0].user", is(layout.getMetadata().getUser())));
+            .andExpect(jsonPath("$[0].name",
+                is(layout.getMetadata().getBaseMetadata().getName())))
+            .andExpect(jsonPath("$[0].group",
+                is(layout.getMetadata().getBaseMetadata().getGroup())))
+            .andExpect(jsonPath("$[0].screenshot",
+                is(layout.getMetadata().getBaseMetadata().getScreenshot())))
+            .andExpect(jsonPath("$[0].user",
+                is(layout.getMetadata().getBaseMetadata().getUser())));
     }
 
     @Test
@@ -106,7 +118,7 @@ public class LayoutIntegrationTest {
     @Test
     void createLayout_validLayout_returnsCreatedLayoutAndLayoutIsPersisted()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
+        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
 
         MvcResult result = mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -114,30 +126,37 @@ public class LayoutIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
-            .andExpect(jsonPath("$.metadata.name", is(layoutRequest.getMetadata().getName())))
-            .andExpect(jsonPath("$.metadata.group", is(layoutRequest.getMetadata().getGroup())))
-            .andExpect(jsonPath("$.metadata.screenshot", is(layoutRequest.getMetadata().getScreenshot())))
-            .andExpect(jsonPath("$.metadata.user", is(layoutRequest.getMetadata().getUser())))
+            .andExpect(jsonPath("$.metadata.name",
+                is(layoutRequest.getMetadata().getBaseMetadata().getName())))
+            .andExpect(jsonPath("$.metadata.group",
+                is(layoutRequest.getMetadata().getBaseMetadata().getGroup())))
+            .andExpect(jsonPath("$.metadata.screenshot",
+                is(layoutRequest.getMetadata().getBaseMetadata().getScreenshot())))
+            .andExpect(jsonPath("$.metadata.user",
+                is(layoutRequest.getMetadata().getBaseMetadata().getUser())))
             .andReturn();
 
-        UUID createdLayoutId = UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
+        UUID createdLayoutId = UUID.fromString(
+            JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
         Layout createdLayout = layoutRepository.findById(createdLayoutId).orElseThrow();
-        Metadata createdMetadata = metadataRepository.findById(createdLayout.getMetadata().getId()).orElseThrow();
+        Metadata createdMetadata = metadataRepository.findById(createdLayout.getMetadata().getId())
+            .orElseThrow();
 
-        // Check that the one-to-one relationship isn't causing duplicate/unexpected entries in the DB
+        // Check that the one-to-one relationship isn't causing duplicate/unexpected entries in
+        // the DB
         assertThat(layoutRepository.findAll()).containsExactly(createdLayout);
         assertThat(metadataRepository.findAll()).containsExactly(createdMetadata);
 
         assertThat(createdLayout.getDefinition())
             .isEqualTo(layoutRequest.getDefinition());
-        assertThat(createdMetadata.getName())
-            .isEqualTo(layoutRequest.getMetadata().getName());
-        assertThat(createdMetadata.getGroup())
-            .isEqualTo(layoutRequest.getMetadata().getGroup());
-        assertThat(createdMetadata.getScreenshot())
-            .isEqualTo(layoutRequest.getMetadata().getScreenshot());
-        assertThat(createdMetadata.getUser())
-            .isEqualTo(layoutRequest.getMetadata().getUser());
+        assertThat(createdMetadata.getBaseMetadata().getName())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
+        assertThat(createdMetadata.getBaseMetadata().getGroup())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
+        assertThat(createdMetadata.getBaseMetadata().getScreenshot())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
+        assertThat(createdMetadata.getBaseMetadata().getUser())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
     }
 
 
@@ -154,7 +173,7 @@ public class LayoutIntegrationTest {
     @Test
     void createLayout_validLayoutButInvalidMetadata_returns400AndDoesNotCreateLayout()
         throws Exception {
-        LayoutRequestDTO layoutRequest = createValidCreateLayoutRequest();
+        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
         layoutRequest.setMetadata(null);
 
         mockMvc.perform(post("/layouts")
@@ -168,7 +187,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_validIDAndValidRequest_returns204AndLayoutHasChanged() throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -180,14 +199,14 @@ public class LayoutIntegrationTest {
 
         assertThat(updatedLayout.getDefinition())
             .isEqualTo(layoutRequest.getDefinition());
-        assertThat(updatedLayout.getMetadata().getName())
-            .isEqualTo(layoutRequest.getMetadata().getName());
-        assertThat(updatedLayout.getMetadata().getGroup())
-            .isEqualTo(layoutRequest.getMetadata().getGroup());
-        assertThat(updatedLayout.getMetadata().getScreenshot())
-            .isEqualTo(layoutRequest.getMetadata().getScreenshot());
-        assertThat(updatedLayout.getMetadata().getUser())
-            .isEqualTo(layoutRequest.getMetadata().getUser());
+        assertThat(updatedLayout.getMetadata().getBaseMetadata().getName())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
+        assertThat(updatedLayout.getMetadata().getBaseMetadata().getGroup())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
+        assertThat(updatedLayout.getMetadata().getBaseMetadata().getScreenshot())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
+        assertThat(updatedLayout.getMetadata().getBaseMetadata().getUser())
+            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
     }
 
     @Test
@@ -224,7 +243,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_validIdButLayoutDoesNotExist_returnsNotFound() throws Exception {
         UUID layoutID = UUID.randomUUID();
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -235,7 +254,7 @@ public class LayoutIntegrationTest {
     @Test
     void updateLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
-        LayoutRequestDTO layoutRequest = createValidUpdateRequest();
+        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
                 .content(objectMapper.writeValueAsString(layoutRequest))
@@ -271,14 +290,17 @@ public class LayoutIntegrationTest {
     private Layout createDefaultLayoutInDatabase() {
         Layout layout = new Layout();
         Metadata metadata = new Metadata();
+        BaseMetadata baseMetadata = new BaseMetadata();
+
+        baseMetadata.setName(defaultName);
+        baseMetadata.setGroup(defaultGroup);
+        baseMetadata.setScreenshot(defaultScreenshot);
+        baseMetadata.setUser(defaultUser);
+
+        metadata.setBaseMetadata(baseMetadata);
 
         layout.setDefinition(defaultDefinition);
         layout.setMetadata(metadata);
-
-        metadata.setName(defaultName);
-        metadata.setGroup(defaultGroup);
-        metadata.setScreenshot(defaultScreenshot);
-        metadata.setUser(defaultUser);
 
         metadataRepository.save(metadata);
         Layout createdLayout = layoutRepository.save(layout);
@@ -289,29 +311,20 @@ public class LayoutIntegrationTest {
         return createdLayout;
     }
 
-    private LayoutRequestDTO createValidUpdateRequest() {
-        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
-        metadataRequest.setName("Updated name");
-        metadataRequest.setGroup("Updated group");
-        metadataRequest.setScreenshot("Updated screenshot");
-        metadataRequest.setUser("Updated user");
+    private LayoutRequestDTO createValidLayoutRequest() {
+        BaseMetadata baseMetadata = new BaseMetadata();
+        baseMetadata.setName(defaultName);
+        baseMetadata.setGroup(defaultGroup);
+        baseMetadata.setScreenshot(defaultScreenshot);
+        baseMetadata.setUser(defaultUser);
 
-        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
-        layoutRequest.setDefinition("Updated definition");
-        layoutRequest.setMetadata(metadataRequest);
-        return layoutRequest;
-    }
-
-    private LayoutRequestDTO createValidCreateLayoutRequest() {
         MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
-        metadataRequest.setName(defaultName);
-        metadataRequest.setGroup(defaultGroup);
-        metadataRequest.setScreenshot(defaultScreenshot);
-        metadataRequest.setUser(defaultUser);
+        metadataRequest.setBaseMetadata(baseMetadata);
 
         LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
         layoutRequest.setDefinition(defaultDefinition);
         layoutRequest.setMetadata(metadataRequest);
+
         return layoutRequest;
     }
 }

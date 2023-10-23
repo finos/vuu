@@ -30,7 +30,7 @@ public class Metadata {
     @Embedded
     private BaseMetadata baseMetadata;
 
-    private Date created = new Date();
+    private final Date created = new Date();
 
     private Date updated;
 }

@@ -13,9 +13,11 @@ import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
+import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.service.LayoutService;
+import org.finos.vuu.layoutserver.service.MetadataService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,9 @@ class LayoutControllerTest {
     private LayoutService layoutService;
 
     @Mock
+    private MetadataService metadataService;
+
+    @Mock
     private ModelMapper modelMapper;
 
     @InjectMocks
@@ -40,6 +45,7 @@ class LayoutControllerTest {
     private UUID doesNotExistLayoutId;
     private Layout layout;
     private Metadata metadata;
+    private BaseMetadata baseMetadata;
     private LayoutRequestDTO layoutRequest;
     private LayoutResponseDTO expectedLayoutResponse;
     private List<MetadataResponseDTO> expectedMetadataResponse;
@@ -51,12 +57,15 @@ class LayoutControllerTest {
         UUID metadataId = UUID.randomUUID();
         String layoutDefinition = "Test Definition";
 
+        baseMetadata = new BaseMetadata();
+        baseMetadata.setName("Test Layout");
+        baseMetadata.setUser("Test User");
+        baseMetadata.setGroup("Test Group");
+        baseMetadata.setScreenshot("Test Screenshot");
+
         metadata = new Metadata();
         metadata.setId(metadataId);
-        metadata.setName("Test Layout");
-        metadata.setUser("Test User");
-        metadata.setGroup("Test Group");
-        metadata.setScreenshot("Test Screenshot");
+        metadata.setBaseMetadata(baseMetadata);
 
         layout = new Layout();
         layout.setId(validLayoutId);
@@ -65,10 +74,7 @@ class LayoutControllerTest {
 
         layoutRequest = new LayoutRequestDTO();
         MetadataRequestDTO metadataRequestDTO = new MetadataRequestDTO();
-        metadataRequestDTO.setName(metadata.getName());
-        metadataRequestDTO.setUser(metadata.getUser());
-        metadataRequestDTO.setGroup(metadata.getGroup());
-        metadataRequestDTO.setScreenshot(metadata.getScreenshot());
+        metadataRequestDTO.setBaseMetadata(baseMetadata);
         layoutRequest.setDefinition(layout.getDefinition());
         layoutRequest.setMetadata(metadataRequestDTO);
 
@@ -101,15 +107,16 @@ class LayoutControllerTest {
 
     @Test
     void getMetadata_metadataExists_returnsMetadata() {
-        when(layoutService.getMetadata()).thenReturn(List.of(metadata));
+        when(metadataService.getMetadata()).thenReturn(List.of(metadata));
         when(modelMapper.map(metadata, MetadataResponseDTO.class)).thenReturn(
             getMetadataResponseDTO());
+
         assertThat(layoutController.getMetadata()).isEqualTo(expectedMetadataResponse);
     }
 
     @Test
     void getMetadata_noMetadataExists_returnsEmptyArray() {
-        when(layoutService.getMetadata()).thenReturn(List.of());
+        when(metadataService.getMetadata()).thenReturn(List.of());
         assertThat(layoutController.getMetadata()).isEmpty();
     }
 
@@ -151,10 +158,7 @@ class LayoutControllerTest {
     private MetadataResponseDTO getMetadataResponseDTO() {
         MetadataResponseDTO metadataResponse = new MetadataResponseDTO();
         metadataResponse.setLayoutId(layout.getId());
-        metadataResponse.setName(layout.getMetadata().getName());
-        metadataResponse.setUser(layout.getMetadata().getUser());
-        metadataResponse.setGroup(layout.getMetadata().getGroup());
-        metadataResponse.setScreenshot(layout.getMetadata().getScreenshot());
+        metadataResponse.setBaseMetadata(baseMetadata);
         metadataResponse.setCreated(layout.getMetadata().getCreated());
         metadataResponse.setUpdated(layout.getMetadata().getUpdated());
         return metadataResponse;

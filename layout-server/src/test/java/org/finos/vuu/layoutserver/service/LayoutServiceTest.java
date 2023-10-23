@@ -1,19 +1,18 @@
 package org.finos.vuu.layoutserver.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
-import org.finos.vuu.layoutserver.model.Metadata;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
+import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,18 +41,21 @@ class LayoutServiceTest {
     public void setup() {
         layoutId = UUID.randomUUID();
         UUID metadataId = UUID.randomUUID();
-        layout = new Layout();
+        BaseMetadata baseMetadata = new BaseMetadata();
         metadata = new Metadata();
+        layout = new Layout();
+
+        baseMetadata.setName("Test Name");
+        baseMetadata.setGroup("Test Group");
+        baseMetadata.setScreenshot("Test Screenshot");
+        baseMetadata.setUser("Test User");
+
+        metadata.setId(metadataId);
+        metadata.setBaseMetadata(baseMetadata);
+
         layout.setId(layoutId);
         layout.setDefinition("");
         layout.setMetadata(metadata);
-        metadata.setId(metadataId);
-        metadata.setName("");
-        metadata.setGroup("");
-        metadata.setScreenshot("");
-        metadata.setUser("");
-        metadata.setCreated(new Date());
-        metadata.setUpdated(new Date());
     }
 
     @Test
@@ -90,7 +92,8 @@ class LayoutServiceTest {
     void updateLayout_layoutDoesNotExist_throwsNoSuchElementException() {
         when(layoutRepository.findById(layoutId)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () -> layoutService.updateLayout(layoutId, layout));
+        assertThrows(NoSuchElementException.class,
+            () -> layoutService.updateLayout(layoutId, layout));
     }
 
     @Test

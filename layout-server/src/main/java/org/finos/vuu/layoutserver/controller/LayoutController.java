@@ -84,7 +84,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layout) {
+    public void updateLayout(@PathVariable UUID id, @Valid @RequestBody LayoutRequestDTO layout) {
         Layout newLayout = mapper.map(layout, Layout.class);
 
         layoutService.updateLayout(id, newLayout);
