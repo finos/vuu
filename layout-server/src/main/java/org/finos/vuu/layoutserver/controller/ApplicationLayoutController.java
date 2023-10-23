@@ -27,7 +27,9 @@ public class ApplicationLayoutController {
     private final ModelMapper mapper;
 
     /**
-     * Gets the application layout for the requesting user. Returns a default layout if none exists.
+     * Gets the persisted application layout for the requesting user. If the requesting user does not have an
+     * application layout persisted, a default layout with a null username is returned instead. No more than one
+     * application layout can be persisted for a given user.
      *
      * @return the application layout
      */
@@ -38,7 +40,8 @@ public class ApplicationLayoutController {
     }
 
     /**
-     * Creates a new application layout for the requesting user.
+     * Creates a new application layout for the requesting user. If the requesting user already has an application
+     * layout persisted, this will be identical to the PUT method, {@link #updateApplicationLayout(String, JsonNode)}.
      *
      * @param layoutDefinition JSON representation of the application layout to be created
      * @param username         the user making the request
@@ -50,7 +53,8 @@ public class ApplicationLayoutController {
     }
 
     /**
-     * Updates the application layout for the requesting user.
+     * Updates the application layout for the requesting user. If the requesting user does not have an application
+     * layout persisted, this will be identical to the POST method, {@link #createApplicationLayout(String, JsonNode)}.
      *
      * @param layoutDefinition JSON representation of the application layout to be created
      * @param username         the user making the request
@@ -62,7 +66,8 @@ public class ApplicationLayoutController {
     }
 
     /**
-     * Deletes the application layout for the requesting user.
+     * Deletes the application layout for the requesting user. A 404 will be returned if there is no existing
+     * application layout.
      *
      * @param username         the user making the request
      */
