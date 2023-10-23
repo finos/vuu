@@ -51,6 +51,36 @@ export const DefaultTableNextArrayData = () => {
 };
 DefaultTableNextArrayData.displaySequence = displaySequence++;
 
+export const NavigationStyle = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState<TableConfig>(configProp);
+
+  const handleConfigChange = useCallback((config: TableConfig) => {
+    setConfig(config);
+  }, []);
+
+  return (
+    <TableNext
+      {...props}
+      config={config}
+      height={645}
+      navigationStyle="row"
+      onConfigChange={handleConfigChange}
+      renderBufferSize={5}
+      width={723}
+    />
+  );
+};
+NavigationStyle.displaySequence = displaySequence++;
+
 export const EditableTableNextArrayData = () => {
   const { config, dataSource } = useTableConfig({
     columnConfig: {
