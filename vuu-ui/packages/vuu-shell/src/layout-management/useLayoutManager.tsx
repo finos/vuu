@@ -3,7 +3,7 @@ import { LayoutJSON, LocalLayoutPersistenceManager, resolveJSONPath, RemoteLayou
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import { defaultLayout } from "@finos/vuu-layout/";
 
-const local = process.env.LOCAL || false;
+const local = process.env.LOCAL ?? true;
 
 const persistenceManager = local ? new LocalLayoutPersistenceManager() : new RemoteLayoutPersistenceManager();
 
