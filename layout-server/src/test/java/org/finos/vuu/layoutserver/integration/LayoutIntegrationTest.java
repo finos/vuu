@@ -1,11 +1,14 @@
 package org.finos.vuu.layoutserver.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -89,7 +92,12 @@ public class LayoutIntegrationTest {
     void getLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
 
-        mockMvc.perform(get("/layouts/{id}", layoutID)).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/layouts/{id}", layoutID))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                    + "UUID string: invalidUUID"));
     }
 
     @Test
@@ -167,7 +175,15 @@ public class LayoutIntegrationTest {
         mockMvc.perform(post("/layouts")
                 .content(invalidLayout)
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "JSON parse error: Unrecognized token 'invalidLayout': was expecting (JSON "
+                    + "String, Number, Array, Object or token 'null', 'true' or 'false'); nested "
+                    + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
+                    + "token 'invalidLayout': was expecting (JSON String, Number, Array, Object "
+                    + "or token 'null', 'true' or 'false')\n"
+                    + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
+                    + " line: 1, column: 14]"));
     }
 
     @Test
@@ -179,7 +195,18 @@ public class LayoutIntegrationTest {
         mockMvc.perform(post("/layouts")
                 .content(objectMapper.writeValueAsString(layoutRequest))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "Validation failed for argument [0] in public org.finos.vuu.layoutserver.dto"
+                    + ".response.LayoutResponseDTO org.finos.vuu.layoutserver.controller"
+                    + ".LayoutController.createLayout(org.finos.vuu.layoutserver.dto.request"
+                    + ".LayoutRequestDTO): [Field error in object 'layoutRequestDTO' on field "
+                    + "'metadata': rejected value [null]; codes [NotNull.layoutRequestDTO"
+                    + ".metadata,NotNull.metadata,NotNull.org.finos.vuu.layoutserver.dto.request"
+                    + ".MetadataRequestDTO,NotNull]; arguments [org.springframework.context"
+                    + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO.metadata,"
+                    + "metadata]; arguments []; default message [metadata]]; default message "
+                    + "[Please provide valid metadata]] "));
 
         assertThat(layoutRepository.findAll()).isEmpty();
     }
@@ -221,7 +248,48 @@ public class LayoutIntegrationTest {
         mockMvc.perform(put("/layouts/{id}", layout.getId())
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(anyOf(
+                equalTo(
+                    "Validation failed for argument [1] in public void org.finos.vuu.layoutserver"
+                        + ".controller.LayoutController.updateLayout(java.util.UUID,org.finos.vuu"
+                        + ".layoutserver.dto.request.LayoutRequestDTO) with 2 errors: [Field "
+                        + "error in"
+                        + " object 'layoutRequestDTO' on field 'metadata': rejected value [null]; "
+                        + "codes [NotNull.layoutRequestDTO.metadata,NotNull.metadata,NotNull.org"
+                        + ".finos.vuu.layoutserver.dto.request.MetadataRequestDTO,NotNull]; "
+                        + "arguments"
+                        + " [org.springframework.context.support.DefaultMessageSourceResolvable: "
+                        + "codes [layoutRequestDTO.metadata,metadata]; arguments []; default "
+                        + "message "
+                        + "[metadata]]; default message [Please provide valid metadata]] [Field "
+                        + "error"
+                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
+                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
+                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
+                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
+                        + ".definition,definition]; arguments []; default message [definition]]; "
+                        + "default message [Please provide a valid definition]] "),
+                equalTo(
+                    "Validation failed for argument [1] in public void org.finos.vuu.layoutserver"
+                        + ".controller.LayoutController.updateLayout(java.util.UUID,org.finos.vuu"
+                        + ".layoutserver.dto.request.LayoutRequestDTO) with 2 errors: [Field "
+                        + "error in"
+                        + " object 'layoutRequestDTO' on field 'metadata': rejected value [null]; "
+                        + "codes [NotNull.layoutRequestDTO.metadata,NotNull.metadata,NotNull.org"
+                        + ".finos.vuu.layoutserver.dto.request.MetadataRequestDTO,NotNull]; "
+                        + "arguments"
+                        + " [org.springframework.context.support.DefaultMessageSourceResolvable: "
+                        + "codes [layoutRequestDTO.metadata,metadata]; arguments []; default "
+                        + "message "
+                        + "[metadata]]; default message [Please provide valid metadata]] [Field "
+                        + "error"
+                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
+                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
+                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
+                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
+                        + ".definition,definition]; arguments []; default message [definition]]; "
+                        + "default message [Please provide a valid definition]] "))));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
@@ -235,9 +303,21 @@ public class LayoutIntegrationTest {
         mockMvc.perform(put("/layouts/{id}", layout.getId())
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "JSON parse error: Cannot construct instance of `org.finos.vuu.layoutserver.dto"
+                    + ".request.LayoutRequestDTO` (although at least one Creator exists): no "
+                    + "String-argument constructor/factory method to deserialize from String "
+                    + "value ('invalidRequest'); nested exception is com.fasterxml.jackson"
+                    + ".databind.exc.MismatchedInputException: Cannot construct instance of `org"
+                    + ".finos.vuu.layoutserver.dto.request.LayoutRequestDTO` (although at least "
+                    + "one Creator exists): no String-argument constructor/factory method to "
+                    + "deserialize from String value ('invalidRequest')\n"
+                    + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
+                    + " line: 1, column: 1]"));
 
-        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(
+            layout);
     }
 
     @Test
@@ -259,7 +339,11 @@ public class LayoutIntegrationTest {
         mockMvc.perform(put("/layouts/{id}", layoutID)
                 .content(objectMapper.writeValueAsString(layoutRequest))
                 .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                    + "UUID string: invalidUUID"));
     }
 
     @Test
@@ -284,7 +368,12 @@ public class LayoutIntegrationTest {
     void deleteLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
 
-        mockMvc.perform(delete("/layouts/{id}", layoutID)).andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/layouts/{id}", layoutID))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string(
+                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                    + "UUID string: invalidUUID"));
     }
 
     private Layout createDefaultLayoutInDatabase() {
