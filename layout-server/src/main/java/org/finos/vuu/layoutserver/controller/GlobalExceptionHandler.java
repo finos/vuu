@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<Object> handleBadRequest(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Object> handleBadRequest(Exception ex) {
         return new ResponseEntity<>(ex.getMessage(), org.springframework.http.HttpStatus.BAD_REQUEST);
     }
 }
