@@ -132,12 +132,11 @@ export const useList = <Item, S extends SelectionStrategy>({
     },
     setHighlightedIndex,
     ...keyboardHook
-  } = useKeyboardNavigation<Item>({
+  } = useKeyboardNavigation({
     containerRef: scrollContainer,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
     highlightedIndex: highlightedIndexProp,
-    indexPositions: dataHook.data,
     itemCount: dataHook.data.length,
     label,
     onHighlight,

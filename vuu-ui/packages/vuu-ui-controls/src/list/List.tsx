@@ -203,12 +203,12 @@ export const List = forwardRef(function List<
           focusVisible: collapsibleHeaders && appliedFocusVisible === idx.value,
         })}
         aria-expanded={expanded}
-        data-idx={collapsibleHeaders ? idx.value : undefined}
         data-index={collapsibleHeaders ? idx.value : undefined}
         data-highlighted={idx.value === highlightedIndex || undefined}
         data-sticky={stickyHeaders}
         data-selectable={false}
         id={headerId}
+        itemHeight={getItemHeight(idx.value)}
         key={`header-${idx.value}`}
         label={title}
         // role="presentation"

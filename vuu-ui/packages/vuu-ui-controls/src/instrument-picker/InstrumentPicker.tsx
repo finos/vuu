@@ -1,4 +1,5 @@
 import { TableSchema } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useId } from "@finos/vuu-layout";
 import { TableNext, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
@@ -17,6 +18,14 @@ export interface InstrumentPickerProps
   TableProps: Pick<TableProps, "config" | "dataSource">;
   columnMap: ColumnMap;
   disabled?: boolean;
+  /**
+   * Used to form the display value to render in input following selection. If
+   * not provided, default will be the values from rendered columns.
+   *
+   * @param row DataSourceRow
+   * @returns string
+   */
+  itemToString?: (row: DataSourceRow) => string;
   onSelect: TableRowSelectHandler;
   schema: TableSchema;
   searchColumns: string[];
@@ -30,6 +39,7 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
     columnMap,
     disabled,
     id: idProp,
+    itemToString,
     onSelect,
     schema,
     searchColumns,
@@ -47,7 +57,16 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
     onOpenChange,
     tableHandlers,
     value,
-  } = useInstrumentPicker({ columnMap, dataSource, onSelect, searchColumns });
+  } = useInstrumentPicker({
+    columnMap,
+    columns: TableProps.config.columns,
+    dataSource,
+    itemToString,
+    onSelect,
+    searchColumns,
+  });
+
+  console.log({ value });
 
   const endAdornment = useMemo(() => <span data-icon="chevron-down" />, []);
 
