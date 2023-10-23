@@ -67,6 +67,7 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
@@ -98,6 +99,7 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
+  navigationStyle,
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
@@ -408,6 +410,7 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,

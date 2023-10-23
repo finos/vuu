@@ -36,12 +36,13 @@
   overflow: auto;
 }
 
-.vuuListItemHeader {
+.vuuListHeader {
   --saltList-item-background: var(--list-item-header-background);
   color: var(--list-item-header-color);
+  font-weight: 600;
 }
 
-.vuuListItemHeader[data-sticky="true"] {
+.vuuListHeader[data-sticky="true"] {
   --saltList-item-background: var(--list-background);
   position: sticky;
   top: 0;

@@ -20,6 +20,8 @@ export type TableRowClickHandler = (row: VuuDataRow) => void;
 // TODO implement a Model object to represent a row data for better API
 export type TableRowSelectHandler = (row: DataSourceRow) => void;
 
+export type TableNavigationStyle = "none" | "cell" | "row";
+
 export interface TableProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   Row?: FC<RowProps>;
@@ -32,6 +34,11 @@ export interface TableProps
   dataSource: DataSource;
   headerHeight?: number;
   height?: number;
+  /**
+   * Defined how focus navigation within data cells will be handled by table.
+   * Default is cell.
+   */
+  navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
    * Available columns can be changed by the addition or removal of

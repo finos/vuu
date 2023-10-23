@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import cx from "classnames";
 
 import {
