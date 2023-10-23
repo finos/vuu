@@ -3,6 +3,7 @@ package org.finos.vuu.layoutserver.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.finos.vuu.layoutserver.exceptions.InternalServerErrorException;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.slf4j.Logger;
@@ -60,11 +61,11 @@ public class ApplicationLayoutService {
 
     private JsonNode loadDefaultLayoutJsonFile() {
         ObjectMapper objectMapper = new ObjectMapper();
+        ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
         try {
-            ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
             return objectMapper.readTree(resource.getInputStream());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read default application layout");
+            throw new InternalServerErrorException("Failed to read default application layout");
         }
     }
 }

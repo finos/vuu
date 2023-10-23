@@ -151,12 +151,10 @@ public class ApplicationLayoutIntegrationTest {
     public void deleteApplicationLayout_noLayoutExists_returns404() throws Exception {
         String user = "user";
 
-        String response = mockMvc.perform(delete("/application-layouts")
+        mockMvc.perform(delete("/application-layouts")
                         .header("user", user))
                 .andExpect(status().isNotFound())
-                .andReturn().getResponse().getContentAsString();
-
-        assertThat(response).isEqualTo("No layout found for user: " + user);
+                .andExpect(jsonPath("$.message", is("No layout found for user: " + user)));
     }
 
     @Test
