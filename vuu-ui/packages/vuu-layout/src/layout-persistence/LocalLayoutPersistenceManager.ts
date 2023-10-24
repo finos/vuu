@@ -52,14 +52,13 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          this.saveLayoutsWithMetadata(
-            existingLayouts.map((layout) =>
-              layout.id === id ? { ...layout, json: newLayout } : layout
-            ),
-            existingMetadata.map((metadata) =>
-              metadata.id === id ? { ...metadata, ...newMetadata } : metadata
-            )
+          const updatedLayouts = existingLayouts.map((layout) =>
+            layout.id === id ? { ...layout, json: newLayout } : layout
           );
+          const updatedMetadata = existingMetadata.map((metadata) =>
+            metadata.id === id ? { ...metadata, ...newMetadata } : metadata
+          );
+          this.saveLayoutsWithMetadata(updatedLayouts, updatedMetadata);
           resolve();
         })
         .catch((e) => reject(e));
