@@ -1,5 +1,6 @@
 import { ChangeEvent, HTMLAttributes, useState } from "react";
 import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import { VuuLogo } from "./VuuLogo";
 
 import "./LoginPanel.css";
 
@@ -7,11 +8,13 @@ const classBase = "vuuLoginPanel";
 
 export interface LoginPanelProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {
+  appName?: string;
   onSubmit: (username: string, password: string) => void;
   requirePassword?: boolean;
 }
 
 export const LoginPanel = ({
+  appName = "Demo App",
   requirePassword = true,
   onSubmit,
 }: LoginPanelProps) => {
@@ -36,33 +39,48 @@ export const LoginPanel = ({
 
   return (
     <div className={classBase}>
-      <FormField style={{ width: 200 }}>
-        <FormFieldLabel>Username</FormFieldLabel>
-        <Input value={username} id="text-username" onChange={handleUsername} />
-      </FormField>
-
-      {requirePassword ? (
-        <FormField style={{ width: 200 }}>
-          <FormFieldLabel>Password</FormFieldLabel>
+      <div className={`${classBase}-branding`}>
+        <VuuLogo />
+        <div className={`${classBase}-appName`}>{appName}</div>
+      </div>
+      <div className={`${classBase}-form`}>
+        <div className={`${classBase}-title`}>Welcome Back</div>
+        <FormField>
+          <FormFieldLabel>Username</FormFieldLabel>
           <Input
-            inputProps={{
-              type: "password",
-            }}
-            value={password}
-            id="text-password"
-            onChange={handlePassword}
+            value={username}
+            id="text-username"
+            onChange={handleUsername}
           />
         </FormField>
-      ) : null}
 
-      <Button
-        className={`${classBase}-login`}
-        disabled={!dataIsValid}
-        onClick={login}
-        variant="cta"
-      >
-        Login
-      </Button>
+        {requirePassword ? (
+          <FormField>
+            <FormFieldLabel>Password</FormFieldLabel>
+            <Input
+              className={`${classBase}-password`}
+              inputProps={{
+                type: "password",
+              }}
+              value={password}
+              id="text-password"
+              onChange={handlePassword}
+              endAdornment={
+                <span data-icon="eye" style={{ cursor: "pointer" }} />
+              }
+            />
+          </FormField>
+        ) : null}
+
+        <Button
+          className={`${classBase}-login`}
+          disabled={!dataIsValid}
+          onClick={login}
+          variant="cta"
+        >
+          Login
+        </Button>
+      </div>
     </div>
   );
 };

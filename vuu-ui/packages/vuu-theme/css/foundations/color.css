@@ -5,12 +5,15 @@
   --vuu-color-transparent: transparent;
   --vuu-color-black: black;
   --vuu-color-white: white;
+  --vuu-color-white-fade-70: rgba(255,255,255,.7);
 
   /** text-selection */
   --vuu-color-blue-40: rgb(164, 213, 244); /*  #A4D5F4 */
 
 
   --vuu-color-purple-10: rgb(109,24,189); /*  #6D18BD */
+  --vuu-color-purple-20-fade-40 :rgba(197, 163, 229, .4); /* #C5A3E566 */
+  --vuu-color-purple-50: rgb(42, 1, 95); /*  #2A015F */
   --vuu-color-purple-10-fade-light: rgba(109,24,189, var(--vuu-fade-light)); 
 
   --vuu-color-pink-10: rgb(234, 120, 128); /*  #F37880 */
