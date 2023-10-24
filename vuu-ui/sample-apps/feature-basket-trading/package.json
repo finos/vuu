@@ -42,7 +42,16 @@
   },
   "vuu": {
     "featureProps": {
-      "schema": "instrumentPrices"
+      "schemas": [
+        {
+          "module": "BASKET",
+          "table": "basket"
+        },
+        {
+          "module": "SIMUL",
+          "table": "instruments"
+        }
+      ]
     },
     "leftNavLocation": "vuu-features"
   }

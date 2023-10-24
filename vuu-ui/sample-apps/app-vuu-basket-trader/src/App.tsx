@@ -20,6 +20,7 @@ import {
 } from "@finos/vuu-layout";
 
 import "./App.css";
+import { RpcResponseHandler } from "packages/vuu-data-react/src";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
@@ -56,6 +57,11 @@ export const App = ({ user }: { user: VuuUser }) => {
     handleMenuAction,
   } = useLayoutContextMenuItems();
 
+  const handleRpcResponse = useCallback<RpcResponseHandler>((response) => {
+    console.log(`rpc response`, {
+      response,
+    });
+  }, []);
   const handleClose = useCallback(() => {
     setDialogContent(undefined);
     handleCloseDialog?.();
@@ -67,7 +73,9 @@ export const App = ({ user }: { user: VuuUser }) => {
       menuActionHandler={handleMenuAction}
       menuBuilder={buildMenuOptions}
     >
-      <ShellContextProvider value={{ getDefaultColumnConfig }}>
+      <ShellContextProvider
+        value={{ getDefaultColumnConfig, handleRpcResponse }}
+      >
         <Shell
           LayoutProps={layoutProps}
           className="App"

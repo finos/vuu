@@ -42,7 +42,10 @@
   },
   "vuu": {
     "featureProps": {
-      "schema": "instrumentPrices"
+      "schemas": {
+        "module": "SIMUL",
+        "table": "instrumentPrices"
+      }
     },
     "leftNavLocation": "vuu-features"
   }

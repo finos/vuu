@@ -14,3 +14,8 @@
     font-size: 18px;
     font-weight: 700;
 }
+
+.vuuBasketEmptyBasketsPanel-add {
+    --saltButton-height: 24px;
+    --saltButton-padding: 16px;
+}

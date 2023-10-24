@@ -22,3 +22,7 @@
 .vuuToolbarProxy {
   background: var(--salt-container-primary-background);
 }
+
+.vuuShell-mainTabs > .vuuTabstrip > .vuuOverflowContainer-wrapContainer {
+  background: var(--vuu-color-gray-25);
+}

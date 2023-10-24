@@ -43,6 +43,17 @@ type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("RemoteDataSource");
 
+type DataSourceStatus =
+  | "disabled"
+  | "disabling"
+  | "enabled"
+  | "enabling"
+  | "initialising"
+  | "subscribing"
+  | "subscribed"
+  | "suspended"
+  | "unsubscribed";
+
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
@@ -52,7 +63,7 @@ export class RemoteDataSource
 {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private status = "initialising";
+  private status: DataSourceStatus = "initialising";
   private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
@@ -115,6 +126,7 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
+    console.log("%csubscribe", "color:red;font-weight:bold;");
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -135,7 +147,7 @@ export class RemoteDataSource
       this.#range = range;
     }
 
-    if (this.status !== "initialising") {
+    if (this.status !== "initialising" && this.status !== "unsubscribed") {
       return;
     }
 
@@ -198,12 +210,16 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
+    console.log("%cunsubscribe", "color:red;font-weight:bold;");
+
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
     this.server?.destroy(this.viewport);
     this.removeAllListeners();
+    this.status = "unsubscribed";
+    this.viewport = undefined;
   }
 
   suspend() {

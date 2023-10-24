@@ -72,9 +72,10 @@ const features: FeatureProps[] = [
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
-      basketDefinitionsSchema: schemas.basketDefinitions,
-      basketDesignSchema: schemas.basketDesign,
-      basketOrdersSchema: schemas.basketOrders,
+      basketSchema: schemas.basket,
+      // basketDefinitionsSchema: schemas.basketDefinitions,
+      // basketDesignSchema: schemas.basketDesign,
+      // basketOrdersSchema: schemas.basketOrders,
       instrumentsSchema: schemas.instruments,
     },
   },

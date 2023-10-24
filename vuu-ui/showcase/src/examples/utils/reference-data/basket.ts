@@ -1,12 +1,12 @@
-export type ID = string;
+export type id = string;
 export type name = string;
 export type notionalValue = number;
 export type notionalValueUsd = number;
 
-export type BasketDataRow = [ID, name, notionalValue, notionalValueUsd];
+export type BasketDataRow = [id, name, notionalValue, notionalValueUsd];
 
 export const BasketColumnMap = {
-  ID: 0,
+  id: 0,
   name: 1,
   notionalValue: 2,
   notionalValueUsd: 3,

@@ -1,4 +1,5 @@
 import { Palette, PaletteItem } from "@finos/vuu-layout";
+import { ListProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes } from "react";
 import { Feature, FeatureProps } from "../feature/Feature";
 
@@ -19,23 +20,33 @@ export const FeatureList = ({
 
   console.log({ features });
 
+  const listProps: Partial<ListProps> = {
+    height: "100%",
+  };
+
   return (
     <div {...htmlAttributes} className={classBase}>
       <div className={`${classBase}-header`}>{title}</div>
-      <Palette orientation="vertical" ViewProps={ViewProps}>
-        {features.map((featureProps, i) => (
-          <PaletteItem
-            closeable
-            key={i}
-            label={featureProps.title}
-            resizeable
-            resize="defer"
-            header
-          >
-            <Feature {...featureProps} />
-          </PaletteItem>
-        ))}
-      </Palette>
+      <div className={`${classBase}-content`}>
+        <Palette
+          orientation="vertical"
+          ListProps={listProps}
+          ViewProps={ViewProps}
+        >
+          {features.map((featureProps, i) => (
+            <PaletteItem
+              closeable
+              key={i}
+              label={featureProps.title}
+              resizeable
+              resize="defer"
+              header
+            >
+              <Feature {...featureProps} />
+            </PaletteItem>
+          ))}
+        </Palette>
+      </div>
     </div>
   );
 };

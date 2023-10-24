@@ -13,11 +13,10 @@ let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
   const basketSchema = getSchema("basket");
-  const basketDefinitionsSchema = getSchema("basketDefinitions");
-  const basketDesignSchema = getSchema("basketDesign");
-  const basketOrdersSchema = getSchema("basketOrders");
+  // const basketDefinitionsSchema = getSchema("basketDefinitions");
+  // const basketDesignSchema = getSchema("basketDesign");
+  // const basketOrdersSchema = getSchema("basketOrders");
   const instrumentsSchema = getSchema("instruments");
-
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
@@ -54,9 +53,9 @@ export const DefaultBasketTradingFeature = () => {
       >
         <BasketTradingFeature
           basketSchema={basketSchema}
-          basketDefinitionsSchema={basketDefinitionsSchema}
-          basketDesignSchema={basketDesignSchema}
-          basketOrdersSchema={basketOrdersSchema}
+          // basketDefinitionsSchema={basketDefinitionsSchema}
+          // basketDesignSchema={basketDesignSchema}
+          // basketOrdersSchema={basketOrdersSchema}
           instrumentsSchema={instrumentsSchema}
         />
       </View>
@@ -67,9 +66,9 @@ DefaultBasketTradingFeature.displaySequence = displaySequence++;
 
 export const BasketTradingFeatureNoBaskets = () => {
   const basketSchema = getSchema("basket");
-  const basketDefinitionsSchema = getSchema("basketDefinitions");
-  const basketDesignSchema = getSchema("basketDesign");
-  const basketOrdersSchema = getSchema("basketOrders");
+  // const basketDefinitionsSchema = getSchema("basketDefinitions");
+  // const basketDesignSchema = getSchema("basketDesign");
+  // const basketOrdersSchema = getSchema("basketOrders");
   const instrumentsSchema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
@@ -77,27 +76,26 @@ export const BasketTradingFeatureNoBaskets = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const [layout, saveLayoutConfig] = useLayoutConfig({
-    // save to local storage. Use browser devtools to purge this
-    saveLocation: "local",
-    saveUrl: "table-next-feature",
-  });
+  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [layout]);
+  }, [applicationLayout]);
 
   const handleLayoutChange = useCallback(
     (layout) => {
       console.log("layout change");
-      saveLayoutConfig(layout);
+      saveApplicationLayout(layout);
     },
-    [saveLayoutConfig]
+    [saveApplicationLayout]
   );
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider
+      layout={applicationLayout}
+      onLayoutChange={handleLayoutChange}
+    >
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
@@ -109,9 +107,9 @@ export const BasketTradingFeatureNoBaskets = () => {
       >
         <BasketTradingNoBasketsFeature
           basketSchema={basketSchema}
-          basketDefinitionsSchema={basketDefinitionsSchema}
-          basketDesignSchema={basketDesignSchema}
-          basketOrdersSchema={basketOrdersSchema}
+          // basketDefinitionsSchema={basketDefinitionsSchema}
+          // basketDesignSchema={basketDesignSchema}
+          // basketOrdersSchema={basketOrdersSchema}
           instrumentsSchema={instrumentsSchema}
         />
       </View>
@@ -122,9 +120,9 @@ BasketTradingFeatureNoBaskets.displaySequence = displaySequence++;
 
 export const BasketTradingFeatureOneBasket = () => {
   const basketSchema = getSchema("basket");
-  const basketDefinitionsSchema = getSchema("basketDefinitions");
-  const basketDesignSchema = getSchema("basketDesign");
-  const basketOrdersSchema = getSchema("basketOrders");
+  // const basketDefinitionsSchema = getSchema("basketDefinitions");
+  // const basketDesignSchema = getSchema("basketDesign");
+  // const basketOrdersSchema = getSchema("basketOrders");
   const instrumentsSchema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
@@ -132,27 +130,26 @@ export const BasketTradingFeatureOneBasket = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const [layout, saveLayoutConfig] = useLayoutConfig({
-    // save to local storage. Use browser devtools to purge this
-    saveLocation: "local",
-    saveUrl: "table-next-feature",
-  });
+  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [layout]);
+  }, [applicationLayout]);
 
   const handleLayoutChange = useCallback(
     (layout) => {
       console.log("layout change");
-      saveLayoutConfig(layout);
+      saveApplicationLayout(layout);
     },
-    [saveLayoutConfig]
+    [saveApplicationLayout]
   );
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={layout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider
+      layout={applicationLayout}
+      onLayoutChange={handleLayoutChange}
+    >
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
@@ -164,9 +161,9 @@ export const BasketTradingFeatureOneBasket = () => {
       >
         <BasketTradingOneBasketFeature
           basketSchema={basketSchema}
-          basketDefinitionsSchema={basketDefinitionsSchema}
-          basketDesignSchema={basketDesignSchema}
-          basketOrdersSchema={basketOrdersSchema}
+          // basketDefinitionsSchema={basketDefinitionsSchema}
+          // basketDesignSchema={basketDesignSchema}
+          // basketOrdersSchema={basketOrdersSchema}
           instrumentsSchema={instrumentsSchema}
         />
       </View>
@@ -189,9 +186,10 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const basketDefinitionsSchema = getSchema("basketDefinitions");
-  const basketDesignSchema = getSchema("basketDesign");
-  const basketOrdersSchema = getSchema("basketOrders");
+  const basketSchema = getSchema("basket");
+  // const basketDefinitionsSchema = getSchema("basketDefinitions");
+  // const basketDesignSchema = getSchema("basketDesign");
+  // const basketOrdersSchema = getSchema("basketOrders");
   const instrumentsSchema = getSchema("instruments");
 
   return (
@@ -206,9 +204,10 @@ export const BasketTradingFeatureAsFeature = () => {
     >
       <Feature
         ComponentProps={{
-          basketDefinitionsSchema,
-          basketDesignSchema,
-          basketOrdersSchema,
+          basketSchema,
+          // basketDefinitionsSchema,
+          // basketDesignSchema,
+          // basketOrdersSchema,
           instrumentsSchema,
         }}
         url={url}
