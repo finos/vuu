@@ -50,6 +50,10 @@ public class LayoutService {
     }
 
     public void deleteLayout(UUID id) {
-        layoutRepository.deleteById(id);
+        try {
+            layoutRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new NoSuchElementException("Layout with ID '" + id + "' not found");
+        }
     }
 }

@@ -151,7 +151,6 @@ class LayoutControllerTest {
     void deleteLayout_callsLayoutService() {
         layoutController.deleteLayout(validLayoutId);
 
-        verify(layoutService).getLayout(validLayoutId);
         verify(layoutService).deleteLayout(validLayoutId);
     }
 
