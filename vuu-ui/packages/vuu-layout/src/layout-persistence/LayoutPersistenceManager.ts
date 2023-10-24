@@ -19,7 +19,7 @@ export interface LayoutPersistenceManager {
    * @param metadata - Metadata describing the new layout to overwrite with
    * @param layout   - Full JSON representation of the new layout to overwrite with
    */
-  updateLayout: (id: string, metadata: Omit<LayoutMetadata, "id">, layout: LayoutJSON) => Promise<void>;
+  updateLayout: (id: string, metadata: LayoutMetadataDto, layout: LayoutJSON) => Promise<void>;
 
   /**
    * Deletes an existing layout and its corresponding metadata

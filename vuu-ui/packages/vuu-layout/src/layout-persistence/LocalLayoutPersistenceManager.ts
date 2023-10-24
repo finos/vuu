@@ -1,4 +1,9 @@
-import { Layout, LayoutMetadata, LayoutMetadataDto, WithId } from "@finos/vuu-shell";
+import {
+  Layout,
+  LayoutMetadata,
+  LayoutMetadataDto,
+  WithId,
+} from "@finos/vuu-shell";
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
@@ -27,12 +32,10 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
             id,
             created: formatDate(new Date(), "dd.mm.yyyy"),
           };
-          this.appendAndPersist(
-            id,
-            newMetadata,
-            layout,
-            existingLayouts,
-            existingMetadata
+
+          this.saveLayoutsWithMetadata(
+            [...existingLayouts, { id, json: layout }],
+            [...existingMetadata, newMetadata]
           );
           resolve(newMetadata);
         }
@@ -42,18 +45,21 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   updateLayout(
     id: string,
-    newMetadata: Omit<LayoutMetadata, "id">,
+    newMetadata: LayoutMetadataDto,
     newLayout: LayoutJSON
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter((layout) => layout.id !== id);
-          const metadata = existingMetadata.filter(
-            (metadata) => metadata.id !== id
+          this.saveLayoutsWithMetadata(
+            existingLayouts.map((layout) =>
+              layout.id === id ? { ...layout, json: newLayout } : layout
+            ),
+            existingMetadata.map((metadata) =>
+              metadata.id === id ? { ...metadata, ...newMetadata } : metadata
+            )
           );
-          this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
           resolve();
         })
         .catch((e) => reject(e));
@@ -128,19 +134,6 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
       resolve(layouts || []);
     });
-  }
-
-  private appendAndPersist(
-    newId: string,
-    newMetadata: Omit<LayoutMetadata, "id">,
-    newLayout: LayoutJSON,
-    existingLayouts: Layout[],
-    existingMetadata: LayoutMetadata[]
-  ) {
-    existingLayouts.push({ id: newId, json: newLayout });
-    existingMetadata.push({ id: newId, ...newMetadata });
-
-    this.saveLayoutsWithMetadata(existingLayouts, existingMetadata);
   }
 
   private saveLayoutsWithMetadata(
