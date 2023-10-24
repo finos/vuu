@@ -15,7 +15,7 @@ const metadata: LayoutMetadata[] = [
     id: "0001",
     name: "layout 1",
     group: "group 1",
-    screenshot: "",
+    screenshot: "screenshot",
     user: "username",
     created: "01.01.2000",
   },

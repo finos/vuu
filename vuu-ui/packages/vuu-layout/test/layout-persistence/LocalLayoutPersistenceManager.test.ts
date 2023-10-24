@@ -91,7 +91,7 @@ describe("createLayout", () => {
       id,
     };
 
-    expect(created).toEqual(formatDate(new Date(), "dd.mm.yyyy"));
+    expect(created).toEqual(newDate);
     expect(persistedMetadata).toEqual([expectedMetadata]);
     expect(persistedLayout).toEqual([expectedLayout]);
   });
