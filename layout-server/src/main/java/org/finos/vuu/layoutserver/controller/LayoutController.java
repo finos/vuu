@@ -68,7 +68,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public LayoutResponseDTO createLayout(@RequestBody @Valid LayoutRequestDTO layoutToCreate) {
+    public LayoutResponseDTO createLayout(@Valid @RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
