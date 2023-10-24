@@ -6,7 +6,7 @@ import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
 
 import "./BasketToolbar.css";
-import { MenuActionHandler } from "packages/vuu-data-types";
+import { MenuActionHandler } from "@finos/vuu-data-types";
 
 const classBase = "vuuBasketToolbar";
 

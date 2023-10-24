@@ -1,30 +1,29 @@
-import { LayoutProvider, View } from "@finos/vuu-layout";
+import { getSchema } from "@finos/vuu-data-test";
+import { LayoutProvider, registerComponent, View } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeature } from "../../features/BasketTrading.feature";
 import { BasketTradingNoBasketsFeature } from "../../features/BasketTradingNoBaskets.feature";
 import { BasketTradingOneBasketFeature } from "../../features/BasketTradingOneBasket.feature";
-import { useTableSchema } from "../utils";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
-import { registerComponent } from "@finos/vuu-layout";
 
 registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 
 let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
-  const basketSchema = useTableSchema("basket");
-  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
-  const basketDesignSchema = useTableSchema("basketDesign");
-  const basketOrdersSchema = useTableSchema("basketOrders");
-  const instrumentsSchema = useTableSchema("instruments");
+  const basketSchema = getSchema("basket");
+  const basketDefinitionsSchema = getSchema("basketDefinitions");
+  const basketDesignSchema = getSchema("basketDesign");
+  const basketOrdersSchema = getSchema("basketOrders");
+  const instrumentsSchema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationLayout, saveApplicationLayout} = useLayoutManager();
+  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
@@ -40,7 +39,10 @@ export const DefaultBasketTradingFeature = () => {
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={applicationLayout} onLayoutChange={handleLayoutChange}>
+    <LayoutProvider
+      layout={applicationLayout}
+      onLayoutChange={handleLayoutChange}
+    >
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
@@ -64,11 +66,11 @@ export const DefaultBasketTradingFeature = () => {
 DefaultBasketTradingFeature.displaySequence = displaySequence++;
 
 export const BasketTradingFeatureNoBaskets = () => {
-  const basketSchema = useTableSchema("basket");
-  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
-  const basketDesignSchema = useTableSchema("basketDesign");
-  const basketOrdersSchema = useTableSchema("basketOrders");
-  const instrumentsSchema = useTableSchema("instruments");
+  const basketSchema = getSchema("basket");
+  const basketDefinitionsSchema = getSchema("basketDefinitions");
+  const basketDesignSchema = getSchema("basketDesign");
+  const basketOrdersSchema = getSchema("basketOrders");
+  const instrumentsSchema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -119,11 +121,11 @@ export const BasketTradingFeatureNoBaskets = () => {
 BasketTradingFeatureNoBaskets.displaySequence = displaySequence++;
 
 export const BasketTradingFeatureOneBasket = () => {
-  const basketSchema = useTableSchema("basket");
-  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
-  const basketDesignSchema = useTableSchema("basketDesign");
-  const basketOrdersSchema = useTableSchema("basketOrders");
-  const instrumentsSchema = useTableSchema("instruments");
+  const basketSchema = getSchema("basket");
+  const basketDefinitionsSchema = getSchema("basketDefinitions");
+  const basketDesignSchema = getSchema("basketDesign");
+  const basketOrdersSchema = getSchema("basketOrders");
+  const instrumentsSchema = getSchema("instruments");
 
   //-----------------------------------------------------------------------------------
   // Note the following functionality is provided by the Shell in a full application.
@@ -187,10 +189,10 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const basketDefinitionsSchema = useTableSchema("basketDefinitions");
-  const basketDesignSchema = useTableSchema("basketDesign");
-  const basketOrdersSchema = useTableSchema("basketOrders");
-  const instrumentsSchema = useTableSchema("instruments");
+  const basketDefinitionsSchema = getSchema("basketDefinitions");
+  const basketDesignSchema = getSchema("basketDesign");
+  const basketOrdersSchema = getSchema("basketOrders");
+  const instrumentsSchema = getSchema("instruments");
 
   return (
     <View

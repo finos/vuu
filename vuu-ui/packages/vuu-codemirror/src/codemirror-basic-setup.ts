@@ -1,16 +1,16 @@
-import { KeyBinding } from "@codemirror/view";
+import { closeBrackets } from "@codemirror/autocomplete";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
-  closeBrackets,
   defaultHighlightStyle,
-  defaultKeymap,
-  drawSelection,
-  Extension,
-  highlightSpecialChars,
-  history,
-  historyKeymap,
-  keymap,
   syntaxHighlighting,
-} from "./index";
+} from "@codemirror/language";
+import { Extension } from "@codemirror/state";
+import {
+  drawSelection,
+  highlightSpecialChars,
+  KeyBinding,
+  keymap,
+} from "@codemirror/view";
 
 const keyBindings = [
   ...defaultKeymap,

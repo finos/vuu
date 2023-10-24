@@ -1,6 +1,10 @@
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { getDefaultAlignment, isCalculatedColumn } from "@finos/vuu-utils";
+import {
+  getCalculatedColumnName,
+  getDefaultAlignment,
+  isCalculatedColumn,
+} from "@finos/vuu-utils";
 import {
   Button,
   FormField,
@@ -15,8 +19,18 @@ import { ColumnExpressionPanel } from "../column-expression-panel";
 import { VuuInput } from "@finos/vuu-ui-controls";
 
 import "./ColumnSettingsPanel.css";
+import { ColumnNameLabel } from "./ColumnNameLabel";
 
 const classBase = "vuuColumnSettingsPanel";
+
+const getColumnLabel = (column: ColumnDescriptor) => {
+  const { name, label } = column;
+  if (isCalculatedColumn(name)) {
+    return label ?? getCalculatedColumnName(column);
+  } else {
+    return label ?? name;
+  }
+};
 
 export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
   column: ColumnDescriptor;
@@ -36,11 +50,13 @@ export const ColumnSettingsPanel = ({
   const isNewCalculatedColumn = columnProp.name === "::";
   const {
     availableRenderers,
+    editCalculatedColumn,
     selectedCellRenderer,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange,
+    onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRenderer,
     onInputCommit,
@@ -56,7 +72,6 @@ export const ColumnSettingsPanel = ({
     serverDataType,
     align = getDefaultAlignment(serverDataType),
     name,
-    label = name,
     pin,
     width,
   } = column;
@@ -64,8 +79,18 @@ export const ColumnSettingsPanel = ({
   return (
     <div className={classBase}>
       <div className={`${classBase}-header`}>
-        <span>{name}</span>
+        <ColumnNameLabel column={column} />
       </div>
+
+      {editCalculatedColumn ? (
+        <ColumnExpressionPanel
+          column={column}
+          onChangeName={onChangeCalculatedColumnName}
+          onSave={onSave}
+          tableConfig={tableConfig}
+          vuuTable={vuuTable}
+        />
+      ) : null}
 
       <FormField data-field="column-label">
         <FormFieldLabel>Column Label</FormFieldLabel>
@@ -73,7 +98,7 @@ export const ColumnSettingsPanel = ({
           className="vuuInput"
           onChange={onChange}
           onCommit={onInputCommit}
-          value={label}
+          value={getColumnLabel(column)}
         />
       </FormField>
 
@@ -142,36 +167,27 @@ export const ColumnSettingsPanel = ({
         onChangeRenderer={onChangeRenderer}
       />
 
-      {isCalculatedColumn(column.name) ? (
-        <ColumnExpressionPanel
-          column={column}
-          onSave={onSave}
-          tableConfig={tableConfig}
-          vuuTable={vuuTable}
-        />
-      ) : (
-        <div
-          className={`${classBase}-buttonBar`}
-          data-align={isNewCalculatedColumn ? "right" : undefined}
+      <div
+        className={`${classBase}-buttonBar`}
+        data-align={isNewCalculatedColumn ? "right" : undefined}
+      >
+        <Button
+          className={`${classBase}-buttonNavPrev`}
+          variant="secondary"
+          data-icon="arrow-left"
+          onClick={navigatePrevColumn}
         >
-          <Button
-            className={`${classBase}-buttonNavPrev`}
-            variant="secondary"
-            data-icon="arrow-left"
-            onClick={navigatePrevColumn}
-          >
-            PREVIOUS
-          </Button>
-          <Button
-            className={`${classBase}-buttonNavNext`}
-            variant="secondary"
-            data-icon="arrow-right"
-            onClick={navigateNextColumn}
-          >
-            NEXT
-          </Button>
-        </div>
-      )}
+          PREVIOUS
+        </Button>
+        <Button
+          className={`${classBase}-buttonNavNext`}
+          variant="secondary"
+          data-icon="arrow-right"
+          onClick={navigateNextColumn}
+        >
+          NEXT
+        </Button>
+      </div>
     </div>
   );
 };

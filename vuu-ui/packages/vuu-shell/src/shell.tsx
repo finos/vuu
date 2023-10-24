@@ -6,6 +6,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import {
@@ -13,10 +14,7 @@ import {
   LayoutProvider,
   LayoutProviderProps,
 } from "@finos/vuu-layout";
-import {
-  LayoutChangeHandler,
-  LayoutJSON,
-} from "@finos/vuu-layout/src/layout-reducer";
+import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
@@ -64,19 +62,20 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutId = useRef("latest");
-  const { applicationLayout, saveApplicationLayout, loadLayoutById } = useLayoutManager();
+  const { applicationLayout, saveApplicationLayout, loadLayoutById } =
+    useLayoutManager();
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
       try {
-        saveApplicationLayout(layout);
         console.log(`handle layout changed ${layoutChangeReason}`);
+        saveApplicationLayout(layout);
         // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");
       }
     },
-    [applicationLayout]
+    [saveApplicationLayout]
   );
 
   const handleSwitchTheme = useCallback((mode: ThemeMode) => {
@@ -123,6 +122,7 @@ export const Shell = ({
   return (
     <ThemeProvider>
       <LayoutProvider
+        {...LayoutProps}
         layout={applicationLayout}
         onLayoutChange={handleLayoutChange}
       >

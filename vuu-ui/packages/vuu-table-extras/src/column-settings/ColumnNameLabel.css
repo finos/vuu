@@ -1,0 +1,8 @@
+.vuuColumnNameLabel-calculated {
+    display: flex;
+    gap: 2px;
+}
+
+.vuuColumnNameLabel-placeholder {
+    color: var(--vuu-color-gray-35);
+}

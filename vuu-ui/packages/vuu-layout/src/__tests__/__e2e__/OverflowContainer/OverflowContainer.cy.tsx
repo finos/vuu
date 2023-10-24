@@ -7,18 +7,21 @@ describe("WHEN it initially renders, with enough space for all items", () => {
     cy.mount(<TestFixtureSimpleOverflowContainer width={700} />);
     const container = cy.findByTestId("overflow-container");
     container.should("have.class", "vuuOverflowContainer");
-    container.should("not.have.class", "overflowed");
-    // cy.get(".saltTabstrip-inner > *")
-    //   .should("have.length", 5)
-    //   .filter(":visible")
-    //   .should("have.length", 5);
+    container.should(
+      "not.have.class",
+      "vuuOverflowContainer-wrapContainer-overflowed"
+    );
   });
-  //   it("THEN no items will be overflowed", () => {
-  //     cy.mount(<DefaultTabstrip width={400} />);
-  //     cy.get(OVERFLOWED_ITEMS).should("have.length", 0);
-  //   });
-  //   it("THEN no overflow indicator will be present", () => {
-  //     cy.mount(<DefaultTabstrip width={400} />);
-  //     cy.get(OVERFLOW_IND).should("have.length", 0);
-  //   });
+});
+
+describe("WHEN it initially renders, with space for all but one items", () => {
+  it("THEN all but one items will be visible, one will be marked as wrapped and overflow Indicator will be visible", () => {
+    cy.mount(<TestFixtureSimpleOverflowContainer width={600} />);
+    const container = cy.findByTestId("overflow-container");
+    const wrapContainer = container.children().first();
+    wrapContainer.should(
+      "have.class",
+      "vuuOverflowContainer-wrapContainer-overflowed"
+    );
+  });
 });

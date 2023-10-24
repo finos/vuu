@@ -2,7 +2,7 @@ import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Dropdown,
-  SelectionChangeHandler,
+  MultiSelectionHandler,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
@@ -22,7 +22,7 @@ export const DefaultDropdown = () => {
     <Dropdown
       defaultSelected={usa_states[0]}
       onSelectionChange={handleSelectionChange}
-      source={usa_states}
+      source={usa_states.slice(0, 10)}
     />
   );
 };
@@ -30,7 +30,7 @@ export const DefaultDropdown = () => {
 DefaultDropdown.displaySequence = displaySequence++;
 
 export const SizedDropdown = () => {
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
+  const handleChange: SingleSelectionHandler = (event, selectedItem) => {
     console.log("selection changed", selectedItem);
   };
   return (
@@ -113,7 +113,7 @@ FullyControlledDropdown.displaySequence = displaySequence++;
 export const DataOnDemand = () => {
   const [data, setData] = useState(["EUR"]);
 
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
+  const handleChange: SingleSelectionHandler = (event, selectedItem) => {
     console.log("selection changed", selectedItem);
   };
 
@@ -158,7 +158,7 @@ export const SwitchDataSource = () => {
     }
   }, []);
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, value) => {
       if (value !== null) {
         selectedRef.current = value;
@@ -195,14 +195,14 @@ export const SwitchDataSource = () => {
 SwitchDataSource.displaySequence = displaySequence++;
 
 export const MultiSelectDropdown = () => {
-  const handleSelectionChange = useCallback<SelectionChangeHandler<string>>(
+  const handleSelectionChange = useCallback<MultiSelectionHandler<string>>(
     (event, selected) => {
       console.log(`selectionChange ${JSON.stringify(selected)}`);
     },
     []
   );
   return (
-    <Dropdown<string>
+    <Dropdown
       defaultSelected={[usa_states[0]]}
       onSelectionChange={handleSelectionChange}
       selectionStrategy="multiple"

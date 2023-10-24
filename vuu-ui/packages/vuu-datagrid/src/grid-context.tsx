@@ -14,7 +14,7 @@ import {
   GridAction,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
-import { DataSourceFilter } from "packages/vuu-data-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 export interface GridActionGroup {
   type: "group";

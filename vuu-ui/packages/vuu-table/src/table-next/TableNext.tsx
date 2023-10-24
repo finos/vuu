@@ -26,6 +26,7 @@ export const TableNext = forwardRef(function TableNext(
     config,
     dataSource,
     id: idProp,
+    navigationStyle = "cell",
     onAvailableColumnsChange,
     onConfigChange,
     onFeatureEnabled,
@@ -69,6 +70,7 @@ export const TableNext = forwardRef(function TableNext(
     containerRef,
     dataSource,
     headerHeight,
+    navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
     onFeatureEnabled,
@@ -98,6 +100,7 @@ export const TableNext = forwardRef(function TableNext(
   const className = cx(classBase, classNameProp, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
+    [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
     // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });

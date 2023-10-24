@@ -37,17 +37,17 @@ const getTargetSize = (
     case "height":
       return size.height;
     case "clientHeight":
-      return element.clientHeight;
+      return Math.floor(element.clientHeight);
     case "clientWidth":
-      return element.clientWidth;
+      return Math.floor(element.clientWidth);
     case "contentHeight":
       return size.contentHeight;
     case "contentWidth":
       return size.contentWidth;
     case "scrollHeight":
-      return Math.ceil(element.scrollHeight);
+      return Math.ceil(Math.floor(element.scrollHeight));
     case "scrollWidth":
-      return Math.ceil(element.scrollWidth);
+      return Math.ceil(Math.floor(element.scrollWidth));
     case "width":
       return size.width;
     default:
@@ -99,11 +99,19 @@ export function useResizeObserver(
   const measure = useCallback((target: HTMLElement): measurements<number> => {
     const { width, height } = target.getBoundingClientRect();
     const { clientWidth: contentWidth, clientHeight: contentHeight } = target;
+    const flooredHeight = Math.floor(height);
+    const flooredWidth = Math.floor(width);
+
     return dimensionsRef.current.reduce(
       (map: { [key: string]: number }, dim) => {
         map[dim] = getTargetSize(
           target,
-          { width, height, contentHeight, contentWidth },
+          {
+            width: flooredWidth,
+            height: flooredHeight,
+            contentHeight,
+            contentWidth,
+          },
           dim as measuredDimension
         );
         return map;

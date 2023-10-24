@@ -15,7 +15,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noEmit": true,
+    // "noEmit": true,
     "jsx": "react-jsx",
     "sourceMap": true
   },
@@ -24,7 +24,28 @@
     "sample-apps/*/src", 
     "showcase/src", 
     "sample-apps/*/index.ts",
-    "sample-apps/*/src"
+    "sample-apps/*/src",
+    "global.d.ts"
   ],
-  "exclude": ["**/*.cy.*", "**/*.test.*"]
+  "exclude": ["**/*.cy.*", "**/*.test.*"],
+  "references": [
+    {"path" : "packages/vuu-codemirror"},
+    {"path" : "packages/vuu-data"},
+    {"path" : "packages/vuu-data-ag-grid"},
+    {"path" : "packages/vuu-data-react"},
+    {"path" : "packages/vuu-data-types"},
+    {"path" : "packages/vuu-datagrid"},
+    {"path" : "packages/vuu-datatable"},
+    {"path" : "packages/vuu-filter-parser"},
+    {"path" : "packages/vuu-filter-types"},
+    {"path" : "packages/vuu-filters"},
+    {"path" : "packages/vuu-layout"},
+    {"path" : "packages/vuu-popups"},
+    {"path" : "packages/vuu-protocol-types"},
+    {"path" : "packages/vuu-shell"},
+    {"path" : "packages/vuu-table"},
+    {"path" : "packages/vuu-table-extras"},
+    {"path" : "packages/vuu-ui-controls"},
+    {"path" : "packages/vuu-utils"}
+  ]
 }

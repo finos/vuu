@@ -2,7 +2,6 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
 import { useIdMemo } from "@salt-ds/core";
-import cx from "classnames";
 import { CSSProperties } from "react";
 import { HeaderCell } from "../HeaderCell";
 import { HeaderGroupCell } from "../HeaderGroupCell";
@@ -14,10 +13,9 @@ import "./VuuTableSelectionDecorator.css";
 
 const classBase = "vuuTable2";
 
-const { IDX, RENDER_IDX } = metadataKeys;
+const { RENDER_IDX } = metadataKeys;
 
 export const VuuTable = ({
-  allowConfigEditing: showSettings = false,
   className: classNameProp,
   config,
   dataSource,
@@ -27,6 +25,7 @@ export const VuuTable = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelect,
   onSelectionChange,
   onShowConfigEditor,
   renderBufferSize = 0,
@@ -34,7 +33,6 @@ export const VuuTable = ({
   selectionModel = "extended",
   style: styleProp,
   width,
-  zebraStripes = false,
   ...htmlAttributes
 }: TableProps) => {
   const id = useIdMemo(idProp);
@@ -124,12 +122,7 @@ export const VuuTable = ({
             className={`${classBase}-contentContainer`}
             ref={scrollProps.contentContainerRef}
           >
-            <div
-              {...tableProps}
-              className={cx(`${classBase}-table`, {
-                [`${classBase}-stripes`]: zebraStripes,
-              })}
-            >
+            <div {...tableProps} className={`${classBase}-table`}>
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">
                   {columns.map((column, i) => {

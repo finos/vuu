@@ -1,3 +1,4 @@
+import "../global-mocks";
 import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalLayoutPersistenceManager } from "../../src/layout-persistence";
@@ -20,7 +21,7 @@ vi.mock("@finos/vuu-filters", async () => {
         return undefined;
       }
     },
-  }
+  };
 });
 
 const persistenceManager = new LocalLayoutPersistenceManager();
@@ -67,7 +68,7 @@ const layoutsSaveLocation = "layouts/layouts";
 
 afterEach(() => {
   localStorage.clear();
-})
+});
 
 describe("createLayout", () => {
   it("persists to local storage with a unique ID and current date", async () => {

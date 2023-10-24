@@ -83,14 +83,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     filterbarConfigFromState?.filters ?? []
   );
 
-  const handleActiveChange = useCallback(
-    (activeFilterIndex: number[]) => {
-      activeRef.current = activeFilterIndex;
-      save?.({ filters, activeFilterIndex }, "filterbar-config");
-    },
-    [filters, save]
-  );
-
   const handleFiltersChanged = useCallback(
     (filters: Filter[]) => {
       save?.(
@@ -123,6 +115,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const handleTableConfigChange = useCallback(
     (config: TableConfig) => {
+      console.log(`tabale config changed`);
       save?.(config, "table-config");
       // tableConfigRef.current = config;
     },
@@ -131,14 +124,14 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
 
-  const configColumns = tableConfigFromState?.columns;
-
   const tableConfig = useMemo(
     () => ({
+      ...tableConfigFromState,
       columns:
-        configColumns || applyDefaults(tableSchema, getDefaultColumnConfig),
+        tableConfigFromState?.columns ||
+        applyDefaults(tableSchema, getDefaultColumnConfig),
     }),
-    [configColumns, getDefaultColumnConfig, tableSchema]
+    [getDefaultColumnConfig, tableConfigFromState, tableSchema]
   );
 
   const dataSource: DataSource = useMemo(() => {
@@ -257,7 +250,6 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
     filters,
     onApplyFilter: handleApplyFilter,
-    onActiveChange: handleActiveChange,
     onFiltersChanged: handleFiltersChanged,
     tableSchema,
   };

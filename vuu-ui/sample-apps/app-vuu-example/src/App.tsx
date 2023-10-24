@@ -7,19 +7,21 @@ import {
   SessionEditingForm,
   Shell,
   ShellContextProvider,
+  ShellProps,
   ThemeProvider,
   VuuUser,
 } from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
-import { Stack } from "./AppStack";
+// import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { getFormConfig } from "./session-editing";
+import { createPlaceholder } from "./createPlaceholder";
 
 import "./App.css";
 // Because we do not render the AppSidePanel directly, the css will not be included in bundle.
 import "./app-sidepanel/AppSidePanel.css";
-import { VuuTable } from "packages/vuu-protocol-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 
 const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
 const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
@@ -31,31 +33,12 @@ const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
 const vuuBlotterUrl = "./feature-vuu-table/index.js";
 // const vuuBlotterUrl = "./feature-vuu-table/index.js";
 
-registerComponent("Stack", Stack, "container");
+// registerComponent("Stack", Stack, "container");
 
-const defaultLayout = {
-  type: "Stack",
-  props: {
-    style: {
-      width: "100%",
-      height: "100%",
-    },
-    enableAddTab: true,
-    enableRemoveTab: true,
-    preserve: true,
-    active: 0,
-    TabstripProps: {
-      allowAddTab: true,
-      allowCloseTab: true,
-      allowRenameTab: true,
-    },
-  },
-  children: [
-    {
-      type: "Placeholder",
-      title: "Page 1",
-    },
-  ],
+// createNewChild is used when we add a new Tab to Stack
+const layoutProps: ShellProps["LayoutProps"] = {
+  createNewChild: createPlaceholder,
+  pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
 };
 
 const withTable = (action: unknown): action is { table: VuuTable } =>
@@ -118,8 +101,8 @@ export const App = ({ user }: { user: VuuUser }) => {
     <ShellContextProvider value={{ getDefaultColumnConfig, handleRpcResponse }}>
       <ThemeProvider theme="salt">
         <Shell
+          LayoutProps={layoutProps}
           className="App"
-          defaultLayout={defaultLayout}
           leftSidePanel={<AppSidePanel features={features} tables={tables} />}
           serverUrl={serverUrl}
           user={user}

@@ -9,6 +9,7 @@ export const buildAll = async () => {
 
   // TODO determine the dependency graph/build order programatically
   const wave1 = [
+    "vuu-data-test",
     "vuu-data-types",
     "vuu-datagrid-types",
     "vuu-filter-types",

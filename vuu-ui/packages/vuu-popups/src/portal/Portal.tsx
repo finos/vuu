@@ -1,4 +1,4 @@
-import { useThemeAttributes } from "@finos/vuu-shell";
+import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-shell";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -22,10 +22,20 @@ export interface PortalProps {
    */
   id?: string;
   /**
+   * Callback invoked immediately after render (in layoutEffect). Can be
+   * used to check position vis-a-vis viewport and adjust if out of bounds
+   */
+  onRender?: () => void;
+  /**
    * Allow conditional rendering of this Portal, if false, will render nothing.
    * Defaults to true
    */
   open?: boolean;
+  /**
+   * ThemeAttributes can be passed in for cases where ContextMenu is
+   * rendered via popup-service showPopup, outside the Context hierarchy.
+   */
+  themeAttributes?: ThemeAttributes;
 }
 
 function getContainer(container: PortalProps["container"]) {
@@ -42,12 +52,15 @@ export const Portal = ({
   children,
   container: containerProp = document.body,
   id = DEFAULT_ID,
+  onRender,
   open = true,
+  themeAttributes,
 }: PortalProps) => {
   const [mounted, setMounted] = useState(false);
   const portalRef = useRef<HTMLElement | null>(null);
   const container = getContainer(containerProp) ?? document.body;
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const [themeClass, densityClass, dataMode] =
+    useThemeAttributes(themeAttributes);
 
   useLayoutEffect(() => {
     const root = document.getElementById(id);
@@ -65,6 +78,12 @@ export const Portal = ({
     el.dataset.mode = dataMode;
     setMounted(true);
   }, [id, container, themeClass, densityClass, dataMode]);
+
+  useLayoutEffect(() => {
+    requestAnimationFrame(() => {
+      onRender?.();
+    });
+  }, [onRender]);
 
   if (open && mounted && portalRef.current && children) {
     return createPortal(children, portalRef.current);

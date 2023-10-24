@@ -34,15 +34,15 @@
 .vuuList-viewport {
   height: var(--computed-list-height, var(--measured-px-height));
   overflow: auto;
-  width: var(--measured-px-width);
 }
 
-.vuuListItemHeader {
+.vuuListHeader {
   --saltList-item-background: var(--list-item-header-background);
   color: var(--list-item-header-color);
+  font-weight: 600;
 }
 
-.vuuListItemHeader[data-sticky="true"] {
+.vuuListHeader[data-sticky="true"] {
   --saltList-item-background: var(--list-background);
   position: sticky;
   top: 0;

@@ -5,10 +5,10 @@ import {
   InstrumentPricesReferenceData,
 } from "../reference-data";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { schemas } from "../useSchemas";
+import { getSchema } from "@finos/vuu-data-test";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
-const { instrumentPrices: instrumentPriceSchema } = schemas;
+const instrumentPriceSchema = getSchema("instrumentPrices");
 
 export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {
@@ -39,7 +39,7 @@ export const ColumnGenerator: ColumnGeneratorFn = (
   //columnConfig: ExtendedColumnConfig = {}
 ) => {
   const instrumentPriceColumns: ColumnDescriptor[] =
-    schemas.instrumentPrices.columns;
+    instrumentPriceSchema.columns;
   if (typeof columns === "number") {
     throw Error(
       "InstrumentPricesColumnGenerator must be passed columns (strings)"

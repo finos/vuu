@@ -7,10 +7,25 @@
     height: 100%;
 }
 
+
 .vuuToolbarItem.vuuFocusVisible {
     outline-color: var(--vuuToolbarItem-outlineColor, var(--salt-focused-outlineColor));
     outline-style: dashed;
     outline-width: 1px;
-    outline-offset: -1px;
+    outline-offset: 0px;
   }
+
+
+  .vuuPopupMenu:focus,
+  .vuuToolbarItem:focus,
+  .vuuToolbarItem:focus-visible {
+
+    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple-10));
+    outline-style: dashed;
+    outline-width: 1px;
+    outline-offset: 0px;
+
+}
+
+
   

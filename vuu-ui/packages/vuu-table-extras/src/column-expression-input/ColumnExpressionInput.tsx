@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, memo } from "react";
 import { ColumnDefinitionExpression } from "./column-language-parser";
 import {
   ExpressionSuggestionConsumer,
@@ -20,18 +20,24 @@ export interface ColumnExpressionInputProps
   source?: string;
 }
 
-export const ColumnExpressionInput = ({
-  onChange,
-  onSubmitExpression,
-  source = "",
-  suggestionProvider,
-}: ColumnExpressionInputProps) => {
-  const { editorRef } = useColumnExpressionEditor({
+export const ColumnExpressionInput = memo(
+  ({
     onChange,
     onSubmitExpression,
-    source,
+    source = "",
     suggestionProvider,
-  });
+  }: ColumnExpressionInputProps) => {
+    const { editorRef } = useColumnExpressionEditor({
+      onChange,
+      onSubmitExpression,
+      source,
+      suggestionProvider,
+    });
 
-  return <div className={`${classBase}`} ref={editorRef} />;
-};
+    return <div className={`${classBase}`} ref={editorRef} />;
+  },
+  (prevProps, newProps) => {
+    return prevProps.source === newProps.source;
+  }
+);
+ColumnExpressionInput.displayName = "ColumnExpressionInput";

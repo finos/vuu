@@ -13,9 +13,10 @@ import {
 } from "@finos/vuu-table-extras";
 import { GroupColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { useTableConfig, useTestDataSource } from "../utils";
 import { GroupHeaderCellNext } from "@finos/vuu-table";
 import { defaultValueFormatter } from "@finos/vuu-utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./TableNext.examples.css";
 
@@ -49,6 +50,36 @@ export const DefaultTableNextArrayData = () => {
   );
 };
 DefaultTableNextArrayData.displaySequence = displaySequence++;
+
+export const NavigationStyle = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState<TableConfig>(configProp);
+
+  const handleConfigChange = useCallback((config: TableConfig) => {
+    setConfig(config);
+  }, []);
+
+  return (
+    <TableNext
+      {...props}
+      config={config}
+      height={645}
+      navigationStyle="row"
+      onConfigChange={handleConfigChange}
+      renderBufferSize={5}
+      width={723}
+    />
+  );
+};
+NavigationStyle.displaySequence = displaySequence++;
 
 export const EditableTableNextArrayData = () => {
   const { config, dataSource } = useTableConfig({
@@ -101,7 +132,7 @@ export const EditableTableNextArrayData = () => {
 EditableTableNextArrayData.displaySequence = displaySequence++;
 
 export const TableNextVuuInstruments = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource, error } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
@@ -229,6 +260,48 @@ export const AutoTableNext = () => {
   );
 };
 AutoTableNext.displaySequence = displaySequence++;
+
+export const AutoTableNextAsFlexChild = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 100px)",
+        marginLeft: 50,
+        marginTop: 50,
+        width: "calc(100vw - 100px)",
+      }}
+    >
+      <div style={{ flex: "1 1 auto" }}>
+        <TableNext
+          {...props}
+          config={{
+            ...config,
+          }}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={0}
+        />
+      </div>
+    </div>
+  );
+};
+AutoTableNextAsFlexChild.displaySequence = displaySequence++;
 
 export const AutoTableNextBasketDesign = () => {
   const {

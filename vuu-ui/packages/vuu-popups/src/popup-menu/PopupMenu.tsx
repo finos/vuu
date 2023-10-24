@@ -6,6 +6,8 @@ import {
   useState,
 } from "react";
 import {
+  MenuOpenHandler,
+  PopupCloseCallback,
   PopupCloseReason,
   reasonIsClickAway,
   useContextMenu,
@@ -13,9 +15,9 @@ import {
 import cx from "classnames";
 import { Button } from "@salt-ds/core";
 import { useId } from "@finos/vuu-layout";
+import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 
 import "./PopupMenu.css";
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 
 const classBase = "vuuPopupMenu";
 
@@ -55,7 +57,13 @@ export const PopupMenu = ({
   const id = useId(idProp);
   const [showContextMenu] = useContextMenu(menuBuilder, menuActionHandler);
 
-  const handleMenuClose = useCallback(
+  const handleOpenMenu = useCallback<MenuOpenHandler>((el) => {
+    console.log(`menu Open `, {
+      el,
+    });
+  }, []);
+
+  const handleMenuClose = useCallback<PopupCloseCallback>(
     (reason?: PopupCloseReason) => {
       setMenuOpen(false);
       // If user has clicked the MenuButton whilst menu is open, we want to close it.
@@ -86,16 +94,23 @@ export const PopupMenu = ({
         setMenuOpen(true);
         showContextMenu(e, menuLocation, {
           ContextMenuProps: {
-            className: "vuuPopupMenuList",
             id: `${id}-menu`,
             onClose: handleMenuClose,
+            openMenu: handleOpenMenu,
             position: getPosition(rootRef.current),
           },
           ...menuOptions,
         });
       }
     },
-    [handleMenuClose, id, menuLocation, menuOptions, showContextMenu]
+    [
+      handleMenuClose,
+      handleOpenMenu,
+      id,
+      menuLocation,
+      menuOptions,
+      showContextMenu,
+    ]
   );
 
   return (

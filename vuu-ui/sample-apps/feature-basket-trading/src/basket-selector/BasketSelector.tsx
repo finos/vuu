@@ -1,6 +1,5 @@
 import { PriceTicker } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
-// import { VuuDataRow } from "packages/vuu-protocol-types";
 import { DataSource, SubscribeCallback } from "@finos/vuu-data";
 import { useId } from "@finos/vuu-layout";
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";

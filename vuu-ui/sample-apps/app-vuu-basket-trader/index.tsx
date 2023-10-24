@@ -1,4 +1,8 @@
-import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
+import {
+  getAuthDetailsFromCookies,
+  LayoutManagementProvider,
+  redirectToLogin,
+} from "@finos/vuu-shell";
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./src/App";
@@ -12,7 +16,9 @@ if (!username || !token) {
   redirectToLogin();
 } else {
   ReactDOM.render(
-    <App user={{ username, token }} />,
+    <LayoutManagementProvider>
+      <App user={{ username, token }} />
+    </LayoutManagementProvider>,
     document.getElementById("root")
   );
 }

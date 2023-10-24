@@ -71,11 +71,11 @@ export const useList = <Item, S extends SelectionStrategy>({
     onKeyboardNavigation?.(evt, nextIndex);
   };
 
-  console.log(
-    `useList
-    defaultSelected ${JSON.stringify(defaultSelected)}
-    selectedProp ${JSON.stringify(selected)} `
-  );
+  // console.log(
+  //   `useList
+  //   defaultSelected ${JSON.stringify(defaultSelected)}
+  //   selectedProp ${JSON.stringify(selected)} `
+  // );
 
   // TODO where do these belong ?
   const handleSelect = useCallback<SelectHandler>(
@@ -132,12 +132,11 @@ export const useList = <Item, S extends SelectionStrategy>({
     },
     setHighlightedIndex,
     ...keyboardHook
-  } = useKeyboardNavigation<Item>({
+  } = useKeyboardNavigation({
     containerRef: scrollContainer,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
     highlightedIndex: highlightedIndexProp,
-    indexPositions: dataHook.data,
     itemCount: dataHook.data.length,
     label,
     onHighlight,

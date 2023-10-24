@@ -159,7 +159,9 @@ export const DefaultSettingsPanel = () => {
   return (
     <TableSettingsPanel
       availableColumns={availableColumns}
+      onAddCalculatedColumn={() => console.log("add calculated column")}
       onConfigChange={handleConfigChange}
+      onDataSourceConfigChange={() => console.log("data source congig change")}
       style={{ width: 252 }}
       tableConfig={tableConfig}
     />

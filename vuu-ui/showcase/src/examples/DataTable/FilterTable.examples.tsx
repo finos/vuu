@@ -2,13 +2,14 @@ import { FilterTable } from "@finos/vuu-datatable";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useState } from "react";
-import { useSchemas, useTestDataSource } from "../utils";
-import { DataSourceFilter } from "packages/vuu-data-types";
+import { useTestDataSource } from "../utils";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
 export const DefaultFilterTable = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource, error, tableSchema } = useTestDataSource({
     // bufferSize: 1000,
     schemas,

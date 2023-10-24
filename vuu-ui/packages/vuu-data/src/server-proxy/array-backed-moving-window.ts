@@ -7,6 +7,23 @@ type RangeTuple = [boolean, readonly VuuRow[] /*, readonly VuuRow[]*/];
 
 const log = logger("array-backed-moving-window");
 
+function dataIsUnchanged(newRow: VuuRow, existingRow?: VuuRow) {
+  if (!existingRow) {
+    return false;
+  }
+
+  if (existingRow.sel !== newRow.sel) {
+    return false;
+  }
+
+  for (let i = 0; i < existingRow.data.length; i++) {
+    if (existingRow.data[i] !== newRow.data[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export class ArrayBackedMovingWindow {
   #range: WindowRange;
 
@@ -79,9 +96,13 @@ export class ArrayBackedMovingWindow {
 
   setAtIndex(row: VuuRow) {
     const { rowIndex: index } = row;
+    const internalIndex = index - this.#range.from;
+    //TODO measure the performance impact of this check
+    if (dataIsUnchanged(row, this.internalData[internalIndex])) {
+      return false;
+    }
     const isWithinClientRange = this.isWithinClientRange(index);
     if (isWithinClientRange || this.isWithinRange(index)) {
-      const internalIndex = index - this.#range.from;
       if (!this.internalData[internalIndex] && isWithinClientRange) {
         this.rowsWithinRange += 1;
       }

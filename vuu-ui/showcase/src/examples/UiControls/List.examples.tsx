@@ -3,7 +3,7 @@ import {
   dragStrategy,
   List,
   ListItem,
-  MultiSelectionChangeHandler,
+  MultiSelectionHandler,
   SelectHandler,
   SingleSelectionHandler,
   VirtualizedList,
@@ -20,17 +20,17 @@ import {
   useRef,
   useState,
 } from "react";
-import { usa_states } from "./List.data";
+import { usa_states, usa_states_cities } from "./List.data";
 
 let displaySequence = 1;
 
 export const DefaultList = () => {
   const handleSelect = useCallback<SelectHandler>((evt, selected) => {
-    console.log(`handleSelect`, { selected });
+    console.log(`handleSelect ${selected}`);
   }, []);
   const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, selected) => {
-      console.log(`handleSelectionChange`, { selected });
+      console.log(`handleSelectionChange ${selected}`);
     },
     []
   );
@@ -111,7 +111,7 @@ export const InlineListItems = () => {
 InlineListItems.displaySequence = displaySequence++;
 
 export const ListExtendedSelection = () => {
-  const handleSelectionChange = useCallback<MultiSelectionChangeHandler>(
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, selected) => {
       console.log(`handleSelectionChange`, { selected });
     },
@@ -418,4 +418,53 @@ export const DefaultSelectedWithinViewport = () => {
     </>
   );
 };
-DefaultList.displaySequence = displaySequence++;
+DefaultSelectedWithinViewport.displaySequence = displaySequence++;
+
+export const GroupedList = () => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
+    console.log(`handleSelect ${selected}`);
+  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange ${selected}`);
+    },
+    []
+  );
+
+  return (
+    <List
+      aria-label="Listbox example"
+      itemHeight={36}
+      maxWidth={292}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states_cities}
+    />
+  );
+};
+GroupedList.displaySequence = displaySequence++;
+
+export const GroupedListCollapsibleHeaders = () => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
+    console.log(`handleSelect ${selected}`);
+  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange ${selected}`);
+    },
+    []
+  );
+
+  return (
+    <List
+      aria-label="Listbox example"
+      collapsibleHeaders
+      itemHeight={36}
+      maxWidth={292}
+      onSelect={handleSelect}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states_cities}
+    />
+  );
+};
+GroupedListCollapsibleHeaders.displaySequence = displaySequence++;

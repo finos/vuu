@@ -15,7 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { SingleSelectionHandler } from "packages/vuu-ui-controls/src";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls/src";
 
 const cursorAtTextStart = (input: HTMLInputElement) =>
   input.selectionStart === 0;
@@ -35,15 +35,12 @@ const getFocusedField = () =>
 
 const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
   const activeField = getFocusedField();
-  console.log(`activeField = ${activeField?.className}`);
   const filterClause = activeField?.closest(".vuuFilterClause");
   if (filterClause?.lastChild === activeField) {
     requestAnimationFrame(() => {
-      console.log("enmd o the line, baby, wait, then try again");
       focusNextFocusableElement();
     });
   } else {
-    console.log("go ahead and focus next field");
     const nextField =
       direction === "fwd"
         ? (activeField.nextElementSibling as HTMLElement)
@@ -107,7 +104,6 @@ const navigateToNextInputIfAtBoundary = (
         const nextField = field.nextSibling as HTMLElement;
         const nextInput = nextField?.querySelector("input");
         evt.preventDefault();
-        console.log("%cfocus nextInput", "color:green;font-weight:bold");
         nextInput?.focus();
         requestAnimationFrame(() => {
           nextInput?.select();
@@ -163,7 +159,6 @@ export const useFilterClauseEditor = ({
   );
 
   const setOperator = useCallback((op) => {
-    console.log(`setOperator ${op}`);
     _setOperator(op);
   }, []);
 
@@ -173,13 +168,15 @@ export const useFilterClauseEditor = ({
 
   const handleSelectionChangeColumn = useCallback<
     SingleSelectionHandler<ColumnDescriptor>
-  >((evt, column) => {
-    console.log(`handleSelectionChangeColumn ${column.name}`);
-    setSelectedColumn(column ?? undefined);
-    setOperator(undefined);
-    setValue(undefined);
-    focusNextElement();
-  }, []);
+  >(
+    (evt, column) => {
+      setSelectedColumn(column ?? undefined);
+      setOperator(undefined);
+      setValue(undefined);
+      focusNextElement();
+    },
+    [setOperator]
+  );
 
   const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
     (evt, selected) => {
@@ -193,7 +190,7 @@ export const useFilterClauseEditor = ({
         );
       }
     },
-    []
+    [setOperator]
   );
 
   const handleChangeValue = useCallback(

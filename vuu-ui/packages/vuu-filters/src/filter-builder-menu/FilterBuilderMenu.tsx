@@ -1,6 +1,6 @@
 import { ContextMenuProps } from "@finos/vuu-popups";
-import { MenuActionHandler } from "packages/vuu-data-types";
-import { ReactElement, useCallback, useEffect, useRef } from "react";
+import { MenuActionHandler } from "@finos/vuu-data-types";
+import { ReactElement, useCallback, useRef } from "react";
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 import { List, ListItem } from "@finos/vuu-ui-controls";
 

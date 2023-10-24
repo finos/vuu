@@ -28,14 +28,14 @@ import { ColumnSettingsProps } from "./ColumnSettingsPanel";
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type integer",
-    label: "Default Renderer (data type int, long)",
+    label: "Default Renderer (int, long)",
     name: "default-int",
   },
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type double",
-    label: "Default Renderer (data type double)",
+    label: "Default Renderer (double)",
     name: "default-double",
   },
   ...getRegisteredCellRenderers("double"),
@@ -44,7 +44,7 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
 const stringCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type string",
-    label: "Default Renderer (data type string)",
+    label: "Default Renderer (string)",
     name: "default-string",
   },
 ];
@@ -130,7 +130,9 @@ export const useColumnSettings = ({
   const [column, setColumn] = useState<ColumnDescriptor>(
     getColumn(tableConfig.columns, columnProp)
   );
-
+  const [editCalculatedColumn, setEditCalculatedColumn] = useState(
+    column.name === "::"
+  );
   const availableRenderers = useMemo(() => {
     return getAvailableCellRenderers(column);
   }, [column]);
@@ -183,6 +185,10 @@ export const useColumnSettings = ({
     },
     [column, onConfigChange, tableConfig]
   );
+
+  const handleChangeCalculatedColumnName = useCallback((name: string) => {
+    setColumn((state) => ({ ...state, name }));
+  }, []);
 
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
@@ -246,11 +252,13 @@ export const useColumnSettings = ({
 
   return {
     availableRenderers,
+    editCalculatedColumn,
     selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange: handleChange,
+    onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
     onInputCommit: handleInputCommit,

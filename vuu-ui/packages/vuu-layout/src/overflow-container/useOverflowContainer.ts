@@ -52,7 +52,11 @@ export const useOverflowContainer = ({
         container,
         orientation
       );
-      applyOverflowClassToWrappedItems(container, wrapped);
+      applyOverflowClassToWrappedItems(
+        container,
+        wrapped,
+        "vuuOverflowContainer-wrapContainer"
+      );
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
       }
@@ -102,6 +106,8 @@ export const useOverflowContainer = ({
           };
         });
       },
+      // The menu items are our overflowed items, selecting one by default
+      // brings it back onto the toolbar - TODO is this right ?
       ({ options }) => {
         if (container && hasOverflowItem(options)) {
           // TODO do we always want to switch it into view - leave that to caller

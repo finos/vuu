@@ -36,9 +36,10 @@ async function connectToServer(
     // never be called until subscriptions have been made, so this is safe.
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
-      if (isConnectionQualityMetrics(msg))
+      if (isConnectionQualityMetrics(msg)) {
+        console.log("post connection metrics");
         postMessage({ type: "connection-metrics", messages: msg });
-      else if (isConnectionStatusMessage(msg)) {
+      } else if (isConnectionStatusMessage(msg)) {
         onConnectionStatusChange(msg);
         if (msg.status === "reconnected") {
           server.reconnect();

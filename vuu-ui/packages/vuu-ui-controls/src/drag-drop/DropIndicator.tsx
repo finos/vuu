@@ -1,4 +1,4 @@
-import { PortalDeprecated } from "@finos/vuu-popups";
+import { Portal } from "@finos/vuu-popups";
 import { forwardRef } from "react";
 import { Rect } from "./dragDropTypesNext";
 
@@ -10,12 +10,12 @@ export const DropIndicator = forwardRef<
 >(function DropIndicator({ rect }, forwardedRef) {
   const { left, top, width, height } = rect;
   return (
-    <PortalDeprecated>
+    <Portal>
       <div
         className={`vuuDropIndicator`}
         ref={forwardedRef}
         style={{ left, top, width, height }}
       />
-    </PortalDeprecated>
+    </Portal>
   );
 });

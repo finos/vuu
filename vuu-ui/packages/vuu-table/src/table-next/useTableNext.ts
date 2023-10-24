@@ -67,6 +67,7 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
@@ -98,6 +99,7 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
+  navigationStyle,
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
@@ -180,7 +182,6 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        // expectConfigChangeRef.current = true;
         // dispatchColumnAction({
         //   type: "setTableSchema",
         //   tableSchema,
@@ -240,7 +241,6 @@ export const useTable = ({
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,
@@ -410,6 +410,7 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,
