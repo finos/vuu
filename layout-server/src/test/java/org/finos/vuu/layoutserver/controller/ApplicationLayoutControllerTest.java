@@ -29,7 +29,7 @@ class ApplicationLayoutControllerTest {
     }
 
     @Test
-    public void getApplicationLayout_validUser_returnsLayoutFromService() throws JsonProcessingException {
+    public void getApplicationLayout_anyUsername_returnsLayoutFromService() throws JsonProcessingException {
         String user = "user";
         JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
@@ -45,7 +45,7 @@ class ApplicationLayoutControllerTest {
     }
 
     @Test
-    public void createApplicationLayout_validUser_callsService() throws JsonProcessingException {
+    public void createApplicationLayout_anyInput_callsService() throws JsonProcessingException {
         String user = "user";
         JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
@@ -55,7 +55,7 @@ class ApplicationLayoutControllerTest {
     }
 
     @Test
-    public void updateApplicationLayout_validUser_callsService() throws JsonProcessingException {
+    public void updateApplicationLayout_anyInput_callsService() throws JsonProcessingException {
         String user = "user";
         JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
@@ -65,7 +65,7 @@ class ApplicationLayoutControllerTest {
     }
 
     @Test
-    public void deleteApplicationLayout_validUser_callsService() {
+    public void deleteApplicationLayout_anyUsername_callsService() {
         String user = "user";
 
         controller.deleteApplicationLayout(user);
