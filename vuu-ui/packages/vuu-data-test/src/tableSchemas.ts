@@ -18,7 +18,7 @@ export type VuuTableName =
 export const schemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
   basket: {
     columns: [
-      { name: "ID", serverDataType: "string" },
+      { name: "id", serverDataType: "string" },
       { name: "name", serverDataType: "string" },
       { name: "notionalValue", serverDataType: "double" },
       { name: "notionalValueUsd", serverDataType: "double" },

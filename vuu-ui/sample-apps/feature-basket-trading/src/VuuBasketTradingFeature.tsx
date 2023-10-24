@@ -2,10 +2,10 @@ import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BasketSelectorProps } from "./basket-selector";
-import { BasketTableEdit } from "./basket-table-edit";
-import { BasketTableLive } from "./basket-table-live";
-import { BasketToolbar } from "./basket-toolbar";
+// import { BasketSelectorProps } from "./basket-selector";
+// import { BasketTableEdit } from "./basket-table-edit";
+// import { BasketTableLive } from "./basket-table-live";
+// import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { NewBasketPanel } from "./new-basket-panel";
@@ -20,45 +20,47 @@ const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
 export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
-  basketDefinitionsSchema: TableSchema;
-  basketDesignSchema: TableSchema;
-  basketOrdersSchema: TableSchema;
+  // basketDefinitionsSchema: TableSchema;
+  // basketDesignSchema: TableSchema;
+  // basketOrdersSchema: TableSchema;
   instrumentsSchema: TableSchema;
 }
 
-const VuuBasketTradingFeature = ({
-  basketSchema,
-  basketDefinitionsSchema,
-  basketDesignSchema,
-  basketOrdersSchema,
-  instrumentsSchema,
-}: BasketTradingFeatureProps) => {
+const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
+  const {
+    basketSchema,
+    // basketDefinitionsSchema,
+    // basketDesignSchema,
+    // basketOrdersSchema,
+    instrumentsSchema,
+  } = props;
+
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const {
-    activeTabIndex,
+    // activeTabIndex,
     dataSourceBasket,
-    dataSourceBasketDefinitions,
-    dataSourceBasketDefinitionsSearch,
-    dataSourceBasketDesign,
-    dataSourceBasketOrders,
+    // dataSourceBasketDefinitions,
+    // dataSourceBasketDefinitionsSearch,
+    // dataSourceBasketDesign,
+    // dataSourceBasketOrders,
     dataSourceInstruments,
-    onSendToMarket,
-    onTakeOffMarket,
+    // onSendToMarket,
+    // onTakeOffMarket,
     saveNewBasket,
   } = useBasketTradingDataSources({
     basketSchema,
-    basketDefinitionsSchema,
-    basketDesignSchema,
-    basketOrdersSchema,
+    // basketDefinitionsSchema,
+    // basketDesignSchema,
+    // basketOrdersSchema,
     instrumentsSchema,
   });
 
-  useEffect(() => {
-    dataSourceBasketDesign.resume?.();
-    return () => {
-      dataSourceBasketDesign.suspend?.();
-    };
-  }, [dataSourceBasketDesign]);
+  // useEffect(() => {
+  //   dataSourceBasketDesign.resume?.();
+  //   return () => {
+  //     dataSourceBasketDesign.suspend?.();
+  //   };
+  // }, [dataSourceBasketDesign]);
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu({
     dataSourceInstruments,
@@ -77,7 +79,6 @@ const VuuBasketTradingFeature = ({
   );
 
   const handleAddBasket = useCallback(() => {
-    console.log("add a basket");
     setDialog(
       <NewBasketPanel
         basketDataSource={dataSourceBasket}
@@ -88,66 +89,66 @@ const VuuBasketTradingFeature = ({
     );
   }, [basketSchema, dataSourceBasket, handleClose, handleSaveNewBasket]);
 
-  const basketSelectorProps = useMemo<BasketSelectorProps>(
-    () => ({
-      basketId: "001",
-      dataSourceBasket: dataSourceBasketDefinitions,
-      dataSourceBasketSearch: dataSourceBasketDefinitionsSearch,
-      onClickAddBasket: handleAddBasket,
-    }),
-    [
-      dataSourceBasketDefinitions,
-      dataSourceBasketDefinitionsSearch,
-      handleAddBasket,
-    ]
-  );
+  // const basketSelectorProps = useMemo<BasketSelectorProps>(
+  //   () => ({
+  //     basketId: "001",
+  //     dataSourceBasket: dataSourceBasketDefinitions,
+  //     dataSourceBasketSearch: dataSourceBasketDefinitionsSearch,
+  //     onClickAddBasket: handleAddBasket,
+  //   }),
+  //   [
+  //     dataSourceBasketDefinitions,
+  //     dataSourceBasketDefinitionsSearch,
+  //     handleAddBasket,
+  //   ]
+  // );
 
-  if (dataSourceBasketDefinitions.size === 0) {
-    return (
-      <>
-        <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
-        {dialog}
-      </>
-    );
-  }
-
+  // if (dataSourceBasketDefinitions.size === 0) {
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildMenuOptions}
-    >
-      <FlexboxLayout
-        className={classBase}
-        style={{ flexDirection: "column", height: "100%" }}
-      >
-        <BasketToolbar
-          BasketSelectorProps={basketSelectorProps}
-          basketStatus={basketStatus[activeTabIndex]}
-          onSendToMarket={onSendToMarket}
-          onTakeOffMarket={onTakeOffMarket}
-        />
-        <Stack
-          active={activeTabIndex}
-          className={`${classBase}-stack`}
-          // onTabSelectionChanged={setActive}
-          style={{ flex: 1 }}
-        >
-          <BasketTableEdit
-            data-tab-location="basket-design"
-            data-tab-title="Design"
-            dataSource={dataSourceBasketDesign}
-            tableSchema={basketDesignSchema}
-          />
-          <BasketTableLive
-            data-tab-title="On Market"
-            dataSource={dataSourceBasketOrders}
-            tableSchema={basketOrdersSchema}
-          />
-        </Stack>
-      </FlexboxLayout>
+    <>
+      <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
       {dialog}
-    </ContextMenuProvider>
+    </>
   );
+  // }
+
+  // return (
+  //   <ContextMenuProvider
+  //     menuActionHandler={handleMenuAction}
+  //     menuBuilder={buildMenuOptions}
+  //   >
+  //     <FlexboxLayout
+  //       className={classBase}
+  //       style={{ flexDirection: "column", height: "100%" }}
+  //     >
+  //       <BasketToolbar
+  //         BasketSelectorProps={basketSelectorProps}
+  //         basketStatus={basketStatus[activeTabIndex]}
+  //         onSendToMarket={onSendToMarket}
+  //         onTakeOffMarket={onTakeOffMarket}
+  //       />
+  //       <Stack
+  //         active={activeTabIndex}
+  //         className={`${classBase}-stack`}
+  //         // onTabSelectionChanged={setActive}
+  //         style={{ flex: 1 }}
+  //       >
+  //         <BasketTableEdit
+  //           data-tab-location="basket-design"
+  //           data-tab-title="Design"
+  //           dataSource={dataSourceBasketDesign}
+  //           tableSchema={basketDesignSchema}
+  //         />
+  //         <BasketTableLive
+  //           data-tab-title="On Market"
+  //           dataSource={dataSourceBasketOrders}
+  //           tableSchema={basketOrdersSchema}
+  //         />
+  //       </Stack>
+  //     </FlexboxLayout>
+  //     {dialog}
+  //   </ContextMenuProvider>
+  // );
 };
 
 export default VuuBasketTradingFeature;

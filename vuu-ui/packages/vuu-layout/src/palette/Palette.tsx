@@ -1,5 +1,10 @@
 import { uuid } from "@finos/vuu-utils";
-import { List, ListItem, ListItemProps } from "@finos/vuu-ui-controls";
+import {
+  List,
+  ListItem,
+  ListItemProps,
+  ListProps,
+} from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import {
   cloneElement,
@@ -58,19 +63,21 @@ export interface PaletteProps
     HTMLAttributes<HTMLDivElement>,
     "onDragStart" | "onDrop" | "onSelect"
   > {
+  ListProps?: Partial<ListProps>;
+  ViewProps?: Partial<ViewProps>;
   children: ReactElement[];
   itemHeight?: number;
   orientation: "horizontal" | "vertical";
   selection?: string;
-  ViewProps?: Partial<ViewProps>;
 }
 
 export const Palette = ({
+  ListProps,
+  ViewProps,
   children,
   className,
   itemHeight = 41,
   orientation = "horizontal",
-  ViewProps,
   ...props
 }: PaletteProps) => {
   const dispatch = useLayoutProviderDispatch();
@@ -121,6 +128,7 @@ export const Palette = ({
 
   return (
     <List
+      {...ListProps}
       {...props}
       className={cx(classBase, className, `${classBase}-${orientation}`)}
       itemHeight={itemHeight}

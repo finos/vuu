@@ -194,10 +194,10 @@ export const LeftNav = ({
         className={`${classBase}-menu-secondary`}
         showTabs={false}
       >
-        <FeatureList features={features} title="Vuu Features" />
-        <FeatureList features={tableFeatures} title="Vuu Tables" />
+        <FeatureList features={features} title="VUU FEATURES" />
+        <FeatureList features={tableFeatures} title="VUU TABLES" />
         <div style={{ background: "green", height: "100%" }}>
-          Layout Templates
+          LAYOUT TEMPLATES
         </div>
         <div className="vuuLeftNav-drawer">
           <LayoutsList />

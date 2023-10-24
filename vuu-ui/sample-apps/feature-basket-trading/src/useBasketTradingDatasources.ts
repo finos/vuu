@@ -5,17 +5,17 @@ import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 
 export type basketDataSourceKey =
   | "data-source-basket"
-  | "data-source-basket-definitions"
-  | "data-source-basket-definitions-search"
-  | "data-source-basket-design"
-  | "data-source-basket-orders"
+  // | "data-source-basket-definitions"
+  // | "data-source-basket-definitions-search"
+  // | "data-source-basket-design"
+  // | "data-source-basket-orders"
   | "data-source-instruments";
 
 export const useBasketTradingDataSources = ({
   basketSchema,
-  basketDefinitionsSchema,
-  basketDesignSchema,
-  basketOrdersSchema,
+  // basketDefinitionsSchema,
+  // basketDesignSchema,
+  // basketOrdersSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -24,18 +24,18 @@ export const useBasketTradingDataSources = ({
 
   const [
     dataSourceBasket,
-    dataSourceBasketDefinitions,
-    dataSourceBasketDefinitionsSearch,
-    dataSourceBasketDesign,
-    dataSourceBasketOrders,
+    // dataSourceBasketDefinitions,
+    // dataSourceBasketDefinitionsSearch,
+    // dataSourceBasketDesign,
+    // dataSourceBasketOrders,
     dataSourceInstruments,
   ] = useMemo(() => {
     const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
       ["data-source-basket", basketSchema],
-      ["data-source-basket-definitions", basketDefinitionsSchema],
-      ["data-source-basket-definitions-search", basketDefinitionsSchema],
-      ["data-source-basket-design", basketDesignSchema],
-      ["data-source-basket-orders", basketOrdersSchema],
+      // ["data-source-basket-definitions", basketDefinitionsSchema],
+      // ["data-source-basket-definitions-search", basketDefinitionsSchema],
+      // ["data-source-basket-design", basketDesignSchema],
+      // ["data-source-basket-orders", basketOrdersSchema],
       ["data-source-instruments", instrumentsSchema],
     ];
 
@@ -56,10 +56,10 @@ export const useBasketTradingDataSources = ({
     }
     return dataSources;
   }, [
-    basketDefinitionsSchema,
-    basketDesignSchema,
-    basketOrdersSchema,
     basketSchema,
+    // basketDefinitionsSchema,
+    // basketDesignSchema,
+    // basketOrdersSchema,
     id,
     instrumentsSchema,
     loadSession,
@@ -82,10 +82,10 @@ export const useBasketTradingDataSources = ({
   return {
     activeTabIndex,
     dataSourceBasket,
-    dataSourceBasketDefinitions,
-    dataSourceBasketDefinitionsSearch,
-    dataSourceBasketDesign,
-    dataSourceBasketOrders,
+    // dataSourceBasketDefinitions,
+    // dataSourceBasketDefinitionsSearch,
+    // dataSourceBasketDesign,
+    // dataSourceBasketOrders,
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,

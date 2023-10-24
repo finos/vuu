@@ -1,6 +1,12 @@
 import { useVuuTables } from "@finos/vuu-data-react";
-import { FeatureProps, Features } from "@finos/vuu-shell";
+import {
+  FeatureProps,
+  Features,
+  isTableSchema,
+  isWildcardSchema,
+} from "@finos/vuu-shell";
 import { wordify } from "@finos/vuu-utils";
+import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export interface FeaturesHookProps {
@@ -10,6 +16,9 @@ export interface FeaturesHookProps {
 export const useFeatures = ({
   features: featuresProp,
 }: FeaturesHookProps): [FeatureProps[], FeatureProps[]] => {
+  console.log("useFeatures", {
+    featuresProp,
+  });
   const tables = useVuuTables();
   const [features, tableFeatures] = useMemo<
     [FeatureProps[], FeatureProps[]]
@@ -17,13 +26,14 @@ export const useFeatures = ({
     const features: FeatureProps[] = [];
     const tableFeatures: FeatureProps[] = [];
     for (const {
-      featureProps,
+      featureProps = {},
       leftNavLocation = "vuu-tables",
       ...feature
     } of Object.values(featuresProp)) {
+      const { schema, schemas } = featureProps;
       const target =
         leftNavLocation === "vuu-tables" ? tableFeatures : features;
-      if (featureProps?.schema === "*" && tables) {
+      if (isWildcardSchema(schema) && tables) {
         for (const tableSchema of tables.values()) {
           target.push({
             ...feature,
@@ -35,14 +45,27 @@ export const useFeatures = ({
             )}`,
           });
         }
-      } else if (featureProps?.schema && tables) {
+      } else if (isTableSchema(schema) && tables) {
         //TODO set the
-        const tableSchema = tables.get(featureProps?.schema);
+        const tableSchema = tables.get(schema.table);
         target.push({
           ...feature,
           ComponentProps: {
             tableSchema,
           },
+        });
+      } else if (Array.isArray(schemas)) {
+        target.push({
+          ...feature,
+          ComponentProps: schemas.reduce<Record<string, TableSchema>>(
+            (map, schema) => {
+              map[`${schema.table}Schema`] = tables?.get(
+                schema.table
+              ) as TableSchema;
+              return map;
+            },
+            {}
+          ),
         });
       } else {
         target.push(feature);

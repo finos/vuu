@@ -1,3 +1,5 @@
+import { VuuTable } from "@finos/vuu-protocol-types";
+
 declare global {
   const vuuConfig: Promise<VuuConfig>;
 }
@@ -11,7 +13,8 @@ export interface FeatureConfig {
   css?: string;
   leftNavLocation: "vuu-features" | "vuu-tables";
   featureProps?: {
-    schema?: string;
+    schema?: "*" | VuuTable;
+    schemas?: VuuTable[];
   };
 }
 
@@ -23,3 +26,10 @@ export interface VuuConfig {
   authUrl?: string;
   websocketUrl: string;
 }
+
+export const isWildcardSchema = (schema?: "*" | VuuTable): schema is "*" =>
+  schema === "*";
+export const isTableSchema = (schema?: "*" | VuuTable): schema is VuuTable =>
+  typeof schema === "object" &&
+  typeof schema.module === "string" &&
+  typeof schema.table === "string";
