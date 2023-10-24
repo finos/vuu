@@ -52,9 +52,6 @@ export const useInstrumentPicker = ({
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
       setIsOpen(open);
-      console.log(`useInstrumentPicker handleOpenChange ${closeReason}`, {
-        onOpenChangeProp,
-      });
       onOpenChangeProp?.(open, closeReason);
     },
     [onOpenChangeProp, setIsOpen]
