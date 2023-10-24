@@ -2,12 +2,15 @@ package org.finos.vuu.layoutserver.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.vuu.layoutserver.exceptions.InternalServerErrorException;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
+import org.finos.vuu.layoutserver.utils.DefaultApplicationLayoutLoader;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,6 +21,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,14 +39,29 @@ public class ApplicationLayoutIntegrationTest {
     private MockMvc mockMvc;
     @Autowired
     private ApplicationLayoutRepository repository;
+    @MockBean
+    private DefaultApplicationLayoutLoader mockLoader;
+    private final DefaultApplicationLayoutLoader realLoader = new DefaultApplicationLayoutLoader();
 
     @Test
     public void getApplicationLayout_noLayoutExists_returns200WithDefaultLayout() throws Exception {
+        when(mockLoader.getDefaultLayout()).thenReturn(realLoader.getDefaultLayout());
+
         mockMvc.perform(get("/application-layouts").header("user", "new user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", nullValue()))
-                // Expecting application layout as defined in /test/resources/defaultLayout.json
+                // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
                 .andExpect(jsonPath("$.definition.defaultLayoutKey", is("default-layout-value")));
+    }
+
+    @Test
+    public void getApplicationLayout_defaultFailsToLoad_returns500() throws Exception {
+        String errorMessage = "Failed to read default application layout";
+        doThrow(new InternalServerErrorException(errorMessage)).when(mockLoader).getDefaultLayout();
+
+        mockMvc.perform(get("/application-layouts").header("user", "new user"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message", is(errorMessage)));
     }
 
     @Test

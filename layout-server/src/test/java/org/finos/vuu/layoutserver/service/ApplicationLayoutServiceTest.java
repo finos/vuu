@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
+import org.finos.vuu.layoutserver.utils.DefaultApplicationLayoutLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,12 +26,13 @@ class ApplicationLayoutServiceTest {
 
     private static ApplicationLayoutRepository mockRepo;
     private static ApplicationLayoutService service;
+    private static final DefaultApplicationLayoutLoader defaultLoader = new DefaultApplicationLayoutLoader();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setup() {
         mockRepo = Mockito.mock(ApplicationLayoutRepository.class);
-        service = new ApplicationLayoutService(mockRepo);
+        service = new ApplicationLayoutService(mockRepo, defaultLoader);
     }
 
     @Test
@@ -39,7 +41,7 @@ class ApplicationLayoutServiceTest {
 
         ApplicationLayout actualLayout = service.getApplicationLayout("new user");
 
-        // Expecting application layout as defined in /test/resources/defaultLayout.json
+        // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
         JsonNode expectedDefinition = objectMapper.readTree("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
         assertThat(actualLayout.getUsername()).isNull();

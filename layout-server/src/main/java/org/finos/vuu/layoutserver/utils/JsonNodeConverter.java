@@ -1,4 +1,4 @@
-package org.finos.vuu.layoutserver.config;
+package org.finos.vuu.layoutserver.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
