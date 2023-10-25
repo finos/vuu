@@ -377,6 +377,7 @@ public class LayoutIntegrationTest {
     }
 
     private Layout createDefaultLayoutInDatabase() {
+        UUID id = UUID.randomUUID();
         Layout layout = new Layout();
         Metadata metadata = new Metadata();
         BaseMetadata baseMetadata = new BaseMetadata();
@@ -387,9 +388,11 @@ public class LayoutIntegrationTest {
         baseMetadata.setUser(defaultUser);
 
         metadata.setBaseMetadata(baseMetadata);
+        metadata.setId(id);
 
         layout.setDefinition(defaultDefinition);
         layout.setMetadata(metadata);
+        layout.setId(id);
 
         metadataRepository.save(metadata);
         Layout createdLayout = layoutRepository.save(layout);

@@ -39,7 +39,6 @@ class LayoutServiceTest {
 
     @BeforeEach
     public void setup() {
-        layoutId = UUID.randomUUID();
         UUID metadataId = UUID.randomUUID();
         BaseMetadata baseMetadata = new BaseMetadata();
         metadata = new Metadata();
@@ -53,7 +52,6 @@ class LayoutServiceTest {
         metadata.setId(metadataId);
         metadata.setBaseMetadata(baseMetadata);
 
-        layout.setId(layoutId);
         layout.setDefinition("");
         layout.setMetadata(metadata);
     }
@@ -76,7 +74,7 @@ class LayoutServiceTest {
     void createLayout() {
         when(layoutRepository.save(layout)).thenReturn(layout);
 
-        assertThat(layoutService.createLayout(layout)).isEqualTo(layoutId);
+        assertThat(layoutService.createLayout(layout)).isEqualTo(layout.getId());
     }
 
     @Test

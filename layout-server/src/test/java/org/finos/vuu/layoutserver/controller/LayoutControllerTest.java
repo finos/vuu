@@ -79,7 +79,6 @@ class LayoutControllerTest {
         layoutRequest.setMetadata(metadataRequestDTO);
 
         expectedLayoutResponse = new LayoutResponseDTO();
-        expectedLayoutResponse.setId(layout.getId());
         expectedLayoutResponse.setDefinition(layout.getDefinition());
 
         MetadataResponseDTO metadataResponse = getMetadataResponseDTO();
@@ -156,7 +155,6 @@ class LayoutControllerTest {
 
     private MetadataResponseDTO getMetadataResponseDTO() {
         MetadataResponseDTO metadataResponse = new MetadataResponseDTO();
-        metadataResponse.setLayoutId(layout.getId());
         metadataResponse.setBaseMetadata(baseMetadata);
         metadataResponse.setCreated(layout.getMetadata().getCreated());
         metadataResponse.setUpdated(layout.getMetadata().getUpdated());

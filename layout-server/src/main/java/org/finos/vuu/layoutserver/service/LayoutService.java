@@ -22,15 +22,16 @@ public class LayoutService {
             .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
-    public Layout getLayoutByMetadataId(UUID id) {
-        return layoutRepository.findLayoutByMetadataId(id);
-    }
-
     public List<Metadata> getMetadata() {
         return metadataService.getMetadata();
     }
 
     public UUID createLayout(Layout layout) {
+        UUID id = UUID.randomUUID();
+
+        layout.setId(id);
+        layout.getMetadata().setId(id);
+
         return layoutRepository.save(layout).getId();
     }
 

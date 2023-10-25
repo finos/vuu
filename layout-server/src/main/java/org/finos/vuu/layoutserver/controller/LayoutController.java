@@ -71,7 +71,9 @@ public class LayoutController {
     public LayoutResponseDTO createLayout(@Valid @RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
-        Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
+        UUID id = layoutService.createLayout(layout);
+
+        Layout createdLayout = layoutService.getLayout(id);
 
         return mapper.map(createdLayout, LayoutResponseDTO.class);
     }

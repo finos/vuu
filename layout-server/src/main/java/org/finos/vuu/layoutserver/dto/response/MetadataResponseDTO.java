@@ -9,7 +9,7 @@ import org.finos.vuu.layoutserver.model.BaseMetadata;
 @Data
 public class MetadataResponseDTO {
 
-    private UUID layoutId;
+    private UUID id;
 
     @JsonUnwrapped
     BaseMetadata baseMetadata;
