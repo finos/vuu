@@ -13,10 +13,10 @@ public class LayoutRequestDTO {
      * components)
      */
     @JsonProperty(value = "definition", required = true)
-    @NotBlank(message = "Please provide a valid definition")
+    @NotBlank(message = "Definition must not be blank")
     private String definition;
 
     @JsonProperty(value = "metadata", required = true)
-    @NotNull(message = "Please provide valid metadata")
+    @NotNull(message = "Metadata must not be null")
     private MetadataRequestDTO metadata;
 }
