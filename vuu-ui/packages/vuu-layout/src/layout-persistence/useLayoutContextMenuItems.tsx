@@ -1,5 +1,5 @@
 import {
-  LayoutMetadata,
+  LayoutMetadataDto,
   SaveLayoutPanel,
   useLayoutManager,
 } from "@finos/vuu-shell";
@@ -21,7 +21,7 @@ export const useLayoutContextMenuItems = () => {
   }, []);
 
   const handleSave = useCallback(
-    (layoutMetadata: Omit<LayoutMetadata, "id">) => {
+    (layoutMetadata: LayoutMetadataDto) => {
       saveLayout(layoutMetadata);
       setDialogContent(undefined);
     },

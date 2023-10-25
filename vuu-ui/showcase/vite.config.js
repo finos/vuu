@@ -8,6 +8,7 @@ export default defineConfig({
   },
   define: {
     "process.env.NODE_DEBUG": false,
+    "process.env.LOCAL": true,
   },
   esbuild: {
     jsx: `automatic`,

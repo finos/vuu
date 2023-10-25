@@ -1,12 +1,11 @@
 import "../global-mocks";
-import { Layout, LayoutMetadata } from "@finos/vuu-shell";
+import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalLayoutPersistenceManager } from "../../src/layout-persistence";
 import { LayoutJSON } from "../../src/layout-reducer";
-import {
-  getLocalEntity,
-  saveLocalEntity,
-} from "../../../vuu-filters/src/local-config";
+import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
+import { formatDate } from "@finos/vuu-utils";
+import { expectPromiseRejectsWithError } from "./utils";
 
 vi.mock("@finos/vuu-filters", async () => {
   return {
@@ -29,13 +28,15 @@ const persistenceManager = new LocalLayoutPersistenceManager();
 
 const existingId = "existing_id";
 
+const newDate = formatDate(new Date(), "dd.mm.yyyy");
+
 const existingMetadata: LayoutMetadata = {
   id: existingId,
   name: "Existing Layout",
   group: "Group 1",
   screenshot: "screenshot",
   user: "vuu user",
-  date: "01/01/2023",
+  created: newDate,
 };
 
 const existingLayout: Layout = {
@@ -43,12 +44,19 @@ const existingLayout: Layout = {
   json: { type: "t0" },
 };
 
-const metadataToAdd: Omit<LayoutMetadata, "id"> = {
+const metadataToAdd: LayoutMetadataDto = {
   name: "New Layout",
   group: "Group 1",
   screenshot: "screenshot",
   user: "vuu user",
-  date: "26/09/2023",
+};
+
+const metadataToUpdate: Omit<LayoutMetadata, "id"> = {
+  name: "New Layout",
+  group: "Group 1",
+  screenshot: "screenshot",
+  user: "vuu user",
+  created: newDate,
 };
 
 const layoutToAdd: LayoutJSON = {
@@ -63,8 +71,8 @@ afterEach(() => {
 });
 
 describe("createLayout", () => {
-  it("persists to local storage with a unique ID", async () => {
-    const returnedId = await persistenceManager.createLayout(
+  it("persists to local storage with a unique ID and current date", async () => {
+    const { id, created } = await persistenceManager.createLayout(
       metadataToAdd,
       layoutToAdd
     );
@@ -75,14 +83,16 @@ describe("createLayout", () => {
 
     const expectedMetadata: LayoutMetadata = {
       ...metadataToAdd,
-      id: returnedId,
+      id,
+      created,
     };
 
     const expectedLayout: Layout = {
       json: layoutToAdd,
-      id: returnedId,
+      id,
     };
 
+    expect(created).toEqual(newDate);
     expect(persistedMetadata).toEqual([expectedMetadata]);
     expect(persistedLayout).toEqual([expectedLayout]);
   });
@@ -91,11 +101,11 @@ describe("createLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    const returnedId = await persistenceManager.createLayout(
+    const { id, created } = await persistenceManager.createLayout(
       metadataToAdd,
       layoutToAdd
     );
-    expect(returnedId).not.toEqual(existingId);
+    expect(id).not.toEqual(existingId);
 
     const persistedMetadata =
       getLocalEntity<LayoutMetadata[]>(metadataSaveLocation);
@@ -103,12 +113,13 @@ describe("createLayout", () => {
 
     const expectedMetadata: LayoutMetadata = {
       ...metadataToAdd,
-      id: returnedId,
+      id,
+      created,
     };
 
     const expectedLayout: Layout = {
       json: layoutToAdd,
-      id: returnedId,
+      id,
     };
 
     expect(persistedMetadata).toEqual([existingMetadata, expectedMetadata]);
@@ -123,7 +134,7 @@ describe("updateLayout", () => {
 
     await persistenceManager.updateLayout(
       existingId,
-      metadataToAdd,
+      metadataToUpdate,
       layoutToAdd
     );
 
@@ -132,7 +143,7 @@ describe("updateLayout", () => {
     const persistedLayout = getLocalEntity<Layout[]>(layoutsSaveLocation);
 
     const expectedMetadata: LayoutMetadata = {
-      ...metadataToAdd,
+      ...metadataToUpdate,
       id: existingId,
     };
 
@@ -148,9 +159,13 @@ describe("updateLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `No metadata with ID ${existingId}`
     );
   });
@@ -158,9 +173,13 @@ describe("updateLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `No layout with ID ${existingId}`
     );
   });
@@ -168,11 +187,11 @@ describe("updateLayout", () => {
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existent_id";
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
         persistenceManager.updateLayout(
           requestedId,
-          metadataToAdd,
+          metadataToUpdate,
           layoutToAdd
         ),
       `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`
@@ -183,9 +202,13 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `Non-unique metadata with ID ${existingId}`
     );
   });
@@ -194,9 +217,13 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `Non-unique layout with ID ${existingId}`
     );
   });
@@ -205,9 +232,13 @@ describe("updateLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
     );
   });
@@ -215,9 +246,13 @@ describe("updateLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`
     );
   });
@@ -225,9 +260,13 @@ describe("updateLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () =>
-        persistenceManager.updateLayout(existingId, metadataToAdd, layoutToAdd),
+        persistenceManager.updateLayout(
+          existingId,
+          metadataToUpdate,
+          layoutToAdd
+        ),
       `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
     );
   });
@@ -251,7 +290,7 @@ describe("deleteLayout", () => {
   it("errors if there is no metadata in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `No metadata with ID ${existingId}`
     );
@@ -260,7 +299,7 @@ describe("deleteLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `No layout with ID ${existingId}`
     );
@@ -269,7 +308,7 @@ describe("deleteLayout", () => {
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existent_id";
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(requestedId),
       `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`
     );
@@ -279,7 +318,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `Non-unique metadata with ID ${existingId}`
     );
@@ -289,7 +328,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `Non-unique layout with ID ${existingId}`
     );
@@ -299,7 +338,7 @@ describe("deleteLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
     );
@@ -308,7 +347,7 @@ describe("deleteLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`
     );
@@ -317,7 +356,7 @@ describe("deleteLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
       `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
     );
@@ -345,7 +384,7 @@ describe("loadLayout", () => {
   it("errors if there is no layout in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
       `No layout with ID ${existingId}`
     );
@@ -354,7 +393,7 @@ describe("loadLayout", () => {
   it("errors if there is no metadata or layout in local storage with requested ID ", async () => {
     const requestedId = "non_existent_id";
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(requestedId),
       `No layout with ID ${requestedId}`
     );
@@ -373,7 +412,7 @@ describe("loadLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
       `Non-unique layout with ID ${existingId}`
     );
@@ -383,7 +422,7 @@ describe("loadLayout", () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
       `Non-unique layout with ID ${existingId}`
     );
@@ -392,7 +431,7 @@ describe("loadLayout", () => {
   it("errors if there are multiple metadata entries and no layouts in local storage with requested ID ", async () => {
     saveLocalEntity(metadataSaveLocation, [existingMetadata, existingMetadata]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
       `No layout with ID ${existingId}`
     );
@@ -401,7 +440,7 @@ describe("loadLayout", () => {
   it("errors if there are no metadata entries and multiple layouts in local storage with requested ID ", async () => {
     saveLocalEntity(layoutsSaveLocation, [existingLayout, existingLayout]);
 
-    expectError(
+    expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
       `Non-unique layout with ID ${existingId}`
     );
@@ -429,7 +468,3 @@ describe("loadMetadata", () => {
     expect(await persistenceManager.loadMetadata()).toEqual([]);
   });
 });
-
-const expectError = (f: () => Promise<unknown>, message: string) => {
-  expect(f).rejects.toStrictEqual(new Error(message));
-};

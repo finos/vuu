@@ -8,26 +8,29 @@ import React, {
 import {
   LayoutJSON,
   LocalLayoutPersistenceManager,
+  RemoteLayoutPersistenceManager,
   resolveJSONPath,
 } from "@finos/vuu-layout";
-import { LayoutMetadata } from "./layoutTypes";
+import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import { defaultLayout } from "@finos/vuu-layout/";
 
-const persistenceManager = new LocalLayoutPersistenceManager();
+const local = process.env.LOCAL ?? true;
+
+const persistenceManager = local ? new LocalLayoutPersistenceManager() : new RemoteLayoutPersistenceManager();
 
 export const LayoutManagementContext = React.createContext<{
-  layoutMetadata: LayoutMetadata[];
-  saveLayout: (n: Omit<LayoutMetadata, "id">) => void;
-  applicationLayout: LayoutJSON;
-  saveApplicationLayout: (layout: LayoutJSON) => void;
-  loadLayoutById: (id: string) => void;
+  layoutMetadata: LayoutMetadata[],
+  saveLayout: (n: LayoutMetadataDto) => void,
+  applicationLayout: LayoutJSON,
+  saveApplicationLayout: (layout: LayoutJSON) => void,
+  loadLayoutById: (id: string) => void
 }>({
   layoutMetadata: [],
-  saveLayout: () => undefined,
+  saveLayout: () => null,
   applicationLayout: defaultLayout,
-  saveApplicationLayout: () => undefined,
-  loadLayoutById: () => defaultLayout,
-});
+  saveApplicationLayout: () => null,
+  loadLayoutById: () => defaultLayout
+})
 
 type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
@@ -58,8 +61,12 @@ export const LayoutManagementProvider = (
     });
     persistenceManager.loadApplicationLayout().then((layout) => {
       setApplicationLayout(layout);
-    });
-  }, [setApplicationLayout]);
+    })
+      .catch((error: Error) => {
+        //TODO: Show error toaster
+        console.error("Error occurred while retrieving metadata", error)
+      })
+  }, [setApplicationLayout])
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
@@ -69,23 +76,18 @@ export const LayoutManagementProvider = (
     [setApplicationLayout]
   );
 
-  const saveLayout = useCallback((metadata: Omit<LayoutMetadata, "id">) => {
-    const layoutToSave = resolveJSONPath(
-      applicationLayoutRef.current,
-      "#main-tabs.ACTIVE_CHILD"
-    );
+  const saveLayout = useCallback((metadata:LayoutMetadataDto) => {
+
+    const layoutToSave = resolveJSONPath(applicationLayoutRef.current, "#main-tabs.ACTIVE_CHILD");
 
     if (layoutToSave) {
-      persistenceManager
-        .createLayout(metadata, layoutToSave)
-        .then((generatedId) => {
-          const newMetadata: LayoutMetadata = {
-            ...metadata,
-            id: generatedId,
-          };
-
-          setLayoutMetadata((prev) => [...prev, newMetadata]);
-        });
+      persistenceManager.createLayout(metadata, layoutToSave).then((metadata) => {
+        setLayoutMetadata(prev => [...prev, metadata]);
+        //TODO: Show success toast
+      }).catch((error: Error) => {
+        //TODO: Show error toaster
+        console.error("Error occurred while saving layout", error)
+      })
     }
     //TODO else{ show error message}
   }, []);
