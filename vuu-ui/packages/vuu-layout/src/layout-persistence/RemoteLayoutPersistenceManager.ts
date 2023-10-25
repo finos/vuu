@@ -3,11 +3,14 @@ import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
 import { defaultLayout } from "./data";
 
-const DEFAULT_SERVER_BASE_URL = "http://127.0.0.1:8081/api"
+const DEFAULT_SERVER_BASE_URL = "http://127.0.0.1:8081/api";
 
 const baseURL = process.env.LAYOUT_BASE_URL ?? DEFAULT_SERVER_BASE_URL;
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts";
+
+export type CreateLayoutResponseDto = { metadata: LayoutMetadata };
+export type GetLayoutResponseDto = { definition: LayoutJSON };
 
 export class RemoteLayoutPersistenceManager
   implements LayoutPersistenceManager
@@ -24,14 +27,14 @@ export class RemoteLayoutPersistenceManager
         method: "POST",
         body: JSON.stringify({
           metadata,
-          definition: layout,
+          definition: JSON.stringify(layout),
         }),
       })
         .then((response) => {
           if (!response.ok) {
             reject(new Error(response.statusText));
           }
-          response.json().then(({ metadata }: { metadata: LayoutMetadata }) => {
+          response.json().then(({ metadata }: CreateLayoutResponseDto) => {
             if (!metadata) {
               reject(new Error("Response did not contain valid metadata"));
             }
@@ -95,11 +98,11 @@ export class RemoteLayoutPersistenceManager
           if (!response.ok) {
             reject(new Error(response.statusText));
           }
-          response.json().then((layout) => {
-            if (!layout) {
+          response.json().then(({ definition }: GetLayoutResponseDto) => {
+            if (!definition) {
               reject(new Error("Response did not contain a valid layout"));
             }
-            resolve(layout);
+            resolve(definition);
           });
         })
         .catch((error: Error) => {

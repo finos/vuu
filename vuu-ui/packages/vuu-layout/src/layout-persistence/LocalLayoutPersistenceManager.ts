@@ -27,7 +27,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
         ([existingLayouts, existingMetadata]) => {
           const id = getUniqueId();
-          const newMetadata = {
+          const newMetadata: LayoutMetadata = {
             ...metadata,
             id,
             created: formatDate(new Date(), "dd.mm.yyyy"),
