@@ -1,5 +1,9 @@
 import { LayoutJSON } from "@finos/vuu-layout";
-import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
+import {
+  ApplicationLayout,
+  LayoutMetadata,
+  LayoutMetadataDto
+} from "@finos/vuu-shell";
 
 export interface LayoutPersistenceManager {
   /**
@@ -49,7 +53,7 @@ export interface LayoutPersistenceManager {
    *
    * @returns Full JSON representation of the application layout
    */
-  loadApplicationLayout: () => Promise<LayoutJSON>;
+  loadApplicationLayout: () => Promise<ApplicationLayout>;
 
   /**
   * Saves the application layout which includes all layouts on screen

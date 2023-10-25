@@ -1,4 +1,5 @@
 import {
+  ApplicationLayout,
   Layout,
   LayoutMetadata,
   LayoutMetadataDto,
@@ -111,14 +112,15 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     });
   }
 
-  loadApplicationLayout(): Promise<LayoutJSON> {
+  loadApplicationLayout(): Promise<ApplicationLayout> {
+    console.log("LOCAL: LOAD APP LAYOUT");
     console.log("loadApplicationLAyout");
     return new Promise((resolve) => {
       const applicationLayout = getLocalEntity<LayoutJSON>(this.#urlKey);
       if (applicationLayout) {
-        resolve(applicationLayout);
+        resolve({username: "vuu-user", definition: applicationLayout});
       } else {
-        resolve(defaultLayout);
+        resolve({username: "vuu-user", definition: defaultLayout});
       }
     });
   }

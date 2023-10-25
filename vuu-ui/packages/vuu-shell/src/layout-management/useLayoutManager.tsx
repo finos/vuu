@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import {
+  ApplicationLayout,
   LayoutJSON,
   LocalLayoutPersistenceManager,
   RemoteLayoutPersistenceManager,
@@ -63,8 +64,11 @@ export const LayoutManagementProvider = (
     });
     persistenceManager
       .loadApplicationLayout()
-      .then((layout) => {
-        setApplicationLayout(layout);
+      .then((layoutDto: ApplicationLayout) => {
+        if (layoutDto.username === null) {
+          persistenceManager.saveApplicationLayout(layoutDto.definition);
+        }
+        setApplicationLayout(layoutDto.definition);
       })
       .catch((error: Error) => {
         //TODO: Show error toaster

@@ -1,4 +1,8 @@
-import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
+import {
+  ApplicationLayout,
+  LayoutMetadata,
+  LayoutMetadataDto
+} from "@finos/vuu-shell";
 import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
 import { defaultLayout } from "./data";
@@ -134,13 +138,51 @@ export class RemoteLayoutPersistenceManager
   }
 
   saveApplicationLayout(layout: LayoutJSON): Promise<void> {
-    // TODO POST api/layouts/application #71
-    console.log(layout);
-    return new Promise((resolve) => resolve());
+    return new Promise((resolve, reject) =>
+      fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "user": "vuu-user"
+        },
+        body: JSON.stringify({
+          layoutDefinition: layout,
+        }),
+      })
+      .then((response) => {
+        if (!response.ok) {
+          reject(new Error(response.statusText));
+        }
+        resolve();
+      })
+      .catch((error: Error) => {
+        reject(error);
+      })
+    );
   }
 
-  loadApplicationLayout(): Promise<LayoutJSON> {
-    // TODO GET api/layouts/application #71
-    return new Promise((resolve) => resolve(defaultLayout));
+  loadApplicationLayout(): Promise<ApplicationLayout> {
+    return new Promise((resolve, reject) =>
+      fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
+        method: "GET",
+        headers: {
+          "user": "vuu-user",
+        },
+      })
+      .then((response) => {
+        if (!response.ok) {
+          reject(new Error(response.statusText));
+        }
+        response.json().then((response: ApplicationLayout) => {
+          if (!response) {
+            reject(new Error("Response did not contain valid layout information"));
+          }
+          resolve(response);
+        });
+      })
+      .catch((error: Error) => {
+        reject(error);
+      })
+    );
   }
 }
