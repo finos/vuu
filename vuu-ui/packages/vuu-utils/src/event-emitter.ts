@@ -89,6 +89,15 @@ export class EventEmitter<Events extends EmittedEvents> {
     this.addListener(event, listener);
   }
 
+  hasListener<E extends keyof Events>(event: E, listener: Events[E]) {
+    const listeners = this.#events.get(event);
+    if (Array.isArray(listeners)) {
+      return listeners.includes(listener);
+    } else {
+      return listeners === listener;
+    }
+  }
+
   private invokeHandler(handler: Listener | Array<Listener>, args: unknown[]) {
     if (isArrayOfListeners(handler)) {
       handler.slice().forEach((listener) => this.invokeHandler(listener, args));

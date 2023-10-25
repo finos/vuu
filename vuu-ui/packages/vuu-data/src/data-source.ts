@@ -510,6 +510,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
     props: SubscribeProps,
     callback: SubscribeCallback
   ) => Promise<void>;
+  table?: VuuTable;
   title?: string;
   unsubscribe: () => void;
   viewport?: string;

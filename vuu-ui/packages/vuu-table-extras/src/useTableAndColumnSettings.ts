@@ -99,6 +99,21 @@ export const useTableAndColumnSettings = ({
     });
   }, [showColumnSettingsPanel]);
 
+  const handleNavigateToColumn = useCallback(
+    (columnName: string) => {
+      const column = tableConfig.columns.find((c) => c.name === columnName);
+      if (column) {
+        showColumnSettingsPanel({
+          type: "columnSettings",
+          column,
+          //TODO where do we get this from
+          vuuTable: { module: "SIMUL", table: "instruments" },
+        });
+      }
+    },
+    [showColumnSettingsPanel, tableConfig.columns]
+  );
+
   showTableSettingsRef.current = useCallback(() => {
     showContextPanel("TableSettings", "DataGrid Settings", {
       availableColumns:
@@ -110,11 +125,13 @@ export const useTableAndColumnSettings = ({
       onAddCalculatedColumn: handleAddCalculatedColumn,
       onConfigChange,
       onDataSourceConfigChange,
+      onNavigateToColumn: handleNavigateToColumn,
       tableConfig,
     } as TableSettingsProps);
   }, [
     availableColumns,
     handleAddCalculatedColumn,
+    handleNavigateToColumn,
     onConfigChange,
     onDataSourceConfigChange,
     showContextPanel,

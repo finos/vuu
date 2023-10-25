@@ -26,6 +26,11 @@
     flex: 1 1 auto;
 }
 
+.vuuColumnList-text:hover {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
 .vuuColumnList-checkBox {
     flex: 0 0 20px;
 }

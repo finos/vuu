@@ -9,14 +9,16 @@ import "./ColumnExpressionInput.css";
 
 const classBase = "vuuColumnExpressionInput";
 
+export type ColumnExpressionSubmitHandler = (
+  source: string,
+  expression: ColumnDefinitionExpression | undefined
+) => void;
+
 export interface ColumnExpressionInputProps
   extends ExpressionSuggestionConsumer,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange?: (source: string) => void;
-  onSubmitExpression?: (
-    source: string,
-    expression: ColumnDefinitionExpression | undefined
-  ) => void;
+  onSubmitExpression?: ColumnExpressionSubmitHandler;
   source?: string;
 }
 

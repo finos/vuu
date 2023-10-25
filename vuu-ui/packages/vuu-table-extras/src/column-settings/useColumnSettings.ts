@@ -19,11 +19,13 @@ import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { ColumnSettingsProps } from "./ColumnSettingsPanel";
+import { ColumnExpressionSubmitHandler } from "../column-expression-input";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
@@ -130,9 +132,17 @@ export const useColumnSettings = ({
   const [column, setColumn] = useState<ColumnDescriptor>(
     getColumn(tableConfig.columns, columnProp)
   );
-  const [editCalculatedColumn, setEditCalculatedColumn] = useState(
-    column.name === "::"
-  );
+  const [inEditMode, setEditMode] = useState(column.name === "::");
+
+  const handleEditCalculatedcolumn = useCallback(() => {
+    setEditMode(true);
+  }, []);
+
+  useEffect(() => {
+    setColumn(columnProp);
+    setEditMode(columnProp.name === "::");
+  }, [columnProp]);
+
   const availableRenderers = useMemo(() => {
     return getAvailableCellRenderers(column);
   }, [column]);
@@ -186,9 +196,22 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
+  const handleChangeCalculatedColumn = useCallback(
+    (calculatedColumnName: string) => {
+      console.log(`handleChangeCalculatedColumn ${calculatedColumnName}`);
+    },
+    []
+  );
   const handleChangeCalculatedColumnName = useCallback((name: string) => {
     setColumn((state) => ({ ...state, name }));
   }, []);
+
+  const handleSubmitColumnExpression =
+    useCallback<ColumnExpressionSubmitHandler>((source, expression) => {
+      console.log(`handleSubmitColumnExpression ${source}`, {
+        expression,
+      });
+    }, []);
 
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
@@ -239,29 +262,26 @@ export const useColumnSettings = ({
     navigateColumn({ moveBy: -1 });
   }, [navigateColumn]);
 
-  const handleSaveCalculatedColumn = useCallback(
-    (calculatedColumn: ColumnDescriptor) => {
-      // TODO validate expression, unique name
-      onCreateCalculatedColumn({
-        ...column,
-        ...calculatedColumn,
-      });
-    },
-    [column, onCreateCalculatedColumn]
-  );
+  const handleSaveCalculatedColumn = useCallback(() => {
+    // TODO validate expression, unique name
+    onCreateCalculatedColumn(column);
+  }, [column, onCreateCalculatedColumn]);
 
   return {
     availableRenderers,
-    editCalculatedColumn,
+    editCalculatedColumn: inEditMode,
     selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
     onChange: handleChange,
+    onChangeCalculatedColumn: handleChangeCalculatedColumn,
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
+    onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
     onSave: handleSaveCalculatedColumn,
+    onSubmitExpression: handleSubmitColumnExpression,
   };
 };

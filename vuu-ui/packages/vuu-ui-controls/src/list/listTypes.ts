@@ -242,6 +242,7 @@ export interface ListHookProps<
     | "collapsibleHeaders"
     | "disabled"
     | "id"
+    | "onClick"
     | "onDragStart"
     | "onDrop"
     | "onHighlight"

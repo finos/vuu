@@ -1,4 +1,4 @@
-import { RefObject, SyntheticEvent } from "react";
+import { MouseEventHandler, RefObject, SyntheticEvent } from "react";
 
 export type SelectionDisallowed = "none";
 export type SingleSelectionStrategy = "default" | "deselectable";
@@ -79,6 +79,7 @@ export interface SelectionHookProps extends SelectionProps {
   highlightedIdx: number;
   itemQuery: string;
   label?: string;
+  onClick?: MouseEventHandler;
   selectionKeys?: string[];
   tabToSelect?: boolean;
 }

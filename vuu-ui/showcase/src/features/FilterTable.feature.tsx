@@ -7,7 +7,6 @@ import { useTableConfig } from "../examples/utils";
 export const FilterTableFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
-  console.log({ tableSchema });
   const { saveSession } = useViewContext();
   const { dataSource } = useTableConfig({
     count: 1000,

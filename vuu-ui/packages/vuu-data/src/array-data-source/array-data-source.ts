@@ -16,6 +16,8 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
+  getAddedItems,
+  getMissingItems,
   getSelectionStatus,
   KeySet,
   logger,
@@ -57,7 +59,6 @@ export interface ArrayDataSourceConstructorProps
   data: Array<VuuRowDataItemType[]>;
   rangeChangeRowset?: "delta" | "full";
 }
-
 const { debug } = logger("ArrayDataSource");
 
 const { RENDER_IDX, SELECTED } = metadataKeys;
@@ -147,6 +148,10 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
+
+    console.log(`ArrayDataSource`, {
+      columnDescriptors,
+    });
 
     if (!data || !columnDescriptors) {
       throw Error(
@@ -293,6 +298,10 @@ export class ArrayDataSource
     return this.processedData ?? this.#data;
   }
 
+  get table() {
+    return this.tableSchema.table;
+  }
+
   get config() {
     return this.#config;
   }
@@ -434,6 +443,17 @@ export class ArrayDataSource
   }
 
   set columns(columns: string[]) {
+    const addedColumns = getAddedItems(this.config.columns, columns);
+    if (addedColumns.length > 0) {
+      const columnsWithoutDescriptors = getMissingItems(
+        this.columnDescriptors,
+        addedColumns,
+        (col) => col.name
+      );
+      console.log(`columnsWithoutDescriptors`, {
+        columnsWithoutDescriptors,
+      });
+    }
     this.config = {
       ...this.#config,
       columns,

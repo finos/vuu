@@ -583,6 +583,16 @@ export const getColumnName = (name: string) => {
   }
 };
 
+export const getColumnLabel = (column: ColumnDescriptor) => {
+  if (column.label) {
+    return column.label;
+  } else if (isCalculatedColumn(column.name)) {
+    return getCalculatedColumnName(column);
+  } else {
+    return column.name;
+  }
+};
+
 export const findColumn = (
   columns: KeyedColumnDescriptor[],
   columnName: string

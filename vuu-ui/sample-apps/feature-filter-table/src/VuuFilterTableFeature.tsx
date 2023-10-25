@@ -1,4 +1,5 @@
 import {
+  configChanged,
   DataSource,
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
@@ -96,28 +97,29 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      // confirmed / unconfirmed messages are used for UI updates, not state saving
-      if (confirmed === undefined) {
+      if (
+        // confirmed / unconfirmed messages are used for UI updates, not state saving
+        confirmed === undefined &&
+        configChanged(dataSourceConfigFromState, config)
+      ) {
         save?.(config, "datasource-config");
       }
     },
-    [save]
+    [dataSourceConfigFromState, save]
   );
 
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
       console.log("save new available columns");
       save?.(columns, "available-columns");
-      // tableConfigRef.current = config;
     },
     [save]
   );
 
   const handleTableConfigChange = useCallback(
     (config: TableConfig) => {
-      console.log(`tabale config changed`);
+      console.log(`table config changed`);
       save?.(config, "table-config");
-      // tableConfigRef.current = config;
     },
     [save]
   );
@@ -141,6 +143,19 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
         "%cFilterTableFeature DATA SOURCE IN SESSION STATE",
         "color:red;font-weight:bold;"
       );
+
+      // Only required when injecting a dataSource into session
+      // state in Showcase examples
+      if (!ds.hasListener("config", handleDataSourceConfigChange)) {
+        ds.on("config", handleDataSourceConfigChange);
+      }
+
+      if (dataSourceConfigFromState) {
+        // this won't do anything if dataSource config already matches this
+        // This is only really used when injecting a dataSource into session
+        // state in Showcase examples
+        ds.config = dataSourceConfigFromState;
+      }
 
       return ds;
     }
