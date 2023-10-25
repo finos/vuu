@@ -43,6 +43,7 @@ public class LayoutService {
             .baseMetadata(newMetadata.getBaseMetadata())
             .updated(new Date())
             .build();
+        updatedMetadata.setId(layoutToUpdate.getId());
 
         layoutToUpdate.setDefinition(newLayout.getDefinition());
         layoutToUpdate.setMetadata(updatedMetadata);

@@ -132,7 +132,6 @@ public class LayoutIntegrationTest {
                 .content(objectMapper.writeValueAsString(layoutRequest))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
             .andExpect(jsonPath("$.metadata.name",
                 is(layoutRequest.getMetadata().getBaseMetadata().getName())))
@@ -145,7 +144,7 @@ public class LayoutIntegrationTest {
             .andReturn();
 
         UUID createdLayoutId = UUID.fromString(
-            JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
+            JsonPath.read(result.getResponse().getContentAsString(), "$.metadata.id"));
         Layout createdLayout = layoutRepository.findById(createdLayoutId).orElseThrow();
         Metadata createdMetadata = metadataRepository.findById(createdLayout.getMetadata().getId())
             .orElseThrow();
@@ -274,6 +273,13 @@ public class LayoutIntegrationTest {
                     "Validation failed for argument [1] in public void org.finos.vuu.layoutserver"
                         + ".controller.LayoutController.updateLayout(java.util.UUID,org.finos.vuu"
                         + ".layoutserver.dto.request.LayoutRequestDTO) with 2 errors: [Field "
+                        + "error"
+                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
+                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
+                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
+                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
+                        + ".definition,definition]; arguments []; default message [definition]]; "
+                        + "default message [Please provide a valid definition]] [Field "
                         + "error in"
                         + " object 'layoutRequestDTO' on field 'metadata': rejected value [null]; "
                         + "codes [NotNull.layoutRequestDTO.metadata,NotNull.metadata,NotNull.org"
@@ -282,14 +288,7 @@ public class LayoutIntegrationTest {
                         + " [org.springframework.context.support.DefaultMessageSourceResolvable: "
                         + "codes [layoutRequestDTO.metadata,metadata]; arguments []; default "
                         + "message "
-                        + "[metadata]]; default message [Please provide valid metadata]] [Field "
-                        + "error"
-                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
-                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
-                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
-                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
-                        + ".definition,definition]; arguments []; default message [definition]]; "
-                        + "default message [Please provide a valid definition]] "))));
+                        + "[metadata]]; default message [Please provide valid metadata]] "))));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
