@@ -35,6 +35,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class ApplicationLayoutIntegrationTest {
     public static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final String BASE_URL = "/application-layouts";
+    public static final String MISSING_USERNAME_ERROR_MESSAGE =
+            "Required request header 'username' for method parameter type String is not present";
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -47,7 +51,7 @@ public class ApplicationLayoutIntegrationTest {
     public void getApplicationLayout_noLayoutExists_returns200WithDefaultLayout() throws Exception {
         when(mockLoader.getDefaultLayout()).thenReturn(realLoader.getDefaultLayout());
 
-        mockMvc.perform(get("/application-layouts").header("user", "new user"))
+        mockMvc.perform(get(BASE_URL).header("username", "new user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", nullValue()))
                 // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
@@ -59,9 +63,18 @@ public class ApplicationLayoutIntegrationTest {
         String errorMessage = "Failed to read default application layout";
         doThrow(new InternalServerErrorException(errorMessage)).when(mockLoader).getDefaultLayout();
 
-        mockMvc.perform(get("/application-layouts").header("user", "new user"))
+        mockMvc.perform(get(BASE_URL).header("username", "new user"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message", is(errorMessage)));
+    }
+
+    @Test
+    public void getApplicationLayout_noUserInHeader_returns400() throws Exception {
+        String actualError = mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
     }
 
     @Test
@@ -73,7 +86,7 @@ public class ApplicationLayoutIntegrationTest {
 
         persistApplicationLayout(user, definition);
 
-        mockMvc.perform(get("/application-layouts").header("user", user))
+        mockMvc.perform(get(BASE_URL).header("username", user))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is(user)))
                 .andExpect(jsonPath("$.definition", is(definition)));
@@ -84,8 +97,7 @@ public class ApplicationLayoutIntegrationTest {
         String user = "user";
         String definition = "{\"key\": \"value\"}";
 
-        mockMvc.perform(post("/application-layouts")
-                        .header("user", user)
+        mockMvc.perform(post(BASE_URL).header("username", user)
                         .content(definition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -108,8 +120,7 @@ public class ApplicationLayoutIntegrationTest {
 
         String newDefinition = "{\"new-key\": \"new-value\"}";
 
-        mockMvc.perform(post("/application-layouts")
-                        .header("user", user)
+        mockMvc.perform(post(BASE_URL).header("username", user)
                         .content(newDefinition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -124,12 +135,20 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     @Test
+    public void createApplicationLayout_noUserInHeader_returns400() throws Exception {
+        String actualError = mockMvc.perform(post(BASE_URL))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
+    }
+
+    @Test
     public void updateApplicationLayout_noLayoutExists_returns204AndPersistsLayout() throws Exception {
         String user = "user";
         String definition = "{\"key\": \"value\"}";
 
-        mockMvc.perform(put("/application-layouts")
-                        .header("user", user)
+        mockMvc.perform(put(BASE_URL).header("username", user)
                         .content(definition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
@@ -152,8 +171,7 @@ public class ApplicationLayoutIntegrationTest {
 
         String newDefinition = "{\"new-key\": \"new-value\"}";
 
-        mockMvc.perform(put("/application-layouts")
-                        .header("user", user)
+        mockMvc.perform(put(BASE_URL).header("username", user)
                         .content(newDefinition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
@@ -168,11 +186,19 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     @Test
+    public void updateApplicationLayout_noUserInHeader_returns400() throws Exception {
+        String actualError = mockMvc.perform(put(BASE_URL))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
+    }
+
+    @Test
     public void deleteApplicationLayout_noLayoutExists_returns404() throws Exception {
         String user = "user";
 
-        mockMvc.perform(delete("/application-layouts")
-                        .header("user", user))
+        mockMvc.perform(delete(BASE_URL).header("username", user))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", is("No layout found for user: " + user)));
     }
@@ -186,12 +212,20 @@ public class ApplicationLayoutIntegrationTest {
 
         persistApplicationLayout(user, initialDefinition);
 
-        mockMvc.perform(delete("/application-layouts")
-                        .header("user", user))
+        mockMvc.perform(delete(BASE_URL).header("username", user))
                 .andExpect(status().isNoContent())
                 .andExpect(jsonPath("$").doesNotExist());
 
         assertThat(repository.findAll()).hasSize(0);
+    }
+
+    @Test
+    public void deleteApplicationLayout_noUserInHeader_returns400() throws Exception {
+        String actualError = mockMvc.perform(delete(BASE_URL))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getErrorMessage();
+
+        assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
     }
 
     private void persistApplicationLayout(String user, Map<String, String> definition) {

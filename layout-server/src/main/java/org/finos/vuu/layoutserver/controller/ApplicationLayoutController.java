@@ -35,7 +35,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public ApplicationLayoutDto getApplicationLayout(@RequestHeader("user") String username) {
+    public ApplicationLayoutDto getApplicationLayout(@RequestHeader("username") String username) {
         return mapper.map(service.getApplicationLayout(username), ApplicationLayoutDto.class);
     }
 
@@ -48,7 +48,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public void createApplicationLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
+    public void createApplicationLayout(@RequestHeader("username") String username, @RequestBody JsonNode layoutDefinition) {
         service.createApplicationLayout(username, layoutDefinition);
     }
 
@@ -61,7 +61,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping
-    public void updateApplicationLayout(@RequestHeader("user") String username, @RequestBody JsonNode layoutDefinition) {
+    public void updateApplicationLayout(@RequestHeader("username") String username, @RequestBody JsonNode layoutDefinition) {
         service.updateApplicationLayout(username, layoutDefinition);
     }
 
@@ -73,7 +73,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping
-    public void deleteApplicationLayout(@RequestHeader("user") String username) {
+    public void deleteApplicationLayout(@RequestHeader("username") String username) {
         service.deleteApplicationLayout(username);
     }
 }
