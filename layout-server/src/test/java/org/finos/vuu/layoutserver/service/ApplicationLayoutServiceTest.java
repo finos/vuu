@@ -67,7 +67,7 @@ class ApplicationLayoutServiceTest {
         String user = "user";
         JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
-        service.createApplicationLayout(user, definition);
+        service.persistApplicationLayout(user, definition);
 
         verify(mockRepo, times(1))
                 .save(new ApplicationLayout(user, definition));
@@ -78,27 +78,7 @@ class ApplicationLayoutServiceTest {
         String definition = "invalid JSON";
 
         assertThrows(JsonProcessingException.class, () ->
-            service.createApplicationLayout("user", objectMapper.readTree(definition))
-        );
-    }
-
-    @Test
-    public void updateApplicationLayout_validDefinition_callsRepoSave() throws JsonProcessingException {
-        String user = "user";
-        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
-
-        service.updateApplicationLayout(user, definition);
-
-        verify(mockRepo, times(1))
-                .save(new ApplicationLayout(user, definition));
-    }
-
-    @Test
-    public void updateApplicationLayout_invalidDefinition_throwsJsonException() {
-        String definition = "invalid JSON";
-
-        assertThrows(JsonProcessingException.class, () ->
-            service.updateApplicationLayout("user", objectMapper.readTree(definition))
+            service.persistApplicationLayout("user", objectMapper.readTree(definition))
         );
     }
 

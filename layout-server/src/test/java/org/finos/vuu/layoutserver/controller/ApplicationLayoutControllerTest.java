@@ -45,23 +45,13 @@ class ApplicationLayoutControllerTest {
     }
 
     @Test
-    public void createApplicationLayout_anyInput_callsService() throws JsonProcessingException {
+    public void persistApplicationLayout_anyInput_callsService() throws JsonProcessingException {
         String user = "user";
         JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
 
-        controller.createApplicationLayout(user, definition);
+        controller.persistApplicationLayout(user, definition);
 
-        verify(mockService, times(1)).createApplicationLayout(user, definition);
-    }
-
-    @Test
-    public void updateApplicationLayout_anyInput_callsService() throws JsonProcessingException {
-        String user = "user";
-        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
-
-        controller.updateApplicationLayout(user, definition);
-
-        verify(mockService, times(1)).updateApplicationLayout(user, definition);
+        verify(mockService, times(1)).persistApplicationLayout(user, definition);
     }
 
     @Test

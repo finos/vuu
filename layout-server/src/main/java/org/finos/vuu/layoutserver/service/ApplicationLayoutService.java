@@ -20,7 +20,7 @@ public class ApplicationLayoutService {
     private final ApplicationLayoutRepository repository;
     private final DefaultApplicationLayoutLoader defaultLoader;
 
-    public void createApplicationLayout(String username, JsonNode layoutDefinition) {
+    public void persistApplicationLayout(String username, JsonNode layoutDefinition) {
         repository.save(new ApplicationLayout(username, layoutDefinition));
     }
 
@@ -29,10 +29,6 @@ public class ApplicationLayoutService {
             logger.info("No application layout for user, returning default");
             return defaultLoader.getDefaultLayout();
         });
-    }
-
-    public void updateApplicationLayout(String username, JsonNode layoutDefinition) {
-        createApplicationLayout(username, layoutDefinition);
     }
 
     public void deleteApplicationLayout(String username) {

@@ -25,7 +25,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -93,11 +92,11 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     @Test
-    public void createApplicationLayout_noLayoutExists_returns201AndPersistsLayout() throws Exception {
+    public void persistApplicationLayout_noLayoutExists_returns201AndPersistsLayout() throws Exception {
         String user = "user";
         String definition = "{\"key\": \"value\"}";
 
-        mockMvc.perform(post(BASE_URL).header("username", user)
+        mockMvc.perform(put(BASE_URL).header("username", user)
                         .content(definition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -110,7 +109,7 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     @Test
-    public void createApplicationLayout_layoutExists_returns201AndOverwritesLayout() throws Exception {
+    public void persistApplicationLayout_layoutExists_returns201AndOverwritesLayout() throws Exception {
         String user = "user";
 
         Map<String, String> initialDefinition = new HashMap<>();
@@ -120,7 +119,7 @@ public class ApplicationLayoutIntegrationTest {
 
         String newDefinition = "{\"new-key\": \"new-value\"}";
 
-        mockMvc.perform(post(BASE_URL).header("username", user)
+        mockMvc.perform(put(BASE_URL).header("username", user)
                         .content(newDefinition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -135,58 +134,7 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     @Test
-    public void createApplicationLayout_noUserInHeader_returns400() throws Exception {
-        String actualError = mockMvc.perform(post(BASE_URL))
-                .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getErrorMessage();
-
-        assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
-    }
-
-    @Test
-    public void updateApplicationLayout_noLayoutExists_returns204AndPersistsLayout() throws Exception {
-        String user = "user";
-        String definition = "{\"key\": \"value\"}";
-
-        mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(definition)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent())
-                .andExpect(jsonPath("$").doesNotExist());
-
-        ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
-
-        assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.getDefinition()).isEqualTo(objectMapper.readTree(definition));
-    }
-
-    @Test
-    public void updateApplicationLayout_layoutExists_returns204AndOverwritesLayout() throws Exception {
-        String user = "user";
-
-        Map<String, String> initialDefinition = new HashMap<>();
-        initialDefinition.put("initial-key", "initial-value");
-
-        persistApplicationLayout(user, initialDefinition);
-
-        String newDefinition = "{\"new-key\": \"new-value\"}";
-
-        mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(newDefinition)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent())
-                .andExpect(jsonPath("$").doesNotExist());
-
-        assertThat(repository.findAll()).hasSize(1);
-
-        ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
-
-        assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.getDefinition()).isEqualTo(objectMapper.readTree(newDefinition));
-    }
-
-    @Test
-    public void updateApplicationLayout_noUserInHeader_returns400() throws Exception {
+    public void persistApplicationLayout_noUserInHeader_returns400() throws Exception {
         String actualError = mockMvc.perform(put(BASE_URL))
                 .andExpect(status().isBadRequest())
                 .andReturn().getResponse().getErrorMessage();
