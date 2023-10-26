@@ -3,6 +3,7 @@ package org.finos.vuu.core.module.basket.provider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.RunOnceLifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.basket.BasketConstants
 import org.finos.vuu.core.module.basket.csv.CsvStaticLoader
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.DefaultProvider
@@ -25,13 +26,13 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
     list.foreach(row => {
 
       if (row.nonEmpty) {
-        val symbol = row("Symbol")
+        val symbol = row("Symbol").asInstanceOf[String]
         val name = row("Name")
         val lastTrade = row("Last Trade")
         val change = row("Change")
         val volume = row("Volume")
         val weighting = row("Weight")
-
+        val side = BasketConstants.Side.Buy
         table.processUpdate(symbol, RowWithData(symbol, Map(
           Ric -> symbol,
           BasketId -> basketId,
@@ -39,7 +40,8 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
           Change -> change,
           Weighting -> weighting,
           Volume -> volume,
-          Description -> name
+          Description -> name,
+          Side -> side
         )), clock.now())
       }
     })

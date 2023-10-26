@@ -1,10 +1,11 @@
-package org.finos.vuu.core.table
+package org.finos.vuu.core.table.join
 
-import org.finos.vuu.api._
-import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api._
+import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.joda.time.LocalDateTime
 import org.scalatest.OneInstancePerTest
 import org.scalatest.featurespec.AnyFeatureSpec
