@@ -37,7 +37,11 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class ModuleFactoryNode protected(tableDefs: TableDefs, rpc: List[VuuServer => RpcHandler], vsName: String, staticServedResources: List[StaticServedResource], rest: List[VuuServer => RestService], viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]) {
+case class ModuleFactoryNode protected(tableDefs: TableDefs,
+                                       rpc: List[VuuServer => RpcHandler],
+                                       vsName: String, staticServedResources: List[StaticServedResource],
+                                       rest: List[VuuServer => RestService],
+                                       viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]) {
 
   def addTable(tableDef: TableDef, func: (DataTable, VuuServer) => Provider): ModuleFactoryNode = {
     val noViewPortDefFunc = (dt: DataTable, prov: Provider, providerContainer: ProviderContainer, tableContainer: TableContainer) => NoViewPortDef
@@ -127,7 +131,7 @@ object ModuleFactory {
   implicit def stringToString(s: String): FieldDefString = new FieldDefString(s)
 
   def withNamespace(ns: String): ModuleFactoryNode = {
-    return ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map())
+    ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map())
   }
 
 }
