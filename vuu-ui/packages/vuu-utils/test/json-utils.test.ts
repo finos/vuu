@@ -158,7 +158,7 @@ describe("jsonToDataSourceRows", () => {
     ]);
   });
 
-  it.only("parses a 2 level structure, mixed simple attributes and array (json values)", () => {
+  it("parses a 2 level structure, mixed simple attributes and array (json values)", () => {
     console.log(
       jsonToDataSourceRows({
         test1: "value 1",
