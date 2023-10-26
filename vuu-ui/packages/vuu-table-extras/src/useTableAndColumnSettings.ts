@@ -54,6 +54,12 @@ export const useTableAndColumnSettings = ({
     [dispatchLayoutAction]
   );
 
+  const handleCancelCreateColumn = useCallback(() => {
+    requestAnimationFrame(() => {
+      showTableSettingsRef.current?.();
+    });
+  }, []);
+
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
       const newAvailableColumns = availableColumns.concat({
@@ -74,6 +80,7 @@ export const useTableAndColumnSettings = ({
     (action: ColumnActionColumnSettings) => {
       showContextPanel("ColumnSettings", "Column Settings", {
         column: action.column,
+        onCancelCreateColumn: handleCancelCreateColumn,
         onConfigChange,
         onCreateCalculatedColumn: handleCreateCalculatedColumn,
         tableConfig,
@@ -81,6 +88,7 @@ export const useTableAndColumnSettings = ({
       } as ColumnSettingsProps);
     },
     [
+      handleCancelCreateColumn,
       handleCreateCalculatedColumn,
       onConfigChange,
       showContextPanel,

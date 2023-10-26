@@ -18,9 +18,9 @@ export interface ColumnNameLabelProps {
 
 export const ColumnNameLabel = ({ column, onClick }: ColumnNameLabelProps) => {
   if (isCalculatedColumn(column.name)) {
-    const [name, expression, type] = getCalculatedColumnDetails(column);
+    const [name, type, expression] = getCalculatedColumnDetails(column);
     const displayName = name || "name";
-    const displayExpression = "expression";
+    const displayExpression = "=expression";
 
     const nameClass =
       displayName === "name" ? `${classBase}-placeholder` : undefined;
@@ -33,9 +33,9 @@ export const ColumnNameLabel = ({ column, onClick }: ColumnNameLabelProps) => {
       >
         <span className={nameClass}>{displayName}</span>
         <span>:</span>
-        <span className={expressionClass}>{displayExpression}</span>
-        <span>:</span>
         <span>{type || "string"}</span>
+        <span>:</span>
+        <span className={expressionClass}>{displayExpression}</span>
         <span className={`${classBase}-edit`} data-icon="edit" />
       </div>
     );

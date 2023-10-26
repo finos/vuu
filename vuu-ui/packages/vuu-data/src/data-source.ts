@@ -212,7 +212,7 @@ const equivalentColumns: DataConfigPredicate = (
   (cols1 === undefined && cols2?.length === 0) ||
   (cols2 === undefined && cols1?.length === 0);
 
-const columnsChanged: DataConfigPredicate = (config, newConfig) => {
+export const columnsChanged: DataConfigPredicate = (config, newConfig) => {
   const { columns: cols1 } = config;
   const { columns: cols2 } = newConfig;
 

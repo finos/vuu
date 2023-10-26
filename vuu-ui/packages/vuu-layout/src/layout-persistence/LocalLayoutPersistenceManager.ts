@@ -20,10 +20,6 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     layout: LayoutJSON
   ): Promise<string> {
     return new Promise((resolve) => {
-      console.log(
-        `Saving layout as ${metadata.name} to group ${metadata.group}...`
-      );
-
       Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
         ([existingLayouts, existingMetadata]) => {
           const id = getUniqueId();
@@ -98,14 +94,11 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   }
 
   loadApplicationLayout(): Promise<LayoutJSON> {
-    console.log("loadApplicationLAyout");
     return new Promise((resolve) => {
       const applicationLayout = getLocalEntity<LayoutJSON>(this.#urlKey);
       if (applicationLayout) {
-        console.log(applicationLayout);
         resolve(applicationLayout);
       } else {
-        console.log(defaultLayout);
         resolve(defaultLayout);
       }
     });

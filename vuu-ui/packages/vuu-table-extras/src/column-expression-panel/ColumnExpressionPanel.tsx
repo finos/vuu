@@ -18,23 +18,19 @@ import { useColumnExpression } from "./useColumnExpression";
 const classBase = "vuuColumnExpressionPanel";
 
 export interface ColumnExpressionPanelProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange">,
+  extends HTMLAttributes<HTMLDivElement>,
     Pick<ColumnSettingsProps, "tableConfig" | "vuuTable"> {
   column: ColumnDescriptor;
   /**
    * Callback prop, invoked on every change to calculated column definition
    * @param calculatedColumnName the full calculated column name
    */
-  onChange?: (calculatedColumnName: string) => void;
   onChangeName?: (name: string) => void;
-  onSubmitExpression?: ColumnExpressionSubmitHandler;
 }
 
 export const ColumnExpressionPanel = ({
   column: columnProp,
-  onChange,
   onChangeName: onChangeNameProp,
-  onSubmitExpression: onSubmitExpressionProp,
   tableConfig,
   vuuTable,
 }: ColumnExpressionPanelProps) => {
@@ -42,9 +38,7 @@ export const ColumnExpressionPanel = ({
   const { column, onChangeExpression, onChangeName, onChangeType } =
     useColumnExpression({
       column: columnProp,
-      onChange,
       onChangeName: onChangeNameProp,
-      onSubmitExpression: onSubmitExpressionProp,
     });
   // The initial value to pass into the Expression Input. That is a
   // CodeMirror editor and will manage its own state once initialised.
@@ -57,19 +51,14 @@ export const ColumnExpressionPanel = ({
     table: vuuTable,
   });
 
-  const handleSubmitExpression = useCallback<ColumnExpressionSubmitHandler>(
-    (source, expression) => {
-      onSubmitExpressionProp?.(source, expression);
+  const handleSubmitExpression =
+    useCallback<ColumnExpressionSubmitHandler>(() => {
       if (typeRef.current) {
         (
           typeRef.current?.querySelector("button") as HTMLButtonElement
         )?.focus();
       }
-    },
-    [onSubmitExpressionProp]
-  );
-
-  console.log(`name ${column.name}`);
+    }, []);
 
   return (
     <div className={classBase}>

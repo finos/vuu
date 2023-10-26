@@ -1,5 +1,6 @@
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
+import { VuuInput } from "@finos/vuu-ui-controls";
 import {
   getCalculatedColumnName,
   getDefaultAlignment,
@@ -12,14 +13,14 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import cx from "classnames";
 import { HTMLAttributes } from "react";
-import { ColumnFormattingPanel } from "../column-formatting-settings";
-import { useColumnSettings } from "./useColumnSettings";
 import { ColumnExpressionPanel } from "../column-expression-panel";
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { ColumnFormattingPanel } from "../column-formatting-settings";
+import { ColumnNameLabel } from "./ColumnNameLabel";
+import { useColumnSettings } from "./useColumnSettings";
 
 import "./ColumnSettingsPanel.css";
-import { ColumnNameLabel } from "./ColumnNameLabel";
 
 const classBase = "vuuColumnSettingsPanel";
 
@@ -35,6 +36,7 @@ const getColumnLabel = (column: ColumnDescriptor) => {
 export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
   column: ColumnDescriptor;
   onConfigChange: (config: TableConfig) => void;
+  onCancelCreateColumn: () => void;
   onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
   tableConfig: TableConfig;
   vuuTable: VuuTable;
@@ -42,6 +44,7 @@ export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
 
 export const ColumnSettingsPanel = ({
   column: columnProp,
+  onCancelCreateColumn,
   onConfigChange,
   onCreateCalculatedColumn,
   tableConfig,
@@ -55,17 +58,17 @@ export const ColumnSettingsPanel = ({
     column,
     navigateNextColumn,
     navigatePrevColumn,
+    onCancel,
     onChange,
-    onChangeCalculatedColumn,
     onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRenderer,
     onEditCalculatedColumn,
     onInputCommit,
     onSave,
-    onSubmitExpression,
   } = useColumnSettings({
     column: columnProp,
+    onCancelCreateColumn,
     onConfigChange,
     onCreateCalculatedColumn,
     tableConfig,
@@ -80,7 +83,11 @@ export const ColumnSettingsPanel = ({
   } = column;
 
   return (
-    <div className={classBase}>
+    <div
+      className={cx(classBase, {
+        [`${classBase}-editing`]: editCalculatedColumn,
+      })}
+    >
       <div className={`${classBase}-header`}>
         <ColumnNameLabel column={column} onClick={onEditCalculatedColumn} />
       </div>
@@ -88,9 +95,7 @@ export const ColumnSettingsPanel = ({
       {editCalculatedColumn ? (
         <ColumnExpressionPanel
           column={column}
-          onChange={onChangeCalculatedColumn}
           onChangeName={onChangeCalculatedColumnName}
-          onSubmitExpression={onSubmitExpression}
           tableConfig={tableConfig}
           vuuTable={vuuTable}
         />
@@ -173,11 +178,12 @@ export const ColumnSettingsPanel = ({
 
       {editCalculatedColumn ? (
         <div className="vuuColumnSettingsPanel-buttonBar" data-align="right">
-          <Button className={`${classBase}-buttonCancel`} tabIndex={-1}>
+          <Button
+            className={`${classBase}-buttonCancel`}
+            onClick={onCancel}
+            tabIndex={-1}
+          >
             cancel
-          </Button>
-          <Button className={`${classBase}-buttonApply`} tabIndex={-1}>
-            apply
           </Button>
           <Button
             className={`${classBase}-buttonSave`}

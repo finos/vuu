@@ -22,7 +22,7 @@
     --vuuFilterEditor-suggestion-selectedBackground: var(--salt-selectable-background-selected);
     --vuuFilterEditor-suggestion-selectedColor: var(--vuuFilterEditor-color);
     --vuuFilterEditor-suggestion-height: 24px;
-    --vuuFilterEditor-variableColor: blue;
+    --vuuFilterEditor-variableColor: var(--vuu-color_purple-10);
 
     align-items: center;
     border-color: var(--salt-container-secondary-borderColor);

@@ -10,7 +10,7 @@ import { ColumnExpressionPanelProps } from "./ColumnExpressionPanel";
 
 export type ColumnExpressionHookProps = Pick<
   ColumnExpressionPanelProps,
-  "column" | "onChangeName" | "onChange" | "onSubmitExpression"
+  "column" | "onChangeName"
 >;
 
 const applyDefaults = (column: ColumnDescriptor) => {
@@ -18,7 +18,7 @@ const applyDefaults = (column: ColumnDescriptor) => {
   if (type === "") {
     return {
       ...column,
-      name: `${name}:${expression}:string`,
+      name: `${name}:string:${expression}`,
     };
   } else {
     return column;
@@ -51,9 +51,6 @@ export const useColumnExpression = ({
       const newColumn = setCalculatedColumnName(column, value);
       // columnNameRef.current = newColumn.name;
       setColumn(newColumn);
-      console.log(
-        `onChangeName ${value} calculatedColumnName ${newColumn.name}`
-      );
       onChangeNameProp?.(newColumn.name);
     },
     [column, onChangeNameProp, setColumn]
@@ -85,10 +82,9 @@ export const useColumnExpression = ({
         const newColumn = setCalculatedColumnType(column, value);
         setColumn(newColumn);
         onChangeNameProp?.(newColumn.name);
-        console.log(`calculatedColumnName ${newColumn.name}`);
       }
     },
-    [column, onChangeNameProp]
+    [column, onChangeNameProp, setColumn]
   );
 
   return {

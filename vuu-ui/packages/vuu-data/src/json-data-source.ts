@@ -92,6 +92,7 @@ export class JsonDataSource
     }
 
     [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+
     this.visibleRows = this.#data
       .filter((row) => row[DEPTH] === 0)
       .map((row, index) =>
@@ -132,8 +133,6 @@ export class JsonDataSource
     callback: SubscribeCallback
   ) {
     this.clientCallback = callback;
-
-    console.log(`subscribe range ${range?.from} ${range?.to}`);
 
     if (aggregations) {
       this.#aggregations = aggregations;
@@ -318,6 +317,10 @@ export class JsonDataSource
 
   set aggregations(aggregations: VuuAggregation[]) {
     this.#aggregations = aggregations;
+  }
+
+  set data(data: JsonData) {
+    console.log(`set JsonDataSource data`);
   }
 
   get sort() {

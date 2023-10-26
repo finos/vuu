@@ -13,7 +13,7 @@
     --vuuFilterEditor-suggestion-selectedColor: var(--salt-text-primary-foreground);
     --vuuFilterEditor-suggestion-detailColor: var(--salt-text-secondary-foreground-disabled);
     --vuuFilterEditor-suggestion-height: 24px;
-    --vuuFilterEditor-variableColor: blue;
+    --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);
 
     align-items: center;
     box-sizing: border-box;

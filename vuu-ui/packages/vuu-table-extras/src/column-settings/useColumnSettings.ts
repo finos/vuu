@@ -83,7 +83,7 @@ const getCellRendererDescriptor = (
       }
     }
   }
-  // retur the appropriate default value for the column
+  // returm the appropriate default value for the column
   const typedAvailableRenderers = getAvailableCellRenderers(column);
   return typedAvailableRenderers[0];
 };
@@ -125,6 +125,7 @@ const replaceColumn = (
 
 export const useColumnSettings = ({
   column: columnProp,
+  onCancelCreateColumn,
   onConfigChange,
   onCreateCalculatedColumn,
   tableConfig,
@@ -132,11 +133,13 @@ export const useColumnSettings = ({
   const [column, setColumn] = useState<ColumnDescriptor>(
     getColumn(tableConfig.columns, columnProp)
   );
+  const columnRef = useRef<ColumnDescriptor>(column);
   const [inEditMode, setEditMode] = useState(column.name === "::");
 
   const handleEditCalculatedcolumn = useCallback(() => {
+    columnRef.current = column;
     setEditMode(true);
-  }, []);
+  }, [column]);
 
   useEffect(() => {
     setColumn(columnProp);
@@ -196,22 +199,9 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
-  const handleChangeCalculatedColumn = useCallback(
-    (calculatedColumnName: string) => {
-      console.log(`handleChangeCalculatedColumn ${calculatedColumnName}`);
-    },
-    []
-  );
   const handleChangeCalculatedColumnName = useCallback((name: string) => {
     setColumn((state) => ({ ...state, name }));
   }, []);
-
-  const handleSubmitColumnExpression =
-    useCallback<ColumnExpressionSubmitHandler>((source, expression) => {
-      console.log(`handleSubmitColumnExpression ${source}`, {
-        expression,
-      });
-    }, []);
 
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
@@ -267,6 +257,17 @@ export const useColumnSettings = ({
     onCreateCalculatedColumn(column);
   }, [column, onCreateCalculatedColumn]);
 
+  const handleCancelEdit = useCallback(() => {
+    if (columnProp.name === "::") {
+      onCancelCreateColumn();
+    } else {
+      if (columnRef.current !== undefined && columnRef.current !== column) {
+        setColumn(columnRef.current);
+      }
+      setEditMode(false);
+    }
+  }, [column, columnProp.name, onCancelCreateColumn]);
+
   return {
     availableRenderers,
     editCalculatedColumn: inEditMode,
@@ -274,14 +275,13 @@ export const useColumnSettings = ({
     column,
     navigateNextColumn,
     navigatePrevColumn,
+    onCancel: handleCancelEdit,
     onChange: handleChange,
-    onChangeCalculatedColumn: handleChangeCalculatedColumn,
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
     onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
     onSave: handleSaveCalculatedColumn,
-    onSubmitExpression: handleSubmitColumnExpression,
   };
 };

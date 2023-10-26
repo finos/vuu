@@ -1,4 +1,4 @@
-import { HTMLAttributes, memo } from "react";
+import { FocusEventHandler, HTMLAttributes, memo, useCallback } from "react";
 import { ColumnDefinitionExpression } from "./column-language-parser";
 import {
   ExpressionSuggestionConsumer,
@@ -29,14 +29,14 @@ export const ColumnExpressionInput = memo(
     source = "",
     suggestionProvider,
   }: ColumnExpressionInputProps) => {
-    const { editorRef } = useColumnExpressionEditor({
+    const { editorRef, onBlur } = useColumnExpressionEditor({
       onChange,
       onSubmitExpression,
       source,
       suggestionProvider,
     });
 
-    return <div className={`${classBase}`} ref={editorRef} />;
+    return <div className={`${classBase}`} onBlur={onBlur} ref={editorRef} />;
   },
   (prevProps, newProps) => {
     return prevProps.source === newProps.source;
