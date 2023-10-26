@@ -67,7 +67,7 @@ const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
   return validColumns.map((column) => {
     const label = column.label ?? column.name;
     return {
-      apply: options.prefix ? `${options.prefix}${label}` : label,
+      apply: options.prefix ? `${options.prefix}${column.name}` : column.name,
       label,
       boost: 5,
       type: "column",

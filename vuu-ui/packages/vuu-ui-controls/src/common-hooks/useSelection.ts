@@ -41,6 +41,7 @@ export const useSelection = ({
   // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
   itemQuery,
+  onClick,
   // label,
   onSelect,
   onSelectionChange,
@@ -239,18 +240,22 @@ export const useSelection = ({
           lastActive.current = highlightedIdx;
         }
       }
+      onClick?.(evt);
     },
     [
       containerRef,
       highlightedIdx,
       disableSelection,
+      onClick,
       selectItemAtIndex,
       isExtendedSelect,
     ]
   );
 
   const listHandlers = selectionIsDisallowed(selectionStrategy)
-    ? NO_SELECTION_HANDLERS
+    ? {
+        onClick,
+      }
     : {
         onClick: handleClick,
         onKeyDown: handleKeyDown,

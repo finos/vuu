@@ -583,6 +583,16 @@ export const getColumnName = (name: string) => {
   }
 };
 
+export const getColumnLabel = (column: ColumnDescriptor) => {
+  if (column.label) {
+    return column.label;
+  } else if (isCalculatedColumn(column.name)) {
+    return getCalculatedColumnName(column);
+  } else {
+    return column.name;
+  }
+};
+
 export const findColumn = (
   columns: KeyedColumnDescriptor[],
   columnName: string
@@ -877,7 +887,7 @@ export const isCalculatedColumn = (columnName?: string) =>
 
 export const getCalculatedColumnDetails = (column: ColumnDescriptor) => {
   if (isCalculatedColumn(column.name)) {
-    return column.name.split(":");
+    return column.name.split(/:=?/);
   } else {
     throw Error(
       `column-utils, getCalculatedColumnDetails column name ${column.name} is not valid calculated column`
@@ -887,19 +897,30 @@ export const getCalculatedColumnDetails = (column: ColumnDescriptor) => {
 
 export const getCalculatedColumnName = (column: ColumnDescriptor) =>
   getCalculatedColumnDetails(column)[0];
-export const getCalculatedColumnExpression = (column: ColumnDescriptor) =>
-  getCalculatedColumnDetails(column)[1];
 export const getCalculatedColumnType = (column: ColumnDescriptor) =>
-  getCalculatedColumnDetails(column)[2] as VuuColumnDataType;
+  getCalculatedColumnDetails(column)[1] as VuuColumnDataType;
+export const getCalculatedColumnExpression = (column: ColumnDescriptor) =>
+  getCalculatedColumnDetails(column)[2];
 
 export const setCalculatedColumnName = (
   column: ColumnDescriptor,
   name: string
 ): ColumnDescriptor => {
-  const [, expression, type] = column.name.split(":");
+  const [, type, expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${expression}:${type}`,
+    name: `${name}:${type}:${expression}`,
+  };
+};
+
+export const setCalculatedColumnType = (
+  column: ColumnDescriptor,
+  type: string
+): ColumnDescriptor => {
+  const [name, , expression] = column.name.split(":");
+  return {
+    ...column,
+    name: `${name}:${type}:${expression}`,
   };
 };
 
@@ -908,20 +929,9 @@ export const setCalculatedColumnExpression = (
   column: ColumnDescriptor,
   expression: string
 ): ColumnDescriptor => {
-  const [name, , type] = column.name.split(":");
+  const [name, type] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${expression}:${type}`,
-  };
-};
-
-export const setCalculatedColumnType = (
-  column: ColumnDescriptor,
-  type: string
-): ColumnDescriptor => {
-  const [name, expression] = column.name.split(":");
-  return {
-    ...column,
-    name: `${name}:${expression}:${type}`,
+    name: `${name}:${type}:=${expression}`,
   };
 };

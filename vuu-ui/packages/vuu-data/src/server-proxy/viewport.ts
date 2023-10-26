@@ -918,7 +918,6 @@ export class Viewport {
   // alleviate pressure on UI DataTable.
   private shouldThrottleMessage = (mode: DataUpdateMode) => {
     const elapsedTime = this.setLastUpdate(mode);
-    console.log(`elapsed time = ${elapsedTime}`);
     return (
       mode === "size-only" &&
       elapsedTime > 0 &&

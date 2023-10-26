@@ -67,7 +67,6 @@ export const Shell = ({
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
       try {
-        console.log(`handle layout changed ${layoutChangeReason}`);
         saveApplicationLayout(layout);
         // saveLayoutConfig(layout);
       } catch {

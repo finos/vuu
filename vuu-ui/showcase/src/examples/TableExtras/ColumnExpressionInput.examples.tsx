@@ -3,6 +3,7 @@ import {
   ColumnExpressionInput,
   ColumnExpressionInputProps,
   Expression,
+  isCompleteExpression,
   useColumnExpressionSuggestionProvider,
 } from "@finos/vuu-table-extras";
 
@@ -10,6 +11,7 @@ import { JsonTable } from "@finos/vuu-datatable";
 
 import {} from "@finos/vuu-utils";
 import { useAutoLoginToVuuServer } from "../utils";
+import { Input } from "@salt-ds/core";
 
 let displaySequence = 1;
 
@@ -38,7 +40,8 @@ const columns = [
 export const DefaultColumnExpressionInput = () => {
   const [expression, setExpression] = useState<Expression>();
   const [source, setSource] = useState("");
-  const [isValid] = useState(false);
+  const [currentSource, setCurrentSource] = useState("");
+  const [isValid, setIsValid] = useState(false);
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns,
     table,
@@ -56,27 +59,47 @@ export const DefaultColumnExpressionInput = () => {
   const handleChange: ColumnExpressionInputProps["onChange"] = useCallback(
     (source: string) => {
       console.log(`source ${source}, expression ${expression}`);
-      // const isValidExpression = isCompleteExpression(source);
-      // console.log(`is valid ${isValidExpression}`);
-      // setIsValid(isCompleteExpression(source));
+      setCurrentSource(source);
+      const isValidExpression = isCompleteExpression(source);
+      console.log(`is valid ${isValidExpression}`);
+      setIsValid(isValidExpression);
     },
-    []
+    [expression]
   );
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 24,
+        padding: 24,
+      }}
+    >
+      <div style={{ margin: 50 }}>{currentSource}</div>
+      <Input style={{ width: 120 }} />
       <ColumnExpressionInput
         onChange={handleChange}
         onSubmitExpression={handleSubmitExpression}
         source={source}
         suggestionProvider={suggestionProvider}
       />
-      <span>isValid {isValid}</span>
-      <br />
-      <br />
+      <Input style={{ width: 120 }} />
+      <div style={{ whiteSpace: "pre" }}>
+        {JSON.stringify(expression, null, 2)}
+      </div>
+      <span>{`isValid ${isValid}`}</span>
       {/* <div>{source}</div> */}
-      <JsonTable source={expression as any} height={400} />
-    </>
+      <JsonTable
+        config={{
+          columnSeparators: true,
+          rowSeparators: true,
+          zebraStripes: true,
+        }}
+        source={expression as any}
+        height={400}
+      />
+    </div>
   );
 };
 DefaultColumnExpressionInput.displaySequence = displaySequence++;

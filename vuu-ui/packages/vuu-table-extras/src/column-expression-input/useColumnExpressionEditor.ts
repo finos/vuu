@@ -10,7 +10,14 @@ import {
   startCompletion,
 } from "@finos/vuu-codemirror";
 import { createEl } from "@finos/vuu-utils";
-import { MutableRefObject, useEffect, useMemo, useRef } from "react";
+import {
+  FocusEventHandler,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { columnExpressionLanguageSupport } from "./column-language-parser";
 import {
   ColumnDefinitionExpression,
@@ -102,7 +109,7 @@ export const useColumnExpressionEditor = ({
   const viewRef = useRef<EditorView>();
   const completionFn = useColumnAutoComplete(suggestionProvider, onSubmitRef);
 
-  const [createState, clearInput] = useMemo(() => {
+  const [createState, clearInput, submit] = useMemo(() => {
     const parseExpression = ():
       | [string, ColumnDefinitionExpression]
       | ["", undefined] => {
@@ -165,9 +172,9 @@ export const useColumnExpressionEditor = ({
             }
           }),
           // Enforces single line view
-          // EditorState.transactionFilter.of((tr) =>
-          //   tr.newDoc.lines > 1 ? [] : tr
-          // ),
+          EditorState.transactionFilter.of((tr) =>
+            tr.newDoc.lines > 1 ? [] : tr
+          ),
           vuuTheme,
           vuuHighlighting,
         ],
@@ -177,7 +184,7 @@ export const useColumnExpressionEditor = ({
       submitExpression();
     };
 
-    return [createState, clearInput];
+    return [createState, clearInput, submitExpression];
   }, [completionFn, onChange, onSubmitExpression, source]);
 
   useEffect(() => {
@@ -195,5 +202,9 @@ export const useColumnExpressionEditor = ({
     };
   }, [completionFn, createState]);
 
-  return { editorRef, clearInput };
+  const handleBlur = useCallback<FocusEventHandler>(() => {
+    submit();
+  }, [submit]);
+
+  return { editorRef, clearInput, onBlur: handleBlur };
 };

@@ -234,6 +234,9 @@ export const useTable = ({
         tableConfig: newTableConfig,
         dataSourceConfig: dataSource.config,
       });
+      console.log(`dispatch onConfigChange`, {
+        newTableConfig,
+      });
       onConfigChange?.(newTableConfig);
     },
     [dataSource, dispatchColumnAction, onConfigChange, tableConfig]

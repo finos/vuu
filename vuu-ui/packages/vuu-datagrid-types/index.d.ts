@@ -129,7 +129,6 @@ export interface ColumnDescriptor {
   align?: ColumnAlignment;
   className?: string;
   editable?: boolean;
-  expression?: string;
   flex?: number;
   /** 
    Optional additional level(s) of heading to display above label.
