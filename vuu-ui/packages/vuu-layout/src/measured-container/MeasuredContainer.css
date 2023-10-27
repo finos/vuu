@@ -1,6 +1,8 @@
 
 .vuuMeasuredContainer {
+    flex: var(--vuuMeasuredContainer-flex, none);
     height: var(--vuuMeasuredContainer-height, var(--measured-css-height));
+    min-height: 0;
     width: var(--measured-css-width);
   
 }

@@ -1,5 +1,5 @@
 .vuuFilterTableFeature {
-    --vuuTable-flex: 1 1 1px;
+    --vuuMeasuredContainer-flex: 1 1 1px;
     min-height: 100px;
 
 }
