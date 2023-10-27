@@ -74,6 +74,14 @@ describe("ColumnExpressionParser", () => {
     ).toEqual(Ok);
   });
 
+  it("parses and function", () => {
+    expect(evaluateExpression('and(price > 100, ccy="EUR")')).toEqual(Ok);
+  });
+
+  it("parses or function", () => {
+    expect(evaluateExpression('or(price > 100, ccy="EUR")')).toEqual(Ok);
+  });
+
   it("parses conditional expressions", () => {
     expect(evaluateExpression("if(price > 100, true, false)")).toEqual(Ok);
     expect(evaluateExpression('if(side="Sell","N","Y")')).toEqual(Ok);

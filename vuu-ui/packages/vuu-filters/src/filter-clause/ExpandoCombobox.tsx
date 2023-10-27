@@ -75,7 +75,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   );
 
   const handleSetSelectedText = useCallback((text: string) => {
-    console.log(`handleSetSelectedText ${text}`);
     setText(text);
   }, []);
 
@@ -132,7 +131,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     minWidth: 102,
   };
 
-  return (
+  return props.source?.length === 0 ? null : (
     <div
       className={cx(classBase, classNameProp)}
       data-text={text}

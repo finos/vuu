@@ -187,7 +187,7 @@ export const useTable = ({
         //   tableSchema,
         // });
       } else {
-        console.log("usbscription message with no schema");
+        console.log("subscription message with no schema");
       }
     },
     []

@@ -33,6 +33,7 @@ export interface FilterBarHookProps
     | "activeFilterIndex"
     | "filters"
     | "onApplyFilter"
+    | "onChangeActiveFilterIndex"
     | "onFiltersChanged"
     | "showMenu"
   > {
@@ -46,6 +47,7 @@ export const useFilterBar = ({
   containerRef,
   filters: filtersProp,
   onApplyFilter,
+  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp,
 }: FilterBarHookProps) => {
@@ -308,8 +310,9 @@ export const useFilterBar = ({
   const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
     (itemIndex) => {
       setActiveFilterIndex(itemIndex);
+      onChangeActiveFilterIndexProp?.(itemIndex);
     },
-    []
+    [onChangeActiveFilterIndexProp]
   );
 
   const handleClickAddFilter = useCallback(() => {
@@ -327,7 +330,6 @@ export const useFilterBar = ({
   };
 
   const handleChangeFilterClause = (filterClause: Partial<FilterClause>) => {
-    console.log({ filterClause });
     if (filterClause !== undefined) {
       setEditFilter((filter) => replaceClause(filter, filterClause));
       setShowMenu(true);
