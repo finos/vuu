@@ -9,6 +9,8 @@
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
+  flex: var(--vuuTable-flex, none);
+  min-height: 0;
   position: relative;
   user-select: none;
 }

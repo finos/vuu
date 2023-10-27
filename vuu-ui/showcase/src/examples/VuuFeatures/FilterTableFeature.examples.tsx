@@ -1,5 +1,10 @@
 import { getSchema } from "@finos/vuu-data-test";
-import { LayoutProvider, registerComponent, View } from "@finos/vuu-layout";
+import {
+  FlexboxLayout,
+  LayoutProvider,
+  registerComponent,
+  View,
+} from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
@@ -19,13 +24,8 @@ export const DefaultFilterTableFeature = () => {
   //-----------------------------------------------------------------------------------
   const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
-  useEffect(() => {
-    console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [applicationLayout]);
-
   const handleLayoutChange = useCallback(
     (layout) => {
-      console.log("layout change");
       saveApplicationLayout(layout);
     },
     [saveApplicationLayout]
@@ -52,6 +52,44 @@ export const DefaultFilterTableFeature = () => {
   );
 };
 DefaultFilterTableFeature.displaySequence = displaySequence++;
+
+export const FilterTableFeatureFlexBox = () => {
+  const schema = getSchema("instruments");
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ flexDirection: "column", width: "100%", height: "100%" }}
+      >
+        <View
+          Header={VuuBlotterHeader}
+          id="table-next-feature-0"
+          className="vuuTableNextFeature"
+          closeable
+          header
+          resizeable
+          title="Instruments"
+          style={{ flex: 1 }}
+        >
+          <FilterTableFeature tableSchema={schema} />
+        </View>
+        <View
+          Header={VuuBlotterHeader}
+          id="table-next-feature"
+          className="vuuTableNextFeature-1"
+          closeable
+          header
+          resizeable
+          title="Instruments"
+          style={{ flex: 1 }}
+        >
+          <FilterTableFeature tableSchema={schema} />
+        </View>
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+FilterTableFeatureFlexBox.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;

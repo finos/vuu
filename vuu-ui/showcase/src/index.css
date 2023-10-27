@@ -12,7 +12,7 @@ body {
   align-items: center;
   display: flex;
   gap: 12px;
-  height: 36px;
+  height: var(--vuuToolbarProxy-height, 36px);
 }
 
 .vuuToolbarProxy > [data-align="end"]{

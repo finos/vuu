@@ -251,13 +251,11 @@ function init({
   tableConfig,
 }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
-  console.log({ columns, dataSourceConfig: dataSourceConfig?.columns });
 
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(columnDescriptorToKeyedColumDescriptor(tableAttributes));
 
-  console.log({ keyedColumns });
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
     : keyedColumns;
