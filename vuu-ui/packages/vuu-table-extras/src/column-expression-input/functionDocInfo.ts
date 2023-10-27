@@ -25,7 +25,7 @@ export const functionDocInfo = ({
   rootElement.appendChild(child2);
 
   if (example) {
-    const exampleElement = createEl("div", "example-container", "Example:");
+    const exampleElement = createEl("div", "example-container");
     const expressionElement = createEl(
       "div",
       "example-expression",
@@ -34,9 +34,9 @@ export const functionDocInfo = ({
     const resultElement = createEl("div", "example-result", example.result);
 
     exampleElement.appendChild(expressionElement);
-    exampleElement.appendChild(resultElement);
 
     rootElement.appendChild(exampleElement);
+    rootElement.appendChild(resultElement);
   }
 
   return rootElement;

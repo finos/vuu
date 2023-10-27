@@ -7,6 +7,7 @@ const packages = [
   "vuu-data",
   "vuu-data-react",
   "vuu-data-ag-grid",
+  "vuu-data-test",
   "vuu-data-types",
   "vuu-table-extras",
   "vuu-datagrid-types",
