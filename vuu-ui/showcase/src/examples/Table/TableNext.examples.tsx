@@ -442,6 +442,10 @@ export const VuuTableNextCalculatedColumns = () => {
         },
       },
       {
+        name: 'openEur:boolean:=and(ccy="EUR",openQty>2000)',
+        serverDataType: "boolean",
+      },
+      {
         name: 'isBuy:char:=if(side="Sell","N","Y")',
         serverDataType: "char",
       },
@@ -499,7 +503,7 @@ export const VuuTableNextCalculatedColumns = () => {
       dataSource={dataSource}
       height={645}
       renderBufferSize={50}
-      width={715}
+      width="100%"
     />
   );
 };
