@@ -54,7 +54,7 @@
       }
     
       .vuuTableNextRow-selectionDecorator {
-        background-color: var(--vuu-selection-decorator-bg, inherit);
+        background-color: var(--vuu-selection-decorator-bg, white);
         display: inline-block;
         position: relative;
         height: var(--row-height);

@@ -6,6 +6,12 @@ import cx from "classnames";
 import "./MeasuredContainer.css";
 
 export interface MeasuredContainerProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * A numeric value for height will result in a fixed height. To adapt to container
+   * use either a percentage height or 'auto'. Always use 'auto' when rendering
+   * within a column based flex container, together with a flex value (use the
+   * --vuuMeasuredContainer-flex CSS custom property))
+   */
   height?: number | string;
   onResize?: (size: MeasuredSize) => void;
   width?: number | string;

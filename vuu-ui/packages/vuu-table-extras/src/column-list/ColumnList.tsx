@@ -117,7 +117,7 @@ export const ColumnList = ({
       <List<ColumnItem, "none">
         ListItem={ColumnListItem}
         allowDragDrop
-        height="100%"
+        height="auto"
         onChange={handleChange}
         onClick={handleClick}
         onMoveListItem={onMoveListItem}
