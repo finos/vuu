@@ -110,10 +110,6 @@ export class RemoteDataSource
       visualLink: visualLink || this.#config.visualLink,
     };
 
-    console.log(`1)`, {
-      config: this.#config,
-    });
-
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
   }
@@ -161,14 +157,6 @@ export class RemoteDataSource
     this.server = await getServerAPI();
 
     const { bufferSize } = this;
-
-    console.log(`subscribe`, {
-      config: this.#config,
-    });
-
-    console.log(`3)`, {
-      config: this.#config,
-    });
 
     this.server?.subscribe(
       {
@@ -400,9 +388,6 @@ export class RemoteDataSource
   }
 
   set config(config: DataSourceConfig) {
-    console.log(`2)`, {
-      config,
-    });
     if (configChanged(this.#config, config)) {
       if (config) {
         const newConfig: DataSourceConfig =
@@ -452,7 +437,6 @@ export class RemoteDataSource
         this.server.send(message);
       }
     }
-    console.log("set columns");
     this.emit("config", this.#config);
   }
 

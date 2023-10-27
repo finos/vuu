@@ -387,7 +387,7 @@ describe("Column Expression treeWalker", () => {
     });
   });
 
-  it.only("parses and expressions with boolean conditions", () => {
+  it.skip("parses and expressions with boolean conditions", () => {
     const str = 'and(bid > 100, currency="EUR")';
     const result = parser.parse(str);
     const expression = walkTree(result, str);

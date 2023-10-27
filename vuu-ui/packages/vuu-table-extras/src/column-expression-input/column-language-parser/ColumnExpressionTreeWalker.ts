@@ -588,7 +588,6 @@ export const walkTree = (tree: Tree, source: string) => {
   const cursor = tree.cursor();
   do {
     const { name, from, to } = cursor;
-    console.log(`walkTree ${name}`);
     switch (name) {
       case "AndCondition":
         columnExpression.setCondition("and");

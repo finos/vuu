@@ -159,20 +159,6 @@ describe("jsonToDataSourceRows", () => {
   });
 
   it("parses a 2 level structure, mixed simple attributes and array (json values)", () => {
-    console.log(
-      jsonToDataSourceRows({
-        test1: "value 1",
-        test2: 12345,
-        test3: 100.01,
-        test4: true,
-        test5: [
-          { "test5.1": "test 5.1 value" },
-          { "test5.2": "test 5.2 value" },
-          { "test5.3": "test 5.2 value" },
-        ],
-      })
-    );
-
     // prettier-ignore
     expect(
       jsonToDataSourceRows({
