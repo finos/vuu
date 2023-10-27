@@ -166,7 +166,6 @@ public class LayoutIntegrationTest {
             .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
     }
 
-
     @Test
     void createLayout_invalidLayout_returns400() throws Exception {
         String invalidLayout = "invalidLayout";
@@ -196,16 +195,7 @@ public class LayoutIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(content().string(
-                "Validation failed for argument [0] in public org.finos.vuu.layoutserver.dto"
-                    + ".response.LayoutResponseDTO org.finos.vuu.layoutserver.controller"
-                    + ".LayoutController.createLayout(org.finos.vuu.layoutserver.dto.request"
-                    + ".LayoutRequestDTO): [Field error in object 'layoutRequestDTO' on field "
-                    + "'metadata': rejected value [null]; codes [NotNull.layoutRequestDTO"
-                    + ".metadata,NotNull.metadata,NotNull.org.finos.vuu.layoutserver.dto.request"
-                    + ".MetadataRequestDTO,NotNull]; arguments [org.springframework.context"
-                    + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO.metadata,"
-                    + "metadata]; arguments []; default message [metadata]]; default message "
-                    + "[Please provide valid metadata]] "));
+                "[metadata: Metadata must not be null]"));
 
         assertThat(layoutRepository.findAll()).isEmpty();
     }
@@ -249,46 +239,8 @@ public class LayoutIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(content().string(anyOf(
-                equalTo(
-                    "Validation failed for argument [1] in public void org.finos.vuu.layoutserver"
-                        + ".controller.LayoutController.updateLayout(java.util.UUID,org.finos.vuu"
-                        + ".layoutserver.dto.request.LayoutRequestDTO) with 2 errors: [Field "
-                        + "error in"
-                        + " object 'layoutRequestDTO' on field 'metadata': rejected value [null]; "
-                        + "codes [NotNull.layoutRequestDTO.metadata,NotNull.metadata,NotNull.org"
-                        + ".finos.vuu.layoutserver.dto.request.MetadataRequestDTO,NotNull]; "
-                        + "arguments"
-                        + " [org.springframework.context.support.DefaultMessageSourceResolvable: "
-                        + "codes [layoutRequestDTO.metadata,metadata]; arguments []; default "
-                        + "message "
-                        + "[metadata]]; default message [Please provide valid metadata]] [Field "
-                        + "error"
-                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
-                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
-                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
-                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
-                        + ".definition,definition]; arguments []; default message [definition]]; "
-                        + "default message [Please provide a valid definition]] "),
-                equalTo(
-                    "Validation failed for argument [1] in public void org.finos.vuu.layoutserver"
-                        + ".controller.LayoutController.updateLayout(java.util.UUID,org.finos.vuu"
-                        + ".layoutserver.dto.request.LayoutRequestDTO) with 2 errors: [Field "
-                        + "error"
-                        + " in object 'layoutRequestDTO' on field 'definition': rejected value []; "
-                        + "codes [NotBlank.layoutRequestDTO.definition,NotBlank.definition,NotBlank"
-                        + ".java.lang.String,NotBlank]; arguments [org.springframework.context"
-                        + ".support.DefaultMessageSourceResolvable: codes [layoutRequestDTO"
-                        + ".definition,definition]; arguments []; default message [definition]]; "
-                        + "default message [Please provide a valid definition]] [Field "
-                        + "error in"
-                        + " object 'layoutRequestDTO' on field 'metadata': rejected value [null]; "
-                        + "codes [NotNull.layoutRequestDTO.metadata,NotNull.metadata,NotNull.org"
-                        + ".finos.vuu.layoutserver.dto.request.MetadataRequestDTO,NotNull]; "
-                        + "arguments"
-                        + " [org.springframework.context.support.DefaultMessageSourceResolvable: "
-                        + "codes [layoutRequestDTO.metadata,metadata]; arguments []; default "
-                        + "message "
-                        + "[metadata]]; default message [Please provide valid metadata]] "))));
+                equalTo("[definition: Definition must not be blank, metadata: Metadata must not be null]"),
+                equalTo("[metadata: Metadata must not be null, definition: Definition must not be blank]"))));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
