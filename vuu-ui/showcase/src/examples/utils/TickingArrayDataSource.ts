@@ -6,7 +6,10 @@ import {
 } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { RowUpdates, UpdateGenerator } from "./rowUpdates";
+import {
+  RowUpdates,
+  UpdateGenerator,
+} from "@finos/vuu-data-test/src/rowUpdates";
 
 export interface TickingArrayDataSourceConstructorProps
   extends ArrayDataSourceConstructorProps {

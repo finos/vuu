@@ -1,10 +1,9 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { PriceReferenceData } from "../reference-data";
-import { ExtendedColumnConfig } from "../useTableConfig";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { getAllSchemas } from "@finos/vuu-data-test";
+import { getAllSchemas } from "../tableSchemas";
 
 export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   if (index >= PriceReferenceData.length) {
@@ -21,11 +20,7 @@ const tickingColumns = [bid, bidSize, ask, askSize];
 export const createUpdateGenerator = () =>
   new BaseUpdateGenerator(tickingColumns);
 
-export const ColumnGenerator: ColumnGeneratorFn = (
-  columns = [],
-  columnConfig: ExtendedColumnConfig = {}
-) => {
-  console.log({ columnConfig });
+export const ColumnGenerator: ColumnGeneratorFn = (columns = []) => {
   const schemaColumns: ColumnDescriptor[] = pricesSchema.columns;
   if (typeof columns === "number") {
     throw Error("PricesColumnGenerator must be passed columns (strings)");

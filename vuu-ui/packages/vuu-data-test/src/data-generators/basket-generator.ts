@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { BasketColumnMap, BasketReferenceData } from "../reference-data";
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema } from "../tableSchemas";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
 export const RowGenerator: RowGeneratorFactory =

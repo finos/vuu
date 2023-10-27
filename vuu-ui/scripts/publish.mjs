@@ -6,6 +6,7 @@ const packages = [
   "vuu-codemirror",
   "vuu-data",
   "vuu-data-react",
+  "vuu-data-test",
   "vuu-data-ag-grid",
   "vuu-data-test",
   "vuu-data-types",

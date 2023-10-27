@@ -10,10 +10,7 @@ import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
 import { makeSuggestions } from "./makeSuggestions";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
-import {
-  getColumnAndRowGenerator,
-  populateArray,
-} from "./data-generators/vuu-row-generator";
+import { getColumnAndRowGenerator, populateArray } from "@finos/vuu-data-test";
 
 const NO_CONFIG = {} as const;
 const NO_COLUMNS: number[] = [];
