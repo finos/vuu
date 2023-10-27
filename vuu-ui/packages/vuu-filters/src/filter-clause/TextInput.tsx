@@ -82,7 +82,7 @@ export const TextInput = forwardRef(function TextInput(
           setTypeaheadValues(suggestions);
         })
         .catch((err) => {
-          console.error("Error getting suggsetions", err);
+          console.error("Error getting suggestions", err);
         });
     }
   }, [table, column, valueInputValue, getSuggestions]);

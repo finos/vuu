@@ -2,7 +2,7 @@
     align-items: center;
     background: var(--salt-taggable-background);
     border: solid 1px var(--salt-taggable-foreground);
-    border-radius: 26px;
+    border-radius: 24px;
     color: var(--vuu-color-gray-50);
     display: inline-flex;
     max-width: var(--vuuFilterPill-maxWidth, 200px);
@@ -13,7 +13,7 @@
 }
 
 .vuuFilterPill.vuuToolbarItem {
-    height: 26px;
+    height: 24px;
 }
 
 .vuuFilterPill[aria-selected="true"]{

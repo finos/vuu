@@ -25,7 +25,7 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
   {
     accepts: ["boolean"],
     description:
-      "Applies boolean and operator across supplied parameters to retuner a single boolean result",
+      "Applies boolean and operator across supplied parameters to returns a single boolean result",
     example: {
       expression: 'and(ccy="EUR",quantity=0)',
       result: "true | false",
@@ -124,6 +124,24 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * or
+   */
+  {
+    accepts: ["boolean"],
+    description:
+      "Applies boolean or operator across supplied parameters to returns a single boolean result",
+    example: {
+      expression: 'or(status="cancelled",quantity=0)',
+      result: "true | false",
+    },
+    name: "or",
+    params: {
+      description: "( boolean, [ boolean* ] )",
+    },
+    type: "boolean",
+  },
+
   /**
    * upper()
    */
