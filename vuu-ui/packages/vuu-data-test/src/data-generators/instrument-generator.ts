@@ -1,12 +1,13 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema } from "../tableSchemas";
 import {
   InstrumentReferenceData,
   InstrumentColumnMap,
 } from "../reference-data";
 import { getCalculatedColumnType, isCalculatedColumn } from "@finos/vuu-utils";
-import { ExtendedColumnConfig } from "../useTableConfig";
+
+export type ExtendedColumnConfig = { [key: string]: Partial<ColumnDescriptor> };
 
 export const RowGenerator: RowGeneratorFactory =
   (columnNames?: string[]) => (index: number) => {

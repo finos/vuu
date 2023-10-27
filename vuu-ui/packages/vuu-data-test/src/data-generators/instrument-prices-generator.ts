@@ -5,7 +5,7 @@ import {
   InstrumentPricesReferenceData,
 } from "../reference-data";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema } from "../tableSchemas";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
 
 const instrumentPriceSchema = getSchema("instrumentPrices");

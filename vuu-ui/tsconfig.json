@@ -26,7 +26,7 @@
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
     "global.d.ts"
-  ],
+, "packages/vuu-data-test/src/UpdateGenerator.ts"  ],
   "exclude": ["**/*.cy.*", "**/*.test.*"],
   "references": [
     {"path" : "packages/vuu-codemirror"},

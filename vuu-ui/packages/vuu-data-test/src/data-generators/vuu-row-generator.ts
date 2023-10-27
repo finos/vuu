@@ -1,8 +1,9 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
-import { RowAtIndexFunc } from "../ArrayProxy";
 import * as dataGenerators from ".";
 import { UpdateGenerator } from "../rowUpdates";
+
+type RowAtIndexFunc<T = unknown> = (index: number) => T | undefined;
 
 export const VuuColumnGenerator = (columnCount: number): string[] =>
   ["Row No"].concat(
