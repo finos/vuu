@@ -56,8 +56,8 @@ export interface MeasuredContainerHookResult {
 // is no border on Table, these values will not change. If there is a border,
 // inner values will be updated once measured.
 const getInitialCssSize = (
-  height?: number | "string",
-  width?: number | "string"
+  height?: number | string,
+  width?: number | string
 ): CssSize => {
   if (isValidNumber(height) && isValidNumber(width)) {
     return {

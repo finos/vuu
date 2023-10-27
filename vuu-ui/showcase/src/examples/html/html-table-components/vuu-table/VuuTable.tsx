@@ -1,5 +1,5 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { TableProps } from "@finos/vuu-table";
+import { TablePropsDeprecated as TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
 import { useIdMemo } from "@salt-ds/core";
 import { CSSProperties } from "react";
@@ -35,7 +35,6 @@ export const VuuTable = ({
   width,
   ...htmlAttributes
 }: TableProps) => {
-  const id = useIdMemo(idProp);
   const {
     columnMap,
     columns,

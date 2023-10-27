@@ -640,10 +640,7 @@ export function updateColumn(
   }
 }
 
-export const toDataSourceColumns = (column: ColumnDescriptor) =>
-  column.expression
-    ? `${column.name}:${column.serverDataType}:${column.expression}`
-    : column.name;
+export const toDataSourceColumns = (column: ColumnDescriptor) => column.name;
 
 export const getRowRecord = (
   row: DataSourceRow,
