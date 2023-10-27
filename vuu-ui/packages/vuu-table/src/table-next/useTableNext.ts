@@ -99,7 +99,7 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
-  navigationStyle,
+  navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,

@@ -15,6 +15,12 @@ import { isDataLoading } from "@finos/vuu-utils";
 
 const classBase = "vuuTable";
 
+export interface TablePropsDeprecated
+  extends Omit<TableProps, "height" | "width"> {
+  height?: number;
+  width?: number;
+}
+
 export const Table = ({
   allowConfigEditing: showSettings = false,
   className: classNameProp,
@@ -35,7 +41,7 @@ export const Table = ({
   style: styleProp,
   width,
   ...htmlAttributes
-}: TableProps) => {
+}: TablePropsDeprecated) => {
   const id = useIdMemo(idProp);
   const {
     containerMeasurements: { containerRef, innerSize, outerSize },
