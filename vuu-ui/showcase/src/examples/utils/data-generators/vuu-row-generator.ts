@@ -49,7 +49,7 @@ export const DefaultColumnGenerator: ColumnGeneratorFn = (
 
 const defaultGenerators = {
   ColumnGenerator: DefaultColumnGenerator,
-  RowGeneratorFactory: DefaultRowGenerator,
+  RowGenerator: DefaultRowGenerator,
 };
 
 export const getColumnAndRowGenerator = (

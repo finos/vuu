@@ -39,7 +39,7 @@ export const LeftNav = ({
   features,
   onResize,
   sizeCollapsed = 80,
-  sizeContent = 240,
+  sizeContent = 300,
   sizeExpanded = 240,
   style: styleProp,
   tableFeatures,
@@ -142,6 +142,7 @@ export const LeftNav = ({
     ...styleProp,
     "--nav-menu-collapsed-width": `${sizeCollapsed}px`,
     "--nav-menu-expanded-width": `${sizeExpanded}px`,
+    "--nav-menu-content-width": `${sizeContent}px`,
   } as CSSProperties;
 
   return (

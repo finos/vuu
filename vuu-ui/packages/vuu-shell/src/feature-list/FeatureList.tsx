@@ -18,8 +18,6 @@ export const FeatureList = ({
 }: FeatureListProps) => {
   const ViewProps = {};
 
-  console.log({ features });
-
   const listProps: Partial<ListProps> = {
     height: "100%",
   };

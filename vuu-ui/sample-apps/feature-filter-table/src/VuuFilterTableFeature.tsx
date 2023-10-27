@@ -17,7 +17,10 @@ import { FilterBarProps } from "@finos/vuu-filters";
 import { FlexboxLayout, useViewContext } from "@finos/vuu-layout";
 import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { DataSourceStats } from "@finos/vuu-table-extras";
+import cx from "classnames";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import "./VuuFilterTableFeature.css";
 
 import {
   isViewportMenusAction,
@@ -31,7 +34,7 @@ import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
 import { Button } from "@salt-ds/core";
 import "./VuuFilterTableFeature.css";
 
-const classBase = "VuuFilterTableFeature";
+const classBase = "vuuFilterTableFeature";
 
 export interface FilterTableFeatureProps {
   tableSchema: TableSchema;
@@ -275,6 +278,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
       ...tableConfig,
     },
     dataSource,
+    height: "auto",
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
     onFeatureEnabled: handleVuuFeatureEnabled,
@@ -296,10 +300,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
           TableProps={tableProps}
           style={{ flex: "1 1 auto" }}
         />
-        <div
-          className="vuuToolbarProxy vuuBlotter-footer"
-          style={{ height: 18 }}
-        >
+        <div className={cx("vuuToolbarProxy", `${classBase}-footer`)}>
           <DataSourceStats dataSource={dataSource} />
         </div>
       </FlexboxLayout>
