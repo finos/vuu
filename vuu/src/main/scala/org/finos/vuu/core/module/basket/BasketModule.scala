@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentService}
+import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -110,18 +111,18 @@ object BasketModule extends DefaultModule {
         ),
         (table, _) => new AlgoProvider(table)
       )
-//      .addJoinTable(tableDefs =>
-//        JoinTableDef(
-//          name = "BasketTradingConstituentPrices",
-//          baseTable = tableDefs.get("BasketTradingConstituent"),
-//          joinColumns = Columns.allFrom(tableDefs.get("BasketTradingConstituent")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
-//          joins =
-//            JoinTo(
-//              table = tableDefs.get("prices"),
-//              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-//            ),
-//          joinFields = Seq()
-//        ))
+      .addJoinTable(tableDefs =>
+        JoinTableDef(
+          name = "basketTradConsPrices",
+          baseTable = tableDefs.get(NAME, "basketTradingConstituent"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "basketTradingConstituent")) ++ Columns.allFromExcept(tableDefs.get(SimulationModule.NAME, "prices"), "ric"),
+          joins =
+            JoinTo(
+              table = tableDefs.get(SimulationModule.NAME, "prices"),
+              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+            ),
+          joinFields = Seq()
+        ))
       .asModule()
   }
 

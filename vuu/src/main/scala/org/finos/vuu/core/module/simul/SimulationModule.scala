@@ -275,11 +275,11 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "orderEntryPrices",
-          baseTable = tableDefs.get("orderEntry"),
-          joinColumns = Columns.allFrom(tableDefs.get("orderEntry")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+          baseTable = tableDefs.get(NAME, "orderEntry"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get("prices"),
+              table = tableDefs.get(NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()
@@ -287,11 +287,11 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "instrumentPrices",
-          baseTable = tableDefs.get("instruments"),
-          joinColumns = Columns.allFrom(tableDefs.get("instruments")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+          baseTable = tableDefs.get(NAME, "instruments"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get("prices"),
+              table = tableDefs.get(NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()
@@ -299,11 +299,11 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "ordersPrices",
-          baseTable = tableDefs.get("orders"),
-          joinColumns = Columns.allFrom(tableDefs.get("orders")) ++ Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+          baseTable = tableDefs.get(NAME, "orders"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get("prices"),
+              table = tableDefs.get(NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()

@@ -1,4 +1,4 @@
-package org.finos.vuu.core.table.join.modules
+package org.finos.vuu.core.module.modulefrommodule
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
@@ -7,20 +7,27 @@ import org.finos.vuu.core.module.{ModuleFactory, MyCustomRpcHandler, ViewServerM
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.provider.MockProvider
 
-object PriceTestModule{
+object InstrumentModule {
+
+  final val NAME = "INSTRUMENT"
 
   def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
-    ModuleFactory.withNamespace("PriceTest")
+    ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
-          name = "prices",
+          name = "instrument",
           keyField = "ric",
-          columns = Columns.fromNames("ric:String", "bid:long", "offer:long"),
+          columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
           joinFields = "ric"
         )
         ,
-        (table, vs) => new MockProvider(table)
+        (table, vs) => new MockProvider(table),
+        (table, provider, _, _) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new MyCustomRpcHandler
+        )
       )
       .asModule()
   }
+
 }
