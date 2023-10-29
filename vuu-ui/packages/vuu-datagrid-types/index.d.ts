@@ -20,7 +20,7 @@ export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export type DataCellEditHandler = (
-  rowIndex: number,
+  row: DataSourceRow,
   columnName: string,
   value: VuuColumnDataType
 ) => boolean;

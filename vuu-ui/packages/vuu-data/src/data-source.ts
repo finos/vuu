@@ -475,7 +475,7 @@ export type DataSourceEvents = {
 };
 
 export type DataSourceEditHandler = (
-  rowIndex: number,
+  row: DataSourceRow,
   columnName: string,
   value: VuuColumnDataType
 ) => boolean;
