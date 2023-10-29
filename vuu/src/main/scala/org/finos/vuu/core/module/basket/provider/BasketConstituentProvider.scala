@@ -36,6 +36,7 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
         table.processUpdate(symbol, RowWithData(symbol, Map(
           Ric -> symbol,
           BasketId -> basketId,
+          RicBasketId -> (symbol + "." + basketId),
           LastTrade -> lastTrade,
           Change -> change,
           Weighting -> weighting,

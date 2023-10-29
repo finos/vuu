@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentService}
+import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
@@ -48,7 +49,7 @@ object BasketModule extends DefaultModule {
           columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
             BC.Volume.string(), BC.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
-          joinFields = BC.RicBasketId
+          joinFields = BC.RicBasketId, BC.Ric
         ),
         (table, vs) => new BasketConstituentProvider(table),
       )
@@ -111,18 +112,18 @@ object BasketModule extends DefaultModule {
         ),
         (table, _) => new AlgoProvider(table)
       )
-//      .addJoinTable(tableDefs =>
-//        JoinTableDef(
-//          name = "basketTradConsPrices",
-//          baseTable = tableDefs.get(NAME, "basketTradingConstituent"),
-//          joinColumns = Columns.allFrom(tableDefs.get(NAME, "basketTradingConstituent")) ++ Columns.allFromExcept(tableDefs.get(SimulationModule.NAME, "prices"), "ric"),
-//          joins =
-//            JoinTo(
-//              table = tableDefs.get(SimulationModule.NAME, "prices"),
-//              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-//            ),
-//          joinFields = Seq()
-//        ))
+      .addJoinTable(tableDefs =>
+        JoinTableDef(
+          name = "basketConsPrices",
+          baseTable = tableDefs.get(NAME, BasketConstituentTable),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joins =
+            JoinTo(
+              table = tableDefs.get(PriceModule.NAME, "prices"),
+              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+            ),
+          joinFields = Seq()
+        ))
       .asModule()
   }
 

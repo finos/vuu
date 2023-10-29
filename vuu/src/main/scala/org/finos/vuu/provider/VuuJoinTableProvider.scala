@@ -148,6 +148,9 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
   def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
     val keyField = sourceTableDefsByName.get(tableName).keyField
+    if(keyField == null)
+      println("here")
+
     ev.get(keyField).toString
   }
 
