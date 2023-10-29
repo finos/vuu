@@ -633,10 +633,8 @@ export class RemoteDataSource
       field: columnName,
       value: parseInt(value),
       type: "VP_EDIT_CELL_RPC",
-    }).then((response) => {
-      console.log(`response`, {
-        response,
-      });
+    }).then(() => {
+      console.log("response");
     });
     return true;
   }
