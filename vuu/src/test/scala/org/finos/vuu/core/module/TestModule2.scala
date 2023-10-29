@@ -55,12 +55,12 @@ object TestModule2 extends DefaultModule {
         .addJoinTable( tableDefs =>
           JoinTableDef(
             name = "instrumentPrices",
-            baseTable = tableDefs.get("instruments"),
-            joinColumns = Columns.allFrom(tableDefs.get("instruments")) ++
-                          Columns.allFromExcept(tableDefs.get("prices"), "ric"),
+            baseTable = tableDefs.get("TEST", "instruments"),
+            joinColumns = Columns.allFrom(tableDefs.get("TEST", "instruments")) ++
+                          Columns.allFromExcept(tableDefs.get("TEST", "prices"), "ric"),
             joins =
               JoinTo(
-                table = tableDefs.get("prices"),
+                table = tableDefs.get("TEST", "prices"),
                 joinSpec = JoinSpec(left = "ric",
                   right = "ric",
                   LeftOuterJoin)

@@ -6,7 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
 import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.module.{StaticServedResource, ViewServerModule}
+import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
@@ -20,6 +20,7 @@ trait AbstractSessionTestCase {
 
   def createViewServerModule(theName: String): ViewServerModule = {
     new ViewServerModule {
+      override def tableDefContainer: TableDefContainer = ???
       override def name: String = theName
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
