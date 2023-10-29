@@ -33,10 +33,11 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
         val volume = row("Volume")
         val weighting = row("Weight")
         val side = BasketConstants.Side.Buy
-        table.processUpdate(symbol, RowWithData(symbol, Map(
+        val ricBasketId = symbol + "." + basketId
+        table.processUpdate(ricBasketId, RowWithData(symbol, Map(
           Ric -> symbol,
           BasketId -> basketId,
-          RicBasketId -> (symbol + "." + basketId),
+          RicBasketId -> ricBasketId,
           LastTrade -> lastTrade,
           Change -> change,
           Weighting -> weighting,

@@ -71,7 +71,6 @@ object BasketModule extends DefaultModule {
                                       BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
                                       BTC.BasketId.string(), BTC.PriceStrategyId.int(),
                                       BTC.Description.string(),
-                                      BTC.Bid.double(), BTC.Offer.double(), BTC.Last.double(),
                                       BTC.NotionalUsd.double(), BTC.NotionalLocal.double(),
                                       BTC.Venue.string(),
                                       BTC.Algo.string(), BTC.AlgoParams.string(),
@@ -82,7 +81,7 @@ object BasketModule extends DefaultModule {
           VisualLinks(
             Link(BTC.InstanceId, BasketTradingTable, BT.InstanceId),
           ),
-          joinFields = BTC.InstanceIdRic
+          joinFields = BTC.InstanceIdRic, BTC.Ric
         ),
         (table, vs) => new NullProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
@@ -114,9 +113,9 @@ object BasketModule extends DefaultModule {
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
-          name = "basketConsPrices",
-          baseTable = tableDefs.get(NAME, BasketConstituentTable),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          name = "basketTrdConsPrices",
+          baseTable = tableDefs.get(NAME, BasketTradingConstituent),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituent)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
