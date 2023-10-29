@@ -111,18 +111,18 @@ object BasketModule extends DefaultModule {
         ),
         (table, _) => new AlgoProvider(table)
       )
-      .addJoinTable(tableDefs =>
-        JoinTableDef(
-          name = "basketTradConsPrices",
-          baseTable = tableDefs.get(NAME, "basketTradingConstituent"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "basketTradingConstituent")) ++ Columns.allFromExcept(tableDefs.get(SimulationModule.NAME, "prices"), "ric"),
-          joins =
-            JoinTo(
-              table = tableDefs.get(SimulationModule.NAME, "prices"),
-              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-            ),
-          joinFields = Seq()
-        ))
+//      .addJoinTable(tableDefs =>
+//        JoinTableDef(
+//          name = "basketTradConsPrices",
+//          baseTable = tableDefs.get(NAME, "basketTradingConstituent"),
+//          joinColumns = Columns.allFrom(tableDefs.get(NAME, "basketTradingConstituent")) ++ Columns.allFromExcept(tableDefs.get(SimulationModule.NAME, "prices"), "ric"),
+//          joins =
+//            JoinTo(
+//              table = tableDefs.get(SimulationModule.NAME, "prices"),
+//              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+//            ),
+//          joinFields = Seq()
+//        ))
       .asModule()
   }
 

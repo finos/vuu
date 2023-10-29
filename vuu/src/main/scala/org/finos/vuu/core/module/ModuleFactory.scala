@@ -37,7 +37,7 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
       case Some(tableDef) =>
         tableDef
       case None =>
-        throw new Exception(s"Table ${name} could not be found in [" + realizedTableDefs.map(_.name).mkString(",") + "]")
+        throw new Exception(s"Table $name could not be found in [" + realizedTableDefs.map(_.name).mkString(",") + "]")
     }
   }
 }
@@ -138,12 +138,12 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
 object ModuleFactory {
 
-  private val tableDefConatiner = new TableDefContainer(Map())
+  private val tableDefContainer = new TableDefContainer(Map())
 
   implicit def stringToString(s: String): FieldDefString = new FieldDefString(s)
 
   def withNamespace(ns: String): ModuleFactoryNode = {
-    ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map(), tableDefConatiner)
+    ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map(), tableDefContainer)
   }
 
 }
