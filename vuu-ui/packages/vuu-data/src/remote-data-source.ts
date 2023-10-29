@@ -131,10 +131,7 @@ export class RemoteDataSource
   ) {
     console.log(
       `%csubscribe ${this.viewport} ${this.table.table} ststus ${this.status}`,
-      "color:red;font-weight:bold;",
-      {
-        filter: JSON.stringify(filter ?? this.#config.filter),
-      }
+      "color:red;font-weight:bold;"
     );
     this.clientCallback = callback;
 
