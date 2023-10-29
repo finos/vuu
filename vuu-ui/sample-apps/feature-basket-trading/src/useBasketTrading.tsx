@@ -1,5 +1,5 @@
-import { DataSource, TableSchema } from "packages/vuu-data/src";
-import { useViewContext } from "packages/vuu-layout/src";
+import { DataSource, TableSchema } from "@finos/vuu-data";
+import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo, useState } from "react";
 import { NewBasketPanel } from "./new-basket-panel";
 
