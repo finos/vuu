@@ -1,17 +1,17 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
-import { NewBasketPanel } from "./new-basket-panel";
 
 import "./VuuBasketTradingFeature.css";
 import { EmptyBasketsPanel } from "./empty-baskets-panel";
+import { useBasketTrading } from "./useBasketTrading";
 
 const classBase = "VuuBasketTradingFeature";
 
@@ -33,7 +33,8 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     instrumentsSchema,
   } = props;
 
-  const [dialog, setDialog] = useState<JSX.Element | null>(null);
+  const basketTradingId = "steve-00001";
+
   const {
     activeTabIndex,
     dataSourceBasket,
@@ -43,24 +44,34 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     dataSourceInstruments,
     onSendToMarket,
     onTakeOffMarket,
-    saveNewBasket,
   } = useBasketTradingDataSources({
+    basketTradingId,
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentSchema,
     instrumentsSchema,
   });
 
-  const [basketCount, setBasketCount] = useState(0);
+  const [basketCount, setBasketCount] = useState(-1);
   useMemo(() => {
-    dataSourceBasketTradingSearch.subscribe({}, (message) => {
-      console.log("message from dataSourceTrading", {
-        message,
-      });
-      if (message.size) {
-        setBasketCount(message.size);
+    dataSourceBasketTradingSearch.subscribe(
+      {
+        range: { from: 0, to: 100 },
+      },
+      (message) => {
+        console.log("message from dataSourceTrading", {
+          message,
+        });
+        if (message.size) {
+          setBasketCount(message.size);
+        }
       }
-    });
+    );
+
+    // TEMP server is notsending TABLE_ROWS if size is zero
+    setTimeout(() => {
+      setBasketCount((count) => (count === -1 ? 0 : count));
+    }, 1000);
   }, [dataSourceBasketTradingSearch]);
   // useEffect(() => {
   //   dataSourceBasketDesign.resume?.();
@@ -73,37 +84,24 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     dataSourceInstruments,
   });
 
-  const handleClose = useCallback(() => {
-    setDialog(null);
-  }, []);
+  const { basketId, dialog, handleAddBasket } = useBasketTrading({
+    basketSchema,
+    dataSourceBasket,
+  });
 
-  const handleSaveNewBasket = useCallback(
-    (basketName, basketId) => {
-      saveNewBasket(basketName, basketId);
-      setDialog(null);
-    },
-    [saveNewBasket]
-  );
-
-  const handleAddBasket = useCallback(() => {
-    setDialog(
-      <NewBasketPanel
-        basketDataSource={dataSourceBasket}
-        basketSchema={basketSchema}
-        onClose={handleClose}
-        onSaveBasket={handleSaveNewBasket}
-      />
-    );
-  }, [basketSchema, dataSourceBasket, handleClose, handleSaveNewBasket]);
+  // useMemo(() => {
+  // dataSourceBasketTrading.filter = {
+  //   filter: `basketId = "${basketId}"`,
+  // };
+  // }, [basketId, dataSourceBasketTrading]);
 
   const basketSelectorProps = useMemo<BasketSelectorProps>(
     () => ({
-      basketId: "001",
-      dataSourceBasketTrading,
+      basketTradingId,
       dataSourceBasketTradingSearch: dataSourceBasketTradingSearch,
       onClickAddBasket: handleAddBasket,
     }),
-    [dataSourceBasketTrading, dataSourceBasketTradingSearch, handleAddBasket]
+    [basketTradingId, dataSourceBasketTradingSearch, handleAddBasket]
   );
 
   if (basketCount === -1) {
@@ -130,7 +128,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
         <BasketToolbar
           BasketSelectorProps={basketSelectorProps}
           basketStatus={basketStatus[activeTabIndex]}
-          basketTradngDataSource={dataSourceBasketTrading}
+          basketTradingDataSource={dataSourceBasketTrading}
           onSendToMarket={onSendToMarket}
           onTakeOffMarket={onTakeOffMarket}
         />

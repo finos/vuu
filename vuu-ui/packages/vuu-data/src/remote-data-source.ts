@@ -126,7 +126,13 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    console.log("%csubscribe", "color:red;font-weight:bold;");
+    console.log(
+      `%csubscribe ${this.viewport} ${this.table.table} ststus ${this.status}`,
+      "color:red;font-weight:bold;",
+      {
+        filter: JSON.stringify(filter ?? this.#config.filter),
+      }
+    );
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {

@@ -2,6 +2,7 @@ import { useViewContext } from "@finos/vuu-layout";
 import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { useCallback, useMemo, useState } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import { VuuFilter } from "packages/vuu-protocol-types";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -12,10 +13,11 @@ export type basketDataSourceKey =
 
 export const useBasketTradingDataSources = ({
   basketSchema,
+  basketTradingId,
   basketTradingSchema,
   basketTradingConstituentSchema,
   instrumentsSchema,
-}: BasketTradingFeatureProps) => {
+}: BasketTradingFeatureProps & { basketTradingId: string }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const { id, loadSession, saveSession, title } = useViewContext();
@@ -27,23 +29,29 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingConstituent,
     dataSourceInstruments,
   ] = useMemo(() => {
-    const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
+    const basketFilter: VuuFilter = {
+      filter: `instanceId = "${basketTradingId}"`,
+    };
+    const dataSourceConfig: [basketDataSourceKey, TableSchema, VuuFilter?][] = [
       ["data-source-basket", basketSchema],
-      ["data-source-basket-trading", basketTradingSchema],
-      ["data-source-basket-trading-search", basketTradingSchema],
+      ["data-source-basket-trading", basketTradingSchema, basketFilter],
+      ["data-source-basket-trading-search", basketTradingSchema, basketFilter],
       [
         "data-source-basket-trading-constituent",
         basketTradingConstituentSchema,
+        basketFilter,
       ],
       ["data-source-instruments", instrumentsSchema],
     ];
 
     const dataSources: DataSource[] = [];
-    for (const [key, schema] of dataSourceConfig) {
+    for (const [key, schema, filter] of dataSourceConfig) {
+      console.log(`filter for ${key} = ${JSON.stringify(filter)}`);
       let dataSource = loadSession?.(key) as RemoteDataSource;
       if (dataSource === undefined) {
         dataSource = new RemoteDataSource({
           bufferSize: 200,
+          filter,
           viewport: `${id}-${key}`,
           table: schema.table,
           columns: schema.columns.map((col) => col.name),
@@ -57,12 +65,13 @@ export const useBasketTradingDataSources = ({
   }, [
     basketSchema,
     basketTradingSchema,
+    basketTradingId,
     basketTradingConstituentSchema,
-    id,
     instrumentsSchema,
     loadSession,
-    saveSession,
+    id,
     title,
+    saveSession,
   ]);
 
   const handleSendToMarket = useCallback(() => {
@@ -71,10 +80,6 @@ export const useBasketTradingDataSources = ({
 
   const handleTakeOffMarket = useCallback(() => {
     setActiveTabIndex(0);
-  }, []);
-
-  const saveNewBasket = useCallback((basketName: string, basketId: string) => {
-    console.log(`save new baskert ${basketName}, ${basketId}`);
   }, []);
 
   return {
@@ -86,6 +91,5 @@ export const useBasketTradingDataSources = ({
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
-    saveNewBasket,
   };
 };

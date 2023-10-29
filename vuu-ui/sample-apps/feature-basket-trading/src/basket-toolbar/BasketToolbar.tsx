@@ -14,7 +14,7 @@ const classBase = "vuuBasketToolbar";
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
   basketStatus: BasketStatus;
   BasketSelectorProps: BasketSelectorProps;
-  basketTradngDataSource: DataSource;
+  basketTradingDataSource: DataSource;
   onSendToMarket: () => void;
   onTakeOffMarket: () => void;
 }

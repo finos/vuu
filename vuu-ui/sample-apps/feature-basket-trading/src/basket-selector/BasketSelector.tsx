@@ -22,8 +22,7 @@ import "./BasketSelector.css";
 const classBase = "vuuBasketSelector";
 
 export interface BasketSelectorProps extends HTMLAttributes<HTMLDivElement> {
-  basketId?: string;
-  dataSourceBasketTrading: DataSource;
+  basketTradingId?: string;
   dataSourceBasketTradingSearch: DataSource;
   label?: string;
   onClickAddBasket: () => void;
@@ -44,8 +43,7 @@ export class Basket {
 }
 
 export const BasketSelector = ({
-  basketId: basketIdProp,
-  dataSourceBasketTrading,
+  basketTradingId: basketTradingIdProp,
   dataSourceBasketTradingSearch,
   id: idProp,
   onClickAddBasket,
@@ -54,11 +52,13 @@ export const BasketSelector = ({
   // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
   const rootRef = useRef<HTMLDivElement>(null);
   const columnMap = useMemo(
-    () => buildColumnMap(dataSourceBasketTrading.columns),
-    [dataSourceBasketTrading.columns]
+    () => buildColumnMap(dataSourceBasketTradingSearch.columns),
+    [dataSourceBasketTradingSearch.columns]
   );
   const [open, setOpen] = useState(false);
-  const [basketId, setBasketId] = useState<string | undefined>(basketIdProp);
+  const [basketTradingId, setBasketTradingId] = useState<string | undefined>(
+    basketTradingIdProp
+  );
   const [basket, setBasket] = useState<Basket | undefined>();
   const id = useId(idProp);
   const handleData = useCallback<SubscribeCallback>(
@@ -76,25 +76,27 @@ export const BasketSelector = ({
 
   useMemo(() => {
     console.log("subscribe to basket");
-    dataSourceBasketTrading.subscribe(
+    dataSourceBasketTradingSearch.subscribe(
       {
         range: { from: 0, to: 1 },
-        filter: { filter: `id = "NONE"` },
+        filter: { filter: `instanceId = "${basketTradingId}"` },
       },
       handleData
     );
-  }, [dataSourceBasketTrading, handleData]);
+  }, [basketTradingId, dataSourceBasketTradingSearch, handleData]);
 
   useEffect(() => {
-    console.log(`apply filter id = ${basketId}`);
-    dataSourceBasketTrading.filter = { filter: `id = "${basketId ?? "NONE"}"` };
-  }, [basketId, dataSourceBasketTrading]);
+    console.log(`apply filter id = ${basketTradingId}`);
+    dataSourceBasketTradingSearch.filter = {
+      filter: `id = "${basketTradingId ?? "NONE"}"`,
+    };
+  }, [basketTradingId, dataSourceBasketTradingSearch]);
 
   const handleRowClick = useCallback<TableRowClickHandler>(
     (row) => {
       const { id } = columnMap;
       const basketId = row[id] as string;
-      setBasketId(basketId);
+      setBasketTradingId(basketId);
       setOpen(false);
     },
     [columnMap]

@@ -52,8 +52,6 @@ export const NewBasketPanel = ({
     onSaveBasket,
   });
 
-  console.log({ basketDataSource });
-
   const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(
     () => ({
       config: {

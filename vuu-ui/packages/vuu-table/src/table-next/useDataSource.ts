@@ -72,7 +72,6 @@ export const useDataSource = ({
           dataWindow.setRowCount(message.size);
         }
         if (message.rows) {
-          console.table(message.rows);
           setData(message.rows);
         } else if (typeof message.size === "number") {
           data.current = dataWindow.data;
