@@ -138,11 +138,11 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
 object ModuleFactory {
 
-  private val tableDefContainer = new TableDefContainer(Map())
+  //private val tableDefContainer = new TableDefContainer(Map())
 
   implicit def stringToString(s: String): FieldDefString = new FieldDefString(s)
 
-  def withNamespace(ns: String): ModuleFactoryNode = {
+  def withNamespace(ns: String)(implicit tableDefContainer: TableDefContainer): ModuleFactoryNode = {
     ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map(), tableDefContainer)
   }
 

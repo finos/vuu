@@ -3,6 +3,7 @@ package org.finos.vuu.core.module.modulefrommodule
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, ViewServerMessage}
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
@@ -19,6 +20,7 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val clock: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val authenticator = new Authenticator {
         override def authenticator(user: String, password: String): Option[String] = ???

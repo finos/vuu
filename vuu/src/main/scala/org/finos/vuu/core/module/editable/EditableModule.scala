@@ -1,7 +1,7 @@
 package org.finos.vuu.core.module.editable
 
 import org.finos.vuu.api.{SessionTableDef, TableDef, ViewPortDef, VisualLinks}
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.provider.RpcProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -12,7 +12,7 @@ object EditableModule extends DefaultModule {
 
   final val NAME = "EDITABLE"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(

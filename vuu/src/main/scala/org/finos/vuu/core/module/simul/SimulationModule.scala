@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.simul.provider._
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
@@ -151,7 +151,7 @@ object SimulationModule extends DefaultModule {
 
   final val NAME = "SIMUL"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
 

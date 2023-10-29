@@ -1,7 +1,7 @@
 package org.finos.vuu.core.module.metrics
 
 import org.finos.vuu.api.{Indices, TableDef}
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -75,7 +75,7 @@ object MetricsModule extends DefaultModule {
 
   final val NAME = "METRICS"
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(

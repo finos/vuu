@@ -36,7 +36,7 @@ class MyCustomRpcHandler extends DefaultLifecycleEnabled with AnRpcHandler with 
 
 object TestModule{
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     ModuleFactory.withNamespace("TEST")
         .addTable(
           TableDef(

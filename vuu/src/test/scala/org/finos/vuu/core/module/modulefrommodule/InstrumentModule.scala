@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.modulefrommodule
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{TableDef, ViewPortDef}
-import org.finos.vuu.core.module.{ModuleFactory, MyCustomRpcHandler, ViewServerModule}
+import org.finos.vuu.core.module.{ModuleFactory, MyCustomRpcHandler, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.provider.MockProvider
 
@@ -11,7 +11,7 @@ object InstrumentModule {
 
   final val NAME = "INSTRUMENT"
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(

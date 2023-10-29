@@ -19,7 +19,7 @@ class TestRpcHandler(val tableContainer: TableContainer) extends RpcHandler{
 
 object TestModule2 extends DefaultModule {
 
-    def apply(a: String, x: Int): ViewServerModule ={
+    def apply(a: String, x: Int)(implicit tableDefContainer: TableDefContainer): ViewServerModule ={
       ModuleFactory.withNamespace("TEST")
         .addTable(
           TableDef(
