@@ -20,6 +20,8 @@ export const RowSelected = {
 
 export const isRowSelected = (row: DataSourceRow): boolean =>
   (row[SELECTED] & RowSelected.True) === RowSelected.True;
+export const isRowSelectedLast = (row?: DataSourceRow): boolean =>
+  row !== undefined && (row[SELECTED] & RowSelected.Last) === RowSelected.Last;
 
 const inAscendingOrder = (item1: SelectionItem, item2: SelectionItem) => {
   const n1: number = typeof item1 === "number" ? item1 : item1[0];

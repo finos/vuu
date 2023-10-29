@@ -1,4 +1,4 @@
-import { ContextMenuProvider, Dialog } from "@finos/vuu-popups";
+import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import {
   LeftNav,
   Shell,
@@ -6,7 +6,6 @@ import {
   ShellProps,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useCallback, useRef, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
 import { useFeatures } from "./useFeatures";
@@ -20,7 +19,7 @@ import {
 } from "@finos/vuu-layout";
 
 import "./App.css";
-import { RpcResponseHandler } from "packages/vuu-data-react/src";
+import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
@@ -41,29 +40,14 @@ const {
   await vuuConfig;
 
 export const App = ({ user }: { user: VuuUser }) => {
-  const dialogTitleRef = useRef("");
-  const [dialogContent, setDialogContent] = useState<ReactElement>();
-
   const [features, tableFeatures] = useFeatures({
     features: configuredFeatures,
   });
 
-  const {
-    buildMenuOptions,
-    dialogContent: saveLayoutDialog,
-    handleCloseDialog,
-    handleMenuAction,
-  } = useLayoutContextMenuItems();
-
-  const handleRpcResponse = useCallback<RpcResponseHandler>((response) => {
-    console.log(`rpc response`, {
-      response,
-    });
-  }, []);
-  const handleClose = useCallback(() => {
-    setDialogContent(undefined);
-    handleCloseDialog?.();
-  }, [handleCloseDialog]);
+  const { dialog, setDialogState } = useDialog();
+  const { handleRpcResponse } = useRpcResponseHandler(setDialogState);
+  const { buildMenuOptions, handleMenuAction } =
+    useLayoutContextMenuItems(setDialogState);
 
   // TODO get Context from Shell
   return (
@@ -89,17 +73,7 @@ export const App = ({ user }: { user: VuuUser }) => {
           serverUrl={serverUrl}
           user={user}
         >
-          <Dialog
-            className="vuDialog"
-            isOpen={
-              dialogContent !== undefined || saveLayoutDialog !== undefined
-            }
-            onClose={handleClose}
-            style={{ maxHeight: 500 }}
-            title={dialogTitleRef.current}
-          >
-            {dialogContent ?? saveLayoutDialog}
-          </Dialog>
+          {dialog}
         </Shell>
       </ShellContextProvider>
     </ContextMenuProvider>

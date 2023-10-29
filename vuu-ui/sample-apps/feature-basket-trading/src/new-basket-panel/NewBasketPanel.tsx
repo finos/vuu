@@ -52,6 +52,8 @@ export const NewBasketPanel = ({
     onSaveBasket,
   });
 
+  console.log({ basketDataSource });
+
   const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(
     () => ({
       config: {
@@ -85,12 +87,12 @@ export const NewBasketPanel = ({
             <FormField>
               <FormFieldLabel>Basket Definition</FormFieldLabel>
               <InstrumentPicker
+                TableProps={tableProps}
                 columnMap={columnMap}
                 itemToString={itemToString}
                 onOpenChange={onOpenChangeInstrumentPicker}
                 onSelect={onSelectBasket}
                 searchColumns={searchColumns}
-                TableProps={tableProps}
                 schema={basketSchema}
               />
             </FormField>

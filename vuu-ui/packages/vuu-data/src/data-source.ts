@@ -480,6 +480,13 @@ export type DataSourceEditHandler = (
   value: VuuColumnDataType
 ) => boolean;
 
+export type RpcResponse =
+  | MenuRpcResponse
+  | VuuUIMessageInRPCEditReject
+  | VuuUIMessageInRPCEditResponse;
+
+export type RpcResponseHandler = (response: RpcResponse) => boolean;
+
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
   applyEdit: DataSourceEditHandler;
@@ -494,12 +501,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   groupBy: VuuGroupBy;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) => Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  >;
+  ) => Promise<RpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   select: SelectionChangeHandler;

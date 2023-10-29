@@ -56,7 +56,7 @@ export const App = ({ user }: { user: VuuUser }) => {
         typeof response.action === "object" &&
         response.action !== null &&
         "type" in response.action &&
-        response?.action?.type === "OPEN_DIALOG_ACTION"
+        response.action?.type === "OPEN_DIALOG_ACTION"
       ) {
         const { tableSchema } = response.action as unknown as {
           tableSchema: TableSchema;

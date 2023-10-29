@@ -5,17 +5,15 @@ import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 
 export type basketDataSourceKey =
   | "data-source-basket"
-  // | "data-source-basket-definitions"
-  // | "data-source-basket-definitions-search"
-  // | "data-source-basket-design"
-  // | "data-source-basket-orders"
+  | "data-source-basket-trading"
+  | "data-source-basket-trading-search"
+  | "data-source-basket-trading-constituent"
   | "data-source-instruments";
 
 export const useBasketTradingDataSources = ({
   basketSchema,
-  // basketDefinitionsSchema,
-  // basketDesignSchema,
-  // basketOrdersSchema,
+  basketTradingSchema,
+  basketTradingConstituentSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -24,18 +22,19 @@ export const useBasketTradingDataSources = ({
 
   const [
     dataSourceBasket,
-    // dataSourceBasketDefinitions,
-    // dataSourceBasketDefinitionsSearch,
-    // dataSourceBasketDesign,
-    // dataSourceBasketOrders,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
     dataSourceInstruments,
   ] = useMemo(() => {
     const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
       ["data-source-basket", basketSchema],
-      // ["data-source-basket-definitions", basketDefinitionsSchema],
-      // ["data-source-basket-definitions-search", basketDefinitionsSchema],
-      // ["data-source-basket-design", basketDesignSchema],
-      // ["data-source-basket-orders", basketOrdersSchema],
+      ["data-source-basket-trading", basketTradingSchema],
+      ["data-source-basket-trading-search", basketTradingSchema],
+      [
+        "data-source-basket-trading-constituent",
+        basketTradingConstituentSchema,
+      ],
       ["data-source-instruments", instrumentsSchema],
     ];
 
@@ -45,7 +44,7 @@ export const useBasketTradingDataSources = ({
       if (dataSource === undefined) {
         dataSource = new RemoteDataSource({
           bufferSize: 200,
-          viewport: id,
+          viewport: `${id}-${key}`,
           table: schema.table,
           columns: schema.columns.map((col) => col.name),
           title,
@@ -57,9 +56,8 @@ export const useBasketTradingDataSources = ({
     return dataSources;
   }, [
     basketSchema,
-    // basketDefinitionsSchema,
-    // basketDesignSchema,
-    // basketOrdersSchema,
+    basketTradingSchema,
+    basketTradingConstituentSchema,
     id,
     instrumentsSchema,
     loadSession,
@@ -82,10 +80,9 @@ export const useBasketTradingDataSources = ({
   return {
     activeTabIndex,
     dataSourceBasket,
-    // dataSourceBasketDefinitions,
-    // dataSourceBasketDefinitionsSearch,
-    // dataSourceBasketDesign,
-    // dataSourceBasketOrders,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,

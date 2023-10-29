@@ -105,17 +105,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     dataSource.visualLink = undefined;
   }, [dataSource]);
 
-  const handleVuuFeatureEnabled = useCallback(
-    (message: VuuFeatureMessage) => {
-      if (isViewportMenusAction(message)) {
-        saveSession?.(message.menu, "vuu-menu");
-      } else if (isVisualLinksAction(message)) {
-        saveSession?.(message.links, "vuu-links");
-      }
-    },
-    [saveSession]
-  );
-
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
       console.log("save new available columns");
@@ -130,6 +119,17 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
       save?.(config, "table-config");
     },
     [save]
+  );
+
+  const handleVuuFeatureEnabled = useCallback(
+    (message: VuuFeatureMessage) => {
+      if (isViewportMenusAction(message)) {
+        saveSession?.(message.menu, "vuu-menu");
+      } else if (isVisualLinksAction(message)) {
+        saveSession?.(message.links, "vuu-links");
+      }
+    },
+    [saveSession]
   );
 
   const handleVuuFeatureInvoked = useCallback(

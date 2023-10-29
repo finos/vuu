@@ -1,6 +1,9 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { getSchema } from "../tableSchemas";
+import {
+  ColumnGeneratorFn,
+  RowGeneratorFactory,
+} from "../../vuu-row-generator";
+import { getSchema } from "../../index";
 import {
   InstrumentReferenceData,
   InstrumentColumnMap,

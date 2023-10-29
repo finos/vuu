@@ -1,2 +1,2 @@
-export * from "./tableSchemas";
-export * from "./data-generators/vuu-row-generator";
+export * from "./schemas";
+export * from "./vuu-row-generator";

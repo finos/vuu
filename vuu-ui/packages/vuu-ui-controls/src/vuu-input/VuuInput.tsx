@@ -35,7 +35,6 @@ export const VuuInput = <T extends VuuRowDataItemType = string>({
 }: VuuInputProps<T>) => {
   const commitValue = useCallback<Commithandler<string>>(
     (evt, value) => {
-      console.log(`commit value ${value}`);
       if (type === "number") {
         const numericValue = parseFloat(value);
         if (isValidNumber(numericValue)) {

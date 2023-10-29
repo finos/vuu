@@ -29,6 +29,10 @@ import type { CSSProperties } from "react";
 import type { CellRendererDescriptor } from "./component-registry";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
+/**
+ * ColumnMap provides a lookup of the index position of a data item within a row
+ * by column name.
+ */
 export interface ColumnMap {
   [columnName: string]: number;
 }

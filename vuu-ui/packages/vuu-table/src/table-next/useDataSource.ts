@@ -72,6 +72,7 @@ export const useDataSource = ({
           dataWindow.setRowCount(message.size);
         }
         if (message.rows) {
+          console.table(message.rows);
           setData(message.rows);
         } else if (typeof message.size === "number") {
           data.current = dataWindow.data;
@@ -94,6 +95,10 @@ export const useDataSource = ({
       setData,
     ]
   );
+
+  const getSelectedRows = useCallback(() => {
+    return dataWindow.getSelectedRows();
+  }, [dataWindow]);
 
   useEffect(
     () => () => {
@@ -142,6 +147,7 @@ export const useDataSource = ({
 
   return {
     data: data.current,
+    getSelectedRows,
     range: rangeRef.current,
     setRange,
   };

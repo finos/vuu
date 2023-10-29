@@ -2,10 +2,10 @@ import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { useCallback, useEffect, useMemo, useState } from "react";
-// import { BasketSelectorProps } from "./basket-selector";
-// import { BasketTableEdit } from "./basket-table-edit";
-// import { BasketTableLive } from "./basket-table-live";
-// import { BasketToolbar } from "./basket-toolbar";
+import { BasketSelectorProps } from "./basket-selector";
+import { BasketTableEdit } from "./basket-table-edit";
+import { BasketTableLive } from "./basket-table-live";
+import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { NewBasketPanel } from "./new-basket-panel";
@@ -20,41 +20,48 @@ const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
 export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
-  // basketDefinitionsSchema: TableSchema;
-  // basketDesignSchema: TableSchema;
-  // basketOrdersSchema: TableSchema;
+  basketTradingSchema: TableSchema;
+  basketTradingConstituentSchema: TableSchema;
   instrumentsSchema: TableSchema;
 }
 
 const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   const {
     basketSchema,
-    // basketDefinitionsSchema,
-    // basketDesignSchema,
-    // basketOrdersSchema,
+    basketTradingSchema,
+    basketTradingConstituentSchema,
     instrumentsSchema,
   } = props;
 
   const [dialog, setDialog] = useState<JSX.Element | null>(null);
   const {
-    // activeTabIndex,
+    activeTabIndex,
     dataSourceBasket,
-    // dataSourceBasketDefinitions,
-    // dataSourceBasketDefinitionsSearch,
-    // dataSourceBasketDesign,
-    // dataSourceBasketOrders,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
     dataSourceInstruments,
-    // onSendToMarket,
-    // onTakeOffMarket,
+    onSendToMarket,
+    onTakeOffMarket,
     saveNewBasket,
   } = useBasketTradingDataSources({
     basketSchema,
-    // basketDefinitionsSchema,
-    // basketDesignSchema,
-    // basketOrdersSchema,
+    basketTradingSchema,
+    basketTradingConstituentSchema,
     instrumentsSchema,
   });
 
+  const [basketCount, setBasketCount] = useState(0);
+  useMemo(() => {
+    dataSourceBasketTradingSearch.subscribe({}, (message) => {
+      console.log("message from dataSourceTrading", {
+        message,
+      });
+      if (message.size) {
+        setBasketCount(message.size);
+      }
+    });
+  }, [dataSourceBasketTradingSearch]);
   // useEffect(() => {
   //   dataSourceBasketDesign.resume?.();
   //   return () => {
@@ -89,66 +96,66 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     );
   }, [basketSchema, dataSourceBasket, handleClose, handleSaveNewBasket]);
 
-  // const basketSelectorProps = useMemo<BasketSelectorProps>(
-  //   () => ({
-  //     basketId: "001",
-  //     dataSourceBasket: dataSourceBasketDefinitions,
-  //     dataSourceBasketSearch: dataSourceBasketDefinitionsSearch,
-  //     onClickAddBasket: handleAddBasket,
-  //   }),
-  //   [
-  //     dataSourceBasketDefinitions,
-  //     dataSourceBasketDefinitionsSearch,
-  //     handleAddBasket,
-  //   ]
-  // );
-
-  // if (dataSourceBasketDefinitions.size === 0) {
-  return (
-    <>
-      <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
-      {dialog}
-    </>
+  const basketSelectorProps = useMemo<BasketSelectorProps>(
+    () => ({
+      basketId: "001",
+      dataSourceBasketTrading,
+      dataSourceBasketTradingSearch: dataSourceBasketTradingSearch,
+      onClickAddBasket: handleAddBasket,
+    }),
+    [dataSourceBasketTrading, dataSourceBasketTradingSearch, handleAddBasket]
   );
-  // }
 
-  // return (
-  //   <ContextMenuProvider
-  //     menuActionHandler={handleMenuAction}
-  //     menuBuilder={buildMenuOptions}
-  //   >
-  //     <FlexboxLayout
-  //       className={classBase}
-  //       style={{ flexDirection: "column", height: "100%" }}
-  //     >
-  //       <BasketToolbar
-  //         BasketSelectorProps={basketSelectorProps}
-  //         basketStatus={basketStatus[activeTabIndex]}
-  //         onSendToMarket={onSendToMarket}
-  //         onTakeOffMarket={onTakeOffMarket}
-  //       />
-  //       <Stack
-  //         active={activeTabIndex}
-  //         className={`${classBase}-stack`}
-  //         // onTabSelectionChanged={setActive}
-  //         style={{ flex: 1 }}
-  //       >
-  //         <BasketTableEdit
-  //           data-tab-location="basket-design"
-  //           data-tab-title="Design"
-  //           dataSource={dataSourceBasketDesign}
-  //           tableSchema={basketDesignSchema}
-  //         />
-  //         <BasketTableLive
-  //           data-tab-title="On Market"
-  //           dataSource={dataSourceBasketOrders}
-  //           tableSchema={basketOrdersSchema}
-  //         />
-  //       </Stack>
-  //     </FlexboxLayout>
-  //     {dialog}
-  //   </ContextMenuProvider>
-  // );
+  if (basketCount === -1) {
+    // TODO loading
+    return null;
+  } else if (basketCount === 0) {
+    return (
+      <>
+        <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
+        {dialog}
+      </>
+    );
+  }
+
+  return (
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildMenuOptions}
+    >
+      <FlexboxLayout
+        className={classBase}
+        style={{ flexDirection: "column", height: "100%" }}
+      >
+        <BasketToolbar
+          BasketSelectorProps={basketSelectorProps}
+          basketStatus={basketStatus[activeTabIndex]}
+          basketTradngDataSource={dataSourceBasketTrading}
+          onSendToMarket={onSendToMarket}
+          onTakeOffMarket={onTakeOffMarket}
+        />
+        <Stack
+          active={activeTabIndex}
+          className={`${classBase}-stack`}
+          // onTabSelectionChanged={setActive}
+          style={{ flex: 1 }}
+        >
+          <BasketTableEdit
+            data-tab-location="basket-design"
+            data-tab-title="Design"
+            dataSource={dataSourceBasketTradingConstituent}
+            tableSchema={basketTradingConstituentSchema}
+          />
+          <BasketTableLive
+            data-tab-title="On Market"
+            dataSource={dataSourceBasketTradingConstituent}
+            tableSchema={basketTradingConstituentSchema}
+          />
+        </Stack>
+      </FlexboxLayout>
+      {dialog}
+    </ContextMenuProvider>
+  );
 };
 
 export default VuuBasketTradingFeature;

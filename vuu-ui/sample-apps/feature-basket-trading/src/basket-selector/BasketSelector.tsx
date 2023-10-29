@@ -23,8 +23,8 @@ const classBase = "vuuBasketSelector";
 
 export interface BasketSelectorProps extends HTMLAttributes<HTMLDivElement> {
   basketId?: string;
-  dataSourceBasket: DataSource;
-  dataSourceBasketSearch: DataSource;
+  dataSourceBasketTrading: DataSource;
+  dataSourceBasketTradingSearch: DataSource;
   label?: string;
   onClickAddBasket: () => void;
 }
@@ -45,8 +45,8 @@ export class Basket {
 
 export const BasketSelector = ({
   basketId: basketIdProp,
-  dataSourceBasket,
-  dataSourceBasketSearch,
+  dataSourceBasketTrading,
+  dataSourceBasketTradingSearch,
   id: idProp,
   onClickAddBasket,
   ...htmlAttributes
@@ -54,8 +54,8 @@ export const BasketSelector = ({
   // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
   const rootRef = useRef<HTMLDivElement>(null);
   const columnMap = useMemo(
-    () => buildColumnMap(dataSourceBasket.columns),
-    [dataSourceBasket.columns]
+    () => buildColumnMap(dataSourceBasketTrading.columns),
+    [dataSourceBasketTrading.columns]
   );
   const [open, setOpen] = useState(false);
   const [basketId, setBasketId] = useState<string | undefined>(basketIdProp);
@@ -76,19 +76,19 @@ export const BasketSelector = ({
 
   useMemo(() => {
     console.log("subscribe to basket");
-    dataSourceBasket.subscribe(
+    dataSourceBasketTrading.subscribe(
       {
         range: { from: 0, to: 1 },
         filter: { filter: `id = "NONE"` },
       },
       handleData
     );
-  }, [dataSourceBasket, handleData]);
+  }, [dataSourceBasketTrading, handleData]);
 
   useEffect(() => {
     console.log(`apply filter id = ${basketId}`);
-    dataSourceBasket.filter = { filter: `id = "${basketId ?? "NONE"}"` };
-  }, [basketId, dataSourceBasket]);
+    dataSourceBasketTrading.filter = { filter: `id = "${basketId ?? "NONE"}"` };
+  }, [basketId, dataSourceBasketTrading]);
 
   const handleRowClick = useCallback<TableRowClickHandler>(
     (row) => {
@@ -176,7 +176,7 @@ export const BasketSelector = ({
             <InstrumentSearch
               className={`${classBase}-instrumentSearch`}
               TableProps={tableProps}
-              dataSource={dataSourceBasketSearch}
+              dataSource={dataSourceBasketTradingSearch}
               searchColumn="name"
             />
             <div className={`${classBase}-buttonBar`}>

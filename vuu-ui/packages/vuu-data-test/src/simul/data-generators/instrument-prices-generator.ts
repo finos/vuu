@@ -4,9 +4,12 @@ import {
   InstrumentPricesColumnMap,
   InstrumentPricesReferenceData,
 } from "../reference-data";
-import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { getSchema } from "../tableSchemas";
-import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
+import { BaseUpdateGenerator } from "../../UpdateGenerator";
+import { getSchema } from "../../index";
+import {
+  ColumnGeneratorFn,
+  RowGeneratorFactory,
+} from "../../vuu-row-generator";
 
 const instrumentPriceSchema = getSchema("instrumentPrices");
 

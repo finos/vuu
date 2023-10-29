@@ -193,7 +193,7 @@ export const useTable = ({
     []
   );
 
-  const { data, range, setRange } = useDataSource({
+  const { data, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     onFeatureEnabled,
     onFeatureInvocation,
@@ -432,7 +432,12 @@ export const useTable = ({
     [navigationKeyDown, editingKeyDown]
   );
 
-  const onContextMenu = useTableContextMenuNext({ columns, data });
+  const onContextMenu = useTableContextMenuNext({
+    columns,
+    data,
+    dataSource,
+    getSelectedRows,
+  });
 
   const onHeaderClick = useCallback(
     (evt: MouseEvent) => {
