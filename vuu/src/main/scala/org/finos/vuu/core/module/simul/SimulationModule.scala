@@ -14,6 +14,7 @@ import org.finos.vuu.viewport._
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.OrderPermissionChecker
+import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 
 class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
@@ -173,20 +174,6 @@ object SimulationModule extends DefaultModule {
         )
       )
       .addTable(
-        AutoSubscribeTableDef(
-          name = "prices",
-          keyField = "ric",
-          Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
-                            "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
-          joinFields = "ric"
-        ),
-        (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
-        (table, provider, providerContainer, _) => ViewPortDef(
-          columns = table.getTableDef.columns,
-          service = new PricesService(table, provider)
-        )
-      )
-      .addTable(
         TableDef(
           name = "orders",
           keyField = "orderId",
@@ -276,10 +263,10 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "orderEntryPrices",
           baseTable = tableDefs.get(NAME, "orderEntry"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get(NAME, "prices"),
+              table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()
@@ -288,10 +275,10 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "instrumentPrices",
           baseTable = tableDefs.get(NAME, "instruments"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get(NAME, "prices"),
+              table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()
@@ -300,16 +287,14 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "ordersPrices",
           baseTable = tableDefs.get(NAME, "orders"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
-              table = tableDefs.get(NAME, "prices"),
+              table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
           joinFields = Seq()
         ))
-      //.addRpcHandler(vs => new TheSimulRpcHander)
-      //.addRpcHandler(vs => new OrderEntryRpcHandlerImpl(vs.viewPortContainer, vs.tableContainer, vs.providerContainer))
       .asModule()
   }
 }
