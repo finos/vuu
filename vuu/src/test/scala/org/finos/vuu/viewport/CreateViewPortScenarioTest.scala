@@ -16,6 +16,7 @@ import org.finos.toolbox.json.JsonUtil
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.{LifeCycleRunner, Runner}
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.module.TableDefContainer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -81,6 +82,7 @@ class CreateViewPortScenarioTest extends AnyFeatureSpec with Matchers {
       implicit val timeProvider: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val config = VuuServerConfig(
         VuuHttp2ServerOptions()

@@ -1,7 +1,7 @@
 package org.finos.vuu.core.module.vui
 
 import org.finos.vuu.api.{TableDef, VisualLinks}
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.state.VuiStateStore
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -11,7 +11,7 @@ object VuiStateModule extends DefaultModule {
 
   final val NAME = "vui"
 
-  def apply(store: VuiStateStore)(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply(store: VuiStateStore)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(

@@ -3,12 +3,12 @@ package org.finos.vuu.core.module.modulefrommodule
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin}
-import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
 object JoinModule {
 
-  def apply()(implicit time: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit time: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     import org.finos.vuu.core.module.modulefrommodule.{InstrumentModule => Instrument, PriceModule => Price}
 
     ModuleFactory.withNamespace("JOIN")

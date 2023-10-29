@@ -5,14 +5,14 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.auths.provider.PermissionsProvider
 import org.finos.vuu.core.module.auths.service.PermissionsRpcService
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
 object PermissionModule extends DefaultModule{
 
   private final val NAME = "AUTHS"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import ColumnNames._
 

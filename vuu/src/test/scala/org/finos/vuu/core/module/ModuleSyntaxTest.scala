@@ -12,6 +12,7 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
     Scenario("check we can parse the module"){
 
       Given("A test module which several tables defined, which takes some parameters (these are simple example params but could be complicated lifecycle stuff)")
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
       val module = TestModule2.apply("foo", 100)
       module.tableDefs.size should be (3)
       module.name should equal("TEST")

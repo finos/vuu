@@ -6,7 +6,7 @@ import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, T
 import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentService}
 import org.finos.vuu.core.module.simul.SimulationModule
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
 object BasketModule extends DefaultModule {
@@ -17,7 +17,7 @@ object BasketModule extends DefaultModule {
   final val BasketConstituentTable = "basketConstituent"
   final val BasketTradingConstituent = "basketTradingConstituent"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B}
     import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC}

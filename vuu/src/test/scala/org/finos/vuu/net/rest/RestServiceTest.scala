@@ -11,6 +11,7 @@ import io.vertx.ext.web.client.WebClientOptions
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.module.TableDefContainer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -29,6 +30,7 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val clock: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val store = new MemoryBackedVuiStateStore()
 
