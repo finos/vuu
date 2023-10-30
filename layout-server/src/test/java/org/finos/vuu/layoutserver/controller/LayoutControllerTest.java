@@ -54,7 +54,6 @@ class LayoutControllerTest {
     public void setup() {
         validLayoutId = UUID.randomUUID();
         doesNotExistLayoutId = UUID.randomUUID();
-        UUID metadataId = UUID.randomUUID();
         String layoutDefinition = "Test Definition";
 
         baseMetadata = new BaseMetadata();
@@ -64,13 +63,12 @@ class LayoutControllerTest {
         baseMetadata.setScreenshot("Test Screenshot");
 
         metadata = new Metadata();
-        metadata.setId(metadataId);
         metadata.setBaseMetadata(baseMetadata);
 
         layout = new Layout();
+        layout.setMetadata(metadata);
         layout.setId(validLayoutId);
         layout.setDefinition(layoutDefinition);
-        layout.setMetadata(metadata);
 
         layoutRequest = new LayoutRequestDTO();
         MetadataRequestDTO metadataRequestDTO = new MetadataRequestDTO();
@@ -136,8 +134,6 @@ class LayoutControllerTest {
 
     @Test
     void updateLayout_callsLayoutService() {
-        layout.setId(null);
-        layout.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layout);
 
@@ -158,6 +154,7 @@ class LayoutControllerTest {
         metadataResponse.setBaseMetadata(baseMetadata);
         metadataResponse.setCreated(layout.getMetadata().getCreated());
         metadataResponse.setUpdated(layout.getMetadata().getUpdated());
+        metadataResponse.setId(layout.getId());
         return metadataResponse;
     }
 }

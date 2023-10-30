@@ -44,6 +44,7 @@ public class LayoutIntegrationTest {
     private static String defaultGroup;
     private static String defaultScreenshot;
     private static String defaultUser;
+    private static UUID defaultId;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -61,6 +62,7 @@ public class LayoutIntegrationTest {
         defaultGroup = "Default layout group";
         defaultScreenshot = "Default layout screenshot";
         defaultUser = "Default layout user";
+        defaultId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 
     @Test
@@ -328,7 +330,6 @@ public class LayoutIntegrationTest {
     }
 
     private Layout createDefaultLayoutInDatabase() {
-        UUID id = UUID.randomUUID();
         Layout layout = new Layout();
         Metadata metadata = new Metadata();
         BaseMetadata baseMetadata = new BaseMetadata();
@@ -339,11 +340,10 @@ public class LayoutIntegrationTest {
         baseMetadata.setUser(defaultUser);
 
         metadata.setBaseMetadata(baseMetadata);
-        metadata.setId(id);
 
         layout.setDefinition(defaultDefinition);
         layout.setMetadata(metadata);
-        layout.setId(id);
+        layout.setId(defaultId);
 
         metadataRepository.save(metadata);
         Layout createdLayout = layoutRepository.save(layout);

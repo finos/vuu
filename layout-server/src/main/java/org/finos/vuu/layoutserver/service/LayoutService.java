@@ -30,7 +30,6 @@ public class LayoutService {
         UUID id = UUID.randomUUID();
 
         layout.setId(id);
-        layout.getMetadata().setId(id);
 
         return layoutRepository.save(layout).getId();
     }
@@ -42,8 +41,8 @@ public class LayoutService {
         Metadata updatedMetadata = Metadata.builder()
             .baseMetadata(newMetadata.getBaseMetadata())
             .updated(new Date())
+            .id(layoutToUpdate.getId())
             .build();
-        updatedMetadata.setId(layoutToUpdate.getId());
 
         layoutToUpdate.setDefinition(newLayout.getDefinition());
         layoutToUpdate.setMetadata(updatedMetadata);

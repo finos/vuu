@@ -22,4 +22,9 @@ public class Layout {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "metadata_id", referencedColumnName = "id")
     private Metadata metadata;
+
+    public void setId(UUID id){
+        this.id=id;
+        this.metadata.setId(id);
+    }
 }
