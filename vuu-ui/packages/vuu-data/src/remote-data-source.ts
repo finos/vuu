@@ -129,10 +129,7 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    console.log(
-      `%csubscribe ${this.viewport} ${this.table.table} ststus ${this.status}`,
-      "color:red;font-weight:bold;"
-    );
+    console.log(`%csubscribe`, "color:red;font-weight:bold;");
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
