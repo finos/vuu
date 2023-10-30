@@ -1,6 +1,6 @@
 import { ArrayDataSource } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { random } from "./reference-data";
+import { random } from "./simul/reference-data";
 import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
 
 const getNewValue = (value: number) => {

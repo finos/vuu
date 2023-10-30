@@ -22,7 +22,7 @@ export const TableCell = ({
 
   const handleDataItemEdited = useCallback(
     (value: VuuColumnDataType) => {
-      onDataEdited?.(row[IDX], name, value);
+      onDataEdited?.(row, name, value);
       // TODO will only return false in case of server rejection
       return true;
     },

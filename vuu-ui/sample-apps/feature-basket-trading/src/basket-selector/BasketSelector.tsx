@@ -22,9 +22,8 @@ import "./BasketSelector.css";
 const classBase = "vuuBasketSelector";
 
 export interface BasketSelectorProps extends HTMLAttributes<HTMLDivElement> {
-  basketId?: string;
-  dataSourceBasket: DataSource;
-  dataSourceBasketSearch: DataSource;
+  basketTradingId?: string;
+  dataSourceBasketTradingSearch: DataSource;
   label?: string;
   onClickAddBasket: () => void;
 }
@@ -44,9 +43,8 @@ export class Basket {
 }
 
 export const BasketSelector = ({
-  basketId: basketIdProp,
-  dataSourceBasket,
-  dataSourceBasketSearch,
+  basketTradingId: basketTradingIdProp,
+  dataSourceBasketTradingSearch,
   id: idProp,
   onClickAddBasket,
   ...htmlAttributes
@@ -54,11 +52,13 @@ export const BasketSelector = ({
   // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
   const rootRef = useRef<HTMLDivElement>(null);
   const columnMap = useMemo(
-    () => buildColumnMap(dataSourceBasket.columns),
-    [dataSourceBasket.columns]
+    () => buildColumnMap(dataSourceBasketTradingSearch.columns),
+    [dataSourceBasketTradingSearch.columns]
   );
   const [open, setOpen] = useState(false);
-  const [basketId, setBasketId] = useState<string | undefined>(basketIdProp);
+  const [basketTradingId, setBasketTradingId] = useState<string | undefined>(
+    basketTradingIdProp
+  );
   const [basket, setBasket] = useState<Basket | undefined>();
   const id = useId(idProp);
   const handleData = useCallback<SubscribeCallback>(
@@ -76,25 +76,27 @@ export const BasketSelector = ({
 
   useMemo(() => {
     console.log("subscribe to basket");
-    dataSourceBasket.subscribe(
+    dataSourceBasketTradingSearch.subscribe(
       {
         range: { from: 0, to: 1 },
-        filter: { filter: `id = "NONE"` },
+        filter: { filter: `instanceId = "${basketTradingId}"` },
       },
       handleData
     );
-  }, [dataSourceBasket, handleData]);
+  }, [basketTradingId, dataSourceBasketTradingSearch, handleData]);
 
   useEffect(() => {
-    console.log(`apply filter id = ${basketId}`);
-    dataSourceBasket.filter = { filter: `id = "${basketId ?? "NONE"}"` };
-  }, [basketId, dataSourceBasket]);
+    console.log(`apply filter id = ${basketTradingId}`);
+    dataSourceBasketTradingSearch.filter = {
+      filter: `id = "${basketTradingId ?? "NONE"}"`,
+    };
+  }, [basketTradingId, dataSourceBasketTradingSearch]);
 
   const handleRowClick = useCallback<TableRowClickHandler>(
     (row) => {
       const { id } = columnMap;
       const basketId = row[id] as string;
-      setBasketId(basketId);
+      setBasketTradingId(basketId);
       setOpen(false);
     },
     [columnMap]
@@ -176,7 +178,7 @@ export const BasketSelector = ({
             <InstrumentSearch
               className={`${classBase}-instrumentSearch`}
               TableProps={tableProps}
-              dataSource={dataSourceBasketSearch}
+              dataSource={dataSourceBasketTradingSearch}
               searchColumn="name"
             />
             <div className={`${classBase}-buttonBar`}>

@@ -193,15 +193,16 @@ export const useTable = ({
     []
   );
 
-  const { data, range, setRange } = useDataSource({
-    dataSource,
-    onFeatureEnabled,
-    onFeatureInvocation,
-    renderBufferSize,
-    onSizeChange: onDataRowcountChange,
-    onSubscribed,
-    range: initialRange,
-  });
+  const { data, getSelectedRows, onEditTableData, range, setRange } =
+    useDataSource({
+      dataSource,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      renderBufferSize,
+      onSizeChange: onDataRowcountChange,
+      onSubscribed,
+      range: initialRange,
+    });
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
@@ -432,7 +433,12 @@ export const useTable = ({
     [navigationKeyDown, editingKeyDown]
   );
 
-  const onContextMenu = useTableContextMenuNext({ columns, data });
+  const onContextMenu = useTableContextMenuNext({
+    columns,
+    data,
+    dataSource,
+    getSelectedRows,
+  });
 
   const onHeaderClick = useCallback(
     (evt: MouseEvent) => {

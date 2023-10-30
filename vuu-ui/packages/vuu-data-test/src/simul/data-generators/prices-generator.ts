@@ -1,9 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { PriceReferenceData } from "../reference-data";
-import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { BaseUpdateGenerator } from "../UpdateGenerator";
-import { getAllSchemas } from "../tableSchemas";
+import {
+  ColumnGeneratorFn,
+  RowGeneratorFactory,
+} from "../../vuu-row-generator";
+import { BaseUpdateGenerator } from "../../UpdateGenerator";
+import { getAllSchemas } from "../../index";
 
 export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   if (index >= PriceReferenceData.length) {

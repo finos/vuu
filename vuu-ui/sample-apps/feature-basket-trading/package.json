@@ -48,6 +48,14 @@
           "table": "basket"
         },
         {
+          "module": "BASKET",
+          "table": "basketTrading"
+        },
+        {
+          "module": "BASKET",
+          "table": "basketTradingConstituent"
+        },
+        {
           "module": "SIMUL",
           "table": "instruments"
         }

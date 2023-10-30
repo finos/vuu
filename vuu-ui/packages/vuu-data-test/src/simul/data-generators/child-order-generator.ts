@@ -1,6 +1,9 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";
-import { getSchema } from "../tableSchemas";
+import {
+  ColumnGeneratorFn,
+  RowGeneratorFactory,
+} from "../../vuu-row-generator";
+import { getSchema } from "../../index";
 import { currencies, locations, suffixes } from "./generatedData";
 
 function random(min: number, max: number) {
@@ -16,6 +19,14 @@ const accounts = [
   "Account 4",
   "Account 5",
 ];
+
+const strategies = [
+  "Strategy 1",
+  "Strategy 2",
+  "Strategy 3",
+  "Strategy 4",
+  "Strategy 5",
+];
 const algos = ["Algo 1", "Algo 2", "Algo 3", "Algo 4", "Algo 5"];
 
 const maxIndex = 20 * 20 * 20 * 20 * 8;
@@ -28,49 +39,49 @@ export const RowGenerator: RowGeneratorFactory = () => (index: number) => {
   const suffix = suffixes[random(0, suffixes.length - 1)];
 
   const account = accounts[random(0, 4)];
-  const algo = algos[random(0, 4)];
-  const avgPrice = 0;
+  const averagePrice = 0;
   const ccy = currencies[random(0, 4)];
-  const childCount = 0;
   const exchange = locations[suffix][1];
   const filledQty = 0;
   const id = `${index}`;
   const idAsInt = index;
   const lastUpdate = Date.now();
   const openQty = 0;
+  const parentOrderId = 0;
   const price = 0;
   const quantity = 0;
   const ric = "AAA.L";
   const side = "buy";
   const status = "active";
+  const strategy = strategies[random(0, strategies.length - 1)];
   const volLimit = 10_000;
 
   return [
     account,
-    algo,
-    avgPrice,
+    averagePrice,
     ccy,
-    childCount,
     exchange,
     filledQty,
     id,
     idAsInt,
     lastUpdate,
     openQty,
+    parentOrderId,
     price,
     quantity,
     ric,
     side,
     status,
+    strategy,
     volLimit,
   ];
 };
 
 export const ColumnGenerator: ColumnGeneratorFn = (columns = []) => {
-  const schema = getSchema("parentOrders");
+  const schema = getSchema("childOrders");
   const schemaColumns: ColumnDescriptor[] = schema.columns;
   if (typeof columns === "number") {
-    throw Error("ParentOrderColumnGenerator must be passed columns (strings)");
+    throw Error("ChildOrderColumnGenerator must be passed columns (strings)");
   } else if (columns.length === 0) {
     return schemaColumns;
   } else {

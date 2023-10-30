@@ -302,68 +302,36 @@ export const AutoTableNextAsFlexChild = () => {
 };
 AutoTableNextAsFlexChild.displaySequence = displaySequence++;
 
-export const AutoTableNextBasketDesign = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    rangeChangeRowset: "delta",
-    table: { module: "SIMUL", table: "basketDesign" },
-  });
+// export const AutoTableNextBasketDesign = () => {
+//   const {
+//     typeaheadHook: _,
+//     config: configProp,
+//     ...props
+//   } = useTableConfig({
+//     rangeChangeRowset: "delta",
+//     table: { module: "BASKET", table: "basketDesign" },
+//   });
 
-  const [config, setConfig] = useState(configProp);
+//   const [config, setConfig] = useState(configProp);
 
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
+//   const handleConfigChange = (config: TableConfig) => {
+//     setConfig(config);
+//   };
 
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-AutoTableNextBasketDesign.displaySequence = displaySequence++;
-
-export const AutoTableNextBasket = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    count: 4,
-    rangeChangeRowset: "delta",
-    table: { module: "SIMUL", table: "basket" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-AutoTableNextBasket.displaySequence = displaySequence++;
+//   return (
+//     <TableNext
+//       {...props}
+//       config={{
+//         ...config,
+//         rowSeparators: true,
+//         zebraStripes: true,
+//       }}
+//       onConfigChange={handleConfigChange}
+//       renderBufferSize={50}
+//     />
+//   );
+// };
+// AutoTableNextBasketDesign.displaySequence = displaySequence++;
 
 export const AutoTableNextBasketOrders = () => {
   const {
@@ -371,7 +339,6 @@ export const AutoTableNextBasketOrders = () => {
     config: configProp,
     ...props
   } = useTableConfig({
-    rangeChangeRowset: "delta",
     table: { module: "SIMUL", table: "basketOrders" },
   });
 
@@ -403,7 +370,6 @@ export const AutoTableNextBasketDefinitions = () => {
     ...props
   } = useTableConfig({
     count: 5,
-    rangeChangeRowset: "delta",
     table: { module: "SIMUL", table: "basketDefinitions" },
   });
 

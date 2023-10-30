@@ -1,7 +1,8 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
-import * as dataGenerators from ".";
-import { UpdateGenerator } from "../rowUpdates";
+import * as simulDataGenerators from "./simul/data-generators";
+import * as basketDataGenerators from "./basket/data-generators";
+import { UpdateGenerator } from "./rowUpdates";
 
 type RowAtIndexFunc<T = unknown> = (index: number) => T | undefined;
 
@@ -61,16 +62,31 @@ export const getColumnAndRowGenerator = (
   const tableName = table?.table ?? "";
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  if (table?.table && dataGenerators[table?.table] === undefined) {
-    throw Error(
-      `vuu-row-gererator table ${table.table} was requested but no generator is registered`
-    );
+  switch (table?.module) {
+    case "SIMUL": {
+      const { ColumnGenerator, RowGenerator, createUpdateGenerator } =
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        simulDataGenerators[tableName] ?? defaultGenerators;
+      return [ColumnGenerator, RowGenerator, createUpdateGenerator];
+    }
+
+    case "BASKET": {
+      const { ColumnGenerator, RowGenerator, createUpdateGenerator } =
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        basketDataGenerators[tableName] ?? defaultGenerators;
+      return [ColumnGenerator, RowGenerator, createUpdateGenerator];
+    }
+    case undefined: {
+      const { ColumnGenerator, RowGenerator } = defaultGenerators;
+      return [ColumnGenerator, RowGenerator];
+    }
+    default:
+      throw Error(
+        `vuu-row-gererator table ${table?.table} was requested but no generator is registered`
+      );
   }
-  const { ColumnGenerator, RowGenerator, createUpdateGenerator } =
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    dataGenerators[tableName] ?? defaultGenerators;
-  return [ColumnGenerator, RowGenerator, createUpdateGenerator];
 };
 
 export const populateArray = (
@@ -83,7 +99,12 @@ export const populateArray = (
   const generateRow = rowGen(columnDescriptors.map((col) => col.name));
   const data: Array<VuuRowDataItemType[]> = [];
   for (let i = 0; i < count; i++) {
-    data[i] = generateRow(i) as VuuRowDataItemType[];
+    const row = generateRow(i);
+    if (row) {
+      data[i] = row;
+    } else {
+      break;
+    }
   }
   return data;
 };

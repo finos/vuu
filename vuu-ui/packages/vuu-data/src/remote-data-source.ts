@@ -1,4 +1,4 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerEditRpc,
@@ -18,6 +18,7 @@ import {
   EventEmitter,
   itemsOrOrderChanged,
   logger,
+  metadataKeys,
   throttle,
   uuid,
 } from "@finos/vuu-utils";
@@ -42,6 +43,8 @@ import { MenuRpcResponse } from "./vuuUIMessageTypes";
 type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("RemoteDataSource");
+
+const { KEY } = metadataKeys;
 
 type DataSourceStatus =
   | "disabled"
@@ -126,7 +129,7 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    console.log("%csubscribe", "color:red;font-weight:bold;");
+    console.log(`%csubscribe`, "color:red;font-weight:bold;");
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -614,8 +617,19 @@ export class RemoteDataSource
     }
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+    console.log(
+      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
+    );
+
+    this.menuRpcCall({
+      rowKey: row[KEY],
+      field: columnName,
+      value: parseInt(value),
+      type: "VP_EDIT_CELL_RPC",
+    }).then(() => {
+      console.log("response");
+    });
     return true;
   }
 }

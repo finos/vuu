@@ -4,22 +4,25 @@ import { HTMLAttributes } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
+import { MenuActionHandler } from "@finos/vuu-data-types";
+import { DataSource } from "@finos/vuu-data";
 
 import "./BasketToolbar.css";
-import { MenuActionHandler } from "@finos/vuu-data-types";
 
 const classBase = "vuuBasketToolbar";
 
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
   basketStatus: BasketStatus;
   BasketSelectorProps: BasketSelectorProps;
+  basketTradingDataSource: DataSource;
   onSendToMarket: () => void;
   onTakeOffMarket: () => void;
 }
 
 export const BasketToolbar = ({
-  basketStatus,
   BasketSelectorProps,
+  basketStatus,
+  basketTradingDataSource,
   onSendToMarket,
   onTakeOffMarket,
 }: BasketToolbarProps) => {
