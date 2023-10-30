@@ -67,6 +67,62 @@ export const DefaultJsonTable = () => {
 };
 DefaultJsonTable.displaySequence = displaySequence++;
 
+const jsonArraySimpleData = {
+  test1: "string 1",
+  test2: "string 2",
+  test3: ["test3.1", "test3.2", "test3.3"],
+};
+
+export const JsonTableArraySimpleData = () => {
+  return (
+    <>
+      <JsonTable
+        source={jsonArraySimpleData}
+        height={700}
+        renderBufferSize={20}
+        selectionModel="none"
+        width={500}
+        config={{
+          columnSeparators: true,
+          rowSeparators: true,
+          zebraStripes: true,
+        }}
+      />
+    </>
+  );
+};
+JsonTableArraySimpleData.displaySequence = displaySequence++;
+
+const jsonArrayJsonData = {
+  test1: "string 1",
+  test2: "string 2",
+  test3: [
+    { "test3.1": "test value 3.1" },
+    { "test3.2": "test value 3.2" },
+    { "test3.3": "test value 3.3" },
+  ],
+};
+
+export const JsonTableArrayJsonData = () => {
+  return (
+    <>
+      <JsonTable
+        source={jsonArrayJsonData}
+        height={700}
+        renderBufferSize={20}
+        selectionModel="none"
+        width={500}
+        config={{
+          columnSeparators: true,
+          rowSeparators: true,
+          zebraStripes: true,
+        }}
+      />
+    </>
+  );
+};
+JsonTableArrayJsonData.displaySequence = displaySequence++;
+
 export const PackageJsonTable = () => {
   return (
     <>

@@ -3,7 +3,7 @@ import {
   registerComponent,
   useLayoutContextMenuItems,
 } from "@finos/vuu-layout";
-import { ContextMenuProvider, Dialog } from "@finos/vuu-popups";
+import { ContextMenuProvider, Dialog, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
@@ -72,9 +72,10 @@ const features: FeatureProps[] = [
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
-      basketDefinitionsSchema: schemas.basketDefinitions,
-      basketDesignSchema: schemas.basketDesign,
-      basketOrdersSchema: schemas.basketOrders,
+      basketSchema: schemas.basket,
+      // basketDefinitionsSchema: schemas.basketDefinitions,
+      // basketDesignSchema: schemas.basketDesign,
+      // basketOrdersSchema: schemas.basketOrders,
       instrumentsSchema: schemas.instruments,
     },
   },
@@ -93,12 +94,9 @@ const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = Object.values(
   }));
 
 const ShellWithNewTheme = () => {
-  const {
-    buildMenuOptions,
-    dialogContent,
-    handleCloseDialog,
-    handleMenuAction,
-  } = useLayoutContextMenuItems();
+  const { dialog, setDialogState } = useDialog();
+  const { buildMenuOptions, handleMenuAction } =
+    useLayoutContextMenuItems(setDialogState);
 
   return (
     <ContextMenuProvider
@@ -126,15 +124,7 @@ const ShellWithNewTheme = () => {
           } as CSSProperties
         }
       >
-        <Dialog
-          isOpen={dialogContent !== undefined}
-          onClose={handleCloseDialog}
-          style={{ maxHeight: 500, borderColor: "#6d188b" }}
-          title={"Save Layout"}
-          hideCloseButton
-        >
-          {dialogContent}
-        </Dialog>
+        {dialog}
       </Shell>
     </ContextMenuProvider>
   );

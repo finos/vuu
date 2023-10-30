@@ -2,50 +2,57 @@ import { useViewContext } from "@finos/vuu-layout";
 import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { useCallback, useMemo, useState } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import { VuuFilter } from "packages/vuu-protocol-types";
 
 export type basketDataSourceKey =
   | "data-source-basket"
-  | "data-source-basket-definitions"
-  | "data-source-basket-definitions-search"
-  | "data-source-basket-design"
-  | "data-source-basket-orders"
+  | "data-source-basket-trading"
+  | "data-source-basket-trading-search"
+  | "data-source-basket-trading-constituent"
   | "data-source-instruments";
 
 export const useBasketTradingDataSources = ({
   basketSchema,
-  basketDefinitionsSchema,
-  basketDesignSchema,
-  basketOrdersSchema,
+  basketTradingId,
+  basketTradingSchema,
+  basketTradingConstituentSchema,
   instrumentsSchema,
-}: BasketTradingFeatureProps) => {
+}: BasketTradingFeatureProps & { basketTradingId: string }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const { id, loadSession, saveSession, title } = useViewContext();
 
   const [
     dataSourceBasket,
-    dataSourceBasketDefinitions,
-    dataSourceBasketDefinitionsSearch,
-    dataSourceBasketDesign,
-    dataSourceBasketOrders,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
     dataSourceInstruments,
   ] = useMemo(() => {
-    const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
+    const basketFilter: VuuFilter = {
+      filter: `instanceId = "${basketTradingId}"`,
+    };
+    const dataSourceConfig: [basketDataSourceKey, TableSchema, VuuFilter?][] = [
       ["data-source-basket", basketSchema],
-      ["data-source-basket-definitions", basketDefinitionsSchema],
-      ["data-source-basket-definitions-search", basketDefinitionsSchema],
-      ["data-source-basket-design", basketDesignSchema],
-      ["data-source-basket-orders", basketOrdersSchema],
+      ["data-source-basket-trading", basketTradingSchema, basketFilter],
+      ["data-source-basket-trading-search", basketTradingSchema, basketFilter],
+      [
+        "data-source-basket-trading-constituent",
+        basketTradingConstituentSchema,
+        basketFilter,
+      ],
       ["data-source-instruments", instrumentsSchema],
     ];
 
     const dataSources: DataSource[] = [];
-    for (const [key, schema] of dataSourceConfig) {
+    for (const [key, schema, filter] of dataSourceConfig) {
+      console.log(`filter for ${key} = ${JSON.stringify(filter)}`);
       let dataSource = loadSession?.(key) as RemoteDataSource;
       if (dataSource === undefined) {
         dataSource = new RemoteDataSource({
           bufferSize: 200,
-          viewport: id,
+          filter,
+          viewport: `${id}-${key}`,
           table: schema.table,
           columns: schema.columns.map((col) => col.name),
           title,
@@ -56,15 +63,15 @@ export const useBasketTradingDataSources = ({
     }
     return dataSources;
   }, [
-    basketDefinitionsSchema,
-    basketDesignSchema,
-    basketOrdersSchema,
     basketSchema,
-    id,
+    basketTradingSchema,
+    basketTradingId,
+    basketTradingConstituentSchema,
     instrumentsSchema,
     loadSession,
-    saveSession,
+    id,
     title,
+    saveSession,
   ]);
 
   const handleSendToMarket = useCallback(() => {
@@ -75,20 +82,14 @@ export const useBasketTradingDataSources = ({
     setActiveTabIndex(0);
   }, []);
 
-  const saveNewBasket = useCallback((basketName: string, basketId: string) => {
-    console.log(`save new baskert ${basketName}, ${basketId}`);
-  }, []);
-
   return {
     activeTabIndex,
     dataSourceBasket,
-    dataSourceBasketDefinitions,
-    dataSourceBasketDefinitionsSearch,
-    dataSourceBasketDesign,
-    dataSourceBasketOrders,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
     dataSourceInstruments,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
-    saveNewBasket,
   };
 };

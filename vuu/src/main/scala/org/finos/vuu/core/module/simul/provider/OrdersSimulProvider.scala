@@ -18,10 +18,10 @@ trait RandomNumbers {
 }
 
 class TestFriendlyRandomNumbers() extends RandomNumbers {
-  private var nextInteger = 0;
+  private var nextInteger = 0
 
   def setNextInt(i: Int) = {
-    nextInteger = i;
+    nextInteger = i
   }
 
   override def nextInt(): Int = {
@@ -57,8 +57,8 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
   private val seededRandom = new SeededRandomNumbers(time.now())
   private val ordersCount = new SeededRandomNumbers(time.now())
 
-  val nycRICS = Array("AAPL", "GOOG", "TWTR")
-  val ldnRICS = Array("BT.L", "BP.L", "RDSh.L")
+  val nycRICS: Array[String] = Array("AAPL", "GOOG", "TWTR", "AAL", "ABBV")
+  val ldnRICS: Array[String] = Array("BT.L", "BP.L", "RDSh.L")
 
   def randomSymbolNyc(): String = {
     val index = seededRandom.seededRand(0, nycRICS.length)
@@ -82,7 +82,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
 
     val orderNum = orderCount.incrementAndGet()
 
-    val pad = ("0".padTo(6 - orderNum.toString.length, "0").mkString("")).toString()
+    val pad = "0".padTo(6 - orderNum.toString.length, "0").mkString("")
 
     val orderId = s"$location-" + pad + orderNum
 

@@ -12,6 +12,10 @@ function dataIsUnchanged(newRow: VuuRow, existingRow?: VuuRow) {
     return false;
   }
 
+  if (existingRow.data.length !== newRow.data.length) {
+    return false;
+  }
+
   if (existingRow.sel !== newRow.sel) {
     return false;
   }

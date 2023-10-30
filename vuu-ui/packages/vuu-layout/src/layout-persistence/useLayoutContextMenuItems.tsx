@@ -8,24 +8,22 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
-import { ReactElement, useCallback, useMemo, useState } from "react";
-import { MenuActionClosePopup } from "@finos/vuu-popups";
+import { useCallback, useMemo } from "react";
+import { MenuActionClosePopup, SetDialog } from "@finos/vuu-popups";
 
-export const useLayoutContextMenuItems = () => {
-  const [dialogContent, setDialogContent] = useState<ReactElement>();
-
+export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
   const { saveLayout } = useLayoutManager();
 
   const handleCloseDialog = useCallback(() => {
-    setDialogContent(undefined);
-  }, []);
+    setDialogState(undefined);
+  }, [setDialogState]);
 
   const handleSave = useCallback(
     (layoutMetadata: LayoutMetadataDto) => {
       saveLayout(layoutMetadata);
-      setDialogContent(undefined);
+      setDialogState(undefined);
     },
-    [saveLayout]
+    [saveLayout, setDialogState]
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
@@ -56,24 +54,25 @@ export const useLayoutContextMenuItems = () => {
           action,
         });
         if (action.menuId === "save-layout") {
-          setDialogContent(
-            <SaveLayoutPanel
-              onCancel={handleCloseDialog}
-              onSave={handleSave}
-              componentId={action.options.controlledComponentId}
-            />
-          );
+          setDialogState({
+            content: (
+              <SaveLayoutPanel
+                onCancel={handleCloseDialog}
+                onSave={handleSave}
+                componentId={action.options.controlledComponentId}
+              />
+            ),
+            title: "Save Layout",
+          });
           return true;
         }
         return false;
       },
     ];
-  }, [handleCloseDialog, handleSave]);
+  }, [handleCloseDialog, handleSave, setDialogState]);
 
   return {
     buildMenuOptions,
-    dialogContent,
-    handleCloseDialog,
     handleMenuAction,
   };
 };

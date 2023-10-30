@@ -118,15 +118,10 @@ export const useDropdownBase = ({
 
   const handleBlur = useCallback(
     (evt: FocusEvent<HTMLElement>) => {
-      console.log("useDropdownBase blur", {
-        popperRef: popperRef.current,
-        relatedTarget: evt.relatedTarget,
-      });
       if (isOpen) {
         if (popperRef.current?.contains(evt.relatedTarget)) {
           // ignore
         } else {
-          console.log("hide dropdown");
           hideDropdown("blur");
         }
       }

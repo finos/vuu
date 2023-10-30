@@ -1,11 +1,12 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import {
+  ColumnExpressionSubmitHandler,
   ColumnFormattingPanel,
   ColumnSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { CellRendererDescriptor } from "@finos/vuu-utils";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
@@ -65,16 +66,21 @@ export const NewCalculatedColumnSettingsPanel = () => {
   const onConfigChange = (config: TableConfig) => {
     console.log(`config change ${JSON.stringify(config, null, 2)}`);
   };
-  const onCreateCalculatedColumn = (column: ColumnDescriptor) => {
-    console.log(`create calculated column ${JSON.stringify(column, null, 2)}`);
-    setState((s) => ({
-      tableConfig: {
-        ...s.tableConfig,
-        columns: s.tableConfig.columns.concat(column),
-      },
-      column,
-    }));
-  };
+  const handleCreateCalculatedColumn = useCallback(
+    (column: ColumnDescriptor) => {
+      console.log(
+        `create calculated column ${JSON.stringify(column, null, 2)}`
+      );
+      setState((s) => ({
+        tableConfig: {
+          ...s.tableConfig,
+          columns: s.tableConfig.columns.concat(column),
+        },
+        column,
+      }));
+    },
+    []
+  );
 
   return (
     <div
@@ -88,7 +94,7 @@ export const NewCalculatedColumnSettingsPanel = () => {
       <ColumnSettingsPanel
         column={column}
         onConfigChange={onConfigChange}
-        onCreateCalculatedColumn={onCreateCalculatedColumn}
+        onCreateCalculatedColumn={handleCreateCalculatedColumn}
         tableConfig={tableConfig}
         vuuTable={schema.table}
       />

@@ -5,12 +5,13 @@ import { TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useControlled } from "../common-hooks";
+import { OpenChangeHandler } from "../dropdown";
 import { InstrumentPickerProps } from "./InstrumentPicker";
 
 export interface InstrumentPickerHookProps
   extends Pick<
     InstrumentPickerProps,
-    "columnMap" | "itemToString" | "onSelect" | "searchColumns"
+    "columnMap" | "itemToString" | "onOpenChange" | "onSelect" | "searchColumns"
   > {
   columns: ColumnDescriptor[];
   dataSource: DataSource;
@@ -31,6 +32,7 @@ export const useInstrumentPicker = ({
   defaultIsOpen,
   isOpen: isOpenProp,
   itemToString = defaultItemToString(columns, columnMap),
+  onOpenChange: onOpenChangeProp,
   onSelect,
   searchColumns,
 }: InstrumentPickerHookProps) => {
@@ -41,18 +43,18 @@ export const useInstrumentPicker = ({
     name: "useDropdownList",
   });
 
-  console.log({ dataSource });
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it
     () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
     [searchColumns]
   );
 
-  const handleOpenChange = useCallback(
-    (open) => {
+  const handleOpenChange = useCallback<OpenChangeHandler>(
+    (open, closeReason) => {
       setIsOpen(open);
+      onOpenChangeProp?.(open, closeReason);
     },
-    [setIsOpen]
+    [onOpenChangeProp, setIsOpen]
   );
 
   const handleInputChange = useCallback(
@@ -82,8 +84,9 @@ export const useInstrumentPicker = ({
       setValue(value);
       setIsOpen(false);
       onSelect(row);
+      onOpenChangeProp?.(false, "select");
     },
-    [itemToString, onSelect, setIsOpen]
+    [itemToString, onOpenChangeProp, onSelect, setIsOpen]
   );
 
   const inputProps = {

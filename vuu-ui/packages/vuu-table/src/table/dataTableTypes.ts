@@ -13,7 +13,8 @@ import {
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { VuuDataRow } from "@finos/vuu-protocol-types";
-import { FC, HTMLAttributes, MouseEvent } from "react";
+import { MeasuredContainerProps } from "packages/vuu-layout/src";
+import { FC, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 
 export type TableRowClickHandler = (row: VuuDataRow) => void;
@@ -22,8 +23,7 @@ export type TableRowSelectHandler = (row: DataSourceRow) => void;
 
 export type TableNavigationStyle = "none" | "cell" | "row";
 
-export interface TableProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
+export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
   Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
   /**
@@ -33,7 +33,6 @@ export interface TableProps
   config: TableConfig;
   dataSource: DataSource;
   headerHeight?: number;
-  height?: number;
   /**
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
@@ -85,7 +84,6 @@ export interface TableProps
    * composite component.
    */
   showColumnHeaders?: boolean;
-  width?: number;
 }
 
 export type TableColumnResizeHandler = (

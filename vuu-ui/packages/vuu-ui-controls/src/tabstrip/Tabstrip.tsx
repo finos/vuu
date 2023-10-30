@@ -29,6 +29,7 @@ export const Tabstrip = ({
   orientation = "horizontal",
   showTabMenuButton,
   style: styleProp,
+  tabClassName,
   ...htmlAttributes
 }: TabstripProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -53,7 +54,6 @@ export const Tabstrip = ({
     onMoveTab,
     orientation,
   });
-
   const id = useId(idProp);
   const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
   const style =
@@ -70,6 +70,7 @@ export const Tabstrip = ({
         .map((child, index) => {
           const {
             id: tabId = `${id}-tab-${index}`,
+            className,
             closeable = allowCloseTab,
             editable = allowRenameTab,
             location: tabLocation,
@@ -79,6 +80,7 @@ export const Tabstrip = ({
           return React.cloneElement(child, {
             ...tabProps,
             ...tabstripHook.navigationProps,
+            className: cx(className, tabClassName),
             closeable,
             "data-overflow-priority": selected ? "1" : undefined,
             dragging: draggedItemIndex === index,
@@ -111,19 +113,20 @@ export const Tabstrip = ({
           )
         ),
     [
-      activeTabIndex,
+      children,
       allowAddTab,
+      tabstripHook.navigationProps,
+      onClickAddTab,
+      id,
       allowCloseTab,
       allowRenameTab,
-      children,
-      focusVisible,
-      id,
-      location,
-      onClickAddTab,
       showTabMenuButton,
+      activeTabIndex,
       tabProps,
+      tabClassName,
       draggedItemIndex,
-      tabstripHook.navigationProps,
+      focusVisible,
+      location,
     ]
   );
 

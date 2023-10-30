@@ -55,16 +55,19 @@ export interface MeasuredContainerHookResult {
 // were passed as props), use as initial values for inner size. If there
 // is no border on Table, these values will not change. If there is a border,
 // inner values will be updated once measured.
-const getInitialCssSize = (height: unknown, width: unknown): CssSize => {
+const getInitialCssSize = (
+  height?: number | string,
+  width?: number | string
+): CssSize => {
   if (isValidNumber(height) && isValidNumber(width)) {
     return {
       height: `${height}px`,
       width: `${width}px`,
     };
-  } else if (typeof height === "string" && typeof width === "string") {
+  } else if (typeof height === "string" || typeof width === "string") {
     return {
-      height,
-      width,
+      height: height ?? "100%",
+      width: width ?? "auto",
     };
   } else {
     return FULL_SIZE;

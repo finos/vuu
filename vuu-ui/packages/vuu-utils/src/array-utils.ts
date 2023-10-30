@@ -97,3 +97,21 @@ export const moveItem = <T = unknown>(
     }
   }
 };
+
+export const getAddedItems = <T>(values: undefined | T[], newValues: T[]) => {
+  const isNew = (v: T) => !values?.includes(v);
+  if (values === undefined) {
+    return newValues;
+  } else if (newValues.some(isNew)) {
+    return newValues.filter(isNew);
+  } else {
+    return [] as T[];
+  }
+};
+
+export const getMissingItems = <T, I>(
+  sourceItems: T[],
+  items: I[],
+  identity: (s: T) => I
+) =>
+  items.filter((i) => sourceItems.findIndex((s) => identity(s) === i) === -1);

@@ -1,11 +1,15 @@
 .vuuLayoutList {
+    --vuuMeasuredContainer-flex: 1 1 1px;
     align-self: stretch;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     overflow: hidden;
 }
 
 .vuuLayoutList-header {
     color: var(--light-text-primary, #15171B);
+    flex: 0 0 47px;
     font-weight: 700;
     letter-spacing: 0.48px;
     text-transform: uppercase;

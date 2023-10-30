@@ -111,6 +111,10 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    * not closeable, not renameable and has no tab-location , otherwise true.
    */
   showTabMenuButton?: boolean;
+  /**
+   * An optional classname that will be added to each tab
+   */
+  tabClassName?: string;
 }
 
 export type exitEditHandler = (

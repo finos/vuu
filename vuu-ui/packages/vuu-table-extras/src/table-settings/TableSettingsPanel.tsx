@@ -21,6 +21,7 @@ export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
   onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
   onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
+  onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
 }
 
@@ -34,6 +35,7 @@ export const TableSettingsPanel = ({
   onAddCalculatedColumn,
   onConfigChange,
   onDataSourceConfigChange,
+  onNavigateToColumn,
   tableConfig: tableConfigProp,
   ...htmlAttributes
 }: TableSettingsProps) => {
@@ -115,6 +117,7 @@ export const TableSettingsPanel = ({
         columnItems={columnItems}
         onChange={onColumnChange}
         onMoveListItem={onMoveListItem}
+        onNavigateToColumn={onNavigateToColumn}
       />
 
       <div className={`${classBase}-calculatedButtonbar`}>

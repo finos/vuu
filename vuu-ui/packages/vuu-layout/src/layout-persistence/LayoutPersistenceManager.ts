@@ -53,8 +53,8 @@ export interface LayoutPersistenceManager {
 
   /**
   * Saves the application layout which includes all layouts on screen
-  *   
+  *
   * @param layout - Full JSON representation of the application layout to be saved
   */
-   saveApplicationLayout: (layout: LayoutJSON) => Promise<void>
+   saveApplicationLayout: (layout: LayoutJSON) => Promise<void>;
 }

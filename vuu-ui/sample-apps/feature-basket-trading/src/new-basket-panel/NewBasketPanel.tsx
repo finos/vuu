@@ -4,21 +4,22 @@ import {
   PopupComponent as Popup,
   Portal,
 } from "@finos/vuu-popups";
-import { TableRowSelectHandler } from "@finos/vuu-table";
 import {
-  Commithandler,
   InstrumentPicker,
   InstrumentPickerProps,
   VuuInput,
 } from "@finos/vuu-ui-controls";
-import { buildColumnMap } from "@finos/vuu-utils";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
-import { HTMLAttributes, useCallback, useMemo, useState } from "react";
+import { DataSourceRow } from "packages/vuu-data-types";
+import { HTMLAttributes, useMemo } from "react";
 
 import "./NewBasketPanel.css";
+import { useNewBasketPanel } from "./useNewBasketPanel";
 
 const classBase = "vuuBasketNewBasketPanel";
+
+const displayName = (key: number) => (row: DataSourceRow) => String(row[key]);
 
 export interface NewBasketPanelProps extends HTMLAttributes<HTMLDivElement> {
   basketDataSource: DataSource;
@@ -37,11 +38,25 @@ export const NewBasketPanel = ({
   onSaveBasket,
   ...htmlAttributes
 }: NewBasketPanelProps) => {
+  const {
+    columnMap,
+    onChangeBasketName,
+    onOpenChangeInstrumentPicker,
+    onFeatureEnabled,
+    onSave,
+    onSelectBasket,
+    saveButtonDisabled,
+  } = useNewBasketPanel({
+    basketDataSource,
+    basketSchema,
+    onSaveBasket,
+  });
+
   const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(
     () => ({
       config: {
         columns: [
-          { name: "ID", hidden: true },
+          { name: "id", hidden: true },
           {
             name: "name",
             width: 200,
@@ -50,37 +65,12 @@ export const NewBasketPanel = ({
         rowSeparators: true,
       },
       dataSource: basketDataSource,
+      onFeatureEnabled,
     }),
-    [basketDataSource]
-  );
-  const [basketName, setBasketName] = useState("");
-  const [basketId, setBasketId] = useState<string>();
-
-  const columnMap = buildColumnMap(basketSchema.columns);
-
-  const handleChangeBasketName = useCallback<Commithandler<string>>(
-    (evt, value) => {
-      setBasketName(value);
-    },
-    []
+    [basketDataSource, onFeatureEnabled]
   );
 
-  const handleSelectBasket = useCallback<TableRowSelectHandler>(
-    (row) => {
-      const { ID } = columnMap;
-      const basketId = row[ID] as string;
-      setBasketId(basketId);
-    },
-    [columnMap]
-  );
-
-  const saveBasket = useCallback(() => {
-    if (basketName && basketId) {
-      onSaveBasket(basketName, basketId);
-    }
-  }, [basketId, basketName, onSaveBasket]);
-
-  const disableSave = basketName === "" || basketId === undefined;
+  const itemToString = displayName(columnMap.name);
 
   return (
     <Portal>
@@ -90,27 +80,33 @@ export const NewBasketPanel = ({
           <div className={`${classBase}-body`}>
             <FormField>
               <FormFieldLabel>Basket Name</FormFieldLabel>
-              <VuuInput onCommit={handleChangeBasketName} type="string" />
+              <VuuInput onCommit={onChangeBasketName} type="string" />
             </FormField>
             <FormField>
               <FormFieldLabel>Basket Definition</FormFieldLabel>
               <InstrumentPicker
-                columnMap={columnMap}
-                onSelect={handleSelectBasket}
-                searchColumns={searchColumns}
                 TableProps={tableProps}
+                columnMap={columnMap}
+                itemToString={itemToString}
+                onOpenChange={onOpenChangeInstrumentPicker}
+                onSelect={onSelectBasket}
+                searchColumns={searchColumns}
                 schema={basketSchema}
               />
             </FormField>
           </div>
-        </div>
-        <div className={`${classBase}-buttonBar`}>
-          <Button variant="primary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="cta" disabled={disableSave} onClick={saveBasket}>
-            Save
-          </Button>
+          <div className={`${classBase}-buttonBar`}>
+            <Button variant="primary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              variant="cta"
+              disabled={saveButtonDisabled}
+              onClick={onSave}
+            >
+              Save
+            </Button>
+          </div>
         </div>
       </Popup>
     </Portal>

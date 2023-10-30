@@ -4,17 +4,22 @@ import {
   LayoutMetadataDto,
   WithId,
 } from "@finos/vuu-shell";
+import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
+import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
 import { defaultLayout } from "./data";
-import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
-import { LayoutJSON } from "../layout-reducer";
-import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts/layouts";
 
 export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
+  #urlKey = "api/vui";
+  constructor(urlKey?: string) {
+    if (urlKey) {
+      this.#urlKey = urlKey;
+    }
+  }
   createLayout(
     metadata: LayoutMetadataDto,
     layout: LayoutJSON
@@ -109,7 +114,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
   loadApplicationLayout(): Promise<LayoutJSON> {
     console.log("loadApplicationLAyout");
     return new Promise((resolve) => {
-      const applicationLayout = getLocalEntity<LayoutJSON>("api/vui");
+      const applicationLayout = getLocalEntity<LayoutJSON>(this.#urlKey);
       if (applicationLayout) {
         console.log(applicationLayout);
         resolve(applicationLayout);
@@ -122,7 +127,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   saveApplicationLayout(layout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) => {
-      const savedLayout = saveLocalEntity<LayoutJSON>("api/vui", layout);
+      const savedLayout = saveLocalEntity<LayoutJSON>(this.#urlKey, layout);
       if (savedLayout) {
         resolve();
       } else {

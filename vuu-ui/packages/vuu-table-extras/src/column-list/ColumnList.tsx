@@ -8,10 +8,16 @@ import { Checkbox } from "@salt-ds/core";
 import { Switch } from "@salt-ds/lab";
 import cx from "classnames";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
+import {
+  HTMLAttributes,
+  MouseEventHandler,
+  SyntheticEvent,
+  useCallback,
+} from "react";
 import { ColumnItem } from "../table-settings";
 
 import "./ColumnList.css";
+import { getColumnLabel } from "@finos/vuu-utils";
 
 const classBase = "vuuColumnList";
 const classBaseListItem = "vuuColumnListItem";
@@ -27,6 +33,7 @@ export interface ColumnListProps
   columnItems: ColumnItem[];
   onChange: ColumnChangeHandler;
   onMoveListItem: ListProps["onMoveListItem"];
+  onNavigateToColumn?: (columnName: string) => void;
 }
 
 const ColumnListItem = ({
@@ -40,12 +47,15 @@ const ColumnListItem = ({
       className={cx(classNameProp, classBaseListItem)}
       data-name={item?.name}
     >
+      <span className={`${classBase}-icon`} data-icon="draggable" />
       {item?.isCalculated ? (
         <span className={`${classBase}-icon`} data-icon="function" />
       ) : (
         <Switch className={`${classBase}-switch`} checked={item?.subscribed} />
       )}
-      <span className={`${classBase}-text`}>{item?.label ?? item?.name}</span>
+      <span className={`${classBase}-text`}>
+        {getColumnLabel(item as ColumnDescriptor)}
+      </span>
       <Checkbox
         className={`${classBase}-checkBox`}
         checked={item?.hidden !== true}
@@ -59,6 +69,7 @@ export const ColumnList = ({
   columnItems,
   onChange,
   onMoveListItem,
+  onNavigateToColumn,
   ...htmlAttributes
 }: ColumnListProps) => {
   const handleChange = useCallback(
@@ -83,6 +94,17 @@ export const ColumnList = ({
     },
     [onChange]
   );
+
+  const handleClick = useCallback<MouseEventHandler>((evt) => {
+    const targetEl = evt.target as HTMLElement;
+    if (targetEl.classList.contains("vuuColumnList-text")) {
+      const listItemEl = targetEl.closest(".vuuListItem") as HTMLElement;
+      if (listItemEl?.dataset.name) {
+        onNavigateToColumn?.(listItemEl.dataset.name);
+      }
+    }
+  }, []);
+
   return (
     <div {...htmlAttributes} className={classBase}>
       <div className={`${classBase}-header`}>
@@ -95,8 +117,9 @@ export const ColumnList = ({
       <List<ColumnItem, "none">
         ListItem={ColumnListItem}
         allowDragDrop
-        height="100%"
+        height="auto"
         onChange={handleChange}
+        onClick={handleClick}
         onMoveListItem={onMoveListItem}
         selectionStrategy="none"
         source={columnItems}

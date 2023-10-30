@@ -139,7 +139,6 @@ const handleConditionalExpression = (
   onSubmit?: () => void
 ) => {
   const lastChild = getLastChild(node, context);
-  console.log(`conditional expression last child ${lastChild?.name}`);
   switch (lastChild?.name) {
     case "If":
       return makeSuggestions(context, suggestionProvider, "expression", {
@@ -200,7 +199,6 @@ export const useColumnAutoComplete = (
 
       switch (nodeBefore.name) {
         case "If": {
-          console.log(`conditional expression  If`);
           return makeSuggestions(context, "expression", { prefix: "( " });
         }
         case "Condition":
@@ -218,7 +216,6 @@ export const useColumnAutoComplete = (
               // we need the type of the expression on the other side of the operator
               return makeSuggestions(context, "expression");
             }
-            console.log(`condition  last child ${lastChild?.name}`);
           }
           break;
         case "ConditionalExpression":
@@ -311,11 +308,16 @@ export const useColumnAutoComplete = (
         case "ArgList": {
           const functionName = getFunctionName(nodeBefore, state);
           const lastArgument = getLastChild(nodeBefore, context);
-          const prefix = lastArgument?.name === "OpenBrace" ? undefined : ",";
+
+          const prefix =
+            lastArgument?.name === "OpenBrace" || lastArgument?.name === "Comma"
+              ? undefined
+              : ",";
           let options = await suggestionProvider.getSuggestions("expression", {
             functionName,
           });
           options = prefix ? applyPrefix(options, ", ") : options;
+
           // TODO per function check for number of arguments expected
           if (
             lastArgument?.name !== "OpenBrace" &&

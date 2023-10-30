@@ -1,5 +1,6 @@
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
+import { VuuInput } from "@finos/vuu-ui-controls";
 import {
   getCalculatedColumnName,
   getDefaultAlignment,
@@ -12,14 +13,14 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import cx from "classnames";
 import { HTMLAttributes } from "react";
-import { ColumnFormattingPanel } from "../column-formatting-settings";
-import { useColumnSettings } from "./useColumnSettings";
 import { ColumnExpressionPanel } from "../column-expression-panel";
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { ColumnFormattingPanel } from "../column-formatting-settings";
+import { ColumnNameLabel } from "./ColumnNameLabel";
+import { useColumnSettings } from "./useColumnSettings";
 
 import "./ColumnSettingsPanel.css";
-import { ColumnNameLabel } from "./ColumnNameLabel";
 
 const classBase = "vuuColumnSettingsPanel";
 
@@ -35,6 +36,7 @@ const getColumnLabel = (column: ColumnDescriptor) => {
 export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
   column: ColumnDescriptor;
   onConfigChange: (config: TableConfig) => void;
+  onCancelCreateColumn: () => void;
   onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
   tableConfig: TableConfig;
   vuuTable: VuuTable;
@@ -42,6 +44,7 @@ export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
 
 export const ColumnSettingsPanel = ({
   column: columnProp,
+  onCancelCreateColumn,
   onConfigChange,
   onCreateCalculatedColumn,
   tableConfig,
@@ -55,14 +58,17 @@ export const ColumnSettingsPanel = ({
     column,
     navigateNextColumn,
     navigatePrevColumn,
+    onCancel,
     onChange,
     onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRenderer,
+    onEditCalculatedColumn,
     onInputCommit,
     onSave,
   } = useColumnSettings({
     column: columnProp,
+    onCancelCreateColumn,
     onConfigChange,
     onCreateCalculatedColumn,
     tableConfig,
@@ -77,16 +83,19 @@ export const ColumnSettingsPanel = ({
   } = column;
 
   return (
-    <div className={classBase}>
+    <div
+      className={cx(classBase, {
+        [`${classBase}-editing`]: editCalculatedColumn,
+      })}
+    >
       <div className={`${classBase}-header`}>
-        <ColumnNameLabel column={column} />
+        <ColumnNameLabel column={column} onClick={onEditCalculatedColumn} />
       </div>
 
       {editCalculatedColumn ? (
         <ColumnExpressionPanel
           column={column}
           onChangeName={onChangeCalculatedColumnName}
-          onSave={onSave}
           tableConfig={tableConfig}
           vuuTable={vuuTable}
         />
@@ -167,27 +176,46 @@ export const ColumnSettingsPanel = ({
         onChangeRenderer={onChangeRenderer}
       />
 
-      <div
-        className={`${classBase}-buttonBar`}
-        data-align={isNewCalculatedColumn ? "right" : undefined}
-      >
-        <Button
-          className={`${classBase}-buttonNavPrev`}
-          variant="secondary"
-          data-icon="arrow-left"
-          onClick={navigatePrevColumn}
+      {editCalculatedColumn ? (
+        <div className="vuuColumnSettingsPanel-buttonBar" data-align="right">
+          <Button
+            className={`${classBase}-buttonCancel`}
+            onClick={onCancel}
+            tabIndex={-1}
+          >
+            cancel
+          </Button>
+          <Button
+            className={`${classBase}-buttonSave`}
+            onClick={onSave}
+            variant="cta"
+          >
+            save
+          </Button>
+        </div>
+      ) : (
+        <div
+          className={`${classBase}-buttonBar`}
+          data-align={isNewCalculatedColumn ? "right" : undefined}
         >
-          PREVIOUS
-        </Button>
-        <Button
-          className={`${classBase}-buttonNavNext`}
-          variant="secondary"
-          data-icon="arrow-right"
-          onClick={navigateNextColumn}
-        >
-          NEXT
-        </Button>
-      </div>
+          <Button
+            className={`${classBase}-buttonNavPrev`}
+            variant="secondary"
+            data-icon="arrow-left"
+            onClick={navigatePrevColumn}
+          >
+            PREVIOUS
+          </Button>
+          <Button
+            className={`${classBase}-buttonNavNext`}
+            variant="secondary"
+            data-icon="arrow-right"
+            onClick={navigateNextColumn}
+          >
+            NEXT
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,11 @@
 .vuuColumnNameLabel-calculated {
+    cursor: pointer;
     display: flex;
     gap: 2px;
+}
+
+.vuuColumnNameLabel-edit {
+    margin-left: auto;
 }
 
 .vuuColumnNameLabel-placeholder {

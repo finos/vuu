@@ -10,9 +10,9 @@ import { createArrayDataSource } from "../examples/utils/createArrayDataSource";
 
 export const BasketTradingNoBasketsFeature = ({
   basketSchema,
-  basketDefinitionsSchema,
-  basketDesignSchema,
-  basketOrdersSchema,
+  // basketDefinitionsSchema,
+  // basketDesignSchema,
+  // basketOrdersSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
@@ -20,10 +20,10 @@ export const BasketTradingNoBasketsFeature = ({
   useMemo(() => {
     const dataSourceConfig: [basketDataSourceKey, TableSchema, number?][] = [
       ["data-source-basket", basketSchema, 4],
-      ["data-source-basket-definitions", basketDefinitionsSchema, 0],
-      ["data-source-basket-definitions-search", basketDefinitionsSchema, 0],
-      ["data-source-basket-design", basketDesignSchema],
-      ["data-source-basket-orders", basketOrdersSchema],
+      // ["data-source-basket-definitions", basketDefinitionsSchema, 0],
+      // ["data-source-basket-definitions-search", basketDefinitionsSchema, 0],
+      // ["data-source-basket-design", basketDesignSchema],
+      // ["data-source-basket-orders", basketOrdersSchema],
       ["data-source-instruments", instrumentsSchema],
     ];
     for (const [key, schema, count] of dataSourceConfig) {
@@ -31,10 +31,10 @@ export const BasketTradingNoBasketsFeature = ({
       saveSession?.(dataSource, key);
     }
   }, [
-    basketDefinitionsSchema,
-    basketDesignSchema,
-    basketOrdersSchema,
     basketSchema,
+    // basketDefinitionsSchema,
+    // basketDesignSchema,
+    // basketOrdersSchema,
     instrumentsSchema,
     saveSession,
   ]);
@@ -42,9 +42,9 @@ export const BasketTradingNoBasketsFeature = ({
   return (
     <VuuBasketTradingFeature
       basketSchema={basketSchema}
-      basketDefinitionsSchema={basketDefinitionsSchema}
-      basketDesignSchema={basketDesignSchema}
-      basketOrdersSchema={basketOrdersSchema}
+      // basketDefinitionsSchema={basketDefinitionsSchema}
+      // basketDesignSchema={basketDesignSchema}
+      // basketOrdersSchema={basketOrdersSchema}
       instrumentsSchema={instrumentsSchema}
     />
   );

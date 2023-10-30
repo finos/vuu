@@ -1,6 +1,5 @@
 import { hasAction, MenuRpcResponse, TableSchema } from "@finos/vuu-data";
 import { RpcResponseHandler, useVuuTables } from "@finos/vuu-data-react";
-import { registerComponent } from "@finos/vuu-layout";
 import { Dialog } from "@finos/vuu-popups";
 import {
   Feature,
@@ -13,7 +12,6 @@ import {
 } from "@finos/vuu-shell";
 import { ReactElement, useCallback, useRef, useState } from "react";
 import { AppSidePanel } from "./app-sidepanel";
-// import { Stack } from "./AppStack";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { getFormConfig } from "./session-editing";
 import { createPlaceholder } from "./createPlaceholder";
@@ -32,8 +30,6 @@ const { websocketUrl: serverUrl = defaultWebsocketUrl, features } =
 //TODO how do we separate this from the feature
 const vuuBlotterUrl = "./feature-vuu-table/index.js";
 // const vuuBlotterUrl = "./feature-vuu-table/index.js";
-
-// registerComponent("Stack", Stack, "container");
 
 // createNewChild is used when we add a new Tab to Stack
 const layoutProps: ShellProps["LayoutProps"] = {
@@ -60,7 +56,7 @@ export const App = ({ user }: { user: VuuUser }) => {
         typeof response.action === "object" &&
         response.action !== null &&
         "type" in response.action &&
-        response?.action?.type === "OPEN_DIALOG_ACTION"
+        response.action?.type === "OPEN_DIALOG_ACTION"
       ) {
         const { tableSchema } = response.action as unknown as {
           tableSchema: TableSchema;

@@ -17,7 +17,11 @@ export const EmptyBasketsPanel = ({
       <span className={`${classBase}-info`}>
         You do not have any baskets set up
       </span>
-      <Button variant="cta" onClick={onClickAddBasket}>
+      <Button
+        className={`${classBase}-add`}
+        variant="cta"
+        onClick={onClickAddBasket}
+      >
         Add Basket
         <span data-icon="add" />
       </Button>

@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.basket.csv
 import scala.io.Source
 
 object CsvStaticLoader {
-  def loadConstituent(basketId: String): Array[Map[String, String]] = {
+  def loadConstituent(basketId: String): Array[Map[String, Any]] = {
     val staticDirPath = getClass.getResource("/static").getPath
     val dir = new java.io.File(staticDirPath)
     val csvFiles = dir.listFiles.filter(_.isFile)
@@ -21,14 +21,17 @@ object CsvStaticLoader {
     val volumeInd = header.indexOf("Volume")
     val weightInd = header.indexOf("Weight")
     val changeInd = header.indexOf("Change")
-    val list = array.tail.map(e => Map(
-      "Symbol" -> getValueFromIndex(symbolInd, e),
-      "Last Trade" -> getValueFromIndex(lastTradeInd, e),
-      "Name" -> getValueFromIndex(nameInd, e),
-      "Weight" -> getValueFromIndex(weightInd, e),
-      "Volume" -> getValueFromIndex(volumeInd, e),
-      "Change" -> getValueFromIndex(changeInd, e)
-    ))
+    val list = array.tail.map(e => {
+      val weighting = if(getValueFromIndex(weightInd, e) == null) 0.0D else getValueFromIndex(weightInd, e).toDouble
+      Map[String, Any](
+        "Symbol" -> getValueFromIndex(symbolInd, e),
+        "Last Trade" -> getValueFromIndex(lastTradeInd, e),
+        "Name" -> getValueFromIndex(nameInd, e),
+        "Weight" -> weighting,
+        "Volume" -> getValueFromIndex(volumeInd, e),
+        "Change" -> getValueFromIndex(changeInd, e)
+      )
+    })
     list
   }
 

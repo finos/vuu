@@ -1,6 +1,7 @@
 .vuuTableNextHeaderCell {
   --cell-align: 'flex-start';
-  --vuuColumnHeaderPill-margin: 0 0 0 3px;
+  --vuuColumnHeaderPill-margin: 0;
+  --vuuColumnHeaderPill-flex: 0 0 24px;
 
   align-items: center;
   background-color: var(--vuuTableNextHeaderCell-background, inherit);
@@ -11,7 +12,10 @@
   box-sizing: border-box;
   cursor: default;
   display: inline-flex;
+  gap: 4px;
   height: var(--header-height);
+  padding: 0 12px 0 4px;
+  position: relative;
   vertical-align: top;
 }
 
@@ -20,16 +24,20 @@
     --vuuTable-columnMenu-margin: 0;
     --vuuColumnHeaderPill-margin: 0 3px 0 0;
     --column-menu-left: 2px;
-
     justify-content: flex-end;
+    padding: 0 3px 0 12px;
   }
 
-  .vuuTableNextHeaderCell .vuuColumnResizerNext:hover {
-    --columnResizer-color: var(--vuu-color-purple-10);
-}
 
 .vuuTableNextHeaderCell-label {
+  flex: 0 1 auto;
   line-height: calc(var(--header-height) - 1px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vuuTableNextHeaderCell-right .vuuTableNextHeaderCell-label {
+  text-align: right;
 }
 
 .vuuTableNextHeaderCell-resizing {

@@ -69,12 +69,14 @@ export async function connect(
 
 async function reconnect(connection: WebsocketConnection) {
   //TODO it's not enough to reconnect with a new websocket, we have to log back in as well
-  makeConnection(
-    connection.url,
-    connection.protocol,
-    connection[connectionCallback],
-    connection
-  );
+  // Temp don't try to reconnect at all until better interop with a proxy is implemented
+  // makeConnection(
+  //   connection.url,
+  //   connection.protocol,
+  //   connection[connectionCallback],
+  //   connection
+  // );
+  throw Error("connection broken");
 }
 
 async function makeConnection(

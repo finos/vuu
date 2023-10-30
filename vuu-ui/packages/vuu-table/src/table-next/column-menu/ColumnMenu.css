@@ -13,9 +13,11 @@
     border-radius: 4px;
     cursor: pointer;
     display: inline-block;
+    flex: 0 0 20px;
     padding: 2px;
-    left: var(--column-menu-left, 0);
+    /* left: var(--column-menu-left, 0); */
     margin: var(--vuuTable-columnMenu-margin, 0);
+    width: auto;
 }
 
 .vuuTable-columnMenu:hover {

@@ -15,9 +15,11 @@ import org.finos.vuu.state.{MemoryBackedVuiStateStore, VuiHeader, VuiJsonState, 
 import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.auths.PermissionModule
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.editable.EditableModule
+import org.finos.vuu.core.module.price.PriceModule
 
 /*
 //to allow self signed certs
@@ -31,6 +33,7 @@ object SimulMain extends App with StrictLogging {
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
   logger.info("[VUU] Starting...")
 
@@ -71,7 +74,8 @@ object SimulMain extends App with StrictLogging {
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4)
-  ).withModule(SimulationModule())
+  ).withModule(PriceModule())
+    .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
     .withModule(TypeAheadModule())

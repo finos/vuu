@@ -61,7 +61,7 @@
     position: absolute;
     top:0;
     right: 0;
-    width: 240px;
+    width: var(--nav-menu-content-width, 240px);
     z-index: -1;
 }
 

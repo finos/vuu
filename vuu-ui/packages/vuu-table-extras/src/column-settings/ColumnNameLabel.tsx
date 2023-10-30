@@ -7,30 +7,36 @@ import {
 } from "@finos/vuu-utils";
 
 import "./ColumnNameLabel.css";
+import { MouseEventHandler } from "react";
 
 const classBase = "vuuColumnNameLabel";
 
 export interface ColumnNameLabelProps {
   column: ColumnDescriptor;
+  onClick: MouseEventHandler;
 }
 
-export const ColumnNameLabel = ({ column }: ColumnNameLabelProps) => {
+export const ColumnNameLabel = ({ column, onClick }: ColumnNameLabelProps) => {
   if (isCalculatedColumn(column.name)) {
-    const [name, expression, type] = getCalculatedColumnDetails(column);
+    const [name, type, expression] = getCalculatedColumnDetails(column);
     const displayName = name || "name";
-    const displayExpression = "expression";
+    const displayExpression = "=expression";
 
     const nameClass =
       displayName === "name" ? `${classBase}-placeholder` : undefined;
     const expressionClass =
       expression === "" ? `${classBase}-placeholder` : undefined;
     return (
-      <div className={cx(classBase, `${classBase}-calculated`)}>
+      <div
+        className={cx(classBase, `${classBase}-calculated`)}
+        onClick={onClick}
+      >
         <span className={nameClass}>{displayName}</span>
         <span>:</span>
-        <span className={expressionClass}>{displayExpression}</span>
-        <span>:</span>
         <span>{type || "string"}</span>
+        <span>:</span>
+        <span className={expressionClass}>{displayExpression}</span>
+        <span className={`${classBase}-edit`} data-icon="edit" />
       </div>
     );
   } else {

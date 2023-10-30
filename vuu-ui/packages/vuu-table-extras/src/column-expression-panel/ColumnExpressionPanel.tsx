@@ -5,10 +5,11 @@ import {
   getCalculatedColumnName,
   getCalculatedColumnType,
 } from "@finos/vuu-utils";
-import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import {
   ColumnExpressionInput,
+  ColumnExpressionSubmitHandler,
   useColumnExpressionSuggestionProvider,
 } from "../column-expression-input";
 import { ColumnSettingsProps } from "../column-settings";
@@ -20,36 +21,44 @@ export interface ColumnExpressionPanelProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<ColumnSettingsProps, "tableConfig" | "vuuTable"> {
   column: ColumnDescriptor;
+  /**
+   * Callback prop, invoked on every change to calculated column definition
+   * @param calculatedColumnName the full calculated column name
+   */
   onChangeName?: (name: string) => void;
-  onSave: (column: ColumnDescriptor) => void;
 }
 
 export const ColumnExpressionPanel = ({
   column: columnProp,
   onChangeName: onChangeNameProp,
-  onSave: onSaveProp,
   tableConfig,
   vuuTable,
 }: ColumnExpressionPanelProps) => {
   const typeRef = useRef<HTMLDivElement>(null);
-  const { column, onChangeExpression, onChangeName, onChangeType, onSave } =
+  const { column, onChangeExpression, onChangeName, onChangeType } =
     useColumnExpression({
       column: columnProp,
       onChangeName: onChangeNameProp,
-      onSave: onSaveProp,
     });
-  const expressionRef = useRef<string>(getCalculatedColumnExpression(column));
+  // The initial value to pass into the Expression Input. That is a
+  // CodeMirror editor and will manage its own state once initialised.
+  const initialExpressionRef = useRef<string>(
+    getCalculatedColumnExpression(column)
+  );
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
     columns: tableConfig.columns,
     table: vuuTable,
   });
 
-  const handleSubmitExpression = useCallback(() => {
-    requestAnimationFrame(() => {
-      typeRef.current?.querySelector("button")?.focus();
-    });
-  }, []);
+  const handleSubmitExpression =
+    useCallback<ColumnExpressionSubmitHandler>(() => {
+      if (typeRef.current) {
+        (
+          typeRef.current?.querySelector("button") as HTMLButtonElement
+        )?.focus();
+      }
+    }, []);
 
   return (
     <div className={classBase}>
@@ -62,7 +71,6 @@ export const ColumnExpressionPanel = ({
         <Input
           className="vuuInput"
           onChange={onChangeName}
-          // onKeyDown={onKeyDownColumnName}
           value={getCalculatedColumnName(column)}
         />
       </FormField>
@@ -72,7 +80,7 @@ export const ColumnExpressionPanel = ({
         <ColumnExpressionInput
           onChange={onChangeExpression}
           onSubmitExpression={handleSubmitExpression}
-          source={expressionRef.current}
+          source={initialExpressionRef.current}
           suggestionProvider={suggestionProvider}
         />
       </FormField>
@@ -87,22 +95,6 @@ export const ColumnExpressionPanel = ({
           width="100%"
         />
       </FormField>
-
-      <div className="vuuColumnSettingsPanel-buttonBar" data-align="right">
-        <Button className={`${classBase}-buttonCancel`} tabIndex={-1}>
-          cancel
-        </Button>
-        <Button className={`${classBase}-buttonApply`} tabIndex={-1}>
-          apply
-        </Button>
-        <Button
-          className={`${classBase}-buttonSave`}
-          onClick={onSave}
-          variant="cta"
-        >
-          save
-        </Button>
-      </div>
     </div>
   );
 };

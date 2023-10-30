@@ -9,14 +9,16 @@ import "./ColumnExpressionInput.css";
 
 const classBase = "vuuColumnExpressionInput";
 
+export type ColumnExpressionSubmitHandler = (
+  source: string,
+  expression: ColumnDefinitionExpression | undefined
+) => void;
+
 export interface ColumnExpressionInputProps
   extends ExpressionSuggestionConsumer,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange?: (source: string) => void;
-  onSubmitExpression?: (
-    source: string,
-    expression: ColumnDefinitionExpression | undefined
-  ) => void;
+  onSubmitExpression?: ColumnExpressionSubmitHandler;
   source?: string;
 }
 
@@ -27,14 +29,14 @@ export const ColumnExpressionInput = memo(
     source = "",
     suggestionProvider,
   }: ColumnExpressionInputProps) => {
-    const { editorRef } = useColumnExpressionEditor({
+    const { editorRef, onBlur } = useColumnExpressionEditor({
       onChange,
       onSubmitExpression,
       source,
       suggestionProvider,
     });
 
-    return <div className={`${classBase}`} ref={editorRef} />;
+    return <div className={`${classBase}`} onBlur={onBlur} ref={editorRef} />;
   },
   (prevProps, newProps) => {
     return prevProps.source === newProps.source;

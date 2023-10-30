@@ -1,7 +1,7 @@
 import { TableSchema } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { Toolbar } from "@finos/vuu-layout";
+import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
@@ -19,6 +19,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   activeFilterIndex?: number[];
   filters: Filter[];
   onApplyFilter: (filter: DataSourceFilter) => void;
+  onChangeActiveFilterIndex: ActiveItemChangeHandler;
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
@@ -32,6 +33,7 @@ export const FilterBar = ({
   className: classNameProp,
   filters: filtersProp,
   onApplyFilter,
+  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
@@ -58,6 +60,7 @@ export const FilterBar = ({
     containerRef: rootRef,
     filters: filtersProp,
     onApplyFilter,
+    onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
   });

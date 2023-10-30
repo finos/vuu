@@ -122,7 +122,7 @@ export const Tab = forwardRef(function Tab(
       {...props}
       aria-controls={ariaControls}
       aria-selected={selected}
-      className={cx(classBase, {
+      className={cx(classBase, className, {
         [`${classBase}-closeable`]: closeable,
         "vuuDraggable-dragAway": dragging,
         [`${classBase}-editing`]: editing,

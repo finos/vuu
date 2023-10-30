@@ -3,11 +3,12 @@
     --menu-item-icon-color: black;
     --vuu-icon-color: white;
     --vuu-icon-height: 12px;
-    --vuu-icon-width: 13px;
+    --vuu-icon-width: 12px;
     align-items: center;
     background: var(--salt-taggable-background-active);
     color: white;
     border-radius: 4px;
+    flex: var(--vuuColumnHeaderPill-flex, none);
     font-size: 11px;
     gap: 4px;
     height: 16px;

@@ -29,6 +29,7 @@ export const vuuTheme = EditorView.theme(
     ".cm-tooltip": {
       background: "var(--vuuFilterEditor-tooltipBackground)",
       border: "var(--vuuFilterEditor-tooltipBorder)",
+      borderRadius: "4px",
       boxShadow: "var(--vuuFilterEditor-tooltipElevation)",
       "&.cm-tooltip-autocomplete > ul": {
         fontFamily: "var(--vuuFilterEditor-fontFamily)",

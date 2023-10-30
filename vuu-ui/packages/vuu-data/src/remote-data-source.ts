@@ -1,4 +1,4 @@
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerEditRpc,
@@ -18,6 +18,7 @@ import {
   EventEmitter,
   itemsOrOrderChanged,
   logger,
+  metadataKeys,
   throttle,
   uuid,
 } from "@finos/vuu-utils";
@@ -43,6 +44,19 @@ type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("RemoteDataSource");
 
+const { KEY } = metadataKeys;
+
+type DataSourceStatus =
+  | "disabled"
+  | "disabling"
+  | "enabled"
+  | "enabling"
+  | "initialising"
+  | "subscribing"
+  | "subscribed"
+  | "suspended"
+  | "unsubscribed";
+
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
@@ -52,7 +66,7 @@ export class RemoteDataSource
 {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private status = "initialising";
+  private status: DataSourceStatus = "initialising";
   private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
@@ -115,6 +129,7 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
+    console.log(`%csubscribe`, "color:red;font-weight:bold;");
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -135,7 +150,7 @@ export class RemoteDataSource
       this.#range = range;
     }
 
-    if (this.status !== "initialising") {
+    if (this.status !== "initialising" && this.status !== "unsubscribed") {
       return;
     }
 
@@ -198,12 +213,16 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
+    console.log("%cunsubscribe", "color:red;font-weight:bold;");
+
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
     this.server?.destroy(this.viewport);
     this.removeAllListeners();
+    this.status = "unsubscribed";
+    this.viewport = undefined;
   }
 
   suspend() {
@@ -598,8 +617,19 @@ export class RemoteDataSource
     }
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+    console.log(
+      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
+    );
+
+    this.menuRpcCall({
+      rowKey: row[KEY],
+      field: columnName,
+      value: parseInt(value),
+      type: "VP_EDIT_CELL_RPC",
+    }).then(() => {
+      console.log("response");
+    });
     return true;
   }
 }

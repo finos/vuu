@@ -20,7 +20,7 @@ export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export type DataCellEditHandler = (
-  rowIndex: number,
+  row: DataSourceRow,
   columnName: string,
   value: VuuColumnDataType
 ) => boolean;
@@ -129,7 +129,6 @@ export interface ColumnDescriptor {
   align?: ColumnAlignment;
   className?: string;
   editable?: boolean;
-  expression?: string;
   flex?: number;
   /** 
    Optional additional level(s) of heading to display above label.
