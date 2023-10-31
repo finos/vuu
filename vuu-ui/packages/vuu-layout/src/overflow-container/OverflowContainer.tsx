@@ -146,7 +146,7 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
   return (
     <div
       {...htmlAttributes}
-      className={cx(cx(classBase, className))}
+      className={cx(cx(className, classBase))}
       id={id}
       ref={forwardedRef}
     >

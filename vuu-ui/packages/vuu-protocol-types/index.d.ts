@@ -132,6 +132,8 @@ export interface ServerToClientMenus {
   menu: VuuMenu;
   vpId: string;
 }
+
+//TODO not all menu messages are "ADD_ROWS_TO_ORDERS"
 export interface ServerToClientMenu {
   rpcName: "ADD_ROWS_TO_ORDERS";
   type: "VIEW_PORT_MENU_RESP";
@@ -139,6 +141,13 @@ export interface ServerToClientMenu {
     table?: VuuTable;
     type: "OPEN_DIALOG_ACTION";
   };
+  vpId: string;
+}
+
+export interface ServerToClientMenuReject {
+  error: string;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_REJ";
   vpId: string;
 }
 
@@ -257,6 +266,7 @@ export declare type ServerToClientBody =
   | ServerToClientTableRows
   | ServerToClientMenus
   | ServerToClientMenu
+  | ServerToClientMenuReject
   | ServerToClientMenuSessionTableAction
   | ServerToClientRPC
   | ServerToClientViewPortVisualLinks

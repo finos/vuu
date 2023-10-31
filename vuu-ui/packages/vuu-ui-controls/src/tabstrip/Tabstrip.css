@@ -18,6 +18,10 @@
 
 /* Tabstrip orientation is horizontal */
 .vuuTabstrip-horizontal {
+  --vuuOverflowContainer-borderColor: var(--salt-container-primary-borderColor);
+  --vuuOverflowContainer-borderStyle: none none solid none;
+  --vuuOverflowContainer-borderBottomWidth: 1px;
+
   --tabstrip-height: var(--vuuTabstrip-height, 28px);
   --tabstrip-width: var(--vuuTabstrip-width, 100%);
   --tab-height: var(--tabstrip-height);
@@ -27,7 +31,7 @@
   --tab-thumb-top: auto;
   --tab-thumb-width: var(--tab-thumb-size, 100%);
   align-items: flex-start;
-  border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor));
+  /* border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor)); */
 }
 
 /* Tabstrip orientation is vertical */
@@ -107,7 +111,7 @@
 }
 
 .vuuDraggable-tabstrip-horizontal {
-  --item-height: var(--tabstrip-height);
+  --overflow-item-height: var(--tabstrip-height);
   --tab-thumb-height: 2px;
   --tab-thumb-left: 0px;
   --tabstrip-display: inline-flex;

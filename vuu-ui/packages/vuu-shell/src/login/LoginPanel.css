@@ -1,4 +1,5 @@
 .vuuLoginPanel {
+  --saltInput-paddingLeft: 8px;
   --login-width: 856px;
   --login-height: 550px;
   --hwTextInput-border: solid 1px #ccc;

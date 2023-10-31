@@ -3,22 +3,15 @@ import {
   SchemaColumn,
   TableSchema,
   VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
 } from "@finos/vuu-data";
-import {
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
-  useVuuMenuActions,
-} from "@finos/vuu-data-react";
+import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
-import { LinkDescriptorWithLabel, VuuMenu } from "@finos/vuu-protocol-types";
 import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
 import { Button } from "@salt-ds/core";
-import { Filter } from "packages/vuu-filter-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 import { useSessionDataSource } from "./useSessionDataSource";
@@ -58,7 +51,7 @@ type FilterTableConfig = {
 };
 
 export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
-  const { dispatch, load, save, loadSession, saveSession } = useViewContext();
+  const { dispatch, load, save } = useViewContext();
 
   const {
     "available-columns": availableColumnsFromState,
@@ -121,17 +114,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     [save]
   );
 
-  const handleVuuFeatureEnabled = useCallback(
-    (message: VuuFeatureMessage) => {
-      if (isViewportMenusAction(message)) {
-        saveSession?.(message.menu, "vuu-menu");
-      } else if (isVisualLinksAction(message)) {
-        saveSession?.(message.links, "vuu-links");
-      }
-    },
-    [saveSession]
-  );
-
   const handleVuuFeatureInvoked = useCallback(
     (message: VuuFeatureInvocationMessage) => {
       if (message.type === "vuu-link-created") {
@@ -187,7 +169,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     height: "auto",
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
-    onFeatureEnabled: handleVuuFeatureEnabled,
     onFeatureInvocation: handleVuuFeatureInvoked,
     renderBufferSize: 50,
   };
@@ -199,14 +180,8 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
       get visualLink() {
         return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
       },
-      get visualLinks() {
-        return loadSession?.("vuu-links") as LinkDescriptorWithLabel[];
-      },
-      get vuuMenu() {
-        return loadSession?.("vuu-menu") as VuuMenu;
-      },
     }),
-    [load, loadSession]
+    [load]
   );
 
   useEffect(() => {

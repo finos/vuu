@@ -2,7 +2,7 @@ import { RpcResponseHandler, useVuuTables } from "@finos/vuu-data-react";
 import { hasAction, MenuRpcResponse, TableSchema } from "@finos/vuu-data";
 import { useCallback } from "react";
 import { getFormConfig } from "./session-editing";
-import { Feature, SessionEditingForm } from "packages/vuu-shell/src";
+import { Feature, SessionEditingForm } from "@finos/vuu-shell";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { SetDialog } from "@finos/vuu-popups";
 

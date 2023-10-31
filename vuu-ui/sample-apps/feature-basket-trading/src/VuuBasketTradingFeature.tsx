@@ -64,6 +64,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           message,
         });
         if (message.size) {
+          console.log(`${message.size} baskets in table`);
           setBasketCount(message.size);
         }
         if (message.rows) {
@@ -74,6 +75,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
 
     // TEMP server is notsending TABLE_ROWS if size is zero
     setTimeout(() => {
+      console.log(`temout fired, assume no baskets`);
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 1000);
   }, [dataSourceBasketTradingControl]);

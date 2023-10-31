@@ -1,21 +1,37 @@
 .vuuOverflowContainer {
-    --item-gap : 2px;
+    --overflow-borderColor: var(--vuuOverflowContainer-borderColor, none);
+    --overflow-borderStyle: var(--vuuOverflowContainer-borderStyle, none);
+    --overflow-borderWidth: var(--vuuOverflowContainer-borderWidth, 0px);
+
+    --overflow-border-topWidth: var(--vuuOverflowContainer-borderTopWidth, var(--overflow-borderWidth));
+    --overflow-border-rightWidth: var(--vuuOverflowContainer-borderRightWidth, var(--overflow-borderWidth));
+    --overflow-border-bottomWidth: var(--vuuOverflowContainer-borderBottomWidth, var(--overflow-borderWidth));
+    --overflow-border-leftWidth: var(--vuuOverflowContainer-borderLeftWidth, var(--overflow-borderWidth));
+    
+    --overflow-item-gap : var(--vuuOverflowContainer-gap,2px);
     --overflow-direction: row; 
-    --overflow-height: var(--item-height);
+    --overflow-height: var(--overflow-item-height);
     --overflow-top:top:0;
     --overflow-width: 0px;
+
     background-color: var(--vuuOverflowContainer-background);
-    height: var(--overflow-container-height);
+    border-color: var(--overflow-borderColor);
+    border-style: var(--overflow-borderStyle);
+    border-top-width: var(--overflow-border-topWidth);
+    border-right-width: var(--overflow-border-rightWidth);
+    border-bottom-width:  var(--overflow-border-bottomWidth);
+    border-left-width: var(--overflow-border-leftWidth);
+    height: var(--overflow-container-heightWidth);
 }
 
 .vuuOverflowContainer-horizontal {
     --item-align: center;
-    --item-margin: 0 var(--item-gap) 0 var(--item-gap);
+    --item-margin: 0 var(--overflow-item-gap) 0 var(--overflow-item-gap);
 }
 .vuuOverflowContainer-vertical {
     --item-align: stretch;
-    --item-height: auto;
-    --item-margin: var(--item-gap) 0 var(--item-gap) 0;
+    --overflow-item-height: auto;
+    --item-margin: var(--overflow-item-gap) 0 var(--overflow-item-gap) 0;
     --overflow-direction: column; 
     --overflow-height: 0;
     --overflow-left: 0;
@@ -25,12 +41,14 @@
 }
 
 .vuuOverflowContainer-wrapContainer {
-    --item-height: var(--overflow-container-height);
+    --border: calc(var(--overflow-border-topWidth) + var(--overflow-border-bottomWidth));
+    --overflow-item-height: calc(var(--overflow-container-height) - var(--border));
     align-items: var(--item-align);
     display: flex;
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
-    height: var(--item-height);
+    height: var(--overflow-item-height);
+    justify-content: var(--vuuOverflowContainer-justifyContent, flex-start);
     min-width: var(--vuuOverflowContainer-minWidth, 44px);
     overflow: hidden;
     position: relative;
@@ -54,7 +72,7 @@
     display: flex;
     order: 1;
     position: relative;
-    height: var(--item-height);
+    height: var(--overflow-item-height);
     margin: var(--item-margin);
 }
 

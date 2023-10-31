@@ -9,7 +9,7 @@ export interface BasketTradingHookProsp {
 }
 
 type BasketState = {
-  basketId?: string;
+  basketInstanceId?: string;
   dialog?: JSX.Element;
 };
 
@@ -21,16 +21,16 @@ export const useBasketTrading = ({
 }: BasketTradingHookProsp) => {
   const { load, save } = useViewContext();
 
-  const { basketId } = useMemo(() => {
-    const { basketId } = load?.("basket-state") ?? NO_STATE;
-    if (basketId) {
-      console.log(`loaded basketId ${basketId}`);
+  const basketInstanceId = useMemo<string>(() => {
+    const { basketInstanceId } = load?.("basket-state") ?? NO_STATE;
+    if (basketInstanceId) {
+      console.log(`loaded basket Id ${basketInstanceId}`);
     }
-    return { basketId };
+    return basketInstanceId;
   }, [load]);
 
   const [basketState, setBasketState] = useState<BasketState>({
-    basketId,
+    basketInstanceId,
     dialog: undefined,
   });
 
@@ -42,10 +42,10 @@ export const useBasketTrading = ({
   }, []);
 
   const handleSaveNewBasket = useCallback((basketName, basketId) => {
-    setBasketState({
-      basketId,
+    setBasketState((state) => ({
+      ...state,
       dialog: undefined,
-    });
+    }));
   }, []);
 
   const handleAddBasket = useCallback(() => {

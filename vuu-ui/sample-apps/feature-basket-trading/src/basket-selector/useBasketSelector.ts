@@ -3,7 +3,7 @@ import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { SubscribeCallback } from "@finos/vuu-data";
 import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { OpenChangeHandler, useControlled } from "@finos/vuu-ui-controls";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";
 
@@ -58,7 +58,8 @@ export const useBasketSelector = ({
       setIsOpen(open);
       onOpenChange?.(open, closeReason);
       if (open === false) {
-        dataSourceBasketTradingSearch.unsubscribe();
+        console.log(`disable basketSearch`);
+        dataSourceBasketTradingSearch.disable?.();
       }
     },
     [dataSourceBasketTradingSearch, onOpenChange, setIsOpen]
@@ -66,14 +67,15 @@ export const useBasketSelector = ({
 
   const handleRowClick = useCallback<TableRowClickHandler>(
     (row) => {
-      const instanceIdId = row[columnMap.instanceId] as string;
-      setBasketInstanceId(instanceIdId);
-      setIsOpen(false);
+      const instanceId = row[columnMap.instanceId] as string;
+      console.log(`instanceId ${instanceId}`);
+      setBasketInstanceId(instanceId);
+      handleOpenChange(false, "select");
       dataSourceBasketTrading.filter = {
-        filter: `instanceId = "${basketInstanceId}"`,
+        filter: `instanceId = "${instanceId}"`,
       };
     },
-    [basketInstanceId, columnMap.instanceId, dataSourceBasketTrading, setIsOpen]
+    [columnMap.instanceId, dataSourceBasketTrading, handleOpenChange]
   );
 
   const handleData = useCallback<SubscribeCallback>(

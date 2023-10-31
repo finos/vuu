@@ -1,3 +1,4 @@
+export * as AppHeader from "./AppHeader.examples";
 export * as AppSidePanel from "./AppSidePanel.examples";
 export * as ConnectionStatus from "./ConnectionStatus.examples";
 export * as ConnectionMetrics from "./ConnectionMetrics.examples";

@@ -12,6 +12,7 @@
   "types": "src/index.ts",
   "dependencies": {
     "@salt-ds/core": "1.8.0",
+    "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-table-extras": "0.0.26",

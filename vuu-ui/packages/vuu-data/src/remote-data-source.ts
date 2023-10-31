@@ -7,6 +7,7 @@ import {
   VuuAggregation,
   VuuColumnDataType,
   VuuGroupBy,
+  VuuMenu,
   VuuRange,
   VuuSort,
   VuuTable,
@@ -30,6 +31,7 @@ import {
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
+  DataSourceStatus,
   isDataSourceConfigMessage,
   OptimizeStrategy,
   SubscribeCallback,
@@ -39,23 +41,16 @@ import {
   WithFullConfig,
 } from "./data-source";
 import { MenuRpcResponse } from "./vuuUIMessageTypes";
+import {
+  isViewportMenusAction,
+  isVisualLinksAction,
+} from "packages/vuu-data-react/src";
 
 type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("RemoteDataSource");
 
 const { KEY } = metadataKeys;
-
-type DataSourceStatus =
-  | "disabled"
-  | "disabling"
-  | "enabled"
-  | "enabling"
-  | "initialising"
-  | "subscribing"
-  | "subscribed"
-  | "suspended"
-  | "unsubscribed";
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
@@ -66,17 +61,20 @@ export class RemoteDataSource
 {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private status: DataSourceStatus = "initialising";
   private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
 
   #config: WithFullConfig = vanillaConfig;
   #groupBy: VuuGroupBy = [];
+  #links: LinkDescriptorWithLabel[] | undefined;
+  #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #range: VuuRange = { from: 0, to: 0 };
   #selectedRowsCount = 0;
   #size = 0;
+  #status: DataSourceStatus = "initialising";
+
   #title: string | undefined;
 
   public table: VuuTable;
@@ -119,7 +117,7 @@ export class RemoteDataSource
 
   async subscribe(
     {
-      viewport = this.viewport ?? uuid(),
+      viewport = this.viewport ?? (this.viewport = uuid()),
       columns,
       aggregations,
       range,
@@ -130,7 +128,10 @@ export class RemoteDataSource
     callback: SubscribeCallback
   ) {
     this.clientCallback = callback;
-
+    console.log(
+      `%csubscribe ${this.viewport} status ${this.#status}`,
+      "color:red"
+    );
     if (aggregations || columns || filter || groupBy || sort) {
       this.#config = {
         ...this.#config,
@@ -149,11 +150,18 @@ export class RemoteDataSource
       this.#range = range;
     }
 
-    if (this.status !== "initialising" && this.status !== "unsubscribed") {
+    if (
+      this.#status !== "initialising" &&
+      this.#status !== "unsubscribed" &&
+      // We can subscribe to a disabled dataSource. No request will be
+      // sent to server to create a new VP, just to enable the existing one.
+      // The current subscribing client becomes the subscription owner
+      this.#status !== "disabled"
+    ) {
       return;
     }
 
-    this.status = "subscribing";
+    this.#status = "subscribing";
     this.viewport = viewport;
 
     this.server = await getServerAPI();
@@ -175,12 +183,13 @@ export class RemoteDataSource
 
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
-      this.status = "subscribed";
+      this.#status = "subscribed";
       this.clientCallback?.(message);
     } else if (message.type === "disabled") {
-      this.status = "disabled";
+      console.log("disabled confirmed by server");
+      this.#status = "disabled";
     } else if (message.type === "enabled") {
-      this.status = "enabled";
+      this.#status = "enabled";
     } else if (isDataSourceConfigMessage(message)) {
       // This is an ACK for a CHANGE_VP message. Nothing to do here. We need
       // to wait for data to be returned before we can consider the change
@@ -204,7 +213,16 @@ export class RemoteDataSource
       if (this.configChangePending) {
         this.setConfigPending();
       }
-      this.clientCallback?.(message);
+
+      if (isViewportMenusAction(message)) {
+        this.#menu = message.menu;
+        console.log({ menu: message.menu });
+      } else if (isVisualLinksAction(message)) {
+        this.#links = message.links as LinkDescriptorWithLabel[];
+      } else {
+        this.clientCallback?.(message);
+      }
+
       if (this.optimize === "debounce") {
         this.revertDebounce();
       }
@@ -212,6 +230,8 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
+    console.log(`%cunsubscribe ${this.viewport}`, "color:red");
+
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
@@ -219,15 +239,16 @@ export class RemoteDataSource
     this.server?.destroy(this.viewport);
     this.server = null;
     this.removeAllListeners();
-    this.status = "unsubscribed";
+    this.#status = "unsubscribed";
     this.viewport = undefined;
     this.range = { from: 0, to: 0 };
   }
 
   suspend() {
-    info?.(`suspend #${this.viewport}, current status ${this.status}`);
+    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
+    info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
-      this.status = "suspended";
+      this.#status = "suspended";
       this.server?.send({
         type: "suspend",
         viewport: this.viewport,
@@ -237,25 +258,26 @@ export class RemoteDataSource
   }
 
   resume() {
-    info?.(`resume #${this.viewport}, current status ${this.status}`);
+    console.log(`resume #${this.viewport}, current status ${this.#status}`);
+    info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
-      if (this.status === "disabled" || this.status === "disabling") {
+      if (this.#status === "disabled" || this.#status === "disabling") {
         this.enable();
-      } else if (this.status === "suspended") {
+      } else if (this.#status === "suspended") {
         this.server?.send({
           type: "resume",
           viewport: this.viewport,
         });
-        this.status = "subscribed";
+        this.#status = "subscribed";
       }
     }
     return this;
   }
 
   disable() {
-    info?.(`disable #${this.viewport}, current status ${this.status}`);
+    info?.(`disable #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
-      this.status = "disabling";
+      this.#status = "disabling";
       this.server?.send({
         viewport: this.viewport,
         type: "disable",
@@ -264,13 +286,16 @@ export class RemoteDataSource
     return this;
   }
 
-  enable() {
-    info?.(`enable #${this.viewport}, current status ${this.status}`);
+  enable(callback?: SubscribeCallback) {
+    info?.(`enable #${this.viewport}, current status ${this.#status}`);
     if (
       this.viewport &&
-      (this.status === "disabled" || this.status === "disabling")
+      (this.#status === "disabled" || this.#status === "disabling")
     ) {
-      this.status = "enabling";
+      this.#status = "enabling";
+      if (callback) {
+        this.clientCallback = callback;
+      }
       this.server?.send({
         viewport: this.viewport,
         type: "enable",
@@ -308,6 +333,18 @@ export class RemoteDataSource
         key,
       });
     }
+  }
+
+  get links() {
+    return this.#links;
+  }
+
+  get menu() {
+    return this.#menu;
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get optimize() {
@@ -608,6 +645,10 @@ export class RemoteDataSource
   async menuRpcCall(
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
   ) {
+    console.log(
+      `%cmenuRpcCall ${this.viewport}`,
+      "color:green;font-weight: bold"
+    );
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,

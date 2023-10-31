@@ -2,7 +2,7 @@ import { useViewContext } from "@finos/vuu-layout";
 import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
 import { useCallback, useMemo, useState } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
-import { VuuFilter } from "packages/vuu-protocol-types";
+import { VuuFilter } from "@finos/vuu-protocol-types";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -38,7 +38,7 @@ export const useBasketTradingDataSources = ({
       ["data-source-basket", basketSchema],
       ["data-source-basket-trading", basketTradingSchema, basketFilter],
       ["data-source-basket-trading-control", basketTradingSchema],
-      ["data-source-basket-trading-search", basketTradingSchema, basketFilter],
+      ["data-source-basket-trading-search", basketTradingSchema],
       [
         "data-source-basket-trading-constituent",
         basketTradingConstituentSchema,

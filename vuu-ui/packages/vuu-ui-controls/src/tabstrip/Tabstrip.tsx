@@ -136,7 +136,7 @@ export const Tabstrip = ({
         {...htmlAttributes}
         {...tabstripHook.containerProps}
         className={className}
-        height={28}
+        height={29}
         id={id}
         orientation={orientation}
         overflowIcon="more-horiz"
