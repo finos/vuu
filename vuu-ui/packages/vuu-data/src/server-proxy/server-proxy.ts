@@ -506,8 +506,6 @@ export class ServerProxy {
       | WithRequestId<VuuRpcRequest>
       | WithRequestId<ClientToServerMenuRPC>
   ) {
-    debug?.(`handleMessageFromClient: ${message.type}`);
-
     if (isViewportMessage(message)) {
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed

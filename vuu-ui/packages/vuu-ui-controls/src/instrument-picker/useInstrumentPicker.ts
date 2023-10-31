@@ -32,7 +32,7 @@ export const useInstrumentPicker = ({
   defaultIsOpen,
   isOpen: isOpenProp,
   itemToString = defaultItemToString(columns, columnMap),
-  onOpenChange: onOpenChangeProp,
+  onOpenChange,
   onSelect,
   searchColumns,
 }: InstrumentPickerHookProps) => {
@@ -52,9 +52,12 @@ export const useInstrumentPicker = ({
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
       setIsOpen(open);
-      onOpenChangeProp?.(open, closeReason);
+      onOpenChange?.(open, closeReason);
+      if (open === false) {
+        dataSource.unsubscribe();
+      }
     },
-    [onOpenChangeProp, setIsOpen]
+    [dataSource, onOpenChange, setIsOpen]
   );
 
   const handleInputChange = useCallback(
@@ -82,11 +85,10 @@ export const useInstrumentPicker = ({
     (row) => {
       const value = itemToString(row);
       setValue(value);
-      setIsOpen(false);
       onSelect(row);
-      onOpenChangeProp?.(false, "select");
+      handleOpenChange?.(false, "select");
     },
-    [itemToString, onOpenChangeProp, onSelect, setIsOpen]
+    [handleOpenChange, itemToString, onSelect]
   );
 
   const inputProps = {

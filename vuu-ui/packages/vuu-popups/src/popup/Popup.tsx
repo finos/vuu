@@ -1,5 +1,4 @@
 import cx from "classnames";
-import { useThemeAttributes } from "@finos/vuu-shell";
 import { HTMLAttributes, RefObject } from "react";
 import { Position, useAnchoredPosition } from "./useAnchoredPosition";
 

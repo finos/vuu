@@ -129,7 +129,6 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    console.log(`%csubscribe`, "color:red;font-weight:bold;");
     this.clientCallback = callback;
 
     if (aggregations || columns || filter || groupBy || sort) {
@@ -213,16 +212,16 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
-    console.log("%cunsubscribe", "color:red;font-weight:bold;");
-
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
     }
     this.server?.destroy(this.viewport);
+    this.server = null;
     this.removeAllListeners();
     this.status = "unsubscribed";
     this.viewport = undefined;
+    this.range = { from: 0, to: 0 };
   }
 
   suspend() {
@@ -618,10 +617,6 @@ export class RemoteDataSource
   }
 
   applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
-    console.log(
-      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
-    );
-
     this.menuRpcCall({
       rowKey: row[KEY],
       field: columnName,

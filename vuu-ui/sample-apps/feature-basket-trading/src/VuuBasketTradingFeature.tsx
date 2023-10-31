@@ -1,7 +1,7 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
@@ -33,19 +33,20 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     instrumentsSchema,
   } = props;
 
-  const basketTradingId = "steve-00001";
+  const basketInstanceId = "steve-00001";
 
   const {
     activeTabIndex,
     dataSourceBasket,
     dataSourceBasketTrading,
+    dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituent,
     dataSourceInstruments,
     onSendToMarket,
     onTakeOffMarket,
   } = useBasketTradingDataSources({
-    basketTradingId,
+    basketInstanceId,
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentSchema,
@@ -54,16 +55,19 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
 
   const [basketCount, setBasketCount] = useState(-1);
   useMemo(() => {
-    dataSourceBasketTradingSearch.subscribe(
+    dataSourceBasketTradingControl.subscribe(
       {
         range: { from: 0, to: 100 },
       },
       (message) => {
-        console.log("message from dataSourceTrading", {
+        console.log("message from dataSourceTradingControl", {
           message,
         });
         if (message.size) {
           setBasketCount(message.size);
+        }
+        if (message.rows) {
+          console.table(message.rows);
         }
       }
     );
@@ -72,19 +76,19 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     setTimeout(() => {
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 1000);
-  }, [dataSourceBasketTradingSearch]);
-  // useEffect(() => {
-  //   dataSourceBasketDesign.resume?.();
-  //   return () => {
-  //     dataSourceBasketDesign.suspend?.();
-  //   };
-  // }, [dataSourceBasketDesign]);
+  }, [dataSourceBasketTradingControl]);
+  useEffect(() => {
+    // dataSourceBasketDesign.resume?.();
+    return () => {
+      dataSourceBasketTradingControl.unsubscribe?.();
+    };
+  }, [dataSourceBasketTradingControl]);
 
   const [buildMenuOptions, handleMenuAction] = useBasketTabMenu({
     dataSourceInstruments,
   });
 
-  const { basketId, dialog, handleAddBasket } = useBasketTrading({
+  const { dialog, handleAddBasket } = useBasketTrading({
     basketSchema,
     dataSourceBasket,
   });
@@ -97,11 +101,12 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
 
   const basketSelectorProps = useMemo<BasketSelectorProps>(
     () => ({
-      basketTradingId,
+      basketInstanceId,
+      dataSourceBasketTrading,
       dataSourceBasketTradingSearch: dataSourceBasketTradingSearch,
       onClickAddBasket: handleAddBasket,
     }),
-    [basketTradingId, dataSourceBasketTradingSearch, handleAddBasket]
+    [dataSourceBasketTrading, dataSourceBasketTradingSearch, handleAddBasket]
   );
 
   if (basketCount === -1) {

@@ -70,8 +70,6 @@ export const BackgroundCell = ({ column, row }: TableCellProps) => {
   );
 };
 
-console.log("register BackgroundCellNext");
-
 registerComponent("background-next", BackgroundCell, "cell-renderer", {
   description: "Change background color of cell when value changes",
   label: "Background Flash",

@@ -6,6 +6,7 @@ export type BasketsTableName =
   | "basketConstituent"
   | "basketTrading"
   | "basketTradingConstituent"
+  | "basketTrdConsPrices"
   | "priceStrategyType";
 
 export const schemas: Readonly<
@@ -67,12 +68,41 @@ export const schemas: Readonly<
       { name: "description", serverDataType: "string" },
       { name: "instanceId", serverDataType: "string" },
       { name: "instanceIdRic", serverDataType: "string" },
+      { name: "limitPrice", serverDataType: "double" },
+      { name: "notionalLocal", serverDataType: "double" },
+      { name: "notionalUsd", serverDataType: "double" },
+      { name: "pctFilled", serverDataType: "double" },
+      { name: "priceSpread", serverDataType: "int" },
+      { name: "priceStrategyId", serverDataType: "int" },
+      { name: "quantity", serverDataType: "long" },
+      { name: "ric", serverDataType: "string" },
+      { name: "side", serverDataType: "string" },
+      { name: "venue", serverDataType: "string" },
+      { name: "weighting", serverDataType: "double" },
+    ],
+    key: "instanceIdRic",
+    table: { module: "BASKET", table: "basketTradingConstituent" },
+  },
+  basketTrdConsPrices: {
+    columns: [
+      { name: "algo", serverDataType: "string" },
+      { name: "algoParams", serverDataType: "string" },
+      { name: "ask", serverDataType: "double" },
+      { name: "askSize", serverDataType: "double" },
+      { name: "basketId", serverDataType: "string" },
+      { name: "bid", serverDataType: "double" },
+      { name: "bidSize", serverDataType: "double" },
+      { name: "close", serverDataType: "double" },
+      { name: "description", serverDataType: "string" },
+      { name: "instanceId", serverDataType: "string" },
+      { name: "instanceIdRic", serverDataType: "string" },
       { name: "last", serverDataType: "double" },
       { name: "limitPrice", serverDataType: "double" },
       { name: "notionalLocal", serverDataType: "double" },
       { name: "notionalUsd", serverDataType: "double" },
-      { name: "offer", serverDataType: "double" },
+      { name: "open", serverDataType: "double" },
       { name: "pctFilled", serverDataType: "double" },
+      { name: "phase", serverDataType: "string" },
       { name: "priceSpread", serverDataType: "int" },
       { name: "priceStrategyId", serverDataType: "int" },
       { name: "quantity", serverDataType: "long" },
