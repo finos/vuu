@@ -201,34 +201,41 @@ export class ArrayDataSource
     this.status = "subscribed";
     this.lastRangeServed = { from: 0, to: 0 };
 
-    if (aggregations || columns || filter || groupBy || sort) {
+    let config = this.#config;
+
+    const hasConfigProps = aggregations || columns || filter || groupBy || sort;
+    if (hasConfigProps) {
       if (range) {
         this.#range = range;
       }
-      this.config = {
-        ...this.#config,
+      config = {
+        ...config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
         filter: filter || this.#config.filter,
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
-    } else {
-      this.clientCallback?.({
-        ...this.#config,
-        type: "subscribed",
-        clientViewportId: this.viewport,
-        range: this.#range,
-        tableSchema: this.tableSchema,
-      });
+    }
 
+    this.clientCallback?.({
+      ...config,
+      type: "subscribed",
+      clientViewportId: this.viewport,
+      range: this.#range,
+      tableSchema: this.tableSchema,
+    });
+
+    if (hasConfigProps) {
+      // invoke setter to action config
+      this.config = config;
+    } else {
       this.clientCallback({
         clientViewportId: this.viewport,
         mode: "size-only",
         type: "viewport-update",
         size: this.#data.length,
       });
-
       if (range) {
         // set range and trigger dispatch of initial rows
         this.range = range;
@@ -570,8 +577,8 @@ export class ArrayDataSource
     console.log({ row, colName, value });
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${row[0]} ${columnName} ${value}`);
     return true;
   }
 

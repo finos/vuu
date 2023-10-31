@@ -2,7 +2,7 @@
     --col-gap: 32px;
     --basket-selector-height: 61px;
     align-items: center;
-    border: solid 1px var(--salt-editable-borderColor);
+    border: solid 1px var(--vuu-color-gray-45);
     border-radius: 6px;
     display: inline-flex;
     height: var(--basket-selector-height);
@@ -13,11 +13,12 @@
     display: grid;
     flex: 1 1 auto;
     gap: 0px var(--col-gap);
-    grid-template-columns: max-content min-content min-content;
+    grid-template-columns: max-content min-content min-content 24px;
     grid-template-rows: 18px 1fr;
 }
 .vuuBasketSelector-label {
     color: var(--vuu-color-gray-50);
+    line-height: 1.5;
     position: relative;
 }
 
@@ -35,6 +36,7 @@
     font-size: 20px;
     font-weight: 700;
     line-height: normal;
+    min-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -45,6 +47,7 @@
     font-size: 20px;
     font-weight: 400;
     line-height: normal;
+    min-width: 50px;
     overflow: hidden;
     position: relative;
     text-overflow: ellipsis;
@@ -59,23 +62,26 @@
     --vuuPriceTicker-fontSize: 20px;
     --vuuPriceTicker-fontWeight: 400;
     line-height: 1.5;
+    min-width: 80px;
 }
 
 .vuuBasketSelector-trigger {
     --saltButton-height: 24px;
     --saltButton-width: 24px;
+    --vuu-icon-color: var(--vuu-color-gray-50);
     --vuu-icon-height: 24px;
     --vuu-icon-size: 24px;
     --vuu-icon-width: 24px;
-    flex: 0 0 auto;
-    margin-left: 16px;
+    align-self: center;
+    grid-column: 4;
+    grid-row: 1 / span 2;
 }
 
 .vuuBasketSelector-searchContainer {
+    --vuuMeasuredContainer-flex: 1 1 1px;
     display: flex;
     flex-direction: column;
     height: 400px;
-    width: 377px;
 }
 
 .vuuBasketSelector-instrumentSearch {
