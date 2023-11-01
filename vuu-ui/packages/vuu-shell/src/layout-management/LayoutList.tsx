@@ -60,7 +60,7 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                       {metadata?.name}
                     </div>
                     <div className={`${classBase}-layoutDetails`}>
-                                        <div>{`${metadata?.user}, ${metadata?.date}`}</div>
+                                        <div>{`${metadata?.user}, ${metadata?.created}`}</div>
                     </div>
                   </div>
                 </div>

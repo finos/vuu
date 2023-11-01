@@ -1,141 +1,58 @@
-import { PriceTicker } from "@finos/vuu-ui-controls";
+import { DropdownBase, PriceTicker } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
-import { DataSource, SubscribeCallback } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data";
 import { useId } from "@finos/vuu-layout";
-import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
-import { TableProps, TableRowClickHandler } from "@finos/vuu-table";
-import { InstrumentSearch } from "@finos/vuu-ui-controls";
-import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import {
-  HTMLAttributes,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { BasketSelectorRow } from "./BasketSelectorRow";
+import { DropdownBaseProps, InstrumentSearch } from "@finos/vuu-ui-controls";
+import { HTMLAttributes, useCallback, useRef } from "react";
 
 import "./BasketSelector.css";
+import { useBasketSelector } from "./useBasketSelector";
 
 const classBase = "vuuBasketSelector";
 
-export interface BasketSelectorProps extends HTMLAttributes<HTMLDivElement> {
-  basketTradingId?: string;
+export interface BasketSelectorProps
+  extends Pick<DropdownBaseProps, "defaultIsOpen" | "isOpen" | "onOpenChange">,
+    HTMLAttributes<HTMLElement> {
+  basketInstanceId?: string;
+  dataSourceBasketTrading: DataSource;
   dataSourceBasketTradingSearch: DataSource;
   label?: string;
   onClickAddBasket: () => void;
 }
 
-export class Basket {
-  currency: string;
-  exchangeRateToUSD: number;
-  name: string;
-  symbolName: string;
-
-  constructor(data: VuuDataRow, columnMap: ColumnMap) {
-    this.currency = data[columnMap.currency] as string;
-    this.exchangeRateToUSD = data[columnMap.exchangeRateToUSD] as number;
-    this.name = data[columnMap.name] as string;
-    this.symbolName = data[columnMap.symbolName] as string;
-  }
-}
-
 export const BasketSelector = ({
-  basketTradingId: basketTradingIdProp,
+  basketInstanceId,
+  dataSourceBasketTrading,
   dataSourceBasketTradingSearch,
   id: idProp,
+  isOpen: isOpenProp,
   onClickAddBasket,
+  onOpenChange: onOpenChangeProp,
   ...htmlAttributes
 }: BasketSelectorProps) => {
-  // const [basket, setBasket] = useState<Basket | undefined>(new Basket());
   const rootRef = useRef<HTMLDivElement>(null);
-  const columnMap = useMemo(
-    () => buildColumnMap(dataSourceBasketTradingSearch.columns),
-    [dataSourceBasketTradingSearch.columns]
-  );
-  const [open, setOpen] = useState(false);
-  const [basketTradingId, setBasketTradingId] = useState<string | undefined>(
-    basketTradingIdProp
-  );
-  const [basket, setBasket] = useState<Basket | undefined>();
   const id = useId(idProp);
-  const handleData = useCallback<SubscribeCallback>(
-    (message) => {
-      if (message.type === "viewport-update" && message.rows?.length === 1) {
-        setBasket(new Basket(message.rows[0], columnMap));
-      }
-    },
-    [columnMap]
-  );
 
-  const toggleSearch = useCallback(() => {
-    setOpen((open) => !open);
-  }, []);
-
-  useMemo(() => {
-    console.log("subscribe to basket");
-    dataSourceBasketTradingSearch.subscribe(
-      {
-        range: { from: 0, to: 1 },
-        filter: { filter: `instanceId = "${basketTradingId}"` },
-      },
-      handleData
-    );
-  }, [basketTradingId, dataSourceBasketTradingSearch, handleData]);
-
-  useEffect(() => {
-    console.log(`apply filter id = ${basketTradingId}`);
-    dataSourceBasketTradingSearch.filter = {
-      filter: `id = "${basketTradingId ?? "NONE"}"`,
-    };
-  }, [basketTradingId, dataSourceBasketTradingSearch]);
-
-  const handleRowClick = useCallback<TableRowClickHandler>(
-    (row) => {
-      const { id } = columnMap;
-      const basketId = row[id] as string;
-      setBasketTradingId(basketId);
-      setOpen(false);
-    },
-    [columnMap]
-  );
-
-  const tableProps: Partial<TableProps> = useMemo(
-    () => ({
-      Row: BasketSelectorRow,
-      config: {
-        columns: [
-          { name: "id", width: 300 },
-          {
-            hidden: true,
-            name: "name",
-            width: 200,
-          },
-          {
-            hidden: true,
-            name: "symbolName",
-            width: 100,
-            type: {
-              name: "string",
-            },
-          },
-        ],
-      },
-      onRowClick: handleRowClick,
-      rowHeight: 47,
-    }),
-    [handleRowClick]
-  );
+  const { basket, isOpen, onOpenChange, tableProps } = useBasketSelector({
+    basketInstanceId,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingSearch,
+    isOpen: isOpenProp,
+    onOpenChange: onOpenChangeProp,
+  });
 
   const handleClickAddBasket = useCallback(() => {
-    setOpen(false);
     onClickAddBasket();
   }, [onClickAddBasket]);
 
   return (
-    <div {...htmlAttributes} className={classBase} ref={rootRef}>
+    <DropdownBase
+      {...htmlAttributes}
+      className={classBase}
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      ref={rootRef}
+    >
       <div className={`${classBase}-basketDetails`}>
         <label className={`${classBase}-label`} id={`${id}-name`}>
           Basket Name
@@ -150,45 +67,42 @@ export const BasketSelector = ({
           className={`${classBase}-basketName`}
           aria-labelledby={`${id}-name`}
         >
-          {basket?.name}
+          {basket?.basketName}
         </span>
         <span
           className={`${classBase}-symbolName`}
           aria-labelledby={`${id}-symbol`}
         >
-          {basket?.symbolName}
+          {basket?.basketId}
         </span>
         <PriceTicker
           aria-labelledby={`${id}-exchange`}
           className={`${classBase}-exchangeRate`}
           decimals={4}
-          price={basket?.exchangeRateToUSD}
+          price={basket?.fxRateToUsd}
           showArrow
         />
+        <Button
+          className={`${classBase}-trigger`}
+          data-icon="chevron-down"
+          // onClick={toggleSearch}
+          variant="secondary"
+        />
       </div>
-      <Button
-        className={`${classBase}-trigger`}
-        data-icon="chevron-down"
-        onClick={toggleSearch}
-        variant="secondary"
-      />
-      <Portal open={open}>
-        <Popup anchorElement={rootRef} placement="below">
-          <div className={`${classBase}-searchContainer`}>
-            <InstrumentSearch
-              className={`${classBase}-instrumentSearch`}
-              TableProps={tableProps}
-              dataSource={dataSourceBasketTradingSearch}
-              searchColumn="name"
-            />
-            <div className={`${classBase}-buttonBar`}>
-              <Button onClick={handleClickAddBasket} variant="secondary">
-                Add New Basket
-              </Button>
-            </div>
-          </div>
-        </Popup>
-      </Portal>
-    </div>
+      <div className={`${classBase}-searchContainer`}>
+        <InstrumentSearch
+          TableProps={tableProps}
+          className={`${classBase}-instrumentSearch`}
+          dataSource={dataSourceBasketTradingSearch}
+          placeHolder="Enter Basket Name"
+          searchColumns={["basketId"]}
+        />
+        <div className={`${classBase}-buttonBar`}>
+          <Button onClick={handleClickAddBasket} variant="secondary">
+            Add New Basket
+          </Button>
+        </div>
+      </div>
+    </DropdownBase>
   );
 };

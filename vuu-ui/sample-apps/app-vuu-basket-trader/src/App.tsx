@@ -49,18 +49,6 @@ export const App = ({ user }: { user: VuuUser }) => {
   const { buildMenuOptions, handleMenuAction } =
     useLayoutContextMenuItems(setDialogState);
 
-  const {
-    buildMenuOptions,
-    dialogContent: saveLayoutDialog,
-    handleCloseDialog,
-    handleMenuAction,
-  } = useLayoutContextMenuItems();
-
-  const handleClose = useCallback(() => {
-    setDialogContent(undefined);
-    handleCloseDialog?.();
-  }, [handleCloseDialog]);
-
   // TODO get Context from Shell
   return (
     <ContextMenuProvider

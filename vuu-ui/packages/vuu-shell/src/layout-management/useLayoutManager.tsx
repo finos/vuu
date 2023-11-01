@@ -28,9 +28,9 @@ export const LayoutManagementContext = React.createContext<{
   loadLayoutById: (id: string) => void;
 }>({
   layoutMetadata: [],
-  saveLayout: () => null,
+  saveLayout: () => undefined,
   applicationLayout: defaultLayout,
-  saveApplicationLayout: () => null,
+  saveApplicationLayout: () => undefined,
   loadLayoutById: () => defaultLayout,
 });
 

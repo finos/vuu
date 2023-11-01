@@ -116,10 +116,8 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     return new Promise((resolve) => {
       const applicationLayout = getLocalEntity<LayoutJSON>(this.#urlKey);
       if (applicationLayout) {
-        console.log(applicationLayout);
         resolve(applicationLayout);
       } else {
-        console.log(defaultLayout);
         resolve(defaultLayout);
       }
     });
