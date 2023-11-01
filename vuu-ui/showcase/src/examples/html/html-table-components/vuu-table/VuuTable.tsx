@@ -1,7 +1,6 @@
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TablePropsDeprecated as TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys } from "@finos/vuu-utils";
-import { useIdMemo } from "@salt-ds/core";
 import { CSSProperties } from "react";
 import { HeaderCell } from "../HeaderCell";
 import { HeaderGroupCell } from "../HeaderGroupCell";
@@ -23,7 +22,6 @@ export const VuuTable = ({
   height,
   id: idProp,
   onConfigChange,
-  onFeatureEnabled,
   onFeatureInvocation,
   onSelect,
   onSelectionChange,
@@ -58,7 +56,6 @@ export const VuuTable = ({
     headerHeight,
     height,
     onConfigChange,
-    onFeatureEnabled,
     onFeatureInvocation,
     onSelectionChange,
     rowHeight,

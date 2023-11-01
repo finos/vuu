@@ -234,6 +234,12 @@ export interface ServerAPI {
 
 const connectedServerAPI: ServerAPI = {
   subscribe: (message, callback) => {
+    if (viewports.get(message.viewport)) {
+      throw Error(
+        `ConnectionManager attempting to subscribe with an existing viewport id`
+      );
+    }
+    // TODO we never use this status
     viewports.set(message.viewport, {
       status: "subscribing",
       request: message,

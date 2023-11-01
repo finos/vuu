@@ -1,15 +1,24 @@
 .vuuAppHeader {
+  --saltButton-borderRadius: 6px;
+  --saltButton-text-color: var(--vuu-color-gray-50);
+  --saltButton-padding: 12px;
+  --vuuToolbarItem-height: 26px;
+  --vuuOverflowContainer-gap: 8px;
+  --vuu-icon-color: var(--vuu-color-gray-45);
+  --vuu-icon-size: 16px;
+  --vuuToolbar-background: var(--vuuAppHeader-background, var(--vuu-color-gray-28));
+  --vuuToolbar-borderWidth: 1px;
+  --vuuToolbar-borderStyle: solid; 
+  --vuuToolbar-borderColor: var(--vuu-color-gray-30);
+
   align-items: center;
-  background: var(--vuuAppHeader-background, var(--salt-container-primary-background));
-  border-bottom: solid 1px var(--salt-container-secondary-borderColor);
   display: flex;
-  height: 40px;
   justify-content: flex-end;
 }
 
 .vuu-theme .vuuAppHeader {
   border-radius: 8px;
-  border: 1px solid #D6D7DA; 
-  height: 44px;
+   
   margin-bottom: 8px;
 }
+

@@ -21,12 +21,12 @@
   --salt-palette-interact-cta-background: var(--vuu-color-purple-10);
   --salt-palette-interact-cta-background-active: var(--vuu-color-purple-10);
   --salt-palette-interact-cta-background-activeDisabled: var(--salt-color-blue-700-fade-background);
-  --salt-palette-interact-cta-background-disabled: var(--salt-color-blue-600-fade-background);
+  --salt-palette-interact-cta-background-disabled: var(--vuu-color-purple-20-fade-40);
   --salt-palette-interact-cta-background-hover: var(--vuu-color-pink-10);
   --salt-palette-interact-cta-foreground: var(--salt-color-white);
   --salt-palette-interact-cta-foreground-active: var(--salt-color-white);
   --salt-palette-interact-cta-foreground-activeDisabled: var(--salt-color-white-fade-foreground);
-  --salt-palette-interact-cta-foreground-disabled: var(--salt-color-white-fade-foreground);
+  --salt-palette-interact-cta-foreground-disabled: var(--vuu-color-white-fade-70);
   --salt-palette-interact-cta-foreground-hover: var(--vuu-color-gray-80);
   --salt-palette-interact-primary-background: var(--vuu-color-white);
   --salt-palette-interact-primary-background-active: var(--vuu-color-gray-50);
@@ -73,7 +73,7 @@
   --salt-palette-interact-cta-background: var(--salt-color-blue-600);
   --salt-palette-interact-cta-background-active: var(--salt-color-blue-700);
   --salt-palette-interact-cta-background-activeDisabled: var(--salt-color-blue-700-fade-background);
-  --salt-palette-interact-cta-background-disabled: var(--salt-color-blue-600-fade-background);
+  --salt-palette-interact-cta-background-disabled: var(--vuu-color-purple-20-fade-40);
   --salt-palette-interact-cta-background-hover: var(--salt-color-blue-500);
   --salt-palette-interact-cta-foreground: var(--salt-color-white);
   --salt-palette-interact-cta-foreground-active: var(--salt-color-white);

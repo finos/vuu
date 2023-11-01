@@ -23,6 +23,7 @@ import type {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,
+  DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
   WithFullConfig,
@@ -54,7 +55,6 @@ export class JsonDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
-  private status = "initialising";
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: SubscribeCallback | undefined;
   private expandedRows = new Set<string>();
@@ -69,6 +69,7 @@ export class JsonDataSource
   #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
+  #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
   public rowCount: number | undefined;
@@ -156,14 +157,14 @@ export class JsonDataSource
       this.#sort = sort;
     }
 
-    if (this.status !== "initialising") {
+    if (this.#status !== "initialising") {
       //TODO check if subscription details are still the same
       return;
     }
 
     this.viewport = viewport;
 
-    this.status = "subscribed";
+    this.#status = "subscribed";
 
     this.clientCallback?.({
       aggregations: this.#aggregations,
@@ -260,6 +261,10 @@ export class JsonDataSource
     }
     this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
     this.sendRowsToClient();
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get config() {
@@ -386,8 +391,10 @@ export class JsonDataSource
     return undefined;
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+    console.log(
+      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
+    );
     return true;
   }
 

@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { useTableConfig, useTestDataSource } from "../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { getAllSchemas, getSchema } from "@finos/vuu-data-test";
+import { ActiveItemChangeHandler } from "packages/vuu-layout/src";
 
 let displaySequence = 1;
 
@@ -34,10 +35,18 @@ export const DefaultFilterTable = () => {
     []
   );
 
+  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
+    (index) => {
+      console.log(`active filters ${index.join(",")}`);
+    },
+    []
+  );
+
   const filterBarProps = {
     filters: [],
     onApplyFilter: handleApplyFilter,
     onChangeFilter: handleChangeFilter,
+    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema,
   };
 
@@ -83,9 +92,17 @@ export const FilterTableArrayDataInstruments = () => {
     [dataSource]
   );
 
+  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
+    (index) => {
+      console.log(`active filters ${index.join(",")}`);
+    },
+    []
+  );
+
   const filterBarProps = {
     filters: [],
     onApplyFilter: handleApplyFilter,
+    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema: getSchema("instruments"),
   };
 

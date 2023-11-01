@@ -1,5 +1,7 @@
 import {
   DataSourceConfig,
+  isViewportMenusAction,
+  isVisualLinksAction,
   MenuRpcResponse,
   RemoteDataSource,
   VuuFeatureMessage,
@@ -8,8 +10,6 @@ import {
 } from "@finos/vuu-data";
 
 import {
-  isViewportMenusAction,
-  isVisualLinksAction,
   MenuActionConfig,
   SuggestionFetcher,
   useTypeaheadSuggestions,

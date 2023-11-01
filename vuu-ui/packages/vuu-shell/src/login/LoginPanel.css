@@ -1,24 +1,70 @@
 .vuuLoginPanel {
+  --saltInput-paddingLeft: 8px;
+  --login-width: 856px;
+  --login-height: 550px;
   --hwTextInput-border: solid 1px #ccc;
   --hwTextInput-height: 28px;
   --hwTextInput-padding: 0 12px;
   --hwTextInput-width: 100%;
   --login-row-height: 60px;
-  align-content: center;
-  align-items: center;
-  border: solid 1px lightgray;
+  border-radius: 16px;
+  box-shadow: 0px 24px 44px 0px rgba(0, 0, 0, 0.25);
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-  justify-content: center;
-  justify-items: center;
+  height: var(--login-height);
   margin: 0 auto;
-  padding: 48px 48px 24px 48px;
-  width: fit-content;
+  width: var(--login-width);
+}
+
+.vuuLoginPanel .saltInput-primary {
+--saltInput-height: 36px;
+}
+
+.vuuLoginPanel-title {
+  justify-content: center;
+font-size: 28px;
+font-weight: 400;
+display: flex;
+}
+
+
+.vuuLoginPanel-branding {
+  align-items: center;
+  background-color: var(--vuu-color-purple-50);
+  border-radius: 16px 0 0 16px;
+  display: flex;
+  flex: 0 0 368px;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: center;
+  padding: 40px 100px;
+}
+
+.vuuLoginPanel-form {
+  background-color: white;
+  border-radius: 0 16px 16px 0px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 32px;
+  justify-content: center;
+  padding: 0 40px;
+}
+
+.vuuLoginPanel-password {
+  --vuu-icon-size: 16px;
+}
+
+.vuuLoginPanel-appName {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .vuuLoginPanel-login {
-  grid-column: 2/3;
-  align-self: end;
-  justify-self: end;
+  --saltButton-height: 36px;
+  --saltButton-borderRadius: 6px;
+  width: 100%
 }
+
+

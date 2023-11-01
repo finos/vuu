@@ -5,24 +5,24 @@ import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
 import { MenuActionHandler } from "@finos/vuu-data-types";
-import { DataSource } from "@finos/vuu-data";
 
 import "./BasketToolbar.css";
+import { Basket } from "../useBasketTrading";
 
 const classBase = "vuuBasketToolbar";
 
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
+  basket?: Basket;
   basketStatus: BasketStatus;
   BasketSelectorProps: BasketSelectorProps;
-  basketTradingDataSource: DataSource;
   onSendToMarket: () => void;
   onTakeOffMarket: () => void;
 }
 
 export const BasketToolbar = ({
+  basket,
   BasketSelectorProps,
   basketStatus,
-  basketTradingDataSource,
   onSendToMarket,
   onTakeOffMarket,
 }: BasketToolbarProps) => {
@@ -32,7 +32,7 @@ export const BasketToolbar = ({
   };
 
   const basketSelector = (
-    <BasketSelector {...BasketSelectorProps} key="selector" />
+    <BasketSelector {...BasketSelectorProps} basket={basket} key="selector" />
   );
   const statusIndicator = (
     <span key="status" className={`${classBase}-statusIndicator`} />
@@ -40,33 +40,41 @@ export const BasketToolbar = ({
   const inputUnits = (
     <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
-      <ExpandoInput className={`${classBase}-units`} value={100} />
+      {/* <ExpandoInput className={`${classBase}-units`} value={100} /> */}
+      <ExpandoInput
+        className={`${classBase}-units`}
+        value={basket?.units ?? ""}
+      />
     </FormField>
   );
   const readOnlyUnits = (
     <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
-      <span className={`${classBase}-units`}>100</span>
+      <span className={`${classBase}-units`}>{basket?.units ?? ""}</span>
     </FormField>
   );
   const notionalUSD = (
     <FormField key="usd">
       <FormFieldLabel>Total USD Not</FormFieldLabel>
-      <span className={`${classBase}-notional`}>1,235,789</span>
+      <span className={`${classBase}-notional`}>
+        {basket?.totalNotional ?? ""}
+      </span>
     </FormField>
   );
 
   const notional = (
     <FormField key="notional">
       <FormFieldLabel>Total Not</FormFieldLabel>
-      <span className={`${classBase}-notional`}>2,345,678</span>
+      <span className={`${classBase}-notional`}>
+        {basket?.totalNotionalUsd ?? ""}
+      </span>
     </FormField>
   );
 
   const pctFilled = (
     <FormField key="filled">
       <FormFieldLabel>% Filled</FormFieldLabel>
-      <span className={`${classBase}-notional`}>25%</span>
+      <span className={`${classBase}-notional`}>{basket?.filledPct ?? ""}</span>
     </FormField>
   );
 

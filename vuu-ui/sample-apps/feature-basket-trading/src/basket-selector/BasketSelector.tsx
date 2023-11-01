@@ -3,47 +3,48 @@ import { Button } from "@salt-ds/core";
 import { DataSource } from "@finos/vuu-data";
 import { useId } from "@finos/vuu-layout";
 import { DropdownBaseProps, InstrumentSearch } from "@finos/vuu-ui-controls";
-import { HTMLAttributes, useCallback, useRef } from "react";
+import { HTMLAttributes, useRef } from "react";
 
 import "./BasketSelector.css";
 import { useBasketSelector } from "./useBasketSelector";
+import { Basket } from "../useBasketTrading";
 
 const classBase = "vuuBasketSelector";
 
 export interface BasketSelectorProps
   extends Pick<DropdownBaseProps, "defaultIsOpen" | "isOpen" | "onOpenChange">,
     HTMLAttributes<HTMLElement> {
+  basket?: Basket;
   basketInstanceId?: string;
-  dataSourceBasketTrading: DataSource;
   dataSourceBasketTradingSearch: DataSource;
   label?: string;
   onClickAddBasket: () => void;
+  onSelectBasket: (basketInstanceId: string) => void;
 }
 
 export const BasketSelector = ({
+  basket,
   basketInstanceId,
-  dataSourceBasketTrading,
   dataSourceBasketTradingSearch,
   id: idProp,
   isOpen: isOpenProp,
-  onClickAddBasket,
+  onClickAddBasket: onClickAddBasketProp,
   onOpenChange: onOpenChangeProp,
+  onSelectBasket,
   ...htmlAttributes
 }: BasketSelectorProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const id = useId(idProp);
 
-  const { basket, isOpen, onOpenChange, tableProps } = useBasketSelector({
-    basketInstanceId,
-    dataSourceBasketTrading,
-    dataSourceBasketTradingSearch,
-    isOpen: isOpenProp,
-    onOpenChange: onOpenChangeProp,
-  });
-
-  const handleClickAddBasket = useCallback(() => {
-    onClickAddBasket();
-  }, [onClickAddBasket]);
+  const { isOpen, onClickAddBasket, onOpenChange, tableProps } =
+    useBasketSelector({
+      basketInstanceId,
+      dataSourceBasketTradingSearch,
+      isOpen: isOpenProp,
+      onClickAddBasket: onClickAddBasketProp,
+      onOpenChange: onOpenChangeProp,
+      onSelectBasket,
+    });
 
   return (
     <DropdownBase
@@ -98,7 +99,7 @@ export const BasketSelector = ({
           searchColumns={["basketId"]}
         />
         <div className={`${classBase}-buttonBar`}>
-          <Button onClick={handleClickAddBasket} variant="secondary">
+          <Button onClick={onClickAddBasket} variant="secondary">
             Add New Basket
           </Button>
         </div>

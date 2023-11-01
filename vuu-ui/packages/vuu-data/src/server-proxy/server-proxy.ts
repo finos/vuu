@@ -755,6 +755,7 @@ export class ServerProxy {
 
       case Message.ENABLE_VP_SUCCESS:
         {
+          //TODO resend menus, links etc to client
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const response = viewport.completeOperation(requestId);
@@ -992,6 +993,20 @@ export class ServerProxy {
           }
         }
         break;
+
+      case "VIEW_PORT_MENU_REJ": {
+        console.log(`send menu error back to client`);
+        const { error, rpcName } = body;
+
+        this.postMessageToClient({
+          error,
+          rpcName,
+          type: "VIEW_PORT_MENU_REJ",
+          requestId,
+        });
+
+        break;
+      }
 
       case "VIEW_PORT_MENU_RESP":
         {

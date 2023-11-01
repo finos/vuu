@@ -282,7 +282,7 @@ export const VerticalOverflowContainerFlexLayout = () => {
           style={{ background: "lightcyan", flex: 1, overflow: "hidden" }}
         >
           {/* prettier-ignore */}
-          <OverflowContainer orientation="vertical" >
+          <OverflowContainer orientation="vertical" height={300}>
               <div className="Item" style={{ height: 60 }}>1</div>
               <div className="Item" style={{ height: 60 }}>2</div>
               <div className="Item" style={{ height: 60 }}>3</div>

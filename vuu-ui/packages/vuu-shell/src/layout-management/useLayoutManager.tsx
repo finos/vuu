@@ -6,14 +6,22 @@ import React, {
   useRef,
 } from "react";
 import {
+  defaultLayout,
   LayoutJSON,
+  LayoutPersistenceManager,
   LocalLayoutPersistenceManager,
   resolveJSONPath,
 } from "@finos/vuu-layout";
 import { LayoutMetadata } from "./layoutTypes";
-import { defaultLayout } from "@finos/vuu-layout/";
 
-const persistenceManager = new LocalLayoutPersistenceManager();
+let _persistenceManager: LayoutPersistenceManager;
+
+const getPersistenceManager = () => {
+  if (_persistenceManager === undefined) {
+    _persistenceManager = new LocalLayoutPersistenceManager();
+  }
+  return _persistenceManager;
+};
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
@@ -53,6 +61,7 @@ export const LayoutManagementProvider = (
   );
 
   useEffect(() => {
+    const persistenceManager = getPersistenceManager();
     persistenceManager.loadMetadata().then((metadata) => {
       setLayoutMetadata(metadata);
     });
@@ -63,6 +72,7 @@ export const LayoutManagementProvider = (
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
+      const persistenceManager = getPersistenceManager();
       setApplicationLayout(layout, false);
       persistenceManager.saveApplicationLayout(layout);
     },
@@ -76,6 +86,7 @@ export const LayoutManagementProvider = (
     );
 
     if (layoutToSave) {
+      const persistenceManager = getPersistenceManager();
       persistenceManager
         .createLayout(metadata, layoutToSave)
         .then((generatedId) => {
@@ -92,6 +103,7 @@ export const LayoutManagementProvider = (
 
   const loadLayoutById = useCallback(
     (id: string) => {
+      const persistenceManager = getPersistenceManager();
       persistenceManager.loadLayout(id).then((layoutJson) => {
         const { current: prev } = applicationLayoutRef;
         setApplicationLayout({

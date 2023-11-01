@@ -8,7 +8,6 @@ import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { useTableConfig } from "../utils";
 import {
   DivElementKeyedWithTranslate,
-  DivElementKeyedWithTranslateInlineScrollbarsCssVariables,
   DivElementWithTranslate,
   VuuTable,
 } from "./html-table-components";
@@ -57,28 +56,6 @@ export const DefaultDivElementKeyedWithTranslate = () => {
   );
 };
 DefaultDivElementKeyedWithTranslate.displaySequence = displaySequence++;
-
-export const DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables =
-  () => {
-    const { typeaheadHook: _, ...config } = useTableConfig({
-      columnCount: 10,
-      count: 1000,
-      rangeChangeRowset: "full",
-    });
-
-    return (
-      <DivElementKeyedWithTranslateInlineScrollbarsCssVariables
-        {...config}
-        headerHeight={30}
-        height={645}
-        renderBufferSize={0}
-        rowHeight={30}
-        width={715}
-      />
-    );
-  };
-DefaultDivElementKeyedWithTranslateInlineScrollbarsCssVariables.displaySequence =
-  displaySequence++;
 
 export const DefaultTableNext = () => {
   const { typeaheadHook: _, ...config } = useTableConfig({

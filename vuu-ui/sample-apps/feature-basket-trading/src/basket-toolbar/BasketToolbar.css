@@ -20,6 +20,10 @@
     font-weight: 700;
 }
 
+/* .vuuBasketToolbar-units {
+    --vuuExpandoInput-minWidth: 80px;
+} */
+
 .saltFormField:has(.vuuBasketToolbar-notional){
     margin: 0 24px;
 

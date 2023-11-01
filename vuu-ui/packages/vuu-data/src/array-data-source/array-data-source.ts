@@ -33,6 +33,7 @@ import {
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
+  DataSourceStatus,
   groupByChanged,
   hasFilter,
   hasGroupBy,
@@ -110,7 +111,6 @@ export class ArrayDataSource
 {
   private clientCallback: SubscribeCallback | undefined;
   private columnDescriptors: ColumnDescriptor[];
-  private status = "initialising";
   private disabled = false;
   private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
@@ -128,6 +128,7 @@ export class ArrayDataSource
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
   #size = 0;
+  #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
   public viewport: string;
@@ -198,7 +199,7 @@ export class ArrayDataSource
   ) {
     this.clientCallback = callback;
     this.viewport = viewport;
-    this.status = "subscribed";
+    this.#status = "subscribed";
     this.lastRangeServed = { from: 0, to: 0 };
 
     let config = this.#config;
@@ -294,6 +295,10 @@ export class ArrayDataSource
       this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get data() {

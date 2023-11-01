@@ -70,7 +70,6 @@ export interface TableHookProps
       | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
-      | "onFeatureEnabled"
       | "onFeatureInvocation"
       | "onSelect"
       | "onSelectionChange"
@@ -102,7 +101,6 @@ export const useTable = ({
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
-  onFeatureEnabled,
   onFeatureInvocation,
   onRowClick: onRowClickProp,
   onSelect,
@@ -193,16 +191,14 @@ export const useTable = ({
     []
   );
 
-  const { data, getSelectedRows, onEditTableData, range, setRange } =
-    useDataSource({
-      dataSource,
-      onFeatureEnabled,
-      onFeatureInvocation,
-      renderBufferSize,
-      onSizeChange: onDataRowcountChange,
-      onSubscribed,
-      range: initialRange,
-    });
+  const { data, getSelectedRows, range, setRange } = useDataSource({
+    dataSource,
+    onFeatureInvocation,
+    renderBufferSize,
+    onSizeChange: onDataRowcountChange,
+    onSubscribed,
+    range: initialRange,
+  });
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {

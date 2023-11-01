@@ -14,6 +14,7 @@ export type CloseReason =
   | "Escape"
   | "click-away"
   | "select"
+  | "script"
   | "Tab"
   | "toggle";
 export type OpenChangeHandler = <T extends boolean>(
