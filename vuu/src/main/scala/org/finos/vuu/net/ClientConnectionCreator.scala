@@ -48,7 +48,7 @@ class DefaultMessageHandler(val channel: Channel,
   private def sendUpdatesInternal(updates: Seq[ViewPortUpdate], highPriority: Boolean = false) = {
     if (updates.nonEmpty) {
 
-      logger.info(s"ASYNC-SVR-OUT: Sending ${updates.size} updates")
+      logger.debug(s"ASYNC-SVR-OUT: Sending ${updates.size} updates")
 
       val formatted = formatDataOutbound(updates)
 
