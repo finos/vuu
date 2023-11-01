@@ -1,6 +1,6 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { VuuDataRow } from "packages/vuu-protocol-types";
-import { buildColumnMap, ColumnMap } from "packages/vuu-utils/src";
+import { VuuDataRow } from "@finos/vuu-protocol-types";
+import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { NewBasketPanel } from "./new-basket-panel";
