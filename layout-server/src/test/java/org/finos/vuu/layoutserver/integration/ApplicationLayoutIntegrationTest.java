@@ -33,9 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ApplicationLayoutIntegrationTest {
-    public static final ObjectMapper objectMapper = new ObjectMapper();
-    public static final String BASE_URL = "/application-layouts";
-    public static final String MISSING_USERNAME_ERROR_MESSAGE =
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String BASE_URL = "/application-layouts";
+    private static final String MISSING_USERNAME_ERROR_MESSAGE =
             "Required request header 'username' for method parameter type String is not present";
 
     @Autowired
