@@ -53,34 +53,6 @@ const { KEY } = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
 
-export const isVisualLinksAction = (
-  action: GridAction
-): action is DataSourceVisualLinksMessage => action.type === "vuu-links";
-
-export const isVisualLinkCreatedAction = (
-  action: GridAction
-): action is DataSourceVisualLinkCreatedMessage =>
-  action.type === "vuu-link-created";
-
-export const isVisualLinkRemovedAction = (
-  action: GridAction
-): action is DataSourceVisualLinkRemovedMessage =>
-  action.type === "vuu-link-removed";
-
-export const isViewportMenusAction = (
-  action: GridAction
-): action is DataSourceMenusMessage => action.type === "vuu-menu";
-
-export const isVuuFeatureAction = (
-  action: GridAction
-): action is VuuFeatureMessage =>
-  isViewportMenusAction(action) || isVisualLinksAction(action);
-
-export const isVuuFeatureInvocation = (
-  action: GridAction
-): action is VuuFeatureInvocationMessage =>
-  action.type === "vuu-link-created" || action.type === "vuu-link-removed";
-
 const isMenuItem = (menu: VuuMenuItem | VuuMenu): menu is VuuMenuItem =>
   "rpcName" in menu;
 

@@ -1,5 +1,3 @@
-import { VuuFeatureMessage } from "@finos/vuu-data";
-import { isViewportMenusAction } from "@finos/vuu-data-react";
 import {
   ClientToServerMenuRPC,
   VuuMenu,
@@ -8,7 +6,7 @@ import {
 import { TableRowSelectHandler } from "@finos/vuu-table";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 
 const { KEY } = metadataKeys;

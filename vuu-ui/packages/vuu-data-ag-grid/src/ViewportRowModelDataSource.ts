@@ -1,10 +1,10 @@
 import {
   DataSource,
   DataSourceConfig,
+  isVuuFeatureAction,
   SubscribeCallback,
   VuuFeatureMessage,
 } from "@finos/vuu-data";
-import { isVuuFeatureAction } from "@finos/vuu-data-react";
 import { Filter } from "@finos/vuu-filter-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import {

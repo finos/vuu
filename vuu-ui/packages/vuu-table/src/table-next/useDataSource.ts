@@ -1,10 +1,10 @@
 import {
   DataSource,
   DataSourceSubscribedMessage,
+  isVuuFeatureInvocation,
   SubscribeCallback,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data";
-import { isVuuFeatureInvocation } from "@finos/vuu-data-react/src";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";

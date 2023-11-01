@@ -40,11 +40,12 @@ import {
   withConfigDefaults,
   WithFullConfig,
 } from "./data-source";
-import { MenuRpcResponse } from "./vuuUIMessageTypes";
+
 import {
   isViewportMenusAction,
   isVisualLinksAction,
-} from "packages/vuu-data-react/src";
+  MenuRpcResponse,
+} from "./vuuUIMessageTypes";
 
 type RangeRequest = (range: VuuRange) => void;
 
