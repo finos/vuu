@@ -5,6 +5,7 @@ import { useTableConfig } from "../../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input } from "@salt-ds/core";
 import { getSchema } from "@finos/vuu-data-test";
+import { ActiveItemChangeHandler } from "packages/vuu-layout/src";
 
 let displaySequence = 1;
 
@@ -31,6 +32,13 @@ export const DefaultFilterBar = ({
     setFilters(filters);
   }, []);
 
+  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
+    (index) => {
+      console.log(`filters changed ${index.join(",")}`);
+    },
+    []
+  );
+
   useEffect(() => {
     inputRef.current?.querySelector("input")?.focus();
   }, []);
@@ -44,6 +52,7 @@ export const DefaultFilterBar = ({
         }}
         filters={filters}
         onApplyFilter={handleApplyFilter}
+        onChangeActiveFilterIndex={handleChangeActiveFilterIndex}
         onFiltersChanged={handleFiltersChanged}
         tableSchema={tableSchema}
       />

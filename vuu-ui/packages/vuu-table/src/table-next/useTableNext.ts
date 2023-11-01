@@ -191,15 +191,14 @@ export const useTable = ({
     []
   );
 
-  const { data, getSelectedRows, onEditTableData, range, setRange } =
-    useDataSource({
-      dataSource,
-      onFeatureInvocation,
-      renderBufferSize,
-      onSizeChange: onDataRowcountChange,
-      onSubscribed,
-      range: initialRange,
-    });
+  const { data, getSelectedRows, range, setRange } = useDataSource({
+    dataSource,
+    onFeatureInvocation,
+    renderBufferSize,
+    onSizeChange: onDataRowcountChange,
+    onSubscribed,
+    range: initialRange,
+  });
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {

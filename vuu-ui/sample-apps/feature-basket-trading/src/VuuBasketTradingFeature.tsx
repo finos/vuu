@@ -1,13 +1,9 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useEffect, useMemo, useState } from "react";
-import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
-import { useBasketTabMenu } from "./useBasketTabMenu";
-import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 
 import "./VuuBasketTradingFeature.css";
 import { EmptyBasketsPanel } from "./empty-baskets-panel";
@@ -33,83 +29,23 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     instrumentsSchema,
   } = props;
 
-  const basketInstanceId = "steve-00001";
-
   const {
     activeTabIndex,
-    dataSourceBasket,
-    dataSourceBasketTrading,
-    dataSourceBasketTradingControl,
-    dataSourceBasketTradingSearch,
+    basket,
+    basketCount,
+    basketSelectorProps,
+    contextMenuProps,
     dataSourceBasketTradingConstituent,
-    dataSourceInstruments,
+    dialog,
+    onClickAddBasket,
     onSendToMarket,
     onTakeOffMarket,
-  } = useBasketTradingDataSources({
-    basketInstanceId,
+  } = useBasketTrading({
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentSchema,
     instrumentsSchema,
   });
-
-  const [basketCount, setBasketCount] = useState(-1);
-  useMemo(() => {
-    dataSourceBasketTradingControl.subscribe(
-      {
-        range: { from: 0, to: 100 },
-      },
-      (message) => {
-        console.log("message from dataSourceTradingControl", {
-          message,
-        });
-        if (message.size) {
-          console.log(`${message.size} baskets in table`);
-          setBasketCount(message.size);
-        }
-        if (message.rows) {
-          console.table(message.rows);
-        }
-      }
-    );
-
-    // TEMP server is notsending TABLE_ROWS if size is zero
-    setTimeout(() => {
-      console.log(`temout fired, assume no baskets`);
-      setBasketCount((count) => (count === -1 ? 0 : count));
-    }, 1000);
-  }, [dataSourceBasketTradingControl]);
-  useEffect(() => {
-    // dataSourceBasketDesign.resume?.();
-    return () => {
-      dataSourceBasketTradingControl.unsubscribe?.();
-    };
-  }, [dataSourceBasketTradingControl]);
-
-  const [buildMenuOptions, handleMenuAction] = useBasketTabMenu({
-    dataSourceInstruments,
-  });
-
-  const { dialog, handleAddBasket } = useBasketTrading({
-    basketSchema,
-    dataSourceBasket,
-  });
-
-  // useMemo(() => {
-  // dataSourceBasketTrading.filter = {
-  //   filter: `basketId = "${basketId}"`,
-  // };
-  // }, [basketId, dataSourceBasketTrading]);
-
-  const basketSelectorProps = useMemo<BasketSelectorProps>(
-    () => ({
-      basketInstanceId,
-      dataSourceBasketTrading,
-      dataSourceBasketTradingSearch: dataSourceBasketTradingSearch,
-      onClickAddBasket: handleAddBasket,
-    }),
-    [dataSourceBasketTrading, dataSourceBasketTradingSearch, handleAddBasket]
-  );
 
   if (basketCount === -1) {
     // TODO loading
@@ -117,25 +53,22 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   } else if (basketCount === 0) {
     return (
       <>
-        <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
+        <EmptyBasketsPanel onClickAddBasket={onClickAddBasket} />
         {dialog}
       </>
     );
   }
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildMenuOptions}
-    >
+    <ContextMenuProvider {...contextMenuProps}>
       <FlexboxLayout
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
       >
         <BasketToolbar
+          basket={basket}
           BasketSelectorProps={basketSelectorProps}
           basketStatus={basketStatus[activeTabIndex]}
-          basketTradingDataSource={dataSourceBasketTrading}
           onSendToMarket={onSendToMarket}
           onTakeOffMarket={onTakeOffMarket}
         />

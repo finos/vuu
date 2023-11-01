@@ -213,7 +213,7 @@ export type VuuServerMenuOptions = {
   columnMap: ColumnMap;
   columnName: string;
   row: DataSourceRow;
-  selectedRowsCount: number;
+  selectedRows: DataSourceRow[];
   viewport: string;
 };
 

@@ -69,7 +69,7 @@ for (const char of chars) {
       currency,
       description,
       exchange,
-      isin,
+      String(isin),
       lotSize,
       ric,
       price,

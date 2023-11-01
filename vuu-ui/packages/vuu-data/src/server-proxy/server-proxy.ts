@@ -996,11 +996,9 @@ export class ServerProxy {
 
       case "VIEW_PORT_MENU_REJ": {
         console.log(`send menu error back to client`);
-        const { error, rpcName, vpId } = body;
-        const viewport = this.viewports.get(vpId);
+        const { error, rpcName } = body;
 
         this.postMessageToClient({
-          clientViewportId: viewport?.clientViewportId,
           error,
           rpcName,
           type: "VIEW_PORT_MENU_REJ",

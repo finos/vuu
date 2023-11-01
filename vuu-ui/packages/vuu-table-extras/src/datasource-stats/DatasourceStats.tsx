@@ -27,8 +27,8 @@ export const DataSourceStats = ({
   }, [dataSource]);
 
   const className = cx(classBase, classNameProp);
-  const from = numberFormatter.format(range.from);
-  const to = numberFormatter.format(range.to - 1);
+  const from = numberFormatter.format(range.from + 1);
+  const to = numberFormatter.format(Math.min(range.to - 1, size));
   const value = numberFormatter.format(size);
   return (
     <div className={className}>

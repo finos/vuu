@@ -134,12 +134,26 @@ export interface MenuRpcResponse {
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
+export interface MenuRpcReject {
+  error?: string;
+  requestId: string;
+  rpcName?: string;
+  type: "VIEW_PORT_MENU_REJ";
+}
+
+export interface VuuUIMessageInMenuRej {
+  error: string;
+  requestId: string;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_REJ";
+}
 
 export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
   | MenuRpcResponse
+  | MenuRpcReject
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta
   | VuuUIMessageInRPCEditReject

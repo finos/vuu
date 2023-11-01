@@ -488,6 +488,8 @@ export type RpcResponse =
 
 export type RpcResponseHandler = (response: RpcResponse) => boolean;
 
+export type RowSearchPredicate = (row: DataSourceRow) => boolean;
+
 export type DataSourceStatus =
   | "disabled"
   | "disabling"

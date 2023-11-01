@@ -128,10 +128,6 @@ export class RemoteDataSource
     callback: SubscribeCallback
   ) {
     this.clientCallback = callback;
-    console.log(
-      `%csubscribe ${this.viewport} status ${this.#status}`,
-      "color:red"
-    );
     if (aggregations || columns || filter || groupBy || sort) {
       this.#config = {
         ...this.#config,
@@ -186,7 +182,6 @@ export class RemoteDataSource
       this.#status = "subscribed";
       this.clientCallback?.(message);
     } else if (message.type === "disabled") {
-      console.log("disabled confirmed by server");
       this.#status = "disabled";
     } else if (message.type === "enabled") {
       this.#status = "enabled";
@@ -216,7 +211,6 @@ export class RemoteDataSource
 
       if (isViewportMenusAction(message)) {
         this.#menu = message.menu;
-        console.log({ menu: message.menu });
       } else if (isVisualLinksAction(message)) {
         this.#links = message.links as LinkDescriptorWithLabel[];
       } else {
@@ -230,8 +224,6 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
-    console.log(`%cunsubscribe ${this.viewport}`, "color:red");
-
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
@@ -245,7 +237,6 @@ export class RemoteDataSource
   }
 
   suspend() {
-    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
     info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "suspended";
@@ -258,7 +249,6 @@ export class RemoteDataSource
   }
 
   resume() {
-    console.log(`resume #${this.viewport}, current status ${this.#status}`);
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       if (this.#status === "disabled" || this.#status === "disabling") {
@@ -645,10 +635,6 @@ export class RemoteDataSource
   async menuRpcCall(
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
   ) {
-    console.log(
-      `%cmenuRpcCall ${this.viewport}`,
-      "color:green;font-weight: bold"
-    );
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         vpId: this.viewport,
@@ -664,7 +650,7 @@ export class RemoteDataSource
       value: parseInt(value),
       type: "VP_EDIT_CELL_RPC",
     }).then(() => {
-      console.log("response");
+      // do something with response;
     });
     return true;
   }
