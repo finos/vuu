@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ../../scripts/build-feature.mjs",
-    "start": "serve -p 5002 ../../deployed_apps/app-vuu-basket-trader"
+    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
   "private": true,
   "keywords": [],

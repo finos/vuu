@@ -51,7 +51,11 @@ export const LoginPanel = ({
     }
   }, [onSubmit, requirePassword, username]);
 
-  const handleCommitPassword = useCallback(() => {}, []);
+  const handleCommitPassword = useCallback(() => {
+    if (username) {
+      onSubmit(username, password);
+    }
+  }, [onSubmit, password, username]);
 
   const dataIsValid =
     username.trim() !== "" &&

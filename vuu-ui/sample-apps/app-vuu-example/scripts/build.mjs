@@ -16,7 +16,7 @@ import path from "path";
 
 const entryPoints = ["index.tsx", "login.tsx", "demo.tsx"];
 
-const outdir = "../../deployed_apps/app-vuu-basket-trader";
+const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
 const websocketUrl = getCommandLineArg("--url", true);
@@ -43,7 +43,7 @@ const { name: projectName } = readPackageJson();
 const esbuildConfig = {
   entryPoints: entryPoints.concat(featureEntryPoints),
   env: development ? "development" : "production",
-  name: "app-vuu-basket-trader",
+  name: "app-vuu-example",
   outdir,
   splitting: true,
   target: "esnext",

@@ -3,10 +3,12 @@ import ReactDOM from "react-dom";
 import { LoginPanel, ThemeProvider } from "@finos/vuu-shell";
 import { authenticate } from "@finos/vuu-data";
 
+import "@finos/vuu-icons/index.css";
 import "@finos/vuu-theme/index.css";
+
 import "./login.css";
 
-async function login(username: string, password: string) {
+async function login(username: string, password = "password") {
   try {
     const { authUrl } = await vuuConfig;
     const authToken = await authenticate(username, password, authUrl);
@@ -23,7 +25,7 @@ async function login(username: string, password: string) {
 }
 
 ReactDOM.render(
-  <ThemeProvider>
+  <ThemeProvider applyThemeClasses>
     <LoginPanel onSubmit={login} />
   </ThemeProvider>,
   document.getElementById("root")
