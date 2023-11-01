@@ -26,12 +26,12 @@ public class LayoutService {
         return metadataService.getMetadata();
     }
 
-    public UUID createLayout(Layout layout) {
+    public Layout createLayout(Layout layout) {
         UUID id = UUID.randomUUID();
 
         layout.setId(id);
 
-        return layoutRepository.save(layout).getId();
+        return layoutRepository.save(layout);
     }
 
     public void updateLayout(UUID layoutId, Layout newLayout) {
@@ -41,7 +41,7 @@ public class LayoutService {
         Metadata updatedMetadata = Metadata.builder()
             .baseMetadata(newMetadata.getBaseMetadata())
             .updated(new Date())
-            .id(layoutToUpdate.getId())
+            .id(layoutToUpdate.getMetadata().getId())
             .build();
 
         layoutToUpdate.setDefinition(newLayout.getDefinition());

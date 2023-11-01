@@ -124,8 +124,7 @@ class LayoutControllerTest {
         layoutWithoutIds.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layoutWithoutIds);
-        when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout.getId());
-        when(layoutService.getLayout(layout.getId())).thenReturn(layout);
+        when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout);
         when(modelMapper.map(layout, LayoutResponseDTO.class)).thenReturn(expectedLayoutResponse);
 
         assertThat(layoutController.createLayout(layoutRequest))

@@ -71,10 +71,10 @@ class LayoutServiceTest {
     }
 
     @Test
-    void createLayout() {
+    void createLayout_returnsLayout() {
         when(layoutRepository.save(layout)).thenReturn(layout);
 
-        assertThat(layoutService.createLayout(layout)).isEqualTo(layout.getId());
+        assertThat(layoutService.createLayout(layout)).isEqualTo(layout);
     }
 
     @Test

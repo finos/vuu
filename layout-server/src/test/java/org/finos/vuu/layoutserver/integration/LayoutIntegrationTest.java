@@ -345,7 +345,6 @@ public class LayoutIntegrationTest {
         layout.setMetadata(metadata);
         layout.setId(defaultId);
 
-        metadataRepository.save(metadata);
         Layout createdLayout = layoutRepository.save(layout);
 
         assertThat(layoutRepository.findById(createdLayout.getId()).orElseThrow())
