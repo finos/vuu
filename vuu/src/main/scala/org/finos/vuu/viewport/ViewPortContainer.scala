@@ -428,6 +428,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         UserDefinedFilterAndSort(aFilter, aSort)
     }
 
+    //update the viewport request id, to prevent any unwanted updates going out while we're changing the viewport
+    viewPort.setRequestId(requestId)
+
     //we are not grouped by, but we want to change to a group by
     if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
@@ -512,11 +515,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     } else {
       logger.info("[VP] default else condition in change() call")
-      val structure = viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker)
+      val structure = viewport.ViewPortStructuralFields(table = viewPort.table,
+        columns = columns, viewPortDef = viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort, filterSpec = filterSpec,
+        groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker
+      )
+      //viewPort.setRequestId(requestId)
       viewPort.changeStructure(structure)
+      //viewPort.setKeys(viewPort.getKeys)
     }
-
-    viewPort.setRequestId(requestId)
 
     viewPort
   }
