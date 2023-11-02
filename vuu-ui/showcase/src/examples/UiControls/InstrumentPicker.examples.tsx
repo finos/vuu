@@ -1,9 +1,12 @@
 import { InstrumentPicker } from "@finos/vuu-ui-controls";
-import { getAllSchemas, getSchema } from "@finos/vuu-data-test";
+import {
+  createArrayDataSource,
+  getAllSchemas,
+  getSchema,
+} from "@finos/vuu-data-test";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { TableProps, TableRowSelectHandler } from "@finos/vuu-table";
-import { createArrayDataSource } from "../utils/createArrayDataSource";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useTestDataSource } from "../utils";
 

@@ -1,6 +1,6 @@
-import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { getColumnAndRowGenerator, populateArray } from "@finos/vuu-data-test";
 import { VuuTable } from "@finos/vuu-protocol-types";
+import { TickingArrayDataSource } from "./TickingArrayDataSource";
 
 export const createArrayDataSource = ({
   count = 1000,

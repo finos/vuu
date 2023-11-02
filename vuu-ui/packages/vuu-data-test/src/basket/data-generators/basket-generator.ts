@@ -1,10 +1,10 @@
 import { BasketColumnMap, BasketReferenceData } from "../reference-data";
 import { getGenerators } from "../../generatorTemplate";
 
-const [RowGenerator, ColumnGenerator] = getGenerators(
+const [rowGenerator] = getGenerators(
   "basket",
   BasketColumnMap,
   BasketReferenceData
 );
 
-export { RowGenerator, ColumnGenerator };
+export default rowGenerator;

@@ -8,6 +8,7 @@ import {
   VuuAggregation,
   VuuColumnDataType,
   VuuGroupBy,
+  VuuMenu,
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
@@ -114,7 +115,6 @@ export class ArrayDataSource
   private disabled = false;
   private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
-  private selectedRows: Selection = [];
   private suspended = false;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
@@ -125,11 +125,15 @@ export class ArrayDataSource
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
   #data: readonly DataSourceRow[];
+  #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
   #size = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
+
+  protected _menu: VuuMenu | undefined;
+  protected selectedRows: Selection = [];
 
   public viewport: string;
 
@@ -149,10 +153,6 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
-
-    console.log(`ArrayDataSource`, {
-      columnDescriptors,
-    });
 
     if (!data || !columnDescriptors) {
       throw Error(
@@ -271,6 +271,7 @@ export class ArrayDataSource
   }
 
   select(selected: Selection) {
+    this.#selectedRowsCount = selected.length;
     debug?.(`select ${JSON.stringify(selected)}`);
     this.selectedRows = selected;
     this.setRange(resetRange(this.#range), true);
@@ -295,6 +296,14 @@ export class ArrayDataSource
       this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
+  }
+
+  get links() {
+    return this.#links;
+  }
+
+  get menu() {
+    return this._menu;
   }
 
   get status() {
@@ -503,9 +512,6 @@ export class ArrayDataSource
   }
 
   set sort(sort: VuuSort) {
-    console.log(`set sort`, {
-      sort,
-    });
     debug?.(`sort ${JSON.stringify(sort)}`);
     this.config = {
       ...this.#config,

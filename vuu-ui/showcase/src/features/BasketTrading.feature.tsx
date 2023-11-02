@@ -6,7 +6,7 @@ import VuuBasketTradingFeature, {
 import { useViewContext } from "@finos/vuu-layout";
 import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { createArrayDataSource } from "../examples/utils/createArrayDataSource";
+import { createArrayDataSource, vuuModule } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,
