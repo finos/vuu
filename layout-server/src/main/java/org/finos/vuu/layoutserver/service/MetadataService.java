@@ -1,12 +1,11 @@
 package org.finos.vuu.layoutserver.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.MetadataRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service

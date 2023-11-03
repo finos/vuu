@@ -1,6 +1,6 @@
 package org.finos.vuu.layoutserver.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -28,8 +28,7 @@ public class Metadata {
     @Embedded
     private BaseMetadata baseMetadata;
 
-    private Date created = new Date();
+    private final LocalDate created = LocalDate.now();
 
-    private Date updated;
-
+    private LocalDate updated;
 }

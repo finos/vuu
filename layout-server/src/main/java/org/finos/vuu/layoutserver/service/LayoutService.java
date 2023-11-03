@@ -1,6 +1,7 @@
 package org.finos.vuu.layoutserver.service;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
@@ -15,7 +16,8 @@ public class LayoutService {
     private final LayoutRepository layoutRepository;
 
     public Layout getLayout(UUID id) {
-        return layoutRepository.findById(id).orElseThrow();
+        return layoutRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
     public Layout getLayoutByMetadataId(UUID id) {
@@ -32,7 +34,7 @@ public class LayoutService {
 
         Metadata updatedMetadata = Metadata.builder()
             .baseMetadata(newMetadata.getBaseMetadata())
-            .updated(new Date())
+            .updated(LocalDate.now())
             .build();
 
         layoutToUpdate.setDefinition(newLayout.getDefinition());
@@ -42,6 +44,10 @@ public class LayoutService {
     }
 
     public void deleteLayout(UUID id) {
-        layoutRepository.deleteById(id);
+        try {
+            layoutRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new NoSuchElementException("Layout with ID '" + id + "' not found");
+        }
     }
 }

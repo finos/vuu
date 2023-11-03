@@ -2,6 +2,7 @@ package org.finos.vuu.layoutserver.controller;
 
 import java.util.List;
 import java.util.UUID;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
@@ -11,6 +12,7 @@ import org.finos.vuu.layoutserver.service.LayoutService;
 import org.finos.vuu.layoutserver.service.MetadataService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/layouts")
+@Validated
 public class LayoutController {
 
     private final LayoutService layoutService;
@@ -65,7 +68,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public LayoutResponseDTO createLayout(@RequestBody LayoutRequestDTO layoutToCreate) {
+    public LayoutResponseDTO createLayout(@Valid @RequestBody LayoutRequestDTO layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
@@ -81,7 +84,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable UUID id, @RequestBody LayoutRequestDTO layout) {
+    public void updateLayout(@PathVariable UUID id, @Valid @RequestBody LayoutRequestDTO layout) {
         Layout newLayout = mapper.map(layout, Layout.class);
 
         layoutService.updateLayout(id, newLayout);
