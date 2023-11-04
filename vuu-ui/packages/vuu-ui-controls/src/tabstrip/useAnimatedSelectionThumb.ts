@@ -40,7 +40,6 @@ export const useAnimatedSelectionThumb = (
           isValidNumber(newPosition) &&
           isValidNumber(oldSize)
         ) {
-          console.log({ orientation, positionProp, oldPosition, newPosition });
           offset = oldPosition - newPosition;
           size = oldSize;
           const speed = orientation === "horizontal" ? 1100 : 700;

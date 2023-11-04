@@ -28,6 +28,7 @@ import type { SchemaColumn } from "@finos/vuu-data";
 import type { CSSProperties } from "react";
 import type { CellRendererDescriptor } from "./component-registry";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
+import { moveItem } from "./array-utils";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row
@@ -614,10 +615,10 @@ export const findColumn = (
   }
 };
 
-export function updateColumn(
-  columns: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
-): KeyedColumnDescriptor[];
+export function updateColumn<T extends ColumnDescriptor>(
+  columns: T[],
+  column: T
+): T[];
 export function updateColumn(
   columns: KeyedColumnDescriptor[],
   column: string,
@@ -936,3 +937,19 @@ export const setCalculatedColumnExpression = (
     name: `${name}:${type}:=${expression}`,
   };
 };
+
+export const moveColumnTo = (
+  columns: ColumnDescriptor[],
+  column: ColumnDescriptor,
+  newIndex: number
+) => {
+  const index = columns.indexOf(column);
+  return moveItem(columns, index, newIndex);
+};
+
+export function replaceColumn(
+  state: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+) {
+  return state.map((col) => (col.name === column.name ? column : col));
+}

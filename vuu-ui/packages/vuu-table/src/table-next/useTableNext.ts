@@ -24,6 +24,7 @@ import {
   isJsonGroup,
   isValidNumber,
   metadataKeys,
+  moveColumnTo,
   updateColumn,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
@@ -38,17 +39,19 @@ import {
 } from "react";
 import {
   buildContextMenuDescriptors,
+  ColumnActionHide,
+  ColumnActionPin,
   MeasuredProps,
   RowClickHandler,
   TableProps,
   useSelection,
-  useTableContextMenu,
 } from "../table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
-import { useTableContextMenu as useTableContextMenuNext } from "./useTableContextMenu";
+import { useTableContextMenu } from "./useTableContextMenu";
+import { useHandleTableContextMenu } from "./context-menu";
 import { useCellEditing } from "./useCellEditing";
 import {
   isShowColumnSettings,
@@ -144,6 +147,18 @@ export const useTable = ({
     });
   }, [tableConfig, dataSource.config, dispatchColumnAction]);
 
+  const applyTableConfigChange = useCallback(
+    (config: TableConfig) => {
+      dispatchColumnAction({
+        type: "init",
+        tableConfig: config,
+        dataSourceConfig: dataSource.config,
+      });
+      onConfigChange?.(config);
+    },
+    [dataSource.config, dispatchColumnAction, onConfigChange]
+  );
+
   const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
@@ -202,6 +217,11 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
+      console.log(
+        `useTableNext handleConfigChanged`,
+        JSON.stringify(tableConfig, null, 2)
+      );
+
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -222,23 +242,6 @@ export const useTable = ({
     [dataSource]
   );
 
-  const handleCreateCalculatedColumn = useCallback(
-    (column: ColumnDescriptor) => {
-      dataSource.columns = dataSource.columns.concat(column.name);
-      const newTableConfig = addColumn(tableConfig, column);
-      dispatchColumnAction({
-        type: "init",
-        tableConfig: newTableConfig,
-        dataSourceConfig: dataSource.config,
-      });
-      console.log(`dispatch onConfigChange`, {
-        newTableConfig,
-      });
-      onConfigChange?.(newTableConfig);
-    },
-    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
-  );
-
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
       dispatchColumnAction({
@@ -248,6 +251,42 @@ export const useTable = ({
       });
     });
   }, [dataSource, dispatchColumnAction]);
+
+  const handleCreateCalculatedColumn = useCallback(
+    (column: ColumnDescriptor) => {
+      dataSource.columns = dataSource.columns.concat(column.name);
+      applyTableConfigChange(addColumn(tableConfig, column));
+    },
+    [dataSource, tableConfig, applyTableConfigChange]
+  );
+
+  const hideColumns = useCallback(
+    (action: ColumnActionHide) => {
+      const { columns } = action;
+      const hiddenColumns = columns.map((c) => c.name);
+      const newTableConfig = {
+        ...tableConfig,
+        columns: tableConfig.columns.map((col) =>
+          hiddenColumns.includes(col.name) ? { ...col, hidden: true } : col
+        ),
+      };
+      applyTableConfigChange(newTableConfig);
+    },
+    [tableConfig, applyTableConfigChange]
+  );
+
+  const pinColumn = useCallback(
+    (action: ColumnActionPin) => {
+      applyTableConfigChange({
+        ...tableConfig,
+        columns: updateColumn(tableConfig.columns, {
+          ...action.column,
+          pin: action.pin,
+        }),
+      });
+    },
+    [tableConfig, applyTableConfigChange]
+  );
 
   const { showColumnSettingsPanel, showTableSettingsPanel } =
     useTableAndColumnSettings({
@@ -271,14 +310,26 @@ export const useTable = ({
       } else if (isShowTableSettings(action)) {
         showTableSettingsPanel();
       } else {
-        // expectConfigChangeRef.current = true;
-        dispatchColumnAction(action);
+        switch (action.type) {
+          case "hideColumns":
+            return hideColumns(action);
+          case "pinColumn":
+            return pinColumn(action);
+          default:
+            dispatchColumnAction(action);
+        }
       }
     },
-    [dispatchColumnAction, showColumnSettingsPanel, showTableSettingsPanel]
+    [
+      dispatchColumnAction,
+      hideColumns,
+      pinColumn,
+      showColumnSettingsPanel,
+      showTableSettingsPanel,
+    ]
   );
 
-  const handleContextMenuAction = useTableContextMenu({
+  const handleContextMenuAction = useHandleTableContextMenu({
     dataSource,
     onPersistentColumnOperation,
   });
@@ -429,7 +480,7 @@ export const useTable = ({
     [navigationKeyDown, editingKeyDown]
   );
 
-  const onContextMenu = useTableContextMenuNext({
+  const onContextMenu = useTableContextMenu({
     columns,
     data,
     dataSource,
@@ -500,16 +551,21 @@ export const useTable = ({
 
   const handleDrop = useCallback(
     (moveFrom: number, moveTo: number) => {
-      // onMoveColumn?.(fromIndex, toIndex);
-      const column = columns[moveFrom];
+      const column = tableConfig.columns[moveFrom];
+
+      const newTableConfig = {
+        ...tableConfig,
+        columns: moveColumnTo(tableConfig.columns, column, moveTo),
+      };
 
       dispatchColumnAction({
-        type: "moveColumn",
-        column,
-        moveTo,
+        type: "init",
+        tableConfig: newTableConfig,
+        dataSourceConfig: dataSource.config,
       });
+      onConfigChange?.(newTableConfig);
     },
-    [columns, dispatchColumnAction]
+    [dataSource.config, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
   const handleDataEdited = useCallback<DataCellEditHandler>(

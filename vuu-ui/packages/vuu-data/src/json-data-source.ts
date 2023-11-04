@@ -209,6 +209,19 @@ export class JsonDataSource
     console.log("noop");
     return this;
   }
+  set data(data: JsonData) {
+    console.log(`set JsonDataSource data`);
+    [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+    this.visibleRows = this.#data
+      .filter((row) => row[DEPTH] === 0)
+      .map((row, index) =>
+        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+      ) as DataSourceRow[];
+
+    requestAnimationFrame(() => {
+      this.sendRowsToClient();
+    });
+  }
 
   select(selected: Selection) {
     const updatedRows: DataSourceRow[] = [];
@@ -322,10 +335,6 @@ export class JsonDataSource
 
   set aggregations(aggregations: VuuAggregation[]) {
     this.#aggregations = aggregations;
-  }
-
-  set data(data: JsonData) {
-    console.log(`set JsonDataSource data`);
   }
 
   get sort() {

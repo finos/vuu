@@ -1,2 +1,2 @@
 export * from "./buildContextMenuDescriptors";
-export * from "./useTableContextMenu";
+export * from "./useHandleTableContextMenu";

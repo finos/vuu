@@ -100,7 +100,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
-      console.log("save new available columns");
       save?.(columns, "available-columns");
     },
     [save]
@@ -108,7 +107,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const handleTableConfigChange = useCallback(
     (config: TableConfig) => {
-      console.log(`table config changed`);
       save?.(config, "table-config");
     },
     [save]

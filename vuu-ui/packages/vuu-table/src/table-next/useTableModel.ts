@@ -21,7 +21,7 @@ import {
   isTypeDescriptor,
   logger,
   metadataKeys,
-  moveItem,
+  replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
@@ -107,7 +107,6 @@ export interface ColumnActionMove {
   type: "moveColumn";
   column: KeyedColumnDescriptor;
   moveBy?: 1 | -1;
-  moveTo?: number;
 }
 
 export interface ColumnActionPin {
@@ -331,7 +330,8 @@ const columnDescriptorToKeyedColumDescriptor =
 
 function moveColumn(
   state: InternalTableModel,
-  { column, moveBy, moveTo }: ColumnActionMove
+  // TODO do we ever use this ?
+  { column, moveBy }: ColumnActionMove
 ) {
   const { columns } = state;
   if (typeof moveBy === "number") {
@@ -342,12 +342,6 @@ function moveColumn(
     return {
       ...state,
       columns: newColumns,
-    };
-  } else if (typeof moveTo === "number") {
-    const index = columns.indexOf(column);
-    return {
-      ...state,
-      columns: moveItem(columns, index, moveTo),
     };
   }
   return state;
@@ -512,11 +506,4 @@ function updateTableConfig(
   }
 
   return result;
-}
-
-function replaceColumn(
-  state: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
-) {
-  return state.map((col) => (col.name === column.name ? column : col));
 }

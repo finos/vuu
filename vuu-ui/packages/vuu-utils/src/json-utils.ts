@@ -41,6 +41,12 @@ const getCellValue = (
 ): CellValue => {
   if (isJsonData(attributeValue)) {
     return { attribute: `${attribute}+`, attributeValue: "", type: "json" };
+  } else if (attributeValue === undefined) {
+    return {
+      attribute,
+      attributeValue: "undefined",
+      type: "string",
+    };
   } else if (isVuuRowDataItem(attributeValue)) {
     return {
       attribute,
