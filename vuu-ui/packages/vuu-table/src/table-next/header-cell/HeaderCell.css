@@ -34,6 +34,7 @@
   line-height: calc(var(--header-height) - 1px);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vuuTableNextHeaderCell-right .vuuTableNextHeaderCell-label {

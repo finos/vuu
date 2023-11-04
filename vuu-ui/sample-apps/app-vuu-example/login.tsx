@@ -1,13 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { LoginPanel } from "@finos/vuu-shell";
+import { LoginPanel, ThemeProvider } from "@finos/vuu-shell";
 import { authenticate } from "@finos/vuu-data";
-import { SaltProvider } from "@salt-ds/core";
 
+import "@finos/vuu-icons/index.css";
 import "@finos/vuu-theme/index.css";
+
 import "./login.css";
 
-async function login(username: string, password: string) {
+async function login(username: string, password = "password") {
   try {
     const { authUrl } = await vuuConfig;
     const authToken = await authenticate(username, password, authUrl);
@@ -24,8 +25,8 @@ async function login(username: string, password: string) {
 }
 
 ReactDOM.render(
-  <SaltProvider>
+  <ThemeProvider applyThemeClasses>
     <LoginPanel onSubmit={login} />
-  </SaltProvider>,
+  </ThemeProvider>,
   document.getElementById("root")
 );

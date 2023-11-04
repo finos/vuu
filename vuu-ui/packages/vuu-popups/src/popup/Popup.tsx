@@ -14,7 +14,7 @@ export type PopupPlacement =
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
   anchorElement: RefObject<HTMLElement>;
-  minWidth?: number;
+  minWidth?: number | string;
   offsetLeft?: number;
   offsetTop?: number;
   placement: PopupPlacement;

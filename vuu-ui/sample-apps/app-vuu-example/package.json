@@ -18,9 +18,7 @@
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.8.0",
-    "@salt-ds/icons": "1.5.1",
     "@salt-ds/lab": "1.0.0-alpha.15",
-    "@salt-ds/theme": "1.7.1",
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-datagrid-types": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",

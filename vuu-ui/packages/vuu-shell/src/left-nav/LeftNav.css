@@ -14,11 +14,16 @@
     --svg-layouts: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M15.3333 10H14V11.3333H15.3333V10ZM15.3333 12.6667H14V14H15.3333V12.6667ZM15.3333 7.33333H14V8.66667H15.3333V7.33333ZM10 2H8.66667V3.33333H10V2ZM15.3333 4.66667H14V6H15.3333V4.66667ZM0.666672 14H7.33334V10H0.666672V14ZM2.00001 4.66667H0.666672V6H2.00001V4.66667ZM10 12.6667H8.66667V14H10V12.6667ZM12.6667 2H11.3333V3.33333H12.6667V2ZM15.3333 2H14V3.33333H15.3333V2ZM12.6667 12.6667H11.3333V14H12.6667V12.6667ZM2.00001 7.33333H0.666672V8.66667H2.00001V7.33333ZM7.33334 2H6.00001V3.33333H7.33334V2ZM4.66667 2H3.33334V3.33333H4.66667V2ZM2.00001 2H0.666672V3.33333H2.00001V2Z"/></svg>');
     --vuu-light-text-primary: #15171b;
 
+    --menu-level-2-width: 0px;
+
     box-shadow: 3px 4px 4px 0px rgba(0, 0, 0, 0.15);
+    display: flex;
     margin-bottom: 4px;
+    overflow: hidden;
     position: relative;
-    transition: width .3s ease-in-out;
+    transition: width .2s ease-out;
     z-index: 0;
+    width: calc(var(--menu-width) + var(--menu-level-2-width));
 
 }
 
@@ -32,10 +37,12 @@
 
 .vuuLeftNav-menu-icons-content {
     --menu-width: var(--nav-menu-collapsed-width);
+    --menu-level-2-width: var(--nav-menu-content-width);
 }
 
 .vuuLeftNav-menu-full-content {
     --menu-width: var(--nav-menu-expanded-width);
+    --menu-level-2-width: var(--nav-menu-content-width);
 }
 
 .vuuLeftNav-menu-icons-content .vuuLeftNav-menu-secondary,
@@ -50,18 +57,22 @@
     flex-direction: column;
     height: 100%;
     padding: 32px 16px;
-    transition: width ease .3s;
-    width: var(--menu-width, 100%);
+    transition: flex-basis ease-out .2s;
+    flex-grow:0;
+    flex-shrink:0;
+    flex-basis: var(--menu-width);
 }
 
 .vuuLeftNav-menu-secondary {
     flex: 1 1 auto;
     height: 100%;
     display: none;
-    position: absolute;
+    /* position: absolute; */
     top:0;
     right: 0;
-    width: var(--nav-menu-content-width, 240px);
+    flex-grow:0;
+    flex-shrink:0;
+    flex-basis: var(--nav-menu-content-width, 240px);
     z-index: -1;
 }
 
@@ -98,9 +109,6 @@
     padding: 0;
 }
 
-/* .vuuLeftNav [data-icon]:after {
-    transition: left ease .3s;
-} */
 
 .vuuLeftNav [data-icon='demo'] {
     --vuu-icon-svg: var(--svg-demo);
