@@ -1,4 +1,5 @@
-import { InstrumentReferenceData, random } from ".";
+import InstrumentReferenceData from "./instruments";
+import { random } from "./utils";
 
 export type ask = number;
 export type askSize = number;

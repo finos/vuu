@@ -1,6 +1,5 @@
 import { VuuModule } from "../vuu-modules";
 import { metadataKeys } from "@finos/vuu-utils";
-
 import { BasketsTableName } from "./basket-schemas";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { schemas } from "./basket-schemas";

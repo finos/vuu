@@ -10,6 +10,7 @@ import {
 import {
   RowUpdates,
   UpdateGenerator,
+  UpdateHandler,
 } from "@finos/vuu-data-test/src/rowUpdates";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -67,23 +68,38 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return super.range;
   }
 
-  private processUpdates = (rowUpdates: RowUpdates[]) => {
+  private processUpdates: UpdateHandler = (rowUpdates) => {
     const updatedRows: DataSourceRow[] = [];
     const data = super.currentData;
-    for (const [rowIndex, ...updates] of rowUpdates) {
-      const row = data[rowIndex].slice() as DataSourceRow;
-      if (row) {
-        for (let i = 0; i < updates.length; i += 2) {
-          const colIdx = updates[i] as number;
-          const colVal = updates[i + 1];
-          row[colIdx] = colVal;
+    for (const [updateType, ...updateRecord] of rowUpdates) {
+      switch (updateType) {
+        case "U": {
+          const [rowIndex, ...updates] = updateRecord;
+          const row = data[rowIndex].slice() as DataSourceRow;
+          if (row) {
+            for (let i = 0; i < updates.length; i += 2) {
+              const colIdx = updates[i] as number;
+              const colVal = updates[i + 1];
+              row[colIdx] = colVal;
+            }
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // TODO this is problematic if we're filtered
+            // we need to update the correct underlying row
+            data[rowIndex] = row;
+            updatedRows.push(row);
+          }
+          break;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // TODO this is problematic if we're filtered
-        // we need to update the correct underlying row
-        data[rowIndex] = row;
-        updatedRows.push(row);
+        case "I": {
+          this.insert(updateRecord);
+
+          break;
+        }
+        case "D": {
+          console.log(`delete row`);
+          break;
+        }
       }
     }
     super._clientCallback?.({

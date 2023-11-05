@@ -18,7 +18,8 @@ const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource: vuuModule("BASKET").createDataSource(tableName),
+      dataSource:
+        vuuModule<BasketsTableName>("BASKET").createDataSource(tableName),
     }),
     [schema.columns, tableName]
   );

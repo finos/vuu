@@ -419,7 +419,8 @@ export class ArrayDataSource
   }
 
   get size() {
-    return this.#size;
+    // return this.#size;
+    return this.processedData?.length ?? this.#data.length;
   }
 
   get range() {
@@ -429,6 +430,24 @@ export class ArrayDataSource
   set range(range: VuuRange) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       this.setRange(range);
+    }
+  }
+
+  protected delete(row: VuuRowDataItemType[]) {
+    console.log(`delete row ${row.join(",")}`);
+  }
+
+  protected insert(row: VuuRowDataItemType[]) {
+    // TODO take sorting, filtering. grouping into account
+    console.log("insert row", {
+      lastRange: this.lastRangeServed,
+    });
+    const dataSourceRow = toDataSourceRow(row, this.size);
+    (this.#data as DataSourceRow[]).push(dataSourceRow);
+    const { from, to } = this.#range;
+    const [rowIdx] = dataSourceRow;
+    if (rowIdx >= from && rowIdx < to) {
+      this.sendRowsToClient();
     }
   }
 
@@ -456,7 +475,13 @@ export class ArrayDataSource
       size: data.length,
       type: "viewport-update",
     });
-    this.lastRangeServed = this.#range;
+    this.lastRangeServed = {
+      from: this.#range.from,
+      to: Math.min(
+        this.#range.to,
+        this.#range.from + rowsWithinViewport.length
+      ),
+    };
   }
 
   get columns() {

@@ -2,11 +2,12 @@ import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { RpcResponseHandler } from "@finos/vuu-data-react";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
 
+export type DefaultColumnConfiguration = <T extends string = string>(
+  tableName: T,
+  columnName: string
+) => Partial<ColumnDescriptor> | undefined;
 export interface ShellContextProps {
-  getDefaultColumnConfig?: (
-    tableName: string,
-    columnName: string
-  ) => Partial<ColumnDescriptor>;
+  getDefaultColumnConfig?: DefaultColumnConfiguration;
   handleRpcResponse?: RpcResponseHandler;
 }
 
