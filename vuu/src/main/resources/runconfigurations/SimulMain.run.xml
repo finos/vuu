@@ -5,7 +5,7 @@
     <option name="MAIN_CLASS_NAME" value="org.finos.vuu.SimulMain" />
     <module name="vuu" />
     <option name="PROGRAM_PARAMETERS" value="-Xmx20G -Xlog:gc*=debug:stdout " />
-    <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback-socket.xml" />
+    <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback.xml" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.finos.vuu.*" />

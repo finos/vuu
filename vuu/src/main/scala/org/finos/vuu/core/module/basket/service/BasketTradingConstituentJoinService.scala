@@ -2,13 +2,14 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{DataTable, JoinTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.viewport._
 
-class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with EditRpcHandler with StrictLogging {
+class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with EditRpcHandler with StrictLogging {
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
@@ -23,9 +24,15 @@ class BasketTradingConstituentService(val table: DataTable, val tableContainer: 
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)), clock.now())
-    ViewPortEditSuccess()
+    val joinTable = vp.table.asTable.asInstanceOf[JoinTable]
+    val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
+    joinTable.sourceTables.get(baseTableDef.name) match {
+      case Some(table: DataTable) =>
+        table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)), clock.now())
+        ViewPortEditSuccess()
+      case None =>
+        ViewPortEditFailure("Could not find base table")
+    }
   }
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
