@@ -15,7 +15,7 @@ import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.rpc.EditRpcHandler
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree._
@@ -42,10 +42,6 @@ trait ViewPortContainerMBean {
   def openGroupByKey(vpId: String, treeKey: String): String
 
   def closeGroupByKey(vpId: String, treeKey: String): String
-
-}
-
-object ViewPortContainerMetrics {
 
 }
 
@@ -76,6 +72,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
+  }
+
+  def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    viewPortDef.service.processViewPortRpcCall(method, params, namedParams)(ctx)
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {

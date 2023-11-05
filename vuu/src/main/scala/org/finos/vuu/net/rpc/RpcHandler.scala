@@ -4,13 +4,13 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net._
 import org.finos.vuu.viewport._
 
-import java.lang.reflect.Method
+import java.lang.reflect.{Method, Type}
 
 trait RpcHandler extends StrictLogging {
 
   def menuItems(): ViewPortMenu = EmptyViewPortMenu
 
-  def menusAsMap() = {
+  def menusAsMap(): Map[String, ViewPortMenuItem] = {
 
     val menus = menuItems()
 
@@ -32,13 +32,52 @@ trait RpcHandler extends StrictLogging {
     foldMenus(menus)(Map())
   }
 
-  lazy val menuMap = menusAsMap()
+  lazy val menuMap: Map[String, ViewPortMenuItem] = menusAsMap()
 
   def implementsService(serviceIf: String): Boolean = {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)
   }
 
-  val methodsAndParams = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1).toMap
+  val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
+
+  def processViewPortRpcCall(methodName: String, params: Array[Any], namedParams: Map[String, Any])(ctx: RequestContext):ViewPortAction = {
+
+    if (!methodsAndParams.contains(methodName)) {
+      ViewPortRpcFailure(s"Could not find method $methodName")
+    } else {
+
+      val overloadedMethods = methodsAndParams(methodName)
+
+      val method = findBestMatchingMethod(methodName, params, overloadedMethods)
+
+      try {
+        val r = if (params.length == 0)
+          method.get.invoke(this, ctx)
+        else if (params.length == 1)
+          method.get.invoke(this, toO(params(0)), ctx)
+        else if (params.length == 2)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), ctx)
+        else if (params.length == 3)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), ctx)
+        else if (params.length == 4)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), toO(params(3)), ctx)
+        else if (params.length == 5)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), toO(params(3)), toO(params(4)), ctx)
+        else if (params.length == 6)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), toO(params(3)), toO(params(4)), toO(params(5)), ctx)
+        else if (params.length == 7)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), toO(params(3)), toO(params(4)), toO(params(5)), toO(params(6)), ctx)
+        else if (params.length == 8)
+          method.get.invoke(this, toO(params(0)), toO(params(1)), toO(params(2)), toO(params(3)), toO(params(4)), toO(params(5)), toO(params(6)), toO(params(7)), ctx)
+
+        r.asInstanceOf[ViewPortAction]
+      } catch {
+        case ex: Exception =>
+          logger.error(s"Exception occurred calling rpc $method", ex)
+          ViewPortRpcFailure(s"Exception occured calling rpc $method")
+      }
+    }
+  }
 
   def processRpcCall(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
 
@@ -46,34 +85,34 @@ trait RpcHandler extends StrictLogging {
       onError(s"error could not find method ${rpc.method}", 1)
     } else {
 
-      val overloadedMethods = methodsAndParams.get(rpc.method).get
+      val overloadedMethods = methodsAndParams(rpc.method)
 
       val method = findBestMatchingMethod(rpc, overloadedMethods)
 
       try{
-        val r = if (rpc.params.size == 0)
+        val r = if (rpc.params.length == 0)
           method.get.invoke(this, ctx)
-        else if (rpc.params.size == 1)
+        else if (rpc.params.length == 1)
           method.get.invoke(this, toO(rpc.params(0)), ctx)
-        else if (rpc.params.size == 2)
+        else if (rpc.params.length == 2)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), ctx)
-        else if (rpc.params.size == 3)
+        else if (rpc.params.length == 3)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), ctx)
-        else if (rpc.params.size == 4)
+        else if (rpc.params.length == 4)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), ctx)
-        else if (rpc.params.size == 5)
+        else if (rpc.params.length == 5)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), ctx)
-        else if (rpc.params.size == 6)
+        else if (rpc.params.length == 6)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), ctx)
-        else if (rpc.params.size == 7)
+        else if (rpc.params.length == 7)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), ctx)
-        else if (rpc.params.size == 8)
+        else if (rpc.params.length == 8)
           method.get.invoke(this, toO(rpc.params(0)), toO(rpc.params(1)), toO(rpc.params(2)), toO(rpc.params(3)), toO(rpc.params(4)), toO(rpc.params(5)), toO(rpc.params(6)), toO(rpc.params(7)), ctx)
 
         Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, r, null), module = msg.module))
       }catch{
         case ex: Exception =>
-          logger.error(s"Exception occurred calling rpc ${rpc}", ex)
+          logger.error(s"Exception occurred calling rpc $rpc", ex)
           Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(ex.getMessage, ex.hashCode())), module = msg.module))
       }
 
@@ -85,14 +124,35 @@ trait RpcHandler extends StrictLogging {
 
   def findBestMatchingMethod(rpc: RpcCall, methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
 
-    val size = rpc.params.size + 1
+    val size = rpc.params.length + 1
 
-    val filteredBySize = methods.filter(_._2.size == size)
+    val filteredBySize = methods.filter(_._2.length == size)
 
     filteredBySize.find(m => paramsEqualsRpcParams(m._3, rpc)) match {
       case Some(tuple) => Some(tuple._3)
       case None => None
     }
+  }
+
+  def findBestMatchingMethod(method: String, params: Array[Any], methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
+
+    val size = params.length + 1
+
+    val filteredBySize = methods.filter(_._2.length == size)
+
+    filteredBySize.find(m => paramsEqualsRpcParams(m._3, params)) match {
+      case Some(tuple) => Some(tuple._3)
+      case None => None
+    }
+  }
+
+  def paramsEqualsRpcParams(method: Method, params: Array[Any]): Boolean = {
+
+    val assignable = params.zip(method.getGenericParameterTypes).map({ case (value, classParam) =>
+      classParam.getClass.isAssignableFrom(value.getClass)
+    })
+
+    assignable.length == params.length
   }
 
   def paramsEqualsRpcParams(method: Method, rpcCall: RpcCall): Boolean = {
@@ -101,7 +161,7 @@ trait RpcHandler extends StrictLogging {
       classParam.getClass.isAssignableFrom(value.getClass)
     })
 
-    assignable.size == rpcCall.params.size
+    assignable.length == rpcCall.params.length
   }
 
   def onError(message: String, code: Int): Option[ViewServerMessage] = {

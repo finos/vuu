@@ -11,7 +11,7 @@ import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport._
 import org.scalatest.GivenWhenThen
@@ -81,41 +81,66 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
   //final val TEST_TIME = 1450770869442L
   var counter: Int = 0
 
-  def setupEditableTableInfra()(implicit clock: Clock, metrics: MetricsProvider, lifecycle: LifecycleContainer): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
+  def setupEditableTableInfra()(implicit clock: Clock, metrics: MetricsProvider, lifecycle: LifecycleContainer): (ViewPortContainer, Map[String, (DataTable, MockProvider)], ClientSessionId, OutboundRowPublishQueue, TableContainer, JoinTableProvider) = {
 
     val module = createViewServerModule("TEST")
 
-    val processDef = TableDef(
+    val constituentDef = TableDef(
       name = "constituent",
       keyField = "id",
-      columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
+      columns = Columns.fromNames("id".string(), "ric".string(), "quantity".long()),
       VisualLinks(),
-      joinFields = "id"
+      joinFields = "id", "ric"
     )
 
-    val fixSequenceDef = TableDef(
+    val instrumentDef = TableDef(
       name = "instrument",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "description:String")
+      columns = Columns.fromNames("ric:String", "description:String"),
+      joinFields = "ric"
     )
 
     val pricesDef = TableDef(
-      name = "prices",
+      name = "price",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "bid:Long", "ask:Long")
+      columns = Columns.fromNames("ric:String", "bid:Long", "ask:Long"),
+      joinFields = "ric"
     )
 
-    processDef.setModule(module)
-    fixSequenceDef.setModule(module)
+    val joinDef = JoinTableDef(
+      name = "consInstrumentPrice",
+      baseTable = constituentDef,
+      joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinFields = List("ric"),
+      joins =
+        JoinTo(
+          table = instrumentDef,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      JoinTo(
+        table = pricesDef,
+        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+      )
+    )
+
+    constituentDef.setModule(module)
+    instrumentDef.setModule(module)
+    pricesDef.setModule(module)
+    joinDef.setModule(module)
 
     val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
-    val process = tableContainer.createTable(processDef)
-    val fixSequence = tableContainer.createTable(fixSequenceDef)
+    val constituent = tableContainer.createTable(constituentDef)
+    val instrument = tableContainer.createTable(instrumentDef)
+    val prices = tableContainer.createTable(pricesDef)
 
-    val processProvider = new MockProvider(process)
+    val consInstrumentPrices = tableContainer.createJoinTable(joinDef)
+
+    val constituentProvider = new MockProvider(constituent)
+    val instrumentProvider = new MockProvider(instrument)
+    val pricesProvider = new MockProvider(prices)
 
     val providerContainer = new ProviderContainer(joinProvider)
     val viewPortContainer = setupViewPort(tableContainer, providerContainer)
@@ -127,8 +152,12 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer)
+    val mapTables = Map(constituent.name -> (constituent, constituentProvider),
+                        instrument.name -> (instrument, instrumentProvider),
+                        prices.name -> (prices, pricesProvider),
+                        consInstrumentPrices.name -> (consInstrumentPrices, null))
 
+    (viewPortContainer,  mapTables, session, outQueue, tableContainer, joinProvider)
   }
 
   def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler, clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
