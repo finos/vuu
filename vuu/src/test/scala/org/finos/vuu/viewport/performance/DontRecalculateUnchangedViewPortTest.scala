@@ -1,15 +1,20 @@
 package org.finos.vuu.viewport.performance
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts.assertVpEqWithMeta
-import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange}
+import org.finos.vuu.viewport.{AbstractViewPortTestCase, TestTimeStamp, ViewPortRange}
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
 class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
+
+  implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   Feature("Dont recalculate viewport when hasnt changed") {
 
@@ -20,7 +25,7 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRows(ordersProvider, 10)(timeProvider)
+      createNOrderRows(ordersProvider, 10)(clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
 
@@ -31,17 +36,17 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
-          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
-          (0, "NYC-0000", "chris", "VOD.L", 1311544800L, 100),
-          (0, "NYC-0001", "chris", "VOD.L", 1311544810L, 101),
-          (0, "NYC-0002", "chris", "VOD.L", 1311544820L, 102),
-          (0, "NYC-0003", "chris", "VOD.L", 1311544830L, 103),
-          (0, "NYC-0004", "chris", "VOD.L", 1311544840L, 104),
-          (0, "NYC-0005", "chris", "VOD.L", 1311544850L, 105),
-          (0, "NYC-0006", "chris", "VOD.L", 1311544860L, 106),
-          (0, "NYC-0007", "chris", "VOD.L", 1311544870L, 107),
-          (0, "NYC-0008", "chris", "VOD.L", 1311544880L, 108),
-          (0, "NYC-0009", "chris", "VOD.L", 1311544890L, 109)
+          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
+          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544800010L,101       ),
+          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544800020L,102       ),
+          (0         ,"NYC-0003","chris"   ,"VOD.L"   ,1311544800030L,103       ),
+          (0         ,"NYC-0004","chris"   ,"VOD.L"   ,1311544800040L,104       ),
+          (0         ,"NYC-0005","chris"   ,"VOD.L"   ,1311544800050L,105       ),
+          (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544800060L,106       ),
+          (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544800070L,107       ),
+          (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544800080L,108       ),
+          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544800090L,109       )
         )
       }
 
@@ -94,21 +99,21 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
-          ("sel", "orderId", "trader", "ric", "tradeTime"),
-          (0, "NYC-0000", "chris", "VOD.L", 1311544800L),
-          (0, "NYC-0001", "chris", "VOD.L", 1311544810L),
-          (0, "NYC-0002", "chris", "VOD.L", 1311544820L),
-          (0, "NYC-0003", "chris", "VOD.L", 1311544830L),
-          (0, "NYC-0004", "chris", "VOD.L", 1311544840L),
-          (0, "NYC-0005", "chris", "VOD.L", 1311544850L),
-          (0, "NYC-0006", "chris", "VOD.L", 1311544860L),
-          (0, "NYC-0007", "chris", "VOD.L", 1311544870L),
-          (0, "NYC-0008", "chris", "VOD.L", 1311544880L),
-          (0, "NYC-0009", "chris", "VOD.L", 1311544890L)
+          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime"),
+          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800000L),
+          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544800010L),
+          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544800020L),
+          (0         ,"NYC-0003","chris"   ,"VOD.L"   ,1311544800030L),
+          (0         ,"NYC-0004","chris"   ,"VOD.L"   ,1311544800040L),
+          (0         ,"NYC-0005","chris"   ,"VOD.L"   ,1311544800050L),
+          (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544800060L),
+          (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544800070L),
+          (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544800080L),
+          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544800090L)
         )
       }
 
-      createNOrderRows(ordersProvider, 12)(timeProvider)
+      createNOrderRows(ordersProvider, 12)(clock)
 
       viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode(), viewPort2.getTableUpdateCount()) should be(true)
 
@@ -116,22 +121,21 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
-          ("sel", "orderId", "trader", "ric", "tradeTime"),
-          (0, "NYC-0010", "chris", "VOD.L", 1311545000L),
-          (0, "NYC-0011", "chris", "VOD.L", 1311545010L),
-          (0, "NYC-0000", "chris", "VOD.L", 1311544900L),
-          (0, "NYC-0001", "chris", "VOD.L", 1311544910L),
-          (0, "NYC-0002", "chris", "VOD.L", 1311544920L),
-          (0, "NYC-0003", "chris", "VOD.L", 1311544930L),
-          (0, "NYC-0004", "chris", "VOD.L", 1311544940L),
-          (0, "NYC-0005", "chris", "VOD.L", 1311544950L),
-          (0, "NYC-0006", "chris", "VOD.L", 1311544960L),
-          (0, "NYC-0007", "chris", "VOD.L", 1311544970L),
-          (0, "NYC-0008", "chris", "VOD.L", 1311544980L),
-          (0, "NYC-0009", "chris", "VOD.L", 1311544990L)
+          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime"),
+          (0         ,"NYC-0010","chris"   ,"VOD.L"   ,1311544800200L),
+          (0         ,"NYC-0011","chris"   ,"VOD.L"   ,1311544800210L),
+          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800100L),
+          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544800110L),
+          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544800120L),
+          (0         ,"NYC-0003","chris"   ,"VOD.L"   ,1311544800130L),
+          (0         ,"NYC-0004","chris"   ,"VOD.L"   ,1311544800140L),
+          (0         ,"NYC-0005","chris"   ,"VOD.L"   ,1311544800150L),
+          (0         ,"NYC-0006","chris"   ,"VOD.L"   ,1311544800160L),
+          (0         ,"NYC-0007","chris"   ,"VOD.L"   ,1311544800170L),
+          (0         ,"NYC-0008","chris"   ,"VOD.L"   ,1311544800180L),
+          (0         ,"NYC-0009","chris"   ,"VOD.L"   ,1311544800190L)
         )
       }
-
     }
   }
 }

@@ -1,5 +1,7 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.ViewPortColumnCreator
@@ -10,6 +12,9 @@ import org.scalatest.prop.Tables.Table
 
 class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
 
+  implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
   Feature("Check when we delete a viewport, it is removed and no further ticks are sent") {
 
     Scenario("Create viewport delete it, check no further ticks") {
@@ -18,7 +23,7 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
-      createNOrderRows(ordersProvider, 10)(timeProvider)
+      createNOrderRows(ordersProvider, 10)(clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
@@ -30,11 +35,11 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
 
       assertVpEq(combinedUpdates) {
         Table(
-          ("orderId", "trader", "ric", "tradeTime", "quantity"),
-          ("NYC-0000", "chris", "VOD.L", 1311544800L, 100),
-          ("NYC-0001", "chris", "VOD.L", 1311544810L, 101),
-          ("NYC-0002", "chris", "VOD.L", 1311544820L, 102),
-          ("NYC-0003", "chris", "VOD.L", 1311544830L, 103)
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800010L,101       ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800020L,102       ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800030L,103       )
         )
       }
 

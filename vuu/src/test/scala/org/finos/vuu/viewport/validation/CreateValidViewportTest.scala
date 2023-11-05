@@ -1,5 +1,8 @@
 package org.finos.vuu.viewport.validation
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.CoreServerApiHandler
 import org.finos.vuu.net.{ClientSessionId, CreateViewPortRequest, RequestContext}
 import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange, ViewPortTable}
@@ -11,6 +14,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
   Feature("Check view port is valid") {
 
     Scenario("create viewport, with incorrect columns, check for error") {
+
+      implicit val clock: Clock = new TestFriendlyClock(1311544800)
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       Given("we've created a viewport with orders in")
       val (viewPortContainer, _, _, prices, _, _, outQueue) = createDefaultOrderPricesViewPortInfra()
