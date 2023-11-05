@@ -1,15 +1,20 @@
 package org.finos.vuu.viewport.disable
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.util.table.TableAsserts._
-import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange}
+import org.finos.vuu.viewport.{AbstractViewPortTestCase, TestTimeStamp, ViewPortRange}
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
 class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
+
+  implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   Feature("Disable Viewport example") {
 
@@ -20,7 +25,7 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      createNOrderRowsNoSleep(ordersProvider, 10)(timeProvider)
+      createNOrderRowsNoSleep(ordersProvider, 10)(clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
@@ -32,17 +37,17 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
       //it should return a compound error
       assertVpEq(combinedUpdates) {
         Table(
-          ("orderId", "trader", "ric", "tradeTime", "quantity"),
-          ("NYC-0000", "chris", "VOD.L", 1311544800L, 100),
-          ("NYC-0001", "chris", "VOD.L", 1311544800L, 101),
-          ("NYC-0002", "chris", "VOD.L", 1311544800L, 102),
-          ("NYC-0003", "chris", "VOD.L", 1311544800L, 103),
-          ("NYC-0004", "chris", "VOD.L", 1311544800L, 104),
-          ("NYC-0005", "chris", "VOD.L", 1311544800L, 105),
-          ("NYC-0006", "chris", "VOD.L", 1311544800L, 106),
-          ("NYC-0007", "chris", "VOD.L", 1311544800L, 107),
-          ("NYC-0008", "chris", "VOD.L", 1311544800L, 108),
-          ("NYC-0009", "chris", "VOD.L", 1311544800L, 109)
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,101       ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,102       ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,103       ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,104       ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,105       ),
+          ("NYC-0006","chris"   ,"VOD.L"   ,1311544800000L,106       ),
+          ("NYC-0007","chris"   ,"VOD.L"   ,1311544800000L,107       ),
+          ("NYC-0008","chris"   ,"VOD.L"   ,1311544800000L,108       ),
+          ("NYC-0009","chris"   ,"VOD.L"   ,1311544800000L,109       )
         )
       }
 

@@ -148,9 +148,6 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
   def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
     val keyField = sourceTableDefsByName.get(tableName).keyField
-    if(keyField == null)
-      println("here")
-
     ev.get(keyField).toString
   }
 
@@ -214,7 +211,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
           //for each key in left table, send left update, including additional keys
           leftKeys.foreach(key => {
-            logger.debug(s"Publishing update for left key: ${key}")
+            logger.debug(s"Publishing update for left key: $key")
             publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name, key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key))
           })
         }

@@ -1,5 +1,7 @@
 package org.finos.vuu.viewport
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table.ViewPortColumnCreator
@@ -14,6 +16,9 @@ import org.scalatest.prop.Tables.Table
  */
 class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen{
 
+  implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
   Feature("Check when we update view port ranges, we only send the new rows"){
 
     Scenario("Change viewport from 0-20 to 10-30 and check we only get 10 rows"){
@@ -22,7 +27,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))//.map(orders.getTableDef.columnForName(_)).toList
 
-      createNOrderRows(ordersProvider, 10)(timeProvider)
+      createNOrderRows(ordersProvider, 10)(clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 4), vpcolumns)
 
@@ -35,10 +40,10 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
       assertVpEq(combinedUpdates){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800L,100       ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544810L,101       ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544820L,102       ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544830L,103       )
+          ("NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800010L,101       ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800020L,102       ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800030L,103       )
         )
       }
 
@@ -48,10 +53,9 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
 
       assertVpEq(combineQs(viewPortv2)){
         Table(
-          //don't send 2,3 as they already existed in client cache
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544840L,104       ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544850L,105       )
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800040L,104       ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800050L,105       )
         )
       }
 
