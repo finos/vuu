@@ -213,7 +213,7 @@ export type VuuServerMenuOptions = {
   columnMap: ColumnMap;
   columnName: string;
   row: DataSourceRow;
-  selectedRows: DataSourceRow[];
+  selectedRowsCount: number;
   viewport: string;
 };
 
@@ -373,6 +373,7 @@ export const useVuuMenuActions = ({
           `useViewServer handleMenuAction,  can't handle action type ${menuId}`
         );
       }
+
       return false;
     },
     [clientSideMenuActionHandler, dataSource, onRpcResponse]

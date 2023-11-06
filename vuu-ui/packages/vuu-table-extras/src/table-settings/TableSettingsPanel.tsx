@@ -21,6 +21,7 @@ export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
   onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
   onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
+  onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
 }
 
@@ -34,6 +35,7 @@ export const TableSettingsPanel = ({
   onAddCalculatedColumn,
   onConfigChange,
   onDataSourceConfigChange,
+  onNavigateToColumn,
   tableConfig: tableConfigProp,
   ...htmlAttributes
 }: TableSettingsProps) => {
@@ -85,21 +87,21 @@ export const TableSettingsPanel = ({
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="row-striping"
-            selected={tableConfig.zebraStripes}
+            selected={tableConfig.zebraStripes ?? false}
             onChange={onChangeTableAttribute}
             value="zebraStripes"
           />
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="row-lines"
-            selected={tableConfig.rowSeparators}
+            selected={tableConfig.rowSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="rowSeparators"
           />
           <ToggleButton
             className="vuuIconToggleButton"
             data-icon="col-lines"
-            selected={tableConfig.columnSeparators}
+            selected={tableConfig.columnSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="columnSeparators"
           />
@@ -115,6 +117,7 @@ export const TableSettingsPanel = ({
         columnItems={columnItems}
         onChange={onColumnChange}
         onMoveListItem={onMoveListItem}
+        onNavigateToColumn={onNavigateToColumn}
       />
 
       <div className={`${classBase}-calculatedButtonbar`}>

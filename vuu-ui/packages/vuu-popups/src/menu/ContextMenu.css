@@ -1,7 +1,0 @@
-.vuuContextMenu {
-    border-radius:4px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    border-color: var(--vuuMenuList-borderColor, var(--salt-container-primary-borderColor));
-    border-style: solid;
-    border-width: 1px;
-}

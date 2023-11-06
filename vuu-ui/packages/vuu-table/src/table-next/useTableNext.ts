@@ -39,6 +39,7 @@ import {
 import {
   buildContextMenuDescriptors,
   MeasuredProps,
+  RowClickHandler,
   TableProps,
   useSelection,
   useTableContextMenu,
@@ -66,11 +67,14 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
       | "onFeatureInvocation"
+      | "onSelect"
       | "onSelectionChange"
+      | "onRowClick"
       | "renderBufferSize"
     > {
   containerRef: RefObject<HTMLDivElement>;
@@ -95,16 +99,18 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
+  navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onRowClick: onRowClickProp,
+  onSelect,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel,
-}: // ...measuredProps
-TableHookProps) => {
+}: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -176,33 +182,30 @@ TableHookProps) => {
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        // expectConfigChangeRef.current = true;
         // dispatchColumnAction({
         //   type: "setTableSchema",
         //   tableSchema,
         // });
       } else {
-        console.log("usbscription message with no schema");
+        console.log("subscription message with no schema");
       }
     },
     []
   );
 
-  const { data, range, setRange } = useDataSource({
-    dataSource,
-    onFeatureEnabled,
-    onFeatureInvocation,
-    renderBufferSize,
-    onSizeChange: onDataRowcountChange,
-    onSubscribed,
-    range: initialRange,
-  });
+  const { data, getSelectedRows, onEditTableData, range, setRange } =
+    useDataSource({
+      dataSource,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      renderBufferSize,
+      onSizeChange: onDataRowcountChange,
+      onSubscribed,
+      range: initialRange,
+    });
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`useTableNext handleConfigChanged`, {
-        tableConfig,
-      });
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -215,9 +218,6 @@ TableHookProps) => {
 
   const handleDataSourceConfigChanged = useCallback(
     (dataSourceConfig: DataSourceConfig) => {
-      console.log("config changed", {
-        dataSourceConfig,
-      });
       dataSource.config = {
         ...dataSource.config,
         ...dataSourceConfig,
@@ -228,15 +228,15 @@ TableHookProps) => {
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
-      console.log(`useTableNext handleCreateCalculatedColumn`, {
-        column,
-      });
       dataSource.columns = dataSource.columns.concat(column.name);
       const newTableConfig = addColumn(tableConfig, column);
       dispatchColumnAction({
         type: "init",
         tableConfig: newTableConfig,
         dataSourceConfig: dataSource.config,
+      });
+      console.log(`dispatch onConfigChange`, {
+        newTableConfig,
       });
       onConfigChange?.(newTableConfig);
     },
@@ -245,7 +245,6 @@ TableHookProps) => {
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,
@@ -413,8 +412,9 @@ TableHookProps) => {
     onKeyDown: navigationKeyDown,
     ...containerProps
   } = useKeyboardNavigation({
-    columnCount: columns.length,
+    columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,
@@ -433,7 +433,12 @@ TableHookProps) => {
     [navigationKeyDown, editingKeyDown]
   );
 
-  const onContextMenu = useTableContextMenuNext({ columns, data });
+  const onContextMenu = useTableContextMenuNext({
+    columns,
+    data,
+    dataSource,
+    getSelectedRows,
+  });
 
   const onHeaderClick = useCallback(
     (evt: MouseEvent) => {
@@ -472,10 +477,19 @@ TableHookProps) => {
     [dataSource, onSelectionChange]
   );
 
-  const onRowClick = useSelection({
+  const selectionHookOnRowClick = useSelection({
+    onSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  const handleRowClick = useCallback<RowClickHandler>(
+    (row, rangeSelect, keepExistingSelection) => {
+      selectionHookOnRowClick(row, rangeSelect, keepExistingSelection);
+      onRowClickProp?.(row);
+    },
+    [onRowClickProp, selectionHookOnRowClick]
+  );
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
@@ -540,7 +554,7 @@ TableHookProps) => {
     onDataEdited: handleDataEdited,
     onRemoveGroupColumn,
     onResize: handleResize,
-    onRowClick,
+    onRowClick: handleRowClick,
     onToggleGroup,
     scrollProps,
     tableAttributes,

@@ -9,15 +9,7 @@ import org.finos.vuu.layoutserver.service.LayoutService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -38,6 +30,7 @@ public class LayoutController {
      * @param id ID of the layout to get
      * @return the layout
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     public LayoutResponseDto getLayout(@PathVariable UUID id) {
         return mapper.map(layoutService.getLayout(id), LayoutResponseDto.class);
@@ -48,6 +41,7 @@ public class LayoutController {
      *
      * @return the metadata
      */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/metadata")
     public List<MetadataResponseDto> getMetadata() {
 
@@ -97,8 +91,6 @@ public class LayoutController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void deleteLayout(@PathVariable UUID id) {
-        // Generate a 404 if layout doesn't exist
-        layoutService.getLayout(id);
         layoutService.deleteLayout(id);
     }
 }

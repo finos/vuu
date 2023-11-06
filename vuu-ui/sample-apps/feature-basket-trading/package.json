@@ -1,5 +1,5 @@
 {
-  "name": "feature-vuu-basket-trading",
+  "name": "feature-basket-trading",
   "version": "0.0.26",
   "description": "Basket Trading",
   "scripts": {
@@ -42,7 +42,24 @@
   },
   "vuu": {
     "featureProps": {
-      "schema": "instrumentPrices"
+      "schemas": [
+        {
+          "module": "BASKET",
+          "table": "basket"
+        },
+        {
+          "module": "BASKET",
+          "table": "basketTrading"
+        },
+        {
+          "module": "BASKET",
+          "table": "basketTradingConstituent"
+        },
+        {
+          "module": "SIMUL",
+          "table": "instruments"
+        }
+      ]
     },
     "leftNavLocation": "vuu-features"
   }

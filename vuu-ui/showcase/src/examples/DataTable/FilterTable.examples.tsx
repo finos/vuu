@@ -2,11 +2,14 @@ import { FilterTable } from "@finos/vuu-datatable";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useState } from "react";
-import { useSchemas, useTestDataSource } from "../utils";
-import { DataSourceFilter } from "packages/vuu-data-types";
+import { useTableConfig, useTestDataSource } from "../utils";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { getAllSchemas, getSchema } from "@finos/vuu-data-test";
+
+let displaySequence = 1;
 
 export const DefaultFilterTable = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource, error, tableSchema } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
@@ -58,3 +61,51 @@ export const DefaultFilterTable = () => {
     />
   );
 };
+DefaultFilterTable.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstruments = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    dataSource,
+    ...props
+  } = useTableConfig({
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const handleApplyFilter = useCallback(
+    (filter: DataSourceFilter) => {
+      console.log("apply filter", {
+        filter,
+      });
+      dataSource.filter = filter;
+    },
+    [dataSource]
+  );
+
+  const filterBarProps = {
+    filters: [],
+    onApplyFilter: handleApplyFilter,
+    tableSchema: getSchema("instruments"),
+  };
+
+  const tableProps = {
+    config: configProp,
+    dataSource,
+    ...props,
+    height: 645,
+    renderBufferSize: 20,
+    width: 715,
+  };
+
+  console.log({ tableProps });
+
+  return (
+    <FilterTable
+      FilterBarProps={filterBarProps}
+      TableProps={tableProps}
+      style={{ width: 900, height: 800 }}
+    />
+  );
+};
+FilterTableArrayDataInstruments.displaySequence = displaySequence++;

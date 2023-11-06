@@ -8,9 +8,15 @@ import { PromptProps } from "@finos/vuu-popups";
 import { dispatchMouseEvent, filterAsQuery } from "@finos/vuu-utils";
 import { EditableLabelProps } from "@salt-ds/lab";
 import {
+  ActiveItemChangeHandler,
+  NavigationOutOfBoundsHandler,
+} from "@finos/vuu-layout";
+import {
   KeyboardEvent,
+  KeyboardEventHandler,
   RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -26,8 +32,8 @@ export interface FilterBarHookProps
     FilterBarProps,
     | "activeFilterIndex"
     | "filters"
-    | "onActiveChange"
     | "onApplyFilter"
+    | "onChangeActiveFilterIndex"
     | "onFiltersChanged"
     | "showMenu"
   > {
@@ -40,11 +46,12 @@ export const useFilterBar = ({
   activeFilterIndex: activeFilterIdexProp = [],
   containerRef,
   filters: filtersProp,
-  onActiveChange,
   onApplyFilter,
+  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp,
 }: FilterBarHookProps) => {
+  const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
   const [activeFilterIndex, setActiveFilterIndex] =
     useState<number[]>(activeFilterIdexProp);
@@ -128,30 +135,6 @@ export const useFilterBar = ({
     [onApplyFilter]
   );
 
-  const handleFilterActivation = useCallback(
-    (activeIndices: number[]) => {
-      if (activeIndices.length > 0) {
-        const activeFilters = activeIndices.map<Filter>(
-          (index) => filters[index]
-        );
-        if (activeFilters.length === 1) {
-          const [filter] = activeFilters;
-          applyFilter(filter);
-        } else {
-          applyFilter({
-            op: "and",
-            filters: activeFilters,
-          });
-        }
-      } else {
-        applyFilter();
-      }
-      setActiveFilterIndex(activeIndices);
-      onActiveChange?.(activeIndices);
-    },
-    [applyFilter, filters, onActiveChange]
-  );
-
   const deleteConfirmed = useCallback(
     (filter: Filter) => {
       const indexOfFilter = filters.indexOf(filter);
@@ -163,8 +146,8 @@ export const useFilterBar = ({
       }
       const indexOfDeletedFilter = onDeleteFilter?.(filter);
       if (activeFilterIndex.includes(indexOfDeletedFilter)) {
-        handleFilterActivation(
-          activeFilterIndex.filter((i) => i !== indexOfDeletedFilter)
+        setActiveFilterIndex((indices) =>
+          indices.filter((i) => i !== indexOfDeletedFilter)
         );
       }
 
@@ -175,13 +158,7 @@ export const useFilterBar = ({
         }
       });
     },
-    [
-      activeFilterIndex,
-      filters,
-      focusFilterPill,
-      handleFilterActivation,
-      onDeleteFilter,
-    ]
+    [activeFilterIndex, filters, focusFilterPill, onDeleteFilter]
   );
 
   const getDeletePrompt = useMemo(
@@ -272,7 +249,6 @@ export const useFilterBar = ({
         case "apply-save": {
           // TODO save these into state together
           const isNewFilter = editingFilter.current === undefined;
-
           const newFilter = editFilter as Filter;
           const changeHandler = isNewFilter ? onAddFilter : onChangeFilter;
           const indexOfNewFilter = changeHandler(newFilter);
@@ -283,11 +259,13 @@ export const useFilterBar = ({
 
           setEditFilter(undefined);
 
-          if (!activeFilterIndex.includes(indexOfNewFilter)) {
-            handleFilterActivation(activeFilterIndex.concat(indexOfNewFilter));
-          }
+          setActiveFilterIndex((indices) =>
+            indices.includes(indexOfNewFilter)
+              ? indices
+              : indices.concat(indexOfNewFilter)
+          );
+
           setShowMenu(false);
-          applyFilter(newFilter);
           return true;
         }
 
@@ -307,15 +285,34 @@ export const useFilterBar = ({
           return false;
       }
     },
-    [
-      activeFilterIndex,
-      applyFilter,
-      editFilter,
-      editPillLabel,
-      handleFilterActivation,
-      onAddFilter,
-      onChangeFilter,
-    ]
+    [editFilter, editPillLabel, onAddFilter, onChangeFilter]
+  );
+
+  useEffect(() => {
+    if (activeFilterIndex.length > 0) {
+      const activeFilters = activeFilterIndex.map<Filter>(
+        (index) => filters[index]
+      );
+      if (activeFilters.length === 1) {
+        const [filter] = activeFilters;
+        applyFilter(filter);
+      } else {
+        applyFilter({
+          op: "and",
+          filters: activeFilters,
+        });
+      }
+    } else {
+      applyFilter();
+    }
+  }, [activeFilterIndex, applyFilter, filters]);
+
+  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
+    (itemIndex) => {
+      setActiveFilterIndex(itemIndex);
+      onChangeActiveFilterIndexProp?.(itemIndex);
+    },
+    [onChangeActiveFilterIndexProp]
   );
 
   const handleClickAddFilter = useCallback(() => {
@@ -352,16 +349,36 @@ export const useFilterBar = ({
     [editFilter]
   );
 
+  const handleAddButtonKeyDown = useCallback<KeyboardEventHandler>((evt) => {
+    if (evt.key === "ArrowLeft") {
+      console.log("navgiate to the Toolbar");
+    }
+  }, []);
+
+  const handlePillNavigationOutOfBounds =
+    useCallback<NavigationOutOfBoundsHandler>((direction) => {
+      if (direction === "end") {
+        addButtonRef.current?.focus();
+      }
+    }, []);
+
+  const addButtonProps = {
+    ref: addButtonRef,
+    onKeyDown: handleAddButtonKeyDown,
+  };
+
   return {
     activeFilterIndex,
+    addButtonProps,
     editFilter,
     filters,
+    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     onClickAddFilter: handleClickAddFilter,
     onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,
-    onFilterActivation: handleFilterActivation,
     onKeyDown,
     onMenuAction: handleMenuAction,
+    onNavigateOutOfBounds: handlePillNavigationOutOfBounds,
     pillProps,
     promptProps,
     showMenu,

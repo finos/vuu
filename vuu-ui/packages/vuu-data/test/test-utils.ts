@@ -46,14 +46,15 @@ export const createTableRows = (
   to,
   vpSize = 100,
   ts = 1,
-  sel: 0 | 1 = 0
+  sel: 0 | 1 = 0,
+  numericValue = 1000
 ): VuuRow[] => {
   const results: VuuRow[] = [];
   for (let rowIndex = from; rowIndex < to; rowIndex++) {
     const key = ("0" + rowIndex).slice(-2);
     const rowKey = `key-${key}`;
     results.push({
-      data: [rowKey, `name ${key}`, 1000 + rowIndex, true],
+      data: [rowKey, `name ${key}`, numericValue + rowIndex, true],
       rowIndex,
       rowKey,
       updateType: "U",

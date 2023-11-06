@@ -87,7 +87,6 @@ export const DockLayoutWithTable = () => {
           data-dock="content"
           renderBufferSize={100}
           rowHeight={20}
-          zebraStripes
         />
       </DockLayout>
       <div

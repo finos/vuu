@@ -9,7 +9,8 @@
     --vuu-icon-width: 20px;
 
     background: var(--vuuPopupMenu-background, transparent);
-    border-radius: 4px;
+    border: var(--vuuPopupMenu-border, none);
+    border-radius: var(--vuuPopupMenu-borderRadius, 4px);
     cursor: pointer;
     display: inline-block;
     margin-top: 2px;
@@ -33,4 +34,11 @@
 
 .vuu-theme .vuuPopupMenu-open {
     --saltButton-background: #6D18BD;
+}
+
+.vuuPopupMenu-withCaption {
+    --vuu-icon-left: calc(100% - 24px); 
+    --vuu-icon-size: 20px;
+    --saltButton-width: auto;
+    padding: 0 28px 0 8px;
 }

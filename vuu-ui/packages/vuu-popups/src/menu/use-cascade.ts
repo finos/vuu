@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import { closestListItem } from "./list-dom-utils";
-import { MenuItemProps } from "./MenuList";
+import { MenuItemProps, MenuOpenHandler } from "./MenuList";
 // import {mousePosition} from './aim/utils';
 // import {aiming} from './aim/aim';
 
@@ -65,9 +65,14 @@ export type RuntimeMenuDescriptor = {
   top: number;
 };
 
+/**  menuitem-vuu-1-0   vuu-1 */
 export const getHostMenuId = (id: string, rootId: string) => {
   const pos = id.lastIndexOf("-");
-  return pos > -1 ? id.slice(9, pos) : rootId;
+  if (id.startsWith("menuitem")) {
+    return pos > -1 ? id.slice(9, pos) : rootId;
+  } else {
+    return pos > -1 ? id.slice(0, pos) : rootId;
+  }
 };
 
 const getTargetMenuId = (id: string) => id.slice(9);
@@ -100,7 +105,7 @@ export interface CascadeHooksResult {
   closeMenu: () => void;
   handleRender: () => void;
   listItemProps: Partial<MenuItemProps>;
-  openMenu: (menuItemEl: HTMLElement) => void;
+  openMenu: MenuOpenHandler;
   openMenus: RuntimeMenuDescriptor[];
 }
 
@@ -209,7 +214,12 @@ export const useCascade = ({
   }, []);
 
   const scheduleOpen = useCallback(
-    (hostMenuId: string, targetMenuId: string, menuItemId: string) => {
+    (
+      hostMenuId: string,
+      targetMenuId: string,
+      menuItemId: string,
+      delay = 300
+    ) => {
       clearAnyScheduledOpenTasks();
       // do we need to set target state to pending-open ?s
 
@@ -221,7 +231,7 @@ export const useCascade = ({
         menuState.current[hostMenuId] = "popup-open";
         menuState.current[targetMenuId] = "no-popup";
         openMenu(hostMenuId, targetMenuId, menuItemId);
-      }, 400);
+      }, delay);
     },
     [clearAnyScheduledOpenTasks, closeMenus, openMenu]
   );
@@ -233,6 +243,7 @@ export const useCascade = ({
       // );
       menuState.current[openMenuId] = "pending-close";
       menuClosePendingTimeout.current = window.setTimeout(() => {
+        // console.log(`call closeMenus from scheduleClose`);
         closeMenus(itemId);
       }, 400);
     },
@@ -241,8 +252,8 @@ export const useCascade = ({
 
   const handleRender = useCallback(() => {
     const { current: menus } = openMenus;
-    const [menu] = menus.slice(-1);
-    const el = document.getElementById(menu.id);
+    const menu = menus.at(-1);
+    const el = menu ? document.getElementById(menu.id) : undefined;
     if (el) {
       const { right, bottom } = el.getBoundingClientRect();
       const { clientHeight, clientWidth } = document.body;
@@ -260,23 +271,23 @@ export const useCascade = ({
       if (typeof el.tabIndex === "number") {
         el.focus();
       }
-    } else {
-      console.log(`no element found with if ${menu.id}`);
     }
   }, [rootId, setOpenMenus]);
 
   // TODO introduce a delay parameter that allows click to requeat an immediate render
-  const triggerChildMenu = useCallback(
-    (menuItemEl: HTMLElement) => {
+  const triggerChildMenu = useCallback<MenuOpenHandler>(
+    (menuItemEl, immediate = false) => {
       const { hostMenuId, targetMenuId, menuItemId, isGroup, isOpen } =
         getMenuItemDetails(menuItemEl, rootId);
-
       const {
         current: { [hostMenuId]: state },
       } = menuState;
 
+      const delay = immediate ? 0 : undefined;
+
       // console.log(
       //   `%ctriggerChildMenu
+      //   rootId ${rootId}
       //   menuItem ${menuItemId}
       //   host menu: ${hostMenuId}
       //   target menu: ${targetMenuId}
@@ -290,14 +301,14 @@ export const useCascade = ({
 
       if (state === "no-popup" && isGroup) {
         menuState.current[hostMenuId] = "popup-pending";
-        scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+        scheduleOpen(hostMenuId, targetMenuId, menuItemId, delay);
       } else if (state === "popup-pending" && !isGroup) {
         menuState.current[hostMenuId] = "no-popup";
         clearTimeout(menuOpenPendingTimeout.current);
         menuOpenPendingTimeout.current = undefined;
       } else if (state === "popup-pending" && isGroup) {
         clearTimeout(menuOpenPendingTimeout.current);
-        scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+        scheduleOpen(hostMenuId, targetMenuId, menuItemId, delay);
       } else if (state === "popup-open") {
         if (menuIsOpen(targetMenuId)) {
           const menuStatus = getOpenMenuStatus(targetMenuId);
@@ -327,7 +338,7 @@ export const useCascade = ({
           ) {
             scheduleClose(hostMenuId, lastOpenedMenu.id, menuItemId);
             if (isGroup && !isOpen) {
-              scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+              scheduleOpen(hostMenuId, targetMenuId, menuItemId, delay);
             }
           } else if (
             parentOfLastOpenedMenu.id === hostMenuId &&
@@ -336,10 +347,10 @@ export const useCascade = ({
             menuState.current[lastOpenedMenu.id] === "pending-close"
           ) {
             // if there is already an item queued for opening cancel it
-            scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+            scheduleOpen(hostMenuId, targetMenuId, menuItemId, delay);
           } else if (isGroup) {
             // closeMenus(menuId, itemId);
-            scheduleOpen(hostMenuId, targetMenuId, menuItemId);
+            scheduleOpen(hostMenuId, targetMenuId, menuItemId, delay);
           } else if (
             !(
               (menuState.current[lastOpenedMenu.id] === "pending-close") /*&&

@@ -48,16 +48,19 @@ const pathToExample = (path: string): [string[], string] => {
   const importPath =
     endOfImportPath === -1 ? path : path.slice(0, endOfImportPath);
   const suffix = env === "development" ? "" : ".js";
-  console.log({ importPath });
-  return [
-    [
-      `./examples/${importPath}.examples${suffix}`,
-      `./examples/${importPath}/index${suffix}`,
-      `./examples/${importPath}.stories${suffix}`,
-      `./examples/${importPath}/${importPath}${suffix}`,
-    ],
-    path.slice(endOfImportPath + 1),
-  ];
+  const exampleName = path.slice(endOfImportPath + 1);
+  if (exampleName === "") {
+    return [[], ""];
+  } else {
+    return [
+      [
+        `./examples/${importPath}.examples${suffix}`,
+        `./examples/${importPath}/index${suffix}`,
+        `./examples/${importPath}/${importPath}${suffix}`,
+      ],
+      exampleName,
+    ];
+  }
 };
 
 if (hasUrlParameter("standalone")) {
@@ -67,7 +70,6 @@ if (hasUrlParameter("standalone")) {
   const path = [exampleName];
   for (const importPath of targetPaths) {
     try {
-      console.log(`import from ${importPath}`);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       targetExamples = await import(/* @vite-ignore */ importPath);
@@ -99,7 +101,7 @@ if (hasUrlParameter("standalone")) {
           density="high"
           themeMode="light"
         >
-          <div style={{ height: "100vh", width: "100vw" }}>
+          <div className="vuuShowcase-StandaloneRoot">
             <Component />
           </div>
         </ThemeProvider>,
@@ -108,14 +110,17 @@ if (hasUrlParameter("standalone")) {
     } else {
       console.warn(`Example Component ${exampleName} not found`);
     }
-  } else {
+  } else if (exampleName) {
     console.error(
       `Unable to load Component(s), are you using the correct file structure for your examples ?
        paths ${targetPaths.join("\n")} `
     );
+  } else {
+    // root app has been loaded with no example selection, therefore nothing to load into iframe
   }
 } else {
   import("./examples/index")
+    // A type error will appear here if any story is exported that does not assign displaySequence
     .then((stories: ExamplesModule) => {
       import("./AppRoutes")
         .then(({ AppRoutes }) => {

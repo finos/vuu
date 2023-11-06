@@ -9,21 +9,39 @@ import {
   useRef,
 } from "react";
 import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
-import { CellPos, getTableCell, headerCellQuery } from "./table-dom-utils";
+import {
+  CellPos,
+  dataCellQuery,
+  getTableCell,
+  headerCellQuery,
+} from "./table-dom-utils";
+import { TableNavigationStyle } from "../table/dataTableTypes";
 
-const navigationKeys = new Set<NavigationKey>([
+const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
   "End",
   "PageUp",
   "PageDown",
   "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
   "ArrowUp",
 ]);
 
-export const isNavigationKey = (key: string): key is NavigationKey => {
-  return navigationKeys.has(key as NavigationKey);
+const cellNavigationKeys = new Set(rowNavigationKeys);
+cellNavigationKeys.add("ArrowLeft");
+cellNavigationKeys.add("ArrowRight");
+
+export const isNavigationKey = (
+  key: string,
+  navigationStyle: TableNavigationStyle
+): key is NavigationKey => {
+  switch (navigationStyle) {
+    case "cell":
+      return cellNavigationKeys.has(key as NavigationKey);
+    case "row":
+      return rowNavigationKeys.has(key as NavigationKey);
+    default:
+      return false;
+  }
 };
 
 type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
@@ -89,7 +107,7 @@ function nextCellPos(
       return [rowIdx + 1, colIdx];
     }
   } else if (key === "ArrowRight") {
-    if (colIdx < columnCount) {
+    if (colIdx < columnCount - 1) {
       return [rowIdx, colIdx + 1];
     } else {
       return [rowIdx, colIdx];
@@ -109,6 +127,7 @@ export interface NavigationHookProps {
   columnCount?: number;
   disableHighlightOnFocus?: boolean;
   label?: string;
+  navigationStyle: TableNavigationStyle;
   viewportRange: VuuRange;
   requestScroll?: ScrollRequestHandler;
   restoreLastFocus?: boolean;
@@ -121,6 +140,7 @@ export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
   disableHighlightOnFocus,
+  navigationStyle,
   requestScroll,
   rowCount = 0,
   viewportRowCount,
@@ -239,6 +259,7 @@ NavigationHookProps) => {
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
         : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
+      console.log(`nextRowIdx ${nextRowIdx} nextColIdx ${nextColIdx}`);
 
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
@@ -250,13 +271,13 @@ NavigationHookProps) => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (rowCount > 0 && isNavigationKey(e.key)) {
+      if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
         e.preventDefault();
         e.stopPropagation();
         void navigateChildItems(e.key);
       }
     },
-    [rowCount, navigateChildItems]
+    [rowCount, navigationStyle, navigateChildItems]
   );
 
   const handleClick = useCallback(
@@ -291,12 +312,12 @@ NavigationHookProps) => {
   const fullyRendered = containerRef.current?.firstChild != null;
   useEffect(() => {
     if (fullyRendered && focusableCell.current === undefined) {
-      const headerCell = containerRef.current?.querySelector(
-        headerCellQuery(0)
-      ) as HTMLTableCellElement;
-      if (headerCell) {
-        headerCell.setAttribute("tabindex", "0");
-        focusableCell.current = headerCell;
+      const { current: container } = containerRef;
+      const cell = (container?.querySelector(headerCellQuery(0)) ||
+        container?.querySelector(dataCellQuery(0, 0))) as HTMLElement;
+      if (cell) {
+        cell.setAttribute("tabindex", "0");
+        focusableCell.current = cell;
       }
     }
   }, [containerRef, fullyRendered]);

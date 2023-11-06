@@ -1,10 +1,15 @@
 import {
   ArrayDataSource,
   ArrayDataSourceConstructorProps,
+  SubscribeCallback,
+  SubscribeProps,
 } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { DataSourceRow } from "packages/vuu-data-types";
-import { RowUpdates, UpdateGenerator } from "./rowUpdates";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  RowUpdates,
+  UpdateGenerator,
+} from "@finos/vuu-data-test/src/rowUpdates";
 
 export interface TickingArrayDataSourceConstructorProps
   extends ArrayDataSourceConstructorProps {
@@ -19,23 +24,31 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }: TickingArrayDataSourceConstructorProps) {
     super(arrayDataSourceProps);
     this.#updateGenerator = updateGenerator;
-    updateGenerator?.setData(super.data);
+    updateGenerator?.setDataSource(this);
     updateGenerator?.setUpdateHandler(this.processUpdates);
+  }
+
+  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+    const subscription = super.subscribe(subscribeProps, callback);
+    if (subscribeProps.range) {
+      this.#updateGenerator?.setRange(subscribeProps.range);
+    }
+    return subscription;
   }
 
   set range(range: VuuRange) {
     super.range = range;
     this.#updateGenerator?.setRange(range);
   }
-
   get range() {
     return super.range;
   }
 
   private processUpdates = (rowUpdates: RowUpdates[]) => {
     const updatedRows: DataSourceRow[] = [];
+    const data = super.currentData;
     for (const [rowIndex, ...updates] of rowUpdates) {
-      const row = super.data[rowIndex].slice() as DataSourceRow;
+      const row = data[rowIndex].slice() as DataSourceRow;
       if (row) {
         for (let i = 0; i < updates.length; i += 2) {
           const colIdx = updates[i] as number;
@@ -44,7 +57,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        super.data[rowIndex] = row;
+        // TODO this is problematic if we're filtered
+        // we need to update the correct underlying row
+        data[rowIndex] = row;
         updatedRows.push(row);
       }
     }

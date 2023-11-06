@@ -506,8 +506,6 @@ export class ServerProxy {
       | WithRequestId<VuuRpcRequest>
       | WithRequestId<ClientToServerMenuRPC>
   ) {
-    debug?.(`handleMessageFromClient: ${message.type}`);
-
     if (isViewportMessage(message)) {
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed
@@ -720,7 +718,7 @@ export class ServerProxy {
 
       case "REMOVE_VP_SUCCESS":
         {
-          const viewport = this.viewports.get(body.viewPortId);
+          const viewport = viewports.get(body.viewPortId);
           if (viewport) {
             this.mapClientToServerViewport.delete(viewport.clientViewportId);
             viewports.delete(body.viewPortId);

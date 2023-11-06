@@ -6,7 +6,7 @@ import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.module.{StaticServedResource, ViewServerModule}
+import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
@@ -30,19 +30,13 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
   def createViewServerModule(theName: String): ViewServerModule = {
     new ViewServerModule {
       override def name: String = theName
-
+      override def tableDefContainer: TableDefContainer = ???
       override def tableDefs: List[TableDef] = ???
-
       override def serializationMixin: AnyRef = ???
-
       override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = ???
-
       override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
-
       override def staticFileResources(): List[StaticServedResource] = ???
-
       override def restServicesUnrealized: List[VuuServer => RestService] = ???
-
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = ???
     }
   }

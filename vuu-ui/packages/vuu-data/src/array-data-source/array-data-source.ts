@@ -16,6 +16,8 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
+  getAddedItems,
+  getMissingItems,
   getSelectionStatus,
   KeySet,
   logger,
@@ -57,7 +59,6 @@ export interface ArrayDataSourceConstructorProps
   data: Array<VuuRowDataItemType[]>;
   rangeChangeRowset?: "delta" | "full";
 }
-
 const { debug } = logger("ArrayDataSource");
 
 const { RENDER_IDX, SELECTED } = metadataKeys;
@@ -132,7 +133,7 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
-  private processedData: readonly DataSourceRow[] | undefined = undefined;
+  protected processedData: readonly DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -147,6 +148,10 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
+
+    console.log(`ArrayDataSource`, {
+      columnDescriptors,
+    });
 
     if (!data || !columnDescriptors) {
       throw Error(
@@ -191,18 +196,20 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
-    if (this.status !== "initialising") {
-      throw Error(
-        "ArrayDataSource subscribe should not be called more than once"
-      );
-    }
-
     this.clientCallback = callback;
+    this.viewport = viewport;
+    this.status = "subscribed";
+    this.lastRangeServed = { from: 0, to: 0 };
 
-    if (aggregations || columns || filter || groupBy || sort) {
-      //TODO use setter so we build the sorted/grouped etc dataset
-      this.#config = {
-        ...this.#config,
+    let config = this.#config;
+
+    const hasConfigProps = aggregations || columns || filter || groupBy || sort;
+    if (hasConfigProps) {
+      if (range) {
+        this.#range = range;
+      }
+      config = {
+        ...config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
         filter: filter || this.#config.filter,
@@ -211,35 +218,35 @@ export class ArrayDataSource
       };
     }
 
-    this.viewport = viewport;
-
-    this.status = "subscribed";
-
     this.clientCallback?.({
-      ...this.#config,
+      ...config,
       type: "subscribed",
       clientViewportId: this.viewport,
       range: this.#range,
       tableSchema: this.tableSchema,
     });
 
-    this.clientCallback({
-      clientViewportId: this.viewport,
-      mode: "size-only",
-      type: "viewport-update",
-      size: this.#data.length,
-    });
-
-    if (range) {
-      // set range and trigger dispatch of initial rows
-      this.range = range;
-    } else if (this.#range !== NULL_RANGE) {
-      this.sendRowsToClient();
+    if (hasConfigProps) {
+      // invoke setter to action config
+      this.config = config;
+    } else {
+      this.clientCallback({
+        clientViewportId: this.viewport,
+        mode: "size-only",
+        type: "viewport-update",
+        size: this.#data.length,
+      });
+      if (range) {
+        // set range and trigger dispatch of initial rows
+        this.range = range;
+      } else if (this.#range !== NULL_RANGE) {
+        this.sendRowsToClient();
+      }
     }
   }
 
   unsubscribe() {
-    console.log("noop");
+    console.log("unsubscribe noop");
   }
 
   suspend() {
@@ -248,17 +255,17 @@ export class ArrayDataSource
   }
 
   resume() {
-    console.log("noop");
+    console.log("resume noop");
     return this;
   }
 
   disable() {
-    console.log("noop");
+    console.log("disable noop");
     return this;
   }
 
   enable() {
-    console.log("noop");
+    console.log("enable noop");
     return this;
   }
 
@@ -293,11 +300,20 @@ export class ArrayDataSource
     return this.#data;
   }
 
+  // Only used by the UpdateGenerator
+  get currentData() {
+    return this.processedData ?? this.#data;
+  }
+
+  get table() {
+    return this.tableSchema.table;
+  }
+
   get config() {
     return this.#config;
   }
 
-  set config(config: DataSourceConfig | undefined) {
+  set config(config: DataSourceConfig) {
     if (configChanged(this.#config, config)) {
       if (config) {
         const originalConfig = this.#config;
@@ -317,7 +333,7 @@ export class ArrayDataSource
         let processedData: DataSourceRow[] | undefined;
 
         if (hasFilter(config)) {
-          const { filterStruct } = config.filter;
+          const { filter, filterStruct = parseFilter(filter) } = config.filter;
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);
@@ -434,6 +450,17 @@ export class ArrayDataSource
   }
 
   set columns(columns: string[]) {
+    const addedColumns = getAddedItems(this.config.columns, columns);
+    if (addedColumns.length > 0) {
+      const columnsWithoutDescriptors = getMissingItems(
+        this.columnDescriptors,
+        addedColumns,
+        (col) => col.name
+      );
+      console.log(`columnsWithoutDescriptors`, {
+        columnsWithoutDescriptors,
+      });
+    }
     this.config = {
       ...this.#config,
       columns,
@@ -550,8 +577,8 @@ export class ArrayDataSource
     console.log({ row, colName, value });
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+    console.log(`ArrayDataSource applyEdit ${row[0]} ${columnName} ${value}`);
     return true;
   }
 

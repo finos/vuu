@@ -38,13 +38,25 @@ export const useOverflowContainer = ({
   // Drag drop needs a ref to container
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const setOverflowTabIndex = useCallback((tabIndex: "0" | "-1") => {
+    if (containerRef.current) {
+      containerRef.current
+        .querySelector(".vuuOverflowContainer-OverflowIndicator button")
+        ?.setAttribute("tabindex", tabIndex);
+    }
+  }, []);
+
   const handleResize = useCallback(async () => {
     if (container) {
       let [nonWrapped, wrapped] = getNonWrappedAndWrappedItems(
         container,
         orientation
       );
-      applyOverflowClassToWrappedItems(container, wrapped);
+      applyOverflowClassToWrappedItems(
+        container,
+        wrapped,
+        "vuuOverflowContainer-wrapContainer"
+      );
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
         wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
       }
@@ -62,9 +74,16 @@ export const useOverflowContainer = ({
           wrapped = NO_WRAPPED_ITEMS;
         }
       }
+
+      if (wrappedItemsRef.current.length === 0 && wrapped.length > 0) {
+        setOverflowTabIndex("0");
+      } else if (wrappedItemsRef.current.length > 0 && wrapped.length === 0) {
+        setOverflowTabIndex("-1");
+      }
+
       wrappedItemsRef.current = wrapped;
     }
-  }, [container, orientation]);
+  }, [container, orientation, setOverflowTabIndex]);
 
   const hasOverflowItem = (
     opt: unknown
@@ -87,6 +106,8 @@ export const useOverflowContainer = ({
           };
         });
       },
+      // The menu items are our overflowed items, selecting one by default
+      // brings it back onto the toolbar - TODO is this right ?
       ({ options }) => {
         if (container && hasOverflowItem(options)) {
           // TODO do we always want to switch it into view - leave that to caller
@@ -107,7 +128,10 @@ export const useOverflowContainer = ({
     let currentSize = 0;
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
-        const { [sizeProp]: size } = entry.contentRect;
+        const { [sizeProp]: actualSize } = entry.contentRect;
+        // This is important. Sometimes tiny sub-pixel differeces
+        // can be reported, which break the layout assumptions
+        const size = Math.round(actualSize as number);
         if (isValidNumber(size) && currentSize !== size) {
           currentSize = size;
           handleResize();

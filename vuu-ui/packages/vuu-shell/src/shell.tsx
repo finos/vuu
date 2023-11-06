@@ -8,21 +8,18 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { useLayoutConfig } from "./layout-config";
 import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
 } from "@finos/vuu-layout";
-import {
-  LayoutChangeHandler,
-  LayoutJSON,
-} from "@finos/vuu-layout/src/layout-reducer";
+import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 import { logger } from "@finos/vuu-utils";
 import { useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
+import { useLayoutManager } from "./layout-management";
 
 import "./shell.css";
 
@@ -33,28 +30,12 @@ export type VuuUser = {
 
 const { error } = logger("Shell");
 
-const warningLayout = {
-  type: "View",
-  props: {
-    style: { height: "calc(100% - 6px)" },
-  },
-  children: [
-    {
-      props: {
-        className: "vuuShell-warningPlaceholder",
-      },
-      type: "Placeholder",
-    },
-  ],
-};
-
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   LayoutProps?: Pick<
     LayoutProviderProps,
     "createNewChild" | "pathToDropTarget"
   >;
   children?: ReactNode;
-  defaultLayout?: LayoutJSON;
   leftSidePanel?: ReactElement;
   leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
@@ -69,7 +50,6 @@ export const Shell = ({
   LayoutProps,
   children,
   className: classNameProp,
-  defaultLayout = warningLayout,
   leftSidePanel,
   leftSidePanelLayout,
   loginUrl,
@@ -81,23 +61,20 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutId = useRef("latest");
-  const [layout, saveLayoutConfig, loadLayoutById] = useLayoutConfig({
-    defaultLayout,
-    saveLocation,
-    saveUrl,
-    user,
-  });
+  const { applicationLayout, saveApplicationLayout, loadLayoutById } =
+    useLayoutManager();
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
       try {
         console.log(`handle layout changed ${layoutChangeReason}`);
-        saveLayoutConfig(layout);
+        saveApplicationLayout(layout);
+        // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");
       }
     },
-    [saveLayoutConfig]
+    [saveApplicationLayout]
   );
 
   const handleSwitchTheme = useCallback((mode: ThemeMode) => {
@@ -145,7 +122,7 @@ export const Shell = ({
     <ThemeProvider>
       <LayoutProvider
         {...LayoutProps}
-        layout={layout}
+        layout={applicationLayout}
         onLayoutChange={handleLayoutChange}
       >
         <DraggableLayout

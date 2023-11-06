@@ -1,4 +1,4 @@
-import type { rect } from '../common-types';
+import type { rect } from "@finos/vuu-utils";
 export interface DragDropRect extends rect {
   children?: DragDropRect[];
   header?: {
@@ -28,7 +28,7 @@ export interface DropPosition {
   West: boolean;
 }
 
-export type RelativePosition = 'after' | 'before';
+export type RelativePosition = "after" | "before";
 
 export type DropPosTab = {
   index: number;

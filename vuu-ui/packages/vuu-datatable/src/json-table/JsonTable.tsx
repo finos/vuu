@@ -1,29 +1,54 @@
 import { TableProps } from "@finos/vuu-table";
 import { JsonData } from "@finos/vuu-utils";
-import { Table } from "@finos/vuu-table";
+import { TableNext } from "@finos/vuu-table";
 import { JsonDataSource } from "@finos/vuu-data";
-import { useMemo } from "react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { useEffect, useMemo, useRef } from "react";
+import { TableConfig } from "@finos/vuu-datagrid-types";
 
 export interface JsonTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
+  config?: Pick<
+    TableConfig,
+    "columnSeparators" | "rowSeparators" | "zebraStripes"
+  >;
   source: JsonData | undefined;
 }
 
 export const JsonTable = ({
-  source = { "": "" },
+  config,
+  source: sourceProp = { "": "" },
   ...tableProps
 }: JsonTableProps) => {
-  const [dataSource, tableConfig] = useMemo((): [
-    JsonDataSource,
-    { columns: ColumnDescriptor[] }
-  ] => {
-    const ds = new JsonDataSource({
-      data: source,
+  const sourceRef = useRef(sourceProp);
+  const dataSourceRef = useRef<JsonDataSource>();
+  useMemo(() => {
+    dataSourceRef.current = new JsonDataSource({
+      data: sourceRef.current,
     });
+  }, []);
 
-    return [ds, { columns: ds.columnDescriptors }];
-  }, [source]);
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      ...config,
+      columns: dataSourceRef.current?.columnDescriptors ?? [],
+    };
+  }, [config]);
 
-  return <Table {...tableProps} config={tableConfig} dataSource={dataSource} />;
+  useEffect(() => {
+    if (dataSourceRef.current) {
+      dataSourceRef.current.data = sourceProp;
+    }
+  }, [sourceProp]);
+
+  if (dataSourceRef.current === undefined) {
+    return null;
+  }
+
+  return (
+    <TableNext
+      {...tableProps}
+      config={tableConfig}
+      dataSource={dataSourceRef.current}
+    />
+  );
 };

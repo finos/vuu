@@ -75,6 +75,8 @@ const pendingRequests = new Map();
 
 type WorkerOptions = {
   protocol: WebSocketProtocol;
+  retryLimitDisconnect?: number;
+  retryLimitStartup?: number;
   url: string;
   token?: string;
   username: string | undefined;
@@ -89,6 +91,8 @@ type WorkerOptions = {
 const getWorker = async ({
   handleConnectionStatusChange,
   protocol,
+  retryLimitDisconnect,
+  retryLimitStartup,
   token = "",
   username,
   url,
@@ -120,6 +124,8 @@ const getWorker = async ({
           window.clearTimeout(timer);
           worker.postMessage({
             protocol,
+            retryLimitDisconnect,
+            retryLimitStartup,
             token,
             type: "connect",
             url,
@@ -158,6 +164,7 @@ function handleMessageFromWorker({
   } else if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit("connection-status", message);
   } else if (isConnectionQualityMetrics(message)) {
+    console.log({ message });
     ConnectionManager.emit("connection-metrics", message);
   } else {
     const requestId = (message as VuuUIMessageInRPC).requestId;
@@ -274,6 +281,10 @@ export type ConnectOptions = {
   authToken?: string;
   username?: string;
   protocol?: WebSocketProtocol;
+  /** Max number of reconnect attempts in the event of unsuccessful websocket connection at startup */
+  retryLimitStartup?: number;
+  /** Max number of reconnect attempts in the event of a disconnected websocket connection */
+  retryLimitDisconnect?: number;
 };
 
 class _ConnectionManager extends EventEmitter<ConnectionEvents> {
@@ -284,6 +295,8 @@ class _ConnectionManager extends EventEmitter<ConnectionEvents> {
     authToken,
     username,
     protocol,
+    retryLimitDisconnect,
+    retryLimitStartup,
   }: ConnectOptions): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
@@ -292,6 +305,8 @@ class _ConnectionManager extends EventEmitter<ConnectionEvents> {
       url,
       token: authToken,
       username,
+      retryLimitDisconnect,
+      retryLimitStartup,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       handleConnectionStatusChange: handleMessageFromWorker,
@@ -321,6 +336,8 @@ export const connectToServer = async ({
   protocol = undefined,
   authToken,
   username,
+  retryLimitDisconnect,
+  retryLimitStartup,
 }: ConnectOptions) => {
   try {
     const serverAPI = await ConnectionManager.connect({
@@ -328,6 +345,8 @@ export const connectToServer = async ({
       url,
       authToken,
       username,
+      retryLimitDisconnect,
+      retryLimitStartup,
     });
     resolveServer(serverAPI);
   } catch (err: unknown) {

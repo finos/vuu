@@ -1,7 +1,7 @@
 import { TableSchema } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { Toolbar } from "@finos/vuu-layout";
+import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
@@ -18,8 +18,8 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
   activeFilterIndex?: number[];
   filters: Filter[];
-  onActiveChange?: (itemIndex: number[]) => void;
   onApplyFilter: (filter: DataSourceFilter) => void;
+  onChangeActiveFilterIndex: ActiveItemChangeHandler;
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
@@ -28,12 +28,12 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
-  activeFilterIndex: activeFilterIndexProp,
+  activeFilterIndex: activeFilterIndexProp = [],
   FilterClauseEditorProps,
   className: classNameProp,
   filters: filtersProp,
-  onActiveChange,
   onApplyFilter,
+  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
@@ -42,12 +42,14 @@ export const FilterBar = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeFilterIndex,
+    addButtonProps,
     editFilter,
     filters,
     onClickAddFilter,
     onClickRemoveFilter,
     onChangeFilterClause,
-    onFilterActivation,
+    onChangeActiveFilterIndex,
+    onNavigateOutOfBounds,
     onKeyDown,
     onMenuAction,
     pillProps,
@@ -57,8 +59,8 @@ export const FilterBar = ({
     activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
     filters: filtersProp,
-    onActiveChange,
     onApplyFilter,
+    onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
   });
@@ -78,16 +80,6 @@ export const FilterBar = ({
           <FilterPill {...pillProps} filter={filter} key={`filter-${i}`} />
         );
       });
-      items.push(
-        <Button
-          className={`${classBase}-add`}
-          data-icon="plus"
-          data-selectable={false}
-          key="filter-add"
-          onClick={onClickAddFilter}
-          variant="primary"
-        />
-      );
       return items;
     } else if (editFilter) {
       // TODO what about the relationship between these clauses,which will no longer be self-evident
@@ -135,12 +127,26 @@ export const FilterBar = ({
       <span className={`${classBase}-icon`} data-icon="tune" />
       <Toolbar
         activeItemIndex={activeFilterIndex}
-        height={26}
-        onActiveChange={onFilterActivation}
+        height={28}
+        onActiveChange={onChangeActiveFilterIndex}
+        onNavigateOutOfBounds={onNavigateOutOfBounds}
         selectionStrategy="multiple-special-key"
       >
         {getChildren()}
       </Toolbar>
+      {editFilter === undefined ? (
+        <Button
+          {...addButtonProps}
+          className={`${classBase}-add`}
+          data-icon="plus"
+          data-selectable={false}
+          key="filter-add"
+          onClick={onClickAddFilter}
+          tabIndex={0}
+          variant="primary"
+        />
+      ) : null}
+
       {promptProps ? (
         <Prompt
           {...promptProps}

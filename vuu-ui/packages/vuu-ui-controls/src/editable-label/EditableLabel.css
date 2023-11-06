@@ -12,7 +12,7 @@
   font-size: var(--salt-text-fontSize);
   height: var(--editableLabel-height);
   justify-content: center;
-  max-width: 170px;
+  /* max-width: 170px; */
   outline: none;
   overflow: hidden;
   padding: 0 var(--editableLabel-padding);

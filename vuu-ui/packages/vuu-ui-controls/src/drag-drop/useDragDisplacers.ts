@@ -1,10 +1,11 @@
+import type { orientationType } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
+import { Direction } from "./dragDropTypesNext";
+import { createDragSpacer as createDragDisplacer } from "./Draggable";
 import {
   MeasuredDropTarget,
   mutateDropTargetsSwitchDropTargetPosition,
 } from "./drop-target-utils";
-import { createDragSpacer as createDragDisplacer } from "./Draggable";
-import { Direction } from "./dragDropTypesNext";
 
 export type DragDisplacersHookResult = {
   displaceItem: (
@@ -23,16 +24,20 @@ export type DragDisplacersHookResult = {
     direction?: Direction | "static",
     orientation?: "horizontal" | "vertical"
   ) => void;
-  clearSpacers: () => void;
+  clearSpacers: (useAnimation?: boolean) => void;
 };
 
-export type DragDisplacersHook = () => DragDisplacersHookResult;
+export type DragDisplacersHook = (
+  orientation: orientationType
+) => DragDisplacersHookResult;
 /**
  * Manage a pair of displacer elements to smoothly display a moving gap between
  * list items of any kind. Designed to be used in a drag drop operation. The 'static'
  * direction option should be used at drag start or following scroll.
  */
-export const useDragDisplacers: DragDisplacersHook = () => {
+export const useDragDisplacers: DragDisplacersHook = (
+  orientation = "horizontal"
+) => {
   const animationFrame = useRef(0);
   const transitioning = useRef(false);
 
@@ -40,11 +45,6 @@ export const useDragDisplacers: DragDisplacersHook = () => {
     // We only need to listen for transition end on one of the spacers
     () => [createDragDisplacer(transitioning), createDragDisplacer()],
     []
-  );
-
-  const clearSpacers = useCallback(
-    () => spacers.forEach((spacer) => spacer.remove()),
-    [spacers]
   );
 
   const animateTransition = useCallback(
@@ -61,6 +61,24 @@ export const useDragDisplacers: DragDisplacersHook = () => {
     [spacers]
   );
 
+  const clearSpacers = useCallback(
+    (useTransition = false) => {
+      if (useTransition === true) {
+        const [spacer] = spacers;
+        const cleanup = () => {
+          spacer.removeEventListener("transitionend", cleanup);
+          clearSpacers();
+        };
+        const propertyName = orientation === "horizontal" ? "width" : "height";
+        spacer.addEventListener("transitionend", cleanup);
+        animateTransition(0, propertyName);
+      } else {
+        spacers.forEach((spacer) => spacer.remove());
+      }
+    },
+    [animateTransition, orientation, spacers]
+  );
+
   const cancelAnyPendingAnimation = useCallback(() => {
     if (animationFrame.current) {
       cancelAnimationFrame(animationFrame.current);
@@ -74,8 +92,7 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static",
-      orientation: "horizontal" | "vertical" = "horizontal"
+      direction: Direction | "static" = "static"
     ) => {
       if (dropTarget) {
         const propertyName = orientation === "horizontal" ? "width" : "height";
@@ -114,7 +131,13 @@ export const useDragDisplacers: DragDisplacersHook = () => {
         }
       }
     },
-    [animateTransition, cancelAnyPendingAnimation, clearSpacers, spacers]
+    [
+      animateTransition,
+      cancelAnyPendingAnimation,
+      clearSpacers,
+      orientation,
+      spacers,
+    ]
   );
   const displaceLastItem = useCallback(
     (
@@ -122,8 +145,7 @@ export const useDragDisplacers: DragDisplacersHook = () => {
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static",
-      orientation: "horizontal" | "vertical" = "horizontal"
+      direction: Direction | "static" = "static"
     ) => {
       const propertyName = orientation === "horizontal" ? "width" : "height";
       const [spacer1, spacer2] = spacers;
@@ -154,7 +176,13 @@ export const useDragDisplacers: DragDisplacersHook = () => {
         mutateDropTargetsSwitchDropTargetPosition(dropTargets, direction);
       }
     },
-    [animateTransition, cancelAnyPendingAnimation, clearSpacers, spacers]
+    [
+      animateTransition,
+      cancelAnyPendingAnimation,
+      clearSpacers,
+      orientation,
+      spacers,
+    ]
   );
 
   return {

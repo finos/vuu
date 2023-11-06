@@ -1,5 +1,5 @@
 import { useControlled } from "@finos/vuu-ui-controls";
-import { Filter } from "packages/vuu-filter-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { useCallback } from "react";
 
 export interface FiltersHookProps {

@@ -1,4 +1,4 @@
-import { Toolbar } from "@finos/vuu-layout";
+import { NavigationOutOfBoundsHandler, Toolbar } from "@finos/vuu-layout";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, MouseEvent, useCallback, useState } from "react";
 
@@ -7,6 +7,12 @@ import "./Toolbar.examples.css";
 let displaySequence = 1;
 
 export const DefaulToolbar = () => {
+  const handleNavigateOutOfBounds = useCallback<NavigationOutOfBoundsHandler>(
+    (direction) => {
+      console.log(`onNavigateOutOfBounds ${direction}`);
+    },
+    []
+  );
   return (
     <div
       style={
@@ -15,12 +21,12 @@ export const DefaulToolbar = () => {
           padding: 100,
           width: "100vw",
           background: "ivory",
-          "--vuuPopupMenu-background": "red",
         } as CSSProperties
       }
     >
       <Toolbar
         height={44}
+        onNavigateOutOfBounds={handleNavigateOutOfBounds}
         style={{
           background: "var(--vuu-color-gray-30)",
           width: "100%",
@@ -49,7 +55,6 @@ export const ToolbarControlledSelection = () => {
           padding: 100,
           width: "100vw",
           background: "ivory",
-          "--vuuPopupMenu-background": "red",
         } as CSSProperties
       }
     >
@@ -85,7 +90,6 @@ export const DefaulToolbarActivateSingle = () => {
           padding: 100,
           width: "100vw",
           background: "ivory",
-          "--vuuPopupMenu-background": "red",
         } as CSSProperties
       }
     >

@@ -1,15 +1,19 @@
 import { LayoutJSON } from "@finos/vuu-layout";
 
-export type LayoutMetadata = {
-  id: string;
+export interface WithId {
+  id: string
+}
+
+export interface LayoutMetadata extends WithId {
   name: string;
   group: string;
   screenshot: string;
   user: string;
-  date: string;
-};
+  created: string;
+}
 
-export type Layout = {
-  id: string,
+export type LayoutMetadataDto = Omit<LayoutMetadata, "id" | "created">;
+
+export interface Layout extends WithId {
   json: LayoutJSON;
-};
+}

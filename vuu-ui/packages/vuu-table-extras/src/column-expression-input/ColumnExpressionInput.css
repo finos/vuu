@@ -7,13 +7,13 @@
     --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
     --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
     --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
-    --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--salt-container-borderWidth) var(--salt-container-borderStyle); 
+    --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10); 
     --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
-    --vuuFilterEditor-suggestion-selectedBackground: var(--salt-selectable-background-selected);
+    --vuuFilterEditor-suggestion-selectedBackground: var(--vuu-color-gray-10);
     --vuuFilterEditor-suggestion-selectedColor: var(--salt-text-primary-foreground);
     --vuuFilterEditor-suggestion-detailColor: var(--salt-text-secondary-foreground-disabled);
     --vuuFilterEditor-suggestion-height: 24px;
-    --vuuFilterEditor-variableColor: blue;
+    --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);
 
     align-items: center;
     box-sizing: border-box;
@@ -47,6 +47,9 @@
     align-items: center;
 }
 
+.vuuFunctionDoc {
+    padding: 13px 7px;
+}
 
 .vuuFunctionDoc .function-heading {
     display: flex;
@@ -54,29 +57,33 @@
 }
 
 .vuuFunctionDoc .function-name {
-    font-style: italic;
+    font-weight: 700;
+    text-transform: capitalize;
 }
 
 .vuuFunctionDoc .param-list {
-    font-style: italic;
-    color: blue;
+    color: var(--vuu-color-gray-50);
     white-space: pre;
 }
 
 .vuuFunctionDoc .function-type {
+    color: var(--vuu-color-gray-50);
+    font-weight: 700;
     margin-left: auto;
+    text-transform: capitalize;
 }
 
 .vuuFunctionDoc .example-container {
-    background-color: var(--salt-container-secondary-background);
+    background-color: var(--vuu-color-gray-03);
     margin: 6px 0;
     padding: 3px;
 }
 
 .vuuFunctionDoc .example-expression {
+    color: var(--vuu-color-gray-80);
     font-family: var(--salt-typography-fontFamily-code);
-    margin-left: 8px;
-    margin-top: 6px;
+    font-weight: 500;
+    padding: 8px;
 }
 
 .vuuFunctionDoc .example-result {

@@ -1,75 +1,125 @@
-import {
-  DataSource,
-  DataSourceConfig,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
-import { FlexboxLayout, Stack, useViewContext } from "@finos/vuu-layout";
+import { TableSchema } from "@finos/vuu-data";
+import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { BasketSelectorProps } from "./basket-selector";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
 import { useBasketTabMenu } from "./useBasketTabMenu";
+import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 
 import "./VuuBasketTradingFeature.css";
+import { EmptyBasketsPanel } from "./empty-baskets-panel";
+import { useBasketTrading } from "./useBasketTrading";
 
 const classBase = "VuuBasketTradingFeature";
 
+export type BasketStatus = "design" | "on-market";
+const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
+
 export interface BasketTradingFeatureProps {
-  basketDesignSchema: TableSchema;
+  basketSchema: TableSchema;
+  basketTradingSchema: TableSchema;
+  basketTradingConstituentSchema: TableSchema;
+  instrumentsSchema: TableSchema;
 }
 
-const VuuBasketTradingFeature = ({
-  basketDesignSchema,
-}: BasketTradingFeatureProps) => {
-  const { id, save, loadSession, saveSession, title } = useViewContext();
-  const [active, setActive] = useState(0);
+const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
+  const {
+    basketSchema,
+    basketTradingSchema,
+    basketTradingConstituentSchema,
+    instrumentsSchema,
+  } = props;
 
-  const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      // confirmed / unconfirmed messages are used for UI updates, not state saving
-      if (confirmed === undefined) {
-        save?.(config, "datasource-config");
+  const basketInstanceId = "steve-00001";
+
+  const {
+    activeTabIndex,
+    dataSourceBasket,
+    dataSourceBasketTrading,
+    dataSourceBasketTradingControl,
+    dataSourceBasketTradingSearch,
+    dataSourceBasketTradingConstituent,
+    dataSourceInstruments,
+    onSendToMarket,
+    onTakeOffMarket,
+  } = useBasketTradingDataSources({
+    basketInstanceId,
+    basketSchema,
+    basketTradingSchema,
+    basketTradingConstituentSchema,
+    instrumentsSchema,
+  });
+
+  const [basketCount, setBasketCount] = useState(-1);
+  useMemo(() => {
+    dataSourceBasketTradingControl.subscribe(
+      {
+        range: { from: 0, to: 100 },
+      },
+      (message) => {
+        console.log("message from dataSourceTradingControl", {
+          message,
+        });
+        if (message.size) {
+          setBasketCount(message.size);
+        }
+        if (message.rows) {
+          console.table(message.rows);
+        }
       }
-    },
-    [save]
+    );
+
+    // TEMP server is notsending TABLE_ROWS if size is zero
+    setTimeout(() => {
+      setBasketCount((count) => (count === -1 ? 0 : count));
+    }, 1000);
+  }, [dataSourceBasketTradingControl]);
+  useEffect(() => {
+    // dataSourceBasketDesign.resume?.();
+    return () => {
+      dataSourceBasketTradingControl.unsubscribe?.();
+    };
+  }, [dataSourceBasketTradingControl]);
+
+  const [buildMenuOptions, handleMenuAction] = useBasketTabMenu({
+    dataSourceInstruments,
+  });
+
+  const { dialog, handleAddBasket } = useBasketTrading({
+    basketSchema,
+    dataSourceBasket,
+  });
+
+  // useMemo(() => {
+  // dataSourceBasketTrading.filter = {
+  //   filter: `basketId = "${basketId}"`,
+  // };
+  // }, [basketId, dataSourceBasketTrading]);
+
+  const basketSelectorProps = useMemo<BasketSelectorProps>(
+    () => ({
+      basketInstanceId,
+      dataSourceBasketTrading,
+      dataSourceBasketTradingSearch: dataSourceBasketTradingSearch,
+      onClickAddBasket: handleAddBasket,
+    }),
+    [dataSourceBasketTrading, dataSourceBasketTradingSearch, handleAddBasket]
   );
 
-  const basketDesignDataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
-    if (ds) {
-      return ds;
-    }
-
-    ds = new RemoteDataSource({
-      bufferSize: 200,
-      viewport: id,
-      table: basketDesignSchema.table,
-      columns: basketDesignSchema.columns.map((col) => col.name),
-      title,
-    });
-    ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds, "data-source");
-    return ds;
-  }, [
-    basketDesignSchema.columns,
-    basketDesignSchema.table,
-    handleDataSourceConfigChange,
-    id,
-    loadSession,
-    saveSession,
-    title,
-  ]);
-
-  useEffect(() => {
-    basketDesignDataSource.resume?.();
-    return () => {
-      basketDesignDataSource.suspend?.();
-    };
-  }, [basketDesignDataSource]);
-
-  const [buildMenuOptions, handleMenuAction] = useBasketTabMenu();
+  if (basketCount === -1) {
+    // TODO loading
+    return null;
+  } else if (basketCount === 0) {
+    return (
+      <>
+        <EmptyBasketsPanel onClickAddBasket={handleAddBasket} />
+        {dialog}
+      </>
+    );
+  }
 
   return (
     <ContextMenuProvider
@@ -80,22 +130,33 @@ const VuuBasketTradingFeature = ({
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
       >
-        <BasketToolbar />
+        <BasketToolbar
+          BasketSelectorProps={basketSelectorProps}
+          basketStatus={basketStatus[activeTabIndex]}
+          basketTradingDataSource={dataSourceBasketTrading}
+          onSendToMarket={onSendToMarket}
+          onTakeOffMarket={onTakeOffMarket}
+        />
         <Stack
-          active={active}
+          active={activeTabIndex}
           className={`${classBase}-stack`}
-          onTabSelectionChanged={setActive}
+          // onTabSelectionChanged={setActive}
           style={{ flex: 1 }}
         >
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
-            dataSource={basketDesignDataSource}
-            tableSchema={basketDesignSchema}
+            dataSource={dataSourceBasketTradingConstituent}
+            tableSchema={basketTradingConstituentSchema}
           />
-          <BasketTableLive data-tab-title="On Market" />
+          <BasketTableLive
+            data-tab-title="On Market"
+            dataSource={dataSourceBasketTradingConstituent}
+            tableSchema={basketTradingConstituentSchema}
+          />
         </Stack>
       </FlexboxLayout>
+      {dialog}
     </ContextMenuProvider>
   );
 };

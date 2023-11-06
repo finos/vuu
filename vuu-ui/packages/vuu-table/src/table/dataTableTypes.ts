@@ -12,9 +12,19 @@ import {
   TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { HTMLAttributes, MouseEvent } from "react";
+import { VuuDataRow } from "@finos/vuu-protocol-types";
+import { MeasuredContainerProps } from "packages/vuu-layout/src";
+import { FC, MouseEvent } from "react";
+import { RowProps } from "../table-next/Row";
 
-export interface TableProps extends HTMLAttributes<HTMLDivElement> {
+export type TableRowClickHandler = (row: VuuDataRow) => void;
+// TODO implement a Model object to represent a row data for better API
+export type TableRowSelectHandler = (row: DataSourceRow) => void;
+
+export type TableNavigationStyle = "none" | "cell" | "row";
+
+export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
+  Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
   /**
    * required if a fully featured column picker is to be available
@@ -23,7 +33,11 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
   config: TableConfig;
   dataSource: DataSource;
   headerHeight?: number;
-  height?: number;
+  /**
+   * Defined how focus navigation within data cells will be handled by table.
+   * Default is cell.
+   */
+  navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
    * Available columns can be changed by the addition or removal of
@@ -47,7 +61,14 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    * response must be handled. This callback provides that response.
    */
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+
+  /**
+   * callback invoked when user 'clicks' a table row. CLick triggered either
+   * via mouse click or keyboard (default ENTER);
+   */
+  onRowClick?: TableRowClickHandler;
   onShowConfigEditor?: () => void;
+  onSelect?: TableRowSelectHandler;
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   rowHeight?: number;
@@ -63,7 +84,6 @@ export interface TableProps extends HTMLAttributes<HTMLDivElement> {
    * composite component.
    */
   showColumnHeaders?: boolean;
-  width?: number;
 }
 
 export type TableColumnResizeHandler = (

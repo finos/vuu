@@ -22,9 +22,18 @@ export const vuuTheme = EditorView.theme(
     ".cm-scroller": {
       fontFamily: "var(--vuuFilterEditor-fontFamily)",
     },
+    ".cm-completionLabel": {
+      color: "var(--vuu-color-gray-50)",
+    },
+    ".cm-completionMatchedText": {
+      color: "var(--vuu-color-gray-80)",
+      fontWeight: 700,
+      textDecoration: "none",
+    },
     ".cm-tooltip": {
       background: "var(--vuuFilterEditor-tooltipBackground)",
       border: "var(--vuuFilterEditor-tooltipBorder)",
+      borderRadius: "4px",
       boxShadow: "var(--vuuFilterEditor-tooltipElevation)",
       "&.cm-tooltip-autocomplete > ul": {
         fontFamily: "var(--vuuFilterEditor-fontFamily)",

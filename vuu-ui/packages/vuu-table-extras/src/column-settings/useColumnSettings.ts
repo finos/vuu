@@ -15,27 +15,29 @@ import {
   updateColumnRenderer,
   updateColumnType,
 } from "@finos/vuu-utils";
-import { SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { ColumnSettingsProps } from "./ColumnSettingsPanel";
+import { ColumnExpressionSubmitHandler } from "../column-expression-input";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type integer",
-    label: "Default Renderer (data type int, long)",
+    label: "Default Renderer (int, long)",
     name: "default-int",
   },
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type double",
-    label: "Default Renderer (data type double)",
+    label: "Default Renderer (double)",
     name: "default-double",
   },
   ...getRegisteredCellRenderers("double"),
@@ -44,7 +46,7 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
 const stringCellRenderers: CellRendererDescriptor[] = [
   {
     description: "Default formatter for columns with data type string",
-    label: "Default Renderer (data type string)",
+    label: "Default Renderer (string)",
     name: "default-string",
   },
 ];
@@ -81,7 +83,7 @@ const getCellRendererDescriptor = (
       }
     }
   }
-  // retur the appropriate default value for the column
+  // returm the appropriate default value for the column
   const typedAvailableRenderers = getAvailableCellRenderers(column);
   return typedAvailableRenderers[0];
 };
@@ -123,6 +125,7 @@ const replaceColumn = (
 
 export const useColumnSettings = ({
   column: columnProp,
+  onCancelCreateColumn,
   onConfigChange,
   onCreateCalculatedColumn,
   tableConfig,
@@ -130,12 +133,24 @@ export const useColumnSettings = ({
   const [column, setColumn] = useState<ColumnDescriptor>(
     getColumn(tableConfig.columns, columnProp)
   );
+  const columnRef = useRef<ColumnDescriptor>(column);
+  const [inEditMode, setEditMode] = useState(column.name === "::");
+
+  const handleEditCalculatedcolumn = useCallback(() => {
+    columnRef.current = column;
+    setEditMode(true);
+  }, [column]);
+
+  useEffect(() => {
+    setColumn(columnProp);
+    setEditMode(columnProp.name === "::");
+  }, [columnProp]);
 
   const availableRenderers = useMemo(() => {
     return getAvailableCellRenderers(column);
   }, [column]);
 
-  const selectedCellRendererRef = useRef<CellRendererDescriptor | null>(
+  const selectedCellRendererRef = useRef<CellRendererDescriptor | undefined>(
     getCellRendererDescriptor(availableRenderers, column)
   );
 
@@ -184,8 +199,12 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
+  const handleChangeCalculatedColumnName = useCallback((name: string) => {
+    setColumn((state) => ({ ...state, name }));
+  }, []);
+
   const handleChangeRenderer = useCallback<
-    SelectionChangeHandler<CellRendererDescriptor>
+    SingleSelectionHandler<CellRendererDescriptor>
   >(
     (evt, cellRenderer) => {
       if (cellRenderer) {
@@ -233,26 +252,35 @@ export const useColumnSettings = ({
     navigateColumn({ moveBy: -1 });
   }, [navigateColumn]);
 
-  const handleSaveCalculatedColumn = useCallback(
-    (calculatedColumn: ColumnDescriptor) => {
-      // TODO validate expression, unique name
-      onCreateCalculatedColumn({
-        ...column,
-        ...calculatedColumn,
-      });
-    },
-    [column, onCreateCalculatedColumn]
-  );
+  const handleSaveCalculatedColumn = useCallback(() => {
+    // TODO validate expression, unique name
+    onCreateCalculatedColumn(column);
+  }, [column, onCreateCalculatedColumn]);
+
+  const handleCancelEdit = useCallback(() => {
+    if (columnProp.name === "::") {
+      onCancelCreateColumn();
+    } else {
+      if (columnRef.current !== undefined && columnRef.current !== column) {
+        setColumn(columnRef.current);
+      }
+      setEditMode(false);
+    }
+  }, [column, columnProp.name, onCancelCreateColumn]);
 
   return {
     availableRenderers,
+    editCalculatedColumn: inEditMode,
     selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
+    onCancel: handleCancelEdit,
     onChange: handleChange,
+    onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRenderer: handleChangeRenderer,
+    onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
     onSave: handleSaveCalculatedColumn,
   };

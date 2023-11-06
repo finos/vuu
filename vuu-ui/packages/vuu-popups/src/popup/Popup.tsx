@@ -1,34 +1,42 @@
 import cx from "classnames";
-import { useThemeAttributes } from "@finos/vuu-shell";
 import { HTMLAttributes, RefObject } from "react";
-import { useAnchoredPosition } from "./useAnchoredPosition";
+import { Position, useAnchoredPosition } from "./useAnchoredPosition";
 
 import "./Popup.css";
 
-export type PopupPlacement = "below" | "below-center" | "center" | "right";
+export type PopupPlacement =
+  | "absolute"
+  | "below"
+  | "below-center"
+  | "below-full-width"
+  | "center"
+  | "right";
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
-  placement: PopupPlacement;
   anchorElement: RefObject<HTMLElement>;
+  minWidth?: number;
   offsetLeft?: number;
   offsetTop?: number;
+  placement: PopupPlacement;
+  position?: Position;
 }
 
 export const PopupComponent = ({
   children,
   className,
   anchorElement,
+  minWidth,
   placement,
+  position: positionProp,
 }: PopupComponentProps) => {
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
-  const position = useAnchoredPosition({ anchorElement, placement });
-
+  const { popupRef, position } = useAnchoredPosition({
+    anchorElement,
+    minWidth,
+    placement,
+    position: positionProp,
+  });
   return position === undefined ? null : (
-    <div
-      className={cx(`vuuPortal`, className, themeClass, densityClass)}
-      data-mode={dataMode}
-      style={position}
-    >
+    <div className={cx(`vuuPortal`, className)} ref={popupRef} style={position}>
       {children}
     </div>
   );

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ReactElement } from "react";
+import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
 import { ContributionLocation } from "../layout-view";
@@ -21,11 +21,13 @@ export interface LayoutRoot extends WithProps {
 }
 
 export interface LayoutJSON extends WithType {
+  active?: number;
   children?: LayoutJSON[];
   id?: string;
   props?: { [key: string]: any };
   state?: any;
   type: string;
+  style?: CSSProperties;
 }
 
 export interface WithActive {

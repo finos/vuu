@@ -1,5 +1,5 @@
 import { GridConfig } from "@finos/vuu-datagrid-types";
-import { Table, TableProps } from "@finos/vuu-table";
+import { Table, TablePropsDeprecated as TableProps } from "@finos/vuu-table";
 import { ReactElement, useCallback, useState } from "react";
 import { Dialog } from "@finos/vuu-popups";
 

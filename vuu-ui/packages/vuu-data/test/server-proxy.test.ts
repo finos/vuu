@@ -2574,9 +2574,9 @@ describe("ServerProxy", () => {
         body: {
           ...COMMON_TABLE_ROW_ATTRS,
           rows: [
-            ...createTableRows("server-vp-1", 0, 1, 100, 1, 1),
+            ...createTableRows("server-vp-1", 0, 1, 100, 1, 1, 2000),
             sizeRow("server-vp-2", 20),
-            ...createTableRows("server-vp-2", 0, 10),
+            ...createTableRows("server-vp-2", 0, 10, 100, 2, 0, 2000),
           ],
         },
       });
@@ -2587,7 +2587,7 @@ describe("ServerProxy", () => {
           {
             mode: "update",
             rows: [
-              [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',1000,true],
+              [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',2000,true],
           ],
             type: 'viewport-update',
             clientViewportId: 'client-vp-1'
@@ -2598,16 +2598,16 @@ describe("ServerProxy", () => {
           {
             mode: "batch",
             rows: [
-              [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',1000,true],
-              [1,1,true,false,0,0,"key-01",0,"key-01","name 01",1001,true],
-              [2,2,true,false,0,0,"key-02",0,"key-02","name 02",1002,true],
-              [3,3,true,false,0,0,"key-03",0,"key-03","name 03",1003,true],
-              [4,4,true,false,0,0,"key-04",0,"key-04","name 04",1004,true],
-              [5,5,true,false,0,0,"key-05",0,"key-05","name 05",1005,true],
-              [6,6,true,false,0,0,"key-06",0,"key-06","name 06",1006,true],
-              [7,7,true,false,0,0,"key-07",0,"key-07","name 07",1007,true],
-              [8,8,true,false,0,0,"key-08",0,"key-08","name 08",1008,true],
-              [9,9,true,false,0,0,"key-09",0,"key-09","name 09",1009,true]
+              [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',2000,true],
+              [1,1,true,false,0,0,"key-01",0,"key-01","name 01",2001,true],
+              [2,2,true,false,0,0,"key-02",0,"key-02","name 02",2002,true],
+              [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2003,true],
+              [4,4,true,false,0,0,"key-04",0,"key-04","name 04",2004,true],
+              [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2005,true],
+              [6,6,true,false,0,0,"key-06",0,"key-06","name 06",2006,true],
+              [7,7,true,false,0,0,"key-07",0,"key-07","name 07",2007,true],
+              [8,8,true,false,0,0,"key-08",0,"key-08","name 08",2008,true],
+              [9,9,true,false,0,0,"key-09",0,"key-09","name 09",2009,true]
           ],
             size: 100,
             type: 'viewport-update',

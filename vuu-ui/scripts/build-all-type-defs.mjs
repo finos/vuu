@@ -13,6 +13,7 @@ function buildPackage(packageName) {
 const packages = [
   "vuu-utils",
   "vuu-data",
+  "vuu-data-test",
   "vuu-data-react",
   "vuu-data-ag-grid",
   "vuu-filter-parser",

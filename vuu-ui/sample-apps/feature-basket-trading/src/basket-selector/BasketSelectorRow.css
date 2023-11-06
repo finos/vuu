@@ -1,0 +1,41 @@
+.vuuBasketSelectorRow {
+    border-bottom: solid 1px var(--vuu-color-gray-05);
+    height: var(--row-height);
+    width: 100%;
+}
+
+.vuuBasketSelectorRow:hover {
+    background-color: var(--vuu-color-gray-10);
+}
+
+.vuuBasketSelectorRow .vuuTableNextCell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 24px 16px;
+    line-height: 1.5;
+    padding: 3px 0;
+    width: 100%;
+}
+
+.vuuBasketSelectorRow-name {
+    font-size: 16px;
+}
+.vuuBasketSelectorRow-status {
+    text-align: right;
+}
+
+.vuuBasketSelectorRow-symbolContainer {
+    display: flex;
+    gap: 8px;
+}
+
+.vuuBasketSelectorRow-symbolLabel {
+    color: var(--vuu-color-gray-50);
+}
+.vuuBasketSelectorRow-basketId {
+    color: var(--vuu-color-gray-80);
+    display: flex;
+    gap: 3px;
+}
+
+

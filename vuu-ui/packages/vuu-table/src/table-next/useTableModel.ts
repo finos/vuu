@@ -11,6 +11,7 @@ import {
   applyGroupByToColumns,
   applySortToColumns,
   getCellRenderer,
+  getColumnLabel,
   getTableHeadings,
   getValueFormatter,
   hasValidationRules,
@@ -195,10 +196,8 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
   info?.(`TableModelReducer ${action.type}`);
-  console.log(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init":
-      console.log({ init: action });
       return init(action);
     case "moveColumn":
       return moveColumn(state, action);
@@ -252,9 +251,11 @@ function init({
   tableConfig,
 }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
+
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(columnDescriptorToKeyedColumDescriptor(tableAttributes));
+
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
     : keyedColumns;
@@ -298,7 +299,7 @@ const columnDescriptorToKeyedColumDescriptor =
       align = getDefaultAlignment(column.serverDataType),
       key,
       name,
-      label = name,
+      label = getColumnLabel(column),
       width = columnDefaultWidth,
       ...rest
     } = column;

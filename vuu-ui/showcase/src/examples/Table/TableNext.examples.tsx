@@ -11,11 +11,11 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { GroupColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { useSchemas, useTableConfig, useTestDataSource } from "../utils";
+import { useTableConfig, useTestDataSource } from "../utils";
 import { GroupHeaderCellNext } from "@finos/vuu-table";
-import { defaultValueFormatter } from "@finos/vuu-utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./TableNext.examples.css";
 
@@ -49,6 +49,36 @@ export const DefaultTableNextArrayData = () => {
   );
 };
 DefaultTableNextArrayData.displaySequence = displaySequence++;
+
+export const NavigationStyle = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState<TableConfig>(configProp);
+
+  const handleConfigChange = useCallback((config: TableConfig) => {
+    setConfig(config);
+  }, []);
+
+  return (
+    <TableNext
+      {...props}
+      config={config}
+      height={645}
+      navigationStyle="row"
+      onConfigChange={handleConfigChange}
+      renderBufferSize={5}
+      width={723}
+    />
+  );
+};
+NavigationStyle.displaySequence = displaySequence++;
 
 export const EditableTableNextArrayData = () => {
   const { config, dataSource } = useTableConfig({
@@ -101,7 +131,7 @@ export const EditableTableNextArrayData = () => {
 EditableTableNextArrayData.displaySequence = displaySequence++;
 
 export const TableNextVuuInstruments = () => {
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { config, dataSource, error } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
@@ -230,14 +260,86 @@ export const AutoTableNext = () => {
 };
 AutoTableNext.displaySequence = displaySequence++;
 
-export const AutoTableNextBasketDesign = () => {
+export const AutoTableNextAsFlexChild = () => {
   const {
     typeaheadHook: _,
     config: configProp,
     ...props
   } = useTableConfig({
-    rangeChangeRowset: "delta",
-    table: { module: "SIMUL", table: "basketDesign" },
+    rangeChangeRowset: "full",
+    table: { module: "SIMUL", table: "instruments" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 100px)",
+        marginLeft: 50,
+        marginTop: 50,
+        width: "calc(100vw - 100px)",
+      }}
+    >
+      <div style={{ flex: "1 1 auto" }}>
+        <TableNext
+          {...props}
+          config={{
+            ...config,
+          }}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={0}
+        />
+      </div>
+    </div>
+  );
+};
+AutoTableNextAsFlexChild.displaySequence = displaySequence++;
+
+// export const AutoTableNextBasketDesign = () => {
+//   const {
+//     typeaheadHook: _,
+//     config: configProp,
+//     ...props
+//   } = useTableConfig({
+//     rangeChangeRowset: "delta",
+//     table: { module: "BASKET", table: "basketDesign" },
+//   });
+
+//   const [config, setConfig] = useState(configProp);
+
+//   const handleConfigChange = (config: TableConfig) => {
+//     setConfig(config);
+//   };
+
+//   return (
+//     <TableNext
+//       {...props}
+//       config={{
+//         ...config,
+//         rowSeparators: true,
+//         zebraStripes: true,
+//       }}
+//       onConfigChange={handleConfigChange}
+//       renderBufferSize={50}
+//     />
+//   );
+// };
+// AutoTableNextBasketDesign.displaySequence = displaySequence++;
+
+export const AutoTableNextBasketOrders = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    table: { module: "SIMUL", table: "basketOrders" },
   });
 
   const [config, setConfig] = useState(configProp);
@@ -259,7 +361,119 @@ export const AutoTableNextBasketDesign = () => {
     />
   );
 };
-AutoTableNextBasketDesign.displaySequence = displaySequence++;
+AutoTableNextBasketOrders.displaySequence = displaySequence++;
+
+export const AutoTableNextBasketDefinitions = () => {
+  const {
+    typeaheadHook: _,
+    config: configProp,
+    ...props
+  } = useTableConfig({
+    count: 5,
+    table: { module: "SIMUL", table: "basketDefinitions" },
+  });
+
+  const [config, setConfig] = useState(configProp);
+
+  const handleConfigChange = (config: TableConfig) => {
+    setConfig(config);
+  };
+
+  return (
+    <TableNext
+      {...props}
+      config={{
+        ...config,
+        rowSeparators: true,
+        zebraStripes: true,
+      }}
+      onConfigChange={handleConfigChange}
+      renderBufferSize={50}
+    />
+  );
+};
+AutoTableNextBasketDefinitions.displaySequence = displaySequence++;
+
+export const VuuTableNextCalculatedColumns = () => {
+  const calculatedColumns: ColumnDescriptor[] = useMemo(
+    () => [
+      {
+        name: "notional:double:=price*quantity",
+        serverDataType: "double",
+        type: {
+          name: "number",
+          formatting: {
+            decimals: 2,
+          },
+        },
+      },
+      {
+        name: 'openEur:boolean:=and(ccy="EUR",openQty>2000)',
+        serverDataType: "boolean",
+      },
+      {
+        name: 'isBuy:char:=if(side="Sell","N","Y")',
+        serverDataType: "char",
+      },
+      {
+        name: 'CcySort:char:=if(ccy="Gbp",1,if(ccy="USD",2,3))',
+        serverDataType: "char",
+        width: 60,
+      },
+      {
+        name: "CcyLower:string:=lower(ccy)",
+        serverDataType: "string",
+        width: 60,
+      },
+      {
+        name: "AccountUpper:string:=upper(account)",
+        label: "ACCOUNT",
+        serverDataType: "string",
+      },
+      {
+        name: 'ExchangeCcy:string:=concatenate("---", exchange,"...",ccy, "---")',
+        serverDataType: "string",
+      },
+      {
+        name: 'ExchangeIsNY:boolean:=starts(exchange,"N")',
+        serverDataType: "boolean",
+      },
+      // {
+      //   name: "Text",
+      //   expression: "=text(quantity)",
+      //   serverDataType: "string",
+      // },
+    ],
+    []
+  );
+
+  const schemas = getAllSchemas();
+  const { config, dataSource, error } = useTestDataSource({
+    // bufferSize: 1000,
+    schemas,
+    calculatedColumns,
+    tablename: "parentOrders",
+  });
+
+  console.log({ config, dataSource });
+
+  const [tableConfig] = useState<TableConfig>(config);
+
+  if (error) {
+    return error;
+  }
+
+  return (
+    <TableNext
+      config={tableConfig}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={50}
+      width="100%"
+    />
+  );
+};
+VuuTableNextCalculatedColumns.displaySequence = displaySequence++;
 
 export const GroupHeaderCellNextOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {

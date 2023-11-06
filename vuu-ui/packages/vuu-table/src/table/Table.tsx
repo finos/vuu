@@ -15,6 +15,12 @@ import { isDataLoading } from "@finos/vuu-utils";
 
 const classBase = "vuuTable";
 
+export interface TablePropsDeprecated
+  extends Omit<TableProps, "height" | "width"> {
+  height?: number;
+  width?: number;
+}
+
 export const Table = ({
   allowConfigEditing: showSettings = false,
   className: classNameProp,
@@ -26,6 +32,7 @@ export const Table = ({
   onConfigChange,
   onFeatureEnabled,
   onFeatureInvocation,
+  onSelect,
   onSelectionChange,
   onShowConfigEditor: onShowSettings,
   renderBufferSize = 0,
@@ -34,7 +41,7 @@ export const Table = ({
   style: styleProp,
   width,
   ...htmlAttributes
-}: TableProps) => {
+}: TablePropsDeprecated) => {
   const id = useIdMemo(idProp);
   const {
     containerMeasurements: { containerRef, innerSize, outerSize },
@@ -61,6 +68,7 @@ export const Table = ({
     width,
   });
 
+  console.log({ tableProps });
   const style = {
     ...outerSize,
     "--content-height": `${viewportMeasurements.contentHeight}px`,

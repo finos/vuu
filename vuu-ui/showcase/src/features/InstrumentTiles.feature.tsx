@@ -8,7 +8,6 @@ export const InstrumentTilesFeature = ({
   tableSchema,
 }: InstrumentTilesFeatureProps) => {
   const { id, saveSession } = useViewContext();
-
   const { dataSource } = useTableConfig({
     count: 1000,
     dataSourceConfig: {

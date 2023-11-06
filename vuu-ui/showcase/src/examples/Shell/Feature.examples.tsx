@@ -1,7 +1,7 @@
 import { Feature } from "@finos/vuu-shell";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useMemo, useState } from "react";
-import { useTableSchema } from "../utils";
+import { getSchema } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
@@ -34,7 +34,7 @@ const env = process.env.NODE_ENV as Environment;
 export const DefaultFeature = () => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  const schema = useTableSchema("instruments");
+  const schema = getSchema("instruments");
 
   const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
     const { value } = evt.target as HTMLButtonElement;

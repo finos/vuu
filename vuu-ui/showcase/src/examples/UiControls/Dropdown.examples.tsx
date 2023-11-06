@@ -1,6 +1,10 @@
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
-import { Dropdown, SelectionChangeHandler } from "@finos/vuu-ui-controls";
+import {
+  Dropdown,
+  MultiSelectionHandler,
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
@@ -8,14 +12,17 @@ import { usa_states } from "./List.data";
 let displaySequence = 1;
 
 export const DefaultDropdown = () => {
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
-    console.log("selection changed", selectedItem);
-  };
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (event, selected) => {
+      console.log(`selection changed ${selected}`);
+    },
+    []
+  );
   return (
     <Dropdown
       defaultSelected={usa_states[0]}
-      onSelectionChange={handleChange}
-      source={usa_states}
+      onSelectionChange={handleSelectionChange}
+      source={usa_states.slice(0, 10)}
     />
   );
 };
@@ -23,7 +30,7 @@ export const DefaultDropdown = () => {
 DefaultDropdown.displaySequence = displaySequence++;
 
 export const SizedDropdown = () => {
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
+  const handleChange: SingleSelectionHandler = (event, selectedItem) => {
     console.log("selection changed", selectedItem);
   };
   return (
@@ -106,7 +113,7 @@ FullyControlledDropdown.displaySequence = displaySequence++;
 export const DataOnDemand = () => {
   const [data, setData] = useState(["EUR"]);
 
-  const handleChange: SelectionChangeHandler = (event, selectedItem) => {
+  const handleChange: SingleSelectionHandler = (event, selectedItem) => {
     console.log("selection changed", selectedItem);
   };
 
@@ -151,7 +158,7 @@ export const SwitchDataSource = () => {
     }
   }, []);
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, value) => {
       if (value !== null) {
         selectedRef.current = value;
@@ -188,13 +195,14 @@ export const SwitchDataSource = () => {
 SwitchDataSource.displaySequence = displaySequence++;
 
 export const MultiSelectDropdown = () => {
-  const handleSelectionChange = useCallback<
-    SelectionChangeHandler<string, "multiple">
-  >((event, selectedItem) => {
-    // nothing to see
-  }, []);
+  const handleSelectionChange = useCallback<MultiSelectionHandler<string>>(
+    (event, selected) => {
+      console.log(`selectionChange ${JSON.stringify(selected)}`);
+    },
+    []
+  );
   return (
-    <Dropdown<string, "multiple">
+    <Dropdown
       defaultSelected={[usa_states[0]]}
       onSelectionChange={handleSelectionChange}
       selectionStrategy="multiple"

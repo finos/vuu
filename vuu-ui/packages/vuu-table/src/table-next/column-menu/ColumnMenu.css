@@ -13,9 +13,11 @@
     border-radius: 4px;
     cursor: pointer;
     display: inline-block;
+    flex: 0 0 20px;
     padding: 2px;
-    left: var(--column-menu-left, 0);
+    /* left: var(--column-menu-left, 0); */
     margin: var(--vuuTable-columnMenu-margin, 0);
+    width: auto;
 }
 
 .vuuTable-columnMenu:hover {
@@ -35,12 +37,4 @@
     --vuu-icon-size: 14px;
   }
 
-  .vuuColumnMenuList {
-    --vuuMenuList-borderStyle: solid;
-    border-radius:4px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    border-color: var(--vuuMenuList-borderColor, var(--salt-container-primary-borderColor));
-    border-style: solid;
-    border-width: 1px;
-  }
   

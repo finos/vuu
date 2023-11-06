@@ -15,8 +15,6 @@ import {
   SelectionHookProps,
   SelectionHookResult,
   selectionIsDisallowed,
-  SelectionStrategy,
-  SingleSelectionStrategy,
 } from "./selectionTypes";
 import { useControlled } from "./useControlled";
 
@@ -36,13 +34,14 @@ export const groupSelectionEnabled = (
   groupSelection: GroupSelectionMode
 ): boolean => groupSelection && groupSelection !== GROUP_SELECTION_NONE;
 
-export const useSelection = <Selection extends SelectionStrategy = "default">({
+export const useSelection = ({
   containerRef,
   defaultSelected,
   disableSelection = false,
   // groupSelection = GROUP_SELECTION_NONE,
   highlightedIdx,
   itemQuery,
+  onClick,
   // label,
   onSelect,
   onSelectionChange,
@@ -50,7 +49,7 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
   selectionStrategy,
   selectionKeys = defaultSelectionKeys,
   tabToSelect,
-}: SelectionHookProps<Selection>): SelectionHookResult<Selection> => {
+}: SelectionHookProps): SelectionHookResult => {
   const isDeselectable = selectionStrategy === "deselectable";
   const isMultipleSelect = selectionStrategy === "multiple";
   const isExtendedSelect = selectionStrategy === "extended";
@@ -61,37 +60,27 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
     [selectionKeys]
   );
 
-  const emptyValue = useCallback((): Selection extends SingleSelectionStrategy
-    ? null
-    : string[] => {
-    type returnType = Selection extends SingleSelectionStrategy
-      ? null
-      : string[];
-    return isMultipleSelect || isExtendedSelect
-      ? ([] as unknown as returnType)
-      : (null as returnType);
-  }, [isMultipleSelect, isExtendedSelect]);
-
-  const [selected, setSelected] = useControlled<
-    Selection extends SingleSelectionStrategy ? string | null : string[]
-  >({
+  const [selected, setSelected] = useControlled<string[]>({
     controlled: selectedProp,
-    default: defaultSelected ?? emptyValue(),
+    default: defaultSelected ?? [],
     name: "UseSelection",
     state: "selected",
   });
 
+  // console.log(
+  //   `useSelection
+  //   defaultSelected ${JSON.stringify(defaultSelected)}
+  //   selectedProp ${JSON.stringify(selectedProp)}
+  //   selected ${JSON.stringify(selected)}`
+  // );
+
   const isItemSelected = useCallback(
-    (itemId: string) => {
-      return Array.isArray(selected)
-        ? selected.includes(itemId)
-        : selected === itemId;
-    },
+    (itemId: string) => selected.includes(itemId),
     [selected]
   );
 
   const selectDeselectable = useCallback(
-    (itemId: string) => (isItemSelected(itemId) ? null : itemId),
+    (itemId: string) => (isItemSelected(itemId) ? [] : [itemId]),
     [isItemSelected]
   );
   const selectMultiple = useCallback(
@@ -99,7 +88,6 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
       const nextItems = isItemSelected(itemId)
         ? (selected as string[]).filter((i) => i !== itemId)
         : (selected as string[]).concat(itemId);
-      // nextItems.sort(byItemIndex);
       nextItems.sort();
       return nextItems;
     },
@@ -128,7 +116,6 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
         .map((el) => el.id);
       // concat the current selection with a new selection and remove duplicates for overlaps
       const nextItems = [...new Set([...currentSelection, ...rangeSelection])];
-      // nextItems.sort(byItemIndex);
       nextItems.sort();
       return nextItems;
     },
@@ -142,31 +129,24 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
       rangeSelect: boolean,
       preserveExistingSelection?: boolean
     ) => {
-      type returnType = Selection extends SingleSelectionStrategy
-        ? string | null
-        : string[];
-
       const { current: container } = containerRef;
       const { id } = getElementByDataIndex(container, idx, true);
 
-      let newSelected: returnType;
+      let newSelected;
       if (isMultipleSelect) {
-        newSelected = selectMultiple(id) as returnType;
+        newSelected = selectMultiple(id);
       } else if (isExtendedSelect) {
         if (preserveExistingSelection && !rangeSelect) {
-          newSelected = selectMultiple(id) as returnType;
+          newSelected = selectMultiple(id);
         } else if (rangeSelect) {
-          newSelected = selectRange(
-            idx,
-            preserveExistingSelection
-          ) as returnType;
+          newSelected = selectRange(idx, preserveExistingSelection);
         } else {
-          newSelected = [id] as returnType;
+          newSelected = [id];
         }
       } else if (isDeselectable) {
-        newSelected = selectDeselectable(id) as returnType;
+        newSelected = selectDeselectable(id);
       } else {
-        newSelected = id as returnType;
+        newSelected = [id];
       }
 
       if (newSelected !== selected) {
@@ -248,7 +228,6 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
       const { current: container } = containerRef;
       const element = getElementByDataIndex(container, highlightedIdx);
       if (!disableSelection && isSelectableElement(element)) {
-        // if (!isCollapsibleItem(item)) {
         evt.preventDefault();
         evt.stopPropagation();
         selectItemAtIndex(
@@ -260,20 +239,23 @@ export const useSelection = <Selection extends SelectionStrategy = "default">({
         if (isExtendedSelect) {
           lastActive.current = highlightedIdx;
         }
-        // }
       }
+      onClick?.(evt);
     },
     [
       containerRef,
       highlightedIdx,
       disableSelection,
+      onClick,
       selectItemAtIndex,
       isExtendedSelect,
     ]
   );
 
   const listHandlers = selectionIsDisallowed(selectionStrategy)
-    ? NO_SELECTION_HANDLERS
+    ? {
+        onClick,
+      }
     : {
         onClick: handleClick,
         onKeyDown: handleKeyDown,

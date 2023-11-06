@@ -50,6 +50,8 @@ object Columns {
         val name :: dataType :: _ = nameAndDt.split(":").toList
         val dtClass = DataType.fromString(dataType)
         SimpleColumn(name, index, dtClass)
+      case 1 =>
+        throw new Exception("Not datatype defined for column:" + splitDef)
     }
 
   }).toArray
@@ -71,7 +73,7 @@ object Columns {
 
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
 
-    val excluded = excludeColumns.map(s => (s -> 1)).toMap
+    val excluded = excludeColumns.map(s => s -> 1).toMap
 
     table.columns.filterNot(c => excluded.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }

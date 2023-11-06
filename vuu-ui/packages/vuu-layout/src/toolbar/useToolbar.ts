@@ -1,5 +1,6 @@
 import type { OverflowItem, ToolbarProps } from "@finos/vuu-layout";
 import { isValidNumber } from "@finos/vuu-utils";
+import { PopupCloseCallback } from "@finos/vuu-popups";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -13,7 +14,10 @@ import { useSelection } from "./useSelection";
 export interface ToolbarHookProps
   extends Pick<
       ToolbarProps,
-      "activeItemIndex" | "defaultActiveItemIndex" | "onActiveChange"
+      | "activeItemIndex"
+      | "defaultActiveItemIndex"
+      | "onActiveChange"
+      | "onNavigateOutOfBounds"
     >,
     Required<Pick<ToolbarProps, "orientation" | "selectionStrategy">> {
   containerRef: RefObject<HTMLElement>;
@@ -26,6 +30,7 @@ export const useToolbar = ({
   containerRef,
   itemQuery = "vuuToolbarItem",
   onActiveChange,
+  onNavigateOutOfBounds,
   orientation,
   selectionStrategy,
 }: ToolbarHookProps) => {
@@ -40,9 +45,8 @@ export const useToolbar = ({
     ...keyboardHook
   } = useKeyboardNavigation({
     containerRef,
-    keyBoardActivation: "manual",
+    onNavigateOutOfBounds,
     orientation,
-    selectedIndex: lastSelection.current ?? [],
   });
 
   const {
@@ -93,10 +97,12 @@ export const useToolbar = ({
     (item: OverflowItem) => {
       const index = parseInt(item.index);
       if (!isNaN(index)) {
+        //TODO need to be able to reset the overflow-priority without selecting the item
         selectionHookActivateItem(index);
+        keyboardHookFocusItem(index);
       }
     },
-    [selectionHookActivateItem]
+    [keyboardHookFocusItem, selectionHookActivateItem]
   );
 
   const itemProps = {
@@ -107,8 +113,13 @@ export const useToolbar = ({
 
   return {
     activeItemIndex: selectionHookSelected,
+    focusableIdx: keyboardHook.focusableIdx,
     focusVisible: keyboardHook.focusVisible,
     containerProps: {
+      PopupMenuProps: {
+        onKeyDown: handleKeyDown,
+        onMenuClose: keyboardHook.onOverflowMenuClose,
+      },
       ...keyboardHook.containerProps,
       onSwitchWrappedItemIntoView,
     },

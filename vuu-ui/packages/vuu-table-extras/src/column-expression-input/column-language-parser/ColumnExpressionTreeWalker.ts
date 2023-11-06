@@ -469,7 +469,9 @@ class ColumnExpression {
           : new RelationalExpressionImpl();
         this.addExpression(condition);
       }
-    } else {
+    } /*else if (isCallExpression(this.#expression)) {
+      this.addExpression(new RelationalExpressionImpl());
+    } */ else {
       console.error("setCondition called unexpectedly");
     }
   }
@@ -596,6 +598,7 @@ export const walkTree = (tree: Tree, source: string) => {
         break;
 
       case "RelationalExpression":
+        // TODO this breaks when the relationalexpression is an argument to a CallExpression
         columnExpression.setCondition();
         break;
 

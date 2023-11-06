@@ -47,6 +47,7 @@ const DefaultTabstripProps: Partial<TabstripProps> = {
 
 export const Stack = forwardRef(function Stack(
   {
+    TabstripProps = DefaultTabstripProps,
     active = 0,
     children,
     className: classNameProp,
@@ -62,7 +63,6 @@ export const Stack = forwardRef(function Stack(
     onTabSelectionChanged,
     showTabs = "top",
     style,
-    TabstripProps = DefaultTabstripProps,
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
@@ -71,6 +71,7 @@ export const Stack = forwardRef(function Stack(
     allowCloseTab,
     allowRenameTab,
     className: tabstripClassName,
+    tabClassName,
   } = TabstripProps;
 
   const handleExitEditMode = useCallback(

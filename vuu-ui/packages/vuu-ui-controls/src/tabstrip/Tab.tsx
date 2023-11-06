@@ -1,7 +1,7 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
-import { MenuActionHandler } from "packages/vuu-data-types";
+import { MenuActionHandler } from "@finos/vuu-data-types";
 import {
   FocusEvent,
   ForwardedRef,
@@ -122,7 +122,7 @@ export const Tab = forwardRef(function Tab(
       {...props}
       aria-controls={ariaControls}
       aria-selected={selected}
-      className={cx(classBase, {
+      className={cx(classBase, className, {
         [`${classBase}-closeable`]: closeable,
         "vuuDraggable-dragAway": dragging,
         [`${classBase}-editing`]: editing,

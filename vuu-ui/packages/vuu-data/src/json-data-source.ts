@@ -25,7 +25,9 @@ import type {
   DataSourceEvents,
   SubscribeCallback,
   SubscribeProps,
+  WithFullConfig,
 } from "./data-source";
+import { vanillaConfig } from "./data-source";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
@@ -59,7 +61,7 @@ export class JsonDataSource
   private visibleRows: DataSourceRow[] = [];
 
   #aggregations: VuuAggregation[] = [];
-  #columns: string[] = [];
+  #config: WithFullConfig = vanillaConfig;
   #data: DataSourceRow[];
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
@@ -90,6 +92,7 @@ export class JsonDataSource
     }
 
     [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+
     this.visibleRows = this.#data
       .filter((row) => row[DEPTH] === 0)
       .map((row, index) =>
@@ -100,7 +103,10 @@ export class JsonDataSource
       this.#aggregations = aggregations;
     }
     if (this.columnDescriptors) {
-      this.#columns = this.columnDescriptors.map((c) => c.name);
+      this.#config = {
+        ...this.#config,
+        columns: this.columnDescriptors.map((c) => c.name),
+      };
     }
     if (filter) {
       this.#filter = filter;
@@ -128,13 +134,14 @@ export class JsonDataSource
   ) {
     this.clientCallback = callback;
 
-    console.log(`subscribe range ${range?.from} ${range?.to}`);
-
     if (aggregations) {
       this.#aggregations = aggregations;
     }
     if (columns) {
-      this.#columns = columns;
+      this.#config = {
+        ...this.#config,
+        columns,
+      };
     }
     if (filter) {
       this.#filter = filter;
@@ -162,7 +169,7 @@ export class JsonDataSource
       aggregations: this.#aggregations,
       type: "subscribed",
       clientViewportId: this.viewport,
-      columns: this.#columns,
+      columns: this.#config.columns,
       filter: this.#filter,
       groupBy: this.#groupBy,
       range: this.#range,
@@ -240,8 +247,6 @@ export class JsonDataSource
       size: this.visibleRows.length,
       type: "viewport-update",
     });
-
-    console.log(this.expandedRows);
   }
 
   closeTreeNode(key: string, cascade = false) {
@@ -258,7 +263,7 @@ export class JsonDataSource
   }
 
   get config() {
-    return undefined;
+    return this.#config;
   }
 
   get selectedRowsCount() {
@@ -295,12 +300,15 @@ export class JsonDataSource
   }
 
   get columns() {
-    return this.#columns;
+    return this.#config.columns;
   }
 
   set columns(columns: string[]) {
-    this.#columns = columns;
-    console.log(`ArrayDataSource setColumns ${columns.join(",")}`);
+    // TODO use setter
+    this.#config = {
+      ...this.#config,
+      columns,
+    };
   }
 
   get aggregations() {
@@ -309,6 +317,10 @@ export class JsonDataSource
 
   set aggregations(aggregations: VuuAggregation[]) {
     this.#aggregations = aggregations;
+  }
+
+  set data(data: JsonData) {
+    console.log(`set JsonDataSource data`);
   }
 
   get sort() {
@@ -327,7 +339,6 @@ export class JsonDataSource
   set filter(filter: DataSourceFilter) {
     // TODO should we wait until server ACK before we assign #sort ?
     this.#filter = filter;
-    console.log(`RemoteDataSource ${JSON.stringify(filter)}`);
   }
 
   get groupBy() {
@@ -401,9 +412,6 @@ export class JsonDataSource
         `JsonDataSource getChildRows row not found for key ${rowKey}`
       );
     }
-
-    const sections = rowKey.split("|").slice(1);
-    console.log({ sections, parentRow });
 
     return [];
   }

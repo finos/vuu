@@ -4,7 +4,7 @@ import {
   ContextMenuGroupItemDescriptor,
   ContextMenuItemDescriptor,
   MenuBuilder,
-} from "packages/vuu-data-types";
+} from "@finos/vuu-data-types";
 import {
   VuuAggregation,
   VuuGroupBy,

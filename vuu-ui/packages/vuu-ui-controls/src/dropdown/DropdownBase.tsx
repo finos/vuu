@@ -24,6 +24,7 @@ const classBase = "vuuDropdown";
 export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
   function Dropdown(
     {
+      PopupProps,
       "aria-labelledby": ariaLabelledByProp,
       children,
       className: classNameProp,
@@ -36,7 +37,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
       onOpenChange,
       openKeys,
       openOnFocus,
-      placement = "bottom-start",
+      placement = "below-full-width",
       popupWidth,
       width,
       ...htmlAttributes
@@ -109,7 +110,7 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         className: cx(className, `${classBase}-popup-component`),
         id,
         ref: popupComponentRef,
-        width: ownWidth ?? width,
+        width: placement.endsWith("full-width") ? "auto" : ownWidth ?? width,
       });
     };
 
@@ -120,7 +121,11 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
         {getTriggerComponent()}
         {isOpen && (
           <Portal>
-            <Popup anchorElement={rootRef} placement="below">
+            <Popup
+              {...PopupProps}
+              anchorElement={rootRef}
+              placement={placement}
+            >
               {getPopupComponent()}
             </Popup>
           </Portal>

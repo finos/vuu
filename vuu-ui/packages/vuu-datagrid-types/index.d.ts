@@ -7,6 +7,7 @@ import type {
 } from "@finos/vuu-protocol-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
+import type { ColumnMap } from "@finos/vuu-utils";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -19,7 +20,7 @@ export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export type DataCellEditHandler = (
-  rowIndex: number,
+  row: DataSourceRow,
   columnName: string,
   value: VuuColumnDataType
 ) => boolean;
@@ -42,6 +43,7 @@ export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
   columnSeparators?: boolean;
+  showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
 }
@@ -127,7 +129,6 @@ export interface ColumnDescriptor {
   align?: ColumnAlignment;
   className?: string;
   editable?: boolean;
-  expression?: string;
   flex?: number;
   /** 
    Optional additional level(s) of heading to display above label.

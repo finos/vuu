@@ -4,9 +4,11 @@ import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDto;
 import org.finos.vuu.layoutserver.dto.response.MetadataResponseDto;
+import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.service.LayoutService;
+import org.finos.vuu.layoutserver.service.MetadataService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -28,8 +29,20 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LayoutControllerTest {
 
+    private static final String LAYOUT_DEFINITION = "Test Definition";
+    private static final String LAYOUT_GROUP = "Test Group";
+    private static final String LAYOUT_NAME = "Test Layout";
+    private static final String LAYOUT_SCREENSHOT = "Test Screenshot";
+    private static final String LAYOUT_USER = "Test User";
+    private static final UUID VALID_LAYOUT_ID = UUID.randomUUID();
+    private static final UUID VALID_METADATA_ID = UUID.randomUUID();
+    private static final UUID DOES_NOT_EXIST_LAYOUT_ID = UUID.randomUUID();
+
     @Mock
     private LayoutService layoutService;
+
+    @Mock
+    private MetadataService metadataService;
 
     @Mock
     private ModelMapper modelMapper;
@@ -37,80 +50,74 @@ class LayoutControllerTest {
     @InjectMocks
     private LayoutController layoutController;
 
-    private UUID validLayoutId;
-    private UUID doesNotExistLayoutId;
     private Layout layout;
     private Metadata metadata;
+    private BaseMetadata baseMetadata;
     private LayoutRequestDto layoutRequest;
     private LayoutResponseDto expectedLayoutResponse;
-    private List<MetadataResponseDto> expectedMetadataResponse;
+    private MetadataResponseDto metadataResponse;
 
     @BeforeEach
     public void setup() {
-        validLayoutId = UUID.randomUUID();
-        doesNotExistLayoutId = UUID.randomUUID();
-        UUID metadataId = UUID.randomUUID();
-        String layoutDefinition = "Test Definition";
+        baseMetadata = new BaseMetadata();
+        baseMetadata.setName(LAYOUT_NAME);
+        baseMetadata.setUser(LAYOUT_USER);
+        baseMetadata.setGroup(LAYOUT_GROUP);
+        baseMetadata.setScreenshot(LAYOUT_SCREENSHOT);
 
-        metadata = new Metadata();
-        metadata.setId(metadataId);
-        metadata.setName("Test Layout");
-        metadata.setUser("Test User");
-        metadata.setGroup("Test Group");
-        metadata.setScreenshot("Test Screenshot");
+        metadata = Metadata.builder().id(VALID_METADATA_ID).baseMetadata(baseMetadata).build();
 
         layout = new Layout();
-        layout.setId(validLayoutId);
-        layout.setDefinition(layoutDefinition);
+        layout.setId(VALID_LAYOUT_ID);
+        layout.setDefinition(LAYOUT_DEFINITION);
         layout.setMetadata(metadata);
 
         layoutRequest = new LayoutRequestDto();
         MetadataRequestDto metadataRequestDTO = new MetadataRequestDto();
-        metadataRequestDTO.setName(metadata.getName());
-        metadataRequestDTO.setUser(metadata.getUser());
-        metadataRequestDTO.setGroup(metadata.getGroup());
-        metadataRequestDTO.setScreenshot(metadata.getScreenshot());
+        metadataRequestDTO.setBaseMetadata(baseMetadata);
         layoutRequest.setDefinition(layout.getDefinition());
         layoutRequest.setMetadata(metadataRequestDTO);
+
+        metadataResponse = getMetadataResponseDTO();
 
         expectedLayoutResponse = new LayoutResponseDto();
         expectedLayoutResponse.setId(layout.getId());
         expectedLayoutResponse.setDefinition(layout.getDefinition());
-
-        MetadataResponseDto metadataResponse = getMetadataResponseDTO();
         expectedLayoutResponse.setMetadata(metadataResponse);
 
-        expectedMetadataResponse = new ArrayList<>();
-        expectedMetadataResponse.add(metadataResponse);
     }
 
 
     @Test
     void getLayout_layoutExists_returnsLayout() {
-        when(layoutService.getLayout(validLayoutId)).thenReturn(layout);
-        when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(
-            expectedLayoutResponse);
-        assertThat(layoutController.getLayout(validLayoutId)).isEqualTo(expectedLayoutResponse);
+        when(layoutService.getLayout(VALID_LAYOUT_ID)).thenReturn(layout);
+        when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(expectedLayoutResponse);
+        assertThat(layoutController.getLayout(VALID_LAYOUT_ID)).isEqualTo(expectedLayoutResponse);
     }
 
     @Test
-    void getLayout_layoutDoesNotExist_throwsNotFoundAndReturns404() {
-        when(layoutService.getLayout(doesNotExistLayoutId)).thenThrow(NoSuchElementException.class);
+    void getLayout_layoutDoesNotExist_throwsNoSuchElementException() {
+        when(layoutService.getLayout(DOES_NOT_EXIST_LAYOUT_ID))
+            .thenThrow(NoSuchElementException.class);
+
         assertThrows(NoSuchElementException.class,
-            () -> layoutController.getLayout(doesNotExistLayoutId));
+            () -> layoutController.getLayout(DOES_NOT_EXIST_LAYOUT_ID));
     }
 
     @Test
     void getMetadata_metadataExists_returnsMetadata() {
-        when(layoutService.getMetadata()).thenReturn(List.of(metadata));
-        when(modelMapper.map(metadata, MetadataResponseDto.class)).thenReturn(
-            getMetadataResponseDTO());
-        assertThat(layoutController.getMetadata()).isEqualTo(expectedMetadataResponse);
+        List<Metadata> metadataList = List.of(metadata);
+
+        when(layoutService.getMetadata()).thenReturn(metadataList);
+        when(modelMapper.map(metadata, MetadataResponseDto.class))
+            .thenReturn(metadataResponse);
+
+        assertThat(layoutController.getMetadata()).isEqualTo(List.of(metadataResponse));
     }
 
     @Test
     void getMetadata_noMetadataExists_returnsEmptyArray() {
-        when(layoutService.getMetadata()).thenReturn(List.of());
+//        when(metadataService.getMetadata()).thenReturn(List.of());
         assertThat(layoutController.getMetadata()).isEmpty();
     }
 
@@ -125,37 +132,32 @@ class LayoutControllerTest {
         when(layoutService.getLayout(layout.getId())).thenReturn(layout);
         when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(expectedLayoutResponse);
 
-        assertThat(layoutController.createLayout(layoutRequest))
-            .isEqualTo(expectedLayoutResponse);
+        assertThat(layoutController.createLayout(layoutRequest)).isEqualTo(expectedLayoutResponse);
     }
 
     @Test
-    void updateLayout_callsLayoutService() {
+    void updateLayout_validLayout_callsLayoutService() {
         layout.setId(null);
         layout.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layout);
 
-        layoutController.updateLayout(validLayoutId, layoutRequest);
+        layoutController.updateLayout(VALID_LAYOUT_ID, layoutRequest);
 
-        verify(layoutService).updateLayout(validLayoutId, layout);
+        verify(layoutService).updateLayout(VALID_LAYOUT_ID, layout);
     }
 
     @Test
-    void deleteLayout_callsLayoutService() {
-        layoutController.deleteLayout(validLayoutId);
+    void deleteLayout__validId_callsLayoutService() {
+        layoutController.deleteLayout(VALID_LAYOUT_ID);
 
-        verify(layoutService).getLayout(validLayoutId);
-        verify(layoutService).deleteLayout(validLayoutId);
+        verify(layoutService).deleteLayout(VALID_LAYOUT_ID);
     }
 
     private MetadataResponseDto getMetadataResponseDTO() {
         MetadataResponseDto metadataResponse = new MetadataResponseDto();
         metadataResponse.setLayoutId(layout.getId());
-        metadataResponse.setName(layout.getMetadata().getName());
-        metadataResponse.setUser(layout.getMetadata().getUser());
-        metadataResponse.setGroup(layout.getMetadata().getGroup());
-        metadataResponse.setScreenshot(layout.getMetadata().getScreenshot());
+        metadataResponse.setBaseMetadata(baseMetadata);
         metadataResponse.setCreated(layout.getMetadata().getCreated());
         metadataResponse.setUpdated(layout.getMetadata().getUpdated());
         return metadataResponse;

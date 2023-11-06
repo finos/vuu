@@ -1,8 +1,8 @@
+import { rect } from "@finos/vuu-utils";
 import { ReactElement } from "react";
-import { rect } from "../common-types";
 import { LayoutModel } from "../layout-reducer";
 import { findTarget, followPath, getProps } from "../utils";
-import { BoxModel, Measurements, Position } from "./BoxModel";
+import { BoxModel, Measurements } from "./BoxModel";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState, IntrinsicSizes } from "./DragState";
 import { DropTarget, identifyDropTarget } from "./DropTarget";

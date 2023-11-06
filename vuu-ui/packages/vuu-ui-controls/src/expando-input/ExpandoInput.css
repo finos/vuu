@@ -7,6 +7,8 @@
     --saltInput-height: calc(var(--vuuExpandoInput-height) - 4px);
     --saltInput-minWidth: var(--vuuExpandoInput-minWidth, 8px);
   
+    border: var(--vuuExpandoInput-border, none);
+    border-radius: var(--vuuExpandoInput-borderRadius, 0);
     color: inherit;
     cursor: default;
     display: inline-block;

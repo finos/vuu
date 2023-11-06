@@ -3,8 +3,7 @@
 }
 
 .Item {
-    --vuuToolbarItem-outlineColor: cyan;
-    background-color: var(--item-bg, blue);
+    background-color: var(--item-bg, ivory);
     color: white;
     height: 32px;
 }
@@ -21,10 +20,6 @@
     outline: none;
 } */
 
-
-.vuuToolbarItem-focusVisible {
-    outline: dashed var(--vuuToolbarItem-outlineColor, cyan);
-}
 
 /* [data-overflow-priority="1"].Item {
     background-color: pink;

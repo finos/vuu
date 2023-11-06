@@ -20,6 +20,7 @@ yarn-debug.log*
 yarn-error.log*
 
 /vuu-ui/showcase/src/examples/**/*.js
+/vuu-ui/cypress/screenshots
 
 deployed_apps
 dist

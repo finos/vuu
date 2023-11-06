@@ -25,7 +25,9 @@ async function connectToServer(
   protocol: WebSocketProtocol,
   token: string,
   username: string | undefined,
-  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void
+  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void,
+  retryLimitDisconnect?: number,
+  retryLimitStartup?: number
 ) {
   const connection = await connectWebsocket(
     url,
@@ -34,9 +36,10 @@ async function connectToServer(
     // never be called until subscriptions have been made, so this is safe.
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
-      if (isConnectionQualityMetrics(msg))
+      if (isConnectionQualityMetrics(msg)) {
+        console.log("post connection metrics");
         postMessage({ type: "connection-metrics", messages: msg });
-      else if (isConnectionStatusMessage(msg)) {
+      } else if (isConnectionStatusMessage(msg)) {
         onConnectionStatusChange(msg);
         if (msg.status === "reconnected") {
           server.reconnect();
@@ -44,7 +47,9 @@ async function connectToServer(
       } else {
         server.handleMessageFromServer(msg);
       }
-    }
+    },
+    retryLimitDisconnect,
+    retryLimitStartup
   );
 
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
@@ -72,7 +77,9 @@ const handleMessageFromClient = async ({
         message.protocol,
         message.token,
         message.username,
-        postMessage
+        postMessage,
+        message.retryLimitDisconnect,
+        message.retryLimitStartup
       );
       postMessage({ type: "connected" });
       break;

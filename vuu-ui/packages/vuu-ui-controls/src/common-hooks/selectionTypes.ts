@@ -1,4 +1,4 @@
-import { RefObject, SyntheticEvent } from "react";
+import { MouseEventHandler, RefObject, SyntheticEvent } from "react";
 
 export type SelectionDisallowed = "none";
 export type SingleSelectionStrategy = "default" | "deselectable";
@@ -19,22 +19,19 @@ export type SelectionStrategy =
   | SingleSelectionStrategy
   | MultiSelectionStrategy;
 
-export type selectedType<
-  Item,
-  Selection extends SelectionStrategy
-> = Selection extends MultiSelectionStrategy ? Item[] : Item | null;
+export const isSingleSelection = (
+  s?: SelectionStrategy
+): s is SingleSelectionStrategy =>
+  s === undefined || s === "default" || s === "deselectable";
+
+export const isMultiSelection = (
+  s?: SelectionStrategy
+): s is MultiSelectionStrategy =>
+  s === "multiple" || s?.startsWith("extended") === true;
 
 export type SelectHandler<Item = string> = (
   event: SyntheticEvent,
   selectedItem: Item
-) => void;
-
-export type SelectionChangeHandler<
-  Item = string,
-  Selection extends SelectionStrategy = "default"
-> = (
-  event: SyntheticEvent,
-  selected: Selection extends SingleSelectionStrategy ? Item | null : Item[]
 ) => void;
 
 export const selectionIsDisallowed = (
@@ -53,31 +50,18 @@ export const deselectionIsAllowed = (
 ): selection is "deselectable" | MultiSelectionStrategy =>
   selection !== "none" && selection !== "default";
 
-export const hasSelection = <Item = unknown>(
-  selected: Item | Item[] | null
-): selected is Item | Item[] => {
-  return Array.isArray(selected)
-    ? selected.length > 0
-    : selected !== null && selected !== undefined;
-};
+export const hasSelection = <Item = unknown>(selected?: Item[]) =>
+  selected !== undefined && selected.length > 0;
 
-export const getFirstSelectedItem = <Item = unknown>(
-  selected: Item | Item[] | null
-): Item | null => {
-  return Array.isArray(selected) ? selected[0] : selected;
-};
+export const getFirstSelectedItem = <Item = unknown>(selected: Item[]) =>
+  selected[0];
 
-export interface SelectionProps<
-  Item,
-  Selection extends SelectionStrategy = "default"
-> {
-  defaultSelected?: Selection extends SingleSelectionStrategy
-    ? Item | null
-    : Item[];
-  onSelect?: SelectHandler<Item>;
-  onSelectionChange?: SelectionChangeHandler<Item, Selection>;
-  selected?: Selection extends SingleSelectionStrategy ? Item | null : Item[];
-  selectionStrategy?: Selection;
+interface SelectionProps {
+  defaultSelected?: string[];
+  onSelect?: SelectHandler;
+  onSelectionChange?: MultiSelectionHandler;
+  selected?: string[];
+  selectionStrategy?: SelectionStrategy;
 }
 
 export interface ListHandlers {
@@ -89,28 +73,51 @@ export interface ListHandlers {
   ) => void;
   onMouseMove?: (event: React.MouseEvent) => void;
 }
-export interface SelectionHookProps<
-  Selection extends SelectionStrategy = "default"
-> extends SelectionProps<string, Selection> {
+export interface SelectionHookProps extends SelectionProps {
   containerRef: RefObject<HTMLElement>;
   disableSelection?: boolean;
   highlightedIdx: number;
   itemQuery: string;
   label?: string;
+  onClick?: MouseEventHandler;
   selectionKeys?: string[];
   tabToSelect?: boolean;
 }
 
-export interface SelectionHookResult<
-  Selection extends SelectionStrategy = "default"
-> {
+export interface SelectionHookResult {
   listHandlers: ListHandlers;
-  selected: Selection extends SingleSelectionStrategy
-    ? string | null
-    : string[];
-  setSelected: (
-    selected: Selection extends SingleSelectionStrategy
-      ? string | null
-      : string[]
-  ) => void;
+  selected: string[];
+  setSelected: (selected: string[]) => void;
+}
+
+export type MultiSelectionHandler<Item = string> = (
+  event: SyntheticEvent | null,
+  selected: Item[]
+) => void;
+export type SingleSelectionHandler<Item = string> = (
+  event: SyntheticEvent | null,
+  selected: Item
+) => void;
+
+export type SelectionType<
+  I,
+  S extends SelectionStrategy
+> = S extends MultiSelectionStrategy ? I[] : I | null;
+
+export interface ComponentSelectionProps<
+  Item = string,
+  S extends SelectionStrategy = "default"
+> {
+  defaultSelected?: S extends MultiSelectionStrategy ? Item[] : Item;
+  onSelect?: SelectHandler<Item>;
+  onSelectionChange?: S extends MultiSelectionStrategy
+    ? MultiSelectionHandler<Item>
+    : SingleSelectionHandler<Item>;
+  selected?: SelectionType<Item, S>;
+  selectionStrategy?: S;
+  /**
+   * The keyboard keys used to effect selection, defaults to SPACE and ENTER
+   * TODO maybe this belongs on the SelectionProps interface ?
+   */
+  selectionKeys?: string[];
 }

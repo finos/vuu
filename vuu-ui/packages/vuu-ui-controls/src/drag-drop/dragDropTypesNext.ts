@@ -1,5 +1,6 @@
 import { MouseEventHandler, RefObject } from "react";
 import { orientationType } from "@finos/vuu-utils";
+import { DragDropState } from "./DragDropState";
 
 //-----------------------------------
 // From useScrollPosition in List
@@ -56,7 +57,7 @@ export interface DragHookResult {
 
 export interface InternalDragHookResult
   extends Omit<DragHookResult, "isDragging" | "isScrolling"> {
-  beginDrag: (evt: MouseEvent) => void;
+  beginDrag: (dragElement: HTMLElement) => void;
   drag: (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => void;
   drop: () => void;
   handleScrollStart: () => void;
@@ -65,18 +66,39 @@ export interface InternalDragHookResult
     _scrollPos: number,
     atEnd: boolean
   ) => void;
+  /**
+   * Draggable item has been dragged out of container. Remove any local drop
+   * indicators. Dragged element itself should not yet be removed from DOM.
+   */
+  releaseDrag?: () => void;
 }
+
+export interface DropOptions {
+  fromIndex?: number;
+  toIndex: number;
+  isExternal?: boolean;
+  payload?: unknown;
+}
+
+export type DragStartHandler = (dragDropState: DragDropState) => void;
+
+export type DropHandler = (
+  fromIndex: number,
+  toIndex: number,
+  options: DropOptions
+) => void;
 
 export interface DragDropProps {
   allowDragDrop?: boolean | dragStrategy;
   /** this is the className that will be assigned during drag to the dragged element  */
   draggableClassName: string;
   extendedDropZone?: boolean;
+  getDragPayload?: (dragElement: HTMLElement) => unknown;
   id?: string;
   isDragSource?: boolean;
   isDropTarget?: boolean;
-  onDragStart?: () => void;
-  onDrop: (fromIndex: number, toIndex: number) => void;
+  onDragStart?: DragStartHandler;
+  onDrop: DropHandler;
   onDropSettle?: (toIndex: number) => void;
   orientation: orientationType;
   containerRef: RefObject<HTMLElement>;
@@ -89,8 +111,13 @@ export type DragDropHook = (props: DragDropProps) => DragHookResult;
 
 export interface InternalDragDropProps
   extends Omit<DragDropProps, "draggableClassName" | "id"> {
-  draggableRef: RefObject<HTMLDivElement>;
   isDragSource?: boolean;
   isDropTarget?: boolean;
   selected?: unknown;
 }
+
+export type DragDropContext = {
+  dragElement: HTMLElement;
+  dragPayload: unknown;
+  mouseOffset: MouseOffset;
+};

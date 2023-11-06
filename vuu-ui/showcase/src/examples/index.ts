@@ -1,5 +1,4 @@
 export * as Apps from "./Apps";
-export * as AppComponents from "./AppComponents";
 export * as TableExtras from "./TableExtras";
 export * as DataGrid from "./DataGrid";
 export * as DataTable from "./DataTable";

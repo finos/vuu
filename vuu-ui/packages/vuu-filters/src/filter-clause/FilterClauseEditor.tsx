@@ -3,8 +3,7 @@ import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import cx from "classnames";
-import { HTMLAttributes, useCallback, useEffect, useRef } from "react";
-import { CloseButton } from "./CloseButton";
+import { HTMLAttributes, useCallback } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { NumericInput } from "./NumericInput";
 import { getOperators } from "./operator-utils";
@@ -12,6 +11,7 @@ import { TextInput } from "./TextInput";
 import { useFilterClauseEditor } from "./useFilterClauseEditor";
 
 import "./FilterClauseEditor.css";
+import { Button } from "@salt-ds/core";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -34,45 +34,23 @@ export const FilterClauseEditor = ({
   ...htmlAttributes
 }: FilterClauseEditorProps) => {
   const { table, columns } = tableSchema;
-  const columnRef = useRef<HTMLDivElement>(null);
-  const operatorRef = useRef<HTMLDivElement>(null);
-  const valueRef = useRef<HTMLDivElement>(null);
 
   const {
     InputProps,
+    columnRef,
     onChangeValue,
     onSelectionChangeColumn,
     onSelectionChangeOperator,
     operator,
+    operatorRef,
     selectedColumn,
     value,
+    valueRef,
   } = useFilterClauseEditor({
     filterClause,
     onChange,
     tableSchema,
   });
-
-  useEffect(() => {
-    if (selectedColumn === undefined) {
-      const columnInput = columnRef.current?.querySelector("input");
-      columnInput?.focus();
-    } else if (
-      selectedColumn !== undefined &&
-      operator === undefined &&
-      operatorRef.current
-    ) {
-      const operatorInput = operatorRef.current.querySelector("input");
-      operatorInput?.focus();
-    }
-  }, [operator, selectedColumn]);
-
-  useEffect(() => {
-    if (operator !== undefined && value === undefined && valueRef.current) {
-      console.log(`Looks like operator has changed, is now ${operator}`);
-      const valueInput = valueRef.current.querySelector("input");
-      valueInput?.focus();
-    }
-  }, [operator, value]);
 
   const getInputElement = useCallback(() => {
     if (selectedColumn === null || operator === undefined) {
@@ -122,6 +100,7 @@ export const FilterClauseEditor = ({
     InputProps,
     filterClause,
     onChangeValue,
+    valueRef,
     suggestionProvider,
     table,
     value,
@@ -130,6 +109,7 @@ export const FilterClauseEditor = ({
   return (
     <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
       <ExpandoCombobox<ColumnDescriptor>
+        title="column"
         InputProps={InputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}
         initialHighlightedIndex={0}
@@ -141,6 +121,7 @@ export const FilterClauseEditor = ({
       />
       {selectedColumn?.name ? (
         <ExpandoCombobox<string>
+          title="operator"
           InputProps={InputProps}
           className={cx(`${classBase}Field`, `${classBase}Operator`, {
             [`${classBase}Operator-hidden`]: selectedColumn === null,
@@ -154,7 +135,11 @@ export const FilterClauseEditor = ({
       ) : null}
       {getInputElement()}
       {value !== undefined ? (
-        <CloseButton className={`${classBase}-closeButton`} onClick={onClose} />
+        <Button
+          className={`${classBase}-closeButton`}
+          onClick={onClose}
+          data-icon="close"
+        />
       ) : null}
     </div>
   );

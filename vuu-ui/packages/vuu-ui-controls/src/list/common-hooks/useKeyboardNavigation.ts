@@ -18,14 +18,12 @@ import {
   PageUp,
 } from "./keyUtils";
 import {
-  CollectionItem,
   NavigationHookProps,
   NavigationHookResult,
   getFirstSelectedItem,
   hasSelection,
-  SelectionStrategy,
 } from "../../common-hooks";
-import { getElementByDataIndex } from "@finos/vuu-utils";
+import { getElementByDataIndex, isValidNumber } from "@finos/vuu-utils";
 
 export const LIST_FOCUS_VISIBLE = -2;
 
@@ -47,16 +45,20 @@ function nextItemIdx(count: number, key: string, idx: number) {
   }
 }
 
-const getIndexOfSelectedItem = (
-  items: CollectionItem<unknown>[],
-  selected?: CollectionItem<unknown> | null | CollectionItem<unknown>[]
-) => {
-  const selectedItem = getFirstSelectedItem(selected);
-  if (selectedItem) {
-    return items.indexOf(selectedItem);
-  } else {
-    return -1;
+const getIndexOfSelectedItem = (selected?: string[]) => {
+  const selectedItemId = Array.isArray(selected)
+    ? getFirstSelectedItem(selected)
+    : undefined;
+  if (selectedItemId) {
+    const el = document.getElementById(selectedItemId) as HTMLElement;
+    if (el) {
+      const index = parseInt(el.dataset.index ?? "-1");
+      if (isValidNumber(index)) {
+        return index;
+      }
+    }
   }
+  return -1;
 };
 
 const getStartIdx = (
@@ -136,27 +138,29 @@ const pageUp = async (
   }
 };
 
-const isLeaf = <Item>(item: CollectionItem<Item>): boolean =>
-  !item.header && !item.childNodes;
-const isFocusable = <Item>(item: CollectionItem<Item>) =>
-  isLeaf(item) || item.expanded !== undefined;
+// const isLeaf = <Item>(item: CollectionItem<Item>): boolean =>
+//   !item.header && !item.childNodes;
+const isLeaf = (element?: HTMLElement) => element !== undefined;
+// const isFocusable = <Item>(item: CollectionItem<Item>) =>
+//   isLeaf(item) || item.expanded !== undefined;
+// TODO read dom element and check for leaf item or toggleable group
+const isFocusable = (container: HTMLElement, index: number) => {
+  const targetEl = getElementByDataIndex(container, index);
+  return isLeaf(targetEl);
+};
 
-export const useKeyboardNavigation = <
-  Item,
-  Selection extends SelectionStrategy
->({
+export const useKeyboardNavigation = ({
   containerRef,
   defaultHighlightedIndex = -1,
   disableHighlightOnFocus,
   highlightedIndex: highlightedIndexProp,
-  indexPositions,
   itemCount,
   onHighlight,
   onKeyboardNavigation,
   restoreLastFocus,
   selected,
   viewportItemCount,
-}: NavigationHookProps<Item, Selection>): NavigationHookResult => {
+}: NavigationHookProps): NavigationHookResult => {
   const lastFocus = useRef(-1);
   const [, forceRender] = useState({});
   const [highlightedIndex, setHighlightedIdx, isControlledHighlighting] =
@@ -200,39 +204,43 @@ export const useKeyboardNavigation = <
 
   const nextFocusableItemIdx = useCallback(
     (key = ArrowDown, idx: number = key === ArrowDown ? -1 : itemCount) => {
+      //TODO we don't seem to have selectedhere first time after selection
       if (itemCount === 0) {
         return -1;
       } else {
-        const indexOfSelectedItem = getIndexOfSelectedItem(
-          indexPositions,
-          selected
-        );
+        const isEnd = key === "End";
+        const isHome = key === "Home";
         // The start index is generally the highlightedIdx (passed in as idx).
         // We don't need it for Home and End navigation.
         // Special case where we have selection, but no highlighting - begin
         // navigation from selected item.
+        const indexOfSelectedItem =
+          isEnd || isHome || idx === -1 ? -1 : getIndexOfSelectedItem(selected);
         const startIdx = getStartIdx(key, idx, indexOfSelectedItem, itemCount);
-
         let nextIdx = nextItemIdx(itemCount, key, startIdx);
+
+        const { current: container } = containerRef;
         // Guard against returning zero, when first item is a header or group
         if (
           nextIdx === 0 &&
           key === ArrowUp &&
-          !isFocusable(indexPositions[0])
+          container &&
+          !isFocusable(container, 0)
         ) {
           return idx;
         }
         while (
-          (((key === ArrowDown || key === Home) && nextIdx < itemCount) ||
-            ((key === ArrowUp || key === End) && nextIdx > 0)) &&
-          !isFocusable(indexPositions[nextIdx])
+          (((key === ArrowDown || isHome) && nextIdx < itemCount) ||
+            ((key === ArrowUp || isEnd) && nextIdx > 0)) &&
+          container &&
+          !isFocusable(container, nextIdx)
         ) {
           nextIdx = nextItemIdx(itemCount, key, nextIdx);
         }
         return nextIdx;
       }
     },
-    [indexPositions, itemCount, selected]
+    [containerRef, itemCount, selected]
   );
 
   // does this belong here or should it be a method passed in?
@@ -247,7 +255,7 @@ export const useKeyboardNavigation = <
     } else {
       // If mouse wan't used, then keyboard must have been
       keyboardNavigation.current = true;
-      if (indexPositions.length === 0) {
+      if (itemCount === 0) {
         setHighlightedIndex(LIST_FOCUS_VISIBLE);
       } else if (highlightedIndex !== -1) {
         // We need to force a render here. We're not changing the highlightedIdx, but we want to
@@ -258,10 +266,7 @@ export const useKeyboardNavigation = <
         if (lastFocus.current !== -1) {
           setHighlightedIndex(lastFocus.current);
         } else {
-          const selectedItemIdx = getIndexOfSelectedItem(
-            indexPositions,
-            selected
-          );
+          const selectedItemIdx = getIndexOfSelectedItem(selected);
           if (selectedItemIdx !== -1) {
             setHighlightedIndex(selectedItemIdx);
           } else {
@@ -269,10 +274,7 @@ export const useKeyboardNavigation = <
           }
         }
       } else if (hasSelection(selected)) {
-        const selectedItemIdx = getIndexOfSelectedItem(
-          indexPositions,
-          selected
-        );
+        const selectedItemIdx = getIndexOfSelectedItem(selected);
         setHighlightedIndex(selectedItemIdx);
       } else if (disableHighlightOnFocus !== true) {
         setHighlightedIndex(nextFocusableItemIdx());
@@ -281,7 +283,7 @@ export const useKeyboardNavigation = <
   }, [
     disableHighlightOnFocus,
     highlightedIndex,
-    indexPositions,
+    itemCount,
     nextFocusableItemIdx,
     restoreLastFocus,
     selected,
