@@ -6,7 +6,7 @@
 
 Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
 
-https://vuu.finos.org/docs/introduction/intro
+<https://vuu.finos.org/docs/introduction/intro>
 
 ## Installation - Server
 
@@ -16,7 +16,7 @@ https://vuu.finos.org/docs/introduction/intro
 
 See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have.
 
-#### OS X & Linux:
+#### OS X & Linux
 
 ```sh
 #In your favourite code directory...
@@ -31,7 +31,7 @@ cd example/main
 mvn exec:exec
 ```
 
-#### Windows:
+#### Windows
 
 ```sh
 this should be the same as Linux & macos just with windows adjusted paths
@@ -104,7 +104,7 @@ npm run build
 npm run build:app
 ```
 
-You can now open the demo app in your browser at https://127.0.0.1:8443/index.html
+You can now open the demo app in your browser at <https://127.0.0.1:8443/index.html>
 
 Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
 
