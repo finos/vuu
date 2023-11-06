@@ -73,12 +73,12 @@ class LayoutControllerTest {
         layout.setMetadata(metadata);
 
         layoutRequest = new LayoutRequestDto();
-        MetadataRequestDto metadataRequestDTO = new MetadataRequestDto();
-        metadataRequestDTO.setBaseMetadata(baseMetadata);
+        MetadataRequestDto metadataRequestDto = new MetadataRequestDto();
+        metadataRequestDto.setBaseMetadata(baseMetadata);
         layoutRequest.setDefinition(layout.getDefinition());
-        layoutRequest.setMetadata(metadataRequestDTO);
+        layoutRequest.setMetadata(metadataRequestDto);
 
-        metadataResponse = getMetadataResponseDTO();
+        metadataResponse = getMetadataResponseDto();
 
         expectedLayoutResponse = new LayoutResponseDto();
         expectedLayoutResponse.setId(layout.getId());
@@ -117,7 +117,6 @@ class LayoutControllerTest {
 
     @Test
     void getMetadata_noMetadataExists_returnsEmptyArray() {
-//        when(metadataService.getMetadata()).thenReturn(List.of());
         assertThat(layoutController.getMetadata()).isEmpty();
     }
 
@@ -154,7 +153,7 @@ class LayoutControllerTest {
         verify(layoutService).deleteLayout(VALID_LAYOUT_ID);
     }
 
-    private MetadataResponseDto getMetadataResponseDTO() {
+    private MetadataResponseDto getMetadataResponseDto() {
         MetadataResponseDto metadataResponse = new MetadataResponseDto();
         metadataResponse.setLayoutId(layout.getId());
         metadataResponse.setBaseMetadata(baseMetadata);

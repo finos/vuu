@@ -12,9 +12,7 @@ import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ApplicationLayoutControllerTest {
     private static ApplicationLayoutService mockService;
