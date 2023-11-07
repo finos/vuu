@@ -209,20 +209,32 @@
                 </executions>
             </plugin>
 
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
                         <goals>
-                            <goal>sign</goal>
+                            <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin-->
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Xmx10G</argument>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>-Dvuu.webroot=../../vuu-ui/deployed_apps/app-vuu-example</argument>
+                        <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
+                        <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
+                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
+                        <argument>org.finos.vuu.SimulMain</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
