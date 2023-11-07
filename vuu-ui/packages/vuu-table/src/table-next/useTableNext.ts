@@ -220,10 +220,10 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(
-        `useTableNext handleConfigChanged`,
-        JSON.stringify(tableConfig, null, 2)
-      );
+      // console.log(
+      //   `useTableNext handleConfigChanged`,
+      //   JSON.stringify(tableConfig, null, 2)
+      // );
 
       dispatchColumnAction({
         type: "init",

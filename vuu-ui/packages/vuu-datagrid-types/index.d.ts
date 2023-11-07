@@ -62,7 +62,7 @@ export interface GridConfig extends TableConfig {
   selectionBookendWidth?: number;
 }
 
-export declare type TypeFormatting = {
+export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
   pattern?: string;
@@ -77,7 +77,10 @@ export interface EditValidationRule {
   value?: string;
 }
 
-export interface ColumnTypeRenderer {
+/**
+ * Descibes a custom cell renderer for a Table column
+ */
+export interface ColumnTypeRendering {
   associatedField?: string;
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
@@ -100,13 +103,19 @@ export declare type ColumnTypeSimple =
   | "checkbox";
 
 export declare type ColumnTypeDescriptor = {
-  formatting?: TypeFormatting;
+  formatting?: ColumnTypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer;
+  renderer?: ColumnTypeRendering | MappedValueTypeRenderer;
+};
+
+export declare type ColumnTypeDescriptorCustomRenderer = {
+  formatting?: ColumnTypeFormatting;
+  name: ColumnTypeSimple;
+  renderer: ColumnTypeRendering;
 };
 
 export interface ColumnTypeRendererWithValidationRules
-  extends ColumnTypeRenderer {
+  extends ColumnTypeRendering {
   rules: EditValidationRule[];
 }
 
@@ -149,6 +158,11 @@ export interface ColumnDescriptor {
   sortable?: boolean;
   type?: ColumnType;
   width?: number;
+}
+
+export interface ColumnDescriptorCustomRenderer
+  extends Omit<ColumnDescriptor, "type"> {
+  type: ColumnTypeDescriptorCustomRenderer;
 }
 
 /** This is an internal description of a Column that extends the public

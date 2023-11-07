@@ -17,7 +17,7 @@ const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
   basketTradingSchema: TableSchema;
-  basketTradingConstituentSchema: TableSchema;
+  basketTradingConstituentJoinSchema: TableSchema;
   instrumentsSchema: TableSchema;
 }
 
@@ -25,7 +25,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   const {
     basketSchema,
     basketTradingSchema,
-    basketTradingConstituentSchema,
+    basketTradingConstituentJoinSchema,
     instrumentsSchema,
   } = props;
 
@@ -35,7 +35,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketCount,
     basketSelectorProps,
     contextMenuProps,
-    dataSourceBasketTradingConstituent,
+    dataSourceBasketTradingConstituentJoin,
     dialog,
     onClickAddBasket,
     onSendToMarket,
@@ -43,7 +43,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   } = useBasketTrading({
     basketSchema,
     basketTradingSchema,
-    basketTradingConstituentSchema,
+    basketTradingConstituentJoinSchema,
     instrumentsSchema,
   });
 
@@ -81,13 +81,13 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
-            dataSource={dataSourceBasketTradingConstituent}
-            tableSchema={basketTradingConstituentSchema}
+            dataSource={dataSourceBasketTradingConstituentJoin}
+            tableSchema={basketTradingConstituentJoinSchema}
           />
           <BasketTableLive
             data-tab-title="On Market"
-            dataSource={dataSourceBasketTradingConstituent}
-            tableSchema={basketTradingConstituentSchema}
+            dataSource={dataSourceBasketTradingConstituentJoin}
+            tableSchema={basketTradingConstituentJoinSchema}
           />
         </Stack>
       </FlexboxLayout>

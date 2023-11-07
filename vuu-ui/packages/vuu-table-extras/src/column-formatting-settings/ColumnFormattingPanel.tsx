@@ -1,36 +1,44 @@
-import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
+import {
+  ColumnDescriptor,
+  ColumnDescriptorCustomRenderer,
+  ColumnTypeFormatting,
+  ColumnTypeRendering,
+} from "@finos/vuu-datagrid-types";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
-import { CellRendererDescriptor } from "@finos/vuu-utils";
+import {
+  CellRendererDescriptor,
+  ConfigurationEditorProps,
+  getCellRendererOptions,
+  getConfigurationEditor,
+  isColumnTypeRenderer,
+  isTypeDescriptor,
+} from "@finos/vuu-utils";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
-import { HTMLAttributes, useMemo } from "react";
+import { HTMLAttributes, useCallback, useMemo } from "react";
 import { NumericFormattingSettings } from "./NumericFormattingSettings";
-
-// import "./ColumnTypePanel.css";
 
 const classBase = "vuuColumnFormattingPanel";
 
 export interface ColumnFormattingPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   availableRenderers: CellRendererDescriptor[];
-  selectedCellRenderer?: CellRendererDescriptor;
   column: ColumnDescriptor;
-  onChangeFormatting: (formatting: TypeFormatting) => void;
-  onChangeRenderer: SingleSelectionHandler<CellRendererDescriptor>;
+  onChangeFormatting: (formatting: ColumnTypeFormatting) => void;
+  onChangeRendering: (renderProps: ColumnTypeRendering) => void;
 }
 
 const itemToString = (item: CellRendererDescriptor) => item.label ?? item.name;
 
 export const ColumnFormattingPanel = ({
   availableRenderers,
-  selectedCellRenderer,
   className,
   column,
   onChangeFormatting,
-  onChangeRenderer,
+  onChangeRendering,
   ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
-  const content = useMemo(() => {
+  const contentForType = useMemo(() => {
     switch (column.serverDataType) {
       case "double":
       case "int":
@@ -46,6 +54,42 @@ export const ColumnFormattingPanel = ({
     }
   }, [column, onChangeFormatting]);
 
+  const ConfigEditor = useMemo<
+    React.FC<ConfigurationEditorProps> | undefined
+  >(() => {
+    const { type } = column;
+    if (isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer)) {
+      const cellRendererOptions = getCellRendererOptions(type.renderer.name);
+      return getConfigurationEditor(cellRendererOptions?.configEditor);
+    }
+    return undefined;
+  }, [column]);
+
+  const selectedCellRenderer = useMemo(() => {
+    const { type } = column;
+    const [defaultRenderer] = availableRenderers;
+    const rendererName =
+      isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer)
+        ? type.renderer.name
+        : undefined;
+    const configuredRenderer = availableRenderers.find(
+      (renderer) => renderer.name === rendererName
+    );
+    return configuredRenderer ?? defaultRenderer;
+  }, [availableRenderers, column]);
+
+  const handleChangeRenderer = useCallback<
+    SingleSelectionHandler<CellRendererDescriptor>
+  >(
+    (evt, cellRendererDescriptor) => {
+      const renderProps: ColumnTypeRendering = {
+        name: cellRendererDescriptor.name,
+      };
+      onChangeRendering?.(renderProps);
+    },
+    [onChangeRendering]
+  );
+
   const { serverDataType = "string" } = column;
 
   return (
@@ -59,7 +103,7 @@ export const ColumnFormattingPanel = ({
         <Dropdown<CellRendererDescriptor>
           className={cx(`${classBase}-renderer`)}
           itemToString={itemToString}
-          onSelectionChange={onChangeRenderer}
+          onSelectionChange={handleChangeRenderer}
           selected={selectedCellRenderer}
           source={availableRenderers}
           width="100%"
@@ -68,7 +112,13 @@ export const ColumnFormattingPanel = ({
       <div
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
-        {content}
+        {contentForType}
+        {ConfigEditor ? (
+          <ConfigEditor
+            column={column as ColumnDescriptorCustomRenderer}
+            onChangeRendering={onChangeRendering}
+          />
+        ) : null}
       </div>
     </div>
   );

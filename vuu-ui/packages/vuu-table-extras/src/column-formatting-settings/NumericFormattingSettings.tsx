@@ -1,7 +1,10 @@
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { Switch } from "@salt-ds/lab";
-import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
-import { getTypeSettingsFromColumn } from "@finos/vuu-utils";
+import {
+  ColumnDescriptor,
+  ColumnTypeFormatting,
+} from "@finos/vuu-datagrid-types";
+import { getTypeFormattingFromColumn } from "@finos/vuu-utils";
 import {
   ChangeEvent,
   KeyboardEvent,
@@ -14,16 +17,15 @@ const classBase = "vuuFormattingSettings";
 
 export interface NumericFormattingSettingsProps {
   column: ColumnDescriptor;
-  onChange: (formatting: TypeFormatting) => void;
+  onChange: (formatting: ColumnTypeFormatting) => void;
 }
 
 export const NumericFormattingSettings = ({
   column,
   onChange,
 }: NumericFormattingSettingsProps) => {
-  const [formattingSettings, setFormattingSettings] = useState<TypeFormatting>(
-    getTypeSettingsFromColumn(column)
-  );
+  const [formattingSettings, setFormattingSettings] =
+    useState<ColumnTypeFormatting>(getTypeFormattingFromColumn(column));
 
   const handleInputKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLInputElement>) => {

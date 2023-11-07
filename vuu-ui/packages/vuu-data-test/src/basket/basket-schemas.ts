@@ -6,7 +6,7 @@ export type BasketsTableName =
   | "basketConstituent"
   | "basketTrading"
   | "basketTradingConstituent"
-  | "basketTrdConsPrices"
+  | "basketTradingConstituentJoin"
   | "priceStrategyType";
 
 export const schemas: Readonly<
@@ -83,7 +83,8 @@ export const schemas: Readonly<
     key: "instanceIdRic",
     table: { module: "BASKET", table: "basketTradingConstituent" },
   },
-  basketTrdConsPrices: {
+
+  basketTradingConstituentJoin: {
     columns: [
       { name: "algo", serverDataType: "string" },
       { name: "algoParams", serverDataType: "string" },
@@ -107,6 +108,7 @@ export const schemas: Readonly<
       { name: "priceStrategyId", serverDataType: "int" },
       { name: "quantity", serverDataType: "long" },
       { name: "ric", serverDataType: "string" },
+      { name: "scenario", serverDataType: "string" },
       { name: "side", serverDataType: "string" },
       { name: "venue", serverDataType: "string" },
       { name: "weighting", serverDataType: "double" },

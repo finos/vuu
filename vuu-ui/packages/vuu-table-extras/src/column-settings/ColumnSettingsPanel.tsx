@@ -54,7 +54,6 @@ export const ColumnSettingsPanel = ({
   const {
     availableRenderers,
     editCalculatedColumn,
-    selectedCellRenderer,
     column,
     navigateNextColumn,
     navigatePrevColumn,
@@ -62,7 +61,7 @@ export const ColumnSettingsPanel = ({
     onChange,
     onChangeCalculatedColumnName,
     onChangeFormatting,
-    onChangeRenderer,
+    onChangeRendering,
     onEditCalculatedColumn,
     onInputCommit,
     onSave,
@@ -170,10 +169,9 @@ export const ColumnSettingsPanel = ({
       </FormField>
       <ColumnFormattingPanel
         availableRenderers={availableRenderers}
-        selectedCellRenderer={selectedCellRenderer}
         column={column}
         onChangeFormatting={onChangeFormatting}
-        onChangeRenderer={onChangeRenderer}
+        onChangeRendering={onChangeRendering}
       />
 
       {editCalculatedColumn ? (

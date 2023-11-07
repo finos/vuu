@@ -1,7 +1,7 @@
 import { isTypeDescriptor, roundDecimal } from "@finos/vuu-utils";
 import {
   KeyedColumnDescriptor,
-  TypeFormatting,
+  ColumnTypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { createElement, useRef } from "react";
 
@@ -30,7 +30,7 @@ function numericFormatter(
     alignOnDecimals = false,
     decimals = 4,
     zeroPad = false,
-  }: TypeFormatting = DEFAULT_NUMERIC_FORMATTING,
+  }: ColumnTypeFormatting = DEFAULT_NUMERIC_FORMATTING,
   align: "left" | "right" = "right"
 ) {
   const props = { className: "num" };
