@@ -43,7 +43,7 @@ cd vuu
 #run the maven compile step
 mvn compile
 #cd into vuu, child in repo
-cd vuu
+cd example/main
 #The server should now be started on your machine with Simulation module
 mvn exec:exec
 ```
