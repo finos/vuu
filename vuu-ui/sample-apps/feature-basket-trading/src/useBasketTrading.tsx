@@ -32,7 +32,7 @@ export type BasketTradingHookProps = Pick<
   BasketTradingFeatureProps,
   | "basketSchema"
   | "basketTradingSchema"
-  | "basketTradingConstituentSchema"
+  | "basketTradingConstituentJoinSchema"
   | "instrumentsSchema"
 >;
 
@@ -46,7 +46,7 @@ const NO_STATE = { basketId: undefined } as any;
 export const useBasketTrading = ({
   basketSchema,
   basketTradingSchema,
-  basketTradingConstituentSchema,
+  basketTradingConstituentJoinSchema,
   instrumentsSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
@@ -61,7 +61,7 @@ export const useBasketTrading = ({
     dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
-    dataSourceBasketTradingConstituent,
+    dataSourceBasketTradingConstituentJoin,
     dataSourceInstruments,
     onSendToMarket,
     onTakeOffMarket,
@@ -69,7 +69,7 @@ export const useBasketTrading = ({
     basketInstanceId,
     basketSchema,
     basketTradingSchema,
-    basketTradingConstituentSchema,
+    basketTradingConstituentJoinSchema,
     instrumentsSchema,
   });
 
@@ -134,10 +134,14 @@ export const useBasketTrading = ({
     (basketInstanceId: string) => {
       save?.({ basketInstanceId }, "basket-state");
       const filter = { filter: `instanceId = "${basketInstanceId}"` };
-      dataSourceBasketTradingConstituent.filter = filter;
+      dataSourceBasketTradingConstituentJoin.filter = filter;
       dataSourceBasketTradingControl.filter = filter;
     },
-    [dataSourceBasketTradingConstituent, dataSourceBasketTradingControl, save]
+    [
+      dataSourceBasketTradingConstituentJoin,
+      dataSourceBasketTradingControl,
+      save,
+    ]
   );
 
   const handleAddBasket = useCallback(() => {
@@ -190,7 +194,7 @@ export const useBasketTrading = ({
     basketCount,
     basketSelectorProps,
     contextMenuProps,
-    dataSourceBasketTradingConstituent,
+    dataSourceBasketTradingConstituentJoin,
     onClickAddBasket: handleAddBasket,
     onSendToMarket,
     onTakeOffMarket,

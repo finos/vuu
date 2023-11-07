@@ -5,7 +5,7 @@ import React from "react";
 import { isTypeDescriptor } from "@finos/vuu-utils";
 import { GridCellProps } from "../grid-cells";
 import "./progress-cell.css";
-import { ColumnTypeRenderer } from "@finos/vuu-datagrid-types";
+import { ColumnTypeRendering } from "@finos/vuu-datagrid-types";
 
 const ProgressCell = React.memo(function ProgressCell({
   column,
@@ -18,9 +18,9 @@ const ProgressCell = React.memo(function ProgressCell({
   const value = row[column.key];
   if (
     isTypeDescriptor(type) &&
-    (type.renderer as ColumnTypeRenderer)?.associatedField
+    (type.renderer as ColumnTypeRendering)?.associatedField
   ) {
-    const associatedField = (type.renderer as ColumnTypeRenderer)
+    const associatedField = (type.renderer as ColumnTypeRendering)
       .associatedField as string;
     const associatedValue = row[columnMap[associatedField]];
     if (typeof value === "number" && typeof associatedValue === "number") {

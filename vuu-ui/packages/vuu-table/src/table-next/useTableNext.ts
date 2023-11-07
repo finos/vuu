@@ -159,6 +159,9 @@ export const useTable = ({
     [dataSource.config, dispatchColumnAction, onConfigChange]
   );
 
+  /**
+   * These stateColumns are required only for the duration of a column resize operation
+   */
   const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
@@ -217,10 +220,10 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(
-        `useTableNext handleConfigChanged`,
-        JSON.stringify(tableConfig, null, 2)
-      );
+      // console.log(
+      //   `useTableNext handleConfigChanged`,
+      //   JSON.stringify(tableConfig, null, 2)
+      // );
 
       dispatchColumnAction({
         type: "init",
@@ -368,6 +371,7 @@ export const useTable = ({
               column,
               width,
             });
+            setStateColumns(undefined);
             onConfigChange?.(
               updateTableConfig(tableConfig, {
                 type: "col-size",

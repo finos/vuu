@@ -4,7 +4,7 @@ import type {
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
-  ColumnTypeRenderer,
+  ColumnTypeRendering,
   ColumnTypeWithValidationRules,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
@@ -12,7 +12,7 @@ import type {
   PinLocation,
   TableHeading,
   TableHeadings,
-  TypeFormatting,
+  ColumnTypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -165,6 +165,9 @@ export declare type ColumnTypeSimple =
   | "time"
   | "checkbox";
 
+/**
+ *
+ */
 export const isTypeDescriptor = (
   type?: ColumnType
 ): type is ColumnTypeDescriptor =>
@@ -174,8 +177,8 @@ const EMPTY_COLUMN_MAP = {} as const;
 
 export const isColumnTypeRenderer = (
   renderer?: unknown
-): renderer is ColumnTypeRenderer =>
-  typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
+): renderer is ColumnTypeRendering =>
+  typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
 
 export const hasValidationRules = (
   type?: ColumnType
@@ -748,7 +751,7 @@ export const getDefaultColumnType = (
 
 export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
   column: T,
-  formatting: TypeFormatting
+  formatting: ColumnTypeFormatting
 ): T => {
   const { serverDataType, type = getDefaultColumnType(serverDataType) } =
     column;
@@ -772,11 +775,11 @@ export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
   }
 };
 
-export const updateColumnRenderer = <
+export const updateColumnRenderProps = <
   T extends ColumnDescriptor = ColumnDescriptor
 >(
   column: T,
-  cellRenderer: CellRendererDescriptor
+  renderer: ColumnTypeRendering
 ): T => {
   const { serverDataType, type } = column;
   if (type === undefined) {
@@ -784,9 +787,7 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         name: getDefaultColumnType(serverDataType),
-        renderer: {
-          name: cellRenderer.name,
-        },
+        renderer,
       },
     };
   } else if (isSimpleColumnType(type)) {
@@ -794,9 +795,7 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         name: type,
-        renderer: {
-          name: cellRenderer.name,
-        },
+        renderer,
       },
     };
   } else {
@@ -804,18 +803,17 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         ...type,
-        renderer: {
-          name: cellRenderer.name,
-        },
+        // TODO do we need to preserve any existing attributes from renderer ?
+        renderer,
       },
     };
   }
 };
 
 const NO_TYPE_SETTINGS = {};
-export const getTypeSettingsFromColumn = (
+export const getTypeFormattingFromColumn = (
   column: ColumnDescriptor
-): TypeFormatting => {
+): ColumnTypeFormatting => {
   if (isTypeDescriptor(column.type)) {
     return column.type.formatting ?? NO_TYPE_SETTINGS;
   } else {

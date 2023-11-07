@@ -1,21 +1,19 @@
 import {
   ColumnDescriptor,
   TableConfig,
-  TypeFormatting,
+  ColumnTypeFormatting,
 } from "@finos/vuu-datagrid-types";
 
 import {
   CellRendererDescriptor,
+  ColumnRenderPropsChangeHandler,
   getRegisteredCellRenderers,
-  isColumnTypeRenderer,
-  isTypeDescriptor,
   isValidColumnAlignment,
   isValidPinLocation,
   setCalculatedColumnName,
-  updateColumnRenderer,
+  updateColumnRenderProps,
   updateColumnType,
 } from "@finos/vuu-utils";
-import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   useCallback,
@@ -25,7 +23,6 @@ import {
   useState,
 } from "react";
 import { ColumnSettingsProps } from "./ColumnSettingsPanel";
-import { ColumnExpressionSubmitHandler } from "../column-expression-input";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
@@ -33,6 +30,7 @@ const integerCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (int, long)",
     name: "default-int",
   },
+  ...getRegisteredCellRenderers("int"),
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
@@ -49,6 +47,7 @@ const stringCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (string)",
     name: "default-string",
   },
+  ...getRegisteredCellRenderers("string"),
 ];
 
 const getAvailableCellRenderers = (
@@ -66,26 +65,6 @@ const getAvailableCellRenderers = (
     default:
       return stringCellRenderers;
   }
-};
-
-const getCellRendererDescriptor = (
-  availableRenderers: CellRendererDescriptor[],
-  column: ColumnDescriptor
-) => {
-  if (isTypeDescriptor(column.type)) {
-    const { renderer } = column.type;
-    if (isColumnTypeRenderer(renderer)) {
-      const cellRenderer = availableRenderers.find(
-        (r) => r.name === renderer.name
-      );
-      if (cellRenderer) {
-        return cellRenderer;
-      }
-    }
-  }
-  // returm the appropriate default value for the column
-  const typedAvailableRenderers = getAvailableCellRenderers(column);
-  return typedAvailableRenderers[0];
 };
 
 const getFieldName = (input: HTMLInputElement): string => {
@@ -150,10 +129,6 @@ export const useColumnSettings = ({
     return getAvailableCellRenderers(column);
   }, [column]);
 
-  const selectedCellRendererRef = useRef<CellRendererDescriptor | undefined>(
-    getCellRendererDescriptor(availableRenderers, column)
-  );
-
   const handleInputCommit = useCallback(() => {
     onConfigChange(replaceColumn(tableConfig, column));
   }, [column, onConfigChange, tableConfig]);
@@ -203,28 +178,25 @@ export const useColumnSettings = ({
     setColumn((state) => ({ ...state, name }));
   }, []);
 
-  const handleChangeRenderer = useCallback<
-    SingleSelectionHandler<CellRendererDescriptor>
-  >(
-    (evt, cellRenderer) => {
-      if (cellRenderer) {
-        const newColumn: ColumnDescriptor = updateColumnRenderer(
-          column,
-          cellRenderer
-        );
-        selectedCellRendererRef.current = cellRenderer;
-        setColumn(newColumn);
-        onConfigChange(replaceColumn(tableConfig, newColumn));
-      }
+  const handleChangeFormatting = useCallback(
+    (formatting: ColumnTypeFormatting) => {
+      const newColumn: ColumnDescriptor = updateColumnType(column, formatting);
+      setColumn(newColumn);
+      onConfigChange(replaceColumn(tableConfig, newColumn));
     },
     [column, onConfigChange, tableConfig]
   );
 
-  const handleChangeFormatting = useCallback(
-    (formatting: TypeFormatting) => {
-      const newColumn: ColumnDescriptor = updateColumnType(column, formatting);
-      setColumn(newColumn);
-      onConfigChange(replaceColumn(tableConfig, newColumn));
+  const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
+    (renderProps) => {
+      if (renderProps) {
+        const newColumn: ColumnDescriptor = updateColumnRenderProps(
+          column,
+          renderProps
+        );
+        setColumn(newColumn);
+        onConfigChange(replaceColumn(tableConfig, newColumn));
+      }
     },
     [column, onConfigChange, tableConfig]
   );
@@ -235,14 +207,10 @@ export const useColumnSettings = ({
       const index = columns.indexOf(column) + moveBy;
       const newColumn = columns[index];
       if (newColumn) {
-        selectedCellRendererRef.current = getCellRendererDescriptor(
-          availableRenderers,
-          newColumn
-        );
         setColumn(newColumn);
       }
     },
-    [availableRenderers, column, tableConfig]
+    [column, tableConfig]
   );
   const navigateNextColumn = useCallback(() => {
     navigateColumn({ moveBy: 1 });
@@ -271,7 +239,6 @@ export const useColumnSettings = ({
   return {
     availableRenderers,
     editCalculatedColumn: inEditMode,
-    selectedCellRenderer: selectedCellRendererRef.current,
     column,
     navigateNextColumn,
     navigatePrevColumn,
@@ -279,7 +246,7 @@ export const useColumnSettings = ({
     onChange: handleChange,
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
-    onChangeRenderer: handleChangeRenderer,
+    onChangeRendering: handleChangeRendering,
     onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
     onSave: handleSaveCalculatedColumn,

@@ -1,7 +1,7 @@
 import {
   ColumnDescriptor,
   ColumnTypeValueMap,
-  TypeFormatting,
+  ColumnTypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { roundDecimal } from "./round-decimal";
 import {
@@ -16,7 +16,7 @@ export type ValueFormatters = {
   [key: string]: ValueFormatter;
 };
 
-const DEFAULT_NUMERIC_FORMAT: TypeFormatting = {};
+const DEFAULT_NUMERIC_FORMAT: ColumnTypeFormatting = {};
 
 export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();

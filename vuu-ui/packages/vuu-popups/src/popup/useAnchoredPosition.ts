@@ -18,11 +18,11 @@ const getPositionRelativeToAnchor = (
   placement: PopupPlacement,
   offsetLeft: number,
   offsetTop: number,
-  minWidth?: number,
+  minWidth?: number | string,
   dimensions?: { height: number; width: number }
 ): {
   left: number;
-  minWidth?: number;
+  minWidth?: number | string;
   top: number;
   visibility?: Visibility;
   width?: number;
@@ -66,7 +66,7 @@ const getPositionRelativeToAnchor = (
 
 export type Position = {
   left: number;
-  minWidth?: number;
+  minWidth?: number | string;
   top: number;
   visibility?: Visibility;
   width?: number;

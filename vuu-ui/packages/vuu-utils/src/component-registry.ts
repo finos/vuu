@@ -1,6 +1,7 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
-  ColumnTypeRenderer,
+  ColumnDescriptorCustomRenderer,
+  ColumnTypeRendering,
   EditValidationRule,
   MappedValueTypeRenderer,
   TableCellRendererProps,
@@ -14,8 +15,24 @@ export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
 }
 
+export type PropertyChangeHandler = (
+  propertyName: string,
+  propertyValue: string | number | boolean
+) => void;
+
+export type ColumnRenderPropsChangeHandler = (
+  renderProps: ColumnTypeRendering
+) => void;
+export interface ConfigurationEditorProps {
+  column: ColumnDescriptorCustomRenderer;
+  onChangeRendering: ColumnRenderPropsChangeHandler;
+}
+
+export type ConfigEditorComponent = FC<CellConfigPanelProps>;
+
 const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
-const cellConfigPanelsMap = new Map<string, FC<CellConfigPanelProps>>();
+const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
+const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
 const optionsMap = new Map<string, CellRendererOptions>();
 
@@ -30,7 +47,8 @@ export type ComponentType =
   | "data-edit-validator";
 
 type CellRendererOptions = {
-  [key: string]: unknown;
+  // [key: string]: unknown;
+  configEditor?: string;
   description?: string;
   label?: string;
   serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "json" | "private";
@@ -96,6 +114,13 @@ export function registerComponent<
   }
 }
 
+export const registerConfigurationEditor = (
+  componentName: string,
+  configurationEditor: FC<ConfigurationEditorProps>
+) => {
+  configEditorsMap.set(componentName, configurationEditor);
+};
+
 export const getRegisteredCellRenderers = (
   serverDataType?: VuuColumnDataType | "json"
 ): CellRendererDescriptor[] => {
@@ -113,12 +138,19 @@ export const getRegisteredCellRenderers = (
   }
 };
 
+export const getCellRendererOptions = (renderName: string) =>
+  optionsMap.get(renderName);
+
 export function getCellRenderer(
-  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer
+  renderer?: ColumnTypeRendering | MappedValueTypeRenderer
 ) {
   if (renderer && "name" in renderer) {
     return cellRenderersMap.get(renderer.name);
   }
+}
+
+export function getConfigurationEditor(configEditor = "") {
+  return configEditorsMap.get(configEditor);
 }
 
 export function getCellConfigPanelRenderer(name: string) {

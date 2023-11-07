@@ -1,5 +1,5 @@
 import {
-  ColumnTypeRenderer,
+  ColumnTypeRendering,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { ColumnMap, DataRow, isTypeDescriptor } from "@finos/vuu-utils";
@@ -55,7 +55,7 @@ export const GridCell = React.memo(function GridCell({
   const className = useGridCellClassName(column);
   const { type } = column;
   const rendererName = isTypeDescriptor(type)
-    ? (type?.renderer as ColumnTypeRenderer)?.name
+    ? (type?.renderer as ColumnTypeRendering)?.name
     : null;
   const Cell =
     rendererName &&
