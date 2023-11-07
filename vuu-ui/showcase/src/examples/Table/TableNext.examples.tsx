@@ -81,6 +81,33 @@ export const EditableTableNextArrayData = () => {
           },
         },
       },
+      lotSize: {
+        editable: true,
+        type: {
+          name: "number",
+          renderer: {
+            name: "input-cell",
+          },
+        },
+      },
+      exchange: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "input-cell",
+          },
+        },
+      },
+      ric: {
+        editable: true,
+        type: {
+          name: "string",
+          renderer: {
+            name: "input-cell",
+          },
+        },
+      },
     },
     rangeChangeRowset: "full",
     table: { module: "SIMUL", table: "instruments" },
@@ -95,7 +122,7 @@ export const EditableTableNextArrayData = () => {
       dataSource={dataSource}
       height={645}
       renderBufferSize={10}
-      width={723}
+      width={500}
     />
   );
 };

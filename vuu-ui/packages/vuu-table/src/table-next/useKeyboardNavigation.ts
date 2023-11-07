@@ -60,19 +60,17 @@ const howFarIsCellOutsideViewport = (
   cellEl: HTMLElement
 ): readonly [ScrollDirection | undefined, number | undefined] => {
   //TODO lots of scope for optimisation here
-  const scrollbarContainer = cellEl
-    .closest(".vuuTableNext")
-    ?.querySelector(".vuuTableNext-scrollbarContainer");
-  if (scrollbarContainer) {
-    const viewport = scrollbarContainer?.getBoundingClientRect();
+  const contentContainer = cellEl.closest(".vuuTableNext-contentContainer");
+  if (contentContainer) {
+    const viewport = contentContainer?.getBoundingClientRect();
     const cell = cellEl.closest(".vuuTableNextCell")?.getBoundingClientRect();
     if (cell) {
       if (cell.bottom > viewport.bottom) {
         return ["down", cell.bottom - viewport.bottom];
       } else if (cell.top < viewport.top) {
         return ["up", cell.top - viewport.top];
-      } else if (cell.right < viewport.right) {
-        return ["right", cell.right - viewport.right];
+      } else if (cell.right > viewport.right) {
+        return ["right", cell.right + 6 - viewport.right];
       } else if (cell.left < viewport.left) {
         return ["left", cell.left - viewport.left];
       } else {
@@ -107,7 +105,8 @@ function nextCellPos(
       return [rowIdx + 1, colIdx];
     }
   } else if (key === "ArrowRight") {
-    if (colIdx < columnCount - 1) {
+    // The colIdx is 1 based, because of the selection decorator
+    if (colIdx < columnCount) {
       return [rowIdx, colIdx + 1];
     } else {
       return [rowIdx, colIdx];
@@ -186,7 +185,7 @@ NavigationHookProps) => {
           if (direction && distance) {
             requestScroll?.({ type: "scroll-distance", distance, direction });
           }
-          activeCell.focus();
+          activeCell.focus({ preventScroll: true });
         }
       }
     },
@@ -259,7 +258,6 @@ NavigationHookProps) => {
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
         : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
-      console.log(`nextRowIdx ${nextRowIdx} nextColIdx ${nextColIdx}`);
 
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {

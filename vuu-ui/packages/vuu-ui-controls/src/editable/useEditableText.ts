@@ -1,5 +1,6 @@
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import {
+  FocusEventHandler,
   FormEventHandler,
   KeyboardEvent,
   useCallback,
@@ -34,9 +35,13 @@ export const useEditableText = <
   const isDirtyRef = useRef(false);
   const hasCommittedRef = useRef(false);
 
-  const handleBlur = useCallback(() => {
-    console.log("blur");
-  }, []);
+  // const handleBlur = useCallback<FocusEventHandler>(() => {
+  //   console.log("blur");
+  // }, []);
+
+  // const handleFocus = useCallback<FocusEventHandler>((evt) => {
+  //   console.log(">>>    focus");
+  // }, []);
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
@@ -95,8 +100,9 @@ export const useEditableText = <
   );
 
   return {
-    onBlur: handleBlur,
+    // onBlur: handleBlur,
     onChange: handleChange,
+    // onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     value,
     warningMessage: message,

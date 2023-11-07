@@ -201,7 +201,7 @@ export const useTableScroll = ({
           scrollbarContainer.scrollTo({
             top: newScrollTop,
             left: newScrollLeft,
-            behavior: "auto",
+            behavior: "smooth",
           });
         } else if (scrollRequest.type === "scroll-page") {
           const { direction } = scrollRequest;
