@@ -19,8 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -62,7 +61,8 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(get(BASE_URL).header("username", "new user"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.message", is(errorMessage)));
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains(errorMessage)));
     }
 
     @Test
@@ -146,7 +146,8 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(delete(BASE_URL).header("username", user))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", is("No layout found for user: " + user)));
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains("No layout found for user: " + user)));
     }
 
     @Test

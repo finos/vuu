@@ -7,7 +7,6 @@ import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -23,9 +22,6 @@ public class LayoutService {
             .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
-    public List<Metadata> getMetadata() {
-        return metadataService.getMetadata();
-    }
     public Layout getLayoutByMetadataId(UUID id) {
         return layoutRepository.findLayoutByMetadataId(id);
     }

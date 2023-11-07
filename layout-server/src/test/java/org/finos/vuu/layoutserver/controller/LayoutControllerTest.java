@@ -108,7 +108,7 @@ class LayoutControllerTest {
     void getMetadata_metadataExists_returnsMetadata() {
         List<Metadata> metadataList = List.of(metadata);
 
-        when(layoutService.getMetadata()).thenReturn(metadataList);
+        when(metadataService.getMetadata()).thenReturn(metadataList);
         when(modelMapper.map(metadata, MetadataResponseDto.class))
             .thenReturn(metadataResponse);
 
@@ -117,6 +117,7 @@ class LayoutControllerTest {
 
     @Test
     void getMetadata_noMetadataExists_returnsEmptyArray() {
+        when(metadataService.getMetadata()).thenReturn(List.of());
         assertThat(layoutController.getMetadata()).isEmpty();
     }
 

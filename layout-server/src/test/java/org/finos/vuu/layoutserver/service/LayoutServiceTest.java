@@ -23,8 +23,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LayoutServiceTest {
 
-    @Mock
-    private MetadataService metadataService;
     private static final UUID LAYOUT_ID = UUID.randomUUID();
     public static final UUID METADATA_ID = UUID.randomUUID();
 

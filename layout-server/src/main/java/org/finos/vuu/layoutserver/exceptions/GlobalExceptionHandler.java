@@ -18,36 +18,43 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Object> handleNotFound(HttpServletRequest request, Exception ex) {
+    public ResponseEntity<ErrorResponse> handleNotFound(HttpServletRequest request, Exception ex) {
         return generateResponse(request, ex, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({
             HttpMessageNotReadableException.class,
             MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<Object> handleBadRequest(HttpServletRequest request, Exception ex) {
+    public ResponseEntity<ErrorResponse> handleBadRequest(HttpServletRequest request, Exception ex) {
 
         return generateResponse(request, ex, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(HttpServletRequest request, MethodArgumentNotValidException ex) {
+        return generateResponse(request, ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<ErrorResponse> handleInternalServerError(HttpServletRequest request, Exception ex) {
+        return generateResponse(request, ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<ErrorResponse> generateResponse(HttpServletRequest request,
+                                                    Exception ex,
+                                                    HttpStatus status) {
+        return new ResponseEntity<>(new ErrorResponse(request, List.of(ex.getMessage()), status), status);
+    }
+
+    private ResponseEntity<ErrorResponse> generateResponse(HttpServletRequest request,
+                                                           MethodArgumentNotValidException ex,
+                                                           HttpStatus status) {
         List<String> errors = ex.getFieldErrors()
                 .stream()
                 .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
                 .collect(Collectors.toList());
-        return new ResponseEntity<>(errors.toString(),
-                org.springframework.http.HttpStatus.BAD_REQUEST);
-    }
-    @ExceptionHandler(InternalServerErrorException.class)
-    public ResponseEntity<Object> handleInternalServerError(HttpServletRequest request, Exception ex) {
-        return generateResponse(request, ex, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
-    private ResponseEntity<Object> generateResponse(HttpServletRequest request,
-                                                    Exception ex,
-                                                    HttpStatus status) {
-        return new ResponseEntity<>(new ErrorResponse(request, ex, status), status);
+        return new ResponseEntity<>(new ErrorResponse(request, errors, status), status);
     }
 
 }
