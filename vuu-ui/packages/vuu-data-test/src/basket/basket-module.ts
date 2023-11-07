@@ -1,15 +1,14 @@
 import { VuuModule } from "../vuu-modules";
-import { metadataKeys } from "@finos/vuu-utils";
+import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { BasketsTableName } from "./basket-schemas";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { schemas } from "./basket-schemas";
 import ftse from "./reference-data/ftse100";
-// import { ColumnMap } from "@finos/vuu-utils";
-import {
-  VuuDataRow,
-  VuuMenu,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
+import nasdaq from "./reference-data/nasdaq100";
+import sp500 from "./reference-data/sp500";
+import hsi from "./reference-data/hsi";
+import { VuuMenu } from "@finos/vuu-protocol-types";
+import { Table } from "../Table";
 
 // This is a 'local' columnMap
 const buildDataColumnMap = (tableName: BasketsTableName) =>
@@ -29,48 +28,81 @@ const { KEY } = metadataKeys;
 /**
  * Basket
  */
-const basket: VuuDataRow[] = [
+const basket = new Table(schemas.basket, [
   [".NASDAQ100", ".NASDAQ100", 0, 0],
   [".HSI", ".HSI", 0, 0],
   [".FTSE100", ".FTSE100", 0, 0],
   [".SP500", ".SP500", 0, 0],
-];
+]);
 
 /**
  * BasketConstituent
  */
-const basketConstituent: VuuDataRow[] = [];
 
+const basketConstituentData = [];
 for (const row of ftse) {
   // prettier-ignore
   const [ric, name, lastTrade, change, volume] = row;
-
   const basketId = ".FTSE100";
   const side = "BUY";
   const weighting = 1;
-
-  basketConstituent.push([
-    basketId,
-    change,
-    lastTrade,
-    ric,
-    `${ric}-${basketId}`,
-    side,
-    volume,
-    weighting,
-  ]);
+  // prettier-ignore
+  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
 }
+
+for (const row of hsi) {
+  // prettier-ignore
+  const [name, ric, lastTrade, change, , volume] = row;
+  const basketId = ".HSI";
+  const side = "BUY";
+  const weighting = 1;
+  // prettier-ignore
+  basketConstituentData.push([basketId,change,lastTrade,ric,`${ric}-${basketId}`,side,volume,weighting ]);
+}
+
+for (const row of nasdaq) {
+  // prettier-ignore
+  const [, ric, weighting, lastTrade, change] = row;
+  const basketId = ".NASDAQ100";
+  const side = "BUY";
+  const volume = 1000;
+  // prettier-ignore
+  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
+}
+
+for (const row of sp500) {
+  // prettier-ignore
+  const [, ric, weighting,,change] = row;
+  const basketId = ".SP500";
+  const side = "BUY";
+  const volume = 1000;
+  const lastTrade = 0;
+  // prettier-ignore
+  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
+}
+
+const basketConstituent = new Table(
+  schemas.basketConstituent,
+  basketConstituentData
+);
 
 /**
  * BasketTrading
  */
-const basketTrading: VuuDataRow[] = [];
+const basketTrading = new Table(schemas.basketTrading, []);
 
 let basketIncrement = 1;
 /**
  * BasketTradingConstituent
  */
-const basketTradingConstituent: VuuDataRow[] = [];
+const basketTradingConstituent = new Table(
+  schemas.basketTradingConstituent,
+  []
+);
+const basketTradingConstituentJoin = new Table(
+  schemas.basketTradingConstituentJoin,
+  []
+);
 
 function createTradingBasket(basketId: string, basketName: string) {
   const instanceId = `steve-${basketIncrement++}`;
@@ -85,10 +117,13 @@ function createTradingBasket(basketId: string, basketName: string) {
     1_250_000,
     100,
   ];
-  basketTrading.push(basketTradingRow);
+
+  basketTrading.insert(basketTradingRow);
 
   const { basketId: key } = buildDataColumnMap("basketConstituent");
-  const constituents = basketConstituent.filter((c) => c[key] === basketId);
+  const constituents = basketConstituent.data.filter(
+    (c) => c[key] === basketId
+  );
   constituents.forEach(([, , , ric, , , volume, weighting]) => {
     const row = [
       "algo1",
@@ -109,7 +144,7 @@ function createTradingBasket(basketId: string, basketName: string) {
       "LSE",
       weighting,
     ];
-    basketTradingConstituent.push(row);
+    basketTradingConstituent.insert(row);
   });
 }
 
@@ -124,11 +159,14 @@ async function createNewBasket(rpcRequest: any) {
 
 //-------------------
 
-const tables: Record<BasketsTableName, VuuDataRow[]> = {
+const tables: Record<BasketsTableName, Table> = {
+  algoType: new Table(schemas.algoType, []),
   basket,
   basketConstituent,
   basketTrading,
   basketTradingConstituent,
+  basketTradingConstituentJoin,
+  priceStrategyType: new Table(schemas.priceStrategyType, []),
 };
 
 const menus: Record<BasketsTableName, VuuMenu | undefined> = {
@@ -147,7 +185,7 @@ const menus: Record<BasketsTableName, VuuMenu | undefined> = {
   basketConstituent: undefined,
   basketTrading: undefined,
   basketTradingConstituent: undefined,
-  basketTrdConsPrices: undefined,
+  basketTradingConstituentJoin: undefined,
   priceStrategyType: undefined,
 };
 
@@ -167,20 +205,8 @@ const services: Record<BasketsTableName, RpcService[] | undefined> = {
   basketConstituent: undefined,
   basketTrading: undefined,
   basketTradingConstituent: undefined,
-  basketTrdConsPrices: undefined,
+  basketTradingConstituentJoin: undefined,
   priceStrategyType: undefined,
-};
-
-export const populateArray = (tableName: BasketsTableName, count: number) => {
-  const table = tables[tableName];
-  const data: Array<VuuRowDataItemType[]> = [];
-  for (let i = 0; i < count; i++) {
-    if (i >= table.length) {
-      break;
-    }
-    data[i] = table[i].slice(0, 7);
-  }
-  return data;
 };
 
 const getColumnDescriptors = (tableName: BasketsTableName) => {
@@ -190,10 +216,9 @@ const getColumnDescriptors = (tableName: BasketsTableName) => {
 
 const createDataSource = (tableName: BasketsTableName) => {
   const columnDescriptors = getColumnDescriptors(tableName);
-  const dataArray = populateArray(tableName, 100);
   return new TickingArrayDataSource({
     columnDescriptors,
-    data: dataArray,
+    table: tables[tableName],
     menu: menus[tableName],
     rpcServices: services[tableName],
     // updateGenerator: createUpdateGenerator?.(),

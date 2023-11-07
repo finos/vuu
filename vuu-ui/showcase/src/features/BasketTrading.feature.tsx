@@ -6,7 +6,7 @@ import VuuBasketTradingFeature, {
 import { useViewContext } from "@finos/vuu-layout";
 import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { createArrayDataSource, vuuModule } from "@finos/vuu-data-test";
+import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,
@@ -17,18 +17,23 @@ export const BasketTradingFeature = ({
   const { saveSession } = useViewContext();
 
   useMemo(() => {
-    const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
-      ["data-source-basket", basketSchema],
-      ["data-source-basket-trading-control", basketTradingSchema],
-      ["data-source-basket-trading-search", basketTradingSchema],
+    const dataSourceConfig: [
+      basketDataSourceKey,
+      TableSchema,
+      VuuModuleName
+    ][] = [
+      ["data-source-basket", basketSchema, "BASKET"],
+      ["data-source-basket-trading-control", basketTradingSchema, "BASKET"],
+      ["data-source-basket-trading-search", basketTradingSchema, "BASKET"],
       [
         "data-source-basket-trading-constituent-join",
         basketTradingConstituentJoinSchema,
+        "BASKET",
       ],
-      ["data-source-instruments", instrumentsSchema],
+      ["data-source-instruments", instrumentsSchema, "SIMUL"],
     ];
-    for (const [key, schema] of dataSourceConfig) {
-      const dataSource = createArrayDataSource({ table: schema.table });
+    for (const [key, schema, module] of dataSourceConfig) {
+      const dataSource = vuuModule(module).createDataSource(schema.table.table);
       saveSession?.(dataSource, key);
     }
   }, [

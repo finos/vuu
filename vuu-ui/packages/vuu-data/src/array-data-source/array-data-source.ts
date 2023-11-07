@@ -437,7 +437,7 @@ export class ArrayDataSource
     console.log(`delete row ${row.join(",")}`);
   }
 
-  protected insert(row: VuuRowDataItemType[]) {
+  protected insert = (row: VuuRowDataItemType[]) => {
     // TODO take sorting, filtering. grouping into account
     console.log("insert row", {
       lastRange: this.lastRangeServed,
@@ -449,7 +449,7 @@ export class ArrayDataSource
     if (rowIdx >= from && rowIdx < to) {
       this.sendRowsToClient();
     }
-  }
+  };
 
   private setRange(range: VuuRange, forceFullRefresh = false) {
     this.#range = range;

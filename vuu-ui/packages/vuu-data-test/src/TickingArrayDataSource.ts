@@ -8,7 +8,6 @@ import {
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
 import {
-  RowUpdates,
   UpdateGenerator,
   UpdateHandler,
 } from "@finos/vuu-data-test/src/rowUpdates";
@@ -18,7 +17,9 @@ import {
   ClientToServerMenuRPC,
   VuuMenu,
   VuuRange,
+  VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { Table } from "./Table";
 
 export type RpcService = {
   rpcName: string;
@@ -26,30 +27,41 @@ export type RpcService = {
 };
 
 export interface TickingArrayDataSourceConstructorProps
-  extends ArrayDataSourceConstructorProps {
+  extends Omit<ArrayDataSourceConstructorProps, "data"> {
+  data?: Array<VuuRowDataItemType[]>;
   menu?: VuuMenu;
   rpcServices?: RpcService[];
+  table?: Table;
   updateGenerator?: UpdateGenerator;
 }
 
-//TODO this should accept a Table object rather than raw data array
-// Table will emit events. These will cause update messages to user
-// if within viewport
 export class TickingArrayDataSource extends ArrayDataSource {
   #rpcServices: RpcService[] | undefined;
   #updateGenerator: UpdateGenerator | undefined;
   constructor({
+    data,
     rpcServices,
+    table,
     updateGenerator,
     menu,
     ...arrayDataSourceProps
   }: TickingArrayDataSourceConstructorProps) {
-    super(arrayDataSourceProps);
+    if (data === undefined && table === undefined) {
+      throw Error("TickingArrayDataSource must be constructed with data");
+    }
+    super({
+      ...arrayDataSourceProps,
+      data: data ?? table?.data ?? [],
+    });
     this._menu = menu;
     this.#rpcServices = rpcServices;
     this.#updateGenerator = updateGenerator;
     updateGenerator?.setDataSource(this);
     updateGenerator?.setUpdateHandler(this.processUpdates);
+
+    if (table) {
+      table.on("insert", this.insert);
+    }
   }
 
   async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {

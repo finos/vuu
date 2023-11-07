@@ -1,7 +1,16 @@
 import { ArrayDataSource } from "@finos/vuu-data";
 import { VuuRange, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import type {
+  RowDelete,
+  RowInsert,
+  RowUpdates,
+  UpdateGenerator,
+  UpdateHandler,
+} from "../rowUpdates";
 import { random } from "./reference-data";
-import type { RowUpdates, UpdateGenerator, UpdateHandler } from "../rowUpdates";
+import { metadataKeys } from "@finos/vuu-utils";
+import { count } from "console";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;
@@ -27,12 +36,21 @@ const createOrder = (): ["I", ...VuuRowDataItemType[]] => {
   ];
 };
 
+type OrderPhase = "create-order" | "fill-order" | "remove-order";
+
 export class OrderUpdateGenerator implements UpdateGenerator {
   private dataSource: ArrayDataSource | undefined;
   private range: VuuRange | undefined;
   private updateHandler: UpdateHandler | undefined;
   private updating = false;
   private timer: number | undefined;
+  private phase: OrderPhase = "create-order";
+  private orderCount: number;
+  private columnMap: ColumnMap;
+
+  constructor(orderCount = 20) {
+    this.orderCount = orderCount;
+  }
 
   setRange(range: VuuRange) {
     this.range = range;
@@ -43,6 +61,7 @@ export class OrderUpdateGenerator implements UpdateGenerator {
 
   setDataSource(dataSource: ArrayDataSource) {
     this.dataSource = dataSource;
+    this.columnMap = buildColumnMap(dataSource.columns);
   }
 
   setUpdateHandler(updateHandler: UpdateHandler) {
@@ -66,18 +85,63 @@ export class OrderUpdateGenerator implements UpdateGenerator {
   }
 
   update = () => {
-    if (this.range && this.updateHandler) {
-      const updates: RowUpdates[] = [];
+    const updates: (RowUpdates | RowInsert | RowDelete)[] = [];
 
-      updates.push(createOrder());
+    switch (this.phase) {
+      case "create-order": {
+        updates.push(createOrder());
 
-      if (updates.length > 0) {
-        this.updateHandler(updates);
+        const data = this.dataSource?.data;
+        if (data && data.length >= this.orderCount) {
+          console.log("phase >>> fill");
+          this.phase = "fill-order";
+        }
+
+        break;
       }
 
-      if (_orderId > 40) {
-        this.updating = false;
+      case "fill-order": {
+        console.log("fill-order");
+        const data = this.dataSource?.data;
+        let filledCount = 0;
+        if (data) {
+          const count = data.length;
+          const { IDX } = metadataKeys;
+          const { filledQuantity: filledKey, quantity: qtyKey } =
+            this.columnMap;
+          for (const order of data) {
+            const {
+              [IDX]: rowIdx,
+              [filledKey]: filledQty,
+              [qtyKey]: quantity,
+            } = order;
+            if (filledQty < quantity) {
+              const newFilledQty = Math.min(
+                quantity,
+                Math.max(100, filledQty * 1.1)
+              );
+              updates.push(["U", rowIdx, filledKey, newFilledQty]);
+            } else {
+              filledCount += 1;
+              // schedule for delete
+            }
+          }
+          if (filledCount === count) {
+            console.log(">>> remove phase ");
+            this.phase = "remove-order";
+          }
+        }
+
+        break;
       }
+
+      case "remove-order": {
+        break;
+      }
+    }
+
+    if (updates.length > 0) {
+      this.updateHandler?.(updates);
     }
 
     if (this.updating) {
