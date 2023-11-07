@@ -13,8 +13,8 @@ import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContaine
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
-import org.finos.vuu.provider.simulation.{SimulatedBigInstrumentsProvider, SimulatedPricesProvider}
-import org.finos.vuu.provider.{Provider, ProviderContainer, RpcProvider}
+import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
+import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 
 

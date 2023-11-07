@@ -5,6 +5,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core._
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.authn.AuthNModule
 import org.finos.vuu.core.module.auths.PermissionModule
@@ -15,7 +16,6 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.core._
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}

@@ -2,11 +2,10 @@ package org.finos.vuu.core.module.basket
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, TableDef, ViewPortDef, VisualLinks}
-import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
+import org.finos.vuu.api._
+import org.finos.vuu.core.module.basket.provider._
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService}
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -22,11 +21,7 @@ object BasketModule extends DefaultModule {
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
-    import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B}
-    import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC}
-    import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT}
-    import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentColumnNames => BTC}
-    import org.finos.vuu.core.module.basket.BasketModule.{PriceStrategy => PS}
+    import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
 
     ModuleFactory.withNamespace(NAME)
       .addTable(

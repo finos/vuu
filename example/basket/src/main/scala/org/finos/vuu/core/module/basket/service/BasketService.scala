@@ -6,9 +6,9 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.viewport.{NoAction, SelectionViewPortMenuItem, ViewPortAction, ViewPortMenu, ViewPortSelection}
+import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.viewport._
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -20,9 +20,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
 
 //private val counter = new AtomicInteger(0)
 
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT}
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC}
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentColumnNames => BTC}
+  import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
   private def getAndPadCounter(session: ClientSessionId): String = {
     val counterValue = counter.incrementAndGet()
