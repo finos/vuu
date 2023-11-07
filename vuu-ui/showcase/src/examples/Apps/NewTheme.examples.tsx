@@ -3,7 +3,7 @@ import {
   registerComponent,
   useLayoutContextMenuItems,
 } from "@finos/vuu-layout";
-import { ContextMenuProvider, Dialog, useDialog } from "@finos/vuu-popups";
+import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
@@ -73,9 +73,8 @@ const features: FeatureProps[] = [
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
       basketSchema: schemas.basket,
-      // basketDefinitionsSchema: schemas.basketDefinitions,
-      // basketDesignSchema: schemas.basketDesign,
-      // basketOrdersSchema: schemas.basketOrders,
+      basketTradingSchema: schemas.basketTrading,
+      basketTradingConstituentJoinSchema: schemas.basketTradingConstituentJoin,
       instrumentsSchema: schemas.instruments,
     },
   },

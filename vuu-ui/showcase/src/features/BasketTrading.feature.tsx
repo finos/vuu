@@ -10,31 +10,31 @@ import { createArrayDataSource } from "../examples/utils/createArrayDataSource";
 
 export const BasketTradingFeature = ({
   basketSchema,
-  // basketDefinitionsSchema,
-  // basketDesignSchema,
-  // basketOrdersSchema,
+  basketTradingSchema,
+  basketTradingConstituentJoinSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
 
   useMemo(() => {
-    const dataSourceConfig: [basketDataSourceKey, TableSchema, number?][] = [
-      ["data-source-basket", basketSchema, 4],
-      // ["data-source-basket-definitions", basketDefinitionsSchema, 5],
-      // ["data-source-basket-definitions-search", basketDefinitionsSchema, 5],
-      // ["data-source-basket-design", basketDesignSchema],
-      // ["data-source-basket-orders", basketOrdersSchema],
+    const dataSourceConfig: [basketDataSourceKey, TableSchema][] = [
+      ["data-source-basket", basketSchema],
+      ["data-source-basket-trading-control", basketTradingSchema],
+      ["data-source-basket-trading-search", basketTradingSchema],
+      [
+        "data-source-basket-trading-constituent-join",
+        basketTradingConstituentJoinSchema,
+      ],
       ["data-source-instruments", instrumentsSchema],
     ];
-    for (const [key, schema, count] of dataSourceConfig) {
-      const dataSource = createArrayDataSource({ count, table: schema.table });
+    for (const [key, schema] of dataSourceConfig) {
+      const dataSource = createArrayDataSource({ table: schema.table });
       saveSession?.(dataSource, key);
     }
   }, [
     basketSchema,
-    // basketDefinitionsSchema,
-    // basketDesignSchema,
-    // basketOrdersSchema,
+    basketTradingConstituentJoinSchema,
+    basketTradingSchema,
     instrumentsSchema,
     saveSession,
   ]);
@@ -42,9 +42,8 @@ export const BasketTradingFeature = ({
   return (
     <VuuBasketTradingFeature
       basketSchema={basketSchema}
-      // basketDefinitionsSchema={basketDefinitionsSchema}
-      // basketDesignSchema={basketDesignSchema}
-      // basketOrdersSchema={basketOrdersSchema}
+      basketTradingSchema={basketTradingSchema}
+      basketTradingConstituentJoinSchema={basketTradingConstituentJoinSchema}
       instrumentsSchema={instrumentsSchema}
     />
   );
