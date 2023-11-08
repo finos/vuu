@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
 class LayoutServiceTest {
 
     private static final UUID LAYOUT_ID = UUID.randomUUID();
-    public static final UUID METADATA_ID = UUID.randomUUID();
 
     @Mock
     private LayoutRepository layoutRepository;
@@ -42,12 +41,12 @@ class LayoutServiceTest {
         baseMetadata.setScreenshot("Test Screenshot");
         baseMetadata.setUser("Test User");
 
-        Metadata metadata = Metadata.builder().id(METADATA_ID).baseMetadata(baseMetadata).build();
+        Metadata metadata = Metadata.builder().id(LAYOUT_ID).baseMetadata(baseMetadata).build();
 
         layout = new Layout();
+        layout.setMetadata(metadata);
         layout.setId(LAYOUT_ID);
         layout.setDefinition("");
-        layout.setMetadata(metadata);
     }
 
     @Test
@@ -62,14 +61,14 @@ class LayoutServiceTest {
         when(layoutRepository.findById(LAYOUT_ID)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class,
-            () -> layoutService.getLayout(LAYOUT_ID));
+                () -> layoutService.getLayout(LAYOUT_ID));
     }
 
     @Test
-    void createLayout_anyLayout_returnsLayoutId() {
+    void createLayout_anyLayout_returnsNewLayout() {
         when(layoutRepository.save(layout)).thenReturn(layout);
 
-        assertThat(layoutService.createLayout(layout)).isEqualTo(LAYOUT_ID);
+        assertThat(layoutService.createLayout(layout)).isEqualTo(layout);
     }
 
     @Test
@@ -86,7 +85,7 @@ class LayoutServiceTest {
         when(layoutRepository.findById(LAYOUT_ID)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class,
-            () -> layoutService.updateLayout(LAYOUT_ID, layout));
+                () -> layoutService.updateLayout(LAYOUT_ID, layout));
     }
 
     @Test
@@ -99,10 +98,10 @@ class LayoutServiceTest {
     @Test
     void deleteLayout_noLayoutExists_throwsNoSuchElementException() {
         doThrow(new EmptyResultDataAccessException(1))
-            .when(layoutRepository).deleteById(LAYOUT_ID);
+                .when(layoutRepository).deleteById(LAYOUT_ID);
 
         assertThrows(NoSuchElementException.class,
-            () -> layoutService.deleteLayout(LAYOUT_ID));
+                () -> layoutService.deleteLayout(LAYOUT_ID));
 
         verify(layoutRepository, times(1)).deleteById(LAYOUT_ID);
     }

@@ -15,19 +15,18 @@ import java.util.UUID;
 public class LayoutService {
 
     private final LayoutRepository layoutRepository;
-    private final MetadataService metadataService;
 
     public Layout getLayout(UUID id) {
         return layoutRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
+                .orElseThrow(() -> new NoSuchElementException("Layout with ID '" + id + "' not found"));
     }
 
-    public Layout getLayoutByMetadataId(UUID id) {
-        return layoutRepository.findLayoutByMetadataId(id);
-    }
+    public Layout createLayout(Layout layout) {
+        UUID id = UUID.randomUUID();
 
-    public UUID createLayout(Layout layout) {
-        return layoutRepository.save(layout).getId();
+        layout.setId(id);
+
+        return layoutRepository.save(layout);
     }
 
     public void updateLayout(UUID layoutId, Layout newLayout) {
@@ -35,9 +34,10 @@ public class LayoutService {
         Metadata newMetadata = newLayout.getMetadata();
 
         Metadata updatedMetadata = Metadata.builder()
-            .baseMetadata(newMetadata.getBaseMetadata())
-            .updated(LocalDate.now())
-            .build();
+                .baseMetadata(newMetadata.getBaseMetadata())
+                .updated(LocalDate.now())
+                .id(layoutToUpdate.getMetadata().getId())
+                .build();
 
         layoutToUpdate.setDefinition(newLayout.getDefinition());
         layoutToUpdate.setMetadata(updatedMetadata);

@@ -48,9 +48,9 @@ public class LayoutController {
     public List<MetadataResponseDto> getMetadata() {
 
         return metadataService.getMetadata()
-            .stream()
-            .map(metadata -> mapper.map(metadata, MetadataResponseDto.class))
-            .collect(java.util.stream.Collectors.toList());
+                .stream()
+                .map(metadata -> mapper.map(metadata, MetadataResponseDto.class))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**
@@ -64,15 +64,13 @@ public class LayoutController {
     public LayoutResponseDto createLayout(@RequestBody @Valid LayoutRequestDto layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
-        Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
-
-        return mapper.map(createdLayout, LayoutResponseDto.class);
+        return mapper.map(layoutService.createLayout(layout), LayoutResponseDto.class);
     }
 
     /**
      * Updates the specified layout
      *
-     * @param id        ID of the layout to update
+     * @param id     ID of the layout to update
      * @param layout the new layout
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)

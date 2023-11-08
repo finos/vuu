@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 public class MetadataResponseDto {
 
-    private UUID layoutId;
+    private UUID id;
 
     @JsonUnwrapped
     BaseMetadata baseMetadata;

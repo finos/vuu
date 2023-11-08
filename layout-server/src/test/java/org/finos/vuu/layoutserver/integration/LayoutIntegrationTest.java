@@ -37,6 +37,7 @@ public class LayoutIntegrationTest {
     private static final String DEFAULT_LAYOUT_GROUP = "Default layout group";
     private static final String DEFAULT_LAYOUT_SCREENSHOT = "Default layout screenshot";
     private static final String DEFAULT_LAYOUT_USER = "Default layout user";
+    private static final UUID DEFAULT_LAYOUT_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -111,8 +112,10 @@ public class LayoutIntegrationTest {
 
     @Test
     void getMetadata_multipleMetadataExists_returnsAllMetadata() throws Exception {
-        Layout layout1 = createDefaultLayoutInDatabase();
-        Layout layout2 = createDefaultLayoutInDatabase();
+        UUID layout1Id = UUID.randomUUID();
+        UUID layout2Id = UUID.randomUUID();
+        Layout layout1 = createLayoutWithIdInDatabase(layout1Id);
+        Layout layout2 = createLayoutWithIdInDatabase(layout2Id);
         layout2.setDefinition("Different definition");
         layout2.getMetadata().getBaseMetadata().setName("Different name");
         layout2.getMetadata().getBaseMetadata().setGroup("Different group");
@@ -421,6 +424,26 @@ public class LayoutIntegrationTest {
 
         layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
         layout.setMetadata(metadata);
+        layout.setId(DEFAULT_LAYOUT_ID);
+
+        return layoutRepository.save(layout);
+    }
+
+    private Layout createLayoutWithIdInDatabase(UUID id) {
+        Layout layout = new Layout();
+        Metadata metadata = new Metadata();
+        BaseMetadata baseMetadata = new BaseMetadata();
+
+        baseMetadata.setName(DEFAULT_LAYOUT_NAME);
+        baseMetadata.setGroup(DEFAULT_LAYOUT_GROUP);
+        baseMetadata.setScreenshot(DEFAULT_LAYOUT_SCREENSHOT);
+        baseMetadata.setUser(DEFAULT_LAYOUT_USER);
+
+        metadata.setBaseMetadata(baseMetadata);
+
+        layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
+        layout.setMetadata(metadata);
+        layout.setId(id);
 
         return layoutRepository.save(layout);
     }

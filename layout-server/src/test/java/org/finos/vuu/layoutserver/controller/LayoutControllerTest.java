@@ -34,9 +34,8 @@ class LayoutControllerTest {
     private static final String LAYOUT_NAME = "Test Layout";
     private static final String LAYOUT_SCREENSHOT = "Test Screenshot";
     private static final String LAYOUT_USER = "Test User";
-    private static final UUID VALID_LAYOUT_ID = UUID.randomUUID();
-    private static final UUID VALID_METADATA_ID = UUID.randomUUID();
-    private static final UUID DOES_NOT_EXIST_LAYOUT_ID = UUID.randomUUID();
+    private static final UUID VALID_ID = UUID.randomUUID();
+    private static final UUID DOES_NOT_EXIST_ID = UUID.randomUUID();
 
     @Mock
     private LayoutService layoutService;
@@ -65,12 +64,12 @@ class LayoutControllerTest {
         baseMetadata.setGroup(LAYOUT_GROUP);
         baseMetadata.setScreenshot(LAYOUT_SCREENSHOT);
 
-        metadata = Metadata.builder().id(VALID_METADATA_ID).baseMetadata(baseMetadata).build();
+        metadata = Metadata.builder().id(VALID_ID).baseMetadata(baseMetadata).build();
 
         layout = new Layout();
-        layout.setId(VALID_LAYOUT_ID);
-        layout.setDefinition(LAYOUT_DEFINITION);
         layout.setMetadata(metadata);
+        layout.setId(VALID_ID);
+        layout.setDefinition(LAYOUT_DEFINITION);
 
         layoutRequest = new LayoutRequestDto();
         MetadataRequestDto metadataRequestDto = new MetadataRequestDto();
@@ -90,18 +89,18 @@ class LayoutControllerTest {
 
     @Test
     void getLayout_layoutExists_returnsLayout() {
-        when(layoutService.getLayout(VALID_LAYOUT_ID)).thenReturn(layout);
+        when(layoutService.getLayout(VALID_ID)).thenReturn(layout);
         when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(expectedLayoutResponse);
-        assertThat(layoutController.getLayout(VALID_LAYOUT_ID)).isEqualTo(expectedLayoutResponse);
+        assertThat(layoutController.getLayout(VALID_ID)).isEqualTo(expectedLayoutResponse);
     }
 
     @Test
     void getLayout_layoutDoesNotExist_throwsNoSuchElementException() {
-        when(layoutService.getLayout(DOES_NOT_EXIST_LAYOUT_ID))
-            .thenThrow(NoSuchElementException.class);
+        when(layoutService.getLayout(DOES_NOT_EXIST_ID))
+                .thenThrow(NoSuchElementException.class);
 
         assertThrows(NoSuchElementException.class,
-            () -> layoutController.getLayout(DOES_NOT_EXIST_LAYOUT_ID));
+                () -> layoutController.getLayout(DOES_NOT_EXIST_ID));
     }
 
     @Test
@@ -110,7 +109,7 @@ class LayoutControllerTest {
 
         when(metadataService.getMetadata()).thenReturn(metadataList);
         when(modelMapper.map(metadata, MetadataResponseDto.class))
-            .thenReturn(metadataResponse);
+                .thenReturn(metadataResponse);
 
         assertThat(layoutController.getMetadata()).isEqualTo(List.of(metadataResponse));
     }
@@ -125,11 +124,9 @@ class LayoutControllerTest {
     void createLayout_validLayout_returnsCreatedLayout() {
         Layout layoutWithoutIds = layout;
         layoutWithoutIds.setId(null);
-        layoutWithoutIds.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layoutWithoutIds);
-        when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout.getId());
-        when(layoutService.getLayout(layout.getId())).thenReturn(layout);
+        when(layoutService.createLayout(layoutWithoutIds)).thenReturn(layout);
         when(modelMapper.map(layout, LayoutResponseDto.class)).thenReturn(expectedLayoutResponse);
 
         assertThat(layoutController.createLayout(layoutRequest)).isEqualTo(expectedLayoutResponse);
@@ -138,25 +135,25 @@ class LayoutControllerTest {
     @Test
     void updateLayout_validLayout_callsLayoutService() {
         layout.setId(null);
-        layout.getMetadata().setId(null);
+        // layout.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layout);
 
-        layoutController.updateLayout(VALID_LAYOUT_ID, layoutRequest);
+        layoutController.updateLayout(VALID_ID, layoutRequest);
 
-        verify(layoutService).updateLayout(VALID_LAYOUT_ID, layout);
+        verify(layoutService).updateLayout(VALID_ID, layout);
     }
 
     @Test
     void deleteLayout__validId_callsLayoutService() {
-        layoutController.deleteLayout(VALID_LAYOUT_ID);
+        layoutController.deleteLayout(VALID_ID);
 
-        verify(layoutService).deleteLayout(VALID_LAYOUT_ID);
+        verify(layoutService).deleteLayout(VALID_ID);
     }
 
     private MetadataResponseDto getMetadataResponseDto() {
         MetadataResponseDto metadataResponse = new MetadataResponseDto();
-        metadataResponse.setLayoutId(layout.getId());
+        metadataResponse.setId(layout.getId());
         metadataResponse.setBaseMetadata(baseMetadata);
         metadataResponse.setCreated(layout.getMetadata().getCreated());
         metadataResponse.setUpdated(layout.getMetadata().getUpdated());

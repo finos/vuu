@@ -10,7 +10,6 @@ import java.util.UUID;
 public class Layout {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
@@ -19,4 +18,9 @@ public class Layout {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "metadata_id", referencedColumnName = "id")
     private Metadata metadata;
+
+    public void setId(UUID id) {
+        this.id=id;
+        this.metadata.setId(id);
+    }
 }
