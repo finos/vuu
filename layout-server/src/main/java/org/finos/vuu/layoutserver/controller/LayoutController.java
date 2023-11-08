@@ -1,27 +1,20 @@
 package org.finos.vuu.layoutserver.controller;
 
-import java.util.List;
-import java.util.UUID;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.LayoutResponseDTO;
-import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.response.LayoutResponseDto;
+import org.finos.vuu.layoutserver.dto.response.MetadataResponseDto;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.service.LayoutService;
 import org.finos.vuu.layoutserver.service.MetadataService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -41,8 +34,8 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public LayoutResponseDTO getLayout(@PathVariable UUID id) {
-        return mapper.map(layoutService.getLayout(id), LayoutResponseDTO.class);
+    public LayoutResponseDto getLayout(@PathVariable UUID id) {
+        return mapper.map(layoutService.getLayout(id), LayoutResponseDto.class);
     }
 
     /**
@@ -52,11 +45,11 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/metadata")
-    public List<MetadataResponseDTO> getMetadata() {
+    public List<MetadataResponseDto> getMetadata() {
 
         return metadataService.getMetadata()
             .stream()
-            .map(metadata -> mapper.map(metadata, MetadataResponseDTO.class))
+            .map(metadata -> mapper.map(metadata, MetadataResponseDto.class))
             .collect(java.util.stream.Collectors.toList());
     }
 
@@ -68,12 +61,12 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public LayoutResponseDTO createLayout(@Valid @RequestBody LayoutRequestDTO layoutToCreate) {
+    public LayoutResponseDto createLayout(@RequestBody @Valid LayoutRequestDto layoutToCreate) {
         Layout layout = mapper.map(layoutToCreate, Layout.class);
 
         Layout createdLayout = layoutService.getLayout(layoutService.createLayout(layout));
 
-        return mapper.map(createdLayout, LayoutResponseDTO.class);
+        return mapper.map(createdLayout, LayoutResponseDto.class);
     }
 
     /**
@@ -84,7 +77,7 @@ public class LayoutController {
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateLayout(@PathVariable UUID id, @Valid @RequestBody LayoutRequestDTO layout) {
+    public void updateLayout(@PathVariable UUID id, @RequestBody @Valid LayoutRequestDto layout) {
         Layout newLayout = mapper.map(layout, Layout.class);
 
         layoutService.updateLayout(id, newLayout);

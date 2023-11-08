@@ -1,15 +1,5 @@
 package org.finos.vuu.layoutserver.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
 import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
@@ -21,6 +11,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.EmptyResultDataAccessException;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LayoutServiceTest {

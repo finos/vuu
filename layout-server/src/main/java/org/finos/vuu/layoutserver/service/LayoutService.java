@@ -1,19 +1,21 @@
 package org.finos.vuu.layoutserver.service;
 
-import java.time.LocalDate;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+
 @RequiredArgsConstructor
 @Service
 public class LayoutService {
 
     private final LayoutRepository layoutRepository;
+    private final MetadataService metadataService;
 
     public Layout getLayout(UUID id) {
         return layoutRepository.findById(id)

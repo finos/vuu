@@ -1,20 +1,9 @@
 package org.finos.vuu.layoutserver.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import java.util.UUID;
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.request.MetadataRequestDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
 import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
@@ -29,6 +18,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,17 +59,17 @@ public class LayoutIntegrationTest {
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
         mockMvc.perform(get("/layouts/{id}", layout.getId()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.definition",
-                is(layout.getDefinition())))
-            .andExpect(jsonPath("$.metadata.name",
-                is(layout.getMetadata().getBaseMetadata().getName())))
-            .andExpect(jsonPath("$.metadata.group",
-                is(layout.getMetadata().getBaseMetadata().getGroup())))
-            .andExpect(jsonPath("$.metadata.screenshot",
-                is(layout.getMetadata().getBaseMetadata().getScreenshot())))
-            .andExpect(jsonPath("$.metadata.user",
-                is(layout.getMetadata().getBaseMetadata().getUser())));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.definition",
+                        is(layout.getDefinition())))
+                .andExpect(jsonPath("$.metadata.name",
+                        is(layout.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$.metadata.group",
+                        is(layout.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$.metadata.screenshot",
+                        is(layout.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$.metadata.user",
+                        is(layout.getMetadata().getBaseMetadata().getUser())));
     }
 
     @Test
@@ -87,11 +84,12 @@ public class LayoutIntegrationTest {
         String layoutID = "invalidUUID";
 
         mockMvc.perform(get("/layouts/{id}", layoutID))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
-                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
-                    + "UUID string: invalidUUID"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages",
+                        contains("Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                                + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                                + "UUID string: invalidUUID")));
     }
 
     @Test
@@ -100,15 +98,15 @@ public class LayoutIntegrationTest {
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
         mockMvc.perform(get("/layouts/metadata"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].name",
-                is(layout.getMetadata().getBaseMetadata().getName())))
-            .andExpect(jsonPath("$[0].group",
-                is(layout.getMetadata().getBaseMetadata().getGroup())))
-            .andExpect(jsonPath("$[0].screenshot",
-                is(layout.getMetadata().getBaseMetadata().getScreenshot())))
-            .andExpect(jsonPath("$[0].user",
-                is(layout.getMetadata().getBaseMetadata().getUser())));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name",
+                        is(layout.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$[0].group",
+                        is(layout.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$[0].screenshot",
+                        is(layout.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$[0].user",
+                        is(layout.getMetadata().getBaseMetadata().getUser())));
     }
 
     @Test
@@ -126,58 +124,58 @@ public class LayoutIntegrationTest {
         assertThat(layoutRepository.findById(layout2.getId()).orElseThrow()).isEqualTo(layout2);
 
         mockMvc.perform(get("/layouts/metadata"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].name",
-                is(layout1.getMetadata().getBaseMetadata().getName())))
-            .andExpect(jsonPath("$[0].group",
-                is(layout1.getMetadata().getBaseMetadata().getGroup())))
-            .andExpect(jsonPath("$[0].screenshot",
-                is(layout1.getMetadata().getBaseMetadata().getScreenshot())))
-            .andExpect(jsonPath("$[0].user",
-                is(layout1.getMetadata().getBaseMetadata().getUser())))
-            .andExpect(jsonPath("$[1].name",
-                is(layout2.getMetadata().getBaseMetadata().getName())))
-            .andExpect(jsonPath("$[1].group",
-                is(layout2.getMetadata().getBaseMetadata().getGroup())))
-            .andExpect(jsonPath("$[1].screenshot",
-                is(layout2.getMetadata().getBaseMetadata().getScreenshot())))
-            .andExpect(jsonPath("$[1].user",
-                is(layout2.getMetadata().getBaseMetadata().getUser())));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name",
+                        is(layout1.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$[0].group",
+                        is(layout1.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$[0].screenshot",
+                        is(layout1.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$[0].user",
+                        is(layout1.getMetadata().getBaseMetadata().getUser())))
+                .andExpect(jsonPath("$[1].name",
+                        is(layout2.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$[1].group",
+                        is(layout2.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$[1].screenshot",
+                        is(layout2.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$[1].user",
+                        is(layout2.getMetadata().getBaseMetadata().getUser())));
     }
 
     @Test
     void getMetadata_metadataDoesNotExist_returnsEmptyList() throws Exception {
         mockMvc.perform(get("/layouts/metadata"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isEmpty());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
     }
 
     @Test
     void createLayout_validRequest_returnsCreatedLayoutAndLayoutIsPersisted()
-        throws Exception {
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+            throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
 
         MvcResult result = mockMvc.perform(post("/layouts")
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").isNotEmpty())
-            .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
-            .andExpect(jsonPath("$.metadata.name",
-                is(layoutRequest.getMetadata().getBaseMetadata().getName())))
-            .andExpect(jsonPath("$.metadata.group",
-                is(layoutRequest.getMetadata().getBaseMetadata().getGroup())))
-            .andExpect(jsonPath("$.metadata.screenshot",
-                is(layoutRequest.getMetadata().getBaseMetadata().getScreenshot())))
-            .andExpect(jsonPath("$.metadata.user",
-                is(layoutRequest.getMetadata().getBaseMetadata().getUser())))
-            .andReturn();
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
+                .andExpect(jsonPath("$.metadata.name",
+                        is(layoutRequest.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$.metadata.group",
+                        is(layoutRequest.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$.metadata.screenshot",
+                        is(layoutRequest.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$.metadata.user",
+                        is(layoutRequest.getMetadata().getBaseMetadata().getUser())))
+                .andReturn();
 
         UUID createdLayoutId = UUID.fromString(
-            JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
+                JsonPath.read(result.getResponse().getContentAsString(), "$.id"));
         Layout createdLayout = layoutRepository.findById(createdLayoutId).orElseThrow();
         Metadata createdMetadata = metadataRepository.findById(createdLayout.getMetadata().getId())
-            .orElseThrow();
+                .orElseThrow();
 
         // Check that the one-to-one relationship isn't causing duplicate/unexpected entries in
         // the DB
@@ -185,29 +183,29 @@ public class LayoutIntegrationTest {
         assertThat(metadataRepository.findAll()).containsExactly(createdMetadata);
 
         assertThat(createdLayout.getDefinition())
-            .isEqualTo(layoutRequest.getDefinition());
+                .isEqualTo(layoutRequest.getDefinition());
         assertThat(createdMetadata.getBaseMetadata().getName())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
         assertThat(createdMetadata.getBaseMetadata().getGroup())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
         assertThat(createdMetadata.getBaseMetadata().getScreenshot())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
         assertThat(createdMetadata.getBaseMetadata().getUser())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
     }
 
     @Test
     void createLayout_invalidRequestBodyDefinitionsIsBlank_returns400AndDoesNotCreateLayout()
-        throws Exception {
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+            throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
         layoutRequest.setDefinition("");
 
         mockMvc.perform(post("/layouts")
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "[definition: Definition must not be blank]"));
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be blank")));
 
         assertThat(layoutRepository.findAll()).isEmpty();
         assertThat(metadataRepository.findAll()).isEmpty();
@@ -215,16 +213,16 @@ public class LayoutIntegrationTest {
 
     @Test
     void createLayout_invalidRequestBodyMetadataIsNull_returns400AndDoesNotCreateLayout()
-        throws Exception {
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+            throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
         layoutRequest.setMetadata(null);
 
         mockMvc.perform(post("/layouts")
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "[metadata: Metadata must not be null]"));
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains("metadata: Metadata must not be null")));
 
         assertThat(layoutRepository.findAll()).isEmpty();
         assertThat(metadataRepository.findAll()).isEmpty();
@@ -236,26 +234,27 @@ public class LayoutIntegrationTest {
         String invalidLayout = "invalidLayout";
 
         mockMvc.perform(post("/layouts")
-                .content(invalidLayout)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "JSON parse error: Unrecognized token 'invalidLayout': was expecting (JSON "
-                    + "String, Number, Array, Object or token 'null', 'true' or 'false'); nested "
-                    + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
-                    + "token 'invalidLayout': was expecting (JSON String, Number, Array, Object "
-                    + "or token 'null', 'true' or 'false')\n"
-                    + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
-                    + " line: 1, column: 14]"));
+                        .content(invalidLayout)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains(
+                        "JSON parse error: Unrecognized token 'invalidLayout': was expecting (JSON "
+                                + "String, Number, Array, Object or token 'null', 'true' or 'false'); nested "
+                                + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
+                                + "token 'invalidLayout': was expecting (JSON String, Number, Array, Object "
+                                + "or token 'null', 'true' or 'false')\n"
+                                + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
+                                + " line: 1, column: 14]")));
     }
 
     @Test
     void updateLayout_validIdAndValidRequest_returns204AndLayoutHasChanged() throws Exception {
         Layout initialLayout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(initialLayout.getId()).orElseThrow()).isEqualTo(
-            initialLayout);
+                initialLayout);
 
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
         layoutRequest.setDefinition("Updated definition");
         layoutRequest.getMetadata().getBaseMetadata().setName("Updated name");
         layoutRequest.getMetadata().getBaseMetadata().setGroup("Updated group");
@@ -263,115 +262,119 @@ public class LayoutIntegrationTest {
         layoutRequest.getMetadata().getBaseMetadata().setUser("Updated user");
 
         mockMvc.perform(put("/layouts/{id}", initialLayout.getId())
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNoContent())
-            .andExpect(jsonPath("$").doesNotExist());
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent())
+                .andExpect(jsonPath("$").doesNotExist());
 
         Layout updatedLayout = layoutRepository.findById(initialLayout.getId()).orElseThrow();
 
         assertThat(updatedLayout.getDefinition())
-            .isEqualTo(layoutRequest.getDefinition());
+                .isEqualTo(layoutRequest.getDefinition());
         assertThat(updatedLayout.getMetadata().getBaseMetadata().getName())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getName());
         assertThat(updatedLayout.getMetadata().getBaseMetadata().getGroup())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getGroup());
         assertThat(updatedLayout.getMetadata().getBaseMetadata().getScreenshot())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getScreenshot());
         assertThat(updatedLayout.getMetadata().getBaseMetadata().getUser())
-            .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
+                .isEqualTo(layoutRequest.getMetadata().getBaseMetadata().getUser());
 
         assertThat(updatedLayout).isNotEqualTo(initialLayout);
     }
 
     @Test
     void updateLayout_invalidRequestBodyDefinitionIsBlank_returns400AndLayoutDoesNotChange()
-        throws Exception {
+            throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
-        LayoutRequestDTO request = createValidLayoutRequest();
+        LayoutRequestDto request = createValidLayoutRequest();
         request.setDefinition("");
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string("[definition: Definition must not be blank]"));
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be blank")));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
 
     @Test
     void updateLayout_invalidRequestBodyMetadataIsNull_returns400AndLayoutDoesNotChange()
-        throws Exception {
+            throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
-        LayoutRequestDTO request = createValidLayoutRequest();
+        LayoutRequestDto request = createValidLayoutRequest();
         request.setMetadata(null);
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string("[metadata: Metadata must not be null]"));
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains("metadata: Metadata must not be null")));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
 
     @Test
     void updateLayout_invalidRequestBodyUnexpectedFormat_returns400AndLayoutDoesNotChange()
-        throws Exception {
+            throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
         String request = "invalidRequest";
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "JSON parse error: Cannot construct instance of `org.finos.vuu.layoutserver.dto"
-                    + ".request.LayoutRequestDTO` (although at least one Creator exists): no "
-                    + "String-argument constructor/factory method to deserialize from String "
-                    + "value ('invalidRequest'); nested exception is com.fasterxml.jackson"
-                    + ".databind.exc.MismatchedInputException: Cannot construct instance of `org"
-                    + ".finos.vuu.layoutserver.dto.request.LayoutRequestDTO` (although at least "
-                    + "one Creator exists): no String-argument constructor/factory method to "
-                    + "deserialize from String value ('invalidRequest')\n"
-                    + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
-                    + " line: 1, column: 1]"));
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains(
+                        "JSON parse error: Cannot construct instance of `org.finos.vuu.layoutserver.dto"
+                                + ".request.LayoutRequestDto` (although at least one Creator exists): no "
+                                + "String-argument constructor/factory method to deserialize from String "
+                                + "value ('invalidRequest'); nested exception is com.fasterxml.jackson"
+                                + ".databind.exc.MismatchedInputException: Cannot construct instance of `org"
+                                + ".finos.vuu.layoutserver.dto.request.LayoutRequestDto` (although at least "
+                                + "one Creator exists): no String-argument constructor/factory method to "
+                                + "deserialize from String value ('invalidRequest')\n"
+                                + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
+                                + " line: 1, column: 1]")));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(
-            layout);
+                layout);
     }
 
     @Test
     void updateLayout_validIdButLayoutDoesNotExist_returnsNotFound() throws Exception {
         UUID layoutID = UUID.randomUUID();
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void updateLayout_invalidId_returns400() throws Exception {
         String layoutID = "invalidUUID";
-        LayoutRequestDTO layoutRequest = createValidLayoutRequest();
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
 
         mockMvc.perform(put("/layouts/{id}", layoutID)
-                .content(objectMapper.writeValueAsString(layoutRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
-                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
-                    + "UUID string: invalidUUID"));
+                        .content(objectMapper.writeValueAsString(layoutRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains(
+                        "Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                                + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                                + "UUID string: invalidUUID")));
     }
 
     @Test
@@ -396,11 +399,12 @@ public class LayoutIntegrationTest {
         String layoutID = "invalidUUID";
 
         mockMvc.perform(delete("/layouts/{id}", layoutID))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(
-                "Failed to convert value of type 'java.lang.String' to required type 'java.util"
-                    + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
-                    + "UUID string: invalidUUID"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+                .andExpect(jsonPath("$.messages", contains(
+                        "Failed to convert value of type 'java.lang.String' to required type 'java.util"
+                                + ".UUID'; nested exception is java.lang.IllegalArgumentException: Invalid "
+                                + "UUID string: invalidUUID")));
     }
 
     private Layout createDefaultLayoutInDatabase() {
@@ -421,17 +425,17 @@ public class LayoutIntegrationTest {
         return layoutRepository.save(layout);
     }
 
-    private LayoutRequestDTO createValidLayoutRequest() {
+    private LayoutRequestDto createValidLayoutRequest() {
         BaseMetadata baseMetadata = new BaseMetadata();
         baseMetadata.setName(DEFAULT_LAYOUT_NAME);
         baseMetadata.setGroup(DEFAULT_LAYOUT_GROUP);
         baseMetadata.setScreenshot(DEFAULT_LAYOUT_SCREENSHOT);
         baseMetadata.setUser(DEFAULT_LAYOUT_USER);
 
-        MetadataRequestDTO metadataRequest = new MetadataRequestDTO();
+        MetadataRequestDto metadataRequest = new MetadataRequestDto();
         metadataRequest.setBaseMetadata(baseMetadata);
 
-        LayoutRequestDTO layoutRequest = new LayoutRequestDTO();
+        LayoutRequestDto layoutRequest = new LayoutRequestDto();
         layoutRequest.setDefinition(DEFAULT_LAYOUT_DEFINITION);
         layoutRequest.setMetadata(metadataRequest);
 

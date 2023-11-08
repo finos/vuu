@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class LayoutResponseDTO {
+public class LayoutResponseDto {
 
     private UUID id;
 
@@ -15,5 +15,5 @@ public class LayoutResponseDTO {
      */
     private String definition;
 
-    private MetadataResponseDTO metadata;
+    private MetadataResponseDto metadata;
 }

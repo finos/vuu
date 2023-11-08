@@ -1,12 +1,13 @@
 package org.finos.vuu.layoutserver.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 @Data
-public class LayoutRequestDTO {
+public class LayoutRequestDto {
 
     /**
      * The definition of the layout as a string (e.g. stringified JSON structure containing
@@ -18,5 +19,5 @@ public class LayoutRequestDTO {
 
     @JsonProperty(value = "metadata", required = true)
     @NotNull(message = "Metadata must not be null")
-    private MetadataRequestDTO metadata;
+    private MetadataRequestDto metadata;
 }

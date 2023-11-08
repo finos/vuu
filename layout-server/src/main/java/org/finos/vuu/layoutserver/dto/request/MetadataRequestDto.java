@@ -5,7 +5,7 @@ import lombok.Data;
 import org.finos.vuu.layoutserver.model.BaseMetadata;
 
 @Data
-public class MetadataRequestDTO {
+public class MetadataRequestDto {
 
     @JsonUnwrapped
     BaseMetadata baseMetadata;

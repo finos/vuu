@@ -1,8 +1,9 @@
 package org.finos.vuu.layoutserver.model;
 
+import lombok.Data;
+
 import javax.persistence.Embeddable;
 import javax.persistence.Lob;
-import lombok.Data;
 
 @Data
 @Embeddable

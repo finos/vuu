@@ -1,8 +1,8 @@
 package org.finos.vuu.layoutserver.config;
 
 import lombok.RequiredArgsConstructor;
-import org.finos.vuu.layoutserver.dto.request.LayoutRequestDTO;
-import org.finos.vuu.layoutserver.dto.response.MetadataResponseDTO;
+import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
+import org.finos.vuu.layoutserver.dto.response.MetadataResponseDto;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.service.LayoutService;
@@ -20,13 +20,13 @@ public class MappingConfig {
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
 
-        mapper.typeMap(LayoutRequestDTO.class, Layout.class)
+        mapper.typeMap(LayoutRequestDto.class, Layout.class)
             .addMappings(m -> m.skip(Layout::setId));
 
-        mapper.typeMap(Metadata.class, MetadataResponseDTO.class)
+        mapper.typeMap(Metadata.class, MetadataResponseDto.class)
             .addMappings(m -> m.map(
                 metadata -> layoutService.getLayoutByMetadataId(metadata.getId()),
-                MetadataResponseDTO::setLayoutId));
+                MetadataResponseDto::setLayoutId));
 
         return mapper;
     }

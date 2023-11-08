@@ -1,13 +1,14 @@
 package org.finos.vuu.layoutserver.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import java.time.LocalDate;
-import java.util.UUID;
 import lombok.Data;
 import org.finos.vuu.layoutserver.model.BaseMetadata;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 @Data
-public class MetadataResponseDTO {
+public class MetadataResponseDto {
 
     private UUID layoutId;
 
