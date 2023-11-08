@@ -18,7 +18,6 @@ import {
   isFilteredColumn,
   isGroupColumn,
   isPinned,
-  isTypeDescriptor,
   logger,
   metadataKeys,
   replaceColumn,
@@ -40,12 +39,6 @@ const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
-
-const getCellRendererForColumn = (column: ColumnDescriptor) => {
-  if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer);
-  }
-};
 
 const getDataType = (
   column: ColumnDescriptor,
@@ -306,7 +299,7 @@ const columnDescriptorToKeyedColumDescriptor =
     const keyedColumnWithDefaults = {
       ...rest,
       align,
-      CellRenderer: getCellRendererForColumn(column),
+      CellRenderer: getCellRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,

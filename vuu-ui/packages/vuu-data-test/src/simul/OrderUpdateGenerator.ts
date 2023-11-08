@@ -10,7 +10,6 @@ import type {
 } from "../rowUpdates";
 import { random } from "./reference-data";
 import { metadataKeys } from "@finos/vuu-utils";
-import { count } from "console";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;

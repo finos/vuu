@@ -30,8 +30,7 @@ import {
 
 import { Reducer, useReducer } from "react";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { DataSourceConfig } from "@finos/vuu-data";
-import { TableSchema } from "@finos/vuu-data/src/message-utils";
+import { DataSourceConfig, TableSchema } from "@finos/vuu-data";
 
 const DEFAULT_COLUMN_WIDTH = 100;
 const KEY_OFFSET = metadataKeys.count;
@@ -41,7 +40,7 @@ const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
 
 const getCellRendererForColumn = (column: ColumnDescriptor) => {
   if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer);
+    return getCellRenderer(column);
   }
 };
 

@@ -198,10 +198,10 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        // dispatchColumnAction({
-        //   type: "setTableSchema",
-        //   tableSchema,
-        // });
+        dispatchColumnAction({
+          type: "setTableSchema",
+          tableSchema,
+        });
       } else {
         console.log("subscription message with no schema");
       }
@@ -573,8 +573,8 @@ export const useTable = ({
   );
 
   const handleDataEdited = useCallback<DataCellEditHandler>(
-    (rowIndex, columnName, value) => {
-      return dataSource.applyEdit(rowIndex, columnName, value);
+    (row, columnName, value) => {
+      return dataSource.applyEdit(row, columnName, value);
     },
     [dataSource]
   );

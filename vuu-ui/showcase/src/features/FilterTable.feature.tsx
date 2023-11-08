@@ -1,21 +1,22 @@
 import VuuFilterTableFeature, {
   FilterTableFeatureProps,
 } from "feature-vuu-filter-table";
+import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
 import { useViewContext } from "@finos/vuu-layout";
-import { useTableConfig } from "../examples/utils";
+import { useMemo } from "react";
 
 export const FilterTableFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
   const { saveSession } = useViewContext();
-  const { dataSource } = useTableConfig({
-    count: 1000,
-    dataSourceConfig: {
-      columns: tableSchema.columns.map((col) => col.name),
-    },
-    table: tableSchema.table,
-    rangeChangeRowset: "delta",
-  });
+  const {
+    table: { module, table: tableName },
+  } = tableSchema;
+
+  const dataSource = useMemo(
+    () => vuuModule(module as VuuModuleName).createDataSource(tableName),
+    [module, tableName]
+  );
 
   saveSession?.(dataSource, "data-source");
 

@@ -14,6 +14,7 @@ import type {
   TableHeading,
   TableHeadings,
   ColumnTypeFormatting,
+  LookupRenderer,
 } from "@finos/vuu-datagrid-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -28,7 +29,6 @@ import type {
 import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
-import type { CellRendererDescriptor } from "./component-registry";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 /**
@@ -180,6 +180,12 @@ export const isColumnTypeRenderer = (
   renderer?: unknown
 ): renderer is ColumnTypeRendering =>
   typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
+
+export const isLookupRenderer = (
+  renderer?: unknown
+): renderer is LookupRenderer =>
+  typeof (renderer as LookupRenderer)?.name !== "undefined" &&
+  "lookup" in (renderer as LookupRenderer);
 
 export const hasValidationRules = (
   type?: ColumnType

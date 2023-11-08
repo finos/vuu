@@ -59,12 +59,12 @@ export const useDropdown = <Item, S extends SelectionStrategy>({
       }
       if (Array.isArray(selected)) {
         (onSelectionChange as MultiSelectionHandler<Item>)?.(
-          null,
+          evt,
           selected as Item[]
         );
       } else if (selected) {
         (onSelectionChange as SingleSelectionHandler<Item>)?.(
-          null,
+          evt,
           selected as Item
         );
       }

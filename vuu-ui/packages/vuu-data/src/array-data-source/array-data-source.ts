@@ -439,9 +439,6 @@ export class ArrayDataSource
 
   protected insert = (row: VuuRowDataItemType[]) => {
     // TODO take sorting, filtering. grouping into account
-    console.log("insert row", {
-      lastRange: this.lastRangeServed,
-    });
     const dataSourceRow = toDataSourceRow(row, this.size);
     (this.#data as DataSourceRow[]).push(dataSourceRow);
     const { from, to } = this.#range;

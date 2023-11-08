@@ -26,16 +26,6 @@ const buildDataColumnMap = (tableName: BasketsTableName) =>
 const { KEY } = metadataKeys;
 
 /**
- * Basket
- */
-const basket = new Table(schemas.basket, [
-  [".NASDAQ100", ".NASDAQ100", 0, 0],
-  [".HSI", ".HSI", 0, 0],
-  [".FTSE100", ".FTSE100", 0, 0],
-  [".SP500", ".SP500", 0, 0],
-]);
-
-/**
  * BasketConstituent
  */
 
@@ -47,7 +37,7 @@ for (const row of ftse) {
   const side = "BUY";
   const weighting = 1;
   // prettier-ignore
-  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
+  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
 }
 
 for (const row of hsi) {
@@ -57,28 +47,28 @@ for (const row of hsi) {
   const side = "BUY";
   const weighting = 1;
   // prettier-ignore
-  basketConstituentData.push([basketId,change,lastTrade,ric,`${ric}-${basketId}`,side,volume,weighting ]);
+  basketConstituentData.push([basketId,change,name, lastTrade,ric,`${ric}-${basketId}`,side,volume,weighting ]);
 }
 
 for (const row of nasdaq) {
   // prettier-ignore
-  const [, ric, weighting, lastTrade, change] = row;
+  const [name, ric, weighting, lastTrade, change] = row;
   const basketId = ".NASDAQ100";
   const side = "BUY";
   const volume = 1000;
   // prettier-ignore
-  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
+  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
 }
 
 for (const row of sp500) {
   // prettier-ignore
-  const [, ric, weighting,,change] = row;
+  const [name, ric, weighting,,change] = row;
   const basketId = ".SP500";
   const side = "BUY";
   const volume = 1000;
   const lastTrade = 0;
   // prettier-ignore
-  basketConstituentData.push([ basketId, change, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
+  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
 }
 
 const basketConstituent = new Table(
@@ -124,27 +114,79 @@ function createTradingBasket(basketId: string, basketName: string) {
   const constituents = basketConstituent.data.filter(
     (c) => c[key] === basketId
   );
-  constituents.forEach(([, , , ric, , , volume, weighting]) => {
-    const row = [
-      "algo1",
-      "",
+
+  constituents.forEach(([, , description, , ric, , , quantity, weighting]) => {
+    const algo = "algo";
+    const algoParams = "";
+    const limitPrice = 95;
+    const notionalLocal = 0;
+    const notionalUsd = 0;
+    const pctFilled = 0;
+    const priceSpread = 0;
+    const priceStrategyId = 1;
+    const side = "buy";
+    const venue = "venue";
+
+    const basketTradingConstituentRow = [
+      algo,
+      algoParams,
       basketId,
-      100,
-      "description",
+      description,
       instanceId,
       `${instanceId}-${ric}`,
-      95,
-      0,
-      0,
-      0,
-      0,
-      volume,
+      limitPrice,
+      notionalLocal,
+      notionalUsd,
+      pctFilled,
+      priceSpread,
+      priceStrategyId,
+      quantity,
       ric,
-      "BUY",
-      "LSE",
+      side,
+      venue,
       weighting,
     ];
-    basketTradingConstituent.insert(row);
+    basketTradingConstituent.insert(basketTradingConstituentRow);
+
+    const ask = 0;
+    const askSize = 0;
+    const bid = 0;
+    const bidSize = 0;
+    const close = 0;
+    const last = 0;
+    const open = 0;
+    const phase = "market";
+    const scenario = "scenario";
+
+    const basketTradingConstituentJoinRow = [
+      algo,
+      algoParams,
+      ask,
+      askSize,
+      basketId,
+      bid,
+      bidSize,
+      close,
+      description,
+      instanceId,
+      `${instanceId}-${ric}`,
+      last,
+      limitPrice,
+      notionalLocal,
+      notionalUsd,
+      open,
+      pctFilled,
+      phase,
+      priceSpread,
+      priceStrategyId,
+      quantity,
+      ric,
+      scenario,
+      side,
+      venue,
+      weighting,
+    ];
+    basketTradingConstituentJoin.insert(basketTradingConstituentJoinRow);
   });
 }
 
@@ -160,13 +202,29 @@ async function createNewBasket(rpcRequest: any) {
 //-------------------
 
 const tables: Record<BasketsTableName, Table> = {
-  algoType: new Table(schemas.algoType, []),
-  basket,
+  algoType: new Table(schemas.algoType, [
+    ["Sniper", 0],
+    ["Dark Liquidity", 1],
+    ["VWAP", 2],
+    ["POV", 3],
+    ["Dynamic Close", 4],
+  ]),
+  basket: new Table(schemas.basket, [
+    [".NASDAQ100", ".NASDAQ100", 0, 0],
+    [".HSI", ".HSI", 0, 0],
+    [".FTSE100", ".FTSE100", 0, 0],
+    [".SP500", ".SP500", 0, 0],
+  ]),
   basketConstituent,
   basketTrading,
   basketTradingConstituent,
   basketTradingConstituentJoin,
-  priceStrategyType: new Table(schemas.priceStrategyType, []),
+  priceStrategyType: new Table(schemas.priceStrategyType, [
+    ["Peg to Near Touch", 0],
+    ["Far Touch", 1],
+    ["Limit", 2],
+    ["Algo", 3],
+  ]),
 };
 
 const menus: Record<BasketsTableName, VuuMenu | undefined> = {

@@ -49,32 +49,10 @@ BasketConstituent.displaySequence = displaySequence++;
 export const BasketTrading = () => <BasketTable tableName="basketTrading" />;
 BasketTrading.displaySequence = displaySequence++;
 
-export const BasketTradingConstituent = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "BASKET", table: "basketTradingConstituent" },
-  });
+export const AlgoType = () => <BasketTable tableName="algoType" />;
+AlgoType.displaySequence = displaySequence++;
 
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-BasketTradingConstituent.displaySequence = displaySequence++;
+export const PriceStrategyType = () => (
+  <BasketTable tableName="priceStrategyType" />
+);
+PriceStrategyType.displaySequence = displaySequence++;

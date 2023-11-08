@@ -1,6 +1,5 @@
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import {
-  FocusEventHandler,
   FormEventHandler,
   KeyboardEvent,
   useCallback,
@@ -8,6 +7,13 @@ import {
   useState,
 } from "react";
 import { ClientSideValidationChecker } from "./editable-utils";
+
+export const WarnCommit = () => {
+  console.warn(
+    "onCommit handler has not been provided to InputCell cell renderer"
+  );
+  return true;
+};
 
 export interface EditableTextHookProps<
   T extends VuuColumnDataType = VuuColumnDataType
