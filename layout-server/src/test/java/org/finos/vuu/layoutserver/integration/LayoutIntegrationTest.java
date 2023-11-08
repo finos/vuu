@@ -111,6 +111,42 @@ public class LayoutIntegrationTest {
     }
 
     @Test
+    void getMetadata_multipleMetadataExists_returnsAllMetadata() throws Exception {
+        UUID layout1Id = UUID.randomUUID();
+        UUID layout2Id = UUID.randomUUID();
+        Layout layout1 = createLayoutWithIdInDatabase(layout1Id);
+        Layout layout2 = createLayoutWithIdInDatabase(layout2Id);
+        layout2.setDefinition("Different definition");
+        layout2.getMetadata().getBaseMetadata().setName("Different name");
+        layout2.getMetadata().getBaseMetadata().setGroup("Different group");
+        layout2.getMetadata().getBaseMetadata().setScreenshot("Different screenshot");
+        layout2.getMetadata().getBaseMetadata().setUser("Different user");
+        layoutRepository.save(layout2);
+
+        assertThat(layoutRepository.findById(layout1.getId()).orElseThrow()).isEqualTo(layout1);
+        assertThat(layoutRepository.findById(layout2.getId()).orElseThrow()).isEqualTo(layout2);
+
+        mockMvc.perform(get("/layouts/metadata"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name",
+                        is(layout1.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$[0].group",
+                        is(layout1.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$[0].screenshot",
+                        is(layout1.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$[0].user",
+                        is(layout1.getMetadata().getBaseMetadata().getUser())))
+                .andExpect(jsonPath("$[1].name",
+                        is(layout2.getMetadata().getBaseMetadata().getName())))
+                .andExpect(jsonPath("$[1].group",
+                        is(layout2.getMetadata().getBaseMetadata().getGroup())))
+                .andExpect(jsonPath("$[1].screenshot",
+                        is(layout2.getMetadata().getBaseMetadata().getScreenshot())))
+                .andExpect(jsonPath("$[1].user",
+                        is(layout2.getMetadata().getBaseMetadata().getUser())));
+    }
+
+    @Test
     void getMetadata_metadataDoesNotExist_returnsEmptyList() throws Exception {
         mockMvc.perform(get("/layouts/metadata"))
                 .andExpect(status().isOk())
@@ -389,6 +425,25 @@ public class LayoutIntegrationTest {
         layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
         layout.setMetadata(metadata);
         layout.setId(DEFAULT_LAYOUT_ID);
+
+        return layoutRepository.save(layout);
+    }
+
+    private Layout createLayoutWithIdInDatabase(UUID id) {
+        Layout layout = new Layout();
+        Metadata metadata = new Metadata();
+        BaseMetadata baseMetadata = new BaseMetadata();
+
+        baseMetadata.setName(DEFAULT_LAYOUT_NAME);
+        baseMetadata.setGroup(DEFAULT_LAYOUT_GROUP);
+        baseMetadata.setScreenshot(DEFAULT_LAYOUT_SCREENSHOT);
+        baseMetadata.setUser(DEFAULT_LAYOUT_USER);
+
+        metadata.setBaseMetadata(baseMetadata);
+
+        layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
+        layout.setMetadata(metadata);
+        layout.setId(id);
 
         return layoutRepository.save(layout);
     }
