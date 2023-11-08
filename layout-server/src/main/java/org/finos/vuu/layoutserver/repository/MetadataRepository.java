@@ -8,5 +8,4 @@ import java.util.UUID;
 
 
 @Repository
-public interface MetadataRepository extends CrudRepository<Metadata, UUID> {
-}
+public interface MetadataRepository extends CrudRepository<Metadata, UUID> {}
