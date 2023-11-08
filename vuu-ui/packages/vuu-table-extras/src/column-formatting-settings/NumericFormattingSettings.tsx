@@ -1,6 +1,6 @@
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { Switch } from "@salt-ds/lab";
-import { ColumnDescriptor, TypeFormatting } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor, TypeFormatting } from "@finos/vuu-datagrid-types";
 import { getTypeSettingsFromColumn } from "@finos/vuu-utils";
 import {
   ChangeEvent,
@@ -94,7 +94,7 @@ export const NumericFormattingSettings = ({
       <FormField labelPlacement="left">
         <FormFieldLabel>Align on decimals</FormFieldLabel>
         <Switch
-          checked={formattingSettings.alignOnDecimals}
+          checked={formattingSettings.alignOnDecimals ?? false}
           onChange={handleChangeAlignDecimals}
           value="align-decimals"
         />
@@ -102,7 +102,7 @@ export const NumericFormattingSettings = ({
       <FormField labelPlacement="left">
         <FormFieldLabel>Zero pad decimals</FormFieldLabel>
         <Switch
-          checked={formattingSettings.zeroPad}
+          checked={formattingSettings.zeroPad ?? false}
           onChange={handleChangeZeroPad}
           value="zero-pad"
         />

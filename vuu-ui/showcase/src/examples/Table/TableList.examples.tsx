@@ -1,7 +1,7 @@
 import { TableNext } from "@finos/vuu-table";
 import { ArrayDataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 let displaySequence = 1;
 

@@ -212,7 +212,7 @@ const equivalentColumns: DataConfigPredicate = (
   (cols1 === undefined && cols2?.length === 0) ||
   (cols2 === undefined && cols1?.length === 0);
 
-const columnsChanged: DataConfigPredicate = (config, newConfig) => {
+export const columnsChanged: DataConfigPredicate = (config, newConfig) => {
   const { columns: cols1 } = config;
   const { columns: cols2 } = newConfig;
 
@@ -475,10 +475,17 @@ export type DataSourceEvents = {
 };
 
 export type DataSourceEditHandler = (
-  rowIndex: number,
+  row: DataSourceRow,
   columnName: string,
   value: VuuColumnDataType
 ) => boolean;
+
+export type RpcResponse =
+  | MenuRpcResponse
+  | VuuUIMessageInRPCEditReject
+  | VuuUIMessageInRPCEditResponse;
+
+export type RpcResponseHandler = (response: RpcResponse) => boolean;
 
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
@@ -494,12 +501,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   groupBy: VuuGroupBy;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) => Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  >;
+  ) => Promise<RpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   select: SelectionChangeHandler;
@@ -510,6 +512,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
     props: SubscribeProps,
     callback: SubscribeCallback
   ) => Promise<void>;
+  table?: VuuTable;
   title?: string;
   unsubscribe: () => void;
   viewport?: string;

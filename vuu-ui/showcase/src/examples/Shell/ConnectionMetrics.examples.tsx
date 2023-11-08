@@ -1,7 +1,8 @@
 import { SubscribeCallback } from "@finos/vuu-data";
 import { useServerConnectionQuality } from "@finos/vuu-data-react";
-import { ErrorDisplay, useSchemas, useTestDataSource } from "../utils";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 import { useCallback } from "react";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
@@ -19,7 +20,7 @@ export const ConnectionMetrics = () => {
     "scenario",
   ];
   const messagesPerSecond = useServerConnectionQuality();
-  const { schemas } = useSchemas();
+  const schemas = getAllSchemas();
   const { error, dataSource } = useTestDataSource({
     schemas,
     tablename: "prices",

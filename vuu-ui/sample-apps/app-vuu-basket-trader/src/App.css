@@ -53,7 +53,7 @@ body {
   align-items: center;
   display: flex;
   gap: 12px;
-  height: 36px;
+  height: var(--vuuToolbarProxy-height, 36px);
 }
 
 .vuuToolbarProxy > [data-align="end"]{
@@ -111,8 +111,8 @@ body {
     z-index: 1;
   }
 
-  .vuuShell-mainTabs > .vuuTabstrip .vuuTab {
-    background-color: var(--vuu-color-gray-28);
+  .vuuTab.MainTab {
+    background-color: #F1F2F4;
     border-color: #D6D7DA;
     border-radius: 6px 6px 0 0;
     border-width: 1px;
@@ -120,13 +120,14 @@ body {
     position: relative;
   }
 
-  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected {
+  .MainTab.vuuTab-selected {
     background-color: white;
     border-bottom-color: white;
     z-index: 1;
+
   }
 
-  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-selected:before{
+  .MainTab.vuuTab-selected:before{
     background-color: #6d188b;;
     content: '';
     position: absolute;
@@ -137,7 +138,7 @@ body {
     width: 6px;
   }
 
-  .vuuShell-mainTabs > .vuuTabstrip .vuuTab:hover:not(.vuuTab-selected):before{
+  .MainTab.vuuTab:hover:not(.vuuTab-selected):before{
     background-color: #F37880;
     content: '';
     position: absolute;
@@ -148,7 +149,7 @@ body {
     width: 6px;
   }
 
-  .vuuShell-mainTabs > .vuuTabstrip .vuuTab-main {
+  .vuuTab.MainTab .vuuTab-main {
     background-color: transparent;
     font-weight: 700;
     height: 29px;

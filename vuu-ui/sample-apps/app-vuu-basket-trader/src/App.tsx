@@ -1,4 +1,4 @@
-import { Dialog } from "@finos/vuu-popups";
+import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import {
   LeftNav,
   Shell,
@@ -6,18 +6,20 @@ import {
   ShellProps,
   VuuUser,
 } from "@finos/vuu-shell";
-import { ReactElement, useRef, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
-import { defaultLayout } from "./defaultLayout";
 import { useFeatures } from "./useFeatures";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { registerComponent } from "@finos/vuu-layout";
+import {
+  registerComponent,
+  useLayoutContextMenuItems,
+} from "@finos/vuu-layout";
 
 import "./App.css";
+import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
@@ -38,47 +40,42 @@ const {
   await vuuConfig;
 
 export const App = ({ user }: { user: VuuUser }) => {
-  const dialogTitleRef = useRef("");
-  const [dialogContent, setDialogContent] = useState<ReactElement>();
-  const handleClose = () => {
-    setDialogContent(undefined);
-  };
-
   const [features, tableFeatures] = useFeatures({
     features: configuredFeatures,
   });
 
-  console.log({ features, tableFeatures });
+  const { dialog, setDialogState } = useDialog();
+  const { handleRpcResponse } = useRpcResponseHandler(setDialogState);
+  const { buildMenuOptions, handleMenuAction } =
+    useLayoutContextMenuItems(setDialogState);
 
   // TODO get Context from Shell
   return (
-    <ShellContextProvider value={{ getDefaultColumnConfig }}>
-      <Shell
-        LayoutProps={layoutProps}
-        className="App"
-        defaultLayout={defaultLayout}
-        leftSidePanelLayout="full-height"
-        leftSidePanel={
-          <LeftNav
-            features={features}
-            tableFeatures={tableFeatures}
-            style={{ width: 240 }}
-          />
-        }
-        saveUrl="https://localhost:8443/api/vui"
-        serverUrl={serverUrl}
-        user={user}
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildMenuOptions}
+    >
+      <ShellContextProvider
+        value={{ getDefaultColumnConfig, handleRpcResponse }}
       >
-        <Dialog
-          className="vuDialog"
-          isOpen={dialogContent !== undefined}
-          onClose={handleClose}
-          style={{ maxHeight: 500 }}
-          title={dialogTitleRef.current}
+        <Shell
+          LayoutProps={layoutProps}
+          className="App"
+          leftSidePanelLayout="full-height"
+          leftSidePanel={
+            <LeftNav
+              features={features}
+              tableFeatures={tableFeatures}
+              style={{ width: 240 }}
+            />
+          }
+          saveUrl="https://localhost:8443/api/vui"
+          serverUrl={serverUrl}
+          user={user}
         >
-          {dialogContent}
-        </Dialog>
-      </Shell>
-    </ShellContextProvider>
+          {dialog}
+        </Shell>
+      </ShellContextProvider>
+    </ContextMenuProvider>
   );
 };

@@ -1,14 +1,12 @@
 import { FocusEvent, KeyboardEvent, RefObject } from "react";
-import { CollectionItem } from "./collectionTypes";
 
-export interface NavigationProps<Item = unknown> {
+export interface NavigationProps {
   cycleFocus?: boolean;
   defaultHighlightedIndex?: number;
   disableHighlightOnFocus?: boolean;
   focusOnHighlight?: boolean;
   focusVisible?: number;
   highlightedIndex?: number;
-  indexPositions: CollectionItem<Item>[];
   itemCount: number;
   onHighlight?: (idx: number) => void;
   onKeyboardNavigation?: (evt: KeyboardEvent, idx: number) => void;
@@ -16,7 +14,7 @@ export interface NavigationProps<Item = unknown> {
   viewportItemCount: number;
 }
 
-export interface NavigationHookProps<Item> extends NavigationProps<Item> {
+export interface NavigationHookProps extends NavigationProps {
   containerRef: RefObject<HTMLElement>;
   label?: string;
   selected?: string[];

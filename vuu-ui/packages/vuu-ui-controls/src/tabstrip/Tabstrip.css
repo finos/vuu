@@ -107,8 +107,10 @@
 }
 
 .vuuDraggable-tabstrip-horizontal {
+  --item-height: var(--tabstrip-height);
   --tab-thumb-height: 2px;
   --tab-thumb-left: 0px;
+  --tabstrip-display: inline-flex;
   --tabstrip-height: 28px;
   line-height: var(--tabstrip-height);
 }

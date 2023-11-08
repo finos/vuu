@@ -1,38 +1,23 @@
 import { byModule } from "@finos/vuu-data";
 import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@finos/vuu-data-types";
-import { registerComponent } from "@finos/vuu-layout";
-import {
-  ContextMenuProvider,
-  Dialog,
-  MenuActionClosePopup,
-} from "@finos/vuu-popups";
+  registerComponent,
+  useLayoutContextMenuItems,
+} from "@finos/vuu-layout";
+import { ContextMenuProvider, Dialog, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
   LayoutManagementProvider,
-  LayoutMetadata,
   LeftNav,
-  SaveLayoutPanel,
   Shell,
-  useLayoutManager,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import {
-  CSSProperties,
-  ReactElement,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { CSSProperties } from "react";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
-import { schemas } from "../utils";
+import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./NewTheme.examples.css";
 
@@ -40,6 +25,7 @@ registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "test-user", token: "test-token" };
+const schemas = getAllSchemas();
 
 let displaySequence = 1;
 
@@ -86,9 +72,10 @@ const features: FeatureProps[] = [
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
     ComponentProps: {
-      basketDefinitionsSchema: schemas.basketDefinitions,
-      basketDesignSchema: schemas.basketDesign,
-      basketOrdersSchema: schemas.basketOrders,
+      basketSchema: schemas.basket,
+      // basketDefinitionsSchema: schemas.basketDefinitions,
+      // basketDesignSchema: schemas.basketDesign,
+      // basketOrdersSchema: schemas.basketOrders,
       instrumentsSchema: schemas.instruments,
     },
   },
@@ -107,64 +94,9 @@ const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = Object.values(
   }));
 
 const ShellWithNewTheme = () => {
-  const [dialogContent, setDialogContent] = useState<ReactElement>();
-
-  const handleCloseDialog = useCallback(() => {
-    setDialogContent(undefined);
-  }, []);
-
-  const { saveLayout } = useLayoutManager();
-
-  const handleSave = useCallback(
-    (layoutMetadata: Omit<LayoutMetadata, "id">) => {
-      saveLayout(layoutMetadata);
-      setDialogContent(undefined);
-    },
-    [saveLayout]
-  );
-
-  const [buildMenuOptions, handleMenuAction] = useMemo<
-    [MenuBuilder, MenuActionHandler]
-  >(() => {
-    return [
-      (location, options) => {
-        console.log({ options });
-        const locations = location.split(" ");
-        const menuDescriptors: ContextMenuItemDescriptor[] = [];
-        if (locations.includes("main-tab")) {
-          menuDescriptors.push(
-            {
-              label: "Save Layout",
-              action: "save-layout",
-              options,
-            },
-            {
-              label: "Layout Settings",
-              action: "layout-settings",
-              options,
-            }
-          );
-        }
-        return menuDescriptors;
-      },
-      (action: MenuActionClosePopup) => {
-        console.log("menu action", {
-          action,
-        });
-        if (action.menuId === "save-layout") {
-          setDialogContent(
-            <SaveLayoutPanel
-              onCancel={handleCloseDialog}
-              onSave={handleSave}
-              componentId={action.options.controlledComponentId}
-            />
-          );
-          return true;
-        }
-        return false;
-      },
-    ];
-  }, [handleCloseDialog, handleSave]);
+  const { dialog, setDialogState } = useDialog();
+  const { buildMenuOptions, handleMenuAction } =
+    useLayoutContextMenuItems(setDialogState);
 
   return (
     <ContextMenuProvider
@@ -192,15 +124,7 @@ const ShellWithNewTheme = () => {
           } as CSSProperties
         }
       >
-        <Dialog
-          isOpen={dialogContent !== undefined}
-          onClose={handleCloseDialog}
-          style={{ maxHeight: 500, borderColor: "#6d188b" }}
-          title={"Save Layout"}
-          hideCloseButton
-        >
-          {dialogContent}
-        </Dialog>
+        {dialog}
       </Shell>
     </ContextMenuProvider>
   );

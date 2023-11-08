@@ -1,13 +1,14 @@
+import { getSchema } from "@finos/vuu-data-test";
 import { BasketToolbar } from "feature-basket-trading";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/basket-selector";
 import { BasketStatus } from "sample-apps/feature-basket-trading/src/VuuBasketTradingFeature";
-import { useSchema, useTableConfig } from "../utils";
+import { useTableConfig } from "../utils";
 
 let displaySequence = 1;
 
 export const BasketToolbarDesign = () => {
-  const schema = useSchema("basketDefinitions");
+  const schema = getSchema("basketDefinitions");
   const [basketStatus, setBasketStatus] = useState<BasketStatus>("design");
 
   const { dataSource: dataSourceBasket } = useTableConfig({
@@ -31,6 +32,7 @@ export const BasketToolbarDesign = () => {
       basketId: "001",
       dataSourceBasket,
       dataSourceBasketSearch,
+      onClickAddBasket: () => console.log("Add Basket"),
     }),
     [dataSourceBasket, dataSourceBasketSearch]
   );
@@ -47,7 +49,7 @@ export const BasketToolbarDesign = () => {
 BasketToolbarDesign.displaySequence = displaySequence++;
 
 export const BasketToolbarOnMarket = () => {
-  const schema = useSchema("basketDefinitions");
+  const schema = getSchema("basketDefinitions");
   const [basketStatus, setBasketStatus] = useState<BasketStatus>("on-market");
 
   const { dataSource: dataSourceBasket } = useTableConfig({
@@ -71,6 +73,7 @@ export const BasketToolbarOnMarket = () => {
       basketId: "001",
       dataSourceBasket,
       dataSourceBasketSearch,
+      onClickAddBasket: () => console.log("Add Basket"),
     }),
     [dataSourceBasket, dataSourceBasketSearch]
   );

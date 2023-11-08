@@ -1,19 +1,16 @@
 package org.finos.vuu.layoutserver.model;
 
-import javax.persistence.Column;
-import java.util.Date;
-import java.util.UUID;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-import lombok.Data;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -29,7 +26,7 @@ public class Metadata {
     @Embedded
     private BaseMetadata baseMetadata;
 
-    private final Date created = new Date();
+    private final LocalDate created = LocalDate.now();
 
-    private Date updated;
+    private LocalDate updated;
 }

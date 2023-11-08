@@ -4,6 +4,10 @@
     width: 100%;
 }
 
+.vuuBasketSelectorRow:hover {
+    background-color: var(--vuu-color-gray-10);
+}
+
 .vuuBasketSelectorRow .vuuTableNextCell {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -16,8 +20,20 @@
 .vuuBasketSelectorRow-name {
     font-size: 16px;
 }
+.vuuBasketSelectorRow-status {
+    text-align: right;
+}
 
-.vuuBasketSelectorRow-symbol {
+.vuuBasketSelectorRow-symbolContainer {
+    display: flex;
+    gap: 8px;
+}
+
+.vuuBasketSelectorRow-symbolLabel {
+    color: var(--vuu-color-gray-50);
+}
+.vuuBasketSelectorRow-basketId {
+    color: var(--vuu-color-gray-80);
     display: flex;
     gap: 3px;
 }

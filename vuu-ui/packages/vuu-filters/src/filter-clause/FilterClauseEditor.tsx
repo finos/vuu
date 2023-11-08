@@ -3,8 +3,7 @@ import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import cx from "classnames";
-import { HTMLAttributes, useCallback, useEffect, useRef } from "react";
-import { CloseButton } from "./CloseButton";
+import { HTMLAttributes, useCallback } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { NumericInput } from "./NumericInput";
 import { getOperators } from "./operator-utils";
@@ -12,6 +11,7 @@ import { TextInput } from "./TextInput";
 import { useFilterClauseEditor } from "./useFilterClauseEditor";
 
 import "./FilterClauseEditor.css";
+import { Button } from "@salt-ds/core";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -135,7 +135,11 @@ export const FilterClauseEditor = ({
       ) : null}
       {getInputElement()}
       {value !== undefined ? (
-        <CloseButton className={`${classBase}-closeButton`} onClick={onClose} />
+        <Button
+          className={`${classBase}-closeButton`}
+          onClick={onClose}
+          data-icon="close"
+        />
       ) : null}
     </div>
   );

@@ -3,10 +3,12 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     minify: false,
+    sourcemap: true,
     target: "esnext",
   },
   define: {
     "process.env.NODE_DEBUG": false,
+    "process.env.LOCAL": true,
   },
   esbuild: {
     jsx: `automatic`,

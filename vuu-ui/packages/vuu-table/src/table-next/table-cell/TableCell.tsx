@@ -1,6 +1,6 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { metadataKeys } from "@finos/vuu-utils";
-import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 
@@ -22,7 +22,7 @@ export const TableCell = ({
 
   const handleDataItemEdited = useCallback(
     (value: VuuColumnDataType) => {
-      onDataEdited?.(row[IDX], name, value);
+      onDataEdited?.(row, name, value);
       // TODO will only return false in case of server rejection
       return true;
     },

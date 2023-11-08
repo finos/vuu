@@ -1,10 +1,12 @@
 import { LayoutsList, LayoutManagementProvider } from "@finos/vuu-shell";
 
-export const LayoutsBrowser = (): JSX.Element => {
-    return (
-        <LayoutManagementProvider>
-            <LayoutsList />
-        </LayoutManagementProvider>
-    );
-};
+let displaySequence = 0;
 
+export const LayoutsBrowser = (): JSX.Element => {
+  return (
+    <LayoutManagementProvider>
+      <LayoutsList />
+    </LayoutManagementProvider>
+  );
+};
+LayoutsBrowser.displaySequence = displaySequence++;

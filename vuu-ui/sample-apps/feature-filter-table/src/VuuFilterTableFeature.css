@@ -1,0 +1,10 @@
+.vuuFilterTableFeature {
+    --vuuMeasuredContainer-flex: 1 1 1px;
+    min-height: 100px;
+
+}
+
+.vuuFilterTableFeature-footer {
+    --vuuToolbarProxy-height: auto;
+    flex: 0 0 18px;
+}

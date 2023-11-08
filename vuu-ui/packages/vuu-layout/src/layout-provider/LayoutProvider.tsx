@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -86,7 +87,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   const serializeState = useCallback(
     (source, layoutChangeReason: LayoutChangeReason) => {
-      console.log(`serialize state ${layoutChangeReason}`);
       if (onLayoutChange) {
         const targetContainer =
           findTarget(source, withDropTarget) || state.current;
@@ -115,7 +115,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
     [forceRefresh, serializeState]
   );
 
-  const layoutActionDispatcher: LayoutProviderDispatch = useCallback(
+  const layoutActionDispatcher = useCallback<LayoutProviderDispatch>(
     (action) => {
       switch (action.type) {
         case "drag-start": {
@@ -144,9 +144,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   useEffect(() => {
     if (layout) {
-      // If we have a layout container with the dropTarget attribute we're going to inject the loaded layout there
-      // TODO make this a bit more robust/configurable than just using this magic attribute, that sounds like something
-      // else.
       const targetContainer = findTarget(
         state.current as never,
         withDropTarget

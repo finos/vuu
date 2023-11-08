@@ -13,7 +13,13 @@ import {
   isVuuFeatureInvocation,
 } from "@finos/vuu-data-react";
 import { VuuRange, VuuSortCol } from "@finos/vuu-protocol-types";
-import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
+import {
+  getFullRange,
+  isRowSelectedLast,
+  metadataKeys,
+  RowSelected,
+  WindowRange,
+} from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const { SELECTED } = metadataKeys;
@@ -224,6 +230,11 @@ export class MovingWindow {
         this.data[internalIndex - 1][SELECTED] = 2;
       } else if (preSelected === 2 && !isSelected) {
         this.data[internalIndex - 1][SELECTED] = 0;
+      } else if (
+        isRowSelectedLast(this.data[internalIndex - 1]) &&
+        isSelected
+      ) {
+        this.data[internalIndex - 1][SELECTED] -= 4;
       }
     }
   }

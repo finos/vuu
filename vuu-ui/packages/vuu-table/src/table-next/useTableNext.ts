@@ -67,6 +67,7 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureEnabled"
@@ -98,6 +99,7 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
+  navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureEnabled,
@@ -180,27 +182,27 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        // expectConfigChangeRef.current = true;
         // dispatchColumnAction({
         //   type: "setTableSchema",
         //   tableSchema,
         // });
       } else {
-        console.log("usbscription message with no schema");
+        console.log("subscription message with no schema");
       }
     },
     []
   );
 
-  const { data, range, setRange } = useDataSource({
-    dataSource,
-    onFeatureEnabled,
-    onFeatureInvocation,
-    renderBufferSize,
-    onSizeChange: onDataRowcountChange,
-    onSubscribed,
-    range: initialRange,
-  });
+  const { data, getSelectedRows, onEditTableData, range, setRange } =
+    useDataSource({
+      dataSource,
+      onFeatureEnabled,
+      onFeatureInvocation,
+      renderBufferSize,
+      onSizeChange: onDataRowcountChange,
+      onSubscribed,
+      range: initialRange,
+    });
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
@@ -233,6 +235,9 @@ export const useTable = ({
         tableConfig: newTableConfig,
         dataSourceConfig: dataSource.config,
       });
+      console.log(`dispatch onConfigChange`, {
+        newTableConfig,
+      });
       onConfigChange?.(newTableConfig);
     },
     [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
@@ -240,7 +245,6 @@ export const useTable = ({
 
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,
@@ -410,6 +414,7 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
     viewportRange: range,
@@ -428,7 +433,12 @@ export const useTable = ({
     [navigationKeyDown, editingKeyDown]
   );
 
-  const onContextMenu = useTableContextMenuNext({ columns, data });
+  const onContextMenu = useTableContextMenuNext({
+    columns,
+    data,
+    dataSource,
+    getSelectedRows,
+  });
 
   const onHeaderClick = useCallback(
     (evt: MouseEvent) => {

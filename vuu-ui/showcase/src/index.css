@@ -12,7 +12,7 @@ body {
   align-items: center;
   display: flex;
   gap: 12px;
-  height: 36px;
+  height: var(--vuuToolbarProxy-height, 36px);
 }
 
 .vuuToolbarProxy > [data-align="end"]{
@@ -25,3 +25,12 @@ body {
 
 /* .vuuTooltrayProxy {
 } */
+
+.vuuShowcase-StandaloneRoot {
+  height: 100vh;
+  /** this prevents root being displaced by component margin */
+  position:absolute;
+  left:0;
+  top:0;
+  width: 100vw;
+}

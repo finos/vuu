@@ -1,10 +1,11 @@
 import { TableSchema } from "@finos/vuu-data";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useId } from "@finos/vuu-layout";
 import { TableNext, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
-import { DropdownBase } from "../dropdown";
+import { DropdownBase, OpenChangeHandler } from "../dropdown";
 import "./SearchCell";
 import { useInstrumentPicker } from "./useInstrumentPicker";
 
@@ -17,6 +18,16 @@ export interface InstrumentPickerProps
   TableProps: Pick<TableProps, "config" | "dataSource">;
   columnMap: ColumnMap;
   disabled?: boolean;
+  /**
+   * Used to form the display value to render in input following selection. If
+   * not provided, default will be the values from rendered columns.
+   *
+   * @param row DataSourceRow
+   * @returns string
+   */
+  itemToString?: (row: DataSourceRow) => string;
+  onClose?: () => void;
+  onOpenChange?: OpenChangeHandler;
   onSelect: TableRowSelectHandler;
   schema: TableSchema;
   searchColumns: string[];
@@ -30,6 +41,8 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
     columnMap,
     disabled,
     id: idProp,
+    itemToString,
+    onOpenChange: onOpenChangeProp,
     onSelect,
     schema,
     searchColumns,
@@ -47,9 +60,25 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
     onOpenChange,
     tableHandlers,
     value,
-  } = useInstrumentPicker({ columnMap, dataSource, onSelect, searchColumns });
+  } = useInstrumentPicker({
+    columnMap,
+    columns: TableProps.config.columns,
+    dataSource,
+    itemToString,
+    onOpenChange: onOpenChangeProp,
+    onSelect,
+    searchColumns,
+  });
 
   const endAdornment = useMemo(() => <span data-icon="chevron-down" />, []);
+
+  const tableProps = {
+    ...TableProps,
+    config: {
+      ...TableProps.config,
+      showHighlightedRow: true,
+    },
+  };
 
   return (
     <DropdownBase
@@ -66,7 +95,6 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
       <Input
         {...inputProps}
         disabled={disabled}
-        // ref={useForkRef(setInputRef, setHookInputRef)}
         {...controlProps}
         endAdornment={endAdornment}
         value={value}
@@ -75,11 +103,12 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
       <TableNext
         rowHeight={25}
         renderBufferSize={100}
-        {...TableProps}
+        {...tableProps}
         {...tableHandlers}
         className={`${classBase}-list`}
         height={200}
         dataSource={dataSource}
+        navigationStyle="row"
         showColumnHeaders={false}
       />
     </DropdownBase>

@@ -65,7 +65,7 @@ class BasketConstituentProviderTest extends AnyFeatureSpec with Matchers with Be
     }
   }
 
-  Feature("Able to load basket constituents from .NASDAQ100 and show on basket constituent table") {
+  ignore("Able to load basket constituents from .NASDAQ100 and show on basket constituent table") {
 
 //    Scenario("display ric") {
 //      val array = getDataForBasket(".NASDAQ100")

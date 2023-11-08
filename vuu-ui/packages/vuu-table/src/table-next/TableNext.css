@@ -25,6 +25,10 @@
   --row-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
+.vuuTableNext-highlight .vuuTableNextRow:hover {
+  background-color: var(--vuu-color-pink-10-fade-20);
+}
+
 .vuuTableNext-scrollbarContainer {
   --scroll-content-width: 1100px;
   border-bottom: none !important;

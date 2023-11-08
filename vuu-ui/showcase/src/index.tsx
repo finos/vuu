@@ -101,7 +101,7 @@ if (hasUrlParameter("standalone")) {
           density="high"
           themeMode="light"
         >
-          <div style={{ height: "100vh", width: "100vw" }}>
+          <div className="vuuShowcase-StandaloneRoot">
             <Component />
           </div>
         </ThemeProvider>,
@@ -120,6 +120,7 @@ if (hasUrlParameter("standalone")) {
   }
 } else {
   import("./examples/index")
+    // A type error will appear here if any story is exported that does not assign displaySequence
     .then((stories: ExamplesModule) => {
       import("./AppRoutes")
         .then(({ AppRoutes }) => {

@@ -67,6 +67,9 @@
     --vuu-icon-svg: var(--vuu-svg-pin-right);
   }
 
+  .vuuColumnSettingsPanel-editing .vuuColumnNameLabel-edit {
+    display: none;
+  }
   
 
 

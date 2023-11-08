@@ -11,6 +11,7 @@ const columnExpressionLanguage = LRLanguage.define({
   parser: parser.configure({
     props: [
       styleTags({
+        Column: tag.attributeValue,
         Function: tag.variableName,
         String: tag.string,
         Or: tag.emphasis,

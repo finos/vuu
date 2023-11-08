@@ -1,26 +1,25 @@
 import { BasketSelector } from "feature-basket-trading";
 import { useCallback } from "react";
-import { useSchema, useTableConfig } from "../utils";
+import { useTableConfig } from "../utils";
+import { getSchema } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
 export const DefaultBasketSelector = () => {
-  const schema = useSchema("basketDefinitions");
+  const schema = getSchema("basketTrading");
 
-  const { dataSource: dataSourceBasket } = useTableConfig({
-    count: 5,
+  const { dataSource: datasourceBasketTrading } = useTableConfig({
     dataSourceConfig: {
       columns: schema.columns.map((col) => col.name),
     },
-    table: { module: "SIMUL", table: "basketDefinitions" },
+    table: { module: "BASKET", table: "basketTrading" },
   });
 
-  const { dataSource: datasourceBasketSearch } = useTableConfig({
-    count: 5,
+  const { dataSource: datasourceBasketTradingSearch } = useTableConfig({
     dataSourceConfig: {
       columns: schema.columns.map((col) => col.name),
     },
-    table: { module: "SIMUL", table: "basketDefinitions" },
+    table: { module: "BASKET", table: "basketTrading" },
   });
 
   const handleClickAddBasket = useCallback(() => {
@@ -29,9 +28,9 @@ export const DefaultBasketSelector = () => {
 
   return (
     <BasketSelector
-      dataSourceBasket={dataSourceBasket}
-      dataSourceBasketSearch={datasourceBasketSearch}
-      basketId="001"
+      basketInstanceId="steve-3"
+      dataSourceBasketTrading={datasourceBasketTrading}
+      dataSourceBasketTradingSearch={datasourceBasketTradingSearch}
       onClickAddBasket={handleClickAddBasket}
     />
   );

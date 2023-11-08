@@ -24,8 +24,6 @@ export const SearchCell = ({
   );
 };
 
-console.log("register SearchCell");
-
 registerComponent("search-cell", SearchCell, "cell-renderer", {
   serverDataType: "private",
 });

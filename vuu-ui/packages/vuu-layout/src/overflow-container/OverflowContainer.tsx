@@ -1,4 +1,4 @@
-import { PopupMenu } from "@finos/vuu-popups";
+import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
 import { orientationType } from "@finos/vuu-utils";
 import { useId } from "@finos/vuu-layout";
 
@@ -18,6 +18,7 @@ import "./OverflowContainer.css";
 const classBase = "vuuOverflowContainer";
 
 export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
+  PopupMenuProps?: Partial<PopupMenuProps>;
   allowDragDrop?: boolean;
   debugId?: string;
   height: number;
@@ -30,6 +31,7 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
 
 const WrapContainer = React.memo(
   ({
+    PopupMenuProps,
     allowDragDrop,
     children,
     className: classNameProp,
@@ -100,6 +102,7 @@ const WrapContainer = React.memo(
         key="overflow"
       >
         <PopupMenu
+          {...PopupMenuProps}
           icon={overflowIcon}
           menuBuilder={menuBuilder}
           menuActionHandler={menuActionHandler}
@@ -123,6 +126,7 @@ WrapContainer.displayName = "OverflowContainer.InnerContainer";
 
 export const OverflowContainer = forwardRef(function OverflowContainer(
   {
+    PopupMenuProps,
     allowDragDrop = false,
     children,
     className,
@@ -147,6 +151,7 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
       ref={forwardedRef}
     >
       <WrapContainer
+        PopupMenuProps={PopupMenuProps}
         allowDragDrop={allowDragDrop}
         height={height}
         id={id}

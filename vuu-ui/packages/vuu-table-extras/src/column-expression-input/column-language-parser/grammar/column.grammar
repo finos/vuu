@@ -1,10 +1,10 @@
 
 @precedence {
-  call,
   or @left,
   and @left
   times @left,
   plus @left
+  op @left
 }
 
 @top ColumnDefinitionExpression { expression }
@@ -18,7 +18,8 @@ expression {
   ParenthesizedExpression |
   ArithmeticExpression |
   ConditionalExpression |
-  CallExpression
+  RelationalExpression |
+  CallExpression 
 }
 
 ParenthesizedExpression { OpenBrace expression CloseBrace }
@@ -44,7 +45,7 @@ AndCondition {  booleanCondition !and "and" booleanCondition }
 OrCondition { booleanCondition !or "or" booleanCondition }
 
 RelationalExpression {
-  expression RelationalOperator expression
+  expression !op RelationalOperator expression
 }
 
 RelationalOperator {

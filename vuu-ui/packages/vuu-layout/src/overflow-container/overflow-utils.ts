@@ -8,6 +8,14 @@ export type OverflowItem = {
   overflowPriority: string;
 };
 
+export const isOverflowElement = (element: HTMLElement | null) =>
+  element !== null &&
+  element.dataset.index === "overflow" &&
+  element.parentElement !== null &&
+  element.parentElement.classList.contains(
+    "vuuOverflowContainer-wrapContainer-overflowed"
+  );
+
 export const sortByScreenOrder = (elements: HTMLElement[]): HTMLElement[] =>
   elements.sort((e1, e2) => {
     const {
@@ -79,9 +87,11 @@ export const getNonWrappedAndWrappedItems = (
 
 export const applyOverflowClassToWrappedItems = (
   container: HTMLElement,
-  overflowedItems: OverflowItem[]
+  overflowedItems: OverflowItem[],
+  classBase?: string
 ) => {
   let ignoreOverflow = false;
+  const className = classBase ? `${classBase}-overflowed` : "overflow";
   if (overflowedItems.find(({ index }) => index === "overflow")) {
     if (overflowedItems.length === 1) {
       ignoreOverflow = true;
@@ -92,9 +102,9 @@ export const applyOverflowClassToWrappedItems = (
       dataset: { index = "?" },
     } = element as HTMLElement;
     if (overflowedItems.length === 0 || ignoreOverflow) {
-      container.classList.remove("overflowed");
+      container.classList.remove(className);
     } else {
-      container.classList.add("overflowed");
+      container.classList.add(className);
     }
     if (
       index !== "overflow" &&

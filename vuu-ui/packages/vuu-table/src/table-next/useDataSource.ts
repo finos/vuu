@@ -95,6 +95,10 @@ export const useDataSource = ({
     ]
   );
 
+  const getSelectedRows = useCallback(() => {
+    return dataWindow.getSelectedRows();
+  }, [dataWindow]);
+
   useEffect(
     () => () => {
       isMounted.current = true;
@@ -142,6 +146,7 @@ export const useDataSource = ({
 
   return {
     data: data.current,
+    getSelectedRows,
     range: rangeRef.current,
     setRange,
   };

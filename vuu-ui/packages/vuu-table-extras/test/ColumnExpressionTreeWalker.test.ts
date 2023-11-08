@@ -386,6 +386,20 @@ describe("Column Expression treeWalker", () => {
       });
     });
   });
+
+  it.skip("parses and expressions with boolean conditions", () => {
+    const str = 'and(bid > 100, currency="EUR")';
+    const result = parser.parse(str);
+    const expression = walkTree(result, str);
+    expect(expression).toEqual({
+      type: "callExpression",
+      functionName: "and",
+      arguments: [
+        { type: "relationalExpression" },
+        { type: "relationalExpression" },
+      ],
+    });
+  });
 });
 
 // expect(evaluateExpression('if(side="Sell","N","Y")')).toEqual(Ok);

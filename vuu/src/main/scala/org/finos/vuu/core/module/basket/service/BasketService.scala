@@ -30,9 +30,20 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
     keys.map( key => table.pullRow(key) ).filter(_.get(BC.BasketId).toString == key)
   }
 
-  def createBasket(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
+  private def mkTradingConstituentRow(side: String, basketKey: String, instanceKey: String, constituentKey: String, quantity: Long, basketConsRow: RowData): RowWithData = {
+    RowWithData(constituentKey, Map(BTC.BasketId -> basketKey, BTC.Ric -> basketConsRow.get(BC.Ric), BTC.InstanceId -> instanceKey,
+      BTC.Quantity -> quantity,
+      BTC.InstanceIdRic -> constituentKey,
+      BTC.Description -> basketConsRow.get(BC.Description),
+      BTC.Side -> side
+    ))
+  }
 
-    //logger.info("createBasket()")
+  private def mkTradingBasketRow(instanceKey: String, basketKey: String): RowWithData = {
+    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey))
+  }
+
+  def createBasket(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
 
     val basketKey = selection.rowKeyIndex.map({ case (key, _) => key }).toList.head
 
@@ -42,25 +53,26 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {
       case table: DataTable =>
-        table.processUpdate(instanceKey, RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey)), clock.now())
+        table.processUpdate(instanceKey, mkTradingBasketRow(instanceKey, basketKey), clock.now())
       case null =>
+        logger.error("Cannot find the Basket Trading table.")
     }
 
     tableContainer.getTable(BasketModule.BasketTradingConstituent) match {
       case table: DataTable =>
         constituents.foreach( rowData => {
           val constituentKey = instanceKey + "." + rowData.get(BTC.Ric)
-          table.processUpdate(constituentKey, RowWithData(constituentKey, Map(BTC.BasketId -> basketKey, BTC.Ric -> rowData.get(BC.Ric) , BTC.InstanceId -> instanceKey,
-            //BTC.Quantity -> rowData.get(BC.Quantity),
-            BTC.InstanceIdRic -> constituentKey,
-            BTC.Description -> rowData.get(BC.Description)
-          )), clock.now())
+          val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
+          val quantity = (weighting * 100).asInstanceOf[Long]
+          val side = rowData.get(BTC.Side).toString
+          table.processUpdate(constituentKey, mkTradingConstituentRow(side, basketKey, instanceKey, constituentKey, quantity, rowData), clock.now())
         })
       case null =>
+        logger.error("Cannot find the Basket Trading Constituent.")
     }
 
     NoAction()
-  }
+    }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu(
       new SelectionViewPortMenuItem("Create New", "", (sel, sess) => this.createBasket(sel, sess), "CREATE_NEW_BASKET"),

@@ -9,7 +9,7 @@ import {
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useCallback, useRef } from "react";
 import { RowClickHandler } from "./dataTableTypes";
 

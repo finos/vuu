@@ -17,7 +17,7 @@ import "./VuuInstrumentTilesFeature.css";
 
 const classBase = "VuuInstrumentTilesFeature";
 
-export interface FilterTableFeatureProps {
+export interface InstrumentTilesFeatureProps {
   tableSchema: TableSchema;
 }
 
@@ -25,7 +25,7 @@ const { KEY } = metadataKeys;
 
 const VuuInstrumentTilesFeature = ({
   tableSchema,
-}: FilterTableFeatureProps) => {
+}: InstrumentTilesFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
 
   const instrumentKeys = useMemo(

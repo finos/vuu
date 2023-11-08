@@ -12,6 +12,7 @@ import org.finos.vuu.viewport.ViewPortTable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.module.TableDefContainer
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -23,6 +24,7 @@ class CoreModuleTest extends AnyFeatureSpec with Matchers with StrictLogging wit
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
     implicit val timeProvider: Clock = new DefaultClock
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+    implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
     lifecycle.autoShutdownHook()
 

@@ -2,10 +2,12 @@ package org.finos.vuu.core.module.basket
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{Link, TableDef, ViewPortDef, VisualLinks}
-import org.finos.vuu.core.module.basket.provider.{BasketConstituentProvider, BasketProvider, NotYetImplementedProvider, PriceStrategyProvider}
-import org.finos.vuu.core.module.basket.service.BasketService
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, ViewServerModule}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
+import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentService}
+import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.core.module.simul.SimulationModule
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
 object BasketModule extends DefaultModule {
@@ -16,7 +18,7 @@ object BasketModule extends DefaultModule {
   final val BasketConstituentTable = "basketConstituent"
   final val BasketTradingConstituent = "basketTradingConstituent"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
+  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B}
     import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC}
@@ -44,9 +46,10 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
-          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(), BC.Volume.string()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
+            BC.Volume.string(), BC.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
-          joinFields = BC.RicBasketId
+          joinFields = BC.RicBasketId, BC.Ric
         ),
         (table, vs) => new BasketConstituentProvider(table),
       )
@@ -58,16 +61,16 @@ object BasketModule extends DefaultModule {
           VisualLinks(),
           joinFields = BT.BasketId
         ),
-        (table, vs) => new NotYetImplementedProvider(table),
+        (table, vs) => new NullProvider(table),
       )
       .addTable(
         TableDef(
           name = BasketTradingConstituent,
           keyField = BTC.InstanceIdRic,
-          columns = Columns.fromNames(BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
+          columns = Columns.fromNames(BTC.Quantity.long(), BTC.Side.string(),
+                                      BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
                                       BTC.BasketId.string(), BTC.PriceStrategyId.int(),
                                       BTC.Description.string(),
-                                      BTC.Bid.double(), BTC.Offer.double(), BTC.Last.double(),
                                       BTC.NotionalUsd.double(), BTC.NotionalLocal.double(),
                                       BTC.Venue.string(),
                                       BTC.Algo.string(), BTC.AlgoParams.string(),
@@ -78,28 +81,59 @@ object BasketModule extends DefaultModule {
           VisualLinks(
             Link(BTC.InstanceId, BasketTradingTable, BT.InstanceId),
           ),
-          joinFields = BTC.InstanceIdRic
+          joinFields = BTC.InstanceIdRic, BTC.Ric
         ),
-        (table, vs) => new NotYetImplementedProvider(table),
+        (table, vs) => new NullProvider(table),
+        (table, _, _, tableContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new BasketTradingConstituentService(table, tableContainer)
+        )
       )
       .addTable(
         //lookup table for price strategies....
         TableDef(
-          name = "priceStrategy",
+          name = "priceStrategyType",
           keyField = PS.Id,
           columns = Columns.fromNames(PS.Id.int(), PS.PriceStrategy.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = PS.Id
         ),
         (table, _) => new PriceStrategyProvider(table)
-      ).asModule()
+      )
+      .addTable(
+        //lookup table for price strategies....
+        TableDef(
+          name = "algoType",
+          keyField = Algo.Id,
+          columns = Columns.fromNames(Algo.Id.int(), Algo.AlgoType.string()), // we can join to instruments and other tables to get the rest of the data.....
+          VisualLinks(),
+          joinFields = PS.Id
+        ),
+        (table, _) => new AlgoProvider(table)
+      )
+      .addJoinTable(tableDefs =>
+        JoinTableDef(
+          name = "basketTrdConsPrices",
+          baseTable = tableDefs.get(NAME, BasketTradingConstituent),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituent)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joins =
+            JoinTo(
+              table = tableDefs.get(PriceModule.NAME, "prices"),
+              joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+            ),
+          joinFields = Seq()
+        ))
+      .asModule()
   }
 
   object PriceStrategy {
     final val Id = "id"
     final val PriceStrategy = "priceStrategy"
-    final val NotionalValue = "notionalValue"
-    final val NotionalValueUsd = "notionalValue"
+  }
+
+  object Algo {
+    final val Id = "id"
+    final val AlgoType = "algoType"
   }
 
   object BasketColumnNames {
@@ -118,6 +152,7 @@ object BasketModule extends DefaultModule {
     final val Change = "change"
     final val Volume = "volume"
     final val Description = "description"
+    final val Side = "side"
   }
 
   object BasketTradingColumnNames {
@@ -135,6 +170,7 @@ object BasketModule extends DefaultModule {
 
   object BasketTradingConstituentColumnNames {
     final val InstanceIdRic = "instanceIdRic"
+    final val Side          = "side"
     final val InstanceId = "instanceId"
     final val BasketId = "basketId"
     final val Ric = "ric"

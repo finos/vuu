@@ -1,4 +1,4 @@
-import { PopupComponentProps, PopupPlacement } from "packages/vuu-popups/src";
+import type { PopupComponentProps, PopupPlacement } from "@finos/vuu-popups";
 import {
   HTMLAttributes,
   KeyboardEvent,

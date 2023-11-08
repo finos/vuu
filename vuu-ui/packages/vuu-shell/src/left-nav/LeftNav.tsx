@@ -39,7 +39,7 @@ export const LeftNav = ({
   features,
   onResize,
   sizeCollapsed = 80,
-  sizeContent = 240,
+  sizeContent = 300,
   sizeExpanded = 240,
   style: styleProp,
   tableFeatures,
@@ -142,6 +142,7 @@ export const LeftNav = ({
     ...styleProp,
     "--nav-menu-collapsed-width": `${sizeCollapsed}px`,
     "--nav-menu-expanded-width": `${sizeExpanded}px`,
+    "--nav-menu-content-width": `${sizeContent}px`,
   } as CSSProperties;
 
   return (
@@ -194,10 +195,10 @@ export const LeftNav = ({
         className={`${classBase}-menu-secondary`}
         showTabs={false}
       >
-        <FeatureList features={features} title="Vuu Features" />
-        <FeatureList features={tableFeatures} title="Vuu Tables" />
+        <FeatureList features={features} title="VUU FEATURES" />
+        <FeatureList features={tableFeatures} title="VUU TABLES" />
         <div style={{ background: "green", height: "100%" }}>
-          Layout Templates
+          LAYOUT TEMPLATES
         </div>
         <div className="vuuLeftNav-drawer">
           <LayoutsList />

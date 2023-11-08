@@ -15,11 +15,14 @@ export const BasketSelectorRow = ({
   onClick,
   onDataEdited,
   onToggleGroup,
-  zebraStripes = false,
+  zebraStripes: _,
   ...htmlAttributes
 }: RowProps) => {
-  const name = row[columnMap.name];
-  const symbolName = row[columnMap.symbolName];
+  const {
+    [columnMap.basketId]: basketId,
+    [columnMap.basketName]: basketName,
+    [columnMap.status]: status,
+  } = row;
   const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 
   const handleRowClick = useCallback(
@@ -41,12 +44,14 @@ export const BasketSelectorRow = ({
       style={style}
     >
       <div className="vuuTableNextCell" role="cell">
-        <span className={`${classBase}-name`}>{name}</span>
-        <span></span>
-        <div className={`${classBase}-symbol`}>
-          <label className={`${classBase}-status`}>Symbol</label>
-          <span className={`${classBase}-symbolName`}>{symbolName}</span>
+        <span className={`${classBase}-name`}>{basketName}</span>
+        <label className={`${classBase}-status`}>{status}</label>
+        <div className={`${classBase}-symbolContainer`}>
+          <label className={`${classBase}-symbolLabel`}>Symbol</label>
+          <span className={`${classBase}-basketId`}>{basketId}</span>
         </div>
+        <span></span>
+        <div className={`${classBase}-symbol`}></div>
       </div>
     </div>
   );

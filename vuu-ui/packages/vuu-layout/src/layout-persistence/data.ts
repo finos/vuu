@@ -22,10 +22,11 @@ export const defaultLayout: LayoutJSON = {
     className: "vuuShell-mainTabs",
     TabstripProps: {
       allowAddTab: true,
+      allowCloseTab: true,
       allowRenameTab: true,
       animateSelectionThumb: false,
       location: "main-tab",
-      allowCloseTab: true
+      tabClassName: "MainTab",
     },
     preserve: true,
     active: 0,

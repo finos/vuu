@@ -1,5 +1,10 @@
 export type ColumnFunctionDescriptor = {
-  accepts: "string" | "number" | "any" | Array<"string" | "number">;
+  accepts:
+    | "string"
+    | "number"
+    | "boolean"
+    | "any"
+    | Array<"string" | "number" | "boolean">;
   description: string;
   example: {
     expression: string;
@@ -14,6 +19,24 @@ export type ColumnFunctionDescriptor = {
 };
 
 export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
+  /**
+   * and
+   */
+  {
+    accepts: ["boolean"],
+    description:
+      "Applies boolean and operator across supplied parameters to returns a single boolean result",
+    example: {
+      expression: 'and(ccy="EUR",quantity=0)',
+      result: "true | false",
+    },
+    name: "and",
+    params: {
+      description: "( boolean, [ boolean* ] )",
+    },
+    type: "boolean",
+  },
+
   /**
    * concatenate()
    */
@@ -101,6 +124,24 @@ export const columnFunctionDescriptors: ColumnFunctionDescriptor[] = [
     },
     type: "string",
   },
+  /**
+   * or
+   */
+  {
+    accepts: ["boolean"],
+    description:
+      "Applies boolean or operator across supplied parameters to returns a single boolean result",
+    example: {
+      expression: 'or(status="cancelled",quantity=0)',
+      result: "true | false",
+    },
+    name: "or",
+    params: {
+      description: "( boolean, [ boolean* ] )",
+    },
+    type: "boolean",
+  },
+
   /**
    * upper()
    */

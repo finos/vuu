@@ -42,7 +42,7 @@ interface MeasuredState {
 
 const isNumber = (val: unknown): val is number => Number.isFinite(val);
 
-const FULL_SIZE: CssSize = { height: "100%", width: "100%" };
+const FULL_SIZE: CssSize = { height: "100%", width: "auto" };
 
 export interface MeasuredContainerHookResult {
   containerRef: RefObject<HTMLDivElement>;
@@ -55,16 +55,19 @@ export interface MeasuredContainerHookResult {
 // were passed as props), use as initial values for inner size. If there
 // is no border on Table, these values will not change. If there is a border,
 // inner values will be updated once measured.
-const getInitialCssSize = (height: unknown, width: unknown): CssSize => {
+const getInitialCssSize = (
+  height?: number | string,
+  width?: number | string
+): CssSize => {
   if (isValidNumber(height) && isValidNumber(width)) {
     return {
       height: `${height}px`,
       width: `${width}px`,
     };
-  } else if (typeof height === "string" && typeof width === "string") {
+  } else if (typeof height === "string" || typeof width === "string") {
     return {
-      height,
-      width,
+      height: height ?? "100%",
+      width: width ?? "auto",
     };
   } else {
     return FULL_SIZE;
@@ -96,7 +99,7 @@ export const useMeasuredContainer = ({
     inner: getInitialInnerSize(height, width),
     outer: {
       height: height ?? "100%",
-      width: width ?? "100%",
+      width: width ?? "auto",
     },
   });
   const fixedHeight = typeof height === "number";
@@ -144,7 +147,7 @@ export const useMeasuredContainer = ({
       if (
         fixedHeight &&
         isNumber(clientWidth) &&
-        clientWidth !== inner?.width
+        Math.floor(clientWidth) !== inner?.width
       ) {
         newState = {
           css,
@@ -157,7 +160,7 @@ export const useMeasuredContainer = ({
       } else if (
         fixedWidth &&
         isNumber(clientHeight) &&
-        clientHeight !== inner?.height
+        Math.floor(clientHeight) !== inner?.height
       ) {
         newState = {
           css,

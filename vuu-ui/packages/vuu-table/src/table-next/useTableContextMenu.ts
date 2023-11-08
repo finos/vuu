@@ -1,17 +1,24 @@
-import { buildColumnMap } from "@finos/vuu-utils";
+import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { MouseEvent, useCallback } from "react";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
+import { buildColumnMap } from "@finos/vuu-utils";
+import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
   columns: KeyedColumnDescriptor[];
   data: DataSourceRow[];
+  dataSource: DataSource;
+  getSelectedRows: () => DataSourceRow[];
 }
+
+const NO_ROWS = [] as const;
 
 export const useTableContextMenu = ({
   columns,
   data,
+  dataSource,
+  getSelectedRows,
 }: TableContextMenuHookProps) => {
   const [showContextMenu] = usePopupContextMenu();
 
@@ -23,7 +30,7 @@ export const useTableContextMenu = ({
       const cellEl = target?.closest("div[role='cell']");
       const rowEl = target?.closest("div[role='row']");
       if (cellEl && rowEl /*&& currentData && currentDataSource*/) {
-        //   const { columns, selectedRowsCount } = currentDataSource;
+        const { selectedRowsCount } = dataSource;
         const columnMap = buildColumnMap(columns);
         const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
         const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
@@ -33,12 +40,12 @@ export const useTableContextMenu = ({
           columnMap,
           columnName,
           row,
-          // selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
-          // viewport: dataSource?.viewport,
+          selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
+          viewport: dataSource.viewport,
         });
       }
     },
-    [columns, data, showContextMenu]
+    [columns, data, dataSource, showContextMenu]
   );
 
   return onContextMenu;

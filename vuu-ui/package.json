@@ -35,11 +35,12 @@
     "showcase:build": " cd showcase && node scripts/build.mjs",
     "test:cypress": "cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
+    "test:cypress:e2e": "cypress run --browser chrome",
     "test:vite": "vitest run",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "pub:debug": "node ./scripts/publish.mjs --debug",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
     "@types/jest": "^26.0.20",
@@ -82,9 +83,9 @@
     "stylelint": "^15.0.0",
     "tinycolor2": "1.4.2",
     "typescript": "4.9.5",
-    "vite": "4.2.0",
+    "vite": "4.5.0",
     "vite-tsconfig-paths": "^4.0.3",
-    "vitest": "0.33.0"
+    "vitest": "0.34.6"
   },
   "engines": {
     "node": ">=16.0.0"

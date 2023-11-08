@@ -1,7 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.client.ClientHelperFns._
-import org.finos.vuu.core.module.{MyObjectParam, TestModule}
+import org.finos.vuu.core.module.{MyObjectParam, TableDefContainer, TestModule}
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import org.finos.vuu.net.WebSocketViewServerClient
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
@@ -32,6 +32,7 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val timeProvider: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       lifecycle.autoShutdownHook()
 

@@ -24,6 +24,8 @@ import {
   stripFilterFromColumns,
   moveItemDeprecated,
   getDefaultAlignment,
+  isCalculatedColumn,
+  getCalculatedColumnName,
 } from "@finos/vuu-utils";
 
 import { Reducer, useReducer } from "react";
@@ -236,6 +238,14 @@ function init({ dataSourceConfig, tableConfig }: InitialConfig): TableModel {
   }
 }
 
+const labelFromName = (column: ColumnDescriptor) => {
+  if (isCalculatedColumn(column.name)) {
+    return getCalculatedColumnName(column);
+  } else {
+    return column.name;
+  }
+};
+
 const getLabel = (
   label: string,
   columnFormatHeader?: "uppercase" | "capitalize"
@@ -264,7 +274,7 @@ const toKeyedColumWithDefaults =
       align = getDefaultAlignment(serverDataType),
       key,
       name,
-      label = name,
+      label = labelFromName(column),
       width = columnDefaultWidth,
       ...rest
     } = column;

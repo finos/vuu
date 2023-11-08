@@ -29,6 +29,8 @@ trait ViewServerModule {
 
   def tableDefs: List[TableDef]
 
+  def tableDefContainer: TableDefContainer
+
   def serializationMixin: Object
 
   def rpcHandlersUnrealized: List[VuuServer => RpcHandler]
