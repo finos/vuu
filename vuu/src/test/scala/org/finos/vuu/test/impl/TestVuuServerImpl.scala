@@ -5,17 +5,19 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
-import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer, VuuServer}
-import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.module._
+import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer}
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, ClientSessionContainerImpl, ClientSessionId, MessageBody, ViewServerHandlerFactoryImpl}
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
+import org.finos.vuu.net._
+import org.finos.vuu.provider._
 import org.finos.vuu.test.{TestViewPort, TestVuuServer}
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+import org.finos.vuu.util.OutboundRowPublishQueue
+import org.finos.vuu.viewport.{DefaultRange, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
 class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging with IVuuServer {
 
@@ -46,6 +48,8 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
+
+  val queue = new OutboundRowPublishQueue()
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
     logger.info(s"Creating joinTable ${joinDef.name}")
@@ -127,11 +131,18 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     }
   }
 
-  override def createViewPort(module: String, tableName: String): TestViewPort = ???
+  override def createViewPort(module: String, tableName: String): TestViewPort = {
+    val table = tableContainer.getTable(tableName)
+    val columns = ViewPortColumnCreator.create(table, table.getTableDef.columns.map(_.name).toList)
+    val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, table, DefaultRange, columns)
+    new TestViewPort(viewport)
+  }
 
-  override def session: ClientSessionId = new ClientSessionId("test-session", "test-user")
+  override def session: ClientSessionId = ClientSessionId("test-session", "test-user")
 
-  override def runOnce(): Unit = ???
+  override def runOnce(): Unit = {
+    viewPortContainer.runOnce()
+  }
 
   override def doStart(): Unit = {lifecycle.start()}
 
@@ -144,4 +155,8 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   override val lifecycleId: String = "TestVuuServerImpl#" + getClass.hashCode()
 
   override def start(): Unit = ???
+
+  override def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit = {
+    viewPortContainer.addViewPortDefinition(table, vpDefFunc)
+  }
 }
