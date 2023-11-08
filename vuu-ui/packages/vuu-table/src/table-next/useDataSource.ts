@@ -113,7 +113,6 @@ export const useDataSource = ({
 
   useEffect(() => {
     if (dataSource.status === "disabled") {
-      console.log(`about to subscribe but dataSource is disabled`);
       dataSource.enable?.(datasourceMessageHandler);
     } else {
       //TODO could we improve this by using a ref for range ?

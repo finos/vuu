@@ -296,6 +296,8 @@ export class RemoteDataSource
   }
 
   select(selected: Selection) {
+    //TODO this isn't always going to be correct - need to count
+    // selection block items
     this.#selectedRowsCount = selected.length;
     if (this.viewport) {
       this.server?.send({

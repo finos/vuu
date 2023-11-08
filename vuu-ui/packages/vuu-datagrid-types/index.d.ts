@@ -4,6 +4,7 @@ import type {
   VuuAggType,
   VuuColumnDataType,
   VuuSortType,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
@@ -77,6 +78,11 @@ export interface EditValidationRule {
   value?: string;
 }
 
+export type ListOption = {
+  label: string;
+  value: number | string;
+};
+
 /**
  * Descibes a custom cell renderer for a Table column
  */
@@ -87,10 +93,25 @@ export interface ColumnTypeRendering {
   name: string;
   rules?: EditValidationRule[];
   // These are for the dropdown-input - how do we type parameters for custom renderers ?
-  values?: ReadonlyArray<string>;
+  values?: ReadonlyArray<ListOption>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
+}
+
+export type LookupTableDetails = {
+  labelColumn: string;
+  table: VuuTable;
+  valueColumn: string;
+};
+/**
+ * This describes a serverside lookup table which will be bound to the edit control
+ * for this column. The lookup table will typically have two columns, mapping a
+ * numeric value to a User friendly display string.
+ */
+export interface LookupRenderer {
+  name: string;
+  lookup: LookupTableDetails;
 }
 
 export declare type ColumnTypeSimple =
@@ -105,7 +126,7 @@ export declare type ColumnTypeSimple =
 export declare type ColumnTypeDescriptor = {
   formatting?: ColumnTypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: ColumnTypeRendering | MappedValueTypeRenderer;
+  renderer?: ColumnTypeRendering | LookupRenderer | MappedValueTypeRenderer;
 };
 
 export declare type ColumnTypeDescriptorCustomRenderer = {

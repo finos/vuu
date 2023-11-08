@@ -1,5 +1,6 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
+  ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
   EditValidationRule,
@@ -10,6 +11,7 @@ import {
   VuuColumnDataType,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
@@ -141,11 +143,18 @@ export const getRegisteredCellRenderers = (
 export const getCellRendererOptions = (renderName: string) =>
   optionsMap.get(renderName);
 
-export function getCellRenderer(
-  renderer?: ColumnTypeRendering | MappedValueTypeRenderer
-) {
-  if (renderer && "name" in renderer) {
-    return cellRenderersMap.get(renderer.name);
+export function getCellRenderer(column: ColumnDescriptor) {
+  if (isTypeDescriptor(column.type)) {
+    const { renderer } = column.type;
+    if (isColumnTypeRenderer(renderer)) {
+      return cellRenderersMap.get(renderer.name);
+    }
+  }
+  if (column.editable) {
+    // we can only offer a text input edit as a generic editor.
+    // If a more specialised editor is required, user must configure
+    // it in column config.
+    return cellRenderersMap.get("input-cell");
   }
 }
 

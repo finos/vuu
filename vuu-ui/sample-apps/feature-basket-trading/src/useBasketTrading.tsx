@@ -97,7 +97,7 @@ export const useBasketTrading = ({
           if (message.size) {
             setBasketCount(message.size);
           }
-          if (message.rows) {
+          if (message.rows && message.rows.length > 0) {
             setBasket(new Basket(message.rows[0], columnMap));
           }
         }

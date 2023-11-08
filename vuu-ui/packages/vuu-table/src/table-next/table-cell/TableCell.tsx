@@ -1,12 +1,10 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
-import { metadataKeys } from "@finos/vuu-utils";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 
 import "./TableCell.css";
 
-const { IDX } = metadataKeys;
 const classBase = "vuuTableNextCell";
 
 export const TableCell = ({

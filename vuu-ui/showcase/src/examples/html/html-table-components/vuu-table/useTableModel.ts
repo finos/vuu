@@ -17,7 +17,6 @@ import {
   isFilteredColumn,
   isGroupColumn,
   isPinned,
-  isTypeDescriptor,
   logger,
   metadataKeys,
   sortPinnedColumns,
@@ -35,12 +34,6 @@ const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
-
-const getCellRendererForColumn = (column: ColumnDescriptor) => {
-  if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer);
-  }
-};
 
 const getDataType = (
   column: ColumnDescriptor,
@@ -251,7 +244,7 @@ const toKeyedColumWithDefaults =
     const keyedColumnWithDefaults = {
       ...rest,
       align,
-      CellRenderer: getCellRendererForColumn(column),
+      CellRenderer: getCellRenderer(column),
       label: getLabel(label, columnFormatHeader),
       key: key ?? index + KEY_OFFSET,
       name,

@@ -42,7 +42,7 @@ export const DefaultBasketTradingFeature = () => {
         className="vuuTableNextFeature"
         closeable
         header
-        title="Instruments"
+        title="Basket Trading"
         style={{ width: 1260, height: 600 }}
       >
         <BasketTradingFeature

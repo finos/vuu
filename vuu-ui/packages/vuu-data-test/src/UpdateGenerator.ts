@@ -1,7 +1,7 @@
 import { ArrayDataSource } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { random } from "./simul/reference-data";
-import { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
+import type { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;
@@ -63,7 +63,7 @@ export class BaseUpdateGenerator implements UpdateGenerator {
           if (shallUpdateRow) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const rowUpdates: RowUpdates = [rowIndex];
+            const rowUpdates: RowUpdates = ["U", rowIndex];
             const row = data[rowIndex];
             for (const colIdx of this.tickingColumns) {
               const shallUpdateColumn = random(0, 10) < 5;

@@ -55,6 +55,7 @@ export const useNewBasketPanel = ({
         if (rpcCommand) {
           basketDataSource
             .menuRpcCall({
+              // basketName: basketName,
               rpcName: rpcCommand.rpcName,
               type: "VIEW_PORT_MENUS_SELECT_RPC",
             } as Omit<ClientToServerMenuRPC, "vpId">)

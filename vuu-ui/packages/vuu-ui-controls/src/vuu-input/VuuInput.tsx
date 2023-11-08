@@ -11,6 +11,10 @@ import {
 
 const classBase = "vuuInput";
 
+const constantInputProps = {
+  autoComplete: "off",
+};
+
 export type Commithandler<T extends VuuRowDataItemType = VuuRowDataItemType> = (
   evt: SyntheticEvent<HTMLInputElement>,
   value: T
@@ -76,6 +80,10 @@ export const VuuInput = <T extends VuuRowDataItemType = string>({
   return (
     <Input
       {...props}
+      inputProps={{
+        ...constantInputProps,
+        ...props.inputProps,
+      }}
       className={cx(classBase, className)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}

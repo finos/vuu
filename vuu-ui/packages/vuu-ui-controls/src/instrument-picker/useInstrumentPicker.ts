@@ -92,6 +92,9 @@ export const useInstrumentPicker = ({
   );
 
   const inputProps = {
+    inputProps: {
+      autoComplete: "off",
+    },
     onChange: handleInputChange,
   };
   const controlProps = {};

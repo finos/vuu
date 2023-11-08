@@ -1,52 +1,64 @@
+import { useLookupValues } from "@finos/vuu-data-react";
+import { ListOption, TableCellRendererProps } from "@finos/vuu-datagrid-types";
 import {
+  dispatchCommitEvent,
   Dropdown,
   DropdownOpenKey,
   SingleSelectionHandler,
+  WarnCommit,
 } from "@finos/vuu-ui-controls";
-import {
-  isColumnTypeRenderer,
-  isTypeDescriptor,
-  registerComponent,
-} from "@finos/vuu-utils";
-import { TableCellProps } from "@finos/vuu-datagrid-types";
-// import { dispatchCommitEvent } from "@finos/vuu-ui-controls";
+import { registerComponent } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { memo, useCallback, useState } from "react";
 
 import "./DropdownCell.css";
-import { useCallback, useState } from "react";
 
 const classBase = "vuuTableDropdownCell";
 
 const openKeys: DropdownOpenKey[] = ["Enter", " "];
 
-export const DropdownCell = ({ column, columnMap, row }: TableCellProps) => {
-  const values =
-    isTypeDescriptor(column.type) && isColumnTypeRenderer(column.type?.renderer)
-      ? column.type?.renderer?.values
-      : [];
+export const DropdownCell = memo(
+  function DropdownCell({
+    column,
+    columnMap,
+    onCommit = WarnCommit,
+    row,
+  }: TableCellRendererProps) {
+    const dataIdx = columnMap[column.name];
 
-  const dataIdx = columnMap[column.name];
-  const [value, setValue] = useState(row[dataIdx]);
+    const { initialValue, values } = useLookupValues(column, row[dataIdx]);
 
-  const handleSelectionChange = useCallback<SingleSelectionHandler>(
-    (evt, selectedItem) => {
-      if (selectedItem) {
-        setValue(selectedItem);
-        // dispatchCommitEvent(evt.target as HTMLElement);
-      }
-    },
-    []
-  );
+    const [value, setValue] = useState<ListOption | null>(null);
 
-  return (
-    <Dropdown
-      className={classBase}
-      onSelectionChange={handleSelectionChange}
-      openKeys={openKeys}
-      selected={value}
-      source={values}
-      width={column.width - 17} // temp hack
-    />
-  );
-};
+    const handleSelectionChange = useCallback<
+      SingleSelectionHandler<ListOption>
+    >(
+      (evt, selectedOption) => {
+        if (selectedOption) {
+          setValue(selectedOption);
+          if (onCommit(selectedOption.value as VuuColumnDataType) && evt) {
+            dispatchCommitEvent(evt.target as HTMLElement);
+          }
+        }
+      },
+      [onCommit]
+    );
+
+    return (
+      <Dropdown<ListOption>
+        className={classBase}
+        onSelectionChange={handleSelectionChange}
+        openKeys={openKeys}
+        selected={value ?? initialValue}
+        source={values}
+        width={column.width - 17} // temp hack
+      />
+    );
+  },
+  // Only rerender if data or column changes
+  (p, p1) =>
+    p.column === p1.column &&
+    p.row[p.columnMap[p.column.name]] === p1.row[p1.columnMap[p1.column.name]]
+);
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {});

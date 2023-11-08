@@ -8,6 +8,13 @@ import {
 } from "react";
 import { ClientSideValidationChecker } from "./editable-utils";
 
+export const WarnCommit = () => {
+  console.warn(
+    "onCommit handler has not been provided to InputCell cell renderer"
+  );
+  return true;
+};
+
 export interface EditableTextHookProps<
   T extends VuuColumnDataType = VuuColumnDataType
 > {
@@ -34,9 +41,13 @@ export const useEditableText = <
   const isDirtyRef = useRef(false);
   const hasCommittedRef = useRef(false);
 
-  const handleBlur = useCallback(() => {
-    console.log("blur");
-  }, []);
+  // const handleBlur = useCallback<FocusEventHandler>(() => {
+  //   console.log("blur");
+  // }, []);
+
+  // const handleFocus = useCallback<FocusEventHandler>((evt) => {
+  //   console.log(">>>    focus");
+  // }, []);
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
@@ -95,8 +106,9 @@ export const useEditableText = <
   );
 
   return {
-    onBlur: handleBlur,
+    // onBlur: handleBlur,
     onChange: handleChange,
+    // onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     value,
     warningMessage: message,

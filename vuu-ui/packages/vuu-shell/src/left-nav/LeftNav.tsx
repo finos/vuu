@@ -60,7 +60,6 @@ export const LeftNav = ({
     navStatus: defaultDisplayStatus,
   });
   const [themeClass] = useThemeAttributes();
-  console.log(`navState ${navState}`);
 
   const toggleNavWidth = useCallback(
     (navStatus: NavDisplayStatus) => {

@@ -1,3 +1,4 @@
+import type { SchemaColumn, TableSchema } from "@finos/vuu-data";
 import type { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import type {
   ColumnAlignment,
@@ -13,6 +14,7 @@ import type {
   TableHeading,
   TableHeadings,
   ColumnTypeFormatting,
+  LookupRenderer,
 } from "@finos/vuu-datagrid-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -24,11 +26,10 @@ import type {
   VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import type { SchemaColumn } from "@finos/vuu-data";
+import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import type { CSSProperties } from "react";
-import type { CellRendererDescriptor } from "./component-registry";
-import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 import { moveItem } from "./array-utils";
+import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row
@@ -179,6 +180,12 @@ export const isColumnTypeRenderer = (
   renderer?: unknown
 ): renderer is ColumnTypeRendering =>
   typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
+
+export const isLookupRenderer = (
+  renderer?: unknown
+): renderer is LookupRenderer =>
+  typeof (renderer as LookupRenderer)?.name !== "undefined" &&
+  "lookup" in (renderer as LookupRenderer);
 
 export const hasValidationRules = (
   type?: ColumnType
@@ -951,3 +958,24 @@ export function replaceColumn(
 ) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
+
+export const applyDefaultColumnConfig = (
+  { columns, table }: TableSchema,
+  getDefaultColumnConfig?: DefaultColumnConfiguration
+) => {
+  if (typeof getDefaultColumnConfig === "function") {
+    return columns.map((column) => {
+      const config = getDefaultColumnConfig(table.table, column.name);
+      if (config) {
+        return {
+          ...column,
+          ...config,
+        };
+      } else {
+        return column;
+      }
+    });
+  } else {
+    return columns;
+  }
+};

@@ -1,47 +1,26 @@
 import {
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
-  TableSchema,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data";
 import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-datagrid-types";
+import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
-import { ShellContextProps, useShellContext } from "@finos/vuu-shell";
+import { useShellContext } from "@finos/vuu-shell";
+import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 import { useSessionDataSource } from "./useSessionDataSource";
+import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 
 const NO_CONFIG: FilterTableConfig = {};
 
 const defaultTableConfig: Partial<TableConfig> = {
   rowSeparators: true,
   zebraStripes: true,
-};
-
-const applyDefaults = (
-  { columns, table }: TableSchema,
-  getDefaultColumnConfig?: ShellContextProps["getDefaultColumnConfig"]
-) => {
-  if (typeof getDefaultColumnConfig === "function") {
-    return columns.map((column) => {
-      const config = getDefaultColumnConfig(table.table, column.name);
-      if (config) {
-        return {
-          ...column,
-          ...config,
-        };
-      } else {
-        return column;
-      }
-    });
-  } else {
-    return columns;
-  }
 };
 
 type FilterTableConfig = {
@@ -144,7 +123,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
       ...tableConfigFromState,
       columns:
         tableConfigFromState?.columns ||
-        applyDefaults(tableSchema, getDefaultColumnConfig),
+        applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
     }),
     [getDefaultColumnConfig, tableConfigFromState, tableSchema]
   );

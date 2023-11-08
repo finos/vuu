@@ -1,7 +1,6 @@
-import { getSchema } from "@finos/vuu-data-test";
+import { createArrayDataSource, getSchema } from "@finos/vuu-data-test";
 import { NewBasketPanel } from "feature-basket-trading";
 import { useCallback, useMemo } from "react";
-import { createArrayDataSource } from "../utils/createArrayDataSource";
 
 let displaySequence = 1;
 
