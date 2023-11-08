@@ -1,100 +1,51 @@
-package org.finos.vuu.core
+package org.finos.vuu.test.impl
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
-import org.finos.toolbox.thread.{LifeCycleRunOncePerThreadExecutorRunner, LifeCycleRunner, WorkItem}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
+import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer, VuuServer}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net._
-import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
+import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
-import org.finos.vuu.net.ws.WebSocketServer
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
-import org.finos.vuu.viewport._
+import org.finos.vuu.net.{AlwaysHappyLoginValidator, ClientSessionContainerImpl, ClientSessionId, MessageBody, ViewServerHandlerFactoryImpl}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
+import org.finos.vuu.test.{TestViewPort, TestVuuServer}
+import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
-import java.util.concurrent.{Callable, FutureTask}
+class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging with IVuuServer {
 
-/**
- * Vuu Server
- */
-class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
-
-  val serializer: Serializer[String, MessageBody] = JsonVsSerializer
+  private val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val authenticator: Authenticator = config.security.authenticator
-  val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
-
   val sessionContainer = new ClientSessionContainerImpl()
+
+  val authenticator = new AlwaysHappyAuthenticator
+  val tokenValidator = new AlwaysHappyLoginValidator
 
   val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)
 
   val providerContainer = new ProviderContainer(joinProvider)
+
   lifecycle(this).dependsOn(providerContainer)
 
   val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
   val moduleContainer = new ModuleContainer
 
-  config.modules.foreach(module => registerModule(module))
+  modules.foreach(module => registerModule(module))
 
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
   val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
-
-  //order of creation here is important
-  val server = new WebSocketServer(config.wsOptions, factory)
-
-  private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
-
-  val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
-
-  private val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
-  lifecycle(joinProviderRunner).dependsOn(joinProvider)
-
-  private val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = -1)
-  lifecycle(handlerRunner).dependsOn(joinProviderRunner)
-
-  private val viewPortRunner = if(config.threading.viewportThreads == 1){
-    new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
-  }else {
-      new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
-      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
-    {
-      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortCallable(r, viewPortContainer)
-      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortWorkItem(r.get(), viewPortContainer)
-    }
-  }
-
-  lifecycle(viewPortRunner).dependsOn(server)
-
-  private val groupByRunner: LifeCycleRunner = if (config.threading.treeThreads == 1) {
-    new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
-  } else {
-    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () => {
-      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer))
-    }) {
-      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
-
-      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortTreeWorkItem(r.get(), viewPortContainer)
-    }
-  }
-
-  lifecycle(groupByRunner).dependsOn(server)
-
-  def createTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating table ${tableDef.name}")
-    tableContainer.createTable(tableDef)
-  }
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
     logger.info(s"Creating joinTable ${joinDef.name}")
@@ -106,13 +57,17 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     tableContainer.createAutoSubscribeTable(tableDef)
   }
 
+  def createTable(tableDef: TableDef): DataTable = {
+    logger.info(s"Creating table ${tableDef.name}")
+    tableContainer.createTable(tableDef)
+  }
 
   def registerProvider(table: DataTable, provider: Provider): Unit = {
     providerContainer.add(table, provider)
     table.setProvider(provider)
   }
 
-  private def registerModule(module: ViewServerModule): VuuServer = {
+  private def registerModule(module: ViewServerModule): IVuuServer = {
 
     val vs = this
 
@@ -128,6 +83,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
+
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = module.viewPortDefs
     }
@@ -145,14 +101,14 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       case tableDef: TableDef if tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createAutoSubscribeTable(tableDef)
-        val provider = module.getProviderForTable(table, this)
+        val provider = new MockProvider(table)
         registerProvider(table, provider)
 
       case tableDef: TableDef if !tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createTable(tableDef)
         logger.info(s"Loading provider for table ${table.name}...")
-        val provider = module.getProviderForTable(table, this)
+        val provider = new MockProvider(table)
         registerProvider(table, provider)
     }
 
@@ -163,19 +119,29 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     this
   }
 
-  lifecycle(this).dependsOn(httpServer, server, joinProviderRunner, handlerRunner, viewPortRunner, joinProvider, groupByRunner)
-
-  def join(): Unit = {
-    lifecycle.join()
+  override def getProvider(module: String, table: String): MockProvider = {
+    providerContainer.getProviderForTable(table) match {
+      case Some(provider: Provider) => provider.asInstanceOf[MockProvider]
+      case None =>
+        throw new Exception("No provider found in test table")
+    }
   }
 
-  override def doStart(): Unit = {}
+  override def createViewPort(module: String, tableName: String): TestViewPort = ???
 
-  override def doStop(): Unit = {}
+  override def session: ClientSessionId = new ClientSessionId("test-session", "test-user")
+
+  override def runOnce(): Unit = ???
+
+  override def doStart(): Unit = {lifecycle.start()}
+
+  override def doStop(): Unit = {lifecycle.stop()}
 
   override def doInitialize(): Unit = {}
 
   override def doDestroy(): Unit = {}
 
-  override val lifecycleId: String = "vuuServer"
+  override val lifecycleId: String = "TestVuuServerImpl#" + getClass.hashCode()
+
+  override def start(): Unit = ???
 }

@@ -1,14 +1,14 @@
 package org.finos.vuu.provider.simulation
 
-import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{Columns, SimpleDataTable, ViewPortColumnCreator}
-import org.finos.vuu.provider.TestFriendlyJoinTableProvider
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.text.AsciiUtil
-import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.toolbox.time.TestFriendlyClock
+import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.{Columns, SimpleDataTable, ViewPortColumnCreator}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
 
 class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 

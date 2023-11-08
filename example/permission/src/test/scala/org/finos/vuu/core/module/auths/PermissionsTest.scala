@@ -1,11 +1,10 @@
 package org.finos.vuu.core.module.auths
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.module.auths.PermissionSet._
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-
-import org.finos.vuu.core.module.auths.PermissionSet._
 
 class PermissionsTest extends AnyFeatureSpec with Matchers with StrictLogging with GivenWhenThen {
 

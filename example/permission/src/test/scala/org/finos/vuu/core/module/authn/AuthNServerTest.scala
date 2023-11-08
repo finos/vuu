@@ -1,25 +1,25 @@
 package org.finos.vuu.core.module.authn
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.net.{Authenticator, LoggedInTokenValidator}
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
-import org.finos.vuu.state.MemoryBackedVuiStateStore
-import io.vertx.core.{Vertx, VertxOptions}
 import io.vertx.core.json.JsonObject
+import io.vertx.core.{Vertx, VertxOptions}
 import io.vertx.ext.web.client.WebClientOptions
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.core.module.vui.VuiStateModule
+import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.{Authenticator, LoggedInTokenValidator}
+import org.finos.vuu.state.MemoryBackedVuiStateStore
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 

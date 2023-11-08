@@ -1,8 +1,7 @@
-package org.finos.vuu.viewport.auths
+package org.finos.vuu.core.module.auths
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.auths.RowPermissionChecker
-import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.table.{Column, RowData}
 import org.finos.vuu.viewport.ViewPort
 

@@ -21,6 +21,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.5.09-SNAPSHOT</version>
+            <scope>test</scope>
+            <classifier>test-jar</classifier>
+        </dependency>
+
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>

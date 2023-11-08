@@ -1,6 +1,7 @@
-package org.finos.vuu.provider
+package org.finos.vuu.provider.simulation
 
 import org.finos.vuu.core.table.{DataTable, JoinTableUpdate}
+import org.finos.vuu.provider.JoinTableProvider
 
 import java.util
 

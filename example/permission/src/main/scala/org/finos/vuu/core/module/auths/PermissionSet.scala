@@ -29,7 +29,6 @@ object PermissionSet {
     roles.mkString(",")
   }
 
-
   def toBinaryString(intRepresentation: Int): String = {
     val binaryString = Integer.toBinaryString(intRepresentation)
     padWithZeros(binaryString)
