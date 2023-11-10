@@ -1,7 +1,7 @@
 import {
   ApplicationLayout,
   LayoutMetadata,
-  LayoutMetadataDto
+  LayoutMetadataDto,
 } from "@finos/vuu-shell";
 import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
@@ -143,19 +143,19 @@ export class RemoteLayoutPersistenceManager
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "username": "vuu-user"
+          username: "vuu-user",
         },
         body: JSON.stringify(layout),
       })
-      .then((response) => {
-        if (!response.ok) {
-          reject(new Error(response.statusText));
-        }
-        resolve();
-      })
-      .catch((error: Error) => {
-        reject(error);
-      })
+        .then((response) => {
+          if (!response.ok) {
+            reject(new Error(response.statusText));
+          }
+          resolve();
+        })
+        .catch((error: Error) => {
+          reject(error);
+        })
     );
   }
 
@@ -164,23 +164,27 @@ export class RemoteLayoutPersistenceManager
       fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
         method: "GET",
         headers: {
-          "username": "vuu-user",
+          username: "vuu-user",
         },
       })
-      .then((response) => {
-        if (!response.ok) {
-          reject(new Error(response.statusText));
-        }
-        response.json().then((applicationLayout: ApplicationLayout) => {
-          if (!applicationLayout) {
-            reject(new Error("Response did not contain valid application layout information"));
+        .then((response) => {
+          if (!response.ok) {
+            reject(new Error(response.statusText));
           }
-          resolve(applicationLayout.definition);
-        });
-      })
-      .catch((error: Error) => {
-        reject(error);
-      })
+          response.json().then((applicationLayout: ApplicationLayout) => {
+            if (!applicationLayout) {
+              reject(
+                new Error(
+                  "Response did not contain valid application layout information"
+                )
+              );
+            }
+            resolve(applicationLayout.definition);
+          });
+        })
+        .catch((error: Error) => {
+          reject(error);
+        })
     );
   }
 }
