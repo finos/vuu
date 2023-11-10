@@ -28,7 +28,10 @@
     visibility: hidden;
     white-space: pre-wrap;
   }
-  
+  .vuuExpandoInput-error {
+    border-color: var(--vuu-color-red-50);
+  }
+
   .vuuExpandoInput .saltInput {
     font-weight: var(--salt-text-fontWeight);
     left: var(--expandoInput-padding, 0);

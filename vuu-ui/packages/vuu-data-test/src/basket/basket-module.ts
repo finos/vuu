@@ -116,14 +116,14 @@ function createTradingBasket(basketId: string, basketName: string) {
   );
 
   constituents.forEach(([, , description, , ric, , , quantity, weighting]) => {
-    const algo = "algo";
+    const algo = undefined;
     const algoParams = "";
     const limitPrice = 95;
     const notionalLocal = 0;
     const notionalUsd = 0;
     const pctFilled = 0;
     const priceSpread = 0;
-    const priceStrategyId = 1;
+    const priceStrategyId = undefined;
     const side = "buy";
     const venue = "venue";
 
@@ -274,8 +274,10 @@ const getColumnDescriptors = (tableName: BasketsTableName) => {
 
 const createDataSource = (tableName: BasketsTableName) => {
   const columnDescriptors = getColumnDescriptors(tableName);
+  const { key } = schemas[tableName];
   return new TickingArrayDataSource({
     columnDescriptors,
+    keyColumn: key,
     table: tables[tableName],
     menu: menus[tableName],
     rpcServices: services[tableName],

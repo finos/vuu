@@ -1,6 +1,12 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
 import { LayoutProvider, registerComponent, View } from "@finos/vuu-layout";
-import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
+import {
+  Feature,
+  FeatureProps,
+  LookupTableProvider,
+  ShellContextProvider,
+  useLayoutManager,
+} from "@finos/vuu-shell";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeature } from "../../features/BasketTrading.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
@@ -31,30 +37,52 @@ export const DefaultBasketTradingFeature = () => {
   );
   // ----------------------------------------------------------------------------------
 
+  const getLookupValues = useCallback<LookupTableProvider>((table) => {
+    if (table.table === "algoType") {
+      return [
+        { label: "Sniper", value: 0 },
+        { label: "Dark Liquidity", value: 1 },
+        { label: "VWAP", value: 2 },
+        { label: "POV", value: 3 },
+        { label: "Dynamic CLose", value: 4 },
+      ];
+    } else if (table.table === "priceStrategyType") {
+      return [
+        { label: "Peg to Near Touch", value: 0 },
+        { label: "Far Touch", value: 1 },
+        { label: "Limit", value: 2 },
+        { label: "Algo", value: 3 },
+      ];
+    }
+    return [];
+  }, []);
+
   return (
-    <LayoutProvider
-      layout={applicationLayout}
-      onLayoutChange={handleLayoutChange}
-    >
-      <View
-        Header={VuuBlotterHeader}
-        id="table-next-feature"
-        className="vuuTableNextFeature"
-        closeable
-        header
-        title="Basket Trading"
-        style={{ width: 1260, height: 600 }}
+    <ShellContextProvider value={{ getLookupValues }}>
+      <LayoutProvider
+        layout={applicationLayout}
+        onLayoutChange={handleLayoutChange}
       >
-        <BasketTradingFeature
-          basketSchema={schemas.basket}
-          basketTradingSchema={schemas.basketTrading}
-          basketTradingConstituentJoinSchema={
-            schemas.basketTradingConstituentJoin
-          }
-          instrumentsSchema={schemas.instruments}
-        />
-      </View>
-    </LayoutProvider>
+        <View
+          Header={VuuBlotterHeader}
+          id="table-next-feature"
+          className="vuuTableNextFeature"
+          closeable
+          header
+          title="Basket Trading"
+          style={{ width: 1260, height: 600 }}
+        >
+          <BasketTradingFeature
+            basketSchema={schemas.basket}
+            basketTradingSchema={schemas.basketTrading}
+            basketTradingConstituentJoinSchema={
+              schemas.basketTradingConstituentJoin
+            }
+            instrumentsSchema={schemas.instruments}
+          />
+        </View>
+      </LayoutProvider>
+    </ShellContextProvider>
   );
 };
 DefaultBasketTradingFeature.displaySequence = displaySequence++;

@@ -1,5 +1,12 @@
-import { TableCellProps } from "@finos/vuu-datagrid-types";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import {
+  DataItemCommitHandler,
+  TableCellProps,
+} from "@finos/vuu-datagrid-types";
+import {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
+import { isNumericColumn } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 
@@ -18,13 +25,24 @@ export const TableCell = ({
   const { CellRenderer, name, valueFormatter } = column;
   const dataIdx = columnMap[name];
 
-  const handleDataItemEdited = useCallback(
-    (value: VuuColumnDataType) => {
-      onDataEdited?.(row, name, value);
-      // TODO will only return false in case of server rejection
-      return true;
+  const handleDataItemEdited = useCallback<DataItemCommitHandler>(
+    (value) => {
+      if (onDataEdited) {
+        let typedValue = value;
+        if (isNumericColumn(column) && typeof value === "string") {
+          typedValue =
+            column.serverDataType === "double"
+              ? parseFloat(value)
+              : parseInt(value);
+        }
+        return onDataEdited?.(row, name, typedValue);
+      } else {
+        throw Error(
+          "TableCell onDataEdited prop not supplied for an editable cell"
+        );
+      }
     },
-    [name, onDataEdited, row]
+    [column, name, onDataEdited, row]
   );
 
   const handleClick = useCallback<MouseEventHandler>(

@@ -1,7 +1,5 @@
-import { TableConfig } from "@finos/vuu-datagrid-types";
 import { TableNext, TableProps } from "@finos/vuu-table";
-import { useMemo, useState } from "react";
-import { useTableConfig } from "../utils";
+import { useMemo } from "react";
 import { BasketsTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { ContextMenuProvider } from "@finos/vuu-popups";

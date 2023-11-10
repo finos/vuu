@@ -15,6 +15,7 @@ import {
   VuuLinkDescriptor,
   VuuMenu,
   VuuRange,
+  VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -344,7 +345,6 @@ const datasourceMessages = [
   "vuu-menu",
   "sort",
   "subscribed",
-  "VIEW_PORT_MENU_REJ",
 ];
 
 export type ConfigChangeColumnsMessage = {
@@ -475,11 +475,15 @@ export type DataSourceEvents = {
   resize: (size: number) => void;
 };
 
+/**
+ * return Promise<true> indicates success
+ * return Promise<errorMessage> indicates failure
+ */
 export type DataSourceEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuColumnDataType
-) => boolean;
+  value: VuuRowDataItemType
+) => Promise<true | string>;
 
 export type RpcResponse =
   | MenuRpcResponse

@@ -8,6 +8,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
   VuuColumnDataType,
+  VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -400,11 +401,15 @@ export class JsonDataSource
     return undefined;
   }
 
-  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+  applyEdit(
+    row: DataSourceRow,
+    columnName: string,
+    value: VuuRowDataItemType
+  ): Promise<true> {
     console.log(
       `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
     );
-    return true;
+    return Promise.resolve(true);
   }
 
   getChildRows(rowKey: string) {

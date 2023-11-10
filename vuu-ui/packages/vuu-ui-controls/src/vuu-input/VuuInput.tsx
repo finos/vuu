@@ -4,10 +4,16 @@ import { Input, InputProps } from "@salt-ds/core";
 import cx from "classnames";
 import {
   FocusEventHandler,
+  ForwardedRef,
+  forwardRef,
   KeyboardEventHandler,
   SyntheticEvent,
   useCallback,
 } from "react";
+import { Tooltip, useTooltip } from "@finos/vuu-popups";
+import { useId } from "@finos/vuu-layout";
+
+import "./VuuInput.css";
 
 const classBase = "vuuInput";
 
@@ -22,6 +28,7 @@ export type Commithandler<T extends VuuRowDataItemType = VuuRowDataItemType> = (
 export interface VuuInputProps<
   T extends VuuRowDataItemType = VuuRowDataItemType
 > extends InputProps {
+  errorMessage?: string;
   onCommit: Commithandler<T>;
   type?: T;
 }
@@ -30,13 +37,26 @@ export interface VuuInputProps<
  * A variant of Salt Input that provides a commit callback prop,
  * TODO along with cancel behaviour ?
  */
-export const VuuInput = <T extends VuuRowDataItemType = string>({
-  className,
-  onCommit,
-  onKeyDown,
-  type,
-  ...props
-}: VuuInputProps<T>) => {
+export const VuuInput = forwardRef(function VuuInput<
+  T extends VuuRowDataItemType = string
+>(
+  {
+    className,
+    errorMessage,
+    id: idProp,
+    onCommit,
+    onKeyDown,
+    type,
+    ...props
+  }: VuuInputProps<T>,
+  forwardedRef: ForwardedRef<HTMLDivElement>
+) {
+  const id = useId(idProp);
+  const { anchorProps, tooltipProps } = useTooltip({
+    id,
+    tooltipContent: errorMessage,
+  });
+
   const commitValue = useCallback<Commithandler<string>>(
     (evt, value) => {
       if (type === "number") {
@@ -77,16 +97,32 @@ export const VuuInput = <T extends VuuRowDataItemType = string>({
     [commitValue]
   );
 
-  return (
-    <Input
-      {...props}
-      inputProps={{
-        ...constantInputProps,
-        ...props.inputProps,
-      }}
-      className={cx(classBase, className)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
+  const endAdornment = errorMessage ? (
+    <span
+      {...anchorProps}
+      className={`${classBase}-errorIcon`}
+      data-icon="error"
     />
+  ) : undefined;
+
+  return (
+    <>
+      <Input
+        {...props}
+        endAdornment={endAdornment}
+        id={id}
+        inputProps={{
+          ...constantInputProps,
+          ...props.inputProps,
+        }}
+        className={cx(classBase, className, {
+          [`${classBase}-errror`]: errorMessage,
+        })}
+        onBlur={handleBlur}
+        ref={forwardedRef}
+        onKeyDown={handleKeyDown}
+      />
+      {tooltipProps ? <Tooltip {...tooltipProps} status="error" /> : null}
+    </>
   );
-};
+});

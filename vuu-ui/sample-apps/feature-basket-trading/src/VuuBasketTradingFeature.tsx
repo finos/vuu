@@ -38,6 +38,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     dataSourceBasketTradingConstituentJoin,
     dialog,
     onClickAddBasket,
+    onCommitBasketChange,
     onSendToMarket,
     onTakeOffMarket,
   } = useBasketTrading({
@@ -69,6 +70,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           basket={basket}
           BasketSelectorProps={basketSelectorProps}
           basketStatus={basketStatus[activeTabIndex]}
+          onCommit={onCommitBasketChange}
           onSendToMarket={onSendToMarket}
           onTakeOffMarket={onTakeOffMarket}
         />
