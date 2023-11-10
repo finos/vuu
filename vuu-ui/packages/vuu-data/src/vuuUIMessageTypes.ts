@@ -142,7 +142,7 @@ export interface MenuRpcResponse {
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
-export interface MenuRpcReject {
+export interface MenuRpcReject extends ViewportMessageIn {
   error?: string;
   requestId: string;
   rpcName?: string;

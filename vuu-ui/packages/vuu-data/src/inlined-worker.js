@@ -2381,13 +2381,17 @@ var ServerProxy = class {
         break;
       case "VIEW_PORT_MENU_REJ": {
         console.log(\`send menu error back to client\`);
-        const { error: error4, rpcName } = body;
-        this.postMessageToClient({
-          error: error4,
-          rpcName,
-          type: "VIEW_PORT_MENU_REJ",
-          requestId
-        });
+        const { error: error4, rpcName, vpId } = body;
+        const viewport = this.viewports.get(vpId);
+        if (viewport) {
+          this.postMessageToClient({
+            clientViewportId: viewport.clientViewportId,
+            error: error4,
+            rpcName,
+            type: "VIEW_PORT_MENU_REJ",
+            requestId
+          });
+        }
         break;
       }
       case "VIEW_PORT_MENU_RESP":

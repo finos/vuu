@@ -40,6 +40,7 @@ const loadLookupValues = ({
         },
         (message) => {
           if (message.type === "viewport-update") {
+            //TODO check we have full dataset
             if (message.rows) {
               const listOptions = message.rows.map<ListOption>((row) => ({
                 value: row[columnMap[valueColumn]] as string | number,

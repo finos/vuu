@@ -1,11 +1,11 @@
 .saltButton {
     white-space: nowrap;;
+    --saltButton-borderRadius: 6px;
 }
 
 .saltButton-primary {
     --saltButton-borderColor: var(--salt-actionable-primary-foreground);
     --saltButton-borderWidth: 1px;
-    --saltButton-borderRadius: 6px;
     --saltButton-borderStyle: solid;
     --vuu-icon-color: var(--saltIcon-color);
 }

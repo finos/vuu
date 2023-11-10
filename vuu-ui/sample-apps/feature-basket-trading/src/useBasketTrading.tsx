@@ -1,8 +1,9 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
+import { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTabMenu } from "./useBasketTabMenu";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
@@ -11,17 +12,21 @@ import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 export class Basket {
   basketId: string;
   basketName: string;
+  dataSourceRow: DataSourceRow;
   filledPct: number;
   fxRateToUsd: number;
+  side: string;
   totalNotional: number;
   totalNotionalUsd: number;
   units: number;
 
-  constructor(data: VuuDataRow, columnMap: ColumnMap) {
+  constructor(data: DataSourceRow, columnMap: ColumnMap) {
+    this.dataSourceRow = data;
     this.basketId = data[columnMap.basketId] as string;
     this.basketName = data[columnMap.basketName] as string;
     this.filledPct = data[columnMap.filledPct] as number;
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
+    this.side = "BUY";
     this.totalNotional = data[columnMap.totalNotional] as number;
     this.totalNotionalUsd = data[columnMap.totalNotionalUsd] as number;
     this.units = data[columnMap.units] as number;
@@ -112,6 +117,7 @@ export const useBasketTrading = ({
 
   useEffect(() => {
     return () => {
+      console.log("unsubscribe from dataSourceBasketTradingControl");
       dataSourceBasketTradingControl.unsubscribe?.();
     };
   }, [dataSourceBasketTradingControl]);
@@ -178,6 +184,21 @@ export const useBasketTrading = ({
     ]
   );
 
+  const handleCommitBasketChange = useCallback<BasketChangeHandler>(
+    (columnName, value) => {
+      if (basket) {
+        const { dataSourceRow } = basket;
+        return dataSourceBasketTradingControl.applyEdit(
+          dataSourceRow,
+          columnName,
+          value
+        );
+      }
+      return Promise.resolve(true);
+    },
+    [basket, dataSourceBasketTradingControl]
+  );
+
   const [menuBuilder, menuActionHandler] = useBasketTabMenu({
     dataSourceInstruments,
   });
@@ -196,6 +217,7 @@ export const useBasketTrading = ({
     contextMenuProps,
     dataSourceBasketTradingConstituentJoin,
     onClickAddBasket: handleAddBasket,
+    onCommitBasketChange: handleCommitBasketChange,
     onSendToMarket,
     onTakeOffMarket,
   };

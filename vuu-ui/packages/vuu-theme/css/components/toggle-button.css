@@ -5,7 +5,7 @@
 }
 
 .saltToggleButtonGroup-horizontal .saltToggleButton {
-    height: 24px;
+    height: var(--vuuToggleButton-height, 24px);
 }
 
 .vuuIconToggleButton {

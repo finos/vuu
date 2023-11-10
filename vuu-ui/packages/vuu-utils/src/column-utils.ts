@@ -15,6 +15,7 @@ import type {
   TableHeadings,
   ColumnTypeFormatting,
   LookupRenderer,
+  ValueListRenderer,
 } from "@finos/vuu-datagrid-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -186,6 +187,12 @@ export const isLookupRenderer = (
 ): renderer is LookupRenderer =>
   typeof (renderer as LookupRenderer)?.name !== "undefined" &&
   "lookup" in (renderer as LookupRenderer);
+
+export const isValueListRenderer = (
+  renderer?: unknown
+): renderer is ValueListRenderer =>
+  typeof (renderer as ValueListRenderer)?.name !== "undefined" &&
+  Array.isArray((renderer as ValueListRenderer).values);
 
 export const hasValidationRules = (
   type?: ColumnType

@@ -2,6 +2,10 @@
     display: none;
 }
 
+.saltInput:hover {
+    background: inherit;;
+}
+
 .saltInput-primary {
     --saltInput-height: 24px;
     border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));

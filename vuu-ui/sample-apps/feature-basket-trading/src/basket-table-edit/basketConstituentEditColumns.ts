@@ -13,7 +13,20 @@ const ticking = {
 };
 
 export default [
-  { label: "Side", name: "side", pin: "left", width: 80 },
+  {
+    label: "B/S",
+    name: "side",
+    pin: "left",
+    editable,
+    type: {
+      name: "string",
+      renderer: {
+        name: "toggle-cell",
+        values: ["BUY", "SELL"],
+      },
+    },
+    width: 60,
+  },
   { name: "ric", pin: "left" },
   { name: "description", label: "Name", width: 220 },
   { name: "quantity", editable },

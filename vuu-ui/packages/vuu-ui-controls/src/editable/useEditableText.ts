@@ -1,4 +1,5 @@
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { DataItemCommitHandler } from "packages/vuu-datagrid-types";
 import {
   FormEventHandler,
   KeyboardEvent,
@@ -8,19 +9,19 @@ import {
 } from "react";
 import { ClientSideValidationChecker } from "./editable-utils";
 
-export const WarnCommit = () => {
+export const WarnCommit = (): Promise<true> => {
   console.warn(
     "onCommit handler has not been provided to InputCell cell renderer"
   );
-  return true;
+  return Promise.resolve(true);
 };
 
 export interface EditableTextHookProps<
-  T extends VuuColumnDataType = VuuColumnDataType
+  T extends VuuRowDataItemType = VuuRowDataItemType
 > {
   clientSideEditValidationCheck?: ClientSideValidationChecker;
   initialValue: T;
-  onCommit: (value: T) => boolean;
+  onCommit: DataItemCommitHandler;
 }
 
 export const dispatchCommitEvent = (el: HTMLElement) => {
@@ -29,7 +30,7 @@ export const dispatchCommitEvent = (el: HTMLElement) => {
 };
 
 export const useEditableText = <
-  T extends VuuColumnDataType = VuuColumnDataType
+  T extends VuuRowDataItemType = VuuRowDataItemType
 >({
   clientSideEditValidationCheck,
   initialValue,
@@ -40,14 +41,6 @@ export const useEditableText = <
   const initialValueRef = useRef<T>(initialValue);
   const isDirtyRef = useRef(false);
   const hasCommittedRef = useRef(false);
-
-  // const handleBlur = useCallback<FocusEventHandler>(() => {
-  //   console.log("blur");
-  // }, []);
-
-  // const handleFocus = useCallback<FocusEventHandler>((evt) => {
-  //   console.log(">>>    focus");
-  // }, []);
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
@@ -60,11 +53,14 @@ export const useEditableText = <
             setMessage(warningMessage);
           } else {
             setMessage(undefined);
-            // if we want to potentially await server ACK here, need async
-            if (onCommit(value)) {
-              isDirtyRef.current = false;
-              dispatchCommitEvent(evt.target as HTMLInputElement);
-            }
+            onCommit(value).then((response) => {
+              if (response === true) {
+                isDirtyRef.current = false;
+                dispatchCommitEvent(evt.target as HTMLInputElement);
+              } else {
+                setMessage(response);
+              }
+            });
           }
         } else {
           dispatchCommitEvent(evt.target as HTMLInputElement);
@@ -93,10 +89,8 @@ export const useEditableText = <
       const { value } = evt.target as HTMLInputElement;
       isDirtyRef.current = value !== initialValueRef.current;
       setValue(value as T);
-      console.log(`value changes to ${value} message ${message}`);
       if (hasCommittedRef.current) {
         const warningMessage = clientSideEditValidationCheck?.(value);
-        console.log({ warningMessage });
         if (warningMessage !== message && warningMessage !== false) {
           setMessage(warningMessage);
         }
@@ -106,9 +100,7 @@ export const useEditableText = <
   );
 
   return {
-    // onBlur: handleBlur,
     onChange: handleChange,
-    // onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     value,
     warningMessage: message,

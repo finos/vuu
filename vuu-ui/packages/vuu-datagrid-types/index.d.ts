@@ -3,6 +3,7 @@ import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
   VuuColumnDataType,
+  VuuRowDataItemType,
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -23,8 +24,8 @@ export type TableHeadings = TableHeading[][];
 export type DataCellEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuColumnDataType
-) => boolean;
+  value: VuuRowDataItemType
+) => Promise<string | true>;
 
 export interface TableCellProps {
   className?: string;
@@ -35,9 +36,15 @@ export interface TableCellProps {
   row: DataSourceRow;
 }
 
+export type CommitResponse = Promise<true | string>;
+
+export type DataItemCommitHandler = (
+  value: VuuRowDataItemType
+) => CommitResponse;
+
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onCommit?: (value: VuuColumnDataType) => boolean;
+  onCommit?: DataItemCommitHandler;
 }
 
 export interface TableAttributes {
@@ -92,8 +99,6 @@ export interface ColumnTypeRendering {
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
   rules?: EditValidationRule[];
-  // These are for the dropdown-input - how do we type parameters for custom renderers ?
-  values?: ReadonlyArray<ListOption>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
@@ -114,6 +119,11 @@ export interface LookupRenderer {
   lookup: LookupTableDetails;
 }
 
+export interface ValueListRenderer {
+  name: string;
+  values: string[];
+}
+
 export declare type ColumnTypeSimple =
   | "string"
   | "number"
@@ -126,7 +136,11 @@ export declare type ColumnTypeSimple =
 export declare type ColumnTypeDescriptor = {
   formatting?: ColumnTypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: ColumnTypeRendering | LookupRenderer | MappedValueTypeRenderer;
+  renderer?:
+    | ColumnTypeRendering
+    | LookupRenderer
+    | MappedValueTypeRenderer
+    | ValueListRenderer;
 };
 
 export declare type ColumnTypeDescriptorCustomRenderer = {

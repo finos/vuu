@@ -5,10 +5,10 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
-  VuuColumnDataType,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
+  VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -646,15 +646,18 @@ export class RemoteDataSource
     }
   }
 
-  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
-    this.menuRpcCall({
+  applyEdit(row: DataSourceRow, columnName: string, value: VuuRowDataItemType) {
+    return this.menuRpcCall({
       rowKey: row[KEY],
       field: columnName,
-      value: parseInt(value),
+      value: value,
       type: "VP_EDIT_CELL_RPC",
-    }).then(() => {
-      // do something with response;
+    }).then((response) => {
+      if (response?.error) {
+        return response.error;
+      } else {
+        return true;
+      }
     });
-    return true;
   }
 }

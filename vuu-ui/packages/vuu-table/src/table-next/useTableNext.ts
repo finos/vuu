@@ -29,6 +29,7 @@ import {
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import {
+  FocusEvent,
   KeyboardEvent,
   MouseEvent,
   RefObject,
@@ -206,7 +207,7 @@ export const useTable = ({
         console.log("subscription message with no schema");
       }
     },
-    []
+    [dispatchColumnAction]
   );
 
   const { data, getSelectedRows, range, setRange } = useDataSource({
@@ -460,6 +461,7 @@ export const useTable = ({
 
   const {
     navigate,
+    onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
     ...containerProps
   } = useKeyboardNavigation({
@@ -472,7 +474,23 @@ export const useTable = ({
     viewportRowCount: viewportMeasurements.rowCount,
   });
 
-  const { onKeyDown: editingKeyDown } = useCellEditing({ navigate });
+  const {
+    onBlur: editingBlur,
+    onKeyDown: editingKeyDown,
+    onFocus: editingFocus,
+  } = useCellEditing({
+    navigate,
+  });
+
+  const handleFocus = useCallback(
+    (e: FocusEvent<HTMLElement>) => {
+      navigationFocus();
+      if (!e.defaultPrevented) {
+        editingFocus(e);
+      }
+    },
+    [editingFocus, navigationFocus]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
@@ -573,9 +591,8 @@ export const useTable = ({
   );
 
   const handleDataEdited = useCallback<DataCellEditHandler>(
-    (row, columnName, value) => {
-      return dataSource.applyEdit(row, columnName, value);
-    },
+    async (row, columnName, value) =>
+      dataSource.applyEdit(row, columnName, value),
     [dataSource]
   );
 
@@ -599,6 +616,8 @@ export const useTable = ({
 
   return {
     ...containerProps,
+    onBlur: editingBlur,
+    onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     columnMap,
     columns,
