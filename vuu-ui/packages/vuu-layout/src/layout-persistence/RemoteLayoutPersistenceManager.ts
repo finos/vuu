@@ -171,11 +171,11 @@ export class RemoteLayoutPersistenceManager
         if (!response.ok) {
           reject(new Error(response.statusText));
         }
-        response.json().then((response: ApplicationLayout) => {
-          if (!response) {
+        response.json().then((applicationLayout: ApplicationLayout) => {
+          if (!applicationLayout) {
             reject(new Error("Response did not contain valid application layout information"));
           }
-          resolve(response.definition);
+          resolve(applicationLayout.definition);
         });
       })
       .catch((error: Error) => {
