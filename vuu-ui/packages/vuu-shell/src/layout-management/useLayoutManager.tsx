@@ -6,13 +6,15 @@ import React, {
   useState,
 } from "react";
 import {
-  ApplicationLayout,
   LayoutJSON,
   LocalLayoutPersistenceManager,
   RemoteLayoutPersistenceManager,
   resolveJSONPath,
 } from "@finos/vuu-layout";
-import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
+import {
+  LayoutMetadata,
+  LayoutMetadataDto
+} from "./layoutTypes";
 import { defaultLayout } from "@finos/vuu-layout/";
 
 const local = process.env.LOCAL ?? true;
@@ -59,20 +61,22 @@ export const LayoutManagementProvider = (
   );
 
   useEffect(() => {
-    persistenceManager.loadMetadata().then((metadata) => {
-      setLayoutMetadata(metadata);
-    });
-    persistenceManager
-      .loadApplicationLayout()
-      .then((layoutDto: ApplicationLayout) => {
-        if (layoutDto.username === null) {
-          persistenceManager.saveApplicationLayout(layoutDto.definition);
-        }
-        setApplicationLayout(layoutDto.definition);
+    persistenceManager.loadMetadata()
+      .then((metadata) => {
+        setLayoutMetadata(metadata);
       })
       .catch((error: Error) => {
         //TODO: Show error toaster
         console.error("Error occurred while retrieving metadata", error);
+      });
+
+      persistenceManager.loadApplicationLayout()
+      .then((layout: LayoutJSON) => {
+        setApplicationLayout(layout);
+      })
+      .catch((error: Error) => {
+        //TODO: Show error toaster
+        console.error("Error occurred while retrieving application layout", error);
       });
   }, [setApplicationLayout]);
 

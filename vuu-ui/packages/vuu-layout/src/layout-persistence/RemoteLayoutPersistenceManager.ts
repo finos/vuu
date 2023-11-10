@@ -5,13 +5,13 @@ import {
 } from "@finos/vuu-shell";
 import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
-import { defaultLayout } from "./data";
 
 const DEFAULT_SERVER_BASE_URL = "http://127.0.0.1:8081/api";
 
 const baseURL = process.env.LAYOUT_BASE_URL ?? DEFAULT_SERVER_BASE_URL;
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts";
+const applicationLayoutsSaveLocation = "application-layouts";
 
 export type CreateLayoutResponseDto = { metadata: LayoutMetadata };
 export type GetLayoutResponseDto = { definition: LayoutJSON };
@@ -140,14 +140,12 @@ export class RemoteLayoutPersistenceManager
   saveApplicationLayout(layout: LayoutJSON): Promise<void> {
     return new Promise((resolve, reject) =>
       fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "user": "vuu-user"
+          "username": "vuu-user"
         },
-        body: JSON.stringify({
-          layoutDefinition: layout,
-        }),
+        body: JSON.stringify(layout),
       })
       .then((response) => {
         if (!response.ok) {
@@ -161,12 +159,12 @@ export class RemoteLayoutPersistenceManager
     );
   }
 
-  loadApplicationLayout(): Promise<ApplicationLayout> {
+  loadApplicationLayout(): Promise<LayoutJSON> {
     return new Promise((resolve, reject) =>
       fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
         method: "GET",
         headers: {
-          "user": "vuu-user",
+          "username": "vuu-user",
         },
       })
       .then((response) => {
@@ -175,9 +173,9 @@ export class RemoteLayoutPersistenceManager
         }
         response.json().then((response: ApplicationLayout) => {
           if (!response) {
-            reject(new Error("Response did not contain valid layout information"));
+            reject(new Error("Response did not contain valid application layout information"));
           }
-          resolve(response);
+          resolve(response.definition);
         });
       })
       .catch((error: Error) => {
