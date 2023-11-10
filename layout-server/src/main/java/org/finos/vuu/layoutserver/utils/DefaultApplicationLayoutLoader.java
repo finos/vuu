@@ -1,7 +1,7 @@
 package org.finos.vuu.layoutserver.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.vuu.layoutserver.exceptions.InternalServerErrorException;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.springframework.context.annotation.Bean;
@@ -24,15 +24,15 @@ public class DefaultApplicationLayoutLoader {
     }
 
     private void loadDefaultLayout() {
-        JsonNode definition = loadDefaultLayoutJsonFile();
+        ObjectNode definition = loadDefaultLayoutJsonFile();
         defaultLayout = new ApplicationLayout(null, definition);
     }
 
-    private JsonNode loadDefaultLayoutJsonFile() {
+    private ObjectNode loadDefaultLayoutJsonFile() {
         ObjectMapper objectMapper = new ObjectMapper();
         ClassPathResource resource = new ClassPathResource(DEFAULT_LAYOUT_FILE);
         try {
-            return objectMapper.readTree(resource.getInputStream());
+            return objectMapper.readValue(resource.getInputStream(), ObjectNode.class);
         } catch (IOException e) {
             throw new InternalServerErrorException("Failed to read default application layout");
         }

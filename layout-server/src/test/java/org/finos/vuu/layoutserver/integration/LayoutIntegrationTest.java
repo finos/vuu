@@ -9,6 +9,7 @@ import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
 import org.finos.vuu.layoutserver.repository.MetadataRepository;
+import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class LayoutIntegrationTest {
 
-    private static final String DEFAULT_LAYOUT_DEFINITION = "Default layout definition";
+    private static final String LAYOUT_DEFINITION_STRING = "{\"id\":\"main-tabs\"}";
     private static final String DEFAULT_LAYOUT_NAME = "Default layout name";
     private static final String DEFAULT_LAYOUT_GROUP = "Default layout group";
     private static final String DEFAULT_LAYOUT_SCREENSHOT = "Default layout screenshot";
@@ -40,6 +42,7 @@ public class LayoutIntegrationTest {
     private static final UUID DEFAULT_LAYOUT_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectNodeConverter objectNodeConverter = new ObjectNodeConverter();
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,10 +62,12 @@ public class LayoutIntegrationTest {
         Layout layout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
+        Map<String, Object> definition = objectMapper.convertValue(layout.getDefinition(), Map.class);
+
         mockMvc.perform(get("/layouts/{id}", layout.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.definition",
-                        is(layout.getDefinition())))
+                        is(definition)))
                 .andExpect(jsonPath("$.metadata.name",
                         is(layout.getMetadata().getBaseMetadata().getName())))
                 .andExpect(jsonPath("$.metadata.group",
@@ -116,8 +121,7 @@ public class LayoutIntegrationTest {
         UUID layout2Id = UUID.randomUUID();
         Layout layout1 = createLayoutWithIdInDatabase(layout1Id);
         Layout layout2 = createLayoutWithIdInDatabase(layout2Id);
-        layout2.setDefinition("Different definition");
-        layout2.getMetadata().getBaseMetadata().setName("Different name");
+        layout2.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
         layout2.getMetadata().getBaseMetadata().setGroup("Different group");
         layout2.getMetadata().getBaseMetadata().setScreenshot("Different screenshot");
         layout2.getMetadata().getBaseMetadata().setUser("Different user");
@@ -158,12 +162,14 @@ public class LayoutIntegrationTest {
             throws Exception {
         LayoutRequestDto layoutRequest = createValidLayoutRequest();
 
+        Map<String, Object> definition = objectMapper.convertValue(layoutRequest.getDefinition(), Map.class);
+
         MvcResult result = mockMvc.perform(post("/layouts")
                         .content(objectMapper.writeValueAsString(layoutRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(jsonPath("$.definition", is(layoutRequest.getDefinition())))
+                .andExpect(jsonPath("$.definition", is(definition)))
                 .andExpect(jsonPath("$.metadata.name",
                         is(layoutRequest.getMetadata().getBaseMetadata().getName())))
                 .andExpect(jsonPath("$.metadata.group",
@@ -198,17 +204,17 @@ public class LayoutIntegrationTest {
     }
 
     @Test
-    void createLayout_invalidRequestBodyDefinitionsIsBlank_returns400AndDoesNotCreateLayout()
+    void createLayout_invalidRequestBodyDefinitionsIsNull_returns400AndDoesNotCreateLayout()
             throws Exception {
         LayoutRequestDto layoutRequest = createValidLayoutRequest();
-        layoutRequest.setDefinition("");
+        layoutRequest.setDefinition(null);
 
         mockMvc.perform(post("/layouts")
                         .content(objectMapper.writeValueAsString(layoutRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages", iterableWithSize(1)))
-                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be blank")));
+                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be null")));
 
         assertThat(layoutRepository.findAll()).isEmpty();
         assertThat(metadataRepository.findAll()).isEmpty();
@@ -258,7 +264,7 @@ public class LayoutIntegrationTest {
                 initialLayout);
 
         LayoutRequestDto layoutRequest = createValidLayoutRequest();
-        layoutRequest.setDefinition("Updated definition");
+        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
         layoutRequest.getMetadata().getBaseMetadata().setName("Updated name");
         layoutRequest.getMetadata().getBaseMetadata().setGroup("Updated group");
         layoutRequest.getMetadata().getBaseMetadata().setScreenshot("Updated screenshot");
@@ -287,20 +293,20 @@ public class LayoutIntegrationTest {
     }
 
     @Test
-    void updateLayout_invalidRequestBodyDefinitionIsBlank_returns400AndLayoutDoesNotChange()
+    void updateLayout_invalidRequestBodyDefinitionIsNull_returns400AndLayoutDoesNotChange()
             throws Exception {
         Layout layout = createDefaultLayoutInDatabase();
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
 
         LayoutRequestDto request = createValidLayoutRequest();
-        request.setDefinition("");
+        request.setDefinition(null);
 
         mockMvc.perform(put("/layouts/{id}", layout.getId())
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.messages", iterableWithSize(1)))
-                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be blank")));
+                .andExpect(jsonPath("$.messages", contains("definition: Definition must not be null")));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
@@ -422,7 +428,7 @@ public class LayoutIntegrationTest {
 
         metadata.setBaseMetadata(baseMetadata);
 
-        layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
         layout.setMetadata(metadata);
         layout.setId(DEFAULT_LAYOUT_ID);
 
@@ -441,7 +447,7 @@ public class LayoutIntegrationTest {
 
         metadata.setBaseMetadata(baseMetadata);
 
-        layout.setDefinition(DEFAULT_LAYOUT_DEFINITION);
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
         layout.setMetadata(metadata);
         layout.setId(id);
 
@@ -459,7 +465,7 @@ public class LayoutIntegrationTest {
         metadataRequest.setBaseMetadata(baseMetadata);
 
         LayoutRequestDto layoutRequest = new LayoutRequestDto();
-        layoutRequest.setDefinition(DEFAULT_LAYOUT_DEFINITION);
+        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
         layoutRequest.setMetadata(metadataRequest);
 
         return layoutRequest;

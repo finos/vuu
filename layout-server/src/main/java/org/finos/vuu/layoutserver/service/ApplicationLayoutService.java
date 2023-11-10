@@ -1,6 +1,6 @@
 package org.finos.vuu.layoutserver.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
@@ -20,7 +20,7 @@ public class ApplicationLayoutService {
     private final ApplicationLayoutRepository repository;
     private final DefaultApplicationLayoutLoader defaultLoader;
 
-    public void persistApplicationLayout(String username, JsonNode layoutDefinition) {
+    public void persistApplicationLayout(String username, ObjectNode layoutDefinition) {
         repository.save(new ApplicationLayout(username, layoutDefinition));
     }
 

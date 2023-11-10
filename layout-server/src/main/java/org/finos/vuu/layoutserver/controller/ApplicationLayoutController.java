@@ -1,6 +1,6 @@
 package org.finos.vuu.layoutserver.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
@@ -37,7 +37,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping
-    public void persistApplicationLayout(@RequestHeader("username") String username, @RequestBody JsonNode layoutDefinition) {
+    public void persistApplicationLayout(@RequestHeader("username") String username, @RequestBody ObjectNode layoutDefinition) {
         service.persistApplicationLayout(username, layoutDefinition);
     }
 

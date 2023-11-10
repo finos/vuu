@@ -1,11 +1,12 @@
 package org.finos.vuu.layoutserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.finos.vuu.layoutserver.utils.DefaultApplicationLayoutLoader;
+import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -24,6 +25,7 @@ class ApplicationLayoutServiceTest {
     private static ApplicationLayoutRepository mockRepo;
     private static ApplicationLayoutService service;
     private static final DefaultApplicationLayoutLoader defaultLoader = new DefaultApplicationLayoutLoader();
+    private static final ObjectNodeConverter objectNodeConverter = new ObjectNodeConverter();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
@@ -39,7 +41,7 @@ class ApplicationLayoutServiceTest {
         ApplicationLayout actualLayout = service.getApplicationLayout("new user");
 
         // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
-        JsonNode expectedDefinition = objectMapper.readTree("{\"defaultLayoutKey\":\"default-layout-value\"}");
+        ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
         assertThat(actualLayout.getUsername()).isNull();
         assertThat(actualLayout.getDefinition()).isEqualTo(expectedDefinition);
@@ -49,7 +51,7 @@ class ApplicationLayoutServiceTest {
     public void getApplicationLayout_layoutExists_returnsLayout() throws JsonProcessingException {
         String user = "user";
 
-        JsonNode expectedDefinition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
+        ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
         ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition);
 
         when(mockRepo.findById(user)).thenReturn(Optional.of(expectedLayout));
@@ -62,7 +64,7 @@ class ApplicationLayoutServiceTest {
     @Test
     public void createApplicationLayout_validDefinition_callsRepoSave() throws JsonProcessingException {
         String user = "user";
-        JsonNode definition = objectMapper.readTree("{\"id\":\"main-tabs\"}");
+        ObjectNode definition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
 
         service.persistApplicationLayout(user, definition);
 
@@ -75,7 +77,7 @@ class ApplicationLayoutServiceTest {
         String definition = "invalid JSON";
 
         assertThrows(JsonProcessingException.class, () ->
-            service.persistApplicationLayout("user", objectMapper.readTree(definition))
+            service.persistApplicationLayout("user", (ObjectNode) objectMapper.readTree(definition))
         );
     }
 
