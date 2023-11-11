@@ -54,11 +54,11 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTradingTable,
           keyField = BT.InstanceId,
-          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(), BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(), BT.TotalNotional.double(), BT.TotalNotionalUsd.double()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(), BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(), BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BT.BasketId
         ),
-        (table, vs) => new NullProvider(table),
+        (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new BasketTradingService(table, tableContainer)
@@ -172,6 +172,7 @@ object BasketModule extends DefaultModule {
     //BasketTrading Screen
     final val Status = "status"
     final val FilledPct = "filledPct"
+    final val Side = "side"
   }
 
   object BasketTradingConstituentColumnNames {

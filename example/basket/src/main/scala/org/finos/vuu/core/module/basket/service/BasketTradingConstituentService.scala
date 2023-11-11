@@ -69,4 +69,16 @@ class BasketTradingConstituentService(val table: DataTable, val tableContainer: 
 
   override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
 
+  def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
+    ViewPortEditSuccess()
+  }
+
+  def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
+    ViewPortEditSuccess()
+  }
+
+  override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
+    new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
+    new SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy")
+  )
 }

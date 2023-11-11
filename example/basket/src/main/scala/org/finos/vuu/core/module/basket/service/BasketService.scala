@@ -37,17 +37,21 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
     keys.map( key => table.pullRow(key) ).filter(_.get(BC.BasketId).toString == key)
   }
 
-  private def mkTradingConstituentRow(side: String, basketKey: String, instanceKey: String, constituentKey: String, quantity: Long, basketConsRow: RowData): RowWithData = {
-    RowWithData(constituentKey, Map(BTC.BasketId -> basketKey, BTC.Ric -> basketConsRow.get(BC.Ric), BTC.InstanceId -> instanceKey,
+  private def mkTradingConstituentRow(side: String, basketKey: String, instanceKey: String,
+                                      constituentKey: String, quantity: Long, weighting: Double, basketConsRow: RowData): RowWithData = {
+    RowWithData(constituentKey, Map(BTC.BasketId -> basketKey,
+      BTC.Ric -> basketConsRow.get(BC.Ric),
+      BTC.InstanceId -> instanceKey,
       BTC.Quantity -> quantity,
       BTC.InstanceIdRic -> constituentKey,
       BTC.Description -> basketConsRow.get(BC.Description),
-      BTC.Side -> side
+      BTC.Side -> side,
+      BTC.Weighting -> weighting
     ))
   }
 
   private def mkTradingBasketRow(instanceKey: String, basketKey: String): RowWithData = {
-    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey))
+    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey, BT.BasketName -> instanceKey))
   }
 
   def createBasketFromRpc(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
@@ -85,7 +89,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
           val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
           val quantity = (weighting * 100).asInstanceOf[Long]
           val side = rowData.get(BTC.Side).toString
-          table.processUpdate(constituentKey, mkTradingConstituentRow(side, basketKey, name, constituentKey, quantity, rowData), clock.now())
+          table.processUpdate(constituentKey, mkTradingConstituentRow(side, basketKey, name, constituentKey, quantity, weighting, rowData), clock.now())
         })
       case null =>
         logger.error("Cannot find the Basket Trading Constituent.")

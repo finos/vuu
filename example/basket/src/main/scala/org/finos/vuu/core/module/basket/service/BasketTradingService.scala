@@ -2,6 +2,7 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituent
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
@@ -16,8 +17,31 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-      table.processUpdate(key, RowWithData(key, Map(BT.InstanceId -> key, columnName -> data)), clock.now())
-      ViewPortEditSuccess()
+    logger.info("Changing cell value for key:" + key + "(" + columnName + ":" + data + ")")
+    table.processUpdate(key, RowWithData(key, Map(BT.InstanceId -> key, columnName -> data)), clock.now())
+
+    columnName match {
+      case BT.Units =>
+        val constituentTable = tableContainer.getTable(BasketTradingConstituent)
+        val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
+        constituents.foreach( row => {
+            val unitsAsInt = data.asInstanceOf[Int]
+            val weighting = row.get(BTC.Weighting)
+            val quantity = (weighting.asInstanceOf[Double] * unitsAsInt).toLong
+            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)), clock.now())
+        })
+      case BT.Side =>
+        val constituentTable = tableContainer.getTable(BasketTradingConstituent)
+        val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
+        val side = data.asInstanceOf[String]
+        constituents.foreach(row => {
+          constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> side)), clock.now())
+        })
+
+      case _ =>
+    }
+
+    ViewPortEditSuccess()
     }
   override def deleteRowAction(): ViewPortDeleteRowAction = ???
 

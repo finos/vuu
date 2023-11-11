@@ -1,14 +1,18 @@
 package org.finos.vuu.core.module.basket.csv
 
+import com.typesafe.scalalogging.StrictLogging
+
 import scala.io.Source
 
-object CsvStaticLoader {
+object CsvStaticLoader extends StrictLogging {
   def loadConstituent(basketId: String): Array[Map[String, Any]] = {
+
     val staticDirPath = getClass.getResource("/static").getPath
     val dir = new java.io.File(staticDirPath)
     val csvFiles = dir.listFiles.filter(_.isFile)
       .filter(_.getName.endsWith(basketId.replace(".","").toLowerCase + ".csv"))
     val csvFile = csvFiles(0)
+    logger.info("Loading basket static:" + basketId + "(" + csvFile + ")")
     val bufferedSource = Source.fromFile(csvFile)
     val csv = for (line <- bufferedSource.getLines) yield line.split(",").map(_.trim)
     val array = csv.toArray
@@ -19,7 +23,7 @@ object CsvStaticLoader {
     val nameInd = header.indexOf("Name")
     val lastTradeInd = header.indexOf("Last Trade")
     val volumeInd = header.indexOf("Volume")
-    val weightInd = header.indexOf("Weight")
+    val weightInd = header.indexOf("Weighting")
     val changeInd = header.indexOf("Change")
     val list = array.tail.map(e => {
       val weighting = if(getValueFromIndex(weightInd, e) == null) 0.0D else getValueFromIndex(weightInd, e).toDouble
@@ -27,7 +31,7 @@ object CsvStaticLoader {
         "Symbol" -> getValueFromIndex(symbolInd, e),
         "Last Trade" -> getValueFromIndex(lastTradeInd, e),
         "Name" -> getValueFromIndex(nameInd, e),
-        "Weight" -> weighting,
+        "Weighting" -> weighting,
         "Volume" -> getValueFromIndex(volumeInd, e),
         "Change" -> getValueFromIndex(changeInd, e)
       )
