@@ -62,8 +62,6 @@ class DefaultMessageHandler(val channel: Channel,
 
   override def sendUpdates(): Unit = {
 
-    //TODO implement flow controller
-
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
         logger.debug("Sending heartbeat")
