@@ -132,13 +132,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcAddRow(vpId: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
+  def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
     service match {
-      case serv: EditRpcHandler => serv.addRowAction().func("", data, viewPort, session)
+      case serv: EditRpcHandler => serv.addRowAction().func(key, data, viewPort, session)
       case _ =>
         throw new Exception(s"Service is not editable rpc")
     }

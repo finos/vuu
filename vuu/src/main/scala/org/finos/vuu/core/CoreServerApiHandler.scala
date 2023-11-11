@@ -126,7 +126,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcAddRow(msg.vpId, msg.data, ctx.session)) match {
+    Try(viewPortContainer.callRpcAddRow(msg.vpId, msg.rowKey, msg.data, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Menu Selection RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_ADD_ROW_RPC", action))(ctx)

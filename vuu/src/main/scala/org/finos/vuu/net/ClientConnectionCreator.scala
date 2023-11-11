@@ -155,6 +155,9 @@ class DefaultMessageHandler(val channel: Channel,
       case req: RemoveVisualLinkRequest => serverApi.process(req)(ctx)
       case req: ViewPortEditCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortAddRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortDeleteRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortDeleteCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditSubmitFormRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortRpcCall => serverApi.process(req)(ctx)
     }
