@@ -23,6 +23,10 @@ class BasketTest extends VuuServerTestCase {
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
       implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
 
+      import BasketModule._
+      import PriceModule._
+      import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
+
       withVuuServer(PriceModule(), BasketModule()) {
         vuuServer =>
 
@@ -30,11 +34,11 @@ class BasketTest extends VuuServerTestCase {
 
           vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))
 
-          val pricesProvider = vuuServer.getProvider("PRICE", "prices")
+          val pricesProvider = vuuServer.getProvider(PriceModule.NAME, "prices")
 
           pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "phase" -> "C"))
 
-          val viewport = vuuServer.createViewPort("PRICE", "prices")
+          val viewport = vuuServer.createViewPort(PriceModule.NAME, "prices")
 
           vuuServer.runOnce()
 
@@ -45,18 +49,18 @@ class BasketTest extends VuuServerTestCase {
             )
           }
 
-          val viewportBasket = vuuServer.createViewPort("BASKET", "basket")
+          val viewportBasket = vuuServer.createViewPort(BasketModule.NAME, "basket")
 
           val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](viewportBasket)
 
           val action = basketService.createBasket(".FTSE", "chris-001")(vuuServer.requestContext)
 
-          val viewportBasketTrading = vuuServer.createViewPort("BASKET", "basketTrading")
+          val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, "basketTrading")
 
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](viewportBasketTrading)
 
           //CJS: I don't like this forced cast, need to look at that a bit
-          basketTradingService.editCellAction().func("chris-001", "units", 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func("chris-001", BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
 
           vuuServer.runOnce()
 

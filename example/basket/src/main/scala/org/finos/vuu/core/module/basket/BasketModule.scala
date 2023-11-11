@@ -11,7 +11,7 @@ import org.finos.vuu.core.table.Columns
 
 object BasketModule extends DefaultModule {
 
-  private final val NAME = "BASKET"
+  final val NAME = "BASKET"
 
   final val BasketTable = "basket"
   final val BasketTradingTable = "basketTrading"
