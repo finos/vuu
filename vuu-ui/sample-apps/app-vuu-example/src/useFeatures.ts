@@ -16,7 +16,6 @@ export interface FeaturesHookProps {
 export const useFeatures = ({
   features: featuresProp,
 }: FeaturesHookProps): [FeatureProps[], FeatureProps[]] => {
-  console.log(`useFeatures about to call useVuuTables`);
   const tables = useVuuTables();
   const [features, tableFeatures] = useMemo<
     [FeatureProps[], FeatureProps[]]

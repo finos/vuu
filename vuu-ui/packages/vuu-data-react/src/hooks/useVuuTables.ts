@@ -5,7 +5,6 @@ export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();
 
   const buildTables = useCallback((schemas: TableSchema[]) => {
-    console.log({ schemas });
     const vuuTables = new Map<string, TableSchema>();
     schemas.forEach((schema) => {
       vuuTables.set(schema.table.table, schema);
@@ -16,7 +15,6 @@ export const useVuuTables = () => {
   useEffect(() => {
     async function fetchTableMetadata() {
       const server = await getServerAPI();
-      console.log(`useVuuTable about to call server getTableList`);
       const { tables } = await server.getTableList();
       const tableSchemas = buildTables(
         await Promise.all(

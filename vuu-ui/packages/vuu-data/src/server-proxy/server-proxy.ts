@@ -3,6 +3,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerMessage,
   LinkDescriptorWithLabel,
+  ServerToClientCreateViewPortSuccess,
   ServerToClientMessage,
   ServerToClientTableList,
   ServerToClientTableMeta,
@@ -34,8 +35,6 @@ import {
   OpenDialogAction,
   ServerProxySubscribeMessage,
   VuuUIMessageIn,
-  VuuUIMessageInTableList,
-  VuuUIMessageInTableMeta,
   VuuUIMessageOut,
   VuuUIMessageOutAggregate,
   VuuUIMessageOutCloseTreeNode,
@@ -126,7 +125,6 @@ export class ServerProxy {
   private authToken = "";
   private user = "user";
   private pendingLogin?: PendingLogin;
-  private pendingTableMetaRequests = new Map<string, string>();
   private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
@@ -194,32 +192,83 @@ export class ServerProxy {
   public subscribe(message: ServerProxySubscribeMessage) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
-      if (
-        !this.hasSchemaForTable(message.table) &&
-        // A Session table is never cached - it is limited to a single workflow interaction
-        // The metadata for a session table is requested even before the subscribe call.
-        !isSessionTable(message.table)
-      ) {
-        info?.(
-          `subscribe to ${message.table.table}, no metadata yet, request metadata`
-        );
-        const requestId = nextRequestId();
-        this.sendMessageToServer(
-          { type: "GET_TABLE_META", table: message.table },
-          requestId
-        );
-        this.pendingTableMetaRequests.set(requestId, message.viewport);
-      }
+      const pendingTableSchema = this.getTableMeta(message.table);
+      // if (
       const viewport = new Viewport(message, this.postMessageToClient);
       this.viewports.set(message.viewport, viewport);
-      // use client side viewport id as request id, so that when we process the response,
+      // Use client side viewport id as request id, so that when we process the response,
       // which will provide the serverside viewport id, we can establish a mapping between
       // the two
-      this.sendIfReady(
+      //TODO handle CREATE_VP error, but server does not send it at the moment
+      const pendingSubscription = this.awaitResponseToMessage(
         viewport.subscribe(),
-        message.viewport,
-        this.sessionId !== ""
+        message.viewport
       );
+      const awaitPendingReponses = Promise.all([
+        pendingSubscription,
+        pendingTableSchema,
+      ]) as Promise<
+        [ServerToClientCreateViewPortSuccess, TableSchema | undefined]
+      >;
+      awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
+        const { viewPortId: serverViewportId } = subscribeResponse;
+        const { status: viewportStatus } = viewport;
+        // switch storage key from client viewportId to server viewportId
+        if (message.viewport !== serverViewportId) {
+          this.viewports.delete(message.viewport);
+          this.viewports.set(serverViewportId, viewport);
+        }
+        this.mapClientToServerViewport.set(message.viewport, serverViewportId);
+
+        const clientResponse = viewport.handleSubscribed(
+          subscribeResponse,
+          tableSchema
+        );
+        if (clientResponse) {
+          this.postMessageToClient(clientResponse);
+          if (debugEnabled) {
+            debug(
+              `post DataSourceSubscribedMessage to client: ${JSON.stringify(
+                clientResponse
+              )}`
+            );
+          }
+        }
+
+        // In the case of a reconnect, we may have resubscribed a disabled viewport,
+        // reset the disabled state on server
+        if (viewport.disabled) {
+          this.disableViewport(viewport);
+        }
+
+        if (
+          viewportStatus === "subscribing" &&
+          // A session table will never have Visual Links, nor Context Menus
+          !isSessionTable(viewport.table)
+        ) {
+          // If status is "resubscribing", the following is unnecessary
+          this.sendMessageToServer({
+            type: Message.GET_VP_VISUAL_LINKS,
+            vpId: serverViewportId,
+          });
+          this.sendMessageToServer({
+            type: Message.GET_VIEW_PORT_MENUS,
+            vpId: serverViewportId,
+          });
+
+          // Resend requests for links from other viewports already on page, they may be linkable to this viewport
+          Array.from(this.viewports.entries())
+            .filter(
+              ([id, { disabled }]) => id !== serverViewportId && !disabled
+            )
+            .forEach(([vpId]) => {
+              this.sendMessageToServer({
+                type: Message.GET_VP_VISUAL_LINKS,
+                vpId,
+              });
+            });
+        }
+      });
     } else {
       error(`spurious subscribe call ${message.viewport}`);
     }
@@ -570,9 +619,6 @@ export class ServerProxy {
             requestId
           ) as Promise<ServerToClientTableList>;
           this.tableList.then((response) => {
-            console.log(
-              `got ${response.tables.length} tables, requestId ${requestId}`
-            );
             this.postMessageToClient({
               type: "TABLE_LIST_RESP",
               tables: response.tables,
@@ -583,29 +629,14 @@ export class ServerProxy {
         }
 
         case "GET_TABLE_META": {
-          const {
-            table: { module, table },
-          } = message;
-          const key = `${module}:${table}`;
-          let tableMetaRequest = this.cachedTableMetaRequests.get(key);
-          if (!tableMetaRequest) {
-            console.log(
-              `%crequest ${key} from server`,
-              "color:blue;font-weight:bold;"
-            );
-            tableMetaRequest = this.awaitResponseToMessage(
-              { type, table: message.table },
-              requestId
-            ) as Promise<ServerToClientTableMeta>;
-            this.cachedTableMetaRequests.set(key, tableMetaRequest);
-          }
-          tableMetaRequest?.then((response) => {
-            const tableSchema = this.cacheTableMeta(response);
-            this.postMessageToClient({
-              type: "TABLE_META_RESP",
-              tableSchema,
-              requestId,
-            });
+          this.getTableMeta(message.table, requestId).then((tableSchema) => {
+            if (tableSchema) {
+              this.postMessageToClient({
+                type: "TABLE_META_RESP",
+                tableSchema,
+                requestId,
+              });
+            }
           });
           return;
         }
@@ -619,6 +650,22 @@ export class ServerProxy {
         message
       )}`
     );
+  }
+
+  private getTableMeta(table: VuuTable, requestId = nextRequestId()) {
+    if (isSessionTable(table)) {
+      return Promise.resolve(undefined);
+    }
+    const key = `${table.module}:${table.table}`;
+    let tableMetaRequest = this.cachedTableMetaRequests.get(key);
+    if (!tableMetaRequest) {
+      tableMetaRequest = this.awaitResponseToMessage(
+        { type: "GET_TABLE_META", table },
+        requestId
+      ) as Promise<ServerToClientTableMeta>;
+      this.cachedTableMetaRequests.set(key, tableMetaRequest);
+    }
+    return tableMetaRequest?.then((response) => this.cacheTableMeta(response));
   }
 
   private awaitResponseToMessage(
@@ -697,68 +744,6 @@ export class ServerProxy {
         }
         break;
       // TODO login rejected
-
-      case "CREATE_VP_SUCCESS":
-        {
-          const viewport = viewports.get(requestId);
-          // The clientViewportId was used as requestId for CREATE_VP message. From this point,
-          // we will key viewports using serverViewPortId and maintain a mapping between client
-          // and server viewport ids.
-          if (viewport) {
-            const { status: viewportStatus } = viewport;
-            const { viewPortId: serverViewportId } = body;
-
-            if (requestId !== serverViewportId) {
-              viewports.delete(requestId);
-              viewports.set(serverViewportId, viewport);
-            }
-            this.mapClientToServerViewport.set(requestId, serverViewportId);
-            const response = viewport.handleSubscribed(body);
-            if (response) {
-              this.postMessageToClient(response);
-              if (debugEnabled) {
-                debug(
-                  `post DataSourceSubscribedMessage to client: ${JSON.stringify(
-                    response
-                  )}`
-                );
-              }
-            }
-            // In the case of a reconnect, we may have resubscribed a disabled viewport,
-            // reset the disabled state on server
-            if (viewport.disabled) {
-              this.disableViewport(viewport);
-            }
-            if (
-              viewportStatus === "subscribing" &&
-              // A session table will never have Visual Links, nor Context Menus
-              !isSessionTable(viewport.table)
-            ) {
-              // If status is "resubscribing", the following is unnecessary
-              this.sendMessageToServer({
-                type: Message.GET_VP_VISUAL_LINKS,
-                vpId: serverViewportId,
-              });
-              this.sendMessageToServer({
-                type: Message.GET_VIEW_PORT_MENUS,
-                vpId: serverViewportId,
-              });
-
-              // Resend requests for links from other viewports already on page, they may be linkable to this viewport
-              Array.from(viewports.entries())
-                .filter(
-                  ([id, { disabled }]) => id !== serverViewportId && !disabled
-                )
-                .forEach(([vpId]) => {
-                  this.sendMessageToServer({
-                    type: Message.GET_VP_VISUAL_LINKS,
-                    vpId,
-                  });
-                });
-            }
-          }
-        }
-        break;
 
       case "REMOVE_VP_SUCCESS":
         {
@@ -935,45 +920,6 @@ export class ServerProxy {
         }
         break;
 
-      // case "TABLE_LIST_RESP":
-      //   console.log(`TABLE_LIST_RESP ${requestId}`);
-      //   this.postMessageToClient({
-      //     type: "TABLE_LIST_RESP",
-      //     tables: body.tables,
-      //     requestId,
-      //   } as VuuUIMessageInTableList);
-      //   break;
-
-      case "TABLE_META_RESP":
-        // This request may have originated from client or may have been made by
-        // ServerProxy whilst creating a new subscription
-        {
-          console.log(`add ${body.table.table} to cache`);
-          const tableSchema = this.cacheTableMeta(body);
-          const clientViewportId = this.pendingTableMetaRequests.get(requestId);
-          if (clientViewportId) {
-            this.pendingTableMetaRequests.delete(requestId);
-            // If the viewport is still stored under clientViewportId, the subscription has not
-            // yet been acknowledged and client not informed. If the subscription has already
-            // been acknowledged, the viewport will be stored under serverViewportId;
-            const viewport = this.viewports.get(clientViewportId);
-            if (viewport) {
-              viewport.setTableSchema(tableSchema);
-            } else {
-              warn?.(
-                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
-              );
-            }
-          } else {
-            this.postMessageToClient({
-              type: "TABLE_META_RESP",
-              tableSchema,
-              requestId,
-            } as VuuUIMessageInTableMeta);
-          }
-        }
-        break;
-
       case "VP_VISUAL_LINKS_RESP":
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
@@ -1117,10 +1063,6 @@ export class ServerProxy {
       default:
         infoEnabled && info(`handleMessageFromServer ${body["type"]}.`);
     }
-  }
-
-  private hasSchemaForTable(table: VuuTable) {
-    return this.cachedTableSchemas.has(`${table.module}:${table.table}`);
   }
 
   private cacheTableMeta(messageBody: ServerToClientTableMeta): TableSchema {

@@ -182,7 +182,6 @@ export class Viewport {
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
   private selectedRows: Selection = [];
-  private tableSchema: TableSchema | null = null;
   private useBatchMode = true;
   private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
   private updateThrottleTimer: number | undefined = undefined;
@@ -299,15 +298,18 @@ export class Viewport {
     } as ClientToServerCreateViewPort;
   }
 
-  handleSubscribed({
-    viewPortId,
-    aggregations,
-    columns,
-    filterSpec: filter,
-    range,
-    sort,
-    groupBy,
-  }: ServerToClientCreateViewPortSuccess) {
+  handleSubscribed(
+    {
+      viewPortId,
+      aggregations,
+      columns,
+      filterSpec: filter,
+      range,
+      sort,
+      groupBy,
+    }: ServerToClientCreateViewPortSuccess,
+    tableSchema?: TableSchema
+  ) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
     this.aggregations = aggregations;
@@ -330,7 +332,7 @@ export class Viewport {
       groupBy,
       range,
       sort,
-      tableSchema: this.tableSchema,
+      tableSchema,
     } as DataSourceSubscribedMessage;
   }
 
@@ -570,10 +572,6 @@ export class Viewport {
       menu,
       clientViewportId: this.clientViewportId,
     };
-  }
-
-  setTableSchema(tableSchema: TableSchema) {
-    this.tableSchema = tableSchema;
   }
 
   openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {

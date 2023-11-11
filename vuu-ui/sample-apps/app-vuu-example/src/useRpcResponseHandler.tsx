@@ -12,7 +12,6 @@ const withTable = (action: unknown): action is { table: VuuTable } =>
 const vuuFilterTableFeatureUrl = "./feature-filter-table/index.js";
 
 export const useRpcResponseHandler = (setDialogState: SetDialog) => {
-  console.log(`useRpcResponseHandler about to call useVuuTables`);
   const tables = useVuuTables();
 
   const handleClose = useCallback(() => {
