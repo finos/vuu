@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.basket.service.{BasketService, BasketServiceIF}
+import org.finos.vuu.core.module.basket.service.BasketServiceIF
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.test.VuuServerTestCase
@@ -14,9 +14,9 @@ import org.scalatest.prop.Tables.Table
 
 class BasketTest extends VuuServerTestCase {
 
-  Feature("Example Test Case") {
+  Feature("Basket Service Test Case") {
 
-    Scenario("Check scenario") {
+    Scenario("Check the creation of the baskets and constituents") {
 
       implicit val clock: Clock = new TestFriendlyClock(10001L)
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
