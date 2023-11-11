@@ -267,7 +267,7 @@ const connectedServerAPI: ServerAPI = {
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>
-    asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
+    asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
 
   getTableSchema: async (table) =>
     asyncRequest<TableSchema>({

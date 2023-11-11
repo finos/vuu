@@ -4,6 +4,7 @@ import {
   ClientToServerMessage,
   LinkDescriptorWithLabel,
   ServerToClientMessage,
+  ServerToClientTableList,
   ServerToClientTableMeta,
   VuuLinkDescriptor,
   VuuRpcRequest,
@@ -129,7 +130,12 @@ export class ServerProxy {
   private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
   private queuedRequests: Array<ClientToServerMessage["body"]> = [];
-  private cachedTableSchemas: Map<string, Readonly<TableSchema>> = new Map();
+  private cachedTableMetaRequests: Map<
+    string,
+    Promise<ServerToClientTableMeta>
+  > = new Map();
+  private cachedTableSchemas: Map<string, TableSchema> = new Map();
+  private tableList: Promise<ServerToClientTableList> | undefined;
 
   constructor(connection: Connection, callback: PostMessageToClientCallback) {
     this.connection = connection;
@@ -558,13 +564,51 @@ export class ServerProxy {
     } else {
       const { type, requestId } = message;
       switch (type) {
-        case "GET_TABLE_LIST":
-          return this.sendMessageToServer({ type }, requestId);
-        case "GET_TABLE_META":
-          return this.sendMessageToServer(
-            { type, table: message.table },
+        case "GET_TABLE_LIST": {
+          this.tableList ??= this.awaitResponseToMessage(
+            { type },
             requestId
-          );
+          ) as Promise<ServerToClientTableList>;
+          this.tableList.then((response) => {
+            console.log(
+              `got ${response.tables.length} tables, requestId ${requestId}`
+            );
+            this.postMessageToClient({
+              type: "TABLE_LIST_RESP",
+              tables: response.tables,
+              requestId,
+            });
+          });
+          return;
+        }
+
+        case "GET_TABLE_META": {
+          const {
+            table: { module, table },
+          } = message;
+          const key = `${module}:${table}`;
+          let tableMetaRequest = this.cachedTableMetaRequests.get(key);
+          if (!tableMetaRequest) {
+            console.log(
+              `%crequest ${key} from server`,
+              "color:blue;font-weight:bold;"
+            );
+            tableMetaRequest = this.awaitResponseToMessage(
+              { type, table: message.table },
+              requestId
+            ) as Promise<ServerToClientTableMeta>;
+            this.cachedTableMetaRequests.set(key, tableMetaRequest);
+          }
+          tableMetaRequest?.then((response) => {
+            const tableSchema = this.cacheTableMeta(response);
+            this.postMessageToClient({
+              type: "TABLE_META_RESP",
+              tableSchema,
+              requestId,
+            });
+          });
+          return;
+        }
         case "RPC_CALL":
           return this.rpcCall(message);
         default:
@@ -578,10 +622,10 @@ export class ServerProxy {
   }
 
   private awaitResponseToMessage(
-    message: ClientToServerBody
+    message: ClientToServerBody,
+    requestId = nextRequestId()
   ): Promise<unknown> {
     return new Promise((resolve, reject) => {
-      const requestId = nextRequestId();
       this.sendMessageToServer(message, requestId);
       this.pendingRequests.set(requestId, { reject, resolve });
     });
@@ -642,7 +686,7 @@ export class ServerProxy {
         );
         break;
 
-      case Message.LOGIN_SUCCESS:
+      case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
           // we should tear down the pending Login now
@@ -654,7 +698,7 @@ export class ServerProxy {
         break;
       // TODO login rejected
 
-      case Message.CREATE_VP_SUCCESS:
+      case "CREATE_VP_SUCCESS":
         {
           const viewport = viewports.get(requestId);
           // The clientViewportId was used as requestId for CREATE_VP message. From this point,
@@ -891,18 +935,20 @@ export class ServerProxy {
         }
         break;
 
-      case Message.TABLE_LIST_RESP:
-        this.postMessageToClient({
-          type: Message.TABLE_LIST_RESP,
-          tables: body.tables,
-          requestId,
-        } as VuuUIMessageInTableList);
-        break;
+      // case "TABLE_LIST_RESP":
+      //   console.log(`TABLE_LIST_RESP ${requestId}`);
+      //   this.postMessageToClient({
+      //     type: "TABLE_LIST_RESP",
+      //     tables: body.tables,
+      //     requestId,
+      //   } as VuuUIMessageInTableList);
+      //   break;
 
-      case Message.TABLE_META_RESP:
+      case "TABLE_META_RESP":
         // This request may have originated from client or may have been made by
         // ServerProxy whilst creating a new subscription
         {
+          console.log(`add ${body.table.table} to cache`);
           const tableSchema = this.cacheTableMeta(body);
           const clientViewportId = this.pendingTableMetaRequests.get(requestId);
           if (clientViewportId) {
@@ -920,7 +966,7 @@ export class ServerProxy {
             }
           } else {
             this.postMessageToClient({
-              type: Message.TABLE_META_RESP,
+              type: "TABLE_META_RESP",
               tableSchema,
               requestId,
             } as VuuUIMessageInTableMeta);
