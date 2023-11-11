@@ -16,7 +16,11 @@ object BasketService{
   val counter = new AtomicInteger(0)
 }
 
-class BasketService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with StrictLogging {
+trait BasketServiceIF{
+  def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction
+}
+
+class BasketService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
 
 //private val counter = new AtomicInteger(0)
 
@@ -47,7 +51,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
   }
 
   def createBasketFromRpc(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
-    createBasket(basketKey, name)
+    createBasket(basketKey, name)(ctx)
   }
 
   def createBasket(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
@@ -56,10 +60,14 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
 
     val instanceKey = getAndPadCounter(session)
 
-    createBasket(basketKey, instanceKey)
+    createBasketInternal(basketKey, instanceKey, session)
   }
 
- private def createBasket(basketKey: String, name: String): ViewPortAction = {
+  def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
+    createBasketInternal(basketKey, name, ctx.session)
+  }
+
+  private def createBasketInternal(basketKey: String, name: String, sessionId: ClientSessionId): ViewPortAction = {
 
     val constituents = getConstituentsForBasketKey(basketKey)
 

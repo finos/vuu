@@ -45,6 +45,8 @@ import org.finos.vuu.net._
   new Type(value = classOf[RpcReject], name = "RPC_REJECT"),
   new Type(value = classOf[HeartBeatResponse], name = "HB_RESP"),
   new Type(value = classOf[RpcCall], name = "RPC_CALL"),
+  new Type(value = classOf[ViewPortRpcCall], name = "VIEW_PORT_RPC_CALL"),
+  new Type(value = classOf[ViewPortRpcResponse], name = "VIEW_PORT_RPC_REPONSE"),
   new Type(value = classOf[MenuRpcCall], name = "MENU_RPC_CALL"),
   new Type(value = classOf[MenuRpcResponse], name = "MENU_RPC_RESP"),
   new Type(value = classOf[RpcResponse], name = "RPC_RESP"),

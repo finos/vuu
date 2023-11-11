@@ -156,6 +156,7 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ViewPortEditCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditRowRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditSubmitFormRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortRpcCall => serverApi.process(req)(ctx)
     }
   }
 

@@ -15,9 +15,12 @@ import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net._
 import org.finos.vuu.provider._
+import org.finos.vuu.test.rpc.RpcDynamicProxy
 import org.finos.vuu.test.{TestViewPort, TestVuuServer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.viewport.{DefaultRange, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+
+import scala.reflect.classTag
 
 class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging with IVuuServer {
 
@@ -138,7 +141,9 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     new TestViewPort(viewport)
   }
 
-  override def session: ClientSessionId = ClientSessionId("test-session", "test-user")
+  override def session: ClientSessionId = {
+    clientSessionId
+  }
 
   override def runOnce(): Unit = {
     viewPortContainer.runOnce()
@@ -154,9 +159,42 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override val lifecycleId: String = "TestVuuServerImpl#" + getClass.hashCode()
 
-  override def start(): Unit = ???
+  var handler: ViewServerHandler = null
+  val channel = new TestChannel
+  var clientSessionId: ClientSessionId = null
+
+  override def login(user: String, token: String): Unit = {
+    handler = factory.create()
+    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest("TOKEN", "AAAA")))
+    handler.handle(packet, channel)
+
+    channel.popMsg match {
+      case Some(msgPacket) =>
+        val msg = serializer.deserialize(msgPacket)
+        clientSessionId = ClientSessionId(msg.sessionId, user)
+    }
+
+  }
 
   override def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit = {
     viewPortContainer.addViewPortDefinition(table, vpDefFunc)
+  }
+
+  override def getViewPortRpcServiceProxy[TYPE : _root_.scala.reflect.ClassTag](viewport: ViewPort):TYPE = {
+
+    val interceptor = new RpcDynamicProxy(viewport, handler, serializer, session, "FOO", "BAR")
+
+    val clazz: Class[_] = classTag[TYPE].runtimeClass
+
+    val proxyInstance = java.lang.reflect.Proxy.newProxyInstance(
+                                  getClass.getClassLoader,
+                                  Array[Class[_]](clazz),
+                                  interceptor).asInstanceOf[TYPE]
+
+    proxyInstance
+  }
+
+  override def requestContext: RequestContext = {
+    RequestContext(RequestId.oneNew(), clientSessionId, queue, "TOKEN")
   }
 }

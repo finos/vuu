@@ -5,7 +5,7 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.sort.{FilterAndSort, Sort}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext}
 import org.finos.vuu.provider.{MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree.TreeNodeState
@@ -97,11 +97,12 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
 
 trait TestVuuServer {
 
-  def start(): Unit
+  def login(user: String, token: String): Unit
   def getProvider(module: String, table: String): MockProvider
   def createViewPort(module: String, tableName: String): TestViewPort
   def session: ClientSessionId
   def runOnce(): Unit
   def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit
-
+  def getViewPortRpcServiceProxy[TYPE: _root_.scala.reflect.ClassTag](viewport: ViewPort): TYPE
+  def requestContext: RequestContext
 }

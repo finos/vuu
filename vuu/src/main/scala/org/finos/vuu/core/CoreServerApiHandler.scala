@@ -19,7 +19,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
       case Success(action) =>
         logger.info("Processed VP RPC call" + msg)
-        vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
+        vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
         logger.info("Failed to remove viewport", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
