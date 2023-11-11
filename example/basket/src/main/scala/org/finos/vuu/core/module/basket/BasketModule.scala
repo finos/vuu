@@ -4,7 +4,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
 import org.finos.vuu.core.module.basket.provider._
-import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService}
+import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService, BasketTradingService}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
@@ -59,6 +59,10 @@ object BasketModule extends DefaultModule {
           joinFields = BT.BasketId
         ),
         (table, vs) => new NullProvider(table),
+        (table, _, _, tableContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new BasketTradingService(table, tableContainer)
+        )
       )
       .addTable(
         TableDef(

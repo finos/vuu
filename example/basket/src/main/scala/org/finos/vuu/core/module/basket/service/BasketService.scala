@@ -6,7 +6,7 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
 
@@ -97,4 +97,5 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
   override def menuItems(): ViewPortMenu = ViewPortMenu(
       new SelectionViewPortMenuItem("Create New", "", (sel, sess) => this.createBasket(sel, sess), "CREATE_NEW_BASKET"),
   )
+
 }
