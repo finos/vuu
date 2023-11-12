@@ -2,6 +2,7 @@ import { vi } from "vitest";
 import {
   ServerToClientCreateViewPortSuccess,
   ServerToClientMessage,
+  ServerToClientTableMeta,
   ServerToClientTableRows,
   VuuRow,
 } from "@finos/vuu-protocol-types";
@@ -156,6 +157,17 @@ export const updateTableRow = (
   };
 };
 
+export const testSchema = {
+  columns: [
+    { name: "col-1", serverDataType: "string" },
+    { name: "col-2", serverDataType: "string" },
+    { name: "col-3", serverDataType: "string" },
+    { name: "col-4", serverDataType: "string" },
+  ],
+  key: "col-1",
+  table: { module: "TEST", table: "test-table" },
+};
+
 // prettier-ignore
 export const createSubscription = ({
   aggregations = [],
@@ -170,7 +182,8 @@ export const createSubscription = ({
   viewport = `client-vp-${key}`
 } = {}): [
   ServerProxySubscribeMessage, 
-  ServerToClientMessage<ServerToClientCreateViewPortSuccess>
+  ServerToClientMessage<ServerToClientCreateViewPortSuccess>,
+  ServerToClientMessage<ServerToClientTableMeta>
 ] => [
   { 
     aggregations,
@@ -199,6 +212,19 @@ export const createSubscription = ({
     },
     token: "",
     user: "user"
+  }, {
+    module: "TEST",
+    requestId: `1`,
+    body: {
+      columns: ['col-1', 'col-2', 'col-3', 'col-4'],
+      key: 'col-1',
+      dataTypes: ['string','string','string','string'],
+      table: {module: "TEST", table: "test-table"},
+      type: "TABLE_META_RESP"
+    },
+    token: "",
+    user: "user"
+
   }
 ];
 
@@ -207,26 +233,46 @@ const mockConnection = {
   status: "ready" as const,
 };
 
-export const createServerProxyAndSubscribeToViewport = (
+export const subscribe = async (
+  serverProxy: ServerProxy,
+  { bufferSize = 0, key = "1", to = 10 }: SubscriptionDetails
+) => {
+  const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
+    createSubscription({
+      bufferSize,
+      key,
+      to,
+    });
+
+  serverProxy.subscribe(clientSubscription);
+  serverProxy.handleMessageFromServer(serverSubscriptionAck);
+  serverProxy.handleMessageFromServer(tableMetaResponse);
+
+  // allow the promises pending for the subscription and ,etadata to resolve
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
+};
+
+export type SubscriptionDetails = {
+  bufferSize?: number;
+  key?: string;
+  to?: number;
+};
+
+export const createServerProxyAndSubscribeToViewport = async (
   postMessageToClient: any,
   {
     bufferSize = 0,
     connection = mockConnection,
-  }: { bufferSize?: number; connection?: any } = {}
+    key = "1",
+    to = 10,
+  }: { bufferSize?: number; connection?: any; key?: string; to?: number } = {}
 ) => {
   const serverProxy = new ServerProxy(connection, postMessageToClient);
   //TODO we shouldn't be able to bypass checks like this
   serverProxy["sessionId"] = "dsdsd";
   serverProxy["authToken"] = "test";
 
-  const [clientSubscription, serverSubscriptionAck] = createSubscription({
-    bufferSize,
-  });
-
-  serverProxy.subscribe(clientSubscription);
-  serverProxy.handleMessageFromServer(serverSubscriptionAck);
-
-  postMessageToClient.mockClear();
+  await subscribe(serverProxy, { bufferSize, key, to });
 
   return serverProxy;
 };

@@ -1,5 +1,5 @@
 import "./global-mocks";
-import { describe, expect, vi, it } from "vitest";
+import { beforeEach, describe, expect, vi, it } from "vitest";
 import {
   ServerProxy,
   TEST_setRequestId,
@@ -14,6 +14,8 @@ import {
   createTableGroupRows,
   createSubscription,
   sizeRow,
+  subscribe,
+  testSchema,
   updateTableRow,
 } from "./test-utils";
 import {
@@ -30,32 +32,72 @@ const SERVER_MESSAGE_CONSTANTS = {
   user: "user",
 };
 
-const mockConnection = {
-  send: vi.fn(),
-  status: "ready" as const,
-};
-
-const noop = () => undefined;
-
 describe("ServerProxy", () => {
+  beforeEach(() => {
+    TEST_setRequestId(1);
+  });
+
   describe("subscription", () => {
-    it("creates Viewport on client subscribe", () => {
-      const [clientSubscription] = createSubscription();
-      const serverProxy = new ServerProxy(mockConnection, noop);
-      serverProxy.subscribe(clientSubscription);
-      expect(serverProxy["viewports"].size).toEqual(1);
-      const { clientViewportId, status } = serverProxy["viewports"].get(
-        "client-vp-1"
-      ) as Viewport;
-      expect(clientViewportId).toEqual("client-vp-1");
-      expect(status).toEqual("subscribing");
+    it("sends server requests for metadata, links and menus along with subscription", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      await createServerProxyAndSubscribeToViewport(postMessageToClient, {
+        connection,
+      });
+
+      expect(connection.send).toBeCalledTimes(4);
+
+      expect(connection.send).toHaveBeenNthCalledWith(1, {
+        body: {
+          table: { module: "TEST", table: "test-table" },
+          type: "GET_TABLE_META",
+        },
+        requestId: "1",
+        ...SERVER_MESSAGE_CONSTANTS,
+      });
+
+      expect(connection.send).toHaveBeenNthCalledWith(2, {
+        body: {
+          aggregations: [],
+          columns: ["col-1"],
+          type: "CREATE_VP",
+          table: { module: "TEST", table: "test-table" },
+          range: { from: 0, to: 10 },
+          sort: { sortDefs: [] },
+          filterSpec: { filter: "" },
+          groupBy: [],
+        },
+        requestId: "client-vp-1",
+        ...SERVER_MESSAGE_CONSTANTS,
+      });
+
+      expect(connection.send).toHaveBeenNthCalledWith(3, {
+        body: {
+          type: "GET_VP_VISUAL_LINKS",
+          vpId: "server-vp-1",
+        },
+        requestId: "2",
+        ...SERVER_MESSAGE_CONSTANTS,
+      });
+      expect(connection.send).toHaveBeenNthCalledWith(4, {
+        body: {
+          type: "GET_VIEW_PORT_MENUS",
+          vpId: "server-vp-1",
+        },
+        requestId: "3",
+        ...SERVER_MESSAGE_CONSTANTS,
+      });
     });
 
-    it("initialises Viewport when server ACKS subscription", () => {
+    it("initialises Viewport when server ACKS subscription", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
-
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
       expect(serverProxy["viewports"].size).toEqual(1);
       expect(
         serverProxy["mapClientToServerViewport"].get("client-vp-1")
@@ -68,15 +110,12 @@ describe("ServerProxy", () => {
       expect(status).toEqual("subscribed");
     });
 
-    it("sends message to client once subscribed", () => {
-      const callback = vi.fn();
-      const [clientSubscription, serverSubscription] = createSubscription();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription);
-      serverProxy.handleMessageFromServer(serverSubscription);
-      //TODO cover tableSchema in test
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+    it("sends message to client once subscribed", async () => {
+      const postMessageToClient = vi.fn();
+      await createServerProxyAndSubscribeToViewport(postMessageToClient);
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         aggregations: [],
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
@@ -89,17 +128,20 @@ describe("ServerProxy", () => {
         sort: {
           sortDefs: [],
         },
-        tableSchema: null,
+        tableSchema: testSchema,
         type: "subscribed",
       });
     });
   });
 
   describe("Data Handling", () => {
-    it("sends data to client when initial full dataset is received", () => {
+    it("sends data to client when initial full dataset is received", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -133,10 +175,13 @@ describe("ServerProxy", () => {
       );
     });
 
-    it("sends data to client once all data for client range is available", () => {
+    it("sends data to client once all data for client range is available", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -191,10 +236,11 @@ describe("ServerProxy", () => {
   });
 
   describe("Scrolling, no buffer", () => {
-    it("scrolls forward, partial viewport", () => {
+    it("scrolls forward, partial viewport", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -255,10 +301,11 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("scrolls forward, discrete viewport", () => {
+    it("scrolls forward, discrete viewport", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -320,10 +367,11 @@ describe("ServerProxy", () => {
   });
 
   describe("Updates", () => {
-    it("Updates, no scrolling, only sends updated rows to client", () => {
+    it("Updates, no scrolling, only sends updated rows to client", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -357,34 +405,21 @@ describe("ServerProxy", () => {
   });
 
   describe("Buffering data", () => {
-    it("buffers 10 rows, server sends entire buffer set", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 10,
-      });
-
+    it("buffers 10 rows, server sends entire buffer set", async () => {
       const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+          connection,
+        }
+      );
 
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
-
-      mockConnection.send.mockClear();
-      TEST_setRequestId(1);
-
-      serverProxy.subscribe(clientSubscription1);
-
-      expect(mockConnection.send).toBeCalledTimes(2);
-
-      expect(mockConnection.send).toHaveBeenNthCalledWith(1, {
-        body: {
-          table: clientSubscription1.table,
-          type: "GET_TABLE_META",
-        },
-        requestId: "1",
-        ...SERVER_MESSAGE_CONSTANTS,
-      });
-
-      expect(mockConnection.send).toHaveBeenNthCalledWith(2, {
+      expect(connection.send).toHaveBeenNthCalledWith(2, {
         body: {
           aggregations: [],
           columns: ["col-1"],
@@ -398,8 +433,6 @@ describe("ServerProxy", () => {
         requestId: "client-vp-1",
         ...SERVER_MESSAGE_CONSTANTS,
       });
-
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       postMessageToClient.mockClear();
 
@@ -433,20 +466,22 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("10 rows in grid, so 11 requested, (render buffer 0), 10 rows in Viewport buffer, page down, narrowing of range by 1 row", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 10,
-        to: 11,
-      });
-
+    it("10 rows in grid, so 11 requested, (render buffer 0), 10 rows in Viewport buffer, page down, narrowing of range by 1 row", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+          connection,
+          to: 11,
+        }
+      );
 
-      serverProxy.subscribe(clientSubscription1);
-
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenNthCalledWith(2, {
         body: {
           aggregations: [],
           columns: ["col-1"],
@@ -463,8 +498,6 @@ describe("ServerProxy", () => {
         token: "test",
         user: "user",
       });
-
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
 
       postMessageToClient.mockClear();
 
@@ -526,14 +559,16 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("buffers 10 rows, server sends partial buffer set, enough to fulfill client request, followed by rest", () => {
+    it("buffers 10 rows, server sends partial buffer set, enough to fulfill client request, followed by rest", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
           bufferSize: 10,
         }
       );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -577,14 +612,16 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
     });
 
-    it("buffers 10 rows, server sends partial buffer set, not enough to fulfill client request, followed by rest", () => {
+    it("buffers 10 rows, server sends partial buffer set, not enough to fulfill client request, followed by rest", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
           bufferSize: 10,
         }
       );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -636,7 +673,7 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      // This will be a buffer top-up only, so no callback
+      // This will be a buffer top-up only, so no postMessageToClient
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -650,19 +687,23 @@ describe("ServerProxy", () => {
   });
 
   describe("scrolling, with buffer", () => {
-    it("scroll to end", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        to: 20,
-        bufferSize: 100,
-      });
+    it("scroll to end", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 100,
+          connection,
+          to: 20,
+        }
+      );
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -675,8 +716,8 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
       TEST_setRequestId(1);
 
       serverProxy.handleMessageFromClient({
@@ -685,9 +726,9 @@ describe("ServerProxy", () => {
         range: { from: 4975, to: 5000 },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
@@ -712,7 +753,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -722,10 +763,10 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -759,17 +800,22 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("returns client range requests from buffer, if available. Calls server when end of buffer is approached", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 10,
-      });
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+    it("returns client range requests from buffer, if available. Calls server when end of buffer is approached", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -779,8 +825,8 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -788,11 +834,11 @@ describe("ServerProxy", () => {
         range: { from: 2, to: 12 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -802,8 +848,8 @@ describe("ServerProxy", () => {
         ],
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -811,11 +857,11 @@ describe("ServerProxy", () => {
         range: { from: 5, to: 15 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -826,8 +872,8 @@ describe("ServerProxy", () => {
         ],
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
       TEST_setRequestId(1);
 
       serverProxy.handleMessageFromClient({
@@ -836,11 +882,11 @@ describe("ServerProxy", () => {
         range: { from: 8, to: 18 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -851,7 +897,7 @@ describe("ServerProxy", () => {
         ],
       });
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
           viewPortId: "server-vp-1",
@@ -866,18 +912,17 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("records sent to client when enough data available, client scrolls before initial rows rendered", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 10,
-      });
+    it("records sent to client when enough data available, client scrolls before initial rows rendered", async () => {
+      const postMessageToClient = vi.fn();
 
-      // 1) subscribe for rows [0,10]
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+        }
+      );
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // 2) server with responds with just rows [0 ... 4]
       serverProxy.handleMessageFromServer({
@@ -889,15 +934,15 @@ describe("ServerProxy", () => {
       });
 
       // 3) Do not have entire set requested by user, so only size is initially returned
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 100,
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // 4) now client scrolls, before initial data sent
       serverProxy.handleMessageFromClient({
@@ -906,7 +951,7 @@ describe("ServerProxy", () => {
         range: { from: 2, to: 12 },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -916,9 +961,9 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -928,10 +973,10 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -950,19 +995,17 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("data sequence is correct when scrolling backward, data arrives from server in multiple batches", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 10,
-      });
-      // Client requests rows 0..10 with viewport buffersize of 10
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
+    it("data sequence is correct when scrolling backward, data arrives from server in multiple batches", async () => {
+      const postMessageToClient = vi.fn();
 
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+        }
+      );
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      postMessageToClient.mockClear();
 
       // This translates into server call for rows 0..20 these are all stored in Viewport cache
       // and rows 0..10 returned to client
@@ -974,7 +1017,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // Client now requests 20..30, with the buffer this translates to 15..35.
       // We have 0..20 in Viewport cache, so 0..15 will be discarded and 20..30
@@ -1003,9 +1046,9 @@ describe("ServerProxy", () => {
           rows: [...createTableRows("server-vp-1", 20, 35, 100, 2)],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // Client now requests 12..22 (scrolled backwards) which expands to 7..27 Viewport cache
       // contains 15..35 so we discard 27..35 and keep 15..27. We can expect 7..15 from server.
@@ -1018,7 +1061,7 @@ describe("ServerProxy", () => {
         type: "setViewRange",
         range: { from: 12, to: 22 },
       });
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1041,9 +1084,9 @@ describe("ServerProxy", () => {
           rows: [...createTableRows("server-vp-1", 13, 15, 100, 3)],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // We get the remaining rows we requested. Viewport cache now contains full 7..27
       // and we have all the rows from the client range, so we can take this together with
@@ -1055,10 +1098,10 @@ describe("ServerProxy", () => {
           rows: [...createTableRows("server-vp-1", 7, 13, 100, 4)],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1077,15 +1120,22 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("Scrolling with large buffer. Keys are recomputed on each scroll. Calls server when end of buffer is approached", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        bufferSize: 100,
-      });
+    it("Scrolling with large buffer. Keys are recomputed on each scroll. Calls server when end of buffer is approached", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 100,
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1110,8 +1160,8 @@ describe("ServerProxy", () => {
         to: 10,
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1119,11 +1169,11 @@ describe("ServerProxy", () => {
         range: { from: 12, to: 23 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1142,8 +1192,8 @@ describe("ServerProxy", () => {
         ],
       });
 
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1151,11 +1201,11 @@ describe("ServerProxy", () => {
         range: { from: 30, to: 40 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1176,13 +1226,17 @@ describe("ServerProxy", () => {
   });
 
   describe("synchronising with server", () => {
-    it("does not spam server when buffer limit reached and server request already in-flight", () => {
-      TEST_setRequestId(1);
+    it("does not spam server when buffer limit reached and server request already in-flight", async () => {
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
       const postMessageToClient = vi.fn();
       // prettier-ignore
-      const serverProxy = createServerProxyAndSubscribeToViewport( 
+      const serverProxy = await createServerProxyAndSubscribeToViewport( 
         postMessageToClient,
-        { bufferSize: 20, connection: mockConnection }
+        { bufferSize: 20, connection }
       );
 
       TEST_setRequestId(1);
@@ -1197,7 +1251,7 @@ describe("ServerProxy", () => {
       });
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // 2) Client requests rows 16..26 . although non-contiguous with previous request, we already have
       // full client range in viewport buffer. We need to read ahead from server, because we're close to
@@ -1208,11 +1262,11 @@ describe("ServerProxy", () => {
         range: { from: 16, to: 26 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // TODO test for the call to get nmetadata as well
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
           viewPortId: "server-vp-1",
@@ -1227,7 +1281,7 @@ describe("ServerProxy", () => {
       });
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // Client requests 17..27 before we have received response to previous request. The
       // request in-flight already covers this range. We have the data in cache to satisfy
@@ -1238,11 +1292,11 @@ describe("ServerProxy", () => {
         range: { from: 17, to: 27 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // client requests 18..28 same deal as above
       serverProxy.handleMessageFromClient({
@@ -1251,18 +1305,21 @@ describe("ServerProxy", () => {
         range: { from: 18, to: 28 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
     });
 
-    it("re-requests data from server even before receiving results", () => {
-      TEST_setRequestId(1);
+    it("re-requests data from server even before receiving results", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
           bufferSize: 20,
-          connection: mockConnection,
+          connection,
         }
       );
 
@@ -1276,7 +1333,7 @@ describe("ServerProxy", () => {
       });
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       TEST_setRequestId(1);
 
@@ -1288,11 +1345,11 @@ describe("ServerProxy", () => {
         range: { from: 16, to: 26 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // buffer size is 20 so we will have requested +/- 10 around the client range
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
           viewPortId: "server-vp-1",
@@ -1319,7 +1376,7 @@ describe("ServerProxy", () => {
       });
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // 4) client scrolls forward again, before we have received previously requested rows. We already have
       // a request in flight, so we don't send another. We have all rows client needs.
@@ -1329,11 +1386,11 @@ describe("ServerProxy", () => {
         range: { from: 17, to: 27 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       TEST_setRequestId(1);
 
@@ -1345,10 +1402,10 @@ describe("ServerProxy", () => {
         range: { from: 24, to: 34 },
       });
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         user: "user",
         body: {
           viewPortId: "server-vp-1",
@@ -1365,15 +1422,16 @@ describe("ServerProxy", () => {
   });
 
   describe("growing and shrinking rowset (Orders)", () => {
-    it("initializes with rowset that does not fill client viewport", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        to: 20,
-        bufferSize: 100,
-      });
+    it("initializes with rowset that does not fill client viewport", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 100,
+          to: 20,
+        }
+      );
 
       postMessageToClient.mockClear();
 
@@ -1410,15 +1468,17 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("gradually reduces, then grows viewport", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        to: 20,
-        bufferSize: 100,
-      });
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+    it("gradually reduces, then grows viewport", async () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 100,
+          to: 20,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       const timeNow = Date.now();
       console.log(`time now ${timeNow}`);
@@ -1435,7 +1495,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1456,9 +1516,9 @@ describe("ServerProxy", () => {
         },
       });
 
-      // callbacks will be size only
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+      // postMessageToClients will be size only
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1467,7 +1527,7 @@ describe("ServerProxy", () => {
 
       vi.setSystemTime(timeNow + 10);
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1475,8 +1535,8 @@ describe("ServerProxy", () => {
           rows: [sizeRow("server-vp-1", 8)],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         type: "viewport-update",
         mode: "size-only",
         clientViewportId: "client-vp-1",
@@ -1485,7 +1545,7 @@ describe("ServerProxy", () => {
 
       vi.setSystemTime(timeNow + 20);
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1493,15 +1553,15 @@ describe("ServerProxy", () => {
           rows: [sizeRow("server-vp-1", 1)],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 1,
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1510,15 +1570,15 @@ describe("ServerProxy", () => {
         },
       });
       // fails intermittent;y with 0
-      expect(callback).toHaveBeenCalledTimes(1);
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         size: 0,
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1529,9 +1589,9 @@ describe("ServerProxy", () => {
           ],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1541,7 +1601,7 @@ describe("ServerProxy", () => {
         ],
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1552,9 +1612,9 @@ describe("ServerProxy", () => {
           ],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1564,7 +1624,7 @@ describe("ServerProxy", () => {
         ],
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         body: {
@@ -1575,9 +1635,9 @@ describe("ServerProxy", () => {
           ],
         },
       });
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update", // WRONG
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -1593,17 +1653,22 @@ describe("ServerProxy", () => {
   });
 
   describe("selection", () => {
-    it("single select", () => {
-      const [clientSubscription1, serverSubscriptionAck1] = createSubscription({
-        to: 20,
-      });
+    it("single select", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+          to: 20,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1618,7 +1683,7 @@ describe("ServerProxy", () => {
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // prettier-ignore
       serverProxy.handleMessageFromClient({
@@ -1629,8 +1694,8 @@ describe("ServerProxy", () => {
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           vpId: "server-vp-1",
           type: "SET_SELECTION",
@@ -1645,7 +1710,7 @@ describe("ServerProxy", () => {
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       // prettier-ignore
       serverProxy.handleMessageFromClient({
@@ -1655,9 +1720,9 @@ describe("ServerProxy", () => {
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(1);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           vpId: "server-vp-1",
           type: "SET_SELECTION",
@@ -1673,10 +1738,19 @@ describe("ServerProxy", () => {
   });
 
   describe("filtering", () => {
-    it("invokes filter on viewport, which stores current filter criteria", () => {
+    it("invokes filter on viewport, which stores current filter criteria", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1688,7 +1762,7 @@ describe("ServerProxy", () => {
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1715,10 +1789,19 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("sets batch mode when a filter has been applied", () => {
+    it("sets batch mode when a filter has been applied", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1730,7 +1813,7 @@ describe("ServerProxy", () => {
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1794,10 +1877,20 @@ describe("ServerProxy", () => {
             size: 43
           });
     });
-    it("handles TABLE_ROWS that preceed filter request together with filtered rows, in same batch", () => {
+
+    it("handles TABLE_ROWS that preceed filter request together with filtered rows, in same batch", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1809,7 +1902,7 @@ describe("ServerProxy", () => {
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1886,16 +1979,19 @@ describe("ServerProxy", () => {
   });
 
   describe("GroupBy", () => {
-    const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
+    it("sets viewport isTree when groupby in place", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-    it("sets viewport isTree when groupby in place", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        { connection }
+      );
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1906,8 +2002,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1915,10 +2011,10 @@ describe("ServerProxy", () => {
         groupBy: ["col-4"],
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           aggregations: [],
           viewPortId: "server-vp-1",
@@ -1952,14 +2048,21 @@ describe("ServerProxy", () => {
       expect(serverProxy["viewports"].get("server-vp-1")?.isTree).toBe(true);
     });
 
-    it("on changing group, sends grouped records as batch, with SIZE record", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+    it("on changing group, sends grouped records as batch, with SIZE record", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1970,8 +2073,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -1979,9 +2082,9 @@ describe("ServerProxy", () => {
         groupBy: ["col-4"],
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           aggregations: [],
           viewPortId: "server-vp-1",
@@ -2012,16 +2115,16 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer(createTableGroupRows());
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
         ]
       ).toHaveLength(4);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2035,14 +2138,21 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("on changing group, sends grouped records as batch, without SIZE record", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+    it("on changing group, sends grouped records as batch, without SIZE record", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2053,8 +2163,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -2062,9 +2172,9 @@ describe("ServerProxy", () => {
         groupBy: ["col-4"],
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           aggregations: [],
           viewPortId: "server-vp-1",
@@ -2095,16 +2205,16 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
       serverProxy.handleMessageFromServer(createTableGroupRows(false));
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
         ]
       ).toHaveLength(4);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2118,14 +2228,22 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("on changing group, it may receive group records in multiple batches", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+    it("on changing group, it may receive group records in multiple batches", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2136,8 +2254,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -2145,9 +2263,9 @@ describe("ServerProxy", () => {
         groupBy: ["col-4"],
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           aggregations: [],
           viewPortId: "server-vp-1",
@@ -2178,7 +2296,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       const groupRows = createTableGroupRows(false);
       const group1 = {
@@ -2207,7 +2325,7 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(group1);
       serverProxy.handleMessageFromServer(group2);
 
-      expect(callback).toHaveBeenCalledTimes(2);
+      expect(postMessageToClient).toHaveBeenCalledTimes(2);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
@@ -2215,7 +2333,7 @@ describe("ServerProxy", () => {
       ).toHaveLength(4);
       // prettier-ignore
 
-      expect(callback).toHaveBeenNthCalledWith(1, {
+      expect(postMessageToClient).toHaveBeenNthCalledWith(1, {
         mode: "size-only",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2223,7 +2341,7 @@ describe("ServerProxy", () => {
       })
 
       // prettier-ignore
-      expect(callback).toHaveBeenNthCalledWith(2, {
+      expect(postMessageToClient).toHaveBeenNthCalledWith(2, {
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2236,11 +2354,21 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("ignores regular row updates after grouping is in place", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+    it("ignores regular row updates after grouping is in place", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2251,8 +2379,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -2274,7 +2402,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2284,14 +2412,25 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
     });
 
-    it("processes group row updates", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+    it("processes group row updates", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          bufferSize: 10,
+          connection,
+        }
+      );
+
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2302,8 +2441,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -2325,18 +2464,18 @@ describe("ServerProxy", () => {
         },
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer(createTableGroupRows());
 
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
         ]
       ).toHaveLength(4);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2349,7 +2488,7 @@ describe("ServerProxy", () => {
         size: 4,
       });
 
-      callback.mockClear();
+      postMessageToClient.mockClear();
 
       // prettier-ignore
       serverProxy.handleMessageFromServer({
@@ -2370,14 +2509,14 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
         ]
       ).toHaveLength(4);
       // prettier-ignore
-      expect(callback).toHaveBeenCalledWith({
+      expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
         type: "viewport-update",
         clientViewportId: "client-vp-1",
@@ -2389,17 +2528,11 @@ describe("ServerProxy", () => {
   });
 
   describe("SIZE records", () => {
-    const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
-
-    it("subscribe whilst table is loading", () => {
+    it("subscribe whilst table is loading", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      //TODO we shouldn't be able to bypass checks like this
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
-
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       postMessageToClient.mockClear();
 
@@ -2520,25 +2653,16 @@ describe("ServerProxy", () => {
     });
   });
 
-  describe("on visual linking", () => {
-    it("returns link table rows", () => {
-      const [clientSubscription1, serverSubscriptionAck1] =
-        createSubscription();
-      const [clientSubscription2, serverSubscriptionAck2] = createSubscription({
-        key: "2",
-      });
-
+  describe("on visual linking", async () => {
+    it("returns link table rows", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      //TODO we shouldn't be able to bypass checks like this
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      await subscribe(serverProxy, { key: "2" });
 
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck2);
+      postMessageToClient.mockClear();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2618,10 +2742,11 @@ describe("ServerProxy", () => {
   });
 
   describe("debounce mode", () => {
-    it("clears pending range request when request is filled", () => {
+    it("clears pending range request when request is filled", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2665,10 +2790,11 @@ describe("ServerProxy", () => {
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
     });
 
-    it("clears pending range request when only partial set of rows received", () => {
+    it("clears pending range request when only partial set of rows received", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2708,10 +2834,11 @@ describe("ServerProxy", () => {
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
     });
 
-    it("queues pending range requests, until filled, no message to client until current client range filled", () => {
+    it("queues pending range requests, until filled, no message to client until current client range filled", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2792,10 +2919,11 @@ describe("ServerProxy", () => {
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
     });
 
-    it("sends debounce request to client when rows requested before previous request acked", () => {
+    it("sends debounce request to client when rows requested before previous request acked", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy =
-        createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
 
       // prettier-ignore
       serverProxy.handleMessageFromServer({
@@ -2836,16 +2964,19 @@ describe("ServerProxy", () => {
   });
 
   describe("config", () => {
-    const [clientSubscription1, serverSubscriptionAck1] = createSubscription();
+    it("sets viewport isTree when config includes groupby", async () => {
+      const postMessageToClient = vi.fn();
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
 
-    it("sets viewport isTree when config includes groupby", () => {
-      const callback = vi.fn();
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy["sessionId"] = "dsdsd";
-      serverProxy["authToken"] = "test";
-
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscriptionAck1);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient,
+        {
+          connection,
+        }
+      );
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -2856,8 +2987,8 @@ describe("ServerProxy", () => {
       });
 
       TEST_setRequestId(1);
-      callback.mockClear();
-      mockConnection.send.mockClear();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
@@ -2871,10 +3002,10 @@ describe("ServerProxy", () => {
         },
       });
 
-      expect(callback).toHaveBeenCalledTimes(0);
-      expect(mockConnection.send).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(connection.send).toHaveBeenCalledTimes(1);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           aggregations: [],
           viewPortId: "server-vp-1",
@@ -2910,75 +3041,57 @@ describe("ServerProxy", () => {
   });
 
   describe("multiple subscriptions", () => {
-    it("sends messages to correct clients once subscribed", () => {
-      const callback = vi.fn();
-      const [clientSubscription1, serverSubscription1] = createSubscription({
-        key: "1",
-      });
-      const [clientSubscription2, serverSubscription2] = createSubscription({
-        key: "2",
-      });
-      const serverProxy = new ServerProxy(mockConnection, callback);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscription2);
-      //TODO cover tableSchema in test
-      expect(callback).toHaveBeenCalledTimes(2);
-      expect(callback).toHaveBeenNthCalledWith<[DataSourceSubscribedMessage]>(
-        1,
-        {
-          aggregations: [],
-          clientViewportId: "client-vp-1",
-          columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
-          groupBy: [],
-          range: {
-            from: 0,
-            to: 10,
-          },
-          sort: {
-            sortDefs: [],
-          },
-          tableSchema: null,
-          type: "subscribed",
-        }
+    it("sends messages to correct clients once subscribed", async () => {
+      const postMessageToClient = vi.fn();
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
       );
-      expect(callback).toHaveBeenNthCalledWith<[DataSourceSubscribedMessage]>(
-        2,
-        {
-          aggregations: [],
-          clientViewportId: "client-vp-2",
-          columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
-          groupBy: [],
-          range: {
-            from: 0,
-            to: 10,
-          },
-          sort: {
-            sortDefs: [],
-          },
-          tableSchema: null,
-          type: "subscribed",
-        }
-      );
+
+      await subscribe(serverProxy, { key: "2" });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(2);
+      expect(postMessageToClient).toHaveBeenNthCalledWith(1, {
+        aggregations: [],
+        clientViewportId: "client-vp-1",
+        columns: ["col-1", "col-2", "col-3", "col-4"],
+        filter: { filter: "" },
+        groupBy: [],
+        range: {
+          from: 0,
+          to: 10,
+        },
+        sort: {
+          sortDefs: [],
+        },
+        tableSchema: testSchema,
+        type: "subscribed",
+      });
+      expect(postMessageToClient).toHaveBeenNthCalledWith(2, {
+        aggregations: [],
+        clientViewportId: "client-vp-2",
+        columns: ["col-1", "col-2", "col-3", "col-4"],
+        filter: { filter: "" },
+        groupBy: [],
+        range: {
+          from: 0,
+          to: 10,
+        },
+        sort: {
+          sortDefs: [],
+        },
+        tableSchema: testSchema,
+        type: "subscribed",
+      });
       expect(serverProxy["viewports"].size).toEqual(2);
     });
 
-    it("sends data to each client when initial full datasets are received as separate batches", () => {
+    it("sends data to each client when initial full datasets are received as separate batches", async () => {
       const postMessageToClient = vi.fn();
-      const [clientSubscription1, serverSubscription1] = createSubscription({
-        key: "1",
-      });
-      const [clientSubscription2, serverSubscription2] = createSubscription({
-        key: "2",
-      });
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscription2);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      await subscribe(serverProxy, { key: "2" });
 
       postMessageToClient.mockClear();
 
@@ -3050,19 +3163,13 @@ describe("ServerProxy", () => {
       );
     });
 
-    it("sends data to each client when initial full datasets are received interleaved", () => {
+    it("sends data to each client when initial full datasets are received interleaved", async () => {
       const postMessageToClient = vi.fn();
-      const [clientSubscription1, serverSubscription1] = createSubscription({
-        key: "1",
-      });
-      const [clientSubscription2, serverSubscription2] = createSubscription({
-        key: "2",
-      });
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscription2);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      await subscribe(serverProxy, { key: "2" });
 
       postMessageToClient.mockClear();
 
@@ -3127,19 +3234,13 @@ describe("ServerProxy", () => {
       );
     });
 
-    it("sends data to each client followed by mixed updates", () => {
+    it("sends data to each client followed by mixed updates", async () => {
       const postMessageToClient = vi.fn();
-      const [clientSubscription1, serverSubscription1] = createSubscription({
-        key: "1",
-      });
-      const [clientSubscription2, serverSubscription2] = createSubscription({
-        key: "2",
-      });
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscription2);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      await subscribe(serverProxy, { key: "2" });
 
       postMessageToClient.mockClear();
 
@@ -3205,19 +3306,13 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("sends mixed updates, including size change for one vp", () => {
+    it("sends mixed updates, including size change for one vp", async () => {
       const postMessageToClient = vi.fn();
-      const [clientSubscription1, serverSubscription1] = createSubscription({
-        key: "1",
-      });
-      const [clientSubscription2, serverSubscription2] = createSubscription({
-        key: "2",
-      });
-      const serverProxy = new ServerProxy(mockConnection, postMessageToClient);
-      serverProxy.subscribe(clientSubscription1);
-      serverProxy.subscribe(clientSubscription2);
-      serverProxy.handleMessageFromServer(serverSubscription1);
-      serverProxy.handleMessageFromServer(serverSubscription2);
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
+        postMessageToClient
+      );
+
+      await subscribe(serverProxy, { key: "2" });
 
       postMessageToClient.mockClear();
 
@@ -3330,12 +3425,17 @@ describe("ServerProxy", () => {
   });
 
   describe("disable and enable", () => {
-    it("sends a message to server when client calls disable", () => {
+    it("sends a message to server when client calls disable", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
-          connection: mockConnection,
+          connection,
         }
       );
       // prettier-ignore
@@ -3347,7 +3447,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
       postMessageToClient.mockClear();
 
       expect(serverProxy["viewports"].get("server-vp-1")?.disabled).toBe(false);
@@ -3358,10 +3458,10 @@ describe("ServerProxy", () => {
         type: "disable",
         viewport: "client-vp-1",
       });
-      expect(mockConnection.send).toBeCalledTimes(1);
+      expect(connection.send).toBeCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           type: "DISABLE_VP",
           viewPortId: "server-vp-1",
@@ -3384,12 +3484,16 @@ describe("ServerProxy", () => {
       expect(serverProxy["viewports"].get("server-vp-1")?.disabled).toBe(true);
     });
 
-    it("sends a message to server when client calls enable, re-sends data from cache to client", () => {
+    it("sends a message to server when client calls enable, re-sends data from cache to client", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
-          connection: mockConnection,
+          connection,
         }
       );
       // prettier-ignore
@@ -3417,7 +3521,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
       postMessageToClient.mockClear();
 
       TEST_setRequestId(1);
@@ -3428,10 +3532,10 @@ describe("ServerProxy", () => {
         type: "enable",
         viewport: "client-vp-1",
       });
-      expect(mockConnection.send).toBeCalledTimes(1);
+      expect(connection.send).toBeCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(mockConnection.send).toHaveBeenCalledWith({
+      expect(connection.send).toHaveBeenCalledWith({
         body: {
           type: "ENABLE_VP",
           viewPortId: "server-vp-1",
@@ -3483,12 +3587,17 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("does nothing if client calls enable for a viewport which has not been disabled", () => {
+    it("does nothing if client calls enable for a viewport which has not been disabled", async () => {
       const postMessageToClient = vi.fn();
-      const serverProxy = createServerProxyAndSubscribeToViewport(
+      const connection = {
+        send: vi.fn(),
+        status: "ready" as const,
+      };
+
+      const serverProxy = await createServerProxyAndSubscribeToViewport(
         postMessageToClient,
         {
-          connection: mockConnection,
+          connection,
         }
       );
       // prettier-ignore
@@ -3500,7 +3609,7 @@ describe("ServerProxy", () => {
         },
       });
 
-      mockConnection.send.mockClear();
+      connection.send.mockClear();
       postMessageToClient.mockClear();
 
       TEST_setRequestId(1);
@@ -3509,7 +3618,7 @@ describe("ServerProxy", () => {
         type: "enable",
         viewport: "client-vp-1",
       });
-      expect(mockConnection.send).toBeCalledTimes(0);
+      expect(connection.send).toBeCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
     });
   });

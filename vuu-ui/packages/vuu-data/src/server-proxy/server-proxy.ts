@@ -213,6 +213,7 @@ export class ServerProxy {
       awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
         const { viewPortId: serverViewportId } = subscribeResponse;
         const { status: viewportStatus } = viewport;
+
         // switch storage key from client viewportId to server viewportId
         if (message.viewport !== serverViewportId) {
           this.viewports.delete(message.viewport);
