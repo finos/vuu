@@ -14,8 +14,6 @@ import org.finos.vuu.viewport.{GroupBy, RowSource, ViewPort, ViewPortColumns, Vi
 import java.util.concurrent.ConcurrentHashMap
 
 class TestViewPort(val viewPort: ViewPort) extends ViewPort{
-  def getRpcService[TYPE]: TYPE = ???
-  def getRpcProxyService[TYPE]: TYPE = ???
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = viewPort.updateSpecificKeys(keys)
   override def setRequestId(request: String): Unit = viewPort.setRequestId(request)
   override def getRequestId: String = viewPort.getRequestId

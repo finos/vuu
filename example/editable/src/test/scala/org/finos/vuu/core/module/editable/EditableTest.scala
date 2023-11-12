@@ -33,7 +33,7 @@ class EditableTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewport)) {
+          assertVpEq(combineQsForVp(viewport)) {
             Table(
               ("rowId", "A", "B", "C", "D"),
               ("key1", "TEST", 1001.0, 500, true)
@@ -44,7 +44,7 @@ class EditableTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewport)) {
+          assertVpEq(combineQsForVp(viewport)) {
             Table(
               ("rowId", "A", "B", "C", "D"),
               ("key1", "TEST", 200.0, 500, true)
@@ -55,7 +55,7 @@ class EditableTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewport)) {
+          assertVpEq(combineQsForVp(viewport)) {
             Table(
               ("rowId", "A", "B", "C", "D"),
               ("key2", "TEST2", 1001.0, 500, true)
@@ -66,7 +66,7 @@ class EditableTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewport)) {
+          assertVpEq(combineQsForVp(viewport)) {
             Table(
               ("rowId", "A", "B", "C", "D")
             )

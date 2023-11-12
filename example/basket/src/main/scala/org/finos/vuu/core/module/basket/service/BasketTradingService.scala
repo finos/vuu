@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituent
+import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable, Sides}
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
@@ -22,7 +22,7 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
 
     columnName match {
       case BT.Units =>
-        val constituentTable = tableContainer.getTable(BasketTradingConstituent)
+        val constituentTable = tableContainer.getTable(BasketTradingConstituentTable)
         val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
         constituents.foreach( row => {
             val unitsAsInt = data.asInstanceOf[Int]
@@ -31,11 +31,15 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
             constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)), clock.now())
         })
       case BT.Side =>
-        val constituentTable = tableContainer.getTable(BasketTradingConstituent)
+        val constituentTable = tableContainer.getTable(BasketTradingConstituentTable)
         val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
         val side = data.asInstanceOf[String]
         constituents.foreach(row => {
-          constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> side)), clock.now())
+          val newSide = row.get(BTC.Side) match {
+            case Sides.Buy => Sides.Sell
+            case _ => Sides.Buy
+          }
+          constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> newSide)), clock.now())
         })
 
       case _ =>

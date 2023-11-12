@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.basket.service
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
+import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable, PriceStrategy, Sides}
 import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
@@ -46,12 +46,14 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
       BTC.InstanceIdRic -> constituentKey,
       BTC.Description -> basketConsRow.get(BC.Description),
       BTC.Side -> side,
-      BTC.Weighting -> weighting
+      BTC.Weighting -> weighting,
+      BTC.PriceStrategyId -> 2,
+      BTC.Algo -> -1,
     ))
   }
 
   private def mkTradingBasketRow(instanceKey: String, basketKey: String): RowWithData = {
-    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey, BT.BasketName -> instanceKey))
+    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey, BT.BasketName -> instanceKey, BT.Side -> Sides.Buy, BT.Units -> 1))
   }
 
   def createBasketFromRpc(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
@@ -82,7 +84,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
         logger.error("Cannot find the Basket Trading table.")
     }
 
-    tableContainer.getTable(BasketModule.BasketTradingConstituent) match {
+    tableContainer.getTable(BasketModule.BasketTradingConstituentTable) match {
       case table: DataTable =>
         constituents.foreach( rowData => {
           val constituentKey = name + "." + rowData.get(BTC.Ric)

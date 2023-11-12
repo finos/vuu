@@ -12,7 +12,7 @@ import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
 
-class BasketTest extends VuuServerTestCase {
+class BasketCreateTest extends VuuServerTestCase {
 
   Feature("Basket Service Test Case") {
 
@@ -40,7 +40,7 @@ class BasketTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewport)) {
+          assertVpEq(combineQsForVp(viewport)) {
             Table(
               ("ric", "bid", "ask", "bidSize", "askSize", "last", "open", "close", "phase", "scenario"),
               ("VOD.L", null, null, null, null, null, null, null, "C", null)
@@ -62,10 +62,10 @@ class BasketTest extends VuuServerTestCase {
 
           vuuServer.runOnce()
 
-          assertVpEq(combineQs(viewportBasketTrading)) {
+          assertVpEq(combineQsForVp(viewportBasketTrading)) {
             Table(
-              ("basketId", "instanceId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd"),
-              (".FTSE", "chris-001", null, 100, "OFF-MARKET", null, null, null, null)
+              ("basketId", "instanceId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side"),
+              (".FTSE", "chris-001", "chris-001", 100, "OFF-MARKET", null, null, null, null, null)
             )
           }
       }

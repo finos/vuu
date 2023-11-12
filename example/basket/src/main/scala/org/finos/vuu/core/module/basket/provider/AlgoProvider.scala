@@ -10,11 +10,12 @@ class AlgoProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer,
   lifecycle(this)
 
   private final val Algos = List(
-    (0, "Sniper"),
-    (1, "Dark Liquidity"),
-    (2, "VWAP"),
-    (3, "POV"),
-    (4, "Dynamic CLose"),
+    (-1, "None"),
+    (1, "Sniper"),
+    (2, "Dark Liquidity"),
+    (3, "VWAP"),
+    (4, "POV"),
+    (5, "Dynamic CLose"),
   )
 
   override def doStart(): Unit = {

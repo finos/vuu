@@ -9,7 +9,7 @@ class PriceStrategyProvider(val table: DataTable)(implicit lifecycle: LifecycleC
 
   lifecycle(this)
 
-  private final val Strategies = List(
+  final val Strategies = List(
     (0, "Peg To Near Touch"),
     (1, "Far Touch"),
     (2, "Limit"),

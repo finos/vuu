@@ -16,7 +16,7 @@ object BasketModule extends DefaultModule {
   final val BasketTable = "basket"
   final val BasketTradingTable = "basketTrading"
   final val BasketConstituentTable = "basketConstituent"
-  final val BasketTradingConstituent = "basketTradingConstituent"
+  final val BasketTradingConstituentTable = "basketTradingConstituent"
   final val BasketTradingConstituentJoin = "basketTradingConstituentJoin"
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
@@ -44,7 +44,7 @@ object BasketModule extends DefaultModule {
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
           columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
-            BC.Volume.string(), BC.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
+            BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BC.RicBasketId, BC.Ric
         ),
@@ -66,7 +66,7 @@ object BasketModule extends DefaultModule {
       )
       .addTable(
         TableDef(
-          name = BasketTradingConstituent,
+          name = BasketTradingConstituentTable,
           keyField = BTC.InstanceIdRic,
           columns = Columns.fromNames(BTC.Quantity.long(), BTC.Side.string(),
                                       BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
@@ -115,8 +115,8 @@ object BasketModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = BasketTradingConstituentJoin,
-          baseTable = tableDefs.get(NAME, BasketTradingConstituent),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituent)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          baseTable = tableDefs.get(NAME, BasketTradingConstituentTable),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
@@ -169,7 +169,6 @@ object BasketModule extends DefaultModule {
     final val Units = "units"
     final val TotalNotionalUsd = "totalNotionalUsd"
     final val TotalNotional = "totalNotional"
-    //BasketTrading Screen
     final val Status = "status"
     final val FilledPct = "filledPct"
     final val Side = "side"
@@ -183,9 +182,6 @@ object BasketModule extends DefaultModule {
     final val Ric = "ric"
     final val Description = "description"
     final val Quantity = "quantity"
-    final val Last = "last"
-    final val Bid = "bid"
-    final val Offer = "offer"
     final val LimitPrice = "limitPrice"
     final val PriceStrategyId = "priceStrategyId"
     final val NotionalUsd = "notionalUsd"
@@ -196,5 +192,10 @@ object BasketModule extends DefaultModule {
     final val PctFilled = "pctFilled"
     final val Weighting = "weighting"
     final val PriceSpread = "priceSpread"
+  }
+
+  object Sides{
+    final val Buy = "Buy"
+    final val Sell = "Sell"
   }
 }
