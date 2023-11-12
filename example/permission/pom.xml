@@ -24,8 +24,9 @@
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
             <version>0.5.09-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
             <scope>test</scope>
-            <classifier>test-jar</classifier>
         </dependency>
 
         <dependency>
