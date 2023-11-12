@@ -65,7 +65,7 @@ class BasketCreateTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(viewportBasketTrading)) {
             Table(
               ("basketId", "instanceId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side"),
-              (".FTSE", "chris-001", "chris-001", 100, "OFF-MARKET", null, null, null, null, null)
+              (".FTSE", "chris-001", "chris-001", 100, "OFF-MARKET", null, null, null, null, "Buy")
             )
           }
       }
