@@ -19,7 +19,7 @@ object TableTestHelper {
   }
 
   def combineQs(viewPort: ViewPort): Seq[ViewPortUpdate] = {
-    viewPort.outboundQ.popUpTo(100).filter(_.vp.id == viewPort.id)
+    viewPort.outboundQ.popUpTo(100)
   }
 
   def getQueues: OutboundRowPublishQueue = {
