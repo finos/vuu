@@ -7,7 +7,6 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
