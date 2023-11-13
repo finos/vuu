@@ -25,7 +25,13 @@ const getNextValue = (value: string, valueList: string[]) => {
 };
 
 export const CycleStateButton = forwardRef(function CycleStateButton(
-  { className, onCommit, value, values, ...buttonProps }: CycleStateButtonProps,
+  {
+    className,
+    onCommit,
+    value = "",
+    values,
+    ...buttonProps
+  }: CycleStateButtonProps,
   forwardedRef: ForwardedRef<HTMLButtonElement>
 ) {
   const handleClick = useCallback(

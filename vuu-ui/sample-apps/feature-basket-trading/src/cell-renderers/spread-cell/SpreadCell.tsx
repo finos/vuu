@@ -1,13 +1,12 @@
 import { TableCellProps } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-utils";
-import cx from "classnames";
 import { CSSProperties } from "react";
 
 import "./SpreadCell.css";
 
 const classBase = "vuuBasketSpreadCell";
 
-const SpreadCell = ({ column, columnMap, row }: TableCellProps) => {
+const SpreadCell = ({ columnMap, row }: TableCellProps) => {
   //TODO what about click handling
 
   const {
@@ -16,7 +15,6 @@ const SpreadCell = ({ column, columnMap, row }: TableCellProps) => {
     [columnMap.limitPrice]: limitPriceValue,
   } = row;
 
-  const width = 32;
   const calculateSpreadOffset = () => {
     const spread = askValue - bidValue;
     const mid = bidValue + spread / 2;
@@ -40,7 +38,6 @@ const SpreadCell = ({ column, columnMap, row }: TableCellProps) => {
   };
 
   const offset = getSpreadOffset();
-  console.log({ offset });
 
   return (
     <div className={classBase} tabIndex={-1}>

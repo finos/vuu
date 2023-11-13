@@ -124,7 +124,7 @@ function createTradingBasket(basketId: string, basketName: string) {
     const pctFilled = 0;
     const priceSpread = 0;
     const priceStrategyId = undefined;
-    const side = "buy";
+    const side = "BUY";
     const venue = "venue";
 
     const basketTradingConstituentRow = [
@@ -157,6 +157,7 @@ function createTradingBasket(basketId: string, basketName: string) {
     const open = 0;
     const phase = "market";
     const scenario = "scenario";
+    const status = "on market";
 
     const basketTradingConstituentJoinRow = [
       algo,
@@ -183,6 +184,7 @@ function createTradingBasket(basketId: string, basketName: string) {
       ric,
       scenario,
       side,
+      status,
       venue,
       weighting,
     ];
@@ -201,7 +203,19 @@ async function createNewBasket(rpcRequest: any) {
 
 //-------------------
 
-const tables: Record<BasketsTableName, Table> = {
+const tableMaps: Record<BasketsTableName, ColumnMap> = {
+  algoType: buildDataColumnMap("algoType"),
+  basket: buildDataColumnMap("basket"),
+  basketTrading: buildDataColumnMap("basketTrading"),
+  basketTradingConstituent: buildDataColumnMap("basketTradingConstituent"),
+  basketConstituent: buildDataColumnMap("basketConstituent"),
+  basketTradingConstituentJoin: buildDataColumnMap(
+    "basketTradingConstituentJoin"
+  ),
+  priceStrategyType: buildDataColumnMap("priceStrategyType"),
+};
+
+export const tables: Record<BasketsTableName, Table> = {
   algoType: new Table(schemas.algoType, [
     ["Sniper", 0],
     ["Dark Liquidity", 1],
@@ -277,10 +291,11 @@ const createDataSource = (tableName: BasketsTableName) => {
   const { key } = schemas[tableName];
   return new TickingArrayDataSource({
     columnDescriptors,
+    dataMap: tableMaps[tableName],
     keyColumn: key,
-    table: tables[tableName],
     menu: menus[tableName],
     rpcServices: services[tableName],
+    table: tables[tableName],
     // updateGenerator: createUpdateGenerator?.(),
   });
 };

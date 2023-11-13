@@ -7,10 +7,6 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
-import {
-  UpdateGenerator,
-  UpdateHandler,
-} from "@finos/vuu-data-test/src/rowUpdates";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ClientToServerEditRpc,
@@ -19,6 +15,7 @@ import {
   VuuRange,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { UpdateGenerator, UpdateHandler } from "./rowUpdates";
 import { Table } from "./Table";
 
 export type RpcService = {
@@ -38,6 +35,7 @@ export interface TickingArrayDataSourceConstructorProps
 export class TickingArrayDataSource extends ArrayDataSource {
   #rpcServices: RpcService[] | undefined;
   #updateGenerator: UpdateGenerator | undefined;
+
   constructor({
     data,
     rpcServices,
