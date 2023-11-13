@@ -1,7 +1,7 @@
 package org.finos.vuu.core.module
 
 import org.finos.vuu.api.{TableDef, ViewPortDef}
-import org.finos.vuu.core.VuuServer
+import org.finos.vuu.core.{IVuuServer, VuuServer}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
@@ -24,7 +24,7 @@ trait RealizedViewServerModule extends ViewServerModule {
 
 case class StaticServedResource(url: String, directory: Path, canBrowse: Boolean)
 
-trait ViewServerModule {
+trait  ViewServerModule {
   def name: String
 
   def tableDefs: List[TableDef]
@@ -33,13 +33,13 @@ trait ViewServerModule {
 
   def serializationMixin: Object
 
-  def rpcHandlersUnrealized: List[VuuServer => RpcHandler]
+  def rpcHandlersUnrealized: List[IVuuServer => RpcHandler]
 
-  def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
+  def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
 
   def staticFileResources(): List[StaticServedResource]
 
-  def restServicesUnrealized: List[VuuServer => RestService]
+  def restServicesUnrealized: List[IVuuServer => RestService]
 
   def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]
 }

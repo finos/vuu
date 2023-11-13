@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
-import org.finos.vuu.core.VuuServer
+import org.finos.vuu.core.{IVuuServer, VuuServer}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table._
@@ -29,10 +29,10 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       override def tableDefContainer: TableDefContainer = ???
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
-      override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = ???
-      override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
+      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = ???
+      override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???
-      override def restServicesUnrealized: List[VuuServer => RestService] = ???
+      override def restServicesUnrealized: List[IVuuServer => RestService] = ???
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = ???
     }
   }

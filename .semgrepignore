@@ -1,6 +1,9 @@
 .github/workflows/release-mvn-central.yml
 vuu/src/main/resources/certs/key.pem
+example/main/src/main/resources/certs/key.pem
+example/main/src/main/resources/certs/cert.pem
 vuu/src/main/resources/www/ws-example.html
+example/order/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
 vuu/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
 vuu-ui/packages/vuu-data/src/array-data-source/group-utils.ts
 vuu-ui/packages/vuu-datagrid-extras/src/column-expression-input/column-language-parser/walkExpressionTree.ts

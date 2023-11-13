@@ -1,0 +1,35 @@
+column > {value}
+column < {value}
+column == {value}
+column != {value}
+column in [{value},{value2},{value}]
+column nin [{value},{value2},{value}]
+
+
+compound clause:
+columnA gt {value} && columnB lt {value} && columnC in [{value},{value2},{value}]
+columnA gt {value} || columnB lt {value}
+
+
+tradeTime > '2015-09-12 23:59'
+quantity > 700
+
+
+FilterSpec(s: String)
+SortSpec(s:String)
+
+
+val pipeline = Pipeline.start(condition)
+
+Condition.evaluate(row)
+
+AndCondition()
+
+OrCondition(AndCondition, AndCondition)
+
+
+
+
+
+
+

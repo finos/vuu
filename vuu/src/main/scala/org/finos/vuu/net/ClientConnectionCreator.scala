@@ -62,8 +62,6 @@ class DefaultMessageHandler(val channel: Channel,
 
   override def sendUpdates(): Unit = {
 
-    //TODO implement flow controller
-
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
         logger.debug("Sending heartbeat")
@@ -155,7 +153,11 @@ class DefaultMessageHandler(val channel: Channel,
       case req: RemoveVisualLinkRequest => serverApi.process(req)(ctx)
       case req: ViewPortEditCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortAddRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortDeleteRowRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortDeleteCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditSubmitFormRpcCall => serverApi.process(req)(ctx)
+      case req: ViewPortRpcCall => serverApi.process(req)(ctx)
     }
   }
 

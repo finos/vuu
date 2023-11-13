@@ -22,7 +22,7 @@ import java.util.concurrent.{Callable, FutureTask}
 /**
  * Vuu Server
  */
-class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging {
+class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
 
   val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
@@ -106,6 +106,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     tableContainer.createAutoSubscribeTable(tableDef)
   }
 
+
   def registerProvider(table: DataTable, provider: Provider): Unit = {
     providerContainer.add(table, provider)
     table.setProvider(provider)
@@ -122,9 +123,9 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def rpcHandlersUnrealized: List[VuuServer => RpcHandler] = module.rpcHandlersUnrealized
-      override def restServicesUnrealized: List[VuuServer => RestService] = module.restServicesUnrealized
-      override def getProviderForTable(table: DataTable, viewserver: VuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
+      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = module.rpcHandlersUnrealized
+      override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
+      override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()

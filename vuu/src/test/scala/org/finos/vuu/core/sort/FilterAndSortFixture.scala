@@ -6,7 +6,7 @@ import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, ViewPortColumnCreator}
-import org.finos.vuu.provider.TestFriendlyJoinTableProvider
+import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
 object FilterAndSortFixture {
 
