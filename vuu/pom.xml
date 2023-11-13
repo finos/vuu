@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.34-SNAPSHOT</version>
+        <version>0.9.35-beta</version>
     </parent>
 
     <properties>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.9.34-SNAPSHOT</version>
+            <version>0.9.35-beta</version>
         </dependency>
 
         <dependency>
