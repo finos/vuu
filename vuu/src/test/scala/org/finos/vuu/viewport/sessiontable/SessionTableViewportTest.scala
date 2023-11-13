@@ -1,5 +1,6 @@
 package org.finos.vuu.viewport.sessiontable
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api._
@@ -24,7 +25,6 @@ import org.scalatest.prop.Tables.Table
 class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
 
   final val TEST_TIME = 1450770869442L
-  final val clock: Clock = new TestFriendlyClock(TEST_TIME)
   var counter: Int = 0
 
   def createViewServerModule(theName: String): ViewServerModule = {
@@ -82,8 +82,8 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     }
   }
 
-  def createDefaultSessionTableInfra(): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
-    implicit val lifecycle = new LifecycleContainer
+  def createDefaultSessionTableInfra()(implicit clock: Clock, lifecycle:LifecycleContainer, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
+    //implicit val lifecycle = new LifecycleContainer
 
     val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
@@ -185,6 +185,10 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
     Scenario("Create a session table from an rpc call and edit it") {
 
+      implicit val clock: Clock = new TestFriendlyClock(1311544800)
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
       val (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, session, outQueue, basketOrders, tableContainer) = createDefaultSessionTableInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(instruments, instruments.getTableDef.columns.map(_.name).toList)
@@ -236,8 +240,8 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
           Then("verify the table is populated")
           assertVpEq(combinedUpdates2) {
             Table(
-              ("ric", "clientOrderId", "currency", "lastModifiedTime", "quantity", "price", "priceType", "exchange", "orderId", "effectivePrice"),
-              ("VOD.L", "clOrderId-1450770869442-1", "GBp", 1450770869442L, null, null, null, "XLON/SETS", null, null)
+              ("ric"     ,"clientOrderId","currency","lastModifiedTime","quantity","price"   ,"priceType","exchange","orderId" ,"effectivePrice"),
+              ("VOD.L"   ,"clOrderId-1311544800-1","GBp"     ,1311544800L,null      ,null      ,null      ,"XLON/SETS",null      ,null      )
             )
           }
       }

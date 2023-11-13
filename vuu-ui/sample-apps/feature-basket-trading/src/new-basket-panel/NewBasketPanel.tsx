@@ -11,7 +11,7 @@ import {
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { HTMLAttributes, useMemo } from "react";
 
 import "./NewBasketPanel.css";
@@ -42,7 +42,6 @@ export const NewBasketPanel = ({
     columnMap,
     onChangeBasketName,
     onOpenChangeInstrumentPicker,
-    onFeatureEnabled,
     onSave,
     onSelectBasket,
     saveButtonDisabled,
@@ -65,9 +64,8 @@ export const NewBasketPanel = ({
         rowSeparators: true,
       },
       dataSource: basketDataSource,
-      onFeatureEnabled,
     }),
-    [basketDataSource, onFeatureEnabled]
+    [basketDataSource]
   );
 
   const itemToString = displayName(columnMap.name);

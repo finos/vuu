@@ -1,0 +1,32 @@
+
+.vuuTableToggleCell {
+    --saltButton-borderRadius: 4px;
+    --saltButton-height: 16px;
+    font-weight: 500;
+    position: relative;
+    top: 1px;;
+}
+.vuuTableToggleCell-side {
+    --saltButton-minWidth: 40px;
+}
+.vuuTableToggleCell.vuuCycleStateButton-buy {
+    background-color: var(--vuu-color-green-50);
+}
+
+.vuuTableToggleCell.vuuCycleStateButton-sell {
+    background-color: var(--vuu-color-red-50);
+
+}
+
+.vuuTableNextCell .vuuTableToggleCell:focus {
+    /* TODO fix use of important */
+    border: solid 2px var(--vuu-color-purple-10) !important;
+    color: white !important;
+    height: 18px !important;
+    top: 0px !important;
+}
+
+
+
+
+

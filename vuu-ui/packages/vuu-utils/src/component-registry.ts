@@ -1,6 +1,8 @@
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
-  ColumnTypeRenderer,
+  ColumnDescriptor,
+  ColumnDescriptorCustomRenderer,
+  ColumnTypeRendering,
   EditValidationRule,
   MappedValueTypeRenderer,
   TableCellRendererProps,
@@ -9,13 +11,30 @@ import {
   VuuColumnDataType,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
 }
 
+export type PropertyChangeHandler = (
+  propertyName: string,
+  propertyValue: string | number | boolean
+) => void;
+
+export type ColumnRenderPropsChangeHandler = (
+  renderProps: ColumnTypeRendering
+) => void;
+export interface ConfigurationEditorProps {
+  column: ColumnDescriptorCustomRenderer;
+  onChangeRendering: ColumnRenderPropsChangeHandler;
+}
+
+export type ConfigEditorComponent = FC<CellConfigPanelProps>;
+
 const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
-const cellConfigPanelsMap = new Map<string, FC<CellConfigPanelProps>>();
+const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
+const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
 const optionsMap = new Map<string, CellRendererOptions>();
 
@@ -30,7 +49,8 @@ export type ComponentType =
   | "data-edit-validator";
 
 type CellRendererOptions = {
-  [key: string]: unknown;
+  // [key: string]: unknown;
+  configEditor?: string;
   description?: string;
   label?: string;
   serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "json" | "private";
@@ -96,6 +116,13 @@ export function registerComponent<
   }
 }
 
+export const registerConfigurationEditor = (
+  componentName: string,
+  configurationEditor: FC<ConfigurationEditorProps>
+) => {
+  configEditorsMap.set(componentName, configurationEditor);
+};
+
 export const getRegisteredCellRenderers = (
   serverDataType?: VuuColumnDataType | "json"
 ): CellRendererDescriptor[] => {
@@ -113,12 +140,26 @@ export const getRegisteredCellRenderers = (
   }
 };
 
-export function getCellRenderer(
-  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer
-) {
-  if (renderer && "name" in renderer) {
-    return cellRenderersMap.get(renderer.name);
+export const getCellRendererOptions = (renderName: string) =>
+  optionsMap.get(renderName);
+
+export function getCellRenderer(column: ColumnDescriptor) {
+  if (isTypeDescriptor(column.type)) {
+    const { renderer } = column.type;
+    if (isColumnTypeRenderer(renderer)) {
+      return cellRenderersMap.get(renderer.name);
+    }
   }
+  if (column.editable) {
+    // we can only offer a text input edit as a generic editor.
+    // If a more specialised editor is required, user must configure
+    // it in column config.
+    return cellRenderersMap.get("input-cell");
+  }
+}
+
+export function getConfigurationEditor(configEditor = "") {
+  return configEditorsMap.get(configEditor);
 }
 
 export function getCellConfigPanelRenderer(name: string) {

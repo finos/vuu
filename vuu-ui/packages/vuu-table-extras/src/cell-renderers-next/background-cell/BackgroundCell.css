@@ -34,22 +34,30 @@
   padding-right: 8px;
 }
 
-.vuuBackgroundCell.up1 {
+.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-flasher {
+  background-color: transparent;
+}
+
+.vuuBackgroundCell-backgroundOnly.up1,
+.vuuBackgroundCell-backgroundArrow.up1 {
   animation-duration: 30s;
   animation-name: reactbgup1;
 }
 
-.vuuBackgroundCell.up2 {
+.vuuBackgroundCell-backgroundOnly.up2,
+.vuuBackgroundCell-backgroundArrow.up2 {
   animation-duration: 30s;
   animation-name: reactbgup2;
 }
 
-.vuuBackgroundCell.down1 {
+.vuuBackgroundCell-backgroundOnly.down1,
+.vuuBackgroundCell-backgroundArrow.down1 {
   animation-duration: 30s;
   animation-name: reactbgdown1;
 }
 
-.vuuBackgroundCell.down2 {
+.vuuBackgroundCell-backgroundOnly.down2,
+.vuuBackgroundCell-backgroundArrow.down2 {
   animation-duration: 30s;
   animation-name: reactbgdown2;
 }

@@ -1,0 +1,7 @@
+.vuuInput {
+    --vuu-icon-size: 16px;
+}
+
+.vuuInput-errorIcon:after {
+    cursor: pointer;
+}

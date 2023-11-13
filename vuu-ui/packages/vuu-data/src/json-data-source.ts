@@ -8,6 +8,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
   VuuColumnDataType,
+  VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -23,6 +24,7 @@ import type {
   DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,
+  DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
   WithFullConfig,
@@ -54,7 +56,6 @@ export class JsonDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
-  private status = "initialising";
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: SubscribeCallback | undefined;
   private expandedRows = new Set<string>();
@@ -69,6 +70,7 @@ export class JsonDataSource
   #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
+  #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
   public rowCount: number | undefined;
@@ -156,14 +158,14 @@ export class JsonDataSource
       this.#sort = sort;
     }
 
-    if (this.status !== "initialising") {
+    if (this.#status !== "initialising") {
       //TODO check if subscription details are still the same
       return;
     }
 
     this.viewport = viewport;
 
-    this.status = "subscribed";
+    this.#status = "subscribed";
 
     this.clientCallback?.({
       aggregations: this.#aggregations,
@@ -207,6 +209,19 @@ export class JsonDataSource
   enable() {
     console.log("noop");
     return this;
+  }
+  set data(data: JsonData) {
+    console.log(`set JsonDataSource data`);
+    [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+    this.visibleRows = this.#data
+      .filter((row) => row[DEPTH] === 0)
+      .map((row, index) =>
+        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+      ) as DataSourceRow[];
+
+    requestAnimationFrame(() => {
+      this.sendRowsToClient();
+    });
   }
 
   select(selected: Selection) {
@@ -260,6 +275,10 @@ export class JsonDataSource
     }
     this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
     this.sendRowsToClient();
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get config() {
@@ -386,9 +405,15 @@ export class JsonDataSource
     return undefined;
   }
 
-  applyEdit(rowIndex: number, columnName: string, value: VuuColumnDataType) {
-    console.log(`ArrayDataSource applyEdit ${rowIndex} ${columnName} ${value}`);
-    return true;
+  applyEdit(
+    row: DataSourceRow,
+    columnName: string,
+    value: VuuRowDataItemType
+  ): Promise<true> {
+    console.log(
+      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
+    );
+    return Promise.resolve(true);
   }
 
   getChildRows(rowKey: string) {

@@ -6,35 +6,40 @@ import VuuBasketTradingFeature, {
 import { useViewContext } from "@finos/vuu-layout";
 import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { createArrayDataSource } from "../examples/utils/createArrayDataSource";
+import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,
-  // basketDefinitionsSchema,
-  // basketDesignSchema,
-  // basketOrdersSchema,
+  basketTradingSchema,
+  basketTradingConstituentJoinSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
 
   useMemo(() => {
-    const dataSourceConfig: [basketDataSourceKey, TableSchema, number?][] = [
-      ["data-source-basket", basketSchema, 4],
-      // ["data-source-basket-definitions", basketDefinitionsSchema, 5],
-      // ["data-source-basket-definitions-search", basketDefinitionsSchema, 5],
-      // ["data-source-basket-design", basketDesignSchema],
-      // ["data-source-basket-orders", basketOrdersSchema],
-      ["data-source-instruments", instrumentsSchema],
+    const dataSourceConfig: [
+      basketDataSourceKey,
+      TableSchema,
+      VuuModuleName
+    ][] = [
+      ["data-source-basket", basketSchema, "BASKET"],
+      ["data-source-basket-trading-control", basketTradingSchema, "BASKET"],
+      ["data-source-basket-trading-search", basketTradingSchema, "BASKET"],
+      [
+        "data-source-basket-trading-constituent-join",
+        basketTradingConstituentJoinSchema,
+        "BASKET",
+      ],
+      ["data-source-instruments", instrumentsSchema, "SIMUL"],
     ];
-    for (const [key, schema, count] of dataSourceConfig) {
-      const dataSource = createArrayDataSource({ count, table: schema.table });
+    for (const [key, schema, module] of dataSourceConfig) {
+      const dataSource = vuuModule(module).createDataSource(schema.table.table);
       saveSession?.(dataSource, key);
     }
   }, [
     basketSchema,
-    // basketDefinitionsSchema,
-    // basketDesignSchema,
-    // basketOrdersSchema,
+    basketTradingConstituentJoinSchema,
+    basketTradingSchema,
     instrumentsSchema,
     saveSession,
   ]);
@@ -42,9 +47,8 @@ export const BasketTradingFeature = ({
   return (
     <VuuBasketTradingFeature
       basketSchema={basketSchema}
-      // basketDefinitionsSchema={basketDefinitionsSchema}
-      // basketDesignSchema={basketDesignSchema}
-      // basketOrdersSchema={basketOrdersSchema}
+      basketTradingSchema={basketTradingSchema}
+      basketTradingConstituentJoinSchema={basketTradingConstituentJoinSchema}
       instrumentsSchema={instrumentsSchema}
     />
   );

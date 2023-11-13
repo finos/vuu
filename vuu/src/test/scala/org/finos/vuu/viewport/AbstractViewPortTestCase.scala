@@ -16,21 +16,19 @@ object TestTimeStamp{
 
 class AbstractViewPortTestCase extends AnyFeatureSpec {
 
-  implicit val timeProvider: Clock = new TestFriendlyClock(1311544800)
-  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   def filterByVpId(vpUps: Seq[ViewPortUpdate], vp: ViewPort): Seq[ViewPortUpdate] = {
     vpUps.filter( vpu => vpu.vp.id == vp.id )
   }
 
-  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
+  def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer)(implicit clock: Clock, metrics: MetricsProvider): ViewPortContainer = {
 
     val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
     viewPortContainer
   }
 
-  def createDefaultViewPortInfra(): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createDefaultViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
@@ -83,7 +81,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
 
 
-  def createDefaultOrderPricesViewPortInfra(): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createDefaultOrderPricesViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle = new LifecycleContainer
 
     val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis

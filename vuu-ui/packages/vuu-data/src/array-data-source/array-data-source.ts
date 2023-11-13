@@ -8,6 +8,7 @@ import {
   VuuAggregation,
   VuuColumnDataType,
   VuuGroupBy,
+  VuuMenu,
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
@@ -33,6 +34,7 @@ import {
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
+  DataSourceStatus,
   groupByChanged,
   hasFilter,
   hasGroupBy,
@@ -57,35 +59,29 @@ export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
   data: Array<VuuRowDataItemType[]>;
+  keyColumn?: string;
   rangeChangeRowset?: "delta" | "full";
 }
 const { debug } = logger("ArrayDataSource");
 
 const { RENDER_IDX, SELECTED } = metadataKeys;
 
-const toDataSourceRow = (
-  data: VuuRowDataItemType[],
-  index: number
-): DataSourceRow => [
-  index,
-  index,
-  true,
-  false,
-  1,
-  0,
-  data[0].toString(),
-  0,
-  ...data,
-];
+const toDataSourceRow =
+  (key: number) =>
+  (data: VuuRowDataItemType[], index: number): DataSourceRow => {
+    return [index, index, true, false, 1, 0, data[key].toString(), 0, ...data];
+  };
 
-const buildTableSchema = (columns: ColumnDescriptor[]): TableSchema => {
+const buildTableSchema = (
+  columns: ColumnDescriptor[],
+  keyColumn?: string
+): TableSchema => {
   const schema: TableSchema = {
     columns: columns.map(({ name, serverDataType = "string" }) => ({
       name,
       serverDataType,
     })),
-    // how do we identify the key field ?
-    key: columns[0].name,
+    key: keyColumn ?? columns[0].name,
     table: { module: "", table: "Array" },
   };
 
@@ -110,25 +106,29 @@ export class ArrayDataSource
 {
   private clientCallback: SubscribeCallback | undefined;
   private columnDescriptors: ColumnDescriptor[];
-  private status = "initialising";
   private disabled = false;
   private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
-  private selectedRows: Selection = [];
+  /** the index of key field within raw data row */
+  private key: number;
   private suspended = false;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
   private openTreeNodes: string[] = [];
 
-  #columns: string[] = [];
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
   #data: readonly DataSourceRow[];
+  #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
   #size = 0;
+  #status: DataSourceStatus = "initialising";
   #title: string | undefined;
+
+  protected _menu: VuuMenu | undefined;
+  protected selectedRows: Selection = [];
 
   public viewport: string;
 
@@ -142,16 +142,13 @@ export class ArrayDataSource
     data,
     filter,
     groupBy,
+    keyColumn,
     rangeChangeRowset = "delta",
     sort,
     title,
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
-
-    console.log(`ArrayDataSource`, {
-      columnDescriptors,
-    });
 
     if (!data || !columnDescriptors) {
       throw Error(
@@ -160,22 +157,26 @@ export class ArrayDataSource
     }
 
     this.columnDescriptors = columnDescriptors;
-    this.#columns = columnDescriptors.map((column) => column.name);
-    this.#columnMap = buildColumnMap(this.#columns);
+    this.key = keyColumn
+      ? this.columnDescriptors.findIndex((col) => col.name === keyColumn)
+      : 0;
     this.rangeChangeRowset = rangeChangeRowset;
-    this.tableSchema = buildTableSchema(columnDescriptors);
-
-    this.#data = data.map<DataSourceRow>(toDataSourceRow);
+    this.tableSchema = buildTableSchema(columnDescriptors, keyColumn);
     this.viewport = viewport || uuid();
 
     this.#size = data.length;
 
     this.#title = title;
 
+    const columns = columnDescriptors.map((col) => col.name);
+
+    this.#columnMap = buildColumnMap(columns);
+    this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key));
+
     this.config = {
       ...this.#config,
       aggregations: aggregations || this.#config.aggregations,
-      columns: columnDescriptors.map((col) => col.name),
+      columns,
       filter: filter || this.#config.filter,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
@@ -198,7 +199,7 @@ export class ArrayDataSource
   ) {
     this.clientCallback = callback;
     this.viewport = viewport;
-    this.status = "subscribed";
+    this.#status = "subscribed";
     this.lastRangeServed = { from: 0, to: 0 };
 
     let config = this.#config;
@@ -270,6 +271,7 @@ export class ArrayDataSource
   }
 
   select(selected: Selection) {
+    this.#selectedRowsCount = selected.length;
     debug?.(`select ${JSON.stringify(selected)}`);
     this.selectedRows = selected;
     this.setRange(resetRange(this.#range), true);
@@ -294,6 +296,18 @@ export class ArrayDataSource
       this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
+  }
+
+  get links() {
+    return this.#links;
+  }
+
+  get menu() {
+    return this._menu;
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get data() {
@@ -405,7 +419,8 @@ export class ArrayDataSource
   }
 
   get size() {
-    return this.#size;
+    // return this.#size;
+    return this.processedData?.length ?? this.#data.length;
   }
 
   get range() {
@@ -417,6 +432,21 @@ export class ArrayDataSource
       this.setRange(range);
     }
   }
+
+  protected delete(row: VuuRowDataItemType[]) {
+    console.log(`delete row ${row.join(",")}`);
+  }
+
+  protected insert = (row: VuuRowDataItemType[]) => {
+    // TODO take sorting, filtering. grouping into account
+    const dataSourceRow = toDataSourceRow(this.key)(row, this.size);
+    (this.#data as DataSourceRow[]).push(dataSourceRow);
+    const { from, to } = this.#range;
+    const [rowIdx] = dataSourceRow;
+    if (rowIdx >= from && rowIdx < to) {
+      this.sendRowsToClient();
+    }
+  };
 
   private setRange(range: VuuRange, forceFullRefresh = false) {
     this.#range = range;
@@ -442,7 +472,13 @@ export class ArrayDataSource
       size: data.length,
       type: "viewport-update",
     });
-    this.lastRangeServed = this.#range;
+    this.lastRangeServed = {
+      from: this.#range.from,
+      to: Math.min(
+        this.#range.to,
+        this.#range.from + rowsWithinViewport.length
+      ),
+    };
   }
 
   get columns() {
@@ -461,6 +497,10 @@ export class ArrayDataSource
         columnsWithoutDescriptors,
       });
     }
+    this.#columnMap = buildColumnMap(columns);
+    console.log({
+      columnMap: this.#columnMap,
+    });
     this.config = {
       ...this.#config,
       columns,
@@ -498,9 +538,6 @@ export class ArrayDataSource
   }
 
   set sort(sort: VuuSort) {
-    console.log(`set sort`, {
-      sort,
-    });
     debug?.(`sort ${JSON.stringify(sort)}`);
     this.config = {
       ...this.#config,
@@ -577,9 +614,13 @@ export class ArrayDataSource
     console.log({ row, colName, value });
   }
 
-  applyEdit(row: DataSourceRow, columnName: string, value: VuuColumnDataType) {
+  applyEdit(
+    row: DataSourceRow,
+    columnName: string,
+    value: VuuRowDataItemType
+  ): Promise<true> {
     console.log(`ArrayDataSource applyEdit ${row[0]} ${columnName} ${value}`);
-    return true;
+    return Promise.resolve(true);
   }
 
   async menuRpcCall(

@@ -1,52 +1,60 @@
+import { useLookupValues } from "@finos/vuu-data-react";
+import { ListOption, TableCellRendererProps } from "@finos/vuu-datagrid-types";
 import {
+  dispatchCommitEvent,
   Dropdown,
   DropdownOpenKey,
   SingleSelectionHandler,
+  WarnCommit,
 } from "@finos/vuu-ui-controls";
-import {
-  isColumnTypeRenderer,
-  isTypeDescriptor,
-  registerComponent,
-} from "@finos/vuu-utils";
-import { TableCellProps } from "@finos/vuu-datagrid-types";
-// import { dispatchCommitEvent } from "@finos/vuu-ui-controls";
+import { registerComponent } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { memo, useCallback, useState } from "react";
+import { dataAndColumnUnchanged } from "../cell-utils";
 
 import "./DropdownCell.css";
-import { useCallback, useState } from "react";
 
 const classBase = "vuuTableDropdownCell";
 
 const openKeys: DropdownOpenKey[] = ["Enter", " "];
 
-export const DropdownCell = ({ column, columnMap, row }: TableCellProps) => {
-  const values =
-    isTypeDescriptor(column.type) && isColumnTypeRenderer(column.type?.renderer)
-      ? column.type?.renderer?.values
-      : [];
-
+export const DropdownCell = memo(function DropdownCell({
+  column,
+  columnMap,
+  onCommit = WarnCommit,
+  row,
+}: TableCellRendererProps) {
   const dataIdx = columnMap[column.name];
-  const [value, setValue] = useState(row[dataIdx]);
 
-  const handleSelectionChange = useCallback<SingleSelectionHandler>(
-    (evt, selectedItem) => {
-      if (selectedItem) {
-        setValue(selectedItem);
-        // dispatchCommitEvent(evt.target as HTMLElement);
+  const { initialValue, values } = useLookupValues(column, row[dataIdx]);
+
+  const [value, setValue] = useState<ListOption | null>(null);
+
+  const handleSelectionChange = useCallback<SingleSelectionHandler<ListOption>>(
+    (evt, selectedOption) => {
+      if (selectedOption) {
+        setValue(selectedOption);
+        onCommit(selectedOption.value as VuuColumnDataType).then((response) => {
+          if (response === true && evt) {
+            dispatchCommitEvent(evt.target as HTMLElement);
+          }
+        });
       }
     },
-    []
+    [onCommit]
   );
 
   return (
-    <Dropdown
+    <Dropdown<ListOption>
       className={classBase}
       onSelectionChange={handleSelectionChange}
       openKeys={openKeys}
-      selected={value}
+      selected={value ?? initialValue}
       source={values}
       width={column.width - 17} // temp hack
     />
   );
-};
+},
+dataAndColumnUnchanged);
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {});

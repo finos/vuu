@@ -13,7 +13,7 @@ import {
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { VuuDataRow } from "@finos/vuu-protocol-types";
-import { MeasuredContainerProps } from "packages/vuu-layout/src";
+import { MeasuredContainerProps } from "@finos/vuu-layout";
 import { FC, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 
@@ -50,12 +50,6 @@ export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
    * prop, table state can be persisted across sessions.
    */
   onConfigChange?: (config: TableConfig) => void;
-  /**
-   * Features like context menu actions and visual links are enabled by the Vuu server.
-   * This callback allows us to receive a notification when such a feature is available.
-   * The options provided must then be used to configure appropriate UI affordances.
-   */
-  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   /**
    * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
    * response must be handled. This callback provides that response.

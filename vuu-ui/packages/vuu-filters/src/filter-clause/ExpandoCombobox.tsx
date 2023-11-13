@@ -103,8 +103,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         displayedItemCount: 10,
         itemHeight: 22,
         maxWidth: 300,
-        minWidth: 100,
-        width: "auto",
+        minWidth: 80,
+        width: "content-width",
       },
     ];
   }, [InputPropsProp, handleInputChange, ListPropsProp]);
@@ -128,7 +128,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   );
 
   const popupProps = {
-    minWidth: 102,
+    minWidth: "fit-content",
   };
 
   return props.source?.length === 0 ? null : (

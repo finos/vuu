@@ -1,5 +1,3 @@
-import { VuuFeatureMessage } from "@finos/vuu-data";
-import { isViewportMenusAction } from "@finos/vuu-data-react";
 import {
   ClientToServerMenuRPC,
   VuuMenu,
@@ -8,7 +6,7 @@ import {
 import { TableRowSelectHandler } from "@finos/vuu-table";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 
 const { KEY } = metadataKeys;
@@ -42,7 +40,6 @@ export const useNewBasketPanel = ({
   basketSchema,
   onSaveBasket,
 }: NewBasketHookProps) => {
-  const rpcCommandRef = useRef<string | undefined>();
   const columnMap = buildColumnMap(basketSchema.columns);
   const [basketName, setBasketName] = useState("");
   const [basketId, setBasketId] = useState<string>();
@@ -50,16 +47,26 @@ export const useNewBasketPanel = ({
   const saveBasket = useCallback(() => {
     if (basketName && basketId) {
       onSaveBasket(basketName, basketId);
-
-      if (rpcCommandRef.current) {
-        basketDataSource.menuRpcCall({
-          rpcName: rpcCommandRef.current,
-          type: "VIEW_PORT_MENUS_SELECT_RPC",
-        } as Omit<ClientToServerMenuRPC, "vpId">);
-
-        requestAnimationFrame(() => {
-          basketDataSource.unsubscribe();
-        });
+      if (basketDataSource?.menu) {
+        const rpcCommand = getRpcCommand(
+          basketDataSource?.menu?.menus,
+          "CREATE_NEW_BASKET"
+        );
+        if (rpcCommand) {
+          basketDataSource
+            .menuRpcCall({
+              // basketName: basketName,
+              rpcName: rpcCommand.rpcName,
+              type: "VIEW_PORT_MENUS_SELECT_RPC",
+            } as Omit<ClientToServerMenuRPC, "vpId">)
+            .then((response) => {
+              console.log(`rpmMenuResponse`, { response });
+            });
+        }
+      } else {
+        throw Error(
+          "useNewBasketPanel cannot create basket, datasource has no menu"
+        );
       }
     }
   }, [basketDataSource, basketId, basketName, onSaveBasket]);
@@ -80,31 +87,19 @@ export const useNewBasketPanel = ({
     []
   );
 
-  const handleFeatureEnabled = useCallback((message: VuuFeatureMessage) => {
-    if (isViewportMenusAction(message)) {
-      const {
-        menu: { menus },
-      } = message;
-      const rpcCommand = getRpcCommand(menus, "CREATE_NEW_BASKET");
-      console.log({ rpcCommand });
-      rpcCommandRef.current = rpcCommand?.rpcName;
-    }
-  }, []);
-
   const handleOpenChangeInstrumentPicker = useCallback<OpenChangeHandler>(
-    (open, closeReason) => {
+    (open) => {
       if (!open) {
-        console.log(`instrument picker closed ${closeReason}`);
+        basketDataSource.disable?.();
       }
     },
-    []
+    [basketDataSource]
   );
 
   return {
     columnMap,
     onChangeBasketName: handleChangeBasketName,
     onCloseInstrumentPicker: handleOpenChangeInstrumentPicker,
-    onFeatureEnabled: handleFeatureEnabled,
     onOpenChangeInstrumentPicker: handleOpenChangeInstrumentPicker,
     onSave: saveBasket,
     onSelectBasket: handleSelectBasket,

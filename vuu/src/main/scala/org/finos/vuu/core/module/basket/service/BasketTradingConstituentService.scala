@@ -2,6 +2,7 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
@@ -23,7 +24,7 @@ class BasketTradingConstituentService(val table: DataTable, val tableContainer: 
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(columnName -> data)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)), clock.now())
     ViewPortEditSuccess()
   }
 

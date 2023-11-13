@@ -21,6 +21,11 @@ export interface ContextMenuOptions {
 }
 export interface ContextMenuHookProps {
   dataSource?: DataSource;
+  /**
+   * A persistent Column Operation is any manipulation of a table column that should be
+   * persisted across user sessions. e.g. if user pins a column, column should still be
+   * pinned next time user opens app.
+   */
   onPersistentColumnOperation: (action: PersistentColumnAction) => void;
 }
 

@@ -1,28 +1,44 @@
+import { MenuActionHandler } from "@finos/vuu-data-types";
+import {
+  CycleStateButton,
+  CycleStateButtonProps,
+  ExpandoInput,
+  useEditableText,
+} from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
-import { ExpandoInput } from "@finos/vuu-ui-controls";
-import { HTMLAttributes } from "react";
+import {
+  CommitResponse,
+  DataItemCommitHandler,
+} from "packages/vuu-datagrid-types";
+import { VuuRowDataItemType } from "packages/vuu-protocol-types";
+import { HTMLAttributes, useCallback } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";
+import { Basket } from "../useBasketTrading";
 import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
-import { MenuActionHandler } from "@finos/vuu-data-types";
-import { DataSource } from "@finos/vuu-data";
 
 import "./BasketToolbar.css";
 
 const classBase = "vuuBasketToolbar";
 
+export type BasketChangeHandler = (
+  columnName: string,
+  value: VuuRowDataItemType
+) => CommitResponse;
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
+  basket?: Basket;
   basketStatus: BasketStatus;
   BasketSelectorProps: BasketSelectorProps;
-  basketTradingDataSource: DataSource;
+  onCommit?: BasketChangeHandler;
   onSendToMarket: () => void;
   onTakeOffMarket: () => void;
 }
 
 export const BasketToolbar = ({
+  basket,
   BasketSelectorProps,
   basketStatus,
-  basketTradingDataSource,
+  onCommit,
   onSendToMarket,
   onTakeOffMarket,
 }: BasketToolbarProps) => {
@@ -31,42 +47,100 @@ export const BasketToolbar = ({
     return true;
   };
 
+  const handleUnitsEdited = useCallback<DataItemCommitHandler>(
+    (value) => {
+      if (onCommit) {
+        return onCommit?.("units", value);
+      } else {
+        throw Error(
+          "BasketToolbar onCommit prop not supplied for editable Basket"
+        );
+      }
+    },
+    [onCommit]
+  );
+
+  const { warningMessage: unitErrorMessage, ...unitProps } = useEditableText({
+    initialValue: basket?.units ?? "",
+    onCommit: handleUnitsEdited,
+  });
+
+  const handleSideCommit = useCallback<CycleStateButtonProps["onCommit"]>(
+    (_, value) => {
+      if (onCommit) {
+        return onCommit?.("side", value);
+      } else {
+        throw Error(
+          "BasketToolbar onCommit prop not supplied for editable Basket"
+        );
+      }
+    },
+    [onCommit]
+  );
+
   const basketSelector = (
-    <BasketSelector {...BasketSelectorProps} key="selector" />
+    <BasketSelector {...BasketSelectorProps} basket={basket} key="selector" />
   );
   const statusIndicator = (
     <span key="status" className={`${classBase}-statusIndicator`} />
   );
+  const inputSide = (
+    <FormField key="side">
+      <FormFieldLabel>Side</FormFieldLabel>
+      <CycleStateButton
+        className={`${classBase}-side`}
+        onCommit={handleSideCommit}
+        value={basket?.side ?? "BUY"}
+        values={["BUY", "SELL"]}
+        variant="cta"
+      />
+    </FormField>
+  );
+  const readOnlySide = (
+    <FormField key="side">
+      <FormFieldLabel>Units</FormFieldLabel>
+      <span className={`${classBase}-units`}>{basket?.side ?? ""}</span>
+    </FormField>
+  );
   const inputUnits = (
     <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
-      <ExpandoInput className={`${classBase}-units`} value={100} />
+      <ExpandoInput
+        errorMessage={unitErrorMessage}
+        inputProps={unitProps}
+        className={`${classBase}-units`}
+        value={basket?.units ?? ""}
+      />
     </FormField>
   );
   const readOnlyUnits = (
     <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
-      <span className={`${classBase}-units`}>100</span>
+      <span className={`${classBase}-units`}>{basket?.units ?? ""}</span>
     </FormField>
   );
   const notionalUSD = (
     <FormField key="usd">
       <FormFieldLabel>Total USD Not</FormFieldLabel>
-      <span className={`${classBase}-notional`}>1,235,789</span>
+      <span className={`${classBase}-notional`}>
+        {basket?.totalNotional ?? ""}
+      </span>
     </FormField>
   );
 
   const notional = (
     <FormField key="notional">
       <FormFieldLabel>Total Not</FormFieldLabel>
-      <span className={`${classBase}-notional`}>2,345,678</span>
+      <span className={`${classBase}-notional`}>
+        {basket?.totalNotionalUsd ?? ""}
+      </span>
     </FormField>
   );
 
   const pctFilled = (
     <FormField key="filled">
       <FormFieldLabel>% Filled</FormFieldLabel>
-      <span className={`${classBase}-notional`}>25%</span>
+      <span className={`${classBase}-notional`}>{basket?.filledPct ?? ""}</span>
     </FormField>
   );
 
@@ -98,10 +172,17 @@ export const BasketToolbar = ({
   const getToolbarItems = () => {
     const toolbarItems = [basketSelector];
     if (basketStatus === "design") {
-      toolbarItems.push(inputUnits, notionalUSD, notional, sendToMarket);
+      toolbarItems.push(
+        inputSide,
+        inputUnits,
+        notionalUSD,
+        notional,
+        sendToMarket
+      );
     } else {
       toolbarItems.push(
         statusIndicator,
+        readOnlySide,
         readOnlyUnits,
         notionalUSD,
         notional,

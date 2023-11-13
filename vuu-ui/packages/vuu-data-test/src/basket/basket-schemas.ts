@@ -6,7 +6,7 @@ export type BasketsTableName =
   | "basketConstituent"
   | "basketTrading"
   | "basketTradingConstituent"
-  | "basketTrdConsPrices"
+  | "basketTradingConstituentJoin"
   | "priceStrategyType";
 
 export const schemas: Readonly<
@@ -34,6 +34,8 @@ export const schemas: Readonly<
     columns: [
       { name: "basketId", serverDataType: "string" },
       { name: "change", serverDataType: "string" },
+      // this column doesn't exist on Vuu server
+      { name: "description", serverDataType: "string" },
       { name: "lastTrade", serverDataType: "string" },
       { name: "ric", serverDataType: "string" },
       { name: "ricBasketId", serverDataType: "string" },
@@ -64,7 +66,6 @@ export const schemas: Readonly<
       { name: "algo", serverDataType: "string" },
       { name: "algoParams", serverDataType: "string" },
       { name: "basketId", serverDataType: "string" },
-      { name: "bid", serverDataType: "double" },
       { name: "description", serverDataType: "string" },
       { name: "instanceId", serverDataType: "string" },
       { name: "instanceIdRic", serverDataType: "string" },
@@ -83,7 +84,8 @@ export const schemas: Readonly<
     key: "instanceIdRic",
     table: { module: "BASKET", table: "basketTradingConstituent" },
   },
-  basketTrdConsPrices: {
+
+  basketTradingConstituentJoin: {
     columns: [
       { name: "algo", serverDataType: "string" },
       { name: "algoParams", serverDataType: "string" },
@@ -107,12 +109,13 @@ export const schemas: Readonly<
       { name: "priceStrategyId", serverDataType: "int" },
       { name: "quantity", serverDataType: "long" },
       { name: "ric", serverDataType: "string" },
+      { name: "scenario", serverDataType: "string" },
       { name: "side", serverDataType: "string" },
       { name: "venue", serverDataType: "string" },
       { name: "weighting", serverDataType: "double" },
     ],
     key: "instanceIdRic",
-    table: { module: "BASKET", table: "basketTradingConstituent" },
+    table: { module: "BASKET", table: "basketTradingConstituentJoin" },
   },
   priceStrategyType: {
     columns: [

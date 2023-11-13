@@ -1,11 +1,13 @@
 import { MouseEventHandler, ReactNode, RefObject } from "react";
 import { Portal } from "../portal";
 import { TooltipPlacement, useAnchoredPosition } from "./useAnchoredPosition";
+import cx from "classnames";
 
 import "./Tooltip.css";
 
 const classBase = "vuuTooltip";
 
+export type TooltipStatus = "warning" | "error" | "info";
 export interface TooltipProps {
   anchorElement: RefObject<HTMLElement>;
   children: ReactNode;
@@ -13,6 +15,7 @@ export interface TooltipProps {
   onMouseEnter: MouseEventHandler;
   onMouseLeave: MouseEventHandler;
   placement: TooltipPlacement;
+  status?: TooltipStatus;
 }
 
 export const Tooltip = ({
@@ -22,6 +25,7 @@ export const Tooltip = ({
   onMouseEnter,
   onMouseLeave,
   placement,
+  status,
 }: TooltipProps) => {
   const position = useAnchoredPosition({ anchorElement, placement });
   if (position === undefined) {
@@ -30,7 +34,9 @@ export const Tooltip = ({
   return (
     <Portal>
       <div
-        className={classBase}
+        className={cx(classBase, {
+          [`${classBase}-error`]: status === "error",
+        })}
         data-align={placement}
         id={id}
         style={position}

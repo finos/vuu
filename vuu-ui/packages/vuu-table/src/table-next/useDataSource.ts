@@ -1,14 +1,10 @@
 import {
   DataSource,
   DataSourceSubscribedMessage,
+  isVuuFeatureInvocation,
   SubscribeCallback,
   VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
 } from "@finos/vuu-data";
-import {
-  isVuuFeatureAction,
-  isVuuFeatureInvocation,
-} from "@finos/vuu-data-react/src";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
@@ -18,7 +14,6 @@ import { MovingWindow } from "./moving-window";
 export interface DataSourceHookProps {
   dataSource: DataSource;
   // onConfigChange?: (message: DataSourceConfigMessage) => void;
-  onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
@@ -28,7 +23,6 @@ export interface DataSourceHookProps {
 
 export const useDataSource = ({
   dataSource,
-  onFeatureEnabled,
   onFeatureInvocation,
   onSizeChange,
   onSubscribed,
@@ -77,22 +71,13 @@ export const useDataSource = ({
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
-      } else if (isVuuFeatureAction(message)) {
-        onFeatureEnabled?.(message);
       } else if (isVuuFeatureInvocation(message)) {
         onFeatureInvocation?.(message);
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [
-      dataWindow,
-      onFeatureEnabled,
-      onFeatureInvocation,
-      onSizeChange,
-      onSubscribed,
-      setData,
-    ]
+    [dataWindow, onFeatureInvocation, onSizeChange, onSubscribed, setData]
   );
 
   const getSelectedRows = useCallback(() => {
@@ -127,11 +112,15 @@ export const useDataSource = ({
   // }, [refreshIfUpdated]);
 
   useEffect(() => {
-    //TODO could we improve this by using a ref for range ?
-    dataSource?.subscribe(
-      { range: getFullRange(range, renderBufferSize) },
-      datasourceMessageHandler
-    );
+    if (dataSource.status === "disabled") {
+      dataSource.enable?.(datasourceMessageHandler);
+    } else {
+      //TODO could we improve this by using a ref for range ?
+      dataSource?.subscribe(
+        { range: getFullRange(range, renderBufferSize) },
+        datasourceMessageHandler
+      );
+    }
   }, [dataSource, datasourceMessageHandler, range, renderBufferSize]);
 
   const setRange = useCallback(

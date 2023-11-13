@@ -3,8 +3,12 @@ import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
 import { ServerProxySubscribeMessage } from "../src";
 import { Viewport } from "../src/server-proxy/viewport";
-import { createSubscription, createTableRows, sizeRow } from "./test-utils";
-import { TableSchema } from "../src/message-utils";
+import {
+  createSubscription,
+  createTableRows,
+  sizeRow,
+  testSchema,
+} from "./test-utils";
 
 const config_options = {
   aggregations: [],
@@ -22,6 +26,8 @@ const vuu_config_options = {
   sort: { sortDefs: [] },
 };
 
+const noop = () => undefined;
+
 const vuu_table = { module: "TEST", table: "test-table" };
 
 const constructor_options = {
@@ -34,14 +40,14 @@ const constructor_options = {
 describe("Viewport", () => {
   describe("constructor", () => {
     it("initial status is empty", () => {
-      const vp = new Viewport(constructor_options);
+      const vp = new Viewport(constructor_options, noop);
       expect(vp.status).toEqual("");
     });
   });
 
   describe("subscribe", () => {
     it("uses constructor params to construct subscribe message", () => {
-      const vp = new Viewport(constructor_options);
+      const vp = new Viewport(constructor_options, noop);
       const message = vp.subscribe();
       const {
         filter: { filter },
@@ -59,16 +65,19 @@ describe("Viewport", () => {
       });
     });
     it("sets status to subscribing", () => {
-      const vp = new Viewport(constructor_options);
+      const vp = new Viewport(constructor_options, noop);
       vp.subscribe();
       expect(vp.status).toEqual("subscribing");
     });
 
     it("uses bufferSize when constructing range", () => {
-      const vp = new Viewport({
-        bufferSize: 100,
-        ...constructor_options,
-      });
+      const vp = new Viewport(
+        {
+          bufferSize: 100,
+          ...constructor_options,
+        },
+        noop
+      );
       const message = vp.subscribe();
       const {
         filter: { filter },
@@ -86,11 +95,14 @@ describe("Viewport", () => {
       });
     });
     it("applies bufferSize to existing range", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 100,
-        range: { from: 0, to: 100 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 100,
+          range: { from: 0, to: 100 },
+        },
+        noop
+      );
       const message = vp.subscribe();
       const {
         filter: { filter },
@@ -107,11 +119,14 @@ describe("Viewport", () => {
       });
     });
     it("splits bufferSize around existing range", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 100,
-        range: { from: 100, to: 200 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 100,
+          range: { from: 100, to: 200 },
+        },
+        noop
+      );
       const message = vp.subscribe();
       const {
         filter: { filter },
@@ -131,7 +146,7 @@ describe("Viewport", () => {
 
   describe("subscribed", () => {
     it("sets status to subscribed", () => {
-      const vp = new Viewport(constructor_options);
+      const vp = new Viewport(constructor_options, noop);
       const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
         ...vuu_config_options,
         range: { from: 0, to: 50 },
@@ -144,7 +159,7 @@ describe("Viewport", () => {
     });
 
     it("echos back subscription details, enriching values sent by server", () => {
-      const vp = new Viewport(constructor_options);
+      const vp = new Viewport(constructor_options, noop);
       const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
         ...vuu_config_options,
         range: { from: 0, to: 50 },
@@ -152,41 +167,13 @@ describe("Viewport", () => {
         table: vuu_table.table,
         viewPortId: "server-vp1",
       };
-      const message = vp.handleSubscribed(vuuMessageBody);
+      const message = vp.handleSubscribed(vuuMessageBody, testSchema);
 
       expect(message).toEqual({
         ...config_options,
         clientViewportId: constructor_options.viewport,
         range: { from: 0, to: 50 },
-        tableSchema: null,
-        type: "subscribed",
-      });
-    });
-    it("includes tableSchema, when this has been received", () => {
-      const vp = new Viewport(constructor_options);
-      const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
-        ...vuu_config_options,
-        range: { from: 0, to: 50 },
-        type: "CREATE_VP_SUCCESS",
-        table: vuu_table.table,
-        viewPortId: "server-vp1",
-      };
-
-      const tableSchema: TableSchema = {
-        table: { module: "TEST", table: "testTable" },
-        key: "col1",
-        columns: [{ name: "col1", serverDataType: "string" }],
-      };
-
-      vp.setTableSchema(tableSchema);
-
-      const message = vp.handleSubscribed(vuuMessageBody);
-
-      expect(message).toEqual({
-        ...config_options,
-        clientViewportId: constructor_options.viewport,
-        range: { from: 0, to: 50 },
-        tableSchema,
+        tableSchema: testSchema,
         type: "subscribed",
       });
     });
@@ -194,11 +181,14 @@ describe("Viewport", () => {
 
   describe("pending range requests", () => {
     it("holds requests in pending queue, marking them when acked, until first rows received", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 10,
-        range: { from: 0, to: 10 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop
+      );
       const [, serverSubscription] = createSubscription();
 
       vp.handleSubscribed(serverSubscription.body);
@@ -223,11 +213,14 @@ describe("Viewport", () => {
 
   describe("rangeRequestAlreadyPending", () => {
     it("tests range requests against last pending server request", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 10,
-        range: { from: 0, to: 10 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop
+      );
       const [, serverSubscription] = createSubscription();
       vp.handleSubscribed(serverSubscription.body);
 
@@ -258,11 +251,14 @@ describe("Viewport", () => {
     });
 
     it("tests range requests against multiple pending server requests", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 10,
-        range: { from: 0, to: 10 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop
+      );
       const [, serverSubscription] = createSubscription();
       vp.handleSubscribed(serverSubscription.body);
 
@@ -299,11 +295,14 @@ describe("Viewport", () => {
 
   describe("groupBy", () => {
     it("clears dataWindow when a groupBy request is received on a non grouped viewport", () => {
-      const vp = new Viewport({
-        ...constructor_options,
-        bufferSize: 10,
-        range: { from: 0, to: 10 },
-      });
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop
+      );
       const [, serverSubscription] = createSubscription();
 
       vp.handleSubscribed(serverSubscription.body);

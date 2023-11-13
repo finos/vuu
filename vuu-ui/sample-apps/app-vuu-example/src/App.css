@@ -6,12 +6,6 @@ body {
   overflow: hidden;
 }
 
-.App {
-
-  --vuuView-borderStyle: none solid solid none;
-
-}
-
 .ToolbarField .Input {
   border: solid 1px #ccc;
   height: 28px;
@@ -25,6 +19,11 @@ body {
 .vuuApp {
   background-color: green;
 }
+
+.vuuShell-content {
+  padding: 8px;
+}
+
 
 .ToolbarField > svg {
   fill: var(--spectrum-global-color-static-gray-600);
@@ -54,7 +53,7 @@ body {
   align-items: center;
   display: flex;
   gap: 12px;
-  height: 36px;
+  height: var(--vuuToolbarProxy-height, 36px);
 }
 
 .vuuToolbarProxy > [data-align="end"]{
@@ -66,8 +65,93 @@ body {
 }
 
 .vuuShell-mainTabs {
+  --vuuTab-height: 28px;
+  border: solid 1px #D6D7DA;
+  border-top: none !important;
+  border-radius: 6px;
   height: 100%;
+  padding: 36px 8px 8px 8px;
   position: relative;
   width: 100%;
 }
 
+.vuuShellMainTabstrip > .vuuOverflowContainer-wrapContainer {
+  background: var(--vuu-color-gray-25);
+
+}
+
+  .vuuShell-mainTabs > .vuuTabstrip {
+    --vuuTabstrip-height: 28px;
+    --saltTabs-tabstrip-height: 29px;
+    --tabstrip-height: 29px;
+    left:-1px;
+    padding-bottom: 7px;
+    position: absolute !important;
+    right: 1px;
+    top: 0;
+    width: calc(100% + 2px) !important;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabHeader {
+    border-bottom: none;
+  } 
+
+  .vuuShell-mainTabs > .vuuTabstrip:before {
+    background-color: transparent;
+    border-radius: 0 6px 0 0;
+    border-left: solid 1px #D6D7DA;
+    border-right: solid 1px #D6D7DA;
+    border-top: solid 1px #D6D7DA;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left:0;
+    right:0;
+    height: 8px;
+    z-index: 1;
+  }
+
+  .vuuTab.MainTab {
+    background-color: #F1F2F4;
+    border-color: #D6D7DA;
+    border-radius: 6px 6px 0 0;
+    border-width: 1px;
+    border-style: solid; 
+    position: relative;
+  }
+
+  .MainTab.vuuTab-selected {
+    background-color: white;
+    border-bottom-color: white;
+    z-index: 1;
+
+  }
+
+  .MainTab.vuuTab-selected:before{
+    background-color: #6d188b;;
+    content: '';
+    position: absolute;
+    height: 100%;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+  }
+
+  .MainTab.vuuTab:hover:not(.vuuTab-selected):before{
+    background-color: #F37880;
+    content: '';
+    position: absolute;
+    height: 100%;
+    left:0;
+    top:0;
+    border-radius: 6px 0 0 0;
+    width: 6px;
+  }
+
+  .vuuTab.MainTab .vuuTab-main {
+    background-color: transparent;
+    font-weight: 700;
+    height: 29px;
+    padding: 0 24px;
+  }

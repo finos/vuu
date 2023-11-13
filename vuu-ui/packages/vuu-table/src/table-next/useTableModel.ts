@@ -18,10 +18,9 @@ import {
   isFilteredColumn,
   isGroupColumn,
   isPinned,
-  isTypeDescriptor,
   logger,
   metadataKeys,
-  moveItem,
+  replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
@@ -40,12 +39,6 @@ const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
-
-const getCellRendererForColumn = (column: ColumnDescriptor) => {
-  if (isTypeDescriptor(column.type)) {
-    return getCellRenderer(column.type?.renderer);
-  }
-};
 
 const getDataType = (
   column: ColumnDescriptor,
@@ -107,7 +100,6 @@ export interface ColumnActionMove {
   type: "moveColumn";
   column: KeyedColumnDescriptor;
   moveBy?: 1 | -1;
-  moveTo?: number;
 }
 
 export interface ColumnActionPin {
@@ -307,7 +299,7 @@ const columnDescriptorToKeyedColumDescriptor =
     const keyedColumnWithDefaults = {
       ...rest,
       align,
-      CellRenderer: getCellRendererForColumn(column),
+      CellRenderer: getCellRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,
@@ -331,7 +323,8 @@ const columnDescriptorToKeyedColumDescriptor =
 
 function moveColumn(
   state: InternalTableModel,
-  { column, moveBy, moveTo }: ColumnActionMove
+  // TODO do we ever use this ?
+  { column, moveBy }: ColumnActionMove
 ) {
   const { columns } = state;
   if (typeof moveBy === "number") {
@@ -342,12 +335,6 @@ function moveColumn(
     return {
       ...state,
       columns: newColumns,
-    };
-  } else if (typeof moveTo === "number") {
-    const index = columns.indexOf(column);
-    return {
-      ...state,
-      columns: moveItem(columns, index, moveTo),
     };
   }
   return state;
@@ -512,11 +499,4 @@ function updateTableConfig(
   }
 
   return result;
-}
-
-function replaceColumn(
-  state: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
-) {
-  return state.map((col) => (col.name === column.name ? column : col));
 }

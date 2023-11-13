@@ -9,7 +9,7 @@ import {
 import { useMemo } from "react";
 import { ArrayProxy } from "./ArrayProxy";
 import { makeSuggestions } from "./makeSuggestions";
-import { TickingArrayDataSource } from "./TickingArrayDataSource";
+import { TickingArrayDataSource } from "@finos/vuu-data-test";
 import { getColumnAndRowGenerator, populateArray } from "@finos/vuu-data-test";
 
 const NO_CONFIG = {} as const;

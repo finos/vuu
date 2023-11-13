@@ -1,5 +1,6 @@
 package org.finos.vuu.viewport.sessiontable
 
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
@@ -15,7 +16,7 @@ import org.scalatest.prop.Tables.Table
 class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen with AbstractSessionTestCase {
 
   final implicit val clock: Clock = new TestFriendlyClock(TEST_TIME)
-  //implicit val metrics: MetricsProvider = new MetricsProviderImpl
+  implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
   /**
    * This is the process rpc service.

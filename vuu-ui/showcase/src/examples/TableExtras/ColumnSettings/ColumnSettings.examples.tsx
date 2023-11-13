@@ -1,32 +1,48 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import {
-  ColumnExpressionSubmitHandler,
   ColumnFormattingPanel,
   ColumnSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CellRendererDescriptor } from "@finos/vuu-utils";
+import {
+  CellRendererDescriptor,
+  ColumnRenderPropsChangeHandler,
+} from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
 export const ColumnFormattingPanelDouble = () => {
-  const column = useMemo<ColumnDescriptor>(
-    () => ({
-      name: "price",
-      label: "Price",
-      serverDataType: "double",
-    }),
-    []
-  );
+  const [column, setColumn] = useState<ColumnDescriptor>({
+    name: "price",
+    label: "Price",
+    serverDataType: "double",
+  });
 
   const availableRenderers = useMemo<CellRendererDescriptor[]>(
     () => [
       { name: "Default renderer (data type double)" },
       { name: "Background renderer" },
-      { name: "Price Ticker" },
+      {
+        label: "Price Ticker",
+        name: "vuu.price-move-background",
+      },
     ],
+    []
+  );
 
+  const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
+    (renderer) => {
+      console.log(`handleChangeRendering`, { renderer });
+      setColumn((col) => ({
+        ...col,
+        type: {
+          // TODO
+          ...col.type,
+          renderer,
+        },
+      }));
+    },
     []
   );
 
@@ -35,8 +51,7 @@ export const ColumnFormattingPanelDouble = () => {
       availableRenderers={availableRenderers}
       column={column}
       onChangeFormatting={() => console.log("onChangeFormatting")}
-      onChangeRenderer={() => console.log("onChangeRenderer")}
-      selectedCellRenderer={availableRenderers[0]}
+      onChangeRendering={handleChangeRendering}
       style={{
         border: "solid 1px lightgray",
         margin: 20,
@@ -82,6 +97,10 @@ export const NewCalculatedColumnSettingsPanel = () => {
     []
   );
 
+  const handleCancelCreateColumn = useCallback(() => {
+    console.log("cancel create column");
+  }, []);
+
   return (
     <div
       style={{
@@ -93,6 +112,7 @@ export const NewCalculatedColumnSettingsPanel = () => {
     >
       <ColumnSettingsPanel
         column={column}
+        onCancelCreateColumn={handleCancelCreateColumn}
         onConfigChange={onConfigChange}
         onCreateCalculatedColumn={handleCreateCalculatedColumn}
         tableConfig={tableConfig}
@@ -119,7 +139,7 @@ export const CalculatedColumnSettingsPanel = () => {
   }>({
     column: calculatedColumn,
     tableConfig: {
-      columns: schema.columns.concat(calculatedColumn),
+      columns: (schema.columns as ColumnDescriptor[]).concat(calculatedColumn),
     },
   });
   const onConfigChange = (config: TableConfig) => {
@@ -136,6 +156,10 @@ export const CalculatedColumnSettingsPanel = () => {
     }));
   };
 
+  const handleCancelCreateColumn = useCallback(() => {
+    console.log("cancel create column");
+  }, []);
+
   return (
     <div
       style={{
@@ -147,6 +171,7 @@ export const CalculatedColumnSettingsPanel = () => {
     >
       <ColumnSettingsPanel
         column={column}
+        onCancelCreateColumn={handleCancelCreateColumn}
         onConfigChange={onConfigChange}
         onCreateCalculatedColumn={onCreateCalculatedColumn}
         tableConfig={tableConfig}

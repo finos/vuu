@@ -1,3 +1,4 @@
+export * from "./app-header";
 export * from "./connection-status";
 export * from "./density-switch";
 export * from "./feature";

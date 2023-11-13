@@ -20,12 +20,14 @@ const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
 const websocketUrl = getCommandLineArg("--url", true);
-console.log(`websocket URL ${websocketUrl} type ${typeof websocketUrl}`);
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
-const features = getCommandLineArg("--features", true, "feature-vuu-table");
-console.log({ features });
+const features = getCommandLineArg(
+  "--features",
+  true,
+  "feature-filter-table,feature-instrument-tiles,feature-basket-trading"
+);
 if (configPath) {
   configFile = configPath;
 }
@@ -69,7 +71,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
     };
 
     featureBundles.forEach(({ name, files }) => {
-      const { description = name } = readJson(
+      const { description = name, vuu } = readJson(
         path.resolve(`../feature-${name}/package.json`)
       );
       features[name] = {
@@ -77,6 +79,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
         name,
         url: featureFilePath(name, files, ".js"),
         css: featureFilePath(name, files, ".css"),
+        ...vuu,
       };
     });
 

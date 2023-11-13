@@ -6,9 +6,11 @@ import {
   View,
 } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
-import { useCallback, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
+import { JsonTable } from "@finos/vuu-datatable";
+import { JsonData } from "packages/vuu-utils/src";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
@@ -24,31 +26,47 @@ export const DefaultFilterTableFeature = () => {
   //-----------------------------------------------------------------------------------
   const { applicationLayout, saveApplicationLayout } = useLayoutManager();
 
+  // Save layout into state so we can display in JsonTable
+  const [savedLayoutJson, setSavedLayoutJson] = useState(applicationLayout);
+
   const handleLayoutChange = useCallback(
     (layout) => {
       saveApplicationLayout(layout);
+      setSavedLayoutJson(layout);
     },
     [saveApplicationLayout]
   );
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider
-      layout={applicationLayout}
-      onLayoutChange={handleLayoutChange}
-    >
-      <View
-        Header={VuuBlotterHeader}
-        id="table-next-feature"
-        className="vuuTableNextFeature"
-        closeable
-        header
-        title="Instruments"
-        style={{ width: 700, height: 500 }}
+    <div style={{ display: "flex" }}>
+      <LayoutProvider
+        layout={applicationLayout}
+        onLayoutChange={handleLayoutChange}
       >
-        <FilterTableFeature tableSchema={schema} />
-      </View>
-    </LayoutProvider>
+        <View
+          Header={VuuBlotterHeader}
+          id="table-next-feature"
+          className="vuuTableNextFeature"
+          closeable
+          header
+          title="Instruments"
+          style={{ width: 700, height: 500 }}
+        >
+          <FilterTableFeature tableSchema={schema} />
+        </View>
+      </LayoutProvider>
+      <div style={{ flex: "1 1 auto" }}>
+        <JsonTable
+          config={{
+            columnSeparators: true,
+            rowSeparators: true,
+            zebraStripes: true,
+          }}
+          source={savedLayoutJson}
+        />
+      </div>
+    </div>
   );
 };
 DefaultFilterTableFeature.displaySequence = displaySequence++;

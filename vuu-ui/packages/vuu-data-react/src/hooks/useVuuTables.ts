@@ -18,9 +18,7 @@ export const useVuuTables = () => {
       const { tables } = await server.getTableList();
       const tableSchemas = buildTables(
         await Promise.all(
-          tables.map((tableDescriptor) =>
-            server.getTableSchema(tableDescriptor)
-          )
+          tables.map((vuuTable) => server.getTableSchema(vuuTable))
         )
       );
       setTables(tableSchemas);

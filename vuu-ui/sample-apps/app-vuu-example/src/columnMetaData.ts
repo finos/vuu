@@ -57,7 +57,7 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     label: "Ask",
     type: {
       name: "number",
-      renderer: { name: "background", flashStyle: "arrow-bg" },
+      renderer: { name: "vuu.price-move-background", flashStyle: "arrow-bg" },
       formatting: { decimals: 2, zeroPad: true },
     },
     aggregate: Average,
@@ -90,7 +90,7 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "bid",
     type: {
       name: "number",
-      renderer: { name: "background", flashStyle: "arrow-bg" },
+      renderer: { name: "vuu.price-move-background", flashStyle: "arrow-bg" },
       formatting: { decimals: 2, zeroPad: true },
     },
     aggregate: Average,
@@ -100,6 +100,8 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "bidSize",
     type: {
       name: "number",
+      renderer: { name: "vuu.price-move-background", flashStyle: "bg-only" },
+      formatting: { decimals: 2, zeroPad: true },
     },
     aggregate: Average,
   },

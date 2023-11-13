@@ -1,10 +1,11 @@
+import type { SchemaColumn, TableSchema } from "@finos/vuu-data";
 import type { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
   ColumnType,
   ColumnTypeDescriptor,
-  ColumnTypeRenderer,
+  ColumnTypeRendering,
   ColumnTypeWithValidationRules,
   GroupColumnDescriptor,
   KeyedColumnDescriptor,
@@ -12,7 +13,9 @@ import type {
   PinLocation,
   TableHeading,
   TableHeadings,
-  TypeFormatting,
+  ColumnTypeFormatting,
+  LookupRenderer,
+  ValueListRenderer,
 } from "@finos/vuu-datagrid-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -24,9 +27,9 @@ import type {
   VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import type { SchemaColumn } from "@finos/vuu-data";
+import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import type { CSSProperties } from "react";
-import type { CellRendererDescriptor } from "./component-registry";
+import { moveItem } from "./array-utils";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
 
 /**
@@ -164,6 +167,9 @@ export declare type ColumnTypeSimple =
   | "time"
   | "checkbox";
 
+/**
+ *
+ */
 export const isTypeDescriptor = (
   type?: ColumnType
 ): type is ColumnTypeDescriptor =>
@@ -173,8 +179,20 @@ const EMPTY_COLUMN_MAP = {} as const;
 
 export const isColumnTypeRenderer = (
   renderer?: unknown
-): renderer is ColumnTypeRenderer =>
-  typeof (renderer as ColumnTypeRenderer)?.name !== "undefined";
+): renderer is ColumnTypeRendering =>
+  typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
+
+export const isLookupRenderer = (
+  renderer?: unknown
+): renderer is LookupRenderer =>
+  typeof (renderer as LookupRenderer)?.name !== "undefined" &&
+  "lookup" in (renderer as LookupRenderer);
+
+export const isValueListRenderer = (
+  renderer?: unknown
+): renderer is ValueListRenderer =>
+  typeof (renderer as ValueListRenderer)?.name !== "undefined" &&
+  Array.isArray((renderer as ValueListRenderer).values);
 
 export const hasValidationRules = (
   type?: ColumnType
@@ -614,10 +632,10 @@ export const findColumn = (
   }
 };
 
-export function updateColumn(
-  columns: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
-): KeyedColumnDescriptor[];
+export function updateColumn<T extends ColumnDescriptor>(
+  columns: T[],
+  column: T
+): T[];
 export function updateColumn(
   columns: KeyedColumnDescriptor[],
   column: string,
@@ -747,7 +765,7 @@ export const getDefaultColumnType = (
 
 export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
   column: T,
-  formatting: TypeFormatting
+  formatting: ColumnTypeFormatting
 ): T => {
   const { serverDataType, type = getDefaultColumnType(serverDataType) } =
     column;
@@ -771,11 +789,11 @@ export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
   }
 };
 
-export const updateColumnRenderer = <
+export const updateColumnRenderProps = <
   T extends ColumnDescriptor = ColumnDescriptor
 >(
   column: T,
-  cellRenderer: CellRendererDescriptor
+  renderer: ColumnTypeRendering
 ): T => {
   const { serverDataType, type } = column;
   if (type === undefined) {
@@ -783,9 +801,7 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         name: getDefaultColumnType(serverDataType),
-        renderer: {
-          name: cellRenderer.name,
-        },
+        renderer,
       },
     };
   } else if (isSimpleColumnType(type)) {
@@ -793,9 +809,7 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         name: type,
-        renderer: {
-          name: cellRenderer.name,
-        },
+        renderer,
       },
     };
   } else {
@@ -803,18 +817,17 @@ export const updateColumnRenderer = <
       ...column,
       type: {
         ...type,
-        renderer: {
-          name: cellRenderer.name,
-        },
+        // TODO do we need to preserve any existing attributes from renderer ?
+        renderer,
       },
     };
   }
 };
 
 const NO_TYPE_SETTINGS = {};
-export const getTypeSettingsFromColumn = (
+export const getTypeFormattingFromColumn = (
   column: ColumnDescriptor
-): TypeFormatting => {
+): ColumnTypeFormatting => {
   if (isTypeDescriptor(column.type)) {
     return column.type.formatting ?? NO_TYPE_SETTINGS;
   } else {
@@ -935,4 +948,41 @@ export const setCalculatedColumnExpression = (
     ...column,
     name: `${name}:${type}:=${expression}`,
   };
+};
+
+export const moveColumnTo = (
+  columns: ColumnDescriptor[],
+  column: ColumnDescriptor,
+  newIndex: number
+) => {
+  const index = columns.indexOf(column);
+  return moveItem(columns, index, newIndex);
+};
+
+export function replaceColumn(
+  state: KeyedColumnDescriptor[],
+  column: KeyedColumnDescriptor
+) {
+  return state.map((col) => (col.name === column.name ? column : col));
+}
+
+export const applyDefaultColumnConfig = (
+  { columns, table }: TableSchema,
+  getDefaultColumnConfig?: DefaultColumnConfiguration
+) => {
+  if (typeof getDefaultColumnConfig === "function") {
+    return columns.map((column) => {
+      const config = getDefaultColumnConfig(table.table, column.name);
+      if (config) {
+        return {
+          ...column,
+          ...config,
+        };
+      } else {
+        return column;
+      }
+    });
+  } else {
+    return columns;
+  }
 };

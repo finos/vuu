@@ -3,7 +3,9 @@ import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
   VuuColumnDataType,
+  VuuRowDataItemType,
   VuuSortType,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
@@ -22,8 +24,8 @@ export type TableHeadings = TableHeading[][];
 export type DataCellEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuColumnDataType
-) => boolean;
+  value: VuuRowDataItemType
+) => Promise<string | true>;
 
 export interface TableCellProps {
   className?: string;
@@ -34,9 +36,15 @@ export interface TableCellProps {
   row: DataSourceRow;
 }
 
+export type CommitResponse = Promise<true | string>;
+
+export type DataItemCommitHandler = (
+  value: VuuRowDataItemType
+) => CommitResponse;
+
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onCommit?: (value: VuuColumnDataType) => boolean;
+  onCommit?: DataItemCommitHandler;
 }
 
 export interface TableAttributes {
@@ -62,7 +70,7 @@ export interface GridConfig extends TableConfig {
   selectionBookendWidth?: number;
 }
 
-export declare type TypeFormatting = {
+export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
   pattern?: string;
@@ -77,17 +85,43 @@ export interface EditValidationRule {
   value?: string;
 }
 
-export interface ColumnTypeRenderer {
+export type ListOption = {
+  label: string;
+  value: number | string;
+};
+
+/**
+ * Descibes a custom cell renderer for a Table column
+ */
+export interface ColumnTypeRendering {
   associatedField?: string;
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
   rules?: EditValidationRule[];
-  // These are for the dropdown-input - how do we type parameters for custom renderers ?
-  values?: ReadonlyArray<string>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
+}
+
+export type LookupTableDetails = {
+  labelColumn: string;
+  table: VuuTable;
+  valueColumn: string;
+};
+/**
+ * This describes a serverside lookup table which will be bound to the edit control
+ * for this column. The lookup table will typically have two columns, mapping a
+ * numeric value to a User friendly display string.
+ */
+export interface LookupRenderer {
+  name: string;
+  lookup: LookupTableDetails;
+}
+
+export interface ValueListRenderer {
+  name: string;
+  values: string[];
 }
 
 export declare type ColumnTypeSimple =
@@ -100,13 +134,23 @@ export declare type ColumnTypeSimple =
   | "checkbox";
 
 export declare type ColumnTypeDescriptor = {
-  formatting?: TypeFormatting;
+  formatting?: ColumnTypeFormatting;
   name: ColumnTypeSimple;
-  renderer?: ColumnTypeRenderer | MappedValueTypeRenderer;
+  renderer?:
+    | ColumnTypeRendering
+    | LookupRenderer
+    | MappedValueTypeRenderer
+    | ValueListRenderer;
+};
+
+export declare type ColumnTypeDescriptorCustomRenderer = {
+  formatting?: ColumnTypeFormatting;
+  name: ColumnTypeSimple;
+  renderer: ColumnTypeRendering;
 };
 
 export interface ColumnTypeRendererWithValidationRules
-  extends ColumnTypeRenderer {
+  extends ColumnTypeRendering {
   rules: EditValidationRule[];
 }
 
@@ -149,6 +193,11 @@ export interface ColumnDescriptor {
   sortable?: boolean;
   type?: ColumnType;
   width?: number;
+}
+
+export interface ColumnDescriptorCustomRenderer
+  extends Omit<ColumnDescriptor, "type"> {
+  type: ColumnTypeDescriptorCustomRenderer;
 }
 
 /** This is an internal description of a Column that extends the public

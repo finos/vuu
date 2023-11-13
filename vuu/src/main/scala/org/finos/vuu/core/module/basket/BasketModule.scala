@@ -4,7 +4,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Link, TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.basket.provider.{AlgoProvider, BasketConstituentProvider, BasketProvider, NullProvider, PriceStrategyProvider}
-import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentService}
+import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
@@ -14,9 +14,11 @@ object BasketModule extends DefaultModule {
 
   private final val NAME = "BASKET"
 
+  final val BasketTable = "basket"
   final val BasketTradingTable = "basketTrading"
   final val BasketConstituentTable = "basketConstituent"
   final val BasketTradingConstituent = "basketTradingConstituent"
+  final val BasketTradingConstituentJoin = "basketTradingConstituentJoin"
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
@@ -30,7 +32,7 @@ object BasketModule extends DefaultModule {
       .addTable(
         //this table should contain one row for each of .FTSE, .DJI, .HSI, .etc...
         TableDef(
-          name = "basket",
+          name = BasketTable,
           keyField = B.Id,
           columns = Columns.fromNames(B.Id.string(), B.Name.string(), B.NotionalValue.double(), B.NotionalValueUsd.double()),
           VisualLinks(),
@@ -113,7 +115,7 @@ object BasketModule extends DefaultModule {
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
-          name = "basketTrdConsPrices",
+          name = BasketTradingConstituentJoin,
           baseTable = tableDefs.get(NAME, BasketTradingConstituent),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituent)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -121,8 +123,13 @@ object BasketModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
-          joinFields = Seq()
-        ))
+          joinFields = Seq(),
+        ),
+        (table, _, _, tableContainer) => ViewPortDef(
+          columns = table.getTableDef.columns,
+          service = new BasketTradingConstituentJoinService(table, tableContainer)
+        )
+      )
       .asModule()
   }
 

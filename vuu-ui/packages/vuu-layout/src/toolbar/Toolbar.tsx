@@ -21,6 +21,7 @@ export type ActiveItemChangeHandler = (itemIndex: number[]) => void;
 export type NavigationOutOfBoundsHandler = (direction: "start" | "end") => void;
 export interface ToolbarProps extends OverflowContainerProps {
   activeItemIndex?: number[];
+  alignItems?: "start" | "center" | "end";
   defaultActiveItemIndex?: number[];
   onActiveChange?: ActiveItemChangeHandler;
   /**
@@ -30,18 +31,21 @@ export interface ToolbarProps extends OverflowContainerProps {
    */
   onNavigateOutOfBounds?: NavigationOutOfBoundsHandler;
   selectionStrategy?: SelectionStrategy | SpecialKeyMultipleSelection;
+  showSeparators?: boolean;
 }
 
 export const Toolbar = ({
   activeItemIndex: activeItemIndexProp,
+  alignItems = "start",
   defaultActiveItemIndex,
   children,
-  className: classNameProp,
+  className,
   id: idProp,
   onActiveChange,
   onNavigateOutOfBounds,
   orientation = "horizontal",
   selectionStrategy = "none",
+  showSeparators = false,
   ...props
 }: ToolbarProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -62,7 +66,6 @@ export const Toolbar = ({
   });
 
   const id = useId(idProp);
-  const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
 
   const items = useMemo(
     () =>
@@ -90,7 +93,11 @@ export const Toolbar = ({
     <OverflowContainer
       {...props}
       {...toolbarHook.containerProps}
-      className={cx(classBase, className)}
+      className={cx(className, classBase, `${classBase}-${orientation}`, {
+        [`${classBase}-alignCenter`]: alignItems === "center",
+        [`${classBase}-alignEnd`]: alignItems === "end",
+        [`${classBase}-withSeparators`]: showSeparators,
+      })}
       {...props}
       ref={rootRef}
     >

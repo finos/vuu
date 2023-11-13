@@ -38,17 +38,17 @@ class DefaultMessageHandler(val channel: Channel,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
-  val closeFuture = channel.closeFuture()
+  val closeFuture: ChannelFuture = channel.closeFuture()
 
-  closeFuture.addListener(new ChannelFutureListener {
-    override def operationComplete(f: ChannelFuture): Unit = {
-      logger.info("Calling disconnect() from future callback")
-      disconnect()
-    }
+  closeFuture.addListener((f: ChannelFuture) => {
+    logger.info("Calling disconnect() from future callback")
+    disconnect()
   })
 
   private def sendUpdatesInternal(updates: Seq[ViewPortUpdate], highPriority: Boolean = false) = {
-    if (!updates.isEmpty) {
+    if (updates.nonEmpty) {
+
+      logger.debug(s"ASYNC-SVR-OUT: Sending ${updates.size} updates")
 
       val formatted = formatDataOutbound(updates)
 
@@ -81,7 +81,7 @@ class DefaultMessageHandler(val channel: Channel,
     }
   }
 
-  def disconnect() = {
+  def disconnect(): ChannelFuture = {
     serverApi.disconnect(session)
     sessionContainer.remove(session)
     channel.disconnect()
@@ -91,19 +91,19 @@ class DefaultMessageHandler(val channel: Channel,
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
 
     val updates = outbound.filter(vpu => vpu.vpRequestId == vpu.vp.getRequestId).flatMap(vp => formatOneRowUpdate(vp)).toArray
+    //val updates = outbound.flatMap(vp => formatOneRowUpdate(vp)).toArray
 
     val updateId = RequestId.oneNew()
 
-    TableRowUpdates(updateId, true, timeProvider.now, updates)
+    TableRowUpdates(updateId, isLast = true, timeProvider.now(), updates)
   }
 
   protected def formatOneRowUpdate(update: ViewPortUpdate): Option[RowUpdate] = {
 
     update.vpUpdate match {
-      case SizeUpdateType => {
+      case SizeUpdateType =>
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
         Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
-      }
 
       case RowUpdateType =>
 
@@ -168,12 +168,12 @@ class DefaultMessageHandler(val channel: Channel,
           case None =>
             logger.error(s"Could not find impl for service ${rpc.service}")
             Some(VsMsg(msg.requestId, msg.sessionId, msg.token, msg.user,
-              RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call ${rpc} for service ${rpc.service} in module ${msg.module}", -1)))
+              RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call $rpc for service ${rpc.service} in module ${msg.module}", -1)))
             )
         }
       case None =>
         Some(VsMsg(msg.requestId, msg.sessionId, msg.token, msg.user,
-          RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call ${rpc} in module ${msg.module}", -1))))
+          RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call $rpc in module ${msg.module}", -1))))
     }
   }
 
@@ -196,7 +196,7 @@ case class ClientSessionId(sessionId: String, user: String) extends Ordered[Clie
 
 trait ClientSessionContainer {
 
-  def register(sessionId: ClientSessionId, messageHandler: MessageHandler)
+  def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit
 
   //def addConnection(session: ClientSessionId, channel: Channel, handler: InboundMessageHandler): Unit
   def getHandler(sessionId: ClientSessionId): Option[MessageHandler]

@@ -35,11 +35,11 @@ const createBasket = (basketId: string, basketName: string) => {
   data.push(basketTradingRow);
 };
 
-createBasket(".FTSE", "Steve FTSE 1");
-createBasket(".FTSE", "Steve FTSE 2");
-createBasket(".FTSE", "Steve FTSE 3");
-createBasket(".FTSE", "Steve FTSE 4");
-createBasket(".FTSE", "Steve FTSE 5");
-createBasket(".FTSE", "Steve FTSE 6");
+// createBasket(".FTSE", "Steve FTSE 1");
+// createBasket(".FTSE", "Steve FTSE 2");
+// createBasket(".FTSE", "Steve FTSE 3");
+// createBasket(".FTSE", "Steve FTSE 4");
+// createBasket(".FTSE", "Steve FTSE 5");
+// createBasket(".FTSE", "Steve FTSE 6");
 
 export default data;

@@ -235,6 +235,12 @@ export interface ServerAPI {
 
 const connectedServerAPI: ServerAPI = {
   subscribe: (message, callback) => {
+    if (viewports.get(message.viewport)) {
+      throw Error(
+        `ConnectionManager attempting to subscribe with an existing viewport id`
+      );
+    }
+    // TODO we never use this status
     viewports.set(message.viewport, {
       status: "subscribing",
       request: message,
@@ -262,7 +268,7 @@ const connectedServerAPI: ServerAPI = {
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>
-    asyncRequest<VuuTableList>({ type: Message.GET_TABLE_LIST }),
+    asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
 
   getTableSchema: async (table) =>
     asyncRequest<TableSchema>({

@@ -53,34 +53,6 @@ const { KEY } = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
 
-export const isVisualLinksAction = (
-  action: GridAction
-): action is DataSourceVisualLinksMessage => action.type === "vuu-links";
-
-export const isVisualLinkCreatedAction = (
-  action: GridAction
-): action is DataSourceVisualLinkCreatedMessage =>
-  action.type === "vuu-link-created";
-
-export const isVisualLinkRemovedAction = (
-  action: GridAction
-): action is DataSourceVisualLinkRemovedMessage =>
-  action.type === "vuu-link-removed";
-
-export const isViewportMenusAction = (
-  action: GridAction
-): action is DataSourceMenusMessage => action.type === "vuu-menu";
-
-export const isVuuFeatureAction = (
-  action: GridAction
-): action is VuuFeatureMessage =>
-  isViewportMenusAction(action) || isVisualLinksAction(action);
-
-export const isVuuFeatureInvocation = (
-  action: GridAction
-): action is VuuFeatureInvocationMessage =>
-  action.type === "vuu-link-created" || action.type === "vuu-link-removed";
-
 const isMenuItem = (menu: VuuMenuItem | VuuMenu): menu is VuuMenuItem =>
   "rpcName" in menu;
 
@@ -318,11 +290,12 @@ export const useVuuMenuActions = ({
 }: VuuMenuActionHookProps): ViewServerHookResult => {
   const buildViewserverMenuOptions: MenuBuilder = useCallback(
     (location, options) => {
-      const { visualLink, visualLinks, vuuMenu } = menuActionConfig;
+      const { links, menu } = dataSource;
+      const { visualLink } = menuActionConfig;
       const descriptors: ContextMenuItemDescriptor[] = [];
 
-      if (location === "grid" && visualLinks && !visualLink) {
-        visualLinks.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
+      if (location === "grid" && links && !visualLink) {
+        links.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
           const { link, label: linkLabel } = linkDescriptor;
           const label = linkLabel ? linkLabel : link.toTable;
           descriptors.push({
@@ -333,13 +306,13 @@ export const useVuuMenuActions = ({
         });
       }
 
-      if (vuuMenu && isTableLocation(location)) {
+      if (menu && isTableLocation(location)) {
         const menuDescriptor = buildMenuDescriptor(
-          vuuMenu,
+          menu,
           location,
           options as VuuServerMenuOptions
         );
-        if (isRoot(vuuMenu) && isGroupMenuItemDescriptor(menuDescriptor)) {
+        if (isRoot(menu) && isGroupMenuItemDescriptor(menuDescriptor)) {
           descriptors.push(...menuDescriptor.children);
         } else if (menuDescriptor) {
           descriptors.push(menuDescriptor);
@@ -348,7 +321,7 @@ export const useVuuMenuActions = ({
 
       return descriptors;
     },
-    [menuActionConfig]
+    [dataSource, menuActionConfig]
   );
 
   const handleMenuAction = useCallback(

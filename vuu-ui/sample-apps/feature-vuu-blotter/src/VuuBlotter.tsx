@@ -1,17 +1,14 @@
 import {
   ConfigChangeMessage,
   DataSourceVisualLinkCreatedMessage,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
-import {
   isViewportMenusAction,
   isVisualLinkCreatedAction,
   isVisualLinkRemovedAction,
   isVisualLinksAction,
-  MenuActionConfig,
-  useVuuMenuActions,
-} from "@finos/vuu-data-react";
+  RemoteDataSource,
+  TableSchema,
+} from "@finos/vuu-data";
+import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { Grid, GridProvider } from "@finos/vuu-datagrid";
 import { GridAction, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";

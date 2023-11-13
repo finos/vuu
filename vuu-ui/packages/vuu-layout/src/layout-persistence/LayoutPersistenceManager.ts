@@ -10,7 +10,10 @@ export interface LayoutPersistenceManager {
    *
    * @returns Unique identifier assigned to the saved layout
    */
-  createLayout: (metadata: LayoutMetadataDto, layout: LayoutJSON) => Promise<LayoutMetadata>;
+  createLayout: (
+    metadata: LayoutMetadataDto,
+    layout: LayoutJSON
+  ) => Promise<LayoutMetadata>;
 
   /**
    * Overwrites an existing layout and its corresponding metadata with the provided information
@@ -19,7 +22,11 @@ export interface LayoutPersistenceManager {
    * @param metadata - Metadata describing the new layout to overwrite with
    * @param layout   - Full JSON representation of the new layout to overwrite with
    */
-  updateLayout: (id: string, metadata: LayoutMetadataDto, layout: LayoutJSON) => Promise<void>;
+  updateLayout: (
+    id: string,
+    metadata: LayoutMetadataDto,
+    layout: LayoutJSON
+  ) => Promise<void>;
 
   /**
    * Deletes an existing layout and its corresponding metadata
@@ -52,9 +59,9 @@ export interface LayoutPersistenceManager {
   loadApplicationLayout: () => Promise<LayoutJSON>;
 
   /**
-  * Saves the application layout which includes all layouts on screen
-  *
-  * @param layout - Full JSON representation of the application layout to be saved
-  */
-   saveApplicationLayout: (layout: LayoutJSON) => Promise<void>;
+   * Saves the application layout which includes all layouts on screen
+   *
+   * @param layout - Full JSON representation of the application layout to be saved
+   */
+  saveApplicationLayout: (layout: LayoutJSON) => Promise<void>;
 }

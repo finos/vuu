@@ -14,8 +14,16 @@ import {
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { TableSchema, WithRequestId } from "./message-utils";
-import { WithFullConfig } from "./data-source";
-import { Selection } from "@finos/vuu-datagrid-types";
+import {
+  DataSourceMenusMessage,
+  DataSourceVisualLinkCreatedMessage,
+  DataSourceVisualLinkRemovedMessage,
+  DataSourceVisualLinksMessage,
+  VuuFeatureInvocationMessage,
+  VuuFeatureMessage,
+  WithFullConfig,
+} from "./data-source";
+import { GridAction, Selection } from "@finos/vuu-datagrid-types";
 import { WebSocketProtocol } from "./websocket-connection";
 
 export interface OpenDialogAction {
@@ -134,12 +142,26 @@ export interface MenuRpcResponse {
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
+export interface MenuRpcReject extends ViewportMessageIn {
+  error?: string;
+  requestId: string;
+  rpcName?: string;
+  type: "VIEW_PORT_MENU_REJ";
+}
+
+export interface VuuUIMessageInMenuRej {
+  error: string;
+  requestId: string;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_REJ";
+}
 
 export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
   | MenuRpcResponse
+  | MenuRpcReject
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta
   | VuuUIMessageInRPCEditReject
@@ -333,3 +355,31 @@ export const isSessionTable = (table?: unknown) => {
   }
   return false;
 };
+
+export const isVisualLinksAction = (
+  action: GridAction
+): action is DataSourceVisualLinksMessage => action.type === "vuu-links";
+
+export const isVisualLinkCreatedAction = (
+  action: GridAction
+): action is DataSourceVisualLinkCreatedMessage =>
+  action.type === "vuu-link-created";
+
+export const isVisualLinkRemovedAction = (
+  action: GridAction
+): action is DataSourceVisualLinkRemovedMessage =>
+  action.type === "vuu-link-removed";
+
+export const isViewportMenusAction = (
+  action: GridAction
+): action is DataSourceMenusMessage => action.type === "vuu-menu";
+
+export const isVuuFeatureAction = (
+  action: GridAction
+): action is VuuFeatureMessage =>
+  isViewportMenusAction(action) || isVisualLinksAction(action);
+
+export const isVuuFeatureInvocation = (
+  action: GridAction
+): action is VuuFeatureInvocationMessage =>
+  action.type === "vuu-link-created" || action.type === "vuu-link-removed";

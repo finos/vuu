@@ -11,11 +11,11 @@ import "./InputCell.css";
 
 const classBase = "vuuTableInputCell";
 
-const WarnCommit = () => {
+const WarnCommit = (): Promise<true> => {
   console.warn(
     "onCommit handler has not been provided to InputCell cell renderer"
   );
-  return true;
+  return Promise.resolve(true);
 };
 export const InputCell = ({
   column,

@@ -53,11 +53,11 @@ export const useInstrumentPicker = ({
     (open, closeReason) => {
       setIsOpen(open);
       onOpenChange?.(open, closeReason);
-      if (open === false) {
-        dataSource.unsubscribe();
-      }
+      // if (open === false) {
+      //   dataSource.unsubscribe();
+      // }
     },
-    [dataSource, onOpenChange, setIsOpen]
+    [onOpenChange, setIsOpen]
   );
 
   const handleInputChange = useCallback(
@@ -92,6 +92,9 @@ export const useInstrumentPicker = ({
   );
 
   const inputProps = {
+    inputProps: {
+      autoComplete: "off",
+    },
     onChange: handleInputChange,
   };
   const controlProps = {};

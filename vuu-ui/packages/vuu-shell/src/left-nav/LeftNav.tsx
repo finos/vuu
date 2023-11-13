@@ -13,30 +13,39 @@ import "./LeftNav.css";
 
 const classBase = "vuuLeftNav";
 
+export type NavDisplayStatus =
+  | "menu-full"
+  | "menu-icons"
+  | "menu-full-content"
+  | "menu-icons-content";
+
+export type NavDisplayStatusHandler = (
+  navDisplayStatus: NavDisplayStatus
+) => void;
 interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
+  defaultActiveTabIndex?: number;
+  defaultDisplayStatus?: NavDisplayStatus;
   features: FeatureProps[];
   tableFeatures: FeatureProps[];
+  onChangeDisplayStatus?: NavDisplayStatusHandler;
   onResize?: (size: number) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
 }
 
-type NavStatus =
-  | "menu-full"
-  | "menu-icons"
-  | "menu-full-content"
-  | "menu-icons-content";
-
 type NavState = {
   activeTabIndex: number;
-  navStatus: NavStatus;
+  navStatus: NavDisplayStatus;
 };
 
 export const LeftNav = ({
   "data-path": path,
+  defaultDisplayStatus = "menu-full",
+  defaultActiveTabIndex = 0,
   features,
+  onChangeDisplayStatus,
   onResize,
   sizeCollapsed = 80,
   sizeContent = 300,
@@ -47,13 +56,13 @@ export const LeftNav = ({
 }: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
   const [navState, setNavState] = useState<NavState>({
-    activeTabIndex: 0,
-    navStatus: "menu-full",
+    activeTabIndex: defaultActiveTabIndex,
+    navStatus: defaultDisplayStatus,
   });
   const [themeClass] = useThemeAttributes();
 
   const toggleNavWidth = useCallback(
-    (navStatus: NavStatus) => {
+    (navStatus: NavDisplayStatus) => {
       switch (navStatus) {
         case "menu-icons":
           return sizeExpanded;
@@ -68,7 +77,7 @@ export const LeftNav = ({
     [sizeCollapsed, sizeContent, sizeExpanded]
   );
 
-  const toggleNavStatus = (navStatus: NavStatus) => {
+  const toggleNavStatus = (navStatus: NavDisplayStatus) => {
     switch (navStatus) {
       case "menu-icons":
         return "menu-full";
@@ -82,7 +91,10 @@ export const LeftNav = ({
   };
 
   const getWidthAndStatus = useCallback(
-    (navState: NavStatus, tabIndex: number): [number, NavStatus] => {
+    (
+      navState: NavDisplayStatus,
+      tabIndex: number
+    ): [number, NavDisplayStatus] => {
       if (tabIndex === 0) {
         const newNavState =
           navState === "menu-full-content"
@@ -127,16 +139,18 @@ export const LeftNav = ({
 
   const toggleSize = useCallback(() => {
     const { activeTabIndex, navStatus: currentNavStatus } = navState;
+    const newNavStatus = toggleNavStatus(currentNavStatus);
     setNavState({
       activeTabIndex,
-      navStatus: toggleNavStatus(currentNavStatus),
+      navStatus: newNavStatus,
     });
     dispatch({
       type: Action.LAYOUT_RESIZE,
       path,
       size: toggleNavWidth(currentNavStatus),
     } as LayoutResizeAction);
-  }, [dispatch, navState, path, toggleNavWidth]);
+    onChangeDisplayStatus?.(newNavStatus);
+  }, [dispatch, navState, onChangeDisplayStatus, path, toggleNavWidth]);
 
   const style = {
     ...styleProp,

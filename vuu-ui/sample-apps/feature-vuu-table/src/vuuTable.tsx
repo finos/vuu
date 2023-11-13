@@ -5,14 +5,8 @@ import {
   RemoteDataSource,
   TableSchema,
   VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
 } from "@finos/vuu-data";
-import {
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuActionConfig,
-  useVuuMenuActions,
-} from "@finos/vuu-data-react";
+import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
@@ -162,17 +156,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
     dataSource.visualLink = undefined;
   }, [dataSource]);
 
-  const handleVuuFeatureEnabled = useCallback(
-    (message: VuuFeatureMessage) => {
-      if (isViewportMenusAction(message)) {
-        saveSession?.(message.menu, "vuu-menu");
-      } else if (isVisualLinksAction(message)) {
-        saveSession?.(message.links, "vuu-links");
-      }
-    },
-    [saveSession]
-  );
-
   const handleVuuFeatureInvoked = useCallback(
     (message: VuuFeatureInvocationMessage) => {
       if (message.type === "vuu-link-created") {
@@ -280,7 +263,6 @@ const VuuTable = ({ schema, ...props }: FilteredTableProps) => {
             config={tableConfigRef.current}
             dataSource={dataSource}
             onConfigChange={handleTableConfigChange}
-            onFeatureEnabled={handleVuuFeatureEnabled}
             onFeatureInvocation={handleVuuFeatureInvoked}
             renderBufferSize={100}
             rowHeight={18}

@@ -1,12 +1,17 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, ListOption } from "@finos/vuu-datagrid-types";
 import { RpcResponseHandler } from "@finos/vuu-data-react";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
+import { VuuTable } from "@finos/vuu-protocol-types";
 
+export type LookupTableProvider = (table: VuuTable) => ListOption[];
+
+export type DefaultColumnConfiguration = <T extends string = string>(
+  tableName: T,
+  columnName: string
+) => Partial<ColumnDescriptor> | undefined;
 export interface ShellContextProps {
-  getDefaultColumnConfig?: (
-    tableName: string,
-    columnName: string
-  ) => Partial<ColumnDescriptor>;
+  getDefaultColumnConfig?: DefaultColumnConfiguration;
+  getLookupValues?: LookupTableProvider;
   handleRpcResponse?: RpcResponseHandler;
 }
 

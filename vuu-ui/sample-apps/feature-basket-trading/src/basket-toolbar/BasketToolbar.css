@@ -7,7 +7,25 @@
     padding: 8px 16px;
 }
 
+
+.vuuBasketToolbar-side {
+    --saltButton-height: 32px;
+    --saltButton-minWidth: 50px;
+    color: white;
+}
+
+.vuuCycleStateButton-buy {
+    background-color: var(--vuu-color-green-50);
+  
+}
+.vuuCycleStateButton-sell {
+    background-color: var(--vuu-color-red-50);
+  
+}
+
+
 .vuuBasketToolbar-units {
+    --saltInput-minWidth: 60px!important;
     --vuuExpandoInput-border: solid 1px var(--salt-editable-borderColor);
     --vuuExpandoInput-borderRadius: 6px;
     --vuuExpandoInput-height: 32px;
@@ -19,6 +37,10 @@
     font-size: 20px;
     font-weight: 700;
 }
+
+/* .vuuBasketToolbar-units {
+    --vuuExpandoInput-minWidth: 80px;
+} */
 
 .saltFormField:has(.vuuBasketToolbar-notional){
     margin: 0 24px;

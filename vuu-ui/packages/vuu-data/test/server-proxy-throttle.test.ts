@@ -36,9 +36,9 @@ const mockConnection = {
 };
 
 describe("ServerProxy 'size-only throttling'", () => {
-  it("passes a size only message through to UI client", () => {
+  it("passes a size only message through to UI client", async () => {
     const postMessageToClient = vi.fn();
-    const serverProxy = createServerProxyAndSubscribeToViewport(
+    const serverProxy = await createServerProxyAndSubscribeToViewport(
       postMessageToClient,
       {
         connection: mockConnection,

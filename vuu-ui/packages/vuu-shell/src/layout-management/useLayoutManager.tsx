@@ -6,22 +6,28 @@ import React, {
   useState,
 } from "react";
 import {
+  defaultLayout,
   LayoutJSON,
+  LayoutPersistenceManager,
   LocalLayoutPersistenceManager,
   RemoteLayoutPersistenceManager,
   resolveJSONPath,
 } from "@finos/vuu-layout";
-import {
-  LayoutMetadata,
-  LayoutMetadataDto
-} from "./layoutTypes";
-import { defaultLayout } from "@finos/vuu-layout/";
+import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
 const local = process.env.LOCAL ?? true;
 
-const persistenceManager = local
-  ? new LocalLayoutPersistenceManager()
-  : new RemoteLayoutPersistenceManager();
+let _persistenceManager: LayoutPersistenceManager;
+
+const getPersistenceManager = () => {
+  if (_persistenceManager == undefined) {
+    _persistenceManager = local
+      ? new LocalLayoutPersistenceManager()
+      : new RemoteLayoutPersistenceManager();
+  }
+
+  return _persistenceManager;
+};
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
@@ -61,7 +67,8 @@ export const LayoutManagementProvider = (
   );
 
   useEffect(() => {
-    persistenceManager.loadMetadata()
+    getPersistenceManager()
+      .loadMetadata()
       .then((metadata) => {
         setLayoutMetadata(metadata);
       })
@@ -70,20 +77,24 @@ export const LayoutManagementProvider = (
         console.error("Error occurred while retrieving metadata", error);
       });
 
-      persistenceManager.loadApplicationLayout()
+    getPersistenceManager()
+      .loadApplicationLayout()
       .then((layout: LayoutJSON) => {
         setApplicationLayout(layout);
       })
       .catch((error: Error) => {
         //TODO: Show error toaster
-        console.error("Error occurred while retrieving application layout", error);
+        console.error(
+          "Error occurred while retrieving application layout",
+          error
+        );
       });
   }, [setApplicationLayout]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
       setApplicationLayout(layout, false);
-      persistenceManager.saveApplicationLayout(layout);
+      getPersistenceManager().saveApplicationLayout(layout);
     },
     [setApplicationLayout]
   );
@@ -95,7 +106,7 @@ export const LayoutManagementProvider = (
     );
 
     if (layoutToSave) {
-      persistenceManager
+      getPersistenceManager()
         .createLayout(metadata, layoutToSave)
         .then((metadata) => {
           //TODO: Show success toast
@@ -111,14 +122,16 @@ export const LayoutManagementProvider = (
 
   const loadLayoutById = useCallback(
     (id: string) => {
-      persistenceManager.loadLayout(id).then((layoutJson) => {
-        const { current: prev } = applicationLayoutRef;
-        setApplicationLayout({
-          ...prev,
-          active: prev.children?.length ?? 0,
-          children: [...(prev.children || []), layoutJson],
+      getPersistenceManager()
+        .loadLayout(id)
+        .then((layoutJson) => {
+          const { current: prev } = applicationLayoutRef;
+          setApplicationLayout({
+            ...prev,
+            active: prev.children?.length ?? 0,
+            children: [...(prev.children || []), layoutJson],
+          });
         });
-      });
     },
     [setApplicationLayout]
   );

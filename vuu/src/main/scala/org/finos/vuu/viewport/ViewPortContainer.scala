@@ -15,7 +15,7 @@ import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.rpc.EditRpcHandler
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree._
@@ -42,10 +42,6 @@ trait ViewPortContainerMBean {
   def openGroupByKey(vpId: String, treeKey: String): String
 
   def closeGroupByKey(vpId: String, treeKey: String): String
-
-}
-
-object ViewPortContainerMetrics {
 
 }
 
@@ -76,6 +72,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
+  }
+
+  def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
+    val viewPort = this.getViewPortById(vpId)
+    val viewPortDef = viewPort.getStructure.viewPortDef
+    viewPortDef.service.processViewPortRpcCall(method, params, namedParams)(ctx)
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
@@ -428,6 +430,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         UserDefinedFilterAndSort(aFilter, aSort)
     }
 
+    //update the viewport request id, to prevent any unwanted updates going out while we're changing the viewport
+    viewPort.setRequestId(requestId)
+
     //we are not grouped by, but we want to change to a group by
     if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
@@ -512,11 +517,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     } else {
       logger.info("[VP] default else condition in change() call")
-      val structure = viewport.ViewPortStructuralFields(table = viewPort.table, columns = columns, viewPortDef = viewPort.getStructure.viewPortDef, filtAndSort = filtAndSort, filterSpec = filterSpec, groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker)
+      val structure = viewport.ViewPortStructuralFields(table = viewPort.table,
+        columns = columns, viewPortDef = viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort, filterSpec = filterSpec,
+        groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker
+      )
+      //viewPort.setRequestId(requestId)
       viewPort.changeStructure(structure)
+      //viewPort.setKeys(viewPort.getKeys)
     }
-
-    viewPort.setRequestId(requestId)
 
     viewPort
   }

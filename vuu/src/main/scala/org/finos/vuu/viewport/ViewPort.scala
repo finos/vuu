@@ -214,6 +214,8 @@ class ViewPortImpl(val id: String,
 
     val onlySortOrFilterChange = onlyFilterOrSortChanged(newStructuralFields, structuralFields.get())
 
+    logger.info(s"changeStructure(..) onlySortOrFilterChange=$onlySortOrFilterChange")
+
     structuralFields.set(newStructuralFields)
 
     if (!onlySortOrFilterChange)
@@ -276,6 +278,8 @@ class ViewPortImpl(val id: String,
     val to = currentRange.to
 
     val inrangeKeys = currentKeys.slice(from, to)
+
+    logger.info(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
 
     inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
   }
@@ -474,8 +478,8 @@ class ViewPortImpl(val id: String,
   }
 
   private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
-    logger.debug(s"publishing update @[$index] = $key ")
     if (this.enabled) {
+      logger.debug(s"publishing update @[$index] = $key ")
       outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }

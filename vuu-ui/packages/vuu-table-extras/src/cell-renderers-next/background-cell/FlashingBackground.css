@@ -1,57 +1,57 @@
-@property --background-cell-background {
-  syntax: '<color>'; /* <- defined as type number for the transition to work */
+/* @property --background-cell-background {
+  syntax: '<color>'; 
   initial-value: transparent;
   inherits: false;
-}
+} */
 
-@property --background-cell-color {
-  syntax: '<color>'; /* <- defined as type number for the transition to work */
+/* @property color {
+  syntax: '<color>'; 
   initial-value: #15171B;
   inherits: false;
-}
+} */
 
 @keyframes reactbgup1 {
     from {
-      --background-cell-background: var(--vuu-color-green-50);
-      --background-cell-color: white;
+      background-color: var(--vuu-color-green-50);
+      color: white;
     }
     to {
-      --background-cell-background: transparent;
-      --background-cell-color: var(--vuu-color-gray-80);
+      background-color: transparent;
+      color: var(--vuu-color-gray-80);
 
     }
   }
   
   @keyframes reactbgup2 {
     from {
-      --background-cell-background: var(--vuu-color-green-50);
-      --background-cell-color: #ffffff;
+      background-color: var(--vuu-color-green-50);
+      color: #ffffff;
     }
     to {
-      --background-cell-background: transparent;
-      --background-cell-color: var(--vuu-color-gray-80);
+      background-color: transparent;
+      color: var(--vuu-color-gray-80);
     }
   }
   
   @keyframes reactbgdown1 {
     from {
-      --background-cell-background: var(--vuu-color-red-50);
-      --background-cell-color: white;
+      background-color: var(--vuu-color-red-50);
+      color: white;
     }
     to {
-      --background-cell-background: transparent;
-      --background-cell-color: var(--vuu-color-gray-80);
+      background-color: transparent;
+      color: var(--vuu-color-gray-80);
     }
   }
   
   @keyframes reactbgdown2 {
     from {
-      --background-cell-background: var(--vuu-color-red-50);
-      --background-cell-color: white;
+      background-color: var(--vuu-color-red-50);
+      color: white;
     }
     to {
-      --background-cell-background: transparent;
-      --background-cell-color: var(--vuu-color-gray-80);
+      background-color: transparent;
+      color: var(--vuu-color-gray-80);
     }
   }
   

@@ -58,6 +58,7 @@ export const BackgroundCell = ({ column, row }: TableCellProps) => {
   const dirClass = direction ? ` ` + direction : "";
 
   const className = cx(classBase, dirClass, {
+    [`${classBase}-backgroundOnly`]: flashStyle === FlashStyle.BackgroundOnly,
     [`${classBase}-arrowOnly`]: flashStyle === FlashStyle.ArrowOnly,
     [`${classBase}-arrowBackground`]: flashStyle === FlashStyle.ArrowBackground,
   });
@@ -70,8 +71,14 @@ export const BackgroundCell = ({ column, row }: TableCellProps) => {
   );
 };
 
-registerComponent("background-next", BackgroundCell, "cell-renderer", {
-  description: "Change background color of cell when value changes",
-  label: "Background Flash",
-  serverDataType: ["long", "int", "double"],
-});
+registerComponent(
+  "vuu.price-move-background",
+  BackgroundCell,
+  "cell-renderer",
+  {
+    description: "Change background color of cell when value changes",
+    configEditor: "BackgroundCellConfigurationEditor",
+    label: "Background Flash",
+    serverDataType: ["long", "int", "double"],
+  }
+);

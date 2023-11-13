@@ -15,6 +15,7 @@ import {
   VuuLinkDescriptor,
   VuuMenu,
   VuuRange,
+  VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
@@ -474,11 +475,35 @@ export type DataSourceEvents = {
   resize: (size: number) => void;
 };
 
+/**
+ * return Promise<true> indicates success
+ * return Promise<errorMessage> indicates failure
+ */
 export type DataSourceEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuColumnDataType
-) => boolean;
+  value: VuuRowDataItemType
+) => Promise<true | string>;
+
+export type RpcResponse =
+  | MenuRpcResponse
+  | VuuUIMessageInRPCEditReject
+  | VuuUIMessageInRPCEditResponse;
+
+export type RpcResponseHandler = (response: RpcResponse) => boolean;
+
+export type RowSearchPredicate = (row: DataSourceRow) => boolean;
+
+export type DataSourceStatus =
+  | "disabled"
+  | "disabling"
+  | "enabled"
+  | "enabling"
+  | "initialising"
+  | "subscribing"
+  | "subscribed"
+  | "suspended"
+  | "unsubscribed";
 
 export type RpcResponse =
   | MenuRpcResponse
@@ -493,12 +518,37 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;
+  status: DataSourceStatus;
+  /**
+   *
+   * Similar to disable but intended for pauses of very short duration (default is 3 seconds). Although
+   * the dataSource will stop sending messages until resumed, it will not disconnect from a  remote server.
+   * It will preserve subscription to the remote server and continue to apply updates to cached data. It
+   * just won't send updates through to the UI thread (until resumed). Useful in edge cases such as where a
+   * component is dragged to a new location. When dropped, the component will be unmounted and very quickly
+   * remounted by React. For the duration of this operation, we suspend updates . Updating an unmounted
+   * React component would cause a React error.
+   * If an suspend is requested and not resumed within 3 seconds, it will automatically be promoted to a disable.,
+   */
   suspend?: () => void;
   resume?: () => void;
-  enable?: () => void;
+  /**
+   * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
+   * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
+   * accepts the same subscribe callback as subscribe. This allows a completely new instance of a component to
+   * assume ownership of a subscription and receive all messages.
+   */
+  enable?: (callback?: SubscribeCallback) => void;
+  /**
+   * Disables this subscription. A datasource will send no further messages until re-enabled. Example usage
+   * might be for a component displayed within a set of Tabs. If user switches to another tab, the dataSource
+   * of the component that is no longer visible can be disabled until it is made visible again.
+   */
   disable?: () => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
+  links?: LinkDescriptorWithLabel[];
+  menu?: VuuMenu;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
   ) => Promise<RpcResponse | undefined>;

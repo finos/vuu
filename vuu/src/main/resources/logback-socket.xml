@@ -26,6 +26,10 @@
         <appender-ref ref="server-inout"/>
     </logger>
 
+    <!--logger name = "org.finos.vuu.viewport" level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </logger-->
+
     <logger name="org.finos.vuu.net.DefaultMessageHandler" level="DEBUG">
         <appender-ref ref="server-inout"/>
         <totalSizeCap>20MB</totalSizeCap>

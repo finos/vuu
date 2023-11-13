@@ -7,7 +7,7 @@ import org.finos.toolbox.time.Clock
 
 import java.util.concurrent.ConcurrentHashMap
 
-class MockProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
+class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
   lifecycle(this)
 
@@ -22,7 +22,7 @@ class MockProvider(table: DataTable)(implicit timeProvider: Clock, lifecycle: Li
   }
 
   def tick(key: String, row: Map[String, Any]) =
-    table.processUpdate(key, new RowWithData(key, row), timeProvider.now())
+    table.processUpdate(key, new RowWithData(key, row), clock.now())
 
   def delete(key: String) = {
     table.processDelete(key)

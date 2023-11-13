@@ -45,7 +45,7 @@ export const useTableContextMenu = ({
         });
       }
     },
-    [columns, data, dataSource, showContextMenu]
+    [columns, data, dataSource, getSelectedRows, showContextMenu]
   );
 
   return onContextMenu;

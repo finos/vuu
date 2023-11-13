@@ -53,21 +53,18 @@ export const useDropdown = <Item, S extends SelectionStrategy>({
 
   const handleSelectionChange = useCallback(
     (evt, selected) => {
-      console.log(`useDropdown onSelectionChange`, {
-        selected,
-      });
       if (!isMultiSelect) {
         setIsOpen(false);
         onOpenChange?.(false);
       }
       if (Array.isArray(selected)) {
         (onSelectionChange as MultiSelectionHandler<Item>)?.(
-          null,
+          evt,
           selected as Item[]
         );
       } else if (selected) {
         (onSelectionChange as SingleSelectionHandler<Item>)?.(
-          null,
+          evt,
           selected as Item
         );
       }

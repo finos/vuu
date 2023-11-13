@@ -1,126 +1,56 @@
-import { TableConfig } from "@finos/vuu-datagrid-types";
-import { TableNext } from "@finos/vuu-table";
-import { useState } from "react";
-import { useTableConfig } from "../utils";
+import { TableNext, TableProps } from "@finos/vuu-table";
+import { useMemo } from "react";
+import { BasketsTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
+import { useVuuMenuActions } from "@finos/vuu-data-react";
+import { ContextMenuProvider } from "@finos/vuu-popups";
 
 let displaySequence = 1;
 
-export const Basket = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "BASKET", table: "basket" },
-  });
+const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
+  const schema = getSchema(tableName);
 
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
+    () => ({
+      config: {
+        columns: schema.columns,
         rowSeparators: true,
         zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
+      },
+      dataSource:
+        vuuModule<BasketsTableName>("BASKET").createDataSource(tableName),
+    }),
+    [schema.columns, tableName]
+  );
+
+  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    dataSource: tableProps.dataSource,
+  });
+
+  return (
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildViewserverMenuOptions}
+    >
+      <TableNext {...tableProps} renderBufferSize={50} />
+    </ContextMenuProvider>
   );
 };
+
+export const Basket = () => <BasketTable tableName="basket" />;
 Basket.displaySequence = displaySequence++;
 
-export const BasketConstituent = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "BASKET", table: "basketConstituent" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
+export const BasketConstituent = () => (
+  <BasketTable tableName="basketConstituent" />
+);
 BasketConstituent.displaySequence = displaySequence++;
 
-export const BasketTrading = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "BASKET", table: "basketTrading" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
+export const BasketTrading = () => <BasketTable tableName="basketTrading" />;
 BasketTrading.displaySequence = displaySequence++;
 
-export const BasketTradingConstituent = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "BASKET", table: "basketTradingConstituent" },
-  });
+export const AlgoType = () => <BasketTable tableName="algoType" />;
+AlgoType.displaySequence = displaySequence++;
 
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <TableNext
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-BasketTradingConstituent.displaySequence = displaySequence++;
+export const PriceStrategyType = () => (
+  <BasketTable tableName="priceStrategyType" />
+);
+PriceStrategyType.displaySequence = displaySequence++;

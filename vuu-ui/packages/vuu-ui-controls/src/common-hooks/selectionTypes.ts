@@ -90,10 +90,17 @@ export interface SelectionHookResult {
   setSelected: (selected: string[]) => void;
 }
 
+/**
+ * evt is only null in the special case of a selection fired from a multi-select
+ * host on tab or selection based on freeform text in combobox
+ */
 export type MultiSelectionHandler<Item = string> = (
   event: SyntheticEvent | null,
   selected: Item[]
 ) => void;
+/**
+ * evt is only null in the special case of freeform text in combobox
+ */
 export type SingleSelectionHandler<Item = string> = (
   event: SyntheticEvent | null,
   selected: Item
