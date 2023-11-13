@@ -4,6 +4,7 @@ import { Dialog } from "./Dialog";
 export type DialogState = {
   content: ReactElement;
   title: string;
+  hideCloseButton?: boolean;
 };
 
 export type SetDialog = (dialogState?: DialogState) => void;
@@ -22,6 +23,7 @@ export const useDialog = () => {
       onClose={handleClose}
       style={{ maxHeight: 500 }}
       title={dialogState.title}
+      hideCloseButton={dialogState.hideCloseButton}
     >
       {dialogState.content}
     </Dialog>

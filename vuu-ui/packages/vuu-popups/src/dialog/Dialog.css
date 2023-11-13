@@ -2,9 +2,13 @@
   background: var(--salt-container-primary-background);
   border: var(--vuuDialog-border, solid 1px #ccc);
   border-radius: 5px;
-  padding: var(--vuuDialog-padding, 0);
+  padding: var(--vuuDialog-padding, 16px);
   box-shadow: var(--salt-overlayable-shadow, none);
   height: var(--vuuDialog-height, fit-content);
   width: var(--vuuDialog-width, fit-content);
+}
+
+.vuuDialog-body {
+  padding-top: 16px;
 }
 

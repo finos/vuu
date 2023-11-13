@@ -63,6 +63,7 @@ export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
               />
             ),
             title: "Save Layout",
+            hideCloseButton: true,
           });
           return true;
         }

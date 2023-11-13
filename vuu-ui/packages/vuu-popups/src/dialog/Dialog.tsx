@@ -42,7 +42,7 @@ export const Dialog = ({
             onClose={close}
             title={title}
           />
-          {children}
+          <div className={`${classBase}-body`}>{children}</div>
         </div>
       </Scrim>
     </Portal>
