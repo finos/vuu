@@ -12,7 +12,7 @@ import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
 import { useShellContext } from "@finos/vuu-shell";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 
@@ -160,13 +160,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     }),
     [load]
   );
-
-  useEffect(() => {
-    dataSource.resume?.();
-    return () => {
-      dataSource.suspend?.();
-    };
-  }, [dataSource]);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource,

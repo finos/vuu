@@ -44,6 +44,7 @@ export const useDataSource = ({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
+      console.table(updates);
       for (const row of updates) {
         dataWindow.add(row);
       }
@@ -51,6 +52,8 @@ export const useDataSource = ({
       if (isMounted.current) {
         // TODO do we ever need to worry about missing updates here ?
         forceUpdate({});
+      } else {
+        console.log(`ignore update as we're not mounted`);
       }
     },
     [dataWindow]
@@ -84,17 +87,14 @@ export const useDataSource = ({
     return dataWindow.getSelectedRows();
   }, [dataWindow]);
 
-  useEffect(
-    () => () => {
-      isMounted.current = true;
-      // if (rafHandle.current) {
-      //   cancelAnimationFrame(rafHandle.current);
-      //   rafHandle.current = null;
-      // }
+  useEffect(() => {
+    isMounted.current = true;
+    dataSource.resume?.();
+    return () => {
       isMounted.current = false;
-    },
-    []
-  );
+      dataSource.suspend?.();
+    };
+  }, [dataSource]);
 
   // Keep until we'tre sure we don't need it for updates
   // const refreshIfUpdated = useCallback(() => {
