@@ -1876,11 +1876,13 @@ var ServerProxy = class {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
   disableViewport(viewport) {
+    console.log("disable viewport");
     const requestId = nextRequestId();
     const request = viewport.disable(requestId);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
   enableViewport(viewport) {
+    console.log("enable viewport");
     if (viewport.disabled) {
       const requestId = nextRequestId();
       const request = viewport.enable(requestId);

@@ -72,7 +72,6 @@ export const LayoutManagementProvider = (
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
-      console.log(`save application layout ${JSON.stringify(layout, null, 2)}`);
       const persistenceManager = getPersistenceManager();
       setApplicationLayout(layout, false);
       persistenceManager.saveApplicationLayout(layout);
