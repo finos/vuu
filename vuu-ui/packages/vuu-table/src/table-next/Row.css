@@ -13,6 +13,11 @@
       --row-background: var(--row-background-even);
     }
 
+    .vuuTableNextRow-highlighted {
+      background-color: red;
+    }
+
+
     .vuuTableNextRow-selected,
     .vuuTableNextRow-selectedEnd {
       /* background-color: rgb(133,133,137,.16); */

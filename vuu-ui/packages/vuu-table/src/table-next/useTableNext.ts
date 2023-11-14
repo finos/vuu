@@ -1,5 +1,4 @@
 import {
-  DataSource,
   DataSourceConfig,
   DataSourceSubscribedMessage,
   JsonDataSource,
@@ -37,7 +36,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import {
@@ -73,10 +71,12 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "highlightedIndex"
       | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onFeatureInvocation"
+      | "onHighlight"
       | "onSelect"
       | "onSelectionChange"
       | "onRowClick"
@@ -104,10 +104,12 @@ export const useTable = ({
   containerRef,
   dataSource,
   headerHeight = 25,
+  highlightedIndex: highlightedIndexProp,
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
   onFeatureInvocation,
+  onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
   onSelectionChange,
@@ -116,7 +118,6 @@ export const useTable = ({
   selectionModel,
 }: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
-  const dataSourceRef = useRef<DataSource>();
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
@@ -467,6 +468,7 @@ export const useTable = ({
   });
 
   const {
+    highlightedIndex,
     navigate,
     onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
@@ -474,9 +476,11 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
+    onHighlight,
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
   });
@@ -638,6 +642,7 @@ export const useTable = ({
     data,
     handleContextMenuAction,
     headerProps,
+    highlightedIndex,
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,

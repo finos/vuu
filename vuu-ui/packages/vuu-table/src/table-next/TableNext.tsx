@@ -2,13 +2,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import {
-  CSSProperties,
-  ForwardedRef,
-  forwardRef,
-  useEffect,
-  useRef,
-} from "react";
+import { CSSProperties, ForwardedRef, forwardRef, useRef } from "react";
 import {
   GroupHeaderCellNext as GroupHeaderCell,
   HeaderCell,
@@ -31,11 +25,13 @@ export const TableNext = forwardRef(function TableNext(
     className: classNameProp,
     config,
     dataSource,
+    highlightedIndex: highlightedIndexProp,
     id: idProp,
     navigationStyle = "cell",
     onAvailableColumnsChange,
     onConfigChange,
     onFeatureInvocation,
+    onHighlight,
     onRowClick: onRowClickProp,
     onSelect,
     onSelectionChange,
@@ -60,6 +56,7 @@ export const TableNext = forwardRef(function TableNext(
     dragDropHook,
     handleContextMenuAction,
     headerProps,
+    highlightedIndex,
     onDataEdited,
     onRemoveGroupColumn,
     onResize,
@@ -76,10 +73,12 @@ export const TableNext = forwardRef(function TableNext(
     containerRef,
     dataSource,
     headerHeight,
+    highlightedIndex: highlightedIndexProp,
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
     onFeatureInvocation,
+    onHighlight,
     onRowClick: onRowClickProp,
     onSelect,
     onSelectionChange,
@@ -105,7 +104,7 @@ export const TableNext = forwardRef(function TableNext(
   const className = cx(classBase, classNameProp, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
-    [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
+    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
     // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
@@ -168,6 +167,7 @@ export const TableNext = forwardRef(function TableNext(
                 <Row
                   columnMap={columnMap}
                   columns={columns}
+                  highlighted={highlightedIndex === data[IDX]}
                   key={data[RENDER_IDX]}
                   onClick={onRowClick}
                   onDataEdited={onDataEdited}

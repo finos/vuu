@@ -51,7 +51,7 @@ export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
   columnSeparators?: boolean;
-  showHighlightedRow?: boolean;
+  // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
 }

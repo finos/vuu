@@ -37,6 +37,7 @@ export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
    */
+  highlightedIndex?: number;
   navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
@@ -56,6 +57,7 @@ export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
    */
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
 
+  onHighlight?: (idx: number) => void;
   /**
    * callback invoked when user 'clicks' a table row. CLick triggered either
    * via mouse click or keyboard (default ENTER);

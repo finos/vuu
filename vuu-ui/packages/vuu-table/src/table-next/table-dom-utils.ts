@@ -35,3 +35,18 @@ export const cellIsEditable = (cell: HTMLDivElement) =>
 
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
+
+export function getRowIndex(rowEl?: HTMLElement) {
+  if (rowEl) {
+    const idx: string | null = rowEl.ariaRowIndex;
+    if (idx !== null) {
+      return parseInt(idx, 10);
+    }
+  }
+  return -1;
+}
+
+const closestRow = (el: HTMLElement) =>
+  el.closest('[role="row"]') as HTMLElement;
+
+export const closestRowIndex = (el: HTMLElement) => getRowIndex(closestRow(el));

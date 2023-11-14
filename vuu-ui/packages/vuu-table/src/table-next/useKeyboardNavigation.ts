@@ -1,3 +1,4 @@
+import { useControlled } from "@salt-ds/core";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import {
   KeyboardEvent,
@@ -5,12 +6,12 @@ import {
   RefObject,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
 } from "react";
 import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
 import {
   CellPos,
+  closestRowIndex,
   dataCellQuery,
   getTableCell,
   headerCellQuery,
@@ -124,10 +125,13 @@ function nextCellPos(
 export interface NavigationHookProps {
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
+  defaultHighlightedIndex?: number;
   disableHighlightOnFocus?: boolean;
+  highlightedIndex?: number;
   label?: string;
   navigationStyle: TableNavigationStyle;
   viewportRange: VuuRange;
+  onHighlight?: (idx: number) => void;
   requestScroll?: ScrollRequestHandler;
   restoreLastFocus?: boolean;
   rowCount?: number;
@@ -138,9 +142,12 @@ export interface NavigationHookProps {
 export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
+  defaultHighlightedIndex,
   disableHighlightOnFocus,
+  highlightedIndex: highlightedIndexProp,
   navigationStyle,
   requestScroll,
+  onHighlight,
   rowCount = 0,
   viewportRowCount,
 }: // viewportRange,
@@ -149,6 +156,24 @@ NavigationHookProps) => {
   const focusedCellPos = useRef<CellPos>([-1, -1]);
   const focusableCell = useRef<HTMLElement>();
   const activeCellPos = useRef<CellPos>([-1, 0]);
+  const highlightedIndexRef = useRef<number | undefined>();
+
+  const [highlightedIndex, setHighlightedIdx] = useControlled({
+    controlled: highlightedIndexProp,
+    default: defaultHighlightedIndex,
+    name: "UseKeyboardNavigation",
+  });
+  highlightedIndexRef.current = highlightedIndex;
+  const setHighlightedIndex = useCallback(
+    (idx: number, fromKeyboard = false) => {
+      onHighlight?.(idx);
+      setHighlightedIdx(idx);
+      if (fromKeyboard) {
+        // lastFocus.current = idx;
+      }
+    },
+    [onHighlight, setHighlightedIdx]
+  );
 
   const getFocusedCell = (element: HTMLElement | Element | null) =>
     element?.closest(
@@ -198,12 +223,16 @@ NavigationHookProps) => {
     (rowIdx: number, colIdx: number, fromKeyboard = false) => {
       const pos: CellPos = [rowIdx, colIdx];
       activeCellPos.current = pos;
-      focusCell(pos);
+      if (navigationStyle === "row") {
+        setHighlightedIdx(rowIdx);
+      } else {
+        focusCell(pos);
+      }
       if (fromKeyboard) {
         focusedCellPos.current = pos;
       }
     },
-    [focusCell]
+    [focusCell, navigationStyle, setHighlightedIdx]
   );
 
   const nextPageItemIdx = useCallback(
@@ -248,17 +277,24 @@ NavigationHookProps) => {
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
           focusedCellPos.current = getTableCellPos(focusedCell);
+          if (navigationStyle === "row") {
+            setHighlightedIdx(focusedCellPos.current[0]);
+          }
         }
       }
     }
-  }, [disableHighlightOnFocus, containerRef]);
+  }, [
+    disableHighlightOnFocus,
+    containerRef,
+    navigationStyle,
+    setHighlightedIdx,
+  ]);
 
   const navigateChildItems = useCallback(
     async (key: NavigationKey) => {
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
         : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
-
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
@@ -267,15 +303,33 @@ NavigationHookProps) => {
     [columnCount, nextPageItemIdx, rowCount, setActiveCell]
   );
 
+  const moveHighlightedRow = useCallback(
+    async (key: NavigationKey) => {
+      console.log(`moveHighlightedRow`);
+      const { current: highlighted } = highlightedIndexRef;
+      const [nextRowIdx] = isPagingKey(key)
+        ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
+        : nextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
+      if (nextRowIdx !== highlighted) {
+        setHighlightedIndex(nextRowIdx);
+      }
+    },
+    [columnCount, nextPageItemIdx, rowCount, setHighlightedIndex]
+  );
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
         e.preventDefault();
         e.stopPropagation();
-        void navigateChildItems(e.key);
+        if (navigationStyle === "row") {
+          moveHighlightedRow(e.key);
+        } else {
+          void navigateChildItems(e.key);
+        }
       }
     },
-    [rowCount, navigationStyle, navigateChildItems]
+    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems]
   );
 
   const handleClick = useCallback(
@@ -291,18 +345,23 @@ NavigationHookProps) => {
     [setActiveCell]
   );
 
+  const handleMouseLeave = useCallback(() => {
+    setHighlightedIndex(-1);
+  }, [setHighlightedIndex]);
+
+  const handleMouseMove = useCallback(
+    (evt: MouseEvent) => {
+      const idx = closestRowIndex(evt.target as HTMLElement);
+      if (idx !== -1 && idx !== highlightedIndexRef.current) {
+        setHighlightedIndex(idx);
+      }
+    },
+    [setHighlightedIndex]
+  );
+
   const navigate = useCallback(() => {
     navigateChildItems("ArrowDown");
   }, [navigateChildItems]);
-
-  const containerProps = useMemo(() => {
-    return {
-      navigate,
-      onClick: handleClick,
-      onFocus: handleFocus,
-      onKeyDown: handleKeyDown,
-    };
-  }, [handleClick, handleFocus, handleKeyDown, navigate]);
 
   // First render will only render the outer container when explicit
   // sizing has not been provided. Outer container is measured and
@@ -320,5 +379,13 @@ NavigationHookProps) => {
     }
   }, [containerRef, fullyRendered]);
 
-  return containerProps;
+  return {
+    highlightedIndex,
+    navigate,
+    onClick: handleClick,
+    onFocus: handleFocus,
+    onKeyDown: handleKeyDown,
+    onMouseLeave: navigationStyle === "row" ? handleMouseLeave : undefined,
+    onMouseMove: navigationStyle === "row" ? handleMouseMove : undefined,
+  };
 };
