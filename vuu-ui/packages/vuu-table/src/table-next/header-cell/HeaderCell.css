@@ -46,7 +46,7 @@
 }
 
 .vuuTableNextHeaderCell.vuuPinLeft {
-  padding-left: 2px;;
+  padding-left: 2px;
 }
 
   .vuuTableNextHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizerNext:before {
@@ -79,7 +79,7 @@
     width: var(--pin-width);
     top:0;
     bottom:0;
-    right: -1px;
+    right: 3px;
     height: var(--height);
     z-index: -5;
 }

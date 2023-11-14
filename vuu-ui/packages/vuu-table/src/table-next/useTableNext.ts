@@ -1,4 +1,5 @@
 import {
+  DataSource,
   DataSourceConfig,
   DataSourceSubscribedMessage,
   JsonDataSource,
@@ -36,6 +37,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -114,9 +116,14 @@ export const useTable = ({
   selectionModel,
 }: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
+  const dataSourceRef = useRef<DataSource>();
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
+  // // We track changes to tableConfig. When detected, these trigger an init
+  // // of model. We will need dataSource for that, but don't want to trigger
+  // // that logic when dataSource itself changes.
+  // dataSourceRef.current = dataSource;
 
   const [size, setSize] = useState<MeasuredSize | undefined>();
   const handleResize = useCallback((size: MeasuredSize) => {
@@ -560,9 +567,16 @@ export const useTable = ({
     [onRowClickProp, selectionHookOnRowClick]
   );
 
+  useLayoutEffectSkipFirst(() => {
+    dispatchColumnAction({
+      type: "init",
+      tableConfig: config,
+      dataSourceConfig: dataSource.config,
+    });
+  }, [config, dataSource, dispatchColumnAction]);
+
   useEffect(() => {
     dataSource.on("config", (config, confirmed) => {
-      // expectConfigChangeRef.current = true;
       dispatchColumnAction({
         type: "tableConfig",
         ...config,

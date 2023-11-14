@@ -8,14 +8,7 @@ import type {
   UpdateGenerator,
   UpdateHandler,
 } from "../rowUpdates";
-import { random } from "./reference-data";
 import { metadataKeys } from "@finos/vuu-utils";
-
-const getNewValue = (value: number) => {
-  const multiplier = random(0, 100) / 1000;
-  const direction = random(0, 10) >= 5 ? 1 : -1;
-  return value + value * multiplier * direction;
-};
 
 let _orderId = 1;
 const orderId = () => `0000000${_orderId++}`.slice(-3);
@@ -45,7 +38,7 @@ export class OrderUpdateGenerator implements UpdateGenerator {
   private timer: number | undefined;
   private phase: OrderPhase = "create-order";
   private orderCount: number;
-  private columnMap: ColumnMap;
+  private columnMap?: ColumnMap;
 
   constructor(orderCount = 20) {
     this.orderCount = orderCount;
@@ -103,7 +96,7 @@ export class OrderUpdateGenerator implements UpdateGenerator {
         console.log("fill-order");
         const data = this.dataSource?.data;
         let filledCount = 0;
-        if (data) {
+        if (data && this.columnMap) {
           const count = data.length;
           const { IDX } = metadataKeys;
           const { filledQuantity: filledKey, quantity: qtyKey } =
@@ -116,8 +109,8 @@ export class OrderUpdateGenerator implements UpdateGenerator {
             } = order;
             if (filledQty < quantity) {
               const newFilledQty = Math.min(
-                quantity,
-                Math.max(100, filledQty * 1.1)
+                quantity as number,
+                Math.max(100, (filledQty as number) * 1.1)
               );
               updates.push(["U", rowIdx, filledKey, newFilledQty]);
             } else {

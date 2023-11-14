@@ -6,7 +6,6 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
-  VuuColumnDataType,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -19,10 +18,8 @@ import {
   EventEmitter,
   getAddedItems,
   getMissingItems,
-  getSelectionStatus,
   KeySet,
   logger,
-  metadataKeys,
   NULL_RANGE,
   rangeNewItems,
   resetRange,
@@ -54,17 +51,17 @@ import {
 import { aggregateData } from "./aggregate-utils";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
+import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
   data: Array<VuuRowDataItemType[]>;
+  dataMap?: ColumnMap;
   keyColumn?: string;
   rangeChangeRowset?: "delta" | "full";
 }
 const { debug } = logger("ArrayDataSource");
-
-const { RENDER_IDX, SELECTED } = metadataKeys;
 
 const toDataSourceRow =
   (key: number) =>
@@ -88,24 +85,18 @@ const buildTableSchema = (
   return schema;
 };
 
-const toClientRow = (
-  row: DataSourceRow,
-  keys: KeySet,
-  selection: Selection
-) => {
-  const [rowIndex] = row;
-  const clientRow = row.slice() as DataSourceRow;
-  clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
-  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
-  return clientRow;
-};
-
 export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
   private clientCallback: SubscribeCallback | undefined;
   private columnDescriptors: ColumnDescriptor[];
+  /** sorted offsets of data within raw data, reflecting sort order
+   * of columns specified by client.
+   */
+  private dataIndices: number[] | undefined;
+  /** Map reflecting positions of data items in raw data */
+  private dataMap: ColumnMap | undefined;
   private disabled = false;
   private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
@@ -117,6 +108,7 @@ export class ArrayDataSource
   private rangeChangeRowset: "delta" | "full";
   private openTreeNodes: string[] = [];
 
+  /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
   #data: readonly DataSourceRow[];
@@ -140,6 +132,7 @@ export class ArrayDataSource
     // different from RemoteDataSource
     columnDescriptors,
     data,
+    dataMap,
     filter,
     groupBy,
     keyColumn,
@@ -157,20 +150,19 @@ export class ArrayDataSource
     }
 
     this.columnDescriptors = columnDescriptors;
+    this.dataMap = dataMap;
     this.key = keyColumn
       ? this.columnDescriptors.findIndex((col) => col.name === keyColumn)
       : 0;
     this.rangeChangeRowset = rangeChangeRowset;
     this.tableSchema = buildTableSchema(columnDescriptors, keyColumn);
     this.viewport = viewport || uuid();
-
     this.#size = data.length;
-
     this.#title = title;
 
     const columns = columnDescriptors.map((col) => col.name);
-
     this.#columnMap = buildColumnMap(columns);
+    this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
     this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key));
 
     this.config = {
@@ -463,7 +455,9 @@ export class ArrayDataSource
 
     const rowsWithinViewport = data
       .slice(rowRange.from, rowRange.to)
-      .map((row) => toClientRow(row, this.keys, this.selectedRows));
+      .map((row) =>
+        toClientRow(row, this.keys, this.selectedRows, this.dataIndices)
+      );
 
     this.clientCallback?.({
       clientViewportId: this.viewport,
@@ -498,9 +492,11 @@ export class ArrayDataSource
       });
     }
     this.#columnMap = buildColumnMap(columns);
-    console.log({
-      columnMap: this.#columnMap,
-    });
+    this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
+
+    const dataToClientMap = buildDataToClientMap(this.#columnMap, this.dataMap);
+    console.log({ dataToClientMap });
+
     this.config = {
       ...this.#config,
       columns,

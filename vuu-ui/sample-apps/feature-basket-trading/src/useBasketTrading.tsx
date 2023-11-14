@@ -1,11 +1,13 @@
+import { useVuuMenuActions } from "@finos/vuu-data-react";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { ContextMenuConfiguration } from "@finos/vuu-popups";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketPanel } from "./new-basket-panel";
-import { useBasketTabMenu } from "./useBasketTabMenu";
+import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 
@@ -117,7 +119,6 @@ export const useBasketTrading = ({
 
   useEffect(() => {
     return () => {
-      console.log("unsubscribe from dataSourceBasketTradingControl");
       dataSourceBasketTradingControl.unsubscribe?.();
     };
   }, [dataSourceBasketTradingControl]);
@@ -199,13 +200,30 @@ export const useBasketTrading = ({
     [basket, dataSourceBasketTradingControl]
   );
 
-  const [menuBuilder, menuActionHandler] = useBasketTabMenu({
+  const [menuBuilder, menuActionHandler] = useBasketContextMenus({
     dataSourceInstruments,
   });
 
-  const contextMenuProps = {
+  const handleRpcResponse = useCallback((response) => {
+    console.log("handleRpcResponse", {
+      response,
+    });
+  }, []);
+
+  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+    dataSource: dataSourceBasketTradingConstituentJoin,
+    menuActionConfig: undefined,
+    onRpcResponse: handleRpcResponse,
+  });
+
+  const contextMenuProps: ContextMenuConfiguration = {
     menuActionHandler,
     menuBuilder,
+  };
+
+  const basketDesignContextMenuConfig: ContextMenuConfiguration = {
+    menuActionHandler: handleMenuAction,
+    menuBuilder: buildViewserverMenuOptions,
   };
 
   return {
@@ -213,6 +231,7 @@ export const useBasketTrading = ({
     activeTabIndex,
     basket,
     basketCount,
+    basketDesignContextMenuConfig,
     basketSelectorProps,
     contextMenuProps,
     dataSourceBasketTradingConstituentJoin,

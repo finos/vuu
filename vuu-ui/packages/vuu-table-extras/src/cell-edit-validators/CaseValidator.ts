@@ -1,7 +1,7 @@
 import { EditRuleValidator, registerComponent } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 
-const isString = (value: VuuRowDataItemType): value is string =>
+const isString = (value?: VuuRowDataItemType): value is string =>
   typeof value === "string";
 
 export const CaseValidator: EditRuleValidator = (rule, value) => {

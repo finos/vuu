@@ -2,7 +2,13 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import { CSSProperties, ForwardedRef, forwardRef, useRef } from "react";
+import {
+  CSSProperties,
+  ForwardedRef,
+  forwardRef,
+  useEffect,
+  useRef,
+} from "react";
 import {
   GroupHeaderCellNext as GroupHeaderCell,
   HeaderCell,
@@ -45,6 +51,7 @@ export const TableNext = forwardRef(function TableNext(
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     columnMap,
