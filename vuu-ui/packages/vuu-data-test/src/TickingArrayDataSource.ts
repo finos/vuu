@@ -85,7 +85,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       switch (updateType) {
         case "U": {
           const [rowIndex, ...updates] = updateRecord;
-          const row = data[rowIndex].slice() as DataSourceRow;
+          const row = data[rowIndex as number].slice() as DataSourceRow;
           if (row) {
             for (let i = 0; i < updates.length; i += 2) {
               const colIdx = updates[i] as number;

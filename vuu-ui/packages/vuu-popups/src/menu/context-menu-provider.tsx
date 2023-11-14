@@ -9,11 +9,14 @@ export const ContextMenuContext = createContext<ContextMenuContextType | null>(
   null
 );
 
-export interface ContextMenuProviderProps {
-  children: ReactNode;
-  label?: string;
+export interface ContextMenuConfiguration {
   menuActionHandler?: MenuActionHandler;
   menuBuilder: MenuBuilder;
+}
+
+export interface ContextMenuProviderProps extends ContextMenuConfiguration {
+  children: ReactNode;
+  label?: string;
 }
 
 interface ProviderProps extends ContextMenuProviderProps {

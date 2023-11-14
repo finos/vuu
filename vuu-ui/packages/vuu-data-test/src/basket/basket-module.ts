@@ -7,7 +7,7 @@ import ftse from "./reference-data/ftse100";
 import nasdaq from "./reference-data/nasdaq100";
 import sp500 from "./reference-data/sp500";
 import hsi from "./reference-data/hsi";
-import { VuuMenu } from "@finos/vuu-protocol-types";
+import { VuuMenu, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { Table } from "../Table";
 
 // This is a 'local' columnMap
@@ -21,7 +21,6 @@ const buildDataColumnMap = (tableName: BasketsTableName) =>
   );
 
 //---------------
-// export const BasketColumnMap = buildColumnMap("basket");
 
 const { KEY } = metadataKeys;
 
@@ -116,18 +115,18 @@ function createTradingBasket(basketId: string, basketName: string) {
   );
 
   constituents.forEach(([, , description, , ric, , , quantity, weighting]) => {
-    const algo = undefined;
+    const algo = "";
     const algoParams = "";
     const limitPrice = 95;
     const notionalLocal = 0;
     const notionalUsd = 0;
     const pctFilled = 0;
     const priceSpread = 0;
-    const priceStrategyId = undefined;
+    const priceStrategyId = "";
     const side = "BUY";
     const venue = "venue";
 
-    const basketTradingConstituentRow = [
+    const basketTradingConstituentRow: VuuRowDataItemType[] = [
       algo,
       algoParams,
       basketId,

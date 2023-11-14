@@ -8,7 +8,7 @@ import { MenuActionClosePopup } from "@finos/vuu-popups";
 import { DataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 
-export const useBasketTabMenu = ({
+export const useBasketContextMenus = ({
   dataSourceInstruments,
 }: {
   dataSourceInstruments: DataSource;

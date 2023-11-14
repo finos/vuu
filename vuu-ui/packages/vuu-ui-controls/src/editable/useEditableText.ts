@@ -1,6 +1,8 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { DataItemCommitHandler } from "packages/vuu-datagrid-types";
+import { DataItemCommitHandler } from "@finos/vuu-datagrid-types";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
+  FocusEventHandler,
   FormEventHandler,
   KeyboardEvent,
   useCallback,
@@ -20,8 +22,9 @@ export interface EditableTextHookProps<
   T extends VuuRowDataItemType = VuuRowDataItemType
 > {
   clientSideEditValidationCheck?: ClientSideValidationChecker;
-  initialValue: T;
-  onCommit: DataItemCommitHandler;
+  initialValue?: T;
+  onCommit: DataItemCommitHandler<T>;
+  type?: "string" | "number" | "boolean";
 }
 
 export const dispatchCommitEvent = (el: HTMLElement) => {
@@ -29,43 +32,54 @@ export const dispatchCommitEvent = (el: HTMLElement) => {
   el.dispatchEvent(commitEvent);
 };
 
-export const useEditableText = <
-  T extends VuuRowDataItemType = VuuRowDataItemType
->({
+export const useEditableText = <T extends string | number = string>({
   clientSideEditValidationCheck,
   initialValue,
   onCommit,
+  type,
 }: EditableTextHookProps<T>) => {
   const [message, setMessage] = useState<string | undefined>();
-  const [value, setValue] = useState(initialValue);
-  const initialValueRef = useRef<T>(initialValue);
+  const [value, setValue] = useState<T | undefined>(initialValue);
+  const initialValueRef = useRef<T | undefined>(initialValue);
   const isDirtyRef = useRef(false);
   const hasCommittedRef = useRef(false);
+
+  useLayoutEffectSkipFirst(() => {
+    //TODO this isn't right, review the state we're using
+    setValue(initialValue);
+  }, [initialValue]);
+
+  const commit = useCallback(
+    (target: HTMLElement) => {
+      if (isDirtyRef.current) {
+        hasCommittedRef.current = true;
+        const warningMessage = clientSideEditValidationCheck?.(value);
+        if (warningMessage) {
+          setMessage(warningMessage);
+        } else {
+          setMessage(undefined);
+          onCommit(value as T).then((response) => {
+            if (response === true) {
+              isDirtyRef.current = false;
+              dispatchCommitEvent(target);
+            } else {
+              setMessage(response);
+            }
+          });
+        }
+      } else {
+        // why, if not dirty ?
+        dispatchCommitEvent(target);
+        hasCommittedRef.current = false;
+      }
+    },
+    [clientSideEditValidationCheck, onCommit, value]
+  );
 
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => {
       if (evt.key === "Enter") {
-        evt.stopPropagation();
-        if (isDirtyRef.current) {
-          hasCommittedRef.current = true;
-          const warningMessage = clientSideEditValidationCheck?.(value);
-          if (warningMessage) {
-            setMessage(warningMessage);
-          } else {
-            setMessage(undefined);
-            onCommit(value).then((response) => {
-              if (response === true) {
-                isDirtyRef.current = false;
-                dispatchCommitEvent(evt.target as HTMLInputElement);
-              } else {
-                setMessage(response);
-              }
-            });
-          }
-        } else {
-          dispatchCommitEvent(evt.target as HTMLInputElement);
-          hasCommittedRef.current = false;
-        }
+        commit(evt.target as HTMLElement);
       } else if (
         evt.key === "ArrowRight" ||
         evt.key === "ArrowLeft" ||
@@ -81,28 +95,42 @@ export const useEditableText = <
         }
       }
     },
-    [clientSideEditValidationCheck, onCommit, value]
+    [commit]
+  );
+
+  const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
+    (evt) => {
+      commit(evt.target as HTMLElement);
+    },
+    [commit]
   );
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
-      const { value } = evt.target as HTMLInputElement;
+      let typedValue: VuuRowDataItemType = (evt.target as HTMLInputElement)
+        .value;
+      if (type === "number" && !isNaN(parseFloat(typedValue))) {
+        typedValue = parseFloat(typedValue);
+      }
       isDirtyRef.current = value !== initialValueRef.current;
-      setValue(value as T);
-      if (hasCommittedRef.current) {
+      setValue(typedValue as T);
+      if (hasCommittedRef.current && value !== undefined) {
         const warningMessage = clientSideEditValidationCheck?.(value);
         if (warningMessage !== message && warningMessage !== false) {
           setMessage(warningMessage);
         }
       }
     },
-    [clientSideEditValidationCheck, message]
+    [clientSideEditValidationCheck, message, type, value]
   );
 
   return {
+    inputProps: {
+      onBlur: handleBlur,
+      onKeyDown: handleKeyDown,
+    },
     onChange: handleChange,
-    onKeyDown: handleKeyDown,
-    value,
+    value: value ?? "",
     warningMessage: message,
   };
 };

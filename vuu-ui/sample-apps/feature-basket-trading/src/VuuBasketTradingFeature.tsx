@@ -33,6 +33,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     activeTabIndex,
     basket,
     basketCount,
+    basketDesignContextMenuConfig,
     basketSelectorProps,
     contextMenuProps,
     dataSourceBasketTradingConstituentJoin,
@@ -82,6 +83,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           <BasketTableEdit
             data-tab-location="basket-design"
             data-tab-title="Design"
+            contextMenuConfig={basketDesignContextMenuConfig}
             dataSource={dataSourceBasketTradingConstituentJoin}
             tableSchema={basketTradingConstituentJoinSchema}
           />

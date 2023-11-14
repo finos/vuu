@@ -83,6 +83,7 @@ export const useNewBasketPanel = ({
   const handleChangeBasketName = useCallback<Commithandler<string>>(
     (evt, value) => {
       setBasketName(value);
+      return Promise.resolve(true);
     },
     []
   );
