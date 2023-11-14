@@ -1,7 +1,6 @@
 package org.finos.vuu.layoutserver.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
@@ -18,7 +17,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ApplicationLayoutServiceTest {
 
@@ -26,7 +28,6 @@ class ApplicationLayoutServiceTest {
     private static ApplicationLayoutService service;
     private static final DefaultApplicationLayoutLoader defaultLoader = new DefaultApplicationLayoutLoader();
     private static final ObjectNodeConverter objectNodeConverter = new ObjectNodeConverter();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     public void setup() {
@@ -71,16 +72,7 @@ class ApplicationLayoutServiceTest {
         verify(mockRepo, times(1))
                 .save(new ApplicationLayout(user, definition));
     }
-
-    @Test
-    public void createApplicationLayout_invalidDefinition_throwsJsonException() {
-        String definition = "invalid JSON";
-
-        assertThrows(JsonProcessingException.class, () ->
-            service.persistApplicationLayout("user", (ObjectNode) objectMapper.readTree(definition))
-        );
-    }
-
+    
     @Test
     public void deleteApplicationLayout_entryExists_callsRepoDelete() {
         String user = "user";

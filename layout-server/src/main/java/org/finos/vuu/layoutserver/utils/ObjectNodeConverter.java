@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
 import java.io.IOException;
 
-@Converter
 public class ObjectNodeConverter implements AttributeConverter<ObjectNode, String> {
     private static final Logger logger = LoggerFactory.getLogger(ObjectNodeConverter.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
