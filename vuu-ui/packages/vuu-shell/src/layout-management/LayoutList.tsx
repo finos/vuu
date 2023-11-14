@@ -41,26 +41,26 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
         source={Object.entries(layoutsByGroup)}
         ListItem={({ item }) => {
           if (!item) return <></>;
-          const [groupName, layouts] = item;
+          const [groupName, layoutMetadata] = item;
           return (
             <>
               <div className={`${classBase}-groupName`}>{groupName}</div>
-              {layouts.map((layout) => (
+              {layoutMetadata.map((metadata) => (
                 <div
                   className={`${classBase}-layoutContainer`}
-                  key={layout?.id}
-                  onClick={() => handleLoadLayout(layout?.id)}
+                  key={metadata?.id}
+                  onClick={() => handleLoadLayout(metadata?.id)}
                 >
                   <img
                     className={`${classBase}-screenshot`}
-                    src={layout?.screenshot}
+                    src={metadata?.screenshot}
                   />
                   <div>
                     <div className={`${classBase}-layoutName`}>
-                      {layout?.name}
+                      {metadata?.name}
                     </div>
                     <div className={`${classBase}-layoutDetails`}>
-                      <div>{`${layout?.user}, ${layout?.date}`}</div>
+                      <div>{`${metadata?.user}, ${metadata?.created}`}</div>
                     </div>
                   </div>
                 </div>
