@@ -568,10 +568,6 @@ export const useTable = ({
   );
 
   useLayoutEffectSkipFirst(() => {
-    console.log(
-      `%cconfig has changed (${config.columns.length} columns)`,
-      "color: green; font-weight: bold;"
-    );
     dispatchColumnAction({
       type: "init",
       tableConfig: config,
