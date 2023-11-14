@@ -10,6 +10,7 @@
     flex: 0 0 40px;
 }
 .vuuInstrumentSearch-list {
+    --vuuMeasuredContainer-flex: 1 1 1px;
     background-color: var(--salt-container-primary-background);
     flex: 1 1 auto;
 }

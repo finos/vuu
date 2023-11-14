@@ -44,9 +44,6 @@ export const useBasketContextMenus = ({
                 type: "InstrumentSearch",
                 props: {
                   dataSource: dataSourceInstruments,
-                  //   columnName: action.column.name,
-                  //   onConfigChange,
-                  //   tableConfig,
                 },
               },
               title: "Add Ticker",
@@ -56,5 +53,5 @@ export const useBasketContextMenus = ({
         return false;
       },
     ];
-  }, []);
+  }, [dataSourceInstruments, dispatchLayoutAction]);
 };
