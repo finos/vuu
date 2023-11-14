@@ -20,6 +20,7 @@ import {
   getMissingItems,
   KeySet,
   logger,
+  metadataKeys,
   NULL_RANGE,
   rangeNewItems,
   resetRange,
@@ -102,6 +103,7 @@ export class ArrayDataSource
   private groupMap: undefined | GroupMap;
   /** the index of key field within raw data row */
   private key: number;
+  private indexOfDataKey: number;
   private suspended = false;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
@@ -440,6 +442,24 @@ export class ArrayDataSource
     }
   };
 
+  protected update = (row: VuuRowDataItemType[], columnName: string) => {
+    // TODO take sorting, filtering. grouping into account
+    const keyValue = row[this.key];
+    const { KEY } = metadataKeys;
+    const colIndex = this.#columnMap[columnName];
+    const dataColIndex = this.dataMap[columnName];
+    const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
+    if (dataIndex !== -1) {
+      const dataSourceRow = this.#data[dataIndex];
+      dataSourceRow[colIndex] = row[dataColIndex];
+      const { from, to } = this.#range;
+      const [rowIdx] = dataSourceRow;
+      if (rowIdx >= from && rowIdx < to) {
+        this.sendRowsToClient(true);
+      }
+    }
+  };
+
   private setRange(range: VuuRange, forceFullRefresh = false) {
     this.#range = range;
     this.keys.reset(range);
@@ -592,23 +612,23 @@ export class ArrayDataSource
     console.log("remove link");
   }
 
-  private findRow(rowKey: number) {
-    const row = this.#data[rowKey];
-    if (row) {
-      return row;
-    } else {
-      throw `no row found for key ${rowKey}`;
-    }
-  }
+  // private findRow(rowKey: number) {
+  //   const row = this.#data[rowKey];
+  //   if (row) {
+  //     return row;
+  //   } else {
+  //     throw `no row found for key ${rowKey}`;
+  //   }
+  // }
 
-  private updateRow(
-    rowKey: string,
-    colName: string,
-    value: VuuRowDataItemType
-  ) {
-    const row = this.findRow(parseInt(rowKey));
-    console.log({ row, colName, value });
-  }
+  // private updateRow(
+  //   rowKey: string,
+  //   colName: string,
+  //   value: VuuRowDataItemType
+  // ) {
+  //   const row = this.findRow(parseInt(rowKey));
+  //   console.log({ row, colName, value });
+  // }
 
   applyEdit(
     row: DataSourceRow,

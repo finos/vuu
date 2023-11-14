@@ -44,7 +44,6 @@ export const useDataSource = ({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
-      console.table(updates);
       for (const row of updates) {
         dataWindow.add(row);
       }

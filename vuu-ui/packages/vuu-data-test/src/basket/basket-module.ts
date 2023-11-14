@@ -20,6 +20,18 @@ const buildDataColumnMap = (tableName: BasketsTableName) =>
     {}
   );
 
+const tableMaps: Record<BasketsTableName, ColumnMap> = {
+  algoType: buildDataColumnMap("algoType"),
+  basket: buildDataColumnMap("basket"),
+  basketTrading: buildDataColumnMap("basketTrading"),
+  basketTradingConstituent: buildDataColumnMap("basketTradingConstituent"),
+  basketConstituent: buildDataColumnMap("basketConstituent"),
+  basketTradingConstituentJoin: buildDataColumnMap(
+    "basketTradingConstituentJoin"
+  ),
+  priceStrategyType: buildDataColumnMap("priceStrategyType"),
+};
+
 //---------------
 
 const { KEY } = metadataKeys;
@@ -72,13 +84,18 @@ for (const row of sp500) {
 
 const basketConstituent = new Table(
   schemas.basketConstituent,
-  basketConstituentData
+  basketConstituentData,
+  tableMaps.basketConstituent
 );
 
 /**
  * BasketTrading
  */
-const basketTrading = new Table(schemas.basketTrading, []);
+const basketTrading = new Table(
+  schemas.basketTrading,
+  [],
+  tableMaps.basketTrading
+);
 
 let basketIncrement = 1;
 /**
@@ -86,11 +103,13 @@ let basketIncrement = 1;
  */
 const basketTradingConstituent = new Table(
   schemas.basketTradingConstituent,
-  []
+  [],
+  tableMaps.basketTradingConstituent
 );
 const basketTradingConstituentJoin = new Table(
   schemas.basketTradingConstituentJoin,
-  []
+  [],
+  tableMaps.basketTradingConstituentJoin
 );
 
 function createTradingBasket(basketId: string, basketName: string) {
@@ -101,6 +120,7 @@ function createTradingBasket(basketId: string, basketName: string) {
     0,
     1.25,
     instanceId,
+    "BUY",
     "OFF MARKET",
     1_000_000,
     1_250_000,
@@ -202,42 +222,42 @@ async function createNewBasket(rpcRequest: any) {
 
 //-------------------
 
-const tableMaps: Record<BasketsTableName, ColumnMap> = {
-  algoType: buildDataColumnMap("algoType"),
-  basket: buildDataColumnMap("basket"),
-  basketTrading: buildDataColumnMap("basketTrading"),
-  basketTradingConstituent: buildDataColumnMap("basketTradingConstituent"),
-  basketConstituent: buildDataColumnMap("basketConstituent"),
-  basketTradingConstituentJoin: buildDataColumnMap(
-    "basketTradingConstituentJoin"
-  ),
-  priceStrategyType: buildDataColumnMap("priceStrategyType"),
-};
-
 export const tables: Record<BasketsTableName, Table> = {
-  algoType: new Table(schemas.algoType, [
-    ["Sniper", 0],
-    ["Dark Liquidity", 1],
-    ["VWAP", 2],
-    ["POV", 3],
-    ["Dynamic Close", 4],
-  ]),
-  basket: new Table(schemas.basket, [
-    [".NASDAQ100", ".NASDAQ100", 0, 0],
-    [".HSI", ".HSI", 0, 0],
-    [".FTSE100", ".FTSE100", 0, 0],
-    [".SP500", ".SP500", 0, 0],
-  ]),
+  algoType: new Table(
+    schemas.algoType,
+    [
+      ["Sniper", 0],
+      ["Dark Liquidity", 1],
+      ["VWAP", 2],
+      ["POV", 3],
+      ["Dynamic Close", 4],
+    ],
+    tableMaps.algoType
+  ),
+  basket: new Table(
+    schemas.basket,
+    [
+      [".NASDAQ100", ".NASDAQ100", 0, 0],
+      [".HSI", ".HSI", 0, 0],
+      [".FTSE100", ".FTSE100", 0, 0],
+      [".SP500", ".SP500", 0, 0],
+    ],
+    tableMaps.basket
+  ),
   basketConstituent,
   basketTrading,
   basketTradingConstituent,
   basketTradingConstituentJoin,
-  priceStrategyType: new Table(schemas.priceStrategyType, [
-    ["Peg to Near Touch", 0],
-    ["Far Touch", 1],
-    ["Limit", 2],
-    ["Algo", 3],
-  ]),
+  priceStrategyType: new Table(
+    schemas.priceStrategyType,
+    [
+      ["Peg to Near Touch", 0],
+      ["Far Touch", 1],
+      ["Limit", 2],
+      ["Algo", 3],
+    ],
+    tableMaps.priceStrategyType
+  ),
 };
 
 const menus: Record<BasketsTableName, VuuMenu | undefined> = {

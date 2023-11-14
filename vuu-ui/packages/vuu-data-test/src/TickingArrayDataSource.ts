@@ -15,6 +15,7 @@ import {
   VuuRange,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { metadataKeys } from "@finos/vuu-utils";
 import { UpdateGenerator, UpdateHandler } from "./rowUpdates";
 import { Table } from "./Table";
 
@@ -35,6 +36,7 @@ export interface TickingArrayDataSourceConstructorProps
 export class TickingArrayDataSource extends ArrayDataSource {
   #rpcServices: RpcService[] | undefined;
   #updateGenerator: UpdateGenerator | undefined;
+  #table?: Table;
 
   constructor({
     data,
@@ -54,11 +56,13 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this._menu = menu;
     this.#rpcServices = rpcServices;
     this.#updateGenerator = updateGenerator;
+    this.#table = table;
     updateGenerator?.setDataSource(this);
     updateGenerator?.setUpdateHandler(this.processUpdates);
 
     if (table) {
       table.on("insert", this.insert);
+      table.on("update", this.update);
     }
   }
 
@@ -137,6 +141,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
       }
       return rows;
     }, []);
+  }
+
+  applyEdit(
+    row: DataSourceRow,
+    columnName: string,
+    value: VuuRowDataItemType
+  ): Promise<true> {
+    const key = row[metadataKeys.KEY];
+    this.#table?.update(key, columnName, value);
+    return Promise.resolve(true);
   }
 
   async menuRpcCall(

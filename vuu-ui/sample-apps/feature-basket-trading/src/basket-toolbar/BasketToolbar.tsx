@@ -43,7 +43,6 @@ export const BasketToolbar = ({
   onTakeOffMarket,
 }: BasketToolbarProps) => {
   const handleMenuAction: MenuActionHandler = () => {
-    console.log("Menu Action");
     return true;
   };
 
@@ -92,7 +91,7 @@ export const BasketToolbar = ({
       <CycleStateButton
         className={`${classBase}-side`}
         onCommit={handleSideCommit}
-        value={basket?.side ?? "BUY"}
+        value={basket?.side ?? ""}
         values={["BUY", "SELL"]}
         variant="cta"
       />

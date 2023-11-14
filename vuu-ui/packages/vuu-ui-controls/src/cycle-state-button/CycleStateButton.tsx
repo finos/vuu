@@ -34,6 +34,8 @@ export const CycleStateButton = forwardRef(function CycleStateButton(
   }: CycleStateButtonProps,
   forwardedRef: ForwardedRef<HTMLButtonElement>
 ) {
+  console.log(`CycleStateButton value = ${value}`);
+
   const handleClick = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
       const nextValue = getNextValue(value, values);

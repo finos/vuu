@@ -28,7 +28,7 @@ export class Basket {
     this.basketName = data[columnMap.basketName] as string;
     this.filledPct = data[columnMap.filledPct] as number;
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
-    this.side = "BUY";
+    this.side = data[columnMap.side] as string;
     this.totalNotional = data[columnMap.totalNotional] as number;
     this.totalNotionalUsd = data[columnMap.totalNotionalUsd] as number;
     this.units = data[columnMap.units] as number;
@@ -105,6 +105,9 @@ export const useBasketTrading = ({
             setBasketCount(message.size);
           }
           if (message.rows && message.rows.length > 0) {
+            const basket = new Basket(message.rows[0], columnMap);
+            console.log({ basket, row: message.rows[0] });
+
             setBasket(new Basket(message.rows[0], columnMap));
           }
         }
@@ -188,6 +191,7 @@ export const useBasketTrading = ({
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
       if (basket) {
+        console.log(`handleCommitBasketChange ${columnName} => ${value}`);
         const { dataSourceRow } = basket;
         return dataSourceBasketTradingControl.applyEdit(
           dataSourceRow,
@@ -225,6 +229,8 @@ export const useBasketTrading = ({
     menuActionHandler: handleMenuAction,
     menuBuilder: buildViewserverMenuOptions,
   };
+
+  console.log(`basket ${basket?.side}`);
 
   return {
     ...basketState,
