@@ -505,13 +505,6 @@ export type DataSourceStatus =
   | "suspended"
   | "unsubscribed";
 
-export type RpcResponse =
-  | MenuRpcResponse
-  | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditResponse;
-
-export type RpcResponseHandler = (response: RpcResponse) => boolean;
-
 export interface DataSource extends EventEmitter<DataSourceEvents> {
   aggregations: VuuAggregation[];
   applyEdit: DataSourceEditHandler;

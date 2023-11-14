@@ -1,16 +1,15 @@
-import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
+import {ColumnDescriptor, Selection} from "@finos/vuu-datagrid-types";
 import {
-  LinkDescriptorWithLabel,
-  VuuGroupBy,
-  VuuAggregation,
-  VuuRange,
-  VuuSort,
-  ClientToServerMenuRPC,
   ClientToServerEditRpc,
-  VuuColumnDataType,
+  ClientToServerMenuRPC,
+  LinkDescriptorWithLabel,
+  VuuAggregation,
+  VuuGroupBy,
+  VuuRange,
   VuuRowDataItemType,
+  VuuSort,
 } from "@finos/vuu-protocol-types";
-import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
+import {DataSourceFilter, DataSourceRow} from "@finos/vuu-data-types";
 import {
   EventEmitter,
   isSelected,
@@ -29,21 +28,21 @@ import type {
   SubscribeProps,
   WithFullConfig,
 } from "./data-source";
-import { vanillaConfig } from "./data-source";
+import {vanillaConfig} from "./data-source";
 import {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
 
-const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
+const NULL_SCHEMA = {columns: [], key: "", table: {module: "", table: ""}};
 
 export interface JsonDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   data: JsonData;
 }
 
-const { DEPTH, IDX, IS_EXPANDED, IS_LEAF, KEY, SELECTED } = metadataKeys;
+const {DEPTH, IDX, IS_EXPANDED, IS_LEAF, KEY, SELECTED} = metadataKeys;
 
 const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   const [rowIndex] = row;
@@ -54,8 +53,7 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
 
 export class JsonDataSource
   extends EventEmitter<DataSourceEvents>
-  implements DataSource
-{
+  implements DataSource {
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: SubscribeCallback | undefined;
   private expandedRows = new Set<string>();
@@ -64,12 +62,12 @@ export class JsonDataSource
   #aggregations: VuuAggregation[] = [];
   #config: WithFullConfig = vanillaConfig;
   #data: DataSourceRow[];
-  #filter: DataSourceFilter = { filter: "" };
+  #filter: DataSourceFilter = {filter: ""};
   #groupBy: VuuGroupBy = [];
-  #range: VuuRange = { from: 0, to: 0 };
+  #range: VuuRange = {from: 0, to: 0};
   #selectedRowsCount = 0;
   #size = 0;
-  #sort: VuuSort = { sortDefs: [] };
+  #sort: VuuSort = {sortDefs: []};
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
@@ -79,14 +77,14 @@ export class JsonDataSource
   private keys = new KeySet(this.#range);
 
   constructor({
-    aggregations,
-    data,
-    filter,
-    groupBy,
-    sort,
-    title,
-    viewport,
-  }: JsonDataSourceConstructorProps) {
+                aggregations,
+                data,
+                filter,
+                groupBy,
+                sort,
+                title,
+                viewport,
+              }: JsonDataSourceConstructorProps) {
     super();
 
     if (!data) {
@@ -96,10 +94,10 @@ export class JsonDataSource
     [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
 
     this.visibleRows = this.#data
-      .filter((row) => row[DEPTH] === 0)
-      .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
-      ) as DataSourceRow[];
+    .filter((row) => row[DEPTH] === 0)
+    .map((row, index) =>
+      ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+    ) as DataSourceRow[];
     this.viewport = viewport || uuid();
     if (aggregations) {
       this.#aggregations = aggregations;
@@ -210,14 +208,15 @@ export class JsonDataSource
     console.log("noop");
     return this;
   }
+
   set data(data: JsonData) {
     console.log(`set JsonDataSource data`);
     [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
     this.visibleRows = this.#data
-      .filter((row) => row[DEPTH] === 0)
-      .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
-      ) as DataSourceRow[];
+    .filter((row) => row[DEPTH] === 0)
+    .map((row, index) =>
+      ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+    ) as DataSourceRow[];
 
     requestAnimationFrame(() => {
       this.sendRowsToClient();
@@ -227,7 +226,7 @@ export class JsonDataSource
   select(selected: Selection) {
     const updatedRows: DataSourceRow[] = [];
     for (const row of this.#data) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
+      const {[IDX]: rowIndex, [SELECTED]: sel} = row;
       const wasSelected = sel === 1;
       const nowSelected = isSelected(selected, rowIndex);
       if (nowSelected !== wasSelected) {
@@ -251,14 +250,14 @@ export class JsonDataSource
   openTreeNode(key: string) {
     this.expandedRows.add(key);
     this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
-    const { from, to } = this.#range;
+    const {from, to} = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
 
       mode: "batch",
       rows: this.visibleRows
-        .slice(from, to)
-        .map((row) => toClientRow(row, this.keys)),
+      .slice(from, to)
+      .map((row) => toClientRow(row, this.keys)),
       size: this.visibleRows.length,
       type: "viewport-update",
     });
@@ -306,13 +305,13 @@ export class JsonDataSource
   }
 
   private sendRowsToClient() {
-    const { from, to } = this.#range;
+    const {from, to} = this.#range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
       mode: "batch",
       rows: this.visibleRows
-        .slice(from, to)
-        .map((row) => toClientRow(row, this.keys)),
+      .slice(from, to)
+      .map((row) => toClientRow(row, this.keys)),
       size: this.visibleRows.length,
       type: "viewport-update",
     });
@@ -336,10 +335,6 @@ export class JsonDataSource
 
   set aggregations(aggregations: VuuAggregation[]) {
     this.#aggregations = aggregations;
-  }
-
-  set data(data: JsonData) {
-    console.log(`set JsonDataSource data`);
   }
 
   get sort() {
@@ -377,9 +372,9 @@ export class JsonDataSource
   }
 
   createLink({
-    parentVpId,
-    link: { fromColumn, toColumn },
-  }: LinkDescriptorWithLabel) {
+               parentVpId,
+               link: {fromColumn, toColumn},
+             }: LinkDescriptorWithLabel) {
     console.log("create link", {
       parentVpId,
       fromColumn,
@@ -419,11 +414,11 @@ export class JsonDataSource
   getChildRows(rowKey: string) {
     const parentRow = this.#data.find((row) => row[KEY] === rowKey);
     if (parentRow) {
-      const { [IDX]: parentIdx, [DEPTH]: parentDepth } = parentRow;
+      const {[IDX]: parentIdx, [DEPTH]: parentDepth} = parentRow;
       let rowIdx = parentIdx + 1;
       const childRows = [];
       do {
-        const { [DEPTH]: depth } = this.#data[rowIdx];
+        const {[DEPTH]: depth} = this.#data[rowIdx];
         if (depth === parentDepth + 1) {
           childRows.push(this.#data[rowIdx]);
         } else if (depth <= parentDepth) {
@@ -453,10 +448,10 @@ type Index = {
 
 function getVisibleRows(rows: DataSourceRow[], expandedKeys: Set<string>) {
   const visibleRows: DataSourceRow[] = [];
-  const index: Index = { value: 0 };
+  const index: Index = {value: 0};
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const { [DEPTH]: depth, [KEY]: key, [IS_LEAF]: isLeaf } = row;
+    const {[DEPTH]: depth, [KEY]: key, [IS_LEAF]: isLeaf} = row;
     const isExpanded = expandedKeys.has(key);
     visibleRows.push(cloneRow(row, index, isExpanded));
     if (!isLeaf && !isExpanded) {

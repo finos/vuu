@@ -21,13 +21,12 @@ const constantInputProps = {
   autoComplete: "off",
 };
 
-export type Commithandler<T extends VuuRowDataItemType = VuuRowDataItemType> = (
+export type Commithandler<T extends VuuRowDataItemType = string> = (
   evt: SyntheticEvent<HTMLInputElement>,
   value: T
 ) => void;
-export interface VuuInputProps<
-  T extends VuuRowDataItemType = VuuRowDataItemType
-> extends InputProps {
+export interface VuuInputProps<T extends VuuRowDataItemType = string>
+  extends InputProps {
   errorMessage?: string;
   onCommit: Commithandler<T>;
   type?: T;

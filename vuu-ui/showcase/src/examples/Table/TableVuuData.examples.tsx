@@ -4,7 +4,7 @@ import {
   RemoteDataSource,
   TableSchema,
 } from "@finos/vuu-data";
-import { getAllSchemas } from "@finos/vuu-data-test";
+import { getAllSchemas, getSchema, SimulTableName } from "@finos/vuu-data-test";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { ColumnDescriptor, GridConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
@@ -16,6 +16,7 @@ import { Table, TableProps } from "@finos/vuu-table";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { itemsChanged, toDataSourceColumns } from "@finos/vuu-utils";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { FilterTable } from "@finos/vuu-datatable";
 import {
   ReactElement,
   SyntheticEvent,
@@ -52,30 +53,21 @@ export const VuuDataTable = () => {
     ],
     []
   );
-  const [tablename, setTablename] = useState("instruments");
+  const [tableName, setTableName] = useState<SimulTableName>("instruments");
   const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(-1);
-  const [dialogContent, setDialogContent] = useState<ReactElement | null>(null);
 
   const schemas = getAllSchemas();
   const { columns, config, dataSource, error } = useTestDataSource({
     columnConfig,
     schemas,
-    tablename,
+    tablename: tableName,
   });
 
-  const table = useMemo(
-    () => ({ module: "SIMUL", table: tablename }),
-    [tablename]
-  );
+  console.log({ columns });
 
   const configRef = useRef<Omit<GridConfig, "headings">>(config);
   const [tableConfig, setTableConfig] =
     useState<Omit<GridConfig, "headings">>(config);
-
-  const filterSuggestionProvider = useFilterSuggestionProvider({
-    columns,
-    table,
-  });
 
   useMemo(() => {
     setTableConfig((configRef.current = config));
@@ -83,38 +75,8 @@ export const VuuDataTable = () => {
 
   const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
     const { value } = evt.target as HTMLButtonElement;
-    setTablename(value);
+    setTableName(value as SimulTableName);
   };
-
-  const handleSettingsConfigChange = useCallback(
-    (config: Omit<GridConfig, "headings">, closePanel = false) => {
-      console.log(`Table.examples config changed`, {
-        config,
-      });
-      setTableConfig((currentConfig) => {
-        if (itemsChanged(currentConfig.columns, config.columns, "name")) {
-          // side effect: update columns on dataSource
-          dataSource.columns = config.columns.map(toDataSourceColumns);
-        }
-        return (configRef.current = config);
-      });
-      closePanel && setDialogContent(null);
-    },
-    [dataSource]
-  );
-
-  const handleTableConfigChange = useCallback(
-    (config: Omit<GridConfig, "headings">) => {
-      // we want this to be used when editor is opened next, but we don;t want
-      // to trigger a re-render of our dataTable
-      configRef.current = config;
-    },
-    []
-  );
-
-  const hideSettings = useCallback(() => {
-    setDialogContent(null);
-  }, []);
 
   const getCcyCol = (dataSource: DataSource) =>
     (dataSource as RemoteDataSource).table.table === "instruments"
@@ -190,21 +152,13 @@ export const VuuDataTable = () => {
     }
   }, [dataSource, selectedGroupIndex]);
 
-  const handleSubmitFilter = useCallback(
-    (filterStruct: Filter | undefined, filter: string, filterName?: string) => {
-      filterName && console.log(`named filter created '${filterName}'`);
-      dataSource.filter = { filter, filterStruct };
-    },
-    [dataSource]
-  );
-
   if (error) {
     return <ErrorDisplay>{error}</ErrorDisplay>;
   }
 
   return (
     <>
-      <ToggleButtonGroup onChange={handleChange} value={tablename}>
+      <ToggleButtonGroup onChange={handleChange} value={tableName}>
         <ToggleButton value="instruments">Instruments</ToggleButton>
         <ToggleButton value="orders">Orders</ToggleButton>
         <ToggleButton value="parentOrders">Parent Orders</ToggleButton>
@@ -226,7 +180,7 @@ export const VuuDataTable = () => {
             <ToggleButton onClick={groupByCurrencyExchangeRic} value={2}>
               CCY, Exchange, Ric
             </ToggleButton>
-            {tablename === "parentOrders" ? (
+            {tableName === "parentOrders" ? (
               <ToggleButton onClick={groupByAccountAlgo} value={3}>
                 Account, Algo, 7 columns
               </ToggleButton>
@@ -235,24 +189,22 @@ export const VuuDataTable = () => {
             )}
           </ToggleButtonGroup>
         </div>
-        <div>
-          <FilterInput
-            existingFilter={dataSource.filter.filterStruct}
-            onSubmitFilter={handleSubmitFilter}
-            style={{ width: 300 }}
-            suggestionProvider={filterSuggestionProvider}
-          />
-        </div>
       </div>
-      <Table
-        allowConfigEditing
-        dataSource={dataSource}
-        config={tableConfig}
-        // columnSizing="fill"
-        height={645}
-        onConfigChange={handleTableConfigChange}
-        renderBufferSize={20}
-        width={750}
+      <FilterTable
+        FilterBarProps={{
+          filters: [],
+          onApplyFilter: () => console.log("onApplyFilter"),
+          onChangeActiveFilterIndex: () =>
+            console.log("onChangeActiveFilterIndex"),
+          tableSchema: getSchema(tableName),
+        }}
+        TableProps={{
+          dataSource,
+          config: tableConfig,
+          height: 645,
+          renderBufferSize: 20,
+          width: 750,
+        }}
       />
       <div
         className="vuuToolbarProxy vuuTable-footer"
@@ -265,14 +217,6 @@ export const VuuDataTable = () => {
       >
         <DataSourceStats dataSource={dataSource} />
       </div>
-      <Dialog
-        className="vuuDialog-gridConfig"
-        isOpen={dialogContent !== null}
-        onClose={hideSettings}
-        title="Grid and Column Settings"
-      >
-        {dialogContent}
-      </Dialog>
     </>
   );
 };

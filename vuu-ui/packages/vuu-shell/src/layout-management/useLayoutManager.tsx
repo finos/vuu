@@ -20,12 +20,11 @@ const local = process.env.LOCAL ?? true;
 let _persistenceManager: LayoutPersistenceManager;
 
 const getPersistenceManager = () => {
-  if (_persistenceManager == undefined) {
+  if (_persistenceManager === undefined) {
     _persistenceManager = local
       ? new LocalLayoutPersistenceManager()
       : new RemoteLayoutPersistenceManager();
   }
-
   return _persistenceManager;
 };
 
@@ -67,8 +66,9 @@ export const LayoutManagementProvider = (
   );
 
   useEffect(() => {
-    getPersistenceManager()
-      .loadMetadata()
+    const persistenceManager = getPersistenceManager();
+
+    persistenceManager.loadMetadata()
       .then((metadata) => {
         setLayoutMetadata(metadata);
       })
@@ -77,8 +77,7 @@ export const LayoutManagementProvider = (
         console.error("Error occurred while retrieving metadata", error);
       });
 
-    getPersistenceManager()
-      .loadApplicationLayout()
+    persistenceManager.loadApplicationLayout()
       .then((layout: LayoutJSON) => {
         setApplicationLayout(layout);
       })
@@ -93,6 +92,7 @@ export const LayoutManagementProvider = (
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
+      console.log(`save application layout ${JSON.stringify(layout, null, 2)}`);
       setApplicationLayout(layout, false);
       getPersistenceManager().saveApplicationLayout(layout);
     },

@@ -1,12 +1,12 @@
 package org.finos.vuu.provider
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{JoinTableDef, TableDef}
-import org.finos.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
-import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, RightToLeftKeys}
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{JoinTableDef, TableDef}
+import org.finos.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
+import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, RightToLeftKeys}
 
 import java.util
 import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
@@ -148,9 +148,6 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
   def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
     val keyField = sourceTableDefsByName.get(tableName).keyField
-    if(keyField == null)
-      println("here")
-
     ev.get(keyField).toString
   }
 

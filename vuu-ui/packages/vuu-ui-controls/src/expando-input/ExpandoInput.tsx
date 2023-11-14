@@ -19,7 +19,7 @@ export const ExpandoInput = forwardRef(function ExpandoInput(
     value,
     inputProps,
     onCommit = noop,
-    ...InputProps
+    ...props
   }: ExpandoInputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
@@ -31,7 +31,7 @@ export const ExpandoInput = forwardRef(function ExpandoInput(
       data-text={value}
     >
       <VuuInput
-        {...InputProps}
+        {...props}
         errorMessage={errorMessage}
         inputProps={{ ...inputProps, className: `${classBase}-input` }}
         onCommit={onCommit}

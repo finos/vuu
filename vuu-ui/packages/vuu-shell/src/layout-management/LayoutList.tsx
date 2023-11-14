@@ -48,8 +48,8 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
               {layoutMetadata.map((metadata) => (
                 <div
                   className={`${classBase}-layoutContainer`}
-                                key={metadata?.id}
-                                onClick={() => handleLoadLayout(metadata?.id)}
+                  key={metadata?.id}
+                  onClick={() => handleLoadLayout(metadata?.id)}
                 >
                   <img
                     className={`${classBase}-screenshot`}
@@ -60,7 +60,7 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                       {metadata?.name}
                     </div>
                     <div className={`${classBase}-layoutDetails`}>
-                                        <div>{`${metadata?.user}, ${metadata?.created}`}</div>
+                      <div>{`${metadata?.user}, ${metadata?.created}`}</div>
                     </div>
                   </div>
                 </div>

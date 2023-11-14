@@ -38,9 +38,9 @@ export interface TableCellProps {
 
 export type CommitResponse = Promise<true | string>;
 
-export type DataItemCommitHandler = (
-  value: VuuRowDataItemType
-) => CommitResponse;
+export type DataItemCommitHandler<
+  T extends VuuRowDataItemType = VuuRowDataItemType
+> = (value: T) => CommitResponse;
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {

@@ -47,7 +47,7 @@ export const BasketToolbar = ({
     return true;
   };
 
-  const handleUnitsEdited = useCallback<DataItemCommitHandler>(
+  const handleUnitsEdited = useCallback<DataItemCommitHandler<number>>(
     (value) => {
       if (onCommit) {
         return onCommit?.("units", value);
@@ -60,10 +60,12 @@ export const BasketToolbar = ({
     [onCommit]
   );
 
-  const { warningMessage: unitErrorMessage, ...unitProps } = useEditableText({
-    initialValue: basket?.units ?? "",
-    onCommit: handleUnitsEdited,
-  });
+  const { warningMessage: unitErrorMessage, ...unitProps } =
+    useEditableText<number>({
+      initialValue: basket?.units,
+      onCommit: handleUnitsEdited,
+      type: "number",
+    });
 
   const handleSideCommit = useCallback<CycleStateButtonProps["onCommit"]>(
     (_, value) => {
@@ -102,14 +104,15 @@ export const BasketToolbar = ({
       <span className={`${classBase}-units`}>{basket?.side ?? ""}</span>
     </FormField>
   );
+
   const inputUnits = (
     <FormField key="units">
       <FormFieldLabel>Units</FormFieldLabel>
       <ExpandoInput
+        {...unitProps}
         errorMessage={unitErrorMessage}
-        inputProps={unitProps}
         className={`${classBase}-units`}
-        value={basket?.units ?? ""}
+        // value={basket?.units ?? ""}
       />
     </FormField>
   );

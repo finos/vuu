@@ -3,19 +3,18 @@ import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { getEditRuleValidator } from "@finos/vuu-utils";
 
 export type ClientSideValidationChecker = (
-  value: VuuRowDataItemType
+  value?: VuuRowDataItemType
 ) => string | false | undefined;
 
 export const buildValidationChecker =
   (rules: EditValidationRule[]): ClientSideValidationChecker =>
-  (value: VuuRowDataItemType) =>
+  (value?: VuuRowDataItemType) =>
     applyRules(rules, value);
 
 function applyRules(
   rules: EditValidationRule[],
-  value: VuuRowDataItemType
+  value?: VuuRowDataItemType
 ): string | false | undefined {
-  console.log(`apply rules to ${value}`);
   let result: false | string | undefined = undefined;
   for (const rule of rules) {
     const editRuleValidator = getEditRuleValidator(rule.name);
@@ -43,6 +42,5 @@ function applyRules(
     }
   }
 
-  console.log(result);
   return result;
 }

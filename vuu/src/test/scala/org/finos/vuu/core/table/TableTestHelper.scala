@@ -1,10 +1,10 @@
 package org.finos.vuu.core.table
 
-import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.TestFriendlyClock
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api._
-import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider}
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.{ViewPort, ViewPortUpdate}
 
@@ -15,23 +15,23 @@ object TableTestHelper {
   }
 
   def combineQs(queue: PublishQueue[ViewPortUpdate]): Seq[ViewPortUpdate] = {
-    queue.popUpTo(20)
+    queue.popUpTo(100)
   }
 
   def combineQs(viewPort: ViewPort): Seq[ViewPortUpdate] = {
-    viewPort.outboundQ.popUpTo(20)
+    viewPort.outboundQ.popUpTo(100)
   }
 
   def getQueues: OutboundRowPublishQueue = {
     val outQueue = new OutboundRowPublishQueue()
-    (outQueue)
+    outQueue
   }
 
-  def createOrderPricesScenario() = {
+  def createOrderPricesScenario(): (DataTable, DataTable, DataTable, MockProvider, MockProvider, JoinTableProvider) = {
 
-    implicit val clock = new TestFriendlyClock(100000000l)
-    implicit val lifecycle = new LifecycleContainer
-    implicit val metrics = new MetricsProviderImpl
+    implicit val clock: Clock = new TestFriendlyClock(100000000L)
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+    implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
     val ordersDef = TableDef(
       name = "orders",

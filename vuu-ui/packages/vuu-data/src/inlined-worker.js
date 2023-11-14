@@ -682,7 +682,6 @@ var CHANGE_VP_RANGE_SUCCESS = "CHANGE_VP_RANGE_SUCCESS";
 var CLOSE_TREE_NODE = "CLOSE_TREE_NODE";
 var CLOSE_TREE_SUCCESS = "CLOSE_TREE_SUCCESS";
 var CREATE_VP = "CREATE_VP";
-var CREATE_VP_SUCCESS = "CREATE_VP_SUCCESS";
 var DISABLE_VP = "DISABLE_VP";
 var DISABLE_VP_SUCCESS = "DISABLE_VP_SUCCESS";
 var ENABLE_VP = "ENABLE_VP";
@@ -692,14 +691,11 @@ var GET_VIEW_PORT_MENUS = "GET_VIEW_PORT_MENUS";
 var HB = "HB";
 var HB_RESP = "HB_RESP";
 var LOGIN = "LOGIN";
-var LOGIN_SUCCESS = "LOGIN_SUCCESS";
 var OPEN_TREE_NODE = "OPEN_TREE_NODE";
 var OPEN_TREE_SUCCESS = "OPEN_TREE_SUCCESS";
 var REMOVE_VP = "REMOVE_VP";
 var RPC_RESP = "RPC_RESP";
 var SET_SELECTION_SUCCESS = "SET_SELECTION_SUCCESS";
-var TABLE_META_RESP = "TABLE_META_RESP";
-var TABLE_LIST_RESP = "TABLE_LIST_RESP";
 var TABLE_ROW = "TABLE_ROW";
 
 // src/server-proxy/rpc-services.ts
@@ -967,7 +963,6 @@ var Viewport = class {
     this.pendingRangeRequests = [];
     this.rowCountChanged = false;
     this.selectedRows = [];
-    this.tableSchema = null;
     this.useBatchMode = true;
     this.lastUpdateStatus = NO_UPDATE_STATUS;
     this.updateThrottleTimer = void 0;
@@ -1106,7 +1101,7 @@ var Viewport = class {
     range,
     sort,
     groupBy
-  }) {
+  }, tableSchema) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
     this.aggregations = aggregations;
@@ -1123,7 +1118,7 @@ var Viewport = class {
       groupBy,
       range,
       sort,
-      tableSchema: this.tableSchema
+      tableSchema
     };
   }
   awaitOperation(requestId, msg) {
@@ -1328,9 +1323,6 @@ var Viewport = class {
       menu,
       clientViewportId: this.clientViewportId
     };
-  }
-  setTableSchema(tableSchema) {
-    this.tableSchema = tableSchema;
   }
   openTreeNode(requestId, message) {
     if (this.useBatchMode) {
@@ -1659,9 +1651,9 @@ var ServerProxy = class {
   constructor(connection, callback) {
     this.authToken = "";
     this.user = "user";
-    this.pendingTableMetaRequests = /* @__PURE__ */ new Map();
     this.pendingRequests = /* @__PURE__ */ new Map();
     this.queuedRequests = [];
+    this.cachedTableMetaRequests = /* @__PURE__ */ new Map();
     this.cachedTableSchemas = /* @__PURE__ */ new Map();
     this.connection = connection;
     this.postMessageToClient = callback;
@@ -1705,26 +1697,62 @@ var ServerProxy = class {
   }
   subscribe(message) {
     if (!this.mapClientToServerViewport.has(message.viewport)) {
-      if (!this.hasSchemaForTable(message.table) && // A Session table is never cached - it is limited to a single workflow interaction
-      // The metadata for a session table is requested even before the subscribe call.
-      !isSessionTable(message.table)) {
-        info3 == null ? void 0 : info3(
-          \`subscribe to \${message.table.table}, no metadata yet, request metadata\`
-        );
-        const requestId = nextRequestId();
-        this.sendMessageToServer(
-          { type: "GET_TABLE_META", table: message.table },
-          requestId
-        );
-        this.pendingTableMetaRequests.set(requestId, message.viewport);
-      }
+      const pendingTableSchema = this.getTableMeta(message.table);
       const viewport = new Viewport(message, this.postMessageToClient);
       this.viewports.set(message.viewport, viewport);
-      this.sendIfReady(
+      const pendingSubscription = this.awaitResponseToMessage(
         viewport.subscribe(),
-        message.viewport,
-        this.sessionId !== ""
+        message.viewport
       );
+      const awaitPendingReponses = Promise.all([
+        pendingSubscription,
+        pendingTableSchema
+      ]);
+      awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
+        const { viewPortId: serverViewportId } = subscribeResponse;
+        const { status: viewportStatus } = viewport;
+        if (message.viewport !== serverViewportId) {
+          this.viewports.delete(message.viewport);
+          this.viewports.set(serverViewportId, viewport);
+        }
+        this.mapClientToServerViewport.set(message.viewport, serverViewportId);
+        const clientResponse = viewport.handleSubscribed(
+          subscribeResponse,
+          tableSchema
+        );
+        if (clientResponse) {
+          this.postMessageToClient(clientResponse);
+          if (debugEnabled4) {
+            debug4(
+              \`post DataSourceSubscribedMessage to client: \${JSON.stringify(
+                clientResponse
+              )}\`
+            );
+          }
+        }
+        if (viewport.disabled) {
+          this.disableViewport(viewport);
+        }
+        if (viewportStatus === "subscribing" && // A session table will never have Visual Links, nor Context Menus
+        !isSessionTable(viewport.table)) {
+          this.sendMessageToServer({
+            type: GET_VP_VISUAL_LINKS,
+            vpId: serverViewportId
+          });
+          this.sendMessageToServer({
+            type: GET_VIEW_PORT_MENUS,
+            vpId: serverViewportId
+          });
+          Array.from(this.viewports.entries()).filter(
+            ([id, { disabled }]) => id !== serverViewportId && !disabled
+          ).forEach(([vpId]) => {
+            this.sendMessageToServer({
+              type: GET_VP_VISUAL_LINKS,
+              vpId
+            });
+          });
+        }
+      });
     } else {
       error3(\`spurious subscribe call \${message.viewport}\`);
     }
@@ -1965,6 +1993,7 @@ var ServerProxy = class {
     this.sendMessageToServer(rpcRequest, requestId, { module });
   }
   handleMessageFromClient(message) {
+    var _a;
     if (isViewporttMessage(message)) {
       if (message.type === "disable") {
         const viewport = this.getViewportForClient(message.viewport, false);
@@ -2016,13 +2045,32 @@ var ServerProxy = class {
     } else {
       const { type, requestId } = message;
       switch (type) {
-        case "GET_TABLE_LIST":
-          return this.sendMessageToServer({ type }, requestId);
-        case "GET_TABLE_META":
-          return this.sendMessageToServer(
-            { type, table: message.table },
+        case "GET_TABLE_LIST": {
+          (_a = this.tableList) != null ? _a : this.tableList = this.awaitResponseToMessage(
+            { type },
             requestId
           );
+          this.tableList.then((response) => {
+            this.postMessageToClient({
+              type: "TABLE_LIST_RESP",
+              tables: response.tables,
+              requestId
+            });
+          });
+          return;
+        }
+        case "GET_TABLE_META": {
+          this.getTableMeta(message.table, requestId).then((tableSchema) => {
+            if (tableSchema) {
+              this.postMessageToClient({
+                type: "TABLE_META_RESP",
+                tableSchema,
+                requestId
+              });
+            }
+          });
+          return;
+        }
         case "RPC_CALL":
           return this.rpcCall(message);
         default:
@@ -2034,9 +2082,23 @@ var ServerProxy = class {
       )}\`
     );
   }
-  awaitResponseToMessage(message) {
+  getTableMeta(table, requestId = nextRequestId()) {
+    if (isSessionTable(table)) {
+      return Promise.resolve(void 0);
+    }
+    const key = \`\${table.module}:\${table.table}\`;
+    let tableMetaRequest = this.cachedTableMetaRequests.get(key);
+    if (!tableMetaRequest) {
+      tableMetaRequest = this.awaitResponseToMessage(
+        { type: "GET_TABLE_META", table },
+        requestId
+      );
+      this.cachedTableMetaRequests.set(key, tableMetaRequest);
+    }
+    return tableMetaRequest == null ? void 0 : tableMetaRequest.then((response) => this.cacheTableMeta(response));
+  }
+  awaitResponseToMessage(message, requestId = nextRequestId()) {
     return new Promise((resolve, reject) => {
-      const requestId = nextRequestId();
       this.sendMessageToServer(message, requestId);
       this.pendingRequests.set(requestId, { reject, resolve });
     });
@@ -2080,60 +2142,13 @@ var ServerProxy = class {
           "NA"
         );
         break;
-      case LOGIN_SUCCESS:
+      case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
           (_a = this.pendingLogin) == null ? void 0 : _a.resolve(sessionId);
           this.pendingLogin = void 0;
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
-        }
-        break;
-      case CREATE_VP_SUCCESS:
-        {
-          const viewport = viewports.get(requestId);
-          if (viewport) {
-            const { status: viewportStatus } = viewport;
-            const { viewPortId: serverViewportId } = body;
-            if (requestId !== serverViewportId) {
-              viewports.delete(requestId);
-              viewports.set(serverViewportId, viewport);
-            }
-            this.mapClientToServerViewport.set(requestId, serverViewportId);
-            const response = viewport.handleSubscribed(body);
-            if (response) {
-              this.postMessageToClient(response);
-              if (debugEnabled4) {
-                debug4(
-                  \`post DataSourceSubscribedMessage to client: \${JSON.stringify(
-                    response
-                  )}\`
-                );
-              }
-            }
-            if (viewport.disabled) {
-              this.disableViewport(viewport);
-            }
-            if (viewportStatus === "subscribing" && // A session table will never have Visual Links, nor Context Menus
-            !isSessionTable(viewport.table)) {
-              this.sendMessageToServer({
-                type: GET_VP_VISUAL_LINKS,
-                vpId: serverViewportId
-              });
-              this.sendMessageToServer({
-                type: GET_VIEW_PORT_MENUS,
-                vpId: serverViewportId
-              });
-              Array.from(viewports.entries()).filter(
-                ([id, { disabled }]) => id !== serverViewportId && !disabled
-              ).forEach(([vpId]) => {
-                this.sendMessageToServer({
-                  type: GET_VP_VISUAL_LINKS,
-                  vpId
-                });
-              });
-            }
-          }
         }
         break;
       case "REMOVE_VP_SUCCESS":
@@ -2288,36 +2303,6 @@ var ServerProxy = class {
           }
         }
         break;
-      case TABLE_LIST_RESP:
-        this.postMessageToClient({
-          type: TABLE_LIST_RESP,
-          tables: body.tables,
-          requestId
-        });
-        break;
-      case TABLE_META_RESP:
-        {
-          const tableSchema = this.cacheTableMeta(body);
-          const clientViewportId = this.pendingTableMetaRequests.get(requestId);
-          if (clientViewportId) {
-            this.pendingTableMetaRequests.delete(requestId);
-            const viewport = this.viewports.get(clientViewportId);
-            if (viewport) {
-              viewport.setTableSchema(tableSchema);
-            } else {
-              warn3 == null ? void 0 : warn3(
-                "Message has come back AFTER CREATE_VP_SUCCESS, what do we do now"
-              );
-            }
-          } else {
-            this.postMessageToClient({
-              type: TABLE_META_RESP,
-              tableSchema,
-              requestId
-            });
-          }
-        }
-        break;
       case "VP_VISUAL_LINKS_RESP":
         {
           const activeLinkDescriptors = this.getActiveLinks(body.links);
@@ -2444,9 +2429,6 @@ var ServerProxy = class {
       default:
         infoEnabled3 && info3(\`handleMessageFromServer \${body["type"]}.\`);
     }
-  }
-  hasSchemaForTable(table) {
-    return this.cachedTableSchemas.has(\`\${table.module}:\${table.table}\`);
   }
   cacheTableMeta(messageBody) {
     const { module, table } = messageBody.table;

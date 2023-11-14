@@ -25,10 +25,6 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     layout: LayoutJSON
   ): Promise<LayoutMetadata> {
     return new Promise((resolve) => {
-      console.log(
-        `Saving layout as ${metadata.name} to group ${metadata.group}...`
-      );
-
       Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
         ([existingLayouts, existingMetadata]) => {
           const id = getUniqueId();

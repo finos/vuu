@@ -6,17 +6,14 @@ import {
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
-import {
-  EventEmitter,
-  getLoggingConfigForWorker,
-  uuid,
-} from "@finos/vuu-utils";
+import {EventEmitter, getLoggingConfigForWorker, uuid,} from "@finos/vuu-utils";
 import {
   DataSourceCallbackMessage,
   shouldMessageBeRoutedToDataSource as messageShouldBeRoutedToDataSource,
 } from "./data-source";
 import * as Message from "./server-proxy/messages";
 import {
+  ConnectionQualityMetrics,
   ConnectionStatusMessage,
   isConnectionQualityMetrics,
   isConnectionStatusMessage,
@@ -31,10 +28,9 @@ import {
 } from "./vuuUIMessageTypes";
 
 // Note: inlined-worker is a generated file, it must be built
-import { workerSourceCode } from "./inlined-worker";
-import { ConnectionQualityMetrics } from "./vuuUIMessageTypes";
-import { WebSocketProtocol } from "./websocket-connection";
-import { TableSchema } from "./message-utils";
+import {workerSourceCode} from "./inlined-worker";
+import {WebSocketProtocol} from "./websocket-connection";
+import {TableSchema} from "./message-utils";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",
@@ -89,17 +85,17 @@ type WorkerOptions = {
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
 const getWorker = async ({
-  handleConnectionStatusChange,
-  protocol,
-  retryLimitDisconnect,
-  retryLimitStartup,
-  token = "",
-  username,
-  url,
-}: WorkerOptions) => {
+                           handleConnectionStatusChange,
+                           protocol,
+                           retryLimitDisconnect,
+                           retryLimitStartup,
+                           token = "",
+                           username,
+                           url,
+                         }: WorkerOptions) => {
   if (token === "" && pendingWorker === undefined) {
     return new Promise<Worker>((resolve) => {
-      pendingWorkerNoToken.push({ resolve });
+      pendingWorkerNoToken.push({resolve});
     });
   }
   //FIXME If we have a pending request already and a new request arrives with a DIFFERENT
@@ -119,7 +115,7 @@ const getWorker = async ({
       // establishing a connection. When we resolve the worker, a runtime message
       // handler will replace this (see below)
       worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
-        const { data: message } = msg;
+        const {data: message} = msg;
         if (message.type === "ready") {
           window.clearTimeout(timer);
           worker.postMessage({
@@ -139,7 +135,7 @@ const getWorker = async ({
           }
           pendingWorkerNoToken.length = 0;
         } else if (isConnectionStatusMessage(message)) {
-          handleConnectionStatusChange({ data: message });
+          handleConnectionStatusChange({data: message});
         } else {
           console.warn("ConnectionManager: Unexpected message from the worker");
         }
@@ -150,8 +146,8 @@ const getWorker = async ({
 };
 
 function handleMessageFromWorker({
-  data: message,
-}: MessageEvent<VuuUIMessageIn | DataSourceCallbackMessage>) {
+                                   data: message,
+                                 }: MessageEvent<VuuUIMessageIn | DataSourceCallbackMessage>) {
   if (messageShouldBeRoutedToDataSource(message)) {
     const viewport = viewports.get(message.clientViewportId);
     if (viewport) {
@@ -164,12 +160,11 @@ function handleMessageFromWorker({
   } else if (isConnectionStatusMessage(message)) {
     ConnectionManager.emit("connection-status", message);
   } else if (isConnectionQualityMetrics(message)) {
-    console.log({ message });
     ConnectionManager.emit("connection-metrics", message);
   } else {
     const requestId = (message as VuuUIMessageInRPC).requestId;
     if (pendingRequests.has(requestId)) {
-      const { resolve } = pendingRequests.get(requestId);
+      const {resolve} = pendingRequests.get(requestId);
       pendingRequests.delete(requestId);
       const {
         type: _1,
@@ -214,7 +209,7 @@ const asyncRequest = <T = unknown>(
     ...msg,
   });
   return new Promise((resolve, reject) => {
-    pendingRequests.set(requestId, { resolve, reject });
+    pendingRequests.set(requestId, {resolve, reject});
   });
 };
 
@@ -246,11 +241,11 @@ const connectedServerAPI: ServerAPI = {
       request: message,
       postMessageToClientDataSource: callback,
     });
-    worker.postMessage({ type: "subscribe", ...message });
+    worker.postMessage({type: "subscribe", ...message});
   },
 
   unsubscribe: (viewport) => {
-    worker.postMessage({ type: "unsubscribe", viewport });
+    worker.postMessage({type: "unsubscribe", viewport});
   },
 
   send: (message) => {
@@ -268,7 +263,7 @@ const connectedServerAPI: ServerAPI = {
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>
-    asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
+    asyncRequest<VuuTableList>({type: "GET_TABLE_LIST"}),
 
   getTableSchema: async (table) =>
     asyncRequest<TableSchema>({
@@ -297,13 +292,13 @@ class _ConnectionManager extends EventEmitter<ConnectionEvents> {
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
   async connect({
-    url,
-    authToken,
-    username,
-    protocol,
-    retryLimitDisconnect,
-    retryLimitStartup,
-  }: ConnectOptions): Promise<ServerAPI> {
+                  url,
+                  authToken,
+                  username,
+                  protocol,
+                  retryLimitDisconnect,
+                  retryLimitStartup,
+                }: ConnectOptions): Promise<ServerAPI> {
     // By passing handleMessageFromWorker here, we can get connection status
     //messages while we wait for worker to resolve.
     worker = await getWorker({
@@ -338,13 +333,13 @@ export const ConnectionManager = new _ConnectionManager();
  * @param token
  */
 export const connectToServer = async ({
-  url,
-  protocol = undefined,
-  authToken,
-  username,
-  retryLimitDisconnect,
-  retryLimitStartup,
-}: ConnectOptions) => {
+                                        url,
+                                        protocol = undefined,
+                                        authToken,
+                                        username,
+                                        retryLimitDisconnect,
+                                        retryLimitStartup,
+                                      }: ConnectOptions) => {
   try {
     const serverAPI = await ConnectionManager.connect({
       protocol,

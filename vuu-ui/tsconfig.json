@@ -4,7 +4,12 @@
     "noImplicitAny": true,
     "target": "es2016",
     "downlevelIteration": true,
-    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "WebWorker"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -25,27 +30,67 @@
     "showcase/src",
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
-    "global.d.ts"
-, "packages/vuu-data-test/src/UpdateGenerator.ts"  ],
-  "exclude": ["**/*.cy.*", "**/*.test.*"],
+    "global.d.ts",
+    "packages/vuu-data-test/src/UpdateGenerator.ts"
+  ],
+  "exclude": [
+    "**/*.cy.*",
+    "**/*.test.*"
+  ],
   "references": [
-    {"path" : "packages/vuu-codemirror"},
-    {"path" : "packages/vuu-data"},
-    {"path" : "packages/vuu-data-ag-grid"},
-    {"path" : "packages/vuu-data-react"},
-    {"path" : "packages/vuu-data-types"},
-    {"path" : "packages/vuu-datagrid"},
-    {"path" : "packages/vuu-datatable"},
-    {"path" : "packages/vuu-filter-parser"},
-    {"path" : "packages/vuu-filter-types"},
-    {"path" : "packages/vuu-filters"},
-    {"path" : "packages/vuu-layout"},
-    {"path" : "packages/vuu-popups"},
-    {"path" : "packages/vuu-protocol-types"},
-    {"path" : "packages/vuu-shell"},
-    {"path" : "packages/vuu-table"},
-    {"path" : "packages/vuu-table-extras"},
-    {"path" : "packages/vuu-ui-controls"},
-    {"path" : "packages/vuu-utils"}
+    {
+      "path": "packages/vuu-codemirror"
+    },
+    {
+      "path": "packages/vuu-data"
+    },
+    {
+      "path": "packages/vuu-data-ag-grid"
+    },
+    {
+      "path": "packages/vuu-data-react"
+    },
+    {
+      "path": "packages/vuu-data-types"
+    },
+    {
+      "path": "packages/vuu-datagrid"
+    },
+    {
+      "path": "packages/vuu-datatable"
+    },
+    {
+      "path": "packages/vuu-filter-parser"
+    },
+    {
+      "path": "packages/vuu-filter-types"
+    },
+    {
+      "path": "packages/vuu-filters"
+    },
+    {
+      "path": "packages/vuu-layout"
+    },
+    {
+      "path": "packages/vuu-popups"
+    },
+    {
+      "path": "packages/vuu-protocol-types"
+    },
+    {
+      "path": "packages/vuu-shell"
+    },
+    {
+      "path": "packages/vuu-table"
+    },
+    {
+      "path": "packages/vuu-table-extras"
+    },
+    {
+      "path": "packages/vuu-ui-controls"
+    },
+    {
+      "path": "packages/vuu-utils"
+    }
   ]
 }

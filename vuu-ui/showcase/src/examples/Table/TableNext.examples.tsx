@@ -6,7 +6,7 @@ import {
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
-import { GroupHeaderCellNext, TableNext } from "@finos/vuu-table";
+import { TableNext } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -14,6 +14,7 @@ import {
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
 import { useTableConfig, useTestDataSource } from "../utils";
+import { GroupHeaderCellNext } from "@finos/vuu-table";
 import { getAllSchemas } from "@finos/vuu-data-test";
 
 import "./TableNext.examples.css";

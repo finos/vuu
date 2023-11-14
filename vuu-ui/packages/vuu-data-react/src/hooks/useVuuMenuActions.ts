@@ -1,12 +1,7 @@
 import {
   DataSource,
-  DataSourceMenusMessage,
   DataSourceVisualLinkCreatedMessage,
-  DataSourceVisualLinkRemovedMessage,
-  DataSourceVisualLinksMessage,
   MenuRpcResponse,
-  VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
@@ -16,8 +11,7 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
-import { GridAction } from "@finos/vuu-datagrid-types";
-import { getFilterPredicate } from "@finos/vuu-filter-parser";
+import {getFilterPredicate} from "@finos/vuu-filter-parser";
 import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -34,8 +28,8 @@ import {
   isGroupMenuItemDescriptor,
   metadataKeys,
 } from "@finos/vuu-utils";
-import type { MenuActionClosePopup } from "@finos/vuu-popups";
-import { useCallback } from "react";
+import type {MenuActionClosePopup} from "@finos/vuu-popups";
+import {useCallback} from "react";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 
@@ -44,12 +38,13 @@ export interface VuuCellMenuItem extends VuuMenuItem {
   field: string;
   value: VuuRowDataItemType;
 }
+
 export interface VuuRowMenuItem extends VuuMenuItem {
   rowKey: string;
   row: { [key: string]: VuuRowDataItemType };
 }
 
-const { KEY } = metadataKeys;
+const {KEY} = metadataKeys;
 
 const NO_CONFIG: MenuActionConfig = {};
 
@@ -111,7 +106,7 @@ const gridRowMeetsFilterCriteria = (
 const getMenuRpcRequest = (
   options: VuuMenuItem
 ): Omit<ClientToServerMenuRPC, "vpId"> => {
-  const { rpcName } = options;
+  const {rpcName} = options;
   if (isCellMenu(options)) {
     return {
       field: options.field,
@@ -185,11 +180,11 @@ export type VuuServerMenuOptions = {
   columnMap: ColumnMap;
   columnName: string;
   row: DataSourceRow;
-  selectedRowsCount: number;
+  selectedRows: DataSourceRow[];
   viewport: string;
 };
 
-const hasFilter = ({ filter }: VuuMenuItem) =>
+const hasFilter = ({filter}: VuuMenuItem) =>
   typeof filter === "string" && filter.length > 0;
 
 const getMenuItemOptions = (
@@ -266,12 +261,12 @@ const buildMenuDescriptor = (
       };
     } else {
       const children = menu.menus
-        .map((childMenu) =>
-          buildMenuDescriptor(childMenu, tableLocation, options)
-        )
-        .filter(
-          (childMenu) => childMenu !== undefined
-        ) as ContextMenuItemDescriptor[];
+      .map((childMenu) =>
+        buildMenuDescriptor(childMenu, tableLocation, options)
+      )
+      .filter(
+        (childMenu) => childMenu !== undefined
+      ) as ContextMenuItemDescriptor[];
       if (children.length > 0) {
         return {
           label: menu.name,
@@ -283,20 +278,20 @@ const buildMenuDescriptor = (
 };
 
 export const useVuuMenuActions = ({
-  clientSideMenuActionHandler,
-  dataSource,
-  menuActionConfig = NO_CONFIG,
-  onRpcResponse,
-}: VuuMenuActionHookProps): ViewServerHookResult => {
+                                    clientSideMenuActionHandler,
+                                    dataSource,
+                                    menuActionConfig = NO_CONFIG,
+                                    onRpcResponse,
+                                  }: VuuMenuActionHookProps): ViewServerHookResult => {
   const buildViewserverMenuOptions: MenuBuilder = useCallback(
     (location, options) => {
-      const { links, menu } = dataSource;
-      const { visualLink } = menuActionConfig;
+      const {links, menu} = dataSource;
+      const {visualLink} = menuActionConfig;
       const descriptors: ContextMenuItemDescriptor[] = [];
 
       if (location === "grid" && links && !visualLink) {
         links.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
-          const { link, label: linkLabel } = linkDescriptor;
+          const {link, label: linkLabel} = linkDescriptor;
           const label = linkLabel ? linkLabel : link.toTable;
           descriptors.push({
             label: `Link to ${label}`,
@@ -325,7 +320,7 @@ export const useVuuMenuActions = ({
   );
 
   const handleMenuAction = useCallback(
-    ({ menuId, options }: MenuActionClosePopup) => {
+    ({menuId, options}: MenuActionClosePopup) => {
       if (clientSideMenuActionHandler?.(menuId, options)) {
         return true;
       } else if (menuId === "MENU_RPC_CALL") {

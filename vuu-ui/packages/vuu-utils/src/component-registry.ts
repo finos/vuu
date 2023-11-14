@@ -4,7 +4,6 @@ import {
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
   EditValidationRule,
-  MappedValueTypeRenderer,
   TableCellRendererProps,
 } from "@finos/vuu-datagrid-types";
 import {
@@ -40,7 +39,7 @@ const optionsMap = new Map<string, CellRendererOptions>();
 
 export type EditRuleValidator = (
   editRule: EditValidationRule,
-  value: VuuRowDataItemType
+  value?: VuuRowDataItemType
 ) => boolean | string;
 
 export type ComponentType =

@@ -3,7 +3,7 @@
     <option name="ALTERNATIVE_JRE_PATH" value="temurin-11" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.finos.vuu.SimulMain" />
-    <module name="vuu" />
+    <module name="main" />
     <option name="PROGRAM_PARAMETERS" value="-Xmx20G -Xlog:gc*=debug:stdout " />
     <option name="VM_PARAMETERS" value="-Dlogback.configurationFile=logback.xml" />
     <extension name="coverage">
