@@ -7,6 +7,7 @@ import {
   ForwardedRef,
   forwardRef,
   KeyboardEventHandler,
+  ReactElement,
   SyntheticEvent,
   useCallback,
 } from "react";
@@ -124,4 +125,8 @@ export const VuuInput = forwardRef(function VuuInput<
       {tooltipProps ? <Tooltip {...tooltipProps} status="error" /> : null}
     </>
   );
-});
+}) as <T extends VuuRowDataItemType = string>(
+  props: VuuInputProps<T> & {
+    ref?: ForwardedRef<HTMLDivElement>;
+  }
+) => ReactElement<VuuInputProps<T>>;
