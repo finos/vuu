@@ -8,6 +8,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class LayoutRequestDto {
 
+    /**
+     * The definition of the layout as an arbitrary JSON structure, describing all required components
+     */
     @NotNull(message = "Definition must not be null")
     private ObjectNode definition;
 

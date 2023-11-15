@@ -1,7 +1,6 @@
 package org.finos.vuu.layoutserver.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class ObjectNodeConverter implements AttributeConverter<ObjectNode, Strin
     @Override
     public ObjectNode convertToEntityAttribute(String definition) {
         try {
-            return objectMapper.readValue(extractDefinition(definition), new TypeReference<>() {});
+            return objectMapper.readValue(extractDefinition(definition), ObjectNode.class);
         } catch (final IOException e) {
             logger.error("JSON reading error", e);
             return null;

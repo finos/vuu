@@ -9,6 +9,10 @@ import java.util.UUID;
 public class LayoutResponseDto {
 
     private UUID id;
+    
+    /**
+     * The definition of the layout as an arbitrary JSON structure, describing all required components
+     */
     private ObjectNode definition;
 
     private MetadataResponseDto metadata;

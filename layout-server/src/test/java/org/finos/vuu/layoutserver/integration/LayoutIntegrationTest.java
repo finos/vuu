@@ -39,8 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class LayoutIntegrationTest {
 
-    private static final String LAYOUT_DEFINITION_STRING = "{\"id\":\"main-tabs\"}";
-    private static final String UPDATED_LAYOUT_DEFINITION_STRING = "{\"id\":\"updated-main-tabs\"}";
+    private static final String DEFAULT_LAYOUT_DEFINITION_STRING = "{\"id\":\"main-tabs\"}";
+    private static final String DEFAULT_UPDATED_LAYOUT_DEFINITION_STRING = "{\"id\":\"updated-main-tabs\"}";
     private static final String DEFAULT_LAYOUT_NAME = "Default layout name";
     private static final String DEFAULT_LAYOUT_GROUP = "Default layout group";
     private static final String DEFAULT_LAYOUT_SCREENSHOT = "Default layout screenshot";
@@ -127,7 +127,7 @@ public class LayoutIntegrationTest {
         UUID layout2Id = UUID.randomUUID();
         Layout layout1 = createLayoutWithIdInDatabase(layout1Id);
         Layout layout2 = createLayoutWithIdInDatabase(layout2Id);
-        layout2.setDefinition(objectNodeConverter.convertToEntityAttribute(UPDATED_LAYOUT_DEFINITION_STRING));
+        layout2.setDefinition(objectNodeConverter.convertToEntityAttribute(DEFAULT_UPDATED_LAYOUT_DEFINITION_STRING));
         layout2.getMetadata().getBaseMetadata().setName("Different name");
         layout2.getMetadata().getBaseMetadata().setGroup("Different group");
         layout2.getMetadata().getBaseMetadata().setScreenshot("Different screenshot");
@@ -271,7 +271,7 @@ public class LayoutIntegrationTest {
                 initialLayout);
 
         LayoutRequestDto layoutRequest = createValidLayoutRequest();
-        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(UPDATED_LAYOUT_DEFINITION_STRING));
+        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(DEFAULT_UPDATED_LAYOUT_DEFINITION_STRING));
         layoutRequest.getMetadata().getBaseMetadata().setName("Updated name");
         layoutRequest.getMetadata().getBaseMetadata().setGroup("Updated group");
         layoutRequest.getMetadata().getBaseMetadata().setScreenshot("Updated screenshot");
@@ -435,7 +435,7 @@ public class LayoutIntegrationTest {
 
         metadata.setBaseMetadata(baseMetadata);
 
-        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(DEFAULT_LAYOUT_DEFINITION_STRING));
         layout.setMetadata(metadata);
         layout.setId(DEFAULT_LAYOUT_ID);
 
@@ -454,7 +454,7 @@ public class LayoutIntegrationTest {
 
         metadata.setBaseMetadata(baseMetadata);
 
-        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(DEFAULT_LAYOUT_DEFINITION_STRING));
         layout.setMetadata(metadata);
         layout.setId(id);
 
@@ -472,7 +472,7 @@ public class LayoutIntegrationTest {
         metadataRequest.setBaseMetadata(baseMetadata);
 
         LayoutRequestDto layoutRequest = new LayoutRequestDto();
-        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
+        layoutRequest.setDefinition(objectNodeConverter.convertToEntityAttribute(DEFAULT_LAYOUT_DEFINITION_STRING));
         layoutRequest.setMetadata(metadataRequest);
 
         return layoutRequest;
