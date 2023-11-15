@@ -2,8 +2,15 @@ import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { TableRowSelectHandler } from "@finos/vuu-table";
-import { ColumnMap } from "@finos/vuu-utils";
-import { ChangeEvent, useCallback, useMemo, useState } from "react";
+import { ColumnMap, dispatchMouseEvent } from "@finos/vuu-utils";
+import {
+  ChangeEvent,
+  KeyboardEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useControlled } from "../common-hooks";
 import { OpenChangeHandler } from "../dropdown";
 import { InstrumentPickerProps } from "./InstrumentPicker";
@@ -42,6 +49,10 @@ export const useInstrumentPicker = ({
     default: defaultIsOpen ?? false,
     name: "useDropdownList",
   });
+
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it
@@ -91,23 +102,43 @@ export const useInstrumentPicker = ({
     [handleOpenChange, itemToString, onSelect]
   );
 
+  const handleKeyDown = useCallback<KeyboardEventHandler>(
+    (e) => {
+      if (e.key === "ArrowDown") {
+        setHighlightedIndex((index) => index + 1);
+      } else if (e.key === "ArrowUp") {
+        setHighlightedIndex((index) => Math.max(0, index - 1));
+      } else if (e.key === "Enter" || e.key === " ") {
+        // induce an onSelect event by 'clicking' the row
+        const rowEl = tableRef.current?.querySelector(
+          `[aria-rowindex="${highlightedIndex}"]`
+        ) as HTMLElement;
+        if (rowEl) {
+          dispatchMouseEvent(rowEl, "click");
+        }
+      }
+    },
+    [highlightedIndex]
+  );
+
   const inputProps = {
     inputProps: {
       autoComplete: "off",
+      onKeyDown: handleKeyDown,
     },
     onChange: handleInputChange,
   };
-  const controlProps = {};
   const tableHandlers = {
     onSelect: handleSelectRow,
   };
 
   return {
-    controlProps,
+    highlightedIndex,
     inputProps,
     isOpen,
     onOpenChange: handleOpenChange,
     tableHandlers,
+    tableRef,
     value,
   };
 };

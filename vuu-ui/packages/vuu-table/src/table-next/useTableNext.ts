@@ -8,6 +8,7 @@ import {
   ColumnDescriptor,
   DataCellEditHandler,
   KeyedColumnDescriptor,
+  RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
@@ -43,14 +44,13 @@ import {
   ColumnActionHide,
   ColumnActionPin,
   MeasuredProps,
-  RowClickHandler,
   TableProps,
-  useSelection,
 } from "../table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
+import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
 import { useHandleTableContextMenu } from "./context-menu";
 import { useCellEditing } from "./useCellEditing";
@@ -468,7 +468,7 @@ export const useTable = ({
   });
 
   const {
-    highlightedIndex,
+    highlightedIndexRef,
     navigate,
     onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
@@ -501,16 +501,6 @@ export const useTable = ({
       }
     },
     [editingFocus, navigationFocus]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLElement>) => {
-      navigationKeyDown(e);
-      if (!e.defaultPrevented) {
-        editingKeyDown(e);
-      }
-    },
-    [navigationKeyDown, editingKeyDown]
   );
 
   const onContextMenu = useTableContextMenu({
@@ -557,11 +547,28 @@ export const useTable = ({
     [dataSource, onSelectionChange]
   );
 
-  const selectionHookOnRowClick = useSelection({
+  const {
+    onKeyDown: selectionHookKeyDown,
+    onRowClick: selectionHookOnRowClick,
+  } = useSelection({
+    highlightedIndexRef,
     onSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      navigationKeyDown(e);
+      if (!e.defaultPrevented) {
+        editingKeyDown(e);
+      }
+      if (!e.defaultPrevented) {
+        selectionHookKeyDown(e);
+      }
+    },
+    [navigationKeyDown, editingKeyDown, selectionHookKeyDown]
+  );
 
   const handleRowClick = useCallback<RowClickHandler>(
     (row, rangeSelect, keepExistingSelection) => {
@@ -642,7 +649,7 @@ export const useTable = ({
     data,
     handleContextMenuAction,
     headerProps,
-    highlightedIndex,
+    highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,

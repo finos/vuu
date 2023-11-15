@@ -76,7 +76,7 @@ export interface ListHandlers {
 export interface SelectionHookProps extends SelectionProps {
   containerRef: RefObject<HTMLElement>;
   disableSelection?: boolean;
-  highlightedIdx: number;
+  highlightedIndex: number;
   itemQuery: string;
   label?: string;
   onClick?: MouseEventHandler;

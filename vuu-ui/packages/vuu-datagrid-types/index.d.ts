@@ -1,4 +1,3 @@
-import type { ValueFormatter } from "@finos/vuu-table";
 import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
@@ -7,9 +6,11 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import type { FunctionComponent, MouseEvent } from "react";
+import { VuuDataRow } from "@finos/vuu-protocol-types";
+import type { ValueFormatter } from "@finos/vuu-table";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { ColumnMap } from "@finos/vuu-utils";
+import type { FunctionComponent, MouseEvent } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -41,6 +42,14 @@ export type CommitResponse = Promise<true | string>;
 export type DataItemCommitHandler<
   T extends VuuRowDataItemType = VuuRowDataItemType
 > = (value: T) => CommitResponse;
+
+export type TableRowClickHandler = (row: VuuDataRow) => void;
+
+export type RowClickHandler = (
+  row: DataSourceRow,
+  rangeSelect: boolean,
+  keepExistingSelection: boolean
+) => void;
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {

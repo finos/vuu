@@ -2,7 +2,6 @@ import {
   DataSource,
   SchemaColumn,
   VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
@@ -12,12 +11,10 @@ import {
   TableHeadings,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { MeasuredContainerProps } from "@finos/vuu-layout";
 import { FC, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 
-export type TableRowClickHandler = (row: VuuDataRow) => void;
 // TODO implement a Model object to represent a row data for better API
 export type TableRowSelectHandler = (row: DataSourceRow) => void;
 
@@ -127,9 +124,3 @@ export interface Viewport {
   rowCount: number;
   // contentWidth: number;
 }
-
-export type RowClickHandler = (
-  row: DataSourceRow,
-  rangeSelect: boolean,
-  keepExistingSelection: boolean
-) => void;

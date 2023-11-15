@@ -42,12 +42,21 @@ export const NavigationStyle = () => {
     };
   }, []);
 
+  const onSelect = useCallback((row) => {
+    console.log({ row });
+  }, []);
+  const onSelectionChange = useCallback((selected) => {
+    console.log({ selected });
+  }, []);
+
   return (
     <TableNext
       {...tableProps}
       height={645}
       navigationStyle="row"
       renderBufferSize={5}
+      onSelect={onSelect}
+      onSelectionChange={onSelectionChange}
       width={723}
     />
   );

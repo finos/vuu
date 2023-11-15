@@ -11,7 +11,6 @@ import {
   useRef,
 } from "react";
 import {
-  ListHandlers,
   SelectionHookProps,
   SelectionHookResult,
   selectionIsDisallowed,
@@ -23,8 +22,6 @@ export const CHECKBOX = "checkbox";
 export const GROUP_SELECTION_NONE = "none";
 export const GROUP_SELECTION_SINGLE = "single";
 export const GROUP_SELECTION_CASCADE = "cascade";
-
-const NO_SELECTION_HANDLERS: ListHandlers = {};
 
 export type GroupSelectionMode = "none" | "single" | "cascade";
 
@@ -39,7 +36,7 @@ export const useSelection = ({
   defaultSelected,
   disableSelection = false,
   // groupSelection = GROUP_SELECTION_NONE,
-  highlightedIdx,
+  highlightedIndex,
   itemQuery,
   onClick,
   // label,
@@ -180,7 +177,7 @@ export const useSelection = ({
   const handleKeyDown = useCallback(
     (evt: KeyboardEvent) => {
       const { current: container } = containerRef;
-      const element = getElementByDataIndex(container, highlightedIdx);
+      const element = getElementByDataIndex(container, highlightedIndex);
       if (isSelectableElement(element)) {
         if (isSelectionEvent(evt) || (tabToSelect && evt.key === "Tab")) {
           // We do not inhibit Tab behaviour, if we are selecting on Tab then we apply
@@ -190,18 +187,18 @@ export const useSelection = ({
           }
           selectItemAtIndex(
             evt,
-            highlightedIdx,
+            highlightedIndex,
             false,
             evt.ctrlKey || evt.metaKey
           );
           if (isExtendedSelect) {
-            lastActive.current = highlightedIdx;
+            lastActive.current = highlightedIndex;
           }
         }
       }
     },
     [
-      highlightedIdx,
+      highlightedIndex,
       containerRef,
       isSelectionEvent,
       tabToSelect,
@@ -226,25 +223,25 @@ export const useSelection = ({
   const handleClick = useCallback(
     (evt: MouseEvent) => {
       const { current: container } = containerRef;
-      const element = getElementByDataIndex(container, highlightedIdx);
+      const element = getElementByDataIndex(container, highlightedIndex);
       if (!disableSelection && isSelectableElement(element)) {
         evt.preventDefault();
         evt.stopPropagation();
         selectItemAtIndex(
           evt,
-          highlightedIdx,
+          highlightedIndex,
           evt.shiftKey,
           evt.ctrlKey || evt.metaKey
         );
         if (isExtendedSelect) {
-          lastActive.current = highlightedIdx;
+          lastActive.current = highlightedIndex;
         }
       }
       onClick?.(evt);
     },
     [
       containerRef,
-      highlightedIdx,
+      highlightedIndex,
       disableSelection,
       onClick,
       selectItemAtIndex,

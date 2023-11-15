@@ -8,7 +8,6 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
-  VuuColumnDataType,
   VuuColumns,
   VuuFilter,
   VuuGroupBy,

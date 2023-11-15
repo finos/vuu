@@ -1,6 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
-import * as simulDataGenerators from "./simul/data-generators";
 import { UpdateGenerator } from "./rowUpdates";
 
 type RowAtIndexFunc<T = unknown> = (index: number) => T | undefined;

@@ -14,7 +14,7 @@
     }
 
     .vuuTableNextRow-highlighted {
-      background-color: red;
+      background-color: var(--vuu-color-gray-10);
     }
 
 
