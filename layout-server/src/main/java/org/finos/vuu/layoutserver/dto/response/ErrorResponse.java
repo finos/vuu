@@ -4,12 +4,12 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
 public class ErrorResponse {
-    private Date timestamp = new Date();
+    private LocalDate timestamp = LocalDate.now();
     private int status;
     private String error;
     private List<String> messages;
