@@ -31,7 +31,7 @@ export class RemoteLayoutPersistenceManager
         method: "POST",
         body: JSON.stringify({
           metadata,
-          definition: JSON.stringify(layout),
+          definition: layout,
         }),
       })
         .then((response) => {
