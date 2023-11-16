@@ -21,6 +21,14 @@ import "./BasketToolbar.css";
 
 const classBase = "vuuBasketToolbar";
 
+const formatNotional = (notional?: number) => {
+  if (notional === undefined) {
+    return "";
+  } else {
+    return notional.toLocaleString();
+  }
+};
+
 export type BasketChangeHandler = (
   columnName: string,
   value: VuuRowDataItemType
@@ -125,7 +133,7 @@ export const BasketToolbar = ({
     <FormField key="usd">
       <FormFieldLabel>Total USD Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>
-        {basket?.totalNotional ?? ""}
+        {formatNotional(basket?.totalNotional)}
       </span>
     </FormField>
   );
@@ -134,7 +142,7 @@ export const BasketToolbar = ({
     <FormField key="notional">
       <FormFieldLabel>Total Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>
-        {basket?.totalNotionalUsd ?? ""}
+        {formatNotional(basket?.totalNotionalUsd)}
       </span>
     </FormField>
   );
