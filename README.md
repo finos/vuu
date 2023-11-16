@@ -67,6 +67,9 @@ mvn spring-boot:run
 1. Follow steps 3-5 outlined in 'Configuring IntelliJ' below
 2. Select 'LayoutServer' config and click run
 
+### Workspace Settings 
+A set of VSCode settings is shared as workspace settings. In order to use the workspace settings the project needs to be opened in VSCode from vuu-ui/ folder 
+
 ## Configuring IntelliJ
 
 You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
