@@ -1,18 +1,18 @@
 import { InstrumentSearch } from "@finos/vuu-ui-controls";
-import { getAllSchemas } from "@finos/vuu-data-test";
-import { useTableConfig, useTestDataSource } from "../utils";
+import { getAllSchemas, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import { useTestDataSource } from "../utils";
+import { useMemo } from "react";
 
 let displaySequence = 1;
 
 export const DefaultInstrumentSearch = () => {
-  const { dataSource } = useTableConfig({
-    dataSourceConfig: {
-      columns: ["bbg", "description"],
-    },
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const dataSource = useMemo(
+    () => vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
+    []
+  );
   return (
     <InstrumentSearch
+      autoFocus
       dataSource={dataSource}
       style={{ height: 400, width: 250 }}
     />
@@ -22,10 +22,8 @@ export const DefaultInstrumentSearch = () => {
 DefaultInstrumentSearch.displaySequence = displaySequence++;
 
 export const InstrumentSearchVuuInstruments = () => {
-  const schemas = getAllSchemas();
   const { dataSource, error } = useTestDataSource({
-    // bufferSize: 1000,
-    schemas,
+    schemas: getAllSchemas(),
   });
 
   if (error) {

@@ -93,6 +93,7 @@ export const BasketSelector = ({
       <div className={`${classBase}-searchContainer`}>
         <InstrumentSearch
           TableProps={tableProps}
+          autoFocus
           className={`${classBase}-instrumentSearch`}
           dataSource={dataSourceBasketTradingSearch}
           placeHolder="Enter Basket Name"

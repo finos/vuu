@@ -12,13 +12,7 @@ import {
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import {
-  HTMLAttributes,
-  RefCallback,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
 
 import "./NewBasketPanel.css";
 import { useNewBasketPanel } from "./useNewBasketPanel";

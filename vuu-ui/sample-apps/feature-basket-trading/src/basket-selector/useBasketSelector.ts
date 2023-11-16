@@ -1,6 +1,7 @@
-import { TableProps, TableRowClickHandler } from "@finos/vuu-table";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { TableRowClickHandler } from "@finos/vuu-datagrid-types";
+import { TableProps } from "@finos/vuu-table";
 import { OpenChangeHandler, useControlled } from "@finos/vuu-ui-controls";
+import { buildColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";

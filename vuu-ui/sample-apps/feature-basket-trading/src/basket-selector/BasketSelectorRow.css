@@ -8,6 +8,10 @@
     background-color: var(--vuu-color-gray-10);
 }
 
+.vuuBasketSelectorRow-highlighted {
+    background-color: var(--vuu-color-gray-10);
+}
+
 .vuuBasketSelectorRow .vuuTableNextCell {
     display: grid;
     grid-template-columns: 1fr 1fr;

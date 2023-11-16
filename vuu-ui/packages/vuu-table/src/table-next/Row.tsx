@@ -3,7 +3,6 @@ import {
   DataCellEditHandler,
   KeyedColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
-import { RowClickHandler } from "@finos/vuu-table";
 import {
   ColumnMap,
   isGroupColumn,

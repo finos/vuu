@@ -1,12 +1,17 @@
 import { DataSource } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-layout";
-import { TableNext, TableProps } from "@finos/vuu-table";
+import {
+  TableNext,
+  TableProps,
+  useControlledTableNavigation,
+} from "@finos/vuu-table";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import cx from "classnames";
 import {
   FormEvent,
   HTMLAttributes,
+  RefCallback,
   useCallback,
   useMemo,
   useState,
@@ -14,6 +19,7 @@ import {
 import "./SearchCell";
 
 import "./InstrumentSearch.css";
+import { table } from "console";
 
 const classBase = "vuuInstrumentSearch";
 
@@ -36,6 +42,7 @@ const defaultTableConfig: TableConfig = {
 
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps?: Partial<TableProps>;
+  autoFocus?: boolean;
   dataSource: DataSource;
   placeHolder?: string;
   searchColumns?: string[];
@@ -45,6 +52,7 @@ const searchIcon = <span data-icon="search" />;
 
 export const InstrumentSearch = ({
   TableProps,
+  autoFocus = false,
   className,
   dataSource,
   placeHolder,
@@ -56,6 +64,9 @@ export const InstrumentSearch = ({
     () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
     [searchColumns]
   );
+
+  const { highlightedIndexRef, onKeyDown, tableRef } =
+    useControlledTableNavigation(-1);
 
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -77,13 +88,21 @@ export const InstrumentSearch = ({
     [baseFilterPattern, dataSource]
   );
 
+  const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
+    setTimeout(() => {
+      el?.querySelector("input")?.focus();
+    }, 100);
+  }, []);
+
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <FormField className={`${classBase}-inputField`}>
         <FormFieldLabel></FormFieldLabel>
         <Input
+          inputProps={{ onKeyDown }}
           endAdornment={searchIcon}
           placeholder={placeHolder}
+          ref={autoFocus ? searchCallbackRef : null}
           value={searchState.searchText}
           onChange={handleChange}
         />
@@ -93,10 +112,12 @@ export const InstrumentSearch = ({
         id="instrument-search"
         rowHeight={25}
         config={defaultTableConfig}
+        highlightedIndex={highlightedIndexRef.current}
         renderBufferSize={100}
         {...TableProps}
         className={`${classBase}-list`}
         dataSource={dataSource}
+        ref={tableRef}
         showColumnHeaders={false}
       />
     </div>
