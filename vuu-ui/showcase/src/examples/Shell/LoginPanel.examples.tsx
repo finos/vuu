@@ -1,5 +1,5 @@
 import { LoginPanel } from "@finos/vuu-shell";
 
 export const DefaultLoginPanel = () => {
-  return <LoginPanel />;
+  return <LoginPanel onSubmit={() => console.log("onSubmit")} />;
 };

@@ -3,7 +3,7 @@ import { dispatchMouseEvent } from "@finos/vuu-utils";
 import { KeyboardEventHandler, useCallback, useRef } from "react";
 
 export const useControlledTableNavigation = (
-  initialValue?: number,
+  initialValue: number,
   rowCount: number
 ) => {
   const tableRef = useRef<HTMLDivElement>(null);
@@ -29,7 +29,7 @@ export const useControlledTableNavigation = (
         }
       }
     },
-    [highlightedIndexRef, setHighlightedIndex]
+    [highlightedIndexRef, rowCount, setHighlightedIndex]
   );
 
   return {

@@ -47,7 +47,7 @@ export const useInstrumentPicker = ({
   });
 
   const { highlightedIndexRef, onKeyDown, tableRef } =
-    useControlledTableNavigation(-1);
+    useControlledTableNavigation(-1, dataSource.size);
 
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it

@@ -2,6 +2,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   DataCellEditHandler,
   KeyedColumnDescriptor,
+  RowClickHandler,
 } from "@finos/vuu-datagrid-types";
 import {
   ColumnMap,

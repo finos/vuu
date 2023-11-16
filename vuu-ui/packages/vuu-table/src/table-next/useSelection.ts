@@ -11,6 +11,7 @@ import {
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
@@ -29,7 +30,7 @@ export interface SelectionHookProps {
   highlightedIndexRef: MutableRefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
-  onSelect?: (rowIndex: number) => void;
+  onSelect?: (row: DataSourceRow) => void;
   onSelectionChange: SelectionChangeHandler;
 }
 

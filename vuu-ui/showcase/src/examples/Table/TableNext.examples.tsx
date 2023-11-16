@@ -272,19 +272,10 @@ export const TableNextInLayoutWithContextPanel = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const handleConfigChange = useCallback((tableConfig: TableConfig) => {
-    console.log("config changed");
-  }, []);
-
   return (
     <LayoutProvider>
       <FlexboxLayout style={{ height: 645, width: "100%" }}>
-        <TableNext
-          {...props}
-          config={config}
-          onConfigChange={handleConfigChange}
-          renderBufferSize={30}
-        />
+        <TableNext {...props} config={config} renderBufferSize={30} />
         <ContextPanel id="context-panel" overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
@@ -302,11 +293,7 @@ export const AutoTableNext = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
+  const [config] = useState(configProp);
 
   return (
     <TableNext
@@ -314,7 +301,6 @@ export const AutoTableNext = () => {
       config={{
         ...config,
       }}
-      onConfigChange={handleConfigChange}
       renderBufferSize={0}
     />
   );

@@ -1,5 +1,8 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import {
+  KeyedColumnDescriptor,
+  RowClickHandler,
+} from "@finos/vuu-datagrid-types";
 import {
   ColumnMap,
   isGroupColumn,
@@ -11,7 +14,6 @@ import {
 } from "@finos/vuu-utils";
 import cx from "classnames";
 import { HTMLAttributes, memo, MouseEvent, useCallback } from "react";
-import { RowClickHandler } from "./dataTableTypes";
 import { TableCell } from "./TableCell";
 import { TableGroupCell } from "./TableGroupCell";
 

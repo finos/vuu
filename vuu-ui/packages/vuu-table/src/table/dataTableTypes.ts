@@ -6,6 +6,7 @@ import {
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   KeyedColumnDescriptor,
+  RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
   TableHeadings,

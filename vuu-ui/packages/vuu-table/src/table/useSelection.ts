@@ -1,4 +1,5 @@
 import {
+  RowClickHandler,
   Selection,
   SelectionChangeHandler,
   TableSelectionModel,
@@ -11,7 +12,6 @@ import {
 } from "@finos/vuu-utils";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { useCallback, useRef } from "react";
-import { RowClickHandler } from "./dataTableTypes";
 
 const { IDX } = metadataKeys;
 
