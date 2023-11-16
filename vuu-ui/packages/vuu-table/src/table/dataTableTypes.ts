@@ -9,6 +9,7 @@ import {
   SelectionChangeHandler,
   TableConfig,
   TableHeadings,
+  TableRowClickHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
 import { MeasuredContainerProps } from "@finos/vuu-layout";
@@ -29,6 +30,7 @@ export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
   availableColumns?: SchemaColumn[];
   config: TableConfig;
   dataSource: DataSource;
+  disableFocus?: boolean;
   headerHeight?: number;
   /**
    * Defined how focus navigation within data cells will be handled by table.

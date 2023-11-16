@@ -150,6 +150,7 @@ export interface NavigationHookProps {
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
   defaultHighlightedIndex?: number;
+  disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
   highlightedIndex?: number;
   label?: string;
@@ -166,6 +167,7 @@ export interface NavigationHookProps {
 export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
+  disableFocus = false,
   defaultHighlightedIndex,
   disableHighlightOnFocus,
   highlightedIndex: highlightedIndexProp,
@@ -425,7 +427,7 @@ NavigationHookProps) => {
   // only then, on second render,  is content rendered.
   const fullyRendered = containerRef.current?.firstChild != null;
   useEffect(() => {
-    if (fullyRendered && focusableCell.current === undefined) {
+    if (fullyRendered && focusableCell.current === undefined && !disableFocus) {
       const { current: container } = containerRef;
       const cell = (container?.querySelector(headerCellQuery(0)) ||
         container?.querySelector(dataCellQuery(0, 0))) as HTMLElement;

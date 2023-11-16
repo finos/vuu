@@ -112,20 +112,27 @@ const basketTradingConstituentJoin = new Table(
   tableMaps.basketTradingConstituentJoin
 );
 
+// export as convenience for showcase examples
+export const createBasketTradingRow = (
+  basketId: string,
+  basketName: string,
+  side = "BUY",
+  status = "OFF MARKET"
+) => [
+  basketId,
+  basketName,
+  0,
+  1.25,
+  `steve-${basketIncrement++}`,
+  side,
+  status,
+  1_000_000,
+  1_250_000,
+  100,
+];
+
 function createTradingBasket(basketId: string, basketName: string) {
-  const instanceId = `steve-${basketIncrement++}`;
-  const basketTradingRow = [
-    basketId,
-    basketName,
-    0,
-    1.25,
-    instanceId,
-    "BUY",
-    "OFF MARKET",
-    1_000_000,
-    1_250_000,
-    100,
-  ];
+  const basketTradingRow = createBasketTradingRow(basketId, basketName);
 
   basketTrading.insert(basketTradingRow);
 
@@ -146,13 +153,15 @@ function createTradingBasket(basketId: string, basketName: string) {
     const side = "BUY";
     const venue = "venue";
 
+    const { instanceId } = tableMaps.basketTrading;
+    const basketInstanceId = basketTradingRow[instanceId];
     const basketTradingConstituentRow: VuuRowDataItemType[] = [
       algo,
       algoParams,
       basketId,
       description,
-      instanceId,
-      `${instanceId}-${ric}`,
+      basketInstanceId,
+      `${basketInstanceId}-${ric}`,
       limitPrice,
       notionalLocal,
       notionalUsd,
@@ -188,8 +197,8 @@ function createTradingBasket(basketId: string, basketName: string) {
       bidSize,
       close,
       description,
-      instanceId,
-      `${instanceId}-${ric}`,
+      basketInstanceId,
+      `${basketInstanceId}-${ric}`,
       last,
       limitPrice,
       notionalLocal,

@@ -8,6 +8,7 @@
 .vuuInstrumentSearch-inputField {
     --vuu-icon-size: 16px;
     flex: 0 0 40px;
+    padding: 0 12px;
 }
 .vuuInstrumentSearch-list {
     --vuuMeasuredContainer-flex: 1 1 1px;

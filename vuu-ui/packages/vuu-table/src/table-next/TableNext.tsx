@@ -25,6 +25,7 @@ export const TableNext = forwardRef(function TableNext(
     className: classNameProp,
     config,
     dataSource,
+    disableFocus = false,
     highlightedIndex: highlightedIndexProp,
     id: idProp,
     navigationStyle = "cell",
@@ -72,6 +73,7 @@ export const TableNext = forwardRef(function TableNext(
     config,
     containerRef,
     dataSource,
+    disableFocus,
     headerHeight,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
@@ -131,7 +133,11 @@ export const TableNext = forwardRef(function TableNext(
           className={`${classBase}-contentContainer`}
           ref={scrollProps.contentContainerRef}
         >
-          <div {...tableProps} className={`${classBase}-table`} tabIndex={-1}>
+          <div
+            {...tableProps}
+            className={`${classBase}-table`}
+            tabIndex={disableFocus ? undefined : -1}
+          >
             {showColumnHeaders ? (
               <div className={`${classBase}-col-headings`}>
                 <div className={`${classBase}-col-headers`} role="row">

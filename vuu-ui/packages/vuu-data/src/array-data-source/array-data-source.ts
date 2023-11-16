@@ -98,13 +98,9 @@ export class ArrayDataSource
   private dataIndices: number[] | undefined;
   /** Map reflecting positions of data items in raw data */
   private dataMap: ColumnMap | undefined;
-  private disabled = false;
-  private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
   /** the index of key field within raw data row */
   private key: number;
-  private indexOfDataKey: number;
-  private suspended = false;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";

@@ -6,7 +6,7 @@ import {
   TableProps,
   useControlledTableNavigation,
 } from "@finos/vuu-table";
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import { Input } from "@salt-ds/core";
 import cx from "classnames";
 import {
   FormEvent,
@@ -19,7 +19,6 @@ import {
 import "./SearchCell";
 
 import "./InstrumentSearch.css";
-import { table } from "console";
 
 const classBase = "vuuInstrumentSearch";
 
@@ -66,7 +65,7 @@ export const InstrumentSearch = ({
   );
 
   const { highlightedIndexRef, onKeyDown, tableRef } =
-    useControlledTableNavigation(-1);
+    useControlledTableNavigation(-1, dataSource.size);
 
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -96,8 +95,7 @@ export const InstrumentSearch = ({
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
-      <FormField className={`${classBase}-inputField`}>
-        <FormFieldLabel></FormFieldLabel>
+      <div className={`${classBase}-inputField`}>
         <Input
           inputProps={{ onKeyDown }}
           endAdornment={searchIcon}
@@ -106,9 +104,10 @@ export const InstrumentSearch = ({
           value={searchState.searchText}
           onChange={handleChange}
         />
-      </FormField>
+      </div>
 
       <TableNext
+        disableFocus
         id="instrument-search"
         rowHeight={25}
         config={defaultTableConfig}
@@ -117,6 +116,7 @@ export const InstrumentSearch = ({
         {...TableProps}
         className={`${classBase}-list`}
         dataSource={dataSource}
+        navigationStyle="row"
         ref={tableRef}
         showColumnHeaders={false}
       />

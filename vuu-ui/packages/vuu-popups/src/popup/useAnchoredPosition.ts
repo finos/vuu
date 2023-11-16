@@ -36,6 +36,8 @@ const getPositionRelativeToAnchor = (
       return { left: right + offsetLeft, top: top + offsetTop };
     case "below-center":
       return { left: left + width / 2 + offsetLeft, top: bottom + offsetTop };
+    case "below-right":
+      return { left: left, minWidth, top: bottom + offsetTop };
     case "below-full-width":
       return {
         left: left + offsetLeft,

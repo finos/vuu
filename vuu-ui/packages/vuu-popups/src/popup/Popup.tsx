@@ -8,6 +8,7 @@ export type PopupPlacement =
   | "absolute"
   | "below"
   | "below-center"
+  | "below-right"
   | "below-full-width"
   | "center"
   | "right";

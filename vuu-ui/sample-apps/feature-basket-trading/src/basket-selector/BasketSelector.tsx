@@ -36,7 +36,7 @@ export const BasketSelector = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const id = useId(idProp);
 
-  const { isOpen, onClickAddBasket, onOpenChange, tableProps } =
+  const { isOpen, onClickAddBasket, onOpenChange, tableProps, triggerRef } =
     useBasketSelector({
       basketInstanceId,
       dataSourceBasketTradingSearch,
@@ -49,9 +49,11 @@ export const BasketSelector = ({
   return (
     <DropdownBase
       {...htmlAttributes}
+      PopupProps={{ minWidth: 400 }}
       className={classBase}
       isOpen={isOpen}
       onOpenChange={onOpenChange}
+      placement="below-right"
       ref={rootRef}
     >
       <div className={`${classBase}-basketDetails`}>
@@ -86,7 +88,7 @@ export const BasketSelector = ({
         <Button
           className={`${classBase}-trigger`}
           data-icon="chevron-down"
-          // onClick={toggleSearch}
+          ref={triggerRef}
           variant="secondary"
         />
       </div>

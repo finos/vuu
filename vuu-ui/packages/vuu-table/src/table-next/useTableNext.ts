@@ -71,6 +71,7 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "disableFocus"
       | "highlightedIndex"
       | "navigationStyle"
       | "onAvailableColumnsChange"
@@ -103,6 +104,7 @@ export const useTable = ({
   config,
   containerRef,
   dataSource,
+  disableFocus,
   headerHeight = 25,
   highlightedIndex: highlightedIndexProp,
   navigationStyle = "cell",
@@ -476,6 +478,7 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    disableFocus,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,
