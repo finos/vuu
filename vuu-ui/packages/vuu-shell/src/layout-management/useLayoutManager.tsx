@@ -13,6 +13,7 @@ import {
   RemoteLayoutPersistenceManager,
   resolveJSONPath,
 } from "@finos/vuu-layout";
+import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
 let _persistenceManager: LayoutPersistenceManager;
@@ -69,6 +70,7 @@ export const LayoutManagementProvider = (
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
   const applicationLayoutRef = useRef<LayoutJSON>(defaultLayout);
+  const { notify } = useNotifications();
 
   const setApplicationLayout = useCallback(
     (layout: LayoutJSON, rerender = true) => {
@@ -89,7 +91,11 @@ export const LayoutManagementProvider = (
         setLayoutMetadata(metadata);
       })
       .catch((error: Error) => {
-        //TODO: Show error toaster
+        notify({
+          type: NotificationLevel.Error,
+          header: "This Didn't Work",
+          body: "Failed to load metadata from server",
+        });
         console.error("Error occurred while retrieving metadata", error);
       });
 
@@ -99,13 +105,17 @@ export const LayoutManagementProvider = (
         setApplicationLayout(layout);
       })
       .catch((error: Error) => {
-        //TODO: Show error toaster
+        notify({
+          type: NotificationLevel.Error,
+          header: "This Didn't Work",
+          body: "Failed to load application layout from server",
+        });
         console.error(
           "Error occurred while retrieving application layout",
           error
         );
       });
-  }, [setApplicationLayout]);
+  }, [notify, setApplicationLayout]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
@@ -115,26 +125,42 @@ export const LayoutManagementProvider = (
     [setApplicationLayout]
   );
 
-  const saveLayout = useCallback((metadata: LayoutMetadataDto) => {
-    const layoutToSave = resolveJSONPath(
-      applicationLayoutRef.current,
-      "#main-tabs.ACTIVE_CHILD"
-    );
+  const saveLayout = useCallback(
+    (metadata: LayoutMetadataDto) => {
+      const layoutToSave = resolveJSONPath(
+        applicationLayoutRef.current,
+        "#main-tabs.ACTIVE_CHILD"
+      );
 
-    if (layoutToSave) {
-      getPersistenceManager()
-        .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
-        .then((metadata) => {
-          //TODO: Show success toast
-          setLayoutMetadata((prev) => [...prev, metadata]);
-        })
-        .catch((error: Error) => {
-          //TODO: Show error toaster
-          console.error("Error occurred while saving layout", error);
+      if (layoutToSave) {
+        getPersistenceManager()
+          .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
+          .then((metadata) => {
+            notify({
+              type: NotificationLevel.Success,
+              header: "Layout Saved Successfully",
+              body: `${metadata.name} saved successfully`,
+            });
+            setLayoutMetadata((prev) => [...prev, metadata]);
+          })
+          .catch((error: Error) => {
+            notify({
+              type: NotificationLevel.Error,
+              header: "This Didn't Work",
+              body: "Failed to save layout to server",
+            });
+            console.error("Error occurred while saving layout", error);
+          });
+      } else {
+        notify({
+          type: NotificationLevel.Error,
+          header: "This Didn't Work",
+          body: "Cannot save undefined layout",
         });
-    }
-    //TODO else{ show error message}
-  }, []);
+      }
+    },
+    [notify]
+  );
 
   const loadLayoutById = useCallback(
     (id: string) => {

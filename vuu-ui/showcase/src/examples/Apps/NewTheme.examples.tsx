@@ -3,7 +3,11 @@ import {
   registerComponent,
   useLayoutContextMenuItems,
 } from "@finos/vuu-layout";
-import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
+import {
+  ContextMenuProvider,
+  NotificationsProvider,
+  useDialog,
+} from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
@@ -141,9 +145,11 @@ const ShellWithNewTheme = () => {
 
 export const ShellWithNewThemeAndLayoutManagement = () => {
   return (
-    <LayoutManagementProvider>
-      <ShellWithNewTheme />
-    </LayoutManagementProvider>
+    <NotificationsProvider>
+      <LayoutManagementProvider>
+        <ShellWithNewTheme />
+      </LayoutManagementProvider>
+    </NotificationsProvider>
   );
 };
 
