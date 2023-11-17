@@ -12,6 +12,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport._
 import org.finos.vuu.viewport.tree.{EmptyTree, Tree, TreeNode}
 
+import java.util.UUID
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 import scala.jdk.CollectionConverters._
 
@@ -44,6 +45,8 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   final val createInstant = clock.now()
 
+  final val uuid: String = UUID.randomUUID().toString
+
   override def linkableName: String = source.linkableName
 
   private val wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
@@ -58,18 +61,18 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   private var onRowUpdateFn: (String, RowWithData) => Unit = updateNoOp
 
   @volatile
-  private var onRowDeleteFn: (String) => Unit = deleteNoOp
+  private var onRowDeleteFn: String => Unit = deleteNoOp
 
   private def updateNoOp(key: String, row: RowWithData): Unit = {}
 
   private def deleteNoOp(key: String): Unit = {}
 
 
-  def onRawUpdate(fn: (String, RowWithData) => Unit) = {
+  def onRawUpdate(fn: (String, RowWithData) => Unit): Unit = {
     onRowUpdateFn = fn
   }
 
-  def onRawDelete(fn: (String) => Unit) = {
+  def onRawDelete(fn: String => Unit): Unit = {
     onRowDeleteFn = fn
   }
 
@@ -81,7 +84,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
 
-  override def toAscii(count: Int) = {
+  override def toAscii(count: Int): String = {
 
     val columns = getTableDef.columns
     val keys = primaryKeys
@@ -107,15 +110,13 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   override def delete(): Unit = {
     this.removeAllObservers()
-    MapHasAsScala(this.wrappedObservers).asScala.foreach({ case (key, v) => {
+    MapHasAsScala(this.wrappedObservers).asScala.foreach({ case (key, v) =>
       v match {
         case upko : WrappedUpdateHandlingKeyObserver[RowKeyUpdate] =>
           this.sourceTable.removeKeyObserver(upko.originalKey, v)
         case x =>
           println("Error: ChrisChris")
       }
-    }
-
     })
   }
 
@@ -219,7 +220,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
     }).toArray[Any]
   }
 
-  override def name: String = s"session:$session/groupBy-" + source.name + "_" + createInstant.toString
+  override def name: String = s"session:$session/groupBy-" + source.name + "_" + createInstant.toString + "-" + uuid
 
   def tableId: String = name + "@" + hashCode()
 
@@ -252,7 +253,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
     val mapped = rowUpdate.copy(key = treeKey, source = this)
     if(mapped != null) {
-      logger.debug(s"Found node for originalKey ${nodeKey} mapped to ${treeKey}")
+      logger.debug(s"Found node for originalKey $nodeKey mapped to $treeKey")
     }
 
     mapped
@@ -268,7 +269,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
         val originalKey = node.originalKey
 
-        logger.debug(s"Adding key observer${originalKey} for tree key ${key}")
+        logger.debug(s"Adding key observer$originalKey for tree key $key")
 
         val wappedObserver = new WrappedUpdateHandlingKeyObserver[RowKeyUpdate](mapKeyToTreeKey(originalKey, key, _), observer, originalKey)
 
@@ -296,7 +297,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
       //remove it
       case wo: WrappedUpdateHandlingKeyObserver[RowKeyUpdate] =>
         this.wrappedObservers.remove(key)
-        logger.debug(s"Removing wrapped observer: ${key} -> ${wo.originalKey}")
+        logger.debug(s"Removing wrapped observer: $key -> ${wo.originalKey}")
         sourceTable.removeKeyObserver(wo.originalKey, wo)
       case null =>
         logger.debug(s"remove normal key observer:$key")

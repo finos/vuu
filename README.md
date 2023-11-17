@@ -24,7 +24,7 @@ cd vuu
 #run the maven compile step
 mvn install
 #cd into vuu, child in repo
-cd vuu
+cd example/main
 #The server should now be started on your machine
 mvn exec:exec
 ```
