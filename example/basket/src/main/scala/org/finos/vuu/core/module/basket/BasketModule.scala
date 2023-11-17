@@ -6,6 +6,7 @@ import org.finos.vuu.api._
 import org.finos.vuu.core.module.basket.provider._
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService, BasketTradingService}
 import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.core.module.simul.InstrumentsService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -111,6 +112,17 @@ object BasketModule extends DefaultModule {
           joinFields = PS.Id
         ),
         (table, _) => new AlgoProvider(table)
+      )
+      .addTable(
+        TableDef(
+          name = "instruments",
+          keyField = "ric",
+          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
+            "currency".string(), "exchange".string(), "lotSize".int()),
+          VisualLinks(),
+          joinFields = "ric"
+        ),
+        (table, vs) => new BasketInstrumentProvider(table)
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
