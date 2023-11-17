@@ -1,7 +1,7 @@
 package org.finos.vuu.layoutserver.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.vuu.layoutserver.exceptions.InternalServerErrorException;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
@@ -176,6 +176,6 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     private void persistApplicationLayout(String user, Map<String, String> definition) {
-        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, JsonNode.class)));
+        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, ObjectNode.class)));
     }
 }

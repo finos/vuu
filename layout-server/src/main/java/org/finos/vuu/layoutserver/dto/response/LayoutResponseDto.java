@@ -1,5 +1,6 @@
 package org.finos.vuu.layoutserver.dto.response;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 
 import java.util.UUID;
@@ -8,12 +9,11 @@ import java.util.UUID;
 public class LayoutResponseDto {
 
     private UUID id;
-
+    
     /**
-     * The definition of the layout as a string (e.g. stringified JSON structure containing
-     * components)
+     * The definition of the layout as an arbitrary JSON structure, describing all required components
      */
-    private String definition;
+    private ObjectNode definition;
 
     private MetadataResponseDto metadata;
 }

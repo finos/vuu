@@ -4,6 +4,7 @@ import org.finos.vuu.layoutserver.model.BaseMetadata;
 import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.repository.LayoutRepository;
+import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,8 @@ class LayoutServiceTest {
 
     private Layout layout;
 
+    private static final ObjectNodeConverter objectNodeConverter = new ObjectNodeConverter();
+
     @BeforeEach
     public void setup() {
         BaseMetadata baseMetadata = new BaseMetadata();
@@ -46,7 +49,7 @@ class LayoutServiceTest {
         layout = new Layout();
         layout.setMetadata(metadata);
         layout.setId(LAYOUT_ID);
-        layout.setDefinition("");
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}"));
     }
 
     @Test

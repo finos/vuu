@@ -1,5 +1,6 @@
 package org.finos.vuu.layoutserver.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.vuu.layoutserver.dto.request.LayoutRequestDto;
 import org.finos.vuu.layoutserver.dto.request.MetadataRequestDto;
 import org.finos.vuu.layoutserver.dto.response.LayoutResponseDto;
@@ -9,6 +10,7 @@ import org.finos.vuu.layoutserver.model.Layout;
 import org.finos.vuu.layoutserver.model.Metadata;
 import org.finos.vuu.layoutserver.service.LayoutService;
 import org.finos.vuu.layoutserver.service.MetadataService;
+import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +31,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LayoutControllerTest {
 
-    private static final String LAYOUT_DEFINITION = "Test Definition";
+    private static final String LAYOUT_DEFINITION_STRING = "{\"id\":\"main-tabs\"}";
     private static final String LAYOUT_GROUP = "Test Group";
     private static final String LAYOUT_NAME = "Test Layout";
     private static final String LAYOUT_SCREENSHOT = "Test Screenshot";
     private static final String LAYOUT_USER = "Test User";
     private static final UUID VALID_ID = UUID.randomUUID();
     private static final UUID DOES_NOT_EXIST_ID = UUID.randomUUID();
+    private static final ObjectNodeConverter objectNodeConverter = new ObjectNodeConverter();
 
     @Mock
     private LayoutService layoutService;
@@ -57,7 +60,7 @@ class LayoutControllerTest {
     private MetadataResponseDto metadataResponse;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws JsonProcessingException {
         baseMetadata = new BaseMetadata();
         baseMetadata.setName(LAYOUT_NAME);
         baseMetadata.setUser(LAYOUT_USER);
@@ -69,7 +72,7 @@ class LayoutControllerTest {
         layout = new Layout();
         layout.setMetadata(metadata);
         layout.setId(VALID_ID);
-        layout.setDefinition(LAYOUT_DEFINITION);
+        layout.setDefinition(objectNodeConverter.convertToEntityAttribute(LAYOUT_DEFINITION_STRING));
 
         layoutRequest = new LayoutRequestDto();
         MetadataRequestDto metadataRequestDto = new MetadataRequestDto();
@@ -135,7 +138,6 @@ class LayoutControllerTest {
     @Test
     void updateLayout_validLayout_callsLayoutService() {
         layout.setId(null);
-        // layout.getMetadata().setId(null);
 
         when(modelMapper.map(layoutRequest, Layout.class)).thenReturn(layout);
 

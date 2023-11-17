@@ -1,10 +1,10 @@
 package org.finos.vuu.layoutserver.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.finos.vuu.layoutserver.utils.JsonNodeConverter;
+import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -19,7 +19,7 @@ public class ApplicationLayout {
     @Id
     private String username;
 
-    @Convert(converter = JsonNodeConverter.class)
+    @Convert(converter = ObjectNodeConverter.class)
     @Column(columnDefinition = "JSON")
-    private JsonNode definition;
+    private ObjectNode definition;
 }

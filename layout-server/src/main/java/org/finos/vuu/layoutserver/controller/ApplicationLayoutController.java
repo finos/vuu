@@ -1,12 +1,19 @@
 package org.finos.vuu.layoutserver.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
@@ -37,7 +44,7 @@ public class ApplicationLayoutController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping
-    public void persistApplicationLayout(@RequestHeader("username") String username, @RequestBody JsonNode layoutDefinition) {
+    public void persistApplicationLayout(@RequestHeader("username") String username, @RequestBody ObjectNode layoutDefinition) {
         service.persistApplicationLayout(username, layoutDefinition);
     }
 
