@@ -134,6 +134,7 @@ export const useDataSource = ({
 
   return {
     data: data.current,
+    dataRef: data,
     getSelectedRows,
     range: rangeRef.current,
     setRange,

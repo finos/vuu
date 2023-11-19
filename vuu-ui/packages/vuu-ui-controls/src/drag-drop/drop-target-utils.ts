@@ -9,7 +9,7 @@ const TOP_BOTTOM = ["top", "bottom"];
 export const NOT_OVERFLOWED = ":not(.wrapped)";
 export const NOT_HIDDEN = ':not([aria-hidden="true"])';
 
-// TODO figure out which of these sttributes we no longer need
+// TODO figure out which of these attributes we no longer need
 export type MeasuredDropTarget = {
   /** 
     The index position currently occupied by this item. If draggable 
@@ -355,3 +355,33 @@ export const dropTargetsDebugString = (dropTargets: MeasuredDropTarget[]) =>
         )})  ${d.element?.textContent} `
     )
     .join("");
+
+export const getScrollableContainer = (
+  container: HTMLElement,
+  itemQuery: string
+) => {
+  // TODO if this is too fragile a way to identify scrollable container, we
+  // can add a prop to pass it 'scrollableContainerQuery'
+  const firstItem = container.querySelector(
+    `${itemQuery}:not([aria-hidden="true"])`
+  );
+  // generally, we expect the immediateParent to be a contentContainer, the
+  // parent of that will be the scrollable container. This may or may not be
+  // the outer container (likely not)
+  const immediateParent = firstItem?.parentElement;
+  if (immediateParent === container) {
+    return container;
+  } else {
+    return immediateParent?.parentElement as HTMLElement;
+  }
+};
+
+export const isContainerScrollable = (
+  scrollableContainer: HTMLElement,
+  orientation: orientationType
+) => {
+  const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
+  const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } =
+    scrollableContainer;
+  return scrollSize > clientSize;
+};

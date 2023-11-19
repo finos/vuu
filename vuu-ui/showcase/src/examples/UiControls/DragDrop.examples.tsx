@@ -18,7 +18,7 @@ export const DraggableListsOneWayDrag = () => {
   );
   const dragSource = useMemo(
     () => ({
-      list1: { dropTargets: "list2" },
+      list1: { dropTargets: ["list1", "list2"] },
     }),
     []
   );
@@ -98,6 +98,7 @@ export const DraggableListsOneWayDrag = () => {
     <DragDropProvider dragSources={dragSource}>
       <Flexbox>
         <List
+          allowDragDrop
           aria-label="Listbox example"
           id="list1"
           itemHeight={36}
@@ -105,10 +106,11 @@ export const DraggableListsOneWayDrag = () => {
           onDragStart={handleDragStart1}
           onMoveListItem={handleMoveListItem1}
           source={state1}
-          allowDragDrop
+          width={200}
         />
         <div style={{ flexBasis: 24, flexShrink: 0, flexGrow: 0 }} />
         <List
+          allowDragDrop
           aria-label="Listbox example"
           id="list2"
           itemHeight={36}
@@ -117,7 +119,7 @@ export const DraggableListsOneWayDrag = () => {
           onDrop={handleDrop2}
           onMoveListItem={handleMoveListItem2}
           source={state2}
-          allowDragDrop
+          width={200}
         />
       </Flexbox>
     </DragDropProvider>

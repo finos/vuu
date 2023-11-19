@@ -10,6 +10,7 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import { VuuDataRow } from "packages/vuu-protocol-types";
 
 export class Basket {
   basketId: string;
@@ -230,7 +231,22 @@ export const useBasketTrading = ({
     menuBuilder: buildViewserverMenuOptions,
   };
 
-  console.log(`basket ${basket?.side}`);
+  const handleDropInstrument = useCallback(
+    (dragDropState) => {
+      console.log(`useBasketTrading handleDropInstrument`, {
+        instrument: dragDropState.payload,
+      });
+      const dataRow = dragDropState.payload as DataSourceRow;
+      const key = dataRow[6];
+      const dataSourceRow = dataRow.slice(8);
+      dataSourceBasketTradingControl
+        .insertRow?.(key, dataSourceRow)
+        .then((response) => {
+          console.log({ response });
+        });
+    },
+    [dataSourceBasketTradingControl]
+  );
 
   return {
     ...basketState,
@@ -243,6 +259,7 @@ export const useBasketTrading = ({
     dataSourceBasketTradingConstituentJoin,
     onClickAddBasket: handleAddBasket,
     onCommitBasketChange: handleCommitBasketChange,
+    onDropInstrument: handleDropInstrument,
     onSendToMarket,
     onTakeOffMarket,
   };

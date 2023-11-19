@@ -5,6 +5,7 @@ import {
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuDataRow,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -654,6 +655,32 @@ export class RemoteDataSource
       field: columnName,
       value: value,
       type: "VP_EDIT_CELL_RPC",
+    }).then((response) => {
+      if (response?.error) {
+        return response.error;
+      } else {
+        return true;
+      }
+    });
+  }
+
+  insertRow(key: string, row: VuuDataRow) {
+    return this.menuRpcCall({
+      rowKey: key,
+      row,
+      type: "VP_EDIT_ADD_ROW_RPC",
+    }).then((response) => {
+      if (response?.error) {
+        return response.error;
+      } else {
+        return true;
+      }
+    });
+  }
+  deleteRow(row: DataSourceRow) {
+    return this.menuRpcCall({
+      rowKey: row[KEY],
+      type: "VP_EDIT_DELETE_ROW_RPC",
     }).then((response) => {
       if (response?.error) {
         return response.error;

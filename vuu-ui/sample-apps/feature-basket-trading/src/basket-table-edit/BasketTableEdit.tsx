@@ -35,7 +35,9 @@ export const BasketTableEdit = ({
     <ContextMenuProvider {...contextMenuConfig}>
       <TableNext
         {...props}
+        allowDragDrop="drop-only"
         dataSource={dataSource}
+        id="basket-constituents"
         renderBufferSize={20}
         className={classBase}
         config={tableConfig}

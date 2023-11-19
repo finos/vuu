@@ -115,3 +115,9 @@
         --toggle-icon-transform: rotate(90deg);
       }
     
+      .vuuDraggable .vuuTableNextRow {
+        --cell-borderColor: transparent;
+        --vuu-selection-decorator-bg: transparent;
+        transform: none!important;
+        z-index: 1;
+      }

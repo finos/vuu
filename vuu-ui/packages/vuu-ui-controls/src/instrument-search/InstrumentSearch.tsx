@@ -64,7 +64,7 @@ export const InstrumentSearch = ({
     [searchColumns]
   );
 
-  const { highlightedIndexRef, onKeyDown, tableRef } =
+  const { highlightedIndexRef, onHighlight, onKeyDown, tableRef } =
     useControlledTableNavigation(-1, dataSource.size);
 
   const [searchState, setSearchState] = useState<{
@@ -117,6 +117,7 @@ export const InstrumentSearch = ({
         className={`${classBase}-list`}
         dataSource={dataSource}
         navigationStyle="row"
+        onHighlight={onHighlight}
         ref={tableRef}
         showColumnHeaders={false}
       />

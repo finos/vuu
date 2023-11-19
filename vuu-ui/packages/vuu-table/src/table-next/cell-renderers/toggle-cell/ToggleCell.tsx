@@ -2,12 +2,9 @@ import {
   ColumnDescriptor,
   TableCellRendererProps,
 } from "@finos/vuu-datagrid-types";
+import { CycleStateButtonProps, WarnCommit } from "@finos/vuu-ui-controls";
 import {
-  CycleStateButtonProps,
-  dispatchCommitEvent,
-  WarnCommit,
-} from "@finos/vuu-ui-controls";
-import {
+  dispatchCustomEvent,
   isTypeDescriptor,
   isValueListRenderer,
   registerComponent,
@@ -46,7 +43,7 @@ export const ToggleCell = memo(function ToggleCell({
     (evt, value) => {
       return onCommit(value).then((response) => {
         if (response === true) {
-          dispatchCommitEvent(evt.target as HTMLElement);
+          dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
         }
         return response;
       });

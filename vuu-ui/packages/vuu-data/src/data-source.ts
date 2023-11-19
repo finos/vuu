@@ -9,6 +9,7 @@ import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumns,
+  VuuDataRow,
   VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
@@ -484,6 +485,12 @@ export type DataSourceEditHandler = (
   value: VuuRowDataItemType
 ) => Promise<true | string>;
 
+export type DataSourceDeleteHandler = (key: string) => Promise<true | string>;
+export type DataSourceInsertHandler = (
+  key: string,
+  row: VuuDataRow
+) => Promise<true | string>;
+
 export type RpcResponse =
   | MenuRpcResponse
   | VuuUIMessageInRPCEditReject
@@ -524,6 +531,9 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
    */
   suspend?: () => void;
   resume?: () => void;
+
+  deleteRow?: DataSourceDeleteHandler;
+
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
@@ -539,6 +549,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   disable?: () => void;
   filter: DataSourceFilter;
   groupBy: VuuGroupBy;
+  insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
   menuRpcCall: (

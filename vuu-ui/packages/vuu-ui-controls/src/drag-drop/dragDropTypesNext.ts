@@ -27,7 +27,11 @@ export type dimensionsType = {
 
 //-----------------------------------
 
-export type dragStrategy = "drop-indicator" | "natural-movement";
+export type dragStrategy =
+  | "drop-indicator"
+  | "natural-movement"
+  | "drag-copy"
+  | "drop-only";
 
 export type Direction = "fwd" | "bwd";
 export const FWD: Direction = "fwd";
@@ -52,7 +56,7 @@ export interface DragHookResult {
   isDragging: boolean;
   isScrolling: RefObject<boolean>;
   onMouseDown?: MouseEventHandler;
-  revealOverflowedItems: boolean;
+  revealOverflowedItems?: boolean;
 }
 
 export interface InternalDragHookResult
@@ -60,8 +64,8 @@ export interface InternalDragHookResult
   beginDrag: (dragElement: HTMLElement) => void;
   drag: (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => void;
   drop: () => void;
-  handleScrollStart: () => void;
-  handleScrollStop: (
+  handleScrollStart?: () => void;
+  handleScrollStop?: (
     scrollDirection: "fwd" | "bwd",
     _scrollPos: number,
     atEnd: boolean

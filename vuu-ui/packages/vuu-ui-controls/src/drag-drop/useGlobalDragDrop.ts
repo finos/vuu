@@ -1,19 +1,23 @@
-import { boxContainsPoint } from "@finos/vuu-utils";
+import { boxContainsPoint, dispatchCustomEvent } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { MeasuredTarget } from "./DragDropProvider";
 import { DragDropState } from "./DragDropState";
 import { MouseOffset } from "./dragDropTypesNext";
 
 export type ResumeDragHandler = (dragDropState: DragDropState) => boolean;
+export type GlobalDropHandler = (dragDropState: DragDropState) => void;
 
 export const useGlobalDragDrop = ({
   onDragOverDropTarget,
+  onDrop,
 }: {
   onDragOverDropTarget: (
     dropTargetId: string,
     dragDropState: DragDropState
   ) => boolean;
+  onDrop: (dropTargetId: string, dragDropState: DragDropState) => void;
 }) => {
+  const dropTargetRef = useRef<string>();
   const measuredDropTargetsRef = useRef<Record<string, MeasuredTarget>>();
 
   const dragDropStateRef = useRef<DragDropState | null>(null);
@@ -48,14 +52,23 @@ export const useGlobalDragDrop = ({
         draggableElement.style.top = `${dragPosY}px`;
         draggableElement.style.left = `${dragPosX}px`;
 
-        const dropTarget = overDropTarget(dragPosX, dragPosY);
-        if (dropTarget) {
-          if (onDragOverDropTarget(dropTarget, dragDropState)) {
+        const dropTargetId = overDropTarget(dragPosX, dragPosY);
+        if (dropTargetId) {
+          const dropTargetWillResumeDrag = onDragOverDropTarget(
+            dropTargetId,
+            dragDropState
+          );
+          if (dropTargetWillResumeDrag) {
             // prettier-ignore
             document.removeEventListener("mousemove", dragMouseMoveHandler, false);
             document.removeEventListener("mouseup", dragMouseUpHandler, false);
             dragDropStateRef.current = null;
+            dropTargetRef.current = undefined;
+          } else {
+            dropTargetRef.current = dropTargetId;
           }
+        } else {
+          dropTargetRef.current = undefined;
         }
       }
     },
@@ -66,7 +79,17 @@ export const useGlobalDragDrop = ({
   const dragMouseUpHandler = useCallback(() => {
     document.removeEventListener("mousemove", dragMouseMoveHandler, false);
     document.removeEventListener("mouseup", dragMouseUpHandler, false);
-  }, [dragMouseMoveHandler]);
+    const { current: dragDropState } = dragDropStateRef;
+    if (dragDropState) {
+      dragDropStateRef.current = null;
+      if (dropTargetRef.current) {
+        onDrop(dropTargetRef.current, dragDropState);
+      }
+      if (dragDropState.draggableElement) {
+        dispatchCustomEvent(dragDropState.draggableElement, "vuu-dropped");
+      }
+    }
+  }, [dragMouseMoveHandler, onDrop]);
 
   const resumeDrag = useCallback<ResumeDragHandler>(
     (dragDropState) => {

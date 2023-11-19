@@ -43,6 +43,10 @@ export const useBasketContextMenus = ({
               content: {
                 type: "InstrumentSearch",
                 props: {
+                  TableProps: {
+                    allowDragDrop: "drag-copy",
+                    id: "basket-instruments",
+                  },
                   dataSource: dataSourceInstruments,
                 },
               },

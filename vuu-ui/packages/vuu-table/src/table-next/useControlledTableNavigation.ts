@@ -32,8 +32,16 @@ export const useControlledTableNavigation = (
     [highlightedIndexRef, rowCount, setHighlightedIndex]
   );
 
+  const handleHighlight = useCallback(
+    (idx: number) => {
+      setHighlightedIndex(idx);
+    },
+    [setHighlightedIndex]
+  );
+
   return {
     highlightedIndexRef,
+    onHighlight: handleHighlight,
     onKeyDown: handleKeyDown,
     tableRef,
   };

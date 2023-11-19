@@ -1,6 +1,8 @@
+import { MeasuredContainer, useId } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { TableProps } from "@finos/vuu-table";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import { CSSProperties, ForwardedRef, forwardRef, useRef } from "react";
 import {
@@ -9,8 +11,6 @@ import {
 } from "./header-cell";
 import { Row as DefaultRow } from "./Row";
 import { useTable } from "./useTableNext";
-import { MeasuredContainer, useId } from "@finos/vuu-layout";
-import { useForkRef } from "@salt-ds/core";
 
 import "./TableNext.css";
 
@@ -21,6 +21,7 @@ const { IDX, RENDER_IDX } = metadataKeys;
 export const TableNext = forwardRef(function TableNext(
   {
     Row = DefaultRow,
+    allowDragDrop,
     availableColumns,
     className: classNameProp,
     config,
@@ -31,6 +32,8 @@ export const TableNext = forwardRef(function TableNext(
     navigationStyle = "cell",
     onAvailableColumnsChange,
     onConfigChange,
+    onDragStart,
+    onDrop,
     onFeatureInvocation,
     onHighlight,
     onRowClick: onRowClickProp,
@@ -48,12 +51,13 @@ export const TableNext = forwardRef(function TableNext(
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     columnMap,
     columns,
     data,
+    draggableColumn,
+    draggableRow,
     dragDropHook,
     handleContextMenuAction,
     headerProps,
@@ -69,6 +73,7 @@ export const TableNext = forwardRef(function TableNext(
     viewportMeasurements,
     ...tableProps
   } = useTable({
+    allowDragDrop,
     availableColumns,
     config,
     containerRef,
@@ -76,9 +81,12 @@ export const TableNext = forwardRef(function TableNext(
     disableFocus,
     headerHeight,
     highlightedIndex: highlightedIndexProp,
+    id,
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
+    onDragStart,
+    onDrop,
     onFeatureInvocation,
     onHighlight,
     onRowClick: onRowClickProp,
@@ -88,6 +96,7 @@ export const TableNext = forwardRef(function TableNext(
     rowHeight,
     selectionModel,
   });
+
   const getStyle = () => {
     return {
       ...styleProp,
@@ -119,6 +128,7 @@ export const TableNext = forwardRef(function TableNext(
       <MeasuredContainer
         {...htmlAttributes}
         className={className}
+        id={id}
         onResize={onResize}
         ref={useForkRef(containerRef, forwardedRef)}
         style={getStyle()}
@@ -164,7 +174,7 @@ export const TableNext = forwardRef(function TableNext(
                       />
                     )
                   )}
-                  {dragDropHook.draggable}
+                  {draggableColumn}
                 </div>
               </div>
             ) : null}
@@ -186,6 +196,7 @@ export const TableNext = forwardRef(function TableNext(
             </div>
           </div>
         </div>
+        {draggableRow}
       </MeasuredContainer>
     </ContextMenuProvider>
   );

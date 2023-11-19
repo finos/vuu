@@ -16,7 +16,10 @@ import {
 import { MeasuredSize, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
-import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import {
+  DragStartHandler,
+  useDragDropNext as useDragDrop,
+} from "@finos/vuu-ui-controls";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
@@ -68,14 +71,18 @@ export interface TableHookProps
   extends MeasuredProps,
     Pick<
       TableProps,
+      | "allowDragDrop"
       | "availableColumns"
       | "config"
       | "dataSource"
       | "disableFocus"
       | "highlightedIndex"
+      | "id"
       | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
+      | "onDragStart"
+      | "onDrop"
       | "onFeatureInvocation"
       | "onHighlight"
       | "onSelect"
@@ -100,6 +107,7 @@ const addColumn = (
 });
 
 export const useTable = ({
+  allowDragDrop = false,
   availableColumns,
   config,
   containerRef,
@@ -107,9 +115,12 @@ export const useTable = ({
   disableFocus,
   headerHeight = 25,
   highlightedIndex: highlightedIndexProp,
+  id,
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
+  onDragStart,
+  onDrop,
   onFeatureInvocation,
   onHighlight,
   onRowClick: onRowClickProp,
@@ -220,7 +231,7 @@ export const useTable = ({
     [dispatchColumnAction]
   );
 
-  const { data, getSelectedRows, range, setRange } = useDataSource({
+  const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     onFeatureInvocation,
     renderBufferSize,
@@ -599,7 +610,7 @@ export const useTable = ({
     });
   }, [dataSource, dispatchColumnAction]);
 
-  const handleDrop = useCallback(
+  const handleDropColumnHeader = useCallback(
     (moveFrom: number, moveTo: number) => {
       const column = tableConfig.columns[moveFrom];
 
@@ -618,35 +629,83 @@ export const useTable = ({
     [dataSource.config, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
+  const handleDropRow = useCallback(
+    (dragDropState) => {
+      onDrop?.(dragDropState);
+    },
+    [onDrop]
+  );
+
   const handleDataEdited = useCallback<DataCellEditHandler>(
     async (row, columnName, value) =>
       dataSource.applyEdit(row, columnName, value),
     [dataSource]
   );
 
-  const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
+  // Drag Drop column headers
+  const {
+    onMouseDown: columnHeaderDragMouseDown,
+    draggable: draggableColumn,
+    ...dragDropHook
+  } = useDragDrop({
+    allowDragDrop: true,
+    containerRef,
+    // this is for useDragDropNext
+    draggableClassName: `vuuTableNext`,
+    // extendedDropZone: overflowedItems.length > 0,
+    onDrop: handleDropColumnHeader,
+    orientation: "horizontal",
+    itemQuery: ".vuuTableNextHeaderCell",
+  });
+
+  const handleDragStartRow = useCallback<DragStartHandler>(
+    (dragDropState) => {
+      const { initialDragElement } = dragDropState;
+      const rowIndex = initialDragElement.ariaRowIndex;
+      if (rowIndex) {
+        const index = parseInt(rowIndex);
+        const row = dataRef.current.find((row) => row[0] === index);
+        console.log(`handleDragStartRow setPayload`, {
+          row,
+        });
+        if (row) {
+          dragDropState.setPayload(row);
+        } else {
+          // should we abort the operation ?
+        }
+      }
+      onDragStart?.(dragDropState);
+    },
+    [dataRef, onDragStart]
+  );
+
+  // Drag Drop rowss
+  const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
     useDragDrop({
-      allowDragDrop: true,
+      allowDragDrop,
       containerRef,
-      // this is for useDragDropNext
       draggableClassName: `vuuTableNext`,
-      // extendedDropZone: overflowedItems.length > 0,
-      onDrop: handleDrop,
-      orientation: "horizontal",
-      itemQuery: ".vuuTableNextHeaderCell",
+      id,
+      onDragStart: handleDragStartRow,
+      onDrop: handleDropRow,
+      orientation: "vertical",
+      itemQuery: ".vuuTableNextRow",
     });
 
   const headerProps = {
     onClick: onHeaderClick,
-    onMouseDown: dragDropHookHandleMouseDown,
+    onMouseDown: columnHeaderDragMouseDown,
     onResize: onHeaderResize,
   };
 
   return {
     ...containerProps,
+    draggableColumn,
+    draggableRow,
     onBlur: editingBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
+    onMouseDown: rowDragMouseDown,
     columnMap,
     columns,
     data,
