@@ -63,6 +63,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <scala.version>2.13.10</scala.version>
+        <scala.major.version>2.13</scala.major.version>
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
@@ -78,6 +79,21 @@
         <jmh.version>1.36</jmh.version>
         <sonar.organization>vuu</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <scapegoat.version>1.3.9</scapegoat.version>
+
+        <sonar.sources>src/main/scala</sonar.sources>
+        <sonar.tests>src/test/scala</sonar.tests>
+        <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
+        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+        <sonar.scala.version>${scala.version}</sonar.scala.version>
+        <sonar.scala.scoverage.reportPath>${project.build.directory}/scoverage.xml</sonar.scala.scoverage.reportPath>
+        <sonar.scala.scapegoat.reportPath>${project.build.directory}/scapegoat.xml</sonar.scala.scapegoat.reportPath>
+
+        <!-- Sonar Java properties -->
+        <sonar.java.binaries>target/scoverage-classes</sonar.java.binaries>
+        <!--sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin-->
+        <!--sonar.jacoco.reportPaths>target/jacoco.exec</sonar.jacoco.reportPaths -->
+        <!--sonar.exclusions>src/test/**</sonar.exclusions-->
     </properties>
 
     <modules>
@@ -177,6 +193,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>com.sksamuel.scapegoat</groupId>
+            <artifactId>scalac-scapegoat-plugin_${scala.major.version}</artifactId>
+            <version>${scapegoat.version}</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -190,6 +212,51 @@
             </activation>
             <build>
                 <plugins>
+
+                    <!--plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>pre-test</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin!-->
+
+                    <plugin>
+                        <groupId>org.scoverage</groupId>
+                        <artifactId>scoverage-maven-plugin</artifactId>
+                        <configuration>
+                            <highlighting>true</highlighting>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>instrument</id>
+                                <goals>
+                                    <goal>pre-compile</goal>
+                                    <goal>post-compile</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>scoverage-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
