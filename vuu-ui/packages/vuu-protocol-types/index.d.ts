@@ -443,10 +443,12 @@ export interface ClientToServerEditRowRpc {
   type: "VP_EDIT_ROW_RPC";
   row: VuuDataRow;
 }
+
+export type VuuDataRowDto = { [key: string]: VuuRowDataItemType };
 export interface ClientToServerAddRowRpc {
   rowKey: string;
   type: "VP_EDIT_ADD_ROW_RPC";
-  row: VuuDataRow;
+  data: VuuDataRowDto;
 }
 export interface ClientToServerDeleteRowRpc {
   rowKey: string;

@@ -9,7 +9,7 @@ import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumns,
-  VuuDataRow,
+  VuuDataRowDto,
   VuuFilter,
   VuuGroupBy,
   VuuLinkDescriptor,
@@ -488,7 +488,7 @@ export type DataSourceEditHandler = (
 export type DataSourceDeleteHandler = (key: string) => Promise<true | string>;
 export type DataSourceInsertHandler = (
   key: string,
-  row: VuuDataRow
+  data: VuuDataRowDto
 ) => Promise<true | string>;
 
 export type RpcResponse =

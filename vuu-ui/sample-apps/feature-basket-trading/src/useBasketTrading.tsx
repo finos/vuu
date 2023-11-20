@@ -10,7 +10,7 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
-import { VuuDataRow } from "packages/vuu-protocol-types";
+import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
 
 export class Basket {
   basketId: string;
@@ -43,6 +43,13 @@ export type BasketTradingHookProps = Pick<
   | "basketTradingConstituentJoinSchema"
   | "instrumentsSchema"
 >;
+
+const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
+  Object.entries(columnMap).reduce<VuuDataRowDto>((dto, [colName, index]) => {
+    dto[colName] = dataSourceRow[index];
+    return dto;
+  }, {});
+};
 
 type BasketState = {
   basketInstanceId?: string;
@@ -90,9 +97,13 @@ export const useBasketTrading = ({
     dialog: undefined,
   });
 
-  const columnMap = useMemo(
+  const columnMapBasketTrading = useMemo(
     () => buildColumnMap(dataSourceBasketTradingControl.columns),
     [dataSourceBasketTradingControl.columns]
+  );
+  const columnMapInstrument = useMemo(
+    () => buildColumnMap(dataSourceInstruments.columns),
+    [dataSourceInstruments.columns]
   );
 
   useMemo(() => {
@@ -106,10 +117,10 @@ export const useBasketTrading = ({
             setBasketCount(message.size);
           }
           if (message.rows && message.rows.length > 0) {
-            const basket = new Basket(message.rows[0], columnMap);
+            const basket = new Basket(message.rows[0], columnMapBasketTrading);
             console.log({ basket, row: message.rows[0] });
 
-            setBasket(new Basket(message.rows[0], columnMap));
+            setBasket(new Basket(message.rows[0], columnMapBasketTrading));
           }
         }
       }
@@ -119,7 +130,7 @@ export const useBasketTrading = ({
     setTimeout(() => {
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 800);
-  }, [columnMap, dataSourceBasketTradingControl]);
+  }, [columnMapBasketTrading, dataSourceBasketTradingControl]);
 
   useEffect(() => {
     return () => {
@@ -236,14 +247,29 @@ export const useBasketTrading = ({
       console.log(`useBasketTrading handleDropInstrument`, {
         instrument: dragDropState.payload,
       });
-      const dataRow = dragDropState.payload as DataSourceRow;
-      const key = dataRow[6];
-      const dataSourceRow = dataRow.slice(8);
-      dataSourceBasketTradingControl
-        .insertRow?.(key, dataSourceRow)
-        .then((response) => {
-          console.log({ response });
-        });
+      const key = "steve-00001.AAA.L";
+      const data = {
+        algo: -1,
+        algoParams: "",
+        basketId: ".FTSE100",
+        description: "Test",
+        instanceId: "steve-00001",
+        instanceIdRic: "steve-00001.AAA.L",
+        limitPrice: 0,
+        notionalLocal: 0,
+        notionalUsd: 0,
+        pctFilled: 0,
+        priceSpread: 0,
+        priceStrategyId: 2,
+        quantity: 0,
+        ric: "AAL.L",
+        side: "BUY",
+        venue: "",
+        weighting: 1,
+      };
+      dataSourceBasketTradingControl.insertRow?.(key, data).then((response) => {
+        console.log({ response });
+      });
     },
     [dataSourceBasketTradingControl]
   );
