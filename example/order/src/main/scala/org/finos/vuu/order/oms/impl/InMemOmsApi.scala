@@ -1,8 +1,7 @@
 package org.finos.vuu.order.oms.impl
 
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.order.oms.impl.States.PENDING_ACK
-import org.finos.vuu.order.oms.{Ack, CancelOrder, Fill, NewOrder, OmsApi, OmsListener, ReplaceOrder}
+import org.finos.vuu.order.oms._
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.util.Random
@@ -38,7 +37,7 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
 
   override def createOrder(newOrder: NewOrder): Unit = {
     orders = orders ++ List(InMemOrderState(newOrder.symbol, newOrder.qty, newOrder.price,
-      newOrder.clientOrderId, States.PENDING_ACK, clock.now() + random.between(1, 1000), OrderId.nextOrderId(), 0L))
+      newOrder.clientOrderId, States.PENDING_ACK, clock.now() + random.between(1, MaxTimes.MAX_ACK_TIME_MS), OrderId.nextOrderId(), 0L))
   }
 
   override def replaceOrder(replaceOrder: ReplaceOrder): Unit = ???
@@ -56,7 +55,7 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
           case '~' =>
             val orderId = OrderId.nextOrderId()
             listeners.foreach(_.onAck(Ack(orderId, orderstate.clientOrderId, orderstate.symbol, orderstate.qty, orderstate.price)))
-            orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + random.between(1000, 5000), orderId = orderId)
+            orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + random.between(1000, MaxTimes.MAX_FILL_TIME_MS), orderId = orderId)
           case 'A' =>
             val remainingQty = orderstate.qty - orderstate.filledQty
             val fillQty = if(remainingQty > 1) random.between(1, orderstate.qty - orderstate.filledQty) else 1
