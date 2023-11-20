@@ -45,7 +45,7 @@ Layout management requires persisting layouts. Layouts can either be persisted l
 
 Changing whether local/remote is used is configured with the following flag:
 
-1. Open `finos-vuu\vuu-ui\showcase\vite.config.js`
+1. Open `finos-vuu\vuu-ui\showcase\vite.config.js` (for Showcase), or `finos-vuu\vuu-ui\sample-apps\app-vuu-example\esbuild.mjs` (for sample app)
 2. Set `"process.env.LOCAL"` flag to `true` for local, or `false` for remote
 
 The local implementation is default. It uses browser local storage. If you have chosen the remote implementation, ensure you are running the remote server.
