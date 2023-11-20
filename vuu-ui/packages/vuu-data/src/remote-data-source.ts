@@ -458,6 +458,7 @@ export class RemoteDataSource
   }
 
   set columns(columns: string[]) {
+    console.log(`set columns ${columns.join(",")}`);
     this.#config = {
       ...this.#config,
       columns,

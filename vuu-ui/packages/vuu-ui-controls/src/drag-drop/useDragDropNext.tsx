@@ -133,12 +133,6 @@ export const useDragDropNext: DragDropHook = ({
     register,
   } = useDragDropProvider(id);
 
-  if (id) {
-    console.log(
-      `useDragDropNext #${id} isDragSource ${isDragSource},  isDropTarget ${isDropTarget}`
-    );
-  }
-
   type NativeMouseHandler = (evt: MouseEvent) => void;
   /** refs for drag handlers to avoid circular dependency issues  */
   const dragMouseMoveHandlerRef = useRef<NativeMouseHandler>();
@@ -327,10 +321,6 @@ export const useDragDropNext: DragDropHook = ({
       const handoverToProvider =
         isDropTarget === false || dragOutDistance - dragDistance > 5;
 
-      console.log(`#${id} handoverToProvider = ${handoverToProvider}`, {
-        dragDropState: dragDropStateRef.current,
-      });
-
       if (dragDropStateRef.current && handoverToProvider) {
         if (onDragOut?.(id as string, dragDropStateRef.current)) {
           // TODO create a cleanup function
@@ -440,9 +430,6 @@ export const useDragDropNext: DragDropHook = ({
 
   const resumeDrag = useCallback<ResumeDragHandler>(
     (dragDropState: DragDropState) => {
-      console.log(
-        `useDragDropNext #${id} do we want to resumeDrag ? ${allowDragDrop} `
-      );
       dragDropStateRef.current = dragDropState;
       // Note this is using the draggable element rather than the original draggedElement
       const { draggableElement, mouseOffset } = dragDropState;
@@ -466,14 +453,7 @@ export const useDragDropNext: DragDropHook = ({
         return false;
       }
     },
-    [
-      allowDragDrop,
-      attachDragHandlers,
-      beginDrag,
-      containerRef,
-      id,
-      setDragBoundaries,
-    ]
+    [attachDragHandlers, beginDrag, containerRef, setDragBoundaries]
   );
 
   const dragStart = useCallback(
