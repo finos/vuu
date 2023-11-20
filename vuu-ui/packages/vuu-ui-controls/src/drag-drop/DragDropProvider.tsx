@@ -93,9 +93,6 @@ export const DragDropProvider = ({
 
   const handleDrop = useCallback(
     (dropTargetId: string, dragDropState: DragDropState) => {
-      console.log(`handle drop onto ${dropTargetId}`, {
-        dragDropState,
-      });
       const handleDrop = dropHandlers.get(dropTargetId);
       if (handleDrop) {
         handleDrop(dragDropState);
