@@ -19,7 +19,7 @@ object FilterSpecParser extends StrictLogging {
     val input = CharStreams.fromString(s)
     val lexer = new FilterLexer(input)
     val tokens = new CommonTokenStream(lexer)
-    val parser = new FilterParser(tokens)
+    val parser = new  FilterParser(tokens)
 
     // do not try to make sense of broken syntax
     lexer.removeErrorListeners()

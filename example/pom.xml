@@ -19,6 +19,7 @@
         <module>permission</module>
         <module>price</module>
         <module>basket</module>
+        <module>main-java</module>
     </modules>
 
 

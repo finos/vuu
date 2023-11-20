@@ -3,7 +3,11 @@ package org.finos.vuu.core.module
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 
-class TableDefContainer(var tablesByModule : Map[String, TableDefs]) extends StrictLogging {
+class TableDefContainer(var tablesByModule : Map[String, TableDefs] = Map()) extends StrictLogging {
+
+  def this() = {
+    this(Map())
+  }
 
   def add(module: String, tableDefs: TableDefs): Unit = {
     logger.info(s"Adding table defs for module $module " + this.hashCode() )

@@ -34,7 +34,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     val table = tables.get(name)
 
     if (table == null)
-      s"table not found with name ${name}"
+      s"table not found with name $name"
     else {
       val obByKey = table.getObserversByKey()
       obByKey.map({ case (key, obs) => s"key=$key,obs=${obs.mkString(",")}" }).mkString("\n")
@@ -111,7 +111,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     val table = new TreeSessionTableImpl(source, session, joinTableProvider)
     //source.addSessionListener(table)
     val existing = tables.put(table.name, table)
-    assert(existing == null, "we should never replace an existing table with session id")
+    assert(existing == null, "we should never replace an existing table with session id name:" + table.name + " existing" + existing.name)
     table
   }
 
@@ -129,7 +129,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
   def createJoinTable(table: JoinTableDef): DataTable = {
 
     val baseTable = tables.get(table.baseTable.name)
-    val joinTableMap = table.joins.map(join => (join.table.name -> tables.get(join.table.name))).toMap //tables.get(table.right.name)
+    val joinTableMap = table.joins.map(join => join.table.name -> tables.get(join.table.name)).toMap //tables.get(table.right.name)
     val baseTableMap = Map[String, DataTable](table.baseTable.name -> baseTable)
 
 
@@ -151,7 +151,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
       .map(_.getValue.asInstanceOf[SessionTable])
       .toArray
 
-    logger.info(s"Removing ${sessionTables.length} session tables on disconnect of ${session}")
+    logger.info(s"Removing ${sessionTables.length} session tables on disconnect of $session")
 
     sessionTables.foreach(sessTable => tables.remove(sessTable.name))
   }
