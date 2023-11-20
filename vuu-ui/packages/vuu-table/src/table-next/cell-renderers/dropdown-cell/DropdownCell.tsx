@@ -1,13 +1,12 @@
 import { useLookupValues } from "@finos/vuu-data-react";
 import { ListOption, TableCellRendererProps } from "@finos/vuu-datagrid-types";
 import {
-  dispatchCommitEvent,
   Dropdown,
   DropdownOpenKey,
   SingleSelectionHandler,
   WarnCommit,
 } from "@finos/vuu-ui-controls";
-import { registerComponent } from "@finos/vuu-utils";
+import { dispatchCustomEvent, registerComponent } from "@finos/vuu-utils";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { memo, useCallback, useState } from "react";
 import { dataAndColumnUnchanged } from "../cell-utils";
@@ -36,7 +35,7 @@ export const DropdownCell = memo(function DropdownCell({
         setValue(selectedOption);
         onCommit(selectedOption.value as VuuColumnDataType).then((response) => {
           if (response === true && evt) {
-            dispatchCommitEvent(evt.target as HTMLElement);
+            dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
           }
         });
       }

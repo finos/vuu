@@ -1,6 +1,7 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { DataItemCommitHandler } from "@finos/vuu-datagrid-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { dispatchCustomEvent } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
   FormEventHandler,
@@ -26,11 +27,6 @@ export interface EditableTextHookProps<
   onCommit: DataItemCommitHandler<T>;
   type?: "string" | "number" | "boolean";
 }
-
-export const dispatchCommitEvent = (el: HTMLElement) => {
-  const commitEvent = new Event("vuu-commit");
-  el.dispatchEvent(commitEvent);
-};
 
 export const useEditableText = <T extends string | number = string>({
   clientSideEditValidationCheck,
@@ -61,7 +57,7 @@ export const useEditableText = <T extends string | number = string>({
           onCommit(value as T).then((response) => {
             if (response === true) {
               isDirtyRef.current = false;
-              dispatchCommitEvent(target);
+              dispatchCustomEvent(target, "vuu-commit");
             } else {
               setMessage(response);
             }
@@ -69,7 +65,7 @@ export const useEditableText = <T extends string | number = string>({
         }
       } else {
         // why, if not dirty ?
-        dispatchCommitEvent(target);
+        dispatchCustomEvent(target, "vuu-commit");
         hasCommittedRef.current = false;
       }
     },

@@ -135,3 +135,6 @@
     --header-height: 25px;
     --vuuTableNextHeaderCell-background: var(--vuu-color-gray-25);
   }
+.vuuDraggable-vuuTableNext {
+  --row-height: 25px;
+} 

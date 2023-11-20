@@ -13,6 +13,11 @@
       --row-background: var(--row-background-even);
     }
 
+    .vuuTableNextRow-highlighted {
+      background-color: var(--vuu-color-gray-10);
+    }
+
+
     .vuuTableNextRow-selected,
     .vuuTableNextRow-selectedEnd {
       /* background-color: rgb(133,133,137,.16); */
@@ -110,3 +115,9 @@
         --toggle-icon-transform: rotate(90deg);
       }
     
+      .vuuDraggable .vuuTableNextRow {
+        --cell-borderColor: transparent;
+        --vuu-selection-decorator-bg: transparent;
+        transform: none!important;
+        z-index: 1;
+      }

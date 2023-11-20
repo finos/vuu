@@ -1,7 +1,8 @@
-import { TableProps, TableRowClickHandler } from "@finos/vuu-table";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { TableRowClickHandler } from "@finos/vuu-datagrid-types";
+import { TableProps } from "@finos/vuu-table";
 import { OpenChangeHandler, useControlled } from "@finos/vuu-ui-controls";
-import { useCallback, useMemo } from "react";
+import { buildColumnMap } from "@finos/vuu-utils";
+import { useCallback, useMemo, useRef } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";
 
@@ -25,6 +26,7 @@ export const useBasketSelector = ({
   onOpenChange,
   onSelectBasket,
 }: BasketSelectorHookProps) => {
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
     default: defaultIsOpen ?? false,
@@ -41,8 +43,12 @@ export const useBasketSelector = ({
       setIsOpen(open);
       onOpenChange?.(open, closeReason);
       if (open === false) {
-        console.log(`%cdisable basketSearch`, "color:red;font-weight:bold;");
         dataSourceBasketTradingSearch.disable?.();
+        if (closeReason !== "Tab") {
+          setTimeout(() => {
+            triggerRef.current?.focus();
+          }, 100);
+        }
       }
     },
     [dataSourceBasketTradingSearch, onOpenChange, setIsOpen]
@@ -68,7 +74,7 @@ export const useBasketSelector = ({
       Row: BasketSelectorRow,
       config: {
         columns: [
-          { name: "instanceId", width: 365 },
+          { name: "instanceId", width: 380 },
           { name: "basketId", width: 100, hidden: true },
           {
             name: "name",
@@ -105,5 +111,6 @@ export const useBasketSelector = ({
     onClickAddBasket: handleClickAddBasket,
     onOpenChange: handleOpenChange,
     tableProps,
+    triggerRef,
   };
 };

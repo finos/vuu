@@ -20,6 +20,7 @@ import {
   getMissingItems,
   KeySet,
   logger,
+  metadataKeys,
   NULL_RANGE,
   rangeNewItems,
   resetRange,
@@ -97,12 +98,9 @@ export class ArrayDataSource
   private dataIndices: number[] | undefined;
   /** Map reflecting positions of data items in raw data */
   private dataMap: ColumnMap | undefined;
-  private disabled = false;
-  private groupedData: undefined | DataSourceRow[];
   private groupMap: undefined | GroupMap;
   /** the index of key field within raw data row */
   private key: number;
-  private suspended = false;
   private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
@@ -437,6 +435,24 @@ export class ArrayDataSource
     const [rowIdx] = dataSourceRow;
     if (rowIdx >= from && rowIdx < to) {
       this.sendRowsToClient();
+    }
+  };
+
+  protected update = (row: VuuRowDataItemType[], columnName: string) => {
+    // TODO take sorting, filtering. grouping into account
+    const keyValue = row[this.key];
+    const { KEY } = metadataKeys;
+    const colIndex = this.#columnMap[columnName];
+    const dataColIndex = this.dataMap?.[columnName];
+    const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
+    if (dataIndex !== -1 && dataColIndex !== undefined) {
+      const dataSourceRow = this.#data[dataIndex];
+      dataSourceRow[colIndex] = row[dataColIndex];
+      const { from, to } = this.#range;
+      const [rowIdx] = dataSourceRow;
+      if (rowIdx >= from && rowIdx < to) {
+        this.sendRowsToClient(true);
+      }
     }
   };
 

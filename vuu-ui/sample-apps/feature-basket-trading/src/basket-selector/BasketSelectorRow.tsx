@@ -10,6 +10,7 @@ export const BasketSelectorRow = ({
   className: classNameProp,
   columnMap,
   columns,
+  highlighted,
   row,
   offset,
   onClick,
@@ -38,14 +39,20 @@ export const BasketSelectorRow = ({
     <div
       {...htmlAttributes}
       aria-rowindex={row[0]}
-      className={cx(classBase, "vuuTableNextRow")}
+      className={cx(classBase, "vuuTableNextRow", {
+        [`${classBase}-highlighted`]: highlighted,
+      })}
       onClick={handleRowClick}
       role="row"
       style={style}
     >
       <div className="vuuTableNextCell" role="cell">
         <span className={`${classBase}-name`}>{basketName}</span>
-        <label className={`${classBase}-status`}>{status}</label>
+        {status === "ON MARKET" ? (
+          <label className={`${classBase}-status`}>{status}</label>
+        ) : (
+          <span />
+        )}
         <div className={`${classBase}-symbolContainer`}>
           <label className={`${classBase}-symbolLabel`}>Symbol</label>
           <span className={`${classBase}-basketId`}>{basketId}</span>

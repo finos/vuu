@@ -3,7 +3,9 @@ import cx from "classnames";
 import {
   CSSProperties,
   forwardRef,
+  HTMLAttributes,
   MutableRefObject,
+  RefCallback,
   TransitionEventHandler,
   useCallback,
   useMemo,
@@ -14,58 +16,66 @@ import "./Draggable.css";
 
 const makeClassNames = (classNames: string) =>
   classNames.split(" ").map((className) => `vuuDraggable-${className}`);
-export const Draggable = forwardRef<
-  HTMLDivElement,
-  {
-    wrapperClassName: string;
-    element: HTMLElement;
-    onTransitionEnd?: TransitionEventHandler;
-    scale?: number;
-    style: CSSProperties;
-  }
->(function Draggable(
-  { wrapperClassName, element, onTransitionEnd, style, scale = 1 },
-  forwardedRef
-) {
-  const callbackRef = useCallback(
-    (el: HTMLDivElement) => {
-      if (el) {
-        el.innerHTML = "";
-        el.appendChild(element);
-        if (scale !== 1) {
-          el.style.transform = `scale(${scale},${scale})`;
+
+export interface DraggableProps extends HTMLAttributes<HTMLDivElement> {
+  wrapperClassName: string;
+  element: HTMLElement;
+  onDropped?: () => void;
+  onTransitionEnd?: TransitionEventHandler;
+  scale?: number;
+  style: CSSProperties;
+}
+
+export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
+  function Draggable(
+    { wrapperClassName, element, onDropped, onTransitionEnd, style, scale = 1 },
+    forwardedRef
+  ) {
+    const handleVuuDrop = useCallback(() => {
+      onDropped?.();
+    }, [onDropped]);
+
+    const callbackRef = useCallback<RefCallback<HTMLDivElement>>(
+      (el: HTMLDivElement) => {
+        if (el) {
+          el.innerHTML = "";
+          el.appendChild(element);
+          if (scale !== 1) {
+            el.style.transform = `scale(${scale},${scale})`;
+          }
+          el.addEventListener("vuu-dropped", handleVuuDrop);
         }
-      }
-    },
-    [element, scale]
-  );
-  const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
+      },
+      [element, handleVuuDrop, scale]
+    );
+    const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
 
-  const position = useMemo(
-    () => ({
-      left: 0,
-      top: 0,
-    }),
-    []
-  );
+    const position = useMemo(
+      () => ({
+        left: 0,
+        top: 0,
+      }),
+      []
+    );
 
-  return (
-    <Portal>
-      <Popup
-        anchorElement={{ current: document.body }}
-        placement="absolute"
-        position={position}
-      >
-        <div
-          className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
-          ref={forkedRef}
-          onTransitionEnd={onTransitionEnd}
-          style={style}
-        />
-      </Popup>
-    </Portal>
-  );
-});
+    return (
+      <Portal>
+        <Popup
+          anchorElement={{ current: document.body }}
+          placement="absolute"
+          position={position}
+        >
+          <div
+            className={cx("vuuDraggable", ...makeClassNames(wrapperClassName))}
+            ref={forkedRef}
+            onTransitionEnd={onTransitionEnd}
+            style={style}
+          />
+        </Popup>
+      </Portal>
+    );
+  }
+);
 
 // const colors = ["black", "red", "green", "yellow"];
 // let color_idx = 0;

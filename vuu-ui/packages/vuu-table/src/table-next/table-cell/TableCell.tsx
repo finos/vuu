@@ -2,10 +2,6 @@ import {
   DataItemCommitHandler,
   TableCellProps,
 } from "@finos/vuu-datagrid-types";
-import {
-  VuuColumnDataType,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";

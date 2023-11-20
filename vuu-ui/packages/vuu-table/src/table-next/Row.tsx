@@ -2,8 +2,8 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   DataCellEditHandler,
   KeyedColumnDescriptor,
+  RowClickHandler,
 } from "@finos/vuu-datagrid-types";
-import { RowClickHandler } from "@finos/vuu-table";
 import {
   ColumnMap,
   isGroupColumn,
@@ -23,6 +23,7 @@ export interface RowProps {
   className?: string;
   columnMap: ColumnMap;
   columns: KeyedColumnDescriptor[];
+  highlighted?: boolean;
   row: DataSourceRow;
   offset: number;
   onClick?: RowClickHandler;
@@ -41,6 +42,7 @@ export const Row = memo(
     className: classNameProp,
     columnMap,
     columns,
+    highlighted,
     row,
     offset,
     onClick,
@@ -69,6 +71,7 @@ export const Row = memo(
     const className = cx(classBase, classNameProp, {
       [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
       [`${classBase}-expanded`]: isExpanded,
+      [`${classBase}-highlighted`]: highlighted,
       [`${classBase}-selected`]: selectionStatus & True,
       [`${classBase}-selectedStart`]: selectionStatus & First,
       [`${classBase}-selectedEnd`]: selectionStatus & Last,

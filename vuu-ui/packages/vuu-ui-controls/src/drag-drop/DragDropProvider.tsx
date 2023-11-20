@@ -6,12 +6,15 @@ import React, {
   useMemo,
 } from "react";
 import { DragDropState } from "./DragDropState";
-import { MouseOffset } from "./dragDropTypesNext";
-import { ResumeDragHandler, useGlobalDragDrop } from "./useGlobalDragDrop";
+import {
+  GlobalDropHandler,
+  ResumeDragHandler,
+  useGlobalDragDrop,
+} from "./useGlobalDragDrop";
 
 const NO_DRAG_CONTEXT = {
-  isDragSource: false,
-  isDropTarget: false,
+  isDragSource: undefined,
+  isDropTarget: undefined,
   register: () => undefined,
 };
 
@@ -25,7 +28,8 @@ export type DragOutHandler = (
 
 export type DragDropRegistrationFn = (
   id: string,
-  resumeDrag?: ResumeDragHandler
+  resumeDrag: ResumeDragHandler | false,
+  onDrop?: GlobalDropHandler
 ) => void;
 
 export type EndOfDragOperationHandler = (id: string) => void;
@@ -74,6 +78,7 @@ export const DragDropProvider = ({
     () => new Map<string, ResumeDragHandler>(),
     []
   );
+  const dropHandlers = useMemo(() => new Map<string, GlobalDropHandler>(), []);
   const handleDragOverDropTarget = useCallback(
     (dropTargetId: string, dragDropState: DragDropState) => {
       const resumeDrag = resumeDragHandlers.get(dropTargetId);
@@ -86,8 +91,19 @@ export const DragDropProvider = ({
     [resumeDragHandlers]
   );
 
+  const handleDrop = useCallback(
+    (dropTargetId: string, dragDropState: DragDropState) => {
+      const handleDrop = dropHandlers.get(dropTargetId);
+      if (handleDrop) {
+        handleDrop(dragDropState);
+      }
+    },
+    [dropHandlers]
+  );
+
   const { measuredDropTargetsRef, resumeDrag } = useGlobalDragDrop({
     onDragOverDropTarget: handleDragOverDropTarget,
+    onDrop: handleDrop,
   });
   const [dragSources, dropTargets] = useMemo(() => {
     const sources = new Map<string, string[]>();
@@ -123,6 +139,7 @@ export const DragDropProvider = ({
 
   const onDragOut = useCallback<DragOutHandler>(
     (id, dragDropState) => {
+      console.log("DragDropProvider onDragOut");
       // we call releaseItem if and when the dragged item is dropped onto a remote dropTarget
       measuredDropTargetsRef.current = measureDropTargets(dragSources.get(id));
       resumeDrag(dragDropState);
@@ -136,12 +153,15 @@ export const DragDropProvider = ({
   }, []);
 
   const registerDragDropParty = useCallback<DragDropRegistrationFn>(
-    (id, resumeDrag) => {
+    (id, resumeDrag, onDrop) => {
+      console.log(`register drag drop agent #${id}`);
       if (resumeDrag) {
         resumeDragHandlers.set(id, resumeDrag);
+      } else if (onDrop) {
+        dropHandlers.set(id, onDrop);
       }
     },
-    [resumeDragHandlers]
+    [dropHandlers, resumeDragHandlers]
   );
 
   const contextValue: DragDropContextProps = useMemo(
@@ -169,8 +189,8 @@ export const DragDropProvider = ({
 };
 
 export interface DragDropProviderResult {
-  isDragSource: boolean;
-  isDropTarget: boolean;
+  isDragSource?: boolean;
+  isDropTarget?: boolean;
   onDragOut?: DragOutHandler;
   onEndOfDragOperation?: (id: string) => void;
   register: DragDropRegistrationFn;
@@ -184,7 +204,7 @@ export const useDragDropProvider = (id?: string): DragDropProviderResult => {
     onEndOfDragOperation,
     registerDragDropParty,
   } = useContext(DragDropContext);
-  if (id) {
+  if (id && (dragSources || dropTargets)) {
     const isDragSource = dragSources?.has(id) ?? false;
     const isDropTarget = dropTargets?.has(id) ?? false;
 

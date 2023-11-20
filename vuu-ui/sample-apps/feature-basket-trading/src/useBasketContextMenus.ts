@@ -43,10 +43,11 @@ export const useBasketContextMenus = ({
               content: {
                 type: "InstrumentSearch",
                 props: {
+                  TableProps: {
+                    allowDragDrop: "drag-copy",
+                    id: "basket-instruments",
+                  },
                   dataSource: dataSourceInstruments,
-                  //   columnName: action.column.name,
-                  //   onConfigChange,
-                  //   tableConfig,
                 },
               },
               title: "Add Ticker",
@@ -56,5 +57,5 @@ export const useBasketContextMenus = ({
         return false;
       },
     ];
-  }, []);
+  }, [dataSourceInstruments, dispatchLayoutAction]);
 };

@@ -1,3 +1,4 @@
+import { useControlled } from "@salt-ds/core";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import {
   KeyboardEvent,
@@ -5,12 +6,12 @@ import {
   RefObject,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
 } from "react";
 import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
 import {
   CellPos,
+  closestRowIndex,
   dataCellQuery,
   getTableCell,
   headerCellQuery,
@@ -56,32 +57,56 @@ const NULL_CELL_POS: CellPos = [-1, -1];
 
 const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
 
+const howFarIsRowOutsideViewport = (
+  rowEl: HTMLElement,
+  contentContainer = rowEl.closest(".vuuTableNext-contentContainer")
+): readonly [ScrollDirection | undefined, number | undefined] => {
+  //TODO lots of scope for optimisation here
+  if (contentContainer) {
+    const viewport = contentContainer?.getBoundingClientRect();
+    const row = rowEl.getBoundingClientRect();
+    if (row) {
+      if (row.bottom > viewport.bottom) {
+        return ["down", row.bottom - viewport.bottom];
+      } else if (row.top < viewport.top) {
+        return ["up", row.top - viewport.top];
+      } else {
+        return NO_SCROLL_NECESSARY;
+      }
+    } else {
+      throw Error("Whats going on, row not found");
+    }
+  } else {
+    throw Error("Whats going on, scrollbar container not found");
+  }
+};
+
 const howFarIsCellOutsideViewport = (
   cellEl: HTMLElement
 ): readonly [ScrollDirection | undefined, number | undefined] => {
   //TODO lots of scope for optimisation here
   const contentContainer = cellEl.closest(".vuuTableNext-contentContainer");
   if (contentContainer) {
-    const viewport = contentContainer?.getBoundingClientRect();
-    const cell = cellEl.closest(".vuuTableNextCell")?.getBoundingClientRect();
-    if (cell) {
-      if (cell.bottom > viewport.bottom) {
-        return ["down", cell.bottom - viewport.bottom];
-      } else if (cell.top < viewport.top) {
-        return ["up", cell.top - viewport.top];
-      } else if (cell.right > viewport.right) {
-        return ["right", cell.right + 6 - viewport.right];
-      } else if (cell.left < viewport.left) {
-        return ["left", cell.left - viewport.left];
-      } else {
-        return NO_SCROLL_NECESSARY;
+    const rowEl = cellEl.closest(".vuuTableNextRow") as HTMLElement;
+    if (rowEl) {
+      const result = howFarIsRowOutsideViewport(rowEl, contentContainer);
+      if (result !== NO_SCROLL_NECESSARY) {
+        return result;
       }
-    } else {
-      throw Error("Whats going on, cell not found");
+      const viewport = contentContainer?.getBoundingClientRect();
+      const cell = cellEl.closest(".vuuTableNextCell")?.getBoundingClientRect();
+      if (cell) {
+        if (cell.right > viewport.right) {
+          return ["right", cell.right + 6 - viewport.right];
+        } else if (cell.left < viewport.left) {
+          return ["left", cell.left - viewport.left];
+        }
+      } else {
+        throw Error("Whats going on, cell not found");
+      }
     }
-  } else {
-    throw Error("Whats going on, scrollbar container not found");
   }
+  return NO_SCROLL_NECESSARY;
 };
 
 function nextCellPos(
@@ -124,10 +149,14 @@ function nextCellPos(
 export interface NavigationHookProps {
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
+  defaultHighlightedIndex?: number;
+  disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
+  highlightedIndex?: number;
   label?: string;
   navigationStyle: TableNavigationStyle;
   viewportRange: VuuRange;
+  onHighlight?: (idx: number) => void;
   requestScroll?: ScrollRequestHandler;
   restoreLastFocus?: boolean;
   rowCount?: number;
@@ -138,9 +167,13 @@ export interface NavigationHookProps {
 export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
+  disableFocus = false,
+  defaultHighlightedIndex,
   disableHighlightOnFocus,
+  highlightedIndex: highlightedIndexProp,
   navigationStyle,
   requestScroll,
+  onHighlight,
   rowCount = 0,
   viewportRowCount,
 }: // viewportRange,
@@ -149,6 +182,28 @@ NavigationHookProps) => {
   const focusedCellPos = useRef<CellPos>([-1, -1]);
   const focusableCell = useRef<HTMLElement>();
   const activeCellPos = useRef<CellPos>([-1, 0]);
+  // Keep this in sync with state value. This can be used by functions that need
+  // to reference highlightedIndex at call time but do not need to be regenerated
+  // every time it changes (i.e keep highlightedIndex out of their dependency
+  // arrays, as it can update frequently)
+  const highlightedIndexRef = useRef<number | undefined>();
+
+  const [highlightedIndex, setHighlightedIdx] = useControlled({
+    controlled: highlightedIndexProp,
+    default: defaultHighlightedIndex,
+    name: "UseKeyboardNavigation",
+  });
+  highlightedIndexRef.current = highlightedIndex;
+  const setHighlightedIndex = useCallback(
+    (idx: number, fromKeyboard = false) => {
+      onHighlight?.(idx);
+      setHighlightedIdx(idx);
+      if (fromKeyboard) {
+        // lastFocus.current = idx;
+      }
+    },
+    [onHighlight, setHighlightedIdx]
+  );
 
   const getFocusedCell = (element: HTMLElement | Element | null) =>
     element?.closest(
@@ -198,12 +253,16 @@ NavigationHookProps) => {
     (rowIdx: number, colIdx: number, fromKeyboard = false) => {
       const pos: CellPos = [rowIdx, colIdx];
       activeCellPos.current = pos;
-      focusCell(pos);
+      if (navigationStyle === "row") {
+        setHighlightedIdx(rowIdx);
+      } else {
+        focusCell(pos);
+      }
       if (fromKeyboard) {
         focusedCellPos.current = pos;
       }
     },
-    [focusCell]
+    [focusCell, navigationStyle, setHighlightedIdx]
   );
 
   const nextPageItemIdx = useCallback(
@@ -248,17 +307,24 @@ NavigationHookProps) => {
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
           focusedCellPos.current = getTableCellPos(focusedCell);
+          if (navigationStyle === "row") {
+            setHighlightedIdx(focusedCellPos.current[0]);
+          }
         }
       }
     }
-  }, [disableHighlightOnFocus, containerRef]);
+  }, [
+    disableHighlightOnFocus,
+    containerRef,
+    navigationStyle,
+    setHighlightedIdx,
+  ]);
 
   const navigateChildItems = useCallback(
     async (key: NavigationKey) => {
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
         : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
-
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
@@ -267,15 +333,62 @@ NavigationHookProps) => {
     [columnCount, nextPageItemIdx, rowCount, setActiveCell]
   );
 
+  const scrollRowIntoViewIfNecessary = useCallback(
+    (rowIndex: number) => {
+      const { current: container } = containerRef;
+      const activeRow = container?.querySelector(
+        `[aria-rowindex="${rowIndex}"]`
+      ) as HTMLElement;
+      if (activeRow) {
+        const [direction, distance] = howFarIsRowOutsideViewport(activeRow);
+        if (direction && distance) {
+          requestScroll?.({ type: "scroll-distance", distance, direction });
+        }
+      }
+    },
+    [containerRef, requestScroll]
+  );
+
+  const moveHighlightedRow = useCallback(
+    async (key: NavigationKey) => {
+      console.log(`moveHighlightedRow`);
+      const { current: highlighted } = highlightedIndexRef;
+      const [nextRowIdx] = isPagingKey(key)
+        ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
+        : nextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
+      if (nextRowIdx !== highlighted) {
+        setHighlightedIndex(nextRowIdx);
+        scrollRowIntoViewIfNecessary(nextRowIdx);
+      }
+    },
+    [
+      columnCount,
+      nextPageItemIdx,
+      rowCount,
+      scrollRowIntoViewIfNecessary,
+      setHighlightedIndex,
+    ]
+  );
+
+  useEffect(() => {
+    if (highlightedIndexProp !== undefined && highlightedIndexProp !== -1) {
+      scrollRowIntoViewIfNecessary(highlightedIndexProp);
+    }
+  }, [highlightedIndexProp, scrollRowIntoViewIfNecessary]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
         e.preventDefault();
         e.stopPropagation();
-        void navigateChildItems(e.key);
+        if (navigationStyle === "row") {
+          moveHighlightedRow(e.key);
+        } else {
+          void navigateChildItems(e.key);
+        }
       }
     },
-    [rowCount, navigationStyle, navigateChildItems]
+    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems]
   );
 
   const handleClick = useCallback(
@@ -291,25 +404,30 @@ NavigationHookProps) => {
     [setActiveCell]
   );
 
+  const handleMouseLeave = useCallback(() => {
+    setHighlightedIndex(-1);
+  }, [setHighlightedIndex]);
+
+  const handleMouseMove = useCallback(
+    (evt: MouseEvent) => {
+      const idx = closestRowIndex(evt.target as HTMLElement);
+      if (idx !== -1 && idx !== highlightedIndexRef.current) {
+        setHighlightedIndex(idx);
+      }
+    },
+    [setHighlightedIndex]
+  );
+
   const navigate = useCallback(() => {
     navigateChildItems("ArrowDown");
   }, [navigateChildItems]);
-
-  const containerProps = useMemo(() => {
-    return {
-      navigate,
-      onClick: handleClick,
-      onFocus: handleFocus,
-      onKeyDown: handleKeyDown,
-    };
-  }, [handleClick, handleFocus, handleKeyDown, navigate]);
 
   // First render will only render the outer container when explicit
   // sizing has not been provided. Outer container is measured and
   // only then, on second render,  is content rendered.
   const fullyRendered = containerRef.current?.firstChild != null;
   useEffect(() => {
-    if (fullyRendered && focusableCell.current === undefined) {
+    if (fullyRendered && focusableCell.current === undefined && !disableFocus) {
       const { current: container } = containerRef;
       const cell = (container?.querySelector(headerCellQuery(0)) ||
         container?.querySelector(dataCellQuery(0, 0))) as HTMLElement;
@@ -320,5 +438,13 @@ NavigationHookProps) => {
     }
   }, [containerRef, fullyRendered]);
 
-  return containerProps;
+  return {
+    highlightedIndexRef,
+    navigate,
+    onClick: handleClick,
+    onFocus: handleFocus,
+    onKeyDown: handleKeyDown,
+    onMouseLeave: navigationStyle === "row" ? handleMouseLeave : undefined,
+    onMouseMove: navigationStyle === "row" ? handleMouseMove : undefined,
+  };
 };

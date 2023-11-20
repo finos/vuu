@@ -3,10 +3,11 @@ import {
   FlexboxLayout,
   LayoutProvider,
   registerComponent,
+  Toolbar,
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
-import { TableNext } from "@finos/vuu-table";
+import { TableNext, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -15,41 +16,103 @@ import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
 import { useTableConfig, useTestDataSource } from "../utils";
 import { GroupHeaderCellNext } from "@finos/vuu-table";
-import { getAllSchemas } from "@finos/vuu-data-test";
+import {
+  getAllSchemas,
+  getSchema,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
 
 import "./TableNext.examples.css";
+import { Button } from "@salt-ds/core";
 
 let displaySequence = 1;
 
 export const NavigationStyle = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+    const tableName: SimulTableName = "instruments";
+    return {
+      config: {
+        columns: getSchema(tableName).columns,
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+    };
+  }, []);
 
-  const [config, setConfig] = useState<TableConfig>(configProp);
-
-  const handleConfigChange = useCallback((config: TableConfig) => {
-    setConfig(config);
+  const onSelect = useCallback((row) => {
+    console.log({ row });
+  }, []);
+  const onSelectionChange = useCallback((selected) => {
+    console.log({ selected });
   }, []);
 
   return (
     <TableNext
-      {...props}
-      config={config}
+      {...tableProps}
       height={645}
       navigationStyle="row"
-      onConfigChange={handleConfigChange}
       renderBufferSize={5}
+      onSelect={onSelect}
+      onSelectionChange={onSelectionChange}
       width={723}
     />
   );
 };
 NavigationStyle.displaySequence = displaySequence++;
+
+export const ControlledNavigation = () => {
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+    const tableName: SimulTableName = "instruments";
+    return {
+      config: {
+        columns: getSchema(tableName).columns,
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+    };
+  }, []);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
+  const handlePrevClick = useCallback(() => {
+    setHighlightedIndex((idx) => Math.max(0, idx - 1));
+  }, []);
+
+  const handleNextClick = useCallback(() => {
+    setHighlightedIndex((idx) => idx + 1);
+  }, []);
+
+  const handleHighlight = useCallback((idx: number) => {
+    setHighlightedIndex(idx);
+  }, []);
+
+  return (
+    <>
+      <Toolbar height={32}>
+        <Button variant="secondary" onClick={handlePrevClick}>
+          Previous
+        </Button>
+        <Button variant="secondary" onClick={handleNextClick}>
+          Next
+        </Button>
+      </Toolbar>
+      <TableNext
+        {...tableProps}
+        height={645}
+        highlightedIndex={highlightedIndex}
+        navigationStyle="row"
+        onHighlight={handleHighlight}
+        renderBufferSize={5}
+        width={723}
+      />
+    </>
+  );
+};
+ControlledNavigation.displaySequence = displaySequence++;
 
 export const EditableTableNextArrayData = () => {
   const { config, dataSource } = useTableConfig({
@@ -209,19 +272,10 @@ export const TableNextInLayoutWithContextPanel = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const handleConfigChange = useCallback((tableConfig: TableConfig) => {
-    console.log("config changed");
-  }, []);
-
   return (
     <LayoutProvider>
       <FlexboxLayout style={{ height: 645, width: "100%" }}>
-        <TableNext
-          {...props}
-          config={config}
-          onConfigChange={handleConfigChange}
-          renderBufferSize={30}
-        />
+        <TableNext {...props} config={config} renderBufferSize={30} />
         <ContextPanel id="context-panel" overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
@@ -239,11 +293,7 @@ export const AutoTableNext = () => {
     table: { module: "SIMUL", table: "instruments" },
   });
 
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
+  const [config] = useState(configProp);
 
   return (
     <TableNext
@@ -251,7 +301,6 @@ export const AutoTableNext = () => {
       config={{
         ...config,
       }}
-      onConfigChange={handleConfigChange}
       renderBufferSize={0}
     />
   );

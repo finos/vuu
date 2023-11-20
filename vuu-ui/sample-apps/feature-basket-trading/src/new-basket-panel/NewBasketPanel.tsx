@@ -12,7 +12,7 @@ import {
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "classnames";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { HTMLAttributes, useMemo } from "react";
+import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
 
 import "./NewBasketPanel.css";
 import { useNewBasketPanel } from "./useNewBasketPanel";
@@ -45,6 +45,7 @@ export const NewBasketPanel = ({
     onSave,
     onSelectBasket,
     saveButtonDisabled,
+    saveButtonRef,
   } = useNewBasketPanel({
     basketDataSource,
     basketSchema,
@@ -70,6 +71,12 @@ export const NewBasketPanel = ({
 
   const itemToString = displayName(columnMap.name);
 
+  const inputCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
+    setTimeout(() => {
+      el?.querySelector("input")?.focus();
+    }, 100);
+  }, []);
+
   return (
     <Portal>
       <Popup anchorElement={{ current: document.body }} placement="center">
@@ -78,7 +85,11 @@ export const NewBasketPanel = ({
           <div className={`${classBase}-body`}>
             <FormField>
               <FormFieldLabel>Basket Name</FormFieldLabel>
-              <VuuInput onCommit={onChangeBasketName} type="string" />
+              <VuuInput
+                onCommit={onChangeBasketName}
+                ref={inputCallbackRef}
+                type="string"
+              />
             </FormField>
             <FormField>
               <FormFieldLabel>Basket Definition</FormFieldLabel>
@@ -98,9 +109,10 @@ export const NewBasketPanel = ({
               Cancel
             </Button>
             <Button
-              variant="cta"
               disabled={saveButtonDisabled}
               onClick={onSave}
+              ref={saveButtonRef}
+              variant="cta"
             >
               Save
             </Button>

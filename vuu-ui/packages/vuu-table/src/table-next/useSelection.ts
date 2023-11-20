@@ -6,24 +6,37 @@ import {
 } from "@finos/vuu-datagrid-types";
 import {
   deselectItem,
+  dispatchMouseEvent,
   isRowSelected,
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { useCallback, useRef } from "react";
+import { DataSourceRow } from "packages/vuu-data-types";
+import {
+  KeyboardEvent,
+  KeyboardEventHandler,
+  MutableRefObject,
+  useCallback,
+  useRef,
+} from "react";
 
 const { IDX } = metadataKeys;
 
 const NO_SELECTION: Selection = [];
 
+const defaultSelectionKeys = ["Enter", " "];
+
 export interface SelectionHookProps {
+  highlightedIndexRef: MutableRefObject<number | undefined>;
+  selectionKeys?: string[];
   selectionModel: TableSelectionModel;
   onSelect?: (row: DataSourceRow) => void;
   onSelectionChange: SelectionChangeHandler;
 }
 
 export const useSelection = ({
+  highlightedIndexRef,
+  selectionKeys = defaultSelectionKeys,
   selectionModel,
   onSelect,
   onSelectionChange,
@@ -32,7 +45,12 @@ export const useSelection = ({
   const lastActiveRef = useRef(-1);
   const selectedRef = useRef<Selection>(NO_SELECTION);
 
-  const handleSelectionChange: RowClickHandler = useCallback(
+  const isSelectionEvent = useCallback(
+    (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),
+    [selectionKeys]
+  );
+
+  const handleRowClick = useCallback<RowClickHandler>(
     (row, rangeSelect, keepExistingSelection) => {
       const { [IDX]: idx } = row;
       const { current: active } = lastActiveRef;
@@ -58,5 +76,25 @@ export const useSelection = ({
     [onSelect, onSelectionChange, selectionModel]
   );
 
-  return handleSelectionChange;
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLElement>>(
+    (e) => {
+      if (isSelectionEvent(e)) {
+        const { current: rowIndex } = highlightedIndexRef;
+        if (rowIndex !== undefined && rowIndex !== -1) {
+          const rowEl = (e.target as HTMLElement).querySelector(
+            `[aria-rowindex="${rowIndex}"]`
+          ) as HTMLElement;
+          if (rowEl) {
+            dispatchMouseEvent(rowEl, "click");
+          }
+        }
+      }
+    },
+    [highlightedIndexRef, isSelectionEvent]
+  );
+
+  return {
+    onKeyDown: handleKeyDown,
+    onRowClick: handleRowClick,
+  };
 };

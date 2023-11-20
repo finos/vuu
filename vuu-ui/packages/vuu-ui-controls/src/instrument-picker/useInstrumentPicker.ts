@@ -1,7 +1,10 @@
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { TableRowSelectHandler } from "@finos/vuu-table";
+import {
+  TableRowSelectHandler,
+  useControlledTableNavigation,
+} from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useControlled } from "../common-hooks";
@@ -43,6 +46,9 @@ export const useInstrumentPicker = ({
     name: "useDropdownList",
   });
 
+  const { highlightedIndexRef, onKeyDown, tableRef } =
+    useControlledTableNavigation(-1, dataSource.size);
+
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it
     () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
@@ -53,9 +59,6 @@ export const useInstrumentPicker = ({
     (open, closeReason) => {
       setIsOpen(open);
       onOpenChange?.(open, closeReason);
-      // if (open === false) {
-      //   dataSource.unsubscribe();
-      // }
     },
     [onOpenChange, setIsOpen]
   );
@@ -94,20 +97,21 @@ export const useInstrumentPicker = ({
   const inputProps = {
     inputProps: {
       autoComplete: "off",
+      onKeyDown,
     },
     onChange: handleInputChange,
   };
-  const controlProps = {};
   const tableHandlers = {
     onSelect: handleSelectRow,
   };
 
   return {
-    controlProps,
+    highlightedIndex: highlightedIndexRef.current,
     inputProps,
     isOpen,
     onOpenChange: handleOpenChange,
     tableHandlers,
+    tableRef,
     value,
   };
 };

@@ -6,7 +6,7 @@ import {
 import { TableRowSelectHandler } from "@finos/vuu-table";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 
 const { KEY } = metadataKeys;
@@ -43,6 +43,7 @@ export const useNewBasketPanel = ({
   const columnMap = buildColumnMap(basketSchema.columns);
   const [basketName, setBasketName] = useState("");
   const [basketId, setBasketId] = useState<string>();
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
 
   const saveBasket = useCallback(() => {
     if (basketName && basketId) {
@@ -76,6 +77,9 @@ export const useNewBasketPanel = ({
       const basketId = row[KEY] as string;
       console.log({ basketId, columnMap });
       setBasketId(basketId);
+      setTimeout(() => {
+        saveButtonRef.current?.focus();
+      }, 60);
     },
     [columnMap]
   );
@@ -105,5 +109,6 @@ export const useNewBasketPanel = ({
     onSave: saveBasket,
     onSelectBasket: handleSelectBasket,
     saveButtonDisabled: basketName === "" || basketId === undefined,
+    saveButtonRef,
   };
 };

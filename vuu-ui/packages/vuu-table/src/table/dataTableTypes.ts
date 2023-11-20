@@ -2,41 +2,45 @@ import {
   DataSource,
   SchemaColumn,
   VuuFeatureInvocationMessage,
-  VuuFeatureMessage,
 } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   KeyedColumnDescriptor,
+  RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
   TableHeadings,
+  TableRowClickHandler,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { MeasuredContainerProps } from "@finos/vuu-layout";
+import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
 import { FC, MouseEvent } from "react";
 import { RowProps } from "../table-next/Row";
 
-export type TableRowClickHandler = (row: VuuDataRow) => void;
 // TODO implement a Model object to represent a row data for better API
 export type TableRowSelectHandler = (row: DataSourceRow) => void;
 
 export type TableNavigationStyle = "none" | "cell" | "row";
 
-export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
+export interface TableProps
+  extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
   Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
+  allowDragDrop?: boolean | dragStrategy;
   /**
    * required if a fully featured column picker is to be available
    */
   availableColumns?: SchemaColumn[];
   config: TableConfig;
   dataSource: DataSource;
+  disableFocus?: boolean;
   headerHeight?: number;
   /**
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
    */
+  highlightedIndex?: number;
   navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
@@ -50,12 +54,15 @@ export interface TableProps extends Omit<MeasuredContainerProps, "onSelect"> {
    * prop, table state can be persisted across sessions.
    */
   onConfigChange?: (config: TableConfig) => void;
+  onDragStart?: DragStartHandler;
+  onDrop?: () => void;
   /**
    * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
    * response must be handled. This callback provides that response.
    */
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
 
+  onHighlight?: (idx: number) => void;
   /**
    * callback invoked when user 'clicks' a table row. CLick triggered either
    * via mouse click or keyboard (default ENTER);
@@ -125,9 +132,3 @@ export interface Viewport {
   rowCount: number;
   // contentWidth: number;
 }
-
-export type RowClickHandler = (
-  row: DataSourceRow,
-  rangeSelect: boolean,
-  keepExistingSelection: boolean
-) => void;
