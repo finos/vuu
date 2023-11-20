@@ -22,8 +22,6 @@ trait BasketServiceIF{
 
 class BasketService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
 
-//private val counter = new AtomicInteger(0)
-
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
   private def getAndPadCounter(session: ClientSessionId): String = {
@@ -49,6 +47,8 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
       BTC.Weighting -> weighting,
       BTC.PriceStrategyId -> 2,
       BTC.Algo -> -1,
+      BTC.OrderStatus -> OrderStates.PENDING,
+      BTC.FilledQty -> 0
     ))
   }
 

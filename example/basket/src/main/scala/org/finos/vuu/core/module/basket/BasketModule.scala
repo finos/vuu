@@ -8,6 +8,7 @@ import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingCon
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
+import org.finos.vuu.order.oms.OmsApi
 
 object BasketModule extends DefaultModule {
 
@@ -22,6 +23,8 @@ object BasketModule extends DefaultModule {
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
+
+    val omsApi = OmsApi()
 
     ModuleFactory.withNamespace(NAME)
       .addTable(
@@ -77,14 +80,16 @@ object BasketModule extends DefaultModule {
                                       BTC.Algo.string(), BTC.AlgoParams.string(),
                                       BTC.PctFilled.double(), BTC.Weighting.double(),
                                       BTC.PriceSpread.int(),
-                                      BTC.LimitPrice.double()
+                                      BTC.LimitPrice.double(),
+                                      BTC.FilledQty.long(),
+                                      BTC.OrderStatus.string()
           ),// we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(
             Link(BTC.InstanceId, BasketTradingTable, BT.InstanceId),
           ),
           joinFields = BTC.InstanceIdRic, BTC.Ric
         ),
-        (table, vs) => new NullProvider(table),
+        (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new BasketTradingConstituentService(table, tableContainer)
@@ -192,6 +197,8 @@ object BasketModule extends DefaultModule {
     final val PctFilled = "pctFilled"
     final val Weighting = "weighting"
     final val PriceSpread = "priceSpread"
+    final val OrderStatus = "orderStatus"
+    final val FilledQty = "filledQty"
   }
 
   object Sides{

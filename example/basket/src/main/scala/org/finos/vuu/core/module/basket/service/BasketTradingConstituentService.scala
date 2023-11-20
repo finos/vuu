@@ -6,6 +6,7 @@ import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentCol
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
 
 class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with EditRpcHandler with StrictLogging {
