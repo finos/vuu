@@ -76,6 +76,8 @@
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
         <logback.version>1.2.9</logback.version>
         <jmh.version>1.36</jmh.version>
+        <sonar.organization>vuu</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <modules>
