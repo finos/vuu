@@ -15,13 +15,11 @@ import {
 } from "@finos/vuu-layout";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
-const local = process.env.LOCAL ?? true;
-
 let _persistenceManager: LayoutPersistenceManager;
 
 const getPersistenceManager = () => {
   if (_persistenceManager === undefined) {
-    _persistenceManager = local
+    _persistenceManager = process.env.LOCAL
       ? new LocalLayoutPersistenceManager()
       : new RemoteLayoutPersistenceManager();
   }
@@ -68,7 +66,8 @@ export const LayoutManagementProvider = (
   useEffect(() => {
     const persistenceManager = getPersistenceManager();
 
-    persistenceManager.loadMetadata()
+    persistenceManager
+      .loadMetadata()
       .then((metadata) => {
         setLayoutMetadata(metadata);
       })
@@ -77,7 +76,8 @@ export const LayoutManagementProvider = (
         console.error("Error occurred while retrieving metadata", error);
       });
 
-    persistenceManager.loadApplicationLayout()
+    persistenceManager
+      .loadApplicationLayout()
       .then((layout: LayoutJSON) => {
         setApplicationLayout(layout);
       })

@@ -6,9 +6,7 @@ import {
 import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
 import { LayoutJSON } from "../layout-reducer";
 
-const DEFAULT_SERVER_BASE_URL = "http://127.0.0.1:8081/api";
-
-const baseURL = process.env.LAYOUT_BASE_URL ?? DEFAULT_SERVER_BASE_URL;
+const baseURL = process.env.LAYOUT_BASE_URL;
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts";
 const applicationLayoutsSaveLocation = "application-layouts";
