@@ -21,8 +21,8 @@ async function injectScript(path = "./build/index.html") {
 console.log(`run mobile build`);
 await execWait("docusaurus build");
 
-console.log(`inject desktop redirect into mobile`);
-await injectScript();
+// console.log(`inject desktop redirect into mobile`);
+// await injectScript();
 
 // console.log(`run desktop build`);
 // await execWait(`node ./scripts/build-desktop.mjs`, desktopPath);
