@@ -7,6 +7,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.ConcurrentHashMap
+import javax.print.attribute.standard.Sides
 
 case class TestOrderState(symbol: String, qty: Long, price: Double, state: String, filledQty: Long, filledPrice: Double)
 
@@ -61,7 +62,7 @@ class OmsApiTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
       omsApi.addListener(listener)
 
-      omsApi.createOrder(NewOrder("VOD.L", 1000L, 100.01, "clOrdId1"))
+      omsApi.createOrder(NewOrder("Buy","VOD.L", 1000L, 100.01, "clOrdId1"))
 
       clock.sleep(MAX_ACK_TIME_MS)
       omsApi.runOnce()

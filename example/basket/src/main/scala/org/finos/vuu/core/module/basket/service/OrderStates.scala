@@ -6,3 +6,8 @@ object OrderStates {
   final val CANCELLED = "CANCELLED"
   final val FILLED = "FILLED"
 }
+
+object BasketStates{
+  final val OFF_MARKET = "OFF_MARKET"
+  final val ON_MARKET = "ON_MARKET"
+}

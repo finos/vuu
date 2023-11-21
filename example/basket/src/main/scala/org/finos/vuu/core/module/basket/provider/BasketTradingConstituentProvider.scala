@@ -10,9 +10,9 @@ import org.finos.vuu.provider.DefaultProvider
 
 class BasketTradingConstituentProvider(val table: DataTable, val omsApi: OmsApi)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultProvider  {
 
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentColumnNames => BTC}
+  private val runner = new LifeCycleRunner("TradingConsProviderRunner", runOnce, 50L)
 
-  val runner = new LifeCycleRunner("TradingConsProviderRunner", runOnce, 50L)
+  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentColumnNames => BTC}
 
   omsApi.addListener(new OmsListener {
     override def onAck(ack: Ack): Unit = {

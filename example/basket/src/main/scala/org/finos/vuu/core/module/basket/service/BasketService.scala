@@ -8,6 +8,7 @@ import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.order.oms.{NewOrder, OmsApi}
 import org.finos.vuu.viewport._
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -20,7 +21,7 @@ trait BasketServiceIF{
   def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction
 }
 
-class BasketService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
+class BasketService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
@@ -72,6 +73,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer)(im
   def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
     createBasketInternal(basketKey, name, ctx.session)
   }
+
 
   private def createBasketInternal(basketKey: String, name: String, sessionId: ClientSessionId): ViewPortAction = {
 

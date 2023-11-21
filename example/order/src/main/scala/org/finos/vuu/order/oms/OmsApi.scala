@@ -8,7 +8,7 @@ object MaxTimes{
   final val MAX_FILL_TIME_MS = 8_000
 }
 
-case class NewOrder(symbol: String, qty: Long, price: Double, clientOrderId: String)
+case class NewOrder(side: String, symbol: String, qty: Long, price: Double, clientOrderId: String)
 case class ReplaceOrder(orderId: Int, newPrice: Double, newQty: Long)
 case class CancelOrder(orderId: Int)
 case class Ack(orderId: Int, clientOrderId: String, symbol: String, qty: Long, price: Double)

@@ -20,7 +20,7 @@ object BasketModule extends DefaultModule {
   final val BasketTradingConstituentTable = "basketTradingConstituent"
   final val BasketTradingConstituentJoin = "basketTradingConstituentJoin"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
+  def apply(omsApi: OmsApi)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
 
@@ -39,15 +39,16 @@ object BasketModule extends DefaultModule {
         (table, _) => new BasketProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketService(table, tableContainer)
+          service = new BasketService(table, tableContainer, omsApi)
         )
       )
       .addTable(
         TableDef(
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
-          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
-            BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
+                                      BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
+                                      BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BC.RicBasketId, BC.Ric
         ),
@@ -57,14 +58,17 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTradingTable,
           keyField = BT.InstanceId,
-          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(), BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(), BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
+                                      BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
+                                      BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
+          ), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BT.BasketId
         ),
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketTradingService(table, tableContainer)
+          service = new BasketTradingService(table, tableContainer, omsApi)
         )
       )
       .addTable(

@@ -8,6 +8,7 @@ import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
@@ -23,9 +24,11 @@ class BasketCreateTest extends VuuServerTestCase {
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
       implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
 
+      val omsApi = OmsApi()
+
       import BasketModule.{BasketTradingColumnNames => BT, _}
 
-      withVuuServer(PriceModule(), BasketModule()) {
+      withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
           vuuServer.login("testUser", "testToken")
