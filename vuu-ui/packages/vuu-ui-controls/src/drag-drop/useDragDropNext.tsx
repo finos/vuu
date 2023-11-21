@@ -1,4 +1,5 @@
 import { isOverflowElement } from "@finos/vuu-layout";
+import { dispatchCustomEvent } from "@finos/vuu-utils";
 import {
   MouseEventHandler,
   useCallback,
@@ -21,9 +22,12 @@ import {
   cloneElement,
   constrainRect,
   dimensions,
+  getScrollableContainer,
+  isContainerScrollable,
   NOT_OVERFLOWED,
 } from "./drop-target-utils";
 import { ScrollStopHandler, useAutoScroll } from "./useAutoScroll";
+import { useDragDropCopy } from "./useDragDropCopy";
 import { useDragDropIndicator } from "./useDragDropIndicator";
 import { useDragDropNaturalMovement } from "./useDragDropNaturalMovementNext";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
@@ -114,7 +118,8 @@ export const useDragDropNext: DragDropHook = ({
   const startPosRef = useRef<MouseOffset>({ x: 0, y: 0 });
   /** references the dragged Item during its final 'settling' phase post drop  */
   const settlingItemRef = useRef<HTMLElement | null>(null);
-
+  /** the container which will scroll if content overflows  */
+  const scrollableContainerRef = useRef<HTMLElement | null>(null);
   const dropPosRef = useRef(-1);
   const dropIndexRef = useRef(-1);
 
@@ -188,6 +193,9 @@ export const useDragDropNext: DragDropHook = ({
   );
 
   const terminateDrag = useCallback(() => {
+    const { current: settlingItem } = settlingItemRef;
+    settlingItemRef.current = null;
+
     const { current: toIndex } = dropIndexRef;
     const droppedItem = containerRef.current?.querySelector(
       `${itemQuery}[data-index="${toIndex}"]`
@@ -195,18 +203,21 @@ export const useDragDropNext: DragDropHook = ({
     if (droppedItem) {
       droppedItem.classList.remove("vuuDropTarget-settling");
     }
-
     dropIndexRef.current = -1;
     onDropSettle?.(toIndex);
     setDraggableStatus((status) => ({
       ...status,
       draggable: undefined,
     }));
+
+    if (settlingItem) {
+      dispatchCustomEvent(settlingItem, "vuu-dropped");
+    }
   }, [containerRef, itemQuery, onDropSettle]);
 
   const getScrollDirection = useCallback(
     (mousePos: number) => {
-      if (containerRef.current && dragDropStateRef.current) {
+      if (scrollableContainerRef.current && dragDropStateRef.current) {
         const { mouseOffset } = dragDropStateRef.current;
 
         const { POS, SCROLL_POS, SCROLL_SIZE, CLIENT_SIZE } =
@@ -215,7 +226,7 @@ export const useDragDropNext: DragDropHook = ({
           [SCROLL_POS]: scrollPos,
           [SCROLL_SIZE]: scrollSize,
           [CLIENT_SIZE]: clientSize,
-        } = containerRef.current;
+        } = scrollableContainerRef.current;
 
         const maxScroll = scrollSize - clientSize;
         const canScrollFwd = scrollPos < maxScroll;
@@ -227,7 +238,7 @@ export const useDragDropNext: DragDropHook = ({
         return bwd ? "bwd" : fwd ? "fwd" : "";
       }
     },
-    [containerRef, orientation]
+    [scrollableContainerRef, orientation]
   );
 
   const useDragDropHook: InternalHook =
@@ -235,6 +246,8 @@ export const useDragDropNext: DragDropHook = ({
       ? useDragDropNaturalMovement
       : allowDragDrop === "drop-indicator"
       ? useDragDropIndicator
+      : allowDragDrop === "drag-copy"
+      ? useDragDropCopy
       : noDragDrop;
 
   const onScrollingStopped = useCallback(
@@ -245,7 +258,7 @@ export const useDragDropNext: DragDropHook = ({
   );
 
   const { isScrolling, startScrolling, stopScrolling } = useAutoScroll({
-    containerRef,
+    containerRef: scrollableContainerRef,
     onScrollingStopped,
     orientation,
   });
@@ -301,7 +314,14 @@ export const useDragDropNext: DragDropHook = ({
         ? Math.abs(lastClientContraPos - clientContraPos)
         : 0;
 
-      if (dragDropStateRef.current && dragOutDistance - dragDistance > 5) {
+      // If isDropTarget is false, there are configured dropTargets in context
+      // but this is not one, so drag will be handed straight over to DragProvider
+      // (global drag). If isDropTarget is undefined, we have no DragProvider
+      // so we are dealing with a simple local drag drop operation.
+      const handoverToProvider =
+        isDropTarget === false || dragOutDistance - dragDistance > 5;
+
+      if (dragDropStateRef.current && handoverToProvider) {
         if (onDragOut?.(id as string, dragDropStateRef.current)) {
           // TODO create a cleanup function
           removeDragHandlers();
@@ -313,7 +333,15 @@ export const useDragDropNext: DragDropHook = ({
         return true;
       }
     },
-    [id, isDragSource, onDragOut, orientation, releaseDrag, removeDragHandlers]
+    [
+      id,
+      isDragSource,
+      isDropTarget,
+      onDragOut,
+      orientation,
+      releaseDrag,
+      removeDragHandlers,
+    ]
   );
 
   const dragMouseMoveHandler = useCallback(
@@ -327,7 +355,6 @@ export const useDragDropNext: DragDropHook = ({
       const { current: dragDropState } = dragDropStateRef;
 
       if (dragHandedOvertoProvider(dragDistance, clientContraPos)) {
-        console.log("drag handed over to provider");
         return;
       }
 
@@ -352,7 +379,7 @@ export const useDragDropNext: DragDropHook = ({
             isScrollableRef.current &&
             !isScrolling.current
           ) {
-            handleScrollStart();
+            handleScrollStart?.();
             startScrolling(scrollDirection, 1);
           } else if (!scrollDirection && isScrolling.current) {
             stopScrolling();
@@ -372,15 +399,12 @@ export const useDragDropNext: DragDropHook = ({
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       drag,
+      dragHandedOvertoProvider,
       getScrollDirection,
       handleScrollStart,
-      id,
-      isDragSource,
       isScrolling,
-      onDragOut,
       orientation,
       startScrolling,
       stopScrolling,
@@ -408,11 +432,8 @@ export const useDragDropNext: DragDropHook = ({
     (dragDropState: DragDropState) => {
       dragDropStateRef.current = dragDropState;
       // Note this is using the draggable element rather than the original draggedElement
-      const { draggableElement, mouseOffset, initialDragElement } =
-        dragDropState;
+      const { draggableElement, mouseOffset } = dragDropState;
       const { current: container } = containerRef;
-
-      console.log({ container, draggableElement, initialDragElement });
 
       if (container && draggableElement) {
         const containerRect = container.getBoundingClientRect();
@@ -441,11 +462,16 @@ export const useDragDropNext: DragDropHook = ({
       const dragElement = getDraggableElement(target, itemQuery);
       const { current: container } = containerRef;
       if (container && dragElement) {
-        const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
+        const scrollableContainer = getScrollableContainer(
+          container,
+          itemQuery
+        );
 
-        const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } =
-          container;
-        isScrollableRef.current = scrollSize > clientSize;
+        isScrollableRef.current = isContainerScrollable(
+          scrollableContainer,
+          orientation
+        );
+        scrollableContainerRef.current = scrollableContainer;
 
         const containerRect = container.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
@@ -468,6 +494,7 @@ export const useDragDropNext: DragDropHook = ({
           draggable: (
             <Draggable
               element={cloneElement(dragElement)}
+              onDropped={terminateDrag}
               onTransitionEnd={terminateDrag}
               ref={dragDropState.setDraggable}
               style={constrainRect(draggableRect, containerRect)}
@@ -525,6 +552,8 @@ export const useDragDropNext: DragDropHook = ({
 
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
+      // TODO runtime check here for valid drop targets ?
+
       const { current: container } = containerRef;
       // We don't want to prevent other handlers on this element from working
       // but we do want to stop a drag drop being initiated on a bubbled event.
@@ -579,18 +608,24 @@ export const useDragDropNext: DragDropHook = ({
             terminateDrag();
           }
         });
-      } else {
-        console.log(`dont have the dropped item (at ${dropPos})`);
       }
-      settlingItemRef.current = null;
+      // settlingItemRef.current = null;
     }
   }, [containerRef, itemQuery, settlingItem, terminateDrag]);
 
   useEffect(() => {
     if (id && (isDragSource || isDropTarget)) {
-      register(id, resumeDrag);
+      register(id, allowDragDrop === "drop-only" ? false : resumeDrag, onDrop);
     }
-  }, [id, isDragSource, isDropTarget, register, resumeDrag]);
+  }, [
+    allowDragDrop,
+    id,
+    isDragSource,
+    isDropTarget,
+    onDrop,
+    register,
+    resumeDrag,
+  ]);
 
   return {
     ...dragResult,

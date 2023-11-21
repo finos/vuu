@@ -10,7 +10,7 @@ import { useDragDisplacers } from "./useDragDisplacers";
 import { dispatchMouseEvent } from "@finos/vuu-utils";
 import {
   dimensions,
-  dropTargetsDebugString,
+  // dropTargetsDebugString,
   getIndexOfDraggedItem,
   getNextDropTarget,
   MeasuredDropTarget,
@@ -42,8 +42,6 @@ export const useDragDropNaturalMovement = ({
 
   const draggedItemRef = useRef<MeasuredDropTarget>();
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},.vuuOverflowContainer-OverflowIndicator)`;
-
-  // const { setMeasurements: setVizData } = useListViz();
 
   const indexOf = (dropTarget: MeasuredDropTarget) =>
     measuredDropTargets.current.findIndex((d) => d.id === dropTarget.id);
@@ -129,7 +127,7 @@ export const useDragDropNaturalMovement = ({
         ));
 
         if (internalDrag) {
-          console.log(dropTargetsDebugString(dropTargets));
+          // console.log(dropTargetsDebugString(dropTargets));
           const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
           const draggedItem = dropTargets[indexOfDraggedItem];
           if (draggedItem && container) {
@@ -153,7 +151,7 @@ export const useDragDropNaturalMovement = ({
           const index = dropTargets.indexOf(dropTarget);
           const { start, end, mid } = dropTarget;
 
-          console.log(`nextDropTarget ${dropTarget.element.textContent}`);
+          // console.log(`nextDropTarget ${dropTarget.element.textContent}`);
 
           // need to compute the correct position of this
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -178,7 +176,7 @@ export const useDragDropNaturalMovement = ({
             target.start += size;
           }
 
-          console.log(dropTargetsDebugString(dropTargets));
+          // console.log(dropTargetsDebugString(dropTargets));
 
           const displaceFunction = dropTarget.isLast
             ? displaceLastItem

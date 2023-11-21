@@ -54,11 +54,12 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
   const id = useId(idProp);
 
   const {
-    controlProps,
+    highlightedIndex,
     inputProps,
     isOpen,
     onOpenChange,
     tableHandlers,
+    tableRef,
     value,
   } = useInstrumentPicker({
     columnMap,
@@ -76,7 +77,7 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
     ...TableProps,
     config: {
       ...TableProps.config,
-      showHighlightedRow: true,
+      zebraStripes: false,
     },
   };
 
@@ -95,7 +96,6 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
       <Input
         {...inputProps}
         disabled={disabled}
-        {...controlProps}
         endAdornment={endAdornment}
         value={value}
       />
@@ -107,8 +107,10 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
         {...tableHandlers}
         className={`${classBase}-list`}
         height={200}
+        highlightedIndex={highlightedIndex}
         dataSource={dataSource}
         navigationStyle="row"
+        ref={tableRef}
         showColumnHeaders={false}
       />
     </DropdownBase>

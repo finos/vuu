@@ -37,7 +37,7 @@ async function connectToServer(
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
       if (isConnectionQualityMetrics(msg)) {
-        console.log("post connection metrics");
+        // console.log("post connection metrics");
         postMessage({ type: "connection-metrics", messages: msg });
       } else if (isConnectionStatusMessage(msg)) {
         onConnectionStatusChange(msg);

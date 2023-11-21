@@ -1,48 +1,57 @@
 import { InstrumentPicker } from "@finos/vuu-ui-controls";
 import {
-  createArrayDataSource,
   getAllSchemas,
   getSchema,
+  SimulTableName,
+  vuuModule,
 } from "@finos/vuu-data-test";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { TableProps, TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useTestDataSource } from "../utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 
 let displaySequence = 0;
 
 export const DefaultInstrumentPicker = () => {
-  const schema = getSchema("instruments");
-  const [columnMap, searchColumns, tableProps] = useMemo<
-    [ColumnMap, string[], Pick<TableProps, "config" | "dataSource">]
-  >(
-    () => [
-      buildColumnMap(schema.columns),
-      ["bbg", "description"],
+  const tableName: SimulTableName = "instruments";
+  const schema = getSchema(tableName);
+
+  const [tableProps, columnMap, searchColumns] = useMemo<
+    [Pick<TableProps, "config" | "dataSource">, ColumnMap, string[]]
+  >(() => {
+    return [
       {
         config: {
-          // TODO need to inject this value
-          showHighlightedRow: true,
-          columns: [
-            { name: "bbg", serverDataType: "string" },
-            { name: "description", serverDataType: "string", width: 280 },
-          ] as ColumnDescriptor[],
+          columns: schema.columns,
+          rowSeparators: true,
+          zebraStripes: true,
         },
-        dataSource: createArrayDataSource({ table: schema.table }),
+        dataSource:
+          vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
       },
-    ],
-    [schema]
+      buildColumnMap(schema.columns),
+      ["bbg", "description"],
+    ];
+  }, [schema.columns]);
+
+  const itemToString = useCallback(
+    (row: DataSourceRow) => {
+      return [row[columnMap.description]];
+    },
+    [columnMap.description]
   );
 
-  const handleSelect = useCallback<TableRowSelectHandler>((row) => {
-    console.log(`row selected ${row.join(",")}`);
+  const handleSelect = useCallback<TableRowSelectHandler>((index) => {
+    console.log(`row selected ${index}`);
   }, []);
 
   return (
     <InstrumentPicker
       TableProps={tableProps}
       columnMap={columnMap}
+      itemToString={itemToString}
       onSelect={handleSelect}
       schema={schema}
       searchColumns={searchColumns}

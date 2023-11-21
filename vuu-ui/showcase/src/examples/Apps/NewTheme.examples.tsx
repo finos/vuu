@@ -15,9 +15,10 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CSSProperties } from "react";
+import { CSSProperties, useMemo } from "react";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { getAllSchemas } from "@finos/vuu-data-test";
+import { DragDropProvider } from "@finos/vuu-ui-controls";
 
 import "./NewTheme.examples.css";
 
@@ -97,34 +98,43 @@ const ShellWithNewTheme = () => {
   const { buildMenuOptions, handleMenuAction } =
     useLayoutContextMenuItems(setDialogState);
 
+  const dragSource = useMemo(
+    () => ({
+      "basket-instruments": { dropTargets: "basket-constituents" },
+    }),
+    []
+  );
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
       menuBuilder={buildMenuOptions}
     >
-      <Shell
-        LayoutProps={{
-          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
-        }}
-        leftSidePanelLayout="full-height"
-        leftSidePanel={
-          <LeftNav
-            features={features}
-            tableFeatures={tableFeatures}
-            style={{ width: 240 }}
-          />
-        }
-        loginUrl={window.location.toString()}
-        user={user}
-        style={
-          {
-            "--vuuShell-height": "100vh",
-            "--vuuShell-width": "100vw",
-          } as CSSProperties
-        }
-      >
-        {dialog}
-      </Shell>
+      <DragDropProvider dragSources={dragSource}>
+        <Shell
+          LayoutProps={{
+            pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+          }}
+          leftSidePanelLayout="full-height"
+          leftSidePanel={
+            <LeftNav
+              features={features}
+              tableFeatures={tableFeatures}
+              style={{ width: 240 }}
+            />
+          }
+          loginUrl={window.location.toString()}
+          user={user}
+          style={
+            {
+              "--vuuShell-height": "100vh",
+              "--vuuShell-width": "100vw",
+            } as CSSProperties
+          }
+        >
+          {dialog}
+        </Shell>
+      </DragDropProvider>
     </ContextMenuProvider>
   );
 };

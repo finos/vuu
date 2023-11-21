@@ -148,3 +148,13 @@ export const dispatchMouseEvent = (el: HTMLElement, type: MouseEventTypes) => {
   });
   el.dispatchEvent(evt);
 };
+
+export type VuuDomEventType = "vuu-commit" | "vuu-dropped";
+
+export const dispatchCustomEvent = (el: HTMLElement, type: VuuDomEventType) => {
+  const evt = new Event(type, {
+    bubbles: true,
+    cancelable: true,
+  });
+  el.dispatchEvent(evt);
+};

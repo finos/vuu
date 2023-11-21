@@ -10,6 +10,7 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
 
 export class Basket {
   basketId: string;
@@ -28,7 +29,7 @@ export class Basket {
     this.basketName = data[columnMap.basketName] as string;
     this.filledPct = data[columnMap.filledPct] as number;
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
-    this.side = "BUY";
+    this.side = data[columnMap.side] as string;
     this.totalNotional = data[columnMap.totalNotional] as number;
     this.totalNotionalUsd = data[columnMap.totalNotionalUsd] as number;
     this.units = data[columnMap.units] as number;
@@ -42,6 +43,13 @@ export type BasketTradingHookProps = Pick<
   | "basketTradingConstituentJoinSchema"
   | "instrumentsSchema"
 >;
+
+const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
+  Object.entries(columnMap).reduce<VuuDataRowDto>((dto, [colName, index]) => {
+    dto[colName] = dataSourceRow[index];
+    return dto;
+  }, {});
+};
 
 type BasketState = {
   basketInstanceId?: string;
@@ -89,9 +97,13 @@ export const useBasketTrading = ({
     dialog: undefined,
   });
 
-  const columnMap = useMemo(
+  const columnMapBasketTrading = useMemo(
     () => buildColumnMap(dataSourceBasketTradingControl.columns),
     [dataSourceBasketTradingControl.columns]
+  );
+  const columnMapInstrument = useMemo(
+    () => buildColumnMap(dataSourceInstruments.columns),
+    [dataSourceInstruments.columns]
   );
 
   useMemo(() => {
@@ -105,7 +117,10 @@ export const useBasketTrading = ({
             setBasketCount(message.size);
           }
           if (message.rows && message.rows.length > 0) {
-            setBasket(new Basket(message.rows[0], columnMap));
+            const basket = new Basket(message.rows[0], columnMapBasketTrading);
+            console.log({ basket, row: message.rows[0] });
+
+            setBasket(new Basket(message.rows[0], columnMapBasketTrading));
           }
         }
       }
@@ -115,7 +130,7 @@ export const useBasketTrading = ({
     setTimeout(() => {
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 800);
-  }, [columnMap, dataSourceBasketTradingControl]);
+  }, [columnMapBasketTrading, dataSourceBasketTradingControl]);
 
   useEffect(() => {
     return () => {
@@ -188,6 +203,7 @@ export const useBasketTrading = ({
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
       if (basket) {
+        console.log(`handleCommitBasketChange ${columnName} => ${value}`);
         const { dataSourceRow } = basket;
         return dataSourceBasketTradingControl.applyEdit(
           dataSourceRow,
@@ -226,6 +242,38 @@ export const useBasketTrading = ({
     menuBuilder: buildViewserverMenuOptions,
   };
 
+  const handleDropInstrument = useCallback(
+    (dragDropState) => {
+      console.log(`useBasketTrading handleDropInstrument`, {
+        instrument: dragDropState.payload,
+      });
+      const key = "steve-00001.AAA.L";
+      const data = {
+        algo: -1,
+        algoParams: "",
+        basketId: ".FTSE100",
+        description: "Test",
+        instanceId: "steve-00001",
+        instanceIdRic: "steve-00001.AAA.L",
+        limitPrice: 0,
+        notionalLocal: 0,
+        notionalUsd: 0,
+        pctFilled: 0,
+        priceSpread: 0,
+        priceStrategyId: 2,
+        quantity: 0,
+        ric: "AAL.L",
+        side: "BUY",
+        venue: "",
+        weighting: 1,
+      };
+      dataSourceBasketTradingControl.insertRow?.(key, data).then((response) => {
+        console.log({ response });
+      });
+    },
+    [dataSourceBasketTradingControl]
+  );
+
   return {
     ...basketState,
     activeTabIndex,
@@ -237,6 +285,7 @@ export const useBasketTrading = ({
     dataSourceBasketTradingConstituentJoin,
     onClickAddBasket: handleAddBasket,
     onCommitBasketChange: handleCommitBasketChange,
+    onDropInstrument: handleDropInstrument,
     onSendToMarket,
     onTakeOffMarket,
   };

@@ -38,11 +38,12 @@ const getFlashStyle = (colType?: ColumnType) => {
 };
 
 // export to avoid tree shaking, component is not consumed directly
-export const BackgroundCell = ({ column, row }: TableCellProps) => {
+export const BackgroundCell = ({ column, columnMap, row }: TableCellProps) => {
   //TODO what about click handling
 
-  const { key, type, valueFormatter } = column;
-  const value = row[key];
+  const { name, type, valueFormatter } = column;
+  const dataIdx = columnMap[name];
+  const value = row[dataIdx];
   const flashStyle = getFlashStyle(type);
   const direction = useDirection(row[KEY], value, column);
   const arrow =
@@ -66,7 +67,7 @@ export const BackgroundCell = ({ column, row }: TableCellProps) => {
   return (
     <div className={className} tabIndex={-1}>
       <div className={`${classBase}-flasher`}>{arrow}</div>
-      {valueFormatter(row[column.key])}
+      {valueFormatter(row[dataIdx])}
     </div>
   );
 };

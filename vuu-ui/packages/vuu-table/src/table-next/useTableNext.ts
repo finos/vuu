@@ -1,5 +1,4 @@
 import {
-  DataSource,
   DataSourceConfig,
   DataSourceSubscribedMessage,
   JsonDataSource,
@@ -9,6 +8,7 @@ import {
   ColumnDescriptor,
   DataCellEditHandler,
   KeyedColumnDescriptor,
+  RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
@@ -16,7 +16,10 @@ import {
 import { MeasuredSize, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
-import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import {
+  DragStartHandler,
+  useDragDropNext as useDragDrop,
+} from "@finos/vuu-ui-controls";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
@@ -37,7 +40,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import {
@@ -45,14 +47,13 @@ import {
   ColumnActionHide,
   ColumnActionPin,
   MeasuredProps,
-  RowClickHandler,
   TableProps,
-  useSelection,
 } from "../table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
+import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
 import { useHandleTableContextMenu } from "./context-menu";
 import { useCellEditing } from "./useCellEditing";
@@ -70,13 +71,20 @@ export interface TableHookProps
   extends MeasuredProps,
     Pick<
       TableProps,
+      | "allowDragDrop"
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "disableFocus"
+      | "highlightedIndex"
+      | "id"
       | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
+      | "onDragStart"
+      | "onDrop"
       | "onFeatureInvocation"
+      | "onHighlight"
       | "onSelect"
       | "onSelectionChange"
       | "onRowClick"
@@ -99,15 +107,22 @@ const addColumn = (
 });
 
 export const useTable = ({
+  allowDragDrop = false,
   availableColumns,
   config,
   containerRef,
   dataSource,
+  disableFocus,
   headerHeight = 25,
+  highlightedIndex: highlightedIndexProp,
+  id,
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
+  onDragStart,
+  onDrop,
   onFeatureInvocation,
+  onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
   onSelectionChange,
@@ -116,7 +131,6 @@ export const useTable = ({
   selectionModel,
 }: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
-  const dataSourceRef = useRef<DataSource>();
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
@@ -217,7 +231,7 @@ export const useTable = ({
     [dispatchColumnAction]
   );
 
-  const { data, getSelectedRows, range, setRange } = useDataSource({
+  const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     onFeatureInvocation,
     renderBufferSize,
@@ -467,6 +481,7 @@ export const useTable = ({
   });
 
   const {
+    highlightedIndexRef,
     navigate,
     onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
@@ -474,9 +489,12 @@ export const useTable = ({
   } = useKeyboardNavigation({
     columnCount: columns.filter((c) => c.hidden !== true).length,
     containerRef,
+    disableFocus,
+    highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,
     rowCount: dataSource?.size,
+    onHighlight,
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
   });
@@ -497,16 +515,6 @@ export const useTable = ({
       }
     },
     [editingFocus, navigationFocus]
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLElement>) => {
-      navigationKeyDown(e);
-      if (!e.defaultPrevented) {
-        editingKeyDown(e);
-      }
-    },
-    [navigationKeyDown, editingKeyDown]
   );
 
   const onContextMenu = useTableContextMenu({
@@ -553,11 +561,28 @@ export const useTable = ({
     [dataSource, onSelectionChange]
   );
 
-  const selectionHookOnRowClick = useSelection({
+  const {
+    onKeyDown: selectionHookKeyDown,
+    onRowClick: selectionHookOnRowClick,
+  } = useSelection({
+    highlightedIndexRef,
     onSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      navigationKeyDown(e);
+      if (!e.defaultPrevented) {
+        editingKeyDown(e);
+      }
+      if (!e.defaultPrevented) {
+        selectionHookKeyDown(e);
+      }
+    },
+    [navigationKeyDown, editingKeyDown, selectionHookKeyDown]
+  );
 
   const handleRowClick = useCallback<RowClickHandler>(
     (row, rangeSelect, keepExistingSelection) => {
@@ -585,7 +610,7 @@ export const useTable = ({
     });
   }, [dataSource, dispatchColumnAction]);
 
-  const handleDrop = useCallback(
+  const handleDropColumnHeader = useCallback(
     (moveFrom: number, moveTo: number) => {
       const column = tableConfig.columns[moveFrom];
 
@@ -604,40 +629,89 @@ export const useTable = ({
     [dataSource.config, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
+  const handleDropRow = useCallback(
+    (dragDropState) => {
+      onDrop?.(dragDropState);
+    },
+    [onDrop]
+  );
+
   const handleDataEdited = useCallback<DataCellEditHandler>(
     async (row, columnName, value) =>
       dataSource.applyEdit(row, columnName, value),
     [dataSource]
   );
 
-  const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
+  // Drag Drop column headers
+  const {
+    onMouseDown: columnHeaderDragMouseDown,
+    draggable: draggableColumn,
+    ...dragDropHook
+  } = useDragDrop({
+    allowDragDrop: true,
+    containerRef,
+    // this is for useDragDropNext
+    draggableClassName: `vuuTableNext`,
+    // extendedDropZone: overflowedItems.length > 0,
+    onDrop: handleDropColumnHeader,
+    orientation: "horizontal",
+    itemQuery: ".vuuTableNextHeaderCell",
+  });
+
+  const handleDragStartRow = useCallback<DragStartHandler>(
+    (dragDropState) => {
+      const { initialDragElement } = dragDropState;
+      const rowIndex = initialDragElement.ariaRowIndex;
+      if (rowIndex) {
+        const index = parseInt(rowIndex);
+        const row = dataRef.current.find((row) => row[0] === index);
+        console.log(`handleDragStartRow setPayload`, {
+          row,
+        });
+        if (row) {
+          dragDropState.setPayload(row);
+        } else {
+          // should we abort the operation ?
+        }
+      }
+      onDragStart?.(dragDropState);
+    },
+    [dataRef, onDragStart]
+  );
+
+  // Drag Drop rowss
+  const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
     useDragDrop({
-      allowDragDrop: true,
+      allowDragDrop,
       containerRef,
-      // this is for useDragDropNext
       draggableClassName: `vuuTableNext`,
-      // extendedDropZone: overflowedItems.length > 0,
-      onDrop: handleDrop,
-      orientation: "horizontal",
-      itemQuery: ".vuuTableNextHeaderCell",
+      id,
+      onDragStart: handleDragStartRow,
+      onDrop: handleDropRow,
+      orientation: "vertical",
+      itemQuery: ".vuuTableNextRow",
     });
 
   const headerProps = {
     onClick: onHeaderClick,
-    onMouseDown: dragDropHookHandleMouseDown,
+    onMouseDown: columnHeaderDragMouseDown,
     onResize: onHeaderResize,
   };
 
   return {
     ...containerProps,
+    draggableColumn,
+    draggableRow,
     onBlur: editingBlur,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
+    onMouseDown: rowDragMouseDown,
     columnMap,
     columns,
     data,
     handleContextMenuAction,
     headerProps,
+    highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,

@@ -164,7 +164,7 @@ export const useList = <Item, S extends SelectionStrategy>({
   const selectionHook = useSelection({
     containerRef,
     defaultSelected,
-    highlightedIdx: highlightedIndex,
+    highlightedIndex: highlightedIndex,
     itemQuery: ".vuuListItem",
     label: `${label}:useList`,
     onClick: onClickProp,

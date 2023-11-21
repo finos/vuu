@@ -1,6 +1,8 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { RowClickHandler } from "@finos/vuu-table";
+import {
+  KeyedColumnDescriptor,
+  RowClickHandler,
+} from "@finos/vuu-datagrid-types";
 import {
   ColumnMap,
   isGroupColumn,

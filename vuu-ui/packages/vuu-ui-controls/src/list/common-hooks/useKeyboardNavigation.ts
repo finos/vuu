@@ -159,6 +159,7 @@ export const useKeyboardNavigation = ({
   onKeyboardNavigation,
   restoreLastFocus,
   selected,
+  // TODO
   viewportItemCount,
 }: NavigationHookProps): NavigationHookResult => {
   const lastFocus = useRef(-1);
