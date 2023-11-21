@@ -93,8 +93,8 @@ export const LayoutManagementProvider = (
       .catch((error: Error) => {
         notify({
           type: NotificationLevel.Error,
-          header: "This Didn't Work",
-          body: "Failed to load metadata from server",
+          header: "Failed to Load Layouts",
+          body: "Could not load list of available layouts",
         });
         console.error("Error occurred while retrieving metadata", error);
       });
@@ -107,8 +107,8 @@ export const LayoutManagementProvider = (
       .catch((error: Error) => {
         notify({
           type: NotificationLevel.Error,
-          header: "This Didn't Work",
-          body: "Failed to load application layout from server",
+          header: "Failed to Load Layout",
+          body: "Could not load your latest view",
         });
         console.error(
           "Error occurred while retrieving application layout",
@@ -146,15 +146,15 @@ export const LayoutManagementProvider = (
           .catch((error: Error) => {
             notify({
               type: NotificationLevel.Error,
-              header: "This Didn't Work",
-              body: "Failed to save layout to server",
+              header: "Failed to Save Layout",
+              body: `Failed to save layout ${metadata.name} to server`,
             });
             console.error("Error occurred while saving layout", error);
           });
       } else {
         notify({
           type: NotificationLevel.Error,
-          header: "This Didn't Work",
+          header: "Failed to Save Layout",
           body: "Cannot save undefined layout",
         });
       }
