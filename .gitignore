@@ -31,6 +31,11 @@ website/build/
 website/i18n/
 website/.docusaurus/
 website/package-lock.json
+website-desktop/translated_docs/
+website-desktop/build/
+website-desktop/i18n/
+website-desktop/.docusaurus/
+website-desktop/package-lock.json
 
 # Generated docs
 docs/contributing.md

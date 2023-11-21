@@ -2,9 +2,7 @@
 
 footer {
   display: var(--vuu-footer-display, block);
-    /* width: var(--vuu-desktop-width); */
-    width: 100%;
-    background-color: var(--vuu-dark-bg-background2);
+    width: var(--vuu-desktop-width);
     border: 1px solid  rgba(255, 255, 255, 0.2) ;
     color: var(--vuu-dark-text-secondary);
     font-family: 'Raleway';
@@ -15,12 +13,10 @@ footer {
   
   .footer-columns {
     align-items: center; 
+    background-color: var(--vuu-dark-bg-background2);
     display: flex;
     justify-content: space-between;
-    margin: 0 auto;
     padding: 100px 193px;
-    width: var(--vuu-desktop-width);
-
   }
   
   .footer-column-logo {

@@ -64,8 +64,8 @@
 }
 
 .vuuFeature-minimized.vuuFeature-swing-all {
-  --vuu-feature-main-opacity: 0;
-  /* --vuu-feature-main-item-transform: rotate(-90deg) translateY(100px); */
+  --vuu-feature-main-opacity: 1;
+  --vuu-feature-main-item-transform: rotate(-90deg) translateY(100px);
 }
 
 .vuuFeature-minimized.vuu-conflation {

@@ -36,14 +36,15 @@ export const execWait = (cmd, cwd = ".") =>
   new Promise((resolve, reject) => {
     // const newProcess = exec(cmd, { cwd }, (err, stdout, stderr) => {
     exec(cmd, { cwd }, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-      }
+      console.log(stdout);
       if (stderr) {
         console.log(`stderr: ${stderr}`);
       }
-      console.log(stdout);
-      resolve();
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
     });
     // newProcess.stdout.on("data", function (data) {
     //   console.log(data);
@@ -104,6 +105,17 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
   }
   return true;
 };
+
+export const writeFile = async (text, path) =>
+  new Promise((resolve, reject) => {
+    fs.writeFile(path, text, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
 
 export const writeJsonFileFile = async (json, path) =>
   new Promise((resolve, reject) => {

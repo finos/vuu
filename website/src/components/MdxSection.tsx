@@ -1,30 +1,17 @@
-import React, { HTMLAttributes } from "react";
-import cx from "classnames";
+import React from "react";
 import Link from "@docusaurus/Link";
 
 import "./MdxSection.css";
 
 const classBase = "vuuMdxSection";
 
-export interface MdxSectionProps {
-  className?: "vuu-section-2-col-1" | "vuu-section-2-col-2";
-  subTitle: string;
-  title: string;
-  titleLink: string;
-}
-
-export const MdxSection = ({
-  className,
-  subTitle,
-  title,
-  titleLink,
-}: MdxSectionProps) => {
+export const MdxSection = ({ subTitle, title, titleLink }) => {
   return (
-    <div className={cx("vuuMdxSection", className)}>
+    <div className="vuuMdxSection">
       <div className={`${classBase}-heading`}>
         <div className={`${classBase}-icon`} />
         <Link className={`${classBase}-title vuu-heading-5`} to={titleLink}>
-          {title}
+          What is a Vuu Server?
         </Link>
       </div>
       <div className={`${classBase}-subTitle`}>{subTitle}</div>

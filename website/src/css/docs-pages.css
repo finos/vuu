@@ -1,48 +1,22 @@
 :root.docs-doc-page {
     --doc-sidebar-width: 300px;
-    --ifm-font-family-monospace: 'Port Lligat Sans';
     --ifm-heading-color: var(--vuu-light-text-primary);
     --ifm-link-color: var(--vuu-light-text-primary);;
     --vuu-footer-display: none;
     --vuu-navbar-height: 125px;
-    --vuu-navbar-logo-height: 61px;
-    --vuu-navbar-logo-width: 140px;
-    --vuu-navbar-padding: 32px;
+    --vuu-navbar-padding: 0px;
   }
   
   .docs-doc-page #__docusaurus {
-    align-items: center;
+    align-items: stretch;
     background-color: white;
     color: var(--vuu-light-text-primary);
     min-height: auto;
     padding-top: var(--vuu-navbar-height);
   }
-
-  .docs-doc-page .navbar {
-    justify-content: center;;
-    display: flex;
-    width: 100%;
-  }
-
-  .docs-doc-page .vuu-nav-home {
-    border-bottom-color: transparent;
-  }
   
-  .docs-doc-page .navbar__inner {
-    width: var(--vuu-desktop-width);
-  }
-  
-  .docs-doc-page .main-wrapper {
-    width: var(--vuu-desktop-width);
-
-  }
-
   .docs-doc-page .container {
     min-height: calc(100vh - var(--vuu-navbar-height));
-  }
-
-  .docs-doc-page .col:only-child {
-    max-width: 100% !important;
   }
 
   .theme-doc-sidebar-container {
@@ -57,50 +31,10 @@
     position: relative;
   }
   
-.menu.thin-scrollbar {
-  padding: 0;
-}
-
   .menu__link--active {
     font-weight: 700;
   }
   
-  .menu__list .menu__list {
-    padding-left: 0;
-  }
-
-  .menu__list-item {
-    padding-right: 30px;
-    position: relative;
-  }
-
-  .theme-doc-sidebar-item-link-level-2 {
-    padding-left: var(--ifm-menu-link-padding-horizontal);
-  }
-
-  .menu__list-item--collapsed:hover,
-  .theme-doc-sidebar-item-link-level-2:hover,
-  .theme-doc-sidebar-item-link-level-1:hover {
-      background-color: #eaebf0;
-  }
-
-
-  .theme-doc-sidebar-item-link-level-1:hover:before,
-  .theme-doc-sidebar-item-link-level-2:hover:before,
-    .menu__list-item--collapsed:hover:before {
-    content: '';
-    background-color: var(--vuu-accent1);
-    position: absolute;
-    height: 100%;
-    top:0;
-    left: var(--vuu-menu-indent,0);
-    width: 4px;
-  }
-
-  .theme-doc-sidebar-item-link-level-2:hover:before {
-left: 0;
-}
-
   .menu__list-item--collapsed .menu__caret:before {
     transform: none;
   }
@@ -131,7 +65,6 @@ left: 0;
     width: 4px;
   }
   
-
   .menu__link--sublist-caret:after,
   .menu__caret:before {
     --vuu-icon-size: 12px;
@@ -148,7 +81,7 @@ left: 0;
   }
   
   :root.docs-doc-page main {
-    padding: 0 32px 0 75px;
+    padding: 0 32px;
   }
 
 .markdown {
@@ -234,77 +167,3 @@ left: 0;
     content: none!important;
   }
 
-.table-of-contents {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 25px;
-  padding-left: 20px;
-  position: relative;
-}
-
-.table-of-contents:before {
-  background-image: radial-gradient(circle, #c6c3d3 1.25px, rgba(255,255,255,0) 2.5px);
-  background-position: left;
-  background-size: 5px 15px;
-  background-repeat: repeat-y;
-  content: '';
-  width: 5px;
-  position: absolute;
-  height: calc(100% - 20px);
-  top: 10px;
-  left:0;
-}
-
-.table-of-contents__link {
-  line-height: 16px;
-  padding: 3px 0px;
-}
-
-.table-of-contents__link:hover {
-  color: inherit;
-}
-
-.table-of-contents__link--active {
-  color: inherit;
-  font-weight: 700;
-}
-
-.theme-code-block {
-  --prism-background-color: var(--vuu-dark-bg-background2) !important;
-}
-
-.token-line {
-  color: rgba(255,255,255, .8) !important;
-}
-
-.token-line .token.function {
-  color: var(--vuu-accent1) !important;
-}
-
-.what-is-a-vuu-server {
-  --vuu-background-image: url(/img/vuu/WhatIsAVuuServer.svg);
-}
-.how-does-it-work {
-  --vuu-background-image: url(/img/vuu/HowDoesItWork.png);
-}
-.what-are-the-trade-offs {
-  --vuu-background-image: url(/img/vuu/WhatAreTheTradeoffs.png);
-}
-.lifecycle {
-  --vuu-background-image: url(/img/vuu/Lifecycle.png);
-}
-.providers {
-  --vuu-background-image: url(/img/vuu/Providers.png);
-}
-.tables {
-  --vuu-background-image: url(/img/vuu/Tables.png);
-}
-.viewports {
-  --vuu-background-image: url(/img/vuu/Viewports.png);
-}
-.filters-sorts-trees {
-  --vuu-background-image: url(/img/vuu/FiltersSortsTrees.png);
-}
-.modules {
-  --vuu-background-image: url(/img/vuu/Modules.png);
-}

@@ -1,8 +1,10 @@
 {
   "scripts": {
     "start": "docusaurus start",
+    "launch:desktop": "node ./scripts/launch-desktop.mjs",
+    "launch:mobile": "node ./scripts/launch-mobile.mjs",
     "swizzle": "docusaurus swizzle",
-    "build": "docusaurus build",
+    "build": "node ./scripts/build-website.mjs",
     "publish-gh-pages": "docusaurus deploy"
   },
   "devDependencies": {

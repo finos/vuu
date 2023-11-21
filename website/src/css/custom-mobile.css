@@ -8,7 +8,6 @@
  @import url(vuu-icons.css);
  @import url(vuu-components.css);
  @import url(docs-pages.css);
-
 :root {
 
   --vuu-heading3-color: var(--vuu-accent1);
@@ -83,6 +82,12 @@ body {
   width: var(--vuu-viewport-width);
 }
 
+/* Assuming the correct class name is 'tocCollapsibleButton' */
+.tocCollapsibleButton {
+  display: none;
+}
+
+
 .navbar {
   overflow: hidden;
   padding: 0;
@@ -110,7 +115,6 @@ body {
 
 .navbar__logo {
   height: var(--vuu-navbar-logo-size);
-
 }
 
 
@@ -135,6 +139,45 @@ body {
   display: none;
 }
 
+.vuu-heading-2 {
+  margin-top: 12px;
+}
+
+
+
+
+.docs-doc-page #__docusaurus{
+  color: white;
+}
+
+.navbar-sidebar__brand {
+  background-color: white;
+}
+
+.navbar-sidebar__brand  .navbar__brand{
+  display: none;
+
+}
+
+
+/* .menu__link--active:before {
+  background-color: var(--vuu-accent2);
+} */
+
+
+.vuu-paragraph-small{
+  font-size: 22px;
+  line-height: var(--vuu-paragraph-small-lineHeight);
+  font-weight: var(--vuu-paragraph-small-fontWeight);
+  padding: 40px 40px;
+  
+}
+
+.vuu-paragraph-large {
+  margin: 30px 0px 30px 0px;
+  padding: 15px 15px;
+}
+
 .vuu-scroll-1-bg {
   background: linear-gradient(180deg, var(--vuu-dark-bg-background2) 0%, var(--vuu-dark-bg-background1) 100%);
   height: 800px;
@@ -145,12 +188,13 @@ body {
   z-index: -1;
 }
 
+
 .vuu-scroll-1 {
   display: flex;
   flex-direction: column;
   height: 800px;
   padding-top: calc(18px + var(--vuu-navbar-height));
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
 }
 
@@ -161,14 +205,13 @@ body {
 }
 
 .vuu-scroll-1-copy {
-  margin-top: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;  
   align-items: center;
   text-align: center;
   height: 100%;
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
 }
 
@@ -204,14 +247,35 @@ body {
 }
 
 .vuu-frame-10 {
-  background-color: var(--vuu-dark-bg-background1);
+  background-color: var(--vuu-dark-bg-background2);
 
   /* content driven, remove later */
   /* height: 476px; */
-  padding-top: 486px;
-  height: 1200px;
+  padding-top: 300px;
+  height: 400px;
 
 }
+
+.vuu-frame-11 {
+  background-color: var(--vuu-dark-bg-background2);
+
+  /* content driven, remove later */
+  /* height: 476px; */
+  padding-top: 180px;
+  height: 1300px;
+
+}
+
+.vuu-frame-12 {
+  background-color: #26035b;
+
+  /* content driven, remove later */
+  /* height: 476px; */
+  padding-top: 40px;
+  height: 400px;
+
+}
+
 
 
 .vuuFeatureLayout {
@@ -237,18 +301,18 @@ body {
 }
 
 .vuu-feature-1 {
-  font-size: 80px;
-  line-height: 80px;
-  font-weight: 300;
+  font-size: 36px;
+  line-height: 34px;
+  font-weight: 400;
 }
 .vuu-feature-1-measure {
-  font-size: 50px;
+  font-size: 36px;
   
 }
 
 .vuu-feature-2 {
-  font-size: 20px;
-  line-height: 33px;
+  font-size: 12px;
+  line-height: 14px;
   font-weight: 400;
 }
 
@@ -337,22 +401,57 @@ body {
   :root {
     --vuu-viewport-width: var(--vuu-mobile-width);
     --vuu-navbar-logo-size: 30px;
-  --ifm-navbar-height: 90px;
-  --vuu-navbar-height: 90px;
+    --ifm-navbar-height: 90px;
+    --vuu-navbar-height: 90px;
 
-  --vuu-navbar-padding: 0px;
+    --vuu-navbar-padding: 0px;
+    --vuu-heading1-fontSize: 38px;
+    --vuu-heading1-fontWeight: 300;
+    --vuu-heading1-lineHeight: 44px;
+
+    --vuu-heading2-fontSize: 26px;
+    --vuu-heading2-lineHeight: 32px;
+    --vuu-heading2-fontWeight: 400;
 
   }
 
+
+  :root.docs-doc-page main {
+    padding: 24px;
+  }
+
+  .navbar .navbar__logo > img {
+    display: none;
+  }
+
+  .vuuRevolvingCaption.mobileRevolvingCaption {
+    margin-left: 0 ;
+  }
+
+  .vuu-revolving-caption-exit {
+    opacity: 0;
+    transition: opacity s linear;
+  }
+  
+  .navbar-sidebar__back{
+  color: black;
+  font-family: var(--vuu-font-family);
+  }
+  
+
+  .markdown{
+    color: black;
   }
 
   .navbar__toggle {
     display: inherit;
-    order: 2
+    /* order: 2 */
   }
 
   .navbar {
-   width: var(--vuu-mobile-width) 
+   width: var(--vuu-mobile-width) ;
+   height: 50px;
+
 
   }
 
@@ -360,7 +459,8 @@ body {
     display: flex;
     justify-content: space-between;
     flex: 1;
-    background : url(../../static/img/vuu/vuu-text.png) no-repeat center center;
+    background : url(../../static/img/vuu/vuu-text-logo.png) no-repeat center center;
+    margin-right: 50px;
   }
   
   .navbar__items--right {
@@ -368,13 +468,118 @@ body {
   }
 
 
-.navbar-sidebar {
-  background-color: var(--vuu-dark-bg-background1);
-}
-.menu__link {
-  color: white;
+  .navbar-sidebar {
+    background-color: white;
+
+  }
+
+
+  .menu {
+    background-color: #ffffff;
+  }
+
+  .menu__link {
+    color: black;
+  }
+
+
+ .navbar__inner {
+  align-items: center;
+  height: var(--vuu-navbar-height);
+  padding: 12px 24px 12px 24px;
+  height: 55px;
+  background-color: var(--vuu-dark-bg-background2);
+
+ }
+
+ .vuuMdxSection-subTitle {
+  margin-bottom: 24px;
+ }
+ 
+ .pagination-nav__link {
+  margin-top: 16px;
+ }
+
+ div[class*=tocCollapsible_node_modules] {
+  display: none;
+ }
+
+
+  .image-container {
+    display: flex; 
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 80px;
+  }
+
+  .image-container img {
+    margin: 0 10px;
+    height: 64px;
+    width: 64px;
+  }
+
+  .content-container {
+    text-align: center;
+    font-size: 18px;
+
+  }
+
+  .content-container p {
+    font-size: 18px;
+    line-height: 25.2px;
+    font-weight: 400;
+
+  }
+
+  .content-container h2 {
+  color: var(--vuu-accent1)
+  }
+
+.footer-mobile{
+
+  font-family: var(--vuu-font-family);
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 80%;
 }
 
-.navbar__inner {
-  background-color: var(--vuu-dark-bg-background1);
+ .vuu-copyright{
+  text-align: center;
+ }
+
+ .footer-column-logo,
+ .footer-finos-logo {
+   display: block;
+   margin: 0 auto;
+ }
+ 
+ .footer-column-logo img{
+  display: block;
+  margin: 10px auto;
+ }
+
+ .footer-finos-logo img {
+   display: block;
+   margin: 10px auto;
+   border-top: 1px solid white;
+   border-bottom: 1px solid white;
+   padding-top: 16px;
+   padding-bottom: 16px;
+
+
+ }
+
+ .vuu-mobile-link-list{
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  opacity: 80%;
+ }
+ 
+
+
 }
+
+/* * {
+  border: 1px solid red;
+} */
