@@ -1,14 +1,12 @@
 import fs from "fs";
 import { execWait } from "../../vuu-ui/scripts/utils.mjs";
 
-console.log(`run mobile build`);
+console.log(`mobile build ...`);
 fs.copyFileSync("./src-mobile/css/custom-mobile.css", "./src/css/custom.css");
 fs.copyFileSync("./src-mobile/pages/index-mobile.js", "./src/pages/index.js");
 await execWait("docusaurus build --config ./docusaurus.config.mobile.js");
 
-console.log("do some stuff here");
-
-console.log(`run desktop build`);
+console.log(`desktop build ...`);
 fs.copyFileSync("./src-desktop/css/custom-desktop.css", "./src/css/custom.css");
 fs.copyFileSync("./src-desktop/pages/index-desktop.js", "./src/pages/index.js");
 await execWait(
