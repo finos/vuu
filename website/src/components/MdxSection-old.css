@@ -1,35 +1,10 @@
 .vuuMdxSection {
-    --vuu-section-width: 100%;
     --ifm-link-hover-color: var(--vuu-accent1);
     --ifm-link-hover-decoration: none;
     --vuu-heading5-color: var(--vuu-accent1);
-    display: inline-block;
-    margin-bottom: 32px;
-    width: var(--vuu-section-width);
 
 }
 
-.vuu-section-2-col-1,
-.vuu-section-2-col-2 {
-    --vuu-section-width: calc(50% - 16px);
-}
-
-.vuu-section-2-col-2 {
-    margin-left: 32px;
-}
-
-@media (max-width: 980px){
-
-    .vuu-section-2-col-1,
-    .vuu-section-2-col-2 {
-        --vuu-section-width: 100%;
-    }
-    
-    .vuu-section-2-col-2 {
-        margin-left: 0;
-    }
-    
-}
 
 .vuuMdxSection-heading {
     align-items: center;
@@ -41,17 +16,15 @@
 }
 
 .vuuMdxSection-icon {
-    background-image: var(--vuu-background-image);
+    background-image: url(/img/finos/joining-treeing.png);
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: center center;
-    height: 64px;
-    width: 64px;
+    height: 50px;
+    width: 50px;
 }
 
 .vuuMdxSection-title {
     padding-top: 12px;
-    white-space: nowrap;
 }
 
 .vuuMdxSection-subTitle {
