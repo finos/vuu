@@ -7,5 +7,7 @@ console.log(desktopPath);
 console.log(`run mobile build`);
 await execWait("docusaurus build");
 
+console.log("do some stuff here");
+
 console.log(`run desktop build`);
-await execWait(`node ./scripts/build-desktop.mjs`, desktopPath);
+await execWait("docusaurus build --our-dir ./build/desktop");
