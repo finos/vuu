@@ -1,3 +1,4 @@
+import { NotificationsProvider } from "@finos/vuu-popups";
 import {
   getAuthDetailsFromCookies,
   LayoutManagementProvider,
@@ -16,9 +17,11 @@ if (!username || !token) {
   redirectToLogin();
 } else {
   ReactDOM.render(
-    <LayoutManagementProvider>
-      <App user={{ username, token }} />
-    </LayoutManagementProvider>,
+    <NotificationsProvider>
+      <LayoutManagementProvider>
+        <App user={{ username, token }} />
+      </LayoutManagementProvider>
+    </NotificationsProvider>,
     document.getElementById("root")
   );
 }
