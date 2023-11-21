@@ -1,7 +1,12 @@
-import { Layout, LayoutMetadata, WithId } from "@finos/vuu-shell";
+import {
+  Layout,
+  LayoutMetadata,
+  LayoutMetadataDto,
+  WithId,
+} from "@finos/vuu-shell";
 import { LayoutJSON, LayoutPersistenceManager } from "@finos/vuu-layout";
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
-import { getUniqueId } from "@finos/vuu-utils";
+import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
 import { defaultLayout } from "./data";
 
@@ -16,21 +21,24 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
     }
   }
   createLayout(
-    metadata: Omit<LayoutMetadata, "id">,
+    metadata: LayoutMetadataDto,
     layout: LayoutJSON
-  ): Promise<string> {
+  ): Promise<LayoutMetadata> {
     return new Promise((resolve) => {
       Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
         ([existingLayouts, existingMetadata]) => {
           const id = getUniqueId();
-          this.appendAndPersist(
+          const newMetadata: LayoutMetadata = {
+            ...metadata,
             id,
-            metadata,
-            layout,
-            existingLayouts,
-            existingMetadata
+            created: formatDate(new Date(), "dd.mm.yyyy"),
+          };
+
+          this.saveLayoutsWithMetadata(
+            [...existingLayouts, { id, json: layout }],
+            [...existingMetadata, newMetadata]
           );
-          resolve(id);
+          resolve(newMetadata);
         }
       );
     });
@@ -38,18 +46,20 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
 
   updateLayout(
     id: string,
-    newMetadata: Omit<LayoutMetadata, "id">,
+    newMetadata: LayoutMetadataDto,
     newLayout: LayoutJSON
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
-          const layouts = existingLayouts.filter((layout) => layout.id !== id);
-          const metadata = existingMetadata.filter(
-            (metadata) => metadata.id !== id
+          const updatedLayouts = existingLayouts.map((layout) =>
+            layout.id === id ? { ...layout, json: newLayout } : layout
           );
-          this.appendAndPersist(id, newMetadata, newLayout, layouts, metadata);
+          const updatedMetadata = existingMetadata.map((metadata) =>
+            metadata.id === id ? { ...metadata, ...newMetadata } : metadata
+          );
+          this.saveLayoutsWithMetadata(updatedLayouts, updatedMetadata);
           resolve();
         })
         .catch((e) => reject(e));
@@ -77,10 +87,14 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       this.validateId(id, "layout")
         .then(() => this.loadLayouts())
         .then((existingLayouts) => {
-          const layouts = existingLayouts.find(
+          const foundLayout = existingLayouts.find(
             (layout) => layout.id === id
-          ) as Layout;
-          resolve(layouts.json);
+          );
+          if (foundLayout) {
+            resolve(foundLayout.json);
+          } else {
+            reject(new Error(`no layout found matching id ${id}`));
+          }
         })
         .catch((e) => reject(e));
     });
@@ -120,19 +134,6 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
       const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
       resolve(layouts || []);
     });
-  }
-
-  private appendAndPersist(
-    newId: string,
-    newMetadata: Omit<LayoutMetadata, "id">,
-    newLayout: LayoutJSON,
-    existingLayouts: Layout[],
-    existingMetadata: LayoutMetadata[]
-  ) {
-    existingLayouts.push({ id: newId, json: newLayout });
-    existingMetadata.push({ id: newId, ...newMetadata });
-
-    this.saveLayoutsWithMetadata(existingLayouts, existingMetadata);
   }
 
   private saveLayoutsWithMetadata(

@@ -1,5 +1,5 @@
 import { LayoutJSON } from "@finos/vuu-layout";
-import { LayoutMetadata } from "@finos/vuu-shell";
+import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 
 export interface LayoutPersistenceManager {
   /**
@@ -11,9 +11,9 @@ export interface LayoutPersistenceManager {
    * @returns Unique identifier assigned to the saved layout
    */
   createLayout: (
-    metadata: Omit<LayoutMetadata, "id">,
+    metadata: LayoutMetadataDto,
     layout: LayoutJSON
-  ) => Promise<string>;
+  ) => Promise<LayoutMetadata>;
 
   /**
    * Overwrites an existing layout and its corresponding metadata with the provided information
@@ -24,7 +24,7 @@ export interface LayoutPersistenceManager {
    */
   updateLayout: (
     id: string,
-    metadata: Omit<LayoutMetadata, "id">,
+    metadata: LayoutMetadataDto,
     layout: LayoutJSON
   ) => Promise<void>;
 

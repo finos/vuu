@@ -81,7 +81,11 @@ export const NewBasketPanel = ({
     <Portal>
       <Popup anchorElement={{ current: document.body }} placement="center">
         <div {...htmlAttributes} className={cx(classBase, className)}>
-          <DialogHeader title="Add New Basket" onClose={onClose} />
+          <DialogHeader
+            title="Add New Basket"
+            onClose={onClose}
+            hideCloseButton
+          />
           <div className={`${classBase}-body`}>
             <FormField>
               <FormFieldLabel>Basket Name</FormFieldLabel>
