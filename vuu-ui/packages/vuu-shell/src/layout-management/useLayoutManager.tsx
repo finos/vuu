@@ -147,7 +147,7 @@ export const LayoutManagementProvider = (
             notify({
               type: NotificationLevel.Error,
               header: "Failed to Save Layout",
-              body: `Failed to save layout ${metadata.name} to server`,
+              body: `Failed to save layout ${metadata.name}`,
             });
             console.error("Error occurred while saving layout", error);
           });
@@ -173,9 +173,17 @@ export const LayoutManagementProvider = (
             active: prev.children?.length ?? 0,
             children: [...(prev.children || []), layoutJson],
           });
+        })
+        .catch((error: Error) => {
+          notify({
+            type: NotificationLevel.Error,
+            header: "Failed to Load Layout",
+            body: "Failed to load the requested layout",
+          });
+          console.error("Error occurred while loading layout", error);
         });
     },
-    [setApplicationLayout]
+    [notify, setApplicationLayout]
   );
 
   return (
