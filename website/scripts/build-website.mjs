@@ -10,4 +10,4 @@ await execWait("docusaurus build");
 console.log("do some stuff here");
 
 console.log(`run desktop build`);
-await execWait("docusaurus build --our-dir ./build/desktop");
+await execWait("docusaurus build --out-dir ./build/desktop");
