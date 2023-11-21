@@ -4,8 +4,6 @@
 const projectName = "VUU";
 // Replace 'project-blueprint' with {project name}
 const projectSlug = "vuu";
-// Replace 'FINOS' with {name of copyright owner}
-const copyrightOwner = "UBS";
 
 module.exports = {
   title: `FINOS ${projectName}`,
@@ -18,7 +16,7 @@ module.exports = {
   customFields: {
     repoUrl: `https://github.com/finos/${projectSlug}`,
   },
-  scripts: ["https://buttons.github.io/buttons.js"],
+  scripts: ["/scripts/redirect.js", "https://buttons.github.io/buttons.js"],
   stylesheets: [
     "https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700&display=swap",
     "https://fonts.googleapis.com/css?family=Raleway:400,500&display=swap",
