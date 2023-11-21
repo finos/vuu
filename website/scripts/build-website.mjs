@@ -1,3 +1,4 @@
+import path from "path";
 import { execWait, writeFile } from "../../vuu-ui/scripts/utils.mjs";
 
 const desktopPath = path.resolve("../website-desktop");
