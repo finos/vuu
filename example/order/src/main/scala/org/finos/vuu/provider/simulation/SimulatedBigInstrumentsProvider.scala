@@ -6,12 +6,12 @@ import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.thread.RunOnceLifeCycleRunner
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
+import org.finos.vuu.provider.DefaultProvider
 
 import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
-class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
+class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends DefaultProvider with StrictLogging {
 
   private val runner: RunOnceLifeCycleRunner = new RunOnceLifeCycleRunner("simulInstrumentsProvider", () => build())
 

@@ -9,6 +9,8 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.InstrumentsService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
+import org.finos.vuu.provider.CompositeProvider
+import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 
 object BasketModule extends DefaultModule {
 
@@ -115,14 +117,19 @@ object BasketModule extends DefaultModule {
       )
       .addTable(
         TableDef(
-          name = "instruments",
+          name = "basketInstruments",
           keyField = "ric",
           columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
             "currency".string(), "exchange".string(), "lotSize".int()),
           VisualLinks(),
           joinFields = "ric"
         ),
-        (table, vs) => new BasketInstrumentProvider(table)
+        (table, vs) => new CompositeProvider(new SimulatedBigInstrumentsProvider(table), new BasketInstrumentProvider(table)),
+        (table, provider, providerContainer, _)
+          => ViewPortDef(
+            columns = table.getTableDef.columns,
+            service = new InstrumentsService(table, providerContainer)
+         )
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
