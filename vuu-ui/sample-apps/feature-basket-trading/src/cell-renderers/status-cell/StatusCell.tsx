@@ -11,6 +11,7 @@ const statusValues: { [key: string]: string } = {
   "fully filled": "filled",
   rejected: "rejected",
   cancelled: "cancelled",
+  PENDING: "pending",
 };
 
 export const StatusCell = ({

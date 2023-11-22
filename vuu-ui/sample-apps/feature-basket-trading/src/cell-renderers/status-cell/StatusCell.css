@@ -30,6 +30,11 @@ width: 80px;
     --status-color: var(--vuu-color-red-50);
 }
 
+.vuuBasketTradingStatusCell-pending {
+    --status-borderColor: var(--vuu-color-gray-30);
+    --status-color: var(--vuu-color-gray-80);
+}
+
 .vuuBasketTradingStatusCell-rejected {
     --vuuIcon-color: white;
     --vuu-icon-size: 14px;

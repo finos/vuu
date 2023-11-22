@@ -1,0 +1,17 @@
+.vuuLayoutStartPanel {
+    font-weight: 700;
+}
+
+.vuuLayoutStartPanel-title {
+    color: var(--vuu-color-gray-80);
+    font-size: 28px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.vuuLayoutStartPanel-text {
+    color: var(--vuu-color-gray-50);
+    font-size: 18px;
+    line-height: 1.5;
+    max-width: 460px;
+}

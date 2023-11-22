@@ -20,6 +20,7 @@ export class Basket {
   fxRateToUsd: number;
   instanceId: string;
   side: string;
+  status: string;
   totalNotional: number;
   totalNotionalUsd: number;
   units: number;
@@ -32,6 +33,7 @@ export class Basket {
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
     this.instanceId = data[columnMap.instanceId] as string;
     this.side = data[columnMap.side] as string;
+    this.status = data[columnMap.status] as string;
     this.totalNotional = data[columnMap.totalNotional] as number;
     this.totalNotionalUsd = data[columnMap.totalNotionalUsd] as number;
     this.units = data[columnMap.units] as number;
@@ -278,7 +280,6 @@ export const useBasketTrading = ({
 
   return {
     ...basketState,
-    activeTabIndex,
     basket,
     basketCount,
     basketDesignContextMenuConfig,

@@ -90,8 +90,7 @@ export const useBasketTradingDataSources = ({
 
   const handleSendToMarket = useCallback(
     (basketInstanceId: string) => {
-      // setActiveTabIndex(1);
-      dataSourceBasketTradingConstituentJoin
+      dataSourceBasketTradingControl
         .rpcCall?.({
           params: [basketInstanceId],
           rpcName: "sendToMarket",
@@ -103,7 +102,7 @@ export const useBasketTradingDataSources = ({
           });
         });
     },
-    [dataSourceBasketTradingConstituentJoin]
+    [dataSourceBasketTradingControl]
   );
 
   const handleTakeOffMarket = useCallback(() => {
