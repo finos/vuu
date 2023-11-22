@@ -20,6 +20,8 @@
         <module>price</module>
         <module>basket</module>
         <module>main-java</module>
+        <module>data-order</module>
+        <module>data-ignite</module>
     </modules>
 
 
