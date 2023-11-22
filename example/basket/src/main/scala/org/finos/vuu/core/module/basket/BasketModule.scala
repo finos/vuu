@@ -24,8 +24,6 @@ object BasketModule extends DefaultModule {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
 
-    val omsApi = OmsApi()
-
     ModuleFactory.withNamespace(NAME)
       .addTable(
         //this table should contain one row for each of .FTSE, .DJI, .HSI, .etc...
