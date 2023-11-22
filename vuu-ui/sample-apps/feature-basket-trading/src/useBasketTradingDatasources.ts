@@ -88,9 +88,23 @@ export const useBasketTradingDataSources = ({
     saveSession,
   ]);
 
-  const handleSendToMarket = useCallback(() => {
-    setActiveTabIndex(1);
-  }, []);
+  const handleSendToMarket = useCallback(
+    (basketInstanceId: string) => {
+      // setActiveTabIndex(1);
+      dataSourceBasketTradingConstituentJoin
+        .rpcCall?.({
+          params: [basketInstanceId],
+          rpcName: "sendToMarket",
+          type: "VIEW_PORT_RPC_CALL",
+        })
+        .then((response) => {
+          console.log(`response from sendToMarket call`, {
+            response,
+          });
+        });
+    },
+    [dataSourceBasketTradingConstituentJoin]
+  );
 
   const handleTakeOffMarket = useCallback(() => {
     setActiveTabIndex(0);

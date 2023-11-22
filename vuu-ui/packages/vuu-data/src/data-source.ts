@@ -6,6 +6,7 @@ import {
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
+  ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuColumns,
@@ -554,6 +555,9 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   menu?: VuuMenu;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  ) => Promise<RpcResponse | undefined>;
+  rpcCall?: (
+    message: Omit<ClientToServerViewportRpcCall, "vpId">
   ) => Promise<RpcResponse | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
