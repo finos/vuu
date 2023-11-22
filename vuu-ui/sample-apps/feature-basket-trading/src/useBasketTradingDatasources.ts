@@ -1,6 +1,6 @@
 import { useViewContext } from "@finos/vuu-layout";
 import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuFilter } from "@finos/vuu-protocol-types";
 
@@ -20,8 +20,6 @@ export const useBasketTradingDataSources = ({
   basketTradingConstituentJoinSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps & { basketInstanceId: string }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-
   const { id, loadSession, saveSession, title } = useViewContext();
 
   const [
@@ -92,6 +90,7 @@ export const useBasketTradingDataSources = ({
     (basketInstanceId: string) => {
       dataSourceBasketTradingControl
         .rpcCall?.({
+          namedParams: {},
           params: [basketInstanceId],
           rpcName: "sendToMarket",
           type: "VIEW_PORT_RPC_CALL",
@@ -106,11 +105,10 @@ export const useBasketTradingDataSources = ({
   );
 
   const handleTakeOffMarket = useCallback(() => {
-    setActiveTabIndex(0);
+    console.log("take off market");
   }, []);
 
   return {
-    activeTabIndex,
     dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,

@@ -116,10 +116,6 @@ export const StackLayout = (props: StackProps) => {
   };
 
   const getTabLabel = (component: ReactElement, idx: number) => {
-    console.log(`StackLayout getTabLabel`, {
-      component,
-      idx,
-    });
     const { id, title } = component.props;
     return loadState(id, "view-title") || title || `Tab ${idx + 1}`;
   };

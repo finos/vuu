@@ -55,8 +55,6 @@ export const Tab = forwardRef(function Tab(
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
 
-  console.log(`Tab ${label}`);
-
   const rootRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);
   const setForkRef = useForkRef(ref, rootRef);

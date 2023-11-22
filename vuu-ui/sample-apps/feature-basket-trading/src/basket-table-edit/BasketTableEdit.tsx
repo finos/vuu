@@ -31,8 +31,6 @@ export const BasketTableEdit = ({
     []
   );
 
-  console.log({ dataSource });
-
   return (
     <ContextMenuProvider {...contextMenuConfig}>
       <TableNext

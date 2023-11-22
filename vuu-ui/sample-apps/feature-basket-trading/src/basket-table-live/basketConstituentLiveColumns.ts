@@ -25,7 +25,17 @@ export default [
   },
   { name: "description", label: "Name", width: 220 },
   { name: "quantity" },
-  { name: "pctFilled", label: "% Filled" },
+  {
+    name: "filledQty",
+    label: "% Filled",
+    type: {
+      name: "number",
+      renderer: {
+        associatedField: "quantity",
+        name: "basket-progress",
+      },
+    },
+  },
   { name: "weighting" },
   { name: "last" },
   { name: "bid", type: ticking },
@@ -45,6 +55,14 @@ export default [
     name: "priceStrategyId",
     type: {
       name: "string",
+      renderer: {
+        lookup: {
+          labelColumn: "priceStrategy",
+          table: { module: "BASKET", table: "priceStrategyType" },
+          valueColumn: "id",
+        },
+        name: "lookup-cell",
+      },
     },
     width: 120,
   },
@@ -55,6 +73,14 @@ export default [
     name: "algo",
     type: {
       name: "string",
+      renderer: {
+        lookup: {
+          labelColumn: "algoType",
+          table: { module: "BASKET", table: "algoType" },
+          valueColumn: "id",
+        },
+        name: "lookup-cell",
+      },
     },
     width: 120,
   },

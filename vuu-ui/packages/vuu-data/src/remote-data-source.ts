@@ -47,6 +47,7 @@ import {
   isVisualLinksAction,
   MenuRpcResponse,
 } from "./vuuUIMessageTypes";
+import { TableSchema } from "./message-utils";
 
 type RangeRequest = (range: VuuRange) => void;
 
@@ -80,6 +81,7 @@ export class RemoteDataSource
   #title: string | undefined;
 
   public table: VuuTable;
+  public tableSchema: TableSchema | undefined;
   public viewport: string | undefined;
 
   constructor({
@@ -182,6 +184,9 @@ export class RemoteDataSource
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.#status = "subscribed";
+      if (message.tableSchema) {
+        this.tableSchema = message.tableSchema;
+      }
       this.clientCallback?.(message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";

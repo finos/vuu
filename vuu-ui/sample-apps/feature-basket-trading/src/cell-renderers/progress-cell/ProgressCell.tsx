@@ -12,9 +12,9 @@ import "./ProgressCell.css";
 
 const classBase = "vuuBasketProgressCell";
 
-const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
+export const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
   const { type } = column;
-  const value = row[column.key];
+  const value = row[columnMap[column.name]];
   let showProgress = false;
   let percentage = 0;
 
@@ -24,7 +24,10 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
       const associatedValue = row[columnMap[associatedField]];
       if (isValidNumber(value) && isValidNumber(associatedValue)) {
         percentage = Math.min((value / associatedValue) * 100, 100);
-        showProgress = isFinite(percentage);
+        if (isNaN(percentage)) {
+          percentage = 0;
+        }
+        showProgress = isFinite(percentage) && value > 0;
       } else {
         // Temp workaround for bug on server that sends aggregated values as strings
         const floatValue = parseFloat(value as string);

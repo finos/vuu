@@ -7,10 +7,10 @@ import "./StatusCell.css";
 const classBase = "vuuBasketTradingStatusCell";
 
 const statusValues: { [key: string]: string } = {
-  "on market": "live",
-  "fully filled": "filled",
-  rejected: "rejected",
-  cancelled: "cancelled",
+  ACKED: "live",
+  FILLED: "filled",
+  REJECTED: "rejected",
+  CANCELLED: "cancelled",
   PENDING: "pending",
 };
 

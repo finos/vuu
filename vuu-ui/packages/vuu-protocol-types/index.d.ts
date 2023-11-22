@@ -394,6 +394,7 @@ export declare type RpcMethod = TypeAheadMethod | "addRowsFromInstruments";
 export interface ClientToServerViewportRpcCall {
   type: "VIEW_PORT_RPC_CALL";
   rpcName: string;
+  namedParams: { [key: string]: VuuRowDataItemType };
   params: string[];
   vpId: string;
 }

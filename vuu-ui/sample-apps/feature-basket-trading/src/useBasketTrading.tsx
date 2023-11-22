@@ -76,7 +76,6 @@ export const useBasketTrading = ({
   }, [load]);
 
   const {
-    activeTabIndex,
     dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
@@ -121,9 +120,6 @@ export const useBasketTrading = ({
             setBasketCount(message.size);
           }
           if (message.rows && message.rows.length > 0) {
-            const basket = new Basket(message.rows[0], columnMapBasketTrading);
-            console.log({ basket, row: message.rows[0] });
-
             setBasket(new Basket(message.rows[0], columnMapBasketTrading));
           }
         }
@@ -207,7 +203,6 @@ export const useBasketTrading = ({
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
       if (basket) {
-        console.log(`handleCommitBasketChange ${columnName} => ${value}`);
         const { dataSourceRow } = basket;
         return dataSourceBasketTradingControl.applyEdit(
           dataSourceRow,
