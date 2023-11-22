@@ -9,9 +9,16 @@ export interface LayoutMetadata extends WithId {
   group: string;
   screenshot: string;
   user: string;
-  date: string;
+  created: string;
 }
+
+export type LayoutMetadataDto = Omit<LayoutMetadata, "id" | "created">;
 
 export interface Layout extends WithId {
   json: LayoutJSON;
 }
+
+export type ApplicationLayout = {
+  username: string,
+  definition: LayoutJSON
+};

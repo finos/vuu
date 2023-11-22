@@ -5,6 +5,7 @@
   align-items: center;
   gap: 6px;
   color: var(--light-text-primary, #15171B);
+  font-family: Nunito Sans A-Variant, serif;
   font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
   font-size: 12px;
   font-weight: 400;

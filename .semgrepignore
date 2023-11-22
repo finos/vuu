@@ -7,6 +7,7 @@ example/order/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstr
 vuu/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
 vuu-ui/packages/vuu-data/src/array-data-source/group-utils.ts
 vuu-ui/packages/vuu-datagrid-extras/src/column-expression-input/column-language-parser/walkExpressionTree.ts
+vuu-ui/packages/vuu-layout/src/layout-persistence/RemoteLayoutPersistenceManager.ts
 vuu-ui/packages/vuu-popups/src/menu/useContextMenu.tsx
 vuu-ui/packages/vuu-table-extras/src/cell-edit-validators/PatternValidator.ts
 vuu-ui/packages/vuu-ui-controls/src/list/Highlighter.tsx
