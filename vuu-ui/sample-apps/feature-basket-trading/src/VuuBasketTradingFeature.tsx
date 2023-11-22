@@ -30,7 +30,6 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   } = props;
 
   const {
-    activeTabIndex,
     basket,
     basketCount,
     basketDesignContextMenuConfig,
@@ -61,6 +60,9 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
       </>
     );
   }
+
+  console.log({ basket });
+  const activeTabIndex = basket?.status === "ON_MARKET" ? 1 : 0;
 
   return (
     <ContextMenuProvider {...contextMenuProps}>

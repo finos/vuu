@@ -2,6 +2,7 @@ import {
   ClientToServerMenuRPC,
   ClientToServerTableList,
   ClientToServerTableMeta,
+  ClientToServerViewportRpcCall,
   VuuRpcRequest,
   VuuTable,
   VuuTableList,
@@ -206,6 +207,7 @@ const asyncRequest = <T = unknown>(
     | ClientToServerMenuRPC
     | ClientToServerTableList
     | ClientToServerTableMeta
+    | ClientToServerViewportRpcCall
 ): Promise<T> => {
   const requestId = uuid();
   worker.postMessage({
@@ -222,7 +224,7 @@ export interface ServerAPI {
   getTableSchema: (table: VuuTable) => Promise<TableSchema>;
   getTableList: () => Promise<VuuTableList>;
   rpcCall: <T = unknown>(
-    msg: VuuRpcRequest | ClientToServerMenuRPC
+    msg: VuuRpcRequest | ClientToServerMenuRPC | ClientToServerViewportRpcCall
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
@@ -263,7 +265,10 @@ const connectedServerAPI: ServerAPI = {
   },
 
   rpcCall: async <T = unknown>(
-    message: VuuRpcRequest | ClientToServerMenuRPC
+    message:
+      | VuuRpcRequest
+      | ClientToServerMenuRPC
+      | ClientToServerViewportRpcCall
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>

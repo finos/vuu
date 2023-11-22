@@ -18,9 +18,9 @@ const radioValues = ["Value 1", "Value 2", "Value 3"] as const;
 type RadioValue = (typeof radioValues)[number];
 
 type SaveLayoutPanelProps = {
+  componentId?: string;
   onCancel: () => void;
   onSave: (layoutMetadata: LayoutMetadataDto) => void;
-  componentId?: string
 };
 
 export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
@@ -45,9 +45,9 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       name: layoutName,
       group,
       screenshot: screenshot ?? "",
-      user: "User"
-    })
-  }
+      user: "User",
+    });
+  };
 
   return (
     <div className={`${classBase}-panelContainer`}>

@@ -639,6 +639,15 @@ export class RemoteDataSource
     }
   }
 
+  async rpcCall(rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">) {
+    if (this.viewport) {
+      return this.server?.rpcCall<MenuRpcResponse>({
+        vpId: this.viewport,
+        ...rpcRequest,
+      } as ClientToServerViewportRpcCall);
+    }
+  }
+
   async menuRpcCall(
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
   ) {

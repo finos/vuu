@@ -55,13 +55,13 @@ export const useNewBasketPanel = ({
         );
         if (rpcCommand) {
           basketDataSource
-            .menuRpcCall({
-              // basketName: basketName,
-              rpcName: rpcCommand.rpcName,
-              type: "VIEW_PORT_MENUS_SELECT_RPC",
-            } as Omit<ClientToServerMenuRPC, "vpId">)
+            .rpcCall?.({
+              params: [basketId, basketName],
+              rpcName: "createBasket",
+              type: "VIEW_PORT_RPC_CALL",
+            })
             .then((response) => {
-              console.log(`rpmMenuResponse`, { response });
+              console.log(`rpcResponse`, { response });
             });
         }
       } else {

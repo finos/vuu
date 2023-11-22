@@ -35,6 +35,7 @@ export const defaultLayout: LayoutJSON = {
     {
       props: {
         id: "tab1",
+        title: "Tab 1",
         className: "vuuShell-Placeholder",
       },
       type: "Placeholder",
