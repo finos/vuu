@@ -2,6 +2,7 @@ import {
   ClientToServerBody,
   ClientToServerMenuRPC,
   ClientToServerMessage,
+  ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
   ServerToClientMessage,
@@ -23,6 +24,7 @@ import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
   isVuuMenuRpcRequest,
+  isVuuRpcRequest,
   stripRequestId,
   TableSchema,
   WithRequestId,
@@ -544,6 +546,23 @@ export class ServerProxy {
       );
     }
   }
+  private viewportRpcCall(
+    message: WithRequestId<ClientToServerViewportRpcCall>
+  ) {
+    const viewport = this.getViewportForClient(message.vpId, false);
+    if (viewport?.serverViewportId) {
+      const [requestId, rpcRequest] =
+        stripRequestId<ClientToServerViewportRpcCall>(message);
+      this.sendMessageToServer(
+        {
+          ...rpcRequest,
+          vpId: viewport.serverViewportId,
+          namedParams: {},
+        },
+        requestId
+      );
+    }
+  }
 
   private rpcCall(message: WithRequestId<VuuRpcRequest>) {
     const [requestId, rpcRequest] = stripRequestId<VuuRpcRequest>(message);
@@ -609,6 +628,8 @@ export class ServerProxy {
           default:
         }
       }
+    } else if (isVuuRpcRequest(message)) {
+      return this.viewportRpcCall(message);
     } else if (isVuuMenuRpcRequest(message)) {
       return this.menuRpcCall(message);
     } else {

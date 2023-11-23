@@ -13,10 +13,9 @@ import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
 
-const defaultCreateNewChild = (index: number) => (
+const defaultCreateNewChild = () => (
   <View
     resizeable
-    title={`Tab ${index}`}
     style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
     header
     closeable
@@ -117,6 +116,10 @@ export const StackLayout = (props: StackProps) => {
   };
 
   const getTabLabel = (component: ReactElement, idx: number) => {
+    console.log(`StackLayout getTabLabel`, {
+      component,
+      idx,
+    });
     const { id, title } = component.props;
     return loadState(id, "view-title") || title || `Tab ${idx + 1}`;
   };

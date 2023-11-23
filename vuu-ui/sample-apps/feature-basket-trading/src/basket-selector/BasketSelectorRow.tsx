@@ -48,8 +48,10 @@ export const BasketSelectorRow = ({
     >
       <div className="vuuTableNextCell" role="cell">
         <span className={`${classBase}-name`}>{basketName}</span>
-        {status === "ON MARKET" ? (
-          <label className={`${classBase}-status`}>{status}</label>
+        {status === "ON_MARKET" ? (
+          <label className={`${classBase}-status`}>
+            {status === "ON_MARKET" ? "ON MARKET" : ""}
+          </label>
         ) : (
           <span />
         )}

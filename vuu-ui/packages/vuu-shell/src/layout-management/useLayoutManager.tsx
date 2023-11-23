@@ -44,6 +44,23 @@ type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
 };
 
+const ensureLayoutHasTitle = (
+  layout: LayoutJSON,
+  layoutMetadata: LayoutMetadata
+) => {
+  if (layout.props?.title !== undefined) {
+    return layout;
+  } else {
+    return {
+      ...layout,
+      props: {
+        ...layout.props,
+        title: layoutMetadata.name,
+      },
+    };
+  }
+};
+
 export const LayoutManagementProvider = (
   props: LayoutManagementProviderProps
 ) => {
@@ -107,7 +124,7 @@ export const LayoutManagementProvider = (
 
     if (layoutToSave) {
       getPersistenceManager()
-        .createLayout(metadata, layoutToSave)
+        .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
         .then((metadata) => {
           //TODO: Show success toast
           setLayoutMetadata((prev) => [...prev, metadata]);

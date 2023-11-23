@@ -20,10 +20,13 @@ const classBase = "Tabs";
 
 const getDefaultTabIcon = () => undefined;
 
-const getDefaultTabLabel = (component: ReactElement, tabIndex: number) =>
-  component.props?.title ??
-  component.props?.["data-tab-title"] ??
-  `Tab ${tabIndex + 1}`;
+const getDefaultTabLabel = (component: ReactElement, tabIndex: number) => {
+  return (
+    component.props?.title ??
+    component.props?.["data-tab-title"] ??
+    `Tab ${tabIndex + 1}`
+  );
+};
 
 const getChildElements = <T extends ReactElement = ReactElement>(
   children: ReactNode
@@ -106,6 +109,7 @@ export const Stack = forwardRef(function Stack(
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
       } = child.props;
+      console.log(`Stack tab label [${idx}] ${getTabLabel(child, idx)}`);
       return (
         <Tab
           ariaControls={childId}

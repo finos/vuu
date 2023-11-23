@@ -624,6 +624,7 @@ var MENU_RPC_TYPES = [
   "VP_EDIT_SUBMIT_FORM_RPC"
 ];
 var isVuuMenuRpcRequest = (message) => MENU_RPC_TYPES.includes(message["type"]);
+var isVuuRpcRequest = (message) => message["type"] === "VIEW_PORT_RPC_CALL";
 var stripRequestId = ({
   requestId,
   ...rest
@@ -1987,6 +1988,20 @@ var ServerProxy = class {
       );
     }
   }
+  viewportRpcCall(message) {
+    const viewport = this.getViewportForClient(message.vpId, false);
+    if (viewport == null ? void 0 : viewport.serverViewportId) {
+      const [requestId, rpcRequest] = stripRequestId(message);
+      this.sendMessageToServer(
+        {
+          ...rpcRequest,
+          vpId: viewport.serverViewportId,
+          namedParams: {}
+        },
+        requestId
+      );
+    }
+  }
   rpcCall(message) {
     const [requestId, rpcRequest] = stripRequestId(message);
     const module = getRpcServiceModule(rpcRequest.service);
@@ -2040,6 +2055,8 @@ var ServerProxy = class {
           default:
         }
       }
+    } else if (isVuuRpcRequest(message)) {
+      return this.viewportRpcCall(message);
     } else if (isVuuMenuRpcRequest(message)) {
       return this.menuRpcCall(message);
     } else {
@@ -2497,7 +2514,6 @@ async function connectToServer(url, protocol, token, username, onConnectionStatu
     //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
       if (isConnectionQualityMetrics(msg)) {
-        console.log("post connection metrics");
         postMessage({ type: "connection-metrics", messages: msg });
       } else if (isConnectionStatusMessage(msg)) {
         onConnectionStatusChange(msg);

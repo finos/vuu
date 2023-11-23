@@ -390,6 +390,14 @@ export declare type TypeAheadMethod =
   | "getUniqueFieldValuesStartingWith";
 
 export declare type RpcMethod = TypeAheadMethod | "addRowsFromInstruments";
+
+export interface ClientToServerViewportRpcCall {
+  type: "VIEW_PORT_RPC_CALL";
+  rpcName: string;
+  params: string[];
+  vpId: string;
+}
+
 export interface ClientToServerGetUniqueValues {
   type: "RPC_CALL";
   method: "getUniqueFieldValues";
@@ -501,6 +509,7 @@ export declare type ClientToServerBody =
   | ClientToServerCreateLink
   | ClientToServerRemoveLink
   | ClientToServerMenuRPC
+  | ClientToServerViewportRpcCall
   | VuuRpcRequest;
 export interface ClientToServerMessage<
   TBody extends ClientToServerBody = ClientToServerBody

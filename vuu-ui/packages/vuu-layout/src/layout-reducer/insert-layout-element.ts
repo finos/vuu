@@ -67,24 +67,38 @@ export function insertIntoContainer(
 
   return React.cloneElement(container, { active }, children);
 }
+
+function getDefaultTitle(index: number, container: ReactElement) {
+  if (typeOf(container) === "Stack") {
+    return `Tab ${index + 1}`;
+  } else {
+    return undefined;
+  }
+}
+
 function insertIntoChildren(
-  container: LayoutModel,
+  container: ReactElement,
   containerChildren: ReactElement[],
   newComponent: ReactElement
 ): [number, ReactElement[]] {
   const containerPath = getProp(container, "path");
   const count = containerChildren?.length;
-  const { id = uuid() } = getProps(newComponent);
+  const { id = uuid(), title = getDefaultTitle(count ?? 0, container) } =
+    getProps(newComponent);
 
   if (count) {
     return [
       count,
       containerChildren.concat(
-        resetPath(newComponent, `${containerPath}.${count}`, { id, key: id })
+        resetPath(newComponent, `${containerPath}.${count}`, {
+          id,
+          key: id,
+          title,
+        })
       ),
     ];
   } else {
-    return [0, [resetPath(newComponent, `${containerPath}.0`, { id })]];
+    return [0, [resetPath(newComponent, `${containerPath}.0`, { id, title })]];
   }
 }
 

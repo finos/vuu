@@ -1,5 +1,6 @@
 import {
   ClientToServerMenuRPC,
+  ClientToServerViewportRpcCall,
   VuuColumnDataType,
   VuuRow,
   VuuRpcRequest,
@@ -24,6 +25,15 @@ const MENU_RPC_TYPES = [
 export const isVuuMenuRpcRequest = (
   message: VuuUIMessageOut | VuuRpcRequest | ClientToServerMenuRPC
 ): message is ClientToServerMenuRPC => MENU_RPC_TYPES.includes(message["type"]);
+
+export const isVuuRpcRequest = (
+  message:
+    | VuuUIMessageOut
+    | VuuRpcRequest
+    | ClientToServerMenuRPC
+    | ClientToServerViewportRpcCall
+): message is ClientToServerViewportRpcCall =>
+  message["type"] === "VIEW_PORT_RPC_CALL";
 
 export type WithRequestId<T> = T & { requestId: string };
 

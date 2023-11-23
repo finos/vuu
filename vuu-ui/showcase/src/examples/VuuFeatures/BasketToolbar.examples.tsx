@@ -53,7 +53,7 @@ export const BasketToolbarDesign = () => {
       BasketSelectorProps={basketSelectorProps}
       basketStatus={basketStatus}
       onCommit={handleCommitBasketChange}
-      onSendToMarket={() => setBasketStatus("on-market")}
+      onSendToMarket={() => setBasketStatus(`on-market`)}
       onTakeOffMarket={() => setBasketStatus("design")}
     />
   );

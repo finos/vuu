@@ -12,22 +12,9 @@ const ticking = {
 };
 
 export default [
-  {
-    label: "B/S",
-    name: "side",
-    pin: "left",
-    type: {
-      name: "string",
-      renderer: {
-        name: "toggle-cell",
-        values: ["BUY", "SELL"],
-      },
-    },
-    width: 60,
-  },
   { name: "ric", pin: "left" },
   {
-    name: "status",
+    name: "orderStatus",
     label: "Status",
     type: {
       name: "string",
@@ -38,26 +25,12 @@ export default [
   },
   { name: "description", label: "Name", width: 220 },
   { name: "quantity" },
+  { name: "pctFilled", label: "% Filled" },
   { name: "weighting" },
   { name: "last" },
   { name: "bid", type: ticking },
   { name: "ask", type: ticking },
   { name: "limitPrice" },
-  {
-    name: "priceStrategyId",
-    type: {
-      name: "string",
-      // renderer: {
-      //   lookup: {
-      //     labelColumn: "priceStrategy",
-      //     table: { module: "BASKET", table: "priceStrategyType" },
-      //     valueColumn: "id",
-      //   },
-      //   name: "dropdown-cell",
-      // },
-    },
-    width: 120,
-  },
   {
     name: "priceSpread",
     label: "Price Spread",
@@ -68,6 +41,13 @@ export default [
       },
     },
   },
+  {
+    name: "priceStrategyId",
+    type: {
+      name: "string",
+    },
+    width: 120,
+  },
   { name: "notionalUsd" },
   { name: "notionalLocal" },
   { name: "venue" },
@@ -75,14 +55,6 @@ export default [
     name: "algo",
     type: {
       name: "string",
-      // renderer: {
-      //   lookup: {
-      //     labelColumn: "algoType",
-      //     table: { module: "BASKET", table: "algoType" },
-      //     valueColumn: "id",
-      //   },
-      //   name: "dropdown-cell",
-      // },
     },
     width: 120,
   },
