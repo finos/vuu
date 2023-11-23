@@ -626,12 +626,12 @@ export class Viewport {
     info?.("suspend");
   }
 
-  resume() {
+  resume(): [number, DataSourceRow[]] {
     this.suspended = false;
     if (debugEnabled) {
       debug?.(`resume: ${this.currentData()}`);
     }
-    return this.currentData();
+    return [this.size, this.currentData()];
   }
 
   currentData() {

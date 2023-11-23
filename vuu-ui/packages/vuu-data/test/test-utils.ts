@@ -7,8 +7,12 @@ import {
   VuuRow,
 } from "@finos/vuu-protocol-types";
 import { ServerProxy } from "../src/server-proxy/server-proxy";
+import { Connection } from "../src/connectionTypes";
 
-import { ServerProxySubscribeMessage } from "../src";
+import {
+  PostMessageToClientCallback,
+  ServerProxySubscribeMessage,
+} from "../src";
 
 export const COMMON_ATTRS = {
   module: "TEST",
@@ -256,6 +260,38 @@ export type SubscriptionDetails = {
   bufferSize?: number;
   key?: string;
   to?: number;
+};
+
+export type Mock = { mockClear: () => void };
+export type MockedConnection = Omit<Connection, "send"> & {
+  send: Connection["send"] & Mock;
+};
+
+export const createFixtures = async (
+  proxyParams: {
+    bufferSize?: number;
+    connection?: MockedConnection;
+    key?: string;
+    to?: number;
+  } = {}
+): Promise<
+  [ServerProxy, PostMessageToClientCallback & Mock, MockedConnection]
+> => {
+  const postMessageToClient = vi.fn();
+  const connection = {
+    send: vi.fn(),
+    status: "ready" as const,
+  };
+
+  const serverProxy = await createServerProxyAndSubscribeToViewport(
+    postMessageToClient,
+    {
+      ...proxyParams,
+      connection,
+    }
+  );
+
+  return [serverProxy, postMessageToClient, connection];
 };
 
 export const createServerProxyAndSubscribeToViewport = async (

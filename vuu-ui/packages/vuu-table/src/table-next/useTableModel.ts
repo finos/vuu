@@ -396,7 +396,6 @@ function setTableSchema(
   state: InternalTableModel,
   { tableSchema }: ColumnActionSetTableSchema
 ) {
-  console.log("setTableSchema");
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {

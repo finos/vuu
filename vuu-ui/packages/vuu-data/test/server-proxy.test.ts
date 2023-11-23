@@ -1,28 +1,20 @@
 import "./global-mocks";
 import { beforeEach, describe, expect, vi, it } from "vitest";
-import {
-  ServerProxy,
-  TEST_setRequestId,
-} from "../src/server-proxy/server-proxy";
+import { TEST_setRequestId } from "../src/server-proxy/server-proxy";
 import { Viewport } from "../src/server-proxy/viewport";
 import {
   COMMON_ATTRS,
   COMMON_ROW_ATTRS,
   COMMON_TABLE_ROW_ATTRS,
-  createServerProxyAndSubscribeToViewport,
+  createFixtures,
   createTableRows,
   createTableGroupRows,
-  createSubscription,
   sizeRow,
   subscribe,
   testSchema,
   updateTableRow,
 } from "./test-utils";
-import {
-  DataSourceDataMessage,
-  DataSourceEnabledMessage,
-  DataSourceSubscribedMessage,
-} from "../src";
+import { DataSourceDataMessage, DataSourceEnabledMessage } from "../src";
 import { VuuRow } from "@finos/vuu-protocol-types";
 
 const SERVER_MESSAGE_CONSTANTS = {
@@ -39,16 +31,7 @@ describe("ServerProxy", () => {
 
   describe("subscription", () => {
     it("sends server requests for metadata, links and menus along with subscription", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      await createServerProxyAndSubscribeToViewport(postMessageToClient, {
-        connection,
-      });
-
+      const [, , connection] = await createFixtures();
       expect(connection.send).toBeCalledTimes(4);
 
       expect(connection.send).toHaveBeenNthCalledWith(1, {
@@ -94,10 +77,8 @@ describe("ServerProxy", () => {
     });
 
     it("initialises Viewport when server ACKS subscription", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy] = await createFixtures();
+
       expect(serverProxy["viewports"].size).toEqual(1);
       expect(
         serverProxy["mapClientToServerViewport"].get("client-vp-1")
@@ -111,8 +92,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends message to client once subscribed", async () => {
-      const postMessageToClient = vi.fn();
-      await createServerProxyAndSubscribeToViewport(postMessageToClient);
+      const [, postMessageToClient] = await createFixtures();
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -136,10 +116,7 @@ describe("ServerProxy", () => {
 
   describe("Data Handling", () => {
     it("sends data to client when initial full dataset is received", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -176,10 +153,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends data to client once all data for client range is available", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -237,10 +211,7 @@ describe("ServerProxy", () => {
 
   describe("Scrolling, no buffer", () => {
     it("scrolls forward, partial viewport", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -302,10 +273,7 @@ describe("ServerProxy", () => {
     });
 
     it("scrolls forward, discrete viewport", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -368,10 +336,7 @@ describe("ServerProxy", () => {
 
   describe("Updates", () => {
     it("Updates, no scrolling, only sends updated rows to client", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -406,18 +371,10 @@ describe("ServerProxy", () => {
 
   describe("Buffering data", () => {
     it("buffers 10 rows, server sends entire buffer set", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 10,
-          connection,
-        }
-      );
+        });
 
       expect(connection.send).toHaveBeenNthCalledWith(2, {
         body: {
@@ -467,19 +424,11 @@ describe("ServerProxy", () => {
     });
 
     it("10 rows in grid, so 11 requested, (render buffer 0), 10 rows in Viewport buffer, page down, narrowing of range by 1 row", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 10,
-          connection,
           to: 11,
-        }
-      );
+        });
 
       expect(connection.send).toHaveBeenNthCalledWith(2, {
         body: {
@@ -560,13 +509,9 @@ describe("ServerProxy", () => {
     });
 
     it("buffers 10 rows, server sends partial buffer set, enough to fulfill client request, followed by rest", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 10,
+      });
 
       postMessageToClient.mockClear();
 
@@ -613,13 +558,9 @@ describe("ServerProxy", () => {
     });
 
     it("buffers 10 rows, server sends partial buffer set, not enough to fulfill client request, followed by rest", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 10,
+      });
 
       postMessageToClient.mockClear();
 
@@ -688,20 +629,11 @@ describe("ServerProxy", () => {
 
   describe("scrolling, with buffer", () => {
     it("scroll to end", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 100,
-          connection,
           to: 20,
-        }
-      );
+        });
 
       postMessageToClient.mockClear();
 
@@ -801,19 +733,10 @@ describe("ServerProxy", () => {
     });
 
     it("returns client range requests from buffer, if available. Calls server when end of buffer is approached", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 10,
-          connection,
-        }
-      );
+        });
 
       postMessageToClient.mockClear();
 
@@ -913,14 +836,9 @@ describe("ServerProxy", () => {
     });
 
     it("records sent to client when enough data available, client scrolls before initial rows rendered", async () => {
-      const postMessageToClient = vi.fn();
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 10,
+      });
 
       postMessageToClient.mockClear();
 
@@ -996,14 +914,9 @@ describe("ServerProxy", () => {
     });
 
     it("data sequence is correct when scrolling backward, data arrives from server in multiple batches", async () => {
-      const postMessageToClient = vi.fn();
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 10,
+      });
 
       postMessageToClient.mockClear();
 
@@ -1121,19 +1034,10 @@ describe("ServerProxy", () => {
     });
 
     it("Scrolling with large buffer. Keys are recomputed on each scroll. Calls server when end of buffer is approached", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 100,
-          connection,
-        }
-      );
+        });
 
       postMessageToClient.mockClear();
 
@@ -1227,17 +1131,10 @@ describe("ServerProxy", () => {
 
   describe("synchronising with server", () => {
     it("does not spam server when buffer limit reached and server request already in-flight", async () => {
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const postMessageToClient = vi.fn();
-      // prettier-ignore
-      const serverProxy = await createServerProxyAndSubscribeToViewport( 
-        postMessageToClient,
-        { bufferSize: 20, connection }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
+          bufferSize: 20,
+        });
 
       TEST_setRequestId(1);
 
@@ -1310,18 +1207,10 @@ describe("ServerProxy", () => {
     });
 
     it("re-requests data from server even before receiving results", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           bufferSize: 20,
-          connection,
-        }
-      );
+        });
 
       // 1) server sends initial set of rows
       serverProxy.handleMessageFromServer({
@@ -1423,15 +1312,10 @@ describe("ServerProxy", () => {
 
   describe("growing and shrinking rowset (Orders)", () => {
     it("initializes with rowset that does not fill client viewport", async () => {
-      const postMessageToClient = vi.fn();
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 100,
-          to: 20,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 100,
+        to: 20,
+      });
 
       postMessageToClient.mockClear();
 
@@ -1469,14 +1353,10 @@ describe("ServerProxy", () => {
     });
 
     it("gradually reduces, then grows viewport", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 100,
-          to: 20,
-        }
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 100,
+        to: 20,
+      });
 
       postMessageToClient.mockClear();
 
@@ -1654,19 +1534,10 @@ describe("ServerProxy", () => {
 
   describe("selection", () => {
     it("single select", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
           to: 20,
-        }
-      );
+        });
 
       postMessageToClient.mockClear();
 
@@ -1739,18 +1610,8 @@ describe("ServerProxy", () => {
 
   describe("filtering", () => {
     it("invokes filter on viewport, which stores current filter criteria", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1790,18 +1651,8 @@ describe("ServerProxy", () => {
     });
 
     it("sets batch mode when a filter has been applied", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1879,18 +1730,8 @@ describe("ServerProxy", () => {
     });
 
     it("handles TABLE_ROWS that preceed filter request together with filtered rows, in same batch", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -1980,16 +1821,8 @@ describe("ServerProxy", () => {
 
   describe("GroupBy", () => {
     it("sets viewport isTree when groupby in place", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        { connection }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -2049,18 +1882,8 @@ describe("ServerProxy", () => {
     });
 
     it("on changing group, sends grouped records as batch, with SIZE record", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -2139,18 +1962,8 @@ describe("ServerProxy", () => {
     });
 
     it("on changing group, sends grouped records as batch, without SIZE record", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -2229,19 +2042,10 @@ describe("ServerProxy", () => {
     });
 
     it("on changing group, it may receive group records in multiple batches", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
+          bufferSize: 100,
+        });
 
       postMessageToClient.mockClear();
 
@@ -2355,18 +2159,8 @@ describe("ServerProxy", () => {
     });
 
     it("ignores regular row updates after grouping is in place", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -2416,19 +2210,10 @@ describe("ServerProxy", () => {
     });
 
     it("processes group row updates", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          bufferSize: 10,
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures({
+          bufferSize: 100,
+        });
 
       postMessageToClient.mockClear();
 
@@ -2529,10 +2314,7 @@ describe("ServerProxy", () => {
 
   describe("SIZE records", () => {
     it("subscribe whilst table is loading", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       postMessageToClient.mockClear();
 
@@ -2655,10 +2437,7 @@ describe("ServerProxy", () => {
 
   describe("on visual linking", async () => {
     it("returns link table rows", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -2743,10 +2522,7 @@ describe("ServerProxy", () => {
 
   describe("debounce mode", () => {
     it("clears pending range request when request is filled", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy] = await createFixtures();
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2791,10 +2567,7 @@ describe("ServerProxy", () => {
     });
 
     it("clears pending range request when only partial set of rows received", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy] = await createFixtures();
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2835,10 +2608,7 @@ describe("ServerProxy", () => {
     });
 
     it("queues pending range requests, until filled, no message to client until current client range filled", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       const viewport = serverProxy["viewports"].get("server-vp-1") as Viewport;
       expect(viewport["pendingRangeRequests"]).toHaveLength(0);
@@ -2920,10 +2690,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends debounce request to client when rows requested before previous request acked", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       // prettier-ignore
       serverProxy.handleMessageFromServer({
@@ -2965,18 +2732,8 @@ describe("ServerProxy", () => {
 
   describe("config", () => {
     it("sets viewport isTree when config includes groupby", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
 
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -3042,10 +2799,7 @@ describe("ServerProxy", () => {
 
   describe("multiple subscriptions", () => {
     it("sends messages to correct clients once subscribed", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -3086,10 +2840,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends data to each client when initial full datasets are received as separate batches", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -3164,10 +2915,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends data to each client when initial full datasets are received interleaved", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -3235,10 +2983,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends data to each client followed by mixed updates", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -3307,10 +3052,7 @@ describe("ServerProxy", () => {
     });
 
     it("sends mixed updates, including size change for one vp", async () => {
-      const postMessageToClient = vi.fn();
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient
-      );
+      const [serverProxy, postMessageToClient] = await createFixtures();
 
       await subscribe(serverProxy, { key: "2" });
 
@@ -3426,18 +3168,8 @@ describe("ServerProxy", () => {
 
   describe("disable and enable", () => {
     it("sends a message to server when client calls disable", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
       // prettier-ignore
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -3485,17 +3217,8 @@ describe("ServerProxy", () => {
     });
 
     it("sends a message to server when client calls enable, re-sends data from cache to client", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
       // prettier-ignore
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -3588,18 +3311,8 @@ describe("ServerProxy", () => {
     });
 
     it("does nothing if client calls enable for a viewport which has not been disabled", async () => {
-      const postMessageToClient = vi.fn();
-      const connection = {
-        send: vi.fn(),
-        status: "ready" as const,
-      };
-
-      const serverProxy = await createServerProxyAndSubscribeToViewport(
-        postMessageToClient,
-        {
-          connection,
-        }
-      );
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
       // prettier-ignore
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
@@ -3620,6 +3333,202 @@ describe("ServerProxy", () => {
       });
       expect(connection.send).toBeCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe("suspend and resume", () => {
+    it("suspend does not send message to server", async () => {
+      const [serverProxy, , connection] = await createFixtures();
+      connection.send.mockClear();
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+      expect(serverProxy["viewports"].get("server-vp-1")?.suspended).toBe(true);
+      expect(connection.send).not.toHaveBeenCalled();
+    });
+
+    it("no updates sent to client whilst suspended", async () => {
+      const [serverProxy, postMessageToClient, connection] =
+        await createFixtures();
+      postMessageToClient.mockClear();
+      connection.send.mockClear();
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            updateTableRow("server-vp-1", 3, 2004),
+            updateTableRow("server-vp-1", 5, 2004),
+          ],
+        },
+      });
+      expect(postMessageToClient).not.toHaveBeenCalled();
+    });
+
+    it("cached data IS updated whilst suspended", async () => {
+      const [serverProxy] = await createFixtures();
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 100),
+            ...createTableRows("server-vp-1", 0, 10),
+          ],
+        },
+      });
+
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            updateTableRow("server-vp-1", 3, 2004),
+            updateTableRow("server-vp-1", 5, 2004),
+          ],
+        },
+      });
+
+      const viewport = serverProxy["viewports"].get("server-vp-1");
+      // prettier-ignore
+      expect(viewport?.["dataWindow"].getAtIndex(3).data).toEqual(["key-03","name 03",2004, true]);
+      // prettier-ignore
+      expect(viewport?.["dataWindow"].getAtIndex(5).data).toEqual(["key-05","name 05",2004, true]);
+    });
+
+    it("resume does not send message to server", async () => {
+      const [serverProxy, , connection] = await createFixtures();
+      connection.send.mockClear();
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+      serverProxy.handleMessageFromClient({
+        type: "resume",
+        viewport: "client-vp-1",
+      });
+      expect(serverProxy["viewports"].get("server-vp-1")?.suspended).toBe(
+        false
+      );
+      expect(connection.send).not.toHaveBeenCalled();
+    });
+
+    it("resume re-sends current data to client even if no updated have been received", async () => {
+      const [serverProxy, postMessageToClient] = await createFixtures();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 100),
+            ...createTableRows("server-vp-1", 0, 10),
+          ],
+        },
+      });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+
+      serverProxy.handleMessageFromClient({
+        type: "resume",
+        viewport: "client-vp-1",
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenLastCalledWith({
+        clientViewportId: "client-vp-1",
+        mode: "batch",
+        // prettier-ignore
+        rows: [
+          [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',1000,true],
+          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",1001,true],
+          [2,2,true,false,0,0,"key-02",0,"key-02","name 02",1002,true],
+          [3,3,true,false,0,0,"key-03",0,"key-03","name 03",1003,true],
+          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",1004,true],
+          [5,5,true,false,0,0,"key-05",0,"key-05","name 05",1005,true],
+          [6,6,true,false,0,0,"key-06",0,"key-06","name 06",1006,true],
+          [7,7,true,false,0,0,"key-07",0,"key-07","name 07",1007,true],
+          [8,8,true,false,0,0,"key-08",0,"key-08","name 08",1008,true],
+          [9,9,true,false,0,0,"key-09",0,"key-09","name 09",1009,true]
+        ],
+        size: 100,
+        type: "viewport-update",
+      });
+    });
+
+    it("any updates received whilst suspended will be included in refresh on resume", async () => {
+      const [serverProxy, postMessageToClient] = await createFixtures();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 100),
+            ...createTableRows("server-vp-1", 0, 10),
+          ],
+        },
+      });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromClient({
+        type: "suspend",
+        viewport: "client-vp-1",
+      });
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            updateTableRow("server-vp-1", 3, 2004),
+            updateTableRow("server-vp-1", 5, 2004),
+          ],
+        },
+      });
+
+      serverProxy.handleMessageFromClient({
+        type: "resume",
+        viewport: "client-vp-1",
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      expect(postMessageToClient).toHaveBeenLastCalledWith({
+        clientViewportId: "client-vp-1",
+        mode: "batch",
+        // prettier-ignore
+        rows: [
+          [0,0,true,false,0,0,'key-00', 0,'key-00', 'name 00',1000,true],
+          [1,1,true,false,0,0,"key-01",0,"key-01","name 01",1001,true],
+          [2,2,true,false,0,0,"key-02",0,"key-02","name 02",1002,true],
+          [3,3,true,false,0,0,"key-03",0,"key-03","name 03",2004,true],
+          [4,4,true,false,0,0,"key-04",0,"key-04","name 04",1004,true],
+          [5,5,true,false,0,0,"key-05",0,"key-05","name 05",2004,true],
+          [6,6,true,false,0,0,"key-06",0,"key-06","name 06",1006,true],
+          [7,7,true,false,0,0,"key-07",0,"key-07","name 07",1007,true],
+          [8,8,true,false,0,0,"key-08",0,"key-08","name 08",1008,true],
+          [9,9,true,false,0,0,"key-09",0,"key-09","name 09",1009,true]
+        ],
+        size: 100,
+        type: "viewport-update",
+      });
     });
   });
 });

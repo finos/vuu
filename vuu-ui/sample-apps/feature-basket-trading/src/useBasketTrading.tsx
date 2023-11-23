@@ -132,12 +132,6 @@ export const useBasketTrading = ({
     }, 800);
   }, [columnMapBasketTrading, dataSourceBasketTradingControl]);
 
-  useEffect(() => {
-    return () => {
-      dataSourceBasketTradingControl.unsubscribe?.();
-    };
-  }, [dataSourceBasketTradingControl]);
-
   const handleCloseNewBasketPanel = useCallback(() => {
     setBasketState((state) => ({
       ...state,
@@ -272,6 +266,13 @@ export const useBasketTrading = ({
     },
     [dataSourceBasketTradingControl]
   );
+
+  useEffect(() => {
+    dataSourceBasketTradingControl.resume?.();
+    return () => {
+      dataSourceBasketTradingControl.suspend?.();
+    };
+  }, [dataSourceBasketTradingControl]);
 
   return {
     ...basketState,

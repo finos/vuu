@@ -1376,7 +1376,7 @@ var Viewport = class {
     if (debugEnabled3) {
       debug3 == null ? void 0 : debug3(\`resume: \${this.currentData()}\`);
     }
-    return this.currentData();
+    return [this.size, this.currentData()];
   }
   currentData() {
     const out = [];
@@ -1901,11 +1901,12 @@ var ServerProxy = class {
       clearTimeout(viewport.suspendTimer);
       viewport.suspendTimer = null;
     }
-    const rows = viewport.resume();
+    const [size, rows] = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
       mode: "batch",
       rows,
+      size,
       type: "viewport-update"
     });
   }

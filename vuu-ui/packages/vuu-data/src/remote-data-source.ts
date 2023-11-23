@@ -244,7 +244,6 @@ export class RemoteDataSource
   }
 
   suspend() {
-    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
     info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "suspended";
@@ -257,11 +256,13 @@ export class RemoteDataSource
   }
 
   resume() {
+    const isDisabled = this.#status.startsWith("disabl");
+    const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
-      if (this.#status === "disabled" || this.#status === "disabling") {
+      if (isDisabled) {
         this.enable();
-      } else if (this.#status === "suspended") {
+      } else if (isSuspended) {
         this.server?.send({
           type: "resume",
           viewport: this.viewport,
@@ -273,7 +274,6 @@ export class RemoteDataSource
   }
 
   disable() {
-    console.log(`disable #${this.viewport}, current status ${this.#status}`);
     info?.(`disable #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "disabling";
@@ -463,7 +463,6 @@ export class RemoteDataSource
   }
 
   set columns(columns: string[]) {
-    console.log(`set columns ${columns.join(",")}`);
     this.#config = {
       ...this.#config,
       columns,
@@ -680,9 +679,6 @@ export class RemoteDataSource
   }
 
   insertRow(key: string, data: VuuDataRowDto) {
-    console.log("RemoteDataSource insertRow ${key}", {
-      data,
-    });
     return this.menuRpcCall({
       rowKey: key,
       data,

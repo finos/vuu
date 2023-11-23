@@ -132,14 +132,8 @@ export const DragDropProvider = ({
     return [sources, targets];
   }, [dragSourcesProp]);
 
-  console.log({
-    dragSources,
-    dropTargets,
-  });
-
   const onDragOut = useCallback<DragOutHandler>(
     (id, dragDropState) => {
-      console.log("DragDropProvider onDragOut");
       // we call releaseItem if and when the dragged item is dropped onto a remote dropTarget
       measuredDropTargetsRef.current = measureDropTargets(dragSources.get(id));
       resumeDrag(dragDropState);
@@ -154,7 +148,6 @@ export const DragDropProvider = ({
 
   const registerDragDropParty = useCallback<DragDropRegistrationFn>(
     (id, resumeDrag, onDrop) => {
-      console.log(`register drag drop agent #${id}`);
       if (resumeDrag) {
         resumeDragHandlers.set(id, resumeDrag);
       } else if (onDrop) {

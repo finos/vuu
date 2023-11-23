@@ -445,11 +445,12 @@ export class ServerProxy {
       clearTimeout(viewport.suspendTimer);
       viewport.suspendTimer = null;
     }
-    const rows = viewport.resume();
+    const [size, rows] = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
       mode: "batch",
       rows,
+      size,
       type: "viewport-update",
     });
   }
