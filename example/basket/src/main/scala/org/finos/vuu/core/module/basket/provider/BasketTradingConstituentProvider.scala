@@ -25,7 +25,7 @@ class BasketTradingConstituentProvider(val table: DataTable, val omsApi: OmsApi)
       val state = if(fill.fillQty == fill.totalFilledQty) OrderStates.FILLED else OrderStates.ACKED
       table.processUpdate(fill.clientOrderId,
         RowWithData(fill.clientOrderId, Map[String, Any](BTC.InstanceIdRic -> fill.clientOrderId,
-            BTC.FilledQty -> fill.fillQty, BTC.OrderStatus -> state))
+            BTC.FilledQty -> fill.totalFilledQty, BTC.OrderStatus -> state))
         ,clock.now())
     }
   })
