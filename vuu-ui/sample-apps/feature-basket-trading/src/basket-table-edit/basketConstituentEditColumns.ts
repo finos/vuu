@@ -29,7 +29,7 @@ export default [
   },
   { name: "ric", pin: "left" },
   { name: "description", label: "Name", width: 220 },
-  { name: "quantity", editable },
+  { name: "quantity" },
   { name: "weighting", editable },
   { name: "last" },
   { name: "bid", type: ticking },
