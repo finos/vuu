@@ -20,8 +20,15 @@ class BasketProvider(val table: DataTable)(implicit lifecycle: LifecycleContaine
       table.processUpdate(id, RowWithData(id, Map(
         Id -> id,
         Name -> id
+
       )), clock.now())
     })
+
+    val id = ".MEGA"
+    table.processUpdate(id, RowWithData(id, Map(
+      Id -> id,
+      Name -> id
+    )), clock.now())
   }
 
 

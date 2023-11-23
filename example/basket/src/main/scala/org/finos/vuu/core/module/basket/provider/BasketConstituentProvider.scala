@@ -23,8 +23,12 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
 
   def updateBasketConstituents(basketId: String): Unit = {
     val list = CsvStaticLoader.loadConstituent(basketId)
-    list.foreach(row => {
+    processTableUpdate(basketId, list)
+    processTableUpdate(".MEGA", list)
+  }
 
+  private def processTableUpdate(basketId: String, list: Array[Map[String, Any]]): Unit = {
+    list.foreach(row => {
       if (row.nonEmpty) {
         val symbol = row("Symbol").asInstanceOf[String]
         val name = row("Name")
@@ -47,7 +51,6 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
         )), clock.now())
       }
     })
-
   }
 
   override val lifecycleId: String = "org.finos.vuu.core.module.basket.provider.BasketConstituentProvider"
