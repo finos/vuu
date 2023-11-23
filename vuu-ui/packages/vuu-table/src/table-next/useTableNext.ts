@@ -18,7 +18,7 @@ import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import {
   DragStartHandler,
-  useDragDropNext as useDragDropImplementation,
+  useDragDropNext as useDragDrop,
 } from "@finos/vuu-ui-controls";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
@@ -98,7 +98,11 @@ export interface TableHookProps
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
-const useNullDragDrop = () => undefined;
+const NULL_DRAG_DROP = {
+  draggable: undefined,
+  onMouseDown: undefined,
+};
+const useNullDragDrop = () => NULL_DRAG_DROP;
 
 const addColumn = (
   tableConfig: TableConfig,
@@ -141,9 +145,7 @@ export const useTable = ({
   // // that logic when dataSource itself changes.
   // dataSourceRef.current = dataSource;
 
-  const useDragDrop = allowDragDrop
-    ? useDragDropImplementation
-    : useNullDragDrop;
+  const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
 
   const [size, setSize] = useState<MeasuredSize | undefined>();
   const handleResize = useCallback((size: MeasuredSize) => {
@@ -687,7 +689,7 @@ export const useTable = ({
 
   // Drag Drop rowss
   const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
-    useDragDrop({
+    useRowDragDrop({
       allowDragDrop,
       containerRef,
       draggableClassName: `vuuTableNext`,
