@@ -19,6 +19,7 @@ import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
+import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
 /*
@@ -34,6 +35,8 @@ object SimulMain extends App with StrictLogging {
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+  val omsApi = OmsApi()
 
   logger.info("[VUU] Starting...")
 
@@ -82,8 +85,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(AuthNModule(authenticator, loginTokenValidator))
     .withModule(EditableModule())
     .withModule(PermissionModule())
-    .withModule(BasketModule())
-
+    .withModule(BasketModule(omsApi))
 
   val vuuServer = new VuuServer(config)
 

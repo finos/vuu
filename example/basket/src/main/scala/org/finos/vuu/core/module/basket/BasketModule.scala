@@ -8,6 +8,7 @@ import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingCon
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
+import org.finos.vuu.order.oms.OmsApi
 
 object BasketModule extends DefaultModule {
 
@@ -19,7 +20,7 @@ object BasketModule extends DefaultModule {
   final val BasketTradingConstituentTable = "basketTradingConstituent"
   final val BasketTradingConstituentJoin = "basketTradingConstituentJoin"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
+  def apply(omsApi: OmsApi)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC, PriceStrategy => PS}
 
@@ -36,15 +37,16 @@ object BasketModule extends DefaultModule {
         (table, _) => new BasketProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketService(table, tableContainer)
+          service = new BasketService(table, tableContainer, omsApi)
         )
       )
       .addTable(
         TableDef(
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
-          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
-            BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
+                                      BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
+                                      BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BC.RicBasketId, BC.Ric
         ),
@@ -54,14 +56,17 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTradingTable,
           keyField = BT.InstanceId,
-          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(), BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(), BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()), // we can join to instruments and other tables to get the rest of the data.....
+          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
+                                      BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
+                                      BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
+          ), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = BT.BasketId
         ),
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketTradingService(table, tableContainer)
+          service = new BasketTradingService(table, tableContainer, omsApi)
         )
       )
       .addTable(
@@ -77,14 +82,16 @@ object BasketModule extends DefaultModule {
                                       BTC.Algo.string(), BTC.AlgoParams.string(),
                                       BTC.PctFilled.double(), BTC.Weighting.double(),
                                       BTC.PriceSpread.int(),
-                                      BTC.LimitPrice.double()
+                                      BTC.LimitPrice.double(),
+                                      BTC.FilledQty.long(),
+                                      BTC.OrderStatus.string()
           ),// we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(
             Link(BTC.InstanceId, BasketTradingTable, BT.InstanceId),
           ),
           joinFields = BTC.InstanceIdRic, BTC.Ric
         ),
-        (table, vs) => new NullProvider(table),
+        (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new BasketTradingConstituentService(table, tableContainer)
@@ -192,6 +199,8 @@ object BasketModule extends DefaultModule {
     final val PctFilled = "pctFilled"
     final val Weighting = "weighting"
     final val PriceSpread = "priceSpread"
+    final val OrderStatus = "orderStatus"
+    final val FilledQty = "filledQty"
   }
 
   object Sides{

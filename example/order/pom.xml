@@ -20,6 +20,15 @@
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.9.36-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
             <version>0.9.36-SNAPSHOT</version>
         </dependency>

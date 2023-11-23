@@ -7,6 +7,7 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
@@ -24,9 +25,11 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
       implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
 
+      val omsApi = OmsApi()
+
       import BasketModule._
 
-      withVuuServer(PriceModule(), BasketModule()) {
+      withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
           vuuServer.login("testUser", "testToken")
@@ -91,10 +94,10 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
           assertVpEq(combineQsForVp(vpBasketTradingCons)) {
             Table(
-              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId"),
-              (10L, "Buy", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (10L, "Sell", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (10L, "Buy", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2)
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+              (10L, "Buy", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
@@ -118,10 +121,10 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           And("assert the basket trading constituent table has flipped sides also")
           assertVpEq(filterByVp(vpBasketTradingCons,updates)) {
             Table(
-              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId"),
-              (10L, "Sell", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (10L, "Buy", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (10L, "Sell", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2)
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+              (10L, "Sell", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
@@ -131,10 +134,10 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           And("assert the basket trading constituent table has increased the units")
           assertVpEq(filterByVp(vpBasketTradingCons, combineQs(vpBasketTrading))) {
             Table(
-              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId"),
-              (100L, "Sell", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (100L, "Buy", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2),
-              (100L, "Sell", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2)
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+              (100L, "Sell", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "Buy", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "Sell", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
       }
