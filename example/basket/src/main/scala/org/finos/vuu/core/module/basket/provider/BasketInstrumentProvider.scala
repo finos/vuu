@@ -19,6 +19,7 @@ class BasketInstrumentProvider(val table: DataTable)(implicit lifecycle: Lifecyc
       val list = CsvStaticLoader.loadConstituent(basketId)
       list.map(row => {
         val ric = row("Symbol").toString
+        val description = row("Name").toString
         val bbg = if (ric.endsWith(".L")) ric.replace(".L", " LN") else if (ric.endsWith(".N")) ric.replace(".N", " US") else if (ric.endsWith(".AS")) ric.replace(".AS", " NL") else ric.replace(".", " ")
         val exchange = if (ric.endsWith(".L")) "XLON/LSE-SETS" else if (ric.endsWith(".N")) "XNGS/NAS-GSM" else if (ric.endsWith(".AS")) "XAMS/ENA-MAIN" else "XNYS/NYS-MAIN"
         val lotsize = 1000
@@ -30,7 +31,7 @@ class BasketInstrumentProvider(val table: DataTable)(implicit lifecycle: Lifecyc
           case ".SP500" => "EUR"
           case _ => "USD"
         }
-        Map("ric" -> ric, "description" -> ric, "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize, "bbg" -> bbg)
+        Map("ric" -> ric, "description" -> description, "currency" -> ccy, "exchange" -> exchange, "lotSize" -> lotsize, "bbg" -> bbg)
 
       })
     }).flatMap(_.toList)
