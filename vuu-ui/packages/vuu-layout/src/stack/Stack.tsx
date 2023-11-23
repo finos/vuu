@@ -158,7 +158,13 @@ export const Stack = forwardRef(function Stack(
           {renderTabs()}
         </Tabstrip>
       ) : null}
-      {child}
+      <div
+        aria-labelledby={`${id}-${active}`}
+        className={`${classBase}-tabPanel`}
+        role="tabpanel"
+      >
+        {child}
+      </div>
     </div>
   );
 });

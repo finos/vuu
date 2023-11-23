@@ -23,12 +23,17 @@ export interface TabMenuProps {
    * The id of associated component, if available
    */
   controlledComponentId?: string;
+  /**
+   * The label of Tab, if available
+   */
+  controlledComponentTitle?: string;
 }
 
 export const TabMenu = ({
   allowClose,
   allowRename,
   controlledComponentId,
+  controlledComponentTitle,
   location,
   onMenuAction,
   onMenuClose,
@@ -48,6 +53,7 @@ export const TabMenu = ({
       },
       {
         controlledComponentId,
+        controlledComponentTitle,
         tabIndex: index,
       },
     ],

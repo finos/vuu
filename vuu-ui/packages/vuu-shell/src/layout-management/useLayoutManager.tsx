@@ -47,7 +47,7 @@ type LayoutManagementProviderProps = {
 
 const ensureLayoutHasTitle = (
   layout: LayoutJSON,
-  layoutMetadata: LayoutMetadata
+  layoutMetadata: LayoutMetadataDto
 ) => {
   if (layout.props?.title !== undefined) {
     return layout;
@@ -76,6 +76,9 @@ export const LayoutManagementProvider = (
     (layout: LayoutJSON, rerender = true) => {
       applicationLayoutRef.current = layout;
       if (rerender) {
+        console.log(`set new applicationLayout`, {
+          layout,
+        });
         forceRefresh({});
       }
     },
@@ -170,8 +173,11 @@ export const LayoutManagementProvider = (
           const { current: prev } = applicationLayoutRef;
           setApplicationLayout({
             ...prev,
-            active: prev.children?.length ?? 0,
             children: [...(prev.children || []), layoutJson],
+            props: {
+              ...prev.props,
+              active: prev.children?.length ?? 0,
+            },
           });
         })
         .catch((error: Error) => {
