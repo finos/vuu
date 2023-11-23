@@ -11,6 +11,7 @@ import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
+import { SubscribeCallback } from "packages/vuu-data/src";
 
 export class Basket {
   basketId: string;
@@ -104,33 +105,37 @@ export const useBasketTrading = ({
     () => buildColumnMap(dataSourceBasketTradingControl.columns),
     [dataSourceBasketTradingControl.columns]
   );
-  const columnMapInstrument = useMemo(
-    () => buildColumnMap(dataSourceInstruments.columns),
-    [dataSourceInstruments.columns]
+
+  const handleMessageFromBasketTradingControl = useCallback<SubscribeCallback>(
+    (message) => {
+      if (message.type === "viewport-update") {
+        if (message.size) {
+          setBasketCount(message.size);
+        }
+        if (message.rows && message.rows.length > 0) {
+          setBasket(new Basket(message.rows[0], columnMapBasketTrading));
+        }
+      }
+    },
+    [columnMapBasketTrading]
   );
 
   useMemo(() => {
+    console.log(
+      `subscribe to BT COntrol ${dataSourceBasketTradingControl.status}`
+    );
     dataSourceBasketTradingControl.subscribe(
       {
         range: { from: 0, to: 1 },
       },
-      (message) => {
-        if (message.type === "viewport-update") {
-          if (message.size) {
-            setBasketCount(message.size);
-          }
-          if (message.rows && message.rows.length > 0) {
-            setBasket(new Basket(message.rows[0], columnMapBasketTrading));
-          }
-        }
-      }
+      handleMessageFromBasketTradingControl
     );
 
     // TEMP server is notsending TABLE_ROWS if size is zero
     setTimeout(() => {
       setBasketCount((count) => (count === -1 ? 0 : count));
     }, 800);
-  }, [columnMapBasketTrading, dataSourceBasketTradingControl]);
+  }, [dataSourceBasketTradingControl, handleMessageFromBasketTradingControl]);
 
   const handleCloseNewBasketPanel = useCallback(() => {
     setBasketState((state) => ({

@@ -1131,7 +1131,9 @@ var Viewport = class {
     const { clientViewportId, pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
-      error2("no matching operation found to complete");
+      error2(
+        \`no matching operation found to complete for requestId \${requestId}\`
+      );
       return;
     }
     const { type } = pendingOperation;
@@ -1902,6 +1904,7 @@ var ServerProxy = class {
       viewport.suspendTimer = null;
     }
     const [size, rows] = viewport.resume();
+    debug4 == null ? void 0 : debug4(\`resumeViewport size \${size}, \${rows.length} rows sent to client\`);
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
       mode: "batch",
@@ -2209,26 +2212,14 @@ var ServerProxy = class {
             const response = viewport.completeOperation(requestId);
             if (response) {
               this.postMessageToClient(response);
-              const rows = viewport.currentData();
-              debugEnabled4 && debug4(
-                \`Enable Response (ServerProxy to Client):  \${JSON.stringify(
-                  response
-                )}\`
-              );
-              if (viewport.size === 0) {
-                debugEnabled4 && debug4(\`Viewport Enabled but size 0, resend  to server\`);
-              } else {
-                this.postMessageToClient({
-                  clientViewportId: viewport.clientViewportId,
-                  mode: "batch",
-                  rows,
-                  size: viewport.size,
-                  type: "viewport-update"
-                });
-                debugEnabled4 && debug4(
-                  \`Enable Response (ServerProxy to Client): send size \${viewport.size} \${rows.length} rows from cache\`
-                );
-              }
+              const [size, rows] = viewport.resume();
+              this.postMessageToClient({
+                clientViewportId: viewport.clientViewportId,
+                mode: "batch",
+                rows,
+                size,
+                type: "viewport-update"
+              });
             }
           }
         }

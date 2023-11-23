@@ -341,7 +341,9 @@ export class Viewport {
     const { clientViewportId, pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
-      error("no matching operation found to complete");
+      error(
+        `no matching operation found to complete for requestId ${requestId}`
+      );
       return;
     }
     const { type } = pendingOperation;
