@@ -47,7 +47,7 @@
 
 .vuuLeftNav-menu-icons-content .vuuLeftNav-menu-secondary,
 .vuuLeftNav-menu-full-content .vuuLeftNav-menu-secondary {
-    display: block;
+    display: flex;
 }
 
 .vuuLeftNav-menu-primary {

@@ -17,7 +17,8 @@ export const DefaultInstrumentTilesFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
+  const { applicationJson: applicationLayout, saveApplicationLayout } =
+    useLayoutManager();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");

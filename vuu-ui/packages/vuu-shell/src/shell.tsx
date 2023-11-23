@@ -61,8 +61,11 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutId = useRef("latest");
-  const { applicationLayout, saveApplicationLayout, loadLayoutById } =
-    useLayoutManager();
+  const {
+    applicationJson: { layout: applicationLayout },
+    saveApplicationLayout,
+    loadLayoutById,
+  } = useLayoutManager();
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {

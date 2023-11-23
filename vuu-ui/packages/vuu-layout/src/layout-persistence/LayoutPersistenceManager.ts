@@ -1,4 +1,4 @@
-import { LayoutJSON } from "@finos/vuu-layout";
+import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 
 export interface LayoutPersistenceManager {
@@ -52,16 +52,18 @@ export interface LayoutPersistenceManager {
   loadMetadata: () => Promise<LayoutMetadata[]>;
 
   /**
-   * Retrieves the application layout which includes all layouts on screen
+   * Retrieves the application JSON. This includes the application layout,
+   * which describes all layouts on screen
    *
-   * @returns Full JSON representation of the application layout
+   * @returns Full JSON representation of the application json
    */
-  loadApplicationLayout: () => Promise<LayoutJSON>;
+  loadApplicationJSON: () => Promise<ApplicationJSON>;
 
   /**
-   * Saves the application layout which includes all layouts on screen
+   * Saves the application JSON.  This includes the application layout,
+   * which describes all layouts on screen
    *
    * @param layout - Full JSON representation of the application layout to be saved
    */
-  saveApplicationLayout: (layout: LayoutJSON) => Promise<void>;
+  saveApplicationJSON: (layout: ApplicationJSON) => Promise<void>;
 }

@@ -19,13 +19,24 @@ export type NavDisplayStatus =
   | "menu-full-content"
   | "menu-icons-content";
 
+const getDisplayStatus = (
+  activeTabIndex: number,
+  expanded: boolean
+): NavDisplayStatus => {
+  if (activeTabIndex === 0) {
+    return expanded ? "menu-full" : "menu-icons";
+  } else {
+    return expanded ? "menu-full-content" : "menu-icons-content";
+  }
+};
+
 export type NavDisplayStatusHandler = (
   navDisplayStatus: NavDisplayStatus
 ) => void;
-interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
+export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
   defaultActiveTabIndex?: number;
-  defaultDisplayStatus?: NavDisplayStatus;
+  defaultExpanded?: boolean;
   features: FeatureProps[];
   tableFeatures: FeatureProps[];
   onChangeDisplayStatus?: NavDisplayStatusHandler;
@@ -42,7 +53,7 @@ type NavState = {
 
 export const LeftNav = ({
   "data-path": path,
-  defaultDisplayStatus = "menu-full",
+  defaultExpanded = true,
   defaultActiveTabIndex = 0,
   features,
   onChangeDisplayStatus,
@@ -57,7 +68,7 @@ export const LeftNav = ({
   const dispatch = useLayoutProviderDispatch();
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,
-    navStatus: defaultDisplayStatus,
+    navStatus: getDisplayStatus(defaultActiveTabIndex, defaultExpanded),
   });
   const [themeClass] = useThemeAttributes();
 
@@ -137,7 +148,7 @@ export const LeftNav = ({
     [dispatch, getWidthAndStatus, navState, path]
   );
 
-  const toggleSize = useCallback(() => {
+  const toggleExpanded = useCallback(() => {
     const { activeTabIndex, navStatus: currentNavStatus } = navState;
     const newNavStatus = toggleNavStatus(currentNavStatus);
     setNavState({
@@ -200,7 +211,7 @@ export const LeftNav = ({
                 ? "chevron-left"
                 : "chevron-right"
             }
-            onClick={toggleSize}
+            onClick={toggleExpanded}
           />
         </div>
       </div>
