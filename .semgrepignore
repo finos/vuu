@@ -27,3 +27,4 @@ vuu-ui/showcase/scripts/build.mjs
 vuu-ui/showcase/scripts/parse-stories.mjs
 vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/utils.mjs
+example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
