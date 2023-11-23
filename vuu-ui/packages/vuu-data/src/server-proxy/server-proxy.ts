@@ -446,6 +446,7 @@ export class ServerProxy {
       viewport.suspendTimer = null;
     }
     const [size, rows] = viewport.resume();
+    debug?.(`resumeViewport size ${size}, ${rows.length} rows sent to client`);
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
       mode: "batch",
@@ -810,31 +811,15 @@ export class ServerProxy {
           if (viewport) {
             const response = viewport.completeOperation(requestId);
             if (response) {
-              this.postMessageToClient(response as DataSourceEnabledMessage);
-              const rows = viewport.currentData();
-              debugEnabled &&
-                debug(
-                  `Enable Response (ServerProxy to Client):  ${JSON.stringify(
-                    response
-                  )}`
-                );
-
-              if (viewport.size === 0) {
-                debugEnabled &&
-                  debug(`Viewport Enabled but size 0, resend  to server`);
-              } else {
-                this.postMessageToClient({
-                  clientViewportId: viewport.clientViewportId,
-                  mode: "batch",
-                  rows,
-                  size: viewport.size,
-                  type: "viewport-update",
-                });
-                debugEnabled &&
-                  debug(
-                    `Enable Response (ServerProxy to Client): send size ${viewport.size} ${rows.length} rows from cache`
-                  );
-              }
+              this.postMessageToClient(response);
+              const [size, rows] = viewport.resume();
+              this.postMessageToClient({
+                clientViewportId: viewport.clientViewportId,
+                mode: "batch",
+                rows,
+                size,
+                type: "viewport-update",
+              });
             }
           }
         }

@@ -131,6 +131,10 @@ export class RemoteDataSource
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
+    if (this.#status === "disabled" || this.#status === "disabling") {
+      this.enable(callback);
+      return;
+    }
     this.clientCallback = callback;
     if (aggregations || columns || filter || groupBy || sort) {
       this.#config = {
@@ -152,11 +156,10 @@ export class RemoteDataSource
 
     if (
       this.#status !== "initialising" &&
-      this.#status !== "unsubscribed" &&
+      this.#status !== "unsubscribed"
       // We can subscribe to a disabled dataSource. No request will be
       // sent to server to create a new VP, just to enable the existing one.
       // The current subscribing client becomes the subscription owner
-      this.#status !== "disabled"
     ) {
       return;
     }
