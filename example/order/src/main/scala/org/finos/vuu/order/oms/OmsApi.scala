@@ -14,7 +14,7 @@ case class CancelOrder(orderId: Int)
 case class Ack(orderId: Int, clientOrderId: String, symbol: String, qty: Long, price: Double)
 case class CancelAck(orderId: Int, clientOrderId: String)
 case class ReplaceAck(orderId: Int, clientOrderId: String)
-case class Fill(orderid: Int, fillQty: Long, fillPrice: Double, clientOrderId: String, totalFilledQty: Long)
+case class Fill(orderid: Int, fillQty: Long, fillPrice: Double, clientOrderId: String, totalFilledQty: Long, orderQty: Long)
 
 trait OmsApi {
   def createOrder(newOrder: NewOrder): Unit

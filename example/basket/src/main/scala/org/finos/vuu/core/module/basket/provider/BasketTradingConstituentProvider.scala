@@ -22,7 +22,7 @@ class BasketTradingConstituentProvider(val table: DataTable, val omsApi: OmsApi)
     override def onCancelAck(ack: CancelAck): Unit = ???
     override def onReplaceAck(ack: ReplaceAck): Unit = ???
     override def onFill(fill: Fill): Unit = {
-      val state = if(fill.fillQty == fill.totalFilledQty) OrderStates.FILLED else OrderStates.ACKED
+      val state = if(fill.orderQty == fill.totalFilledQty) OrderStates.FILLED else OrderStates.ACKED
       table.processUpdate(fill.clientOrderId,
         RowWithData(fill.clientOrderId, Map[String, Any](BTC.InstanceIdRic -> fill.clientOrderId,
             BTC.FilledQty -> fill.totalFilledQty, BTC.OrderStatus -> state))
