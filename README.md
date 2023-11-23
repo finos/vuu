@@ -6,15 +6,17 @@
 
 Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
 
-https://vuu.finos.org/docs/introduction/intro
+<https://vuu.finos.org/docs/introduction/intro>
 
 ## Installation - Server
 
-### Prerequisites
+### Vuu Server
+
+#### Prerequisites
 
 See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have.
 
-OS X & Linux:
+#### OS X & Linux
 
 ```sh
 #In your favourite code directory...
@@ -29,40 +31,41 @@ cd example/main
 mvn exec:exec
 ```
 
-Windows:
+#### Windows
 
 ```sh
 this should be the same as Linux & macos just with windows adjusted paths
 ```
 
-## Installation - Client
+### Layout Server
 
-The UI scripts all run from the vuu/vuu-ui directory.
+Layout management requires persisting layouts. Layouts can either be persisted locally or remotely. The remote implementation requires spinning up a Springboot server instance, but is more robust and reflective of a real-world application.
+
+#### Choosing local or remote
+
+Changing whether local/remote is used is configured with the following flag:
+
+1. Open `finos-vuu\vuu-ui\showcase\vite.config.js` (for Showcase), or `finos-vuu\vuu-ui\sample-apps\app-vuu-example\esbuild.mjs` (for sample app)
+2. Set `"process.env.LOCAL"` flag to `true` for local, or `false` for remote
+
+The local implementation is default. It uses browser local storage. If you have chosen the remote implementation, ensure you are running the remote server.
+
+#### Running the remote server
+
+You can run the remote server from IntelliJ or via CLI. Once running, use `http://localhost:8081/api/swagger` to review endpoints and contracts. It uses an in-memory H2 database, and can be accessed at `http://localhost:8081/api/h2-console`.
+
+##### CLI
 
 ```sh
 #from top-level vuu repo (not vuu child directory in repo)
-cd vuu-ui
-npm install
-npm run build
-npm run build:app
+cd layout-server
+mvn spring-boot:run
 ```
 
-You can now open the demo app in your browser at https://127.0.0.1:8443/index.html
+##### From IntelliJ
 
-Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
-
-```sh
-#from top-level vuu repo (not vuu child directory in repo)
-cd vuu-ui/tools/electron
-npm install
-```
-
-Then, back in vuu-ui, run the launch script"
-
-```sh
-#from vuu/vuu-ui
-npm run launch:demo:electron
-```
+1. Follow steps 3-5 outlined in 'Configuring IntelliJ' below
+2. Select 'LayoutServer' config and click run
 
 ## Configuring IntelliJ
 
@@ -88,6 +91,35 @@ npm run build
 
 8. In IntelliJ, select 'SimulMain' config and click run
 9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
+
+## Installation - Client
+
+The UI scripts all run from the vuu/vuu-ui directory.
+
+```sh
+#from top-level vuu repo (not vuu child directory in repo)
+cd vuu-ui
+npm install
+npm run build
+npm run build:app
+```
+
+You can now open the demo app in your browser at <https://127.0.0.1:8443/index.html>
+
+Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
+
+```sh
+#from top-level vuu repo (not vuu child directory in repo)
+cd vuu-ui/tools/electron
+npm install
+```
+
+Then, back in vuu-ui, run the launch script"
+
+```sh
+#from vuu/vuu-ui
+npm run launch:demo:electron
+```
 
 ## Usage example
 
