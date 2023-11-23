@@ -109,7 +109,6 @@ export const Stack = forwardRef(function Stack(
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
       } = child.props;
-      console.log(`Stack tab label [${idx}] ${getTabLabel(child, idx)}`);
       return (
         <Tab
           ariaControls={childId}

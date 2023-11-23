@@ -2,10 +2,16 @@ import { TableSchema } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { TableNext, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
-import { StatusCell } from "../cell-renderers";
+import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
 import columns from "./basketConstituentLiveColumns";
 
-console.log(`component loaded StatusCell ${typeof StatusCell}`);
+console.log(
+  `component loaded 
+    ProgressCell ${typeof ProgressCell} 
+    SpreadCell ${typeof SpreadCell}
+    StatusCell ${typeof StatusCell}
+    `
+);
 import "./BasketTableLive.css";
 
 const classBase = "vuuBasketTableLive";

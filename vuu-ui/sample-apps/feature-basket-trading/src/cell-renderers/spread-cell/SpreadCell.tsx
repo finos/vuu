@@ -6,7 +6,7 @@ import "./SpreadCell.css";
 
 const classBase = "vuuBasketSpreadCell";
 
-const SpreadCell = ({ columnMap, row }: TableCellProps) => {
+export const SpreadCell = ({ columnMap, row }: TableCellProps) => {
   //TODO what about click handling
 
   const {

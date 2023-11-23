@@ -47,6 +47,7 @@ import {
   isVisualLinksAction,
   MenuRpcResponse,
 } from "./vuuUIMessageTypes";
+import { TableSchema } from "./message-utils";
 
 type RangeRequest = (range: VuuRange) => void;
 
@@ -80,6 +81,7 @@ export class RemoteDataSource
   #title: string | undefined;
 
   public table: VuuTable;
+  public tableSchema: TableSchema | undefined;
   public viewport: string | undefined;
 
   constructor({
@@ -182,6 +184,9 @@ export class RemoteDataSource
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.#status = "subscribed";
+      if (message.tableSchema) {
+        this.tableSchema = message.tableSchema;
+      }
       this.clientCallback?.(message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
@@ -239,7 +244,6 @@ export class RemoteDataSource
   }
 
   suspend() {
-    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
     info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "suspended";
@@ -252,11 +256,13 @@ export class RemoteDataSource
   }
 
   resume() {
+    const isDisabled = this.#status.startsWith("disabl");
+    const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
-      if (this.#status === "disabled" || this.#status === "disabling") {
+      if (isDisabled) {
         this.enable();
-      } else if (this.#status === "suspended") {
+      } else if (isSuspended) {
         this.server?.send({
           type: "resume",
           viewport: this.viewport,
@@ -268,7 +274,6 @@ export class RemoteDataSource
   }
 
   disable() {
-    console.log(`disable #${this.viewport}, current status ${this.#status}`);
     info?.(`disable #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "disabling";
@@ -458,7 +463,6 @@ export class RemoteDataSource
   }
 
   set columns(columns: string[]) {
-    console.log(`set columns ${columns.join(",")}`);
     this.#config = {
       ...this.#config,
       columns,
@@ -675,9 +679,6 @@ export class RemoteDataSource
   }
 
   insertRow(key: string, data: VuuDataRowDto) {
-    console.log("RemoteDataSource insertRow ${key}", {
-      data,
-    });
     return this.menuRpcCall({
       rowKey: key,
       data,

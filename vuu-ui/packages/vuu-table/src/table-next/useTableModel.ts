@@ -26,7 +26,7 @@ import {
   subscribedOnly,
 } from "@finos/vuu-utils";
 
-import { DataSourceConfig } from "@finos/vuu-data";
+import { DataSource, DataSourceConfig } from "@finos/vuu-data";
 import { TableSchema } from "@finos/vuu-data/src/message-utils";
 import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
 import { buildValidationChecker } from "@finos/vuu-ui-controls";
@@ -42,15 +42,15 @@ const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
 
 const getDataType = (
   column: ColumnDescriptor,
-  tableSchema: TableSchema
-): VuuColumnDataType => {
-  const schemaColumn = tableSchema.columns.find(
+  tableSchema?: TableSchema
+): VuuColumnDataType | undefined => {
+  const schemaColumn = tableSchema?.columns.find(
     ({ name }) => name === column.name
   );
   if (schemaColumn) {
     return schemaColumn.serverDataType;
   } else {
-    return column.serverDataType ?? "string";
+    return column.serverDataType;
   }
 };
 
@@ -84,7 +84,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 export interface ColumnActionInit {
   type: "init";
   tableConfig: TableConfig;
-  dataSourceConfig?: DataSourceConfig;
+  dataSource: DataSource;
 }
 
 export interface ColumnActionHide {
@@ -215,12 +215,12 @@ const columnReducer: GridModelReducer = (state, action) => {
 
 export const useTableModel = (
   tableConfigProp: TableConfig,
-  dataSourceConfig?: DataSourceConfig
+  dataSource: DataSource
 ) => {
   const [state, dispatchColumnAction] = useReducer<
     GridModelReducer,
     InitialConfig
-  >(columnReducer, { tableConfig: tableConfigProp, dataSourceConfig }, init);
+  >(columnReducer, { tableConfig: tableConfigProp, dataSource }, init);
 
   const { columns, headings, tableConfig, ...tableAttributes } = state;
 
@@ -234,19 +234,16 @@ export const useTableModel = (
 };
 
 type InitialConfig = {
-  dataSourceConfig?: DataSourceConfig;
+  dataSource: DataSource;
   tableConfig: TableConfig;
 };
 
-function init({
-  dataSourceConfig,
-  tableConfig,
-}: InitialConfig): InternalTableModel {
+function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
-
+  const { config: dataSourceConfig, tableSchema } = dataSource;
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
-    .map(columnDescriptorToKeyedColumDescriptor(tableAttributes));
+    .map(columnDescriptorToKeyedColumDescriptor(tableAttributes, tableSchema));
 
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
@@ -280,15 +277,16 @@ const getLabel = (
 };
 
 const columnDescriptorToKeyedColumDescriptor =
-  (tableAttributes: TableAttributes) =>
+  (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
   (
     column: ColumnDescriptor & { key?: number },
     index: number
   ): KeyedColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       tableAttributes;
+    const serverDataType = getDataType(column, tableSchema);
     const {
-      align = getDefaultAlignment(column.serverDataType),
+      align = getDefaultAlignment(serverDataType),
       key,
       name,
       label = getColumnLabel(column),
@@ -307,6 +305,7 @@ const columnDescriptorToKeyedColumDescriptor =
       key: key ?? index + KEY_OFFSET,
       name,
       originalIdx: index,
+      serverDataType,
       valueFormatter: getValueFormatter(column),
       width: width,
     };

@@ -159,26 +159,26 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel(config, dataSource.config);
+  } = useTableModel(config, dataSource);
 
   useLayoutEffectSkipFirst(() => {
     dispatchColumnAction({
       type: "init",
-      dataSourceConfig: dataSource.config,
+      dataSource,
       tableConfig,
     });
-  }, [tableConfig, dataSource.config, dispatchColumnAction]);
+  }, [tableConfig, dataSource, dispatchColumnAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
       dispatchColumnAction({
         type: "init",
         tableConfig: config,
-        dataSourceConfig: dataSource.config,
+        dataSource,
       });
       onConfigChange?.(config);
     },
-    [dataSource.config, dispatchColumnAction, onConfigChange]
+    [dataSource, dispatchColumnAction, onConfigChange]
   );
 
   /**
@@ -250,11 +250,11 @@ export const useTable = ({
       dispatchColumnAction({
         type: "init",
         tableConfig,
-        dataSourceConfig: dataSource.config,
+        dataSource,
       });
       onConfigChange?.(tableConfig);
     },
-    [dataSource.config, dispatchColumnAction, onConfigChange]
+    [dataSource, dispatchColumnAction, onConfigChange]
   );
 
   const handleDataSourceConfigChanged = useCallback(
@@ -596,7 +596,7 @@ export const useTable = ({
     dispatchColumnAction({
       type: "init",
       tableConfig: config,
-      dataSourceConfig: dataSource.config,
+      dataSource,
     });
   }, [config, dataSource, dispatchColumnAction]);
 
@@ -622,11 +622,11 @@ export const useTable = ({
       dispatchColumnAction({
         type: "init",
         tableConfig: newTableConfig,
-        dataSourceConfig: dataSource.config,
+        dataSource,
       });
       onConfigChange?.(newTableConfig);
     },
-    [dataSource.config, dispatchColumnAction, onConfigChange, tableConfig]
+    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
   const handleDropRow = useCallback(

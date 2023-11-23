@@ -102,7 +102,7 @@ export const Row = memo(
 
           return (
             <Cell
-              key={column.key}
+              key={column.name}
               column={column}
               row={row}
               onClick={

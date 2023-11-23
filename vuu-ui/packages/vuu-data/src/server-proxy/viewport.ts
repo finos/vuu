@@ -308,7 +308,7 @@ export class Viewport {
       sort,
       groupBy,
     }: ServerToClientCreateViewPortSuccess,
-    tableSchema?: TableSchema
+    tableSchema: TableSchema
   ) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
@@ -316,11 +316,6 @@ export class Viewport {
     this.columns = columns;
     this.groupBy = groupBy;
     this.isTree = groupBy && groupBy.length > 0;
-    // this.dataWindow = new ArrayBackedMovingWindow(
-    //   this.clientRange,
-    //   range,
-    //   this.bufferSize
-    // );
     this.dataWindow.setRange(range.from, range.to);
     // TODO retrieve the filterStruct
     return {
@@ -631,12 +626,12 @@ export class Viewport {
     info?.("suspend");
   }
 
-  resume() {
+  resume(): [number, DataSourceRow[]] {
     this.suspended = false;
     if (debugEnabled) {
       debug?.(`resume: ${this.currentData()}`);
     }
-    return this.currentData();
+    return [this.size, this.currentData()];
   }
 
   currentData() {

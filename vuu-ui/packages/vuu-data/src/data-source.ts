@@ -286,7 +286,7 @@ export interface DataSourceSubscribedMessage
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
-  tableSchema: Readonly<TableSchema> | null;
+  tableSchema: Readonly<TableSchema>;
   type: "subscribed";
 }
 
@@ -570,6 +570,7 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
     callback: SubscribeCallback
   ) => Promise<void>;
   table?: VuuTable;
+  readonly tableSchema?: TableSchema;
   title?: string;
   unsubscribe: () => void;
   viewport?: string;

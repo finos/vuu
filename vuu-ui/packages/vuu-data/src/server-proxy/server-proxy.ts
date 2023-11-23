@@ -209,9 +209,7 @@ export class ServerProxy {
       const awaitPendingReponses = Promise.all([
         pendingSubscription,
         pendingTableSchema,
-      ]) as Promise<
-        [ServerToClientCreateViewPortSuccess, TableSchema | undefined]
-      >;
+      ]) as Promise<[ServerToClientCreateViewPortSuccess, TableSchema]>;
       awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
         const { viewPortId: serverViewportId } = subscribeResponse;
         const { status: viewportStatus } = viewport;
@@ -447,11 +445,12 @@ export class ServerProxy {
       clearTimeout(viewport.suspendTimer);
       viewport.suspendTimer = null;
     }
-    const rows = viewport.resume();
+    const [size, rows] = viewport.resume();
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
       mode: "batch",
       rows,
+      size,
       type: "viewport-update",
     });
   }

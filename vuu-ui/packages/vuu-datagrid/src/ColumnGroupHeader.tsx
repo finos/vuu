@@ -183,7 +183,7 @@ const ColumnGroupHeader = React.memo(
               isGroupColumn(column) ? (
                 <GroupHeaderCell
                   column={column}
-                  key={column.key}
+                  key={column.name}
                   onClick={handleHeaderClick}
                   onResize={handleColumnResize}
                   onToggleGroupState={() => console.log("onToggleGroupState")}
@@ -193,7 +193,7 @@ const ColumnGroupHeader = React.memo(
                 <HeaderCell
                   column={column}
                   filter={gridModel.filter}
-                  key={column.key}
+                  key={column.name}
                   onDrag={handleDrag}
                   onResize={handleColumnResize}
                   sorted={sortIndicator(gridModel.sort, column)}
