@@ -257,7 +257,6 @@ public class LayoutIntegrationTest {
         assertThat(metadataRepository.findAll()).isEmpty();
     }
 
-
     @Test
     void createLayout_invalidRequestBodyMetadataIsNull_returns400AndDoesNotCreateLayout()
             throws Exception {

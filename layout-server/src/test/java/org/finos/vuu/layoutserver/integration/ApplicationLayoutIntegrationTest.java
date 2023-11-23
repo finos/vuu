@@ -19,10 +19,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -138,6 +143,37 @@ public class ApplicationLayoutIntegrationTest {
                 .andReturn().getResponse().getErrorMessage();
 
         assertThat(actualError).isEqualTo(MISSING_USERNAME_ERROR_MESSAGE);
+    }
+
+    @Test
+    void persistApplicationLayout_definitionIsNotValidJSON_returns400AndDoesNotPersistLayout()
+        throws Exception {
+        String user = "user";
+        String layoutRequestString =
+            "{\n"
+                + "  \"definition\": invalidJson,\n"
+                + "  \"metadata\": {\n"
+                + "    \"name\": \"string\",\n"
+                + "    \"group\": \"string\",\n"
+                + "    \"screenshot\": \"string\",\n"
+                + "    \"user\": \"string\"\n"
+                + "  }\n"
+                + "}";
+
+        mockMvc.perform(put(BASE_URL).header("username", user)
+                .content(layoutRequestString)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(jsonPath("$.messages", contains(
+                "JSON parse error: Unrecognized token 'invalidJson': was expecting (JSON String, "
+                    + "Number, Array, Object or token 'null', 'true' or 'false'); nested "
+                    + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
+                    + "token 'invalidJson': was expecting (JSON String, Number, Array, Object or "
+                    + "token 'null', 'true' or 'false')\n at [Source: (org.springframework.util"
+                    + ".StreamUtils$NonClosingInputStream); line: 2, column: 29]")));
+
+        assertThat(repository.findAll()).isEmpty();
     }
 
     @Test
