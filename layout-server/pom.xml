@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.finos.vuu</groupId>
     <artifactId>layout-server</artifactId>
-    <version>0.9.36-beta</version>
+    <version>0.9.37-SNAPSHOT</version>
     <name>layout-server</name>
     <description>A remote server to persist layouts for the Vuu client</description>
     <properties>
@@ -76,6 +76,9 @@
 
 
   <scm>
-    <tag>vuu-parent-0.9.36-beta</tag>
+    <tag>HEAD</tag>
+    <connection>scm:git:https://github.com/finos/vuu.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/finos/vuu.git</developerConnection>
+    <url>https://github.com/finos/vuu/tree/master</url>
   </scm>
 </project>
