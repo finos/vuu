@@ -16,7 +16,8 @@ class BasketTradingConstituentProvider(val table: DataTable, val omsApi: OmsApi)
 
   omsApi.addListener(new OmsListener {
     override def onAck(ack: Ack): Unit = {
-      table.processUpdate(ack.clientOrderId, RowWithData(ack.clientOrderId, Map[String, Any](BTC.OrderStatus -> OrderStates.ACKED)),clock.now())
+      table.processUpdate(ack.clientOrderId, RowWithData(ack.clientOrderId, Map[String, Any](BTC.InstanceIdRic -> ack.clientOrderId,
+        BTC.OrderStatus -> OrderStates.ACKED)),clock.now())
     }
     override def onCancelAck(ack: CancelAck): Unit = ???
     override def onReplaceAck(ack: ReplaceAck): Unit = ???
