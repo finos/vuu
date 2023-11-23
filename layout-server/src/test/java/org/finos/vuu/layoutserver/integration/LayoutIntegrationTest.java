@@ -12,6 +12,9 @@ import org.finos.vuu.layoutserver.repository.MetadataRepository;
 import org.finos.vuu.layoutserver.utils.ObjectNodeConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -244,6 +247,62 @@ public class LayoutIntegrationTest {
         assertThat(metadataRepository.findAll()).isEmpty();
     }
 
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void createLayout_invalidRequestBodyMetadataNameIsInvalid_returns400AndDoesNotCreateLayout(
+        String name) throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
+        layoutRequest.getMetadata().getBaseMetadata().setName(name);
+
+        mockMvc.perform(post("/layouts")
+                .content(objectMapper.writeValueAsString(layoutRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.name: Name is required")));
+
+        assertThat(layoutRepository.findAll()).isEmpty();
+        assertThat(metadataRepository.findAll()).isEmpty();
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void createLayout_invalidRequestBodyMetadataGroupIsInvalid_returns400AndDoesNotCreateLayout(
+        String group) throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
+        layoutRequest.getMetadata().getBaseMetadata().setGroup(group);
+
+        mockMvc.perform(post("/layouts")
+                .content(objectMapper.writeValueAsString(layoutRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.group: Group is required")));
+
+        assertThat(layoutRepository.findAll()).isEmpty();
+        assertThat(metadataRepository.findAll()).isEmpty();
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void createLayout_invalidRequestBodyUserIsInvalid_returns400AndDoesNotCreateLayout(String user)
+        throws Exception {
+        LayoutRequestDto layoutRequest = createValidLayoutRequest();
+        layoutRequest.getMetadata().getBaseMetadata().setUser(user);
+
+        mockMvc.perform(post("/layouts")
+                .content(objectMapper.writeValueAsString(layoutRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.user: User is required")));
+    }
 
     @Test
     void createLayout_invalidRequestBodyUnexpectedFormat_returns400() throws Exception {
@@ -364,6 +423,72 @@ public class LayoutIntegrationTest {
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(
                 layout);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void updateLayout_invalidRequestBodyMetadataNameIsInvalid_returns400AndLayoutDoesNotChange(
+        String name) throws Exception {
+        Layout layout = createDefaultLayoutInDatabase();
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+
+        LayoutRequestDto request = createValidLayoutRequest();
+        request.getMetadata().getBaseMetadata().setName(name);
+
+        mockMvc.perform(put("/layouts/{id}", layout.getId())
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.name: Name is required")));
+
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void updateLayout_invalidRequestBodyMetadataGroupIsInvalid_returns400AndDoesNotUpdateLayout(
+        String group) throws Exception {
+        Layout layout = createDefaultLayoutInDatabase();
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+
+        LayoutRequestDto request = createValidLayoutRequest();
+        request.getMetadata().getBaseMetadata().setGroup(group);
+
+        mockMvc.perform(put("/layouts/{id}", layout.getId())
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.group: Group is required")));
+
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"  ", "\t", "\n"})
+    void updateLayout_invalidRequestBodyMetadataUserIsNullOrEmpty_returns400AndDoesNotUpdateLayout(
+        String user) throws Exception {
+        Layout layout = createDefaultLayoutInDatabase();
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+
+        LayoutRequestDto request = createValidLayoutRequest();
+        request.getMetadata().getBaseMetadata().setUser(user);
+
+        mockMvc.perform(put("/layouts/{id}", layout.getId())
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(
+                jsonPath("$.messages", contains("metadata.baseMetadata.user: User is required")));
+
+        assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
     }
 
     @Test
