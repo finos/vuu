@@ -2,7 +2,7 @@
   "scripts": {
     "start": "docusaurus start",
     "swizzle": "docusaurus swizzle",
-    "build": "docusaurus build",
+    "build": "node ./scripts/build-website.mjs",
     "publish-gh-pages": "docusaurus deploy"
   },
   "devDependencies": {

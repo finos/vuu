@@ -22,7 +22,7 @@ The command should open your browser and point to `http://localhost:3000`.
 
 You can configure Netlify using your own GitHub account, pointing to a personal repository (or fork); when adding a new site, please use the following configuration:
 
-- Working directory: `website`
+- Woeking directory: `website`
 - Build command: `yarn build`
 - Build directory: `website/build`
 

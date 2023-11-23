@@ -56,7 +56,7 @@ export const DataAnimation = ({
 
   // prettier-ignore
   return (
-    <div className="vuuDataAnimation">
+    <div>
     <svg
       id="vuu-data-animation"
       ref={svgRef}

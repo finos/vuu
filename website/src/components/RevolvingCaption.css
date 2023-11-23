@@ -21,7 +21,7 @@
     opacity: 1;
   }
 
-  .vuu-revolving-caption-exit {
+.vuu-revolving-caption-exit {
     opacity: 0;
     transition: opacity .6s linear;
 }

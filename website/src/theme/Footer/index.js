@@ -12,32 +12,49 @@ const Footer = () => {
           <img src={VuuLogo} alt="Image 1" width="80" />
           <p className="vuu-copyright">
             {" "}
-            Copyright &copy; {new Date().getFullYear()} VUU
+            Copyright &copy; {new Date().getFullYear()} VUU - UBS
           </p>
         </div>
         <div className="vuu-separator" />
         <div className="footer-column">
-          <a href="https://www.finos.org/about-us">
-            <img className="footer-finos-logo" src={FinosLogo} alt="FINOS" />
-          </a>
+          <img className="footer-finos-logo" src={FinosLogo} alt="Image 2" />
         </div>
         <div className="vuu-separator" />
         <div className="footer-column">
           <ul className="vuu-link-list">
             <li>
-              <a href="/docs/introduction/intro">Docs</a>
+              <a href="/page1">Docs</a>
             </li>
             <li>
-              <a href="/docs/getting_started">Getting Started</a>
+              <a href="/page2">Getting Started</a>
             </li>
             <li>
-              <a href="/docs/roadmap">Road Map</a>
+              <a href="/page2">Road Map</a>
             </li>
             <li>
-              <a href="/docs/team">Team</a>
+              <a href="/page2">Team</a>
             </li>
             <li>
-              <a href="https://www.finos.org/about-us">About FINOS</a>
+              <a href="/page2">About FINOS</a>
+            </li>
+          </ul>
+        </div>
+        <div className="footer-column">
+          <ul className="vuu-link-list">
+            <li>
+              <a href="/page1">Docs</a>
+            </li>
+            <li>
+              <a href="/page2">Getting Started</a>
+            </li>
+            <li>
+              <a href="/page2">Road Map</a>
+            </li>
+            <li>
+              <a href="/page2">Team</a>
+            </li>
+            <li>
+              <a href="/page2">About FINOS</a>
             </li>
           </ul>
         </div>
