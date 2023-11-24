@@ -98,7 +98,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   }
 
   def findWindow(startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
-    val query = childOrderCache.query(new SqlFieldsQuery(s"select * from ChildOrder order by id limit $rowCount offset $startIndex"))
+    val query = childOrderCache.query(new SqlFieldsQuery(s"select * from ChildOrder limit $rowCount offset $startIndex"))
 
     val buffer = mutable.ListBuffer[ChildOrder]()
     query.forEach(item => buffer.addOne(toChildOrder(item)))
