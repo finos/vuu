@@ -6,10 +6,12 @@ import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
+import org.finos.vuu.core.module.basket.result.ErrorReason
 import org.finos.vuu.core.table.{DataTable, JoinTable, RowWithData, TableContainer}
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
+
 
 trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
@@ -46,7 +48,9 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
   def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
     updateSelected(selection, Map(ColumnName.Side -> Side.Buy))
   }
-  def addConstituents(rics: Array[String])(ctx: RequestContext): ViewPortEditAction = {
+
+  //this is RCP call and method name is part of contract with UI
+  def addConstituents(rics: Array[String])(ctx: RequestContext): ViewPortAction = {
     if(table.size() == 0)
       ViewPortEditFailure(s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported")
 
@@ -65,7 +69,11 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
         ric = ric))
 
       //todo should we guard against adding row for ric that already exist?
-      updateJoinTable(newRows)
+      updateJoinTable(newRows) match {
+        case Right(_) => ViewPortRpcSuccess()
+        case Left(errorReason) =>
+          ViewPortRpcFailure(errorReason.reason)
+      }
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
@@ -85,7 +93,6 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
   }
 
   private def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-
     ViewPortEditSuccess()
   }
 
@@ -123,15 +130,15 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
     joinTable.sourceTables.get(baseTableDef.name)
   }
 
-  private def updateJoinTable(rows: Array[RowWithData]): ViewPortEditAction = {
+  private def updateJoinTable(rows: Array[RowWithData]): Either[ErrorReason, Unit] = {
     getBaseTable() match {
       case Some(baseTable: DataTable) =>
         rows.foreach(row =>
           baseTable.processUpdate(row.key, row, clock.now())
         )
-        ViewPortEditSuccess()
+        Right()
       case None =>
-        ViewPortEditFailure(s"Could not find base table for ${table.name}")
+        Left(ErrorReason(s"Could not find base table for ${table.name}"))
     }
   }
 
@@ -142,7 +149,13 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
       val sourceTableKey = Map(ColumnName.InstanceIdRic -> key)
       RowWithData(key, sourceTableKey ++ updates)
     })
-    updateJoinTable(updateRows.toArray)
+
+    updateJoinTable(updateRows.toArray) match {
+      case Right(_) => NoAction()
+      case Left(errorReason) =>
+        logger.info(s"Could not update selection values${errorReason.reason}")
+        NoAction()
+    }
   }
 
   private def mkTradingConstituentRow(basketTradeInstanceId: String, sourceBasketId: String, tradeUnit: Int, ric: String): RowWithData = {
