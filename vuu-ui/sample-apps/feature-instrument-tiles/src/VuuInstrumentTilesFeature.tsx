@@ -10,7 +10,6 @@ import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
 import { InstrumentTile } from "./InstrumentTile";
 import { InstrumentTileContainer } from "./InstrumentTileContainer";
-// import { useDataSource } from "@finos/vuu-data-react";
 import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
@@ -18,13 +17,13 @@ import "./VuuInstrumentTilesFeature.css";
 const classBase = "VuuInstrumentTilesFeature";
 
 export interface InstrumentTilesFeatureProps {
-  tableSchema: TableSchema;
+  instrumentPricesSchema: TableSchema;
 }
 
 const { KEY } = metadataKeys;
 
 const VuuInstrumentTilesFeature = ({
-  tableSchema,
+  instrumentPricesSchema,
 }: InstrumentTilesFeatureProps) => {
   const { id, save, loadSession, saveSession, title } = useViewContext();
 
@@ -65,8 +64,8 @@ const VuuInstrumentTilesFeature = ({
     ds = new RemoteDataSource({
       bufferSize: 200,
       viewport: id,
-      table: tableSchema.table,
-      columns: tableSchema.columns.map((col) => col.name),
+      table: instrumentPricesSchema.table,
+      columns: instrumentPricesSchema.columns.map((col) => col.name),
       filter,
       title,
     });
@@ -79,8 +78,8 @@ const VuuInstrumentTilesFeature = ({
     id,
     loadSession,
     saveSession,
-    tableSchema.columns,
-    tableSchema.table,
+    instrumentPricesSchema.columns,
+    instrumentPricesSchema.table,
     title,
   ]);
 
