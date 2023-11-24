@@ -4,6 +4,7 @@ import {
 } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import {
+  LayoutManagementProvider,
   LeftNav,
   Shell,
   ShellContextProvider,
@@ -17,6 +18,7 @@ import {
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
 import { useFeatures } from "./useFeatures";
+import { NotificationsProvider } from "@finos/vuu-popups";
 
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import "./App.css";
@@ -59,33 +61,37 @@ export const App = ({ user }: { user: VuuUser }) => {
   );
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildMenuOptions}
-    >
-      <DragDropProvider dragSources={dragSource}>
-        <ShellContextProvider
-          value={{ getDefaultColumnConfig, handleRpcResponse }}
+    <NotificationsProvider>
+      <LayoutManagementProvider>
+        <ContextMenuProvider
+          menuActionHandler={handleMenuAction}
+          menuBuilder={buildMenuOptions}
         >
-          <Shell
-            LayoutProps={layoutProps}
-            className="App"
-            leftSidePanelLayout="full-height"
-            leftSidePanel={
-              <LeftNav
-                features={features}
-                tableFeatures={tableFeatures}
-                style={{ width: 240 }}
-              />
-            }
-            saveUrl="https://localhost:8443/api/vui"
-            serverUrl={serverUrl}
-            user={user}
-          >
-            {dialog}
-          </Shell>
-        </ShellContextProvider>
-      </DragDropProvider>
-    </ContextMenuProvider>
+          <DragDropProvider dragSources={dragSource}>
+            <ShellContextProvider
+              value={{ getDefaultColumnConfig, handleRpcResponse }}
+            >
+              <Shell
+                LayoutProps={layoutProps}
+                className="App"
+                leftSidePanelLayout="full-height"
+                leftSidePanel={
+                  <LeftNav
+                    features={features}
+                    tableFeatures={tableFeatures}
+                    style={{ width: 240 }}
+                  />
+                }
+                saveUrl="https://localhost:8443/api/vui"
+                serverUrl={serverUrl}
+                user={user}
+              >
+                {dialog}
+              </Shell>
+            </ShellContextProvider>
+          </DragDropProvider>
+        </ContextMenuProvider>
+      </LayoutManagementProvider>
+    </NotificationsProvider>
   );
 };

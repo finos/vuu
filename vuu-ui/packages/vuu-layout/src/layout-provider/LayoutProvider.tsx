@@ -4,7 +4,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -32,6 +31,7 @@ const withDropTarget = (props: any) => props.dropTarget;
 const shouldSave = (action: LayoutReducerAction) =>
   [
     "drag-drop",
+    "layout-resize",
     "remove",
     "set-title",
     "splitter-resize",
@@ -49,6 +49,8 @@ const getLayoutChangeReason = (
       } else {
         return "switch-active-tab";
       }
+    case "layout-resize":
+      return "resize-application-chrome";
     case "save":
       return "save-feature-props";
     case "drag-drop":

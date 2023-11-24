@@ -8,7 +8,7 @@ import React, {
 import {
   ApplicationJSON,
   ApplicationSettings,
-  defaultApplicationJson,
+  loadingApplicationJson,
   LayoutJSON,
   LayoutPersistenceManager,
   LocalLayoutPersistenceManager,
@@ -39,7 +39,7 @@ export const LayoutManagementContext = React.createContext<{
 }>({
   layoutMetadata: [],
   saveLayout: () => undefined,
-  applicationJson: defaultApplicationJson,
+  applicationJson: loadingApplicationJson,
   saveApplicationLayout: () => undefined,
   saveApplicationSettings: () => undefined,
   loadLayoutById: () => undefined,
@@ -73,8 +73,8 @@ export const LayoutManagementProvider = (
   // TODO this default should probably be a loading state rather than the placeholder
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
-  const applicationJSONRef = useRef<ApplicationJSON>(defaultApplicationJson);
   const { notify } = useNotifications();
+  const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJson);
 
   const setApplicationJSON = useCallback(
     (applicationJSON: ApplicationJSON, rerender = true) => {
@@ -88,6 +88,9 @@ export const LayoutManagementProvider = (
 
   const setApplicationLayout = useCallback(
     (layout: LayoutJSON, rerender = true) => {
+      console.log(`save layout`, {
+        layout,
+      });
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
@@ -101,10 +104,14 @@ export const LayoutManagementProvider = (
 
   const setApplicationSettings = useCallback(
     (settings: ApplicationSettings) => {
+      console.log(`save settings`);
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
-          settings,
+          settings: {
+            ...applicationJSONRef.current.settings,
+            ...settings,
+          },
         },
         false
       );

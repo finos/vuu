@@ -15,6 +15,14 @@ export const warningLayout: LayoutJSON = {
   ],
 };
 
+export const loadingApplicationJson: Readonly<ApplicationJSON> = {
+  layout: {
+    type: "Component",
+    id: "loading-main",
+    props: {},
+  },
+};
+
 export const defaultApplicationJson: ApplicationJSON = {
   layout: {
     type: "Stack",

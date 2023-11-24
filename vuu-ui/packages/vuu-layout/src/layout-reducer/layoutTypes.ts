@@ -22,7 +22,10 @@ export interface LayoutRoot extends WithProps {
 }
 
 export interface ApplicationSettings {
-  leftNav?: Pick<LeftNavProps, "defaultActiveTabIndex" | "defaultExpanded">;
+  leftNav?: {
+    activeTabIndex: number;
+    expanded: boolean;
+  };
 }
 
 export interface ApplicationJSON {
@@ -219,7 +222,8 @@ export type ApplicationLevelChange =
   | "switch-active-layout"
   | "open-layout"
   | "close-layout"
-  | "rename-layout";
+  | "rename-layout"
+  | "resize-application-chrome";
 
 export type LayoutChangeReason = LayoutLevelChange | ApplicationLevelChange;
 

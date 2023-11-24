@@ -9,6 +9,7 @@ import {
   useRef,
 } from "react";
 import {
+  loadingApplicationJson,
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
@@ -61,11 +62,8 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const layoutId = useRef("latest");
-  const {
-    applicationJson: { layout: applicationLayout },
-    saveApplicationLayout,
-    loadLayoutById,
-  } = useLayoutManager();
+  const { applicationJson, saveApplicationLayout, loadLayoutById } =
+    useLayoutManager();
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
@@ -106,6 +104,8 @@ export const Shell = ({
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
   const className = cx("vuuShell", classNameProp, themeClass, densityClass);
 
+  const isLoading = applicationJson === loadingApplicationJson;
+
   const shellLayout = useShellLayout({
     leftSidePanelLayout,
     appHeader: (
@@ -120,11 +120,11 @@ export const Shell = ({
     leftSidePanel,
   });
 
-  return (
+  return isLoading ? null : (
     <ThemeProvider>
       <LayoutProvider
         {...LayoutProps}
-        layout={applicationLayout}
+        layout={applicationJson.layout}
         onLayoutChange={handleLayoutChange}
       >
         <DraggableLayout

@@ -1,9 +1,4 @@
-import { NotificationsProvider } from "@finos/vuu-popups";
-import {
-  getAuthDetailsFromCookies,
-  LayoutManagementProvider,
-  redirectToLogin,
-} from "@finos/vuu-shell";
+import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./src/App";
@@ -17,11 +12,7 @@ if (!username || !token) {
   redirectToLogin();
 } else {
   ReactDOM.render(
-    <NotificationsProvider>
-      <LayoutManagementProvider>
-        <App user={{ username, token }} />
-      </LayoutManagementProvider>
-    </NotificationsProvider>,
+    <App user={{ username, token }} />,
     document.getElementById("root")
   );
 }

@@ -1,9 +1,14 @@
 import { VuuLogo } from "@finos/vuu-icons";
-import { Action, Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import {
+  Action,
+  loadingApplicationJson,
+  Stack,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import cx from "classnames";
-import { LayoutsList } from "../layout-management";
+import { LayoutsList, useLayoutManager } from "../layout-management";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList } from "../feature-list";
@@ -48,29 +53,42 @@ export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
 
 type NavState = {
   activeTabIndex: number;
-  primaryMenuExpanded: boolean;
+  expanded: boolean;
 };
 
-export const LeftNav = ({
-  "data-path": path,
-  defaultExpanded = true,
-  defaultActiveTabIndex = 0,
-  features,
-  onActiveChange,
-  onTogglePrimaryMenu,
-  sizeCollapsed = 80,
-  sizeContent = 300,
-  sizeExpanded = 240,
-  style: styleProp,
-  tableFeatures,
-  ...htmlAttributes
-}: LeftNavProps) => {
+export const LeftNav = (props: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
+  const [themeClass] = useThemeAttributes();
+  const { applicationJson, saveApplicationSettings } = useLayoutManager();
+  console.log(`settings`, {
+    expanded: applicationJson?.settings?.leftNav?.expanded,
+    active: applicationJson?.settings?.leftNav?.activeTabIndex,
+  });
+  const {
+    "data-path": path,
+    defaultExpanded = applicationJson?.settings?.leftNav?.expanded ?? true,
+    defaultActiveTabIndex = applicationJson?.settings?.leftNav
+      ?.activeTabIndex ?? 0,
+    features,
+    onActiveChange,
+    onTogglePrimaryMenu,
+    sizeCollapsed = 80,
+    sizeContent = 300,
+    sizeExpanded = 240,
+    style: styleProp,
+    tableFeatures,
+    ...htmlAttributes
+  } = props;
+
+  console.log({
+    defaultExpanded,
+    defaultActiveTabIndex,
+  });
+
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,
-    primaryMenuExpanded: defaultExpanded,
+    expanded: defaultExpanded,
   });
-  const [themeClass] = useThemeAttributes();
 
   const getFullWidth = useCallback(
     (tabIndex: number, expanded: boolean): number => {
@@ -87,13 +105,11 @@ export const LeftNav = ({
 
   const handleTabSelection = useCallback(
     (activeTabIndex: number) => {
-      const { activeTabIndex: currentIndex, primaryMenuExpanded } = navState;
+      const { activeTabIndex: currentIndex, expanded } = navState;
+      const newState = { activeTabIndex, expanded };
+      setNavState(newState);
       if (activeTabIndex === 0 || currentIndex === 0) {
-        const width = getFullWidth(activeTabIndex, primaryMenuExpanded);
-        setNavState((state) => ({
-          ...state,
-          activeTabIndex,
-        }));
+        const width = getFullWidth(activeTabIndex, expanded);
         dispatch({
           type: Action.LAYOUT_RESIZE,
           path,
@@ -101,26 +117,47 @@ export const LeftNav = ({
         } as LayoutResizeAction);
       }
       onActiveChange?.(activeTabIndex);
+      // saveApplicationSettings?.({ leftNav: newState });
     },
-    [dispatch, getFullWidth, navState, onActiveChange, path]
+    [
+      dispatch,
+      getFullWidth,
+      navState,
+      onActiveChange,
+      path,
+      // saveApplicationSettings,
+    ]
   );
 
   const displayStatus = getDisplayStatus(
     navState.activeTabIndex,
-    navState.primaryMenuExpanded
+    navState.expanded
   );
 
   const toggleExpanded = useCallback(() => {
-    const { activeTabIndex, primaryMenuExpanded: expanded } = navState;
+    const { activeTabIndex, expanded } = navState;
     const primaryMenuExpanded = !expanded;
-    setNavState({ activeTabIndex, primaryMenuExpanded });
+    const newState = { activeTabIndex, expanded: primaryMenuExpanded };
+    setNavState(newState);
     dispatch({
-      type: Action.LAYOUT_RESIZE,
+      type: "layout-resize",
       path,
       size: getFullWidth(activeTabIndex, primaryMenuExpanded),
     } as LayoutResizeAction);
     onTogglePrimaryMenu?.(primaryMenuExpanded);
-  }, [dispatch, getFullWidth, navState, onTogglePrimaryMenu, path]);
+    // saveApplicationSettings?.({ leftNav: newState });
+  }, [
+    dispatch,
+    getFullWidth,
+    navState,
+    onTogglePrimaryMenu,
+    path,
+    // saveApplicationSettings,
+  ]);
+
+  if (applicationJson === loadingApplicationJson) {
+    return null;
+  }
 
   const style = {
     ...styleProp,
