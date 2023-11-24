@@ -173,6 +173,7 @@ export const LayoutManagementProvider = (
         getPersistenceManager()
           .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
+            console.log("NOTIFY");
             notify({
               type: NotificationLevel.Success,
               header: "Layout Saved Successfully",
