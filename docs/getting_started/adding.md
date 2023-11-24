@@ -10,13 +10,13 @@ You can add them to your pom by referencing the parent pom directly.
 
 ```
     <dependency>
-        <groupId>org.finos</groupId>
+        <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
         <version>{check the latest version}</version>
     </dependency>
 
         <dependency>
-        <groupId>org.finos</groupId>
+        <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-ui</artifactId>
         <version>{check the latest version}</version>
     </dependency>

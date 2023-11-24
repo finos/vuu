@@ -44,14 +44,14 @@ processUpdate functions like an upsert in a SQL data (i.e. it is used for both a
 # (Simple) Table
 
 Simple Tables (the default table type, defined by using the TableDef() class) are sinks for data. They are wrappers around
-a concurrent map and are mechanisms to propogate update or delete events to join tables and view ports.
+a concurrent map and are mechanisms to propagate update or delete events to join tables and view ports.
 
 Currently simple tables are limited to having strings as the key. This is likely to change in future.
 
 # Join Tables
 
 Join tables represent the logical joining of two separate tables into a single merged table. In practice they are mappings of
-keys from one table to keys from one or more other tables. When data is realised (i.e. sent down to a user's ui via the websocket)
+keys from one table to keys from one or more other tables. When data is realized (i.e. sent down to a user's ui via the websocket)
 the relevant rows are realized by dragging the data from the underlying simple tables.
 
 # AutoSubscribe Table
@@ -69,7 +69,7 @@ Session tables are specific types of tables that live only during the users conn
 
 ### Tree Session Tables
 
-Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view ontop of
+Tree Session tables are created dynamically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view on top of
 and underlying raw table. When we create a tree, we are generating a tree data structure in memory whose leaves are keys that point back to the original rows
 in the underlying table. When your session is closed, the server cleans up these tree tables, freeing up resources.
 

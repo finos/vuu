@@ -46,13 +46,13 @@ The calculated column would at minimum need to contain:
 though datatype might be surplus or could be inferred.
 
 **Question:** How would we infer datatype? How would we cater for nasty expressions like "= price _ clientName"? possible we could error. We could use
-precendence in the datatypes, i.e. first column sets return value.? Or we could look for widest type in the event it was int _ double or int \* long.
-It would likely be porr UX to ask the user to define the return type.
+precedence in the datatypes, i.e. first column sets return value.? Or we could look for widest type in the event it was int _ double or int \* long.
+It would likely be poor UX to ask the user to define the return type.
 
 ### Use in Tree'd Viewports
 
 By default calculated columns would work the same in tree'd viewports as in non-tree'd viewports. THe only caveat to that
-would be when the calculated column would be a branch in the tree. In that case the column values would have to be calcuated in the
+would be when the calculated column would be a branch in the tree. In that case the column values would have to be calculated in the
 tree building function, which may slow down tree generation for specific viewports.
 
 ### Implementation
