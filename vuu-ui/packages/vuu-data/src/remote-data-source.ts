@@ -3,6 +3,7 @@ import { Selection } from "@finos/vuu-datagrid-types";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
+  ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuDataRowDto,
@@ -35,6 +36,7 @@ import {
   DataSourceStatus,
   isDataSourceConfigMessage,
   OptimizeStrategy,
+  RpcResponse,
   SubscribeCallback,
   SubscribeProps,
   vanillaConfig,
@@ -646,9 +648,11 @@ export class RemoteDataSource
     }
   }
 
-  async rpcCall(rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">) {
+  async rpcCall<T extends RpcResponse = RpcResponse>(
+    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
+  ) {
     if (this.viewport) {
-      return this.server?.rpcCall<MenuRpcResponse>({
+      return this.server?.rpcCall<T>({
         vpId: this.viewport,
         ...rpcRequest,
       } as ClientToServerViewportRpcCall);

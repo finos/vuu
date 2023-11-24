@@ -15,7 +15,7 @@ export type basketDataSourceKey =
   | "data-source-basket-trading-control"
   | "data-source-basket-trading-search"
   | "data-source-basket-trading-constituent-join"
-  | "data-source-instruments";
+  | "data-source-basket-constituent";
 
 const NO_FILTER = { filter: "" };
 
@@ -24,7 +24,7 @@ export const useBasketTradingDataSources = ({
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  instrumentsSchema,
+  basketConstituentSchema,
 }: BasketTradingFeatureProps & { basketInstanceId: string }) => {
   const { notify } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
@@ -34,7 +34,7 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceInstruments,
+    dataSourceBasketConstituent,
   ] = useMemo(() => {
     const basketFilter: VuuFilter = basketInstanceId
       ? {
@@ -61,7 +61,7 @@ export const useBasketTradingDataSources = ({
         100,
         basketFilter,
       ],
-      ["data-source-instruments", instrumentsSchema, 100],
+      ["data-source-basket-constituent", basketConstituentSchema, 100],
     ];
 
     const dataSources: DataSource[] = [];
@@ -86,7 +86,7 @@ export const useBasketTradingDataSources = ({
     basketTradingSchema,
     basketInstanceId,
     basketTradingConstituentJoinSchema,
-    instrumentsSchema,
+    basketConstituentSchema,
     loadSession,
     id,
     title,
@@ -125,7 +125,7 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceInstruments,
+    dataSourceBasketConstituent,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
   };

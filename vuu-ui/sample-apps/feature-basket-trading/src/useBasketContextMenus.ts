@@ -9,9 +9,9 @@ import { DataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export const useBasketContextMenus = ({
-  dataSourceInstruments,
+  dataSourceBasketConstituent,
 }: {
-  dataSourceInstruments: DataSource;
+  dataSourceBasketConstituent: DataSource;
 }) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
@@ -47,7 +47,7 @@ export const useBasketContextMenus = ({
                     allowDragDrop: "drag-copy",
                     id: "basket-instruments",
                   },
-                  dataSource: dataSourceInstruments,
+                  dataSource: dataSourceBasketConstituent,
                 },
               },
               title: "Add Ticker",
@@ -57,5 +57,5 @@ export const useBasketContextMenus = ({
         return false;
       },
     ];
-  }, [dataSourceInstruments, dispatchLayoutAction]);
+  }, [dataSourceBasketConstituent, dispatchLayoutAction]);
 };

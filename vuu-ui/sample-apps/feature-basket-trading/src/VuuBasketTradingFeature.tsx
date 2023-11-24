@@ -18,7 +18,7 @@ export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
   basketTradingSchema: TableSchema;
   basketTradingConstituentJoinSchema: TableSchema;
-  instrumentsSchema: TableSchema;
+  basketConstituentSchema: TableSchema;
 }
 
 const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
@@ -26,7 +26,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    instrumentsSchema,
+    basketConstituentSchema,
   } = props;
 
   const {
@@ -46,7 +46,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    instrumentsSchema,
+    basketConstituentSchema,
   });
 
   if (basketCount === -1) {
