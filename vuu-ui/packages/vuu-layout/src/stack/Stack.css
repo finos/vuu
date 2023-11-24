@@ -19,17 +19,20 @@
   background: var(--grey60);
 }
 
+.Tabs-tabPanel {
+  flex: 1; 
+}
+
+.Tabs-tabPanel > * {
+  height: 100%;
+}
+
 .vuuTabHeader {
   --saltTabs-activationIndicator-background: transparent;
   --saltToolbarField-marginTop: calc(var(--salt-size-unit) - 1px);
   border-color: var(--salt-container-primary-borderColor);
   border-style: var(--vuu-tabs-border-style, none none solid none);
   border-width: 1px;
-}
-
-.vuuTabHeader + .hwFlexbox,
-.vuuTabHeader + * {
-  flex: 1;
 }
 
 .vuuTabHeader + .vuuView > .vuuHeader {

@@ -631,6 +631,9 @@ export const useDragDropNext: DragDropHook = ({
     ...dragResult,
     ...draggableStatus,
     isScrolling,
-    onMouseDown: allowDragDrop ? mouseDownHandler : undefined,
+    onMouseDown:
+      allowDragDrop && allowDragDrop !== "drop-only"
+        ? mouseDownHandler
+        : undefined,
   };
 };

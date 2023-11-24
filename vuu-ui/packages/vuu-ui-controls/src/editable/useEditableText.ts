@@ -96,7 +96,9 @@ export const useEditableText = <T extends string | number = string>({
 
   const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
     (evt) => {
-      commit(evt.target as HTMLElement);
+      if (isDirtyRef.current) {
+        commit(evt.target as HTMLElement);
+      }
     },
     [commit]
   );

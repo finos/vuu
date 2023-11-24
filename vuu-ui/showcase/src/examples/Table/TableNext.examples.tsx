@@ -6,7 +6,8 @@ import {
   Toolbar,
   View,
 } from "@finos/vuu-layout";
-import { ContextPanel } from "@finos/vuu-shell";
+import { ContextPanel, DefaultColumnConfiguration } from "@finos/vuu-shell";
+import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { TableNext, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
@@ -115,78 +116,91 @@ export const ControlledNavigation = () => {
 ControlledNavigation.displaySequence = displaySequence++;
 
 export const EditableTableNextArrayData = () => {
-  const { config, dataSource } = useTableConfig({
-    columnConfig: {
-      bbg: {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-            rules: [
-              { name: "vuu-case", value: "upper" },
-              {
-                name: "vuu-pattern",
-                value: "^.{5,8}$",
-                message: "Value must contain between 5 and 8 characters",
+  const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(
+    () => (tableName, columnName) => {
+      switch (columnName) {
+        case "bbg":
+          return {
+            editable: true,
+            type: {
+              name: "string",
+              renderer: {
+                name: "input-cell",
+                // rules: [
+                //   { name: "vuu-case", value: "upper" },
+                //   {
+                //     name: "vuu-pattern",
+                //     value: "^.{5,8}$",
+                //     message: "Value must contain between 5 and 8 characters",
+                //   },
+                // ],
               },
-            ],
-          },
-        },
-      },
-      currency: {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "dropdown-cell",
-            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
-          },
-        },
-      },
-      lotSize: {
-        editable: true,
-        type: {
-          name: "number",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      },
-      exchange: {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      },
-      ric: {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      },
+            },
+          };
+        case "ccy":
+          return {
+            editable: true,
+            type: {
+              name: "string",
+              renderer: {
+                name: "dropdown-cell",
+                values: ["CAD", "EUR", "GBP", "GBX", "USD"],
+              },
+            },
+          };
+        case "lotSize":
+          return {
+            editable: true,
+            type: {
+              name: "number",
+              renderer: {
+                name: "input-cell",
+              },
+            },
+          };
+        case "exchange":
+          return {
+            editable: true,
+            type: {
+              name: "string",
+              renderer: {
+                name: "input-cell",
+              },
+            },
+          };
+        case "ric":
+          return {
+            editable: true,
+            type: {
+              name: "string",
+              renderer: {
+                name: "input-cell",
+              },
+            },
+          };
+      }
     },
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+    []
+  );
+
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+    const tableName: SimulTableName = "instruments";
+    return {
+      config: {
+        columns: applyDefaultColumnConfig(
+          getSchema(tableName),
+          getDefaultColumnConfig
+        ),
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+    };
+  }, [getDefaultColumnConfig]);
 
   return (
-    <TableNext
-      config={{
-        ...config,
-        rowSeparators: true,
-      }}
-      dataSource={dataSource}
-      height={645}
-      renderBufferSize={10}
-      width={500}
-    />
+    <TableNext {...tableProps} height={645} renderBufferSize={10} width={500} />
   );
 };
 EditableTableNextArrayData.displaySequence = displaySequence++;

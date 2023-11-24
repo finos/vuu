@@ -19,14 +19,15 @@ type RadioValue = (typeof radioValues)[number];
 
 type SaveLayoutPanelProps = {
   componentId?: string;
+  defaultTitle?: string;
   onCancel: () => void;
   onSave: (layoutMetadata: LayoutMetadataDto) => void;
 };
 
 export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
-  const { onCancel, onSave, componentId } = props;
+  const { defaultTitle = "", onCancel, onSave, componentId } = props;
 
-  const [layoutName, setLayoutName] = useState<string>("");
+  const [layoutName, setLayoutName] = useState<string>(defaultTitle);
   const [group, setGroup] = useState<string>("");
   const [checkValues, setCheckValues] = useState<string[]>([]);
   const [radioValue, setRadioValue] = useState<RadioValue>(radioValues[0]);

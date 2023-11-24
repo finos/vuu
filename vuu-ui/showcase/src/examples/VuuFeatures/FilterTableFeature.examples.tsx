@@ -24,7 +24,8 @@ export const DefaultFilterTableFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationLayout, saveApplicationLayout } = useLayoutManager();
+  const { applicationJson: applicationLayout, saveApplicationLayout } =
+    useLayoutManager();
 
   // Save layout into state so we can display in JsonTable
   const [savedLayoutJson, setSavedLayoutJson] = useState(applicationLayout);

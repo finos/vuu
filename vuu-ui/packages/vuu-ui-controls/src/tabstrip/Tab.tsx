@@ -156,6 +156,7 @@ export const Tab = forwardRef(function Tab(
           allowClose={closeable}
           allowRename={editable}
           controlledComponentId={ariaControls}
+          controlledComponentTitle={label}
           location={location}
           onMenuAction={onMenuAction as MenuActionHandler}
           onMenuClose={onMenuClose}

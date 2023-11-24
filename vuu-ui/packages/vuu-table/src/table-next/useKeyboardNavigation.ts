@@ -351,7 +351,6 @@ NavigationHookProps) => {
 
   const moveHighlightedRow = useCallback(
     async (key: NavigationKey) => {
-      console.log(`moveHighlightedRow`);
       const { current: highlighted } = highlightedIndexRef;
       const [nextRowIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
@@ -436,7 +435,7 @@ NavigationHookProps) => {
         focusableCell.current = cell;
       }
     }
-  }, [containerRef, fullyRendered]);
+  }, [containerRef, disableFocus, fullyRendered]);
 
   return {
     highlightedIndexRef,

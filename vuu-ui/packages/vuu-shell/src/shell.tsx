@@ -1,4 +1,13 @@
 import { connectToServer } from "@finos/vuu-data";
+import {
+  DraggableLayout,
+  LayoutProvider,
+  LayoutProviderProps,
+  loadingApplicationJson,
+  useLayoutContextMenuItems,
+} from "@finos/vuu-layout";
+import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
+import { logger } from "@finos/vuu-utils";
 import cx from "classnames";
 import {
   HTMLAttributes,
@@ -8,19 +17,13 @@ import {
   useEffect,
   useRef,
 } from "react";
-import {
-  DraggableLayout,
-  LayoutProvider,
-  LayoutProviderProps,
-} from "@finos/vuu-layout";
-import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
 import { AppHeader } from "./app-header";
-import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
-import { logger } from "@finos/vuu-utils";
+import { useLayoutManager } from "./layout-management";
 import { useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
-import { useLayoutManager } from "./layout-management";
+import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
 
+import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import "./shell.css";
 
 export type VuuUser = {
@@ -60,9 +63,14 @@ export const Shell = ({
   ...htmlAttributes
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const { dialog, setDialogState } = useDialog();
+
   const layoutId = useRef("latest");
-  const { applicationLayout, saveApplicationLayout, loadLayoutById } =
+  const { applicationJson, saveApplicationLayout, loadLayoutById } =
     useLayoutManager();
+
+  const { buildMenuOptions, handleMenuAction } =
+    useLayoutContextMenuItems(setDialogState);
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout, layoutChangeReason) => {
@@ -103,6 +111,8 @@ export const Shell = ({
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
   const className = cx("vuuShell", classNameProp, themeClass, densityClass);
 
+  const isLoading = applicationJson === loadingApplicationJson;
+
   const shellLayout = useShellLayout({
     leftSidePanelLayout,
     appHeader: (
@@ -117,23 +127,28 @@ export const Shell = ({
     leftSidePanel,
   });
 
-  return (
+  return isLoading ? null : (
     <ThemeProvider>
-      <LayoutProvider
-        {...LayoutProps}
-        layout={applicationLayout}
-        onLayoutChange={handleLayoutChange}
+      <ContextMenuProvider
+        menuActionHandler={handleMenuAction}
+        menuBuilder={buildMenuOptions}
       >
-        <DraggableLayout
-          className={className}
-          data-mode={dataMode}
-          ref={rootRef}
-          {...htmlAttributes}
+        <LayoutProvider
+          {...LayoutProps}
+          layout={applicationJson.layout}
+          onLayoutChange={handleLayoutChange}
         >
-          {shellLayout}
-        </DraggableLayout>
-      </LayoutProvider>
-      {children}
+          <DraggableLayout
+            className={className}
+            data-mode={dataMode}
+            ref={rootRef}
+            {...htmlAttributes}
+          >
+            {shellLayout}
+          </DraggableLayout>
+        </LayoutProvider>
+        {children || dialog}
+      </ContextMenuProvider>
     </ThemeProvider>
   );
 };

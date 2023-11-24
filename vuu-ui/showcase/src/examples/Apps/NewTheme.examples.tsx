@@ -1,13 +1,6 @@
 import { byModule } from "@finos/vuu-data";
-import {
-  registerComponent,
-  useLayoutContextMenuItems,
-} from "@finos/vuu-layout";
-import {
-  ContextMenuProvider,
-  NotificationsProvider,
-  useDialog,
-} from "@finos/vuu-popups";
+import { registerComponent } from "@finos/vuu-layout";
+import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
   FeatureProps,
@@ -98,9 +91,7 @@ const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = Object.values(
   }));
 
 const ShellWithNewTheme = () => {
-  const { dialog, setDialogState } = useDialog();
-  const { buildMenuOptions, handleMenuAction } =
-    useLayoutContextMenuItems(setDialogState);
+  const { dialog } = useDialog();
 
   const dragSource = useMemo(
     () => ({
@@ -110,36 +101,31 @@ const ShellWithNewTheme = () => {
   );
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildMenuOptions}
-    >
-      <DragDropProvider dragSources={dragSource}>
-        <Shell
-          LayoutProps={{
-            pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
-          }}
-          leftSidePanelLayout="full-height"
-          leftSidePanel={
-            <LeftNav
-              features={features}
-              tableFeatures={tableFeatures}
-              style={{ width: 240 }}
-            />
-          }
-          loginUrl={window.location.toString()}
-          user={user}
-          style={
-            {
-              "--vuuShell-height": "100vh",
-              "--vuuShell-width": "100vw",
-            } as CSSProperties
-          }
-        >
-          {dialog}
-        </Shell>
-      </DragDropProvider>
-    </ContextMenuProvider>
+    <DragDropProvider dragSources={dragSource}>
+      <Shell
+        LayoutProps={{
+          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+        }}
+        leftSidePanelLayout="full-height"
+        leftSidePanel={
+          <LeftNav
+            features={features}
+            tableFeatures={tableFeatures}
+            style={{ width: 240 }}
+          />
+        }
+        loginUrl={window.location.toString()}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100vh",
+            "--vuuShell-width": "100vw",
+          } as CSSProperties
+        }
+      >
+        {dialog}
+      </Shell>
+    </DragDropProvider>
   );
 };
 

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { LeftNavProps } from "packages/vuu-shell/src";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -18,6 +19,18 @@ export interface LayoutRoot extends WithProps {
   active?: number;
   children?: ReactElement[];
   type: string;
+}
+
+export interface ApplicationSettings {
+  leftNav?: {
+    activeTabIndex: number;
+    expanded: boolean;
+  };
+}
+
+export interface ApplicationJSON {
+  layout: LayoutJSON;
+  settings?: ApplicationSettings;
 }
 
 export interface LayoutJSON extends WithType {
@@ -209,7 +222,8 @@ export type ApplicationLevelChange =
   | "switch-active-layout"
   | "open-layout"
   | "close-layout"
-  | "rename-layout";
+  | "rename-layout"
+  | "resize-application-chrome";
 
 export type LayoutChangeReason = LayoutLevelChange | ApplicationLevelChange;
 

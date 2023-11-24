@@ -98,6 +98,12 @@ export interface TableHookProps
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
+const NULL_DRAG_DROP = {
+  draggable: undefined,
+  onMouseDown: undefined,
+};
+const useNullDragDrop = () => NULL_DRAG_DROP;
+
 const addColumn = (
   tableConfig: TableConfig,
   column: ColumnDescriptor
@@ -138,6 +144,8 @@ export const useTable = ({
   // // of model. We will need dataSource for that, but don't want to trigger
   // // that logic when dataSource itself changes.
   // dataSourceRef.current = dataSource;
+
+  const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
 
   const [size, setSize] = useState<MeasuredSize | undefined>();
   const handleResize = useCallback((size: MeasuredSize) => {
@@ -681,7 +689,7 @@ export const useTable = ({
 
   // Drag Drop rowss
   const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
-    useDragDrop({
+    useRowDragDrop({
       allowDragDrop,
       containerRef,
       draggableClassName: `vuuTableNext`,

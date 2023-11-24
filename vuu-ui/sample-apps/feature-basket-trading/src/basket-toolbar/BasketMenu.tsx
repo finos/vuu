@@ -19,6 +19,10 @@ export interface BasketMenuProps {
    * The id of associated component, if available
    */
   controlledComponentId?: string;
+  /**
+   * The Label of Tab, if available
+   */
+  controlledComponentTitle?: string;
 }
 
 export const BasketMenu = ({

@@ -122,7 +122,7 @@ export const useBasketTrading = ({
 
   useMemo(() => {
     console.log(
-      `subscribe to BT COntrol ${dataSourceBasketTradingControl.status}`
+      `subscribe to BT Control ${dataSourceBasketTradingControl.status}`
     );
     dataSourceBasketTradingControl.subscribe(
       {
