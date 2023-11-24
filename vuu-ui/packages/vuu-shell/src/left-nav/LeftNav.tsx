@@ -38,17 +38,17 @@ export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   defaultActiveTabIndex?: number;
   defaultExpanded?: boolean;
   features: FeatureProps[];
-  tableFeatures: FeatureProps[];
-  onChangeDisplayStatus?: NavDisplayStatusHandler;
-  onResize?: (size: number) => void;
+  onActiveChange?: (activeTabIndex: number) => void;
+  onTogglePrimaryMenu?: (expanded: boolean) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
+  tableFeatures: FeatureProps[];
 }
 
 type NavState = {
   activeTabIndex: number;
-  navStatus: NavDisplayStatus;
+  primaryMenuExpanded: boolean;
 };
 
 export const LeftNav = ({
@@ -56,8 +56,8 @@ export const LeftNav = ({
   defaultExpanded = true,
   defaultActiveTabIndex = 0,
   features,
-  onChangeDisplayStatus,
-  onResize,
+  onActiveChange,
+  onTogglePrimaryMenu,
   sizeCollapsed = 80,
   sizeContent = 300,
   sizeExpanded = 240,
@@ -68,100 +68,59 @@ export const LeftNav = ({
   const dispatch = useLayoutProviderDispatch();
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,
-    navStatus: getDisplayStatus(defaultActiveTabIndex, defaultExpanded),
+    primaryMenuExpanded: defaultExpanded,
   });
   const [themeClass] = useThemeAttributes();
 
-  const toggleNavWidth = useCallback(
-    (navStatus: NavDisplayStatus) => {
-      switch (navStatus) {
-        case "menu-icons":
-          return sizeExpanded;
-        case "menu-full":
-          return sizeCollapsed;
-        case "menu-full-content":
-          return sizeCollapsed + sizeContent;
-        case "menu-icons-content":
-          return sizeExpanded + sizeContent;
-      }
-    },
-    [sizeCollapsed, sizeContent, sizeExpanded]
-  );
-
-  const toggleNavStatus = (navStatus: NavDisplayStatus) => {
-    switch (navStatus) {
-      case "menu-icons":
-        return "menu-full";
-      case "menu-full":
-        return "menu-icons";
-      case "menu-full-content":
-        return "menu-icons-content";
-      case "menu-icons-content":
-        return "menu-full-content";
-    }
-  };
-
-  const getWidthAndStatus = useCallback(
-    (
-      navState: NavDisplayStatus,
-      tabIndex: number
-    ): [number, NavDisplayStatus] => {
+  const getFullWidth = useCallback(
+    (tabIndex: number, expanded: boolean): number => {
       if (tabIndex === 0) {
-        const newNavState =
-          navState === "menu-full-content"
-            ? "menu-full"
-            : navState === "menu-icons-content"
-            ? "menu-icons"
-            : navState;
-
-        return newNavState === "menu-icons"
-          ? [sizeCollapsed, newNavState]
-          : [sizeExpanded, newNavState];
+        return expanded ? sizeExpanded : sizeCollapsed;
       } else {
-        const newNavState =
-          navState === "menu-full"
-            ? "menu-full-content"
-            : navState === "menu-icons"
-            ? "menu-icons-content"
-            : navState;
-        return newNavState === "menu-icons-content"
-          ? [sizeCollapsed + sizeContent, newNavState]
-          : [sizeExpanded + sizeContent, newNavState];
+        return expanded
+          ? sizeExpanded + sizeContent
+          : sizeCollapsed + sizeContent;
       }
     },
     [sizeCollapsed, sizeContent, sizeExpanded]
   );
 
   const handleTabSelection = useCallback(
-    (value: number) => {
-      const [width, navStatus] = getWidthAndStatus(navState.navStatus, value);
-      setNavState({
-        activeTabIndex: value,
-        navStatus,
-      });
-      dispatch({
-        type: Action.LAYOUT_RESIZE,
-        path,
-        size: width,
-      } as LayoutResizeAction);
+    (activeTabIndex: number) => {
+      const { activeTabIndex: currentIndex, primaryMenuExpanded } = navState;
+      if (activeTabIndex === 0 || currentIndex === 0) {
+        const width = getFullWidth(activeTabIndex, primaryMenuExpanded);
+        setNavState((state) => ({
+          ...state,
+          activeTabIndex,
+        }));
+        dispatch({
+          type: Action.LAYOUT_RESIZE,
+          path,
+          size: width,
+        } as LayoutResizeAction);
+      }
+      onActiveChange?.(activeTabIndex);
     },
-    [dispatch, getWidthAndStatus, navState, path]
+    [dispatch, getFullWidth, navState, onActiveChange, path]
+  );
+
+  const displayStatus = getDisplayStatus(
+    navState.activeTabIndex,
+    navState.primaryMenuExpanded
   );
 
   const toggleExpanded = useCallback(() => {
-    const { activeTabIndex, navStatus: currentNavStatus } = navState;
-    const newNavStatus = toggleNavStatus(currentNavStatus);
-    setNavState({
-      activeTabIndex,
-      navStatus: newNavStatus,
-    });
+    const { activeTabIndex, primaryMenuExpanded: expanded } = navState;
+    const primaryMenuExpanded = !expanded;
+    setNavState({ activeTabIndex, primaryMenuExpanded });
     dispatch({
       type: Action.LAYOUT_RESIZE,
       path,
-      size: toggleNavWidth(currentNavStatus),
+      size: getFullWidth(activeTabIndex, primaryMenuExpanded),
     } as LayoutResizeAction);
-    onChangeDisplayStatus?.(newNavStatus);
-  }, [dispatch, navState, onChangeDisplayStatus, path, toggleNavWidth]);
+    onTogglePrimaryMenu?.(primaryMenuExpanded);
+  }, [dispatch, getFullWidth, navState, onTogglePrimaryMenu, path]);
 
   const style = {
     ...styleProp,
@@ -173,7 +132,7 @@ export const LeftNav = ({
   return (
     <div
       {...htmlAttributes}
-      className={cx(classBase, `${classBase}-${navState.navStatus}`)}
+      className={cx(classBase, `${classBase}-${displayStatus}`)}
       style={style}
     >
       <div
@@ -194,7 +153,6 @@ export const LeftNav = ({
             <Tab data-icon="demo" label="DEMO"></Tab>
             <Tab data-icon="features" label="VUU FEATURES"></Tab>
             <Tab data-icon="tables" label="VUU TABLES"></Tab>
-            <Tab data-icon="templates" label="LAYOUT TEMPLATES"></Tab>
             <Tab data-icon="layouts" label="MY LAYOUTS"></Tab>
           </Tabstrip>
         </div>
@@ -202,12 +160,12 @@ export const LeftNav = ({
           <button
             className={cx("vuuLeftNav-toggleButton", {
               "vuuLeftNav-toggleButton-open":
-                navState.navStatus.startsWith("menu-full"),
+                displayStatus.startsWith("menu-full"),
               "vuuLeftNav-toggleButton-closed":
-                navState.navStatus.startsWith("menu-icons"),
+                displayStatus.startsWith("menu-icons"),
             })}
             data-icon={
-              navState.navStatus.startsWith("menu-full")
+              displayStatus.startsWith("menu-full")
                 ? "chevron-left"
                 : "chevron-right"
             }
@@ -222,9 +180,6 @@ export const LeftNav = ({
       >
         <FeatureList features={features} title="VUU FEATURES" />
         <FeatureList features={tableFeatures} title="VUU TABLES" />
-        <div style={{ background: "green", height: "100%" }}>
-          LAYOUT TEMPLATES
-        </div>
         <div className="vuuLeftNav-drawer">
           <LayoutsList />
         </div>

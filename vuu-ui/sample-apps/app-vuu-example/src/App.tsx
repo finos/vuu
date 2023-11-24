@@ -58,7 +58,6 @@ export const App = ({ user }: { user: VuuUser }) => {
     []
   );
 
-  // TODO get Context from Shell
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}

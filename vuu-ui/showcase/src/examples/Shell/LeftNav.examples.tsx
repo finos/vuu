@@ -8,13 +8,7 @@ export const VerticalTabstrip = () => {
 VerticalTabstrip.displaySequence = displaySequence++;
 
 export const VerticalTabstripCollapsed = () => {
-  return (
-    <LeftNav
-      defaultDisplayStatus="menu-icons"
-      features={[]}
-      tableFeatures={[]}
-    />
-  );
+  return <LeftNav defaultExpanded={false} features={[]} tableFeatures={[]} />;
 };
 VerticalTabstripCollapsed.displaySequence = displaySequence++;
 
@@ -22,7 +16,7 @@ export const VerticalTabstripCollapsedContent = () => {
   return (
     <LeftNav
       defaultActiveTabIndex={1}
-      defaultDisplayStatus="menu-icons-content"
+      defaultExpanded={false}
       features={[]}
       tableFeatures={[]}
     />
@@ -34,7 +28,7 @@ export const VerticalTabstripContent = () => {
   return (
     <LeftNav
       defaultActiveTabIndex={1}
-      defaultDisplayStatus="menu-full-content"
+      defaultExpanded
       features={[]}
       tableFeatures={[]}
     />
