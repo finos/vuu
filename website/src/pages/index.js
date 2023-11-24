@@ -55,8 +55,8 @@ function Home() {
               from trading systems, to human eyes
             </h2>
             <p className="vuu-paragraph-large">
-              Vuu deals with the complex task of viewporting, throttling <br />{" "}
-              and transmiting your data to clients, so you don't have to.
+              Vuu deals with the complex task of view porting, throttling <br />{" "}
+              and transmitting your data to clients, so you don't have to.
             </p>
             <div className="vuu-button-bar">
               <Link

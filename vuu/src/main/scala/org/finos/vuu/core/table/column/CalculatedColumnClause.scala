@@ -106,6 +106,7 @@ case class LongColumnClause(column: Column) extends CalculatedColumnClause {
   override def dataType: ClauseDataType = ClauseDataType.LONG
   override def calculate(data: RowData): Any = data.get(column) match {
     case null => null
+    case x: Int => x.toLong
     case x => x.asInstanceOf[Long]
   }
 }

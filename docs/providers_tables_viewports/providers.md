@@ -5,7 +5,7 @@ import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
 <SvgDottySeparator style={{marginBottom: 32}}/>
 
 Providers are classes which receive data from a particlar location (network, file, in-process lib) and format that data into a map which matches the shape of the table
-that the provider is populating. THey have a very simple interface:
+that the provider is populating. They have a very simple interface:
 
 Included below is an example of the metrics provider.
 

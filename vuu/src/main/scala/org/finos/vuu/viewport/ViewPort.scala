@@ -376,7 +376,7 @@ class ViewPortImpl(val id: String,
   }
 
   override def setKeys(newKeys: ImmutableArray[String]): Unit = {
-    val sendSizeUpdate = newKeys.length != keys.length
+    val sendSizeUpdate = (newKeys.length != keys.length ) || newKeys.length == 0
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
     setKeysPost(sendSizeUpdate, newKeys)

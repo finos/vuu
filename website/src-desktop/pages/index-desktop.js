@@ -56,7 +56,7 @@ function Home() {
             </h2>
             <p className="vuu-paragraph-large">
               Vuu deals with the complex task of viewporting, throttling <br />{" "}
-              and transmiting your data to clients, so you don't have to.
+              and transmitting your data to clients, so you don't have to.
             </p>
             <div className="vuu-button-bar">
               <Link

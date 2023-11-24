@@ -4,6 +4,6 @@ import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
 
 <SvgDottySeparator style={{marginBottom: 32}}/>
 
-We have a sample Maven project on the Vuu Github site:
+We have a sample Maven module within the code repo:
 
-[Getting Started in Java](https://github.com/venuu-io/vuu-getting-started)
+[Getting Started in Java](https://github.com/finos/vuu/tree/main/example/main-java)
