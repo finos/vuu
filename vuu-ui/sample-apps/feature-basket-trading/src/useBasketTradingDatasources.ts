@@ -1,8 +1,14 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { DataSource, RemoteDataSource, TableSchema } from "@finos/vuu-data";
+import {
+  DataSource,
+  RemoteDataSource,
+  TableSchema,
+  ViewportRpcResponse,
+} from "@finos/vuu-data";
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuFilter } from "@finos/vuu-protocol-types";
+import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -20,6 +26,7 @@ export const useBasketTradingDataSources = ({
   basketTradingConstituentJoinSchema,
   instrumentsSchema,
 }: BasketTradingFeatureProps & { basketInstanceId: string }) => {
+  const { notify } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
 
   const [
@@ -89,19 +96,24 @@ export const useBasketTradingDataSources = ({
   const handleSendToMarket = useCallback(
     (basketInstanceId: string) => {
       dataSourceBasketTradingControl
-        .rpcCall?.({
+        .rpcCall?.<ViewportRpcResponse>({
           namedParams: {},
           params: [basketInstanceId],
           rpcName: "sendToMarket",
           type: "VIEW_PORT_RPC_CALL",
         })
         .then((response) => {
-          console.log(`response from sendToMarket call`, {
-            response,
-          });
+          if (response?.action.type === "VP_RPC_FAILURE") {
+            notify({
+              type: NotificationLevel.Error,
+              header: "Failed to Send to market",
+              body: "Please contact your support team",
+            });
+            console.error(response.action.msg);
+          }
         });
     },
-    [dataSourceBasketTradingControl]
+    [dataSourceBasketTradingControl, notify]
   );
 
   const handleTakeOffMarket = useCallback(() => {

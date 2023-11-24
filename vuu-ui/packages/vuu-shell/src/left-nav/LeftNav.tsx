@@ -110,8 +110,9 @@ export const LeftNav = (props: LeftNavProps) => {
       setNavState(newState);
       if (activeTabIndex === 0 || currentIndex === 0) {
         const width = getFullWidth(activeTabIndex, expanded);
+        console.log(`resize ${path}`);
         dispatch({
-          type: Action.LAYOUT_RESIZE,
+          type: "layout-resize",
           path,
           size: width,
         } as LayoutResizeAction);

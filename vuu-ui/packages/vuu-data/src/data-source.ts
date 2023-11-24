@@ -24,6 +24,7 @@ import { EventEmitter } from "@finos/vuu-utils";
 import { TableSchema } from "./message-utils";
 import {
   MenuRpcResponse,
+  ViewportRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "./vuuUIMessageTypes";
@@ -495,7 +496,8 @@ export type DataSourceInsertHandler = (
 export type RpcResponse =
   | MenuRpcResponse
   | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditResponse;
+  | VuuUIMessageInRPCEditResponse
+  | ViewportRpcResponse;
 
 export type RpcResponseHandler = (response: RpcResponse) => boolean;
 
@@ -556,9 +558,9 @@ export interface DataSource extends EventEmitter<DataSourceEvents> {
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
   ) => Promise<RpcResponse | undefined>;
-  rpcCall?: (
+  rpcCall?: <T extends RpcResponse = RpcResponse>(
     message: Omit<ClientToServerViewportRpcCall, "vpId">
-  ) => Promise<RpcResponse | undefined>;
+  ) => Promise<T | undefined>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   select: SelectionChangeHandler;

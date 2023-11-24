@@ -4,6 +4,7 @@ import {
   LinkDescriptorWithLabel,
   ServerToClientBody,
   ServerToClientMenuSessionTableAction,
+  ServerToClientViewportRpcResponse,
   TypeAheadMethod,
   VuuAggregation,
   VuuColumns,
@@ -142,6 +143,12 @@ export interface MenuRpcResponse {
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
+export interface ViewportRpcResponse {
+  action: ServerToClientViewportRpcResponse["action"];
+  requestId: string;
+  rpcName?: string;
+  type: "VIEW_PORT_RPC_RESPONSE";
+}
 export interface MenuRpcReject extends ViewportMessageIn {
   error?: string;
   requestId: string;
@@ -160,6 +167,7 @@ export type VuuUIMessageIn =
   | VuuUIMessageInConnected
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
+  | ViewportRpcResponse
   | MenuRpcResponse
   | MenuRpcReject
   | VuuUIMessageInTableList

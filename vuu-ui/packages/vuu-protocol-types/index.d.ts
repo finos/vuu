@@ -211,6 +211,20 @@ export interface ServerToClientRPC {
   method: string;
   result: any;
 }
+
+// TODO flesh out as we know more
+export interface ServerToClientViewportRpcResponse {
+  action: {
+    msg: string;
+    type: "VP_RPC_FAILURE";
+  };
+  type: "VIEW_PORT_RPC_REPONSE";
+  method: string;
+  namedParams: { [key: string]: VuuRowDataItemType };
+  params: string[];
+  vpId: string;
+}
+
 export interface ServerToClientEditRPC {
   action: unknown;
   type: "VP_EDIT_RPC_RESPONSE";
@@ -269,6 +283,7 @@ export declare type ServerToClientBody =
   | ServerToClientMenuReject
   | ServerToClientMenuSessionTableAction
   | ServerToClientRPC
+  | ServerToClientViewportRpcResponse
   | ServerToClientViewPortVisualLinks
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
