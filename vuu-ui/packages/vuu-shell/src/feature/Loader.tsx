@@ -1,2 +1,2 @@
 // TODO
-export const Loader = () => <div className="hwLoader">loading</div>;
+export const Loader = () => <div className="hwLoader"></div>;

@@ -46,7 +46,7 @@ export type BasketTradingHookProps = Pick<
   | "basketSchema"
   | "basketTradingSchema"
   | "basketTradingConstituentJoinSchema"
-  | "instrumentsSchema"
+  | "basketConstituentSchema"
 >;
 
 const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
@@ -67,7 +67,7 @@ export const useBasketTrading = ({
   basketSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  instrumentsSchema,
+  basketConstituentSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
 
@@ -81,7 +81,7 @@ export const useBasketTrading = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceInstruments,
+    dataSourceBasketConstituent,
     onSendToMarket,
     onTakeOffMarket,
   } = useBasketTradingDataSources({
@@ -89,7 +89,7 @@ export const useBasketTrading = ({
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    instrumentsSchema,
+    basketConstituentSchema,
   });
 
   const [basket, setBasket] = useState<Basket | undefined>();
@@ -121,9 +121,6 @@ export const useBasketTrading = ({
   );
 
   useMemo(() => {
-    console.log(
-      `subscribe to BT Control ${dataSourceBasketTradingControl.status}`
-    );
     dataSourceBasketTradingControl.subscribe(
       {
         range: { from: 0, to: 1 },
@@ -215,7 +212,7 @@ export const useBasketTrading = ({
   );
 
   const [menuBuilder, menuActionHandler] = useBasketContextMenus({
-    dataSourceInstruments,
+    dataSourceBasketConstituent,
   });
 
   const handleRpcResponse = useCallback((response) => {

@@ -56,8 +56,8 @@
           "table": "basketTradingConstituentJoin"
         },
         {
-          "module": "SIMUL",
-          "table": "instruments"
+          "module": "BASKET",
+          "table": "basketConstituent"
         }
       ]
     },
