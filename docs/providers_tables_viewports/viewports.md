@@ -17,8 +17,8 @@ and will pass that array to the viewport. This thread will then continuously rec
 The row that is sent to a user is only realized in the viewport at the point the row becomes visible in the client (or part of the pre-post fetch.) This occurs by dragging the fields from the underlying tables
 when an update needs to be sent to the client.
 
-![Viewport](./diagrams-view-ports.png)
+![Viewport](./viewports.svg)
 
 And in the context of the wider Vuu server.
 
-![Viewport](./diagrams-server-internals.png)
+![Viewport](./server-internals.svg)
