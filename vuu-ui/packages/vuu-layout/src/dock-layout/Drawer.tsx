@@ -67,6 +67,8 @@ const Drawer = ({
     state: "open",
   });
 
+  console.log(`Drawer sizeOpen ${sizeOpen} sizeClosed ${sizeClosed}`);
+
   const className = cx(classBase, classNameProp, `${classBase}-${position}`, {
     [`${classBase}-open`]: open,
     [`${classBase}-inline`]: inline,

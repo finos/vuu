@@ -6,6 +6,7 @@ import {
   Shell,
   ShellContextProvider,
   ShellProps,
+  SidePanelProps,
   VuuUser,
 } from "@finos/vuu-shell";
 import {
@@ -55,6 +56,14 @@ export const App = ({ user }: { user: VuuUser }) => {
     []
   );
 
+  const leftSidePanelProps = useMemo<SidePanelProps>(
+    () => ({
+      children: <LeftNav features={features} tableFeatures={tableFeatures} />,
+      sizeOpen: 240,
+    }),
+    [features, tableFeatures]
+  );
+
   return (
     <NotificationsProvider>
       <LayoutManagementProvider>
@@ -64,15 +73,9 @@ export const App = ({ user }: { user: VuuUser }) => {
           >
             <Shell
               LayoutProps={layoutProps}
+              LeftSidePanelProps={leftSidePanelProps}
               className="App"
               leftSidePanelLayout="full-height"
-              leftSidePanel={
-                <LeftNav
-                  features={features}
-                  tableFeatures={tableFeatures}
-                  style={{ width: 240 }}
-                />
-              }
               saveUrl="https://localhost:8443/api/vui"
               serverUrl={serverUrl}
               user={user}

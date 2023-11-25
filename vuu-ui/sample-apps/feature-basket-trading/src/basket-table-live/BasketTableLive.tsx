@@ -5,13 +5,14 @@ import { useMemo } from "react";
 import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
 import columns from "./basketConstituentLiveColumns";
 
-console.log(
-  `component loaded 
-    ProgressCell ${typeof ProgressCell} 
-    SpreadCell ${typeof SpreadCell}
-    StatusCell ${typeof StatusCell}
-    `
-);
+if (
+  typeof ProgressCell !== "function" ||
+  typeof SpreadCell !== "function" ||
+  typeof StatusCell !== "function"
+) {
+  console.warn("BasketTableLive not all cusatom cell renderers are available");
+}
+
 import "./BasketTableLive.css";
 
 const classBase = "vuuBasketTableLive";
@@ -31,8 +32,6 @@ export const BasketTableLive = ({
     }),
     []
   );
-
-  console.log({ columns });
 
   return (
     <TableNext

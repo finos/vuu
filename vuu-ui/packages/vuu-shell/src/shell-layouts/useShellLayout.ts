@@ -1,11 +1,12 @@
 import { ReactElement } from "react";
+import { ShellProps } from "../shell";
 import { useFullHeightLeftPanel } from "./useFullHeightLeftPanel";
 import { useInlayLeftPanel } from "./useInlayLeftPanel";
 
 export type ShellLayoutType = "full-height" | "inlay";
 export interface ShellLayoutProps {
+  LeftSidePanelProps: ShellProps["LeftSidePanelProps"];
   appHeader: ReactElement;
-  leftSidePanel?: ReactElement;
 }
 
 export const useShellLayout = ({

@@ -1,0 +1,4 @@
+.vuuShellSidePanel {
+    transition: width .2s ease-out;
+    width: var(--shell-left-nav-size);
+}

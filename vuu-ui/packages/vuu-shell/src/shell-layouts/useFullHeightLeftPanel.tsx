@@ -1,11 +1,12 @@
 import { DraggableLayout, Flexbox } from "@finos/vuu-layout";
 import { ReactElement } from "react";
 import { ContextPanel } from "./context-panel";
+import { SidePanel } from "./side-panel";
 import { ShellLayoutProps } from "./useShellLayout";
 
 export const useFullHeightLeftPanel = ({
   appHeader,
-  leftSidePanel,
+  LeftSidePanelProps,
 }: ShellLayoutProps): ReactElement => {
   return (
     <Flexbox
@@ -16,7 +17,7 @@ export const useFullHeightLeftPanel = ({
         width: "100%",
       }}
     >
-      {leftSidePanel}
+      <SidePanel {...LeftSidePanelProps} id="vuu-side-panel" />
       <Flexbox
         className="vuuShell-content"
         style={{ flex: 1, flexDirection: "column" }}

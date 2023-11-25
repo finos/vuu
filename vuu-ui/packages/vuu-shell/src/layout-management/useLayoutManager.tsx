@@ -14,6 +14,7 @@ import {
   LocalLayoutPersistenceManager,
   RemoteLayoutPersistenceManager,
   resolveJSONPath,
+  defaultApplicationJson,
 } from "@finos/vuu-layout";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
@@ -39,7 +40,8 @@ export const LayoutManagementContext = React.createContext<{
 }>({
   layoutMetadata: [],
   saveLayout: () => undefined,
-  applicationJson: loadingApplicationJson,
+  // The default Application JSON will be served if no LayoutManagementProvider
+  applicationJson: defaultApplicationJson,
   saveApplicationLayout: () => undefined,
   saveApplicationSettings: () => undefined,
   loadLayoutById: () => undefined,

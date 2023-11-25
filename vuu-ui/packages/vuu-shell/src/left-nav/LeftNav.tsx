@@ -1,14 +1,9 @@
 import { VuuLogo } from "@finos/vuu-icons";
-import {
-  Action,
-  loadingApplicationJson,
-  Stack,
-  useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
+import { Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import cx from "classnames";
-import { LayoutsList, useLayoutManager } from "../layout-management";
+import { LayoutsList } from "../layout-management";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList } from "../feature-list";
@@ -59,16 +54,10 @@ type NavState = {
 export const LeftNav = (props: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
   const [themeClass] = useThemeAttributes();
-  const { applicationJson, saveApplicationSettings } = useLayoutManager();
-  console.log(`settings`, {
-    expanded: applicationJson?.settings?.leftNav?.expanded,
-    active: applicationJson?.settings?.leftNav?.activeTabIndex,
-  });
   const {
     "data-path": path,
-    defaultExpanded = applicationJson?.settings?.leftNav?.expanded ?? true,
-    defaultActiveTabIndex = applicationJson?.settings?.leftNav
-      ?.activeTabIndex ?? 0,
+    defaultExpanded = true,
+    defaultActiveTabIndex = 0,
     features,
     onActiveChange,
     onTogglePrimaryMenu,
@@ -79,11 +68,6 @@ export const LeftNav = (props: LeftNavProps) => {
     tableFeatures,
     ...htmlAttributes
   } = props;
-
-  console.log({
-    defaultExpanded,
-    defaultActiveTabIndex,
-  });
 
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,
@@ -110,24 +94,15 @@ export const LeftNav = (props: LeftNavProps) => {
       setNavState(newState);
       if (activeTabIndex === 0 || currentIndex === 0) {
         const width = getFullWidth(activeTabIndex, expanded);
-        console.log(`resize ${path}`);
         dispatch({
           type: "layout-resize",
-          path,
+          path: "#vuu-side-panel",
           size: width,
         } as LayoutResizeAction);
       }
       onActiveChange?.(activeTabIndex);
-      // saveApplicationSettings?.({ leftNav: newState });
     },
-    [
-      dispatch,
-      getFullWidth,
-      navState,
-      onActiveChange,
-      path,
-      // saveApplicationSettings,
-    ]
+    [dispatch, getFullWidth, navState, onActiveChange]
   );
 
   const displayStatus = getDisplayStatus(
@@ -142,23 +117,11 @@ export const LeftNav = (props: LeftNavProps) => {
     setNavState(newState);
     dispatch({
       type: "layout-resize",
-      path,
+      path: "#vuu-side-panel",
       size: getFullWidth(activeTabIndex, primaryMenuExpanded),
     } as LayoutResizeAction);
     onTogglePrimaryMenu?.(primaryMenuExpanded);
-    // saveApplicationSettings?.({ leftNav: newState });
-  }, [
-    dispatch,
-    getFullWidth,
-    navState,
-    onTogglePrimaryMenu,
-    path,
-    // saveApplicationSettings,
-  ]);
-
-  if (applicationJson === loadingApplicationJson) {
-    return null;
-  }
+  }, [dispatch, getFullWidth, navState, onTogglePrimaryMenu]);
 
   const style = {
     ...styleProp,
