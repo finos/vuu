@@ -11,7 +11,7 @@ import { ShellLayoutProps } from "./useShellLayout";
 
 export const useInlayLeftPanel = ({
   appHeader,
-  leftSidePanel,
+  LeftSidePanelProps,
 }: ShellLayoutProps): ReactElement => {
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
@@ -64,7 +64,7 @@ export const useInlayLeftPanel = ({
     >
       {appHeader}
       <DockLayout style={{ flex: 1 }}>
-        {getDrawers(leftSidePanel).concat(
+        {getDrawers(LeftSidePanelProps?.children).concat(
           <DraggableLayout
             dropTarget
             key="main-content"

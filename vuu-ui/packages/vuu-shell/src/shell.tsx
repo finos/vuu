@@ -19,9 +19,10 @@ import {
 } from "react";
 import { AppHeader } from "./app-header";
 import { useLayoutManager } from "./layout-management";
-import { useShellLayout } from "./shell-layouts";
+import { SidePanelProps, useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
 import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
+import { ShellContextProvider } from ".";
 
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import "./shell.css";
@@ -33,13 +34,17 @@ export type VuuUser = {
 
 const { error } = logger("Shell");
 
+const defaultLeftSidePanel: ShellProps["LeftSidePanelProps"] = {};
+
+export type LayoutTemplateName = "full-height" | "inlay";
+
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   LayoutProps?: Pick<
     LayoutProviderProps,
     "createNewChild" | "pathToDropTarget"
   >;
+  LeftSidePanelProps?: SidePanelProps;
   children?: ReactNode;
-  leftSidePanel?: ReactElement;
   leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
@@ -51,9 +56,9 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Shell = ({
   LayoutProps,
+  LeftSidePanelProps = defaultLeftSidePanel,
   children,
   className: classNameProp,
-  leftSidePanel,
   leftSidePanelLayout,
   loginUrl,
   saveLocation = "remote",
@@ -64,11 +69,9 @@ export const Shell = ({
 }: ShellProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const { dialog, setDialogState } = useDialog();
-
   const layoutId = useRef("latest");
   const { applicationJson, saveApplicationLayout, loadLayoutById } =
     useLayoutManager();
-
   const { buildMenuOptions, handleMenuAction } =
     useLayoutContextMenuItems(setDialogState);
 
@@ -76,7 +79,6 @@ export const Shell = ({
     (layout, layoutChangeReason) => {
       try {
         saveApplicationLayout(layout);
-        // saveLayoutConfig(layout);
       } catch {
         error?.("Failed to save layout");
       }
@@ -90,6 +92,7 @@ export const Shell = ({
     }
   }, []);
 
+  // TODO this is out of date
   const handleNavigate = useCallback(
     (id) => {
       layoutId.current = id;
@@ -114,6 +117,7 @@ export const Shell = ({
   const isLoading = applicationJson === loadingApplicationJson;
 
   const shellLayout = useShellLayout({
+    LeftSidePanelProps,
     leftSidePanelLayout,
     appHeader: (
       <AppHeader
@@ -124,7 +128,6 @@ export const Shell = ({
         onSwitchTheme={handleSwitchTheme}
       />
     ),
-    leftSidePanel,
   });
 
   return isLoading ? null : (

@@ -7,6 +7,7 @@ import {
   LayoutManagementProvider,
   LeftNav,
   Shell,
+  SidePanelProps,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
@@ -100,20 +101,22 @@ const ShellWithNewTheme = () => {
     []
   );
 
+  const leftSidePanelProps = useMemo<SidePanelProps>(
+    () => ({
+      children: <LeftNav features={features} tableFeatures={tableFeatures} />,
+      sizeOpen: 240,
+    }),
+    []
+  );
+
   return (
     <DragDropProvider dragSources={dragSource}>
       <Shell
         LayoutProps={{
           pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
         }}
+        LeftSidePanelProps={leftSidePanelProps}
         leftSidePanelLayout="full-height"
-        leftSidePanel={
-          <LeftNav
-            features={features}
-            tableFeatures={tableFeatures}
-            style={{ width: 240 }}
-          />
-        }
         loginUrl={window.location.toString()}
         user={user}
         style={
