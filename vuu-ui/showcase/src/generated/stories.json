@@ -17,9 +17,6 @@
   "ParsedInput": {
     "ParsedInput": "./src/examples/ParsedInput/ParsedInput.stories.jsx"
   },
-  "Table": {
-    "Table": "./src/examples/Table/Table.stories.jsx"
-  },
   "Tools": {
     "LayoutConfigurator": "./src/examples/Tools/LayoutConfigurator.stories.jsx"
   },

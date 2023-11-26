@@ -109,7 +109,6 @@ export const useBasketTrading = ({
   const handleMessageFromBasketTradingControl = useCallback<SubscribeCallback>(
     (message) => {
       if (message.type === "viewport-update") {
-        console.table(message.rows);
         if (message.size) {
           setBasketCount(message.size);
         }
