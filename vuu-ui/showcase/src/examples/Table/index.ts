@@ -1,6 +1,3 @@
-export * as TableArrayData from "./TableArrayData.examples";
-export * as TableVuuData from "./TableVuuData.examples";
-export * as TableExtras from "./TableExtras.examples";
 export * as TableList from "./TableList.examples";
 export * as TableNext from "./TableNext.examples";
 export * as BasketTables from "./BasketTables.examples";
