@@ -8,12 +8,14 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net._
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net.ws.WebSocketServer
+import org.finos.vuu.plugin.{Plugin, PluginRegistry}
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import org.finos.vuu.viewport._
 
@@ -24,44 +26,47 @@ import java.util.concurrent.{Callable, FutureTask}
  */
 class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
 
-  val serializer: Serializer[String, MessageBody] = JsonVsSerializer
+  final val serializer: Serializer[String, MessageBody] = JsonVsSerializer
+
+  final val pluginRegistry: PluginRegistry = PluginRegistry()
+  pluginRegistry.registerPlugin(new VuuInMemPlugin())
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val authenticator: Authenticator = config.security.authenticator
-  val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
+  final val authenticator: Authenticator = config.security.authenticator
+  final val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
 
-  val sessionContainer = new ClientSessionContainerImpl()
+  final val sessionContainer = new ClientSessionContainerImpl()
 
-  val joinProvider: JoinTableProvider = JoinTableProviderImpl()
+  final val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
-  val tableContainer = new TableContainer(joinProvider)
+  final val tableContainer = new TableContainer(joinProvider)
 
-  val providerContainer = new ProviderContainer(joinProvider)
+  final val providerContainer = new ProviderContainer(joinProvider)
   lifecycle(this).dependsOn(providerContainer)
 
-  val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+  final val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
 
-  val moduleContainer = new ModuleContainer
+  final val moduleContainer = new ModuleContainer
 
   config.modules.foreach(module => registerModule(module))
 
-  val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
+  final val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
+  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
 
   //order of creation here is important
-  val server = new WebSocketServer(config.wsOptions, factory)
+  final val server = new WebSocketServer(config.wsOptions, factory)
 
-  private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
+  final private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
-  val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
+  final val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
 
-  private val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
+  private final val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
-  private val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = -1)
+  private final  val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = -1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
   private val viewPortRunner = if(config.threading.viewportThreads == 1){
@@ -93,12 +98,22 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   def createTable(tableDef: TableDef): DataTable = {
     logger.info(s"Creating table ${tableDef.name}")
-    tableContainer.createTable(tableDef)
+    pluginRegistry.withPlugin(tableDef.pluginType){
+      plugin =>
+        val table = plugin.tableFactory.createTable(tableDef, joinProvider)
+        tableContainer.addTable(table)
+        table
+    }
   }
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
     logger.info(s"Creating joinTable ${joinDef.name}")
-    tableContainer.createJoinTable(joinDef)
+    pluginRegistry.withPlugin(joinDef.pluginType){
+      plugin =>
+        val table = plugin.joinTableFactory.createJoinTable(joinDef, tableContainer, joinProvider)
+        tableContainer.addTable(table)
+        table
+    }
   }
 
   def createAutoSubscribeTable(tableDef: TableDef): DataTable = {

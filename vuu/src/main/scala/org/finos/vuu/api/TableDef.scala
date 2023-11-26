@@ -4,6 +4,7 @@ import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table._
+import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.viewport.ViewPort
 
@@ -105,7 +106,7 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields)
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -113,7 +114,7 @@ class SessionTableDef(name: String,
                       joinFields: Seq[String],
                       autosubscribe: Boolean = false,
                       links: VisualLinks = VisualLinks(),
-                      indices: Indices) extends TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices)
+                      indices: Indices) extends TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices) with VuuInMemPluginLocator
 
 
 class TableDef(val name: String,
@@ -122,7 +123,7 @@ class TableDef(val name: String,
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
-               val indices: Indices) {
+               val indices: Indices) extends VuuInMemPluginLocator {
 
   private var module: ViewServerModule = null;
   private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null
@@ -183,7 +184,7 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) {
+case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) with VuuInMemPluginLocator{
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray

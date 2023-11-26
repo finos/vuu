@@ -92,6 +92,10 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     tables.get(name)
   }
 
+  def addTable(table: DataTable): Unit = {
+    tables.put(table.getTableDef.name, table)
+  }
+
   def createAutoSubscribeTable(tableDef: TableDef): DataTable = {
 
     val table = new AutoSubscribeTable(tableDef, joinTableProvider)
@@ -131,7 +135,6 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     val baseTable = tables.get(table.baseTable.name)
     val joinTableMap = table.joins.map(join => join.table.name -> tables.get(join.table.name)).toMap //tables.get(table.right.name)
     val baseTableMap = Map[String, DataTable](table.baseTable.name -> baseTable)
-
 
     val sourceTables = joinTableMap ++ baseTableMap
 
