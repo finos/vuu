@@ -28,40 +28,36 @@ function Home() {
   return (
     <Layout title={`${siteConfig.title}`} description={`${siteConfig.tagline}`}>
       <div className="vuu-scroll-1-bg" />
-      <header className={classnames("vuu-section vuu-scroll-1")}>
-        <div className="vuu-scroll-1-main">
-          <div className="vuu-scroll-1-copy">
-            <h1 className="vuu-heading-1">
-              Delivering <br />
-              <RevolvingCaption
-                captions={revolvingCaptions}
-                className="mobileRevolvingCaption"
-                offSetValue={44}
-              />
-              {/* <span className="vuu-revolving-caption">market data</span> */}
-            </h1>
-            <h2 className="vuu-heading-2">
-              from trading systems, <br />
-              to human eyes
-            </h2>
+      <div className="vuu-scroll-1-main">
+        <h1 className="vuu-heading-1">
+          Delivering <br />
+          <RevolvingCaption
+            captions={revolvingCaptions}
+            className="mobileRevolvingCaption"
+            offSetValue={44}
+          />
+          {/* <span className="vuu-revolving-caption">market data</span> */}
+        </h1>
+        <h2 className="vuu-heading-2">
+          from trading systems, <br />
+          to human eyes
+        </h2>
 
-            <p className="vuu-paragraph-small">
-              Vuu deals with the complex task of viewporting, throttling <br />{" "}
-              and transmitting your data to clients, so you don't have to.
-            </p>
-            <div className="vuu-button-bar">
-              <Link
-                className="vuu-button vuu-button-cta"
-                to="/docs/getting_started"
-              >
-                GET STARTED
-              </Link>
-            </div>
-            {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
-            <ChartMobile />
-          </div>
+        <p className="vuu-paragraph-small">
+          Vuu deals with the complex task of viewporting, throttling <br /> and
+          transmitting your data to clients, so you don't have to.
+        </p>
+        <div className="vuu-button-bar">
+          <Link
+            className="vuu-button vuu-button-cta"
+            to="/docs/getting_started"
+          >
+            GET STARTED
+          </Link>
         </div>
-      </header>
+        {/* <img className="vuu-chart" src={Ch} alt="chart" /> */}
+        <ChartMobile />
+      </div>
 
       <main className="vuu-main">
         <section className={classnames("vuu-section vuu-frame-10")}>

@@ -2,7 +2,7 @@
 
 Let's start with a diagram.
 
-![](./diagrams-server-internals.png)
+![](./diagrams-server-internals.svg)
 
 This shows the basic flow through the system, there are components which have been omitted for clarity.
 
