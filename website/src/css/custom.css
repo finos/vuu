@@ -181,7 +181,7 @@ body {
 
 .vuu-scroll-1-main {
   display: flex;
-  flex: 1 1 auto;
+  height: 450px;
   justify-content: space-between;
   padding: 0 80px;
 }
@@ -201,7 +201,7 @@ body {
   align-items: center;
   display: flex;
   justify-content: center;
-  padding-top: 50px;
+  padding-top: 40px;
 }
 
 .vuu-scroll-arrow {
