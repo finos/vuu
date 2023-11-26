@@ -208,15 +208,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val joinDataKeys = orderPrices.asInstanceOf[JoinTable].joinData.getKeyValuesByTable("NYC-0001")
 
       joinDataKeys shouldBe null
-      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(true)
+      orderPricesViewport.getKeys.toArray().iterator.contains("NYC-0001") should equal(true)
       vpContainer.runOnce()
-      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(false)
+      orderPricesViewport.getKeys.toArray().iterator.contains("NYC-0001") should equal(false)
 
       pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 230))
 
       runContainersOnce(vpContainer, joinProvider)
 
-      orderPricesViewport.getKeys.iterator.contains("NYC-0001") should equal(false)
+      orderPricesViewport.getKeys.toArray().iterator.contains("NYC-0001") should equal(false)
 
       val array = orderPrices.pullRowAsArray("NYC-0001", ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 

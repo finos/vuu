@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.vuu</groupId>
-        <artifactId>example</artifactId>
+        <artifactId>feature</artifactId>
         <version>0.9.36-SNAPSHOT</version>
+        <!--relativePath>../pom.xml</relativePath-->
     </parent>
 
-    <artifactId>main-java</artifactId>
+    <artifactId>ignite-feature</artifactId>
 
     <dependencies>
-
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
@@ -30,12 +30,6 @@
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
-            <artifactId>basket</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
             <version>0.9.36-SNAPSHOT</version>
         </dependency>
@@ -43,18 +37,6 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>editable</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>permission</artifactId>
             <version>0.9.36-SNAPSHOT</version>
         </dependency>
 
@@ -232,52 +214,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>target/generated-sources/antlr4</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xmx10G</argument>
-                        <argument>-classpath</argument>
-                        <classpath />
-                        <argument>-Dvuu.webroot=../../vuu-ui/deployed_apps/app-vuu-example</argument>
-                        <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
-                        <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
-                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>org.finos.vuu.SimulMain</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
-
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.2</version>
@@ -321,7 +257,6 @@
 
         </plugins>
     </build>
-
     <reporting>
         <plugins>
             <plugin>

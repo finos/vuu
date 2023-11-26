@@ -7,6 +7,7 @@ import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
 import org.finos.vuu.core.table._
+import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport._
@@ -52,7 +53,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   private val wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
 
   @volatile
-  private var keys = ImmutableArray.empty[String]
+  private var keys: ImmutableArray[String] = ImmutableArray.empty[String]
 
   @volatile
   private var tree: Tree = EmptyTree

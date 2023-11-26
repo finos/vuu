@@ -5,6 +5,7 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.sort.{FilterAndSort, Sort}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext}
 import org.finos.vuu.provider.{MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
@@ -40,13 +41,13 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
 
   override def getRange: ViewPortRange = viewPort.getRange
 
-  override def setKeys(keys: ImmutableArray[String]): Unit = viewPort.setKeys(keys)
+  override def setKeys(keys: ViewPortKeys): Unit = viewPort.setKeys(keys)
 
-  override def setKeysAndNotify(key: String, keys: ImmutableArray[String]): Unit = viewPort.setKeysAndNotify(key, keys)
+  override def setKeysAndNotify(key: String, keys: ViewPortKeys): Unit = viewPort.setKeysAndNotify(key, keys)
 
-  override def getKeys: ImmutableArray[String] = viewPort.getKeys
+  override def getKeys: ViewPortKeys = viewPort.getKeys
 
-  override def getKeysInRange: ImmutableArray[String] = viewPort.getKeysInRange
+  override def getKeysInRange: ViewPortKeys = viewPort.getKeysInRange
 
   override def getVisualLink: Option[ViewPortVisualLink] = viewPort.getVisualLink
 
