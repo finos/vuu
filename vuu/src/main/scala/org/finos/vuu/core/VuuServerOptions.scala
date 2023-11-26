@@ -4,6 +4,7 @@ import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoginTokenValidator}
+import org.finos.vuu.plugin.Plugin
 
 
 
@@ -70,5 +71,6 @@ case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOp
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
+  def withPlugin(plugin: Plugin): VuuServerConfig = ???
 }
 

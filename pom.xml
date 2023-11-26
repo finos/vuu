@@ -86,6 +86,7 @@
         <!--module>layout-server</module-->
         <module>benchmark</module>
         <module>example</module>
+        <module>feature</module>
     </modules>
 
     <dependencies>
