@@ -68,7 +68,13 @@ mvn spring-boot:run
 2. Select 'LayoutServer' config and click run
 
 ### Workspace Settings 
-A set of VSCode settings is shared as workspace settings. In order to use the workspace settings the project needs to be opened in VSCode from vuu-ui/ folder 
+A set of VSCode settings is shared as workspace settings. In order to use the workspace settings the project needs to be opened in VSCode from vuu-ui/ folder.
+
+Settings provided by the workspace currently cover:
+
+- Prettier as default formatter
+
+When using an IDE other than VSCode, the IDE settings should be set to match the workspace settings
 
 ## Configuring IntelliJ
 
