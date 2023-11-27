@@ -3,12 +3,12 @@ package org.finos.vuu.core.module.basket.service
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable, PriceStrategy, Sides}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable, Sides}
 import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
-import org.finos.vuu.order.oms.{NewOrder, OmsApi}
+import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -18,7 +18,7 @@ object BasketService{
 }
 
 trait BasketServiceIF{
-  def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction
+  def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction
 }
 
 class BasketService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
@@ -30,58 +30,61 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
     session.user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
   }
 
-  private def getConstituentsForBasketKey(key: String): List[RowData] = {
+  private def getConstituentsForSourceBasket(basketId: String): List[RowData] = {
     val table = tableContainer.getTable(BasketConstituentTable)
     val keys = table.primaryKeys.toList
-    keys.map( key => table.pullRow(key) ).filter(_.get(BC.BasketId).toString == key)
+    keys.map( key => table.pullRow(key) ).filter(_.get(BC.BasketId).toString == basketId)
   }
 
-  private def mkTradingConstituentRow(side: String, basketKey: String, instanceKey: String,
-                                      constituentKey: String, quantity: Long, weighting: Double, basketConsRow: RowData): RowWithData = {
-    RowWithData(constituentKey, Map(BTC.BasketId -> basketKey,
-      BTC.Ric -> basketConsRow.get(BC.Ric),
-      BTC.InstanceId -> instanceKey,
-      BTC.Quantity -> quantity,
-      BTC.InstanceIdRic -> constituentKey,
-      BTC.Description -> basketConsRow.get(BC.Description),
-      BTC.Side -> side,
-      BTC.Weighting -> weighting,
-      BTC.PriceStrategyId -> 2,
-      BTC.Algo -> -1,
-      BTC.OrderStatus -> OrderStates.PENDING,
-      BTC.FilledQty -> 0
-    ))
+  private def mkTradingConstituentRow(side: String, sourceBasketId: String, basketTradeInstanceId: String, constituentKey: String,
+                                      quantity: Long, weighting: Double, basketConsRow: RowData): RowWithData = {
+    RowWithData(
+      constituentKey,
+      Map(
+        BTC.Ric -> basketConsRow.get(BC.Ric),
+        BTC.BasketId -> sourceBasketId,
+        BTC.InstanceId -> basketTradeInstanceId,
+        BTC.InstanceIdRic -> constituentKey,
+        BTC.Quantity -> quantity,
+        BTC.Description -> basketConsRow.get(BC.Description),
+        BTC.Side -> side,
+        BTC.Weighting -> weighting,
+        BTC.PriceStrategyId -> 2,
+        BTC.Algo -> -1,
+        BTC.OrderStatus -> OrderStates.PENDING,
+        BTC.FilledQty -> 0
+      ))
   }
 
-  private def mkTradingBasketRow(instanceKey: String, basketKey: String): RowWithData = {
-    RowWithData(instanceKey, Map(BT.InstanceId -> instanceKey, BT.Status -> "OFF-MARKET", BT.BasketId -> basketKey, BT.BasketName -> instanceKey, BT.Side -> Sides.Buy, BT.Units -> 1))
+  private def mkTradingBasketRow(sourceBasketId: String, basketTradeName: String, basketTradeInstanceId: String) = {
+    RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Sides.Buy, BT.Units -> 1))
   }
 
-  def createBasketFromRpc(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
-    createBasket(basketKey, name)(ctx)
+  def createBasketFromRpc(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {
+    createBasket(basketId, name)(ctx)
   }
 
   def createBasket(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
 
-    val basketKey = selection.rowKeyIndex.map({ case (key, _) => key }).toList.head
+    val basketId = selection.rowKeyIndex.map({ case (key, _) => key }).toList.head
 
     val instanceKey = getAndPadCounter(session)
 
-    createBasketInternal(basketKey, instanceKey, session)
+    createBasketInternal(basketId, instanceKey, instanceKey, session)
   }
 
-  def createBasket(basketKey: String, name: String)(ctx: RequestContext): ViewPortAction = {
-    createBasketInternal(basketKey, name, ctx.session)
+  def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {
+    val basketTradeId = getAndPadCounter(ctx.session)
+    createBasketInternal(basketId, name, basketTradeId, ctx.session)
   }
 
+  private def createBasketInternal(sourceBasketId: String, basketTradeName: String, basketTradeId: String, sessionId: ClientSessionId) = {
 
-  private def createBasketInternal(basketKey: String, name: String, sessionId: ClientSessionId): ViewPortAction = {
-
-    val constituents = getConstituentsForBasketKey(basketKey)
+    val constituents = getConstituentsForSourceBasket(sourceBasketId)
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {
       case table: DataTable =>
-        table.processUpdate(name, mkTradingBasketRow(name, basketKey), clock.now())
+        table.processUpdate(basketTradeId, mkTradingBasketRow(sourceBasketId, basketTradeName, basketTradeId), clock.now())
       case null =>
         logger.error("Cannot find the Basket Trading table.")
     }
@@ -89,11 +92,11 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
     tableContainer.getTable(BasketModule.BasketTradingConstituentTable) match {
       case table: DataTable =>
         constituents.foreach( rowData => {
-          val constituentKey = name + "." + rowData.get(BTC.Ric)
+          val constituentKey = basketTradeId + "." + rowData.get(BTC.Ric)
           val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
           val quantity = (weighting * 100).asInstanceOf[Long]
           val side = rowData.get(BTC.Side).toString
-          table.processUpdate(constituentKey, mkTradingConstituentRow(side, basketKey, name, constituentKey, quantity, weighting, rowData), clock.now())
+          table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, rowData), clock.now())
         })
       case null =>
         logger.error("Cannot find the Basket Trading Constituent.")
