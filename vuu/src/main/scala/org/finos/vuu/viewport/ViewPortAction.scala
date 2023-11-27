@@ -26,5 +26,7 @@ case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
   new Type(value = classOf[ViewPortEditSuccess], name = "VP_EDIT_SUCCESS"),
   new Type(value = classOf[ViewPortEditFailure], name = "VP_EDIT_FAIL"),
   new Type(value = classOf[ViewPortRpcFailure], name = "VP_RPC_FAILURE")
+  new Type(value = classOf[ViewPortRpcSuccess], name = "VP_RCP_SUCCESS"),
+  new Type(value = classOf[ViewPortRpcFailure], name = "VP_RCP_FAIL"),
 ))
 trait ViewPortActionMixin {}
