@@ -5,10 +5,11 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
 import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.order.oms.OmsApi
-import org.finos.vuu.test.VuuServerTestCase
+import org.finos.vuu.test.{TestVuuServer, VuuServerTestCase}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
 
@@ -17,17 +18,68 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
   import BasketTestCaseHelper._
 
   Feature("Basket Service Test Case") {
+    implicit val clock: Clock = new TestFriendlyClock(10001L)
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
+    implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+    implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
+    import BasketModule._
+
+    val omsApi = OmsApi()
+
+    Scenario("Check updating trade basket side with no change does not update constituents side") {
+      withVuuServer(PriceModule(), BasketModule(omsApi)) {
+        vuuServer =>
+
+          vuuServer.login("testUser", "testToken")
+
+          GivenBasketTradeExist(vuuServer, ".FTSE", "chris-001")
+
+          val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
+          val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
+          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
+
+          When("we edit the side of the parent basket to same side as current value")
+          basketTradingService.editCellAction().func("chris-001", "side", "Buy", vpBasketTrading, vuuServer.session)
+          vuuServer.runOnce()
+
+          Then("get all the updates that have occurred for all view ports from the outbound queue")
+          val updates = combineQs(vpBasketTrading)
+
+          And("assert the basket trading table has not changed side....")
+          assertVpEq(filterByVp(vpBasketTrading, updates)) {
+            Table(
+              ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
+              ("chris-001", ".FTSE", "chris-001", "OFF-MARKET", 1, null, null, null, null, "Buy")
+            )
+          }
+
+          And("assert the basket trading constituent table has not changed sides")
+          assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
+            Table(
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty","orderStatus"),
+              (10L, "Buy", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", "chris-001", "chris-001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", "chris-001", "chris-001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+            )
+          }
+      }
+    }
+
+    def GivenBasketTradeExist(vuuServer: TestVuuServer, basketId: String, basketTradeName: String): Unit = {
+      val basketProvider = vuuServer.getProvider(BasketModule.NAME, BasketTable)
+      basketProvider.tick(".FTSE", Map(B.Id -> ".FTSE", B.Name -> ".FTSE 100", B.NotionalValue -> 1000001, B.NotionalValueUsd -> 1500001))
+
+      val constituentProvider = vuuServer.getProvider(BasketModule.NAME, BasketConstituentTable)
+      constituentProvider.tick("VOD.L.FTSE", Map(BC.RicBasketId -> "VOD.L.FTSE", BC.Ric -> "VOD.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Vodafone"))
+      constituentProvider.tick("BT.L.FTSE", Map(BC.RicBasketId -> "BT.L.FTSE", BC.Ric -> "BT.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Sell", BC.Description -> "British Telecom"))
+      constituentProvider.tick("BP.L.FTSE", Map(BC.RicBasketId -> "BP.L.FTSE", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Beyond Petroleum"))
+
+      val vpBasket = vuuServer.createViewPort(BasketModule.NAME, BasketTable)
+      val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)
+      basketService.createBasket(basketId, basketTradeName)(vuuServer.requestContext)
+    }
 
     Scenario("Check the creation of the baskets and constituents") {
-
-      implicit val clock: Clock = new TestFriendlyClock(10001L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
-      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
-
-      val omsApi = OmsApi()
-
-      import BasketModule._
 
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
@@ -119,7 +171,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
           //vuuServer.runOnce()
           And("assert the basket trading constituent table has flipped sides also")
-          assertVpEq(filterByVp(vpBasketTradingCons,updates)) {
+          assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
               (10L, "Sell", "chris-001", "chris-001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
