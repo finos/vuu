@@ -12,6 +12,8 @@ import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
 
+import scala.util.control.NonFatal
+
 
 trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
@@ -77,12 +79,30 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    getBaseTable() match {
-      case Some(baseTable: DataTable) =>
-        baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)), clock.now())
-        ViewPortEditSuccess()
-      case None =>
-        ViewPortEditFailure("Could not find base table")
+    try {
+      getBaseTable() match {
+        case Some(baseTable: DataTable) =>
+          columnName match {
+            case ColumnName.Weighting | ColumnName.LimitPrice =>
+              val doubleValue =  convertToDouble(data)
+              baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)), clock.now())
+            case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)), clock.now())
+          }
+          ViewPortEditSuccess()
+        case None =>
+          ViewPortEditFailure("Could not find base table for basket trading constituent join ")
+      }
+    } catch {
+      case NonFatal(t) =>  ViewPortEditFailure(s"Could not update $columnName. $t")
+    }
+  }
+  private def convertToDouble(data:Any): Double = {
+    data match {
+      case decimalValue: java.math.BigDecimal =>
+        decimalValue.doubleValue
+      case integer: java.lang.Integer => integer.toDouble
+      case int: Int => int.toDouble
+      case _ => data.asInstanceOf[Double]
     }
   }
 
