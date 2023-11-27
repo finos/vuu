@@ -6,6 +6,7 @@ import org.finos.vuu.layoutserver.exceptions.InternalServerErrorException;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
 import org.finos.vuu.layoutserver.utils.DefaultApplicationLayoutLoader;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -47,6 +48,11 @@ public class ApplicationLayoutIntegrationTest {
     @MockBean
     private DefaultApplicationLayoutLoader mockLoader;
     private final DefaultApplicationLayoutLoader realLoader = new DefaultApplicationLayoutLoader();
+
+    @BeforeEach
+    public void setUp() {
+        repository.deleteAll();
+    }
 
     @Test
     public void getApplicationLayout_noLayoutExists_returns200WithDefaultLayout() throws Exception {
