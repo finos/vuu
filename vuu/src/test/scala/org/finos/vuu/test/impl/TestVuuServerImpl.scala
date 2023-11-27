@@ -165,7 +165,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def login(user: String, token: String): Unit = {
     handler = factory.create()
-    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest("TOKEN", "AAAA")))
+    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest("TOKEN", user)))
     handler.handle(packet, channel)
 
     channel.popMsg match {
@@ -173,7 +173,6 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
         val msg = serializer.deserialize(msgPacket)
         clientSessionId = ClientSessionId(msg.sessionId, user)
     }
-
   }
 
   override def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit = {
