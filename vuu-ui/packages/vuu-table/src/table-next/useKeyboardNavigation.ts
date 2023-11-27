@@ -240,6 +240,7 @@ NavigationHookProps) => {
           if (direction && distance) {
             requestScroll?.({ type: "scroll-distance", distance, direction });
           }
+          console.log(`activeCell focus`);
           activeCell.focus({ preventScroll: true });
         }
       }

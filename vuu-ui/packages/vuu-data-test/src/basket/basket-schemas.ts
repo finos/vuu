@@ -34,7 +34,6 @@ export const schemas: Readonly<
     columns: [
       { name: "basketId", serverDataType: "string" },
       { name: "change", serverDataType: "string" },
-      // this column doesn't exist on Vuu server
       { name: "description", serverDataType: "string" },
       { name: "lastTrade", serverDataType: "string" },
       { name: "ric", serverDataType: "string" },

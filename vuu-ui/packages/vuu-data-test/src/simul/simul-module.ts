@@ -52,7 +52,11 @@ export const populateArray = (tableName: SimulTableName, count: number) => {
 
 const getColumnDescriptors = (tableName: SimulTableName) => {
   const schema = schemas[tableName];
-  return schema.columns;
+  if (schema) {
+    return schema.columns;
+  } else {
+    console.error(`simul-module no schema found for table SIMUL ${tableName}`);
+  }
 };
 
 const createDataSource = (tableName: SimulTableName) => {

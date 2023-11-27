@@ -2224,6 +2224,8 @@ var ServerProxy = class {
       case "TABLE_ROW":
         {
           const viewportRowMap = groupRowsByViewport(body.rows);
+          console.table(body.rows);
+          console.table(body.rows.map((row) => row.data));
           if (debugEnabled4) {
             const [firstRow, secondRow] = body.rows;
             if (body.rows.length === 0) {

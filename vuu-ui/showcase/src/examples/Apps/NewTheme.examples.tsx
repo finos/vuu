@@ -74,7 +74,7 @@ const features: FeatureProps[] = [
       basketSchema: schemas.basket,
       basketTradingSchema: schemas.basketTrading,
       basketTradingConstituentJoinSchema: schemas.basketTradingConstituentJoin,
-      instrumentsSchema: schemas.instruments,
+      basketConstituentSchema: schemas.basketConstituent,
     },
   },
 ];

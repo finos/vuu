@@ -1,13 +1,13 @@
 import { useViewContext } from "@finos/vuu-layout";
 import {
   DataSource,
+  DataSourceConfig,
   RemoteDataSource,
   TableSchema,
   ViewportRpcResponse,
 } from "@finos/vuu-data";
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
-import { VuuFilter } from "@finos/vuu-protocol-types";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 
 export type basketDataSourceKey =
@@ -17,7 +17,7 @@ export type basketDataSourceKey =
   | "data-source-basket-trading-constituent-join"
   | "data-source-basket-constituent";
 
-const NO_FILTER = { filter: "" };
+const NO_CONFIG = {};
 
 export const useBasketTradingDataSources = ({
   basketSchema,
@@ -36,16 +36,19 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingConstituentJoin,
     dataSourceBasketConstituent,
   ] = useMemo(() => {
-    const basketFilter: VuuFilter = basketInstanceId
+    const basketFilter: DataSourceConfig = basketInstanceId
       ? {
-          filter: `instanceId = "${basketInstanceId}"`,
+          filter: {
+            filter: `instanceId = "${basketInstanceId}"`,
+          },
         }
-      : NO_FILTER;
+      : NO_CONFIG;
+
     const dataSourceConfig: [
       basketDataSourceKey,
       TableSchema,
       number,
-      VuuFilter?
+      DataSourceConfig?
     ][] = [
       ["data-source-basket", basketSchema, 100],
       [
@@ -61,16 +64,23 @@ export const useBasketTradingDataSources = ({
         100,
         basketFilter,
       ],
-      ["data-source-basket-constituent", basketConstituentSchema, 100],
+      [
+        "data-source-basket-constituent",
+        basketConstituentSchema,
+        100,
+        // {
+        //   sort: { sortDefs: [{ column: "description", sortType: "A" }] },
+        // },
+      ],
     ];
 
     const dataSources: DataSource[] = [];
-    for (const [key, schema, bufferSize, filter] of dataSourceConfig) {
+    for (const [key, schema, bufferSize, config] of dataSourceConfig) {
       let dataSource = loadSession?.(key) as RemoteDataSource;
       if (dataSource === undefined) {
         dataSource = new RemoteDataSource({
+          ...config,
           bufferSize,
-          filter,
           viewport: `${id}-${key}`,
           table: schema.table,
           columns: schema.columns.map((col) => col.name),

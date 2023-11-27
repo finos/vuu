@@ -1,11 +1,6 @@
 import { Shell } from "@finos/vuu-shell";
 import { CSSProperties } from "react";
 
-import { AutoVuuTable } from "../html/HtmlTable.examples";
-import { registerComponent } from "@finos/vuu-layout";
-
-registerComponent("AutoVuuTable", AutoVuuTable, "view");
-
 const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
@@ -71,4 +66,4 @@ export const ShellWithFullHeightLayoutLeftPanelClosed = () => {
   );
 };
 
-ShellWithFullHeightLayout.displaySequence = displaySequence++;
+ShellWithFullHeightLayoutLeftPanelClosed.displaySequence = displaySequence++;
