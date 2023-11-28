@@ -74,7 +74,7 @@ class OmsApiTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
       omsApi.containsOrder("clOrdId1") should equal(true)
 
-      listener.getOrderState("clOrdId1").get.filledQty should be > (0L)
+      listener.getOrderState("clOrdId1").get.filledQty should be > 0L
 
       for (n <- 1 to 1000) {
         clock.sleep(MAX_FILL_TIME_MS)
@@ -84,5 +84,34 @@ class OmsApiTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
       omsApi.containsOrder("clOrdId1") should equal(false)
     }
 
+
+    Scenario("Check we can submit order and cancel") {
+
+      implicit val clock: Clock = new TestFriendlyClock(1000L)
+
+      val omsApi = OmsApi()
+
+      val listener = new TestListener()
+
+      omsApi.addListener(listener)
+
+      omsApi.createOrder(NewOrder("Buy", "VOD.L", 1000L, 100.01, "clOrdId1"))
+      omsApi.createOrder(NewOrder("Buy", "BP.L", 1000L, 150.01, "clOrdId2"))
+
+      clock.sleep(MAX_ACK_TIME_MS)
+      omsApi.runOnce()
+
+      listener.getOrderState("clOrdId1").get.state should equal("ACKED")
+
+      val orderId = omsApi.getOrderId("clOrdId1").get
+      omsApi.cancelOrder(CancelOrder(orderId))
+      omsApi.runOnce()
+
+      omsApi.containsOrder("clOrdId1") should equal(false)
+      listener.getOrderState("clOrdId1").get.state should equal("CANCELLED")
+
+      omsApi.containsOrder("clOrdId2") should equal(true)
+
+    }
   }
 }

@@ -4,13 +4,16 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable, Sides}
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
-import org.finos.vuu.order.oms.{NewOrder, OmsApi}
+import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 import org.finos.vuu.viewport._
-trait BasketTradingServiceIF extends EditRpcHandler{
+
+trait BasketTradingServiceIF extends EditRpcHandler {
   def sendToMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction
+
+  def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction
 }
 
 
@@ -20,18 +23,14 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
 
 
   /**
-   * Send basket to market
+   * Send basket to market rpc call
    */
-  override def sendToMarket(name: String)(ctx: RequestContext): ViewPortAction = {
-    val tableRow = table.asTable.pullRow(name)
+  override def sendToMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
+    val tableRow = table.asTable.pullRow(basketInstanceId)
 
-    logger.info("Sending basket to market:" + name + " (row:" + tableRow + ")")
+    logger.info("Sending basket to market:" + basketInstanceId + " (row:" + tableRow + ")")
 
-    val tradingConsTable = tableContainer.getTable(BasketModule.BasketTradingConstituentTable)
-
-    val constituents = tradingConsTable.primaryKeys.toList
-      .map(tradingConsTable.pullRow)
-      .filter(_.get(BTC.InstanceId) == name)
+    val constituents = getConstituents(basketInstanceId)
 
     constituents.foreach(constituentRow => {
 
@@ -48,10 +47,41 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
       omsApi.createOrder(nos)
     })
 
-    table.processUpdate(name, RowWithData(name,
-      Map(BT.InstanceId -> name, BT.Status -> BasketStates.ON_MARKET)), clock.now())
+    updateBasketTradeStatus(basketInstanceId, state = BasketStates.ON_MARKET)
 
     ViewPortEditSuccess()
+  }
+
+  /**
+   * Take basket off market rpc call
+   */
+  override def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
+    val tableRow = table.asTable.pullRow(basketInstanceId)
+
+    logger.info("Tasking basket off market:" + basketInstanceId + " (row:" + tableRow + ")")
+
+    updateBasketTradeStatus(basketInstanceId, BasketStates.OFF_MARKET)
+
+    getConstituents(basketInstanceId)
+      .flatMap(c => omsApi.getOrderId(clientOrderId = c.get(BTC.InstanceIdRic).toString))
+      .foreach(orderId => omsApi.cancelOrder(CancelOrder(orderId)))
+
+    ViewPortEditSuccess()
+  }
+
+  private def getConstituents(basketInstanceId: String): List[RowData] = {
+    val tradingConsTable = tableContainer.getTable(BasketModule.BasketTradingConstituentTable)
+
+    tradingConsTable.primaryKeys.toList
+      .map(tradingConsTable.pullRow)
+      .filter(_.get(BTC.InstanceId) == basketInstanceId)
+  }
+
+  private def updateBasketTradeStatus(basketInstanceId: String, state: String): Unit = {
+    table.processUpdate(
+      basketInstanceId,
+      RowWithData(basketInstanceId, Map(BT.InstanceId -> basketInstanceId, BT.Status -> state)),
+      clock.now())
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
