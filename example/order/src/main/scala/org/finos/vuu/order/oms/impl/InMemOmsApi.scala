@@ -58,9 +58,11 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
             orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + random.between(1000, MaxTimes.MAX_FILL_TIME_MS), orderId = orderId)
           case 'A' =>
             val remainingQty = orderstate.qty - orderstate.filledQty
-            val fillQty = if(remainingQty > 1) random.between(1, orderstate.qty - orderstate.filledQty) else 1
-            listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, orderstate.filledQty + fillQty, orderstate.qty)))
-            orderstate.copy(filledQty = orderstate.filledQty + fillQty, nextEventTime = clock.now() + random.between(1000, 5000))
+            val fillQty = if(remainingQty > 1) random.between(1, remainingQty) else 1
+            val totalFilledQty = orderstate.filledQty + fillQty
+            val state = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
+            listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, totalFilledQty, orderstate.qty)))
+            orderstate.copy(state = state, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, 5000))
           case _ =>
             orderstate
         }
