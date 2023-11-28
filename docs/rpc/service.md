@@ -5,7 +5,7 @@ import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
 <SvgDottySeparator style={{marginBottom: 32}}/>
 
 The best way to describe service rpc calls is with an example. In the default React grid for Vuu, we have the filter
-component. The filter uses an ALNTR grammar for defining how we want to filter the data. Examples of how we use this are:
+component. The filter uses an ANTLR  grammar for defining how we want to filter the data. Examples of how we use this are:
 
 ```
 ric = AAA.L
