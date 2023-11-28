@@ -68,7 +68,7 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
             val totalFilledQty = orderstate.filledQty + fillQty
             val nextState = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
             listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, totalFilledQty, orderstate.qty)))
-            orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, 5000))
+            orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, MaxTimes.MAX_FILL_TIME_MS))
           case 'X' =>
             listeners.foreach(_.onCancelAck(CancelAck(orderstate.orderId, orderstate.clientOrderId)))
             orderstate
@@ -86,8 +86,8 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
   }
 
   override def getOrderId(clientOrderId: String): Option[Int] = {
-    orders.find(order => order.clientOrderId == clientOrderId) match {
-      case Some(o) => Some(o.orderId)
+    orders.find(os => os.clientOrderId == clientOrderId) match {
+      case Some(os) => Some(os.orderId)
       case None => None
     }
   }
