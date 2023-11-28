@@ -9,6 +9,12 @@
   --saltText-color: var(--text-secondary-foreground, #606477);
 }
 
+.spinner{
+  width: 100px;
+  height:100px;
+  background-image: var(--svg-spinner);
+}
+
 .saveLayoutPanel-panelContainer {
   display: flex;
   flex-direction: column;

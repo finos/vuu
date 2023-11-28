@@ -32,12 +32,17 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [checkValues, setCheckValues] = useState<string[]>([]);
   const [radioValue, setRadioValue] = useState<RadioValue>(radioValues[0]);
   const [screenshot, setScreenshot] = useState<string | undefined>();
+  const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<string | undefined>();
 
   useEffect(() => {
     if (componentId) {
-      takeScreenshot(document.getElementById(componentId) as HTMLElement).then(
-        (screenshot) => setScreenshot(screenshot)
-      );
+      takeScreenshot(document.getElementById(componentId) as HTMLElement)
+        .then((screenshot) => {
+          setScreenshot(screenshot);
+        })
+        .catch((error: Error) => {
+          setScreenshotErrorMessage(error.message);
+        });
     }
   }, [componentId]);
 
@@ -125,8 +130,10 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
               src={screenshot}
               alt="screenshot of current layout"
             />
+          ) : screenshotErrorMessage ? (
+            <Text className="screenshot">{screenshotErrorMessage}</Text>
           ) : (
-            <Text className="screenshot">No screenshot available</Text>
+            <div className="spinner" />
           )}
         </div>
       </div>

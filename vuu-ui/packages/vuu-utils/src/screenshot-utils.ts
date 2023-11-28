@@ -2,22 +2,34 @@ import { toPng } from "html-to-image";
 
 /**
  * Takes a screenshot of the given node and returns the base64 encoded image url
- * @param node Node to take screenshot of
+ * @param node HTMLElement to take screenshot of
  * @returns Base64 encoded image url
  */
-export async function takeScreenshot(node: HTMLElement) {
-
-  const screenshot = await toPng(node, { cacheBust: true })
-    .then((dataUrl) => {
-      return dataUrl;
+export const takeScreenshot = (node: HTMLElement): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    toPng(node, {
+      cacheBust: true,
+      filter: (child) => {
+        if (
+          child.nodeType !== Node.TEXT_NODE &&
+          child?.getAttribute("role") === "row"
+        )
+          return false;
+        return true;
+      },
     })
-    .catch((err) => {
-      console.error("Error taking screenshot", err);
-      return undefined;
-    });
-
-  if (!screenshot) {
-    return undefined;
-  }
-  return screenshot;
-}
+      .then((screenshot) => {
+        if (!screenshot) {
+          reject(new Error("No Screenshot available"));
+        }
+        resolve(screenshot);
+      })
+      .catch((error: Error) => {
+        console.error(
+          "the following error occurred while taking a screenshot of a DOMNode",
+          error
+        );
+        reject(new Error("Error taking screenshot"));
+      });
+  });
+};
