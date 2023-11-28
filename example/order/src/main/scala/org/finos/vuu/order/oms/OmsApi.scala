@@ -23,6 +23,7 @@ trait OmsApi {
   def addListener(omsListener: OmsListener): Unit
   def runOnce(): Unit
   def containsOrder(clientOrderId: String): Boolean
+  def getOrderId(clientOrderId: String): Option[Int]
 }
 
 trait OmsListener{
