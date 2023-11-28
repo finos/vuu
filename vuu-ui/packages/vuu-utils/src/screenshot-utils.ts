@@ -9,14 +9,9 @@ export const takeScreenshot = (node: HTMLElement): Promise<string> => {
   return new Promise((resolve, reject) => {
     toPng(node, {
       cacheBust: true,
-      filter: (child) => {
-        if (
-          child.nodeType !== Node.TEXT_NODE &&
-          child?.getAttribute("role") === "row"
-        )
-          return false;
-        return true;
-      },
+      filter: (child) =>
+        child.nodeType === Node.TEXT_NODE ||
+        child.getAttribute("role") !== "row",
     })
       .then((screenshot) => {
         if (!screenshot) {
