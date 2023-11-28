@@ -94,7 +94,10 @@ export const ToastNotification = (props: ToastNotificationProps) => {
   const [right, setRight] = useState(-toastWidth - toastContainerRightPadding);
 
   useEffect(() => {
-    setRight(toastContainerRightPadding);
+    setTimeout(
+      () => setRight(toastContainerRightPadding)
+    );
+
     if (animated) {
       setTimeout(
         () => setRight(-toastWidth - toastContainerRightPadding),
