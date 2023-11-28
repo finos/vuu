@@ -1,21 +1,25 @@
 .vuuBasketSelector {
-    --col-gap: 32px;
-    --basket-selector-height: 61px;
+    --basket-selector-height: var(--vuuBasketSelector-height, 61px);
     align-items: center;
     border: solid 1px var(--vuu-color-gray-45);
     border-radius: 6px;
-    display: inline-flex;
+    container-name: basket-selector;
+    container-type: size;
+    display: inline-block;
     height: var(--basket-selector-height);
-    min-width: 400px;
-    padding: 8px;
+    min-width: 450px;
 }
 
 .vuuBasketSelector-basketDetails {
+    --col-gap: 32px;
     display: grid;
     flex: 1 1 auto;
     gap: 0px var(--col-gap);
-    grid-template-columns: max-content min-content min-content 24px;
+    grid-template-columns: auto auto auto 1fr;
     grid-template-rows: 18px 1fr;
+    height: 100%;
+    padding: 8px;
+    max-width: 100%;
 }
 .vuuBasketSelector-label {
     color: var(--vuu-color-gray-50);
@@ -48,7 +52,7 @@
     font-size: 20px;
     font-weight: 400;
     line-height: normal;
-    min-width: 50px;
+    min-width: 70px;
     overflow: hidden;
     position: relative;
     text-overflow: ellipsis;
@@ -74,6 +78,7 @@
     --vuu-icon-size: 24px;
     --vuu-icon-width: 24px;
     align-self: center;
+    justify-self: end;
     grid-column: 4;
     grid-row: 1 / span 2;
 }
@@ -95,4 +100,15 @@
     display: flex;
     flex: 0 0 36px;
     justify-content: center;
+}
+
+@container basket-selector (height <  59px) {
+    .vuuBasketSelector-basketDetails {
+        grid-template-columns: max-content min-content min-content 1fr;
+        grid-template-rows: 1fr;
+        padding: 4px 8px;
+    }
+    label {
+        display: none;
+    }
 }
