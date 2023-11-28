@@ -42,7 +42,13 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
 
   override def replaceOrder(replaceOrder: ReplaceOrder): Unit = ???
 
-  override def cancelOrder(cancelOrder: CancelOrder): Unit = ???
+  override def cancelOrder(cancelOrder: CancelOrder): Unit = {
+    orders = orders.map(orderState =>
+      if (orderState.orderId == cancelOrder.orderId)
+        orderState.copy(state = States.CANCELLED, nextEventTime = clock.now())
+      else orderState
+    )
+  }
 
   override def addListener(omsListener: OmsListener): Unit = listeners = listeners ++ List(omsListener)
 
@@ -60,9 +66,12 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
             val remainingQty = orderstate.qty - orderstate.filledQty
             val fillQty = if(remainingQty > 1) random.between(1, remainingQty) else 1
             val totalFilledQty = orderstate.filledQty + fillQty
-            val state = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
+            val nextState = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
             listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, totalFilledQty, orderstate.qty)))
-            orderstate.copy(state = state, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, 5000))
+            orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, 5000))
+          case 'X' =>
+            listeners.foreach(_.onCancelAck(CancelAck(orderstate.orderId, orderstate.clientOrderId)))
+            orderstate
           case _ =>
             orderstate
         }
@@ -72,8 +81,14 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
       }
     })
 
-   orders = orders.filter(os => os.filledQty != os.qty)
+    orders = orders.filter(os => os.state != States.FILLED && os.state != States.CANCELLED)
 
   }
 
+  override def getOrderId(clientOrderId: String): Option[Int] = {
+    orders.find(order => order.clientOrderId == clientOrderId) match {
+      case Some(o) => Some(o.orderId)
+      case None => None
+    }
+  }
 }
