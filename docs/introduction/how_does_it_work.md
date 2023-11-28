@@ -20,7 +20,7 @@ out of band on a separate thread to the update path (Filter and Sort Thread.) Th
 table you have asked for in your viewport and applies the filters and sorts you've requested. The resulting array of
 primary keys is then pushed into your viewport.
 
-THe update path, by comparison, is different. If you have a particular key in the visible range of your viewport already
+The update path, by comparison, is different. If you have a particular key in the visible range of your viewport already
 and it is updated, it follows the tick() path, so it will progress through the system as an event, on the same thread
 as the provider itself.
 

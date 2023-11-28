@@ -69,7 +69,7 @@ Session tables are specific types of tables that live only during the users conn
 
 ### Tree Session Tables
 
-Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. THe reason for this is that Tree's are a view ontop of
+Tree Session tables are created dyanmically whenever there is a request to tree an underlying flat table. The reason for this is that Tree's are a view ontop of
 and underlying raw table. When we create a tree, we are generating a tree data structure in memory whose leaves are keys that point back to the original rows
 in the underlying table. When your session is closed, the server cleans up these tree tables, freeing up resources.
 
