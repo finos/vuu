@@ -264,7 +264,7 @@ function updateGroupColumnWidth(
  *    2) adjust the flex of resized column, distribute diff to the other flex columns
  * if we are resizing a non-flex column
  *    1) adjust the width of all other fill columns according to their flex values
- * if we try to adjust teh width of a flex column and it is the only flex column
+ * if we try to adjust the width of a flex column and it is the only flex column
  *    disallow the resize
  */
 function updateGroupFillColumnWidth(
