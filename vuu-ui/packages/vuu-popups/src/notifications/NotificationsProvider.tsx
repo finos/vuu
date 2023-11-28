@@ -60,7 +60,6 @@ export const NotificationsProvider = (props: {
   return (
     <NotificationsContext.Provider value={{ notify }}>
       <div
-        className={`${classBase}-toastContainer`}
         style={{
           width:
             toastWidth + toastContainerRightPadding + toastContainerLeftPadding,
