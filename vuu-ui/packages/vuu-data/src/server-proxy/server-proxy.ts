@@ -826,8 +826,6 @@ export class ServerProxy {
       case "TABLE_ROW":
         {
           const viewportRowMap = groupRowsByViewport(body.rows);
-          console.table(body.rows);
-          console.table(body.rows.map((row) => row.data));
           if (process.env.NODE_ENV === "development" && debugEnabled) {
             const [firstRow, secondRow] = body.rows;
             if (body.rows.length === 0) {

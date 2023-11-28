@@ -100,7 +100,7 @@ export const BasketToolbar = ({
     <span key="status" className={`${classBase}-statusIndicator`} />
   );
   const inputSide = (
-    <FormField key="side">
+    <FormField className={`${classBase}-sideField`} key="side">
       <FormFieldLabel>Side</FormFieldLabel>
       <CycleStateButton
         className={`${classBase}-side`}
@@ -119,7 +119,7 @@ export const BasketToolbar = ({
   );
 
   const inputUnits = (
-    <FormField key="units">
+    <FormField className={`${classBase}-unitsField`} key="units">
       <FormFieldLabel>Units</FormFieldLabel>
       <ExpandoInput
         {...unitProps}
@@ -136,7 +136,7 @@ export const BasketToolbar = ({
     </FormField>
   );
   const notionalUSD = (
-    <FormField key="usd">
+    <FormField className={`${classBase}-notionalUsdField`} key="usd">
       <FormFieldLabel>Total USD Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>
         {formatNotional(basket?.totalNotional)}
@@ -145,7 +145,7 @@ export const BasketToolbar = ({
   );
 
   const notional = (
-    <FormField key="notional">
+    <FormField className={`${classBase}-notionalField`} key="notional">
       <FormFieldLabel>Total Not</FormFieldLabel>
       <span className={`${classBase}-notional`}>
         {formatNotional(basket?.totalNotionalUsd)}
@@ -210,5 +210,9 @@ export const BasketToolbar = ({
     return toolbarItems;
   };
 
-  return <div className={classBase}>{getToolbarItems()}</div>;
+  return (
+    <div className={classBase}>
+      <div className={`${classBase}-inner`}>{getToolbarItems()}</div>
+    </div>
+  );
 };
