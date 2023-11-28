@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
 
 /**
- * THe purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
+ * The purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
  * For the corresponding left keys, say orders, orderId = 1,2,3
  */
 class RightToLeftKeys {

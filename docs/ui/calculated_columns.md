@@ -51,7 +51,7 @@ It would likely be poor UX to ask the user to define the return type.
 
 ### Use in Tree'd Viewports
 
-By default calculated columns would work the same in tree'd viewports as in non-tree'd viewports. THe only caveat to that
+By default calculated columns would work the same in tree'd viewports as in non-tree'd viewports. The only caveat to that
 would be when the calculated column would be a branch in the tree. In that case the column values would have to be calculated in the
 tree building function, which may slow down tree generation for specific viewports.
 

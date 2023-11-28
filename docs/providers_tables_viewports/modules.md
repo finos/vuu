@@ -85,7 +85,7 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
 }
 ```
 
-In the module we also define a rest service. This is how the UI interacts with the state store. THe rest service is exposed via the underlying Vert.x
+In the module we also define a rest service. This is how the UI interacts with the state store. The rest service is exposed via the underlying Vert.x
 infrastructure.
 
 ```scala
