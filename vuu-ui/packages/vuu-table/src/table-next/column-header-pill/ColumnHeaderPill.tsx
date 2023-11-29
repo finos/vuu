@@ -1,13 +1,13 @@
 import cx from "classnames";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 
 import "./ColumnHeaderPill.css";
 
 export interface ColumnHeaderPillProps extends HTMLAttributes<HTMLDivElement> {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   removable?: boolean;
-  onRemove?: (column: KeyedColumnDescriptor) => void;
+  onRemove?: (column: RuntimeColumnDescriptor) => void;
 }
 
 const classBase = "vuuColumnHeaderPill";

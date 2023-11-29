@@ -1,6 +1,6 @@
 import { isTypeDescriptor, roundDecimal } from "@finos/vuu-utils";
 import {
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   ColumnTypeFormatting,
 } from "@finos/vuu-datagrid-types";
 import { createElement, useRef } from "react";
@@ -8,7 +8,7 @@ import { createElement, useRef } from "react";
 const defaultFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
-const getFormatter = (column: KeyedColumnDescriptor) => {
+const getFormatter = (column: RuntimeColumnDescriptor) => {
   if (isTypeDescriptor(column.type)) {
     const { name, formatting } = column.type;
     if (name === "number") {
@@ -18,7 +18,7 @@ const getFormatter = (column: KeyedColumnDescriptor) => {
   return defaultFormatter;
 };
 
-export const useCellFormatter = (column: KeyedColumnDescriptor) => {
+export const useCellFormatter = (column: RuntimeColumnDescriptor) => {
   const formatter = useRef(getFormatter(column));
   return [formatter.current];
 };

@@ -1,6 +1,6 @@
 import {
   ColumnTypeRendering,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { ColumnMap, DataRow, isTypeDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
@@ -10,7 +10,7 @@ import { useCellFormatter } from "./useCellFormatter";
 
 import "./GridCell.css";
 
-const columnType = (column: KeyedColumnDescriptor) =>
+const columnType = (column: RuntimeColumnDescriptor) =>
   !column.type
     ? null
     : typeof column.type === "string"
@@ -18,7 +18,7 @@ const columnType = (column: KeyedColumnDescriptor) =>
     : column.type.name;
 
 // TODO we want to allow css class to be determined by value
-function useGridCellClassName(column: KeyedColumnDescriptor) {
+function useGridCellClassName(column: RuntimeColumnDescriptor) {
   // const count = getInstanceCount(classes);
   // console.log(`instance count = ${JSON.stringify(count)}`)
 
@@ -39,7 +39,7 @@ const cellValuesAreEqual = (prev: GridCellProps, next: GridCellProps) => {
 };
 
 export interface GridCellProps extends HTMLAttributes<HTMLDivElement> {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
   row: DataRow;
 }

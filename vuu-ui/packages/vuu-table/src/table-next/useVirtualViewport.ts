@@ -1,11 +1,11 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { RowAtPositionFunc } from "@finos/vuu-utils";
 import { useCallback, useEffect, useRef } from "react";
 import { ViewportMeasurements } from "@finos/vuu-table";
 
 export interface VirtualViewportHookProps {
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   getRowAtPosition: RowAtPositionFunc;
   setRange: (range: VuuRange) => void;
   viewportMeasurements: ViewportMeasurements;

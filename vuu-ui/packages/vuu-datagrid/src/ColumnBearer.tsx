@@ -17,7 +17,7 @@ import "./column-bearer.css";
 import { GridModelType } from "./grid-model";
 import { ColumnDragState, dragPhase } from "./gridTypes";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { DataSourceRow } from "@finos/vuu-data-types";
 
 const LEFT = "left";
@@ -105,7 +105,7 @@ function getTargetColumn(
 
 function getScrollBounds(
   gridModel: GridModelType,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   const { columnGroups, width } = gridModel;
   if (!columnGroups || width === undefined) {
@@ -135,7 +135,7 @@ function getScrollBounds(
 
 function useScrollBounds(
   gridModel: GridModelType,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   const scrollBounds = useRef(getScrollBounds(gridModel, column));
 
@@ -164,7 +164,7 @@ export interface ColumnBearerProps
   gridModel: GridModelType;
   onDrag: (
     phase: dragPhase,
-    column: KeyedColumnDescriptor,
+    column: RuntimeColumnDescriptor,
     insertIdx: number,
     insertPos: number,
     columnPosition?: number

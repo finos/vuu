@@ -12,7 +12,7 @@ import { resizePhase } from "./gridTypes";
 import {
   ColumnDescriptor,
   GridAction,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
@@ -60,7 +60,7 @@ export interface GridActionSort {
 
 export interface GridModelActionAddCol {
   type: "add-col";
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   insertIdx: number;
 }
 
@@ -72,7 +72,7 @@ export interface GridModelActionAggregate {
 
 export interface GridModelActionHideColumn {
   type: "column-hide";
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
 }
 export interface GridModelActionGridConfig {
   type: "grid-config";
@@ -122,7 +122,7 @@ export interface GridModelActionRowHeight {
 }
 export interface GridModelActionShowColumn {
   type: "column-show";
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
 }
 export interface GridModelActionSort {
   type: "sort";

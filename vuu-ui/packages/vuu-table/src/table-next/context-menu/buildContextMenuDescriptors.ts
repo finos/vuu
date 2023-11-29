@@ -1,12 +1,15 @@
 import { DataSource } from "@finos/vuu-data";
 import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor, PinLocation } from "@finos/vuu-datagrid-types";
+import {
+  RuntimeColumnDescriptor,
+  PinLocation,
+} from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
 
-type MaybeColumn = { column?: KeyedColumnDescriptor };
+type MaybeColumn = { column?: RuntimeColumnDescriptor };
 type MaybeFilter = { filter?: Filter };
 
 export const buildContextMenuDescriptors =

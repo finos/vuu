@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { buildColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
 import cx from "classnames";
 import {
@@ -79,7 +79,7 @@ export interface CanvasProps {
 }
 
 export interface CanvasAPI {
-  beginDrag: (column: KeyedColumnDescriptor) => number | undefined;
+  beginDrag: (column: RuntimeColumnDescriptor) => number | undefined;
   beginHorizontalScroll: () => void;
   beginVerticalScroll: () => void;
   endDrag: (
@@ -88,7 +88,7 @@ export interface CanvasAPI {
     columnLeft: number
   ) => void;
   endHorizontalScroll: () => void;
-  isWithinScrollWindow: (column: KeyedColumnDescriptor) => boolean;
+  isWithinScrollWindow: (column: RuntimeColumnDescriptor) => boolean;
   endVerticalScroll: (scrollTol: number) => void;
   scrollBy: (distance: number) => number;
   scrollLeft: number;
@@ -132,7 +132,7 @@ export const Canvas = forwardRef(function Canvas(
     dispatchCanvasAction({ type: "refresh", columnGroup });
   }, [columnGroup.width, columnGroup.columns]);
 
-  const getColumnIdx = (column: KeyedColumnDescriptor) =>
+  const getColumnIdx = (column: RuntimeColumnDescriptor) =>
     columns.findIndex((col) => col.key === column.key);
 
   useImperativeHandle(forwardedRef, () => ({
@@ -245,7 +245,7 @@ export const Canvas = forwardRef(function Canvas(
       }
     },
 
-    isWithinScrollWindow: (column: KeyedColumnDescriptor) =>
+    isWithinScrollWindow: (column: RuntimeColumnDescriptor) =>
       getColumnIdx(column) !== -1,
 
     scrollBy: (scrollDistance: number) => scrollBy(scrollDistance),

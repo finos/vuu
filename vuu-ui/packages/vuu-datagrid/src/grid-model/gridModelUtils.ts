@@ -9,7 +9,7 @@ import {
   ColumnDescriptor,
   GroupColumnDescriptor,
   Heading,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { ColumnGroupType, GridModelType } from "./gridModelTypes";
 
@@ -59,7 +59,7 @@ export const getColumnHeading = (
 
 export function getColumnGroup(
   { columnGroups }: GridModelType,
-  target: number | KeyedColumnDescriptor
+  target: number | RuntimeColumnDescriptor
 ) {
   const isNumber = typeof target === "number";
   if (isNumber && columnGroups) {
@@ -92,7 +92,7 @@ export function getColumnGroup(
 
 export function getColumnGroupIdx(
   { columnGroups }: GridModelType,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   if (columnGroups) {
     for (let i = 0; i < columnGroups.length; i++) {
@@ -105,7 +105,7 @@ export function getColumnGroupIdx(
 }
 
 const cloneColumn = (
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   { locked }: { locked?: boolean }
 ) => {
   return { ...column, locked };
@@ -114,7 +114,7 @@ const cloneColumn = (
 export const ColumnGroup = {
   insertColumnAt: (
     columnGroup: ColumnGroupType,
-    column: KeyedColumnDescriptor,
+    column: RuntimeColumnDescriptor,
     idx: number
   ) => {
     const columns = columnGroup.columns.slice();
@@ -123,7 +123,7 @@ export const ColumnGroup = {
   },
   moveColumnTo: (
     columnGroup: ColumnGroupType,
-    column: KeyedColumnDescriptor,
+    column: RuntimeColumnDescriptor,
     idx: number
   ) => {
     const sourceIdx = columnGroup.columns.findIndex(
@@ -235,7 +235,7 @@ function updateGroupColumnWidth(
   updateColumnHeading(updatedGroup);
   const resizedColumn = updatedGroup.columns.find(
     (col) => col.name === columnName
-  ) as KeyedColumnDescriptor;
+  ) as RuntimeColumnDescriptor;
   const widthAdjustment = width - resizedColumn.width;
 
   // why isn't this done already ?
@@ -371,12 +371,12 @@ function updateGroupColumn(
 
 export const columnKeysToIndices = (
   keys: number[],
-  columns: KeyedColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[]
 ) => keys.map((key) => columns.findIndex((c) => c.key === key));
 
 function addGroupColumn(
   { groupBy }: { groupBy?: VuuGroupBy },
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   if (groupBy) {
     return groupBy.concat(column.name);
@@ -402,7 +402,7 @@ function addSortColumn(
 
 function setSortColumn(
   gridModel: GridModelType,
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   sortType?: "A" | "D"
 ): VuuSort {
   if (sortType === undefined) {
@@ -425,7 +425,7 @@ function setSortColumn(
 
 function removeGroupColumn(
   { groupBy }: { groupBy?: VuuGroupBy },
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ): VuuGroupBy | undefined {
   if (Array.isArray(groupBy)) {
     if (groupBy.length === 1) {
@@ -440,19 +440,19 @@ function removeGroupColumn(
   }
 }
 
-const omitSystemColumns = (column: KeyedColumnDescriptor) =>
+const omitSystemColumns = (column: RuntimeColumnDescriptor) =>
   !column.isSystemColumn;
 
 const addColumnToColumns = (
-  column: KeyedColumnDescriptor,
-  columns: KeyedColumnDescriptor[],
+  column: RuntimeColumnDescriptor,
+  columns: RuntimeColumnDescriptor[],
   index: number
 ) => {
   const currentIndex = columns.findIndex((col) => col.name === column.name);
   if (currentIndex === index) {
     return columns;
   } else {
-    const newColumns: KeyedColumnDescriptor[] =
+    const newColumns: RuntimeColumnDescriptor[] =
       currentIndex !== -1
         ? columns.filter((_, i) => i !== currentIndex)
         : columns.slice();
@@ -461,7 +461,7 @@ const addColumnToColumns = (
   }
 };
 
-const countLeadingSystemColumns = (columns: KeyedColumnDescriptor[]) => {
+const countLeadingSystemColumns = (columns: RuntimeColumnDescriptor[]) => {
   let count = 0;
   for (let i = 0; i < columns.length; i++) {
     if (!columns[i].isSystemColumn) {
@@ -475,7 +475,7 @@ const countLeadingSystemColumns = (columns: KeyedColumnDescriptor[]) => {
 
 const setAggregation = (
   { aggregations }: GridModelType,
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   aggType: VuuAggType
 ) => {
   return aggregations
@@ -532,14 +532,14 @@ export function expandStatesfromGroupState(
   return results;
 }
 
-const flattenColumnGroup = (columns: KeyedColumnDescriptor[]) => {
+const flattenColumnGroup = (columns: RuntimeColumnDescriptor[]) => {
   if (columns.length === 0 || !columns[0].isGroup) {
     return columns;
   }
 
   const [groupColumn, ...nonGroupColumns] = columns as [
     GroupColumnDescriptor,
-    ...KeyedColumnDescriptor[]
+    ...RuntimeColumnDescriptor[]
   ];
   // traverse the group columns in reverse, but do not reverse (mutate) the original array
   for (let i = groupColumn.columns.length - 1; i >= 0; i--) {
@@ -554,9 +554,9 @@ const flattenColumnGroup = (columns: KeyedColumnDescriptor[]) => {
 };
 
 export function extractGroupColumn(
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   groupBy?: VuuGroupBy
-): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
+): [GroupColumnDescriptor | null, RuntimeColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     // Note: groupedColumns will be in column order, not groupBy order
     const [groupedColumns, rest] = columns.reduce(
@@ -573,7 +573,7 @@ export function extractGroupColumn(
 
         return result;
       },
-      [[], []] as [KeyedColumnDescriptor[], KeyedColumnDescriptor[]]
+      [[], []] as [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]]
     );
     if (groupedColumns.length !== groupBy.length) {
       throw Error(
@@ -583,11 +583,11 @@ export function extractGroupColumn(
       );
     }
     const groupCount = groupBy.length;
-    const groupCols: KeyedColumnDescriptor[] = groupBy.map((name, idx) => {
+    const groupCols: RuntimeColumnDescriptor[] = groupBy.map((name, idx) => {
       // Keep the cols in same order defined on groupBy
       const column = groupedColumns.find(
         (col) => col.name === name
-      ) as KeyedColumnDescriptor;
+      ) as RuntimeColumnDescriptor;
       return {
         ...column,
         groupLevel: groupCount - idx,
@@ -611,13 +611,13 @@ export function extractGroupColumn(
 export const splitKeys = (compositeKey: string): number[] =>
   `${compositeKey}`.split(":").map((k) => parseInt(k, 10));
 
-const isKeyedColumn = (column: unknown): column is KeyedColumnDescriptor =>
-  typeof (column as KeyedColumnDescriptor).key === "number";
+const isKeyedColumn = (column: unknown): column is RuntimeColumnDescriptor =>
+  typeof (column as RuntimeColumnDescriptor).key === "number";
 
 export const assignKeysToColumns = (
-  columns: (ColumnDescriptor | KeyedColumnDescriptor | string)[],
+  columns: (ColumnDescriptor | RuntimeColumnDescriptor | string)[],
   defaultWidth: number
-): KeyedColumnDescriptor[] => {
+): RuntimeColumnDescriptor[] => {
   const start = metadataKeys.count;
   return columns.map((column, i) =>
     typeof column === "string"
@@ -643,7 +643,7 @@ export const assignKeysToColumns = (
 const { DEPTH, IS_LEAF } = metadataKeys;
 
 export const getGroupValueAndOffset = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   row: DataRow
 ): [unknown, number | null] => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;

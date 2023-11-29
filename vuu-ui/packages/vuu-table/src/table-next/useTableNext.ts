@@ -7,7 +7,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
@@ -195,7 +195,7 @@ export const useTable = ({
   /**
    * These stateColumns are required only for the duration of a column resize operation
    */
-  const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
+  const [stateColumns, setStateColumns] = useState<RuntimeColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
       const cols = updateColumn(modelColumns, columnName, { width });
@@ -372,7 +372,7 @@ export const useTable = ({
 
   const handleSort = useCallback(
     (
-      column: KeyedColumnDescriptor,
+      column: RuntimeColumnDescriptor,
       extendSort = false,
       sortType?: VuuSortType
     ) => {
@@ -432,7 +432,7 @@ export const useTable = ({
   );
 
   const onToggleGroup = useCallback(
-    (row: DataSourceRow, column: KeyedColumnDescriptor) => {
+    (row: DataSourceRow, column: RuntimeColumnDescriptor) => {
       const isJson = isJsonGroup(column, row);
       const key = row[KEY];
 
@@ -551,7 +551,7 @@ export const useTable = ({
   );
 
   const onRemoveGroupColumn = useCallback(
-    (column: KeyedColumnDescriptor) => {
+    (column: RuntimeColumnDescriptor) => {
       if (isGroupColumn(column)) {
         dataSource.groupBy = [];
       } else {

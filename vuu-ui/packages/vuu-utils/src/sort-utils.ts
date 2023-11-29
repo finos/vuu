@@ -1,6 +1,6 @@
 import {
   ColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { VuuSort, VuuSortCol, VuuSortType } from "@finos/vuu-protocol-types";
 
@@ -36,7 +36,7 @@ export const applySort = (
 
 export const setSortColumn = (
   { sortDefs }: VuuSort,
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   sortType?: "A" | "D"
 ): VuuSort => {
   if (sortType === undefined) {
@@ -57,7 +57,7 @@ export const setSortColumn = (
 
 export const addSortColumn = (
   { sortDefs }: VuuSort,
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   sortType: "A" | "D" = "A"
 ): VuuSort => {
   const sortEntry: VuuSortCol = { column: column.name, sortType };

@@ -1,6 +1,6 @@
 import {
   GroupColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import { useContextMenu } from "@finos/vuu-popups";
 import cx from "classnames";
@@ -16,11 +16,11 @@ const classBase = "hwGroupHeaderCell";
 
 export interface ColHeaderProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   expandState: 0 | 1 | -1;
-  onClick: (column: KeyedColumnDescriptor) => void;
-  onRemoveColumn: (column: KeyedColumnDescriptor) => void;
-  onToggle: (column: KeyedColumnDescriptor, expandState: number) => void;
+  onClick: (column: RuntimeColumnDescriptor) => void;
+  onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
+  onToggle: (column: RuntimeColumnDescriptor, expandState: number) => void;
 }
 const ColHeader = (props: ColHeaderProps) => {
   const { column, className, onClick, onRemoveColumn, expandState, onToggle } =
@@ -58,9 +58,9 @@ export interface GroupHeaderCellProps
   groupState?: any;
   onClick: (
     groupCol: GroupColumnDescriptor,
-    column: KeyedColumnDescriptor
+    column: RuntimeColumnDescriptor
   ) => void;
-  onRemoveColumn: (column: KeyedColumnDescriptor) => void;
+  onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
   onToggleGroupState: () => void;
 }
 
@@ -87,7 +87,7 @@ export const GroupHeaderCell = ({
   });
 
   const handleClick = useCallback(
-    (column: KeyedColumnDescriptor) => {
+    (column: RuntimeColumnDescriptor) => {
       onClick(groupCol, column);
     },
     [groupCol, onClick]

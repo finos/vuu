@@ -9,7 +9,7 @@ import {
 import { GridCell, GroupCell } from "./grid-cells";
 
 import "./grid-row.css";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 const classBase = "vuuDataGridRow";
 
@@ -18,7 +18,7 @@ const { KEY, SELECTED, IS_LEAF, IS_EXPANDED } = metadataKeys;
 export interface RowProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
   columnMap: ColumnMap;
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   height: number;
   idx: number;
   onClick: (

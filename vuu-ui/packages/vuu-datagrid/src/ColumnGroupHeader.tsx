@@ -17,7 +17,7 @@ import { ColumnGroupType } from "./grid-model/gridModelTypes";
 import { GridModel } from "./grid-model/gridModelUtils";
 import { ColumnDragStartHandler, resizePhase } from "./gridTypes";
 
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { isGroupColumn } from "@finos/vuu-utils";
 import "./ColumnGroupHeader.css";
 
@@ -51,7 +51,7 @@ const ColumnGroupHeader = React.memo(
 
     const sortIndicator = (
       sort: VuuSort | undefined,
-      column: KeyedColumnDescriptor
+      column: RuntimeColumnDescriptor
     ) => {
       if (!sort || sort.sortDefs.length === 0) {
         return undefined;
@@ -130,7 +130,7 @@ const ColumnGroupHeader = React.memo(
     );
 
     const handleHeaderClick = useCallback(
-      (_groupColumn, column: KeyedColumnDescriptor) => {
+      (_groupColumn, column: RuntimeColumnDescriptor) => {
         if (gridModel) {
           dispatchGridAction?.({
             type: "sort",

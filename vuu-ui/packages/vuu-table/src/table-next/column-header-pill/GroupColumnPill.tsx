@@ -1,10 +1,10 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnHeaderPill, ColumnHeaderPillProps } from "./ColumnHeaderPill";
 
 import "./GroupColumnPill.css";
 
 export interface GroupColumnPillProps extends ColumnHeaderPillProps {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
 }
 
 export const GroupColumnPill = ({

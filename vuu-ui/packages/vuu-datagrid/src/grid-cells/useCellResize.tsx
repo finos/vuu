@@ -1,10 +1,10 @@
 import { RefObject, useCallback, useRef } from "react";
-import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { resizePhase } from "../gridTypes";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {
-  column: KeyedColumnDescriptor | Heading;
+  column: RuntimeColumnDescriptor | Heading;
   onResize?: (phase: resizePhase, columnName: string, width?: number) => void;
   rootRef: RefObject<HTMLDivElement>;
 }

@@ -1,7 +1,7 @@
 /* eslint-disable no-sequences */
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { MenuActionClosePopup } from "@finos/vuu-popups";
 import { removeColumnFromFilter, setAggregations } from "@finos/vuu-utils";
 import { AggregationType } from "../constants";
@@ -19,7 +19,7 @@ export interface ContextMenuHookProps {
 
 const removeFilterColumn = (
   dataSourceFilter: DataSourceFilter,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) => {
   if (dataSourceFilter.filterStruct && column) {
     const [filterStruct, filter] = removeColumnFromFilter(

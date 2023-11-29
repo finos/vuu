@@ -1,6 +1,6 @@
 //Note these are duplicated in vuu-filter, those should probably be removed.
 
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   AndFilter,
   Filter,
@@ -81,7 +81,7 @@ export const filterAsQuery = (f: Filter): string => {
 };
 
 export const removeColumnFromFilter = (
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   filter: Filter
 ): [Filter | undefined, string] => {
   if (isMultiClauseFilter(filter)) {

@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 import {
   ContextMenuGroupItemDescriptor,
@@ -126,7 +126,7 @@ function buildAggregationMenuItems(
 
 const getSortType = (
   sortCols?: VuuSortCol[],
-  column?: KeyedColumnDescriptor
+  column?: RuntimeColumnDescriptor
 ): "A" | "D" | void => {
   if (sortCols && column) {
     const sortCol = sortCols.find((sortDef) => sortDef.column === column.name);

@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import {
   getMovingValueDirection,
   isTypeDescriptor,
@@ -9,12 +9,12 @@ import { useEffect, useRef } from "react";
 
 const INITIAL_VALUE = [undefined, undefined, undefined, undefined];
 
-type State = [string, unknown, KeyedColumnDescriptor, valueChangeDirection];
+type State = [string, unknown, RuntimeColumnDescriptor, valueChangeDirection];
 
 export function useDirection(
   key: string,
   value: unknown,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   const ref = useRef<State>();
   const [prevKey, prevValue, prevColumn, prevDirection] =

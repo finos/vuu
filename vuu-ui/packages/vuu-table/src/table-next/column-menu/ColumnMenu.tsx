@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useContextMenu } from "@finos/vuu-popups";
 import cx from "classnames";
 import {
@@ -12,7 +12,7 @@ import {
 import "./ColumnMenu.css";
 
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
 }
 
 const getPosition = (element: HTMLElement | null) => {

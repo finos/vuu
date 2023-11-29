@@ -4,7 +4,7 @@
  * to support pinned columns.
  */
 import {
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
 import { useCallback, useMemo, useRef } from "react";
@@ -18,7 +18,7 @@ import {
 } from "@finos/vuu-utils";
 
 export interface TableViewportHookProps {
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   headerHeight: number;
   headings: TableHeadings;
   rowCount: number;
@@ -66,7 +66,7 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   viewportBodyHeight: 0,
 };
 
-const measurePinnedColumns = (columns: KeyedColumnDescriptor[]) => {
+const measurePinnedColumns = (columns: RuntimeColumnDescriptor[]) => {
   let pinnedWidthLeft = 0;
   let pinnedWidthRight = 0;
   let unpinnedWidth = 0;

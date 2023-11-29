@@ -1,7 +1,7 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   DataCellEditHandler,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   RowClickHandler,
 } from "@finos/vuu-datagrid-types";
 import {
@@ -22,13 +22,13 @@ import "./Row.css";
 export interface RowProps {
   className?: string;
   columnMap: ColumnMap;
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   highlighted?: boolean;
   row: DataSourceRow;
   offset: number;
   onClick?: RowClickHandler;
   onDataEdited?: DataCellEditHandler;
-  onToggleGroup?: (row: DataSourceRow, column: KeyedColumnDescriptor) => void;
+  onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   style?: CSSProperties;
   zebraStripes?: boolean;
 }
@@ -80,7 +80,7 @@ export const Row = memo(
     const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 
     const handleGroupCellClick = useCallback(
-      (evt: MouseEvent, column: KeyedColumnDescriptor) => {
+      (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
         if (isGroupColumn(column) || isJsonGroup(column, row)) {
           evt.stopPropagation();
           onToggleGroup?.(row, column);
