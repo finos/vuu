@@ -82,7 +82,6 @@ function RawFeature<Params extends object | undefined>({
   }
 
   const LazyFeature = useCachedFeature(url);
-  console.log({ props, params });
   return (
     <FeatureErrorBoundary url={url}>
       <Suspense fallback={<Loader />}>
