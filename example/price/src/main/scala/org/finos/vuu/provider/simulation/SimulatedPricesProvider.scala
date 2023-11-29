@@ -56,6 +56,45 @@ object PricesFields {
 }
 
 class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int = 400)(implicit val timeProvider: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging with RunInThread {
+  def maxAsk(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double) = {
+    val spread = ask - bid
+    Math.min(ask + spreadMultipler * spread, spread / 2 + bid + priceMaxDelta)
+  }
+
+  def minAsk(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double) = {
+    Math.max(bid + 1, (ask - bid) / 2 + bid)
+  }
+
+  def maxBid(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double) = {
+    val result = Math.min(ask - 1, (ask - bid) / 2 + bid)
+    if (result < 1) bid + 1 else result
+  }
+
+  def minBid(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double) = {
+    val spread = ask - bid
+    val mid = spread / 2 + bid
+    val result = Math.max(bid - Math.min(spreadMultipler * spread, 10), mid - priceMaxDelta)
+    if (result < 0) bid else result
+  }
+
+  def nextRandomDouble(min: Double, max: Double) = {
+    val random = new Random()
+    random.nextDouble(min, max)
+  }
+
+  def generateNextBidAsk(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double, nextRandomDouble: (Double, Double) => Double) = {
+    var tempAsk = ask
+    if ((bid - ask).abs <= 1) tempAsk = ask + 1
+    val minBidValue = minBid(bid, tempAsk, spreadMultipler, priceMaxDelta)
+    val maxBidValue = maxBid(bid, tempAsk, spreadMultipler, priceMaxDelta)
+    val minAskValue = minAsk(bid, tempAsk, spreadMultipler, priceMaxDelta)
+    val maxAskValue = maxAsk(bid, tempAsk, spreadMultipler, priceMaxDelta)
+    val newBid = (nextRandomDouble(minBidValue, maxBidValue) * 100).round / 100.0
+    val newAsk = (nextRandomDouble(minAskValue, maxAskValue) * 100).round / 100.0
+    (newBid, newAsk)
+  }
+
+
   private val currentModes = new ConcurrentHashMap[String, Simulation]()
   private val states = new ConcurrentHashMap[String, Map[String, Any]]()
 
@@ -158,8 +197,6 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
   }
 
   protected def doTakeAWalk(ric: String): Map[String, Any] = {
-    val smallInc = seededRand(timeProvider.now(), 0, 100)
-
     val newRow = getState(ric) match {
       case Some(row) => mergeLeft(row, walkBidAndAsk(ric, row))
       case None => buildSampleRow(ric)
@@ -177,7 +214,7 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
         case Some(ask) => ask
         case None => existing.get(f.Last) match {
           case Some(last) => last
-          case None => seededRand(timeProvider.now(), 0, 10000)
+          case None => nextRandomDouble(0, 1000)
         }
       }
     }
@@ -191,11 +228,8 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     else {
       val bid = existing(f.Bid).asInstanceOf[Double]
       val ask = existing(f.Ask).asInstanceOf[Double]
-      val diff = ask - bid
-      val inc = seededRand(timeProvider.now(), 0, 50)
-      val delta = (inc / 100).asInstanceOf[Double]
-
-      Map(f.Ric -> ric, f.Bid -> (bid + delta), f.Ask -> (ask + delta), f.Scenario -> "walkBidAsk", f.Phase -> "C")
+      val (newBid:Double, newAsk:Double) = generateNextBidAsk(bid, ask, 10.0, 5.0, nextRandomDouble)
+      Map(f.Ric -> ric, f.Bid -> newBid, f.Ask -> newAsk, f.Scenario -> "walkBidAsk", f.Phase -> "C")
     }
   }
 
@@ -213,15 +247,18 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     existing ++ newMap
   }
 
+  def initBidAsk(priceMaxDelta: Double, nextRandomDouble: (Double, Double) => Double) = {
+    val mid = nextRandomDouble(0, 1000)
+    val tempBid = nextRandomDouble(mid - priceMaxDelta, mid - 1)
+    val ask = nextRandomDouble(mid + 1, mid + priceMaxDelta)
+    val bid = if (tempBid < 0) mid else tempBid
+    val newBid = (bid * 100).round / 100.0
+    val newAsk = (ask * 100).round / 100.0
+    (newBid, newAsk)
+  }
   protected def buildSampleRow(ric: String): Map[String, Any] = {
-    val basePrice = seededRand(timeProvider.now(), 0, 10000)
-    val adjusted = (basePrice / 100).asInstanceOf[Double]
-    val spread = seededRand(timeProvider.now(), 0, 100)
-    val adjustedSpread = (spread / 100).asInstanceOf[Double]
-    val askSize = seededRand(timeProvider.now(), 0, 1000)
-    val bidSize = seededRand(timeProvider.now(), 0, 2000)
-
-    Map(f.Ric -> ric, f.Ask -> (adjusted + adjustedSpread), f.Bid -> (adjusted - adjustedSpread), f.Phase -> "C") ++ BidAskSize()
+    val(bid: Double, ask:Double) = initBidAsk(5,nextRandomDouble)
+    Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Phase -> "C") ++ BidAskSize()
   }
 
   final val MaxSpread = 100
@@ -230,7 +267,6 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     if (!states.get(ric).contains(ric)) {
       seedStartValues(ric)
     } else {
-      val spread = seededRand(timeProvider.now(), 1, 80)
       getState(ric) match {
         case Some(state) =>
           val bid = state(f.Bid).asInstanceOf[Double]
@@ -243,7 +279,6 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
 
           val newBid = bid - activeSpread
           val newAsk = ask + activeSpread
-
           Map(f.Ric -> ric, f.Ask -> newAsk, f.Bid -> newBid, f.Scenario -> "widenBidAndAsk", f.Phase -> "C") ++ BidAskSize()
         case None => throw new Exception("shouldn't get here")
       }
@@ -255,12 +290,11 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
     else {
-      val bidAdjust = seededRand(timeProvider.now(), 0, 10)
-      val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val last = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
-      Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C") ++ BidAskSize()
+      val bid = states.get(ric)(f.Bid).asInstanceOf[Double]
+      val ask = states.get(ric)(f.Ask).asInstanceOf[Double]
+      val (newBid:Double, newAsk:Double) = generateNextBidAsk(bid, ask, 10, 5, nextRandomDouble)
+      val last = ((ask + (newAsk - ask) / 2) * 100).round / 100.0
+      Map(f.Ric -> ric, f.Ask -> newAsk, f.Bid -> newBid, f.Scenario -> "fastTick", f.Last -> last, f.Phase -> "C") ++ BidAskSize()
     }
   }
 
@@ -269,11 +303,10 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
     else {
-      val bidAdjust = seededRand(timeProvider.now(), 0, 10)
-      val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val open = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
+      val bid = states.get(ric)(f.Bid).asInstanceOf[Double]
+      val ask = states.get(ric)(f.Ask).asInstanceOf[Double]
+      val (newBid: Double, newAsk: Double) = generateNextBidAsk(bid, ask, 8, 4, nextRandomDouble)
+      val open = ask + (newAsk - ask) / 2
       Map(f.Ric -> ric, f.Scenario -> "open", f.Open -> open, f.Phase -> "O") ++ BidAskSize()
     }
   }
@@ -283,20 +316,12 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     if (!states.get(ric).contains(f.Bid))
       seedStartValues(ric)
     else {
-      val bidAdjust = seededRand(timeProvider.now(), 0, 10)
-      val askAdjust = seededRand(timeProvider.now(), 0, 20)
-      val bid = states.get(ric)(f.Bid).asInstanceOf[Double] + bidAdjust
-      val ask = states.get(ric)(f.Ask).asInstanceOf[Double] + askAdjust
-      val open = states.get(ric)(f.Ask).asInstanceOf[Double] + (askAdjust / 2)
       Map(f.Ric -> ric, f.Scenario -> "close", f.Phase -> "X") ++ BidAskSizeNull()
     }
   }
 
   protected def seedStartValues(ric: String): Map[String, Any] = {
-    val bid: Double = seededRand(timeProvider.now(), 0, 1000)
-    val ask: Double = bid + (bid / 100)
-    val bidSize = seededRand(timeProvider.now(), 0, 1000)
-    val askSize = seededRand(timeProvider.now(), 0, 1000)
+    val (bid:Double, ask:Double) = initBidAsk(5, nextRandomDouble)
     Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Phase -> "C") ++ BidAskSize()
   }
 
