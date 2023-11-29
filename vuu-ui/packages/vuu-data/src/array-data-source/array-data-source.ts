@@ -67,7 +67,7 @@ const { debug } = logger("ArrayDataSource");
 const toDataSourceRow =
   (key: number) =>
   (data: VuuRowDataItemType[], index: number): DataSourceRow => {
-    return [index, index, true, false, 1, 0, data[key].toString(), 0, ...data];
+    return [index, index, true, false, 1, 0, String(data[key]), 0, ...data];
   };
 
 const buildTableSchema = (

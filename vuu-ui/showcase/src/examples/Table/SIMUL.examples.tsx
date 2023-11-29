@@ -86,3 +86,8 @@ Prices.displaySequence = displaySequence++;
 
 export const Orders = () => <SimulTable tableName="orders" />;
 Orders.displaySequence = displaySequence++;
+
+export const InstrumentPrices = () => (
+  <SimulTable tableName="instrumentPrices" />
+);
+InstrumentPrices.displaySequence = displaySequence++;

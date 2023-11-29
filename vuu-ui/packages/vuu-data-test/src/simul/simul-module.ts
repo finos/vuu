@@ -3,16 +3,16 @@ import { buildColumnMap } from "@finos/vuu-utils";
 import { UpdateGenerator } from "../rowUpdates";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";
-import instruments from "./reference-data/instruments";
-import prices from "./reference-data/prices";
+import instrumentsTable from "./reference-data/instruments";
+import pricesTable from "./reference-data/prices";
 import { schemas, SimulTableName } from "./simul-schemas";
 import { BaseUpdateGenerator } from "../UpdateGenerator";
 import { OrderUpdateGenerator } from "./OrderUpdateGenerator";
+import { buildDataColumnMap, joinTables, Table } from "../Table";
 
 const childOrders: VuuDataRow[] = [];
+
 const instrumentPrices: VuuDataRow[] = [];
-const orders: VuuDataRow[] = [];
-const parentOrders: VuuDataRow[] = [];
 
 const { bid, bidSize, ask, askSize } = buildColumnMap(schemas.prices.columns);
 // prettier-ignore
@@ -20,13 +20,26 @@ const pricesUpdateGenerator = new BaseUpdateGenerator([bid, bidSize, ask, askSiz
 
 const orderUpdateGenerator = new OrderUpdateGenerator();
 
-const tables: Record<SimulTableName, VuuDataRow[]> = {
-  childOrders,
-  instruments,
-  instrumentPrices,
-  orders,
-  parentOrders,
-  prices,
+const tables: Record<SimulTableName, Table> = {
+  childOrders: new Table(
+    schemas.childOrders,
+    [],
+    buildDataColumnMap(schemas.childOrders)
+  ),
+  instruments: instrumentsTable,
+  instrumentPrices: joinTables(
+    { module: "SIMUL", table: "instrumentPrices" },
+    instrumentsTable,
+    pricesTable,
+    "ric"
+  ),
+  orders: new Table(schemas.orders, [], buildDataColumnMap(schemas.orders)),
+  parentOrders: new Table(
+    schemas.parentOrders,
+    [],
+    buildDataColumnMap(schemas.parentOrders)
+  ),
+  prices: pricesTable,
 };
 
 const updates: Record<SimulTableName, UpdateGenerator | undefined> = {
@@ -64,7 +77,8 @@ const createDataSource = (tableName: SimulTableName) => {
   const dataArray = populateArray(tableName, 10_000);
   return new TickingArrayDataSource({
     columnDescriptors,
-    data: dataArray,
+    keyColumn: schemas[tableName].key,
+    table: tables[tableName],
     // menu: menus[tableName],
     // rpcServices: services[tableName],
     updateGenerator: updates[tableName],

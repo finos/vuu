@@ -1,4 +1,6 @@
-import InstrumentReferenceData from "./instruments";
+import instrumentTable, { InstrumentsDataRow } from "./instruments";
+import { buildDataColumnMap, Table } from "../../Table";
+import { schemas } from "../simul-schemas";
 import { random } from "./utils";
 
 export type ask = number;
@@ -30,7 +32,10 @@ const prices: PricesDataRow[] = [];
 const start = performance.now();
 // Create 100_000 Instruments
 
-for (const [, , , , , , ric, priceSeed] of InstrumentReferenceData) {
+// prettier-ignore
+for (const [,,,,,,ric,
+  priceSeed,
+] of instrumentTable.data as InstrumentsDataRow[]) {
   const spread = random(0, 10);
 
   const ask = priceSeed + spread / 2;
@@ -59,4 +64,10 @@ for (const [, , , , , , ric, priceSeed] of InstrumentReferenceData) {
 const end = performance.now();
 console.log(`generating 100,000 prices took ${end - start} ms`);
 
-export default prices;
+const pricesTable = new Table(
+  schemas.prices,
+  prices,
+  buildDataColumnMap(schemas.prices)
+);
+
+export default pricesTable;

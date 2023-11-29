@@ -1,25 +1,23 @@
+import { vuuModule } from "@finos/vuu-data-test";
+import { useViewContext } from "@finos/vuu-layout";
 import VuuInstrumentTilesFeature, {
   InstrumentTilesFeatureProps,
 } from "feature-vuu-instrument-tiles";
-import { useViewContext } from "@finos/vuu-layout";
-import { useTableConfig } from "../examples/utils";
 
 export const InstrumentTilesFeature = ({
-  tableSchema,
+  instrumentPricesSchema,
 }: InstrumentTilesFeatureProps) => {
-  const { id, saveSession } = useViewContext();
-  const { dataSource } = useTableConfig({
-    count: 1000,
-    dataSourceConfig: {
-      columns: ["ask", "bid", "description", "ric"],
-    },
-    table: tableSchema.table,
-    rangeChangeRowset: "delta",
-  });
+  const { saveSession } = useViewContext();
+  const dataSource = vuuModule("SIMUL").createDataSource(
+    instrumentPricesSchema.table.table
+  );
 
   saveSession?.(dataSource, "data-source");
 
-  return <VuuInstrumentTilesFeature tableSchema={tableSchema} />;
+  return (
+    <VuuInstrumentTilesFeature
+      instrumentPricesSchema={instrumentPricesSchema}
+    />
+  );
 };
-
 export default InstrumentTilesFeature;
