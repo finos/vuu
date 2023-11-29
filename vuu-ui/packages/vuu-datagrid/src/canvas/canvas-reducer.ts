@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Reducer } from "react";
 import { ColumnGroupType } from "../grid-model/gridModelTypes";
 
@@ -23,7 +23,7 @@ export interface CanvasActionRefresh {
 export type CanvasAction = CanvasActionRefresh | CanvasActionScrollLeft;
 
 export type CanvasState = [
-  KeyedColumnDescriptor[],
+  RuntimeColumnDescriptor[],
   Map<number, number>,
   ColumnGroupType,
   number
@@ -57,12 +57,12 @@ export const canvasReducer: CanvasReducer = (state, action) => {
   }
 };
 
-function initialKeys(columns: KeyedColumnDescriptor[]) {
+function initialKeys(columns: RuntimeColumnDescriptor[]) {
   return new Map(columns.map((column, idx) => [column.key, idx]));
 }
 
 function nextKeys(
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   prevKeys: Map<number, number>
 ): Map<number, number> {
   if (columns.every(({ key }) => prevKeys.has(key))) {
@@ -111,7 +111,7 @@ function nextKeys(
 function getRenderColumns(
   columnGroup: ColumnGroupType,
   scrollLeft = 0
-): KeyedColumnDescriptor[] {
+): RuntimeColumnDescriptor[] {
   if (!isVirtualizationRequired(columnGroup)) {
     return columnGroup.columns;
   }

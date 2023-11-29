@@ -54,6 +54,7 @@ export const useEditableText = <T extends string | number = string>({
           setMessage(warningMessage);
         } else {
           setMessage(undefined);
+          console.log(`commit value ${value}`);
           onCommit(value as T).then((response) => {
             if (response === true) {
               isDirtyRef.current = false;

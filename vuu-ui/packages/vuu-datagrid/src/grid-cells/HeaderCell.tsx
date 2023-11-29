@@ -1,5 +1,5 @@
 import { useContextMenu } from "@finos/vuu-popups";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";
 import { AggregationType } from "../constants";
@@ -34,7 +34,7 @@ export interface HeaderCellProps
   filter?: DataSourceFilter;
   onDrag?: (
     phase: dragPhase,
-    column: KeyedColumnDescriptor,
+    column: RuntimeColumnDescriptor,
     columnPosition: number,
     mousePosition: number
   ) => void;
@@ -51,7 +51,7 @@ export const HeaderCell = function HeaderCell({
   sorted,
 }: HeaderCellProps) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const col = useRef<KeyedColumnDescriptor>(column);
+  const col = useRef<RuntimeColumnDescriptor>(column);
   // const isResizing = useRef(false);
   const { dispatchGridAction, gridModel } = useGridContext();
 

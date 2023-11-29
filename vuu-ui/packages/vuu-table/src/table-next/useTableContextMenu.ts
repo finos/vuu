@@ -1,12 +1,12 @@
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   data: DataSourceRow[];
   dataSource: DataSource;
   getSelectedRows: () => DataSourceRow[];

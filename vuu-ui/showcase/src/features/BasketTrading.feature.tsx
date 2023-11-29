@@ -12,7 +12,7 @@ export const BasketTradingFeature = ({
   basketSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  instrumentsSchema,
+  basketConstituentSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
 
@@ -30,7 +30,7 @@ export const BasketTradingFeature = ({
         basketTradingConstituentJoinSchema,
         "BASKET",
       ],
-      ["data-source-instruments", instrumentsSchema, "SIMUL"],
+      ["data-source-basket-constituent", basketConstituentSchema, "BASKET"],
     ];
     for (const [key, schema, module] of dataSourceConfig) {
       const dataSource = vuuModule(module).createDataSource(schema.table.table);
@@ -40,7 +40,7 @@ export const BasketTradingFeature = ({
     basketSchema,
     basketTradingConstituentJoinSchema,
     basketTradingSchema,
-    instrumentsSchema,
+    basketConstituentSchema,
     saveSession,
   ]);
 
@@ -49,7 +49,7 @@ export const BasketTradingFeature = ({
       basketSchema={basketSchema}
       basketTradingSchema={basketTradingSchema}
       basketTradingConstituentJoinSchema={basketTradingConstituentJoinSchema}
-      instrumentsSchema={instrumentsSchema}
+      basketConstituentSchema={basketConstituentSchema}
     />
   );
 };

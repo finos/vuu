@@ -1,15 +1,31 @@
-import { MeasuredContainer, useId } from "@finos/vuu-layout";
+import {
+  DataSource,
+  SchemaColumn,
+  VuuFeatureInvocationMessage,
+} from "@finos/vuu-data";
+import {
+  SelectionChangeHandler,
+  TableConfig,
+  TableRowClickHandler,
+  TableSelectionModel,
+} from "@finos/vuu-datagrid-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  MeasuredContainer,
+  MeasuredContainerProps,
+  useId,
+} from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { TableProps } from "@finos/vuu-table";
+import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
 import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
-import { CSSProperties, ForwardedRef, forwardRef, useRef } from "react";
+import { CSSProperties, FC, ForwardedRef, forwardRef, useRef } from "react";
 import {
   GroupHeaderCellNext as GroupHeaderCell,
   HeaderCell,
 } from "./header-cell";
-import { Row as DefaultRow } from "./Row";
+import { Row as DefaultRow, RowProps } from "./Row";
 import { useTable } from "./useTableNext";
 
 import "./TableNext.css";
@@ -17,6 +33,75 @@ import "./TableNext.css";
 const classBase = "vuuTableNext";
 
 const { IDX, RENDER_IDX } = metadataKeys;
+
+// TODO implement a Model object to represent a row data for better API
+export type TableRowSelectHandler = (row: DataSourceRow) => void;
+
+export type TableNavigationStyle = "none" | "cell" | "row";
+
+export interface TableProps
+  extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
+  Row?: FC<RowProps>;
+  allowConfigEditing?: boolean;
+  allowDragDrop?: boolean | dragStrategy;
+  /**
+   * required if a fully featured column picker is to be available
+   */
+  availableColumns?: SchemaColumn[];
+  config: TableConfig;
+  dataSource: DataSource;
+  disableFocus?: boolean;
+  headerHeight?: number;
+  /**
+   * Defined how focus navigation within data cells will be handled by table.
+   * Default is cell.
+   */
+  highlightedIndex?: number;
+  navigationStyle?: TableNavigationStyle;
+  /**
+   * required if a fully featured column picker is to be available.
+   * Available columns can be changed by the addition or removal of
+   * one or more calculated columns.
+   */
+  onAvailableColumnsChange?: (columns: SchemaColumn[]) => void;
+  /**
+   * This callback will be invoked any time a config attribute of TableConfig
+   * is changed. By persisting this value and providing it to the Table as a
+   * prop, table state can be persisted across sessions.
+   */
+  onConfigChange?: (config: TableConfig) => void;
+  onDragStart?: DragStartHandler;
+  onDrop?: () => void;
+  /**
+   * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
+   * response must be handled. This callback provides that response.
+   */
+  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
+
+  onHighlight?: (idx: number) => void;
+  /**
+   * callback invoked when user 'clicks' a table row. CLick triggered either
+   * via mouse click or keyboard (default ENTER);
+   */
+  onRowClick?: TableRowClickHandler;
+  onShowConfigEditor?: () => void;
+  onSelect?: TableRowSelectHandler;
+  onSelectionChange?: SelectionChangeHandler;
+  renderBufferSize?: number;
+  rowHeight?: number;
+  /**
+   * Selection Bookends style the left and right edge of a selection block.
+   * They are optional, value defaults to zero.
+   * TODO this should just live in CSS
+   */
+  selectionBookendWidth?: number;
+  selectionModel?: TableSelectionModel;
+  /**
+   * if false, table rendered without headers. Useful when table is being included in a
+   * composite component.
+   */
+  showColumnHeaders?: boolean;
+}
 
 export const TableNext = forwardRef(function TableNext(
   {

@@ -1,6 +1,6 @@
 import {
   ColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   PinLocation,
   TableAttributes,
   TableConfig,
@@ -60,7 +60,7 @@ const getDataType = (
  * data-related config from DataSource.
  */
 export interface TableModel extends TableAttributes {
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   headings: TableHeadings;
 }
 
@@ -89,16 +89,16 @@ export interface ColumnActionInit {
 
 export interface ColumnActionHide {
   type: "hideColumns";
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
 }
 
 export interface ColumnActionShow {
   type: "showColumns";
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
 }
 export interface ColumnActionMove {
   type: "moveColumn";
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   moveBy?: 1 | -1;
 }
 
@@ -112,7 +112,7 @@ export type ResizePhase = "begin" | "resize" | "end";
 
 export interface ColumnActionResize {
   type: "resizeColumn";
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   phase: ResizePhase;
   width?: number;
 }
@@ -129,10 +129,10 @@ export interface ColumnActionUpdate {
 
 export interface ColumnActionUpdateProp {
   align?: ColumnDescriptor["align"];
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
-  resizing?: KeyedColumnDescriptor["resizing"];
+  resizing?: RuntimeColumnDescriptor["resizing"];
   type: "updateColumnProp";
   width?: ColumnDescriptor["width"];
 }
@@ -243,7 +243,9 @@ function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
-    .map(columnDescriptorToKeyedColumDescriptor(tableAttributes, tableSchema));
+    .map(
+      columnDescriptorToInternalColumDescriptor(tableAttributes, tableSchema)
+    );
 
   const maybePinnedColumns = keyedColumns.some(isPinned)
     ? sortPinnedColumns(keyedColumns)
@@ -276,12 +278,12 @@ const getLabel = (
   return label;
 };
 
-const columnDescriptorToKeyedColumDescriptor =
+const columnDescriptorToInternalColumDescriptor =
   (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
   (
     column: ColumnDescriptor & { key?: number },
     index: number
-  ): KeyedColumnDescriptor => {
+  ): RuntimeColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       tableAttributes;
     const serverDataType = getDataType(column, tableSchema);
@@ -298,6 +300,8 @@ const columnDescriptorToKeyedColumDescriptor =
       ...rest,
       align,
       CellRenderer: getCellRenderer(column),
+      HeaderCellLabelRenderer: getCellRenderer(column, "col-label"),
+      HeaderCellContentRenderer: getCellRenderer(column, "col-content"),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,
@@ -313,7 +317,10 @@ const columnDescriptorToKeyedColumDescriptor =
     if (isGroupColumn(keyedColumnWithDefaults)) {
       keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
         (col) =>
-          columnDescriptorToKeyedColumDescriptor(tableAttributes)(col, col.key)
+          columnDescriptorToInternalColumDescriptor(tableAttributes)(
+            col,
+            col.key
+          )
       );
     }
 

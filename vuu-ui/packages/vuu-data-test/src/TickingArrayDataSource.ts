@@ -11,6 +11,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
+  ClientToServerViewportRpcCall,
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
@@ -28,18 +29,21 @@ export interface TickingArrayDataSourceConstructorProps
   extends Omit<ArrayDataSourceConstructorProps, "data"> {
   data?: Array<VuuRowDataItemType[]>;
   menu?: VuuMenu;
+  menuRpcServices?: RpcService[];
   rpcServices?: RpcService[];
   table?: Table;
   updateGenerator?: UpdateGenerator;
 }
 
 export class TickingArrayDataSource extends ArrayDataSource {
+  #menuRpcServices: RpcService[] | undefined;
   #rpcServices: RpcService[] | undefined;
   #updateGenerator: UpdateGenerator | undefined;
   #table?: Table;
 
   constructor({
     data,
+    menuRpcServices,
     rpcServices,
     table,
     updateGenerator,
@@ -54,6 +58,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       data: data ?? table?.data ?? [],
     });
     this._menu = menu;
+    this.#menuRpcServices = menuRpcServices;
     this.#rpcServices = rpcServices;
     this.#updateGenerator = updateGenerator;
     this.#table = table;
@@ -151,6 +156,23 @@ export class TickingArrayDataSource extends ArrayDataSource {
     const key = row[metadataKeys.KEY];
     this.#table?.update(key, columnName, value);
     return Promise.resolve(true);
+  }
+
+  async rpcCall<T extends RpcResponse = RpcResponse>(
+    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
+  ) {
+    const rpcService = this.#rpcServices?.find(
+      (service) =>
+        service.rpcName ===
+        (rpcRequest as ClientToServerViewportRpcCall).rpcName
+    );
+    if (rpcService) {
+      return rpcService.service({
+        ...rpcRequest,
+      });
+    } else {
+      console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);
+    }
   }
 
   async menuRpcCall(

@@ -1,10 +1,10 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { ColumnHeaderPill } from "./ColumnHeaderPill";
 
 import "./SortIndicator.css";
 
 export interface SortIndicatorProps {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
 }
 
 export const SortIndicator = ({ column }: SortIndicatorProps) => {

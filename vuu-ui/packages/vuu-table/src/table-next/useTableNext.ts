@@ -7,13 +7,17 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   RowClickHandler,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-datagrid-types";
-import { MeasuredSize, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import {
+  MeasuredSize,
+  useLayoutEffectSkipFirst,
+  MeasuredProps,
+} from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import {
@@ -42,22 +46,21 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  buildContextMenuDescriptors,
-  ColumnActionHide,
-  ColumnActionPin,
-  MeasuredProps,
-  TableProps,
-} from "../table";
+import { TableProps } from "./TableNext";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";
 import { useInitialValue } from "./useInitialValue";
 import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
-import { useHandleTableContextMenu } from "./context-menu";
+import {
+  buildContextMenuDescriptors,
+  useHandleTableContextMenu,
+} from "./context-menu";
 import { useCellEditing } from "./useCellEditing";
 import {
+  ColumnActionHide,
+  ColumnActionPin,
   isShowColumnSettings,
   isShowTableSettings,
   PersistentColumnAction,
@@ -192,7 +195,7 @@ export const useTable = ({
   /**
    * These stateColumns are required only for the duration of a column resize operation
    */
-  const [stateColumns, setStateColumns] = useState<KeyedColumnDescriptor[]>();
+  const [stateColumns, setStateColumns] = useState<RuntimeColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
       const cols = updateColumn(modelColumns, columnName, { width });
@@ -369,7 +372,7 @@ export const useTable = ({
 
   const handleSort = useCallback(
     (
-      column: KeyedColumnDescriptor,
+      column: RuntimeColumnDescriptor,
       extendSort = false,
       sortType?: VuuSortType
     ) => {
@@ -429,7 +432,7 @@ export const useTable = ({
   );
 
   const onToggleGroup = useCallback(
-    (row: DataSourceRow, column: KeyedColumnDescriptor) => {
+    (row: DataSourceRow, column: RuntimeColumnDescriptor) => {
       const isJson = isJsonGroup(column, row);
       const key = row[KEY];
 
@@ -509,6 +512,7 @@ export const useTable = ({
 
   const {
     onBlur: editingBlur,
+    onDoubleClick: editingDoubleClick,
     onKeyDown: editingKeyDown,
     onFocus: editingFocus,
   } = useCellEditing({
@@ -547,7 +551,7 @@ export const useTable = ({
   );
 
   const onRemoveGroupColumn = useCallback(
-    (column: KeyedColumnDescriptor) => {
+    (column: RuntimeColumnDescriptor) => {
       if (isGroupColumn(column)) {
         dataSource.groupBy = [];
       } else {
@@ -711,6 +715,7 @@ export const useTable = ({
     draggableColumn,
     draggableRow,
     onBlur: editingBlur,
+    onDoubleClick: editingDoubleClick,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,
     onMouseDown: rowDragMouseDown,

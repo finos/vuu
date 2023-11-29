@@ -7,7 +7,10 @@ import {
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel, DefaultColumnConfiguration } from "@finos/vuu-shell";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+import {
+  applyDefaultColumnConfig,
+  registerComponent as registerCellRenderer,
+} from "@finos/vuu-utils";
 import { TableNext, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
@@ -26,6 +29,7 @@ import {
 
 import "./TableNext.examples.css";
 import { Button } from "@salt-ds/core";
+import { HeaderCellProps } from "packages/vuu-datagrid/src";
 
 let displaySequence = 1;
 
@@ -719,7 +723,7 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
       {
         key: 3,
         name: "price",
-        label: "proce",
+        label: "price",
         valueFormatter,
         width: 100,
       },
@@ -742,3 +746,64 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
   );
 };
 GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;
+
+const SymbolHeader = ({ column }: HeaderCellProps) => {
+  return (
+    <span
+      style={{
+        cursor: "pointer",
+        flex: 1,
+        display: "flex",
+        justifyContent: "flex-end",
+      }}
+    >
+      <Button variant="secondary" data-icon="add" />
+    </span>
+  );
+};
+
+registerCellRenderer("symbol-header", SymbolHeader, "cell-renderer", {});
+
+export const CustomColumnRenderer = () => {
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+    const tableName: SimulTableName = "instruments";
+    return {
+      config: {
+        columns: applyDefaultColumnConfig(
+          getSchema(tableName),
+          (tableName, column) => {
+            if (column === "bbg") {
+              return {
+                colHeaderContentRenderer: "symbol-header",
+              };
+            }
+          }
+        ),
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+    };
+  }, []);
+
+  const onSelect = useCallback((row) => {
+    console.log({ row });
+  }, []);
+  const onSelectionChange = useCallback((selected) => {
+    console.log({ selected });
+  }, []);
+
+  return (
+    <TableNext
+      {...tableProps}
+      height={645}
+      navigationStyle="row"
+      renderBufferSize={5}
+      onSelect={onSelect}
+      onSelectionChange={onSelectionChange}
+      width={723}
+    />
+  );
+};
+CustomColumnRenderer.displaySequence = displaySequence++;

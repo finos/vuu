@@ -2,7 +2,7 @@ import { ConfigChangeHandler, DataSource } from "@finos/vuu-data";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import {
   VuuAggregation,
@@ -18,7 +18,7 @@ export type dragPhase = "drag-start" | "drag" | "drag-end";
 export type resizePhase = "begin" | "resize" | "end";
 
 export type ColumnDragState = {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   columnGroupIdx: number;
   columnIdx: number;
   initialColumnPosition: number;
@@ -87,7 +87,7 @@ export interface ViewportProps {
   onChangeRange: (range: VuuRange) => void;
   onColumnDrop?: (
     phase: dragPhase,
-    column: KeyedColumnDescriptor,
+    column: RuntimeColumnDescriptor,
     index: number
   ) => void;
   onColumnDragStart?: ColumnDragStartHandler;

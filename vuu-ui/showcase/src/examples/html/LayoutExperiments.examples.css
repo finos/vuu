@@ -1,6 +1,142 @@
 
 .DockToolbar .Responsive-inner {
-    align-items: stretch;;
+    align-items: stretch;
     gap: 3px;
     padding: 0 3px !important;
 }
+
+#grid-toolbar {
+    container-name: toolbar;
+    container-type: inline-size;
+}
+
+#toolbar-inner {
+    align-items: center;
+    display: grid;
+    gap: 6px;
+    grid-template-columns: auto auto auto auto auto 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
+}
+
+#picker {
+    background-color: ivory;
+    grid-column: 1;
+    grid-row: 1/5;
+    height: 60px;
+    width: 400px;
+}
+
+#side {
+    background-color: ivory;
+    grid-column: 2;
+    grid-row: 1/5;
+    height: 30px;
+    width: 53px;
+
+
+}
+#units {
+    background-color: ivory;
+    grid-column: 3;
+    grid-row: 1/5;
+    height: 30px;
+    width: 53px;
+}
+
+#notional {
+    background-color: ivory;
+    grid-column: 4;
+    grid-row: 1/5;
+    height: 50px;
+    width: 53px;
+}
+#notional-usd {
+    background-color: ivory;
+    grid-column: 5;
+    grid-row: 1/5;
+    height: 50px;
+    width: 53px;
+}
+#send-button {
+    background-color: ivory;
+    grid-column: 6;
+    grid-row: 1/5;
+    height: 24px;
+    justify-self: end;
+    width: 165px;
+}
+
+@container toolbar (width <  822px) {
+    #side {
+        background-color: ivory;
+    }
+    #units {
+        background-color: ivory;
+    }
+    #notional {
+        background-color: ivory;
+    }
+    #notional-usd {
+        background-color: ivory;
+    }
+}    
+
+@container toolbar (width <  800px) {
+    #side {
+        background-color: red;
+        grid-row: 1/3;
+        height: 23px;    
+    }
+    #units {
+        background-color: red;
+        grid-column: 2;
+        grid-row: 3/5;
+        height: 23px;
+    }
+    #notional {
+        background-color: red;
+        grid-column: 3;
+        grid-row: 1/3;
+        height: 23px;
+    }
+    #notional-usd {
+        background-color: red;
+        grid-column: 3;
+        grid-row: 3/5;
+        height: 23px;
+    }
+}    
+
+
+@container toolbar (width < 700px) {
+    #toolbar-inner{
+        gap: 4px;
+    }
+
+    #side {
+        background-color: green;
+        grid-column: 2;
+        grid-row: 1;
+        height: 11px;
+    }
+    #units {
+        background-color: green;
+        grid-column: 2;
+        grid-row: 2;
+        height: 11px;
+    }
+    #notional {
+        background-color: green;
+        grid-column: 2;
+        grid-row: 3;
+        height: 11px;
+    }
+    #notional-usd {
+        background-color: green;
+        grid-column: 2;
+        grid-row: 4;
+        height: 11px;
+    }
+}    
+
+

@@ -101,7 +101,6 @@ export class ArrayDataSource
   private groupMap: undefined | GroupMap;
   /** the index of key field within raw data row */
   private key: number;
-  private tableSchema: TableSchema;
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
   private openTreeNodes: string[] = [];
@@ -120,6 +119,7 @@ export class ArrayDataSource
   protected _menu: VuuMenu | undefined;
   protected selectedRows: Selection = [];
 
+  public tableSchema: TableSchema;
   public viewport: string;
 
   private keys = new KeySet(this.#range);

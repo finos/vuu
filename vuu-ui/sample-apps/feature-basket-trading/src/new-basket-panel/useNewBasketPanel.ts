@@ -56,6 +56,7 @@ export const useNewBasketPanel = ({
         if (rpcCommand) {
           basketDataSource
             .rpcCall?.({
+              namedParams: {},
               params: [basketId, basketName],
               rpcName: "createBasket",
               type: "VIEW_PORT_RPC_CALL",

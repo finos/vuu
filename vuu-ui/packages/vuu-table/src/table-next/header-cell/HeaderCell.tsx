@@ -1,4 +1,4 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { HTMLAttributes, MouseEvent, useCallback, useRef } from "react";
 import { useCell } from "../useCell";
 import { ColumnMenu } from "../column-menu";
@@ -16,7 +16,7 @@ const classBase = "vuuTableNextHeaderCell";
 
 export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
   classBase?: string;
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   onResize?: TableColumnResizeHandler;
 }
 
@@ -27,6 +27,7 @@ export const HeaderCell = ({
   onResize,
   ...htmlAttributes
 }: HeaderCellProps) => {
+  const { HeaderCellContentRenderer, HeaderCellLabelRenderer } = column;
   const rootRef = useRef<HTMLDivElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
     column,
@@ -45,14 +46,21 @@ export const HeaderCell = ({
   const { className, style } = useCell(column, classBase, true);
 
   const columnMenu = <ColumnMenu column={column} />;
-  const columnLabel = (
+  const columnLabel = HeaderCellLabelRenderer ? (
+    <HeaderCellLabelRenderer className={`${classBase}-label`} column={column} />
+  ) : (
     <div className={`${classBase}-label`}>{column.label ?? column.name}</div>
   );
+
+  const columnContent = HeaderCellContentRenderer
+    ? [<HeaderCellContentRenderer column={column} key="content" />]
+    : [];
+
   const sortIndicator = <SortIndicator column={column} />;
   const headerItems =
     column.align === "right"
-      ? [sortIndicator, columnLabel, columnMenu]
-      : [columnMenu, columnLabel, sortIndicator];
+      ? [sortIndicator, columnLabel].concat(columnContent).concat(columnMenu)
+      : [columnMenu, columnLabel, sortIndicator].concat(columnContent);
 
   return (
     <div

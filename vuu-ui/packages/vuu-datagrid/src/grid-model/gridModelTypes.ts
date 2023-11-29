@@ -5,14 +5,14 @@ import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
 import { Size } from "./useMeasuredSize";
-import { Heading, KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 export type Headings = Heading[][];
 
 export type GridModelStatus = "pending" | "ready";
 
 export type ColumnGroupType = {
-  columns: KeyedColumnDescriptor[];
+  columns: RuntimeColumnDescriptor[];
   contentWidth: number;
   headings?: Headings;
   isGroup: true;

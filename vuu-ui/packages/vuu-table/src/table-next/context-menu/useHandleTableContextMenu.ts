@@ -1,6 +1,6 @@
 /* eslint-disable no-sequences */
 import { DataSource } from "@finos/vuu-data";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { removeColumnFromFilter } from "@finos/vuu-utils";
 import { VuuFilter } from "@finos/vuu-protocol-types";
@@ -15,7 +15,7 @@ import {
 } from "@finos/vuu-utils";
 
 export interface ContextMenuOptions {
-  column?: KeyedColumnDescriptor;
+  column?: RuntimeColumnDescriptor;
   filter?: Filter;
   sort?: VuuFilter;
 }
@@ -31,7 +31,7 @@ export interface ContextMenuHookProps {
 
 const removeFilterColumn = (
   dataSourceFilter: DataSourceFilter,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) => {
   if (dataSourceFilter.filterStruct && column) {
     const [filterStruct, filter] = removeColumnFromFilter(

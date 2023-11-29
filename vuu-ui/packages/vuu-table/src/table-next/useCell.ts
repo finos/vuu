@@ -1,10 +1,10 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { getColumnStyle } from "@finos/vuu-utils";
 import cx from "classnames";
 import { useMemo } from "react";
 
 export const useCell = (
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   classBase: string,
   isHeader?: boolean
 ) =>

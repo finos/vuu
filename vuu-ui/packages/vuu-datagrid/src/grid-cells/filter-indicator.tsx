@@ -5,7 +5,7 @@ import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 
 import "./filter-indicator.css";
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 
 export const Direction = {
   ASC: "asc",
@@ -13,7 +13,7 @@ export const Direction = {
 };
 
 export interface FilterIndicatorProps extends HTMLAttributes<HTMLDivElement> {
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   filter?: Filter;
 }
 

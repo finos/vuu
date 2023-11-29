@@ -66,7 +66,8 @@ export const useSessionDataSource = ({
       tableSchema.columns.map((col) => col.name);
 
     ds = new RemoteDataSource({
-      bufferSize: 200,
+      bufferSize: 0,
+      // bufferSize: 200,
       viewport: id,
       table: tableSchema.table,
       ...dataSourceConfigFromState,

@@ -1,9 +1,9 @@
-import { KeyedColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
 
 export function addGroupColumn(
   groupBy: VuuGroupBy,
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ) {
   if (groupBy) {
     return groupBy.concat(column.name);

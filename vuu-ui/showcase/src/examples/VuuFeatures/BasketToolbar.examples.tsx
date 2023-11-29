@@ -14,8 +14,8 @@ const testBasket: Basket = {
   filledPct: 0,
   fxRateToUsd: 1.25,
   side: "BUY",
-  totalNotional: 1000,
-  totalNotionalUsd: 1000,
+  totalNotional: 1403513122789,
+  totalNotionalUsd: 1305517122789,
   units: 120,
 };
 

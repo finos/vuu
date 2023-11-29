@@ -2,7 +2,7 @@ import { isSimpleColumnType, metadataKeys } from "@finos/vuu-utils";
 import {
   ColumnDescriptor,
   ColumnTypeSimple,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import {
   ColumnGroupType,
@@ -45,7 +45,7 @@ import { Reducer } from "react";
 const DEFAULT_COLUMN_MIN_WIDTH = 30;
 const DEFAULT_COLUMN_WIDTH = 80;
 const DEFAULT_COLUMN_TYPE = { name: "string" as ColumnTypeSimple };
-const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
+const CHECKBOX_COLUMN: RuntimeColumnDescriptor = {
   label: "",
   name: "",
   key: metadataKeys.SELECTED,
@@ -61,7 +61,7 @@ const CHECKBOX_COLUMN: KeyedColumnDescriptor = {
   valueFormatter: undefined,
 };
 
-const LINE_NUMBER_COLUMN: KeyedColumnDescriptor = {
+const LINE_NUMBER_COLUMN: RuntimeColumnDescriptor = {
   className: "vuuLineNumber",
   flex: 0,
   isSystemColumn: true,
@@ -481,7 +481,7 @@ function hideColumn(
   { column }: GridModelActionHideColumn
 ) {
   const columns = GridModel.columns(state).filter(
-    (col: KeyedColumnDescriptor) => col.name !== column.name
+    (col: RuntimeColumnDescriptor) => col.name !== column.name
   );
   // const groupBy = GridModel.groupBy(state);
   const { columnNames, columnGroups } = buildColumnGroups(
@@ -656,7 +656,7 @@ function buildColumnGroups(
   const columnGroups: ColumnGroupType[] = [];
   const gridContentWidth = gridWidth - 17; // how do we know about vertical scrollbar
   let availableWidth = gridContentWidth;
-  const preCols: KeyedColumnDescriptor[] =
+  const preCols: RuntimeColumnDescriptor[] =
     selectionModel === "checkbox"
       ? [CHECKBOX_COLUMN]
       : showLineNumbers
@@ -719,7 +719,7 @@ function buildColumnGroups(
           headings,
           isGroup: true as const,
           locked,
-          columns: [] as KeyedColumnDescriptor[],
+          columns: [] as RuntimeColumnDescriptor[],
           left: totalColumnWidth, // TODO this won't be right if we introduce more than one locked group
           width: 0,
           contentWidth: 0,
@@ -829,7 +829,7 @@ const getMaxHeadingDepth = (columns: ColumnDescriptor[]) => {
 
 function addColumnToHeadings(
   maxHeadingDepth: number,
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   headings: Headings,
   collapsedColumns?: string[]
 ) {

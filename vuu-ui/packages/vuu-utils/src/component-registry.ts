@@ -11,6 +11,7 @@ import {
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
+import { HeaderCellProps } from "packages/vuu-datagrid/src";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
@@ -96,7 +97,8 @@ export function registerComponent<
   T extends
     | TableCellRendererProps
     | CellConfigPanelProps
-    | EditRuleValidator = TableCellRendererProps
+    | EditRuleValidator
+    | HeaderCellProps = TableCellRendererProps
 >(
   componentName: string,
   component: T extends EditRuleValidator ? T : FC<T>,
@@ -142,18 +144,27 @@ export const getRegisteredCellRenderers = (
 export const getCellRendererOptions = (renderName: string) =>
   optionsMap.get(renderName);
 
-export function getCellRenderer(column: ColumnDescriptor) {
-  if (isTypeDescriptor(column.type)) {
-    const { renderer } = column.type;
-    if (isColumnTypeRenderer(renderer)) {
-      return cellRenderersMap.get(renderer.name);
+export function getCellRenderer(
+  column: ColumnDescriptor,
+  cellType: "cell" | "col-content" | "col-label" = "cell"
+) {
+  if (cellType === "cell") {
+    if (isTypeDescriptor(column.type)) {
+      const { renderer } = column.type;
+      if (isColumnTypeRenderer(renderer)) {
+        return cellRenderersMap.get(renderer.name);
+      }
     }
-  }
-  if (column.editable) {
-    // we can only offer a text input edit as a generic editor.
-    // If a more specialised editor is required, user must configure
-    // it in column config.
-    return cellRenderersMap.get("input-cell");
+    if (column.editable) {
+      // we can only offer a text input edit as a generic editor.
+      // If a more specialised editor is required, user must configure
+      // it in column config.
+      return cellRenderersMap.get("input-cell");
+    }
+  } else if (cellType === "col-label" && column.colHeaderLabelRenderer) {
+    return cellRenderersMap.get(column.colHeaderLabelRenderer);
+  } else if (cellType === "col-content" && column.colHeaderContentRenderer) {
+    return cellRenderersMap.get(column.colHeaderContentRenderer);
   }
 }
 

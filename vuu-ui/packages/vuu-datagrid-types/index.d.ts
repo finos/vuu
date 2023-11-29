@@ -30,9 +30,9 @@ export type DataCellEditHandler = (
 
 export interface TableCellProps {
   className?: string;
-  column: KeyedColumnDescriptor;
+  column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
-  onClick?: (event: MouseEvent, column: KeyedColumnDescriptor) => void;
+  onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
   onDataEdited?: DataCellEditHandler;
   row: DataSourceRow;
 }
@@ -181,6 +181,8 @@ export interface ColumnDescriptor {
   aggregate?: VuuAggType;
   align?: ColumnAlignment;
   className?: string;
+  colHeaderContentRenderer?: string;
+  colHeaderLabelRenderer?: string;
   editable?: boolean;
   flex?: number;
   /** 
@@ -211,9 +213,11 @@ export interface ColumnDescriptorCustomRenderer
 
 /** This is an internal description of a Column that extends the public
  * definitin with internal state values. */
-export interface KeyedColumnDescriptor extends ColumnDescriptor {
+export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
+  HeaderCellLabelRenderer?: FunctionComponent<HeaderCellProps>;
+  HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
   className?: string;
   clientSideEditValidationCheck?: ClientSideValidationChecker;
   endPin?: true | undefined;
@@ -239,8 +243,8 @@ export interface KeyedColumnDescriptor extends ColumnDescriptor {
   width: number;
 }
 
-export interface GroupColumnDescriptor extends KeyedColumnDescriptor {
-  columns: KeyedColumnDescriptor[];
+export interface GroupColumnDescriptor extends RuntimeColumnDescriptor {
+  columns: RuntimeColumnDescriptor[];
   groupConfirmed: boolean;
 }
 

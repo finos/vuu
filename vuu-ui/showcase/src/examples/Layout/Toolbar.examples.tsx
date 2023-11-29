@@ -45,6 +45,45 @@ export const DefaulToolbar = () => {
 };
 DefaulToolbar.displaySequence = displaySequence++;
 
+export const ToolbarWrapPriority = () => {
+  const handleNavigateOutOfBounds = useCallback<NavigationOutOfBoundsHandler>(
+    (direction) => {
+      console.log(`onNavigateOutOfBounds ${direction}`);
+    },
+    []
+  );
+  return (
+    <div
+      style={
+        {
+          height: "100vh",
+          padding: 100,
+          width: "100vw",
+          background: "ivory",
+        } as CSSProperties
+      }
+    >
+      <Toolbar
+        height={44}
+        onNavigateOutOfBounds={handleNavigateOutOfBounds}
+        style={{
+          background: "var(--vuu-color-gray-30)",
+          width: "100%",
+          height: 44,
+        }}
+      >
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+        <div tabIndex={0} className="Item" style={{ width: 100 }}></div>
+      </Toolbar>
+    </div>
+  );
+};
+ToolbarWrapPriority.displaySequence = displaySequence++;
+
 export const ToolbarControlledSelection = () => {
   const [activeItem, setActiveItem] = useState<number[]>([]);
   return (

@@ -1,6 +1,6 @@
 import {
   GroupColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
 import cx from "classnames";
 import { useCallback, useRef, useState } from "react";
@@ -15,8 +15,8 @@ import "./GroupHeaderCell.css";
 const classBase = "vuuTableNextGroupHeaderCell";
 
 const switchIfChanged = (
-  columns: KeyedColumnDescriptor[],
-  newColumns: KeyedColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[],
+  newColumns: RuntimeColumnDescriptor[]
 ) => {
   if (columns === newColumns) {
     return columns;
@@ -28,7 +28,7 @@ const switchIfChanged = (
 export interface GroupHeaderCellNextProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
   column: GroupColumnDescriptor;
-  onRemoveColumn: (column: KeyedColumnDescriptor) => void;
+  onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }
 
 export const GroupHeaderCellNext = ({

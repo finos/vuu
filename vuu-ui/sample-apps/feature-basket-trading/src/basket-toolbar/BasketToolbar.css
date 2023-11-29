@@ -1,16 +1,43 @@
 .vuuBasketToolbar {
+
+    --basket-selector-gridColumn: 1;
+    --basket-selector-gridRow: 1/5;
+    --basket-side-gridColumn: 2;
+    --basket-side-gridRow: 1/5;
+    --basket-units-gridColumn: 3;
+    --basket-units-gridRow: 1/5;
+    --basket-notionalUsd-gridColumn: 4;
+    --basket-notionalUsd-gridRow: 1/5;
+    --basket-notional-gridColumn: 5;
+    --basket-notional-gridRow: 1/5;
+    --basket-sendtomarket-gridColumn: 6;
+    --basket-sendtomarket-gridRow: 1/5;
+
     --saltFormField-width: fit-content;
-    align-items: center;
-    display: flex;
+
+    container-name: basket-toolbar;
+    container-type: inline-size;
     flex: 0 0 var(--basket-toolbar-height, 75px); 
-    gap: 12px;
     padding: 8px 16px;
+
 }
 
+.vuuBasketToolbar-inner {
+    align-items: center;
+    display: grid;
+    column-gap: 24px;
+    row-gap: 0px;
+    grid-template-columns: auto auto auto auto auto 1fr;
+    grid-template-rows: 18px 18px 18px 18px;
+}
+
+.vuuBasketToolbar .saltFormFieldLabel {
+    white-space: nowrap;
+}
 
 .vuuBasketToolbar-side {
     --saltButton-height: 32px;
-    --saltButton-minWidth: 50px;
+    --saltButton-minWidth: 80px;
     color: white;
 }
 
@@ -29,6 +56,7 @@
     --vuuExpandoInput-border: solid 1px var(--salt-editable-borderColor);
     --vuuExpandoInput-borderRadius: 6px;
     --vuuExpandoInput-height: 32px;
+    margin-right: 24px;
     min-width: 80px;
 
 }
@@ -36,18 +64,21 @@
 .vuuBasketToolbar-notional {
     font-size: 20px;
     font-weight: 700;
+    height: 24px;
+    line-height: 24px;
 }
 
 /* .vuuBasketToolbar-units {
     --vuuExpandoInput-minWidth: 80px;
 } */
 
-.saltFormField:has(.vuuBasketToolbar-notional){
+.vuuBasketToolbar-notionalField {
     margin: 0 24px;
 
 }
 
-.saltFormField:has(.vuuBasketToolbar-notional):before {
+.vuuBasketToolbar-notionalField:before,
+.vuuBasketToolbar-notionalUsdField:before {
     content: '';
     position: absolute;
     left: -24px;
@@ -63,10 +94,161 @@
     --saltButton-borderRadius: 6px;
     --saltButton-height: 24px;
     --saltButton-padding: 16px;
+    justify-self: end;;
 }
     
 
 .vuuBasketToolbar-sendToMarket {
     --vuu-icon-size: 16px;
-    margin-left: auto;
 }
+
+.vuuBasketToolbar .vuuBasketSelector {
+    grid-column: var(--basket-selector-gridColumn);
+    grid-row: var(--basket-selector-gridRow);
+}
+.vuuBasketToolbar-sideField {
+    grid-column: var(--basket-side-gridColumn);
+    grid-row: var(--basket-side-gridRow);
+}
+.vuuBasketToolbar-unitsField {
+    grid-column: var(--basket-units-gridColumn);
+    grid-row: var(--basket-units-gridRow);
+}
+.vuuBasketToolbar-notionalUsdField {
+    grid-column: var(--basket-notionalUsd-gridColumn);
+    grid-row: var(--basket-notionalUsd-gridRow);
+}
+.vuuBasketToolbar-notionalField {
+    grid-column: var(--basket-notional-gridColumn);
+    grid-row: var(--basket-notional-gridRow);
+}
+.vuuBasketToolbar-sendToMarket {
+    grid-column: var(--basket-sendtomarket-gridColumn);
+    grid-row: var(--basket-sendtomarket-gridRow);
+}
+
+
+@container basket-toolbar (width <  1200px) {
+    .vuuBasketToolbar-inner {
+        grid-template-columns: auto auto auto 1fr;
+    }
+
+    .saltFormField-labelTop {
+        align-self: center;
+        grid-template-areas: "label content";
+    }
+    .vuuBasketToolbar-inner {
+        --basket-side-gridColumn: 2;
+        --basket-side-gridRow: 1/3;
+        --basket-units-gridColumn: 2;
+        --basket-units-gridRow: 3/5;
+        --basket-notionalUsd-gridColumn: 3;
+        --basket-notionalUsd-gridRow: 1/3;
+        --basket-notional-gridColumn: 3;
+        --basket-notional-gridRow: 3/5;
+        --basket-sendtomarket-gridColumn: 4;
+    }
+
+    .vuuBasketToolbar-sideField {
+        align-self: end;
+    }
+
+    .vuuBasketToolbar-sideField .saltFormFieldLabel,
+    .vuuBasketToolbar-unitsField .saltFormFieldLabel {
+        align-self: center;
+        width: 28px;
+    }
+
+
+
+    .vuuBasketToolbar-side {
+        --saltButton-height: 24px;
+    }
+    .vuuBasketToolbar-units {
+        --vuuExpandoInput-height: 24px;
+    }
+
+    .vuuBasketToolbar-notionalUsdField {
+        align-self: end;
+    }
+
+    .vuuBasketToolbar-notionalField {
+        margin: 0;
+    }
+
+    .vuuBasketToolbar-notionalUsdField .saltFormFieldLabel,
+    .vuuBasketToolbar-notionalField .saltFormFieldLabel {
+        align-self: center;
+
+        width: 70px;
+    }
+
+    .vuuBasketToolbar-notionalField:before {
+        content: none;
+    }
+  
+}    
+
+
+@container basket-toolbar (width <  1080px) {
+    .vuuBasketToolbar-inner {
+        --vuuBasketSelector-height: 36px;
+        grid-template-columns: auto auto auto;
+    }
+
+    .saltFormField-labelTop {
+        grid-template-areas: "label content";
+    }
+    .vuuBasketToolbar-inner {
+        --basket-selector-gridRow: 1/3;
+        --basket-side-gridColumn: 2;
+        --basket-side-gridRow: 1/3;
+        --basket-units-gridColumn: 2;
+        --basket-units-gridRow: 3/5;
+        --basket-notionalUsd-gridColumn: 3;
+        --basket-notionalUsd-gridRow: 1/3;
+        --basket-notional-gridColumn: 3;
+        --basket-notional-gridRow: 3/5;
+        --basket-sendtomarket-gridColumn: 1;
+        --basket-sendtomarket-gridRow: 3/5;
+    }
+
+    .vuuBasketToolbar-sideField {
+        align-self: end;
+    }
+
+    .vuuBasketToolbar-sideField .saltFormFieldLabel,
+    .vuuBasketToolbar-unitsField .saltFormFieldLabel {
+        width: 28px;
+    }
+
+    .vuuBasketToolbar-side {
+        --saltButton-height: 24px;
+    }
+    .vuuBasketToolbar-units {
+        --vuuExpandoInput-height: 24px;
+    }
+
+    .vuuBasketToolbar-notionalUsdField {
+        align-self: end;
+    }
+
+    .vuuBasketToolbar-notionalField {
+        margin: 0;
+    }
+
+    .vuuBasketToolbar-notionalUsdField .saltFormFieldLabel,
+    .vuuBasketToolbar-notionalField .saltFormFieldLabel {
+        width: 70px;
+    }
+
+    .vuuBasketToolbar-notionalField:before {
+        content: none;
+    }
+
+    .vuuBasketToolbar-sendToMarket {
+        justify-self: start;
+    }
+  
+}    
+

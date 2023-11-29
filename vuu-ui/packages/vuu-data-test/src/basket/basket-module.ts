@@ -7,7 +7,11 @@ import ftse from "./reference-data/ftse100";
 import nasdaq from "./reference-data/nasdaq100";
 import sp500 from "./reference-data/sp500";
 import hsi from "./reference-data/hsi";
-import { VuuMenu, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  ClientToServerViewportRpcCall,
+  VuuMenu,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 import { Table } from "../Table";
 
 // This is a 'local' columnMap
@@ -220,13 +224,11 @@ function createTradingBasket(basketId: string, basketName: string) {
   });
 }
 
-async function createNewBasket(rpcRequest: any) {
-  const { basketName, selectedRows } = rpcRequest;
-  if (selectedRows.length === 1) {
-    const [row] = selectedRows;
-    const basketId = row[KEY];
-    createTradingBasket(basketId, basketName);
-  }
+async function createNewBasket(rpcRequest: ClientToServerViewportRpcCall) {
+  const {
+    params: [basketId, basketName],
+  } = rpcRequest;
+  createTradingBasket(basketId, basketName);
 }
 
 //-------------------
@@ -298,7 +300,7 @@ const services: Record<BasketsTableName, RpcService[] | undefined> = {
   algoType: undefined,
   basket: [
     {
-      rpcName: "CREATE_NEW_BASKET",
+      rpcName: "createBasket",
       service: createNewBasket,
     },
   ],

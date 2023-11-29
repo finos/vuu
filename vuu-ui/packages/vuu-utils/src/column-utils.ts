@@ -8,7 +8,7 @@ import type {
   ColumnTypeRendering,
   ColumnTypeWithValidationRules,
   GroupColumnDescriptor,
-  KeyedColumnDescriptor,
+  RuntimeColumnDescriptor,
   MappedValueTypeRenderer,
   PinLocation,
   TableHeading,
@@ -89,8 +89,8 @@ export const isValidPinLocation = (v: string): v is PinLocation =>
 
 export const isKeyedColumn = (
   column: ColumnDescriptor
-): column is KeyedColumnDescriptor => {
-  return typeof (column as KeyedColumnDescriptor).key === "number";
+): column is RuntimeColumnDescriptor => {
+  return typeof (column as RuntimeColumnDescriptor).key === "number";
 };
 
 export const fromServerDataType = (
@@ -141,7 +141,7 @@ export const isPinned = (column: ColumnDescriptor) =>
 export const hasHeadings = (column: ColumnDescriptor) =>
   Array.isArray(column.heading) && column.heading.length > 0;
 
-export const isResizing = (column: KeyedColumnDescriptor) => column.resizing;
+export const isResizing = (column: RuntimeColumnDescriptor) => column.resizing;
 
 export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined
@@ -209,7 +209,7 @@ export const isMappedValueTypeRenderer = (
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (KeyedColumnDescriptor | SchemaColumn | string)[]
+  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[]
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
@@ -258,8 +258,8 @@ export const metadataKeys = {
 
 // This method mutates the passed columns array
 const insertColumn = (
-  columns: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
+  columns: RuntimeColumnDescriptor[],
+  column: RuntimeColumnDescriptor
 ) => {
   const { originalIdx } = column;
   if (typeof originalIdx === "number") {
@@ -276,12 +276,12 @@ const insertColumn = (
 };
 
 export const flattenColumnGroup = (
-  columns: KeyedColumnDescriptor[]
-): KeyedColumnDescriptor[] => {
+  columns: RuntimeColumnDescriptor[]
+): RuntimeColumnDescriptor[] => {
   if (columns[0]?.isGroup) {
     const [groupColumn, ...nonGroupedColumns] = columns as [
       GroupColumnDescriptor,
-      ...KeyedColumnDescriptor[]
+      ...RuntimeColumnDescriptor[]
     ];
     groupColumn.columns.forEach((groupColumn) => {
       insertColumn(nonGroupedColumns, groupColumn);
@@ -293,10 +293,10 @@ export const flattenColumnGroup = (
 };
 
 export function extractGroupColumn(
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   groupBy?: VuuGroupBy,
   confirmed = true
-): [GroupColumnDescriptor | null, KeyedColumnDescriptor[]] {
+): [GroupColumnDescriptor | null, RuntimeColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
     // Note: groupedColumns will be in column order, not groupBy order
@@ -314,7 +314,7 @@ export function extractGroupColumn(
 
         return result;
       },
-      [[], []] as [KeyedColumnDescriptor[], KeyedColumnDescriptor[]]
+      [[], []] as [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]]
     );
     if (groupedColumns.length !== groupBy.length) {
       throw Error(
@@ -324,11 +324,11 @@ export function extractGroupColumn(
       );
     }
     const groupCount = groupBy.length;
-    const groupCols: KeyedColumnDescriptor[] = groupBy.map((name, idx) => {
+    const groupCols: RuntimeColumnDescriptor[] = groupBy.map((name, idx) => {
       // Keep the cols in same order defined on groupBy
       const column = groupedColumns.find(
         (col) => col.name === name
-      ) as KeyedColumnDescriptor;
+      ) as RuntimeColumnDescriptor;
       return {
         ...column,
         groupLevel: groupCount - idx,
@@ -351,25 +351,25 @@ export function extractGroupColumn(
 }
 
 export const isGroupColumn = (
-  column: KeyedColumnDescriptor
+  column: RuntimeColumnDescriptor
 ): column is GroupColumnDescriptor => column.isGroup === true;
 
 export const isJsonAttribute = (value: unknown) =>
   typeof value === "string" && value.endsWith("+");
 
-export const isJsonGroup = (column: KeyedColumnDescriptor, row: VuuDataRow) =>
+export const isJsonGroup = (column: RuntimeColumnDescriptor, row: VuuDataRow) =>
   (column.type as ColumnTypeDescriptor)?.name === "json" &&
   isJsonAttribute(row[column.key]);
 
-export const isJsonColumn = (column: KeyedColumnDescriptor) =>
+export const isJsonColumn = (column: RuntimeColumnDescriptor) =>
   (column.type as ColumnTypeDescriptor)?.name === "json";
 
 export const sortPinnedColumns = (
-  columns: KeyedColumnDescriptor[]
-): KeyedColumnDescriptor[] => {
-  const leftPinnedColumns: KeyedColumnDescriptor[] = [];
-  const rightPinnedColumns: KeyedColumnDescriptor[] = [];
-  const restColumns: KeyedColumnDescriptor[] = [];
+  columns: RuntimeColumnDescriptor[]
+): RuntimeColumnDescriptor[] => {
+  const leftPinnedColumns: RuntimeColumnDescriptor[] = [];
+  const rightPinnedColumns: RuntimeColumnDescriptor[] = [];
+  const restColumns: RuntimeColumnDescriptor[] = [];
   // let pinnedWidthLeft = 0;
   let pinnedWidthLeft = 4;
   for (const column of columns) {
@@ -392,7 +392,7 @@ export const sortPinnedColumns = (
 
   if (leftPinnedColumns.length) {
     leftPinnedColumns.push({
-      ...(leftPinnedColumns.pop() as KeyedColumnDescriptor),
+      ...(leftPinnedColumns.pop() as RuntimeColumnDescriptor),
       endPin: true,
     });
   }
@@ -402,7 +402,7 @@ export const sortPinnedColumns = (
     : restColumns;
 
   if (rightPinnedColumns.length) {
-    const measuredRightPinnedColumns: KeyedColumnDescriptor[] = [];
+    const measuredRightPinnedColumns: RuntimeColumnDescriptor[] = [];
     let pinnedWidthRight = 0;
     for (const column of rightPinnedColumns) {
       measuredRightPinnedColumns.unshift({
@@ -419,7 +419,7 @@ export const sortPinnedColumns = (
 };
 
 export const getTableHeadings = (
-  columns: KeyedColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[]
 ): TableHeadings => {
   if (columns.some(hasHeadings)) {
     const maxHeadingDepth = columns.reduce<number>(
@@ -453,7 +453,7 @@ export const getColumnStyle = ({
   pin,
   pinnedOffset = pin === "left" ? 0 : 4,
   width,
-}: KeyedColumnDescriptor) =>
+}: RuntimeColumnDescriptor) =>
   pin === "left"
     ? ({
         left: pinnedOffset,
@@ -470,7 +470,7 @@ export const getColumnStyle = ({
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
-  column: KeyedColumnDescriptor,
+  column: RuntimeColumnDescriptor,
   aggType: VuuAggType
 ) => {
   return aggregations
@@ -515,7 +515,7 @@ const collectFiltersForColumn = (
 };
 
 export const applyGroupByToColumns = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   groupBy: VuuGroupBy,
   confirmed = true
 ) => {
@@ -526,7 +526,7 @@ export const applyGroupByToColumns = (
       confirmed
     );
     if (groupColumn) {
-      return [groupColumn as KeyedColumnDescriptor].concat(nonGroupedColumns);
+      return [groupColumn as RuntimeColumnDescriptor].concat(nonGroupedColumns);
     }
   } else if (columns[0]?.isGroup) {
     return flattenColumnGroup(columns);
@@ -535,7 +535,7 @@ export const applyGroupByToColumns = (
 };
 
 export const applySortToColumns = (
-  colunms: KeyedColumnDescriptor[],
+  colunms: RuntimeColumnDescriptor[],
   sort: VuuSort
 ) =>
   colunms.map((column) => {
@@ -556,7 +556,7 @@ export const applySortToColumns = (
   });
 
 export const applyFilterToColumns = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   { filterStruct }: DataSourceFilter
 ) =>
   columns.map((column) => {
@@ -577,10 +577,10 @@ export const applyFilterToColumns = (
     }
   });
 
-export const isFilteredColumn = (column: KeyedColumnDescriptor) =>
+export const isFilteredColumn = (column: RuntimeColumnDescriptor) =>
   column.filter !== undefined;
 
-export const stripFilterFromColumns = (columns: KeyedColumnDescriptor[]) =>
+export const stripFilterFromColumns = (columns: RuntimeColumnDescriptor[]) =>
   columns.map((col) => {
     const { filter, ...rest } = col;
     return filter ? rest : col;
@@ -616,9 +616,9 @@ export const getColumnLabel = (column: ColumnDescriptor) => {
 };
 
 export const findColumn = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   columnName: string
-): KeyedColumnDescriptor | undefined => {
+): RuntimeColumnDescriptor | undefined => {
   const column = columns.find((col) => col.name === columnName);
   if (column) {
     return column;
@@ -637,13 +637,13 @@ export function updateColumn<T extends ColumnDescriptor>(
   column: T
 ): T[];
 export function updateColumn(
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   column: string,
   options: Partial<ColumnDescriptor>
-): KeyedColumnDescriptor[];
+): RuntimeColumnDescriptor[];
 export function updateColumn(
-  columns: KeyedColumnDescriptor[],
-  column: string | KeyedColumnDescriptor,
+  columns: RuntimeColumnDescriptor[],
+  column: string | RuntimeColumnDescriptor,
   options?: Partial<ColumnDescriptor>
 ) {
   const targetColumn =
@@ -677,16 +677,16 @@ export const getRowRecord = (
   );
 };
 
-export const isDataLoading = (columns: KeyedColumnDescriptor[]) => {
+export const isDataLoading = (columns: RuntimeColumnDescriptor[]) => {
   return isGroupColumn(columns[0]) && columns[0].groupConfirmed === false;
 };
 
 export const getColumnsInViewport = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   vpStart: number,
   vpEnd: number
-): [KeyedColumnDescriptor[], number] => {
-  const visibleColumns: KeyedColumnDescriptor[] = [];
+): [RuntimeColumnDescriptor[], number] => {
+  const visibleColumns: RuntimeColumnDescriptor[] = [];
   let preSpan = 0;
 
   for (let offset = 0, i = 0; i < columns.length; i++) {
@@ -714,10 +714,10 @@ export const getColumnsInViewport = (
   return [visibleColumns, preSpan];
 };
 
-const isNotHidden = (column: KeyedColumnDescriptor) => column.hidden !== true;
+const isNotHidden = (column: RuntimeColumnDescriptor) => column.hidden !== true;
 
 export const visibleColumnAtIndex = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   index: number
 ) => {
   if (columns.every(isNotHidden)) {
@@ -730,7 +730,7 @@ export const visibleColumnAtIndex = (
 const { DEPTH, IS_LEAF } = metadataKeys;
 // Get the value for a specific columns within a grouped column
 export const getGroupValueAndOffset = (
-  columns: KeyedColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   row: DataSourceRow
 ): [unknown, number] => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
@@ -960,8 +960,8 @@ export const moveColumnTo = (
 };
 
 export function replaceColumn(
-  state: KeyedColumnDescriptor[],
-  column: KeyedColumnDescriptor
+  state: RuntimeColumnDescriptor[],
+  column: RuntimeColumnDescriptor
 ) {
   return state.map((col) => (col.name === column.name ? column : col));
 }
