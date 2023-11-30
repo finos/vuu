@@ -78,8 +78,8 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
   }
 
   def nextRandomDouble(min: Double, max: Double) = {
-    val random = new Random()
-    random.nextDouble(min, max)
+    val r = new Random()
+    min + (max - min) * r.nextDouble
   }
 
   def generateNextBidAsk(bid: Double, ask: Double, spreadMultipler: Double, priceMaxDelta: Double, nextRandomDouble: (Double, Double) => Double) = {
