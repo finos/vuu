@@ -8,6 +8,45 @@ import { useMemo } from "react";
 
 let displaySequence = 1;
 
+const getDefaultColumnConfig = (tableName: string, columnName: string) => {
+  switch (columnName) {
+    case "ask":
+    case "bid":
+      return {
+        type: {
+          name: "number",
+          renderer: {
+            name: "vuu.price-move-background",
+            flashStyle: "arrow-bg",
+          },
+          formatting: { decimals: 2, zeroPad: true },
+        },
+      };
+    case "askSize":
+    case "bidSize":
+      return {
+        type: {
+          name: "number",
+          renderer: {
+            name: "vuu.price-move-background",
+            flashStyle: "bg-only",
+          },
+          formatting: { decimals: 0 },
+        },
+      };
+
+    case "last":
+    case "open":
+    case "close":
+      return {
+        type: {
+          name: "number",
+          formatting: { decimals: 2, zeroPad: true },
+        },
+      };
+  }
+};
+
 const SimulTable = ({
   getDefaultColumnConfig,
   tableName,
@@ -38,7 +77,7 @@ const SimulTable = ({
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <TableNext {...tableProps} renderBufferSize={50} />
+      <TableNext {...tableProps} renderBufferSize={0} />
     </ContextMenuProvider>
   );
 };
@@ -47,34 +86,6 @@ export const Instruments = () => <SimulTable tableName="instruments" />;
 Instruments.displaySequence = displaySequence++;
 
 export const Prices = () => {
-  const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(
-    () => (tableName, columnName) => {
-      switch (columnName) {
-        case "ask":
-        case "bid":
-          return {
-            type: {
-              name: "number",
-              renderer: { name: "background", flashStyle: "arrow-bg" },
-              formatting: { decimals: 2, zeroPad: true },
-            },
-          };
-        case "askSize":
-        case "bidSize":
-        case "last":
-        case "open":
-        case "close":
-          return {
-            type: {
-              name: "number",
-              formatting: { decimals: 2, zeroPad: true },
-            },
-          };
-      }
-    },
-    []
-  );
-
   return (
     <SimulTable
       tableName="prices"
@@ -88,6 +99,9 @@ export const Orders = () => <SimulTable tableName="orders" />;
 Orders.displaySequence = displaySequence++;
 
 export const InstrumentPrices = () => (
-  <SimulTable tableName="instrumentPrices" />
+  <SimulTable
+    tableName="instrumentPrices"
+    getDefaultColumnConfig={getDefaultColumnConfig}
+  />
 );
 InstrumentPrices.displaySequence = displaySequence++;

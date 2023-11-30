@@ -314,6 +314,11 @@ export const useDragDropNext: DragDropHook = ({
         ? Math.abs(lastClientContraPos - clientContraPos)
         : 0;
 
+      if (allowDragDrop === true && !isDragSource && !isDropTarget) {
+        //This is a simple internal drag
+        return false;
+      }
+
       // If isDropTarget is false, there are configured dropTargets in context
       // but this is not one, so drag will be handed straight over to DragProvider
       // (global drag). If isDropTarget is undefined, we have no DragProvider
@@ -334,6 +339,7 @@ export const useDragDropNext: DragDropHook = ({
       }
     },
     [
+      allowDragDrop,
       id,
       isDragSource,
       isDropTarget,

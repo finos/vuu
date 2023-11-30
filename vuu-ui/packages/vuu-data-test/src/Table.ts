@@ -1,11 +1,12 @@
 import { SchemaColumn, TableSchema } from "@finos/vuu-data";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { ColumnMap, EventEmitter } from "@finos/vuu-utils";
+import { UpdateGenerator } from "./rowUpdates";
 
 export type TableEvents = {
   delete: (row: VuuRowDataItemType[]) => void;
   insert: (row: VuuRowDataItemType[]) => void;
-  update: (row: VuuRowDataItemType[], columnName: string) => void;
+  update: (row: VuuRowDataItemType[], columnName?: string) => void;
 };
 
 export class Table extends EventEmitter<TableEvents> {
@@ -13,16 +14,20 @@ export class Table extends EventEmitter<TableEvents> {
   #dataMap: ColumnMap;
   #indexOfKey: number;
   #schema: TableSchema;
+
   constructor(
     schema: TableSchema,
     data: VuuRowDataItemType[][],
-    dataMap: ColumnMap
+    dataMap: ColumnMap,
+    updateGenerator?: UpdateGenerator
   ) {
     super();
     this.#data = data;
     this.#dataMap = dataMap;
     this.#schema = schema;
     this.#indexOfKey = dataMap[schema.key];
+    updateGenerator?.setTable(this);
+    updateGenerator?.setRange({ from: 0, to: 20 });
   }
 
   get data() {
@@ -59,6 +64,16 @@ export class Table extends EventEmitter<TableEvents> {
       this.emit("update", newRow, columnName);
     }
   }
+  updateRow(row: VuuRowDataItemType[]) {
+    const key = row[this.#indexOfKey];
+    const rowIndex = this.#data.findIndex(
+      (row) => row[this.#indexOfKey] === key
+    );
+    if (rowIndex !== -1) {
+      this.#data[rowIndex] = row;
+      this.emit("update", row);
+    }
+  }
 }
 
 export const buildDataColumnMap = (schema: TableSchema) =>
@@ -91,6 +106,8 @@ const getServerDataType = (
   }
 };
 
+// Just copies source tables, then registers update listeners.
+// Not terribly efficient, but good enough for showcase
 export const joinTables = (
   joinTable: VuuTable,
   table1: Table,
@@ -99,6 +116,9 @@ export const joinTables = (
 ) => {
   const { map: m1, schema: schema1 } = table1;
   const { map: m2, schema: schema2 } = table2;
+  const k1 = m1[joinColumn];
+  const k2 = m2[joinColumn];
+
   const combinedColumns = new Set(
     [...schema1.columns, ...schema2.columns].map((col) => col.name).sort()
   );
@@ -116,7 +136,7 @@ export const joinTables = (
   const combinedColumnMap = buildDataColumnMap(combinedSchema);
   const start = performance.now();
   for (const row of table1.data) {
-    const row2 = table2.findByKey(row[m1[joinColumn]]);
+    const row2 = table2.findByKey(String(row[k1]));
     if (row2) {
       const out = [];
       for (const column of table1.schema.columns) {
@@ -134,5 +154,21 @@ export const joinTables = (
   const end = performance.now();
   console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
 
-  return new Table(combinedSchema, data, combinedColumnMap);
+  const newTable = new Table(combinedSchema, data, combinedColumnMap);
+
+  table2.on("update", (row) => {
+    const keyValue = row[k2] as string;
+    const targetRow = newTable.findByKey(keyValue);
+    if (targetRow) {
+      const updatedRow = targetRow.slice();
+      for (const { name } of table2.schema.columns) {
+        if (row[m2[name]] !== updatedRow[combinedColumnMap[name]]) {
+          updatedRow[combinedColumnMap[name]] = row[m2[name]];
+        }
+      }
+      newTable.updateRow(updatedRow);
+    }
+  });
+
+  return newTable;
 };

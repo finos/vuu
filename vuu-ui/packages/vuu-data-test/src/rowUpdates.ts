@@ -1,14 +1,13 @@
 import { VuuRange, VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { ArrayDataSource } from "@finos/vuu-data";
+import { Table } from "./Table";
 
 export type UpdateHandler = (
   updates: (RowUpdates | RowInsert | RowDelete)[]
 ) => void;
 
 export interface UpdateGenerator {
-  setDataSource: (dataSource: ArrayDataSource) => void;
+  setTable: (table: Table) => void;
   setRange: (range: VuuRange) => void;
-  setUpdateHandler: (updateHandler: UpdateHandler) => void;
 }
 
 export type UpdateType = "I" | "D" | "U";
