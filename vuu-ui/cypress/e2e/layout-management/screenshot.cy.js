@@ -8,22 +8,19 @@ context("Screenshot", () => {
 
   // TODO (#VUU24): Improve test alignment with the user flow
   it("Takes a screenshot of the current layout and displays it in the save layout dialog", () => {
-    // TODO (#VUU24): Improve selector
-    cy.get("#tab1-tab").then((tab) => {
-      cy.wrap(tab).findByRole("button").click();
-    });
+    cy.findByRole("tablist", { name: "tab headers" })
+      .findAllByRole("tab")
+      .first()
+      .findByRole("button")
+      .click();
 
-    // TODO (#VUU24): Improve selector
     cy.findByRole("menuitem", { name: "Save Layout" }).click();
 
-    // TODO (#VUU24): Don't find by classname, use an accessible selector
-    cy.get(".saveLayoutPanel-panelContainer").then((dialog) => {
-      cy.wrap(dialog)
-        .find("img")
-        .should("be.visible")
-        .and(($img) => {
-          expect($img[0].naturalWidth).to.be.greaterThan(0);
-        });
-    });
+    cy.findByRole("dialog")
+      .findByAltText("screenshot of current layout")
+      .should("be.visible")
+      .and(($img) => {
+        expect($img[0].naturalWidth).to.be.greaterThan(0);
+      });
   });
 });
