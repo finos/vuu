@@ -4,17 +4,22 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable, Sides}
-import org.finos.vuu.core.module.basket.service.BasketService.counter
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
-
 import java.util.concurrent.atomic.AtomicInteger
 
-object BasketService{
-  val counter = new AtomicInteger(0)
+object BasketTradeId {
+
+  private val counter: AtomicInteger = new AtomicInteger(0)
+  var current:String = "NoneInitalised" //this is for testing but only works if tests that use this doesnt run in parallel
+  def oneNew(user:String): String = {
+    val counterValue = counter.incrementAndGet()
+    current = user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
+    current
+  }
 }
 
 trait BasketServiceIF{
@@ -24,11 +29,6 @@ trait BasketServiceIF{
 class BasketService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
-
-  private def getAndPadCounter(session: ClientSessionId): String = {
-    val counterValue = counter.incrementAndGet()
-    session.user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
-  }
 
   private def getConstituentsForSourceBasket(basketId: String): List[RowData] = {
     val table = tableContainer.getTable(BasketConstituentTable)
@@ -68,13 +68,13 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
 
     val basketId = selection.rowKeyIndex.map({ case (key, _) => key }).toList.head
 
-    val instanceKey = getAndPadCounter(session)
+    val instanceKey = BasketTradeId.oneNew(session.user)
 
     createBasketInternal(basketId, instanceKey, instanceKey, session)
   }
 
   def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {
-    val basketTradeId = getAndPadCounter(ctx.session)
+    val basketTradeId = BasketTradeId.oneNew(ctx.session.user)
     createBasketInternal(basketId, name, basketTradeId, ctx.session)
   }
 
