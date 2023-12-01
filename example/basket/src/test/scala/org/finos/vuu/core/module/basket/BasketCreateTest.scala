@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.order.oms.OmsApi
@@ -54,21 +54,21 @@ class BasketCreateTest extends VuuServerTestCase {
 
           val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](viewportBasket)
 
-          val action = basketService.createBasket(".FTSE", "chris-001")(vuuServer.requestContext)
+          val action = basketService.createBasket(".FTSE", "TestBasket")(vuuServer.requestContext)
 
           val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
 
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](viewportBasketTrading)
 
           //CJS: I don't like this forced cast, need to look at that a bit
-          basketTradingService.editCellAction().func("chris-001", BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(BasketTradeId.current, BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
 
           vuuServer.runOnce()
 
           assertVpEq(combineQsForVp(viewportBasketTrading)) {
             Table(
               ("basketId", "instanceId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side"),
-              (".FTSE", "chris-001", "chris-001", 100, "OFF-MARKET", null, null, null, null, "Buy")
+              (".FTSE", BasketTradeId.current, "TestBasket", 100, "OFF-MARKET", null, null, null, null, "Buy")
             )
           }
       }
