@@ -6,7 +6,7 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.{TestVuuServer, VuuServerTestCase}
@@ -69,6 +69,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           Then("Get the Basket RPC Service and call create basket")
           val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)
           basketService.createBasket(".FTSE", "MyCustomBasket")(vuuServer.requestContext)
+          val basketTradeInstanceId = BasketTradeId.current
 
           val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
 
@@ -79,7 +80,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTrading)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              ("testUser-00001", ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
             )
           }
 
@@ -90,16 +91,16 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTradingCons)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Buy", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket")
-          basketTradingService.editCellAction().func("testUser-00001", "side", "Sell", vpBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "Sell", vpBasketTrading, vuuServer.session)
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
           val updates = combineQs(vpBasketTrading)
@@ -108,7 +109,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTrading, updates)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              ("testUser-00001", ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Sell")
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Sell")
             )
           }
 
@@ -117,73 +118,75 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Sell", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
           When("we edit the units of the parent basket")
-          basketTradingService.editCellAction().func("testUser-00001", "units", 1000L.asInstanceOf[Object], vpBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(basketTradeInstanceId, "units", 1000L.asInstanceOf[Object], vpBasketTrading, vuuServer.session)
 
           And("assert the basket trading constituent table has increased the units")
           assertVpEq(filterByVp(vpBasketTradingCons, combineQs(vpBasketTrading))) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (100L, "Sell", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (100L, "Buy", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (100L, "Sell", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (100L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
       }
     }
 
-    //todo this only works if running one test at a time. BasketService singleton object is used to create the basket trade id and doesnt get reset between tests
-//    Scenario("Check updating trade basket side with no change does not update constituents side") {
-//      import BasketModule._
-//      implicit val clock: Clock = new TestFriendlyClock(10001L)
-//      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
-//      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-//      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
-//
-//      withVuuServer(PriceModule(), BasketModule()) {
-//        vuuServer =>
-//
-//          vuuServer.login("testUser", "testToken2")
-//
-//          GivenBasketTradeExist(vuuServer, ".FTSE", "MyCustomBasket")
-//
-//          val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
-//          val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
-//          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
-//
-//          When("we edit the side of the parent basket to same side as current value")
-//          basketTradingService.editCellAction().func("testUser-00001", "side", "Buy", vpBasketTrading, vuuServer.session)
-//          vuuServer.runOnce()
-//
-//          Then("get all the updates that have occurred for all view ports from the outbound queue")
-//          val updates2 = combineQs(vpBasketTrading)
-//
-//          And("assert the basket trading table has not changed side....")
-//          assertVpEq(filterByVp(vpBasketTrading, updates2)) {
-//            Table(
-//              ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-//              ("testUser-00001", ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
-//            )
-//          }
-//
-//          And("assert the basket trading constituent table has not changed sides")
-//          assertVpEq(filterByVp(vpBasketTradingCons, updates2)) {
-//            Table(
-//              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId"),
-//              (10L, "Buy", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2),
-//              (10L, "Sell", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2),
-//              (10L, "Buy", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2)
-//            )
-//          }
-//      }
-//    }
+    Scenario("Check updating trade basket side with no change does not update constituents side") {
+      import BasketModule._
+      implicit val clock: Clock = new TestFriendlyClock(10001L)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
+      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val omsApi = OmsApi()
+      withVuuServer(PriceModule(), BasketModule(omsApi)) {
+        vuuServer =>
+
+          vuuServer.login("testUser", "testToken2")
+
+          GivenBasketTradeExist(vuuServer, ".FTSE", "MyCustomBasket")
+          val basketTradeInstanceId = BasketTradeId.current
+
+          val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
+          val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
+          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
+
+          When("we edit the side of the parent basket to same side as current value")
+          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "Buy", vpBasketTrading, vuuServer.session)
+          vuuServer.runOnce()
+
+          Then("get all the updates that have occurred for all view ports from the outbound queue")
+          val updates2 = combineQs(vpBasketTrading)
+
+          And("assert the basket trading table has not changed side....")
+          assertVpEq(filterByVp(vpBasketTrading, updates2)) {
+            Table(
+              ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
+            )
+          }
+
+          And("assert the basket trading constituent table has not changed sides")
+          assertVpEq(filterByVp(vpBasketTradingCons, updates2)) {
+            Table(
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+            )
+          }
+      }
+    }
   }
+
   def GivenBasketTradeExist(vuuServer: TestVuuServer, basketId: String, basketTradeName: String): Unit = {
     val basketProvider = vuuServer.getProvider(BasketModule.NAME, BasketModule.BasketTable)
     basketProvider.tick(".FTSE", Map(B.Id -> ".FTSE", B.Name -> ".FTSE 100", B.NotionalValue -> 1000001, B.NotionalValueUsd -> 1500001))
