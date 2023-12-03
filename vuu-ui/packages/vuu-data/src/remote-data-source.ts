@@ -236,6 +236,7 @@ export class RemoteDataSource
   };
 
   unsubscribe() {
+    console.log(`unsubscribe #${this.viewport}`);
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
@@ -249,6 +250,7 @@ export class RemoteDataSource
   }
 
   suspend() {
+    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
     info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "suspended";
@@ -261,6 +263,8 @@ export class RemoteDataSource
   }
 
   resume() {
+    console.log(`resume #${this.viewport}, current status ${this.#status}`);
+
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);

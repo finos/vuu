@@ -242,17 +242,11 @@ export const subscribe = async (
   { bufferSize = 0, key = "1", to = 10 }: SubscriptionDetails
 ) => {
   const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
-    createSubscription({
-      bufferSize,
-      key,
-      to,
-    });
-
+    createSubscription({ bufferSize, key, to });
   serverProxy.subscribe(clientSubscription);
   serverProxy.handleMessageFromServer(serverSubscriptionAck);
   serverProxy.handleMessageFromServer(tableMetaResponse);
-
-  // allow the promises pending for the subscription and ,etadata to resolve
+  // allow the promises pending for the subscription and metadata to resolve
   await new Promise((resolve) => window.setTimeout(resolve, 0));
 };
 

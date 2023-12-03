@@ -8,17 +8,12 @@ import {
 } from "@finos/vuu-table";
 import { Input } from "@salt-ds/core";
 import cx from "classnames";
-import {
-  FormEvent,
-  HTMLAttributes,
-  RefCallback,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { HTMLAttributes, RefCallback, useCallback } from "react";
 import "./SearchCell";
 
 import "./InstrumentSearch.css";
+import { VuuTable } from "packages/vuu-protocol-types";
+import { useInstrumentSearch } from "./useInstrumentSearch";
 
 const classBase = "vuuInstrumentSearch";
 
@@ -42,9 +37,10 @@ const defaultTableConfig: TableConfig = {
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps?: Partial<TableProps>;
   autoFocus?: boolean;
-  dataSource: DataSource;
+  dataSource?: DataSource;
   placeHolder?: string;
   searchColumns?: string[];
+  table?: VuuTable;
 }
 
 const searchIcon = <span data-icon="search" />;
@@ -53,39 +49,20 @@ export const InstrumentSearch = ({
   TableProps,
   autoFocus = false,
   className,
-  dataSource,
+  dataSource: dataSourceProp,
   placeHolder,
-  searchColumns = ["description"],
+  searchColumns,
+  table,
   ...htmlAttributes
 }: InstrumentSearchProps) => {
-  const baseFilterPattern = useMemo(
-    // TODO make this contains once server supports it
-    () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
-    [searchColumns]
-  );
+  const { dataSource, onChange, searchState } = useInstrumentSearch({
+    dataSource: dataSourceProp,
+    searchColumns,
+    table,
+  });
 
   const { highlightedIndexRef, onHighlight, onKeyDown, tableRef } =
-    useControlledTableNavigation(-1, dataSource.size);
-
-  const [searchState, setSearchState] = useState<{
-    searchText: string;
-    filter: string;
-  }>({ searchText: "", filter: "" });
-
-  const handleChange = useCallback(
-    (evt: FormEvent<HTMLInputElement>) => {
-      const { value } = evt.target as HTMLInputElement;
-      const filter = baseFilterPattern.replaceAll("__VALUE__", value);
-      setSearchState({
-        searchText: value,
-        filter,
-      });
-      dataSource.filter = {
-        filter,
-      };
-    },
-    [baseFilterPattern, dataSource]
-  );
+    useControlledTableNavigation(-1, dataSource?.size ?? 0);
 
   const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
     setTimeout(() => {
@@ -102,25 +79,27 @@ export const InstrumentSearch = ({
           placeholder={placeHolder}
           ref={autoFocus ? searchCallbackRef : null}
           value={searchState.searchText}
-          onChange={handleChange}
+          onChange={onChange}
         />
       </div>
 
-      <TableNext
-        disableFocus
-        id="instrument-search"
-        rowHeight={25}
-        config={defaultTableConfig}
-        highlightedIndex={highlightedIndexRef.current}
-        renderBufferSize={100}
-        {...TableProps}
-        className={`${classBase}-list`}
-        dataSource={dataSource}
-        navigationStyle="row"
-        onHighlight={onHighlight}
-        ref={tableRef}
-        showColumnHeaders={false}
-      />
+      {dataSource ? (
+        <TableNext
+          disableFocus
+          id="instrument-search"
+          rowHeight={25}
+          config={defaultTableConfig}
+          highlightedIndex={highlightedIndexRef.current}
+          renderBufferSize={100}
+          {...TableProps}
+          className={`${classBase}-list`}
+          dataSource={dataSource}
+          navigationStyle="row"
+          onHighlight={onHighlight}
+          ref={tableRef}
+          showColumnHeaders={false}
+        />
+      ) : null}
     </div>
   );
 };

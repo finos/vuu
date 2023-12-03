@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketPanel } from "./new-basket-panel";
-import { useBasketContextMenus } from "./useBasketContextMenus";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
@@ -43,10 +42,7 @@ export class Basket {
 
 export type BasketTradingHookProps = Pick<
   BasketTradingFeatureProps,
-  | "basketSchema"
-  | "basketTradingSchema"
-  | "basketTradingConstituentJoinSchema"
-  | "basketConstituentSchema"
+  "basketSchema" | "basketTradingSchema" | "basketTradingConstituentJoinSchema"
 >;
 
 const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
@@ -67,7 +63,6 @@ export const useBasketTrading = ({
   basketSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  basketConstituentSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
 
@@ -81,7 +76,6 @@ export const useBasketTrading = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceBasketConstituent,
     onSendToMarket,
     onTakeOffMarket,
   } = useBasketTradingDataSources({
@@ -89,7 +83,6 @@ export const useBasketTrading = ({
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    basketConstituentSchema,
   });
 
   const [basket, setBasket] = useState<Basket | undefined>();
@@ -211,10 +204,6 @@ export const useBasketTrading = ({
     [basket, dataSourceBasketTradingControl]
   );
 
-  const [menuBuilder, menuActionHandler] = useBasketContextMenus({
-    dataSourceBasketConstituent,
-  });
-
   const handleRpcResponse = useCallback((response) => {
     console.log("handleRpcResponse", {
       response,
@@ -226,11 +215,6 @@ export const useBasketTrading = ({
     menuActionConfig: undefined,
     onRpcResponse: handleRpcResponse,
   });
-
-  const contextMenuProps: ContextMenuConfiguration = {
-    menuActionHandler,
-    menuBuilder,
-  };
 
   const basketDesignContextMenuConfig: ContextMenuConfiguration = {
     menuActionHandler: handleMenuAction,
@@ -282,7 +266,6 @@ export const useBasketTrading = ({
     basketCount,
     basketDesignContextMenuConfig,
     basketSelectorProps,
-    contextMenuProps,
     dataSourceBasketTradingConstituentJoin,
     onClickAddBasket: handleAddBasket,
     onCommitBasketChange: handleCommitBasketChange,

@@ -1,6 +1,5 @@
 import { TableSchema } from "@finos/vuu-data";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
@@ -18,7 +17,6 @@ export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
   basketTradingSchema: TableSchema;
   basketTradingConstituentJoinSchema: TableSchema;
-  basketConstituentSchema: TableSchema;
 }
 
 const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
@@ -26,7 +24,6 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    basketConstituentSchema,
   } = props;
 
   const {
@@ -34,7 +31,6 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketCount,
     basketDesignContextMenuConfig,
     basketSelectorProps,
-    contextMenuProps,
     dataSourceBasketTradingConstituentJoin,
     dialog,
     onClickAddBasket,
@@ -46,7 +42,6 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
-    basketConstituentSchema,
   });
 
   if (basketCount === -1) {
@@ -64,7 +59,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   const activeTabIndex = basket?.status === "ON_MARKET" ? 1 : 0;
 
   return (
-    <ContextMenuProvider {...contextMenuProps}>
+    <>
       <FlexboxLayout
         className={classBase}
         style={{ flexDirection: "column", height: "100%" }}
@@ -83,7 +78,6 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           style={{ flex: 1 }}
         >
           <BasketTableEdit
-            data-tab-location="basket-design"
             data-tab-title="Design"
             contextMenuConfig={basketDesignContextMenuConfig}
             dataSource={dataSourceBasketTradingConstituentJoin}
@@ -98,7 +92,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
         </Stack>
       </FlexboxLayout>
       {dialog}
-    </ContextMenuProvider>
+    </>
   );
 };
 

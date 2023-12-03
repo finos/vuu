@@ -10,7 +10,7 @@ if (
   typeof SpreadCell !== "function" ||
   typeof StatusCell !== "function"
 ) {
-  console.warn("BasketTableLive not all cusatom cell renderers are available");
+  console.warn("BasketTableLive not all custom cell renderers are available");
 }
 
 import "./BasketTableLive.css";

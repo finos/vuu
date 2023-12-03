@@ -7,10 +7,15 @@ import {
 } from "@finos/vuu-popups";
 import { useMemo } from "react";
 import columns from "./basketConstituentEditColumns";
+import { ColHeaderAddSymbol } from "../cell-renderers";
 
 import "./BasketTableEdit.css";
 
 const classBase = "vuuBasketTableEdit";
+
+if (typeof ColHeaderAddSymbol !== "function") {
+  console.warn("BasketTableEdit not all custom cell renderers are available");
+}
 
 export interface BasketTableEditProps extends Omit<TableProps, "config"> {
   contextMenuConfig: ContextMenuConfiguration;

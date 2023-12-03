@@ -97,6 +97,7 @@ export interface TableHookProps
   headerHeight: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
+  size: MeasuredSize;
 }
 
 const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
@@ -138,6 +139,7 @@ export const useTable = ({
   renderBufferSize = 0,
   rowHeight = 20,
   selectionModel,
+  size,
 }: TableHookProps) => {
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
@@ -149,11 +151,6 @@ export const useTable = ({
   // dataSourceRef.current = dataSource;
 
   const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
-
-  const [size, setSize] = useState<MeasuredSize | undefined>();
-  const handleResize = useCallback((size: MeasuredSize) => {
-    setSize(size);
-  }, []);
 
   const menuBuilder = useMemo(
     () => buildContextMenuDescriptors(dataSource),
@@ -220,13 +217,16 @@ export const useTable = ({
     headings,
     rowCount,
     rowHeight,
-    size,
+    size: size,
   });
+  console.log(JSON.stringify(viewportMeasurements, null, 2));
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
     to: viewportMeasurements.rowCount,
   });
+
+  console.log({ initialRange });
 
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
@@ -729,7 +729,6 @@ export const useTable = ({
     onContextMenu,
     onDataEdited: handleDataEdited,
     onRemoveGroupColumn,
-    onResize: handleResize,
     onRowClick: handleRowClick,
     onToggleGroup,
     scrollProps,

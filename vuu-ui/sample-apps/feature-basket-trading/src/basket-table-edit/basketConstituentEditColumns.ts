@@ -27,7 +27,11 @@ export default [
     },
     width: 60,
   },
-  { name: "ric", pin: "left" },
+  {
+    name: "ric",
+    pin: "left",
+    colHeaderContentRenderer: "col-header-add-symbol",
+  },
   { name: "description", label: "Name", width: 220 },
   { name: "quantity" },
   { name: "weighting", editable },

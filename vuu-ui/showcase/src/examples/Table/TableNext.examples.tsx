@@ -11,13 +11,23 @@ import {
   applyDefaultColumnConfig,
   registerComponent as registerCellRenderer,
 } from "@finos/vuu-utils";
-import { TableNext, TableProps } from "@finos/vuu-table";
+import { HeaderCellProps, TableNext, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
-import { CSSProperties, useCallback, useMemo, useState } from "react";
+import {
+  ColumnDescriptor,
+  GroupColumnDescriptor,
+  TableConfig,
+} from "@finos/vuu-datagrid-types";
+import {
+  CSSProperties,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { useTableConfig, useTestDataSource } from "../utils";
 import { GroupHeaderCellNext } from "@finos/vuu-table";
 import {
@@ -29,7 +39,6 @@ import {
 
 import "./TableNext.examples.css";
 import { Button } from "@salt-ds/core";
-import { HeaderCellProps } from "packages/vuu-datagrid/src";
 
 let displaySequence = 1;
 
@@ -748,6 +757,11 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
 GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;
 
 const SymbolHeader = ({ column }: HeaderCellProps) => {
+  const handleClick = useCallback<MouseEventHandler>((e) => {
+    e.stopPropagation();
+    console.log("click");
+  }, []);
+
   return (
     <span
       style={{
@@ -757,7 +771,7 @@ const SymbolHeader = ({ column }: HeaderCellProps) => {
         justifyContent: "flex-end",
       }}
     >
-      <Button variant="secondary" data-icon="add" />
+      <Button variant="primary" data-icon="add" onClick={handleClick} />
     </span>
   );
 };

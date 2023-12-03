@@ -14,8 +14,7 @@ export type basketDataSourceKey =
   | "data-source-basket"
   | "data-source-basket-trading-control"
   | "data-source-basket-trading-search"
-  | "data-source-basket-trading-constituent-join"
-  | "data-source-basket-constituent";
+  | "data-source-basket-trading-constituent-join";
 
 const NO_CONFIG = {};
 
@@ -24,7 +23,6 @@ export const useBasketTradingDataSources = ({
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  basketConstituentSchema,
 }: BasketTradingFeatureProps & { basketInstanceId: string }) => {
   const { notify } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
@@ -34,7 +32,6 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceBasketConstituent,
   ] = useMemo(() => {
     const basketFilter: DataSourceConfig = basketInstanceId
       ? {
@@ -64,14 +61,6 @@ export const useBasketTradingDataSources = ({
         100,
         basketFilter,
       ],
-      [
-        "data-source-basket-constituent",
-        basketConstituentSchema,
-        100,
-        // {
-        //   sort: { sortDefs: [{ column: "description", sortType: "A" }] },
-        // },
-      ],
     ];
 
     const dataSources: DataSource[] = [];
@@ -96,7 +85,6 @@ export const useBasketTradingDataSources = ({
     basketTradingSchema,
     basketInstanceId,
     basketTradingConstituentJoinSchema,
-    basketConstituentSchema,
     loadSession,
     id,
     title,
@@ -135,7 +123,6 @@ export const useBasketTradingDataSources = ({
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
-    dataSourceBasketConstituent,
     onSendToMarket: handleSendToMarket,
     onTakeOffMarket: handleTakeOffMarket,
   };
