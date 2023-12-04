@@ -17,27 +17,12 @@ export const DefaultInstrumentTilesFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationJson: applicationLayout, saveApplicationLayout } =
-    useLayoutManager();
+  const { applicationJson: applicationLayout } = useLayoutManager();
 
-  useEffect(() => {
-    console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [applicationLayout]);
-
-  const handleLayoutChange = useCallback(
-    (layout) => {
-      console.log("layout change");
-      saveApplicationLayout(layout);
-    },
-    [saveApplicationLayout]
-  );
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider
-      layout={applicationLayout}
-      onLayoutChange={handleLayoutChange}
-    >
+    <LayoutProvider layout={applicationLayout.layout}>
       <View
         Header={VuuBlotterHeader}
         id="instrument-tiles-feature"
@@ -47,7 +32,7 @@ export const DefaultInstrumentTilesFeature = () => {
         title="Instruments"
         style={{ width: 700, height: 500 }}
       >
-        <InstrumentTilesFeature tableSchema={schema} />
+        <InstrumentTilesFeature instrumentPricesSchema={schema} />
       </View>
     </LayoutProvider>
   );
@@ -68,7 +53,7 @@ const featurePropsForEnv: Record<Environment, FeatureProps> = {
 
 export const InstrumentTilesFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const tableSchema = getSchema("instrumentPrices");
+  const instrumentPricesSchema = getSchema("instrumentPrices");
 
   return (
     <View
@@ -80,7 +65,11 @@ export const InstrumentTilesFeatureAsFeature = () => {
       title="Instruments"
       style={{ width: 700, height: 500 }}
     >
-      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+      <Feature
+        ComponentProps={{ instrumentPricesSchema }}
+        url={url}
+        css={css}
+      />
     </View>
   );
 };

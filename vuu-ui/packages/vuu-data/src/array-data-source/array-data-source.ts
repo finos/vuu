@@ -54,6 +54,8 @@ import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 
+const { KEY } = metadataKeys;
+
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: ColumnDescriptor[];
@@ -67,7 +69,7 @@ const { debug } = logger("ArrayDataSource");
 const toDataSourceRow =
   (key: number) =>
   (data: VuuRowDataItemType[], index: number): DataSourceRow => {
-    return [index, index, true, false, 1, 0, data[key].toString(), 0, ...data];
+    return [index, index, true, false, 1, 0, String(data[key]), 0, ...data];
   };
 
 const buildTableSchema = (
@@ -108,7 +110,7 @@ export class ArrayDataSource
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
-  #data: readonly DataSourceRow[];
+  #data: Readonly<DataSourceRow>[];
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
@@ -438,10 +440,9 @@ export class ArrayDataSource
     }
   };
 
-  protected update = (row: VuuRowDataItemType[], columnName: string) => {
+  protected update = (row: VuuRowDataItemType[], columnName?: string) => {
     // TODO take sorting, filtering. grouping into account
     const keyValue = row[this.key];
-    const { KEY } = metadataKeys;
     const colIndex = this.#columnMap[columnName];
     const dataColIndex = this.dataMap?.[columnName];
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
@@ -451,7 +452,22 @@ export class ArrayDataSource
       const { from, to } = this.#range;
       const [rowIdx] = dataSourceRow;
       if (rowIdx >= from && rowIdx < to) {
-        this.sendRowsToClient(true);
+        this.sendRowsToClient(false, dataSourceRow);
+      }
+    }
+  };
+
+  protected updateRow = (row: VuuRowDataItemType[]) => {
+    // TODO take sorting, filtering. grouping into account
+    const keyValue = row[this.key];
+    const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
+    if (dataIndex !== -1) {
+      const dataSourceRow = toDataSourceRow(this.key)(row, dataIndex);
+      // maybe update this in place
+      this.#data[dataIndex] = dataSourceRow;
+      const { from, to } = this.#range;
+      if (dataIndex >= from && dataIndex < to) {
+        this.sendRowsToClient(false, dataSourceRow);
       }
     }
   };
@@ -462,33 +478,42 @@ export class ArrayDataSource
     this.sendRowsToClient(forceFullRefresh);
   }
 
-  sendRowsToClient(forceFullRefresh = false) {
-    const rowRange =
-      this.rangeChangeRowset === "delta" && !forceFullRefresh
-        ? rangeNewItems(this.lastRangeServed, this.#range)
-        : this.#range;
-    const data = this.processedData ?? this.#data;
+  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
+    if (row) {
+      this.clientCallback?.({
+        clientViewportId: this.viewport,
+        mode: "update",
+        rows: [row],
+        type: "viewport-update",
+      });
+    } else {
+      const rowRange =
+        this.rangeChangeRowset === "delta" && !forceFullRefresh
+          ? rangeNewItems(this.lastRangeServed, this.#range)
+          : this.#range;
+      const data = this.processedData ?? this.#data;
 
-    const rowsWithinViewport = data
-      .slice(rowRange.from, rowRange.to)
-      .map((row) =>
-        toClientRow(row, this.keys, this.selectedRows, this.dataIndices)
-      );
+      const rowsWithinViewport = data
+        .slice(rowRange.from, rowRange.to)
+        .map((row) =>
+          toClientRow(row, this.keys, this.selectedRows, this.dataIndices)
+        );
 
-    this.clientCallback?.({
-      clientViewportId: this.viewport,
-      mode: "batch",
-      rows: rowsWithinViewport,
-      size: data.length,
-      type: "viewport-update",
-    });
-    this.lastRangeServed = {
-      from: this.#range.from,
-      to: Math.min(
-        this.#range.to,
-        this.#range.from + rowsWithinViewport.length
-      ),
-    };
+      this.clientCallback?.({
+        clientViewportId: this.viewport,
+        mode: "batch",
+        rows: rowsWithinViewport,
+        size: data.length,
+        type: "viewport-update",
+      });
+      this.lastRangeServed = {
+        from: this.#range.from,
+        to: Math.min(
+          this.#range.to,
+          this.#range.from + rowsWithinViewport.length
+        ),
+      };
+    }
   }
 
   get columns() {
@@ -509,9 +534,6 @@ export class ArrayDataSource
     }
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
-
-    const dataToClientMap = buildDataToClientMap(this.#columnMap, this.dataMap);
-    console.log({ dataToClientMap });
 
     this.config = {
       ...this.#config,
@@ -615,15 +637,6 @@ export class ArrayDataSource
     } else {
       throw `no row found for key ${rowKey}`;
     }
-  }
-
-  private updateRow(
-    rowKey: string,
-    colName: string,
-    value: VuuRowDataItemType
-  ) {
-    const row = this.findRow(parseInt(rowKey));
-    console.log({ row, colName, value });
   }
 
   applyEdit(

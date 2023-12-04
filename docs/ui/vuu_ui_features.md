@@ -46,9 +46,16 @@ It is not ideal that all bundles must be created, together with the runtime shel
 
 ## How does a Feature manage data communication with the Vuu Server ?
 
+Data from a remote Vuu server instance is managed using one or more client side DataSource instances. A single DataSource represents a subscription to a Vuu table. A Feature may need to create more than one dataSource. The basket trading feature is an example of a complex feature that creates five dataSources. The Filter Table feature creates a single dataSource. There is a pattern for dataSource management that all features should use and that can be seen in all the existing Features provided with the sample app. Once created, a dataSource should be saved using the session storage mechanism provided by Vuu. When loading, a Feature should first try to load dataSources from session state. If not found, they can be instantiated then saved into session state. THe reason for this is that there are some runtime scenarios that will result in a React component being unmounted, then remounted. When this happens, we want to try and avoid tearing down then recreating the server subscription(s). By storing the dataSource(s) in session state , they persist across React component remount events and can be reloaded back into the original owning component. In the future, as the Feature API is evolved, we will look at baking this behaviour into `feature datasources`. Note: if users do not do this and build Features that always create new dataSource instances whenever mounted, they will work as expected, if less efficient in terms of server resources.
+
 ## How does a Vuu app know which Feature(s) to load ?
 
+The sample app provided with Vuu does not load any features by default. It initially renders only the Shell. It does provide a mechanism to allow a user to add features to the app at runtime - from the palettes available in the Left Nav. The `Vuu Features` palette offers the Basket Trading and Instrument Tiles features. The `Vuu Tables` palette hosts the Filter Table feature, which can be dragged onto the main content area of the app, using any one of the listed Vuu tables.
+In a real world application, the app would just as likely be built with one or more features built-in and preloaded by default.
+
 ## Getting started - how do I create a Feature ?
+
+TBC
 
 ## Does the Vuu Showcase support Features ?
 
@@ -57,5 +64,8 @@ and the fact that many features will create Vuu datasources. When running in the
 
 ### dataSource creation/injection in Showcase features
 
-Most features will create Vuu dataSource(s) internally. However there is a pattern for dataSource creation, descibed above. Features should use the session state service provided by the Vuu shell to manage any dataSources created. The Showcase can take advantage of this pattern by pre-populating the session store with dataSources. The Feature, when loaded will then use these dataSources rather than creating.
-In the existing Showcase examples, there is a `features` folder. The components in here are wrappers round actual VuuFeatures implemented in sample-apps. These render the actual underlying feature but only after creating local versions of the dataSource(s) required by those features and storing them in session state. WHen these features are rendered in SHowcase examples, they will be using the local test data.
+Most features will create Vuu dataSource(s) internally. However there is a pattern for dataSource creation, described above, which helps us here. Features should use the session state service provided by the Vuu shell to manage any dataSources created. The Showcase can take advantage of this pattern by pre-populating the session store with one or more dataSources. The Feature, when loaded will then use these dataSources rather than creating new dataSource instances.
+In the existing Showcase examples, there is a `features` folder. The components in here are wrappers round actual VuuFeatures implemented in `sample-apps`. These render the actual underlying feature but only after creating local versions of the dataSource(s) required by those features and storing them in session state. When these features are rendered in Showcase examples, they will be using the local test data.
+
+Within the `examples` folder of Showcase, the `VuuFeatures` folder has examples of usage of the BasketTrading, InstrumentTiles and FilterTable features.
+Each of these has at least two exported examples. One exports the example feature directly, using it as a regular React component. The other exports the example using the actual `Feature` dynamic loader component, which loads the feature from a url. This mimics almost exactly the way features are loaded into a Vuu app. The actual urls employed will vary depending on whether the Showcase is being run in dev mode (with hot module reloading) or with a built version of Showcase. Both sets of urls can be seen in the examples and the set approprtate to the current environment will be used. The Showcase build is set up to define bundle examples as separate entry points so feature bundles are created.

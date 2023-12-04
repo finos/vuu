@@ -1,6 +1,9 @@
 import "./global-mocks";
 import { beforeEach, describe, expect, vi, it } from "vitest";
-import { TEST_setRequestId } from "../src/server-proxy/server-proxy";
+import {
+  ServerProxy,
+  TEST_setRequestId,
+} from "../src/server-proxy/server-proxy";
 import { Viewport } from "../src/server-proxy/viewport";
 import {
   COMMON_ATTRS,
@@ -13,6 +16,7 @@ import {
   subscribe,
   testSchema,
   updateTableRow,
+  createSubscription,
 } from "./test-utils";
 import { DataSourceDataMessage, DataSourceEnabledMessage } from "../src";
 import { VuuRow } from "@finos/vuu-protocol-types";
@@ -3672,6 +3676,50 @@ describe("ServerProxy", () => {
         ],
         size: 100,
         type: "viewport-update",
+      });
+    });
+  });
+
+  describe("request queuing", () => {
+    it("queue is empty in normal operation", async () => {
+      const [serverProxy] = await createFixtures();
+      expect(serverProxy["queuedRequests"].length).toEqual(0);
+    });
+
+    it("queues range requests sent before subscription completes, sends to server after subscription completes", async () => {
+      const connection = { send: vi.fn(), status: "ready" as const };
+      const postMessageToClient = vi.fn();
+      const serverProxy = new ServerProxy(connection, postMessageToClient);
+      serverProxy["authToken"] = "test";
+      serverProxy["sessionId"] = "dsdsd";
+
+      const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
+        createSubscription();
+      serverProxy.subscribe(clientSubscription);
+      serverProxy.handleMessageFromClient({
+        type: "setViewRange",
+        viewport: "client-vp-1",
+        range: { from: 0, to: 20 },
+      });
+      expect(serverProxy["queuedRequests"].length).toEqual(1);
+      connection.send.mockClear();
+      TEST_setRequestId(1);
+      serverProxy.handleMessageFromServer(serverSubscriptionAck);
+      serverProxy.handleMessageFromServer(tableMetaResponse);
+      // allow the promises pending for the subscription and metadata to resolve
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      // expect(serverProxy["queuedRequests"].length).toEqual(0);
+      console.log(`test messages sent`);
+      expect(connection.send).toHaveBeenCalledTimes(3);
+      expect(connection.send).toHaveBeenNthCalledWith(1, {
+        body: {
+          from: 0,
+          to: 20,
+          type: "CHANGE_VP_RANGE",
+          viewPortId: "server-vp-1",
+        },
+        requestId: "2",
+        ...SERVER_MESSAGE_CONSTANTS,
       });
     });
   });

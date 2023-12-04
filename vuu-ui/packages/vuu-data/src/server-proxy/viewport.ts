@@ -484,7 +484,6 @@ export class Viewport {
       );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
-
       // Don't use zero as a range cap, it's is likely a transient count reported immediately
       // following a groupBy operation.
       const maxRange = this.dataWindow.rowCount || undefined;
@@ -533,7 +532,6 @@ export class Viewport {
       this.keys.reset(this.dataWindow.clientRange);
 
       const toClient = this.isTree ? toClientRowTree : toClientRow;
-
       if (clientRows.length) {
         return [
           serverRequest,

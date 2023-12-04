@@ -12,6 +12,7 @@ import "./BasketMenu.css";
 const classBase = "vuuBasketMenu";
 
 export interface BasketMenuProps {
+  className?: string;
   location?: string;
   onMenuAction: MenuActionHandler;
   onMenuClose?: () => void;
@@ -26,6 +27,7 @@ export interface BasketMenuProps {
 }
 
 export const BasketMenu = ({
+  className,
   location,
   onMenuAction,
   onMenuClose,
@@ -60,7 +62,7 @@ export const BasketMenu = ({
 
   return (
     <PopupMenu
-      className={classBase}
+      className={cx(classBase, className)}
       label="actions"
       menuBuilder={menuBuilder}
       menuActionHandler={onMenuAction}

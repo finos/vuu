@@ -11,7 +11,7 @@ import {
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
-import { HeaderCellProps } from "packages/vuu-datagrid/src";
+import { HeaderCellProps } from "@finos/vuu-table";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;

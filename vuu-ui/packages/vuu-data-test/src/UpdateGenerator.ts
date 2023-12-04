@@ -1,7 +1,7 @@
-import { ArrayDataSource } from "@finos/vuu-data";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { random } from "./simul/reference-data";
-import type { RowUpdates, UpdateGenerator, UpdateHandler } from "./rowUpdates";
+import type { UpdateGenerator } from "./rowUpdates";
+import { Table } from "./Table";
 
 const getNewValue = (value: number) => {
   const multiplier = random(0, 100) / 1000;
@@ -10,9 +10,8 @@ const getNewValue = (value: number) => {
 };
 
 export class BaseUpdateGenerator implements UpdateGenerator {
-  private dataSource: ArrayDataSource | undefined;
+  private table: Table | undefined;
   private range: VuuRange | undefined;
-  private updateHandler: UpdateHandler | undefined;
   private updating = false;
   private timer: number | undefined;
   private tickingColumns: number[];
@@ -23,20 +22,13 @@ export class BaseUpdateGenerator implements UpdateGenerator {
 
   setRange(range: VuuRange) {
     this.range = range;
-    if (!this.updating && this.updateHandler) {
+    if (!this.updating && this.table) {
       this.startUpdating();
     }
   }
 
-  setDataSource(dataSource: ArrayDataSource) {
-    this.dataSource = dataSource;
-  }
-
-  setUpdateHandler(updateHandler: UpdateHandler) {
-    this.updateHandler = updateHandler;
-    if (!this.updating && this.range) {
-      this.startUpdating();
-    }
+  setTable(table: Table) {
+    this.table = table;
   }
 
   private startUpdating() {
@@ -53,31 +45,32 @@ export class BaseUpdateGenerator implements UpdateGenerator {
   }
 
   update = () => {
-    if (this.range && this.updateHandler) {
-      const updates: RowUpdates[] = [];
-      const data = this.dataSource?.currentData;
+    if (this.range && this.table) {
+      const data = this.table?.data;
       if (data && data?.length > 0) {
         const maxRange = Math.min(this.range.to, data.length);
         for (let rowIndex = this.range.from; rowIndex < maxRange; rowIndex++) {
+          let updateCount = 0;
           const shallUpdateRow = random(0, 10) < 2;
           if (shallUpdateRow) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const rowUpdates: RowUpdates = ["U", rowIndex];
+            const rowUpdates = this.table.data[rowIndex];
             const row = data[rowIndex];
             for (const colIdx of this.tickingColumns) {
               const shallUpdateColumn = random(0, 10) < 5;
               if (shallUpdateColumn) {
-                rowUpdates.push(colIdx, getNewValue(row[colIdx] as number));
+                updateCount += 1;
+                const newValue = getNewValue(row[colIdx] as number);
+                if (this.table) {
+                  rowUpdates[colIdx] = newValue;
+                }
               }
             }
-            if (rowUpdates.length > 1) {
-              updates.push(rowUpdates);
+            if (this.table && updateCount > 0) {
+              this.table.updateRow(rowUpdates);
             }
           }
-        }
-        if (updates.length > 0) {
-          this.updateHandler(updates);
         }
       }
     }

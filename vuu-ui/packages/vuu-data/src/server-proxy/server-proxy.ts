@@ -118,6 +118,13 @@ interface PendingLogin {
   resolve: (value: string) => void; // TODO
   reject: () => void;
 }
+
+type QueuedRequest = {
+  clientViewportId: string;
+  message: ClientToServerMessage["body"];
+  requestId: string;
+};
+
 export class ServerProxy {
   private connection: Connection;
   private postMessageToClient: PostMessageToClientCallback;
@@ -128,7 +135,7 @@ export class ServerProxy {
   private pendingLogin?: PendingLogin;
   private pendingRequests = new Map<string, PendingRequest>();
   private sessionId?: string;
-  private queuedRequests: Array<ClientToServerMessage["body"]> = [];
+  private queuedRequests: Array<QueuedRequest> = [];
   private cachedTableMetaRequests: Map<
     string,
     Promise<ServerToClientTableMeta>
@@ -194,12 +201,10 @@ export class ServerProxy {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       const pendingTableSchema = this.getTableMeta(message.table);
-      // if (
       const viewport = new Viewport(message, this.postMessageToClient);
       this.viewports.set(message.viewport, viewport);
-      // Use client side viewport id as request id, so that when we process the response,
-      // which will provide the serverside viewport id, we can establish a mapping between
-      // the two
+      // Use client side viewport id as request id, so that when we process the response, which
+      // will provide the serverside viewport id, we can establish a mapping between the two.
       //TODO handle CREATE_VP error, but server does not send it at the moment
       const pendingSubscription = this.awaitResponseToMessage(
         viewport.subscribe(),
@@ -211,8 +216,7 @@ export class ServerProxy {
       ]) as Promise<[ServerToClientCreateViewPortSuccess, TableSchema]>;
       awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
         const { viewPortId: serverViewportId } = subscribeResponse;
-        const { status: viewportStatus } = viewport;
-
+        const { status: previousViewportStatus } = viewport;
         // switch storage key from client viewportId to server viewportId
         if (message.viewport !== serverViewportId) {
           this.viewports.delete(message.viewport);
@@ -241,8 +245,12 @@ export class ServerProxy {
           this.disableViewport(viewport);
         }
 
+        if (this.queuedRequests.length > 0) {
+          this.processQueuedRequests();
+        }
+
         if (
-          viewportStatus === "subscribing" &&
+          previousViewportStatus === "subscribing" &&
           // A session table will never have Visual Links, nor Context Menus
           !isSessionTable(viewport.table)
         ) {
@@ -271,6 +279,33 @@ export class ServerProxy {
       });
     } else {
       error(`spurious subscribe call ${message.viewport}`);
+    }
+  }
+
+  private processQueuedRequests() {
+    const messageTypesProcessed: { [key: string]: true } = {};
+    while (this.queuedRequests.length) {
+      const queuedRequest = this.queuedRequests.pop();
+      if (queuedRequest) {
+        const { clientViewportId, message, requestId } = queuedRequest;
+        if (message.type === "CHANGE_VP_RANGE") {
+          if (messageTypesProcessed.CHANGE_VP_RANGE) {
+            continue;
+          }
+          messageTypesProcessed.CHANGE_VP_RANGE = true;
+          const serverViewportId =
+            this.mapClientToServerViewport.get(clientViewportId);
+          if (serverViewportId) {
+            this.sendMessageToServer(
+              {
+                ...message,
+                viewPortId: serverViewportId,
+              },
+              requestId
+            );
+          }
+        }
+      }
     }
   }
 
@@ -344,11 +379,18 @@ export class ServerProxy {
           `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`
         );
       }
-      this.sendIfReady(
+      const sentToServer = this.sendIfReady(
         serverRequest,
         requestId,
         viewport.status === "subscribed"
       );
+      if (!sentToServer) {
+        this.queuedRequests.push({
+          clientViewportId: message.viewport,
+          message: serverRequest,
+          requestId,
+        });
+      }
     }
     if (rows) {
       info?.(`setViewRange ${rows.length} rows returned from cache`);
@@ -707,9 +749,6 @@ export class ServerProxy {
     // TODO implement the message queuing in remote data view
     if (isReady) {
       this.sendMessageToServer(message, requestId);
-    } else {
-      // TODO need to make sure we keep the requestId
-      this.queuedRequests.push(message);
     }
     return isReady;
   }
@@ -721,6 +760,19 @@ export class ServerProxy {
   ) {
     const { module = "CORE" } = options;
     if (this.authToken) {
+      // if (body.type === "HB_RESP") {
+      //   // do nothing;
+      // } else if (body.type === "CREATE_VP" || body.type === "CHANGE_VP_RANGE") {
+      //   console.log(
+      //     `%c >>> ${JSON.stringify(body, null, 2)}`,
+      //     "background-color:green;color:white;font-weight:bold;"
+      //   );
+      // } else {
+      //   console.log(
+      //     `%c >>> ${body.type}`,
+      //     "background-color:green;color:white;font-weight:bold;"
+      //   );
+      // }
       this.connection.send({
         requestId,
         sessionId: this.sessionId,
@@ -735,7 +787,14 @@ export class ServerProxy {
   public handleMessageFromServer(message: ServerToClientMessage) {
     const { body, requestId, sessionId } = message;
 
-    // onsole.log(`%c<<< [${new Date().toISOString().slice(11,23)}]  (ServerProxy) ${message.type || JSON.stringify(message)}`,"color:white;background-color:blue;font-weight:bold;");
+    // if (message.body.type !== "HB") {
+    //   console.log(
+    //     `%c<<< [${new Date().toISOString().slice(11, 23)}]  (ServerProxy) ${
+    //       message.body.type || JSON.stringify(message)
+    //     }`,
+    //     "color:white;background-color:blue;font-weight:bold;"
+    //   );
+    // }
 
     const pendingRequest = this.pendingRequests.get(requestId);
     if (pendingRequest) {

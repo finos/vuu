@@ -58,6 +58,7 @@ const VuuInstrumentTilesFeature = ({
   const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.("data-source") as RemoteDataSource;
     if (ds) {
+      console.log({ ds });
       return ds;
     }
 

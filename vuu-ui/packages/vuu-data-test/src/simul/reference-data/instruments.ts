@@ -3,6 +3,8 @@ import { currencies } from "./currencies";
 import { locations, suffixes } from "./locations";
 import { lotsizes } from "./lotsizes";
 import { random } from "./utils";
+import { buildDataColumnMap, Table } from "../../Table";
+import { schemas } from "../simul-schemas";
 
 export type bbg = string;
 export type currency = string;
@@ -79,4 +81,10 @@ for (const char of chars) {
 const end = performance.now();
 console.log(`generating 100,000 instruments took ${end - start} ms`);
 
-export default instruments;
+const instrumentsTable = new Table(
+  schemas.instruments,
+  instruments,
+  buildDataColumnMap(schemas.instruments)
+);
+
+export default instrumentsTable;

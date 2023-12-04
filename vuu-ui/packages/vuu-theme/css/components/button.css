@@ -24,3 +24,7 @@
     outline-width: 1px;
     outline-offset: -1px;
 }
+
+.saltButton[data-icon]{
+    min-width: 20px;
+}

@@ -16,6 +16,7 @@ import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { Basket } from "../useBasketTrading";
 import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
+import cx from "classnames";
 
 import "./BasketToolbar.css";
 
@@ -96,9 +97,13 @@ export const BasketToolbar = ({
   const basketSelector = (
     <BasketSelector {...BasketSelectorProps} basket={basket} key="selector" />
   );
-  const statusIndicator = (
-    <span key="status" className={`${classBase}-statusIndicator`} />
+  const readOnlyStatus = (
+    <FormField className={`${classBase}-statusField`} key="status">
+      <FormFieldLabel>Status</FormFieldLabel>
+      <span className={`${classBase}-status`}>ON MARKET</span>
+    </FormField>
   );
+
   const inputSide = (
     <FormField className={`${classBase}-sideField`} key="side">
       <FormFieldLabel>Side</FormFieldLabel>
@@ -112,9 +117,9 @@ export const BasketToolbar = ({
     </FormField>
   );
   const readOnlySide = (
-    <FormField key="side">
-      <FormFieldLabel>Units</FormFieldLabel>
-      <span className={`${classBase}-units`}>{basket?.side ?? ""}</span>
+    <FormField className={`${classBase}-sideField`} key="side">
+      <FormFieldLabel>Side</FormFieldLabel>
+      <span className={`${classBase}-side`}>{basket?.side ?? ""}</span>
     </FormField>
   );
 
@@ -130,7 +135,7 @@ export const BasketToolbar = ({
     </FormField>
   );
   const readOnlyUnits = (
-    <FormField key="units">
+    <FormField className={`${classBase}-unitsField`} key="units">
       <FormFieldLabel>Units</FormFieldLabel>
       <span className={`${classBase}-units`}>{basket?.units ?? ""}</span>
     </FormField>
@@ -154,13 +159,21 @@ export const BasketToolbar = ({
   );
 
   const pctFilled = (
-    <FormField key="filled">
+    <FormField className={`${classBase}-pctFilledField`} key="filled">
       <FormFieldLabel>% Filled</FormFieldLabel>
-      <span className={`${classBase}-notional`}>{basket?.filledPct ?? ""}</span>
+      <span className={`${classBase}-pctFilled`}>
+        {basket?.pctFilled ?? ""}
+      </span>
     </FormField>
   );
 
-  const basketMenu = <BasketMenu key="menu" onMenuAction={handleMenuAction} />;
+  const basketMenu = (
+    <BasketMenu
+      className={`${classBase}-actions`}
+      key="menu"
+      onMenuAction={handleMenuAction}
+    />
+  );
 
   const sendToMarket = (
     <Button
@@ -197,7 +210,7 @@ export const BasketToolbar = ({
       );
     } else {
       toolbarItems.push(
-        statusIndicator,
+        readOnlyStatus,
         readOnlySide,
         readOnlyUnits,
         notionalUSD,
@@ -211,7 +224,7 @@ export const BasketToolbar = ({
   };
 
   return (
-    <div className={classBase}>
+    <div className={cx(classBase, `${classBase}-${basketStatus}`)}>
       <div className={`${classBase}-inner`}>{getToolbarItems()}</div>
     </div>
   );
