@@ -17,9 +17,15 @@ export class ShellWithNewTheme {
     return cy.findByRole("menuitem", { name: "Save Layout" });
   }
 
-  getLayoutScreenshot() {
-    return cy
-      .findByRole("dialog")
-      .findByAltText("screenshot of current layout");
+  getMyLayoutsButton() {
+    return cy.findByRole("tab", { name: "MY LAYOUTS" });
+  }
+
+  getSavedLayoutButton(layoutName, creator, date) {
+    const day = ("00" + date.getDate()).slice(-2);
+    const formattedDate = `${day}.${date.getMonth() + 1}.${date.getFullYear()}`;
+    const elementName = `${layoutName} ${creator}, ${formattedDate}`;
+
+    return cy.findByRole("button", { name: elementName });
   }
 }

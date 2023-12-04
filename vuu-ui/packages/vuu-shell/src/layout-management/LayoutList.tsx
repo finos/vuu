@@ -11,7 +11,7 @@ type LayoutGroups = {
 
 const classBase = "vuuLayoutList";
 
-export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
+export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
   const { layoutMetadata, loadLayoutById } = useLayoutManager();
 
   const handleLoadLayout = (layoutId?: string) => {
@@ -49,6 +49,7 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
                 <div
                   className={`${classBase}-layoutContainer`}
                   key={metadata?.id}
+                  role="button"
                   onClick={() => handleLoadLayout(metadata?.id)}
                 >
                   <img

@@ -3,7 +3,7 @@ import { Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import cx from "classnames";
-import { LayoutsList } from "../layout-management";
+import { LayoutList } from "../layout-management";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList } from "../feature-list";
@@ -182,7 +182,7 @@ export const LeftNav = (props: LeftNavProps) => {
         <FeatureList features={features} title="VUU FEATURES" />
         <FeatureList features={tableFeatures} title="VUU TABLES" />
         <div className="vuuLeftNav-drawer">
-          <LayoutsList />
+          <LayoutList />
         </div>
       </Stack>
     </div>

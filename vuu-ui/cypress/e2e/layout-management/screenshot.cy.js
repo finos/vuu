@@ -1,7 +1,9 @@
 import "cypress-iframe";
 import { ShellWithNewTheme } from "../../pages/ShellWithNewTheme";
+import { SaveLayoutDialog } from "../../pages/SaveLayoutDialog";
 
 const page = new ShellWithNewTheme();
+const dialog = new SaveLayoutDialog();
 
 context("Screenshot", () => {
   beforeEach(() => {
@@ -13,8 +15,8 @@ context("Screenshot", () => {
     page.getContextMenuButton().click();
     page.getSaveLayoutButton().click();
 
-    page
-      .getLayoutScreenshot()
+    dialog
+      .getScreenshot()
       .should("be.visible")
       .and(($img) => {
         expect($img[0].naturalWidth).to.be.greaterThan(0);
