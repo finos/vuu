@@ -5,7 +5,7 @@
     --doc-sidebar-width: 300px;
     --ifm-font-family-monospace: 'Port Lligat Sans';
     --ifm-heading-color: var(--vuu-light-text-primary);
-    --ifm-link-color: var(--vuu-light-text-primary);;
+    --ifm-link-color: var(--vuu-light-text-primary);
     --vuu-footer-display: none;
     --vuu-navbar-height: 125px;
     --vuu-navbar-logo-height: 61px;
@@ -27,6 +27,10 @@
     width: 100%;
   }
 
+  .docs-doc-page ul {
+    margin-left: 20px;
+  }
+
   .docs-doc-page .vuu-nav-home {
     border-bottom-color: transparent;
   }
@@ -37,7 +41,6 @@
   
   .docs-doc-page .main-wrapper {
     width: var(--vuu-desktop-width);
-
   }
 
   .docs-doc-page .container {
@@ -175,9 +178,6 @@ left: 0;
     --ifm-h2-font-size: 46px;
   }
 
-  .docs-doc-page ul {
-    margin-left: 20px;
-  }
 
   .markdown ol > li {
     counter-increment: item;

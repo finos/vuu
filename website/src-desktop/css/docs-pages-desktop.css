@@ -5,7 +5,7 @@
     --doc-sidebar-width: 300px;
     --ifm-font-family-monospace: 'Port Lligat Sans';
     --ifm-heading-color: var(--vuu-light-text-primary);
-    --ifm-link-color: var(--vuu-light-text-primary);;
+    --ifm-link-color: var(--vuu-light-text-primary);
     --vuu-footer-display: none;
     --vuu-navbar-height: 125px;
     --vuu-navbar-logo-height: 61px;
@@ -25,6 +25,10 @@
     justify-content: center;;
     display: flex;
     width: 100%;
+  }
+
+  .docs-doc-page ul {
+    margin-left: 20px;
   }
 
   .docs-doc-page .vuu-nav-home {

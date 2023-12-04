@@ -18,22 +18,25 @@ export const Roadmap = ({ milestones }: RoadmapProps) => {
   return (
     <div className={classBase}>
       {milestones.map(({ label, targetDate, epicLink }, i) => (
-        <div className={`${classBase}-milestone`} key={i}>
-          <div className={`${classBase}-description`}>{label}</div>
-          <div>
-            <span className={`${classBase}-date`}>{targetDate}</span>
-            {epicLink ? (
-              <a
-                className={`${classBase}-epic`}
-                href={epicLink}
-                target="_blank"
-              >
-                View Epic
-                <span data-icon="link" />
-              </a>
-            ) : null}
+        <>
+          <div className={`${classBase}-spacer`} key={`spacer-${i}`} />
+          <div className={`${classBase}-milestone`} key={i}>
+            <div className={`${classBase}-description`}>{label}</div>
+            <div>
+              <span className={`${classBase}-date`}>{targetDate}</span>
+              {epicLink ? (
+                <a
+                  className={`${classBase}-epic`}
+                  href={epicLink}
+                  target="_blank"
+                >
+                  View Epic
+                  <span data-icon="link" />
+                </a>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </>
       ))}
     </div>
   );
