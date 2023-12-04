@@ -1,7 +1,7 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { Input, Button, FormField, FormFieldLabel, Text } from "@salt-ds/core";
-import { ComboBox, Checkbox, RadioButton } from "@finos/vuu-ui-controls";
+import { Checkbox, ComboBox, RadioButton } from "@finos/vuu-ui-controls";
 import { takeScreenshot } from "@finos/vuu-utils";
+import { Button, FormField, FormFieldLabel, Input, Text } from "@salt-ds/core";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { LayoutMetadataDto } from "./layoutTypes";
 
 import "./SaveLayoutPanel.css";
@@ -54,6 +54,22 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       user: "User",
     });
   };
+
+  const screenshotContent = useMemo(() => {
+    if (screenshot) {
+      return (
+        <img
+          className={`${classBase}-screenshot`}
+          src={screenshot}
+          alt="screenshot of current layout"
+        />
+      );
+    }
+    if (screenshotErrorMessage) {
+      return <Text>{screenshotErrorMessage}</Text>;
+    }
+    return <div className="spinner" />;
+  }, [screenshot, screenshotErrorMessage]);
 
   return (
     <div className={`${classBase}-panelContainer`}>
@@ -124,17 +140,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           </FormField>
         </div>
         <div className={`${classBase}-screenshotContainer`}>
-          {screenshot ? (
-            <img
-              className={`${classBase}-screenshot`}
-              src={screenshot}
-              alt="screenshot of current layout"
-            />
-          ) : screenshotErrorMessage ? (
-            <Text>{screenshotErrorMessage}</Text>
-          ) : (
-            <div className="spinner" />
-          )}
+          {screenshotContent}
         </div>
       </div>
       <div className={`${classBase}-buttonsContainer`}>
