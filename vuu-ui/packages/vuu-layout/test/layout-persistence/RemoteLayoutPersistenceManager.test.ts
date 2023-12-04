@@ -7,7 +7,7 @@ import {
 import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { LayoutJSON } from "../../src/layout-reducer";
 import { v4 as uuidv4 } from "uuid";
-import { expectPromiseRejectsWithError } from "./utils";
+import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 
 const persistence = new RemoteLayoutPersistenceManager();
 const mockFetch = vi.fn();

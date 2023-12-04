@@ -8,7 +8,7 @@ import {
   saveLocalEntity,
 } from "../../../vuu-filters/src/local-config";
 import { formatDate } from "@finos/vuu-utils";
-import { expectPromiseRejectsWithError } from "./utils";
+import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 
 vi.mock("@finos/vuu-filters", async () => {
   return {
