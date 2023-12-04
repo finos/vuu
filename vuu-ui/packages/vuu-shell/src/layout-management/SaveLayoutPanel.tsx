@@ -131,7 +131,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
               alt="screenshot of current layout"
             />
           ) : screenshotErrorMessage ? (
-            <Text className="screenshot">{screenshotErrorMessage}</Text>
+            <Text>{screenshotErrorMessage}</Text>
           ) : (
             <div className="spinner" />
           )}
