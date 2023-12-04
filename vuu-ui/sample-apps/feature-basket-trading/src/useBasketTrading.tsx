@@ -16,7 +16,7 @@ export class Basket {
   basketId: string;
   basketName: string;
   dataSourceRow: DataSourceRow;
-  filledPct: number;
+  pctFilled: number;
   fxRateToUsd: number;
   instanceId: string;
   side: string;
@@ -29,7 +29,7 @@ export class Basket {
     this.dataSourceRow = data;
     this.basketId = data[columnMap.basketId] as string;
     this.basketName = data[columnMap.basketName] as string;
-    this.filledPct = data[columnMap.filledPct] as number;
+    this.pctFilled = data[columnMap.pctFilled] as number;
     this.fxRateToUsd = data[columnMap.fxRateToUsd] as number;
     this.instanceId = data[columnMap.instanceId] as string;
     this.side = data[columnMap.side] as string;

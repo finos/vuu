@@ -1,5 +1,5 @@
-import { getVuuTableSchema } from "packages/vuu-data-react/src";
-import { RemoteDataSource } from "packages/vuu-data/src";
+import { RemoteDataSource } from "@finos/vuu-data";
+import { getVuuTableSchema } from "@finos/vuu-data-react";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 import { InstrumentSearchProps } from "./InstrumentSearch";
 
