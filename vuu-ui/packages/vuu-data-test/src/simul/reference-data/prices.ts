@@ -1,9 +1,12 @@
 import { buildDataColumnMap, Table } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
 import { schemas } from "../simul-schemas";
-import { instrumentsData, InstrumentColumnMap } from "./instruments";
-import { random } from "../../data-utils";
 import basketConstituentData from "../../basket/reference-data/constituents";
+import { random } from "../../data-utils";
+import {
+  InstrumentColumnMap,
+  instrumentsData,
+} from "../reference-data/instruments";
 
 export type ask = number;
 export type askSize = number;
