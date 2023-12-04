@@ -6,6 +6,7 @@
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="3" height="50" viewBox="0 0 3 44"><circle cx="1.5" cy="22.5" r="1.5" fill="rgb(199,203,222)"/><circle cx="1.5" cy="33.5" r="1.5" fill="rgb(199,203,222)"/><circle cx="1.5" cy="42.5" r="1.5" fill="rgb(199,203,222)"/><circle cx="1.5" cy="11.5" r="1.5" fill="rgb(199,203,222)"/><circle cx="1.5" cy="1.5" r="1.5" fill="rgb(199,203,222)"/></svg>');
     background-repeat: repeat-y;
     background-position: left top;
+    margin-bottom: 40px;
 }
 
 
@@ -16,20 +17,19 @@
 }
 
 .vuuRoadmap-milestone:before {
+    background-color: #F37880;
     border-radius: 8px;
     content: ' ';
     position: absolute;
-    top: 74px;
-    left: -7px;
-    height: 16px;
-    width: 16px;
-
-    background-color: #F37880;
-
+    top: 63px;
+    left: -5px;
+    height: 13px;
+    width: 13px;
 }
 
 .vuuRoadmap-description {
 font-size: 24px;
+line-height: 1;
 }
 
 .vuuRoadmap-date {

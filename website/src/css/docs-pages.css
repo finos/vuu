@@ -44,6 +44,13 @@
     min-height: calc(100vh - var(--vuu-navbar-height));
   }
 
+  .container:has(.vuuContributor) .col{
+    max-width: 100% !important;
+  }
+  .container:has(.vuuContributor) .col.col--3{
+    display: none;
+  }
+
   .docs-doc-page .col:only-child {
     max-width: 100% !important;
   }
@@ -168,6 +175,9 @@ left: 0;
     --ifm-h2-font-size: 46px;
   }
 
+  .docs-doc-page ul {
+    margin-left: 20px;
+  }
 
   .markdown ol > li {
     counter-increment: item;

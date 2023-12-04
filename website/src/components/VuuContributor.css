@@ -1,0 +1,48 @@
+.vuuContributors {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.vuuContributor {
+    border: solid 1px #C7CBDE;
+    border-radius : 6px;
+    display: inline-block;
+    padding: 24px 24px 24px 110px;
+    position: relative;
+    width: 400px;
+}
+
+.vuuContributor:before {
+    align-items: center;
+    background-color: #F37880;
+    box-sizing: border-box;
+    border-radius: 32px;
+    content: attr(data-initial);
+    display: flex;
+    font-size: 28px;
+    font-weight: 600;
+    height: 64px;
+    justify-content: center;
+    position: absolute;
+    left: 24px;
+    top: 20px;
+    width: 64px;
+}
+
+
+.vuuContributor-name {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.vuuContributor-company,
+.vuuContributor-role {
+    color: #606477;
+    font-size: 18px;
+}
+
+.vuuContributor-role {
+    margin-left: 12px;
+}

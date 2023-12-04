@@ -37,11 +37,17 @@
   
   .docs-doc-page .main-wrapper {
     width: var(--vuu-desktop-width);
-
   }
 
   .docs-doc-page .container {
     min-height: calc(100vh - var(--vuu-navbar-height));
+  }
+
+  .container:has(.vuuContributor) .col{
+    max-width: 100% !important;
+  }
+  .container:has(.vuuContributor) .col.col--3{
+    display: none;
   }
 
   .docs-doc-page .col:only-child {
