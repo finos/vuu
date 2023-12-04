@@ -219,14 +219,11 @@ export const useTable = ({
     rowHeight,
     size: size,
   });
-  console.log(JSON.stringify(viewportMeasurements, null, 2));
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
     to: viewportMeasurements.rowCount,
   });
-
-  console.log({ initialRange });
 
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {

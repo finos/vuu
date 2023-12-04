@@ -2,9 +2,9 @@ import { buildDataColumnMap, Table } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
 import { schemas } from "../simul-schemas";
 import instrumentTable, { InstrumentsDataRow } from "./instruments";
-import { tables as basketTables } from "../../basket/basket-module";
 import { random } from "./utils";
 import { VuuRowDataItemType } from "packages/vuu-protocol-types";
+import basketConstituentData from "../../basket/reference-data/constituents";
 
 export type ask = number;
 export type askSize = number;
@@ -29,8 +29,6 @@ export type PricesDataRow = [
   ric,
   scenario
 ];
-
-const { basketConstituent } = basketTables;
 
 const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas.prices);
 const pricesUpdateGenerator = new BaseUpdateGenerator([
@@ -75,7 +73,7 @@ for (const [,,,,,,ric,
 }
 
 // prettier-ignore
-for (const [,,,lastTrade,ric] of basketConstituent.data as VuuRowDataItemType[][]) {
+for (const [,,,lastTrade,ric] of basketConstituentData) {
   const priceSeed = parseFloat(String(lastTrade));
   if (!isNaN(priceSeed)){
   const spread = random(0, 10);

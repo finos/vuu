@@ -47,6 +47,11 @@ BasketConstituent.displaySequence = displaySequence++;
 export const BasketTrading = () => <BasketTable tableName="basketTrading" />;
 BasketTrading.displaySequence = displaySequence++;
 
+export const BasketTradingConstituent = () => (
+  <BasketTable tableName="basketTradingConstituent" />
+);
+BasketTradingConstituent.displaySequence = displaySequence++;
+
 export const AlgoType = () => <BasketTable tableName="algoType" />;
 AlgoType.displaySequence = displaySequence++;
 

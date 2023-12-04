@@ -80,7 +80,6 @@ export const DefaultBasketTradingFeature = () => {
             basketTradingConstituentJoinSchema={
               schemas.basketTradingConstituentJoin
             }
-            basketConstituentSchema={schemas.basketConstituent}
           />
         </View>
       </LayoutProvider>
@@ -121,7 +120,6 @@ export const BasketTradingFeatureAsFeature = () => {
             basketTradingSchema: schemas.basketTrading,
             basketTradingConstituentJoinSchema:
               schemas.basketTradingConstituentJoin,
-            basketConstituentSchema: schemas.basketConstituent,
           } as BasketTradingFeatureProps
         }
         url={url}

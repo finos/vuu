@@ -13,6 +13,7 @@ export class Table extends EventEmitter<TableEvents> {
   #data: VuuRowDataItemType[][];
   #dataMap: ColumnMap;
   #indexOfKey: number;
+  #index = new Map<string, number>();
   #schema: TableSchema;
 
   constructor(
@@ -26,8 +27,19 @@ export class Table extends EventEmitter<TableEvents> {
     this.#dataMap = dataMap;
     this.#schema = schema;
     this.#indexOfKey = dataMap[schema.key];
+    this.buildIndex();
     updateGenerator?.setTable(this);
     updateGenerator?.setRange({ from: 0, to: 20 });
+  }
+
+  private buildIndex() {
+    const start = performance.now();
+    for (let i = 0; i < this.#data.length; i++) {
+      const key = this.#data[i][this.#indexOfKey] as string;
+      this.#index.set(key, i);
+    }
+    const end = performance.now();
+    console.log(`building index took ${end - start}ms`);
   }
 
   get data() {
@@ -43,12 +55,16 @@ export class Table extends EventEmitter<TableEvents> {
   }
 
   insert(row: VuuRowDataItemType[]) {
+    const index = this.#data.length;
     this.#data.push(row);
+    const key = row[this.#indexOfKey] as string;
+    this.#index.set(key, index);
     this.emit("insert", row);
   }
 
   findByKey(key: string) {
-    return this.#data.find((d) => (d[this.#indexOfKey] = key));
+    const index = this.#index.get(key) ?? -1;
+    return this.#data[index];
   }
 
   update(key: string, columnName: string, value: VuuRowDataItemType) {
@@ -155,6 +171,23 @@ export const joinTables = (
   console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
 
   const newTable = new Table(combinedSchema, data, combinedColumnMap);
+
+  table1.on("insert", (row) => {
+    console.log(`row inserted into joiend table`);
+    const row2 = table2.findByKey(String(row[k1]));
+    if (row2) {
+      const out = [];
+      for (const column of table1.schema.columns) {
+        const value = row[m1[column.name]];
+        out[combinedColumnMap[column.name]] = value;
+      }
+      for (const column of table2.schema.columns) {
+        const value = row2[m2[column.name]];
+        out[combinedColumnMap[column.name]] = value;
+      }
+      newTable.insert(out);
+    }
+  });
 
   table2.on("update", (row) => {
     const keyValue = row[k2] as string;
