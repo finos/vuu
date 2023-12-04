@@ -67,15 +67,6 @@ mvn spring-boot:run
 1. Follow steps 3-5 outlined in 'Configuring IntelliJ' below
 2. Select 'LayoutServer' config and click run
 
-### Workspace Settings 
-A set of VSCode settings is shared as workspace settings. In order to use the workspace settings the project needs to be opened in VSCode from vuu-ui/ folder.
-
-Settings provided by the workspace currently cover:
-
-- Prettier as default formatter
-
-When using an IDE other than VSCode, the IDE settings should be set to match the workspace settings
-
 ## Configuring IntelliJ
 
 You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
@@ -100,6 +91,18 @@ npm run build
 
 8. In IntelliJ, select 'SimulMain' config and click run
 9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
+
+### IntelliJ Settings
+
+In IntelliJ settings/Editor/Code Style/Java/Import Layout
+- tick "Layout static imports separately
+- apply the following order for imports
+    - import all other imports
+    - < blank line >
+    - import javax.*
+    - import java.*
+    - < blank line >
+    - import static all other imports 
 
 ## Installation - Client
 
@@ -129,6 +132,15 @@ Then, back in vuu-ui, run the launch script"
 #from vuu/vuu-ui
 npm run launch:demo:electron
 ```
+
+### VSCode Workspace Settings 
+A set of VSCode settings is shared as workspace settings. In order to use the workspace settings the project needs to be opened in VSCode from vuu-ui/ folder.
+
+Settings provided by the workspace currently cover:
+
+- Prettier as default formatter
+
+When using an IDE other than VSCode, the IDE settings should be set to match the workspace settings
 
 ## Usage example
 
