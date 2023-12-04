@@ -9,7 +9,7 @@ which allows components to be started and stopped in a sensible order.
 
 ## How does the lifecycle work?
 
-The user interaction with the lifecycle component is very minimal by design. THe obligation is when there is a component
+The user interaction with the lifecycle component is very minimal by design. The obligation is when there is a component
 that depends on something else, it registers that dependency in the construction logic.
 
 As an example if we take the VuiStateStoreProvider

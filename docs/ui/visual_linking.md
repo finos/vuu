@@ -34,7 +34,7 @@ Example:
 
 ```
 If you look at this code from our SimulationModule, you can see we've declared a potential link from this table ChildOrders to parentOrders. 
-THe structure of the declaration is: Link(fieldInChildTable, parentTable, fieldInParentTable)
+The structure of the declaration is: Link(fieldInChildTable, parentTable, fieldInParentTable)
 
 Anytime you declare these links, our UI will allow you to select the Visual Linking usimng a right click on the grid. 
 
