@@ -10,7 +10,6 @@ context("Screenshot", () => {
     page.visit();
   });
 
-  // TODO (#VUU24): Improve test alignment with the user flow
   it("Takes a screenshot of the current layout and displays it in the save layout dialog", () => {
     page.getContextMenuButton().click();
     page.getSaveLayoutButton().click();

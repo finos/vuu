@@ -1,3 +1,4 @@
+import { formatDate } from "@finos/vuu-utils";
 import { SHELL_WITH_NEW_THEME_URL } from "../support/e2e/constants";
 
 export class ShellWithNewTheme {
@@ -22,9 +23,7 @@ export class ShellWithNewTheme {
   }
 
   getSavedLayoutButton(layoutName, creator, date) {
-    const day = ("00" + date.getDate()).slice(-2);
-    const formattedDate = `${day}.${date.getMonth() + 1}.${date.getFullYear()}`;
-    const elementName = `${layoutName} ${creator}, ${formattedDate}`;
+    const elementName = `${layoutName} ${creator}, ${formatDate(date)}`;
 
     return cy.findByRole("button", { name: elementName });
   }
