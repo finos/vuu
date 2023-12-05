@@ -674,9 +674,6 @@ export const useTable = ({
       if (rowIndex) {
         const index = parseInt(rowIndex);
         const row = dataRef.current.find((row) => row[0] === index);
-        console.log(`handleDragStartRow setPayload`, {
-          row,
-        });
         if (row) {
           dragDropState.setPayload(row);
         } else {

@@ -23,7 +23,9 @@ export const useBasketTradingDataSources = ({
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-}: BasketTradingFeatureProps & { basketInstanceId: string }) => {
+}: Omit<BasketTradingFeatureProps, "basketConstituentSchema"> & {
+  basketInstanceId: string;
+}) => {
   const { notify } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
 

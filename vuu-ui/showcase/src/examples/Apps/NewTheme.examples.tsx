@@ -99,7 +99,10 @@ const ShellWithNewTheme = () => {
 
   const dragSource = useMemo(
     () => ({
-      "basket-instruments": { dropTargets: "basket-constituents" },
+      "basket-instruments": {
+        dropTargets: "basket-constituents",
+        payloadType: "key",
+      },
     }),
     []
   );

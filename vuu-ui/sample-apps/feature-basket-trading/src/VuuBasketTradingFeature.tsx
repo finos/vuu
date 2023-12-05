@@ -15,6 +15,7 @@ const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
 export interface BasketTradingFeatureProps {
   basketSchema: TableSchema;
+  basketConstituentSchema: TableSchema;
   basketTradingSchema: TableSchema;
   basketTradingConstituentJoinSchema: TableSchema;
 }
@@ -22,6 +23,7 @@ export interface BasketTradingFeatureProps {
 const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
   const {
     basketSchema,
+    basketConstituentSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
   } = props;
@@ -40,6 +42,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     onTakeOffMarket,
   } = useBasketTrading({
     basketSchema,
+    basketConstituentSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
   });

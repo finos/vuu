@@ -46,7 +46,9 @@ const DragDropContext = createContext<DragDropContextProps>({
   registerDragDropParty: unconfiguredRegistrationCall,
 });
 
-export type DragSources = { [key: string]: { dropTargets: string | string[] } };
+export type DragSources = {
+  [key: string]: { dropTargets: string | string[]; payloadType?: string };
+};
 export interface DragDropProviderProps {
   children: ReactNode;
   dragSources: DragSources;

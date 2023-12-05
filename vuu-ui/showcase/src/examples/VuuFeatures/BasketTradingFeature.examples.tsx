@@ -76,6 +76,7 @@ export const DefaultBasketTradingFeature = () => {
         >
           <BasketTradingFeature
             basketSchema={schemas.basket}
+            basketConstituentSchema={schemas.basketConstituent}
             basketTradingSchema={schemas.basketTrading}
             basketTradingConstituentJoinSchema={
               schemas.basketTradingConstituentJoin
@@ -117,6 +118,7 @@ export const BasketTradingFeatureAsFeature = () => {
         ComponentProps={
           {
             basketSchema: schemas.basket,
+            basketConstituentSchema: schemas.basketConstituent,
             basketTradingSchema: schemas.basketTrading,
             basketTradingConstituentJoinSchema:
               schemas.basketTradingConstituentJoin,

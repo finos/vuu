@@ -130,6 +130,17 @@ function createTradingBasket(basketId: string, basketName: string) {
   });
 }
 
+async function addConstituent(rpcRequest: ClientToServerViewportRpcCall) {
+  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
+}
+async function sendToMarket(rpcRequest: ClientToServerViewportRpcCall) {
+  const [basketInstanceId] = rpcRequest.params;
+  console.log(`RPC call erceived ${rpcRequest.rpcName} ${basketInstanceId}`);
+}
+async function takeOffMarket(rpcRequest: ClientToServerViewportRpcCall) {
+  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
+}
+
 async function createNewBasket(rpcRequest: ClientToServerViewportRpcCall) {
   const {
     params: [basketId, basketName],
@@ -216,9 +227,23 @@ const services: Record<BasketsTableName, RpcService[] | undefined> = {
     },
   ],
   basketConstituent: undefined,
-  basketTrading: undefined,
+  basketTrading: [
+    {
+      rpcName: "sendToMarket",
+      service: sendToMarket,
+    },
+    {
+      rpcName: "takeOffMarket",
+      service: takeOffMarket,
+    },
+  ],
   basketTradingConstituent: undefined,
-  basketTradingConstituentJoin: undefined,
+  basketTradingConstituentJoin: [
+    {
+      rpcName: "addConstituent",
+      service: addConstituent,
+    },
+  ],
   priceStrategyType: undefined,
 };
 

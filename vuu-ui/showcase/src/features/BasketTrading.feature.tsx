@@ -10,6 +10,7 @@ import { vuuModule, VuuModuleName, getSchema } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,
+  basketConstituentSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
 }: BasketTradingFeatureProps) => {
@@ -57,6 +58,7 @@ export const BasketTradingFeature = ({
   return (
     <VuuBasketTradingFeature
       basketSchema={basketSchema}
+      basketConstituentSchema={basketConstituentSchema}
       basketTradingSchema={basketTradingSchema}
       basketTradingConstituentJoinSchema={basketTradingConstituentJoinSchema}
     />
