@@ -6,7 +6,7 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingConstituentJoinServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.{TestVuuServer, VuuServerTestCase}
@@ -185,6 +185,54 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           }
       }
     }
+
+    //TODO oin table cannot be tested currently as it doesnt get updated when underlying table gets updated
+//    Scenario("Adding new constituents by ric should add it to basket trading") {
+//      import BasketModule._
+//      implicit val clock: Clock = new TestFriendlyClock(10001L)
+//      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
+//      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+//      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
+//
+//      val omsApi = OmsApi()
+//      withVuuServer(PriceModule(), BasketModule(omsApi)) {
+//        vuuServer =>
+//
+//          vuuServer.login("testUser", "testToken2")
+//
+//          GivenBasketTradeExist(vuuServer, ".FTSE", "MyCustomBasket")
+//          val basketTradeInstanceId = BasketTradeId.current
+//
+//          val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
+//          val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
+//          val vpBasketTradingConsJoin = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentJoin)
+//          val basketTradingConstituentJoinService = vuuServer.getViewPortRpcServiceProxy[BasketTradingConstituentJoinServiceIF](vpBasketTradingConsJoin)
+//
+//          vuuServer.runOnce()
+//
+//          When("we edit the side of the parent basket to same side as current value")
+//          basketTradingConstituentJoinService.addConstituent("0001.HK")(vuuServer.requestContext)
+//          vuuServer.runOnce()
+//
+//          Then("get all the updates that have occurred for all view ports from the outbound queue")
+//          val updates = combineQs(vpBasketTradingConsJoin)
+//
+//
+//          //todo map description
+//            //todo should basketid be where the stock was sourced from? in this case .HSI?
+//
+//          And("assert the basket trading constituent table has not changed sides")
+//          assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
+//            Table(
+//              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.0001.HK", ".FTSE", "0001.HK", "", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+//            )
+//          }
+//      }
+//    }
   }
 
   def GivenBasketTradeExist(vuuServer: TestVuuServer, basketId: String, basketTradeName: String): Unit = {
