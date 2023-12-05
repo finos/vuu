@@ -33,13 +33,10 @@ export class Table extends EventEmitter<TableEvents> {
   }
 
   private buildIndex() {
-    const start = performance.now();
     for (let i = 0; i < this.#data.length; i++) {
       const key = this.#data[i][this.#indexOfKey] as string;
       this.#index.set(key, i);
     }
-    const end = performance.now();
-    console.log(`building index took ${end - start}ms`);
   }
 
   get data() {
@@ -150,7 +147,7 @@ export const joinTables = (
 
   const data: VuuRowDataItemType[][] = [];
   const combinedColumnMap = buildDataColumnMap(combinedSchema);
-  const start = performance.now();
+  // const start = performance.now();
   for (const row of table1.data) {
     const row2 = table2.findByKey(String(row[k1]));
     if (row2) {
@@ -167,13 +164,12 @@ export const joinTables = (
       data.push(out);
     }
   }
-  const end = performance.now();
-  console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
+  // const end = performance.now();
+  // console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
 
   const newTable = new Table(combinedSchema, data, combinedColumnMap);
 
   table1.on("insert", (row) => {
-    console.log(`row inserted into joiend table`);
     const row2 = table2.findByKey(String(row[k1]));
     if (row2) {
       const out = [];

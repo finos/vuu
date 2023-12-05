@@ -201,8 +201,6 @@ const TableCore = ({
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
-  console.log(`TableNext render ${data.length} rows`);
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}

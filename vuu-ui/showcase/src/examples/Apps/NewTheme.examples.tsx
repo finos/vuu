@@ -70,6 +70,9 @@ const features: FeatureProps[] = [
   {
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
+    ViewProps: {
+      header: false,
+    },
     ComponentProps: {
       basketSchema: schemas.basket,
       basketTradingSchema: schemas.basketTrading,

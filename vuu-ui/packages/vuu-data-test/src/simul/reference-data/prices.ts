@@ -40,7 +40,7 @@ const pricesUpdateGenerator = new BaseUpdateGenerator([
 
 const prices: PricesDataRow[] = [];
 
-const start = performance.now();
+// const start = performance.now();
 // Create 100_000 Instruments
 
 // prettier-ignore
@@ -102,8 +102,8 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
   }
 }
 
-const end = performance.now();
-console.log(`generating 100,000 prices took ${end - start} ms`);
+// const end = performance.now();
+// console.log(`generating 100,000 prices took ${end - start} ms`);
 
 const pricesTable = new Table(
   schemas.prices,

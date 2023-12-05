@@ -1,6 +1,7 @@
 import { DataSource } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-layout";
+
 import {
   TableNext,
   TableProps,
@@ -8,7 +9,7 @@ import {
 } from "@finos/vuu-table";
 import { Input } from "@salt-ds/core";
 import cx from "classnames";
-import { HTMLAttributes, RefCallback, useCallback } from "react";
+import { HTMLAttributes, RefCallback, useCallback, useEffect } from "react";
 import "./SearchCell";
 
 import "./InstrumentSearch.css";
@@ -69,6 +70,13 @@ export const InstrumentSearch = ({
       el?.querySelector("input")?.focus();
     }, 100);
   }, []);
+
+  useEffect(() => {
+    console.log("Instrument SEarch mounted");
+    return () => {
+      console.log("Instrument SEarch unmounted");
+    };
+  });
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
