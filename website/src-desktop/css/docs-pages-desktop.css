@@ -5,7 +5,7 @@
     --doc-sidebar-width: 300px;
     --ifm-font-family-monospace: 'Port Lligat Sans';
     --ifm-heading-color: var(--vuu-light-text-primary);
-    --ifm-link-color: var(--vuu-light-text-primary);;
+    --ifm-link-color: var(--vuu-light-text-primary);
     --vuu-footer-display: none;
     --vuu-navbar-height: 125px;
     --vuu-navbar-logo-height: 61px;
@@ -27,6 +27,10 @@
     width: 100%;
   }
 
+  .docs-doc-page ul {
+    margin-left: 20px;
+  }
+
   .docs-doc-page .vuu-nav-home {
     border-bottom-color: transparent;
   }
@@ -37,11 +41,17 @@
   
   .docs-doc-page .main-wrapper {
     width: var(--vuu-desktop-width);
-
   }
 
   .docs-doc-page .container {
     min-height: calc(100vh - var(--vuu-navbar-height));
+  }
+
+  .container:has(.vuuContributor) .col{
+    max-width: 100% !important;
+  }
+  .container:has(.vuuContributor) .col.col--3{
+    display: none;
   }
 
   .docs-doc-page .col:only-child {

@@ -3,7 +3,26 @@ id: roadmap
 title: Vuu Roadmap
 ---
 
-This is the Vuu Roadmap:
-1. Big Data Support
-2. Data Visualization
-3. User Experience
+import { Roadmap } from "@site/src/components/Roadmap";
+import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
+
+<SvgDottySeparator />
+
+Vuu Roadmap 2024:
+
+<Roadmap
+  milestones={[
+    {
+      label: "Big Data Support",
+      targetDate: "Q2 2024",
+      epicLink: "https://github.com/finos/vuu/issues/911",
+    },
+    { label: "Data Visualization", targetDate: "Q2 2024" },
+    {
+      label: "User Experience",
+      targetDate: "Q2 2024",
+      epicLink: "https://github.com/finos/vuu/issues/912",
+    },
+  ]}
+/>
+<SvgDottySeparator />
