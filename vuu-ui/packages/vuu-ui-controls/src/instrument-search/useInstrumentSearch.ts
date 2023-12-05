@@ -17,7 +17,6 @@ export const useInstrumentSearch = ({
   searchColumns = ["description"],
   table,
 }: InstrumentSearchHookProps) => {
-  console.log(`useInstrumentSearch`);
   const [dataSource, setDataSource] = useState(dataSourceProp);
   const { loadSession, saveSession } = useViewContext();
 
@@ -42,8 +41,9 @@ export const useInstrumentSearch = ({
         } else {
           getVuuTableSchema(table).then((tableSchema) => {
             const newDataSource = new RemoteDataSource({
-              table: tableSchema.table,
               columns: tableSchema.columns.map((col) => col.name),
+              // sort: { sortDefs: [{ column: "description", sortType: "A" }] },
+              table: tableSchema.table,
             });
             setDataSource(newDataSource);
             saveSession?.(newDataSource, sessionKey);

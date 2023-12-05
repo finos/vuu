@@ -27,7 +27,7 @@
     padding-top: 24px;
     padding-left: var(--vuu-side-panel-padding, 0);
     padding-right: var(--vuu-side-panel-padding, 0);
-    position: absolute;
+    position: absolute !important;
     right: 0;
     top:0;
     transition-property: padding-left, padding-right, width;
@@ -41,7 +41,7 @@
     align-items: center;
     display: flex;
     flex-wrap: nowrap;
-    flex: 0 0 27px;
+    flex: 0 0 27px !important;
     justify-content: space-between;
 }
 

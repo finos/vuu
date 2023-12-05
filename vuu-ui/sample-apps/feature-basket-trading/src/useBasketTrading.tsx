@@ -2,7 +2,11 @@ import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { ContextMenuConfiguration } from "@finos/vuu-popups";
+import {
+  ContextMenuConfiguration,
+  NotificationLevel,
+  useNotifications,
+} from "@finos/vuu-popups";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
@@ -10,7 +14,7 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
-import { SubscribeCallback } from "packages/vuu-data/src";
+import { SubscribeCallback, ViewportRpcResponse } from "packages/vuu-data/src";
 
 export class Basket {
   basketId: string;
@@ -69,6 +73,7 @@ export const useBasketTrading = ({
   basketTradingConstituentJoinSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
+  const { notify } = useNotifications();
 
   const basketConstituentMap = useMemo(
     () => buildColumnMap(basketConstituentSchema.columns),
@@ -239,20 +244,30 @@ export const useBasketTrading = ({
         );
         const ric = constituentRow[basketConstituentMap.ric];
         dataSourceBasketTradingConstituentJoin
-          .rpcCall?.({
+          .rpcCall?.<ViewportRpcResponse>({
             type: "VIEW_PORT_RPC_CALL",
             rpcName: "addConstituent",
             namedParams: {},
             params: [ric],
           })
           .then((response) => {
-            console.log(`rpc call response`, {
-              response,
-            });
+            if (response?.action.type === "VP_RCP_SUCCESS") {
+              notify?.({
+                type: NotificationLevel.Success,
+                header: "Add Constituent to Basket",
+                body: `${ric} added to basket`,
+              });
+            } else if (response?.action.type === "VP_RCP_FAILURE") {
+              notify?.({
+                type: NotificationLevel.Error,
+                header: "Add Constituent to Basket",
+                body: response?.action.msg ?? `Failed to add ${ric} to basket`,
+              });
+            }
           });
       }
     },
-    [basketConstituentMap, dataSourceBasketTradingConstituentJoin]
+    [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify]
   );
 
   useEffect(() => {
