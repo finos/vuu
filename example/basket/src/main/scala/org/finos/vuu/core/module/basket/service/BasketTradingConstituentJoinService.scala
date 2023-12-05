@@ -19,9 +19,9 @@ trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
 
   def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
-}
 
-object BasketTradingConstituentJoinService {}
+  def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction
+}
 
 class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends BasketTradingConstituentJoinServiceIF with RpcHandler with StrictLogging {
 
@@ -29,6 +29,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
     new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
     new SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy"),
   )
+
   override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
 
   override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
@@ -52,30 +53,30 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
   }
 
   //this is RCP call and method name is part of contract with UI
-  def addConstituents(rics: Array[String])(ctx: RequestContext): ViewPortAction = {
-    if(table.size() == 0)
+  def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction = {
+    if (table.size() == 0)
       ViewPortEditFailure(s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported")
+    else {
+      val existingConstituentRow = table.pullRow(table.primaryKeys.head)
+      val tradeId = existingConstituentRow.get(ColumnName.InstanceId).asInstanceOf[String]
 
-    val existingConstituentRow = table.pullRow(table.primaryKeys.head)
-    val tradeId = existingConstituentRow.get(ColumnName.InstanceId).asInstanceOf[String]
+      val tradeRow = tableContainer.getTable(BasketModule.BasketTradingTable).pullRow(tradeId)
+      val basketId = tradeRow.get(BTColumnName.BasketId).asInstanceOf[String]
+      val tradeUnit = tradeRow.get(BTColumnName.Units).asInstanceOf[Int]
 
-    val tradeRow = tableContainer.getTable(BasketModule.BasketTradingTable).pullRow(tradeId)
-    val basketId = tradeRow.get(BTColumnName.BasketId).asInstanceOf[String]
-    val tradeUnit = tradeRow.get(BTColumnName.Units).asInstanceOf[Int]
-
-    val newRows = rics.map(ric =>
-      mkTradingConstituentRow(
+      val newRow = mkTradingConstituentRow(
         basketTradeInstanceId = tradeId,
         sourceBasketId = basketId,
         tradeUnit = tradeUnit,
-        ric = ric))
+        ric = ric)
 
       //todo should we guard against adding row for ric that already exist?
-      updateJoinTable(newRows) match {
+      updateJoinTable(Array(newRow)) match {
         case Right(_) => ViewPortRpcSuccess()
         case Left(errorReason) =>
           ViewPortRpcFailure(errorReason.reason)
       }
+    }
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
@@ -84,7 +85,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
         case Some(baseTable: DataTable) =>
           columnName match {
             case ColumnName.Weighting | ColumnName.LimitPrice =>
-              val doubleValue =  convertToDouble(data)
+              val doubleValue = convertToDouble(data)
               baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)), clock.now())
             case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)), clock.now())
           }
@@ -93,10 +94,11 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
           ViewPortEditFailure("Could not find base table for basket trading constituent join ")
       }
     } catch {
-      case NonFatal(t) =>  ViewPortEditFailure(s"Could not update $columnName. $t")
+      case NonFatal(t) => ViewPortEditFailure(s"Could not update $columnName. $t")
     }
   }
-  private def convertToDouble(data:Any): Double = {
+
+  private def convertToDouble(data: Any): Double = {
     data match {
       case decimalValue: java.math.BigDecimal =>
         decimalValue.doubleValue
