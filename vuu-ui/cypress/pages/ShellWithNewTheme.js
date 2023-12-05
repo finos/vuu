@@ -11,7 +11,7 @@ export class ShellWithNewTheme {
       .findByRole("tablist", { name: "tab headers" })
       .findAllByRole("tab")
       .first()
-      .findByRole("button");
+      .findByRole("button", { name: "context menu" });
   }
 
   getSaveLayoutButton() {
