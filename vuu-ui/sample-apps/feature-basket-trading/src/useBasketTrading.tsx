@@ -80,11 +80,6 @@ export const useBasketTrading = ({
     [basketConstituentSchema]
   );
 
-  const basketConstituentMap = useMemo(
-    () => buildColumnMap(basketConstituentSchema.columns),
-    [basketConstituentSchema]
-  );
-
   const basketInstanceId = useMemo<string>(() => {
     const { basketInstanceId } = load?.("basket-state") ?? NO_STATE;
     return basketInstanceId;
