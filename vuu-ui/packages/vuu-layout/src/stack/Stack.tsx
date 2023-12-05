@@ -146,7 +146,7 @@ export const Stack = forwardRef(function Stack(
           allowDragDrop={TabstripProps.allowDragDrop !== false}
           animateSelectionThumb
           className={cx("vuuTabHeader", tabstripClassName)}
-          aria-label="tab headers"
+          aria-label="layouts"
           keyBoardActivation={keyBoardActivation}
           onActiveChange={onTabSelectionChanged}
           onAddTab={onAddTab}
