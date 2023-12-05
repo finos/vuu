@@ -74,11 +74,15 @@ const mapFormatter = (map: ColumnTypeValueMap) => {
   };
 };
 
-export const getValueFormatter = (column: ColumnDescriptor): ValueFormatter => {
+export const getValueFormatter = (
+  column: ColumnDescriptor,
+  serverDataType = column.serverDataType
+): ValueFormatter => {
   if (isDateTimeColumn(column)) {
     return dateFormatter(column);
   }
-  const { serverDataType, type } = column;
+
+  const { type } = column;
   if (isTypeDescriptor(type) && isMappedValueTypeRenderer(type?.renderer)) {
     return mapFormatter(type.renderer.map);
   } else if (serverDataType === "string" || serverDataType === "char") {

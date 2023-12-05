@@ -2,7 +2,7 @@ import { isinGenerator } from "@thomaschaplin/isin-generator";
 import { currencies } from "./currencies";
 import { locations, suffixes } from "./locations";
 import { lotsizes } from "./lotsizes";
-import { random } from "./utils";
+import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
 import { schemas } from "../simul-schemas";
 

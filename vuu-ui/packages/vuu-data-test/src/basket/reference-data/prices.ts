@@ -1,9 +1,8 @@
 import { buildDataColumnMap, Table } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
-import { schemas } from "../simul-schemas";
-import instrumentTable, { InstrumentsDataRow } from "./instruments";
-import { random } from "../../data-utils";
-import basketConstituentData from "../../basket/reference-data/constituents";
+import { schemas } from "../../simul/simul-schemas";
+import basketConstituentData from "./constituents";
+import { initBidAsk, nextRandomDouble, random } from "../../data-utils";
 
 export type ask = number;
 export type askSize = number;
@@ -29,56 +28,23 @@ export type PricesDataRow = [
   scenario
 ];
 
-const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas.prices);
+const { bid, bidSize, ask, askSize, last } = buildDataColumnMap(schemas.prices);
 const pricesUpdateGenerator = new BaseUpdateGenerator({
   bid,
   bidSize,
   ask,
   askSize,
+  last,
 });
 
 const prices: PricesDataRow[] = [];
-
-// const start = performance.now();
-// Create 100_000 Instruments
-
-// prettier-ignore
-for (const [,,,,,,ric,
-  priceSeed,
-] of instrumentTable.data as InstrumentsDataRow[]) {
-  const spread = random(0, 10);
-
-  const ask = priceSeed + spread / 2;
-  const askSize = random(1000, 3000);
-  const bid = priceSeed - spread / 2;
-  const bidSize = random(1000, 3000);
-  const close = priceSeed + random(0, 1) / 10;
-  const last = priceSeed + random(0, 1) / 10;
-  const open = priceSeed + random(0, 1) / 10;
-  const phase = "C";
-  const scenario = "close";
-  prices.push([
-    ask,
-    askSize,
-    bid,
-    bidSize,
-    close,
-    last,
-    open,
-    phase,
-    ric,
-    scenario,
-  ]);
-}
 
 // prettier-ignore
 for (const [,,,lastTrade,ric] of basketConstituentData) {
   const priceSeed = parseFloat(String(lastTrade));
   if (!isNaN(priceSeed)){
-  const spread = random(0, 10);
-  const ask = priceSeed + spread / 2;
+  const [bid, ask] = initBidAsk(5,nextRandomDouble)
   const askSize = random(1000, 3000);
-  const bid = priceSeed - spread / 2;
   const bidSize = random(1000, 3000);
   const close = priceSeed + random(0, 1) / 10;
   const last = priceSeed + random(0, 1) / 10;
@@ -100,9 +66,6 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
 
   }
 }
-
-// const end = performance.now();
-// console.log(`generating 100,000 prices took ${end - start} ms`);
 
 const pricesTable = new Table(
   schemas.prices,

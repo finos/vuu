@@ -4,7 +4,7 @@ import {
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
-import pricesTable from "../simul/reference-data/prices";
+import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";

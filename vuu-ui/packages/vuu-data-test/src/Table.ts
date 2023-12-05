@@ -29,7 +29,7 @@ export class Table extends EventEmitter<TableEvents> {
     this.#indexOfKey = dataMap[schema.key];
     this.buildIndex();
     updateGenerator?.setTable(this);
-    updateGenerator?.setRange({ from: 0, to: 20 });
+    updateGenerator?.setRange({ from: 0, to: 100 });
   }
 
   private buildIndex() {
