@@ -1,13 +1,3 @@
-.vuuToastNotifications-toastContainer {
-    --top: 60px;
-    position: absolute;
-    right: 0;
-    top: var(--top);
-    overflow: hidden;
-    height:calc(100% - var(--top));
-    font-size: 12px;
-}
-
 .vuuToastNotifications-toast {
     --vuu-icon-size: 24px;
     position: absolute;

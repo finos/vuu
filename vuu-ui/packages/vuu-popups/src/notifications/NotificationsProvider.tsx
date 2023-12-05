@@ -60,7 +60,6 @@ export const NotificationsProvider = (props: {
   return (
     <NotificationsContext.Provider value={{ notify }}>
       <div
-        className={`${classBase}-toastContainer`}
         style={{
           width:
             toastWidth + toastContainerRightPadding + toastContainerLeftPadding,
@@ -94,7 +93,10 @@ export const ToastNotification = (props: ToastNotificationProps) => {
   const [right, setRight] = useState(-toastWidth - toastContainerRightPadding);
 
   useEffect(() => {
-    setRight(toastContainerRightPadding);
+    setTimeout(
+      () => setRight(toastContainerRightPadding)
+    );
+
     if (animated) {
       setTimeout(
         () => setRight(-toastWidth - toastContainerRightPadding),
