@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from "react";
-import { registerComponent } from "@finos/vuu-layout";
+import { registerComponent, ViewProps } from "@finos/vuu-layout";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
 import { importCSS } from "./css-module-loader";
@@ -37,6 +37,7 @@ export interface FeatureProps<P extends object | undefined = any> {
     props that will be passed to the lazily loaded component.
    */
   ComponentProps?: P;
+  ViewProps?: Partial<Pick<ViewProps, "closeable" | "header">>;
   css?: string;
   height?: number;
   title?: string;

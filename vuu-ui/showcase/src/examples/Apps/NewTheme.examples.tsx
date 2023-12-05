@@ -70,6 +70,9 @@ const features: FeatureProps[] = [
   {
     title: "Basket Trading",
     ...featurePaths[env].BasketTrading,
+    ViewProps: {
+      header: false,
+    },
     ComponentProps: {
       basketSchema: schemas.basket,
       basketTradingSchema: schemas.basketTrading,
@@ -96,7 +99,10 @@ const ShellWithNewTheme = () => {
 
   const dragSource = useMemo(
     () => ({
-      "basket-instruments": { dropTargets: "basket-constituents" },
+      "basket-instruments": {
+        dropTargets: "basket-constituents",
+        payloadType: "key",
+      },
     }),
     []
   );

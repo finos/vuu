@@ -1,15 +1,9 @@
-import { VuuRowDataItemType } from "packages/vuu-protocol-types";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";
 import instrumentsTable from "./reference-data/instruments";
 import pricesTable from "./reference-data/prices";
 import { schemas, SimulTableName } from "./simul-schemas";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
-
-// prettier-ignore
-// const pricesUpdateGenerator = new BaseUpdateGenerator([bid, bidSize, ask, askSize]);
-
-// const orderUpdateGenerator = new OrderUpdateGenerator();
 
 const tables: Record<SimulTableName, Table> = {
   childOrders: new Table(
@@ -33,17 +27,17 @@ const tables: Record<SimulTableName, Table> = {
   prices: pricesTable,
 };
 
-export const populateArray = (tableName: SimulTableName, count: number) => {
-  const table = tables[tableName];
-  const data: Array<VuuRowDataItemType[]> = [];
-  for (let i = 0; i < count; i++) {
-    if (i >= table.length) {
-      break;
-    }
-    data[i] = table[i];
-  }
-  return data;
-};
+// export const populateArray = (tableName: SimulTableName, count: number) => {
+//   const table = tables[tableName];
+//   const data: Array<VuuRowDataItemType[]> = [];
+//   for (let i = 0; i < count; i++) {
+//     if (i >= table.data.length) {
+//       break;
+//     }
+//     data[i] = table.data[i];
+//   }
+//   return data;
+// };
 
 const getColumnDescriptors = (tableName: SimulTableName) => {
   const schema = schemas[tableName];

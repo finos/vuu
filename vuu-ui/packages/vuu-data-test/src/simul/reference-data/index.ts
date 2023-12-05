@@ -9,4 +9,3 @@ export {
 } from "./instrument-prices";
 export { default as PriceReferenceData } from "./prices";
 export * from "./locations";
-export * from "./utils";

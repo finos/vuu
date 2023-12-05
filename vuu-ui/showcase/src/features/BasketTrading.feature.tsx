@@ -3,18 +3,19 @@ import VuuBasketTradingFeature, {
   basketDataSourceKey,
 } from "feature-basket-trading";
 
-import { useViewContext } from "@finos/vuu-layout";
+import { usePersistentState, useViewContext } from "@finos/vuu-layout";
 import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
+import { vuuModule, VuuModuleName, getSchema } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,
+  basketConstituentSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-  basketConstituentSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
+  const { saveSessionState } = usePersistentState();
 
   useMemo(() => {
     const dataSourceConfig: [
@@ -30,26 +31,36 @@ export const BasketTradingFeature = ({
         basketTradingConstituentJoinSchema,
         "BASKET",
       ],
-      ["data-source-basket-constituent", basketConstituentSchema, "BASKET"],
     ];
     for (const [key, schema, module] of dataSourceConfig) {
       const dataSource = vuuModule(module).createDataSource(schema.table.table);
       saveSession?.(dataSource, key);
     }
+
+    // save the basketConstituent table into session state for the Instrument Search Panel
+    const basketConstituentSchema = getSchema("basketConstituent");
+    const basketConstituentDataSource = vuuModule("BASKET").createDataSource(
+      basketConstituentSchema.table.table
+    );
+    saveSessionState(
+      "context-panel",
+      "instrument-search-BASKET-basketConstituent",
+      basketConstituentDataSource
+    );
   }, [
     basketSchema,
     basketTradingConstituentJoinSchema,
     basketTradingSchema,
-    basketConstituentSchema,
     saveSession,
+    saveSessionState,
   ]);
 
   return (
     <VuuBasketTradingFeature
       basketSchema={basketSchema}
+      basketConstituentSchema={basketConstituentSchema}
       basketTradingSchema={basketTradingSchema}
       basketTradingConstituentJoinSchema={basketTradingConstituentJoinSchema}
-      basketConstituentSchema={basketConstituentSchema}
     />
   );
 };

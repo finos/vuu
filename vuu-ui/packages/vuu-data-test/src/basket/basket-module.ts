@@ -1,18 +1,15 @@
-import { VuuModule } from "../vuu-modules";
-import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
-import { BasketsTableName } from "./basket-schemas";
-import { TickingArrayDataSource } from "../TickingArrayDataSource";
-import { schemas } from "./basket-schemas";
-import ftse from "./reference-data/ftse100";
-import nasdaq from "./reference-data/nasdaq100";
-import sp500 from "./reference-data/sp500";
-import hsi from "./reference-data/hsi";
 import {
   ClientToServerViewportRpcCall,
   VuuMenu,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
-import { Table } from "../Table";
+import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import pricesTable from "./reference-data/prices";
+import { joinTables, Table } from "../Table";
+import { TickingArrayDataSource } from "../TickingArrayDataSource";
+import { VuuModule } from "../vuu-modules";
+import { BasketsTableName, schemas } from "./basket-schemas";
+import basketConstituentData from "./reference-data/constituents";
 
 // This is a 'local' columnMap
 const buildDataColumnMap = (tableName: BasketsTableName) =>
@@ -36,55 +33,11 @@ const tableMaps: Record<BasketsTableName, ColumnMap> = {
   priceStrategyType: buildDataColumnMap("priceStrategyType"),
 };
 
-//---------------
-
 const { KEY } = metadataKeys;
 
 /**
  * BasketConstituent
  */
-
-const basketConstituentData = [];
-for (const row of ftse) {
-  // prettier-ignore
-  const [ric, name, lastTrade, change, volume] = row;
-  const basketId = ".FTSE100";
-  const side = "BUY";
-  const weighting = 1;
-  // prettier-ignore
-  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
-}
-
-for (const row of hsi) {
-  // prettier-ignore
-  const [name, ric, lastTrade, change, , volume] = row;
-  const basketId = ".HSI";
-  const side = "BUY";
-  const weighting = 1;
-  // prettier-ignore
-  basketConstituentData.push([basketId,change,name, lastTrade,ric,`${ric}-${basketId}`,side,volume,weighting ]);
-}
-
-for (const row of nasdaq) {
-  // prettier-ignore
-  const [name, ric, weighting, lastTrade, change] = row;
-  const basketId = ".NASDAQ100";
-  const side = "BUY";
-  const volume = 1000;
-  // prettier-ignore
-  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
-}
-
-for (const row of sp500) {
-  // prettier-ignore
-  const [name, ric, weighting,,change] = row;
-  const basketId = ".SP500";
-  const side = "BUY";
-  const volume = 1000;
-  const lastTrade = 0;
-  // prettier-ignore
-  basketConstituentData.push([ basketId, change, name, lastTrade, ric, `${ric}-${basketId}`, side, volume, weighting ]);
-}
 
 const basketConstituent = new Table(
   schemas.basketConstituent,
@@ -109,11 +62,6 @@ const basketTradingConstituent = new Table(
   schemas.basketTradingConstituent,
   [],
   tableMaps.basketTradingConstituent
-);
-const basketTradingConstituentJoin = new Table(
-  schemas.basketTradingConstituentJoin,
-  [],
-  tableMaps.basketTradingConstituentJoin
 );
 
 // export as convenience for showcase examples
@@ -179,49 +127,18 @@ function createTradingBasket(basketId: string, basketName: string) {
       weighting,
     ];
     basketTradingConstituent.insert(basketTradingConstituentRow);
-
-    const ask = 0;
-    const askSize = 0;
-    const bid = 0;
-    const bidSize = 0;
-    const close = 0;
-    const last = 0;
-    const open = 0;
-    const phase = "market";
-    const scenario = "scenario";
-    const status = "on market";
-
-    const basketTradingConstituentJoinRow = [
-      algo,
-      algoParams,
-      ask,
-      askSize,
-      basketId,
-      bid,
-      bidSize,
-      close,
-      description,
-      basketInstanceId,
-      `${basketInstanceId}-${ric}`,
-      last,
-      limitPrice,
-      notionalLocal,
-      notionalUsd,
-      open,
-      pctFilled,
-      phase,
-      priceSpread,
-      priceStrategyId,
-      quantity,
-      ric,
-      scenario,
-      side,
-      status,
-      venue,
-      weighting,
-    ];
-    basketTradingConstituentJoin.insert(basketTradingConstituentJoinRow);
   });
+}
+
+async function addConstituent(rpcRequest: ClientToServerViewportRpcCall) {
+  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
+}
+async function sendToMarket(rpcRequest: ClientToServerViewportRpcCall) {
+  const [basketInstanceId] = rpcRequest.params;
+  console.log(`RPC call erceived ${rpcRequest.rpcName} ${basketInstanceId}`);
+}
+async function takeOffMarket(rpcRequest: ClientToServerViewportRpcCall) {
+  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
 }
 
 async function createNewBasket(rpcRequest: ClientToServerViewportRpcCall) {
@@ -258,7 +175,12 @@ export const tables: Record<BasketsTableName, Table> = {
   basketConstituent,
   basketTrading,
   basketTradingConstituent,
-  basketTradingConstituentJoin,
+  basketTradingConstituentJoin: joinTables(
+    { module: "BASKET", table: "basketTradingConstituentJoin" },
+    basketTradingConstituent,
+    pricesTable,
+    "ric"
+  ),
   priceStrategyType: new Table(
     schemas.priceStrategyType,
     [
@@ -305,9 +227,23 @@ const services: Record<BasketsTableName, RpcService[] | undefined> = {
     },
   ],
   basketConstituent: undefined,
-  basketTrading: undefined,
+  basketTrading: [
+    {
+      rpcName: "sendToMarket",
+      service: sendToMarket,
+    },
+    {
+      rpcName: "takeOffMarket",
+      service: takeOffMarket,
+    },
+  ],
   basketTradingConstituent: undefined,
-  basketTradingConstituentJoin: undefined,
+  basketTradingConstituentJoin: [
+    {
+      rpcName: "addConstituent",
+      service: addConstituent,
+    },
+  ],
   priceStrategyType: undefined,
 };
 

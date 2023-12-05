@@ -23,5 +23,5 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "css.customData": [
         "./.vscode/custom-css.json"
-   ]
+]
 }

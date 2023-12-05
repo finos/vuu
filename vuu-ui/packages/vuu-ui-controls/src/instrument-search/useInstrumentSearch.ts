@@ -1,5 +1,6 @@
-import { RemoteDataSource } from "@finos/vuu-data";
+import { DataSource, RemoteDataSource } from "@finos/vuu-data";
 import { getVuuTableSchema } from "@finos/vuu-data-react";
+import { useViewContext } from "@finos/vuu-layout";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 import { InstrumentSearchProps } from "./InstrumentSearch";
 
@@ -17,6 +18,8 @@ export const useInstrumentSearch = ({
   table,
 }: InstrumentSearchHookProps) => {
   const [dataSource, setDataSource] = useState(dataSourceProp);
+  const { loadSession, saveSession } = useViewContext();
+
   const [searchState, setSearchState] = useState<{
     searchText: string;
     filter: string;
@@ -31,21 +34,28 @@ export const useInstrumentSearch = ({
   useMemo(() => {
     if (dataSourceProp === undefined) {
       if (table) {
-        getVuuTableSchema(table).then((tableSchema) => {
-          setDataSource(
-            new RemoteDataSource({
-              table: tableSchema.table,
+        const sessionKey = `instrument-search-${table.module}-${table.table}`;
+        const dataSource = loadSession?.(sessionKey) as DataSource;
+        if (dataSource) {
+          setDataSource(dataSource);
+        } else {
+          getVuuTableSchema(table).then((tableSchema) => {
+            const newDataSource = new RemoteDataSource({
               columns: tableSchema.columns.map((col) => col.name),
-            })
-          );
-        });
+              // sort: { sortDefs: [{ column: "description", sortType: "A" }] },
+              table: tableSchema.table,
+            });
+            setDataSource(newDataSource);
+            saveSession?.(newDataSource, sessionKey);
+          });
+        }
       } else {
         throw Error(
           `useInstrumentSearch, if dataSource ismnot provided as prop, Vuu table must be provided`
         );
       }
     }
-  }, [dataSourceProp, table]);
+  }, [dataSourceProp, loadSession, saveSession, table]);
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {

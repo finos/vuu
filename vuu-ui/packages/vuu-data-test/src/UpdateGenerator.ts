@@ -1,5 +1,5 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { random } from "./simul/reference-data";
+import { generateNextBidAsk, nextRandomDouble, random } from "./data-utils";
 import type { UpdateGenerator } from "./rowUpdates";
 import { Table } from "./Table";
 
@@ -14,9 +14,9 @@ export class BaseUpdateGenerator implements UpdateGenerator {
   private range: VuuRange | undefined;
   private updating = false;
   private timer: number | undefined;
-  private tickingColumns: number[];
+  private tickingColumns: { [key: string]: number };
 
-  constructor(tickingColumns: number[]) {
+  constructor(tickingColumns: { [key: string]: number }) {
     this.tickingColumns = tickingColumns;
   }
 
@@ -47,6 +47,7 @@ export class BaseUpdateGenerator implements UpdateGenerator {
   update = () => {
     if (this.range && this.table) {
       const data = this.table?.data;
+      const { bid, ask, last, ...rest } = this.tickingColumns;
       if (data && data?.length > 0) {
         const maxRange = Math.min(this.range.to, data.length);
         for (let rowIndex = this.range.from; rowIndex < maxRange; rowIndex++) {
@@ -57,7 +58,27 @@ export class BaseUpdateGenerator implements UpdateGenerator {
             // @ts-ignore
             const rowUpdates = this.table.data[rowIndex];
             const row = data[rowIndex];
-            for (const colIdx of this.tickingColumns) {
+
+            if (bid !== undefined && ask !== undefined) {
+              const { [bid]: currentBid, [ask]: currentAsk } = row as number[];
+              const [newBid, newAsk] = generateNextBidAsk(
+                currentBid,
+                currentAsk,
+                10,
+                5,
+                nextRandomDouble
+              );
+              rowUpdates[ask] = newAsk;
+              rowUpdates[bid] = newBid;
+              if (last !== undefined) {
+                const newLast =
+                  Math.round((currentAsk + (newAsk - currentAsk) / 2) * 100) /
+                  100.0;
+                rowUpdates[last] = newLast;
+              }
+            }
+
+            for (const colIdx of Object.values(rest)) {
               const shallUpdateColumn = random(0, 10) < 5;
               if (shallUpdateColumn) {
                 updateCount += 1;
@@ -76,7 +97,7 @@ export class BaseUpdateGenerator implements UpdateGenerator {
     }
 
     if (this.updating) {
-      this.timer = window.setTimeout(this.update, 200);
+      this.timer = window.setTimeout(this.update, 500);
     }
   };
 }

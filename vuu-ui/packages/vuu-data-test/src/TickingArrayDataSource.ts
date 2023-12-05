@@ -2,6 +2,7 @@ import {
   ArrayDataSource,
   ArrayDataSourceConstructorProps,
   MenuRpcResponse,
+  RpcResponse,
   SubscribeCallback,
   SubscribeProps,
   VuuUIMessageInRPCEditReject,
@@ -104,6 +105,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     columnName: string,
     value: VuuRowDataItemType
   ): Promise<true> {
+    console.log(`applyEdit ${columnName} ${value}`);
     const key = row[metadataKeys.KEY];
     this.#table?.update(key, columnName, value);
     return Promise.resolve(true);

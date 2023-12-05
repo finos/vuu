@@ -219,14 +219,11 @@ export const useTable = ({
     rowHeight,
     size: size,
   });
-  console.log(JSON.stringify(viewportMeasurements, null, 2));
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
     to: viewportMeasurements.rowCount,
   });
-
-  console.log({ initialRange });
 
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
@@ -677,9 +674,6 @@ export const useTable = ({
       if (rowIndex) {
         const index = parseInt(rowIndex);
         const row = dataRef.current.find((row) => row[0] === index);
-        console.log(`handleDragStartRow setPayload`, {
-          row,
-        });
         if (row) {
           dragDropState.setPayload(row);
         } else {

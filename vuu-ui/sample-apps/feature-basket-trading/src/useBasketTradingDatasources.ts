@@ -23,7 +23,9 @@ export const useBasketTradingDataSources = ({
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-}: BasketTradingFeatureProps & { basketInstanceId: string }) => {
+}: Omit<BasketTradingFeatureProps, "basketConstituentSchema"> & {
+  basketInstanceId: string;
+}) => {
   const { notify } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
 
@@ -101,7 +103,7 @@ export const useBasketTradingDataSources = ({
           type: "VIEW_PORT_RPC_CALL",
         })
         .then((response) => {
-          if (response?.action.type === "VP_RPC_FAILURE") {
+          if (response?.action.type === "VP_RCP_FAILURE") {
             notify({
               type: NotificationLevel.Error,
               header: "Failed to Send to market",
@@ -114,8 +116,24 @@ export const useBasketTradingDataSources = ({
     [dataSourceBasketTradingControl, notify]
   );
 
-  const handleTakeOffMarket = useCallback(() => {
-    console.log("take off market");
+  const handleTakeOffMarket = useCallback((basketInstanceId: string) => {
+    dataSourceBasketTradingControl
+      .rpcCall?.<ViewportRpcResponse>({
+        namedParams: {},
+        params: [basketInstanceId],
+        rpcName: "takeOffMarket",
+        type: "VIEW_PORT_RPC_CALL",
+      })
+      .then((response) => {
+        if (response?.action.type === "VP_RCP_FAILURE") {
+          notify({
+            type: NotificationLevel.Error,
+            header: "Failed to take off market",
+            body: "Please contact your support team",
+          });
+          console.error(response.action.msg);
+        }
+      });
   }, []);
 
   return {

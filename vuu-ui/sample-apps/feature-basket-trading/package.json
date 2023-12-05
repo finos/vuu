@@ -42,6 +42,9 @@
   },
   "vuu": {
     "featureProps": {
+      "ViewProps": {
+        "header": false
+      },
       "schemas": [
         {
           "module": "BASKET",

@@ -25,11 +25,7 @@ export const useFullHeightLeftPanel = ({
         {appHeader}
         <DraggableLayout dropTarget key="main-content" style={{ flex: 1 }} />
       </Flexbox>
-      <ContextPanel
-        id="context-panel"
-        overlay
-        title="Column Settings"
-      ></ContextPanel>
+      <ContextPanel id="context-panel" overlay></ContextPanel>
     </Flexbox>
   );
 };

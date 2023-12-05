@@ -40,7 +40,7 @@ export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
   BasketSelectorProps: BasketSelectorProps;
   onCommit?: BasketChangeHandler;
   onSendToMarket: (basketInstanceId: string) => void;
-  onTakeOffMarket: () => void;
+  onTakeOffMarket: (basketInstanceId: string) => void;
 }
 
 export const BasketToolbar = ({
@@ -93,6 +93,12 @@ export const BasketToolbar = ({
       onSendToMarket(basket?.instanceId);
     }
   }, [basket?.instanceId, onSendToMarket]);
+
+  const handleTakeOffMarket = useCallback(() => {
+    if (basket?.instanceId) {
+      onTakeOffMarket(basket?.instanceId);
+    }
+  }, [basket?.instanceId, onTakeOffMarket]);
 
   const basketSelector = (
     <BasketSelector {...BasketSelectorProps} basket={basket} key="selector" />
@@ -191,7 +197,7 @@ export const BasketToolbar = ({
     <Button
       className={`${classBase}-takeOffMarket`}
       key="off-market"
-      onClick={onTakeOffMarket}
+      onClick={handleTakeOffMarket}
       variant="primary"
     >
       off market

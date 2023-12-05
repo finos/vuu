@@ -90,6 +90,7 @@ export const Palette = ({
     const {
       props: { caption, children: payload, template, ...props },
     } = children[idx];
+    const { ViewProps: componentViewProps } = payload.props;
     const { height, left, top, width } =
       listItemElement.getBoundingClientRect();
     const id = uuid();
@@ -97,7 +98,13 @@ export const Palette = ({
     const component = template ? (
       payload
     ) : (
-      <View {...ViewProps} {...identifiers} {...props} title={props.label}>
+      <View
+        {...ViewProps}
+        {...identifiers}
+        {...props}
+        {...componentViewProps}
+        title={props.label}
+      >
         {payload}
       </View>
     );

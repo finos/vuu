@@ -2,7 +2,11 @@ import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import { ContextMenuConfiguration } from "@finos/vuu-popups";
+import {
+  ContextMenuConfiguration,
+  NotificationLevel,
+  useNotifications,
+} from "@finos/vuu-popups";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
@@ -10,7 +14,7 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
-import { SubscribeCallback } from "packages/vuu-data/src";
+import { SubscribeCallback, ViewportRpcResponse } from "packages/vuu-data/src";
 
 export class Basket {
   basketId: string;
@@ -42,7 +46,10 @@ export class Basket {
 
 export type BasketTradingHookProps = Pick<
   BasketTradingFeatureProps,
-  "basketSchema" | "basketTradingSchema" | "basketTradingConstituentJoinSchema"
+  | "basketSchema"
+  | "basketConstituentSchema"
+  | "basketTradingSchema"
+  | "basketTradingConstituentJoinSchema"
 >;
 
 const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
@@ -61,10 +68,17 @@ const NO_STATE = { basketId: undefined } as any;
 
 export const useBasketTrading = ({
   basketSchema,
+  basketConstituentSchema,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
+  const { notify } = useNotifications();
+
+  const basketConstituentMap = useMemo(
+    () => buildColumnMap(basketConstituentSchema.columns),
+    [basketConstituentSchema]
+  );
 
   const basketInstanceId = useMemo<string>(() => {
     const { basketInstanceId } = load?.("basket-state") ?? NO_STATE;
@@ -223,34 +237,37 @@ export const useBasketTrading = ({
 
   const handleDropInstrument = useCallback(
     (dragDropState) => {
-      console.log(`useBasketTrading handleDropInstrument`, {
-        instrument: dragDropState.payload,
-      });
-      const key = "steve-00001.AAA.L";
-      const data = {
-        algo: -1,
-        algoParams: "",
-        basketId: ".FTSE100",
-        description: "Test",
-        instanceId: "steve-00001",
-        instanceIdRic: "steve-00001.AAA.L",
-        limitPrice: 0,
-        notionalLocal: 0,
-        notionalUsd: 0,
-        pctFilled: 0,
-        priceSpread: 0,
-        priceStrategyId: 2,
-        quantity: 0,
-        ric: "AAL.L",
-        side: "BUY",
-        venue: "",
-        weighting: 1,
-      };
-      dataSourceBasketTradingControl.insertRow?.(key, data).then((response) => {
-        console.log({ response });
-      });
+      const constituentRow = dragDropState.payload;
+      if (constituentRow) {
+        console.log(
+          `useBasketTrading handleDropInstrument ${constituentRow.join(",")}`
+        );
+        const ric = constituentRow[basketConstituentMap.ric];
+        dataSourceBasketTradingConstituentJoin
+          .rpcCall?.<ViewportRpcResponse>({
+            type: "VIEW_PORT_RPC_CALL",
+            rpcName: "addConstituent",
+            namedParams: {},
+            params: [ric],
+          })
+          .then((response) => {
+            if (response?.action.type === "VP_RCP_SUCCESS") {
+              notify?.({
+                type: NotificationLevel.Success,
+                header: "Add Constituent to Basket",
+                body: `${ric} added to basket`,
+              });
+            } else if (response?.action.type === "VP_RCP_FAILURE") {
+              notify?.({
+                type: NotificationLevel.Error,
+                header: "Add Constituent to Basket",
+                body: response?.action.msg ?? `Failed to add ${ric} to basket`,
+              });
+            }
+          });
+      }
     },
-    [dataSourceBasketTradingControl]
+    [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify]
   );
 
   useEffect(() => {

@@ -244,7 +244,7 @@ function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const keyedColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(
-      columnDescriptorToInternalColumDescriptor(tableAttributes, tableSchema)
+      columnDescriptorToRuntimeColumDescriptor(tableAttributes, tableSchema)
     );
 
   const maybePinnedColumns = keyedColumns.some(isPinned)
@@ -278,7 +278,7 @@ const getLabel = (
   return label;
 };
 
-const columnDescriptorToInternalColumDescriptor =
+const columnDescriptorToRuntimeColumDescriptor =
   (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
   (
     column: ColumnDescriptor & { key?: number },
@@ -310,14 +310,14 @@ const columnDescriptorToInternalColumDescriptor =
       name,
       originalIdx: index,
       serverDataType,
-      valueFormatter: getValueFormatter(column),
+      valueFormatter: getValueFormatter(column, serverDataType),
       width: width,
     };
 
     if (isGroupColumn(keyedColumnWithDefaults)) {
       keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
         (col) =>
-          columnDescriptorToInternalColumDescriptor(tableAttributes)(
+          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(
             col,
             col.key
           )

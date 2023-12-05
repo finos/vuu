@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import {
   layoutFromJson,
   LayoutJSON,
+  View,
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 
@@ -27,6 +28,7 @@ export const ContextPanel = ({
   title,
 }: ContextPanelProps) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
+  // const [contentJson, setContentJson] = useState(contentProp);
   const handleClose = useCallback(() => {
     dispatchLayoutAction({
       path: "#context-panel",
@@ -44,13 +46,18 @@ export const ContextPanel = ({
   });
 
   const content = useMemo(
-    () => (contentProp ? layoutFromJson(contentProp, "context-0") : null),
-    [contentProp]
+    () =>
+      contentProp && expanded ? layoutFromJson(contentProp, "context-0") : null,
+    [contentProp, expanded]
   );
 
   return (
-    <div className={cx(classBase, className)}>
-      <div className={`${classBase}-inner`}>
+    <div
+      className={cx(classBase, className, {
+        [`${classBase}-expanded`]: expanded,
+      })}
+    >
+      <View className={`${classBase}-inner`} header={false} id="context-panel">
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
           <Button
@@ -61,7 +68,7 @@ export const ContextPanel = ({
           />
         </div>
         <div className={`${classBase}-content`}>{content}</div>
-      </div>
+      </View>
     </div>
   );
 };
