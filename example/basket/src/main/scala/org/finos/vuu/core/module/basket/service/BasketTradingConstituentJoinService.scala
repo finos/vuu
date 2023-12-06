@@ -5,9 +5,9 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BCColumnName, BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
-import org.finos.vuu.core.table.{DataTable, JoinTable, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{DataTable, JoinTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
@@ -64,11 +64,18 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
       val basketId = tradeRow.get(BTColumnName.BasketId).asInstanceOf[String]
       val tradeUnit = tradeRow.get(BTColumnName.Units).asInstanceOf[Int]
 
+      val basketConstituentRows = getConstituentsWith(ric) //todo what to do when multiple result?
+      val description =
+        if(basketConstituentRows.nonEmpty)
+          basketConstituentRows.head.get(BCColumnName.Description).asInstanceOf[String]
+        else ""
+
       val newRow = mkTradingConstituentRow(
         basketTradeInstanceId = tradeId,
         sourceBasketId = basketId,
         tradeUnit = tradeUnit,
-        ric = ric)
+        ric = ric,
+        description = description)
 
       //todo should we guard against adding row for ric that already exist?
       updateJoinTable(Array(newRow)) match {
@@ -77,6 +84,12 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
           ViewPortRpcFailure(errorReason.reason)
       }
     }
+  }
+
+  private def getConstituentsWith(ric: String): List[RowData] = {
+    val table = tableContainer.getTable(BasketModule.BasketConstituentTable)
+    val keys = table.primaryKeys.toList
+    keys.map(key => table.pullRow(key)).filter(_.get(BCColumnName.Ric).toString == ric)
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
@@ -180,7 +193,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
     }
   }
 
-  private def mkTradingConstituentRow(basketTradeInstanceId: String, sourceBasketId: String, tradeUnit: Int, ric: String): RowWithData = {
+  private def mkTradingConstituentRow(basketTradeInstanceId: String, sourceBasketId: String, tradeUnit: Int, ric: String, description: String): RowWithData = {
     val constituentKey = s"$basketTradeInstanceId.$ric"
     val weighting: Double = 0.1
     RowWithData(
@@ -191,7 +204,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
         ColumnName.InstanceId -> basketTradeInstanceId,
         ColumnName.InstanceIdRic -> constituentKey,
         ColumnName.Quantity -> (weighting * 100).asInstanceOf[Long],
-        ColumnName.Description -> "", //todo look up description from instrument table
+        ColumnName.Description -> description,
         ColumnName.Side -> Side.Buy,
         ColumnName.Weighting -> weighting,
         ColumnName.PriceStrategyId -> 2,

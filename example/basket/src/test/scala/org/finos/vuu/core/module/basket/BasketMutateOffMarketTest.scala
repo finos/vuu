@@ -186,7 +186,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
       }
     }
 
-    //TODO oin table cannot be tested currently as it doesnt get updated when underlying table gets updated
+    //TODO join table cannot be tested currently as it doesnt get updated when underlying table gets updated
 //    Scenario("Adding new constituents by ric should add it to basket trading") {
 //      import BasketModule._
 //      implicit val clock: Clock = new TestFriendlyClock(10001L)
@@ -217,11 +217,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 //          Then("get all the updates that have occurred for all view ports from the outbound queue")
 //          val updates = combineQs(vpBasketTradingConsJoin)
 //
+//          //todo should basketid be where the stock was sourced from? in this case .HSI?
 //
-//          //todo map description
-//            //todo should basketid be where the stock was sourced from? in this case .HSI?
-//
-//          And("assert the basket trading constituent table has not changed sides")
+//          And("assert the basket trading constituent table has added row")
 //          assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
 //            Table(
 //              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
