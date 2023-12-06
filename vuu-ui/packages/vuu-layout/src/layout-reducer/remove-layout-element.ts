@@ -21,7 +21,11 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
     return layoutRoot;
   }
   const { children } = getProps(targetParent);
-  if (children.length > 1 && allOtherChildrenArePlaceholders(children, path)) {
+  if (
+    children.length > 1 &&
+    typeOf(targetParent) !== "Stack" &&
+    allOtherChildrenArePlaceholders(children, path)
+  ) {
     const {
       style: { flexBasis, display, flexDirection, ...style },
     } = getProps(targetParent);
