@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { ReactElement } from "react";
 import { createPlaceHolder } from "./flexUtils";
+import { layoutFromJson } from "./layoutUtils";
 import { swapChild } from "./replace-layout-element";
 
 import {
@@ -22,6 +23,7 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
   }
   const { children } = getProps(targetParent);
   if (
+    // this is very specific to explicitly sized components
     children.length > 1 &&
     typeOf(targetParent) !== "Stack" &&
     allOtherChildrenArePlaceholders(children, path)
@@ -70,7 +72,7 @@ function _removeChild(
 ): ReactElement {
   const props = getProps(container);
   const { children: componentChildren, path, preserve } = props;
-  let { active } = props;
+  let { active, id: containerId } = props;
   const { idx, finalStep } = nextStep(path, getProp(child, "path"));
   const type = typeOf(container) as string;
   let children = componentChildren.slice() as ReactElement[];
@@ -85,9 +87,20 @@ function _removeChild(
     if (children.length === 0 && preserve && type === "Stack") {
       const {
         path,
-        style: { flexBasis, display, flexDirection, ...style },
+        style: { flexBasis },
       } = getProps(child);
-      const placeHolder = createPlaceHolder(path, flexBasis);
+      const placeHolder =
+        containerId === "main-tabs"
+          ? layoutFromJson(
+              {
+                props: {
+                  style: { flexGrow: 1, flexShrink: 1, flexBasis },
+                },
+                type: "Placeholder",
+              },
+              path
+            )
+          : createPlaceHolder(path, flexBasis);
       children.push(placeHolder);
     } else if (
       children.length === 1 &&

@@ -195,6 +195,7 @@ const dropLayoutIntoContainer = (
     clientRect,
     dropRect,
   } = dropTarget;
+
   const existingComponentPath = getProp(existingComponent, "path");
 
   if (existingComponentPath === "0.0") {

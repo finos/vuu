@@ -29,7 +29,7 @@ const isHtmlElement = (component: LayoutModel) => {
 
 export function wrap(
   container: ReactElement,
-  existingComponent: any,
+  existingComponent: ReactElement,
   newComponent: any,
   pos: DropPos,
   clientRect?: DropTarget["clientRect"],
@@ -110,6 +110,7 @@ function wrapFlexComponent(
 ) {
   const { version = 0 } = getProps(newComponent);
   const existingComponentPath = getProp(existingComponent, "path");
+
   const {
     type,
     flexDirection,
