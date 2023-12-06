@@ -34,6 +34,7 @@
   flex-direction: var(--vuuView-flexDirection, column);
   flex-wrap: var(--vuuView-flex-wrap, nowrap);
   flex: 1;
+  justify-content: var(--vuuView-justify, flex-start);
   overflow: hidden;
   position: relative;
 }

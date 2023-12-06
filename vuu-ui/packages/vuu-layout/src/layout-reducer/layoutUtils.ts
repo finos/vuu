@@ -11,7 +11,7 @@ import {
   hasPersistentState,
   setPersistentState,
 } from "../use-persistent-state";
-import { expandFlex, getProps, typeOf } from "../utils";
+import { expandFlex, followPathToParent, getProps, typeOf } from "../utils";
 import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
 
 export const getManagedDimension = (
@@ -287,3 +287,29 @@ function serializeValue(value: unknown): any {
     return result;
   }
 }
+
+// This is experimental and the only query we support to start off with is
+// PARENT_CONTAINER
+export type LayoutQuery = "PARENT_CONTAINER";
+
+export const layoutQuery = (
+  query: LayoutQuery,
+  path?: string,
+  layoutRoot?: ReactElement
+) => {
+  if (path && layoutRoot) {
+    const parentElement = followPathToParent(layoutRoot, path);
+    if (parentElement) {
+      const { id: parentContainerId } = getProps(parentElement);
+      const parentContainerType = typeOf(parentElement);
+      return {
+        parentContainerId,
+        parentContainerType,
+      };
+    }
+    return {
+      parentContainerType: "Stack",
+      parentContainerId: "blah",
+    };
+  }
+};

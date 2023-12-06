@@ -13,6 +13,7 @@ import {
   LayoutChangeReason,
   layoutFromJson,
   LayoutJSON,
+  layoutQuery,
   layoutReducer,
   LayoutReducerAction,
   layoutToJSON,
@@ -125,6 +126,9 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           serializeState(state.current, getLayoutChangeReason(action));
           break;
         }
+        case "query":
+          return layoutQuery(action.query, action.path, state.current);
+
         default: {
           dispatchLayoutAction(action);
           break;

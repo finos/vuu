@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LeftNavProps } from "packages/vuu-shell/src";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -60,6 +59,7 @@ export const LayoutActionType = {
   MAXIMIZE: "maximize",
   MINIMIZE: "minimize",
   MOVE_CHILD: "move-child",
+  QUERY: "query",
   REMOVE: "remove",
   REPLACE: "replace",
   RESTORE: "restore",
@@ -100,6 +100,12 @@ export type MoveChildAction = {
   toIndex: number;
   path: string;
   type: typeof LayoutActionType.MOVE_CHILD;
+};
+
+export type QueryAction = {
+  path?: string;
+  query: string;
+  type: typeof LayoutActionType.QUERY;
 };
 
 export type RemoveAction = {

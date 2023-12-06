@@ -1,10 +1,12 @@
 import React, { SyntheticEvent, useContext } from "react";
 import { ViewAction } from "./viewTypes";
 
+export type QueryReponse = { [key: string]: unknown };
+
 export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   action: Action,
   evt?: SyntheticEvent
-) => Promise<boolean | void>;
+) => Promise<boolean | QueryReponse | void>;
 
 /**
  * This API is available to any Feature hosted within Vuu (as all Features are wrapped
@@ -13,7 +15,7 @@ export type ViewDispatch = <Action extends ViewAction = ViewAction>(
  */
 export interface ViewContextAPI {
   /**
-   * disdpatcher for View actions. These are a subset of LayoutActions, specifically for
+   * dispatcher for View actions. These are a subset of LayoutActions, specifically for
    * View manipulation
    */
   dispatch?: ViewDispatch | null;

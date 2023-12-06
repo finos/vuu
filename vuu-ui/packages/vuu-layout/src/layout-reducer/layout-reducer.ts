@@ -189,17 +189,18 @@ const dropLayoutIntoContainer = (
   dropTarget: DropTarget,
   newComponent: ReactElement
 ): ReactElement => {
-  const {
-    component: existingComponent,
-    pos,
-    clientRect,
-    dropRect,
-  } = dropTarget;
+  const { component, pos, clientRect, dropRect } = dropTarget;
+  const existingComponent = component as ReactElement;
 
   const existingComponentPath = getProp(existingComponent, "path");
 
   if (existingComponentPath === "0.0") {
-    return wrap(layoutRoot, existingComponent, newComponent, pos);
+    return wrap(
+      layoutRoot,
+      existingComponent as ReactElement,
+      newComponent,
+      pos
+    );
   }
 
   const targetContainer = followPathToParent(

@@ -1,13 +1,13 @@
 import cx from "classnames";
-import { HTMLAttributes } from "react";
 import { registerComponent } from "../registry/ComponentRegistry";
+import { LayoutStartPanel } from "./LayoutStartPanel";
+import { View, ViewProps } from "@finos/vuu-layout";
 
 import "./Placeholder.css";
-import { LayoutStartPanel } from "./LayoutStartPanel";
 
 const classBase = "vuuPlaceholder";
 
-export interface PlaceholderProps extends HTMLAttributes<HTMLDivElement> {
+export interface PlaceholderProps extends ViewProps {
   closeable?: boolean;
   flexFill?: boolean;
   resizeable?: boolean;
@@ -19,26 +19,21 @@ export interface PlaceholderProps extends HTMLAttributes<HTMLDivElement> {
   shim?: boolean;
 }
 
+const PlaceholderCore = ({ showStartMenu = true }: PlaceholderProps) => {
+  return <>{showStartMenu ? <LayoutStartPanel /> : null}</>;
+};
+
 export const Placeholder = ({
-  className,
-  closeable,
-  flexFill,
-  showStartMenu = true,
-  resizeable,
-  shim,
-  ...props
+  className: classNameProp,
+  showStartMenu,
+  ...viewProps
 }: PlaceholderProps) => {
+  const className = cx(classBase, classNameProp);
+
   return (
-    <div
-      className={cx(classBase, className, {
-        [`${classBase}-shim`]: shim,
-      })}
-      {...props}
-      data-placeholder
-      data-resizeable
-    >
-      {showStartMenu ? <LayoutStartPanel /> : null}
-    </div>
+    <View {...viewProps} className={className} data-placeholder resizeable>
+      <PlaceholderCore showStartMenu={showStartMenu} />
+    </View>
   );
 };
 

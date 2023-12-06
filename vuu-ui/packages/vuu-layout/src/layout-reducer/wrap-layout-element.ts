@@ -135,6 +135,7 @@ function wrapFlexComponent(
   const resizeProp = isHtmlElement(existingComponent)
     ? "data-resizeable"
     : "resizeable";
+
   const existingComponentProps = {
     [resizeProp]: true,
     style: existingComponentStyle,
