@@ -12,7 +12,8 @@ export class MovingWindow {
   constructor({ from, to }: VuuRange) {
     this.range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
-    this.data = new Array(to - from);
+    console.log(`Moving WIndow ${from} ${to}`);
+    this.data = new Array(Math.max(0, to - from));
     this.rowCount = 0;
   }
 
