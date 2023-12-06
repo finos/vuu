@@ -261,10 +261,10 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     Map(f.Ric -> ric, f.Ask -> ask, f.Bid -> bid, f.Phase -> "C") ++ BidAskSize()
   }
 
-  final val MaxSpread = 100
+  final val MaxSpread = 10
 
   protected def doWidenBidAndAsk(ric: String): Map[String, Any] = {
-    if (!states.get(ric).contains(ric)) {
+    if (!states.get(ric).contains(f.Bid)) {
       seedStartValues(ric)
     } else {
       getState(ric) match {
