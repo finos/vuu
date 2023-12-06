@@ -1,4 +1,5 @@
 .vuuLayoutList {
+    --vuuLayoutList-width: 90%;
     --vuuMeasuredContainer-flex: 1 1 1px;
     align-self: stretch;
     display: flex;
@@ -30,20 +31,22 @@
 }
 
 .vuuLayoutList-header {
-    color: var(--light-text-primary, #15171B);
-    flex: 0 0 47px;
-    font-weight: 700;
-    letter-spacing: 0.48px;
-    text-transform: uppercase;
     display: flex;
+    flex: 0 0 47px;
+    width: var(--vuuLayoutList-width);
     padding: 16px 0;
     border-bottom: 1px solid rgba(119, 124, 148, 0.10);
+    color: var(--light-text-primary, #15171B);
+    font-weight: 700;
+    letter-spacing: 0.48px;
     line-height: 200%;
+    text-transform: uppercase;
 }
 
 .vuuLayoutList-groupName {
     display: flex;
     padding-top: 24px;
+    width: var(--vuuLayoutList-width);
     color: var(--light-text-secondary, #606477);
     font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
     font-family: Nunito Sans;
