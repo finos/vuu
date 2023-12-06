@@ -22,9 +22,12 @@ export class ShellWithNewTheme {
     return cy.findByRole("tab", { name: "MY LAYOUTS" });
   }
 
-  getSavedLayoutButton(layoutName, creator, date) {
-    const elementName = `${layoutName} ${creator}, ${formatDate(date)}`;
+  getLayoutTile(layoutName, group, creator, date) {
+    const layoutTileName = `${layoutName} ${creator}, ${formatDate(date)}`;
 
-    return cy.findByRole("button", { name: elementName });
+    return cy
+      .findByRole("listbox", { name: "my layouts" })
+      .findByRole("list", { name: group })
+      .findByRole("button", { name: layoutTileName });
   }
 }

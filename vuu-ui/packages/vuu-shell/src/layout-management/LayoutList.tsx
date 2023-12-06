@@ -34,7 +34,12 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
   }, {});
 
   return (
-    <div className={classBase} {...props}>
+    <div
+      className={classBase}
+      {...props}
+      role="listbox"
+      aria-label="my layouts"
+    >
       <div className={`${classBase}-header`}>My Layouts</div>
       <List<[string, LayoutMetadata[]]>
         height="auto"
@@ -43,33 +48,37 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
           if (!item) return <></>;
           const [groupName, layoutMetadata] = item;
           return (
-            <>
+            <div role="list" aria-label={groupName}>
               <div className={`${classBase}-groupName`}>{groupName}</div>
-              {layoutMetadata.map((metadata) => (
-                <div
-                  className={`${classBase}-layoutContainer`}
-                  key={metadata?.id}
-                  role="button"
-                  onClick={() => handleLoadLayout(metadata?.id)}
-                >
-                  <img
-                    className={`${classBase}-screenshot`}
-                    src={metadata?.screenshot}
-                  />
-                  <div>
-                    <div className={`${classBase}-layoutName`}>
-                      {metadata?.name}
-                    </div>
-                    <div className={`${classBase}-layoutDetails`}>
-                      <div>{`${metadata?.user}, ${metadata?.created}`}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
+              {layoutMetadata.map((metadata) =>
+                LayoutTile(metadata, handleLoadLayout)
+              )}
+            </div>
           );
         }}
       />
+    </div>
+  );
+};
+
+const LayoutTile = (
+  metadata: LayoutMetadata,
+  handleLoadLayout: (layoutId?: string) => void
+): JSX.Element => {
+  return (
+    <div
+      className={`${classBase}-layoutContainer`}
+      key={metadata?.id}
+      role="button"
+      onClick={() => handleLoadLayout(metadata?.id)}
+    >
+      <img className={`${classBase}-screenshot`} src={metadata?.screenshot} />
+      <div>
+        <div className={`${classBase}-layoutName`}>{metadata?.name}</div>
+        <div className={`${classBase}-layoutDetails`}>
+          <div>{`${metadata?.user}, ${metadata?.created}`}</div>
+        </div>
+      </div>
     </div>
   );
 };
