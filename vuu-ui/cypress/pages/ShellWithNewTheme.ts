@@ -22,7 +22,7 @@ export class ShellWithNewTheme {
     return cy.findByRole("tab", { name: "MY LAYOUTS" });
   }
 
-  getLayoutTile(layoutName, group, creator, date) {
+  getLayoutTile(layoutName: string, group: string, creator: string, date: Date) {
     const layoutTileName = `${layoutName} ${creator}, ${formatDate(date)}`;
 
     return cy
