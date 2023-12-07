@@ -96,7 +96,7 @@
   width: 6px;
 }
 
-.MainTab.vuuTab:hover:not(.vuuTab-selected):before{
+.MainTab.vuuTab:hover:before{
   background-color: #F37880;
   content: '';
   position: absolute;

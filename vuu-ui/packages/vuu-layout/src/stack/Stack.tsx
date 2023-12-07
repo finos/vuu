@@ -11,8 +11,9 @@ import React, {
   ReactElement,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
-import { StackProps } from "./stackTypes";
+import { StackProps, TabLabelFactory } from "./stackTypes";
 
 import "./Stack.css";
 
@@ -20,12 +21,21 @@ const classBase = "Tabs";
 
 const getDefaultTabIcon = () => undefined;
 
-const getDefaultTabLabel = (component: ReactElement, tabIndex: number) => {
-  return (
-    component.props?.title ??
-    component.props?.["data-tab-title"] ??
-    `Tab ${tabIndex + 1}`
-  );
+const getDefaultTabLabel: TabLabelFactory = (
+  component,
+  tabIndex,
+  existingLabels
+): string => {
+  let label = component.props?.title ?? component.props?.["data-tab-title"];
+  if (label) {
+    return label;
+  } else {
+    let count = tabIndex;
+    do {
+      label = `Tab ${++count}`;
+    } while (existingLabels.includes(label));
+    return label;
+  }
 };
 
 const getChildElements = <T extends ReactElement = ReactElement>(
@@ -70,11 +80,11 @@ export const Stack = forwardRef(function Stack(
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
+  const tabLabels = useRef<string[]>([]);
   const {
     allowCloseTab,
     allowRenameTab,
     className: tabstripClassName,
-    tabClassName,
   } = TabstripProps;
 
   const handleExitEditMode = useCallback(
@@ -109,6 +119,8 @@ export const Stack = forwardRef(function Stack(
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
       } = child.props;
+      const label = getTabLabel(child, idx, tabLabels.current);
+      tabLabels.current.push(label);
       return (
         <Tab
           ariaControls={childId}
@@ -116,7 +128,7 @@ export const Stack = forwardRef(function Stack(
           key={childId}
           id={`${childId}-tab`}
           index={idx}
-          label={getTabLabel(child, idx)}
+          label={label}
           location={tabLocation}
           closeable={closeable}
           editable={allowRenameTab}

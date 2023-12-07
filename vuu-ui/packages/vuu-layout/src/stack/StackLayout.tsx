@@ -5,23 +5,20 @@ import {
   useLayoutCreateNewChild,
   useLayoutProviderDispatch,
 } from "../layout-provider";
-import { useViewActionDispatcher, View } from "../layout-view";
+import { useViewActionDispatcher } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
+import { Placeholder } from "../placeholder";
 
 const defaultCreateNewChild = () => (
-  <View
+  <Placeholder
     resizeable
     style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
-    header
-    closeable
-  >
-    <Component style={{ flex: 1 }} />
-  </View>
+  />
 );
 
 export const StackLayout = (props: StackProps) => {
