@@ -149,22 +149,27 @@ export function getCellRenderer(
   cellType: "cell" | "col-content" | "col-label" = "cell"
 ) {
   if (cellType === "cell") {
-    if (isTypeDescriptor(column.type)) {
-      const { renderer } = column.type;
-      if (isColumnTypeRenderer(renderer)) {
-        return cellRenderersMap.get(renderer.name);
-      }
-    }
-    if (column.editable) {
-      // we can only offer a text input edit as a generic editor.
-      // If a more specialised editor is required, user must configure
-      // it in column config.
-      return cellRenderersMap.get("input-cell");
-    }
+    return dataCellRenderer(column);
   } else if (cellType === "col-label" && column.colHeaderLabelRenderer) {
     return cellRenderersMap.get(column.colHeaderLabelRenderer);
   } else if (cellType === "col-content" && column.colHeaderContentRenderer) {
     return cellRenderersMap.get(column.colHeaderContentRenderer);
+  }
+}
+
+function dataCellRenderer(column: ColumnDescriptor) {
+  if (isTypeDescriptor(column.type)) {
+    const { renderer } = column.type;
+    if (isColumnTypeRenderer(renderer)) {
+      return cellRenderersMap.get(renderer.name);
+    }
+  } else if (column.serverDataType === "boolean") {
+    return cellRenderersMap.get("checkbox-cell");
+  } else if (column.editable) {
+    // we can only offer a text input edit as a generic editor.
+    // If a more specialised editor is required, user must configure
+    // it in column config.
+    return cellRenderersMap.get("input-cell");
   }
 }
 

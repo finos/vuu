@@ -1,0 +1,39 @@
+import React, { memo, useCallback } from "react";
+import { TableCellRendererProps } from "@finos/vuu-datagrid-types";
+import { CheckboxIcon, WarnCommit } from "@finos/vuu-ui-controls";
+import { Checkbox } from "@salt-ds/core";
+import { dataAndColumnUnchanged } from "../cell-utils";
+import { dispatchCustomEvent, registerComponent } from "@finos/vuu-utils";
+
+export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
+  ({ column, columnMap, onCommit = WarnCommit, row }) => {
+    const dataIdx = columnMap[column.name];
+    const isChecked = row[dataIdx];
+
+    const handleCommit = useCallback(
+      (value) => async (evt: React.MouseEvent) => {
+        const res = await onCommit(value);
+        if (res === true) {
+          dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
+        }
+        return res;
+      },
+      [onCommit]
+    );
+
+    return (
+      <React.Fragment>
+        {!!column.editable ? (
+          <Checkbox checked={isChecked} onClick={handleCommit(!isChecked)} />
+        ) : (
+          <CheckboxIcon checked={isChecked} disabled={true} />
+        )}
+      </React.Fragment>
+    );
+  },
+  dataAndColumnUnchanged
+);
+
+registerComponent("checkbox-cell", CheckboxCell, "cell-renderer", {
+  serverDataType: "boolean",
+});
