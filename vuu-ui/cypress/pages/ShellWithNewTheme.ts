@@ -28,6 +28,7 @@ export class ShellWithNewTheme {
     return cy
       .findByRole("listbox", { name: "my layouts" })
       .findByRole("list", { name: group })
-      .findByRole("button", { name: layoutTileName });
+      .findByRole("listitem", { name: layoutTileName })
+      .findByRole("button");
   }
 }

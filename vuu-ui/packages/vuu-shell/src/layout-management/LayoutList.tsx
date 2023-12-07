@@ -66,17 +66,19 @@ const LayoutTile = (
   handleLoadLayout: (layoutId?: string) => void
 ): JSX.Element => {
   return (
-    <div
-      className={`${classBase}-layoutContainer`}
-      key={metadata?.id}
-      role="button"
-      onClick={() => handleLoadLayout(metadata?.id)}
-    >
-      <img className={`${classBase}-screenshot`} src={metadata?.screenshot} />
-      <div>
-        <div className={`${classBase}-layoutName`}>{metadata?.name}</div>
-        <div className={`${classBase}-layoutDetails`}>
-          <div>{`${metadata?.user}, ${metadata?.created}`}</div>
+    <div role="listitem">
+      <div
+        className={`${classBase}-layoutContainer`}
+        key={metadata?.id}
+        role="button"
+        onClick={() => handleLoadLayout(metadata?.id)}
+      >
+        <img className={`${classBase}-screenshot`} src={metadata?.screenshot} />
+        <div>
+          <div className={`${classBase}-layoutName`}>{metadata?.name}</div>
+          <div className={`${classBase}-layoutDetails`}>
+            <div>{`${metadata?.user}, ${metadata?.created}`}</div>
+          </div>
         </div>
       </div>
     </div>
