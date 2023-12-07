@@ -7,10 +7,10 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
+import org.finos.vuu.viewport.ViewPortCreateSuccess
 import org.scalatest.prop.Tables.Table
 
 class BasketCreateTest extends VuuServerTestCase {
@@ -54,21 +54,24 @@ class BasketCreateTest extends VuuServerTestCase {
 
           val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](viewportBasket)
 
-          val action = basketService.createBasket(".FTSE", "TestBasket")(vuuServer.requestContext)
+          val vpAction = basketService.createBasket(".FTSE", "TestBasket")(vuuServer.requestContext)
+
+          assert(vpAction.isInstanceOf[ViewPortCreateSuccess])
+          val basketTradeInstanceId = vpAction.asInstanceOf[ViewPortCreateSuccess].key
 
           val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
 
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](viewportBasketTrading)
 
           //CJS: I don't like this forced cast, need to look at that a bit
-          basketTradingService.editCellAction().func(BasketTradeId.current, BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(basketTradeInstanceId, BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
 
           vuuServer.runOnce()
 
           assertVpEq(combineQsForVp(viewportBasketTrading)) {
             Table(
               ("basketId", "instanceId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side"),
-              (".FTSE", BasketTradeId.current, "TestBasket", 100, "OFF-MARKET", null, null, null, null, "BUY")
+              (".FTSE", basketTradeInstanceId, "TestBasket", 100, "OFF-MARKET", null, null, null, null, "BUY")
             )
           }
       }

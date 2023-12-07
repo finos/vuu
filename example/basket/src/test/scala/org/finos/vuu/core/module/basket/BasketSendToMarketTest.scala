@@ -11,6 +11,7 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
+import org.finos.vuu.viewport.ViewPortCreateSuccess
 import org.scalatest.prop.Tables.Table
 
 class BasketSendToMarketTest extends VuuServerTestCase {
@@ -50,8 +51,9 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           Then("Get the Basket RPC Service and call create basket")
           val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)
 
-          basketService.createBasket(".FTSE", "TestBasket")(vuuServer.requestContext)
-          val basketTradeInstanceId = BasketTradeId.current
+          val vpAction = basketService.createBasket(".FTSE", "TestBasket")(vuuServer.requestContext)
+          assert(vpAction.isInstanceOf[ViewPortCreateSuccess])
+          val basketTradeInstanceId = vpAction.asInstanceOf[ViewPortCreateSuccess].key
 
           val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
