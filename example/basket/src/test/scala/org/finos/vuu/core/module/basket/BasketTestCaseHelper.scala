@@ -20,8 +20,8 @@ object BasketTestCaseHelper {
     //symbol + "." + basketId
     //Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(), BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
     //            BC.Volume.string(), BC.Side.string())
-    provider.tick("VOD.L.FTSE", Map(BC.RicBasketId -> "VOD.L.FTSE", BC.Ric -> "VOD.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Vodafone"))
-    provider.tick("BT.L.FTSE", Map(BC.RicBasketId -> "BT.L.FTSE", BC.Ric -> "BT.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "Sell", BC.Description -> "British Telecom"))
-    provider.tick("BP.L.FTSE", Map(BC.RicBasketId -> "BP.L.FTSE", BC.Ric -> "BP.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Beyond Petroleum"))
+    provider.tick("VOD.L.FTSE", Map(BC.RicBasketId -> "VOD.L.FTSE", BC.Ric -> "VOD.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Vodafone"))
+    provider.tick("BT.L.FTSE", Map(BC.RicBasketId -> "BT.L.FTSE", BC.Ric -> "BT.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "SELL", BC.Description -> "British Telecom"))
+    provider.tick("BP.L.FTSE", Map(BC.RicBasketId -> "BP.L.FTSE", BC.Ric -> "BP.L", BC.BasketId -> ".FTSE", BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Beyond Petroleum"))
   }
 }

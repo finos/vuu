@@ -3,7 +3,8 @@ package org.finos.vuu.core.module.basket.service
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable, Sides}
+import org.finos.vuu.core.module.basket.BasketConstants.Side
+import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable}
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
@@ -110,8 +111,8 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
           val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
           constituents.foreach(row => {
             val newSide = row.get(BTC.Side) match {
-              case Sides.Buy => Sides.Sell
-              case _ => Sides.Buy
+              case Side.Buy => Side.Sell
+              case _ => Side.Buy
             }
             constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> newSide)), clock.now())
           })

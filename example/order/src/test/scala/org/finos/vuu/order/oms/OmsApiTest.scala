@@ -62,7 +62,7 @@ class OmsApiTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
       omsApi.addListener(listener)
 
-      omsApi.createOrder(NewOrder("Buy","VOD.L", 1000L, 100.01, "clOrdId1"))
+      omsApi.createOrder(NewOrder("BUY","VOD.L", 1000L, 100.01, "clOrdId1"))
 
       clock.sleep(MAX_ACK_TIME_MS)
       omsApi.runOnce()
@@ -95,8 +95,8 @@ class OmsApiTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
       omsApi.addListener(listener)
 
-      omsApi.createOrder(NewOrder("Buy", "VOD.L", 1000L, 100.01, "clOrdId1"))
-      omsApi.createOrder(NewOrder("Buy", "BP.L", 1000L, 150.01, "clOrdId2"))
+      omsApi.createOrder(NewOrder("BUY", "VOD.L", 1000L, 100.01, "clOrdId1"))
+      omsApi.createOrder(NewOrder("BUY", "BP.L", 1000L, 150.01, "clOrdId2"))
 
       clock.sleep(MAX_ACK_TIME_MS)
       omsApi.runOnce()
