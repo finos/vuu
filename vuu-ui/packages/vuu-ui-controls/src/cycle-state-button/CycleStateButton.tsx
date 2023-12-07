@@ -16,7 +16,7 @@ export interface CycleStateButtonProps extends ButtonProps {
 }
 
 const getNextValue = (value: string, valueList: string[]) => {
-  const index = valueList.indexOf(value);
+  const index = valueList.indexOf(value.toUpperCase());
   if (index === valueList.length - 1) {
     return valueList[0];
   } else {
