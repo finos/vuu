@@ -50,7 +50,7 @@
 }
 
   .vuuTableNextHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizerNext:before {
-    --height: calc(var(--table-height) - 15px);
+    --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
     --inset-r: calc(var(--pin-width) - 2px);
     --inset-b: calc(var(--height) - 2px);
     --clip-path: polygon(
@@ -85,7 +85,7 @@
 }
 
 .vuuTableNextHeaderCell.vuuPinRight.vuuEndPin .vuuColumnResizerNext:before {
-  --height: calc(var(--table-height) - 15px);
+  --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
   --inset-r: calc(var(--pin-width) - 2px);
   --inset-b: calc(var(--height) - 2px);
   --clip-path: polygon(
