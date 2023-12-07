@@ -79,7 +79,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
 
       //todo should we guard against adding row for ric that already exist?
       updateJoinTable(Array(newRow)) match {
-        case Right(_) => ViewPortRpcSuccess()
+        case Right(_) => ViewPortCreateSuccess(newRow.key)
         case Left(errorReason) =>
           ViewPortRpcFailure(errorReason.reason)
       }

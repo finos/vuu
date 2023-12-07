@@ -4,10 +4,7 @@ import org.finos.vuu.net.ClientSessionId
 
 trait ViewPortEditAction extends ViewPortAction {}
 case class ViewPortEditSuccess() extends ViewPortEditAction {}
-case class ViewPortRpcSuccess() extends ViewPortAction {}
-case class ViewPortRpcFailure(msg: String) extends ViewPortAction {}
 case class ViewPortEditFailure(msg: String) extends ViewPortEditAction {}
-case class ViewPortCreateSuccess(key:String) extends ViewPortAction
 
 case class ViewPortEditCellAction(filter: String, func: (String, String, Object, ViewPort, ClientSessionId) => ViewPortEditAction){
   final val rpcName = "VP_EDIT_CELL"
