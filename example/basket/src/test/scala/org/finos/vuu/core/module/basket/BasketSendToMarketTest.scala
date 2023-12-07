@@ -62,9 +62,9 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTradingCons)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
@@ -79,7 +79,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTrading)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              (basketTradeInstanceId, ".FTSE", "TestBasket", "ON_MARKET", 1, null, null, null, null, "Buy")
+              (basketTradeInstanceId, ".FTSE", "TestBasket", "ON_MARKET", 1, null, null, null, null, "BUY")
             )
           }
 
@@ -92,7 +92,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTrading)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              (basketTradeInstanceId, ".FTSE", "TestBasket", "OFF_MARKET", 1, null, null, null, null, "Buy")
+              (basketTradeInstanceId, ".FTSE", "TestBasket", "OFF_MARKET", 1, null, null, null, null, "BUY")
             )
           }
       }

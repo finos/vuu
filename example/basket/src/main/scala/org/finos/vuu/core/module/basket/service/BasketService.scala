@@ -2,8 +2,9 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable, Sides}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable}
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
@@ -57,7 +58,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
   }
 
   private def mkTradingBasketRow(sourceBasketId: String, basketTradeName: String, basketTradeInstanceId: String) = {
-    RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Sides.Buy, BT.Units -> 1))
+    RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Side.Buy, BT.Units -> 1))
   }
 
   def createBasketFromRpc(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {

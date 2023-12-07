@@ -291,7 +291,7 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     val instIdx = randomNumbers.seededRand(0, instruments.length - 1)
     val instrument = instruments(instIdx)
     val quantity = randomNumbers.seededRand(0, 30) * 100 + randomNumbers.seededRand(0, 100)
-    val side = if (randomNumbers.seededRand(0, 10) > 8) "Buy" else "Sell"
+    val side = if (randomNumbers.seededRand(0, 10) > 8) "BUY" else "SELL"
     val account = accounts(randomNumbers.seededRand(0, accounts.length - 1))
     val algo = algos(randomNumbers.seededRand(0, algos.length - 1))
     val volLimit = randomNumbers.seededRand(0, 10) * 10

@@ -33,9 +33,9 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
           vuuServer.login("testUser", "testToken")
 
           val basketName = "test_basket1"
-          val tradeId = GivenBasketTrade(vuuServer.tableContainer, basketName, "Buy")
+          val tradeId = GivenBasketTrade(vuuServer.tableContainer, basketName, "BUY")
           GivenPrices(vuuServer.tableContainer, List(("VOD.L", 1.1, 1.4), ("BP.L", 2.1, 2.4)))
-          GivenBasketTradeConstituentsJoin(vuuServer.tableContainer, tradeId, Map(("VOD.L" -> "Buy"), ("BP.L" -> "Sell")))
+          GivenBasketTradeConstituentsJoin(vuuServer.tableContainer, tradeId, Map(("VOD.L" -> "BUY"), ("BP.L" -> "SELL")))
 
           val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val vpBasketTradingConsJoin = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentJoin)
@@ -60,9 +60,9 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTradingConsJoin, updates)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "bid",  "ask", "filledQty", "orderStatus"),
-              (10L, "Buy", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 2.1, 2.4, 0, "PENDING"),
-              (10L, "Sell", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, null, null, 0, "PENDING"),
-              (10L, "Sell", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 1.1, 1.4, 0, "PENDING")
+              (10L, "BUY", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 2.1, 2.4, 0, "PENDING"),
+              (10L, "SELL", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, null, null, 0, "PENDING"),
+              (10L, "SELL", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 1.1, 1.4, 0, "PENDING")
             )
           }
       }
