@@ -7,7 +7,7 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.net.RequestContext
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
 import java.util.concurrent.atomic.AtomicInteger
@@ -59,26 +59,8 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
     RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Side.Buy, BT.Units -> 1))
   }
 
-  def createBasketFromRpc(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {
-    createBasket(basketId, name)(ctx)
-  }
-
-  def createBasket(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
-
-    val basketId = selection.rowKeyIndex.map({ case (key, _) => key }).toList.head
-
-    val instanceKey = BasketTradeId.oneNew(session.user)
-
-    createBasketInternal(basketId, instanceKey, instanceKey, session)
-  }
-
-  def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction = {
+  def createBasket(sourceBasketId: String, basketTradeName: String)(ctx: RequestContext): ViewPortAction = {
     val basketTradeId = BasketTradeId.oneNew(ctx.session.user)
-    createBasketInternal(basketId, name, basketTradeId, ctx.session)
-  }
-
-  private def createBasketInternal(sourceBasketId: String, basketTradeName: String, basketTradeId: String, sessionId: ClientSessionId) = {
-
     val constituents = getConstituentsForSourceBasket(sourceBasketId)
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {
@@ -103,9 +85,4 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
 
     ViewPortCreateSuccess(basketTradeId)
     }
-
-  override def menuItems(): ViewPortMenu = ViewPortMenu(
-      new SelectionViewPortMenuItem("Create New", "", (sel, sess) => this.createBasket(sel, sess), "CREATE_NEW_BASKET"),
-  )
-
 }
