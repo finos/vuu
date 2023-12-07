@@ -109,8 +109,7 @@ function wrapFlexComponent(
   pos: DropPos
 ) {
   const { version = 0 } = getProps(newComponent);
-  const existingComponentPath = getProp(existingComponent, "path");
-
+  const { path: existingComponentPath, title } = getProps(existingComponent);
   const {
     type,
     flexDirection,
@@ -163,6 +162,7 @@ function wrapFlexComponent(
       ...splitterSize,
       ...showTabs,
       style,
+      title,
       resizeable: getProp(existingComponent, "resizeable"),
     } as LayoutProps,
     targetFirst

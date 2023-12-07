@@ -95,6 +95,7 @@ function _removeChild(
               {
                 props: {
                   style: { flexGrow: 1, flexShrink: 1, flexBasis },
+                  title: "Tab 1",
                 },
                 type: "Placeholder",
               },

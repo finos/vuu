@@ -3,6 +3,7 @@ import { rectTuple, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
+import { TabLabelFactory } from "../stack";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import {
   createPlaceHolder,
@@ -13,7 +14,11 @@ import {
   wrapIntrinsicSizeComponentWithFlexbox,
 } from "./flexUtils";
 import { LayoutModel } from "./layoutTypes";
-import { getManagedDimension, LayoutProps } from "./layoutUtils";
+import {
+  getDefaultTabLabel,
+  getManagedDimension,
+  LayoutProps,
+} from "./layoutUtils";
 
 type insertionPosition = "before" | "after";
 
@@ -68,6 +73,19 @@ export function insertIntoContainer(
   return React.cloneElement(container, { active }, children);
 }
 
+const getDefaultTitle = (
+  containerType: string | undefined,
+  component: ReactElement,
+  index: number,
+  existingLabels: string[]
+) =>
+  containerType === "Stack"
+    ? getDefaultTabLabel(component, index, existingLabels)
+    : undefined;
+
+const getChildrenTitles = (children: ReactElement[]) =>
+  children.map((child) => child.props.title);
+
 function insertIntoChildren(
   container: ReactElement,
   containerChildren: ReactElement[],
@@ -75,7 +93,15 @@ function insertIntoChildren(
 ): [number, ReactElement[]] {
   const containerPath = getProp(container, "path");
   const count = containerChildren?.length;
-  const { id = uuid() } = getProps(newComponent);
+  const {
+    id = uuid(),
+    title = getDefaultTitle(
+      typeOf(container),
+      newComponent,
+      count ?? 0,
+      getChildrenTitles(containerChildren)
+    ),
+  } = getProps(newComponent);
 
   if (count) {
     return [
@@ -84,11 +110,12 @@ function insertIntoChildren(
         resetPath(newComponent, `${containerPath}.${count}`, {
           id,
           key: id,
+          title,
         })
       ),
     ];
   } else {
-    return [0, [resetPath(newComponent, `${containerPath}.0`, { id })]];
+    return [0, [resetPath(newComponent, `${containerPath}.0`, { id, title })]];
   }
 }
 

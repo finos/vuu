@@ -6,6 +6,7 @@ import {
   isContainer,
   isLayoutComponent,
 } from "../registry/ComponentRegistry";
+import { TabLabelFactory } from "../stack";
 import {
   getPersistentState,
   hasPersistentState,
@@ -311,5 +312,22 @@ export const layoutQuery = (
       parentContainerType: "Stack",
       parentContainerId: "blah",
     };
+  }
+};
+
+export const getDefaultTabLabel: TabLabelFactory = (
+  component,
+  tabIndex,
+  existingLabels = []
+): string => {
+  let label = component.props?.title ?? component.props?.["data-tab-title"];
+  if (label) {
+    return label;
+  } else {
+    let count = tabIndex;
+    do {
+      label = `Tab ${++count}`;
+    } while (existingLabels.includes(label));
+    return label;
   }
 };

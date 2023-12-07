@@ -1,9 +1,4 @@
-import { useId } from "@finos/vuu-layout";
-import {
-  Tab,
-  Tabstrip as Tabstrip,
-  TabstripProps,
-} from "@finos/vuu-ui-controls";
+import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import React, {
   ForwardedRef,
@@ -13,30 +8,15 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { StackProps, TabLabelFactory } from "./stackTypes";
+import { getDefaultTabLabel } from "../layout-reducer";
+import { useId } from "../utils";
+import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
 
 const classBase = "Tabs";
 
 const getDefaultTabIcon = () => undefined;
-
-const getDefaultTabLabel: TabLabelFactory = (
-  component,
-  tabIndex,
-  existingLabels
-): string => {
-  let label = component.props?.title ?? component.props?.["data-tab-title"];
-  if (label) {
-    return label;
-  } else {
-    let count = tabIndex;
-    do {
-      label = `Tab ${++count}`;
-    } while (existingLabels.includes(label));
-    return label;
-  }
-};
 
 const getChildElements = <T extends ReactElement = ReactElement>(
   children: ReactNode

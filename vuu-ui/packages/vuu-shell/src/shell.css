@@ -70,6 +70,7 @@
 }
 
 .vuuTab.MainTab {
+  --vuuTabMenu-top: -1px;
   background-color: #F1F2F4;
   border-color: #D6D7DA;
   border-radius: 6px 6px 0 0;
