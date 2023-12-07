@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentTable}
+import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
@@ -15,11 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger
 object BasketTradeId {
 
   private val counter: AtomicInteger = new AtomicInteger(0)
-  var current:String = "NoneInitalised" //this is for testing but only works if tests that use this doesnt run in parallel
   def oneNew(user:String): String = {
     val counterValue = counter.incrementAndGet()
-    current = user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
-    current
+    user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
   }
 }
 
@@ -103,7 +101,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
         logger.error("Cannot find the Basket Trading Constituent.")
     }
 
-    NoAction()
+    ViewPortCreateSuccess(basketTradeId)
     }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu(
