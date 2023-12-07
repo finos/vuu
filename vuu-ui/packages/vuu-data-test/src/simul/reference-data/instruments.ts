@@ -13,6 +13,8 @@ export type description = string;
 export type exchange = string;
 // seed for price generation
 export type price = number;
+type supported = boolean;
+type wishlist = boolean;
 
 export type InstrumentsDataRow = [
   bbg,
@@ -22,7 +24,9 @@ export type InstrumentsDataRow = [
   string,
   number,
   ric,
-  price
+  price,
+  supported,
+  wishlist
 ];
 
 export const InstrumentColumnMap = {
@@ -34,6 +38,8 @@ export const InstrumentColumnMap = {
   number: 5,
   ric: 6,
   price: 7,
+  supported: 8,
+  wishlist: 9,
 };
 
 const instruments: InstrumentsDataRow[] = [];
@@ -63,8 +69,9 @@ for (const char of chars) {
     const lotSize = lotsizes[random(0, lotsizes.length - 1)];
 
     const exchange = locations[suffix][1];
-
     const price = randomPrice();
+    const supported = random(0, 1) === 1;
+    const wishlist = random(0, 1) === 1;
 
     instruments.push([
       bbg,
@@ -75,6 +82,8 @@ for (const char of chars) {
       lotSize,
       ric,
       price,
+      supported,
+      wishlist,
     ]);
   }
 }
