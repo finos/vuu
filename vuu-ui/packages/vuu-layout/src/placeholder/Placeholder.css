@@ -1,10 +1,14 @@
 .vuuPlaceholder {
+  --vuuView-justify: center;
   align-items: center;
   display: flex;
   flex-basis: 0;
   flex-grow: 1;
   flex-shrink: 1;
-  justify-content: center;
+}
+
+.vuuPlaceholder-nested {
+  background-color: red;
 }
 
 .vuuPlaceholder-shim {

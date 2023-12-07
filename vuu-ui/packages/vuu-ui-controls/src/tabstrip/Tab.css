@@ -148,15 +148,6 @@
   --tab-before-width: var(--tab-activationIndicator-thumb-width);
 }
 
-/* .vuuDraggable .vuuTab:before,
-.vuuTab:not(.vuuTab-selected).saltFocusVisible:before,
-.vuuTab:hover:not(.vuuTab-selected):before {
-  --tab-before-content: "";
-  --tab-before-background: var(--salt-navigable-indicator-hover);
-  --tab-before-height: var(--tab-thumb-height);
-  --tab-before-inset: var(--tab-activationIndicator-inset);
-  --tab-before-width: var(--tab-activationIndicator-thumb-width);
-} */
 
 .vuuTab-selected:before {
   --tab-before-content: "";
@@ -170,10 +161,7 @@
   width: var(--tab-thumb-width, 100%);
 }
 
-.vuuTab:hover:not(.vuuTab-closeHover) {
+.vuuTab:hover:not(.vuuTab-closeHover, .vuuTab-selected) {
   background: var(--vuuTab-hover-background, var(--salt-navigable-primary-background-hover));
 }
 
-/* .vuuTabstrip.vuuTabThumb-noTransition .vuuTab-selected:before {
-  transition: none; 
-} */

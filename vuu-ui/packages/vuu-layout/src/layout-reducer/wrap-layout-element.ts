@@ -29,7 +29,7 @@ const isHtmlElement = (component: LayoutModel) => {
 
 export function wrap(
   container: ReactElement,
-  existingComponent: any,
+  existingComponent: ReactElement,
   newComponent: any,
   pos: DropPos,
   clientRect?: DropTarget["clientRect"],
@@ -109,7 +109,7 @@ function wrapFlexComponent(
   pos: DropPos
 ) {
   const { version = 0 } = getProps(newComponent);
-  const existingComponentPath = getProp(existingComponent, "path");
+  const { path: existingComponentPath, title } = getProps(existingComponent);
   const {
     type,
     flexDirection,
@@ -134,6 +134,7 @@ function wrapFlexComponent(
   const resizeProp = isHtmlElement(existingComponent)
     ? "data-resizeable"
     : "resizeable";
+
   const existingComponentProps = {
     [resizeProp]: true,
     style: existingComponentStyle,
@@ -161,6 +162,7 @@ function wrapFlexComponent(
       ...splitterSize,
       ...showTabs,
       style,
+      title,
       resizeable: getProp(existingComponent, "resizeable"),
     } as LayoutProps,
     targetFirst

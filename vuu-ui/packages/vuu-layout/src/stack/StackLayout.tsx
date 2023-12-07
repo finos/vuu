@@ -1,27 +1,24 @@
 import { useIdMemo as useId } from "@salt-ds/core";
-import React, { ReactElement, useCallback, useRef } from "react";
-import Component from "../Component";
+import React, { useCallback, useRef } from "react";
 import {
   useLayoutCreateNewChild,
   useLayoutProviderDispatch,
 } from "../layout-provider";
-import { useViewActionDispatcher, View } from "../layout-view";
+import { useViewActionDispatcher } from "../layout-view";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
-import { StackProps } from "./stackTypes";
+import { StackProps, TabLabelFactory } from "./stackTypes";
+import { getDefaultTabLabel } from "../layout-reducer";
 
 import "./Stack.css";
+import { Placeholder } from "../placeholder";
 
 const defaultCreateNewChild = () => (
-  <View
+  <Placeholder
     resizeable
     style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
-    header
-    closeable
-  >
-    <Component style={{ flex: 1 }} />
-  </View>
+  />
 );
 
 export const StackLayout = (props: StackProps) => {
@@ -115,9 +112,14 @@ export const StackLayout = (props: StackProps) => {
     dispatch({ type: "set-title", path: `${path}.${tabIndex}`, title: text });
   };
 
-  const getTabLabel = (component: ReactElement, idx: number) => {
+  const getTabLabel: TabLabelFactory = (component, idx, existingLabels) => {
     const { id, title } = component.props;
-    return loadState(id, "view-title") || title || `Tab ${idx + 1}`;
+    return (
+      loadState(id, "view-title") ||
+      title ||
+      // This will normally never be called as title is always assigned in layout model
+      getDefaultTabLabel(component, idx, existingLabels)
+    );
   };
 
   return (

@@ -2,6 +2,7 @@ import { createContext, Dispatch, ReactElement } from "react";
 import {
   DragStartAction,
   LayoutReducerAction,
+  QueryAction,
   SaveAction,
 } from "../layout-reducer";
 
@@ -11,7 +12,7 @@ const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   );
 
 export type LayoutProviderDispatch = Dispatch<
-  LayoutReducerAction | SaveAction | DragStartAction
+  LayoutReducerAction | SaveAction | DragStartAction | QueryAction
 >;
 
 export interface LayoutProviderContextProps {

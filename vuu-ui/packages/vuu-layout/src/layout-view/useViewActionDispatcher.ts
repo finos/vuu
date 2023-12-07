@@ -9,7 +9,7 @@ import {
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
 import { usePersistentState } from "../use-persistent-state";
-import { ViewDispatch } from "./ViewContext";
+import { QueryReponse, ViewDispatch } from "./ViewContext";
 import { ViewAction } from "./viewTypes";
 
 export type ContributionLocation = "post-title" | "pre-title";
@@ -90,7 +90,7 @@ export const useViewActionDispatcher = (
     async <A extends ViewAction = ViewAction>(
       action: A,
       evt?: SyntheticEvent
-    ): Promise<boolean | void> => {
+    ): Promise<boolean | QueryReponse | void> => {
       const { type } = action;
       switch (type) {
         case "maximize":
@@ -105,6 +105,13 @@ export const useViewActionDispatcher = (
           return updateContributions(action.location, action.content);
         case "remove-toolbar-contribution":
           return clearContributions();
+        case "query":
+          return dispatchLayoutAction({
+            type,
+            path: action.path,
+            query: action.query,
+          });
+          return;
         default: {
           return undefined;
         }

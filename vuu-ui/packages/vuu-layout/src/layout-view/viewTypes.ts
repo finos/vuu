@@ -5,6 +5,7 @@ import {
   MaximizeAction,
   MinimizeAction,
   MousedownViewAction,
+  QueryAction,
   RemoveAction,
   RemoveToolbarContributionViewAction,
   RestoreAction,
@@ -15,6 +16,7 @@ export type ViewAction =
   | MaximizeAction
   | MinimizeAction
   | MousedownViewAction
+  | QueryAction
   | RemoveAction
   | RestoreAction
   | TearoutAction

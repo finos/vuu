@@ -90,9 +90,6 @@ export const LayoutManagementProvider = (
 
   const setApplicationLayout = useCallback(
     (layout: LayoutJSON, rerender = true) => {
-      console.log(`save layout`, {
-        layout,
-      });
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
@@ -106,7 +103,6 @@ export const LayoutManagementProvider = (
 
   const setApplicationSettings = useCallback(
     (settings: ApplicationSettings) => {
-      console.log(`save settings`);
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
@@ -175,7 +171,6 @@ export const LayoutManagementProvider = (
         getPersistenceManager()
           .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
-            console.log("NOTIFY");
             notify({
               type: NotificationLevel.Success,
               header: "Layout Saved Successfully",

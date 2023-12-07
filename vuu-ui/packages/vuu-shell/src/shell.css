@@ -70,6 +70,7 @@
 }
 
 .vuuTab.MainTab {
+  --vuuTabMenu-top: -1px;
   background-color: #F1F2F4;
   border-color: #D6D7DA;
   border-radius: 6px 6px 0 0;
@@ -96,7 +97,7 @@
   width: 6px;
 }
 
-.MainTab.vuuTab:hover:not(.vuuTab-selected):before{
+.MainTab.vuuTab:hover:before{
   background-color: #F37880;
   content: '';
   position: absolute;

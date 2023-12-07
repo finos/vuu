@@ -1,9 +1,4 @@
-import { useId } from "@finos/vuu-layout";
-import {
-  Tab,
-  Tabstrip as Tabstrip,
-  TabstripProps,
-} from "@finos/vuu-ui-controls";
+import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
 import cx from "classnames";
 import React, {
   ForwardedRef,
@@ -11,7 +6,10 @@ import React, {
   ReactElement,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
+import { getDefaultTabLabel } from "../layout-reducer";
+import { useId } from "../utils";
 import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
@@ -19,14 +17,6 @@ import "./Stack.css";
 const classBase = "Tabs";
 
 const getDefaultTabIcon = () => undefined;
-
-const getDefaultTabLabel = (component: ReactElement, tabIndex: number) => {
-  return (
-    component.props?.title ??
-    component.props?.["data-tab-title"] ??
-    `Tab ${tabIndex + 1}`
-  );
-};
 
 const getChildElements = <T extends ReactElement = ReactElement>(
   children: ReactNode
@@ -70,11 +60,11 @@ export const Stack = forwardRef(function Stack(
   ref: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
+  const tabLabels = useRef<string[]>([]);
   const {
     allowCloseTab,
     allowRenameTab,
     className: tabstripClassName,
-    tabClassName,
   } = TabstripProps;
 
   const handleExitEditMode = useCallback(
@@ -109,6 +99,8 @@ export const Stack = forwardRef(function Stack(
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
       } = child.props;
+      const label = getTabLabel(child, idx, tabLabels.current);
+      tabLabels.current.push(label);
       return (
         <Tab
           ariaControls={childId}
@@ -116,7 +108,7 @@ export const Stack = forwardRef(function Stack(
           key={childId}
           id={`${childId}-tab`}
           index={idx}
-          label={getTabLabel(child, idx)}
+          label={label}
           location={tabLocation}
           closeable={closeable}
           editable={allowRenameTab}

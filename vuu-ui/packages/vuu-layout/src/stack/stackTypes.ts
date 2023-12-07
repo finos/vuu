@@ -1,13 +1,19 @@
 import { TabstripProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
+export type TabLabelFactory = (
+  component: ReactElement,
+  index: number,
+  existingLabels: string[]
+) => string;
+
 export type TabPosition = "top" | "left" | "right" | "bottom";
 export interface StackProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
   active?: number;
   createNewChild?: (index: number) => ReactElement;
   getTabIcon?: (component: ReactElement, index: number) => string | undefined;
-  getTabLabel?: (component: ReactElement, index: number) => string | undefined;
+  getTabLabel?: TabLabelFactory;
   keyBoardActivation?: "automatic" | "manual";
   onAddTab?: () => void;
   onMoveTab?: (fromIndex: number, toIndex: number) => void;
