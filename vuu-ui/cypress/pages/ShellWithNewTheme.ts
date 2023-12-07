@@ -8,7 +8,7 @@ export class ShellWithNewTheme {
 
   getContextMenuButton() {
     return cy
-      .findByRole("tablist", { name: "layouts" })
+      .findByRole("tablist", { name: "data tabs" })
       .findAllByRole("tab")
       .first()
       .findByRole("button", { name: "context menu" });
