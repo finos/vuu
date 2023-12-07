@@ -60,9 +60,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpConstituent)) {
             Table(
               ("ricBasketId", "ric", "basketId", "weighting", "lastTrade", "change", "volume", "description", "side"),
-              ("BP.L.FTSE", "BP.L", ".FTSE", 0.1, null, null, null, "Beyond Petroleum", "Buy"),
-              ("BT.L.FTSE", "BT.L", ".FTSE", 0.1, null, null, null, "British Telecom", "Sell"),
-              ("VOD.L.FTSE", "VOD.L", ".FTSE", 0.1, null, null, null, "Vodafone", "Buy")
+              ("BP.L.FTSE", "BP.L", ".FTSE", 0.1, null, null, null, "Beyond Petroleum", "BUY"),
+              ("BT.L.FTSE", "BT.L", ".FTSE", 0.1, null, null, null, "British Telecom", "SELL"),
+              ("VOD.L.FTSE", "VOD.L", ".FTSE", 0.1, null, null, null, "Vodafone", "BUY")
             )
           }
 
@@ -80,7 +80,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTrading)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "BUY")
             )
           }
 
@@ -91,16 +91,16 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(combineQsForVp(vpBasketTradingCons)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket")
-          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "Sell", vpBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "SELL", vpBasketTrading, vuuServer.session)
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
           val updates = combineQs(vpBasketTrading)
@@ -109,7 +109,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTrading, updates)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Sell")
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "SELL")
             )
           }
 
@@ -118,9 +118,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
 
@@ -131,9 +131,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTradingCons, combineQs(vpBasketTrading))) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (100L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (100L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (100L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (100L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (100L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
       }
@@ -160,7 +160,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket to same side as current value")
-          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "Buy", vpBasketTrading, vuuServer.session)
+          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "BUY", vpBasketTrading, vuuServer.session)
           vuuServer.runOnce()
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
@@ -170,7 +170,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTrading, updates2)) {
             Table(
               ("instanceId", "basketId", "basketName", "status", "units", "filledPct", "fxRateToUsd", "totalNotional", "totalNotionalUsd", "side"),
-              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "Buy")
+              (basketTradeInstanceId, ".FTSE", "MyCustomBasket", "OFF-MARKET", 1, null, null, null, null, "BUY")
             )
           }
 
@@ -178,9 +178,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           assertVpEq(filterByVp(vpBasketTradingCons, updates2)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
             )
           }
       }
@@ -223,10 +223,10 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 //          assertVpEq(filterByVp(vpBasketTradingCons, updates)) {
 //            Table(
 //              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-//              (10L, "Sell", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
-//              (10L, "Buy", basketTradeInstanceId, s"$basketTradeInstanceId.0001.HK", ".FTSE", "0001.HK", "", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
+//              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+//              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.0001.HK", ".FTSE", "0001.HK", "", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING")
 //            )
 //          }
 //      }
@@ -238,9 +238,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
     basketProvider.tick(".FTSE", Map(B.Id -> ".FTSE", B.Name -> ".FTSE 100", B.NotionalValue -> 1000001, B.NotionalValueUsd -> 1500001))
 
     val constituentProvider = vuuServer.getProvider(BasketModule.NAME, BasketModule.BasketConstituentTable)
-    constituentProvider.tick("VOD.L.FTSE", Map(BC.RicBasketId -> "VOD.L.FTSE", BC.Ric -> "VOD.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Vodafone"))
-    constituentProvider.tick("BT.L.FTSE", Map(BC.RicBasketId -> "BT.L.FTSE", BC.Ric -> "BT.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Sell", BC.Description -> "British Telecom"))
-    constituentProvider.tick("BP.L.FTSE", Map(BC.RicBasketId -> "BP.L.FTSE", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "Buy", BC.Description -> "Beyond Petroleum"))
+    constituentProvider.tick("VOD.L.FTSE", Map(BC.RicBasketId -> "VOD.L.FTSE", BC.Ric -> "VOD.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Vodafone"))
+    constituentProvider.tick("BT.L.FTSE", Map(BC.RicBasketId -> "BT.L.FTSE", BC.Ric -> "BT.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "SELL", BC.Description -> "British Telecom"))
+    constituentProvider.tick("BP.L.FTSE", Map(BC.RicBasketId -> "BP.L.FTSE", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Beyond Petroleum"))
 
     val vpBasket = vuuServer.createViewPort(BasketModule.NAME, BasketModule.BasketTable)
     val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)

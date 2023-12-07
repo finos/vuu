@@ -202,9 +202,4 @@ object BasketModule extends DefaultModule {
     final val OrderStatus = "orderStatus"
     final val FilledQty = "filledQty"
   }
-
-  object Sides{
-    final val Buy = "Buy"
-    final val Sell = "Sell"
-  }
 }
