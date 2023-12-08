@@ -600,12 +600,13 @@ export const useDragDropNext: DragDropHook = ({
         requestAnimationFrame(() => {
           const { top: targetTop, left: targetLeft } =
             droppedItem.getBoundingClientRect();
-          const { top: currentTop, left: currentLeft } =
-            settlingItem.getBoundingClientRect();
           // If the droppedItem is already exactly in the drop position, we can just
           // terminate the drag here and now. Most likely, though, it is out by a few
           // pixels. We animate the dragged item into the final resting place before
           // terminating the drag.
+          const style = getComputedStyle(settlingItem);
+          const currentLeft = parseInt(style.getPropertyValue("left"));
+          const currentTop = parseInt(style.getPropertyValue("top"));
           if (currentLeft !== targetLeft || currentTop !== targetTop) {
             settlingItem.classList.add("vuuDraggable-settling");
             settlingItem.style.top = `${targetTop}px`;

@@ -241,15 +241,15 @@ type InitialConfig = {
 function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
-  const keyedColumns = columns
+  const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(
       columnDescriptorToRuntimeColumDescriptor(tableAttributes, tableSchema)
     );
 
-  const maybePinnedColumns = keyedColumns.some(isPinned)
-    ? sortPinnedColumns(keyedColumns)
-    : keyedColumns;
+  const maybePinnedColumns = runtimeColumns.some(isPinned)
+    ? sortPinnedColumns(runtimeColumns)
+    : runtimeColumns;
   let state: InternalTableModel = {
     columns: maybePinnedColumns,
     headings: getTableHeadings(maybePinnedColumns),
@@ -296,7 +296,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       ...rest
     } = column;
 
-    const keyedColumnWithDefaults = {
+    const runtimeColumnWithDefaults = {
       ...rest,
       align,
       CellRenderer: getCellRenderer(column),
@@ -314,8 +314,8 @@ const columnDescriptorToRuntimeColumDescriptor =
       width: width,
     };
 
-    if (isGroupColumn(keyedColumnWithDefaults)) {
-      keyedColumnWithDefaults.columns = keyedColumnWithDefaults.columns.map(
+    if (isGroupColumn(runtimeColumnWithDefaults)) {
+      runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
         (col) =>
           columnDescriptorToRuntimeColumDescriptor(tableAttributes)(
             col,
@@ -324,7 +324,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       );
     }
 
-    return keyedColumnWithDefaults;
+    return runtimeColumnWithDefaults;
   };
 
 function moveColumn(
@@ -333,6 +333,9 @@ function moveColumn(
   { column, moveBy }: ColumnActionMove
 ) {
   const { columns } = state;
+  console.log(`moveColumn`, {
+    columns,
+  });
   if (typeof moveBy === "number") {
     const idx = columns.indexOf(column);
     const newColumns = columns.slice();

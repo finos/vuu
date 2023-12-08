@@ -70,6 +70,10 @@ import { useTableScroll } from "./useTableScroll";
 import { useVirtualViewport } from "./useVirtualViewport";
 import { useTableViewport } from "./useTableViewport";
 
+const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
+  return tableConfig;
+};
+
 export interface TableHookProps
   extends MeasuredProps,
     Pick<
@@ -184,7 +188,7 @@ export const useTable = ({
         tableConfig: config,
         dataSource,
       });
-      onConfigChange?.(config);
+      onConfigChange?.(stripInternalProperties(config));
     },
     [dataSource, dispatchColumnAction, onConfigChange]
   );
@@ -200,6 +204,13 @@ export const useTable = ({
     };
     return [stateColumns ?? modelColumns, setSize];
   }, [modelColumns, stateColumns]);
+
+  console.log({
+    config,
+    tableConfig,
+    modelColumns,
+    columns,
+  });
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
@@ -250,17 +261,12 @@ export const useTable = ({
 
   const handleConfigChanged = useCallback(
     (tableConfig: TableConfig) => {
-      // console.log(
-      //   `useTableNext handleConfigChanged`,
-      //   JSON.stringify(tableConfig, null, 2)
-      // );
-
       dispatchColumnAction({
         type: "init",
         tableConfig,
         dataSource,
       });
-      onConfigChange?.(tableConfig);
+      onConfigChange?.(stripInternalProperties(tableConfig));
     },
     [dataSource, dispatchColumnAction, onConfigChange]
   );
@@ -387,6 +393,7 @@ export const useTable = ({
 
   const onHeaderResize: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
+      console.log(`onHeaderResize`);
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
@@ -403,11 +410,13 @@ export const useTable = ({
             });
             setStateColumns(undefined);
             onConfigChange?.(
-              updateTableConfig(tableConfig, {
-                type: "col-size",
-                column,
-                width,
-              })
+              stripInternalProperties(
+                updateTableConfig(tableConfig, {
+                  type: "col-size",
+                  column,
+                  width,
+                })
+              )
             );
           }
         } else {
@@ -547,6 +556,13 @@ export const useTable = ({
     [columns, handleSort]
   );
 
+  const onMoveGroupColumn = useCallback(
+    (columns: ColumnDescriptor[]) => {
+      dataSource.groupBy = columns.map((col) => col.name);
+    },
+    [dataSource]
+  );
+
   const onRemoveGroupColumn = useCallback(
     (column: RuntimeColumnDescriptor) => {
       if (isGroupColumn(column)) {
@@ -609,23 +625,16 @@ export const useTable = ({
     });
   }, [config, dataSource, dispatchColumnAction]);
 
-  useEffect(() => {
-    dataSource.on("config", (config, confirmed) => {
-      dispatchColumnAction({
-        type: "tableConfig",
-        ...config,
-        confirmed,
-      });
-    });
-  }, [dataSource, dispatchColumnAction]);
-
   const handleDropColumnHeader = useCallback(
     (moveFrom: number, moveTo: number) => {
+      console.log(`handleDropColumnHeader`);
+
       const column = tableConfig.columns[moveFrom];
 
       const newTableConfig = {
         ...tableConfig,
-        columns: moveColumnTo(tableConfig.columns, column, moveTo),
+        // columns: moveColumnTo(tableConfig.columns, column, moveTo),
+        columns: moveColumnTo(columns, column, moveTo),
       };
 
       dispatchColumnAction({
@@ -633,9 +642,9 @@ export const useTable = ({
         tableConfig: newTableConfig,
         dataSource,
       });
-      onConfigChange?.(newTableConfig);
+      onConfigChange?.(stripInternalProperties(newTableConfig));
     },
-    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
+    [columns, dataSource, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
   const handleDropRow = useCallback(
@@ -722,6 +731,7 @@ export const useTable = ({
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,
+    onMoveGroupColumn,
     onRemoveGroupColumn,
     onRowClick: handleRowClick,
     onToggleGroup,

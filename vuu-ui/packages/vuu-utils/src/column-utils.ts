@@ -955,7 +955,7 @@ export const moveColumnTo = (
   column: ColumnDescriptor,
   newIndex: number
 ) => {
-  const index = columns.indexOf(column);
+  const index = columns.findIndex((col) => col.name === column.name);
   return moveItem(columns, index, newIndex);
 };
 

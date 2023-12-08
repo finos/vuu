@@ -110,7 +110,7 @@ export class ArrayDataSource
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
-  #data: Readonly<DataSourceRow>[];
+  #data: DataSourceRow[];
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
@@ -125,7 +125,7 @@ export class ArrayDataSource
   public viewport: string;
 
   private keys = new KeySet(this.#range);
-  protected processedData: readonly DataSourceRow[] | undefined = undefined;
+  protected processedData: DataSourceRow[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -277,7 +277,7 @@ export class ArrayDataSource
       this.#config.groupBy,
       this.#columnMap,
       this.groupMap as GroupMap,
-      this.processedData as readonly DataSourceRow[]
+      this.processedData as DataSourceRow[]
     );
     this.setRange(resetRange(this.#range), true);
   }
@@ -387,7 +387,7 @@ export class ArrayDataSource
               this.#config.groupBy,
               this.#columnMap,
               this.groupMap as GroupMap,
-              processedData as readonly DataSourceRow[]
+              processedData as DataSourceRow[]
             );
           }
         }
@@ -483,7 +483,9 @@ export class ArrayDataSource
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "update",
-        rows: [row],
+        rows: [
+          toClientRow(row, this.keys, this.selectedRows, this.dataIndices),
+        ],
         type: "viewport-update",
       });
     } else {
@@ -663,7 +665,7 @@ export class ArrayDataSource
           {
             const { rowKey, field, value } = rpcRequest;
             try {
-              this.updateRow(rowKey, field, value);
+              this.update(rowKey, field, value);
               resolve(undefined);
             } catch (error) {
               resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
