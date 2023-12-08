@@ -1,3 +1,4 @@
+import { getAuthDetailsFromCookies } from "@finos/vuu-shell";
 import { PersistenceManager } from "./PersistenceManager";
 import {
   ApplicationJSON,
@@ -15,6 +16,8 @@ export type GetLayoutResponseDto = { definition: LayoutJSON };
 export type GetApplicationResponseDto = { definition: ApplicationJSON };
 
 export class RemotePersistenceManager implements PersistenceManager {
+  username: string = getAuthDetailsFromCookies()[0];
+
   createLayout(
     metadata: LayoutMetadataDto,
     layout: LayoutJSON
@@ -139,7 +142,7 @@ export class RemotePersistenceManager implements PersistenceManager {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          username: "vuu-user",
+          username: this.username,
         },
         body: JSON.stringify(applicationJSON),
       })
@@ -160,7 +163,7 @@ export class RemotePersistenceManager implements PersistenceManager {
       fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
         method: "GET",
         headers: {
-          username: "vuu-user",
+          username: this.username,
         },
       })
         .then((response) => {

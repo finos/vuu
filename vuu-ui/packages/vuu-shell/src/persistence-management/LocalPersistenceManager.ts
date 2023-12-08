@@ -1,5 +1,6 @@
 import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
+import { getAuthDetailsFromCookies } from "@finos/vuu-shell";
 import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
 import { defaultApplicationJson } from "./defaultApplicationJson";
@@ -11,16 +12,21 @@ import {
   WithId,
 } from "../layout-management";
 
-const metadataSaveLocation = "layouts/metadata";
-const layoutsSaveLocation = "layouts/layouts";
+const baseMetadataSaveLocation = "layouts/metadata";
+const baseLayoutsSaveLocation = "layouts/layouts";
 
 export class LocalPersistenceManager implements PersistenceManager {
-  #urlKey = "api/vui";
+  username: string = getAuthDetailsFromCookies()[0];
+  metadataSaveLocation = `${baseMetadataSaveLocation}/${this.username}`;
+  layoutsSaveLocation = `${baseLayoutsSaveLocation}/${this.username}`;
+
+  #urlKey = `api/vui/${this.username}`;
   constructor(urlKey?: string) {
     if (urlKey) {
       this.#urlKey = urlKey;
     }
   }
+
   createLayout(
     metadata: LayoutMetadataDto,
     layout: LayoutJSON
@@ -103,7 +109,7 @@ export class LocalPersistenceManager implements PersistenceManager {
 
   loadMetadata(): Promise<LayoutMetadata[]> {
     return new Promise((resolve) => {
-      const metadata = getLocalEntity<LayoutMetadata[]>(metadataSaveLocation);
+      const metadata = getLocalEntity<LayoutMetadata[]>(this.metadataSaveLocation);
       resolve(metadata || []);
     });
   }
@@ -133,24 +139,27 @@ export class LocalPersistenceManager implements PersistenceManager {
     });
   }
 
-  private loadLayouts(): Promise<Layout[]> {
+  loadLayouts: () => Promise<Layout[]> = () => {
     return new Promise((resolve) => {
-      const layouts = getLocalEntity<Layout[]>(layoutsSaveLocation);
+      const layouts = getLocalEntity<Layout[]>(this.layoutsSaveLocation);
       resolve(layouts || []);
     });
   }
 
-  private saveLayoutsWithMetadata(
+  saveLayoutsWithMetadata: (
     layouts: Layout[],
     metadata: LayoutMetadata[]
-  ): void {
-    saveLocalEntity<Layout[]>(layoutsSaveLocation, layouts);
-    saveLocalEntity<LayoutMetadata[]>(metadataSaveLocation, metadata);
+  ) => void = (
+    layouts: Layout[],
+    metadata: LayoutMetadata[]
+  ) => {
+    saveLocalEntity<Layout[]>(this.layoutsSaveLocation, layouts);
+    saveLocalEntity<LayoutMetadata[]>(this.metadataSaveLocation, metadata);
   }
 
   // Ensures that there is exactly one Layout entry and exactly one Metadata
   // entry in local storage corresponding to the provided ID.
-  private async validateIds(id: string): Promise<void> {
+  validateIds: (id: string) => Promise<void> = async (id: string) => {
     return Promise.all([
       this.validateId(id, "metadata").catch((error) => error.message),
       this.validateId(id, "layout").catch((error) => error.message),
@@ -168,10 +177,13 @@ export class LocalPersistenceManager implements PersistenceManager {
 
   // Ensures that there is exactly one element (Layout or Metadata) in local
   // storage corresponding to the provided ID.
-  private validateId(
+  validateId: (
     id: string,
     dataType: "metadata" | "layout"
-  ): Promise<void> {
+  ) => Promise<void> = (
+    id: string,
+    dataType: "metadata" | "layout"
+  ) => {
     return new Promise((resolve, reject) => {
       const loadFunc =
         dataType === "metadata" ? this.loadMetadata : this.loadLayouts;

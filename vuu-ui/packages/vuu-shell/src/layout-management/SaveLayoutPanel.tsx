@@ -3,6 +3,7 @@ import { takeScreenshot } from "./screenshot-utils";
 import { Button, FormField, FormFieldLabel, Input, Text } from "@salt-ds/core";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { LayoutMetadataDto } from "./layoutTypes";
+import { getAuthDetailsFromCookies } from "../login";
 
 import "./SaveLayoutPanel.css";
 
@@ -35,6 +36,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
     string | undefined
   >();
+  const [username] = getAuthDetailsFromCookies();
 
   useEffect(() => {
     if (componentId) {
@@ -53,7 +55,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       name: layoutName,
       group,
       screenshot: screenshot ?? "",
-      user: "User",
+      user: username,
     });
   };
 
