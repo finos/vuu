@@ -1,4 +1,5 @@
 import {
+  ColumnDescriptor,
   GroupColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@finos/vuu-datagrid-types";
@@ -28,12 +29,14 @@ const switchIfChanged = (
 export interface GroupHeaderCellNextProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
   column: GroupColumnDescriptor;
+  onMoveColumn?: (columns: ColumnDescriptor[]) => void;
   onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }
 
 export const GroupHeaderCellNext = ({
   column: groupColumn,
   className: classNameProp,
+  onMoveColumn,
   onRemoveColumn,
   onResize,
   ...htmlAttributes
@@ -55,18 +58,24 @@ export const GroupHeaderCellNext = ({
         }
       : undefined;
 
-  const handleMoveItem = useCallback((fromIndex, toIndex) => {
-    setColumns((cols) => {
-      const newCols = cols.slice();
-      const [tab] = newCols.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        return newCols.concat(tab);
-      } else {
-        newCols.splice(toIndex, 0, tab);
-        return newCols;
-      }
-    });
-  }, []);
+  const handleMoveItem = useCallback(
+    (fromIndex, toIndex) => {
+      setColumns((cols) => {
+        const newCols = cols.slice();
+        const [tab] = newCols.splice(fromIndex, 1);
+        if (toIndex === -1) {
+          const result = newCols.concat(tab);
+          onMoveColumn?.(result);
+          return result;
+        } else {
+          newCols.splice(toIndex, 0, tab);
+          onMoveColumn?.(newCols);
+          return newCols;
+        }
+      });
+    },
+    [onMoveColumn]
+  );
 
   useLayoutEffectSkipFirst(() => {
     setColumns((cols) => switchIfChanged(cols, groupColumn.columns));

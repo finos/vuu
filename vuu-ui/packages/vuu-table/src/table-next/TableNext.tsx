@@ -153,6 +153,7 @@ const TableCore = ({
     headerProps,
     highlightedIndex,
     onDataEdited,
+    onMoveGroupColumn,
     onRemoveGroupColumn,
     onResize,
     onRowClick,
@@ -233,6 +234,7 @@ const TableCore = ({
                       column={col}
                       data-index={i}
                       key={col.name}
+                      onMoveColumn={onMoveGroupColumn}
                       onRemoveColumn={onRemoveGroupColumn}
                     />
                   ) : (

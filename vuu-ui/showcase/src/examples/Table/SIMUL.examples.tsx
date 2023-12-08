@@ -4,7 +4,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import { TableNext, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 let displaySequence = 1;
 
@@ -69,6 +69,10 @@ const SimulTable = ({
     [getDefaultColumnConfig, schema, tableName]
   );
 
+  const handleConfigChange = useCallback((config) => {
+    console.log(JSON.stringify(config, null, 2));
+  }, []);
+
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
@@ -77,7 +81,11 @@ const SimulTable = ({
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <TableNext {...tableProps} renderBufferSize={0} />
+      <TableNext
+        {...tableProps}
+        onConfigChange={handleConfigChange}
+        renderBufferSize={0}
+      />
     </ContextMenuProvider>
   );
 };

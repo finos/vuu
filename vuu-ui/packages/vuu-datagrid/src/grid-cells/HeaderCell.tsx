@@ -80,7 +80,6 @@ export const HeaderCell = function HeaderCell({
 
   const handleClick = useCallback(() => {
     if (!isResizing && gridModel) {
-      console.log("Click");
       dispatchGridAction?.({
         type: "sort",
         sort: GridModel.setSortColumn(gridModel, column),
