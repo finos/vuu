@@ -1,6 +1,6 @@
 import { TableProps } from "@finos/vuu-table";
 import { JsonData } from "@finos/vuu-utils";
-import { TableNext } from "@finos/vuu-table";
+import { Table } from "@finos/vuu-table";
 import { JsonDataSource } from "@finos/vuu-data";
 import { useEffect, useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-datagrid-types";
@@ -45,7 +45,7 @@ export const JsonTable = ({
   }
 
   return (
-    <TableNext
+    <Table
       {...tableProps}
       config={tableConfig}
       dataSource={dataSourceRef.current}

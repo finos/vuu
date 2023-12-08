@@ -1,4 +1,4 @@
-import { TableNext, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
 import { BasketsTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
 import { useVuuMenuActions } from "@finos/vuu-data-react";
@@ -31,7 +31,7 @@ const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <TableNext {...tableProps} renderBufferSize={50} />
+      <Table {...tableProps} renderBufferSize={50} />
     </ContextMenuProvider>
   );
 };

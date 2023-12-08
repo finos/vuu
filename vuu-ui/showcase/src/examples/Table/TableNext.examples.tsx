@@ -11,7 +11,7 @@ import {
   applyDefaultColumnConfig,
   registerComponent as registerCellRenderer,
 } from "@finos/vuu-utils";
-import { HeaderCellProps, TableNext, TableProps } from "@finos/vuu-table";
+import { HeaderCellProps, Table, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -64,7 +64,7 @@ export const NavigationStyle = () => {
   }, []);
 
   return (
-    <TableNext
+    <Table
       {...tableProps}
       height={645}
       navigationStyle="row"
@@ -114,7 +114,7 @@ export const ControlledNavigation = () => {
           Next
         </Button>
       </Toolbar>
-      <TableNext
+      <Table
         {...tableProps}
         height={645}
         highlightedIndex={highlightedIndex}
@@ -215,7 +215,7 @@ export const EditableTableNextArrayData = () => {
   }, [getDefaultColumnConfig]);
 
   return (
-    <TableNext {...tableProps} height={645} renderBufferSize={10} width={500} />
+    <Table {...tableProps} height={645} renderBufferSize={10} width={500} />
   );
 };
 EditableTableNextArrayData.displaySequence = displaySequence++;
@@ -234,7 +234,7 @@ export const TableNextVuuInstruments = () => {
   }
 
   return (
-    <TableNext
+    <Table
       config={tableConfig}
       dataSource={dataSource}
       height={645}
@@ -265,20 +265,20 @@ export const FlexLayoutTables = () => {
       >
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <TableNext {...config1} />
+            <Table {...config1} />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <TableNext {...config2} />
+            <Table {...config2} />
           </View>
         </FlexboxLayout>
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <TableNext {...config3} />
+            <Table {...config3} />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <TableNext {...config4} />
+            <Table {...config4} />
           </View>
         </FlexboxLayout>
       </FlexboxLayout>
@@ -304,7 +304,7 @@ export const TableNextInLayoutWithContextPanel = () => {
   return (
     <LayoutProvider>
       <FlexboxLayout style={{ height: 645, width: "100%" }}>
-        <TableNext {...props} config={config} renderBufferSize={30} />
+        <Table {...props} config={config} renderBufferSize={30} />
         <ContextPanel id="context-panel" overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
@@ -325,7 +325,7 @@ export const AutoTableNext = () => {
   const [config] = useState(configProp);
 
   return (
-    <TableNext
+    <Table
       {...props}
       config={{
         ...config,
@@ -364,7 +364,7 @@ export const AutoTableNextAsFlexChild = () => {
       }}
     >
       <div style={{ flex: "1 1 auto" }}>
-        <TableNext
+        <Table
           {...props}
           config={{
             ...config,
@@ -425,7 +425,7 @@ export const AutoTableNextBasketOrders = () => {
   };
 
   return (
-    <TableNext
+    <Table
       {...props}
       config={{
         ...config,
@@ -456,7 +456,7 @@ export const AutoTableNextBasketDefinitions = () => {
   };
 
   return (
-    <TableNext
+    <Table
       {...props}
       config={{
         ...config,
@@ -540,7 +540,7 @@ export const VuuTableNextCalculatedColumns = () => {
   }
 
   return (
-    <TableNext
+    <Table
       config={tableConfig}
       dataSource={dataSource}
       height={645}
@@ -811,7 +811,7 @@ export const CustomColumnRenderer = () => {
   }, []);
 
   return (
-    <TableNext
+    <Table
       {...tableProps}
       height={645}
       navigationStyle="row"

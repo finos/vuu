@@ -1,5 +1,5 @@
 import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
-import { TableNext, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
 import { HTMLAttributes } from "react";
 import cx from "classnames";
 
@@ -22,7 +22,7 @@ export const FilterTable = ({
   return (
     <div {...htmlAttributes} className={cx(classBase)}>
       <FilterBar {...FilterBarProps} />
-      <TableNext {...TableProps} />
+      <Table {...TableProps} />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { TableSchema } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { useId } from "@finos/vuu-layout";
-import { TableNext, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
+import { Table, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
 import { ColumnMap } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
@@ -100,7 +100,7 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
         value={value}
       />
 
-      <TableNext
+      <Table
         rowHeight={25}
         renderBufferSize={100}
         {...tableProps}
