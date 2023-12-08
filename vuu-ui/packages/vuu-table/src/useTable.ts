@@ -46,7 +46,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TableProps } from "./TableNext";
+import { TableProps } from "./Table";
 import { TableColumnResizeHandler } from "./column-resizing";
 import { updateTableConfig } from "./table-config";
 import { useDataSource } from "./useDataSource";

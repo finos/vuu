@@ -35,9 +35,9 @@ import {
   HeaderCell,
 } from "./header-cell";
 import { Row as DefaultRow, RowProps } from "./Row";
-import { useTable } from "./useTableNext";
+import { useTable } from "./useTable";
 
-import "./TableNext.css";
+import "./Table.css";
 
 const classBase = "vuuTableNext";
 
@@ -278,7 +278,7 @@ const TableCore = ({
   );
 };
 
-export const TableNext = forwardRef(function TableNext(
+export const Table = forwardRef(function TableNext(
   {
     Row,
     allowDragDrop,

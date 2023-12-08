@@ -1,4 +1,4 @@
-import { TableNext } from "@finos/vuu-table";
+import { Table } from "@finos/vuu-table";
 import { ArrayDataSource } from "@finos/vuu-data";
 import { useMemo } from "react";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
@@ -36,7 +36,7 @@ export const DefaultTableList = () => {
 
   return (
     <div style={{ display: "flex", gap: 12 }}>
-      <TableNext
+      <Table
         config={{
           columns,
         }}

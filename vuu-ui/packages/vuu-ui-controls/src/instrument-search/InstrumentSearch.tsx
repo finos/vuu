@@ -3,7 +3,7 @@ import { TableConfig } from "@finos/vuu-datagrid-types";
 import { registerComponent } from "@finos/vuu-layout";
 
 import {
-  TableNext,
+  Table,
   TableProps,
   useControlledTableNavigation,
 } from "@finos/vuu-table";
@@ -85,7 +85,7 @@ export const InstrumentSearch = ({
       </div>
 
       {dataSource ? (
-        <TableNext
+        <Table
           disableFocus
           id="instrument-search"
           rowHeight={25}

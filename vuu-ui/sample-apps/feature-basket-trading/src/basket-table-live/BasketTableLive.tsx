@@ -1,6 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
-import { TableNext, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
 import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
 import columns from "./basketConstituentLiveColumns";
@@ -34,7 +34,7 @@ export const BasketTableLive = ({
   );
 
   return (
-    <TableNext
+    <Table
       {...props}
       renderBufferSize={20}
       className={classBase}

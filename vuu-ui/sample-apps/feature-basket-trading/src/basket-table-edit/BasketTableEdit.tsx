@@ -1,6 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-datagrid-types";
-import { TableNext, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
 import {
   ContextMenuConfiguration,
   ContextMenuProvider,
@@ -38,7 +38,7 @@ export const BasketTableEdit = ({
 
   return (
     <ContextMenuProvider {...contextMenuConfig}>
-      <TableNext
+      <Table
         {...props}
         allowDragDrop="drop-only"
         dataSource={dataSource}
