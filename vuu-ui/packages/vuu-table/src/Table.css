@@ -18,11 +18,11 @@
 }
 
 .vuuTable-colLines {
-  --cell-borderColor: var(--salt-separable-tertiary-borderColor);
+  --cell-borderColor: var(--vuu-color-gray-03);
 }
 
 .vuuTable-rowLines {
-  --row-borderColor: var(--salt-separable-tertiary-borderColor);
+  --row-borderColor: var(--vuu-color-gray-03);
 }
 
 .vuuTable-highlight .vuuTableRow:hover {

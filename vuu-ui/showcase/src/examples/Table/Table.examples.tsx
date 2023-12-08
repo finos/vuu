@@ -1,4 +1,15 @@
 import {
+  getAllSchemas,
+  getSchema,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
+import {
+  ColumnDescriptor,
+  GroupColumnDescriptor,
+  TableConfig,
+} from "@finos/vuu-datagrid-types";
+import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
@@ -8,19 +19,20 @@ import {
 } from "@finos/vuu-layout";
 import { ContextPanel, DefaultColumnConfiguration } from "@finos/vuu-shell";
 import {
-  applyDefaultColumnConfig,
-  registerComponent as registerCellRenderer,
-} from "@finos/vuu-utils";
-import { HeaderCellProps, Table, TableProps } from "@finos/vuu-table";
+  GroupHeaderCellNext,
+  HeaderCellProps,
+  Table,
+  TableProps,
+} from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import {
-  ColumnDescriptor,
-  GroupColumnDescriptor,
-  TableConfig,
-} from "@finos/vuu-datagrid-types";
+  applyDefaultColumnConfig,
+  registerComponent as registerCellRenderer,
+} from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
 import {
   CSSProperties,
   MouseEventHandler,
@@ -29,16 +41,8 @@ import {
   useState,
 } from "react";
 import { useTableConfig, useTestDataSource } from "../utils";
-import { GroupHeaderCellNext } from "@finos/vuu-table";
-import {
-  getAllSchemas,
-  getSchema,
-  SimulTableName,
-  vuuModule,
-} from "@finos/vuu-data-test";
 
-import "./TableNext.examples.css";
-import { Button } from "@salt-ds/core";
+import "./Table.examples.css";
 
 let displaySequence = 1;
 

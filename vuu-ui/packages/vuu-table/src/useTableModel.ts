@@ -240,6 +240,7 @@ type InitialConfig = {
 
 function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
+  console.log(JSON.stringify(tableAttributes, null, 2));
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))

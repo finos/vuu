@@ -261,6 +261,7 @@ export const useTable = ({
 
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
+      console.log(`settings changed`);
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -725,6 +726,11 @@ export const useTable = ({
     onMouseDown: columnHeaderDragMouseDown,
     onResize: onHeaderResize,
   };
+
+  console.log({
+    tableAttributes,
+    config: tableConfig,
+  });
 
   return {
     ...containerProps,

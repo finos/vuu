@@ -189,6 +189,14 @@ const TableCore = ({
     size,
   });
 
+  const className = cx(`${classBase}-contentContainer`, {
+    [`${classBase}-colLines`]: tableAttributes.columnSeparators,
+    [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
+    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
+    [`${classBase}-zebra`]: tableAttributes.zebraStripes,
+    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
+  });
+
   const cssVariables = {
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
@@ -215,7 +223,7 @@ const TableCore = ({
         <div className={`${classBase}-scrollbarContent`} />
       </div>
       <div
-        className={`${classBase}-contentContainer`}
+        className={className}
         ref={scrollProps.contentContainerRef}
         style={cssVariables}
       >
@@ -313,18 +321,18 @@ export const Table = forwardRef(function TableNext(
 
   const [size, setSize] = useState<MeasuredSize>();
 
-  const className = cx(classBase, classNameProp, {
-    [`${classBase}-colLines`]: config.columnSeparators,
-    [`${classBase}-rowLines`]: config.rowSeparators,
-    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
-    [`${classBase}-zebra`]: config.zebraStripes,
-    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
-  });
+  // const className = cx(classBase, classNameProp, {
+  //   [`${classBase}-colLines`]: config.columnSeparators,
+  //   [`${classBase}-rowLines`]: config.rowSeparators,
+  //   // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
+  //   [`${classBase}-zebra`]: config.zebraStripes,
+  //   // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
+  // });
 
   return (
     <MeasuredContainer
       {...htmlAttributes}
-      className={className}
+      className={cx(classBase, classNameProp)}
       id={id}
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}

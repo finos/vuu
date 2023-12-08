@@ -5,6 +5,7 @@ import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import { Table, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
+import { DemoTableContainer } from "./DemoTableContainer";
 
 let displaySequence = 1;
 
@@ -81,11 +82,13 @@ const SimulTable = ({
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <Table
-        {...tableProps}
-        onConfigChange={handleConfigChange}
-        renderBufferSize={0}
-      />
+      <DemoTableContainer>
+        <Table
+          {...tableProps}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={0}
+        />
+      </DemoTableContainer>
     </ContextMenuProvider>
   );
 };
