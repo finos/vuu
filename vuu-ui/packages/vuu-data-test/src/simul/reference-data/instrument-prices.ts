@@ -1,5 +1,5 @@
-import InstrumentReferenceData from "./instruments";
-import PriceReferenceData from "./prices";
+import { instrumentsData } from "./instruments";
+import { pricesData } from "./prices";
 
 export type ask = number;
 export type askSize = number;
@@ -61,11 +61,11 @@ const instrumentPrices: InstrumentPricesDataRow[] = [];
 // const start = performance.now();
 // Create 100_000 Instruments
 
-for (let i = 0; i < InstrumentReferenceData.length; i++) {
+for (let i = 0; i < instrumentsData.length; i++) {
   // prettier-ignore
-  const [bbg,currency,description,exchange,isin,lotSize,ric] = InstrumentReferenceData[i];
+  const [bbg,currency,description,exchange,isin,lotSize,ric] = instrumentsData[i];
   const [ask, askSize, bid, bidSize, close, last, open, phase, , scenario] =
-    PriceReferenceData[i];
+    pricesData[i];
 
   instrumentPrices.push([
     ask,

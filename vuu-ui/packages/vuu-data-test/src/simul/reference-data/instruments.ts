@@ -24,9 +24,9 @@ export type InstrumentsDataRow = [
   string,
   number,
   ric,
-  price,
   supported,
-  wishlist
+  wishlist,
+  price
 ];
 
 export const InstrumentColumnMap = {
@@ -37,12 +37,12 @@ export const InstrumentColumnMap = {
   string: 4,
   number: 5,
   ric: 6,
-  price: 7,
-  supported: 8,
-  wishlist: 9,
-};
+  supported: 7,
+  wishlist: 8,
+  price: 9,
+} as const;
 
-const instruments: InstrumentsDataRow[] = [];
+const instrumentsData: InstrumentsDataRow[] = [];
 
 const chars = Array.from("ABCEFGHKMNOPQRTUVWYZ");
 
@@ -73,7 +73,7 @@ for (const char of chars) {
     const supported = random(0, 1) === 1;
     const wishlist = random(0, 1) === 1;
 
-    instruments.push([
+    instrumentsData.push([
       bbg,
       currency,
       description,
@@ -81,9 +81,9 @@ for (const char of chars) {
       String(isin),
       lotSize,
       ric,
-      price,
       supported,
       wishlist,
+      price,
     ]);
   }
 }
@@ -92,8 +92,9 @@ for (const char of chars) {
 
 const instrumentsTable = new Table(
   schemas.instruments,
-  instruments,
+  instrumentsData,
   buildDataColumnMap(schemas.instruments)
 );
 
+export { instrumentsData };
 export default instrumentsTable;

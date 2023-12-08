@@ -22,7 +22,6 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "isin", serverDataType: "string" },
         { name: "lotSize", serverDataType: "int" },
         { name: "ric", serverDataType: "string" },
-        { name: "price", serverDataType: "double" },
         { name: "supported", serverDataType: "boolean" },
         { name: "wishlist", serverDataType: "boolean" },
       ],
