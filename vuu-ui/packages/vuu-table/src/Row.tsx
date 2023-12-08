@@ -34,7 +34,7 @@ export interface RowProps {
 }
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
-const classBase = "vuuTableNextRow";
+const classBase = "vuuTableRow";
 
 // export const Row = memo(
 export const Row = memo(

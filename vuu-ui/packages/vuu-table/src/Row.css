@@ -1,4 +1,4 @@
-.vuuTableNextRow {
+.vuuTableRow {
   background: var(--row-background,#fff);
     border-bottom: 1px solid var(--row-borderColor);
     box-sizing: border-box;
@@ -9,41 +9,41 @@
     white-space: nowrap;
     }
     
-    .vuuTableNextRow-even {
+    .vuuTableRow-even {
       --row-background: var(--row-background-even);
     }
 
-    .vuuTableNextRow-highlighted {
+    .vuuTableRow-highlighted {
       background-color: var(--vuu-color-gray-10);
     }
 
 
-    .vuuTableNextRow-selected,
-    .vuuTableNextRow-selectedEnd {
+    .vuuTableRow-selected,
+    .vuuTableRow-selectedEnd {
       /* background-color: rgb(133,133,137,.16); */
       background-color: rgb(235,235,236);
     }
   
-    .vuuTableNextRow-selectedStart {
+    .vuuTableRow-selectedStart {
         --vuu-selection-decorator-left-radius: 5px 0 0 0;
         --vuu-selection-decorator-right-radius: 0 5px 0 0;
         border-radius: 5px 5px 0 0;
       }
     
-      .vuuTableNextRow-selectedEnd {
+      .vuuTableRow-selectedEnd {
         --vuu-selection-decorator-left-radius: 0 0 0 5px;
         --vuu-selection-decorator-right-radius: 0 0 5px 0;
         border-radius: 0 0 5px 5px;
       }
     
-      .vuuTableNextRow-selectedStart.vuuTableNextRow-selectedEnd {
+      .vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
         --vuu-selection-decorator-left-radius: 5px 0 0 5px;
         --vuu-selection-decorator-right-radius: 0 5px 5px 0;
         border-radius: 5px 5px 5px 5px;
     
       }
     
-    .vuuTableNextRow-selectedStart:after {
+    .vuuTableRow-selectedStart:after {
         content: '';
         position: absolute;
         top:0;
@@ -54,11 +54,11 @@
         z-index: 1;
       }
     
-    .vuuTableNextRow-selectedEnd {
+    .vuuTableRow-selectedEnd {
         border-bottom-color: var(--vuu-color-purple-10);
       }
     
-      .vuuTableNextRow-selectionDecorator {
+      .vuuTableRow-selectionDecorator {
         background-color: var(--vuu-selection-decorator-bg, white);
         display: inline-block;
         position: relative;
@@ -67,35 +67,35 @@
         z-index: 2;
       }
     
-      .vuuTableNextRow-selectionDecorator.vuuStickyLeft {
+      .vuuTableRow-selectionDecorator.vuuStickyLeft {
         left:0;
         position: sticky;
       }
     
-      .vuuTableNextRow-selectionDecorator.vuuStickyRight {
+      .vuuTableRow-selectionDecorator.vuuStickyRight {
         right:0;
         position: sticky;
       }
     
-      .vuuTableNextRow-selected {
+      .vuuTableRow-selected {
         --vuu-selection-decorator-bg: var(--vuu-color-purple-10);
     
       }
       
-      .vuuTableNextRow-selectedStart {
+      .vuuTableRow-selectedStart {
         --vuu-selection-decorator-bg: white;
       }
       
-      .vuuTableNextRow-selectedEnd {
+      .vuuTableRow-selectedEnd {
         --vuu-selection-decorator-bg: white;
       }
     
-      .vuuTableNextRow-selectedStart.vuuTableNextRow-selectedEnd {
+      .vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
     
       }
     
-      .vuuTableNextRow-selectedStart .vuuTableNextRow-selectionDecorator:before,
-      .vuuTableNextRow-selectedEnd .vuuTableNextRow-selectionDecorator:before {
+      .vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
+      .vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {
         content: '';
         inset: 0;
         position: absolute;
@@ -103,19 +103,19 @@
       }
     
     
-      .vuuTableNextRow-selectionDecorator.vuuStickyLeft:before {
+      .vuuTableRow-selectionDecorator.vuuStickyLeft:before {
         border-radius: var(--vuu-selection-decorator-left-radius, 0);
       }
     
-      .vuuTableNextRow-selectionDecorator.vuuStickyRight:before {
+      .vuuTableRow-selectionDecorator.vuuStickyRight:before {
         border-radius: var(--vuu-selection-decorator-right-radius, 0);
       }
 
-      .vuuTableNextRow-expanded {
+      .vuuTableRow-expanded {
         --toggle-icon-transform: rotate(90deg);
       }
     
-      .vuuDraggable .vuuTableNextRow {
+      .vuuDraggable .vuuTableRow {
         --cell-borderColor: transparent;
         --vuu-selection-decorator-bg: transparent;
         transform: none!important;

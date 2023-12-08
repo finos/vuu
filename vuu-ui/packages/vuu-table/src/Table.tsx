@@ -39,7 +39,7 @@ import { useTable } from "./useTable";
 
 import "./Table.css";
 
-const classBase = "vuuTableNext";
+const classBase = "vuuTable";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 

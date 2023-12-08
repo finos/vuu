@@ -959,11 +959,10 @@ export const moveColumnTo = (
   return moveItem(columns, index, newIndex);
 };
 
-export function replaceColumn(
-  state: RuntimeColumnDescriptor[],
-  column: RuntimeColumnDescriptor
-) {
-  return state.map((col) => (col.name === column.name ? column : col));
+export function replaceColumn<
+  C extends ColumnDescriptor = RuntimeColumnDescriptor
+>(columns: C[], column: C) {
+  return columns.map((col) => (col.name === column.name ? column : col));
 }
 
 export const applyDefaultColumnConfig = (

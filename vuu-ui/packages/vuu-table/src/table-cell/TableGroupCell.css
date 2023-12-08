@@ -1,7 +1,7 @@
-.vuuTableNextGroupCell {
+.vuuTableGroupCell {
     --group-cell-spacer-width: 20px;
     align-items: center;
-    border-right-color: var(--vuuTableNextGroupCell-borderColor, var(--salt-separable-tertiary-borderColor));
+    border-right-color: var(--vuuTableGroupCell-borderColor, var(--salt-separable-tertiary-borderColor));
     border-right-style: solid;
     border-right-width: 1px;
   
@@ -11,7 +11,7 @@
     line-height: 16px;
 }
 
-.vuuTableNextGroupCell-toggle {
+.vuuTableGroupCell-toggle {
     --vuu-icon-height: 16px;
     --vuu-icon-size: 16px;
     --vuu-icon-width: 8px;
@@ -21,6 +21,6 @@
 
 }
 
-.vuuTableNextGroupCell-spacer {
+.vuuTableGroupCell-spacer {
     width: var(--group-cell-spacer-width);
   }

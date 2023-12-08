@@ -11,7 +11,7 @@ import "./TableGroupCell.css";
 
 const { IS_LEAF } = metadataKeys;
 
-const classBase = "vuuTableNextGroupCell";
+const classBase = "vuuTableGroupCell";
 
 export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
   const { columns } = column as GroupColumnDescriptor;
@@ -32,7 +32,7 @@ export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
 
   return (
     <div
-      className={cx(className, "vuuTableNextCell")}
+      className={cx(className, "vuuTableCell")}
       role="cell"
       style={style}
       onClick={isLeaf ? undefined : handleClick}

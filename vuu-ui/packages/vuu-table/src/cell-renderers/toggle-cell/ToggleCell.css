@@ -18,7 +18,7 @@
 
 }
 
-.vuuTableNextCell .vuuTableToggleCell:focus {
+.vuuTableCell .vuuTableToggleCell:focus {
     /* TODO fix use of important */
     border: solid 2px var(--vuu-color-purple-10) !important;
     color: white !important;

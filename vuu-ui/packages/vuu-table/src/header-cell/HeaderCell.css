@@ -1,10 +1,11 @@
-.vuuTableNextHeaderCell {
+.vuuTableGroupHeaderCell,
+.vuuTableHeaderCell {
   --cell-align: 'flex-start';
   --vuuColumnHeaderPill-margin: 0;
   --vuuColumnHeaderPill-flex: 0 0 24px;
 
   align-items: center;
-  background-color: var(--vuuTableNextHeaderCell-background, inherit);
+  background-color: var(--vuuTableHeaderCell-background, inherit);
   border-bottom: 1px solid #ccc;
   border-right-color: var(--cell-borderColor);
   border-right-style: solid;
@@ -19,7 +20,7 @@
   vertical-align: top;
 }
 
-  .vuuTableNextHeaderCell-right {
+  .vuuTableHeaderCell-right {
     --columnResizer-left: 0;
     --vuuTable-columnMenu-margin: 0;
     --vuuColumnHeaderPill-margin: 0 3px 0 0;
@@ -29,7 +30,7 @@
   }
 
 
-.vuuTableNextHeaderCell-label {
+.vuuTableHeaderCell-label {
   flex: 0 1 auto;
   line-height: calc(var(--header-height) - 1px);
   overflow: hidden;
@@ -37,19 +38,19 @@
   white-space: nowrap;
 }
 
-.vuuTableNextHeaderCell-right .vuuTableNextHeaderCell-label {
+.vuuTableHeaderCell-right .vuuTableHeaderCell-label {
   text-align: right;
 }
 
-.vuuTableNextHeaderCell-resizing {
+.vuuTableHeaderCell-resizing {
   --columnResizer-height: var(--table-height);
 }
 
-.vuuTableNextHeaderCell.vuuPinLeft {
+.vuuTableHeaderCell.vuuPinLeft {
   padding-left: 2px;
 }
 
-  .vuuTableNextHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizerNext:before {
+  .vuuTableHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizerNext:before {
     --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
     --inset-r: calc(var(--pin-width) - 2px);
     --inset-b: calc(var(--height) - 2px);
@@ -84,7 +85,7 @@
     z-index: -5;
 }
 
-.vuuTableNextHeaderCell.vuuPinRight.vuuEndPin .vuuColumnResizerNext:before {
+.vuuTableHeaderCell.vuuPinRight.vuuEndPin .vuuColumnResizerNext:before {
   --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
   --inset-r: calc(var(--pin-width) - 2px);
   --inset-b: calc(var(--height) - 2px);
@@ -119,6 +120,6 @@
   z-index: -5;
 }
 
-.vuuTableNextHeaderCell.vuuDraggable-dragAway {
+.vuuTableHeaderCell.vuuDraggable-dragAway {
     display: none;
 }

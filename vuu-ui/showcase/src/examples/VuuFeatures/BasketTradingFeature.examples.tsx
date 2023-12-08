@@ -68,7 +68,7 @@ export const DefaultBasketTradingFeature = () => {
         <View
           Header={VuuBlotterHeader}
           id="table-next-feature"
-          className="vuuTableNextFeature"
+          className="vuuTableFeature"
           closeable
           header
           title="Basket Trading"
@@ -108,7 +108,7 @@ export const BasketTradingFeatureAsFeature = () => {
     <View
       Header={VuuBlotterHeader}
       id="table-next-feature"
-      className="vuuTableNextFeature"
+      className="vuuTableFeature"
       closeable
       header
       title="Instruments"

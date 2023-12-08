@@ -59,7 +59,7 @@ const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
 
 const howFarIsRowOutsideViewport = (
   rowEl: HTMLElement,
-  contentContainer = rowEl.closest(".vuuTableNext-contentContainer")
+  contentContainer = rowEl.closest(".vuuTable-contentContainer")
 ): readonly [ScrollDirection | undefined, number | undefined] => {
   //TODO lots of scope for optimisation here
   if (contentContainer) {
@@ -85,16 +85,16 @@ const howFarIsCellOutsideViewport = (
   cellEl: HTMLElement
 ): readonly [ScrollDirection | undefined, number | undefined] => {
   //TODO lots of scope for optimisation here
-  const contentContainer = cellEl.closest(".vuuTableNext-contentContainer");
+  const contentContainer = cellEl.closest(".vuuTable-contentContainer");
   if (contentContainer) {
-    const rowEl = cellEl.closest(".vuuTableNextRow") as HTMLElement;
+    const rowEl = cellEl.closest(".vuuTableRow") as HTMLElement;
     if (rowEl) {
       const result = howFarIsRowOutsideViewport(rowEl, contentContainer);
       if (result !== NO_SCROLL_NECESSARY) {
         return result;
       }
       const viewport = contentContainer?.getBoundingClientRect();
-      const cell = cellEl.closest(".vuuTableNextCell")?.getBoundingClientRect();
+      const cell = cellEl.closest(".vuuTableCell")?.getBoundingClientRect();
       if (cell) {
         if (cell.right > viewport.right) {
           return ["right", cell.right + 6 - viewport.right];

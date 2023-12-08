@@ -13,7 +13,7 @@ import { OverflowContainer, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 
 import "./GroupHeaderCell.css";
 
-const classBase = "vuuTableNextGroupHeaderCell";
+const classBase = "vuuTableGroupHeaderCell";
 
 const switchIfChanged = (
   columns: RuntimeColumnDescriptor[],
@@ -84,7 +84,7 @@ export const GroupHeaderCellNext = ({
   return (
     <div
       {...htmlAttributes}
-      className={cx(className, "vuuTableNextHeaderCell", classNameProp, {
+      className={cx(className, classNameProp, {
         [`${classBase}-pending`]: groupColumn.groupConfirmed === false,
       })}
       ref={rootRef}

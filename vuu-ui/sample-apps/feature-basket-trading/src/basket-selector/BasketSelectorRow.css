@@ -13,7 +13,7 @@
     background-color: var(--vuu-color-gray-10);
 }
 
-.vuuBasketSelectorRow .vuuTableNextCell {
+.vuuBasketSelectorRow .vuuTableCell {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 24px 16px;

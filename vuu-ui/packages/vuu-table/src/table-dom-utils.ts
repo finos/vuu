@@ -3,10 +3,10 @@ import { RefObject } from "react";
 export type CellPos = [number, number];
 
 export const headerCellQuery = (colIdx: number) =>
-  `.vuuTableNext-col-headers .vuuTableNextHeaderCell:nth-child(${colIdx})`;
+  `.vuuTable-col-headers .vuuTableHeaderCell:nth-child(${colIdx})`;
 
 export const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `.vuuTableNext-body > [aria-rowindex='${rowIdx}'] > [role='cell']:nth-child(${
+  `.vuuTable-body > [aria-rowindex='${rowIdx}'] > [role='cell']:nth-child(${
     colIdx + 1
   })`;
 
@@ -31,7 +31,7 @@ export const getTableCell = (
 };
 
 export const cellIsEditable = (cell: HTMLDivElement) =>
-  cell.classList.contains("vuuTableNextCell-editable");
+  cell.classList.contains("vuuTableCell-editable");
 
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
