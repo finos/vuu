@@ -22,6 +22,8 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "isin", serverDataType: "string" },
         { name: "lotSize", serverDataType: "int" },
         { name: "ric", serverDataType: "string" },
+        { name: "supported", serverDataType: "boolean" },
+        { name: "wishlist", serverDataType: "boolean" },
       ],
       key: "ric",
       table: { module: "SIMUL", table: "instruments" },
