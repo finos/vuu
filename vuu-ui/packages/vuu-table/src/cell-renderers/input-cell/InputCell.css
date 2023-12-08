@@ -7,7 +7,7 @@
     font-weight: 500;
 }
 
-.vuuTableNextCell:focus .vuuTableInputCell.saltInput-primary,
+.vuuTableCell:focus .vuuTableInputCell.saltInput-primary,
 .vuuTableInputCell.saltInput-primary.saltInput-focused {
     border: solid 2px var(--vuu-color-purple-10);
     padding: 0 3px;
@@ -20,7 +20,7 @@
     border-radius: 10px;
 }
 
-.vuuTableNextCell:focus .vuuTableInputCell.saltInput-primary.vuuTableInputCell-error,
+.vuuTableCell:focus .vuuTableInputCell.saltInput-primary.vuuTableInputCell-error,
 .vuuTableInputCell.saltInput-primary.saltInput-focused.vuuTableInputCell-error {
     border: solid 2px var(--vuu-color-red-50);
 }

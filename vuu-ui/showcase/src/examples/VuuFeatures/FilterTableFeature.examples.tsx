@@ -48,7 +48,7 @@ export const DefaultFilterTableFeature = () => {
         <View
           Header={VuuBlotterHeader}
           id="table-next-feature"
-          className="vuuTableNextFeature"
+          className="vuuTableFeature"
           closeable
           header
           title="Instruments"
@@ -83,7 +83,7 @@ export const FilterTableFeatureFlexBox = () => {
         <View
           Header={VuuBlotterHeader}
           id="table-next-feature-0"
-          className="vuuTableNextFeature"
+          className="vuuTableFeature"
           closeable
           header
           resizeable
@@ -95,7 +95,7 @@ export const FilterTableFeatureFlexBox = () => {
         <View
           Header={VuuBlotterHeader}
           id="table-next-feature"
-          className="vuuTableNextFeature-1"
+          className="vuuTableFeature-1"
           closeable
           header
           resizeable
@@ -130,7 +130,7 @@ export const FilterTableFeatureAsFeature = () => {
     <View
       Header={VuuBlotterHeader}
       id="table-next-feature"
-      className="vuuTableNextFeature"
+      className="vuuTableFeature"
       closeable
       header
       title="Instruments"

@@ -39,14 +39,14 @@ export const BasketSelectorRow = ({
     <div
       {...htmlAttributes}
       aria-rowindex={row[0]}
-      className={cx(classBase, "vuuTableNextRow", {
+      className={cx(classBase, "vuuTableRow", {
         [`${classBase}-highlighted`]: highlighted,
       })}
       onClick={handleRowClick}
       role="row"
       style={style}
     >
-      <div className="vuuTableNextCell" role="cell">
+      <div className="vuuTableCell" role="cell">
         <span className={`${classBase}-name`}>{basketName}</span>
         {status === "ON_MARKET" ? (
           <label className={`${classBase}-status`}>

@@ -149,10 +149,6 @@ export const useTable = ({
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
-  // // We track changes to tableConfig. When detected, these trigger an init
-  // // of model. We will need dataSource for that, but don't want to trigger
-  // // that logic when dataSource itself changes.
-  // dataSourceRef.current = dataSource;
 
   const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
 
@@ -166,7 +162,7 @@ export const useTable = ({
   }, []);
 
   const {
-    columns: modelColumns,
+    columns: runtimeColumns,
     dispatchColumnAction,
     headings,
     tableAttributes,
@@ -194,23 +190,27 @@ export const useTable = ({
   );
 
   /**
-   * These stateColumns are required only for the duration of a column resize operation
+  stateColumns are required only for the duration of a column resize operation.
+  We want to minimize the scope of rendering whilst a resize operation is in progress
+  and we do not need to persist transient size values. When the resize is complete, we
+  trigger a config change, clear the stateColumns and revert to using the runtimeColumns
+  managed by the table model, to which the ersize change will have been applied.
    */
   const [stateColumns, setStateColumns] = useState<RuntimeColumnDescriptor[]>();
   const [columns, setColumnSize] = useMemo(() => {
     const setSize = (columnName: string, width: number) => {
-      const cols = updateColumn(modelColumns, columnName, { width });
+      const cols = updateColumn(runtimeColumns, columnName, { width });
       setStateColumns(cols);
     };
-    return [stateColumns ?? modelColumns, setSize];
-  }, [modelColumns, stateColumns]);
+    return [stateColumns ?? runtimeColumns, setSize];
+  }, [runtimeColumns, stateColumns]);
 
-  console.log({
-    config,
-    tableConfig,
-    modelColumns,
-    columns,
-  });
+  // console.log({
+  //   config,
+  //   tableConfig,
+  //   runtimeColumns,
+  //   columns,
+  // });
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
@@ -259,7 +259,7 @@ export const useTable = ({
     range: initialRange,
   });
 
-  const handleConfigChanged = useCallback(
+  const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
       dispatchColumnAction({
         type: "init",
@@ -336,7 +336,7 @@ export const useTable = ({
           serverDataType,
         })),
       onAvailableColumnsChange,
-      onConfigChange: handleConfigChanged,
+      onConfigChange: handleConfigEditedInSettingsPanel,
       onCreateCalculatedColumn: handleCreateCalculatedColumn,
       onDataSourceConfigChange: handleDataSourceConfigChanged,
       tableConfig,
@@ -393,7 +393,6 @@ export const useTable = ({
 
   const onHeaderResize: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
-      console.log(`onHeaderResize`);
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
@@ -546,7 +545,7 @@ export const useTable = ({
     (evt: MouseEvent) => {
       const targetElement = evt.target as HTMLElement;
       const headerCell = targetElement.closest(
-        ".vuuTableNextHeaderCell"
+        ".vuuTableHeaderCell"
       ) as HTMLElement;
       const colIdx = parseInt(headerCell?.dataset.index ?? "-1");
       const column = visibleColumnAtIndex(columns, colIdx);
@@ -627,14 +626,28 @@ export const useTable = ({
 
   const handleDropColumnHeader = useCallback(
     (moveFrom: number, moveTo: number) => {
-      console.log(`handleDropColumnHeader`);
+      const column = columns[moveFrom];
+      // columns are what get rendered, so these are the columns that
+      // the drop operation relates to. We must translate these into
+      // columns within the table config. Grouping complicates this
+      // as the group columns are not present in columns but ARE in
+      // config.columns
+      const orderedColumns = moveColumnTo(columns, column, moveTo);
 
-      const column = tableConfig.columns[moveFrom];
+      const ofColumn =
+        ({ name }: ColumnDescriptor) =>
+        (col: ColumnDescriptor) =>
+          col.name === name;
+
+      const targetIndex = orderedColumns.findIndex(ofColumn(column));
+      const nextColumn = orderedColumns[targetIndex + 1];
+      const insertPos = nextColumn
+        ? tableConfig.columns.findIndex(ofColumn(nextColumn))
+        : -1;
 
       const newTableConfig = {
         ...tableConfig,
-        // columns: moveColumnTo(tableConfig.columns, column, moveTo),
-        columns: moveColumnTo(columns, column, moveTo),
+        columns: moveColumnTo(tableConfig.columns, column, insertPos),
       };
 
       dispatchColumnAction({
@@ -669,11 +682,11 @@ export const useTable = ({
     allowDragDrop: true,
     containerRef,
     // this is for useDragDropNext
-    draggableClassName: `vuuTableNext`,
+    draggableClassName: `vuuTable`,
     // extendedDropZone: overflowedItems.length > 0,
     onDrop: handleDropColumnHeader,
     orientation: "horizontal",
-    itemQuery: ".vuuTableNextHeaderCell",
+    itemQuery: ".vuuTableHeaderCell",
   });
 
   const handleDragStartRow = useCallback<DragStartHandler>(
@@ -694,17 +707,17 @@ export const useTable = ({
     [dataRef, onDragStart]
   );
 
-  // Drag Drop rowss
+  // Drag Drop rows
   const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
     useRowDragDrop({
       allowDragDrop,
       containerRef,
-      draggableClassName: `vuuTableNext`,
+      draggableClassName: `vuuTable`,
       id,
       onDragStart: handleDragStartRow,
       onDrop: handleDropRow,
       orientation: "vertical",
-      itemQuery: ".vuuTableNextRow",
+      itemQuery: ".vuuTableRow",
     });
 
   const headerProps = {

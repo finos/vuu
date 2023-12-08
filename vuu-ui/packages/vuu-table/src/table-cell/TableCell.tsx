@@ -8,7 +8,7 @@ import { useCell } from "../useCell";
 
 import "./TableCell.css";
 
-const classBase = "vuuTableNextCell";
+const classBase = "vuuTableCell";
 
 export const TableCell = ({
   column,

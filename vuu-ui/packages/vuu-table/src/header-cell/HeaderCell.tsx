@@ -12,7 +12,7 @@ import {
 
 import "./HeaderCell.css";
 
-const classBase = "vuuTableNextHeaderCell";
+const classBase = "vuuTableHeaderCell";
 
 export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
   classBase?: string;

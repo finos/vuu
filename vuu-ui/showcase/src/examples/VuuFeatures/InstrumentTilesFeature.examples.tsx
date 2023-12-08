@@ -26,7 +26,7 @@ export const DefaultInstrumentTilesFeature = () => {
       <View
         Header={VuuBlotterHeader}
         id="instrument-tiles-feature"
-        className="vuuTableNextFeature"
+        className="vuuTableFeature"
         closeable
         header
         title="Instruments"
@@ -59,7 +59,7 @@ export const InstrumentTilesFeatureAsFeature = () => {
     <View
       Header={VuuBlotterHeader}
       id="instrument-tiles-feature"
-      className="vuuTableNextFeature"
+      className="vuuTableFeature"
       closeable
       header
       title="Instruments"

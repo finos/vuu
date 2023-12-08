@@ -470,7 +470,7 @@ export const AutoTableNextBasketDefinitions = () => {
 };
 AutoTableNextBasketDefinitions.displaySequence = displaySequence++;
 
-export const VuuTableNextCalculatedColumns = () => {
+export const vuuTableCalculatedColumns = () => {
   const calculatedColumns: ColumnDescriptor[] = useMemo(
     () => [
       {
@@ -549,7 +549,7 @@ export const VuuTableNextCalculatedColumns = () => {
     />
   );
 };
-VuuTableNextCalculatedColumns.displaySequence = displaySequence++;
+vuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const GroupHeaderCellNextOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {

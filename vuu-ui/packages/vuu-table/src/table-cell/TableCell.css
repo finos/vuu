@@ -1,4 +1,4 @@
-.vuuTableNextCell {
+.vuuTableCell {
   border-right-color: var(--cell-borderColor);
   border-right-style: solid;
   border-right-width: 1px;
@@ -10,11 +10,11 @@
     vertical-align: top;
   }
 
-  .vuuTableNextCell-right {
+  .vuuTableCell-right {
     text-align: right;
   }
 
-  .vuuTableNextCell-editable {
+  .vuuTableCell-editable {
     display: inline-flex;
     line-height: 18px;
     padding-bottom: 1px;
@@ -22,7 +22,7 @@
     text-overflow: unset;
   }
   
-  .vuuTableNextCell:focus {
+  .vuuTableCell:focus {
     outline: var(--vuuTableCell-outline, solid var(--vuu-color-purple-10) 2px);
     outline-offset: -2px;
     /** This is to achieve a white background to outline dashes */
@@ -30,12 +30,12 @@
     border-bottom: none;
 }
 
-.vuuTableNextRow-selected .vuuTableNextCell:not(.vuuTableNextCell-editable):focus {
+.vuuTableRow-selected .vuuTableCell:not(.vuuTableCell-editable):focus {
   outline: var(--vuuTableCell-outline, solid var(--vuu-color-purple-10) 2px);
   outline-offset: -1px;
 
 }
-.vuuTableNextCell-editable:focus {
+.vuuTableCell-editable:focus {
   outline: none;
 }
 

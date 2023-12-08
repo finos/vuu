@@ -333,9 +333,6 @@ function moveColumn(
   { column, moveBy }: ColumnActionMove
 ) {
   const { columns } = state;
-  console.log(`moveColumn`, {
-    columns,
-  });
   if (typeof moveBy === "number") {
     const idx = columns.indexOf(column);
     const newColumns = columns.slice();
@@ -445,7 +442,7 @@ function updateColumnProp(
   state: InternalTableModel,
   action: ColumnActionUpdateProp
 ) {
-  let { columns } = state;
+  let { columns, tableConfig } = state;
   const { align, column, hidden, label, resizing, width } = action;
   const targetColumn = columns.find((col) => col.name === column.name);
   if (targetColumn) {
@@ -463,11 +460,25 @@ function updateColumnProp(
     }
     if (typeof width === "number") {
       columns = replaceColumn(columns, { ...targetColumn, width });
+
+      const targetConfigColumn = tableConfig.columns.find(
+        (col) => col.name === column.name
+      );
+      if (targetConfigColumn) {
+        tableConfig = {
+          ...tableConfig,
+          columns: replaceColumn<ColumnDescriptor>(tableConfig.columns, {
+            ...targetConfigColumn,
+            width,
+          }),
+        };
+      }
     }
   }
   return {
     ...state,
     columns,
+    tableConfig,
   } as InternalTableModel;
 }
 
