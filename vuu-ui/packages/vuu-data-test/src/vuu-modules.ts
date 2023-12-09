@@ -1,4 +1,5 @@
 import { DataSource } from "@finos/vuu-data";
+import { SuggestionFetcher } from "packages/vuu-data-react/src";
 import basketModule from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import simulModule from "./simul/simul-module";
@@ -8,6 +9,7 @@ export type VuuModuleName = "BASKET" | "SIMUL";
 
 export interface VuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
+  typeaheadHook: () => SuggestionFetcher;
 }
 
 const vuuModules: Record<

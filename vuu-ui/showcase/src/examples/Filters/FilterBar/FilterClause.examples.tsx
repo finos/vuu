@@ -1,4 +1,4 @@
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import {
@@ -13,7 +13,7 @@ import {
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
-import { useAutoLoginToVuuServer, useTableConfig } from "../../utils";
+import { useAutoLoginToVuuServer } from "../../utils";
 
 import "./FilterClause.examples.css";
 
@@ -82,10 +82,7 @@ DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
 
 export const DataBoundTextInputEmpty = () => {
   const tableSchema = getSchema("instruments");
-  const { typeaheadHook } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const { typeaheadHook } = vuuModule("SIMUL");
 
   const column: ColumnDescriptor = useMemo(
     () => ({ name: "currency", serverDataType: "string" }),
@@ -119,10 +116,7 @@ DataBoundTextInputEmpty.displaySequence = displaySequence++;
 
 export const DataBoundTextInputLoaded = () => {
   const tableSchema = getSchema("instruments");
-  const { typeaheadHook } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const { typeaheadHook } = vuuModule("SIMUL");
 
   const column: ColumnDescriptor = useMemo(
     () => ({ name: "currency", serverDataType: "string" }),
@@ -182,11 +176,7 @@ MultiSelectExpandoComboBox.displaySequence = displaySequence++;
 export const NewFilterClause = () => {
   const tableSchema = getSchema("instruments");
 
-  const { typeaheadHook } = useTableConfig({
-    count: 100_000,
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const { typeaheadHook } = vuuModule("SIMUL");
 
   const onChange = (filterClause: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);

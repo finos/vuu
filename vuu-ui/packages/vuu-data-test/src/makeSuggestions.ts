@@ -1,21 +1,16 @@
-import { ArrayDataSource } from "@finos/vuu-data";
-import { buildColumnMap, DataItem } from "@finos/vuu-utils";
+import { DataItem } from "@finos/vuu-utils";
+import { Table } from "./Table";
 
-const cachedValues = new Map<ArrayDataSource, Map<string, DataItem[]>>();
+const cachedValues = new Map<Table, Map<string, DataItem[]>>();
 
-const getUniqueValues = (
-  dataSource: ArrayDataSource,
-  column: string,
-  pattern = ""
-) => {
+const getUniqueValues = (table: Table, column: string, pattern = "") => {
   let uniqueValues;
-  const cachedEntry = cachedValues.get(dataSource);
+  const cachedEntry = cachedValues.get(table);
   if (cachedEntry && cachedEntry.has(column)) {
     uniqueValues = cachedEntry.get(column) as DataItem[];
   } else {
-    const { columns, data } = dataSource;
-    const columnMap = buildColumnMap(columns);
-    const key = columnMap[column];
+    const { data, map } = table;
+    const key = map[column];
     uniqueValues = [];
     const set = new Set();
     for (const row of data) {
@@ -28,7 +23,7 @@ const getUniqueValues = (
     if (cachedEntry) {
       cachedEntry.set(column, uniqueValues);
     } else {
-      cachedValues.set(dataSource, new Map([[column, uniqueValues]]));
+      cachedValues.set(table, new Map([[column, uniqueValues]]));
     }
   }
   return pattern
@@ -37,11 +32,11 @@ const getUniqueValues = (
 };
 
 export const makeSuggestions = (
-  dataSource: ArrayDataSource,
+  table: Table,
   column: string,
   pattern?: string
 ) => {
-  const uniqueValues = getUniqueValues(dataSource, column, pattern);
+  const uniqueValues = getUniqueValues(table, column, pattern);
   if (uniqueValues.length > 20) {
     return uniqueValues?.slice(0, 20).map((v) => v.toString());
   } else {

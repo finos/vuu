@@ -96,6 +96,11 @@ const SimulTable = ({
 export const Instruments = () => <SimulTable tableName="instruments" />;
 Instruments.displaySequence = displaySequence++;
 
+export const InstrumentsExtended = () => (
+  <SimulTable tableName="instrumentsExtended" />
+);
+InstrumentsExtended.displaySequence = displaySequence++;
+
 export const Prices = () => {
   return (
     <SimulTable

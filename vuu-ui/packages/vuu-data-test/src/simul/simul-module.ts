@@ -1,9 +1,13 @@
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";
 import instrumentsTable from "./reference-data/instruments";
+import instrumentsExtendedTable from "./reference-data/instruments-extended";
 import pricesTable from "./reference-data/prices";
 import { schemas, SimulTableName } from "./simul-schemas";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
+import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
+import { makeSuggestions } from "../makeSuggestions";
 
 const tables: Record<SimulTableName, Table> = {
   childOrders: new Table(
@@ -12,6 +16,7 @@ const tables: Record<SimulTableName, Table> = {
     buildDataColumnMap(schemas.childOrders)
   ),
   instruments: instrumentsTable,
+  instrumentsExtended: instrumentsExtendedTable,
   instrumentPrices: joinTables(
     { module: "SIMUL", table: "instrumentPrices" },
     instrumentsTable,
@@ -59,8 +64,24 @@ const createDataSource = (tableName: SimulTableName) => {
   });
 };
 
+const suggestionFetcher: SuggestionFetcher = async ([
+  vuuTable,
+  column,
+  pattern,
+]: TypeaheadParams) => {
+  const table = tables[vuuTable.table as SimulTableName];
+  if (table) {
+    return makeSuggestions(table, column, pattern);
+  } else {
+    throw Error(
+      `SIMUL suggestionFetcher, unknown table ${vuuTable.module} ${vuuTable.table}`
+    );
+  }
+};
+
 const simulModule: VuuModule<SimulTableName> = {
   createDataSource,
+  typeaheadHook: () => suggestionFetcher,
 };
 
 export default simulModule;

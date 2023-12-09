@@ -727,10 +727,10 @@ export const useTable = ({
     onResize: onHeaderResize,
   };
 
-  console.log({
-    tableAttributes,
-    config: tableConfig,
-  });
+  // console.log({
+  //   tableAttributes,
+  //   config: tableConfig,
+  // });
 
   return {
     ...containerProps,

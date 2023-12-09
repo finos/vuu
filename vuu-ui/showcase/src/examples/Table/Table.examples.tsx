@@ -30,6 +30,7 @@ import {
 } from "@finos/vuu-table-extras";
 import {
   applyDefaultColumnConfig,
+  defaultValueFormatter,
   registerComponent as registerCellRenderer,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
@@ -40,7 +41,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useTableConfig, useTestDataSource } from "../utils";
+import { useTestDataSource } from "../utils";
 
 import "./Table.examples.css";
 
@@ -203,7 +204,7 @@ export const EditableTableNextArrayData = () => {
   );
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
-    const tableName: SimulTableName = "instruments";
+    const tableName: SimulTableName = "instrumentsExtended";
     return {
       config: {
         columns: applyDefaultColumnConfig(
@@ -219,7 +220,7 @@ export const EditableTableNextArrayData = () => {
   }, [getDefaultColumnConfig]);
 
   return (
-    <Table {...tableProps} height={645} renderBufferSize={10} width={500} />
+    <Table {...tableProps} height={645} renderBufferSize={10} width={9200} />
   );
 };
 EditableTableNextArrayData.displaySequence = displaySequence++;
@@ -250,18 +251,23 @@ export const TableNextVuuInstruments = () => {
 TableNextVuuInstruments.displaySequence = displaySequence++;
 
 export const FlexLayoutTables = () => {
-  const { typeaheadHook: _1, ...config1 } = useTableConfig({
-    renderBufferSize: 0,
-  });
-  const { typeaheadHook: _2, ...config2 } = useTableConfig({
-    renderBufferSize: 20,
-  });
-  const { typeaheadHook: _3, ...config3 } = useTableConfig({
-    renderBufferSize: 50,
-  });
-  const { typeaheadHook: _4, ...config4 } = useTableConfig({
-    renderBufferSize: 100,
-  });
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+
+  const [ds1, ds2, ds3, ds4] = useMemo(() => {
+    return [
+      vuuModule("SIMUL").createDataSource("instruments"),
+      vuuModule("SIMUL").createDataSource("instruments"),
+      vuuModule("SIMUL").createDataSource("instruments"),
+      vuuModule("SIMUL").createDataSource("instruments"),
+    ];
+  }, []);
+
   return (
     <LayoutProvider>
       <FlexboxLayout
@@ -269,20 +275,20 @@ export const FlexLayoutTables = () => {
       >
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <Table {...config1} />
+            <Table config={tableConfig} dataSource={ds1} />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <Table {...config2} />
+            <Table config={tableConfig} dataSource={ds2} />
           </View>
         </FlexboxLayout>
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <Table {...config3} />
+            <Table config={tableConfig} dataSource={ds3} />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <Table {...config4} />
+            <Table config={tableConfig} dataSource={ds4} />
           </View>
         </FlexboxLayout>
       </FlexboxLayout>
@@ -296,19 +302,26 @@ export const TableNextInLayoutWithContextPanel = () => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
     registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
-  const {
-    typeaheadHook: _,
-    config,
-    ...props
-  } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+  const dataSource = useMemo(() => {
+    return vuuModule("SIMUL").createDataSource("instruments");
+  }, []);
 
   return (
     <LayoutProvider>
       <FlexboxLayout style={{ height: 645, width: "100%" }}>
-        <Table {...props} config={config} renderBufferSize={30} />
+        <Table
+          config={tableConfig}
+          dataSource={dataSource}
+          renderBufferSize={30}
+          width="100%"
+        />
         <ContextPanel id="context-panel" overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
@@ -317,44 +330,34 @@ export const TableNextInLayoutWithContextPanel = () => {
 TableNextInLayoutWithContextPanel.displaySequence = displaySequence++;
 
 export const AutoTableNext = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
-
-  const [config] = useState(configProp);
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+  const dataSource = useMemo(() => {
+    return vuuModule("SIMUL").createDataSource("instruments");
+  }, []);
 
   return (
-    <Table
-      {...props}
-      config={{
-        ...config,
-      }}
-      renderBufferSize={0}
-    />
+    <Table config={tableConfig} dataSource={dataSource} renderBufferSize={0} />
   );
 };
 AutoTableNext.displaySequence = displaySequence++;
 
 export const AutoTableNextAsFlexChild = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    rangeChangeRowset: "full",
-    table: { module: "SIMUL", table: "instruments" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+  const dataSource = useMemo(() => {
+    return vuuModule("SIMUL").createDataSource("instruments");
+  }, []);
 
   return (
     <div
@@ -369,11 +372,8 @@ export const AutoTableNextAsFlexChild = () => {
     >
       <div style={{ flex: "1 1 auto" }}>
         <Table
-          {...props}
-          config={{
-            ...config,
-          }}
-          onConfigChange={handleConfigChange}
+          config={tableConfig}
+          dataSource={dataSource}
           renderBufferSize={0}
         />
       </div>
@@ -382,99 +382,7 @@ export const AutoTableNextAsFlexChild = () => {
 };
 AutoTableNextAsFlexChild.displaySequence = displaySequence++;
 
-// export const AutoTableNextBasketDesign = () => {
-//   const {
-//     typeaheadHook: _,
-//     config: configProp,
-//     ...props
-//   } = useTableConfig({
-//     rangeChangeRowset: "delta",
-//     table: { module: "BASKET", table: "basketDesign" },
-//   });
-
-//   const [config, setConfig] = useState(configProp);
-
-//   const handleConfigChange = (config: TableConfig) => {
-//     setConfig(config);
-//   };
-
-//   return (
-//     <TableNext
-//       {...props}
-//       config={{
-//         ...config,
-//         rowSeparators: true,
-//         zebraStripes: true,
-//       }}
-//       onConfigChange={handleConfigChange}
-//       renderBufferSize={50}
-//     />
-//   );
-// };
-// AutoTableNextBasketDesign.displaySequence = displaySequence++;
-
-export const AutoTableNextBasketOrders = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    table: { module: "SIMUL", table: "basketOrders" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <Table
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-AutoTableNextBasketOrders.displaySequence = displaySequence++;
-
-export const AutoTableNextBasketDefinitions = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    ...props
-  } = useTableConfig({
-    count: 5,
-    table: { module: "SIMUL", table: "basketDefinitions" },
-  });
-
-  const [config, setConfig] = useState(configProp);
-
-  const handleConfigChange = (config: TableConfig) => {
-    setConfig(config);
-  };
-
-  return (
-    <Table
-      {...props}
-      config={{
-        ...config,
-        rowSeparators: true,
-        zebraStripes: true,
-      }}
-      onConfigChange={handleConfigChange}
-      renderBufferSize={50}
-    />
-  );
-};
-AutoTableNextBasketDefinitions.displaySequence = displaySequence++;
-
-export const vuuTableCalculatedColumns = () => {
+export const VuuTableCalculatedColumns = () => {
   const calculatedColumns: ColumnDescriptor[] = useMemo(
     () => [
       {
@@ -553,7 +461,7 @@ export const vuuTableCalculatedColumns = () => {
     />
   );
 };
-vuuTableCalculatedColumns.displaySequence = displaySequence++;
+VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const GroupHeaderCellNextOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {

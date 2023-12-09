@@ -1,16 +1,22 @@
 import { FilterTable } from "@finos/vuu-datatable";
 import { TableConfig } from "@finos/vuu-datagrid-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { useCallback, useState } from "react";
-import { useTableConfig, useTestDataSource } from "../utils";
+import { useCallback, useMemo, useState } from "react";
+import { useTestDataSource } from "../utils";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { getAllSchemas, getSchema } from "@finos/vuu-data-test";
+import {
+  getAllSchemas,
+  getSchema,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
 import { ActiveItemChangeHandler } from "packages/vuu-layout/src";
+import { TableProps } from "packages/vuu-table/src";
 
 let displaySequence = 1;
+const schemas = getAllSchemas();
 
 export const DefaultFilterTable = () => {
-  const schemas = getAllSchemas();
   const { config, dataSource, error, tableSchema } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
@@ -73,14 +79,21 @@ export const DefaultFilterTable = () => {
 DefaultFilterTable.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstruments = () => {
-  const {
-    typeaheadHook: _,
-    config: configProp,
-    dataSource,
-    ...props
-  } = useTableConfig({
-    table: { module: "SIMUL", table: "instruments" },
-  });
+  const schema = schemas.instruments;
+  const { dataSource, ...restTableProps } = useMemo<
+    Pick<TableProps, "config" | "dataSource">
+  >(
+    () => ({
+      config: {
+        columns: schema.columns,
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
+    }),
+    [schema]
+  );
 
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
@@ -107,9 +120,8 @@ export const FilterTableArrayDataInstruments = () => {
   };
 
   const tableProps = {
-    config: configProp,
+    ...restTableProps,
     dataSource,
-    ...props,
     height: 645,
     renderBufferSize: 20,
     width: 715,
