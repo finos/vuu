@@ -1,37 +1,62 @@
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
+  TableConfig,
   TableHeadings,
 } from "@finos/vuu-datagrid-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "classnames";
+import { VuuSortType } from "packages/vuu-protocol-types";
+import { TableColumnResizeHandler } from "../column-resizing";
 import { GroupHeaderCellNext, HeaderCell } from "../header-cell";
+import { useTableHeader } from "./useTableHeader";
+
+export type ColumnSortHandler = (
+  column: ColumnDescriptor,
+  addToExistingSort: boolean,
+  sortType?: VuuSortType
+) => void;
 
 export interface TableHeaderProps {
   classBase?: string;
   columns: RuntimeColumnDescriptor[];
-  draggableColumn?: JSX.Element | null;
-  draggedItemIndex?: number;
-  headerProps: any;
   headings: TableHeadings;
+  onResizeColumn: TableColumnResizeHandler;
+  onMoveColumn: (columns: ColumnDescriptor[]) => void;
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
+  onSortColumn: ColumnSortHandler;
+  tableConfig: TableConfig;
   tableId: string;
 }
 
 export const TableHeader = ({
   classBase = "vuuTable",
   columns,
-  draggableColumn = null,
-  draggedItemIndex = -1,
-  headerProps,
   headings,
+  onMoveColumn,
   onMoveGroupColumn,
   onRemoveGroupColumn,
+  onResizeColumn,
+  onSortColumn,
+  tableConfig,
   tableId,
 }: TableHeaderProps) => {
+  const {
+    containerRef,
+    draggableColumn,
+    draggedColumnIndex,
+    onClick,
+    onMouseDown,
+  } = useTableHeader({
+    columns,
+    onMoveColumn,
+    onSortColumn,
+    tableConfig,
+  });
+
   return (
-    <div className={`${classBase}-col-headings`}>
+    <div className={`${classBase}-col-headings`} ref={containerRef}>
       {headings.map((colHeaders, i) => (
         <div className="vuuTable-heading" key={i}>
           {colHeaders.map(({ label, width }, j) => (
@@ -45,23 +70,25 @@ export const TableHeader = ({
         {columns.filter(isNotHidden).map((col, i) =>
           isGroupColumn(col) ? (
             <GroupHeaderCellNext
-              {...headerProps}
               column={col}
               data-index={i}
               key={col.name}
               onMoveColumn={onMoveGroupColumn}
               onRemoveColumn={onRemoveGroupColumn}
+              onResize={onResizeColumn}
             />
           ) : (
             <HeaderCell
-              {...headerProps}
               className={cx({
-                "vuuDraggable-dragAway": i === draggedItemIndex,
+                "vuuDraggable-dragAway": i === draggedColumnIndex,
               })}
               column={col}
               data-index={i}
               id={`${tableId}-col-${i}`}
               key={col.name}
+              onClick={onClick}
+              onMouseDown={onMouseDown}
+              onResize={onResizeColumn}
             />
           )
         )}

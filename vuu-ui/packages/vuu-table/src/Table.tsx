@@ -143,22 +143,23 @@ const TableCore = ({
     columnMap,
     columns,
     data,
-    draggableColumn,
     draggableRow,
-    dragDropHook,
     handleContextMenuAction,
-    headerProps,
     headings,
     highlightedIndex,
     onDataEdited,
+    onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
     onResize,
+    onResizeColumn,
     onRowClick,
+    onSortColumn,
     onToggleGroup,
     menuBuilder,
     scrollProps,
     tableAttributes,
+    tableConfig,
     viewportMeasurements,
     ...tableProps
   } = useTable({
@@ -233,12 +234,13 @@ const TableCore = ({
           {showColumnHeaders ? (
             <TableHeader
               columns={columns}
-              draggableColumn={draggableColumn}
-              draggedItemIndex={dragDropHook.draggedItemIndex}
-              headerProps={headerProps}
               headings={headings}
+              onMoveColumn={onMoveColumn}
               onMoveGroupColumn={onMoveGroupColumn}
               onRemoveGroupColumn={onRemoveGroupColumn}
+              onResizeColumn={onResizeColumn}
+              onSortColumn={onSortColumn}
+              tableConfig={tableConfig}
               tableId={id}
             />
           ) : null}
