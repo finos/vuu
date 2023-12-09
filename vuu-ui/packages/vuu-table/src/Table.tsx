@@ -18,7 +18,7 @@ import {
 } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
-import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
+import { metadataKeys } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
@@ -30,12 +30,9 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  GroupHeaderCellNext as GroupHeaderCell,
-  HeaderCell,
-} from "./header-cell";
 import { Row as DefaultRow, RowProps } from "./Row";
 import { useTable } from "./useTable";
+import { TableHeader } from "./table-header/TableHeader";
 
 import "./Table.css";
 
@@ -234,48 +231,16 @@ const TableCore = ({
           tabIndex={disableFocus ? undefined : -1}
         >
           {showColumnHeaders ? (
-            <div className={`${classBase}-col-headings`}>
-              {headings.map((colHeaders, i) => (
-                <div className="vuuTable-heading" key={i}>
-                  {colHeaders.map(({ label, width }, j) => (
-                    <div
-                      key={j}
-                      className="vuuTable-headingCell"
-                      style={{ width }}
-                    >
-                      {label}
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div className={`${classBase}-col-headers`} role="row">
-                {columns.filter(notHidden).map((col, i) =>
-                  isGroupColumn(col) ? (
-                    <GroupHeaderCell
-                      {...headerProps}
-                      column={col}
-                      data-index={i}
-                      key={col.name}
-                      onMoveColumn={onMoveGroupColumn}
-                      onRemoveColumn={onRemoveGroupColumn}
-                    />
-                  ) : (
-                    <HeaderCell
-                      {...headerProps}
-                      className={cx({
-                        "vuuDraggable-dragAway":
-                          i === dragDropHook.draggedItemIndex,
-                      })}
-                      column={col}
-                      data-index={i}
-                      id={`${id}-col-${i}`}
-                      key={col.name}
-                    />
-                  )
-                )}
-                {draggableColumn}
-              </div>
-            </div>
+            <TableHeader
+              columns={columns}
+              draggableColumn={draggableColumn}
+              draggedItemIndex={dragDropHook.draggedItemIndex}
+              headerProps={headerProps}
+              headings={headings}
+              onMoveGroupColumn={onMoveGroupColumn}
+              onRemoveGroupColumn={onRemoveGroupColumn}
+              tableId={id}
+            />
           ) : null}
           <div className={`${classBase}-body`}>
             {data.map((data) => (
@@ -336,8 +301,6 @@ export const Table = forwardRef(function TableNext(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();
-
-  console.log({ config });
 
   return (
     <MeasuredContainer
