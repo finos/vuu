@@ -4,7 +4,7 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { SchemaColumn } from "@finos/vuu-data";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { useMemo } from "react";
 
 let displaySequence = 1;

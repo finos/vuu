@@ -1,4 +1,4 @@
-import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, Selection } from "@finos/vuu-table-types";
 import {
   LinkDescriptorWithLabel,
   VuuGroupBy,

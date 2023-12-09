@@ -5,7 +5,7 @@ import cx from "classnames";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 
 import "./filter-indicator.css";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 
 export const Direction = {
   ASC: "asc",

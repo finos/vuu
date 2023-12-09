@@ -3,10 +3,7 @@
  * and virtualisation of the table. This includes measurements required
  * to support pinned columns.
  */
-import {
-  RuntimeColumnDescriptor,
-  TableHeadings,
-} from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useRef } from "react";
 import { MeasuredSize } from "@finos/vuu-layout";
 import {

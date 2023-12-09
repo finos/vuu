@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   TableConfig,
   ColumnTypeFormatting,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 
 import {
   CellRendererDescriptor,

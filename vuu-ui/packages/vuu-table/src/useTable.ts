@@ -7,16 +7,16 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  RuntimeColumnDescriptor,
   RowClickHandler,
+  RuntimeColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
+  MeasuredProps,
   MeasuredSize,
   useLayoutEffectSkipFirst,
-  MeasuredProps,
 } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
@@ -24,7 +24,6 @@ import {
   DragStartHandler,
   useDragDropNext as useDragDrop,
 } from "@finos/vuu-ui-controls";
-import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
   buildColumnMap,
@@ -43,18 +42,19 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TableProps } from "./Table";
 import { TableColumnResizeHandler } from "./column-resizing";
-import { updateTableConfig } from "./table-config";
-import { useDataSource } from "./useDataSource";
-import { useInitialValue } from "./useInitialValue";
-import { useSelection } from "./useSelection";
-import { useTableContextMenu } from "./useTableContextMenu";
 import {
   buildContextMenuDescriptors,
   useHandleTableContextMenu,
 } from "./context-menu";
+import { TableProps } from "./Table";
+import { updateTableConfig } from "./table-config";
 import { useCellEditing } from "./useCellEditing";
+import { useDataSource } from "./useDataSource";
+import { useInitialValue } from "./useInitialValue";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { useSelection } from "./useSelection";
+import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
   ColumnActionPin,
@@ -64,8 +64,8 @@ import {
   useTableModel,
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
-import { useVirtualViewport } from "./useVirtualViewport";
 import { useTableViewport } from "./useTableViewport";
+import { useVirtualViewport } from "./useVirtualViewport";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;

@@ -2,7 +2,7 @@ import {
   Selection,
   SelectionChangeHandler,
   TableConfig,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { useCallback, useMemo, useRef, useState } from "react";

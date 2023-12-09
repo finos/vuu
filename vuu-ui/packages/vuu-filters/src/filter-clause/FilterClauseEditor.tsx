@@ -1,6 +1,6 @@
 import { TableSchema } from "@finos/vuu-data";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import cx from "classnames";
 import { HTMLAttributes, useCallback } from "react";

@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   GroupColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import cx from "classnames";
 import { useCallback, useRef, useState } from "react";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";

@@ -5,7 +5,7 @@ import {
   TableAttributes,
   TableConfig,
   TableHeadings,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,

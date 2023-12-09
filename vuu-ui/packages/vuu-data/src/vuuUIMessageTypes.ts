@@ -24,7 +24,7 @@ import {
   VuuFeatureMessage,
   WithFullConfig,
 } from "./data-source";
-import { GridAction, Selection } from "@finos/vuu-datagrid-types";
+import { GridAction, Selection } from "@finos/vuu-table-types";
 import { WebSocketProtocol } from "./websocket-connection";
 
 export interface OpenDialogAction {

@@ -1,5 +1,5 @@
 import type { TableSchema } from "@finos/vuu-data";
-import type { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 
 export type SimulTableName =
   | "instruments"

@@ -5,7 +5,7 @@ import { AdornmentsDescriptor } from "../grid-adornments";
 import { GridModelDispatch } from "../grid-context";
 import { GridProps } from "../gridTypes";
 import { Size } from "./useMeasuredSize";
-import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 
 export type Headings = Heading[][];
 

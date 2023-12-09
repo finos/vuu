@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { InputProps } from "@salt-ds/core";

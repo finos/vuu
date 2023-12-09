@@ -16,7 +16,7 @@ import type {
   ColumnTypeFormatting,
   LookupRenderer,
   ValueListRenderer,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
   VuuAggregation,

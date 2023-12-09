@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { HTMLAttributes, MouseEventHandler, useCallback, useRef } from "react";
 import { useCell } from "../useCell";
 import { ColumnMenu } from "../column-menu";

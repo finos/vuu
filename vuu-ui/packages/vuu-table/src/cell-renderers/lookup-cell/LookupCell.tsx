@@ -1,5 +1,5 @@
 import { useLookupValues } from "@finos/vuu-data-react";
-import { TableCellRendererProps } from "@finos/vuu-datagrid-types";
+import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 import { memo } from "react";
 import { dataAndColumnUnchanged } from "../cell-utils";

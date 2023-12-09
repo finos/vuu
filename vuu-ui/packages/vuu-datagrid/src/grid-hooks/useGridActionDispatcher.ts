@@ -3,7 +3,7 @@ import {
   DataSourceAction,
   GridAction,
   ScrollAction,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { useCallback } from "react";
 import { GridActionSelection, GridModelDispatch } from "../grid-context";
 

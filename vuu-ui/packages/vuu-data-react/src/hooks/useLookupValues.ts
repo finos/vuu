@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   ListOption,
   LookupTableDetails,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { RemoteDataSource } from "@finos/vuu-data";
 import { useShellContext } from "@finos/vuu-shell";
 import {

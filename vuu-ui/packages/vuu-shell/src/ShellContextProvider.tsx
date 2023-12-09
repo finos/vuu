@@ -1,4 +1,4 @@
-import { ColumnDescriptor, ListOption } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, ListOption } from "@finos/vuu-table-types";
 import { RpcResponseHandler } from "@finos/vuu-data-react";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
 import { VuuTable } from "@finos/vuu-protocol-types";

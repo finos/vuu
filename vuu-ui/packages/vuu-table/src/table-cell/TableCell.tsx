@@ -1,7 +1,4 @@
-import {
-  DataItemCommitHandler,
-  TableCellProps,
-} from "@finos/vuu-datagrid-types";
+import { DataItemCommitHandler, TableCellProps } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";

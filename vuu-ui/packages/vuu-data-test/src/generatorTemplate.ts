@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { ColumnMap } from "@finos/vuu-utils";
 import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { ColumnGeneratorFn, RowGeneratorFactory } from "./vuu-row-generator";

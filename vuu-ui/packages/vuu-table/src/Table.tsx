@@ -8,7 +8,7 @@ import {
   TableConfig,
   TableRowClickHandler,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   MeasuredContainer,

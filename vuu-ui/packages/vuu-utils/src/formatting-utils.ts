@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   ColumnTypeValueMap,
   ColumnTypeFormatting,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { roundDecimal } from "./round-decimal";
 import {
   isDateTimeColumn,

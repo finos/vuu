@@ -1,5 +1,5 @@
 import { useContextMenu } from "@finos/vuu-popups";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import cx from "classnames";
 import { MouseEvent, useCallback, useRef } from "react";
 import { AggregationType } from "../constants";

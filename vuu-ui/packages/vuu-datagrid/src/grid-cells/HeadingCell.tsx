@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, useRef } from "react";
 import cx from "classnames";
 import { ColResizer } from "./ColResizer";
-import { Heading } from "@finos/vuu-datagrid-types";
+import { Heading } from "@finos/vuu-table-types";
 import { resizePhase } from "../gridTypes";
 import { useCellResize } from "./useCellResize";
 

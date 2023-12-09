@@ -1,5 +1,5 @@
 import { getSchema } from "@finos/vuu-data-test";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import {
   ColumnFormattingPanel,
   ColumnSettingsPanel,

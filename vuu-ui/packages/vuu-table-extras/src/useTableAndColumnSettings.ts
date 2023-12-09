@@ -1,5 +1,5 @@
 import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
 import {
   ColumnSettingsProps,

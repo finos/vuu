@@ -1,5 +1,5 @@
 import { FilterTable } from "@finos/vuu-datatable";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useMemo, useState } from "react";
 import { useTestDataSource } from "../utils";

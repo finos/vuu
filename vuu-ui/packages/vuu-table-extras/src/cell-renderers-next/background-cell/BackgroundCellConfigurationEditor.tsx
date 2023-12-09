@@ -7,7 +7,7 @@ import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 
 import "./BackgroundCellConfigurationEditor.css";
 import { useCallback, useState } from "react";
-import { ColumnDescriptorCustomRenderer } from "packages/vuu-datagrid-types";
+import { ColumnDescriptorCustomRenderer } from "packages/vuu-table-types";
 
 const classBase = "vuuBackgroundCellConfiguration";
 

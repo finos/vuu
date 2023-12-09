@@ -12,7 +12,7 @@ import {
   SuggestionFetcher,
   useTypeaheadSuggestions,
 } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 // import { isMappedValueTypeRenderer, isTypeDescriptor } from "@finos/vuu-utils";

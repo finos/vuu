@@ -1,5 +1,5 @@
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
-import { ColumnDescriptor, Selection } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, Selection } from "@finos/vuu-table-types";
 import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
 import {
   ClientToServerEditRpc,

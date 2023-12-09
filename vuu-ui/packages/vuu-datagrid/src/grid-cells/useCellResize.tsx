@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useRef } from "react";
-import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { resizePhase } from "../gridTypes";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;

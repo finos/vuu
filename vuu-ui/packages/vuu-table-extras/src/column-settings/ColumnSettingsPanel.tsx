@@ -1,4 +1,4 @@
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import {

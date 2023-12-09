@@ -2,7 +2,7 @@ import { isTypeDescriptor, roundDecimal } from "@finos/vuu-utils";
 import {
   RuntimeColumnDescriptor,
   ColumnTypeFormatting,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { createElement, useRef } from "react";
 
 const defaultFormatter = (value: unknown) =>

@@ -10,7 +10,7 @@ import {
   GroupColumnDescriptor,
   Heading,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { ColumnGroupType, GridModelType } from "./gridModelTypes";
 
 // 15px works on Mac, Windows requires 17, unless we style the scrollbars

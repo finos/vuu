@@ -7,7 +7,7 @@ import {
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
 import { SessionEditingForm } from "@finos/vuu-shell";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { ArrayDataSource, DataSource } from "@finos/vuu-data";
 import {
   ContextMenuItemDescriptor,

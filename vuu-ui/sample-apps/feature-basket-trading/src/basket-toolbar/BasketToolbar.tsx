@@ -9,7 +9,7 @@ import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import {
   CommitResponse,
   DataItemCommitHandler,
-} from "packages/vuu-datagrid-types";
+} from "packages/vuu-table-types";
 import { VuuRowDataItemType } from "packages/vuu-protocol-types";
 import { HTMLAttributes, useCallback } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";

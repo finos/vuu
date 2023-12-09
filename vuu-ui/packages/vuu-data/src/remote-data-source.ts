@@ -1,5 +1,5 @@
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
-import { Selection } from "@finos/vuu-datagrid-types";
+import { Selection } from "@finos/vuu-table-types";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,

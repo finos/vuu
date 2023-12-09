@@ -1,4 +1,4 @@
-import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { RefObject, useCallback, useRef, useState } from "react";
 import { ResizePhase } from "../useTableModel";
 

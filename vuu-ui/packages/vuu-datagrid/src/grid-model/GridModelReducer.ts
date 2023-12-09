@@ -3,7 +3,7 @@ import {
   ColumnDescriptor,
   ColumnTypeSimple,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   ColumnGroupType,
   GridModelReducerInitializerTuple,

@@ -9,7 +9,7 @@ import {
 import { GridCell, GroupCell } from "./grid-cells";
 
 import "./grid-row.css";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 
 const classBase = "vuuDataGridRow";
 

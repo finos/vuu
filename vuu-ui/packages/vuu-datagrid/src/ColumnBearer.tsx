@@ -17,7 +17,7 @@ import "./column-bearer.css";
 import { GridModelType } from "./grid-model";
 import { ColumnDragState, dragPhase } from "./gridTypes";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { DataSourceRow } from "@finos/vuu-data-types";
 
 const LEFT = "left";

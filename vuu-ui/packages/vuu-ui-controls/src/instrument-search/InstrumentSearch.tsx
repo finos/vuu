@@ -1,5 +1,5 @@
 import { DataSource } from "@finos/vuu-data";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-layout";
 
 import {

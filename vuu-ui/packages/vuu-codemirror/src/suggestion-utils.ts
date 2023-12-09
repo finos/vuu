@@ -1,5 +1,5 @@
 import { AnnotationType, Completion, EditorView } from "@finos/vuu-codemirror";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export interface VuuCompletion extends Completion {

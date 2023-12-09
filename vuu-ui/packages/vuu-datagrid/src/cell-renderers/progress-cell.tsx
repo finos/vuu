@@ -5,7 +5,7 @@ import React from "react";
 import { isTypeDescriptor } from "@finos/vuu-utils";
 import { GridCellProps } from "../grid-cells";
 import "./progress-cell.css";
-import { ColumnTypeRendering } from "@finos/vuu-datagrid-types";
+import { ColumnTypeRendering } from "@finos/vuu-table-types";
 
 const ProgressCell = React.memo(function ProgressCell({
   column,

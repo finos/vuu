@@ -13,7 +13,7 @@ import {
   ColumnDescriptor,
   GridAction,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
 export interface GridActionGroup {

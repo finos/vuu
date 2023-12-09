@@ -1,7 +1,7 @@
 import {
   ColumnTypeRendering,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { ColumnMap, DataRow, isTypeDescriptor } from "@finos/vuu-utils";
 import cx from "classnames";
 import React, { HTMLAttributes, useContext } from "react";

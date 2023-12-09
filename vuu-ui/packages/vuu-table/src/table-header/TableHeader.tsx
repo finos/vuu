@@ -3,7 +3,7 @@ import {
   RuntimeColumnDescriptor,
   TableConfig,
   TableHeadings,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "classnames";
 import { VuuSortType } from "packages/vuu-protocol-types";

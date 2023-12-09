@@ -3,7 +3,7 @@ import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   VuuAggregation,
   VuuGroupBy,

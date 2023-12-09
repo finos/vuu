@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { buildColumnMap, DataRow, metadataKeys } from "@finos/vuu-utils";
 import cx from "classnames";
 import {

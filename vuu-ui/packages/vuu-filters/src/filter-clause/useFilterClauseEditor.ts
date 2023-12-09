@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
 import {
   isMultiValueFilter,

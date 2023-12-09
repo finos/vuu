@@ -12,7 +12,7 @@
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",
     "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-datagrid-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-utils": "0.0.26"

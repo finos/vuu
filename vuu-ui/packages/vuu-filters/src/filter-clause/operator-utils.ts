@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 
 export const textOperators = ["=", "in", "!=", "starts", "ends"];

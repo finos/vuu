@@ -1,4 +1,4 @@
-import { GroupColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { GroupColumnDescriptor } from "@finos/vuu-table-types";
 import { DataRow, metadataKeys } from "@finos/vuu-utils";
 import React, { useCallback } from "react";
 import { useGridContext } from "../grid-context";

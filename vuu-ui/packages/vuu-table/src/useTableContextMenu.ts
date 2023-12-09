@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";

@@ -1,5 +1,5 @@
 import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 import { useMemo, useRef } from "react";

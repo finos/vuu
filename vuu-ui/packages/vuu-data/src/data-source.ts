@@ -2,7 +2,7 @@ import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   SelectionChangeHandler,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,

@@ -1,7 +1,7 @@
 import {
   GroupColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { useContextMenu } from "@finos/vuu-popups";
 import cx from "classnames";
 import React, { HTMLAttributes, useCallback, useEffect, useRef } from "react";

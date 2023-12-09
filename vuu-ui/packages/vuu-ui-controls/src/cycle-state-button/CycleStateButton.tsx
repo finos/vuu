@@ -1,6 +1,6 @@
 import { Button, ButtonProps } from "@salt-ds/core";
 import cx from "classnames";
-import { CommitResponse } from "packages/vuu-datagrid-types";
+import { CommitResponse } from "packages/vuu-table-types";
 import {
   VuuColumnDataType,
   VuuRowDataItemType,

@@ -1,8 +1,5 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import {
-  ColumnDescriptor,
-  ColumnTypeDescriptor,
-} from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, ColumnTypeDescriptor } from "@finos/vuu-table-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { metadataKeys } from "./column-utils";
 

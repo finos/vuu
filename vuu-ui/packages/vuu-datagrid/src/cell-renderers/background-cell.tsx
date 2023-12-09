@@ -4,7 +4,7 @@ import React from "react";
 import { useCellFormatter } from "../grid-cells/useCellFormatter";
 import { useDirection } from "./use-direction";
 
-import { ColumnType } from "@finos/vuu-datagrid-types";
+import { ColumnType } from "@finos/vuu-table-types";
 import { GridCellProps } from "../grid-cells";
 import "./background-cell.css";
 

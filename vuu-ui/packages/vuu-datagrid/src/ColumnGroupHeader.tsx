@@ -7,7 +7,7 @@ import React, {
   useImperativeHandle,
   useRef,
 } from "react";
-import { Heading } from "@finos/vuu-datagrid-types";
+import { Heading } from "@finos/vuu-table-types";
 import { VuuSort } from "../../vuu-protocol-types";
 import ColumnGroupContext from "./column-group-context";
 import { SortType } from "./constants";
@@ -17,7 +17,7 @@ import { ColumnGroupType } from "./grid-model/gridModelTypes";
 import { GridModel } from "./grid-model/gridModelUtils";
 import { ColumnDragStartHandler, resizePhase } from "./gridTypes";
 
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { isGroupColumn } from "@finos/vuu-utils";
 import "./ColumnGroupHeader.css";
 

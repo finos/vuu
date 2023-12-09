@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
 import { moveColumnTo, visibleColumnAtIndex } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback, useRef } from "react";

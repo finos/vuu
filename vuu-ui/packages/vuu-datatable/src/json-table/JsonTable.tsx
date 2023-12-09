@@ -3,7 +3,7 @@ import { JsonData } from "@finos/vuu-utils";
 import { Table } from "@finos/vuu-table";
 import { JsonDataSource } from "@finos/vuu-data";
 import { useEffect, useMemo, useRef } from "react";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 
 export interface JsonTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
