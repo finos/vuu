@@ -1,5 +1,0 @@
-.hwColumnGroupHeader {
-  vertical-align: top;
-  overflow: hidden;
-  background-color: var(--grid-header-background, var(--grid-background));
-}
