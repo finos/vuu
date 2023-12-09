@@ -746,6 +746,7 @@ export const useTable = ({
     data,
     handleContextMenuAction,
     headerProps,
+    headings,
     highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
     onContextMenu,

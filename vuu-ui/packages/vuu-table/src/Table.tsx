@@ -151,6 +151,7 @@ const TableCore = ({
     dragDropHook,
     handleContextMenuAction,
     headerProps,
+    headings,
     highlightedIndex,
     onDataEdited,
     onMoveGroupColumn,
@@ -234,6 +235,19 @@ const TableCore = ({
         >
           {showColumnHeaders ? (
             <div className={`${classBase}-col-headings`}>
+              {headings.map((colHeaders, i) => (
+                <div className="vuuTable-heading" key={i}>
+                  {colHeaders.map(({ label, width }, j) => (
+                    <div
+                      key={j}
+                      className="vuuTable-headingCell"
+                      style={{ width }}
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              ))}
               <div className={`${classBase}-col-headers`} role="row">
                 {columns.filter(notHidden).map((col, i) =>
                   isGroupColumn(col) ? (
@@ -273,7 +287,9 @@ const TableCore = ({
                 onClick={onRowClick}
                 onDataEdited={onDataEdited}
                 row={data}
-                offset={rowHeight * data[IDX] + headerHeight}
+                offset={
+                  rowHeight * data[IDX] + viewportMeasurements.totalHeaderHeight
+                }
                 onToggleGroup={onToggleGroup}
                 zebraStripes={tableAttributes.zebraStripes}
               />
@@ -321,13 +337,7 @@ export const Table = forwardRef(function TableNext(
 
   const [size, setSize] = useState<MeasuredSize>();
 
-  // const className = cx(classBase, classNameProp, {
-  //   [`${classBase}-colLines`]: config.columnSeparators,
-  //   [`${classBase}-rowLines`]: config.rowSeparators,
-  //   // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
-  //   [`${classBase}-zebra`]: config.zebraStripes,
-  //   // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
-  // });
+  console.log({ config });
 
   return (
     <MeasuredContainer

@@ -46,10 +46,10 @@ const randomPrice = () => {
   return price / multiplier;
 };
 
-// const start = performance.now();
-// Create 100_000 Instruments
+const start = performance.now();
+// Create 10_000 Instruments
 for (const char of chars) {
-  for (let i = 0; i < 5_000; i++) {
+  for (let i = 0; i < 10_000; i++) {
     const char2 = chars[random(0, chars.length - 1)];
     const char3 = chars[random(0, chars.length - 1)];
     const char4 = chars[random(0, chars.length - 1)];
@@ -77,8 +77,8 @@ for (const char of chars) {
     ]);
   }
 }
-// const end = performance.now();
-// console.log(`generating 100,000 instruments took ${end - start} ms`);
+const end = performance.now();
+console.log(`generating 10,000 instruments took ${end - start} ms`);
 
 const instrumentsTable = new Table(
   schemas.instruments,
