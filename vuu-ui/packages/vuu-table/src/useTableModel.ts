@@ -5,7 +5,7 @@ import {
   TableAttributes,
   TableConfig,
   TableHeadings,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
@@ -240,6 +240,7 @@ type InitialConfig = {
 
 function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
+  console.log(JSON.stringify(tableAttributes, null, 2));
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))

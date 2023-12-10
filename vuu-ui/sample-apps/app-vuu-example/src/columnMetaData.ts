@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 const Average = 2;
 

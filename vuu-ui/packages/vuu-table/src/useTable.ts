@@ -7,16 +7,16 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  RuntimeColumnDescriptor,
   RowClickHandler,
+  RuntimeColumnDescriptor,
   SelectionChangeHandler,
   TableConfig,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
+  MeasuredProps,
   MeasuredSize,
   useLayoutEffectSkipFirst,
-  MeasuredProps,
 } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
@@ -24,7 +24,6 @@ import {
   DragStartHandler,
   useDragDropNext as useDragDrop,
 } from "@finos/vuu-ui-controls";
-import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import {
   applySort,
   buildColumnMap,
@@ -32,32 +31,30 @@ import {
   isJsonGroup,
   isValidNumber,
   metadataKeys,
-  moveColumnTo,
   updateColumn,
-  visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import {
   FocusEvent,
   KeyboardEvent,
-  MouseEvent,
   RefObject,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
-import { TableProps } from "./Table";
 import { TableColumnResizeHandler } from "./column-resizing";
-import { updateTableConfig } from "./table-config";
-import { useDataSource } from "./useDataSource";
-import { useInitialValue } from "./useInitialValue";
-import { useSelection } from "./useSelection";
-import { useTableContextMenu } from "./useTableContextMenu";
 import {
   buildContextMenuDescriptors,
   useHandleTableContextMenu,
 } from "./context-menu";
+import { TableProps } from "./Table";
+import { updateTableConfig } from "./table-config";
 import { useCellEditing } from "./useCellEditing";
+import { useDataSource } from "./useDataSource";
+import { useInitialValue } from "./useInitialValue";
+import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { useSelection } from "./useSelection";
+import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
   ColumnActionPin,
@@ -67,8 +64,8 @@ import {
   useTableModel,
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
-import { useVirtualViewport } from "./useVirtualViewport";
 import { useTableViewport } from "./useTableViewport";
+import { useVirtualViewport } from "./useVirtualViewport";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -261,6 +258,7 @@ export const useTable = ({
 
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
+      console.log(`settings changed`);
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -374,11 +372,7 @@ export const useTable = ({
   });
 
   const handleSort = useCallback(
-    (
-      column: RuntimeColumnDescriptor,
-      extendSort = false,
-      sortType?: VuuSortType
-    ) => {
+    (column: ColumnDescriptor, extendSort = false, sortType?: VuuSortType) => {
       if (dataSource) {
         dataSource.sort = applySort(
           dataSource.sort,
@@ -391,7 +385,7 @@ export const useTable = ({
     [dataSource]
   );
 
-  const onHeaderResize: TableColumnResizeHandler = useCallback(
+  const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
       const column = columns.find((column) => column.name === columnName);
       if (column) {
@@ -541,20 +535,6 @@ export const useTable = ({
     getSelectedRows,
   });
 
-  const onHeaderClick = useCallback(
-    (evt: MouseEvent) => {
-      const targetElement = evt.target as HTMLElement;
-      const headerCell = targetElement.closest(
-        ".vuuTableHeaderCell"
-      ) as HTMLElement;
-      const colIdx = parseInt(headerCell?.dataset.index ?? "-1");
-      const column = visibleColumnAtIndex(columns, colIdx);
-      const isAdditive = evt.shiftKey;
-      column && handleSort(column, isAdditive);
-    },
-    [columns, handleSort]
-  );
-
   const onMoveGroupColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
       dataSource.groupBy = columns.map((col) => col.name);
@@ -624,30 +604,11 @@ export const useTable = ({
     });
   }, [config, dataSource, dispatchColumnAction]);
 
-  const handleDropColumnHeader = useCallback(
-    (moveFrom: number, moveTo: number) => {
-      const column = columns[moveFrom];
-      // columns are what get rendered, so these are the columns that
-      // the drop operation relates to. We must translate these into
-      // columns within the table config. Grouping complicates this
-      // as the group columns are not present in columns but ARE in
-      // config.columns
-      const orderedColumns = moveColumnTo(columns, column, moveTo);
-
-      const ofColumn =
-        ({ name }: ColumnDescriptor) =>
-        (col: ColumnDescriptor) =>
-          col.name === name;
-
-      const targetIndex = orderedColumns.findIndex(ofColumn(column));
-      const nextColumn = orderedColumns[targetIndex + 1];
-      const insertPos = nextColumn
-        ? tableConfig.columns.findIndex(ofColumn(nextColumn))
-        : -1;
-
+  const onMoveColumn = useCallback(
+    (columns: ColumnDescriptor[]) => {
       const newTableConfig = {
         ...tableConfig,
-        columns: moveColumnTo(tableConfig.columns, column, insertPos),
+        columns,
       };
 
       dispatchColumnAction({
@@ -657,7 +618,7 @@ export const useTable = ({
       });
       onConfigChange?.(stripInternalProperties(newTableConfig));
     },
-    [columns, dataSource, dispatchColumnAction, onConfigChange, tableConfig]
+    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
   );
 
   const handleDropRow = useCallback(
@@ -672,22 +633,6 @@ export const useTable = ({
       dataSource.applyEdit(row, columnName, value),
     [dataSource]
   );
-
-  // Drag Drop column headers
-  const {
-    onMouseDown: columnHeaderDragMouseDown,
-    draggable: draggableColumn,
-    ...dragDropHook
-  } = useDragDrop({
-    allowDragDrop: true,
-    containerRef,
-    // this is for useDragDropNext
-    draggableClassName: `vuuTable`,
-    // extendedDropZone: overflowedItems.length > 0,
-    onDrop: handleDropColumnHeader,
-    orientation: "horizontal",
-    itemQuery: ".vuuTableHeaderCell",
-  });
 
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
@@ -720,15 +665,13 @@ export const useTable = ({
       itemQuery: ".vuuTableRow",
     });
 
-  const headerProps = {
-    onClick: onHeaderClick,
-    onMouseDown: columnHeaderDragMouseDown,
-    onResize: onHeaderResize,
-  };
+  // console.log({
+  //   tableAttributes,
+  //   config: tableConfig,
+  // });
 
   return {
     ...containerProps,
-    draggableColumn,
     draggableRow,
     onBlur: editingBlur,
     onDoubleClick: editingDoubleClick,
@@ -739,18 +682,22 @@ export const useTable = ({
     columns,
     data,
     handleContextMenuAction,
-    headerProps,
+    headings,
     highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,
+    onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
     onRowClick: handleRowClick,
+    onSortColumn: handleSort,
+    onResizeColumn,
     onToggleGroup,
     scrollProps,
+    // TODO don't think we need these ...
     tableAttributes,
+    tableConfig,
     viewportMeasurements,
-    dragDropHook,
   };
 };

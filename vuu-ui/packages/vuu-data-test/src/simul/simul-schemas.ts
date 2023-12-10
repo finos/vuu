@@ -1,8 +1,9 @@
 import type { TableSchema } from "@finos/vuu-data";
-import type { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 
 export type SimulTableName =
   | "instruments"
+  | "instrumentsExtended"
   | "instrumentPrices"
   | "orders"
   | "childOrders"
@@ -14,6 +15,19 @@ export type SimulTableName =
 export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
   {
     instruments: {
+      columns: [
+        { name: "bbg", serverDataType: "string" },
+        { name: "currency", serverDataType: "string" },
+        { name: "description", serverDataType: "string" },
+        { name: "exchange", serverDataType: "string" },
+        { name: "isin", serverDataType: "string" },
+        { name: "lotSize", serverDataType: "int" },
+        { name: "ric", serverDataType: "string" },
+      ],
+      key: "ric",
+      table: { module: "SIMUL", table: "instruments" },
+    },
+    instrumentsExtended: {
       columns: [
         { name: "bbg", serverDataType: "string" },
         { name: "currency", serverDataType: "string" },

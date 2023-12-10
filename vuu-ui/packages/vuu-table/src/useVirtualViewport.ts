@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { RowAtPositionFunc } from "@finos/vuu-utils";
 import { useCallback, useEffect, useRef } from "react";

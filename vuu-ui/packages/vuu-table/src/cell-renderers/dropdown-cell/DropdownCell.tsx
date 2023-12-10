@@ -1,5 +1,5 @@
 import { useLookupValues } from "@finos/vuu-data-react";
-import { ListOption, TableCellRendererProps } from "@finos/vuu-datagrid-types";
+import { ListOption, TableCellRendererProps } from "@finos/vuu-table-types";
 import {
   Dropdown,
   DropdownOpenKey,

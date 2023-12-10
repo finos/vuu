@@ -1,7 +1,7 @@
 import {
   ColumnDescriptor,
   TableCellRendererProps,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { CycleStateButtonProps, WarnCommit } from "@finos/vuu-ui-controls";
 import {
   dispatchCustomEvent,

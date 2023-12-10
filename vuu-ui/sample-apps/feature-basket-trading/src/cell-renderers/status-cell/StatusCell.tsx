@@ -1,4 +1,4 @@
-import { TableCellRendererProps } from "@finos/vuu-datagrid-types";
+import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 import cx from "classnames";
 

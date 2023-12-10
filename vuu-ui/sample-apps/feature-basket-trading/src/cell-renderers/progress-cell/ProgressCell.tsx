@@ -1,4 +1,4 @@
-import { TableCellProps } from "@finos/vuu-datagrid-types";
+import { TableCellProps } from "@finos/vuu-table-types";
 import {
   isColumnTypeRenderer,
   isTypeDescriptor,

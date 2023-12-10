@@ -1,9 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-data-types";
-import {
-  RuntimeColumnDescriptor,
-  PinLocation,
-} from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor, PinLocation } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 

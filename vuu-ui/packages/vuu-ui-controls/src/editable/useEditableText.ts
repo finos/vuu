@@ -1,4 +1,4 @@
-import { DataItemCommitHandler } from "@finos/vuu-datagrid-types";
+import { DataItemCommitHandler } from "@finos/vuu-table-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { dispatchCustomEvent } from "@finos/vuu-utils";

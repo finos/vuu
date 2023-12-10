@@ -1,9 +1,6 @@
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { Switch } from "@salt-ds/lab";
-import {
-  ColumnDescriptor,
-  ColumnTypeFormatting,
-} from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, ColumnTypeFormatting } from "@finos/vuu-table-types";
 import { getTypeFormattingFromColumn } from "@finos/vuu-utils";
 import {
   ChangeEvent,

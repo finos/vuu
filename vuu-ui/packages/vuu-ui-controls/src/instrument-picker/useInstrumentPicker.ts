@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   TableRowSelectHandler,
   useControlledTableNavigation,

@@ -5,7 +5,7 @@ import {
 } from "@finos/vuu-data";
 import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceFilter } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";

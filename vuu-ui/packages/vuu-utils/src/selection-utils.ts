@@ -4,7 +4,7 @@ import {
   Selection,
   SelectionItem,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { metadataKeys } from "./column-utils";
 
 const NO_SELECTION: number[] = [];

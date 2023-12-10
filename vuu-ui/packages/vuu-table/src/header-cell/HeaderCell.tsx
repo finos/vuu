@@ -1,5 +1,5 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
-import { HTMLAttributes, MouseEvent, useCallback, useRef } from "react";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { HTMLAttributes, MouseEventHandler, useCallback, useRef } from "react";
 import { useCell } from "../useCell";
 import { ColumnMenu } from "../column-menu";
 import { SortIndicator } from "../column-header-pill";
@@ -35,9 +35,8 @@ export const HeaderCell = ({
     rootRef,
   });
 
-  const handleClick = useCallback(
-    (evt: MouseEvent<HTMLTableCellElement>) => {
-      console.log(`click isResizing ${isResizing}`);
+  const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
+    (evt) => {
       !isResizing && onClick?.(evt);
     },
     [isResizing, onClick]

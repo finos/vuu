@@ -8,7 +8,7 @@ import {
   TableConfig,
   TableRowClickHandler,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   MeasuredContainer,
@@ -18,7 +18,7 @@ import {
 } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
-import { isGroupColumn, metadataKeys, notHidden } from "@finos/vuu-utils";
+import { metadataKeys } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
@@ -30,14 +30,12 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  GroupHeaderCellNext as GroupHeaderCell,
-  HeaderCell,
-} from "./header-cell";
 import { Row as DefaultRow, RowProps } from "./Row";
 import { useTable } from "./useTable";
+import { TableHeader } from "./table-header/TableHeader";
 
 import "./Table.css";
+import { DragDropState } from "packages/vuu-ui-controls/src/drag-drop/DragDropState";
 
 const classBase = "vuuTable";
 
@@ -80,7 +78,7 @@ export interface TableProps
    */
   onConfigChange?: (config: TableConfig) => void;
   onDragStart?: DragStartHandler;
-  onDrop?: () => void;
+  onDrop?: (dragDropState: DragDropState) => void;
   /**
    * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
    * response must be handled. This callback provides that response.
@@ -146,21 +144,22 @@ const TableCore = ({
     columnMap,
     columns,
     data,
-    draggableColumn,
     draggableRow,
-    dragDropHook,
     handleContextMenuAction,
-    headerProps,
+    headings,
     highlightedIndex,
     onDataEdited,
+    onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
-    onResize,
+    onResizeColumn,
     onRowClick,
+    onSortColumn,
     onToggleGroup,
     menuBuilder,
     scrollProps,
     tableAttributes,
+    tableConfig,
     viewportMeasurements,
     ...tableProps
   } = useTable({
@@ -189,6 +188,14 @@ const TableCore = ({
     size,
   });
 
+  const className = cx(`${classBase}-contentContainer`, {
+    [`${classBase}-colLines`]: tableAttributes.columnSeparators,
+    [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
+    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
+    [`${classBase}-zebra`]: tableAttributes.zebraStripes,
+    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
+  });
+
   const cssVariables = {
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
@@ -215,7 +222,7 @@ const TableCore = ({
         <div className={`${classBase}-scrollbarContent`} />
       </div>
       <div
-        className={`${classBase}-contentContainer`}
+        className={className}
         ref={scrollProps.contentContainerRef}
         style={cssVariables}
       >
@@ -225,35 +232,17 @@ const TableCore = ({
           tabIndex={disableFocus ? undefined : -1}
         >
           {showColumnHeaders ? (
-            <div className={`${classBase}-col-headings`}>
-              <div className={`${classBase}-col-headers`} role="row">
-                {columns.filter(notHidden).map((col, i) =>
-                  isGroupColumn(col) ? (
-                    <GroupHeaderCell
-                      {...headerProps}
-                      column={col}
-                      data-index={i}
-                      key={col.name}
-                      onMoveColumn={onMoveGroupColumn}
-                      onRemoveColumn={onRemoveGroupColumn}
-                    />
-                  ) : (
-                    <HeaderCell
-                      {...headerProps}
-                      className={cx({
-                        "vuuDraggable-dragAway":
-                          i === dragDropHook.draggedItemIndex,
-                      })}
-                      column={col}
-                      data-index={i}
-                      id={`${id}-col-${i}`}
-                      key={col.name}
-                    />
-                  )
-                )}
-                {draggableColumn}
-              </div>
-            </div>
+            <TableHeader
+              columns={columns}
+              headings={headings}
+              onMoveColumn={onMoveColumn}
+              onMoveGroupColumn={onMoveGroupColumn}
+              onRemoveGroupColumn={onRemoveGroupColumn}
+              onResizeColumn={onResizeColumn}
+              onSortColumn={onSortColumn}
+              tableConfig={tableConfig}
+              tableId={id}
+            />
           ) : null}
           <div className={`${classBase}-body`}>
             {data.map((data) => (
@@ -265,7 +254,9 @@ const TableCore = ({
                 onClick={onRowClick}
                 onDataEdited={onDataEdited}
                 row={data}
-                offset={rowHeight * data[IDX] + headerHeight}
+                offset={
+                  rowHeight * data[IDX] + viewportMeasurements.totalHeaderHeight
+                }
                 onToggleGroup={onToggleGroup}
                 zebraStripes={tableAttributes.zebraStripes}
               />
@@ -313,18 +304,10 @@ export const Table = forwardRef(function TableNext(
 
   const [size, setSize] = useState<MeasuredSize>();
 
-  const className = cx(classBase, classNameProp, {
-    [`${classBase}-colLines`]: config.columnSeparators,
-    [`${classBase}-rowLines`]: config.rowSeparators,
-    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
-    [`${classBase}-zebra`]: config.zebraStripes,
-    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
-  });
-
   return (
     <MeasuredContainer
       {...htmlAttributes}
-      className={className}
+      className={cx(classBase, classNameProp)}
       id={id}
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}

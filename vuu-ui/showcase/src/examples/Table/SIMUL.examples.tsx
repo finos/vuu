@@ -4,11 +4,16 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import { Table, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+import { ColumnDescriptor } from "packages/vuu-table-types";
 import { useCallback, useMemo } from "react";
+import { DemoTableContainer } from "./DemoTableContainer";
 
 let displaySequence = 1;
 
-const getDefaultColumnConfig = (tableName: string, columnName: string) => {
+const getDefaultColumnConfig = (
+  tableName: string,
+  columnName: string
+): Partial<ColumnDescriptor> | undefined => {
   switch (columnName) {
     case "ask":
     case "bid":
@@ -81,17 +86,24 @@ const SimulTable = ({
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <Table
-        {...tableProps}
-        onConfigChange={handleConfigChange}
-        renderBufferSize={0}
-      />
+      <DemoTableContainer>
+        <Table
+          {...tableProps}
+          onConfigChange={handleConfigChange}
+          renderBufferSize={0}
+        />
+      </DemoTableContainer>
     </ContextMenuProvider>
   );
 };
 
 export const Instruments = () => <SimulTable tableName="instruments" />;
 Instruments.displaySequence = displaySequence++;
+
+export const InstrumentsExtended = () => (
+  <SimulTable tableName="instrumentsExtended" />
+);
+InstrumentsExtended.displaySequence = displaySequence++;
 
 export const Prices = () => {
   return (

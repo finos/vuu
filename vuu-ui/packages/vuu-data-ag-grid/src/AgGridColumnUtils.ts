@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { FilterDataProvider } from "./FilterDataProvider";
 

@@ -7,7 +7,7 @@ import {
 import { Checkbox } from "@salt-ds/core";
 import { Switch } from "@salt-ds/lab";
 import cx from "classnames";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   HTMLAttributes,
   MouseEventHandler,

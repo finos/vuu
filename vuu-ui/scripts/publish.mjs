@@ -11,7 +11,7 @@ const packages = [
   "vuu-data-test",
   "vuu-data-types",
   "vuu-table-extras",
-  "vuu-datagrid-types",
+  "vuu-table-types",
   "vuu-table",
   "vuu-filter-types",
   "vuu-filter-parser",

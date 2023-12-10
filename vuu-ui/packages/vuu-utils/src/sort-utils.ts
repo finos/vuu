@@ -1,7 +1,7 @@
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { VuuSort, VuuSortCol, VuuSortType } from "@finos/vuu-protocol-types";
 
 const toggle = (sortType: VuuSortType) => (sortType === "A" ? "D" : "A");

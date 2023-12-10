@@ -127,7 +127,10 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           break;
         }
         case "query":
-          return layoutQuery(action.query, action.path, state.current);
+          if (action.query === "PARENT_CONTAINER") {
+            return layoutQuery(action.query, action.path, state.current);
+          }
+          break;
 
         default: {
           dispatchLayoutAction(action);

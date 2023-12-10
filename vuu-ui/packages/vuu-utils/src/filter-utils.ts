@@ -1,6 +1,6 @@
 //Note these are duplicated in vuu-filter, those should probably be removed.
 
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import {
   AndFilter,
   Filter,

@@ -4,6 +4,7 @@ import {
   isVisualLinksAction,
   MenuRpcResponse,
   RemoteDataSource,
+  RpcResponseHandler,
   VuuFeatureMessage,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
@@ -18,7 +19,7 @@ import {
   VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
 
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -92,12 +93,7 @@ export interface ViewportRowModelHookProps {
   columns?: ColumnDescriptor[];
   dataSource: RemoteDataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
-  onRpcResponse?: (
-    response:
-      | MenuRpcResponse
-      | VuuUIMessageInRPCEditReject
-      | VuuUIMessageInRPCEditResponse
-  ) => void;
+  onRpcResponse?: RpcResponseHandler;
   vuuMenuActionHandler?: VuuMenuActionHandler;
 }
 
@@ -144,15 +140,8 @@ export const useViewportRowModel = ({
     }),
     []
   );
-  const handleRpcResponse = useCallback(
-    (
-      response:
-        | MenuRpcResponse
-        | VuuUIMessageInRPCEditReject
-        | VuuUIMessageInRPCEditResponse
-    ) => {
-      onRpcResponse?.(response);
-    },
+  const handleRpcResponse = useCallback<RpcResponseHandler>(
+    (response) => onRpcResponse?.(response) ?? false,
     [onRpcResponse]
   );
 

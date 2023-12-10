@@ -20,11 +20,12 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  RpcResponse,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
   WithFullConfig,
 } from "./data-source";
-import { GridAction, Selection } from "@finos/vuu-datagrid-types";
+import { GridAction, Selection } from "@finos/vuu-table-types";
 import { WebSocketProtocol } from "./websocket-connection";
 
 export interface OpenDialogAction {
@@ -176,18 +177,12 @@ export type VuuUIMessageIn =
   | VuuUIMessageInRPCEditResponse;
 
 export const isErrorResponse = (
-  response?:
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
+  response?: RpcResponse
 ): response is VuuUIMessageInRPCEditReject =>
   response !== undefined && "error" in response;
 
 export const hasAction = (
-  response?:
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
+  response?: RpcResponse
 ): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
   response != undefined && "action" in response;
 

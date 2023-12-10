@@ -1,11 +1,11 @@
 import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
 import {
   ColumnSettingsProps,
   TableSettingsProps,
 } from "@finos/vuu-table-extras";
-import { ColumnActionColumnSettings } from "@finos/vuu-table/src/table-next/useTableModel";
+import { ColumnActionColumnSettings } from "@finos/vuu-table";
 import { getCalculatedColumnType } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 

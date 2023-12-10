@@ -1,4 +1,4 @@
-import { TableCellRendererProps } from "packages/vuu-datagrid-types";
+import { TableCellRendererProps } from "packages/vuu-table-types";
 /**
  * A memo compare function for cell renderers. Can be used to suppress
  * render where column and data are both unchanged. Avoids render

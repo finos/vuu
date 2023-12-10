@@ -7,7 +7,7 @@ import {
   ToggleButtonGroup,
 } from "@salt-ds/core";
 import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data";
-import { TableConfig } from "@finos/vuu-datagrid-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { HTMLAttributes } from "react";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";

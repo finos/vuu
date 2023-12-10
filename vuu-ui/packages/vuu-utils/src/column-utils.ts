@@ -16,7 +16,7 @@ import type {
   ColumnTypeFormatting,
   LookupRenderer,
   ValueListRenderer,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
   VuuAggregation,
@@ -132,8 +132,6 @@ export const isTimeColumn = ({ type }: ColumnDescriptor) =>
   (isTypeDescriptor(type) ? type.name : type) === "time";
 export const isDateTimeColumn = (column: ColumnDescriptor) =>
   isDateColumn(column) || isTimeColumn(column);
-
-export const notHidden = (column: ColumnDescriptor) => column.hidden !== true;
 
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
@@ -714,7 +712,8 @@ export const getColumnsInViewport = (
   return [visibleColumns, preSpan];
 };
 
-const isNotHidden = (column: RuntimeColumnDescriptor) => column.hidden !== true;
+export const isNotHidden = (column: RuntimeColumnDescriptor) =>
+  column.hidden !== true;
 
 export const visibleColumnAtIndex = (
   columns: RuntimeColumnDescriptor[],

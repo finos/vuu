@@ -15,20 +15,11 @@ import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../../utils/useAutoLoginToVuuServer";
+import { getSchema } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
-const table = { module: "SIMUL", table: "instruments" };
-
-const schemaColumns = [
-  { name: "bbg", serverDataType: "string" } as const,
-  { name: "description", serverDataType: "string" } as const,
-  { name: "currency", serverDataType: "string" } as const,
-  { name: "exchange", serverDataType: "string" } as const,
-  { name: "lotSize", serverDataType: "int" } as const,
-  { name: "isin", serverDataType: "string" } as const,
-  { name: "ric", serverDataType: "string" } as const,
-];
+const { columns, table } = getSchema("instruments");
 
 export const DefaultFilterInput = () => {
   const namedFilters = useMemo(() => new Map<string, string>(), []);
@@ -37,7 +28,7 @@ export const DefaultFilterInput = () => {
     filterQuery: "",
   });
   const suggestionProvider = useFilterSuggestionProvider({
-    columns: schemaColumns,
+    columns,
     namedFilters,
     table,
   });
@@ -107,7 +98,7 @@ export const DefaultFilterInputWithPersistence = () => {
     filterQuery: "",
   });
   const suggestionProvider = useFilterSuggestionProvider({
-    columns: schemaColumns,
+    columns,
     namedFilters,
     table,
   });
@@ -209,7 +200,7 @@ export const FilterInputTabs = () => {
     filterQuery: "",
   });
   const suggestionProvider = useFilterSuggestionProvider({
-    columns: schemaColumns,
+    columns,
     namedFilters,
     saveOptions,
     table,

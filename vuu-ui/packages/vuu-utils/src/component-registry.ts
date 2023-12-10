@@ -5,7 +5,7 @@ import {
   ColumnTypeRendering,
   EditValidationRule,
   TableCellRendererProps,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   VuuColumnDataType,
   VuuRowDataItemType,

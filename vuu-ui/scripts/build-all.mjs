@@ -11,7 +11,7 @@ export const buildAll = async () => {
   const wave1 = [
     "vuu-data-test",
     "vuu-data-types",
-    "vuu-datagrid-types",
+    "vuu-table-types",
     "vuu-filter-types",
     "vuu-filter-parser",
     "vuu-protocol-types",

@@ -3,7 +3,7 @@ import {
   Selection,
   SelectionChangeHandler,
   TableSelectionModel,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import {
   deselectItem,
   dispatchMouseEvent,

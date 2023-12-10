@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { ColumnHeaderPill, ColumnHeaderPillProps } from "./ColumnHeaderPill";
 
 import "./GroupColumnPill.css";

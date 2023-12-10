@@ -3,7 +3,7 @@ import {
   ColumnDescriptorCustomRenderer,
   ColumnTypeFormatting,
   ColumnTypeRendering,
-} from "@finos/vuu-datagrid-types";
+} from "@finos/vuu-table-types";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   CellRendererDescriptor,

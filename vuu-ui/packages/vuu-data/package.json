@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-datagrid-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
   },

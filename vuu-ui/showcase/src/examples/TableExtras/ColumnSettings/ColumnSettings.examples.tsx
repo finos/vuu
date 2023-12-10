@@ -1,5 +1,5 @@
 import { getSchema } from "@finos/vuu-data-test";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import {
   ColumnFormattingPanel,
   ColumnSettingsPanel,
@@ -37,8 +37,7 @@ export const ColumnFormattingPanelDouble = () => {
       setColumn((col) => ({
         ...col,
         type: {
-          // TODO
-          ...col.type,
+          ...(typeof col.type === "object" ? col.type : { name: col.type }),
           renderer,
         },
       }));

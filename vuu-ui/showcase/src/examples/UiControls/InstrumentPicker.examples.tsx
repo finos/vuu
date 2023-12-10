@@ -8,7 +8,7 @@ import {
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { TableProps, TableRowSelectHandler } from "@finos/vuu-table";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useTestDataSource } from "../utils";
 import { DataSourceRow } from "packages/vuu-data-types";
 

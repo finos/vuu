@@ -59,8 +59,10 @@ export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
               <SaveLayoutPanel
                 onCancel={handleCloseDialog}
                 onSave={handleSave}
-                componentId={action.options.controlledComponentId}
-                defaultTitle={action.options.controlledComponentTitle}
+                componentId={action.options?.controlledComponentId}
+                defaultTitle={
+                  action.options?.controlledComponentTitle as string
+                }
               />
             ),
             title: "Save Layout",

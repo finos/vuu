@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "packages/vuu-datagrid-types";
+import { ColumnDescriptor } from "packages/vuu-table-types";
 
 const editable = true;
 const hidden = true;

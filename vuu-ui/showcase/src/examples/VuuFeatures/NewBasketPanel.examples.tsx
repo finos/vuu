@@ -1,4 +1,4 @@
-import { createArrayDataSource, getSchema } from "@finos/vuu-data-test";
+import { BasketsTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
 import { NewBasketPanel } from "feature-basket-trading";
 import { useCallback, useMemo } from "react";
 
@@ -8,8 +8,8 @@ export const DefaultNewBasketPanel = () => {
   const schema = getSchema("basket");
 
   const dataSource = useMemo(
-    () => createArrayDataSource({ count: 4, table: schema.table }),
-    [schema.table]
+    () => vuuModule<BasketsTableName>("BASKET").createDataSource("basket"),
+    []
   );
 
   const saveBasket = useCallback((basketName: string, basketId: string) => {

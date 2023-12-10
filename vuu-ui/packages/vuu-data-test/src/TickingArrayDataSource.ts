@@ -17,6 +17,7 @@ import {
   VuuRange,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
+import { SelectionItem } from "@finos/vuu-table-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { Table } from "./Table";
 
@@ -82,22 +83,25 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   private getSelectedRows() {
-    return this.selectedRows.reduce<DataSourceRow[]>((rows, selected) => {
-      if (Array.isArray(selected)) {
-        selected.forEach((sel) => {
-          const row = this.data[sel];
+    return this.selectedRows.reduce<DataSourceRow[]>(
+      (rows: DataSourceRow[], selected: SelectionItem) => {
+        if (Array.isArray(selected)) {
+          selected.forEach((sel) => {
+            const row = this.data[sel];
+            if (row) {
+              rows.push(row);
+            }
+          });
+        } else {
+          const row = this.data[selected];
           if (row) {
             rows.push(row);
           }
-        });
-      } else {
-        const row = this.data[selected];
-        if (row) {
-          rows.push(row);
         }
-      }
-      return rows;
-    }, []);
+        return rows;
+      },
+      []
+    );
   }
 
   applyEdit(
@@ -113,7 +117,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   async rpcCall<T extends RpcResponse = RpcResponse>(
     rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-  ) {
+  ): Promise<T | undefined> {
     const rpcService = this.#rpcServices?.find(
       (service) =>
         service.rpcName ===

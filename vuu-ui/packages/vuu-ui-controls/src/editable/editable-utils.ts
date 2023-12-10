@@ -1,4 +1,4 @@
-import { EditValidationRule } from "@finos/vuu-datagrid-types";
+import { EditValidationRule } from "@finos/vuu-table-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { getEditRuleValidator } from "@finos/vuu-utils";
 

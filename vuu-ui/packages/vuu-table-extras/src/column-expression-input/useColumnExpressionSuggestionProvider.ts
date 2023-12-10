@@ -11,7 +11,7 @@ import {
   getTypeaheadParams,
   useTypeaheadSuggestions,
 } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import {
   ColumnExpressionOperator,

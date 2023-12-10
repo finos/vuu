@@ -1,5 +1,5 @@
 import cx from "classnames";
-import { RuntimeColumnDescriptor } from "@finos/vuu-datagrid-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 
 import "./ColumnHeaderPill.css";
