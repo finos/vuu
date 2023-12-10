@@ -440,7 +440,7 @@ export class ArrayDataSource
     }
   };
 
-  protected update = (row: VuuRowDataItemType[], columnName?: string) => {
+  protected update = (row: VuuRowDataItemType[], columnName: string) => {
     // TODO take sorting, filtering. grouping into account
     const keyValue = row[this.key];
     const colIndex = this.#columnMap[columnName];
@@ -663,13 +663,14 @@ export class ArrayDataSource
       switch (type) {
         case "VP_EDIT_CELL_RPC":
           {
-            const { rowKey, field, value } = rpcRequest;
-            try {
-              this.update(rowKey, field, value);
-              resolve(undefined);
-            } catch (error) {
-              resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
-            }
+            // TODO
+            // const { rowKey, field, value } = rpcRequest;
+            // try {
+            //   this.update(rowKey, field, value);
+            //   resolve(undefined);
+            // } catch (error) {
+            //   resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
+            // }
           }
 
           break;

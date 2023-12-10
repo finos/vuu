@@ -35,6 +35,7 @@ import { useTable } from "./useTable";
 import { TableHeader } from "./table-header/TableHeader";
 
 import "./Table.css";
+import { DragDropState } from "packages/vuu-ui-controls/src/drag-drop/DragDropState";
 
 const classBase = "vuuTable";
 
@@ -77,7 +78,7 @@ export interface TableProps
    */
   onConfigChange?: (config: TableConfig) => void;
   onDragStart?: DragStartHandler;
-  onDrop?: () => void;
+  onDrop?: (dragDropState: DragDropState) => void;
   /**
    * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
    * response must be handled. This callback provides that response.
@@ -151,7 +152,6 @@ const TableCore = ({
     onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
-    onResize,
     onResizeColumn,
     onRowClick,
     onSortColumn,

@@ -5,7 +5,7 @@ import {
   ColumnSettingsProps,
   TableSettingsProps,
 } from "@finos/vuu-table-extras";
-import { ColumnActionColumnSettings } from "@finos/vuu-table/src/table-next/useTableModel";
+import { ColumnActionColumnSettings } from "@finos/vuu-table";
 import { getCalculatedColumnType } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 

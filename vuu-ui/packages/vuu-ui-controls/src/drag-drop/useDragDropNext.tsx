@@ -622,6 +622,8 @@ export const useDragDropNext: DragDropHook = ({
 
   useEffect(() => {
     if (id && (isDragSource || isDropTarget)) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore TODO drah drop WIP
       register(id, allowDragDrop === "drop-only" ? false : resumeDrag, onDrop);
     }
   }, [

@@ -60,7 +60,7 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
     last,
     open,
     phase,
-    ric,
+    ric as string,
     scenario,
   ]);
 

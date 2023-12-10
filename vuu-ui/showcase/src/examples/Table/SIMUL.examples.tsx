@@ -4,12 +4,16 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import { Table, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+import { ColumnDescriptor } from "packages/vuu-table-types";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 
 let displaySequence = 1;
 
-const getDefaultColumnConfig = (tableName: string, columnName: string) => {
+const getDefaultColumnConfig = (
+  tableName: string,
+  columnName: string
+): Partial<ColumnDescriptor> | undefined => {
   switch (columnName) {
     case "ask":
     case "bid":

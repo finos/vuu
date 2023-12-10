@@ -2,6 +2,7 @@ import {
   DataSource,
   DataSourceVisualLinkCreatedMessage,
   MenuRpcResponse,
+  ViewportRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data";
@@ -152,6 +153,7 @@ export type RpcResponseHandler = (
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
     | VuuUIMessageInRPCEditResponse
+    | ViewportRpcResponse
 ) => void;
 
 export interface VuuMenuActionHookProps {

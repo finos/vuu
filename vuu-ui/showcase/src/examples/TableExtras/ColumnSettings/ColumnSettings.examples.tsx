@@ -37,8 +37,7 @@ export const ColumnFormattingPanelDouble = () => {
       setColumn((col) => ({
         ...col,
         type: {
-          // TODO
-          ...col.type,
+          ...(typeof col.type === "object" ? col.type : { name: col.type }),
           renderer,
         },
       }));

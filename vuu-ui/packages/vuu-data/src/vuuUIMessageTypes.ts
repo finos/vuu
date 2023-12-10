@@ -20,6 +20,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  RpcResponse,
   VuuFeatureInvocationMessage,
   VuuFeatureMessage,
   WithFullConfig,
@@ -176,18 +177,12 @@ export type VuuUIMessageIn =
   | VuuUIMessageInRPCEditResponse;
 
 export const isErrorResponse = (
-  response?:
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
+  response?: RpcResponse
 ): response is VuuUIMessageInRPCEditReject =>
   response !== undefined && "error" in response;
 
 export const hasAction = (
-  response?:
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
+  response?: RpcResponse
 ): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
   response != undefined && "action" in response;
 

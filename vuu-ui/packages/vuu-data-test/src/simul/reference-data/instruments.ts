@@ -33,7 +33,7 @@ export const InstrumentColumnMap = {
   string: 4,
   number: 5,
   ric: 6,
-  price: 9,
+  price: 7,
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];

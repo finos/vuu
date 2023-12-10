@@ -1,4 +1,3 @@
-export * from "./createArrayDataSource";
 export * from "./schemas";
 export * from "./TickingArrayDataSource";
 export * from "./vuu-row-generator";

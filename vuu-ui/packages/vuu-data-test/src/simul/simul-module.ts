@@ -32,24 +32,12 @@ const tables: Record<SimulTableName, Table> = {
   prices: pricesTable,
 };
 
-// export const populateArray = (tableName: SimulTableName, count: number) => {
-//   const table = tables[tableName];
-//   const data: Array<VuuRowDataItemType[]> = [];
-//   for (let i = 0; i < count; i++) {
-//     if (i >= table.data.length) {
-//       break;
-//     }
-//     data[i] = table.data[i];
-//   }
-//   return data;
-// };
-
 const getColumnDescriptors = (tableName: SimulTableName) => {
   const schema = schemas[tableName];
   if (schema) {
     return schema.columns;
   } else {
-    console.error(`simul-module no schema found for table SIMUL ${tableName}`);
+    throw Error(`simul-module no schema found for table SIMUL ${tableName}`);
   }
 };
 

@@ -3,7 +3,7 @@ import {
   VuuMenu,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
-import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import { ColumnMap } from "@finos/vuu-utils";
 import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
@@ -32,8 +32,6 @@ const tableMaps: Record<BasketsTableName, ColumnMap> = {
   ),
   priceStrategyType: buildDataColumnMap("priceStrategyType"),
 };
-
-const { KEY } = metadataKeys;
 
 /**
  * BasketConstituent
@@ -266,8 +264,11 @@ const createDataSource = (tableName: BasketsTableName) => {
   });
 };
 
+const nullTypeaheadHook = async () => [];
+
 const basketModule: VuuModule<BasketsTableName> = {
   createDataSource,
+  typeaheadHook: () => nullTypeaheadHook,
 };
 
 export default basketModule;

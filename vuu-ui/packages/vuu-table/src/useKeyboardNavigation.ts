@@ -16,7 +16,7 @@ import {
   getTableCell,
   headerCellQuery,
 } from "./table-dom-utils";
-import { TableNavigationStyle } from "../table/dataTableTypes";
+import { TableNavigationStyle } from "./Table";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
