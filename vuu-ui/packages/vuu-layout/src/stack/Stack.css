@@ -1,15 +1,15 @@
-.Tabs {
+.vuuTabs {
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
 }
 
-.Tabs-horizontal {
+.vuuTabs-horizontal {
   --vuu-tabs-border-style: none solid none none;
   flex-direction: row;
 }
 
-.Tabs .Toolbar:before {
+.vuuTabs .Toolbar:before {
   left: 0;
   width: 100%;
   bottom: 0;
@@ -19,12 +19,10 @@
   background: var(--grey60);
 }
 
-.Tabs-tabPanel {
+.vuuTabs-tabPanel {
+  display: flex;
   flex: 1; 
-}
-
-.Tabs-tabPanel > * {
-  height: 100%;
+  flex-direction: column;
 }
 
 .vuuTabHeader {
