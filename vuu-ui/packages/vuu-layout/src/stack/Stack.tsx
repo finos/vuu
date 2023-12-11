@@ -14,7 +14,7 @@ import { StackProps } from "./stackTypes";
 
 import "./Stack.css";
 
-const classBase = "Tabs";
+const classBase = "vuuTabs";
 
 const getDefaultTabIcon = () => undefined;
 

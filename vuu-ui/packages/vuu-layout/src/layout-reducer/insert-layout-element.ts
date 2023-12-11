@@ -3,7 +3,6 @@ import { rectTuple, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
-import { TabLabelFactory } from "../stack";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import {
   createPlaceHolder,
@@ -391,7 +390,11 @@ function getStyledComponents(
     } = getProps(newComponent);
     return [
       existingComponent,
-      React.cloneElement(newComponent, { id, version, style }),
+      React.cloneElement(newComponent, {
+        id,
+        version,
+        style: { ...style, flex: "1 1 0px" },
+      }),
     ];
   }
 }
