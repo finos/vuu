@@ -10,6 +10,7 @@ export const takeScreenshot = (node: HTMLElement): Promise<string> => {
     toPng(node, {
       cacheBust: true,
       filter: (child) =>
+        // remove content of table rows
         child.nodeType === Node.TEXT_NODE ||
         child.getAttribute("role") !== "row",
     })
