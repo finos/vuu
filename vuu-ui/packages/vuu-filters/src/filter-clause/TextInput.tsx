@@ -26,17 +26,21 @@ import { FilterClauseValueEditor } from "./filterClauseTypes";
 export interface TextInputProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
+  "data-field"?: string;
   ref: RefObject<HTMLDivElement>;
   operator: string;
   suggestionProvider?: () => SuggestionFetcher;
   value: string;
 }
 
+const NO_DATA_MATCH = ["No matching data"];
+
 export const TextInput = forwardRef(function TextInput(
   {
     InputProps: InputPropsProp = {},
     className,
     column,
+    "data-field": dataField,
     onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
@@ -46,9 +50,6 @@ export const TextInput = forwardRef(function TextInput(
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const [valueInputValue, setValueInputValue] = useState(value ?? "");
-  // const [selectedValues, setSelectedValue] = useState(defaultValues);
-  // const [typeaheadValues, setTypeaheadValues] =
-  //   useState<string[]>([defaultValues]);
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
   const getSuggestions = suggestionProvider();
 
@@ -79,7 +80,11 @@ export const TextInput = forwardRef(function TextInput(
         : [table, column.name];
       getSuggestions(params)
         .then((suggestions) => {
-          setTypeaheadValues(suggestions);
+          if (suggestions.length === 0 && valueInputValue) {
+            setTypeaheadValues(NO_DATA_MATCH);
+          } else {
+            setTypeaheadValues(suggestions);
+          }
         })
         .catch((err) => {
           console.error("Error getting suggestions", err);
@@ -123,6 +128,7 @@ export const TextInput = forwardRef(function TextInput(
           <ExpandoCombobox
             InputProps={InputProps}
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
@@ -132,7 +138,7 @@ export const TextInput = forwardRef(function TextInput(
             value={value}
           />
         );
-      case "starts":
+      case "starts": {
         return (
           <ExpandoCombobox<string>
             InputProps={InputProps}
@@ -142,7 +148,11 @@ export const TextInput = forwardRef(function TextInput(
             }}
             allowFreeText
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
+            disableFilter={
+              typeaheadValues === NO_DATA_MATCH && valueInputValue?.length > 0
+            }
             source={typeaheadValues}
             onInputChange={handleInputChange}
             onSelectionChange={handleSingleValueSelectionChange}
@@ -150,12 +160,14 @@ export const TextInput = forwardRef(function TextInput(
             value={value}
           />
         );
+      }
 
       case "ends":
         return (
           <ExpandoInput
             {...InputProps}
             className={className}
+            data-field={dataField}
             value={valueInputValue}
             ref={forwardedRef}
             onChange={handleInputChange}
@@ -168,6 +180,7 @@ export const TextInput = forwardRef(function TextInput(
           <ExpandoCombobox<string>
             InputProps={InputProps}
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             title="value"
@@ -182,13 +195,14 @@ export const TextInput = forwardRef(function TextInput(
     operator,
     InputProps,
     className,
+    dataField,
     typeaheadValues,
     handleInputChange,
     handleMultiValueSelectionChange,
     forwardedRef,
     value,
-    handleSingleValueSelectionChange,
     valueInputValue,
+    handleSingleValueSelectionChange,
   ]);
 
   return getValueInputField();

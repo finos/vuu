@@ -50,7 +50,8 @@ export const FilterBar = ({
     onChangeFilterClause,
     onChangeActiveFilterIndex,
     onNavigateOutOfBounds,
-    onKeyDown,
+    onKeyDownFilterbar,
+    onKeyDownMenu,
     onMenuAction,
     pillProps,
     promptProps,
@@ -69,8 +70,6 @@ export const FilterBar = ({
     [`${classBase}-display`]: editFilter === undefined,
     [`${classBase}-edit`]: editFilter !== undefined,
   });
-
-  const onClose = () => console.log("Closing filter component");
 
   const getChildren = () => {
     const items: ReactElement[] = [];
@@ -92,14 +91,17 @@ export const FilterBar = ({
             filterClause={filterClause}
             key={`editor-${i}`}
             onChange={onChangeFilterClause}
-            onClose={onClose}
             tableSchema={tableSchema}
           />
         );
       });
       if (showMenu) {
         items.push(
-          <FilterBuilderMenu key="menu" onMenuAction={onMenuAction} />
+          <FilterBuilderMenu
+            key="menu"
+            onMenuAction={onMenuAction}
+            ListProps={{ onKeyDownCapture: onKeyDownMenu }}
+          />
         );
       }
       items.push(
@@ -121,7 +123,7 @@ export const FilterBar = ({
     <div
       {...htmlAttributes}
       className={className}
-      onKeyDown={onKeyDown}
+      onKeyDown={onKeyDownFilterbar}
       ref={rootRef}
     >
       <span className={`${classBase}-icon`} data-icon="tune" />

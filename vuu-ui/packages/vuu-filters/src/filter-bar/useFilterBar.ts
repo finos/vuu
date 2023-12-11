@@ -336,7 +336,7 @@ export const useFilterBar = ({
     }
   };
 
-  const onKeyDown = useCallback(
+  const handleKeyDownFilterbar = useCallback(
     (evt: KeyboardEvent) => {
       if (evt.key === "Escape" && editFilter !== undefined) {
         // TODO confirm if edits applied ?
@@ -347,6 +347,24 @@ export const useFilterBar = ({
       }
     },
     [editFilter]
+  );
+
+  const handleKeyDownMenu = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      console.log(`keydown from List ${evt.key}`);
+      if (evt.key === "Backspace") {
+        const clearButton = containerRef.current?.querySelector(
+          ".vuuFilterClause-clearButton"
+        ) as HTMLButtonElement;
+        if (clearButton) {
+          setTimeout(() => {
+            clearButton.focus();
+          }, 100);
+        }
+        setShowMenu(false);
+      }
+    },
+    [containerRef]
   );
 
   const handleAddButtonKeyDown = useCallback<KeyboardEventHandler>((evt) => {
@@ -376,7 +394,8 @@ export const useFilterBar = ({
     onClickAddFilter: handleClickAddFilter,
     onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,
-    onKeyDown,
+    onKeyDownFilterbar: handleKeyDownFilterbar,
+    onKeyDownMenu: handleKeyDownMenu,
     onMenuAction: handleMenuAction,
     onNavigateOutOfBounds: handlePillNavigationOutOfBounds,
     pillProps,

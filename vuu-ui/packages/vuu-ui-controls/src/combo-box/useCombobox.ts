@@ -97,7 +97,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 }: ComboboxHookProps<Item, S>): ComboboxHookResult<Item, S> => {
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
-  const { setFilterPattern } = collectionHook;
+  const { data, setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
   // used to track multi selection
   const selectedRef = useRef<Item | null | Item[]>(isMultiSelect ? [] : null);
@@ -123,7 +123,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const highlightSelectedItem = useCallback((selected) => {
     if (Array.isArray(selected)) {
-      console.log("TODO multi selection");
+      // TODO multi selection
     } else if (selected == null) {
       setHighlightedIndexRef.current?.(-1);
     }

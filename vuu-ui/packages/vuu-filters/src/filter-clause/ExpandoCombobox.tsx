@@ -67,7 +67,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   const handleInputChange = useCallback(
     (evt: FormEvent<HTMLInputElement>) => {
       const { value } = evt.target as HTMLInputElement;
-      console.log(`onInputChange ${value}`);
       setText(value);
       onInputChange?.(evt);
     },
@@ -130,8 +129,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   const popupProps = {
     minWidth: "fit-content",
   };
-
-  return props.source?.length === 0 ? null : (
+  return (
     <div
       className={cx(classBase, classNameProp)}
       data-text={text}

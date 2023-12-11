@@ -17,7 +17,6 @@ export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   filterClause: Partial<FilterClause>;
   onChange: (filterClause: Partial<FilterClause>) => void;
-  onClose: () => void;
   suggestionProvider?: () => SuggestionFetcher;
   tableSchema: TableSchema;
 }
@@ -27,7 +26,6 @@ const classBase = "vuuFilterClause";
 export const FilterClauseEditor = ({
   className,
   onChange,
-  onClose,
   filterClause,
   suggestionProvider,
   tableSchema,
@@ -39,6 +37,8 @@ export const FilterClauseEditor = ({
     InputProps,
     columnRef,
     onChangeValue,
+    onClear,
+    onClearKeyDown,
     onSelectionChangeColumn,
     onSelectionChangeOperator,
     operator,
@@ -64,6 +64,7 @@ export const FilterClauseEditor = ({
             InputProps={InputProps}
             className={cx(`${classBase}Field`, `${classBase}Value`)}
             column={selectedColumn}
+            data-field="value"
             filterClause={filterClause}
             onInputComplete={onChangeValue}
             operator={operator}
@@ -112,6 +113,7 @@ export const FilterClauseEditor = ({
         title="column"
         InputProps={InputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}
+        data-field="column"
         initialHighlightedIndex={0}
         itemToString={(column) => column.name}
         ref={columnRef}
@@ -126,6 +128,7 @@ export const FilterClauseEditor = ({
           className={cx(`${classBase}Field`, `${classBase}Operator`, {
             [`${classBase}Operator-hidden`]: selectedColumn === null,
           })}
+          data-field="operator"
           initialHighlightedIndex={0}
           ref={operatorRef}
           source={getOperators(selectedColumn)}
@@ -136,8 +139,9 @@ export const FilterClauseEditor = ({
       {getInputElement()}
       {value !== undefined ? (
         <Button
-          className={`${classBase}-closeButton`}
-          onClick={onClose}
+          className={`${classBase}-clearButton`}
+          onClick={onClear}
+          onKeyDown={onClearKeyDown}
           data-icon="close"
         />
       ) : null}

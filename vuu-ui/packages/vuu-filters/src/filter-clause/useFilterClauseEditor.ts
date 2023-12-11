@@ -9,6 +9,7 @@ import { getColumnByName, TableSchema } from "@finos/vuu-data";
 
 import {
   KeyboardEvent,
+  KeyboardEventHandler,
   useCallback,
   useEffect,
   useMemo,
@@ -36,7 +37,7 @@ const getFocusedField = () =>
 const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
   const activeField = getFocusedField();
   const filterClause = activeField?.closest(".vuuFilterClause");
-  if (filterClause?.lastChild === activeField) {
+  if (direction === "fwd" && filterClause?.lastChild === activeField) {
     requestAnimationFrame(() => {
       focusNextFocusableElement();
     });
@@ -56,7 +57,7 @@ const focusNextElement = () => {
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
       const clearButton = filterClause.querySelector(
-        ".vuuFilterClause-closeButton"
+        ".vuuFilterClause-clearButton"
       ) as HTMLButtonElement;
       clearButton?.focus();
     } else {
@@ -178,6 +179,26 @@ export const useFilterClauseEditor = ({
     [setOperator]
   );
 
+  const removeAndNavigateToNextInputIfAtBoundary = useCallback(
+    (evt) => {
+      const input = evt.target as HTMLInputElement;
+      if (input.value === "") {
+        const field = input.closest(
+          ".vuuFilterClauseField,[data-field]"
+        ) as HTMLElement;
+        if (field?.dataset?.field === "operator") {
+          setOperator(undefined);
+          setSelectedColumn(undefined);
+          focusNextFocusableElement("bwd");
+        } else if (field?.dataset?.field === "value") {
+          setOperator(undefined);
+          focusNextFocusableElement("bwd");
+        }
+      }
+    },
+    [setOperator]
+  );
+
   const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
     (evt, selected) => {
       const op = selected;
@@ -223,6 +244,8 @@ export const useFilterClauseEditor = ({
     (evt: KeyboardEvent<HTMLInputElement>) => {
       if (["ArrowLeft", "ArrowRight"].includes(evt.key)) {
         navigateToNextInputIfAtBoundary(evt);
+      } else if (evt.key === "Backspace") {
+        removeAndNavigateToNextInputIfAtBoundary(evt);
       } else if (
         operator &&
         evt.key === "Enter" &&
@@ -231,8 +254,31 @@ export const useFilterClauseEditor = ({
         console.log("enter");
       }
     },
-    [operator]
+    [operator, removeAndNavigateToNextInputIfAtBoundary]
   );
+
+  const handleClear = useCallback(
+    (e) => {
+      const button = e.target as HTMLButtonElement;
+      const firstInput = button
+        .closest(".vuuFilterClause")
+        ?.querySelector("input") as HTMLInputElement;
+
+      setSelectedColumn(undefined);
+      setOperator(undefined);
+      setValue(undefined);
+
+      setTimeout(() => {
+        firstInput.select();
+        firstInput?.focus();
+      }, 100);
+    },
+    [setOperator]
+  );
+
+  const handleClearKeyDown = useCallback<KeyboardEventHandler>((e) => {
+    e.stopPropagation();
+  }, []);
 
   const InputProps = useMemo(
     () => ({
@@ -252,6 +298,8 @@ export const useFilterClauseEditor = ({
     InputProps,
     columnRef,
     onChangeValue: handleChangeValue,
+    onClear: handleClear,
+    onClearKeyDown: handleClearKeyDown,
     onSelectionChangeColumn: handleSelectionChangeColumn,
     onSelectionChangeOperator: handleSelectionChangeOperator,
     operator,

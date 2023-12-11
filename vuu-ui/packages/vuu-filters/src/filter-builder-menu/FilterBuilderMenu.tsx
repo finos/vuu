@@ -2,7 +2,7 @@ import { ContextMenuProps } from "@finos/vuu-popups";
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import { ReactElement, useCallback, useRef } from "react";
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
-import { List, ListItem } from "@finos/vuu-ui-controls";
+import { List, ListItem, ListProps } from "@finos/vuu-ui-controls";
 
 import "./FilterBuilderMenu.css";
 
@@ -10,10 +10,14 @@ const classBase = "vuuFilterBuilderMenu";
 
 export interface FilterBuilderMenuProps
   extends Omit<ContextMenuProps, "children"> {
+  ListProps?: Pick<ListProps, "onKeyDownCapture">;
   onMenuAction: MenuActionHandler;
 }
 
-export const FilterBuilderMenu = ({ onMenuAction }: FilterBuilderMenuProps) => {
+export const FilterBuilderMenu = ({
+  ListProps,
+  onMenuAction,
+}: FilterBuilderMenuProps) => {
   const ref = useRef<HTMLSpanElement>(null);
   const listRef = useCallback((el: HTMLDivElement | null) => {
     if (el) {
@@ -39,6 +43,7 @@ export const FilterBuilderMenu = ({ onMenuAction }: FilterBuilderMenuProps) => {
       <Portal>
         <Popup anchorElement={ref} placement="right">
           <List
+            {...ListProps}
             className={`${classBase}List`}
             defaultHighlightedIndex={1}
             itemHeight={22}

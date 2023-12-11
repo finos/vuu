@@ -38,6 +38,7 @@ export interface ComboBoxProps<
   initialHighlightedIndex?: number;
   itemsToString?: (items: Item[]) => string;
   onSetSelectedText?: (text: string) => void;
+  disableFilter?: boolean;
   value?: string;
 }
 
@@ -59,6 +60,7 @@ export const ComboBox = forwardRef(function Combobox<
     defaultSelected,
     defaultValue,
     disabled,
+    disableFilter,
     onBlur,
     onFocus,
     onChange,
@@ -108,6 +110,7 @@ export const ComboBox = forwardRef(function Combobox<
     source,
     children,
     options: {
+      disableFilter,
       filterPattern: initialValue,
       getFilterRegex,
       itemToString,
