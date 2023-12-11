@@ -42,7 +42,6 @@
     {"path" : "packages/vuu-data-ag-grid"},
     {"path" : "packages/vuu-data-react"},
     {"path" : "packages/vuu-data-types"},
-    {"path" : "packages/vuu-datagrid"},
     {"path" : "packages/vuu-datatable"},
     {"path" : "packages/vuu-filter-parser"},
     {"path" : "packages/vuu-filter-types"},
@@ -52,6 +51,7 @@
     {"path" : "packages/vuu-protocol-types"},
     {"path" : "packages/vuu-shell"},
     {"path" : "packages/vuu-table"},
+    {"path" : "packages/vuu-table-types"},
     {"path" : "packages/vuu-table-extras"},
     {"path" : "packages/vuu-ui-controls"},
     {"path" : "packages/vuu-utils"}
