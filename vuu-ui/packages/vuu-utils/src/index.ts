@@ -6,7 +6,7 @@ export * from "./component-registry";
 export * from "./DataWindow";
 export * from "./common-types";
 export * from "./data-utils";
-export * from "./date-utils";
+export * from "./date";
 export * from "./debug-utils";
 export * from "./filter-utils";
 export * from "./html-utils";

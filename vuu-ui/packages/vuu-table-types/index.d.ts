@@ -9,7 +9,6 @@ import type {
 import { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ValueFormatter } from "@finos/vuu-table";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
-import type { ColumnMap } from "@finos/vuu-utils";
 import type { FunctionComponent, MouseEvent } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
@@ -133,13 +132,13 @@ export interface ValueListRenderer {
   values: string[];
 }
 
+export declare type DateTimeColumnTypeSimple = "date" | "time";
 export declare type ColumnTypeSimple =
   | "string"
   | "number"
   | "boolean"
   | "json"
-  | "date"
-  | "time"
+  | DateTimeColumnTypeSimple
   | "checkbox";
 
 export declare type ColumnTypeDescriptor = {

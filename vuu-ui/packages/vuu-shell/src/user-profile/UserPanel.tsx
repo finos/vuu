@@ -55,7 +55,7 @@ export const UserPanel = forwardRef(function UserPanel(
         .map<HistoryEntry>(({ id, lastUpdate }) => ({
           lastUpdate,
           id,
-          label: `Saved at ${formatDate(new Date(lastUpdate), "kk:mm:ss")}`,
+          label: `Saved at ${formatDate("hh:mm:ss")(new Date(lastUpdate))}`,
         }));
       console.log({ sortedHistory });
       setHistory(sortedHistory);

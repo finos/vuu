@@ -8,8 +8,10 @@ import {
   isDateTimeColumn,
   isTypeDescriptor,
   isMappedValueTypeRenderer,
+  DateTimeColumnDescriptor,
 } from "./column-utils";
-import { DateTimePattern, formatDate, isDateTimePattern } from "./date-utils";
+import { formatDate } from "./date";
+import { dateTimePattern } from "./date/helpers";
 
 export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {
@@ -21,17 +23,13 @@ const DEFAULT_NUMERIC_FORMAT: ColumnTypeFormatting = {};
 export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
-export const dateFormatter = (column: ColumnDescriptor) => {
-  const { type } = column;
-  let pattern: DateTimePattern = "dd.mm.yyyy";
-  if (isTypeDescriptor(type) && type.formatting) {
-    if (isDateTimePattern(type.formatting.pattern)) {
-      pattern = type.formatting.pattern;
-    }
-  }
+const dateFormatter = (column: DateTimeColumnDescriptor) => {
+  const pattern = dateTimePattern(column.type);
+  const formatter = formatDate(pattern);
+
   return (value: unknown) => {
     if (typeof value === "number" && value !== 0) {
-      return formatDate(new Date(value), pattern);
+      return formatter(new Date(value));
     } else {
       return "";
     }
