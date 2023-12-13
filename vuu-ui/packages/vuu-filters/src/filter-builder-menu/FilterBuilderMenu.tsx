@@ -45,15 +45,15 @@ export const FilterBuilderMenu = ({
           <List
             {...ListProps}
             className={`${classBase}List`}
-            defaultHighlightedIndex={1}
+            defaultHighlightedIndex={0}
             itemHeight={22}
             ref={listRef}
             onSelect={handleSelect}
             style={{ position: "relative" }}
             width={100}
           >
-            <ListItem data-action="apply-save" className="vuuMenuButton">
-              APPLY AND SAVE
+            <ListItem data-action="apply-save">
+              <span className="vuuMenuButton">APPLY AND SAVE</span>
             </ListItem>
             <ListItem data-action="and-clause">AND</ListItem>
             <ListItem data-action="or-clause">OR</ListItem>

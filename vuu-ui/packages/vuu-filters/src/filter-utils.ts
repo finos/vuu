@@ -5,6 +5,7 @@ import {
   FilterClause,
   FilterCombinatorOp,
   FilterWithPartialClause,
+  MultiClauseFilter,
   NumericFilterClauseOp,
 } from "@finos/vuu-filter-types";
 import {
@@ -63,6 +64,19 @@ const DEFAULT_ADD_FILTER_OPTS: AddFilterOptions = {
   combineWith: "and",
 };
 
+export const removeLastClause = (filter: MultiClauseFilter) => {
+  const { filters } = filter;
+  if (filters.length > 2) {
+    return {
+      ...filter,
+      filters: filter.filters.slice(0, -1),
+    };
+  } else {
+    // must be 2, we never have 1
+    return filter.filters[0];
+  }
+};
+
 /**
   Allows an empty FilterClause to be appended to an existing filter - for use
   in filter editing UI only.
@@ -76,16 +90,18 @@ export const addClause = (
     isMultiClauseFilter(existingFilter) &&
     existingFilter.op === combineWith
   ) {
-    if (isCompleteFilter(clause)) {
-      return {
-        ...existingFilter,
-        filters: existingFilter.filters.concat(clause),
-      };
-    } else {
-      throw Error(
-        "filter-utils, replaceFilter, only a valid clause can be added to a filter"
-      );
-    }
+    // if (isCompleteFilter(clause)) {
+    return {
+      ...existingFilter,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      filters: existingFilter.filters.concat(clause),
+    };
+    // } else {
+    //   throw Error(
+    //     "filter-utils, replaceFilter, only a valid clause can be added to a filter"
+    //   );
+    // }
   } else {
     return {
       op: combineWith,

@@ -41,6 +41,7 @@ export const TextInput = forwardRef(function TextInput(
     className,
     column,
     "data-field": dataField,
+    onOpenChange,
     onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
@@ -132,6 +133,7 @@ export const TextInput = forwardRef(function TextInput(
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
+            onOpenChange={onOpenChange}
             onSelectionChange={handleMultiValueSelectionChange}
             ref={forwardedRef}
             selectionStrategy="multiple"
@@ -155,6 +157,7 @@ export const TextInput = forwardRef(function TextInput(
             }
             source={typeaheadValues}
             onInputChange={handleInputChange}
+            onOpenChange={onOpenChange}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
@@ -179,12 +182,14 @@ export const TextInput = forwardRef(function TextInput(
         return (
           <ExpandoCombobox<string>
             InputProps={InputProps}
+            allowBackspaceClearsSelection
             className={className}
             data-field={dataField}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             title="value"
             onInputChange={handleInputChange}
+            onOpenChange={onOpenChange}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}

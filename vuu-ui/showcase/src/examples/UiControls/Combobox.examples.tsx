@@ -28,6 +28,25 @@ export const DefaultCombobox = () => {
 
 DefaultCombobox.displaySequence = displaySequence++;
 
+export const AllowBackspaceClearsSelection = () => {
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
+  return (
+    <ComboBox
+      allowBackspaceClearsSelection
+      source={usa_states}
+      onSelectionChange={handleSelectionChange}
+      width={120}
+    />
+  );
+};
+
+AllowBackspaceClearsSelection.displaySequence = displaySequence++;
+
 export const OpenOnFocus = () => {
   const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, selected) => {

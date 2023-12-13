@@ -3,6 +3,7 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   ChangeEvent,
   FocusEvent,
+  KeyboardEventHandler,
   MouseEvent,
   RefObject,
   SyntheticEvent,
@@ -27,6 +28,7 @@ import {
   OpenChangeHandler,
 } from "../dropdown";
 import { ListHookProps, ListHookResult, useList } from "../list";
+import { ComboBoxProps } from "./ComboBox";
 
 const EnterOnly = ["Enter"];
 export interface ComboboxHookProps<
@@ -34,23 +36,27 @@ export interface ComboboxHookProps<
   S extends SelectionStrategy = "default"
 > extends Partial<Omit<DropdownHookProps, "id" | "onKeyDown">>,
     Pick<InputProps, "onBlur" | "onChange" | "onFocus" | "onSelect">,
+    Pick<
+      ComboBoxProps<Item>,
+      | "allowBackspaceClearsSelection"
+      | "allowFreeText"
+      | "defaultValue"
+      | "initialHighlightedIndex"
+      | "itemsToString"
+      | "onSetSelectedText"
+      | "value"
+    >,
     Omit<ComponentSelectionProps<Item, S>, "onSelect">,
     Omit<
       ListHookProps<Item, S>,
       "containerRef" | "defaultSelected" | "onSelect" | "selected"
     > {
   InputProps?: InputProps;
-  allowFreeText?: boolean;
   ariaLabel?: string;
-  defaultValue?: string;
   id: string;
-  initialHighlightedIndex?: number;
   itemCount: number;
-  itemsToString?: (items: Item[]) => string;
   itemToString?: (item: Item) => string;
   listRef: RefObject<HTMLDivElement>;
-  onSetSelectedText?: (text: string) => void;
-  value?: string;
 }
 
 export interface ComboboxHookResult<Item, S extends SelectionStrategy>
@@ -65,6 +71,7 @@ export interface ComboboxHookResult<Item, S extends SelectionStrategy>
 }
 
 export const useCombobox = <Item, S extends SelectionStrategy>({
+  allowBackspaceClearsSelection,
   allowFreeText,
   ariaLabel,
   collectionHook,
@@ -234,7 +241,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
         setTextValue("", false);
       }
       setIsOpen(open);
-      onOpenChange?.(open);
+      onOpenChange?.(open, closeReason);
       if (!open && closeReason !== "Escape") {
         if (!selectFreeTextInputValue()) {
           applySelection();
@@ -280,8 +287,8 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     disableAriaActiveDescendant,
     disableHighlightOnFocus: true,
     disableTypeToSelect: true,
+    label: "combobox",
     onKeyboardNavigation: handleKeyboardNavigation,
-    // onKeyDown: handleInputKeyDown,
     onSelectionChange: handleSelectionChange,
     selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionKeys: EnterOnly,
@@ -315,6 +322,15 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       setIsOpen(true);
     },
     [setFilterPattern, setIsOpen, setValue]
+  );
+
+  const handleInputKeyDown = useCallback<KeyboardEventHandler>(
+    (e) => {
+      if (e.key === "Backspace" && allowBackspaceClearsSelection) {
+        selectedRef.current = null;
+      }
+    },
+    [allowBackspaceClearsSelection]
   );
 
   const { onFocus: inputOnFocus = onFocus } = inputProps;
@@ -398,6 +414,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     // "aria-owns": listId,
     "aria-label": ariaLabel,
     autoComplete: "off",
+    onKeyDown: handleInputKeyDown,
   };
 
   return {

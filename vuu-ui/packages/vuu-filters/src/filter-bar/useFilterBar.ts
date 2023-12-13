@@ -4,14 +4,19 @@ import {
   FilterClause,
   FilterWithPartialClause,
 } from "@finos/vuu-filter-types";
-import { PromptProps } from "@finos/vuu-popups";
-import { dispatchMouseEvent, filterAsQuery } from "@finos/vuu-utils";
-import { EditableLabelProps } from "@salt-ds/lab";
 import {
   ActiveItemChangeHandler,
   NavigationOutOfBoundsHandler,
 } from "@finos/vuu-layout";
+import { PromptProps } from "@finos/vuu-popups";
 import {
+  dispatchMouseEvent,
+  filterAsQuery,
+  isMultiClauseFilter,
+} from "@finos/vuu-utils";
+import { EditableLabelProps } from "@salt-ds/lab";
+import {
+  FocusEventHandler,
   KeyboardEvent,
   KeyboardEventHandler,
   RefObject,
@@ -21,9 +26,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { FilterClauseCancelHandler } from "../filter-clause/useFilterClauseEditor";
 import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
-import { addClause, replaceClause } from "../filter-utils";
+import { addClause, removeLastClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
 import { useFilters } from "./useFilters";
 
@@ -55,11 +61,16 @@ export const useFilterBar = ({
   const editingFilter = useRef<Filter | undefined>();
   const [activeFilterIndex, setActiveFilterIndex] =
     useState<number[]>(activeFilterIdexProp);
-  const [showMenu, setShowMenu] = useState(showMenuProp);
+  const [showMenu, _setShowMenu] = useState(showMenuProp);
   const [editFilter, setEditFilter] = useState<
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
+
+  const setShowMenu = useCallback((show) => {
+    console.trace(`set show menu ${show}`);
+    _setShowMenu(show);
+  }, []);
 
   const {
     filters,
@@ -336,6 +347,37 @@ export const useFilterBar = ({
     }
   };
 
+  const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
+    (reason) => {
+      if (reason === "Backspace" && isMultiClauseFilter(editFilter)) {
+        setEditFilter(removeLastClause(editFilter));
+      }
+    },
+    [editFilter]
+  );
+
+  const handleBlurFilterClause = useCallback<FocusEventHandler>((e) => {
+    const target = e.target as HTMLElement;
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    const filterClause = target.closest(".vuuFilterClause");
+    if (filterClause?.contains(relatedTarget)) {
+      // do nothing
+    } else {
+      const dropdownId = target.getAttribute("aria-owns");
+      const dropDown = dropdownId ? document.getElementById(dropdownId) : null;
+      if (dropDown?.contains(relatedTarget)) {
+        // do nothing
+      } else {
+        // if clause is complete
+        setShowMenu(true);
+      }
+    }
+  }, []);
+
+  const handleFocusFilterClause = useCallback(() => {
+    setShowMenu(false);
+  }, []);
+
   const handleKeyDownFilterbar = useCallback(
     (evt: KeyboardEvent) => {
       if (evt.key === "Escape" && editFilter !== undefined) {
@@ -352,16 +394,30 @@ export const useFilterBar = ({
   const handleKeyDownMenu = useCallback<KeyboardEventHandler>(
     (evt) => {
       console.log(`keydown from List ${evt.key}`);
-      if (evt.key === "Backspace") {
-        const clearButton = containerRef.current?.querySelector(
-          ".vuuFilterClause-clearButton"
-        ) as HTMLButtonElement;
-        if (clearButton) {
-          setTimeout(() => {
-            clearButton.focus();
-          }, 100);
+      const { current: container } = containerRef;
+      if (evt.key === "Backspace" && container) {
+        const fields = Array.from(
+          container.querySelectorAll(".vuuFilterClauseField")
+        );
+        if (fields.length > 0) {
+          const field = fields.at(-1) as HTMLElement;
+          field?.querySelector("input")?.focus();
         }
         setShowMenu(false);
+      } else if (evt.key === "Tab") {
+        if (evt.shiftKey && container) {
+          const clearButtons = Array.from(
+            container.querySelectorAll(".vuuFilterClause-clearButton")
+          ) as HTMLButtonElement[];
+          if (clearButtons.length > 0) {
+            const clearButton = clearButtons.at(-1) as HTMLButtonElement;
+            setTimeout(() => {
+              clearButton.focus();
+            }, 100);
+          }
+        } else {
+          console.log("apply current selection");
+        }
       }
     },
     [containerRef]
@@ -390,10 +446,13 @@ export const useFilterBar = ({
     addButtonProps,
     editFilter,
     filters,
+    onBlurFilterClause: handleBlurFilterClause,
+    onCancelFilterClause: handleCancelFilterClause,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     onClickAddFilter: handleClickAddFilter,
     onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,
+    onFocusFilterClause: handleFocusFilterClause,
     onKeyDownFilterbar: handleKeyDownFilterbar,
     onKeyDownMenu: handleKeyDownMenu,
     onMenuAction: handleMenuAction,

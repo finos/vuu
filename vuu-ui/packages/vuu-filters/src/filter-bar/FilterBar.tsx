@@ -45,10 +45,13 @@ export const FilterBar = ({
     addButtonProps,
     editFilter,
     filters,
+    onBlurFilterClause,
+    onCancelFilterClause,
     onClickAddFilter,
     onClickRemoveFilter,
     onChangeFilterClause,
     onChangeActiveFilterIndex,
+    onFocusFilterClause,
     onNavigateOutOfBounds,
     onKeyDownFilterbar,
     onKeyDownMenu,
@@ -90,7 +93,10 @@ export const FilterBar = ({
             {...FilterClauseEditorProps}
             filterClause={filterClause}
             key={`editor-${i}`}
+            onCancel={onCancelFilterClause}
             onChange={onChangeFilterClause}
+            onBlur={onBlurFilterClause}
+            onFocus={onFocusFilterClause}
             tableSchema={tableSchema}
           />
         );

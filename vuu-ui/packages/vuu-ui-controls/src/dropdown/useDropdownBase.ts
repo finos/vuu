@@ -55,7 +55,6 @@ export const useDropdownBase = ({
 
   const hideDropdown = useCallback(
     (reason: CloseReason) => {
-      console.log(`hideDropdown ${reason}`);
       setIsOpen(false);
       onOpenChange?.(false, reason);
     },

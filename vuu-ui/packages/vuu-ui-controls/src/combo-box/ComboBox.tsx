@@ -32,6 +32,7 @@ export interface ComboBoxProps<
     Pick<ListProps<Item, S>, "ListItem" | "itemToString" | "source" | "width"> {
   InputProps?: InputProps;
   ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
+  allowBackspaceClearsSelection?: boolean;
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
@@ -54,6 +55,7 @@ export const ComboBox = forwardRef(function Combobox<
     PopupProps,
     ListItem,
     "aria-label": ariaLabel,
+    allowBackspaceClearsSelection,
     allowFreeText,
     children,
     defaultIsOpen,
@@ -128,6 +130,7 @@ export const ComboBox = forwardRef(function Combobox<
     selected,
   } = useCombobox<Item, S>({
     InputProps,
+    allowBackspaceClearsSelection,
     allowFreeText,
     ariaLabel,
     collectionHook,
@@ -198,7 +201,6 @@ export const ComboBox = forwardRef(function Combobox<
           focusVisible={focusVisible}
           highlightedIndex={highlightedIndex}
           itemTextHighlightPattern={String(inputProps.value) || undefined}
-          id={`${id}-list`}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           ref={listRef}

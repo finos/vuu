@@ -73,7 +73,7 @@ export const useList = <Item, S extends SelectionStrategy>({
   };
 
   // console.log(
-  //   `useList
+  //   `useList ${label}
   //   defaultSelected ${JSON.stringify(defaultSelected)}
   //   selectedProp ${JSON.stringify(selected)} `
   // );

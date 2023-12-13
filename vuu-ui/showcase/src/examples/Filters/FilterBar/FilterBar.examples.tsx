@@ -1,4 +1,4 @@
-import { FilterBar } from "@finos/vuu-filters";
+import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
 import { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DataSourceFilter } from "@finos/vuu-data-types";
@@ -10,9 +10,8 @@ let displaySequence = 1;
 
 export const DefaultFilterBar = ({
   filters: filtersProp = [],
-}: {
-  filters?: Filter[];
-}) => {
+  onFiltersChanged,
+}: Partial<FilterBarProps>) => {
   const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -24,6 +23,7 @@ export const DefaultFilterBar = ({
   }, []);
 
   const handleFiltersChanged = useCallback((filters: Filter[]) => {
+    onFiltersChanged?.(filters);
     console.log("filters changed");
     setFilters(filters);
   }, []);
@@ -46,6 +46,7 @@ export const DefaultFilterBar = ({
         FilterClauseEditorProps={{
           suggestionProvider: typeaheadHook,
         }}
+        data-testid="filterbar"
         filters={filters}
         onApplyFilter={handleApplyFilter}
         onChangeActiveFilterIndex={handleChangeActiveFilterIndex}

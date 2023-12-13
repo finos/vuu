@@ -230,6 +230,7 @@ export const useKeyboardNavigation = ({
         ) {
           return idx;
         }
+        // TODO this is causing an infinite loop in some scenarios
         while (
           (((key === ArrowDown || isHome) && nextIdx < itemCount) ||
             ((key === ArrowUp || isEnd) && nextIdx > 0)) &&
