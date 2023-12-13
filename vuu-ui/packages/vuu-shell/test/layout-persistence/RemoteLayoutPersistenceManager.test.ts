@@ -9,17 +9,28 @@ import { LayoutJSON } from "@finos/vuu-layout";
 import { v4 as uuidv4 } from "uuid";
 import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 
-const persistence = new RemotePersistenceManager();
 const mockFetch = vi.fn();
 
 global.fetch = mockFetch;
+
+const username = "vuu user";
+
+vi.mock("@finos/vuu-shell", async () => {
+  return {
+    getAuthDetailsFromCookies: (): [string, string] => {
+      return [username, "token"];
+        },
+  };
+});
+
+const persistence = new RemotePersistenceManager();
 
 const metadata: LayoutMetadata = {
   id: "0001",
   name: "layout 1",
   group: "group 1",
   screenshot: "screenshot",
-  user: "username",
+  user: username,
   created: "01.01.2000",
 };
 
@@ -27,7 +38,7 @@ const metadataToAdd: LayoutMetadataDto = {
   name: "layout 1",
   group: "group 1",
   screenshot: "screenshot",
-  user: "username",
+  user: username,
 };
 
 const layout: LayoutJSON = {
@@ -44,7 +55,7 @@ type FetchResponse<T> = {
   statusText?: string;
 };
 
-describe("RemoteLayoutPersistenceManager", () => {
+describe("RemotePersistenceManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -186,7 +186,7 @@ export class LocalPersistenceManager implements PersistenceManager {
   ) => {
     return new Promise((resolve, reject) => {
       const loadFunc =
-        dataType === "metadata" ? this.loadMetadata : this.loadLayouts;
+        dataType === "metadata" ? () => this.loadMetadata() : () => this.loadLayouts();
 
       loadFunc().then((array: WithId[]) => {
         const count = array.filter((element) => element.id === id).length;
