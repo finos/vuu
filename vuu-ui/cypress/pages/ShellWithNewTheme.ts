@@ -2,11 +2,11 @@ import { formatDate } from "@finos/vuu-utils";
 import { SHELL_WITH_NEW_THEME_URL } from "../support/e2e/constants";
 
 export class ShellWithNewTheme {
-  visit() {
+  visit: () => void = () => {
     cy.visit(SHELL_WITH_NEW_THEME_URL);
   }
 
-  getContextMenuButton() {
+  getContextMenuButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy
       .findByRole("tablist", { name: "data tabs" })
       .findAllByRole("tab")
@@ -14,15 +14,25 @@ export class ShellWithNewTheme {
       .findByRole("button", { name: "context menu" });
   }
 
-  getSaveLayoutButton() {
+  getSaveLayoutButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("menuitem", { name: "Save Layout" });
   }
 
-  getMyLayoutsButton() {
+  getMyLayoutsButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("tab", { name: "MY LAYOUTS" });
   }
 
-  getLayoutTile(layoutName: string, group: string, creator: string, date: Date) {
+  getLayoutTile: (
+    layoutName: string,
+    group: string,
+    creator: string,
+    date: Date
+  ) => Cypress.Chainable<JQuery<HTMLElement>> = (
+    layoutName: string,
+    group: string,
+    creator: string,
+    date: Date
+  ) => {
     const layoutTileName = `${layoutName} ${creator}, ${formatDate(date)}`;
 
     return cy

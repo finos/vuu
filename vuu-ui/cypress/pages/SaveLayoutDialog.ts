@@ -1,21 +1,21 @@
 export class SaveLayoutDialog {
-  getScreenshot() {
+  getScreenshot: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByAltText("screenshot of current layout");
   }
 
-  getGroupField() {
-    return cy.findAllByRole("combobox", { name: "Group" });
+  getGroupField: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
+    return cy.findByRole("combobox", { name: "Group" });
   }
 
-  getNameField() {
+  getNameField: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("textbox", { name: "Layout Name" });
   }
 
-  getSaveButton() {
+  getSaveButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("dialog").findByRole("button", { name: "Save" });
   }
 
-  getCancelButton() {
+  getCancelButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("dialog").findByRole("button", { name: "Cancel" });
   }
 }
