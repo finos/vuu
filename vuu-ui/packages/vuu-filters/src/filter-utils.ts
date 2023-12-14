@@ -11,7 +11,6 @@ import {
 import {
   extractFilterForColumn,
   isAndFilter,
-  isCompleteFilter,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,

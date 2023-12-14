@@ -91,9 +91,27 @@ export const FilterBarMultipleFilters = () => {
       filters={[
         { column: "currency", name: "Filter One", op: "=", value: "EUR" },
         { column: "exchange", name: "Filter Two", op: "=", value: "XLON" },
-        { column: "ric", name: "Filter Three", op: "=", value: "AAPL" },
-        { column: "ric", name: "Filter Four", op: "=", value: "AAPL" },
-        { column: "ric", name: "Filter Five", op: "=", value: "AAPL" },
+        {
+          column: "ric",
+          name: "Filter Three",
+          op: "in",
+          values: ["AAPL", "BP.L", "VOD.L"],
+        },
+        {
+          column: "ric",
+          name: "Filter Four",
+          op: "in",
+          values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
+        },
+        {
+          op: "and",
+          name: "Filter Five",
+          filters: [
+            { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
+            { column: "exchange", op: "=", value: "NASDAQ" },
+            { column: "price", op: ">", value: 1000 },
+          ],
+        },
       ]}
     />
   );

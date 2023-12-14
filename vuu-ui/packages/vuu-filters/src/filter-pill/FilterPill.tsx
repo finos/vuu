@@ -1,12 +1,14 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
+import { useId } from "@finos/vuu-layout";
+import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups/src";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
 import { filterAsQuery, isMultiClauseFilter } from "@finos/vuu-utils";
 import cx from "classnames";
-import { PopupCloseCallback } from "@finos/vuu-popups/src";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
 import { filterClauses } from "../filter-utils";
+import { filterAsReactNode } from "./filterAsReactNode";
 
 import "./FilterPill.css";
 
@@ -35,9 +37,10 @@ export interface FilterPillProps
 }
 
 export const FilterPill = ({
+  className: classNameProp,
   editable = true,
   filter,
-  className: classNameProp,
+  id: idProp,
   onBeginEdit,
   onExitEditMode,
   onMenuAction,
@@ -51,6 +54,7 @@ export const FilterPill = ({
     }, [filter, onBeginEdit]);
 
   const label = getFilterLabel(filter);
+  const id = useId(idProp);
 
   const handleMenuClose = useCallback<PopupCloseCallback>((reason) => {
     if (reason?.type === "escape") {
@@ -62,8 +66,25 @@ export const FilterPill = ({
     }
   }, []);
 
+  // Experiment, to be revisited
+  // const tooltipBackground = useRef<string | undefined>();
+  // useLayoutEffect(() => {
+  //   if (rootRef.current) {
+  //     tooltipBackground.current = getComputedStyle(
+  //       rootRef.current
+  //     ).getPropertyValue("--vuuTooltip-background");
+  //   }
+  // }, []);
+
+  const { anchorProps, tooltipProps } = useTooltip({
+    id,
+    placement: "below",
+    tooltipContent: filterAsReactNode(filter),
+  });
+
   return (
     <div
+      {...anchorProps}
       {...htmlAttributes}
       className={cx(classBase, classNameProp)}
       data-text={label}
@@ -84,6 +105,16 @@ export const FilterPill = ({
           filter={filter}
           onMenuAction={onMenuAction}
           onMenuClose={handleMenuClose}
+        />
+      ) : null}
+      {tooltipProps ? (
+        <Tooltip
+          {...tooltipProps}
+          // style={
+          //   {
+          //     "--vuuTooltip-background": tooltipBackground.current,
+          //   } as CSSProperties
+          // }
         />
       ) : null}
     </div>
