@@ -49,7 +49,7 @@
     font-size: 12px;
     font-style: normal;
     font-weight: 700;
-    line-height: 24px; /* 200% */
+    line-height: 200%;
     letter-spacing: 0.48px;
     text-transform: uppercase;
 }
