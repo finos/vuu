@@ -50,8 +50,14 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
           return (
             <div role="list" aria-label={groupName}>
               <div className={`${classBase}-groupName`}>{groupName}</div>
-              {layoutMetadata.map((metadata) =>
-                LayoutTile(metadata, handleLoadLayout)
+              {layoutMetadata.map(
+                (metadata) => (
+                  <LayoutTile
+                    key={metadata.id}
+                    metadata={metadata}
+                    handleLoadLayout={handleLoadLayout}
+                  />
+                )
               )}
             </div>
           );
@@ -61,10 +67,14 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
   );
 };
 
-const LayoutTile = (
-  metadata: LayoutMetadata,
-  handleLoadLayout: (layoutId?: string) => void
-): JSX.Element => {
+type LayoutTileProps = {
+  metadata: LayoutMetadata;
+  handleLoadLayout: (layoutId?: string) => void;
+};
+
+const LayoutTile = (props: LayoutTileProps) => {
+  const { metadata, handleLoadLayout } = props;
+
   return (
     <div role="listitem">
       <div
