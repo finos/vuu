@@ -2,6 +2,7 @@ import { HTMLAttributes } from "react";
 import { List } from "@finos/vuu-ui-controls";
 import { LayoutMetadata } from "./layoutTypes";
 import { useLayoutManager } from "./useLayoutManager";
+import { LayoutTile } from "./LayoutTile";
 
 import "./LayoutList.css";
 
@@ -50,47 +51,17 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
           return (
             <div role="list" aria-label={groupName}>
               <div className={`${classBase}-groupName`}>{groupName}</div>
-              {layoutMetadata.map(
-                (metadata) => (
-                  <LayoutTile
-                    key={metadata.id}
-                    metadata={metadata}
-                    handleLoadLayout={handleLoadLayout}
-                  />
-                )
-              )}
+              {layoutMetadata.map((metadata) => (
+                <LayoutTile
+                  key={metadata.id}
+                  metadata={metadata}
+                  handleLoadLayout={handleLoadLayout}
+                />
+              ))}
             </div>
           );
         }}
       />
-    </div>
-  );
-};
-
-type LayoutTileProps = {
-  metadata: LayoutMetadata;
-  handleLoadLayout: (layoutId?: string) => void;
-};
-
-const LayoutTile = (props: LayoutTileProps) => {
-  const { metadata, handleLoadLayout } = props;
-
-  return (
-    <div role="listitem">
-      <div
-        className={`${classBase}-layoutContainer`}
-        key={metadata?.id}
-        role="button"
-        onClick={() => handleLoadLayout(metadata?.id)}
-      >
-        <img className={`${classBase}-screenshot`} src={metadata?.screenshot} />
-        <div>
-          <div className={`${classBase}-layoutName`}>{metadata?.name}</div>
-          <div className={`${classBase}-layoutDetails`}>
-            <div>{`${metadata?.user}, ${metadata?.created}`}</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
