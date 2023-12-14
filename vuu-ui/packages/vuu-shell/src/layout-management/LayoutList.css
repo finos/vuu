@@ -8,10 +8,6 @@
     overflow: hidden;
     padding-right: 6px;
 
-    /* Works on Firefox */
-    scrollbar-width: thin;
-    scrollbar-color: #D9D9D9 transparent;
-
     /* compatible with Chrome, Edge, and Safari */
     ::-webkit-scrollbar {
         width: 4px;
