@@ -43,6 +43,7 @@ export interface ComboboxHookProps<
       | "defaultValue"
       | "initialHighlightedIndex"
       | "itemsToString"
+      | "onDeselect"
       | "onSetSelectedText"
       | "value"
     >,
@@ -81,6 +82,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   onBlur,
   onFocus,
   onChange,
+  onDeselect,
   onSelect,
   id,
   initialHighlightedIndex = -1,
@@ -93,6 +95,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   onSelectionChange,
   onSetSelectedText,
   selected: selectedProp,
+  selectionKeys = EnterOnly,
   selectionStrategy,
   value: valueProp,
   InputProps: inputProps = {
@@ -291,7 +294,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     onKeyboardNavigation: handleKeyboardNavigation,
     onSelectionChange: handleSelectionChange,
     selected: collectionHook.itemToCollectionItemId(selectedProp as any),
-    selectionKeys: EnterOnly,
+    selectionKeys,
     selectionStrategy,
     tabToSelect: !isMultiSelect,
   });
@@ -328,9 +331,10 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     (e) => {
       if (e.key === "Backspace" && allowBackspaceClearsSelection) {
         selectedRef.current = null;
+        onDeselect?.();
       }
     },
-    [allowBackspaceClearsSelection]
+    [allowBackspaceClearsSelection, onDeselect]
   );
 
   const { onFocus: inputOnFocus = onFocus } = inputProps;

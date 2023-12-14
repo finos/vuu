@@ -23,6 +23,8 @@ import {
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
+const selectionKeys = ["Enter", " "];
+
 export interface TextInputProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
@@ -41,7 +43,7 @@ export const TextInput = forwardRef(function TextInput(
     className,
     column,
     "data-field": dataField,
-    onOpenChange,
+    onDeselect,
     onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
@@ -133,10 +135,10 @@ export const TextInput = forwardRef(function TextInput(
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
-            onOpenChange={onOpenChange}
             onSelectionChange={handleMultiValueSelectionChange}
             ref={forwardedRef}
             selectionStrategy="multiple"
+            selectionKeys={selectionKeys}
             value={value}
           />
         );
@@ -157,7 +159,6 @@ export const TextInput = forwardRef(function TextInput(
             }
             source={typeaheadValues}
             onInputChange={handleInputChange}
-            onOpenChange={onOpenChange}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
@@ -189,7 +190,7 @@ export const TextInput = forwardRef(function TextInput(
             source={typeaheadValues}
             title="value"
             onInputChange={handleInputChange}
-            onOpenChange={onOpenChange}
+            onDeselect={onDeselect}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
@@ -207,6 +208,7 @@ export const TextInput = forwardRef(function TextInput(
     forwardedRef,
     value,
     valueInputValue,
+    onDeselect,
     handleSingleValueSelectionChange,
   ]);
 

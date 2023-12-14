@@ -73,7 +73,6 @@ const focusNextElement = () => {
   const filterClause = filterClauseField?.closest(".vuuFilterClause");
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
-      console.log("focus clear button");
       const clearButton = filterClause.querySelector(
         ".vuuFilterClause-clearButton"
       ) as HTMLButtonElement;
@@ -274,14 +273,14 @@ export const useFilterClauseEditor = ({
             value,
           });
         }
-        // This have no effect if we are inside a FilterBar
-        // requestAnimationFrame(() => {
-        //   focusNextElement();
-        // });
       }
     },
     [onChange, operator, selectedColumn?.name]
   );
+
+  const handleDeselectValue = useCallback(() => {
+    setValue(undefined);
+  }, []);
 
   const handleKeyDownInput = useCallback(
     (evt: KeyboardEvent<HTMLInputElement>) => {
@@ -294,21 +293,24 @@ export const useFilterClauseEditor = ({
         const input = evt.target as HTMLInputElement;
         const field = input.closest("[data-field]") as HTMLElement;
         if (field.dataset.field === "column") {
-          // evt.stopPropagation();
           const column = findColumn(input.value);
           if (column) {
             setSelectedColumn(column);
             focusNextElement();
           }
         } else if (field.dataset.field === "value") {
-          console.log(`Enter value ${input.value}`);
-          const newValue = input.value;
-          setValue(newValue);
-          onChange({
-            column: selectedColumn?.name,
-            op: operator,
-            value: newValue,
-          });
+          if (operator === "starts") {
+            // // don't let this bubble to the Toolbar, it would be
+            // // interpreted as selection
+            evt.stopPropagation();
+            const newValue = input.value;
+            setValue(newValue);
+            onChange({
+              column: selectedColumn?.name,
+              op: operator,
+              value: newValue,
+            });
+          }
         }
       }
     },
@@ -367,6 +369,7 @@ export const useFilterClauseEditor = ({
     onChangeValue: handleChangeValue,
     onClear: handleClear,
     onClearKeyDown: handleClearKeyDown,
+    onDeselectValue: handleDeselectValue,
     onSelectionChangeColumn: handleSelectionChangeColumn,
     onSelectionChangeOperator: handleSelectionChangeOperator,
     operator,

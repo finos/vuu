@@ -10,7 +10,9 @@ let displaySequence = 1;
 
 export const DefaultFilterBar = ({
   filters: filtersProp = [],
+  onApplyFilter,
   onFiltersChanged,
+  style,
 }: Partial<FilterBarProps>) => {
   const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
@@ -18,15 +20,23 @@ export const DefaultFilterBar = ({
   const tableSchema = getSchema("instruments");
   const { typeaheadHook } = vuuModule("SIMUL");
 
-  const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
-    setFilterStruct(filter.filterStruct ?? null);
-  }, []);
+  const handleApplyFilter = useCallback(
+    (filter: DataSourceFilter) => {
+      onApplyFilter?.(filter);
+      setFilterStruct(filter.filterStruct ?? null);
+      console.log(`handleApplyFilter ${JSON.stringify(filter)}`);
+    },
+    [onApplyFilter]
+  );
 
-  const handleFiltersChanged = useCallback((filters: Filter[]) => {
-    onFiltersChanged?.(filters);
-    console.log("filters changed");
-    setFilters(filters);
-  }, []);
+  const handleFiltersChanged = useCallback(
+    (filters: Filter[]) => {
+      onFiltersChanged?.(filters);
+      console.log(`filters changed ${JSON.stringify(filters, null, 2)}`);
+      setFilters(filters);
+    },
+    [onFiltersChanged]
+  );
 
   const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
     (index) => {
@@ -40,8 +50,12 @@ export const DefaultFilterBar = ({
   }, []);
 
   return (
-    <>
-      <Input style={{ margin: 20, width: 100 }} ref={inputRef} />
+    <div style={style}>
+      <Input
+        style={{ margin: 20, width: 100 }}
+        ref={inputRef}
+        data-testid="pre-filterbar"
+      />
       <FilterBar
         FilterClauseEditorProps={{
           suggestionProvider: typeaheadHook,
@@ -55,7 +69,7 @@ export const DefaultFilterBar = ({
       />
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
       <Input style={{ margin: 20, width: 100 }} />
-    </>
+    </div>
   );
 };
 DefaultFilterBar.displaySequence = displaySequence++;

@@ -49,6 +49,7 @@ export const FilterClauseEditor = ({
     onChangeValue,
     onClear,
     onClearKeyDown,
+    onDeselectValue,
     onSelectionChangeColumn,
     onSelectionChangeOperator,
     operator,
@@ -62,21 +63,6 @@ export const FilterClauseEditor = ({
     onChange,
     tableSchema,
   });
-
-  const handleFocus = useCallback(() => {
-    console.log("focus");
-  }, []);
-
-  const handleOpenChange = useCallback(
-    (open, closeReason) => {
-      if (open) {
-        onDropdownOpen?.();
-      } else {
-        onDropdownClose?.(closeReason);
-      }
-    },
-    [onDropdownClose, onDropdownOpen]
-  );
 
   const getInputElement = useCallback(() => {
     if (selectedColumn === null || operator === undefined) {
@@ -92,7 +78,7 @@ export const FilterClauseEditor = ({
             column={selectedColumn}
             data-field="value"
             filterClause={filterClause}
-            onOpenChange={handleOpenChange}
+            onDeselect={onDeselectValue}
             onInputComplete={onChangeValue}
             operator={operator}
             ref={valueRef}
@@ -127,7 +113,6 @@ export const FilterClauseEditor = ({
     operator,
     InputProps,
     filterClause,
-    handleOpenChange,
     onChangeValue,
     valueRef,
     suggestionProvider,
@@ -144,7 +129,6 @@ export const FilterClauseEditor = ({
         data-field="column"
         initialHighlightedIndex={0}
         itemToString={(column) => column.name}
-        onOpenChange={handleOpenChange}
         onSelectionChange={onSelectionChangeColumn}
         ref={columnRef}
         source={columns}
@@ -160,7 +144,6 @@ export const FilterClauseEditor = ({
           })}
           data-field="operator"
           initialHighlightedIndex={0}
-          onOpenChange={handleOpenChange}
           onSelectionChange={onSelectionChangeOperator}
           ref={operatorRef}
           source={getOperators(selectedColumn)}

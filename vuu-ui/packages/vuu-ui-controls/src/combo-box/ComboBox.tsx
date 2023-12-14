@@ -38,6 +38,7 @@ export interface ComboBoxProps<
   getFilterRegex?: (inputValue: string) => RegExp;
   initialHighlightedIndex?: number;
   itemsToString?: (items: Item[]) => string;
+  onDeselect?: () => void;
   onSetSelectedText?: (text: string) => void;
   disableFilter?: boolean;
   value?: string;
@@ -74,9 +75,11 @@ export const ComboBox = forwardRef(function Combobox<
     isOpen: isOpenProp,
     itemToString = defaultItemToString,
     itemsToString,
+    onDeselect,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
     selected: selectedProp,
+    selectionKeys,
     selectionStrategy,
     source,
     value: valueProp,
@@ -143,6 +146,7 @@ export const ComboBox = forwardRef(function Combobox<
     label: props.title,
     listRef,
     onBlur,
+    onDeselect,
     onFocus,
     onChange,
     onSelect,
@@ -154,6 +158,7 @@ export const ComboBox = forwardRef(function Combobox<
     onSelectionChange,
     onSetSelectedText,
     selected: selectedProp,
+    selectionKeys,
     selectionStrategy,
     value: initialValue,
   });

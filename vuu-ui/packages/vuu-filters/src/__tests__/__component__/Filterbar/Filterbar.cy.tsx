@@ -1,3 +1,4 @@
+import { clear } from "console";
 import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
 import { DefaultFilterBar } from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
@@ -8,6 +9,34 @@ const OVERFLOW_INDICATOR = ".vuuOverflowContainer-OverflowIndicator";
 const ADD_BUTTON = ".vuuFilterBar-add";
 const FILTER_CLAUSE = ".vuuFilterClause";
 const FILTER_CLAUSE_FIELD = ".vuuFilterClauseField";
+
+const findOverflowItem = (className: string) =>
+  cy.get(OVERFLOW_CONTAINER).find(className);
+
+const clickListItem = (label: string) => {
+  cy.findByText(label).realHover();
+  cy.findByText(label).realClick();
+};
+
+const clickListItems = (...labels: string[]) => {
+  for (const label of labels) {
+    clickListItem(label);
+  }
+};
+
+const clickButton = (label: string) => {
+  cy.findByText(label).should("be.visible");
+  cy.findByText(label).realClick();
+};
+
+const waitUntilEditableLabelIsFocused = (overflowItemClassName: string) =>
+  findOverflowItem(overflowItemClassName)
+    .find(".vuuEditableLabel")
+    .find("input")
+    .should("be.focused");
+
+const assertInputValue = (className: string, value: string) =>
+  cy.get(`${className} input`).should("have.attr", "value", value);
 
 describe("WHEN it initially renders", () => {
   it("THEN expected classname is present", () => {
@@ -24,7 +53,7 @@ describe("WHEN it initially renders", () => {
   });
 });
 
-describe("The mouse users experience", () => {
+describe("The mouse user", () => {
   describe("WHEN user click Add button on empty Filterbar", () => {
     it("THEN new FilterClause is initiated", () => {
       cy.mount(<DefaultFilterBar />);
@@ -57,16 +86,11 @@ describe("The mouse users experience", () => {
     it("THEN focus moves to operator field", () => {
       cy.mount(<DefaultFilterBar />);
       cy.get(ADD_BUTTON).realClick();
-      cy.findByText("currency").realHover();
-      cy.findByText("currency").realClick();
+      clickListItem("currency");
       cy.get(FILTER_CLAUSE).should("have.length", 1);
       cy.get(FILTER_CLAUSE_FIELD).should("have.length", 2);
 
-      cy.get(".vuuFilterClauseColumn input").should(
-        "have.attr",
-        "value",
-        "currency"
-      );
+      assertInputValue(".vuuFilterClauseColumn", "currency");
 
       cy.get(".vuuFilterClauseOperator input").should("be.focused");
       cy.get(".vuuFilterClauseOperator input").should(
@@ -83,10 +107,7 @@ describe("The mouse users experience", () => {
     it("THEN focus moves to value field", () => {
       cy.mount(<DefaultFilterBar />);
       cy.get(ADD_BUTTON).realClick();
-      cy.findByText("currency").realHover();
-      cy.findByText("currency").realClick();
-      cy.findByText("=").realHover();
-      cy.findByText("=").realClick();
+      clickListItems("currency", "=");
 
       cy.get(FILTER_CLAUSE).should("have.length", 1);
       cy.get(FILTER_CLAUSE_FIELD).should("have.length", 3);
@@ -105,13 +126,7 @@ describe("The mouse users experience", () => {
     it("THEN Save menu is shown", () => {
       cy.mount(<DefaultFilterBar />);
       cy.get(ADD_BUTTON).realClick();
-      cy.findByText("currency").realHover();
-      cy.findByText("currency").realClick();
-      cy.findByText("=").realHover();
-      cy.findByText("=").realClick();
-      cy.findByText("USD").realHover();
-      cy.findByText("USD").realClick();
-
+      clickListItems("currency", "=", "USD");
       cy.get(FILTER_CLAUSE).should("have.length", 1);
       cy.get(`${FILTER_CLAUSE} ${FILTER_CLAUSE}-clearButton`).should(
         "have.length",
@@ -122,28 +137,187 @@ describe("The mouse users experience", () => {
   });
 
   describe("WHEN user clicks APPLY AND SAVE", () => {
-    it("THEN filter is saved", () => {
+    it("THEN filtersChangedHandler callback is invoked", () => {
       const onFiltersChanged = cy.stub().as("filtersChangedHandler");
       cy.mount(<DefaultFilterBar onFiltersChanged={onFiltersChanged} />);
       cy.get(ADD_BUTTON).realClick();
-      cy.findByText("currency").realHover();
-      cy.findByText("currency").realClick();
-      cy.findByText("=").realHover();
-      cy.findByText("=").realClick();
-      cy.findByText("USD").realHover();
-      cy.findByText("USD").realClick();
-      cy.findByText("APPLY AND SAVE").should("be.visible");
-      cy.findByText("APPLY AND SAVE").realClick();
-      cy.get("@filtersChangedHandler").should("have.been.called");
+      clickListItems("currency", "=", "USD");
+      clickButton("APPLY AND SAVE");
       cy.get("@filtersChangedHandler").should("be.calledWith", [
         { column: "currency", op: "=", value: "USD" },
       ]);
     });
+
+    it("THEN filter is applied", () => {
+      const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+      const onFilterApplied = cy.stub().as("onFilterApplied");
+      cy.mount(
+        <DefaultFilterBar
+          onApplyFilter={onFilterApplied}
+          onFiltersChanged={onFiltersChanged}
+        />
+      );
+      cy.get(ADD_BUTTON).realClick();
+      clickListItems("currency", "=", "USD");
+      clickButton("APPLY AND SAVE");
+      cy.get("@filtersChangedHandler").should("be.calledWith", [
+        { column: "currency", op: "=", value: "USD" },
+      ]);
+      cy.get("@onFilterApplied").should("be.calledWith", {
+        filter: 'currency = "USD"',
+        filterStruct: { column: "currency", op: "=", value: "USD" },
+      });
+    });
+
+    it("THEN filter pill is displayed, label is in edit state and focused", () => {
+      cy.mount(<DefaultFilterBar />);
+      cy.get(ADD_BUTTON).realClick();
+      clickListItems("currency", "=", "USD");
+      clickButton("APPLY AND SAVE");
+      cy.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 2);
+      findOverflowItem(".vuuFilterPill").should("have.length", 1);
+      findOverflowItem(".vuuFilterPill")
+        .find(".vuuEditableLabel")
+        .should("have.class", "vuuEditableLabel-editing");
+      findOverflowItem(".vuuFilterPill")
+        .find(".vuuEditableLabel")
+        .find("input")
+        .should("be.focused");
+    });
+
+    describe("WHEN user overtypes label and presses ENTER", () => {
+      it("THEN label is applied and exits edit mode", () => {
+        const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+        cy.mount(<DefaultFilterBar onFiltersChanged={onFiltersChanged} />);
+        cy.get(ADD_BUTTON).realClick();
+        clickListItems("currency", "=", "USD");
+        clickButton("APPLY AND SAVE");
+        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        cy.realType("test");
+        cy.realPress("Enter");
+        findOverflowItem(".vuuFilterPill")
+          .find(".vuuEditableLabel")
+          .should("not.have.class", "vuuEditableLabel-editing");
+        cy.get("@filtersChangedHandler").should("be.calledWith", [
+          { column: "currency", op: "=", value: "USD", name: "test" },
+        ]);
+      });
+
+      it("THEN filter pill has focus", () => {
+        cy.mount(<DefaultFilterBar />);
+        cy.get(ADD_BUTTON).realClick();
+        clickListItems("currency", "=", "USD");
+        clickButton("APPLY AND SAVE");
+        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        cy.realType("test");
+        cy.realPress("Enter");
+        findOverflowItem(".vuuFilterPill").should("be.focused");
+      });
+    });
   });
 });
 
-// describe("The keyboard users experience", () => {
-//   describe("WHEN user click Add button on empty Filterbar", () => {
-//     it("THEN new FilterClasue is initiated adn column is focussed", () => {});
-//   });
-// });
+describe("The keyboard user", () => {
+  describe("WHEN user navigates with keyboard to empty Filterbar", () => {
+    it("THEN add button is focussed", () => {
+      cy.mount(<DefaultFilterBar />);
+      cy.findByTestId("pre-filterbar").find("input").focus();
+      cy.realPress("Tab");
+      cy.get(ADD_BUTTON).should("be.focused");
+    });
+
+    describe("WHEN user presses ADD then uses keyboard to select currency", () => {
+      it("THEN currency is selected and focus moves to operator", () => {
+        cy.mount(<DefaultFilterBar />);
+
+        cy.findByTestId("pre-filterbar").find("input").focus();
+        cy.realPress("Tab");
+        cy.get(ADD_BUTTON).should("be.focused");
+        cy.realPress("Enter");
+        cy.findByRole("combobox").should("be.focused");
+
+        // make sure columns list has renderered
+        cy.findByText("currency").should("exist");
+        cy.realPress("ArrowDown");
+        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "currency");
+        cy.realPress("Enter");
+
+        assertInputValue(".vuuFilterClauseColumn", "currency");
+
+        cy.get(".vuuFilterClauseOperator input").should("be.focused");
+        cy.get(".vuuFilterClauseOperator input").should(
+          "have.attr",
+          "aria-expanded",
+          "true"
+        );
+      });
+    });
+    describe("THEN WHEN user uses keyboard to select =", () => {
+      it("THEN = is selected and focus moves to value", () => {
+        cy.mount(<DefaultFilterBar />);
+
+        cy.findByTestId("pre-filterbar").find("input").focus();
+        cy.realPress("Tab");
+        cy.get(ADD_BUTTON).should("be.focused");
+        cy.realPress("Enter");
+        cy.findByRole("combobox").should("be.focused");
+
+        // make sure columns list has renderered
+        cy.findByText("currency").should("exist");
+        cy.realPress("ArrowDown");
+        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "currency");
+        cy.realPress("Enter");
+
+        cy.findByText("=").should("exist");
+        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "=");
+        cy.realPress("Enter");
+
+        assertInputValue(".vuuFilterClauseOperator", "=");
+
+        cy.get(".vuuFilterClauseValue input").should("be.focused");
+        cy.get(".vuuFilterClauseValue input").should(
+          "have.attr",
+          "aria-expanded",
+          "true"
+        );
+      });
+      describe("THEN WHEN user uses keyboard to select USD", () => {
+        it("THEN USD is selected,  and focus moves to Menu", () => {
+          cy.mount(<DefaultFilterBar />);
+
+          cy.findByTestId("pre-filterbar").find("input").focus();
+          cy.realPress("Tab");
+          cy.get(ADD_BUTTON).should("be.focused");
+          cy.realPress("Enter");
+          cy.findByRole("combobox").should("be.focused");
+
+          // make sure columns list has renderered
+          cy.findByText("currency").should("exist");
+          cy.realPress("ArrowDown");
+          cy.realPress("Enter");
+
+          cy.findByText("=").should("exist");
+          cy.realPress("Enter");
+
+          cy.findByText("USD").should("exist");
+          cy.realPress("ArrowDown");
+          cy.realPress("ArrowDown");
+          cy.realPress("ArrowDown");
+          cy.realPress("ArrowDown");
+          cy.realPress("Enter");
+
+          assertInputValue(".vuuFilterClauseValue", "USD");
+
+          cy.get(FILTER_CLAUSE).should("have.length", 1);
+          cy.get(`${FILTER_CLAUSE} ${FILTER_CLAUSE}-clearButton`).should(
+            "have.length",
+            1
+          );
+          cy.get(".vuuFilterBuilderMenuList")
+            .should("be.visible")
+            .should("be.focused");
+        });
+      });
+    });
+  });
+});

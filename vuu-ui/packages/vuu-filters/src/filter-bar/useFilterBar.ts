@@ -61,16 +61,11 @@ export const useFilterBar = ({
   const editingFilter = useRef<Filter | undefined>();
   const [activeFilterIndex, setActiveFilterIndex] =
     useState<number[]>(activeFilterIdexProp);
-  const [showMenu, _setShowMenu] = useState(showMenuProp);
+  const [showMenu, setShowMenu] = useState(showMenuProp);
   const [editFilter, setEditFilter] = useState<
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
-
-  const setShowMenu = useCallback((show) => {
-    console.trace(`set show menu ${show}`);
-    _setShowMenu(show);
-  }, []);
 
   const {
     filters,
@@ -280,12 +275,17 @@ export const useFilterBar = ({
           return true;
         }
 
-        case "and-clause":
-          setEditFilter((filter) =>
-            addClause(filter as Filter, EMPTY_FILTER_CLAUSE)
+        case "and-clause": {
+          const newFilter = addClause(
+            editFilter as Filter,
+            EMPTY_FILTER_CLAUSE
           );
+          console.log({ newFilter });
+          setEditFilter(newFilter);
           setShowMenu(false);
           return true;
+        }
+
         case "or-clause":
           setEditFilter((filter) =>
             addClause(filter as Filter, {}, { combineWith: "or" })
@@ -328,7 +328,7 @@ export const useFilterBar = ({
 
   const handleClickAddFilter = useCallback(() => {
     setEditFilter({});
-  }, []);
+  }, [setEditFilter]);
 
   const handleClickRemoveFilter = useCallback(() => {
     setEditFilter(undefined);
@@ -340,12 +340,17 @@ export const useFilterBar = ({
     onExitEditMode: handleExitEditFilterName,
   };
 
-  const handleChangeFilterClause = (filterClause: Partial<FilterClause>) => {
-    if (filterClause !== undefined) {
-      setEditFilter((filter) => replaceClause(filter, filterClause));
-      setShowMenu(true);
-    }
-  };
+  const handleChangeFilterClause = useCallback(
+    (filterClause: Partial<FilterClause>) => {
+      console.log(`handleCHangeFilterClause ${JSON.stringify(filterClause)}`);
+      if (filterClause !== undefined) {
+        const newFilter = replaceClause(editFilter, filterClause);
+        setEditFilter(newFilter);
+        setShowMenu(true);
+      }
+    },
+    [editFilter]
+  );
 
   const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
     (reason) => {
@@ -396,6 +401,7 @@ export const useFilterBar = ({
       console.log(`keydown from List ${evt.key}`);
       const { current: container } = containerRef;
       if (evt.key === "Backspace" && container) {
+        evt.preventDefault();
         const fields = Array.from(
           container.querySelectorAll(".vuuFilterClauseField")
         );

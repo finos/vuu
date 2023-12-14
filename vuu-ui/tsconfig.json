@@ -25,6 +25,7 @@
     "sourceMap": true
   },
   "include": [
+    "cypress",
     "packages/*/src",
     "sample-apps/*/src",
     "showcase/src",
@@ -33,7 +34,7 @@
     "global.d.ts"
 , "packages/vuu-data-test/src/UpdateGenerator.ts"  ],
   "exclude": [
-    "**/*.cy.*",
+    // "**/*.cy.*",
     "**/*.test.*"
   ],
   "references": [

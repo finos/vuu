@@ -20,6 +20,7 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
         uniqueValues.push(value);
       }
     }
+    uniqueValues.sort();
     if (cachedEntry) {
       cachedEntry.set(column, uniqueValues);
     } else {
