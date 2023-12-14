@@ -83,10 +83,10 @@ export const useTooltip = ({
         mouseEnterTimerRef.current = undefined;
       } else {
         if (hideTooltipRef.current) {
-          // mouseLeaveTimerRef.current = window.setTimeout(
-          //   hideTooltipRef.current,
-          //   200
-          // );
+          mouseLeaveTimerRef.current = window.setTimeout(
+            hideTooltipRef.current,
+            200
+          );
         }
       }
   }, []);

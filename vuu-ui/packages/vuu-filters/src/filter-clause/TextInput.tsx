@@ -124,6 +124,9 @@ export const TextInput = forwardRef(function TextInput(
   }, [InputPropsProp, onInputComplete, operator, valueInputValue]);
 
   const getValueInputField = useCallback(() => {
+    if (typeaheadValues.length === 0) {
+      return null;
+    }
     switch (operator) {
       case "in":
         //TODO multiselect

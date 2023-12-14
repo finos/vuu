@@ -44,6 +44,5 @@ export const useTypeaheadSuggestions = () =>
             params,
             ...TYPEAHEAD_MESSAGE_CONSTANTS,
           } as ClientToServerGetUniqueValuesStartingWith);
-
     return makeRpcCall<string[]>(rpcMessage);
   }, []);

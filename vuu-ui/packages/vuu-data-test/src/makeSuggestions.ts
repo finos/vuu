@@ -32,15 +32,28 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
     : uniqueValues;
 };
 
+// export const makeSuggestions = (
+//   table: Table,
+//   column: string,
+//   pattern?: string
+// ) => {
+//   const uniqueValues = getUniqueValues(table, column, pattern);
+//   if (uniqueValues.length > 20) {
+//     return uniqueValues?.slice(0, 20).map((v) => v.toString());
+//   } else {
+//     return uniqueValues.map((v) => v.toString());
+//   }
+// };
 export const makeSuggestions = (
   table: Table,
   column: string,
   pattern?: string
-) => {
-  const uniqueValues = getUniqueValues(table, column, pattern);
-  if (uniqueValues.length > 20) {
-    return uniqueValues?.slice(0, 20).map((v) => v.toString());
-  } else {
-    return uniqueValues.map((v) => v.toString());
-  }
-};
+): Promise<string[]> =>
+  new Promise((resolve) => {
+    const uniqueValues = getUniqueValues(table, column, pattern);
+    const result =
+      uniqueValues.length > 20
+        ? uniqueValues?.slice(0, 20).map((v) => v.toString())
+        : uniqueValues.map((v) => v.toString());
+    setTimeout(() => resolve(result), 100);
+  });

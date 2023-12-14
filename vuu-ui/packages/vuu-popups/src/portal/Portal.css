@@ -7,10 +7,14 @@
     border-style: solid;
     border-width: 1px;
     padding: 4px 0;
-    /* z-index: var(--salt-zIndex-modal, 10); */
+    z-index: 100;
 }
 
 
 .vuuPortal:has(.vuuDropdown-popup-component.vuuList-empty){
     display: none;
+}
+
+#vuu-portal-root {
+    z-index: 1000;
 }

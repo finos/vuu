@@ -12,6 +12,7 @@
     justify-content: var(--tooltip-justify);
     display: flex;
     position: absolute;
+    z-index: 100;
   }
   
   .vuuTooltip[data-align='right'] {
