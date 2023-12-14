@@ -139,27 +139,24 @@ export class LocalPersistenceManager implements PersistenceManager {
     });
   }
 
-  loadLayouts: () => Promise<Layout[]> = () => {
+  loadLayouts = (): Promise<Layout[]> => {
     return new Promise((resolve) => {
       const layouts = getLocalEntity<Layout[]>(this.layoutsSaveLocation);
       resolve(layouts || []);
     });
   }
 
-  saveLayoutsWithMetadata: (
+  saveLayoutsWithMetadata = (
     layouts: Layout[],
     metadata: LayoutMetadata[]
-  ) => void = (
-    layouts: Layout[],
-    metadata: LayoutMetadata[]
-  ) => {
+  ): void => {
     saveLocalEntity<Layout[]>(this.layoutsSaveLocation, layouts);
     saveLocalEntity<LayoutMetadata[]>(this.metadataSaveLocation, metadata);
   }
 
   // Ensures that there is exactly one Layout entry and exactly one Metadata
   // entry in local storage corresponding to the provided ID.
-  validateIds: (id: string) => Promise<void> = async (id: string) => {
+  validateIds = async (id: string): Promise<void> => {
     return Promise.all([
       this.validateId(id, "metadata").catch((error) => error.message),
       this.validateId(id, "layout").catch((error) => error.message),
@@ -177,13 +174,10 @@ export class LocalPersistenceManager implements PersistenceManager {
 
   // Ensures that there is exactly one element (Layout or Metadata) in local
   // storage corresponding to the provided ID.
-  validateId: (
+  validateId = (
     id: string,
     dataType: "metadata" | "layout"
-  ) => Promise<void> = (
-    id: string,
-    dataType: "metadata" | "layout"
-  ) => {
+  ): Promise<void> => {
     return new Promise((resolve, reject) => {
       const loadFunc =
         dataType === "metadata" ? () => this.loadMetadata() : () => this.loadLayouts();
