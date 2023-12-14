@@ -7,7 +7,7 @@
     border-style: solid;
     border-width: 1px;
     padding: 4px 0;
-    z-index: var(--salt-zIndex-modal);
+    /* z-index: var(--salt-zIndex-modal, 10); */
 }
 
 
