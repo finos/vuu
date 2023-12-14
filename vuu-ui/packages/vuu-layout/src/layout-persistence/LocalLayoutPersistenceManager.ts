@@ -35,7 +35,7 @@ export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
           const newMetadata: LayoutMetadata = {
             ...metadata,
             id,
-            created: formatDate(new Date(), "dd.mm.yyyy"),
+            created: formatDate("dd.mm.yyyy")(new Date()),
           };
 
           this.saveLayoutsWithMetadata(

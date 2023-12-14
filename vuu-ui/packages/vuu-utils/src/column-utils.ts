@@ -16,6 +16,7 @@ import type {
   ColumnTypeFormatting,
   LookupRenderer,
   ValueListRenderer,
+  DateTimeColumnTypeSimple,
 } from "@finos/vuu-table-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
@@ -126,11 +127,21 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
+type DateTimeColumnType =
+  | DateTimeColumnTypeSimple
+  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
+
+export type DateTimeColumnDescriptor = Omit<ColumnDescriptor, "type"> & {
+  type: DateTimeColumnType;
+};
+
 export const isDateColumn = ({ type }: ColumnDescriptor) =>
   (isTypeDescriptor(type) ? type.name : type) === "date";
 export const isTimeColumn = ({ type }: ColumnDescriptor) =>
   (isTypeDescriptor(type) ? type.name : type) === "time";
-export const isDateTimeColumn = (column: ColumnDescriptor) =>
+export const isDateTimeColumn = (
+  column: ColumnDescriptor
+): column is DateTimeColumnDescriptor =>
   isDateColumn(column) || isTimeColumn(column);
 
 export const isPinned = (column: ColumnDescriptor) =>
@@ -378,11 +389,11 @@ export const sortPinnedColumns = (
           ...column,
           endPin: undefined,
           pinnedOffset: pinnedWidthLeft
-        }); 
+        });
         pinnedWidthLeft += column.width;
       }
       break;
-    // store right pinned columns initially in reverse order      
+    // store right pinned columns initially in reverse order
       case "right": rightPinnedColumns.unshift(column); break;
       default: restColumns.push(column)
     }
