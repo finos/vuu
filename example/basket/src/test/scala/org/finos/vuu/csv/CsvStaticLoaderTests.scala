@@ -10,12 +10,7 @@ class CsvStaticLoaderTests extends AnyFeatureSpec{
     Feature("CSV loading Test Case") {
 
       Scenario("Can successfully load and parse basket constituents") {
-       var path = getClass.getResource("/constituents")
-        //his.class.getResourceAsStream("/myfile")
-        var x = ClassLoader.getSystemResource("")
-//        var x = Source.fromURL(path)
-//        var B = Source.fromResource("/static")
-      val testResourcePath =  this.getClass().getResource("/constituents").getPath
+        val testResourcePath =  this.getClass.getResource("/constituents").getPath
         val constituents = CsvStaticLoader.loadConstituent(".FTSE100", Some(testResourcePath))
 
         assert(constituents.length == 3)
