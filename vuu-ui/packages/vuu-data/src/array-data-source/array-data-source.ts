@@ -320,7 +320,7 @@ export class ArrayDataSource
   }
 
   set config(config: DataSourceConfig) {
-    if (configChanged(this.#config, config)) {
+    if (this.applyConfig(config)) {
       if (config) {
         const originalConfig = this.#config;
         const newConfig: DataSourceConfig =
@@ -403,6 +403,25 @@ export class ArrayDataSource
       this.setRange(resetRange(this.#range), true);
 
       this.emit("config", this.#config);
+    }
+  }
+
+  applyConfig(config: DataSourceConfig) {
+    if (configChanged(this.#config, config)) {
+      if (config) {
+        const newConfig: DataSourceConfig =
+          config?.filter?.filter && config?.filter.filterStruct === undefined
+            ? {
+                ...config,
+                filter: {
+                  filter: config.filter.filter,
+                  filterStruct: parseFilter(config.filter.filter),
+                },
+              }
+            : config;
+        this.#config = withConfigDefaults(newConfig);
+        return true;
+      }
     }
   }
 

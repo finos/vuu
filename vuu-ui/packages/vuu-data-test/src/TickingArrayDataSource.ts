@@ -19,6 +19,7 @@ import {
 } from "@finos/vuu-protocol-types";
 import { SelectionItem } from "@finos/vuu-table-types";
 import { metadataKeys } from "@finos/vuu-utils";
+import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
 
 export type RpcService = {
@@ -159,5 +160,15 @@ export class TickingArrayDataSource extends ArrayDataSource {
       }
     }
     return super.menuRpcCall(rpcRequest);
+  }
+
+  getTypeaheadSuggestions(column: string, pattern?: string): Promise<string[]> {
+    if (this.#table) {
+      return makeSuggestions(this.#table, column, pattern);
+    } else {
+      throw Error(
+        "cannot call getTypeaheadSuggestions on TickingDataSOurce if table has not been provided"
+      );
+    }
   }
 }

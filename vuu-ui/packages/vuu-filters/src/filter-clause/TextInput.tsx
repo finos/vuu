@@ -54,6 +54,7 @@ export const TextInput = forwardRef(function TextInput(
 ) {
   const [valueInputValue, setValueInputValue] = useState(value ?? "");
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
+
   const getSuggestions = suggestionProvider();
 
   const handleSingleValueSelectionChange = useCallback<SingleSelectionHandler>(

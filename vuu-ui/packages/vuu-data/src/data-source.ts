@@ -514,9 +514,33 @@ export type DataSourceStatus =
   | "suspended"
   | "unsubscribed";
 
-export interface DataSource extends EventEmitter<DataSourceEvents> {
+export interface TypeaheadSuggestionProvider {
+  getTypeaheadSuggestions: (
+    columnName: string,
+    pattern?: string
+  ) => Promise<string[]>;
+}
+
+export const isTypeaheadSuggestionProvider = (
+  source: unknown
+): source is TypeaheadSuggestionProvider =>
+  typeof (source as TypeaheadSuggestionProvider)["getTypeaheadSuggestions"] ===
+  "function";
+
+export interface DataSource
+  extends EventEmitter<DataSourceEvents>,
+    Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   applyEdit: DataSourceEditHandler;
+  /**
+   * set config without triggering config event. Use this method when initialising
+   * a dataSource that has been restored from session state. The dataSource will
+   * not yet be subscribed. Triggering the config event is unnecessary and might
+   * cause a React exception if the event were to cause a render.
+   * @param config DataSourceConfig
+   * @returns true if config has been applied (will not be if existig config is same)
+   */
+  applyConfig: (config: DataSourceConfig) => true | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;

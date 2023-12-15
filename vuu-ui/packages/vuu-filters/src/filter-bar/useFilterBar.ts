@@ -42,6 +42,7 @@ export interface FilterBarHookProps
     | "onChangeActiveFilterIndex"
     | "onFiltersChanged"
     | "showMenu"
+    | "tableSchema"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -56,6 +57,7 @@ export const useFilterBar = ({
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp,
+  tableSchema,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
@@ -76,6 +78,7 @@ export const useFilterBar = ({
   } = useFilters({
     filters: filtersProp,
     onFiltersChanged,
+    tableSchema,
   });
 
   const editPillLabel = useCallback(

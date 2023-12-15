@@ -67,6 +67,7 @@ export const FilterBar = ({
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
+    tableSchema,
   });
 
   const className = cx(classBase, classNameProp, {
