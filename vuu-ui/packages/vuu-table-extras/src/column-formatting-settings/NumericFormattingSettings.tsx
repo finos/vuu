@@ -8,18 +8,11 @@ import {
   useCallback,
   useState,
 } from "react";
+import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuFormattingSettings";
 
-export interface NumericFormattingSettingsProps {
-  column: ColumnDescriptor;
-  onChange: (formatting: ColumnTypeFormatting) => void;
-}
-
-export const NumericFormattingSettings = ({
-  column,
-  onChange,
-}: NumericFormattingSettingsProps) => {
+export const NumericFormattingSettings = ({column, onChange}: FormattingSettingsProps) => {
   const [formattingSettings, setFormattingSettings] =
     useState<ColumnTypeFormatting>(getTypeFormattingFromColumn(column));
 

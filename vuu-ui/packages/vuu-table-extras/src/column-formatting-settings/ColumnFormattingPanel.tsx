@@ -11,12 +11,15 @@ import {
   getCellRendererOptions,
   getConfigurationEditor,
   isColumnTypeRenderer,
+  isDateTimeColumn,
   isTypeDescriptor,
 } from "@finos/vuu-utils";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 import { NumericFormattingSettings } from "./NumericFormattingSettings";
+import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
+import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuColumnFormattingPanel";
 
@@ -38,21 +41,10 @@ export const ColumnFormattingPanel = ({
   onChangeRendering,
   ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
-  const contentForType = useMemo(() => {
-    switch (column.serverDataType) {
-      case "double":
-      case "int":
-      case "long":
-        return (
-          <NumericFormattingSettings
-            column={column}
-            onChange={onChangeFormatting}
-          />
-        );
-      default:
-        return null;
-    }
-  }, [column, onChangeFormatting]);
+  const formattingSettingsForType = useMemo(
+    () => formattingSettingsByColType({ column, onChange: onChangeFormatting }),
+    [column, onChangeFormatting]
+  );
 
   const ConfigEditor = useMemo<
     React.FC<ConfigurationEditorProps> | undefined
@@ -81,7 +73,7 @@ export const ColumnFormattingPanel = ({
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
   >(
-    (evt, cellRendererDescriptor) => {
+    (_, cellRendererDescriptor) => {
       const renderProps: ColumnTypeRendering = {
         name: cellRendererDescriptor.name,
       };
@@ -112,7 +104,7 @@ export const ColumnFormattingPanel = ({
       <div
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
-        {contentForType}
+        {formattingSettingsForType}
         {ConfigEditor ? (
           <ConfigEditor
             column={column as ColumnDescriptorCustomRenderer}
@@ -123,3 +115,20 @@ export const ColumnFormattingPanel = ({
     </div>
   );
 };
+
+function formattingSettingsByColType(props: FormattingSettingsProps) {
+  const { column } = props;
+
+  if (isDateTimeColumn(column)) {
+    return <DateTimeFormattingSettings {...props} column={column} />;
+  }
+
+  switch (column.serverDataType) {
+    case "double":
+    case "int":
+    case "long":
+      return <NumericFormattingSettings {...props} />;
+    default:
+      return null;
+  }
+}

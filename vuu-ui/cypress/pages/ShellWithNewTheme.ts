@@ -4,7 +4,7 @@ import { SHELL_WITH_NEW_THEME_URL } from "../support/e2e/constants";
 export class ShellWithNewTheme {
   visit: () => void = () => {
     cy.visit(SHELL_WITH_NEW_THEME_URL);
-  }
+  };
 
   getContextMenuButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy
@@ -12,15 +12,15 @@ export class ShellWithNewTheme {
       .findAllByRole("tab")
       .first()
       .findByRole("button", { name: "context menu" });
-  }
+  };
 
   getSaveLayoutButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("menuitem", { name: "Save Layout" });
-  }
+  };
 
   getMyLayoutsButton: () => Cypress.Chainable<JQuery<HTMLElement>> = () => {
     return cy.findByRole("tab", { name: "MY LAYOUTS" });
-  }
+  };
 
   getLayoutTile: (
     layoutName: string,
@@ -33,12 +33,13 @@ export class ShellWithNewTheme {
     creator: string,
     date: Date
   ) => {
-    const layoutTileName = `${layoutName} ${creator}, ${formatDate(date)}`;
+    const formattedDate = formatDate({ date: "dd.mm.yyyy" })(date);
+    const layoutTileName = `${layoutName} ${creator}, ${formattedDate}`;
 
     return cy
       .findByRole("listbox", { name: "my layouts" })
       .findByRole("list", { name: group })
       .findByRole("listitem", { name: layoutTileName })
       .findByRole("button");
-  }
+  };
 }

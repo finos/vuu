@@ -22,7 +22,6 @@ import type {
   ColumnTypeFormatting,
   ColumnTypeRendering,
   ColumnTypeWithValidationRules,
-  DateTimeColumnTypeSimple,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
   LookupRenderer,
@@ -32,6 +31,7 @@ import type {
   TableHeading,
   TableHeadings,
   ValueListRenderer,
+  DateTimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -131,22 +131,11 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
-type DateTimeColumnType =
-  | DateTimeColumnTypeSimple
-  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
-
-export type DateTimeColumnDescriptor = Omit<ColumnDescriptor, "type"> & {
-  type: DateTimeColumnType;
-};
-
-export const isDateColumn = ({ type }: ColumnDescriptor) =>
-  (isTypeDescriptor(type) ? type.name : type) === "date";
-export const isTimeColumn = ({ type }: ColumnDescriptor) =>
-  (isTypeDescriptor(type) ? type.name : type) === "time";
 export const isDateTimeColumn = (
   column: ColumnDescriptor
 ): column is DateTimeColumnDescriptor =>
-  isDateColumn(column) || isTimeColumn(column);
+  (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
+  "date/time";
 
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";

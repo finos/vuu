@@ -1,5 +1,9 @@
 import { getSchema } from "@finos/vuu-data-test";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
+import {
+  ColumnDescriptor,
+  ColumnTypeFormatting,
+  TableConfig,
+} from "@finos/vuu-table-types";
 import {
   ColumnFormattingPanel,
   ColumnSettingsPanel,
@@ -7,6 +11,7 @@ import {
 import {
   CellRendererDescriptor,
   ColumnRenderPropsChangeHandler,
+  isTypeDescriptor,
 } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
@@ -62,6 +67,57 @@ export const ColumnFormattingPanelDouble = () => {
 };
 
 ColumnFormattingPanelDouble.displaySequence = displaySequence++;
+
+export const ColumnFormattingPanelDateTime = () => {
+  const [column, setColumn] = useState<ColumnDescriptor>({
+    name: "lastUpdated",
+    label: "Last updated",
+    serverDataType: "long",
+    type: {
+      name: "date/time",
+      formatting: {
+        pattern: { date: "MMMM dd, yyyy", time: "hh:mm:ss" },
+      },
+    },
+  });
+
+  const availableRenderers = useMemo<CellRendererDescriptor[]>(
+    () => [{ name: "Default renderer (data type long)" }],
+    []
+  );
+
+  const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
+    (renderer) => console.log(`handleChangeRendering`, { renderer }),
+    []
+  );
+
+  const onChangeFormatting = useCallback((formatting: ColumnTypeFormatting) => {
+    setColumn((col) => ({
+      ...col,
+      type: {
+        ...(isTypeDescriptor(col.type) ? col.type : { name: col.type }),
+        formatting,
+      },
+    }));
+  }, []);
+
+  return (
+    <ColumnFormattingPanel
+      availableRenderers={availableRenderers}
+      column={column}
+      onChangeFormatting={onChangeFormatting}
+      onChangeRendering={handleChangeRendering}
+      style={{
+        border: "solid 1px lightgray",
+        margin: 20,
+        padding: 12,
+        width: 300,
+      }}
+    />
+  );
+};
+
+ColumnFormattingPanelDateTime.displaySequence = displaySequence++;
 
 export const NewCalculatedColumnSettingsPanel = () => {
   const schema = getSchema("parentOrders");

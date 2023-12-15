@@ -31,7 +31,7 @@ const persistenceManager = new LocalPersistenceManager();
 
 const existingId = "existing_id";
 
-const newDate = formatDate("dd.mm.yyyy")(new Date());
+const newDate = formatDate({ date: "dd.mm.yyyy" })(new Date());
 
 const existingMetadata: LayoutMetadata = {
   id: existingId,
