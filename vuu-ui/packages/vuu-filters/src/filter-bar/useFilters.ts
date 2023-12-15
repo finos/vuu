@@ -26,85 +26,75 @@ export const useFilters = ({
 
   const { getApplicationSettings, saveApplicationSettings } =
     useLayoutManager();
-  const savedFilters = getApplicationSettings("filters") as {
+
+  type SavedFilterMap = {
     [key: string]: NamedFilter[];
   };
 
-  console.log({ savedFilters });
+  const hasFilter = (filters: NamedFilter[], name: string) =>
+    filters.findIndex((f) => f.name === name) !== -1;
 
   const saveFilterToSettings = useCallback(
     (filter: Filter, name?: string) => {
-      console.log(`saveFilterToSettings`);
       if (tableSchema && name) {
+        const savedFilters = getApplicationSettings(
+          "filters"
+        ) as SavedFilterMap;
+        let newFilters = savedFilters;
         const { module, table } = tableSchema.table;
         const key = `${module}:${table}`;
         if (savedFilters) {
-          console.log("add filter to existing store ... ", {
-            savedFilters,
-          });
           if (savedFilters[key]) {
-            console.log("add filter to existing filters for this table ... ");
-            if (savedFilters[key].findIndex((f) => f.name === name) !== -1) {
-              console.log("We already have a filter by that name, replace it ");
-
-              saveApplicationSettings(
-                {
-                  ...savedFilters,
-                  [key]: savedFilters[key].map((f) => {
-                    f.name === name ? { ...filter, name } : f;
-                  }),
-                },
-                "filters"
-              );
+            if (hasFilter(savedFilters[key], name)) {
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].map((f) =>
+                  f.name === name ? { ...filter, name } : f
+                ),
+              };
             } else if (
-              name !== undefined &&
-              filter?.name !== undefined &&
+              filter?.name &&
               filter?.name !== name &&
-              savedFilters[key].findIndex((f) => f.name === filter.name) !== -1
+              hasFilter(savedFilters[key], filter.name)
             ) {
-              saveApplicationSettings(
-                {
-                  ...savedFilters,
-                  [key]: savedFilters[key].map((f) =>
-                    f.name === filter.name ? { ...filter, name } : f
-                  ),
-                },
-                "filters"
-              );
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].map((f) =>
+                  f.name === filter.name ? { ...filter, name } : f
+                ),
+              };
             } else {
-              saveApplicationSettings(
-                {
-                  ...savedFilters,
-                  [key]: savedFilters[key].concat({ ...filter, name }),
-                },
-                "filters"
-              );
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].concat({ ...filter, name }),
+              };
             }
           } else {
-            saveApplicationSettings(
-              {
-                ...savedFilters,
-                [key]: [{ ...filter, name }],
-              },
-              "filters"
-            );
+            newFilters = {
+              ...savedFilters,
+              [key]: [{ ...filter, name }],
+            };
           }
         } else {
-          saveApplicationSettings(
-            {
-              [key]: [{ ...filter, name }],
-            },
-            "filters"
-          );
+          newFilters = {
+            [key]: [{ ...filter, name }],
+          };
+        }
+        if (newFilters !== savedFilters) {
+          saveApplicationSettings(newFilters, "filters");
         }
       }
     },
-    [saveApplicationSettings, savedFilters, tableSchema]
+    [getApplicationSettings, saveApplicationSettings, tableSchema]
   );
 
   const removeFilterFromSettings = useCallback(
     (filter: Filter | NamedFilter) => {
       if (tableSchema && filter.name) {
+        const savedFilters = getApplicationSettings(
+          "filters"
+        ) as SavedFilterMap;
+
         const { module, table } = tableSchema.table;
         const key = `${module}:${table}`;
 
@@ -119,7 +109,7 @@ export const useFilters = ({
         }
       }
     },
-    [saveApplicationSettings, savedFilters, tableSchema]
+    [getApplicationSettings, saveApplicationSettings, tableSchema]
   );
 
   const handleAddFilter = useCallback(

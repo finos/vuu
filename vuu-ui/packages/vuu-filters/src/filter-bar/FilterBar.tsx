@@ -11,6 +11,7 @@ import { FilterClauseEditor, FilterClauseEditorProps } from "../filter-clause";
 import { FilterPill } from "../filter-pill";
 import { filterClauses as getFilterClauses } from "../filter-utils";
 import { useFilterBar } from "./useFilterBar";
+import { FilterBarMenu } from "./FilterBarMenu";
 
 import "./FilterBar.css";
 
@@ -133,7 +134,8 @@ export const FilterBar = ({
       onKeyDown={onKeyDownFilterbar}
       ref={rootRef}
     >
-      <span className={`${classBase}-icon`} data-icon="tune" />
+      <FilterBarMenu />
+      {/* <span className={`${classBase}-icon`} data-icon="tune" /> */}
       <Toolbar
         activeItemIndex={activeFilterIndex}
         height={28}

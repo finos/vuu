@@ -1,13 +1,11 @@
 import { DataSource } from "@finos/vuu-data";
 import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor, PinLocation } from "@finos/vuu-table-types";
-import { Filter } from "@finos/vuu-filter-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
 
 type MaybeColumn = { column?: RuntimeColumnDescriptor };
-type MaybeFilter = { filter?: Filter };
 
 export const buildContextMenuDescriptors =
   (dataSource?: DataSource): MenuBuilder =>
@@ -40,30 +38,6 @@ export const buildContextMenuDescriptors =
         label: `DataGrid Settings`,
         options,
       });
-    } else if (location === "filter") {
-      const { column, filter } = options as MaybeFilter & MaybeColumn;
-      const colIsOnlyFilter = filter?.column === column?.name;
-      descriptors.push({
-        label: "Edit filter",
-        action: "filter-edit",
-        options,
-      });
-
-      descriptors.push({
-        label: "Remove filter",
-        action: "filter-remove-column",
-        options,
-      });
-
-      if (column && !colIsOnlyFilter) {
-        // TODO col might still be the only column in the filter if it is
-        // involved in all clauses
-        descriptors.push({
-          label: `Remove all filters`,
-          action: "remove-filters",
-          options,
-        });
-      }
     }
 
     // if (options?.selectedRowCount){
