@@ -39,17 +39,35 @@ export const useFilters = ({
         const { module, table } = tableSchema.table;
         const key = `${module}:${table}`;
         if (savedFilters) {
-          console.log("TODO add filter to exisitng store", {
+          console.log("add filter to existing store ... ", {
             savedFilters,
           });
           if (savedFilters[key]) {
+            console.log("add filter to existing filters for this table ... ");
             if (savedFilters[key].findIndex((f) => f.name === name) !== -1) {
+              console.log("We already have a filter by that name, replace it ");
+
               saveApplicationSettings(
                 {
                   ...savedFilters,
                   [key]: savedFilters[key].map((f) => {
                     f.name === name ? { ...filter, name } : f;
                   }),
+                },
+                "filters"
+              );
+            } else if (
+              name !== undefined &&
+              filter?.name !== undefined &&
+              filter?.name !== name &&
+              savedFilters[key].findIndex((f) => f.name === filter.name) !== -1
+            ) {
+              saveApplicationSettings(
+                {
+                  ...savedFilters,
+                  [key]: savedFilters[key].map((f) =>
+                    f.name === filter.name ? { ...filter, name } : f
+                  ),
                 },
                 "filters"
               );
