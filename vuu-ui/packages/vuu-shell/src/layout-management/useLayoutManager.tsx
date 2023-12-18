@@ -15,6 +15,7 @@ import {
   RemoteLayoutPersistenceManager,
   resolveJSONPath,
   defaultApplicationJson,
+  ApplicationSetting,
 } from "@finos/vuu-layout";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
@@ -35,9 +36,16 @@ export const LayoutManagementContext = React.createContext<{
   saveLayout: (n: LayoutMetadataDto) => void;
   applicationJson: ApplicationJSON;
   saveApplicationLayout: (layout: LayoutJSON) => void;
-  saveApplicationSettings: (settings: ApplicationSettings) => void;
+  getApplicationSettings: (
+    key?: keyof ApplicationSettings
+  ) => ApplicationSettings | ApplicationSetting | undefined;
+  saveApplicationSettings: (
+    settings: ApplicationSettings | ApplicationSetting,
+    key?: keyof ApplicationSettings
+  ) => void;
   loadLayoutById: (id: string) => void;
 }>({
+  getApplicationSettings: () => undefined,
   layoutMetadata: [],
   saveLayout: () => undefined,
   // The default Application JSON will be served if no LayoutManagementProvider
@@ -198,11 +206,30 @@ export const LayoutManagementProvider = (
   );
 
   const saveApplicationSettings = useCallback(
-    (settings: ApplicationSettings) => {
-      setApplicationSettings(settings);
+    (
+      settings: ApplicationSettings | ApplicationSetting,
+      key?: keyof ApplicationSettings
+    ) => {
+      const { settings: applicationSettings } = applicationJSONRef.current;
+      if (key) {
+        setApplicationSettings({
+          ...applicationSettings,
+          [key]: settings,
+        });
+      } else {
+        setApplicationSettings(settings as ApplicationSettings);
+      }
       getPersistenceManager().saveApplicationJSON(applicationJSONRef.current);
     },
     [setApplicationSettings]
+  );
+
+  const getApplicationSettings = useCallback(
+    (key?: keyof ApplicationSettings) => {
+      const { settings } = applicationJSONRef.current;
+      return key ? settings?.[key] : settings;
+    },
+    []
   );
 
   const loadLayoutById = useCallback(
@@ -235,6 +262,7 @@ export const LayoutManagementProvider = (
   return (
     <LayoutManagementContext.Provider
       value={{
+        getApplicationSettings,
         layoutMetadata,
         saveLayout,
         applicationJson: applicationJSONRef.current,

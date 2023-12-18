@@ -1,6 +1,5 @@
 import type { OverflowItem, ToolbarProps } from "@finos/vuu-layout";
 import { isValidNumber } from "@finos/vuu-utils";
-import { PopupCloseCallback } from "@finos/vuu-popups";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,

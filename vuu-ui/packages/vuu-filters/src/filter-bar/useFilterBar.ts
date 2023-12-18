@@ -4,14 +4,19 @@ import {
   FilterClause,
   FilterWithPartialClause,
 } from "@finos/vuu-filter-types";
-import { PromptProps } from "@finos/vuu-popups";
-import { dispatchMouseEvent, filterAsQuery } from "@finos/vuu-utils";
-import { EditableLabelProps } from "@salt-ds/lab";
 import {
   ActiveItemChangeHandler,
   NavigationOutOfBoundsHandler,
 } from "@finos/vuu-layout";
+import { PromptProps } from "@finos/vuu-popups";
 import {
+  dispatchMouseEvent,
+  filterAsQuery,
+  isMultiClauseFilter,
+} from "@finos/vuu-utils";
+import { EditableLabelProps } from "@salt-ds/lab";
+import {
+  FocusEventHandler,
   KeyboardEvent,
   KeyboardEventHandler,
   RefObject,
@@ -21,9 +26,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { FilterClauseCancelHandler } from "../filter-clause/useFilterClauseEditor";
 import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
-import { addClause, replaceClause } from "../filter-utils";
+import { addClause, removeLastClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
 import { useFilters } from "./useFilters";
 
@@ -36,6 +42,7 @@ export interface FilterBarHookProps
     | "onChangeActiveFilterIndex"
     | "onFiltersChanged"
     | "showMenu"
+    | "tableSchema"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -50,6 +57,7 @@ export const useFilterBar = ({
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp,
+  tableSchema,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
@@ -70,6 +78,7 @@ export const useFilterBar = ({
   } = useFilters({
     filters: filtersProp,
     onFiltersChanged,
+    tableSchema,
   });
 
   const editPillLabel = useCallback(
@@ -269,12 +278,17 @@ export const useFilterBar = ({
           return true;
         }
 
-        case "and-clause":
-          setEditFilter((filter) =>
-            addClause(filter as Filter, EMPTY_FILTER_CLAUSE)
+        case "and-clause": {
+          const newFilter = addClause(
+            editFilter as Filter,
+            EMPTY_FILTER_CLAUSE
           );
+          console.log({ newFilter });
+          setEditFilter(newFilter);
           setShowMenu(false);
           return true;
+        }
+
         case "or-clause":
           setEditFilter((filter) =>
             addClause(filter as Filter, {}, { combineWith: "or" })
@@ -317,7 +331,7 @@ export const useFilterBar = ({
 
   const handleClickAddFilter = useCallback(() => {
     setEditFilter({});
-  }, []);
+  }, [setEditFilter]);
 
   const handleClickRemoveFilter = useCallback(() => {
     setEditFilter(undefined);
@@ -329,14 +343,50 @@ export const useFilterBar = ({
     onExitEditMode: handleExitEditFilterName,
   };
 
-  const handleChangeFilterClause = (filterClause: Partial<FilterClause>) => {
-    if (filterClause !== undefined) {
-      setEditFilter((filter) => replaceClause(filter, filterClause));
-      setShowMenu(true);
-    }
-  };
+  const handleChangeFilterClause = useCallback(
+    (filterClause: Partial<FilterClause>) => {
+      console.log(`handleCHangeFilterClause ${JSON.stringify(filterClause)}`);
+      if (filterClause !== undefined) {
+        const newFilter = replaceClause(editFilter, filterClause);
+        setEditFilter(newFilter);
+        setShowMenu(true);
+      }
+    },
+    [editFilter]
+  );
 
-  const onKeyDown = useCallback(
+  const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
+    (reason) => {
+      if (reason === "Backspace" && isMultiClauseFilter(editFilter)) {
+        setEditFilter(removeLastClause(editFilter));
+      }
+    },
+    [editFilter]
+  );
+
+  const handleBlurFilterClause = useCallback<FocusEventHandler>((e) => {
+    const target = e.target as HTMLElement;
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    const filterClause = target.closest(".vuuFilterClause");
+    if (filterClause?.contains(relatedTarget)) {
+      // do nothing
+    } else {
+      const dropdownId = target.getAttribute("aria-owns");
+      const dropDown = dropdownId ? document.getElementById(dropdownId) : null;
+      if (dropDown?.contains(relatedTarget)) {
+        // do nothing
+      } else {
+        // if clause is complete
+        setShowMenu(true);
+      }
+    }
+  }, []);
+
+  const handleFocusFilterClause = useCallback(() => {
+    setShowMenu(false);
+  }, []);
+
+  const handleKeyDownFilterbar = useCallback(
     (evt: KeyboardEvent) => {
       if (evt.key === "Escape" && editFilter !== undefined) {
         // TODO confirm if edits applied ?
@@ -347,6 +397,39 @@ export const useFilterBar = ({
       }
     },
     [editFilter]
+  );
+
+  const handleKeyDownMenu = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      console.log(`keydown from List ${evt.key}`);
+      const { current: container } = containerRef;
+      if (evt.key === "Backspace" && container) {
+        evt.preventDefault();
+        const fields = Array.from(
+          container.querySelectorAll(".vuuFilterClauseField")
+        );
+        if (fields.length > 0) {
+          const field = fields.at(-1) as HTMLElement;
+          field?.querySelector("input")?.focus();
+        }
+        setShowMenu(false);
+      } else if (evt.key === "Tab") {
+        if (evt.shiftKey && container) {
+          const clearButtons = Array.from(
+            container.querySelectorAll(".vuuFilterClause-clearButton")
+          ) as HTMLButtonElement[];
+          if (clearButtons.length > 0) {
+            const clearButton = clearButtons.at(-1) as HTMLButtonElement;
+            setTimeout(() => {
+              clearButton.focus();
+            }, 100);
+          }
+        } else {
+          console.log("apply current selection");
+        }
+      }
+    },
+    [containerRef]
   );
 
   const handleAddButtonKeyDown = useCallback<KeyboardEventHandler>((evt) => {
@@ -372,11 +455,15 @@ export const useFilterBar = ({
     addButtonProps,
     editFilter,
     filters,
+    onBlurFilterClause: handleBlurFilterClause,
+    onCancelFilterClause: handleCancelFilterClause,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     onClickAddFilter: handleClickAddFilter,
     onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,
-    onKeyDown,
+    onFocusFilterClause: handleFocusFilterClause,
+    onKeyDownFilterbar: handleKeyDownFilterbar,
+    onKeyDownMenu: handleKeyDownMenu,
     onMenuAction: handleMenuAction,
     onNavigateOutOfBounds: handlePillNavigationOutOfBounds,
     pillProps,

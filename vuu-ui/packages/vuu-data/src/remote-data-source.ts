@@ -437,6 +437,21 @@ export class RemoteDataSource
   }
 
   set config(config: DataSourceConfig) {
+    if (this.applyConfig(config)) {
+      if (this.#config && this.viewport && this.server) {
+        if (config) {
+          this.server?.send({
+            viewport: this.viewport,
+            type: "config",
+            config: this.#config,
+          });
+        }
+      }
+      this.emit("config", this.#config);
+    }
+  }
+
+  applyConfig(config: DataSourceConfig) {
     if (configChanged(this.#config, config)) {
       if (config) {
         const newConfig: DataSourceConfig =
@@ -449,19 +464,8 @@ export class RemoteDataSource
                 },
               }
             : config;
-
         this.#config = withConfigDefaults(newConfig);
-
-        if (this.#config && this.viewport && this.server) {
-          if (config) {
-            this.server?.send({
-              viewport: this.viewport,
-              type: "config",
-              config: this.#config,
-            });
-          }
-        }
-        this.emit("config", this.#config);
+        return true;
       }
     }
   }

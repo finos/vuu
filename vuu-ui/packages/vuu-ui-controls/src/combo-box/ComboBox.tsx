@@ -32,12 +32,15 @@ export interface ComboBoxProps<
     Pick<ListProps<Item, S>, "ListItem" | "itemToString" | "source" | "width"> {
   InputProps?: InputProps;
   ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
+  allowBackspaceClearsSelection?: boolean;
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
   initialHighlightedIndex?: number;
   itemsToString?: (items: Item[]) => string;
+  onDeselect?: () => void;
   onSetSelectedText?: (text: string) => void;
+  disableFilter?: boolean;
   value?: string;
 }
 
@@ -53,12 +56,14 @@ export const ComboBox = forwardRef(function Combobox<
     PopupProps,
     ListItem,
     "aria-label": ariaLabel,
+    allowBackspaceClearsSelection,
     allowFreeText,
     children,
     defaultIsOpen,
     defaultSelected,
     defaultValue,
     disabled,
+    disableFilter,
     onBlur,
     onFocus,
     onChange,
@@ -70,9 +75,11 @@ export const ComboBox = forwardRef(function Combobox<
     isOpen: isOpenProp,
     itemToString = defaultItemToString,
     itemsToString,
+    onDeselect,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
     selected: selectedProp,
+    selectionKeys,
     selectionStrategy,
     source,
     value: valueProp,
@@ -108,6 +115,7 @@ export const ComboBox = forwardRef(function Combobox<
     source,
     children,
     options: {
+      disableFilter,
       filterPattern: initialValue,
       getFilterRegex,
       itemToString,
@@ -125,6 +133,7 @@ export const ComboBox = forwardRef(function Combobox<
     selected,
   } = useCombobox<Item, S>({
     InputProps,
+    allowBackspaceClearsSelection,
     allowFreeText,
     ariaLabel,
     collectionHook,
@@ -137,6 +146,7 @@ export const ComboBox = forwardRef(function Combobox<
     label: props.title,
     listRef,
     onBlur,
+    onDeselect,
     onFocus,
     onChange,
     onSelect,
@@ -148,6 +158,7 @@ export const ComboBox = forwardRef(function Combobox<
     onSelectionChange,
     onSetSelectedText,
     selected: selectedProp,
+    selectionKeys,
     selectionStrategy,
     value: initialValue,
   });
@@ -195,7 +206,6 @@ export const ComboBox = forwardRef(function Combobox<
           focusVisible={focusVisible}
           highlightedIndex={highlightedIndex}
           itemTextHighlightPattern={String(inputProps.value) || undefined}
-          id={`${id}-list`}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           ref={listRef}

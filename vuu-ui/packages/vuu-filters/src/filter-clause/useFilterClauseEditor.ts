@@ -9,6 +9,7 @@ import { getColumnByName, TableSchema } from "@finos/vuu-data";
 
 import {
   KeyboardEvent,
+  KeyboardEventHandler,
   useCallback,
   useEffect,
   useMemo,
@@ -30,23 +31,40 @@ const getFieldName = (field: HTMLElement) =>
     ? "operator"
     : "value";
 
-const getFocusedField = () =>
-  document.activeElement?.closest(".vuuFilterClauseField") as HTMLElement;
+const getFocusedField = () => {
+  const activeElement = document.activeElement;
+  if (activeElement?.classList.contains("vuuFilterClause-clearButton")) {
+    return activeElement;
+  } else {
+    return activeElement?.closest(".vuuFilterClauseField") as HTMLElement;
+  }
+};
 
 const focusNextFocusableElement = (direction: "fwd" | "bwd" = "fwd") => {
   const activeField = getFocusedField();
   const filterClause = activeField?.closest(".vuuFilterClause");
-  if (filterClause?.lastChild === activeField) {
+  if (direction === "fwd" && filterClause?.lastChild === activeField) {
     requestAnimationFrame(() => {
       focusNextFocusableElement();
     });
   } else {
     const nextField =
       direction === "fwd"
-        ? (activeField.nextElementSibling as HTMLElement)
-        : (activeField.previousElementSibling as HTMLElement);
+        ? (activeField?.nextElementSibling as HTMLElement)
+        : (activeField?.previousElementSibling as HTMLElement);
 
     nextField?.querySelector("input")?.focus();
+  }
+};
+
+const clauseIsNotFirst = (el: HTMLElement) => {
+  const clause = el.closest("[data-index]") as HTMLElement;
+  if (clause) {
+    const index = clause.dataset.index;
+    const previousClause = clause?.parentElement?.querySelector(
+      `[data-index]:has(.vuuFilterClause):has(+[data-index="${index}"])`
+    );
+    return previousClause !== null;
   }
 };
 
@@ -56,7 +74,7 @@ const focusNextElement = () => {
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
       const clearButton = filterClause.querySelector(
-        ".vuuFilterClause-closeButton"
+        ".vuuFilterClause-clearButton"
       ) as HTMLButtonElement;
       clearButton?.focus();
     } else {
@@ -136,14 +154,20 @@ const getFilterClauseValue = (
   }
 };
 
+export type FilterClauseCancelType = "Backspace";
+export type FilterClauseCancelHandler = (
+  reason: FilterClauseCancelType
+) => void;
 export interface FilterClauseEditorHookProps {
   filterClause: Partial<FilterClause>;
+  onCancel?: FilterClauseCancelHandler;
   onChange: (filterClause: Partial<FilterClause>) => void;
   tableSchema: TableSchema;
 }
 
 export const useFilterClauseEditor = ({
   filterClause,
+  onCancel,
   onChange,
   tableSchema,
 }: FilterClauseEditorHookProps) => {
@@ -156,6 +180,12 @@ export const useFilterClauseEditor = ({
   >(getColumnByName(tableSchema, filterClause.column));
   const [operator, _setOperator] = useState<FilterClauseOp | undefined>(
     filterClause.op
+  );
+
+  const findColumn = useCallback(
+    (columnName: string) =>
+      tableSchema.columns.find((col) => col.name === columnName),
+    [tableSchema.columns]
   );
 
   const setOperator = useCallback((op) => {
@@ -173,9 +203,42 @@ export const useFilterClauseEditor = ({
       setSelectedColumn(column ?? undefined);
       setOperator(undefined);
       setValue(undefined);
-      focusNextElement();
+      setTimeout(() => {
+        focusNextElement();
+      }, 100);
     },
     [setOperator]
+  );
+
+  const removeAndNavigateToNextInputIfAtBoundary = useCallback(
+    (evt) => {
+      const input = evt.target as HTMLInputElement;
+      if (input.value === "") {
+        const field = input.closest(
+          ".vuuFilterClauseField,[data-field]"
+        ) as HTMLElement;
+        switch (field?.dataset?.field) {
+          case "operator": {
+            setOperator(undefined);
+            setSelectedColumn(undefined);
+            focusNextFocusableElement("bwd");
+            break;
+          }
+          case "value": {
+            setOperator(undefined);
+            focusNextFocusableElement("bwd");
+            break;
+          }
+          case "column": {
+            if (clauseIsNotFirst(input)) {
+              console.log("This is NOT the first clause");
+              onCancel?.("Backspace");
+            }
+          }
+        }
+      }
+    },
+    [onCancel, setOperator]
   );
 
   const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
@@ -210,34 +273,86 @@ export const useFilterClauseEditor = ({
             value,
           });
         }
-        // This have no effect if we are inside a FilterBar
-        requestAnimationFrame(() => {
-          focusNextElement();
-        });
       }
     },
     [onChange, operator, selectedColumn?.name]
   );
 
+  const handleDeselectValue = useCallback(() => {
+    setValue(undefined);
+  }, []);
+
   const handleKeyDownInput = useCallback(
     (evt: KeyboardEvent<HTMLInputElement>) => {
       if (["ArrowLeft", "ArrowRight"].includes(evt.key)) {
         navigateToNextInputIfAtBoundary(evt);
-      } else if (
-        operator &&
-        evt.key === "Enter" &&
-        ["starts", "ends"].includes(operator)
-      ) {
-        console.log("enter");
+      } else if (evt.key === "Backspace") {
+        removeAndNavigateToNextInputIfAtBoundary(evt);
+      } else if (evt.key === "Enter") {
+        // If value is valid, move on to next field
+        const input = evt.target as HTMLInputElement;
+        const field = input.closest("[data-field]") as HTMLElement;
+        if (field.dataset.field === "column") {
+          const column = findColumn(input.value);
+          if (column) {
+            setSelectedColumn(column);
+            focusNextElement();
+          }
+        } else if (field.dataset.field === "value") {
+          if (operator === "starts") {
+            // // don't let this bubble to the Toolbar, it would be
+            // // interpreted as selection
+            evt.stopPropagation();
+            const newValue = input.value;
+            setValue(newValue);
+            onChange({
+              column: selectedColumn?.name,
+              op: operator,
+              value: newValue,
+            });
+          }
+        }
       }
     },
-    [operator]
+    [
+      findColumn,
+      onChange,
+      operator,
+      removeAndNavigateToNextInputIfAtBoundary,
+      selectedColumn?.name,
+    ]
   );
+
+  const handleClear = useCallback(
+    (e) => {
+      const button = e.target as HTMLButtonElement;
+      const firstInput = button
+        .closest(".vuuFilterClause")
+        ?.querySelector("input") as HTMLInputElement;
+
+      setSelectedColumn(undefined);
+      setOperator(undefined);
+      setValue(undefined);
+
+      setTimeout(() => {
+        firstInput.select();
+        firstInput?.focus();
+      }, 100);
+    },
+    [setOperator]
+  );
+
+  const handleClearKeyDown = useCallback<KeyboardEventHandler>((e) => {
+    e.stopPropagation();
+    if (e.key === "Backspace") {
+      focusNextFocusableElement("bwd");
+    }
+  }, []);
 
   const InputProps = useMemo(
     () => ({
       inputProps: {
-        onKeyDown: handleKeyDownInput,
+        onKeyDownCapture: handleKeyDownInput,
       },
     }),
     [handleKeyDownInput]
@@ -252,6 +367,9 @@ export const useFilterClauseEditor = ({
     InputProps,
     columnRef,
     onChangeValue: handleChangeValue,
+    onClear: handleClear,
+    onClearKeyDown: handleClearKeyDown,
+    onDeselectValue: handleDeselectValue,
     onSelectionChangeColumn: handleSelectionChangeColumn,
     onSelectionChangeOperator: handleSelectionChangeOperator,
     operator,

@@ -23,20 +23,27 @@ import {
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
+const selectionKeys = ["Enter", " "];
+
 export interface TextInputProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
+  "data-field"?: string;
   ref: RefObject<HTMLDivElement>;
   operator: string;
   suggestionProvider?: () => SuggestionFetcher;
   value: string;
 }
 
+const NO_DATA_MATCH = ["No matching data"];
+
 export const TextInput = forwardRef(function TextInput(
   {
     InputProps: InputPropsProp = {},
     className,
     column,
+    "data-field": dataField,
+    onDeselect,
     onInputComplete,
     operator,
     suggestionProvider = useTypeaheadSuggestions,
@@ -46,10 +53,8 @@ export const TextInput = forwardRef(function TextInput(
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const [valueInputValue, setValueInputValue] = useState(value ?? "");
-  // const [selectedValues, setSelectedValue] = useState(defaultValues);
-  // const [typeaheadValues, setTypeaheadValues] =
-  //   useState<string[]>([defaultValues]);
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
+
   const getSuggestions = suggestionProvider();
 
   const handleSingleValueSelectionChange = useCallback<SingleSelectionHandler>(
@@ -79,7 +84,11 @@ export const TextInput = forwardRef(function TextInput(
         : [table, column.name];
       getSuggestions(params)
         .then((suggestions) => {
-          setTypeaheadValues(suggestions);
+          if (suggestions.length === 0 && valueInputValue) {
+            setTypeaheadValues(NO_DATA_MATCH);
+          } else {
+            setTypeaheadValues(suggestions);
+          }
         })
         .catch((err) => {
           console.error("Error getting suggestions", err);
@@ -116,6 +125,9 @@ export const TextInput = forwardRef(function TextInput(
   }, [InputPropsProp, onInputComplete, operator, valueInputValue]);
 
   const getValueInputField = useCallback(() => {
+    if (typeaheadValues.length === 0) {
+      return null;
+    }
     switch (operator) {
       case "in":
         //TODO multiselect
@@ -123,16 +135,18 @@ export const TextInput = forwardRef(function TextInput(
           <ExpandoCombobox
             InputProps={InputProps}
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             onInputChange={handleInputChange}
             onSelectionChange={handleMultiValueSelectionChange}
             ref={forwardedRef}
             selectionStrategy="multiple"
+            selectionKeys={selectionKeys}
             value={value}
           />
         );
-      case "starts":
+      case "starts": {
         return (
           <ExpandoCombobox<string>
             InputProps={InputProps}
@@ -142,7 +156,11 @@ export const TextInput = forwardRef(function TextInput(
             }}
             allowFreeText
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
+            disableFilter={
+              typeaheadValues === NO_DATA_MATCH && valueInputValue?.length > 0
+            }
             source={typeaheadValues}
             onInputChange={handleInputChange}
             onSelectionChange={handleSingleValueSelectionChange}
@@ -150,12 +168,14 @@ export const TextInput = forwardRef(function TextInput(
             value={value}
           />
         );
+      }
 
       case "ends":
         return (
           <ExpandoInput
             {...InputProps}
             className={className}
+            data-field={dataField}
             value={valueInputValue}
             ref={forwardedRef}
             onChange={handleInputChange}
@@ -167,11 +187,14 @@ export const TextInput = forwardRef(function TextInput(
         return (
           <ExpandoCombobox<string>
             InputProps={InputProps}
+            allowBackspaceClearsSelection
             className={className}
+            data-field={dataField}
             initialHighlightedIndex={0}
             source={typeaheadValues}
             title="value"
             onInputChange={handleInputChange}
+            onDeselect={onDeselect}
             onSelectionChange={handleSingleValueSelectionChange}
             ref={forwardedRef}
             value={value}
@@ -182,13 +205,15 @@ export const TextInput = forwardRef(function TextInput(
     operator,
     InputProps,
     className,
+    dataField,
     typeaheadValues,
     handleInputChange,
     handleMultiValueSelectionChange,
     forwardedRef,
     value,
-    handleSingleValueSelectionChange,
     valueInputValue,
+    onDeselect,
+    handleSingleValueSelectionChange,
   ]);
 
   return getValueInputField();

@@ -1,4 +1,4 @@
-import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
+import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import React, {
   ForwardedRef,
@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { Header as VuuHeader } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
+import { useId } from "../utils";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
 import { ViewContext, ViewContextAPI } from "./ViewContext";

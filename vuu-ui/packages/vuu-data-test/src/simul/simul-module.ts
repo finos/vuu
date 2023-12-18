@@ -52,7 +52,7 @@ const createDataSource = (tableName: SimulTableName) => {
   });
 };
 
-const suggestionFetcher: SuggestionFetcher = async ([
+const suggestionFetcher: SuggestionFetcher = ([
   vuuTable,
   column,
   pattern,

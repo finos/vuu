@@ -64,10 +64,10 @@ export function isMultiClauseFilter(
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
 
-const filterValue = (value: string | number | boolean) =>
+export const filterValue = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;
 
-const quotedStrings = (value: string | number | boolean) =>
+export const quotedStrings = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;
 
 export const filterAsQuery = (f: Filter): string => {

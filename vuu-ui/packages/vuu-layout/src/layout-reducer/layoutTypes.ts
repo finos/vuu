@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NamedFilter } from "packages/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -20,12 +21,18 @@ export interface LayoutRoot extends WithProps {
   type: string;
 }
 
+export type ValueOf<T> = T[keyof T];
 export interface ApplicationSettings {
   leftNav?: {
     activeTabIndex: number;
     expanded: boolean;
   };
+  /**
+   * filters are keyed by MODULE:tablename
+   */
+  filters?: { [key: string]: NamedFilter[] };
 }
+export type ApplicationSetting = ValueOf<ApplicationSettings>;
 
 export interface ApplicationJSON {
   layout: LayoutJSON;

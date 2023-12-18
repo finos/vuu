@@ -1,6 +1,7 @@
 .vuuTooltip {
     --tooltip-align: flex-start;
     --tooltip-background: white;
+    --tooltip-border: var(--vuu-color-gray-30);
     --tooltip-color: var(--vuu-color-gray-80);
     --tooltip-justify: flex-start;
     --tooltip-top: auto;
@@ -11,6 +12,7 @@
     justify-content: var(--tooltip-justify);
     display: flex;
     position: absolute;
+    z-index: 100;
   }
   
   .vuuTooltip[data-align='right'] {
@@ -37,10 +39,14 @@
   
   .vuuTooltip-content {
     background-color: var(--tooltip-background);
-    border-radius: 4px;
+    border-color: var(--tooltip-border);
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 6px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     color: var(--tooltip-color);
     line-height: 24px;
-    padding: 2px 6px;
+    padding: 2px 8px;
     position: absolute;
     white-space: nowrap;
     top: var(--tooltip-top);
@@ -50,14 +56,12 @@
   }
     
   .vuuTooltip::before {
-    background-color: var(--tooltip-background);
-    /* background-color: red; */
+    background-color: var(--tooltip-border);
     content: ' ';
     display: block;
     position: absolute;
     width: 12px;
     height: 12px;
-    /* z-index: -1; */
 }
 
 .vuuTooltip[data-align='above']::before {

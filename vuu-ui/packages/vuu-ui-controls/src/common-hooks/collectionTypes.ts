@@ -32,6 +32,7 @@ export interface SourceGroup<T> {
 export type CollectionOptions<T> = {
   collapsibleHeaders?: boolean;
   defaultExpanded?: boolean;
+  disableFilter?: boolean;
   filterPattern?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
   getItemId?: (indexOfItem: number) => string;

@@ -11,6 +11,7 @@ import { FilterClauseEditor, FilterClauseEditorProps } from "../filter-clause";
 import { FilterPill } from "../filter-pill";
 import { filterClauses as getFilterClauses } from "../filter-utils";
 import { useFilterBar } from "./useFilterBar";
+import { FilterBarMenu } from "./FilterBarMenu";
 
 import "./FilterBar.css";
 
@@ -45,12 +46,16 @@ export const FilterBar = ({
     addButtonProps,
     editFilter,
     filters,
+    onBlurFilterClause,
+    onCancelFilterClause,
     onClickAddFilter,
     onClickRemoveFilter,
     onChangeFilterClause,
     onChangeActiveFilterIndex,
+    onFocusFilterClause,
     onNavigateOutOfBounds,
-    onKeyDown,
+    onKeyDownFilterbar,
+    onKeyDownMenu,
     onMenuAction,
     pillProps,
     promptProps,
@@ -63,14 +68,13 @@ export const FilterBar = ({
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
+    tableSchema,
   });
 
   const className = cx(classBase, classNameProp, {
     [`${classBase}-display`]: editFilter === undefined,
     [`${classBase}-edit`]: editFilter !== undefined,
   });
-
-  const onClose = () => console.log("Closing filter component");
 
   const getChildren = () => {
     const items: ReactElement[] = [];
@@ -91,15 +95,21 @@ export const FilterBar = ({
             {...FilterClauseEditorProps}
             filterClause={filterClause}
             key={`editor-${i}`}
+            onCancel={onCancelFilterClause}
             onChange={onChangeFilterClause}
-            onClose={onClose}
+            onBlur={onBlurFilterClause}
+            onFocus={onFocusFilterClause}
             tableSchema={tableSchema}
           />
         );
       });
       if (showMenu) {
         items.push(
-          <FilterBuilderMenu key="menu" onMenuAction={onMenuAction} />
+          <FilterBuilderMenu
+            key="menu"
+            onMenuAction={onMenuAction}
+            ListProps={{ onKeyDownCapture: onKeyDownMenu }}
+          />
         );
       }
       items.push(
@@ -121,10 +131,11 @@ export const FilterBar = ({
     <div
       {...htmlAttributes}
       className={className}
-      onKeyDown={onKeyDown}
+      onKeyDown={onKeyDownFilterbar}
       ref={rootRef}
     >
-      <span className={`${classBase}-icon`} data-icon="tune" />
+      <FilterBarMenu />
+      {/* <span className={`${classBase}-icon`} data-icon="tune" /> */}
       <Toolbar
         activeItemIndex={activeFilterIndex}
         height={28}

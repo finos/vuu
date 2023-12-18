@@ -1,4 +1,5 @@
 .vuuFilterPill {
+    /* --vuuTooltip-background: var(--vuu-color-pink-10); */
     align-items: center;
     background: var(--salt-taggable-background);
     border: solid 1px var(--salt-taggable-foreground);

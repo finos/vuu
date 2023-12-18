@@ -39,6 +39,7 @@ export const useCollectionItems = <Item>({
   const flattenedDataRef = useRef<CollectionItem<Item>[]>([]);
   const EMPTY_COLLECTION: CollectionItem<Item>[] = useMemo(() => [], []);
   const filterPattern = useRef<string>(options.filterPattern ?? "");
+  const disableFilter = options.disableFilter ?? false;
 
   // destructure individual option values so we can safely reference them in dependency arrays
   const {
@@ -126,12 +127,12 @@ export const useCollectionItems = <Item>({
   );
 
   const getFilter = useCallback(() => {
-    if (filterPattern.current) {
+    if (filterPattern.current && !disableFilter) {
       return getDefaultFilter(filterPattern.current, getFilterRegex);
     } else {
       return null;
     }
-  }, [getFilterRegex]);
+  }, [disableFilter, getFilterRegex]);
 
   const collectVisibleItems = useCallback(
     (

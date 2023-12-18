@@ -1,4 +1,4 @@
-import { MouseEventHandler, ReactNode, RefObject } from "react";
+import { CSSProperties, MouseEventHandler, ReactNode, RefObject } from "react";
 import { Portal } from "../portal";
 import { TooltipPlacement, useAnchoredPosition } from "./useAnchoredPosition";
 import cx from "classnames";
@@ -16,6 +16,7 @@ export interface TooltipProps {
   onMouseLeave: MouseEventHandler;
   placement: TooltipPlacement;
   status?: TooltipStatus;
+  style?: CSSProperties;
 }
 
 export const Tooltip = ({
@@ -26,6 +27,7 @@ export const Tooltip = ({
   onMouseLeave,
   placement,
   status,
+  style: styleProp,
 }: TooltipProps) => {
   const position = useAnchoredPosition({ anchorElement, placement });
   if (position === undefined) {
@@ -39,7 +41,7 @@ export const Tooltip = ({
         })}
         data-align={placement}
         id={id}
-        style={position}
+        style={{ ...styleProp, ...position }}
       >
         <span
           className={`${classBase}-content`}

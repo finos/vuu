@@ -14,6 +14,11 @@ const viteConfig: UserConfig = {
   build: {
     sourcemap: true,
   },
+  define: {
+    "process.env.NODE_DEBUG": false,
+    "process.env.LOCAL": true,
+    "process.env.LAYOUT_BASE_URL": `"http://127.0.0.1:8081/api"`,
+  },
   resolve: {
     alias: {
       "cypress/react18": reactVersion.startsWith("18")

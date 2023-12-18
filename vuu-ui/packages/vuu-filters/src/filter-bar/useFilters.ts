@@ -1,17 +1,21 @@
 import { useControlled } from "@finos/vuu-ui-controls";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, NamedFilter } from "@finos/vuu-filter-types";
 import { useCallback } from "react";
+import { TableSchema } from "packages/vuu-data/src";
+import { useLayoutManager } from "@finos/vuu-shell";
 
 export interface FiltersHookProps {
   defaultFilters?: Filter[];
   filters?: Filter[];
   onFiltersChanged?: (filters: Filter[]) => void;
+  tableSchema?: TableSchema;
 }
 
 export const useFilters = ({
   defaultFilters,
   filters: filtersProp,
   onFiltersChanged,
+  tableSchema,
 }: FiltersHookProps) => {
   const [filters, setFilters] = useControlled<Filter[]>({
     controlled: filtersProp,
@@ -19,6 +23,94 @@ export const useFilters = ({
     name: "useFilters",
     state: "Filters",
   });
+
+  const { getApplicationSettings, saveApplicationSettings } =
+    useLayoutManager();
+
+  type SavedFilterMap = {
+    [key: string]: NamedFilter[];
+  };
+
+  const hasFilter = (filters: NamedFilter[], name: string) =>
+    filters.findIndex((f) => f.name === name) !== -1;
+
+  const saveFilterToSettings = useCallback(
+    (filter: Filter, name?: string) => {
+      if (tableSchema && name) {
+        const savedFilters = getApplicationSettings(
+          "filters"
+        ) as SavedFilterMap;
+        let newFilters = savedFilters;
+        const { module, table } = tableSchema.table;
+        const key = `${module}:${table}`;
+        if (savedFilters) {
+          if (savedFilters[key]) {
+            if (hasFilter(savedFilters[key], name)) {
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].map((f) =>
+                  f.name === name ? { ...filter, name } : f
+                ),
+              };
+            } else if (
+              filter?.name &&
+              filter?.name !== name &&
+              hasFilter(savedFilters[key], filter.name)
+            ) {
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].map((f) =>
+                  f.name === filter.name ? { ...filter, name } : f
+                ),
+              };
+            } else {
+              newFilters = {
+                ...savedFilters,
+                [key]: savedFilters[key].concat({ ...filter, name }),
+              };
+            }
+          } else {
+            newFilters = {
+              ...savedFilters,
+              [key]: [{ ...filter, name }],
+            };
+          }
+        } else {
+          newFilters = {
+            [key]: [{ ...filter, name }],
+          };
+        }
+        if (newFilters !== savedFilters) {
+          saveApplicationSettings(newFilters, "filters");
+        }
+      }
+    },
+    [getApplicationSettings, saveApplicationSettings, tableSchema]
+  );
+
+  const removeFilterFromSettings = useCallback(
+    (filter: Filter | NamedFilter) => {
+      if (tableSchema && filter.name) {
+        const savedFilters = getApplicationSettings(
+          "filters"
+        ) as SavedFilterMap;
+
+        const { module, table } = tableSchema.table;
+        const key = `${module}:${table}`;
+
+        if (
+          savedFilters[key]?.findIndex((f) => f.name === filter.name) !== -1
+        ) {
+          const newSavedFilters = {
+            ...savedFilters,
+            [key]: savedFilters[key].filter((f) => f.name !== filter.name),
+          };
+          saveApplicationSettings(newSavedFilters, "filters");
+        }
+      }
+    },
+    [getApplicationSettings, saveApplicationSettings, tableSchema]
+  );
 
   const handleAddFilter = useCallback(
     (filter: Filter) => {
@@ -33,6 +125,10 @@ export const useFilters = ({
 
   const handleDeleteFilter = useCallback(
     (filter: Filter) => {
+      console.log(`handleDeleteFilter`, {
+        filter,
+      });
+
       let index = -1;
       const newFilters = filters.filter((f, i) => {
         if (f !== filter) {
@@ -44,9 +140,10 @@ export const useFilters = ({
       });
       setFilters(newFilters);
       onFiltersChanged?.(newFilters);
+      removeFilterFromSettings(filter);
       return index;
     },
-    [filters, onFiltersChanged, setFilters]
+    [filters, onFiltersChanged, removeFilterFromSettings, setFilters]
   );
 
   const handleRenameFilter = useCallback(
@@ -62,9 +159,11 @@ export const useFilters = ({
       });
       setFilters(newFilters);
       onFiltersChanged?.(newFilters);
+      saveFilterToSettings(filter, name);
+
       return index;
     },
-    [filters, onFiltersChanged, setFilters]
+    [filters, onFiltersChanged, saveFilterToSettings, setFilters]
   );
 
   const handleChangeFilter = useCallback(

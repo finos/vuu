@@ -1,10 +1,13 @@
 import {
   DataSourceVisualLinkCreatedMessage,
+  isTypeaheadSuggestionProvider,
   SchemaColumn,
+  TypeaheadSuggestionProvider,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data";
 import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import { DataSourceFilter } from "@finos/vuu-data-types";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { TableConfig } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
@@ -15,6 +18,7 @@ import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
+import { TypeaheadParams } from "packages/vuu-protocol-types";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -39,6 +43,21 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   } = useMemo<FilterTableConfig>(() => load?.() ?? NO_CONFIG, [load]);
 
   const dataSource = useSessionDataSource({ tableSchema });
+
+  const getSuggestions = useCallback<SuggestionFetcher>(
+    ([, column, pattern]: TypeaheadParams) =>
+      (dataSource as TypeaheadSuggestionProvider).getTypeaheadSuggestions(
+        column,
+        pattern
+      ),
+    [dataSource]
+  );
+
+  const suggestionProvider = useMemo(() => {
+    if (isTypeaheadSuggestionProvider(dataSource)) {
+      return () => getSuggestions;
+    }
+  }, [dataSource, getSuggestions]);
 
   const activeRef = useRef<number[]>(
     filterbarConfigFromState?.activeFilterIndex ?? []
@@ -129,6 +148,11 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   const filterBarProps: FilterBarProps = {
+    FilterClauseEditorProps: suggestionProvider
+      ? {
+          suggestionProvider,
+        }
+      : undefined,
     activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
     filters,
     onApplyFilter: handleApplyFilter,
