@@ -18,6 +18,6 @@
     "@finos/vuu-utils": "0.0.26"
   },
   "peerDependencies": {
-    "react": "^17.0.2"
+    "react": ">=17.0.2"
   }
 }
