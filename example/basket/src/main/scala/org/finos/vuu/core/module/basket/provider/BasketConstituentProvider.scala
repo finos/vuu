@@ -4,25 +4,26 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.RunOnceLifeCycleRunner
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants
-import org.finos.vuu.core.module.basket.csv.CsvStaticLoader
+import org.finos.vuu.core.module.basket.csv.BasketLoader
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.DefaultProvider
 
 class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultProvider {
 
   private val runner = new RunOnceLifeCycleRunner("BasketConstituentProvider", runOnce)
+  private val basketLoader = new BasketLoader()
 
   lifecycle(this).dependsOn(runner)
 
   import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentColumnNames._
 
   def runOnce(): Unit = {
-    val baskets = CsvStaticLoader.load
+    val baskets = basketLoader.loadBasketIds()
     baskets.foreach(basketId => updateBasketConstituents(basketId))
   }
 
   def updateBasketConstituents(basketId: String): Unit = {
-    val list = CsvStaticLoader.loadConstituent(basketId)
+    val list = basketLoader.loadConstituents(basketId)
     list.foreach(row => {
 
       if (row.nonEmpty) {
