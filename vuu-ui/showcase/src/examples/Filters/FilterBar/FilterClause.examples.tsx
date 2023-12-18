@@ -181,14 +181,11 @@ export const NewFilterClause = () => {
   const onChange = (filterClause: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
-  const onClose = () => console.log("Closing filter component");
-
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
         filterClause={EMPTY_FILTER_CLAUSE}
         onChange={onChange}
-        onClose={onClose}
         suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
@@ -206,14 +203,11 @@ export const PartialFilterClauseColumnOnly = () => {
   const onChange = (filterClause?: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
-  const onClose = () => console.log("Closing filter component");
-
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
         filterClause={filterClause}
         onChange={onChange}
-        onClose={onClose}
         tableSchema={tableSchema}
       />
     </div>
@@ -232,14 +226,11 @@ export const PartialFilterClauseColumnAndOperator = () => {
   const onChange = (filterClause?: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
-  const onClose = () => console.log("Closing filter component");
-
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
         filterClause={filterClause}
         onChange={onChange}
-        onClose={onClose}
         tableSchema={tableSchema}
       />
     </div>
@@ -260,14 +251,11 @@ export const CompleteFilterClauseTextEquals = () => {
   const onChange = (filterClause?: Partial<FilterClause>) =>
     console.log("Filter Change", filterClause);
 
-  const onClose = () => console.log("Closing filter component");
-
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
         filterClause={filterClause}
         onChange={onChange}
-        onClose={onClose}
         tableSchema={tableSchema}
       />
     </div>

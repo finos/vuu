@@ -432,7 +432,7 @@ export const GroupedList = () => {
   );
 
   return (
-    <List
+    <List<any>
       aria-label="Listbox example"
       itemHeight={36}
       maxWidth={292}
@@ -456,7 +456,7 @@ export const GroupedListCollapsibleHeaders = () => {
   );
 
   return (
-    <List
+    <List<any>
       aria-label="Listbox example"
       collapsibleHeaders
       itemHeight={36}
