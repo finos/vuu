@@ -12,10 +12,11 @@ class BasketLoader(resourcePath: Option[String] = None) extends StrictLogging {
 
   def loadConstituents(basketId: String): Array[Map[String, Any]] = {
     try {
-      val csvFiles = FileLoader.getFiles(getPath(resourcePath), getBasketFileName(basketId))
+      val filePath = getPath(resourcePath)
+      val csvFiles = FileLoader.getFiles(filePath, getBasketFileName(basketId))
 
       if (csvFiles.isEmpty) {
-        logger.error(s"Failed to find constituents file for $basketId")
+        logger.error(s"Failed to find constituents file for $basketId in $filePath")
         Array.empty
       }
       else {
@@ -25,16 +26,16 @@ class BasketLoader(resourcePath: Option[String] = None) extends StrictLogging {
 
         logger.info(s"Found ${csvContent.dataRows.length} constituents for basket $basketId")
 
-        csvContent.dataRows.map(row => toConstituent(csvContent, row))
+        csvContent.dataRows.map(row => toConstituentMap(csvContent, row))
       }
     }
     catch {
-      case NonFatal(t) => logger.error(s"Failed to parse constituents for $basketId", t)
+      case NonFatal(t) => logger.error(s"Failed to get and parse constituents for $basketId", t)
         Array.empty
     }
   }
 
-  private def toConstituent(csvContent: CsvContent, row: Array[String]) = {
+  private def toConstituentMap(csvContent: CsvContent, row: Array[String]) = {
     Map[String, Any](
       "Symbol" -> csvContent.getValue("Symbol", row),
       "Last Trade" -> csvContent.getValue("Last Trade", row),
@@ -51,6 +52,12 @@ class BasketLoader(resourcePath: Option[String] = None) extends StrictLogging {
 
   private def getPath(resourcePath: Option[String] = None): String = {
     if (resourcePath.isDefined) resourcePath.get
-    else getClass.getResource("/static").getPath
+    else {
+      val url = getStaticResourcePath
+      if (url == null) "" else url.getPath
+    }
   }
+
+  private def getStaticResourcePath =
+    getClass.getResource("/static")
 }

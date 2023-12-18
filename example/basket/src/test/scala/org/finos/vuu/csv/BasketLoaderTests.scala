@@ -16,7 +16,7 @@ class BasketLoaderTests extends AnyFeatureSpec {
       assert(basketIds.contains(".FTSEWITHERROR"))
     }
 
-    Scenario("when no file found return empty") {
+    Scenario("When no file found return empty") {
       val testResourcePath = this.getClass.getResource("/constituents").getPath + "/doesNotExist"
       val basketLoader = new BasketLoader(Some(testResourcePath))
       val basketIds = basketLoader.loadBasketIds()
