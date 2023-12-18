@@ -42,7 +42,7 @@ export const DefaultFilterTableFeature = () => {
   return (
     <div style={{ display: "flex" }}>
       <LayoutProvider
-        layout={applicationLayout}
+        layout={applicationLayout.layout}
         onLayoutChange={handleLayoutChange}
       >
         <View
@@ -64,7 +64,7 @@ export const DefaultFilterTableFeature = () => {
             rowSeparators: true,
             zebraStripes: true,
           }}
-          source={savedLayoutJson}
+          source={savedLayoutJson as unknown as JsonData}
         />
       </div>
     </div>

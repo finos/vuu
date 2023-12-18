@@ -38,7 +38,7 @@ export const DefaultInstrumentPicker = () => {
 
   const itemToString = useCallback(
     (row: DataSourceRow) => {
-      return [row[columnMap.description]];
+      return String([row[columnMap.description]]);
     },
     [columnMap.description]
   );

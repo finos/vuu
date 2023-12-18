@@ -7,7 +7,6 @@ import {
   VuuSort,
   ClientToServerMenuRPC,
   ClientToServerEditRpc,
-  VuuColumnDataType,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
@@ -283,6 +282,10 @@ export class JsonDataSource
 
   get config() {
     return this.#config;
+  }
+
+  applyConfig() {
+    return true as const;
   }
 
   get selectedRowsCount() {

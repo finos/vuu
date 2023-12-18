@@ -40,4 +40,4 @@ export const GridLayoutC = () => {
     </GridLayout>
   );
 };
-GridLayoutB.displaySequence = displaySequence++;
+GridLayoutC.displaySequence = displaySequence++;
