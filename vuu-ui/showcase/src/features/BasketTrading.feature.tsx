@@ -3,9 +3,9 @@ import VuuBasketTradingFeature, {
   BasketTradingFeatureProps,
 } from "feature-basket-trading";
 
-import { getSchema, vuuModule, VuuModuleName } from "@finos/vuu-data-test";
+import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
 import { TableSchema } from "@finos/vuu-data-types";
-import { usePersistentState, useViewContext } from "@finos/vuu-layout";
+import { useViewContext } from "@finos/vuu-layout";
 import { useMemo } from "react";
 
 export const BasketTradingFeature = ({
@@ -15,7 +15,6 @@ export const BasketTradingFeature = ({
   basketTradingConstituentJoinSchema,
 }: BasketTradingFeatureProps) => {
   const { saveSession } = useViewContext();
-  const { saveSessionState } = usePersistentState();
 
   useMemo(() => {
     const dataSourceConfig: [
@@ -31,28 +30,18 @@ export const BasketTradingFeature = ({
         basketTradingConstituentJoinSchema,
         "BASKET",
       ],
+      ["data-source-basket-constituent", basketConstituentSchema, "BASKET"],
     ];
     for (const [key, schema, module] of dataSourceConfig) {
       const dataSource = vuuModule(module).createDataSource(schema.table.table);
       saveSession?.(dataSource, key);
     }
-
-    // save the basketConstituent table into session state for the Instrument Search Panel
-    const basketConstituentSchema = getSchema("basketConstituent");
-    const basketConstituentDataSource = vuuModule("BASKET").createDataSource(
-      basketConstituentSchema.table.table
-    );
-    saveSessionState(
-      "context-panel",
-      "instrument-search-BASKET-basketConstituent",
-      basketConstituentDataSource
-    );
   }, [
+    basketConstituentSchema,
     basketSchema,
     basketTradingConstituentJoinSchema,
     basketTradingSchema,
     saveSession,
-    saveSessionState,
   ]);
 
   return (

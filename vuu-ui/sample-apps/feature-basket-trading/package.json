@@ -14,16 +14,18 @@
   "sideEffects": [
     "**/*.css"
   ],
-  "devDependencies": {},
+  "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-filter-types": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26"
+  },
   "dependencies": {
     "@finos/vuu-data": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",
-    "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
-    "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
-    "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-shell": "0.0.26",
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-table-extras": "0.0.26",

@@ -2,6 +2,7 @@ import {
   ConnectionStatusMessage,
   VuuUIMessageOut,
   WebSocketProtocol,
+  WithRequestId,
 } from "@finos/vuu-data-types";
 import {
   ClientToServerMenuRPC,
@@ -12,7 +13,6 @@ import {
   isConnectionStatusMessage,
   logger,
 } from "@finos/vuu-utils";
-import { WithRequestId } from "./message-utils";
 import { ServerProxy } from "./server-proxy/server-proxy";
 import { connect as connectWebsocket } from "./websocket-connection";
 

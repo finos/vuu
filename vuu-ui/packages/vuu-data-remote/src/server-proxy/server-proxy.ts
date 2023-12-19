@@ -23,6 +23,7 @@ import {
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
+  WithRequestId,
 } from "@finos/vuu-data-types";
 import {
   ClientToServerBody,
@@ -47,7 +48,6 @@ import {
   isVuuMenuRpcRequest,
   isVuuRpcRequest,
   stripRequestId,
-  WithRequestId,
 } from "../message-utils";
 import * as Message from "./messages";
 import { getRpcServiceModule } from "./rpc-services";

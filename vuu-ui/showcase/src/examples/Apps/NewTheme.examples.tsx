@@ -29,7 +29,7 @@ const schemas = getAllSchemas();
 let displaySequence = 1;
 
 // Sort TableScheas by module
-export const byModule = (schema1: TableSchema, schema2: TableSchema) => {
+const byModule = (schema1: TableSchema, schema2: TableSchema) => {
   const m1 = schema1.table.module.toLowerCase();
   const m2 = schema2.table.module.toLowerCase();
   if (m1 < m2) {

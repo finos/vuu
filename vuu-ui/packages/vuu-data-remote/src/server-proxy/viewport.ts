@@ -16,6 +16,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
+  DataUpdateMode,
   Selection,
   TableSchema,
   WithFullConfig,
@@ -52,7 +53,6 @@ import {
   logger,
   RangeMonitor,
 } from "@finos/vuu-utils";
-import { DataUpdateMode } from "../data-source";
 import { getFirstAndLastRows } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";

@@ -1,17 +1,36 @@
-import {
+import type { Filter } from "@finos/vuu-filter-types";
+import type { MenuActionClosePopup } from "@finos/vuu-popups";
+import type {
+  ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  ClientToServerViewportRpcCall,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
+  VuuDataRowDto,
   VuuFilter,
   VuuGroupBy,
+  VuuLinkDescriptor,
   VuuMenu,
   VuuRowDataItemType,
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { Filter } from "@finos/vuu-filter-types";
-import { type MenuActionClosePopup } from "@finos/vuu-popups";
-import { type IEventEmitter } from "@finos/vuu-utils";
+import type { IEventEmitter } from "@finos/vuu-utils";
+import type {
+  DataSourceFilter,
+  MenuRpcResponse,
+  Selection,
+  TableSchema,
+} from "@finos/vuu-data-types";
+import type {
+  ClientToServerTableList,
+  ClientToServerTableMeta,
+  LinkDescriptorWithLabel,
+  ServerToClientViewportRpcResponse,
+  TypeAheadMethod,
+  VuuRange,
+} from "@finos/vuu-protocol-types";
 
 export interface DataSourceFilter extends VuuFilter {
   filterStruct?: Filter;
@@ -57,13 +76,13 @@ export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
   options?: unknown;
 }
 
-export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
-  children: ContextMenuItemDescriptor[];
-}
-
 export type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
+
+export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
+  children: ContextMenuItemDescriptor[];
+}
 
 export interface MessageWithClientViewportId {
   clientViewportId: string;
@@ -74,6 +93,8 @@ export interface DataSourceAggregateMessage
   aggregations: VuuAggregation[];
   type: "aggregate";
 }
+
+export type DataUpdateMode = "batch" | "update" | "size-only";
 
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
   mode: DataUpdateMode;
@@ -130,8 +151,7 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
 }
 
 export interface DataSourceSubscribedMessage
-  extends MessageWithClientViewportId,
-    MessageWithClientViewportId {
+  extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filter: DataSourceFilter;
@@ -189,6 +209,11 @@ export type DataSourceCallbackMessage =
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
   | DataSourceVisualLinksMessage;
+
+export type ConfigChangeColumnsMessage = {
+  type: "columns";
+  columns?: ColumnDescriptor[];
+};
 
 export type ConfigChangeMessage =
   | ConfigChangeColumnsMessage
@@ -444,27 +469,6 @@ export interface MenuRpcResponse {
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
-
-import {
-  ClientToServerTableList,
-  ClientToServerTableMeta,
-  LinkDescriptorWithLabel,
-  ServerToClientViewportRpcResponse,
-  TypeAheadMethod,
-  VuuAggregation,
-  VuuColumns,
-  VuuGroupBy,
-  VuuRange,
-  VuuSort,
-  VuuTable,
-} from "@finos/vuu-protocol-types";
-import {
-  DataSourceFilter,
-  MenuRpcResponse,
-  Selection,
-  TableSchema,
-} from "@finos/vuu-data-types";
-import { WithRequestId } from "./message-utils";
 
 export interface OpenDialogAction {
   type: "OPEN_DIALOG_ACTION";
@@ -732,6 +736,8 @@ export interface TypeAheadRpcRequest {
   params: [VuuTable, ...string[]];
   type: "RPC_CALL";
 }
+
+export type WithRequestId<T> = T & { requestId: string };
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect

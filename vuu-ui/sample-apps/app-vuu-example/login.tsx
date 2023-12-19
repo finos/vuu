@@ -1,11 +1,11 @@
+import { authenticate } from "@finos/vuu-data-remote";
+import { LoginPanel } from "@finos/vuu-shell";
+import { ThemeProvider } from "@finos/vuu-utils";
 import React from "react";
 import ReactDOM from "react-dom";
-import { LoginPanel, ThemeProvider } from "@finos/vuu-shell";
-import { authenticate } from "@finos/vuu-data";
 
 import "@finos/vuu-icons/index.css";
 import "@finos/vuu-theme/index.css";
-
 import "./login.css";
 
 async function login(username: string, password = "password") {

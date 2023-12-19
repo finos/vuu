@@ -1,11 +1,10 @@
-import { RemoteDataSource } from "@finos/vuu-data";
-
+import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import { metadataKeys } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils/useAutoLoginToVuuServer";
-import { metadataKeys } from "@finos/vuu-utils";
-import { DataSourceRow } from "@finos/vuu-data-types";
 
 import "./Performance.examples.css";
 

@@ -13,8 +13,6 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 
-export type DataUpdateMode = "batch" | "update" | "size-only";
-
 export const isSizeOnly = (
   message: DataSourceCallbackMessage
 ): message is DataSourceDataSizeMessage =>
@@ -56,11 +54,6 @@ const datasourceMessages = [
   "sort",
   "subscribed",
 ];
-
-export type ConfigChangeColumnsMessage = {
-  type: "columns";
-  columns?: ColumnDescriptor[];
-};
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown

@@ -3,6 +3,7 @@ import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
+  StackLayout,
 } from "@finos/vuu-layout";
 import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
 import {
@@ -30,6 +31,12 @@ import {
   loadingApplicationJson,
   useLayoutContextMenuItems,
 } from "./layout-persistence";
+
+if (typeof StackLayout !== "function") {
+  console.warn(
+    "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
+  );
+}
 
 export type VuuUser = {
   username: string;

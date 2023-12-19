@@ -1,5 +1,5 @@
 import { Table } from "@finos/vuu-table";
-import { ArrayDataSource } from "@finos/vuu-data";
+import { ArrayDataSource } from "@finos/vuu-data-local";
 import { useMemo } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 

@@ -1,4 +1,4 @@
-import { DataSource, TableSchema } from "@finos/vuu-data";
+import { DataSource, TableSchema } from "@finos/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,

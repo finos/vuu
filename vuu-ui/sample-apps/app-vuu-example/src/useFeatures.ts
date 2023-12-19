@@ -1,4 +1,5 @@
 import { useVuuTables } from "@finos/vuu-data-react";
+import { TableSchema } from "@finos/vuu-data-types";
 import {
   FeatureProps,
   Features,
@@ -6,7 +7,6 @@ import {
   isWildcardSchema,
 } from "@finos/vuu-shell";
 import { wordify } from "@finos/vuu-utils";
-import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
 
 export interface FeaturesHookProps {

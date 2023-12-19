@@ -1,10 +1,10 @@
+import { RemoteDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
-  RemoteDataSource,
+  DataSourceFilter,
   TableSchema,
-} from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+} from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";

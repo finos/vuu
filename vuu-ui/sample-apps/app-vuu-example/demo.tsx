@@ -1,7 +1,7 @@
+import { LoginPanel } from "@finos/vuu-shell";
+import { ThemeProvider, uuid } from "@finos/vuu-utils";
 import React from "react";
 import ReactDOM from "react-dom";
-import { LoginPanel, ThemeProvider } from "@finos/vuu-shell";
-import { uuid } from "@finos/vuu-utils";
 
 import "@finos/vuu-icons/index.css";
 import "@finos/vuu-theme/index.css";

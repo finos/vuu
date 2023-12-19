@@ -2,7 +2,7 @@ import {
   MenuRpcResponse,
   OpenDialogAction,
   TableSchema,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-types";
 import { FormConfig, FormFieldDescriptor } from "@finos/vuu-shell";
 
 const static_config: { [key: string]: Partial<FormConfig> } = {

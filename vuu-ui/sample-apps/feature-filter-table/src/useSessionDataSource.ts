@@ -1,10 +1,10 @@
+import { RemoteDataSource } from "@finos/vuu-data-remote";
 import {
-  configChanged,
   DataSource,
   DataSourceConfig,
-  RemoteDataSource,
   TableSchema,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-types";
+import { configChanged } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo } from "react";
 
@@ -15,8 +15,10 @@ type SessionDataSourceConfig = {
 const NO_CONFIG: SessionDataSourceConfig = {};
 
 export const useSessionDataSource = ({
+  dataSourceSessionKey = "data-source",
   tableSchema,
 }: {
+  dataSourceSessionKey?: string;
   tableSchema: TableSchema;
 }) => {
   const { id, load, save, loadSession, saveSession, title } = useViewContext();
@@ -38,10 +40,10 @@ export const useSessionDataSource = ({
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
+    let ds = loadSession?.(dataSourceSessionKey) as RemoteDataSource;
     if (ds) {
       console.log(
-        "%cFilterTableFeature DATA SOURCE IN SESSION STATE",
+        "%useSessionDataSource DATA SOURCE IN SESSION STATE",
         "color:red;font-weight:bold;"
       );
 

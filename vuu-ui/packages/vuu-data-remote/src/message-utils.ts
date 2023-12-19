@@ -2,6 +2,7 @@ import {
   SchemaColumn,
   TableSchema,
   VuuUIMessageOut,
+  WithRequestId,
 } from "@finos/vuu-data-types";
 import {
   ClientToServerMenuRPC,
@@ -37,8 +38,6 @@ export const isVuuRpcRequest = (
     | ClientToServerViewportRpcCall
 ): message is ClientToServerViewportRpcCall =>
   message["type"] === "VIEW_PORT_RPC_CALL";
-
-export type WithRequestId<T> = T & { requestId: string };
 
 export const stripRequestId = <T>({
   requestId,

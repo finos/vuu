@@ -1,15 +1,16 @@
+import { ThemeSwitch } from "@finos/vuu-shell";
+import { ThemeMode, ThemeProvider } from "@finos/vuu-utils";
+import cx from "classnames";
 import {
   HTMLAttributes,
   MouseEventHandler,
   useCallback,
   useState,
 } from "react";
-import cx from "classnames";
-import { ThemeMode, ThemeProvider, ThemeSwitch } from "@finos/vuu-shell";
 
-import "./ThemedPanel.css";
 import { useContextMenu } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
+import "./ThemedPanel.css";
 
 const classBase = "vuuThemedPanel";
 
