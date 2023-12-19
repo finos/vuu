@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { metadataKeys } from "@finos/vuu-utils";
@@ -51,7 +51,7 @@ export const TreePerformance = () => {
     });
 
   const [dataSourceParent, dataSourceChild] = useMemo(() => {
-    const dsParentOrders = new RemoteDataSource({
+    const dsParentOrders = new VuuDataSource({
       bufferSize: 0,
       columns: ["id", "ric"],
       table: { table: "parentOrders", module: "SIMUL" },
@@ -67,7 +67,7 @@ export const TreePerformance = () => {
     });
 
     // create a separate viewport to track childORders size, otw size is affected by groupBy, filter
-    const dsChildOrdersSize = new RemoteDataSource({
+    const dsChildOrdersSize = new VuuDataSource({
       bufferSize: 0,
       columns: ["id"],
       table: { table: "childOrders", module: "SIMUL" },
@@ -79,7 +79,7 @@ export const TreePerformance = () => {
       }
     });
 
-    const dsChildOrders = new RemoteDataSource({
+    const dsChildOrders = new VuuDataSource({
       bufferSize: 0,
       columns: [
         "id",

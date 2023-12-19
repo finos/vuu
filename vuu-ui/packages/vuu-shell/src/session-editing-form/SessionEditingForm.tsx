@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import { DataSource, TableSchema } from "@finos/vuu-data-types";
 import {
   VuuColumnDataType,
@@ -135,7 +135,7 @@ const getDataSource = (
   if (dataSource) {
     return dataSource;
   } else if (schema) {
-    return new RemoteDataSource({
+    return new VuuDataSource({
       bufferSize: 0,
       table: schema.table,
       columns: schema.columns.map((col) => col.name),

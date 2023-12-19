@@ -90,6 +90,7 @@ export const useBasketTrading = ({
   } = useBasketTradingDataSources({
     basketInstanceId,
     basketSchema,
+    basketConstituentSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
   });

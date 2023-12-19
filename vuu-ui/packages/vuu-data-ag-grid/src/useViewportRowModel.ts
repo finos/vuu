@@ -6,7 +6,7 @@ import {
   VuuMenuActionHandler,
   VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 
 import { RpcResponseHandler, VuuFeatureMessage } from "@finos/vuu-data-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
@@ -86,7 +86,7 @@ export const agSortChangedEventToVuuSortDef = (evt: AgSortChangedEvent) => {
 
 export interface ViewportRowModelHookProps {
   columns?: ColumnDescriptor[];
-  dataSource: RemoteDataSource;
+  dataSource: VuuDataSource;
   onFeatureEnabled?: (message: VuuFeatureMessage) => void;
   onRpcResponse?: RpcResponseHandler;
   vuuMenuActionHandler?: VuuMenuActionHandler;

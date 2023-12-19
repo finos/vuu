@@ -1,5 +1,5 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
@@ -70,9 +70,9 @@ export const useBasketTradingDataSources = ({
 
     const dataSources: DataSource[] = [];
     for (const [key, schema, bufferSize, config] of dataSourceConfig) {
-      let dataSource = loadSession?.(key) as RemoteDataSource;
+      let dataSource = loadSession?.(key) as VuuDataSource;
       if (dataSource === undefined) {
-        dataSource = new RemoteDataSource({
+        dataSource = new VuuDataSource({
           ...config,
           bufferSize,
           viewport: `${id}-${key}`,

@@ -3,7 +3,7 @@ import {
   ListOption,
   LookupTableDetails,
 } from "@finos/vuu-table-types";
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import { useShellContext } from "@finos/vuu-shell";
 import {
   buildColumnMap,
@@ -29,7 +29,7 @@ const loadLookupValues = ({
     const promise: Promise<ListOption[]> = new Promise((resolve) => {
       const columns = [valueColumn, labelColumn];
       const columnMap = buildColumnMap(columns);
-      const dataSource = new RemoteDataSource({
+      const dataSource = new VuuDataSource({
         bufferSize: 0,
         table,
       });

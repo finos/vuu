@@ -52,14 +52,14 @@ import { MenuRpcResponse } from "@finos/vuu-data-types";
 
 type RangeRequest = (range: VuuRange) => void;
 
-const { info } = logger("RemoteDataSource");
+const { info } = logger("VuuDataSource");
 
 const { KEY } = metadataKeys;
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export class RemoteDataSource
+export class VuuDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {

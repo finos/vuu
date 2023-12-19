@@ -3,11 +3,8 @@ import {
   DataSourceConfig,
   DataSourceConfigMessage,
   DataSourceDataSizeMessage,
-  WithFullConfig,
 } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  LinkDescriptorWithLabel,
   ServerToClientBody,
   ServerToClientMenuSessionTableAction,
   VuuTable,

@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
@@ -40,7 +40,7 @@ export const useSessionDataSource = ({
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.(dataSourceSessionKey) as RemoteDataSource;
+    let ds = loadSession?.(dataSourceSessionKey) as VuuDataSource;
     if (ds) {
       console.log(
         "%useSessionDataSource DATA SOURCE IN SESSION STATE",
@@ -67,7 +67,7 @@ export const useSessionDataSource = ({
       dataSourceConfigFromState?.columns ??
       tableSchema.columns.map((col) => col.name);
 
-    ds = new RemoteDataSource({
+    ds = new VuuDataSource({
       bufferSize: 0,
       // bufferSize: 200,
       viewport: id,

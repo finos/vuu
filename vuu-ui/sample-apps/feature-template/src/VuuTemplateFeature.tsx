@@ -1,4 +1,4 @@
-import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
@@ -33,12 +33,12 @@ const VuuTemplateFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
+    let ds = loadSession?.("data-source") as VuuDataSource;
     if (ds) {
       return ds;
     }
 
-    ds = new RemoteDataSource({
+    ds = new VuuDataSource({
       bufferSize: 200,
       viewport: id,
       table: tableSchema.table,
