@@ -1,9 +1,7 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { DensitySwitch, ThemeSwitch } from "@finos/vuu-shell";
 import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 import { Density, ThemeMode, ThemeProvider } from "@finos/vuu-utils";
 import { Button, Text } from "@salt-ds/core";
-import { Dropdown } from "@salt-ds/lab";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
@@ -148,15 +146,6 @@ export const App = ({ stories }: AppProps) => {
                 }}
                 data-mode="light"
               >
-                <Dropdown
-                  className="vuu-ThemePicker"
-                  source={availableThemes}
-                  selected={theme}
-                  onSelectionChange={handleThemeChange}
-                />
-
-                <DensitySwitch onChange={setDensity} />
-                <ThemeSwitch onChange={setThemeMode} />
                 <Button
                   data-align="end"
                   data-icon="open-in"

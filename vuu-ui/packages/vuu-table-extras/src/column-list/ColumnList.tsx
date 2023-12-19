@@ -1,13 +1,12 @@
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   List,
   ListItem,
   ListItemProps,
   ListProps,
 } from "@finos/vuu-ui-controls";
-import { Checkbox } from "@salt-ds/core";
-import { Switch } from "@salt-ds/lab";
+import { Checkbox, Switch } from "@salt-ds/core";
 import cx from "classnames";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   HTMLAttributes,
   MouseEventHandler,
@@ -15,9 +14,9 @@ import {
   useCallback,
 } from "react";
 import { ColumnItem } from "../table-settings";
+import { getColumnLabel } from "@finos/vuu-utils";
 
 import "./ColumnList.css";
-import { getColumnLabel } from "@finos/vuu-utils";
 
 const classBase = "vuuColumnList";
 const classBaseListItem = "vuuColumnListItem";

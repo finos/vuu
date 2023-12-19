@@ -10,12 +10,16 @@ import {
 import { Input } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, RefCallback, useCallback } from "react";
-import "./SearchCell";
+import { SearchCell } from "./SearchCell";
 
 import "./InstrumentSearch.css";
 import { useInstrumentSearch } from "./useInstrumentSearch";
 
 const classBase = "vuuInstrumentSearch";
+
+if (typeof SearchCell !== "function") {
+  console.warn("Instrument Search: SearchCell module not loaded ");
+}
 
 const defaultTableConfig: TableConfig = {
   columns: [

@@ -12,7 +12,7 @@ import "./InstrumentPicker.css";
 const classBase = "vuuInstrumentPicker";
 
 if (typeof SearchCell !== "function") {
-  console.warn("Instrument Picker: SearchCell modulke not loaded ");
+  console.warn("Instrument Picker: SearchCell module not loaded ");
 }
 
 export interface InstrumentPickerProps
