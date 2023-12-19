@@ -1,5 +1,4 @@
-import { DataSource } from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { buildColumnMap } from "@finos/vuu-utils";

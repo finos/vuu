@@ -1,23 +1,9 @@
-import type { SchemaColumn, TableSchema } from "@finos/vuu-data";
-import type { DataSourceFilter, DataSourceRow } from "@finos/vuu-data-types";
 import type {
-  ColumnAlignment,
-  ColumnDescriptor,
-  ColumnType,
-  ColumnTypeDescriptor,
-  ColumnTypeRendering,
-  ColumnTypeWithValidationRules,
-  GroupColumnDescriptor,
-  RuntimeColumnDescriptor,
-  MappedValueTypeRenderer,
-  PinLocation,
-  TableHeading,
-  TableHeadings,
-  ColumnTypeFormatting,
-  LookupRenderer,
-  ValueListRenderer,
-  DateTimeColumnTypeSimple,
-} from "@finos/vuu-table-types";
+  DataSourceFilter,
+  DataSourceRow,
+  SchemaColumn,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
   VuuAggregation,
@@ -28,7 +14,25 @@ import type {
   VuuRowRecord,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { DefaultColumnConfiguration } from "@finos/vuu-shell";
+import type {
+  ColumnAlignment,
+  ColumnDescriptor,
+  ColumnType,
+  ColumnTypeDescriptor,
+  ColumnTypeFormatting,
+  ColumnTypeRendering,
+  ColumnTypeWithValidationRules,
+  DateTimeColumnTypeSimple,
+  DefaultColumnConfiguration,
+  GroupColumnDescriptor,
+  LookupRenderer,
+  MappedValueTypeRenderer,
+  PinLocation,
+  RuntimeColumnDescriptor,
+  TableHeading,
+  TableHeadings,
+  ValueListRenderer,
+} from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
 import { isFilterClause, isMultiClauseFilter } from "./filter-utils";

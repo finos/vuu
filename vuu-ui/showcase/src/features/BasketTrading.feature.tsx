@@ -1,12 +1,12 @@
 import VuuBasketTradingFeature, {
-  BasketTradingFeatureProps,
   basketDataSourceKey,
+  BasketTradingFeatureProps,
 } from "feature-basket-trading";
 
+import { getSchema, vuuModule, VuuModuleName } from "@finos/vuu-data-test";
+import { TableSchema } from "@finos/vuu-data-types";
 import { usePersistentState, useViewContext } from "@finos/vuu-layout";
-import { TableSchema } from "@finos/vuu-data";
 import { useMemo } from "react";
-import { vuuModule, VuuModuleName, getSchema } from "@finos/vuu-data-test";
 
 export const BasketTradingFeature = ({
   basketSchema,

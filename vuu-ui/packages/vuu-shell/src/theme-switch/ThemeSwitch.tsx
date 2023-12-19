@@ -1,7 +1,7 @@
 import cx from "classnames";
 import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
 import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
-import { ThemeMode } from "../theme-provider";
+import { ThemeMode } from "@finos/vuu-utils";
 
 import "./ThemeSwitch.css";
 

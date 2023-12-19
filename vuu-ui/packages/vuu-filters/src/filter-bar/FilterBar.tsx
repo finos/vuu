@@ -1,5 +1,4 @@
-import { TableSchema } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";

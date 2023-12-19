@@ -1,18 +1,17 @@
 import {
+  ContextMenuItemDescriptor,
   DataSource,
+  DataSourceRow,
   DataSourceVisualLinkCreatedMessage,
+  MenuActionHandler,
+  MenuBuilder,
   MenuRpcResponse,
   ViewportRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
-} from "@finos/vuu-data";
-import {
-  ContextMenuItemDescriptor,
-  DataSourceRow,
-  MenuActionHandler,
-  MenuBuilder,
 } from "@finos/vuu-data-types";
 import { getFilterPredicate } from "@finos/vuu-filter-parser";
+import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -29,7 +28,6 @@ import {
   isGroupMenuItemDescriptor,
   metadataKeys,
 } from "@finos/vuu-utils";
-import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import { useCallback } from "react";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";

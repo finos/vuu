@@ -1,7 +1,7 @@
+import { useId } from "@finos/vuu-utils";
 import { MouseEvent, ReactNode, useCallback, useRef, useState } from "react";
 import { TooltipProps } from "./Tooltip";
 import { TooltipPlacement } from "./useAnchoredPosition";
-import { useId } from "@finos/vuu-layout";
 
 export interface TooltipHookProps {
   id: string;

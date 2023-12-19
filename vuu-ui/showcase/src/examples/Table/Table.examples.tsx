@@ -6,7 +6,9 @@ import {
 } from "@finos/vuu-data-test";
 import {
   ColumnDescriptor,
+  DefaultColumnConfiguration,
   GroupColumnDescriptor,
+  HeaderCellProps,
   TableConfig,
 } from "@finos/vuu-table-types";
 import {
@@ -17,13 +19,8 @@ import {
   Toolbar,
   View,
 } from "@finos/vuu-layout";
-import { ContextPanel, DefaultColumnConfiguration } from "@finos/vuu-shell";
-import {
-  GroupHeaderCellNext,
-  HeaderCellProps,
-  Table,
-  TableProps,
-} from "@finos/vuu-table";
+import { ContextPanel } from "@finos/vuu-shell";
+import { GroupHeaderCellNext, Table, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,

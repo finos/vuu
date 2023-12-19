@@ -12,6 +12,7 @@
   "types": "src/index.ts",
   "dependencies": {
     "@salt-ds/core": "1.8.0",
+    "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-table": "0.0.26",
@@ -23,5 +24,6 @@
     "classnames": "^2.2.6",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
-  }
+  },
+  "sideEffects": false
 }

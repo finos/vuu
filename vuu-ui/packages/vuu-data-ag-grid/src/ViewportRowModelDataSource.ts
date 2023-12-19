@@ -1,16 +1,17 @@
 import {
   DataSource,
   DataSourceConfig,
-  isVuuFeatureAction,
   SubscribeCallback,
   VuuFeatureMessage,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-types";
+import {} from "@finos/vuu-data-remote";
 import { Filter } from "@finos/vuu-filter-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
   itemsOrOrderChanged,
+  isVuuFeatureAction,
   metadataKeys,
 } from "@finos/vuu-utils";
 import { AgDataWindow } from "./AgDataWindow";

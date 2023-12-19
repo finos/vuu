@@ -1,9 +1,4 @@
-import {
-  RowClickHandler,
-  Selection,
-  SelectionChangeHandler,
-  TableSelectionModel,
-} from "@finos/vuu-table-types";
+import { RowClickHandler, TableSelectionModel } from "@finos/vuu-table-types";
 import {
   deselectItem,
   dispatchMouseEvent,
@@ -11,7 +6,11 @@ import {
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import {
+  DataSourceRow,
+  Selection,
+  SelectionChangeHandler,
+} from "packages/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,

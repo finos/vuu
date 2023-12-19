@@ -1,6 +1,6 @@
 import { Button } from "@salt-ds/core";
 import { HTMLAttributes, useMemo, useState } from "react";
-import { QueryReponse, useViewContext } from "@finos/vuu-layout";
+import { QueryReponse, useViewContext } from "../layout-view";
 
 import "./LayoutStartPanel.css";
 

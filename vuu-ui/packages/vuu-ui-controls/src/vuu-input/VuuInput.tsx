@@ -1,5 +1,6 @@
+import { Tooltip, useTooltip } from "@finos/vuu-popups";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { isValidNumber } from "@finos/vuu-utils";
+import { isValidNumber, useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
 import cx from "classnames";
 import {
@@ -11,8 +12,6 @@ import {
   SyntheticEvent,
   useCallback,
 } from "react";
-import { Tooltip, useTooltip } from "@finos/vuu-popups";
-import { useId } from "@finos/vuu-layout";
 
 import "./VuuInput.css";
 

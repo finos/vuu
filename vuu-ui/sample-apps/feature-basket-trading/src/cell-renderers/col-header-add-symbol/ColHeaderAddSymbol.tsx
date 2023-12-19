@@ -45,6 +45,6 @@ export const ColHeaderAddSymbol = () => {
 registerComponent(
   "col-header-add-symbol",
   ColHeaderAddSymbol,
-  "cell-renderer",
+  "column-header-content-renderer",
   {}
 );

@@ -1,7 +1,7 @@
 import { TableProps } from "@finos/vuu-table";
 import { JsonData } from "@finos/vuu-utils";
 import { Table } from "@finos/vuu-table";
-import { JsonDataSource } from "@finos/vuu-data";
+import { JsonDataSource } from "@finos/vuu-data-local";
 import { useEffect, useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
 

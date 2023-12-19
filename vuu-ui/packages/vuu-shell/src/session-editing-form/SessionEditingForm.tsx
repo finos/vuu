@@ -1,3 +1,19 @@
+import { RemoteDataSource } from "@finos/vuu-data-remote";
+import { DataSource, TableSchema } from "@finos/vuu-data-types";
+import {
+  VuuColumnDataType,
+  VuuDataRow,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
+import {
+  buildColumnMap,
+  hasAction,
+  isErrorResponse,
+  isValidNumber,
+  shallowEquals,
+} from "@finos/vuu-utils";
+import { Button, useIdMemo } from "@salt-ds/core";
+import cx from "classnames";
 import {
   ChangeEvent,
   FocusEvent,
@@ -8,22 +24,6 @@ import {
   useRef,
   useState,
 } from "react";
-import cx from "classnames";
-import {
-  VuuColumnDataType,
-  VuuDataRow,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
-import { useIdMemo } from "@salt-ds/core";
-import { Button } from "@salt-ds/core";
-import {
-  DataSource,
-  hasAction,
-  isErrorResponse,
-  RemoteDataSource,
-  TableSchema,
-} from "@finos/vuu-data";
-import { buildColumnMap, isValidNumber, shallowEquals } from "@finos/vuu-utils";
 
 import "./SessionEditingForm.css";
 

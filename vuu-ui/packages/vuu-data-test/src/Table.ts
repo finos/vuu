@@ -1,4 +1,4 @@
-import { SchemaColumn, TableSchema } from "@finos/vuu-data";
+import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { ColumnMap, EventEmitter } from "@finos/vuu-utils";
 import { UpdateGenerator } from "./rowUpdates";

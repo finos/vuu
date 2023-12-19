@@ -2,7 +2,7 @@ import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { RowAtPositionFunc } from "@finos/vuu-utils";
 import { useCallback, useEffect, useRef } from "react";
-import { ViewportMeasurements } from "@finos/vuu-table";
+import { ViewportMeasurements } from "./useTableViewport";
 
 export interface VirtualViewportHookProps {
   columns: RuntimeColumnDescriptor[];

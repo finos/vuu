@@ -1,9 +1,9 @@
-import { DataSource } from "@finos/vuu-data";
-import { HTMLAttributes, useEffect, useState } from "react";
+import { DataSource } from "@finos/vuu-data-types";
+import { VuuRange } from "@finos/vuu-protocol-types";
 import cx from "classnames";
+import { HTMLAttributes, useEffect, useState } from "react";
 
 import "./DatasourceStats.css";
-import { VuuRange } from "@finos/vuu-protocol-types";
 
 interface DataSourceStatsProps extends HTMLAttributes<HTMLSpanElement> {
   dataSource: DataSource;

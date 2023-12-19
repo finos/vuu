@@ -3,7 +3,7 @@ import {
   ListOption,
   LookupTableDetails,
 } from "@finos/vuu-table-types";
-import { RemoteDataSource } from "@finos/vuu-data";
+import { RemoteDataSource } from "@finos/vuu-data-remote";
 import { useShellContext } from "@finos/vuu-shell";
 import {
   buildColumnMap,

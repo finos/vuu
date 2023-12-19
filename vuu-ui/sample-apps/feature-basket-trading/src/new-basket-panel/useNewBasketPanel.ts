@@ -1,8 +1,4 @@
-import {
-  ClientToServerMenuRPC,
-  VuuMenu,
-  VuuMenuItem,
-} from "@finos/vuu-protocol-types";
+import { VuuMenu, VuuMenuItem } from "@finos/vuu-protocol-types";
 import { TableRowSelectHandler } from "@finos/vuu-table";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";

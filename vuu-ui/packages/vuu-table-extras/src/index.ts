@@ -8,4 +8,3 @@ export * from "./column-expression-panel";
 export * from "./column-formatting-settings";
 export * from "./datasource-stats";
 export * from "./table-settings";
-export * from "./useTableAndColumnSettings";

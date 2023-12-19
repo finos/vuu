@@ -1,12 +1,16 @@
-import { SchemaColumn } from "@finos/vuu-data";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { SchemaColumn } from "@finos/vuu-data-types";
 import { updateTableConfig } from "@finos/vuu-table";
+import {
+  ColumnDescriptor,
+  TableConfig,
+  TableSettingsProps,
+} from "@finos/vuu-table-types";
 import {
   addColumnToSubscribedColumns,
   isCalculatedColumn,
   moveItem,
   subscribedOnly,
+  useLayoutEffectSkipFirst,
 } from "@finos/vuu-utils";
 import {
   MouseEvent,
@@ -16,7 +20,6 @@ import {
   useState,
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
-import { TableSettingsProps } from "./TableSettingsPanel";
 
 const sortOrderFromAvailableColumns = (
   availableColumns: SchemaColumn[],

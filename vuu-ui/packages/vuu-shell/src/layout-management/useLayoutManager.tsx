@@ -8,17 +8,19 @@ import React, {
 import {
   ApplicationJSON,
   ApplicationSettings,
-  loadingApplicationJson,
   LayoutJSON,
-  LayoutPersistenceManager,
-  LocalLayoutPersistenceManager,
-  RemoteLayoutPersistenceManager,
   resolveJSONPath,
-  defaultApplicationJson,
   ApplicationSetting,
 } from "@finos/vuu-layout";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
+import {
+  defaultApplicationJson,
+  LayoutPersistenceManager,
+  loadingApplicationJson,
+  LocalLayoutPersistenceManager,
+  RemoteLayoutPersistenceManager,
+} from "../layout-persistence";
 
 let _persistenceManager: LayoutPersistenceManager;
 

@@ -1,9 +1,9 @@
+import { SchemaColumn } from "@finos/vuu-data-types";
 import {
   ColumnItem,
   ColumnList,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { SchemaColumn } from "@finos/vuu-data";
 import { TableConfig } from "@finos/vuu-table-types";
 import { useMemo } from "react";
 
@@ -162,7 +162,6 @@ export const DefaultSettingsPanel = () => {
       onAddCalculatedColumn={() => console.log("add calculated column")}
       onConfigChange={handleConfigChange}
       onDataSourceConfigChange={() => console.log("data source congig change")}
-      style={{ width: 252 }}
       tableConfig={tableConfig}
     />
   );

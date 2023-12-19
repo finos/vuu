@@ -1,10 +1,12 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 import { Table, TableProps } from "@finos/vuu-table";
+import {
+  ColumnDescriptor,
+  DefaultColumnConfiguration,
+} from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
-import { ColumnDescriptor } from "packages/vuu-table-types";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 

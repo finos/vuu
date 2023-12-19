@@ -1,15 +1,10 @@
-import {
-  Selection,
-  SelectionChangeHandler,
-  TableConfig,
-} from "@finos/vuu-table-types";
+import { Selection, SelectionChangeHandler } from "@finos/vuu-data-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { List, ListItem } from "@salt-ds/lab";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils";
-import { DefaultColumnConfiguration } from "@finos/vuu-shell";
 
 let displaySequence = 1;
 

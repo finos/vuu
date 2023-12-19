@@ -1,7 +1,10 @@
 //TODO stansardise this
 
-import { DataSource, SubscribeCallback } from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  DataSource,
+  DataSourceRow,
+  SubscribeCallback,
+} from "@finos/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 export interface DataSourceHookProps {

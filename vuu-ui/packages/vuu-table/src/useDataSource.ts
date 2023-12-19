@@ -1,13 +1,13 @@
 import {
   DataSource,
+  DataSourceRow,
   DataSourceSubscribedMessage,
-  isVuuFeatureInvocation,
   SubscribeCallback,
   VuuFeatureInvocationMessage,
-} from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
+} from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
+import { GridAction } from "packages/vuu-table-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 
@@ -20,6 +20,11 @@ export interface DataSourceHookProps {
   range?: VuuRange;
   renderBufferSize?: number;
 }
+
+export const isVuuFeatureInvocation = (
+  action: GridAction
+): action is VuuFeatureInvocationMessage =>
+  action.type === "vuu-link-created" || action.type === "vuu-link-removed";
 
 export const useDataSource = ({
   dataSource,

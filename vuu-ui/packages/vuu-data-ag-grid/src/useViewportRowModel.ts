@@ -1,16 +1,4 @@
 import {
-  DataSourceConfig,
-  isViewportMenusAction,
-  isVisualLinksAction,
-  MenuRpcResponse,
-  RemoteDataSource,
-  RpcResponseHandler,
-  VuuFeatureMessage,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
-} from "@finos/vuu-data";
-
-import {
   MenuActionConfig,
   SuggestionFetcher,
   useTypeaheadSuggestions,
@@ -18,10 +6,17 @@ import {
   VuuMenuActionHandler,
   VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
+import { RemoteDataSource } from "@finos/vuu-data-remote";
 
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { RpcResponseHandler, VuuFeatureMessage } from "@finos/vuu-data-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
-import { buildColumnMap, itemsOrOrderChanged } from "@finos/vuu-utils";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
+import {
+  buildColumnMap,
+  isViewportMenusAction,
+  isVisualLinksAction,
+  itemsOrOrderChanged,
+} from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgData } from "./AgDataWindow";
 import {
@@ -101,9 +96,8 @@ type GroupByConfigChange = {
   groupBy: VuuGroupBy;
 };
 
-const hasGroupByChange = (
-  message?: Partial<DataSourceConfig>
-): message is GroupByConfigChange => Array.isArray(message?.groupBy);
+const hasGroupByChange = (message?: unknown): message is GroupByConfigChange =>
+  Array.isArray((message as GroupByConfigChange).groupBy);
 
 export const useViewportRowModel = ({
   columns,

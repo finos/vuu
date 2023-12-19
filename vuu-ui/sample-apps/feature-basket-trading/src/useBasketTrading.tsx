@@ -14,7 +14,10 @@ import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
-import { SubscribeCallback, ViewportRpcResponse } from "packages/vuu-data/src";
+import {
+  SubscribeCallback,
+  ViewportRpcResponse,
+} from "packages/vuu-data-remote/src";
 
 export class Basket {
   basketId: string;

@@ -18,7 +18,6 @@ export async function build(config) {
     target = ["es2020", "chrome79"],
     write = true,
   } = config;
-
   return esbuild({
     entryPoints,
     banner,

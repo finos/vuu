@@ -1,5 +1,5 @@
+import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { InputProps, useControlled } from "@salt-ds/core";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
 import {
   ChangeEvent,
   FocusEvent,

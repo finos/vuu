@@ -1,8 +1,8 @@
-import { SubscribeCallback } from "@finos/vuu-data";
 import { useServerConnectionQuality } from "@finos/vuu-data-react";
-import { ErrorDisplay, useTestDataSource } from "../utils";
-import { useCallback } from "react";
 import { getAllSchemas } from "@finos/vuu-data-test";
+import { SubscribeCallback } from "@finos/vuu-data-types";
+import { useCallback } from "react";
+import { ErrorDisplay, useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 

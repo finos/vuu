@@ -32,16 +32,19 @@
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
     "global.d.ts"
-, "packages/vuu-data-test/src/UpdateGenerator.ts"  ],
+, "packages/vuu-data-test/src/UpdateGenerator.ts", "sample-apps/standalone-table/index.tsx"  ],
   "exclude": [
     "**/*.cy.*",
     "**/*.test.*"
   ],
   "references": [
     {"path" : "packages/vuu-codemirror"},
-    {"path" : "packages/vuu-data"},
+    {"path" : "packages/vuu-data-local"},
+    {"path" : "packages/vuu-data-remote"},
+    {"path" : "packages/vuu-data-types"},
     {"path" : "packages/vuu-data-ag-grid"},
     {"path" : "packages/vuu-data-react"},
+    {"path" : "packages/vuu-data-test"},
     {"path" : "packages/vuu-data-types"},
     {"path" : "packages/vuu-datatable"},
     {"path" : "packages/vuu-filter-parser"},

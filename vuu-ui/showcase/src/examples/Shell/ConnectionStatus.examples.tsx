@@ -1,4 +1,4 @@
-import { ConnectionStatus } from "@finos/vuu-data";
+import { ConnectionStatus } from "@finos/vuu-data-types";
 import { ConnectionStatusIcon } from "@finos/vuu-shell";
 
 let displaySequence = 1;

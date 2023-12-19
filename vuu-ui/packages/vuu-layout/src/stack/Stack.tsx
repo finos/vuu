@@ -1,4 +1,5 @@
 import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
+import { useId } from "@finos/vuu-utils";
 import cx from "classnames";
 import React, {
   ForwardedRef,
@@ -9,7 +10,6 @@ import React, {
   useRef,
 } from "react";
 import { getDefaultTabLabel } from "../layout-reducer";
-import { useId } from "../utils";
 import { StackProps } from "./stackTypes";
 
 import "./Stack.css";

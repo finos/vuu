@@ -1,11 +1,11 @@
 import { useViewContext } from "@finos/vuu-layout";
+import { RemoteDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
-  RemoteDataSource,
   TableSchema,
   ViewportRpcResponse,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";

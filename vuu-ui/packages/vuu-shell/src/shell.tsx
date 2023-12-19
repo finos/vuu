@@ -1,17 +1,19 @@
-import { connectToServer } from "@finos/vuu-data";
+import { connectToServer } from "@finos/vuu-data-remote";
 import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
-  loadingApplicationJson,
-  useLayoutContextMenuItems,
 } from "@finos/vuu-layout";
 import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
-import { logger } from "@finos/vuu-utils";
+import {
+  logger,
+  ThemeMode,
+  ThemeProvider,
+  useThemeAttributes,
+} from "@finos/vuu-utils";
 import cx from "classnames";
 import {
   HTMLAttributes,
-  ReactElement,
   ReactNode,
   useCallback,
   useEffect,
@@ -21,11 +23,13 @@ import { AppHeader } from "./app-header";
 import { useLayoutManager } from "./layout-management";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
-import { ThemeMode, ThemeProvider, useThemeAttributes } from "./theme-provider";
-import { ShellContextProvider } from ".";
 
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import "./shell.css";
+import {
+  loadingApplicationJson,
+  useLayoutContextMenuItems,
+} from "./layout-persistence";
 
 export type VuuUser = {
   username: string;

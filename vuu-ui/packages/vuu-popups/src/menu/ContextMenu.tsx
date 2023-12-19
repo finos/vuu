@@ -1,15 +1,11 @@
+import { useId } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
+import { PopupCloseCallback, PopupComponent } from "../popup";
+import { Portal, PortalProps } from "../portal";
 import { MenuList, MenuListProps } from "./MenuList";
 import { useCascade } from "./use-cascade";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
-import { useId } from "@finos/vuu-layout";
-import { PopupCloseCallback } from "../popup";
 import { ContextMenuOptions } from "./useContextMenu";
-import {
-  PopupComponent as Popup,
-  Portal,
-  PortalProps,
-} from "@finos/vuu-popups";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
   PortalProps?: Partial<PortalProps>;
@@ -97,7 +93,7 @@ export const ContextMenu = ({
         const childMenuId = getChildMenuId(i);
         return (
           <Portal {...PortalProps} key={i} onRender={handleRender}>
-            <Popup
+            <PopupComponent
               anchorElement={{ current: document.body }}
               placement="absolute"
               position={{ left, top }}
@@ -120,7 +116,7 @@ export const ContextMenu = ({
               >
                 {menus[menuId]}
               </MenuList>
-            </Popup>
+            </PopupComponent>
           </Portal>
         );
       })}

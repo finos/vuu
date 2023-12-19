@@ -1,4 +1,4 @@
-import { DataSource } from "@finos/vuu-data";
+import { DataSource } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-layout";
 
@@ -13,7 +13,6 @@ import { HTMLAttributes, RefCallback, useCallback } from "react";
 import "./SearchCell";
 
 import "./InstrumentSearch.css";
-import { VuuTable } from "packages/vuu-protocol-types";
 import { useInstrumentSearch } from "./useInstrumentSearch";
 
 const classBase = "vuuInstrumentSearch";
@@ -38,10 +37,9 @@ const defaultTableConfig: TableConfig = {
 export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps?: Partial<TableProps>;
   autoFocus?: boolean;
-  dataSource?: DataSource;
+  dataSource: DataSource;
   placeHolder?: string;
   searchColumns?: string[];
-  table?: VuuTable;
 }
 
 const searchIcon = <span data-icon="search" />;
@@ -53,13 +51,11 @@ export const InstrumentSearch = ({
   dataSource: dataSourceProp,
   placeHolder,
   searchColumns,
-  table,
   ...htmlAttributes
 }: InstrumentSearchProps) => {
   const { dataSource, onChange, searchState } = useInstrumentSearch({
     dataSource: dataSourceProp,
     searchColumns,
-    table,
   });
 
   const { highlightedIndexRef, onHighlight, onKeyDown, tableRef } =

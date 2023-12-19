@@ -1,24 +1,23 @@
 import {
-  DataSource,
-  SchemaColumn,
-  VuuFeatureInvocationMessage,
-} from "@finos/vuu-data";
-import {
-  SelectionChangeHandler,
   TableConfig,
   TableRowClickHandler,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  DataSource,
+  DataSourceRow,
+  SchemaColumn,
+  SelectionChangeHandler,
+  VuuFeatureInvocationMessage,
+} from "@finos/vuu-data-types";
 import {
   MeasuredContainer,
   MeasuredContainerProps,
   MeasuredSize,
-  useId,
 } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "classnames";
 import {
@@ -55,6 +54,10 @@ export interface TableProps
    * required if a fully featured column picker is to be available
    */
   availableColumns?: SchemaColumn[];
+  /**
+   * Provide configuration settings for Table. At minimun, column
+   * descriptors must be provided.
+   */
   config: TableConfig;
   dataSource: DataSource;
   disableFocus?: boolean;
@@ -303,6 +306,15 @@ export const Table = forwardRef(function TableNext(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();
+
+  if (config === undefined) {
+    throw Error(
+      "vuu Table requires config prop. Minimum config is list of Column Descriptors"
+    );
+  }
+  if (dataSource === undefined) {
+    throw Error("vuu Table requires dataSource prop");
+  }
 
   return (
     <MeasuredContainer

@@ -1,0 +1,22 @@
+{
+  "name": "@finos/vuu-data-remote",
+  "version": "0.0.26",
+  "main": "src/index.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs",
+    "test": "vitest run",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26",
+    "@finos/vuu-filter-types": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26"
+  },
+  "dependencies": {
+    "@finos/vuu-filter-parser": "0.0.26",
+    "@finos/vuu-utils": "0.0.26"
+  }
+}

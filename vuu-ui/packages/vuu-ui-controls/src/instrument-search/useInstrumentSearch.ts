@@ -1,25 +1,15 @@
-import { DataSource, RemoteDataSource } from "@finos/vuu-data";
-import { getVuuTableSchema } from "@finos/vuu-data-react";
-import { useViewContext } from "@finos/vuu-layout";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 import { InstrumentSearchProps } from "./InstrumentSearch";
 
 export interface InstrumentSearchHookProps
-  extends Pick<
-    InstrumentSearchProps,
-    "dataSource" | "searchColumns" | "table"
-  > {
+  extends Pick<InstrumentSearchProps, "dataSource" | "searchColumns"> {
   label?: string;
 }
 
 export const useInstrumentSearch = ({
-  dataSource: dataSourceProp,
+  dataSource,
   searchColumns = ["description"],
-  table,
 }: InstrumentSearchHookProps) => {
-  const [dataSource, setDataSource] = useState(dataSourceProp);
-  const { loadSession, saveSession } = useViewContext();
-
   const [searchState, setSearchState] = useState<{
     searchText: string;
     filter: string;
@@ -30,32 +20,6 @@ export const useInstrumentSearch = ({
     () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
     [searchColumns]
   );
-
-  useMemo(() => {
-    if (dataSourceProp === undefined) {
-      if (table) {
-        const sessionKey = `instrument-search-${table.module}-${table.table}`;
-        const dataSource = loadSession?.(sessionKey) as DataSource;
-        if (dataSource) {
-          setDataSource(dataSource);
-        } else {
-          getVuuTableSchema(table).then((tableSchema) => {
-            const newDataSource = new RemoteDataSource({
-              columns: tableSchema.columns.map((col) => col.name),
-              // sort: { sortDefs: [{ column: "description", sortType: "A" }] },
-              table: tableSchema.table,
-            });
-            setDataSource(newDataSource);
-            saveSession?.(newDataSource, sessionKey);
-          });
-        }
-      } else {
-        throw Error(
-          `useInstrumentSearch, if dataSource ismnot provided as prop, Vuu table must be provided`
-        );
-      }
-    }
-  }, [dataSourceProp, loadSession, saveSession, table]);
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {

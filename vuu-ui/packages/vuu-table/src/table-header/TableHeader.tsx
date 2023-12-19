@@ -1,13 +1,13 @@
+import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
+  TableColumnResizeHandler,
   TableConfig,
   TableHeadings,
 } from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "classnames";
-import { VuuSortType } from "packages/vuu-protocol-types";
-import { TableColumnResizeHandler } from "../column-resizing";
 import { GroupHeaderCellNext, HeaderCell } from "../header-cell";
 import { useTableHeader } from "./useTableHeader";
 

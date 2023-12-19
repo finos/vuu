@@ -1,8 +1,11 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
-import { isValidNumber, MEASURES } from "@finos/vuu-utils";
+import {
+  isValidNumber,
+  MEASURES,
+  useLayoutEffectSkipFirst,
+} from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useLayoutEffectSkipFirst } from "../utils";
 import {
   applyOverflowClassToWrappedItems,
   removeOverflowIndicatorIfNoLongerNeeded,

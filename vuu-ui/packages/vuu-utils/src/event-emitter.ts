@@ -13,7 +13,17 @@ function isOnlyListener(
   return !Array.isArray(listeners);
 }
 
-export class EventEmitter<Events extends EmittedEvents> {
+export interface IEventEmitter<Events extends EmittedEvents> {
+  addListener<E extends keyof Events>(event: E, listener: Events[E]): void;
+  emit<E extends keyof Events>(event: E, ...args: Parameters<Events[E]>): void;
+  on<E extends keyof Events>(event: E, listener: Events[E]): void;
+  removeListener<E extends keyof Events>(event: E, listener: Events[E]): void;
+  removeAllListeners<E extends keyof Events>(event?: E): void;
+}
+
+export class EventEmitter<Events extends EmittedEvents>
+  implements IEventEmitter<Events>
+{
   #events: Map<keyof Events, Listener | Listener[]> = new Map();
 
   addListener<E extends keyof Events>(event: E, listener: Events[E]) {

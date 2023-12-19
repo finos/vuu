@@ -1,6 +1,5 @@
 import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
-import { orientationType } from "@finos/vuu-utils";
-import { useId } from "@finos/vuu-layout";
+import { orientationType, useId } from "@finos/vuu-utils";
 
 import cx from "classnames";
 import React, {

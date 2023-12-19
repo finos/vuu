@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data-types";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause } from "@finos/vuu-filter-types";

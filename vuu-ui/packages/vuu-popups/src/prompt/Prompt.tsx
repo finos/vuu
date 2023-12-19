@@ -1,4 +1,4 @@
-import { useThemeAttributes } from "@finos/vuu-shell";
+import { useThemeAttributes } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import cx from "classnames";
 import { HTMLAttributes, useLayoutEffect, useRef } from "react";

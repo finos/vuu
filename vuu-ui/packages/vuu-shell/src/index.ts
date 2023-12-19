@@ -10,6 +10,5 @@ export * from "./shell";
 export * from "./shell-layouts";
 export * from "./shellTypes";
 export * from "./ShellContextProvider";
-export * from "./theme-provider";
 export * from "./feature-list";
 export * from "./theme-switch";

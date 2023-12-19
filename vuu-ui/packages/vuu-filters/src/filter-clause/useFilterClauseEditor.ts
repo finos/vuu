@@ -1,12 +1,14 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   isMultiValueFilter,
   isSingleValueFilter,
   isValidFilterClauseOp,
 } from "@finos/vuu-utils";
-import { getColumnByName, TableSchema } from "@finos/vuu-data";
 
+import { getColumnByName } from "@finos/vuu-data-remote";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
@@ -16,7 +18,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { SingleSelectionHandler } from "@finos/vuu-ui-controls/src";
 
 const cursorAtTextStart = (input: HTMLInputElement) =>
   input.selectionStart === 0;

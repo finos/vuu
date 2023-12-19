@@ -3,7 +3,10 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
-import { isGroupMenuItemDescriptor } from "@finos/vuu-utils";
+import {
+  isGroupMenuItemDescriptor,
+  useThemeAttributes,
+} from "@finos/vuu-utils";
 import { cloneElement, useCallback, useContext, useMemo } from "react";
 import {
   MenuActionClosePopup,
@@ -14,7 +17,6 @@ import {
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
 import { ContextMenuContext } from "./context-menu-provider";
-import { useThemeAttributes } from "@finos/vuu-shell";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;

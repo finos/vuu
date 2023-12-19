@@ -1,4 +1,4 @@
-import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-shell";
+import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-utils";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
