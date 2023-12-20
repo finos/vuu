@@ -1,6 +1,6 @@
 .vuu-theme[data-mode="light"] {
   --salt-palette-neutral-primary-background: var(--salt-color-white);
-  --salt-palette-neutral-primary-background-disabled: var(--salt-color-white-fade-background);
+  --salt-palette-neutral-primary-background-disabled: var(--vuu-color-gray-30);
   --salt-palette-neutral-primary-background-readonly: var(--salt-color-white-fade-background-readonly);
   --salt-palette-neutral-primary-foreground: var(--vuu-color-gray-80);
   --salt-palette-neutral-primary-foreground-disabled: var(--salt-color-gray-900-fade-foreground);
