@@ -8,7 +8,7 @@ import {
 } from "../../../vuu-filters/src/local-config";
 import { formatDate } from "@finos/vuu-utils";
 import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
-import { LocalLayoutPersistenceManager } from "../../src/layout-persistence/LocalLayoutPersistenceManager";
+import { LocalPersistenceManager } from "../../src/persistence-management/LocalPersistenceManager";
 
 vi.mock("@finos/vuu-filters", async () => {
   return {
@@ -27,7 +27,7 @@ vi.mock("@finos/vuu-filters", async () => {
   };
 });
 
-const persistenceManager = new LocalLayoutPersistenceManager();
+const persistenceManager = new LocalPersistenceManager();
 
 const existingId = "existing_id";
 

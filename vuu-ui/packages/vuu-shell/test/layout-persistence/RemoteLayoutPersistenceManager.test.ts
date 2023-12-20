@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   GetLayoutResponseDto,
   CreateLayoutResponseDto,
-  RemoteLayoutPersistenceManager,
-} from "../../src/layout-persistence/RemoteLayoutPersistenceManager";
+  RemotePersistenceManager,
+} from "../../src/persistence-management/RemotePersistenceManager";
 import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { LayoutJSON } from "@finos/vuu-layout";
 import { v4 as uuidv4 } from "uuid";
 import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 
-const persistence = new RemoteLayoutPersistenceManager();
+const persistence = new RemotePersistenceManager();
 const mockFetch = vi.fn();
 
 global.fetch = mockFetch;
