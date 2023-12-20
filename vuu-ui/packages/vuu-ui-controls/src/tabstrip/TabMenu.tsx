@@ -57,7 +57,13 @@ export const TabMenu = ({
         tabIndex: index,
       },
     ],
-    [allowClose, allowRename, controlledComponentId, index]
+    [
+      allowClose,
+      allowRename,
+      controlledComponentId,
+      controlledComponentTitle,
+      index,
+    ]
   );
 
   return (
