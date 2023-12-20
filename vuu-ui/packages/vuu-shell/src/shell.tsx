@@ -30,7 +30,7 @@ import "./shell.css";
 import {
   loadingApplicationJson,
   useLayoutContextMenuItems,
-} from "./layout-persistence";
+} from "./persistence-management";
 
 if (typeof StackLayout !== "function") {
   console.warn(

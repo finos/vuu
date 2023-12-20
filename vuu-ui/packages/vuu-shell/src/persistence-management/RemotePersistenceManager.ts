@@ -1,4 +1,4 @@
-import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
+import { PersistenceManager } from "./PersistenceManager";
 import {
   ApplicationJSON,
   LayoutJSON,
@@ -14,9 +14,7 @@ export type CreateLayoutResponseDto = { metadata: LayoutMetadata };
 export type GetLayoutResponseDto = { definition: LayoutJSON };
 export type GetApplicationResponseDto = { definition: ApplicationJSON };
 
-export class RemoteLayoutPersistenceManager
-  implements LayoutPersistenceManager
-{
+export class RemotePersistenceManager implements PersistenceManager {
   createLayout(
     metadata: LayoutMetadataDto,
     layout: LayoutJSON

@@ -3,7 +3,7 @@ import { getLocalEntity, saveLocalEntity } from "@finos/vuu-filters";
 import { formatDate, getUniqueId } from "@finos/vuu-utils";
 
 import { defaultApplicationJson } from "./defaultApplicationJson";
-import { LayoutPersistenceManager } from "./LayoutPersistenceManager";
+import { PersistenceManager } from "./PersistenceManager";
 import {
   Layout,
   LayoutMetadata,
@@ -14,7 +14,7 @@ import {
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts/layouts";
 
-export class LocalLayoutPersistenceManager implements LayoutPersistenceManager {
+export class LocalPersistenceManager implements PersistenceManager {
   #urlKey = "api/vui";
   constructor(urlKey?: string) {
     if (urlKey) {

@@ -1,7 +1,7 @@
 import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
 
-export interface LayoutPersistenceManager {
+export interface PersistenceManager {
   /**
    * Saves a new layout and its corresponding metadata
    *

@@ -16,19 +16,19 @@ import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import {
   defaultApplicationJson,
-  LayoutPersistenceManager,
+  PersistenceManager,
   loadingApplicationJson,
-  LocalLayoutPersistenceManager,
-  RemoteLayoutPersistenceManager,
-} from "../layout-persistence";
+  LocalPersistenceManager,
+  RemotePersistenceManager,
+} from "../persistence-management";
 
-let _persistenceManager: LayoutPersistenceManager;
+let _persistenceManager: PersistenceManager;
 
 const getPersistenceManager = () => {
   if (_persistenceManager === undefined) {
     _persistenceManager = process.env.LOCAL
-      ? new LocalLayoutPersistenceManager()
-      : new RemoteLayoutPersistenceManager();
+      ? new LocalPersistenceManager()
+      : new RemotePersistenceManager();
   }
   return _persistenceManager;
 };
