@@ -3,8 +3,10 @@
   border: var(--vuuDialog-border, solid 1px #ccc);
   border-radius: 5px;
   padding: var(--vuuDialog-padding, 16px);
+  position: relative;
   box-shadow: var(--salt-overlayable-shadow, none);
   height: var(--vuuDialog-height, fit-content);
+  overflow: visible;
   width: var(--vuuDialog-width, fit-content);
 }
 

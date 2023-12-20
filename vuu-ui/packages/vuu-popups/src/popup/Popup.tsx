@@ -6,6 +6,7 @@ import "./Popup.css";
 
 export type PopupPlacement =
   | "absolute"
+  | "auto"
   | "below"
   | "below-center"
   | "below-right"

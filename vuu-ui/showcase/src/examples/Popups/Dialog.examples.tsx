@@ -22,6 +22,7 @@ export const DialogOpenClose = () => {
     setOpen(true);
   };
   const closeDialog = () => {
+    console.log("close");
     setOpen(false);
   };
   return (

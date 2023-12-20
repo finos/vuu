@@ -33,10 +33,11 @@ export const Dialog = ({
     anchorElement = AnchorBody,
     offsetLeft = 0,
     offsetTop = 0,
-    placement = "below",
+    placement = "auto",
   } = PopupProps;
 
   const rootRef = useRef<HTMLDialogElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [themeClass, densityClass, dataMode] = useThemeAttributes();
   const { position } = useAnchoredPosition({
     anchorElement,
@@ -55,22 +56,30 @@ export const Dialog = ({
 
   useLayoutEffect(() => {
     if (rootRef.current) {
-      rootRef.current.showModal();
-      // if (confirmRef.current) {
-      //   confirmRef.current.focus();
-      // }
+      if (isOpen) {
+        rootRef.current.showModal();
+
+        const { left, top } = rootRef.current.getBoundingClientRect();
+        if (portalRef.current) {
+          portalRef.current.style.cssText = `left:-${left}px;position:absolute;top:-${top}px;`;
+        }
+      } else {
+        rootRef.current.close();
+      }
       if (placement.endsWith("center")) {
         const { width } = rootRef.current.getBoundingClientRect();
         rootRef.current.style.marginLeft = `-${width / 2}px`;
       }
     }
-  }, [placement]);
+  }, [isOpen, placement]);
 
   return (
     <dialog
       {...htmlAttributes}
       className={cx(classBase, themeClass)}
       data-mode={dataMode}
+      onClose={close}
+      id="vuu-dialog"
       ref={rootRef}
       style={{ ...style, ...position }}
     >
@@ -80,6 +89,7 @@ export const Dialog = ({
         title={title}
       />
       <div className={`${classBase}-body`}>{children}</div>
+      <div id="vuu-dialog-portal-root" ref={portalRef} />
     </dialog>
   );
 };
