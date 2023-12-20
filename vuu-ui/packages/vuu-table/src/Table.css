@@ -9,6 +9,8 @@
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
+  font-family: var(--vuuTable-fontFamily,var(--salt-typography-fontFamily, sans-serif));
+  font-size: var(--vuuTable-fontSize,var(--salt-text-fontSize, 12px));
   position: relative;
   user-select: none;
 }

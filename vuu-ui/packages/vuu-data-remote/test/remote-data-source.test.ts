@@ -4,9 +4,9 @@ import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
+import { DataSourceConfig } from "@finos/vuu-data-types";
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
-import { RemoteDataSource } from "../src/remote-data-source";
-import { DataSourceConfig } from "../src/data-source";
+import { VuuDataSource } from "../src/vuu-data-source";
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -30,7 +30,7 @@ describe("RemoteDataSource", () => {
     it("cannot be created without table", () => {
       try {
         // @ts-ignore
-        new RemoteDataSource();
+        new VuuDataSource();
         throw Error("RemoteDataSource was created without table");
       } catch (err) {
         expect(err).toBeDefined();
@@ -40,7 +40,7 @@ describe("RemoteDataSource", () => {
       }
       try {
         // @ts-ignore
-        new RemoteDataSource({});
+        new VuuDataSource({});
         throw Error("RemoteDataSource was created without table");
       } catch (err) {
         expect(err).toBeDefined();
@@ -50,7 +50,7 @@ describe("RemoteDataSource", () => {
       }
       try {
         // @ts-ignore
-        new RemoteDataSource({
+        new VuuDataSource({
           bufferSize: 100,
           aggregations: [],
           columns: ["test1", "test2"],
@@ -64,7 +64,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("requires only Table for successful construction", () => {
-      const dataSource = new RemoteDataSource({
+      const dataSource = new VuuDataSource({
         table: { module: "SIMUL", table: "instruments" },
       });
       expect(dataSource).toBeDefined();
@@ -76,7 +76,7 @@ describe("RemoteDataSource", () => {
       const sort = {
         sortDefs: [{ column: "col1", sortType: "A" } as VuuSortCol],
       };
-      const dataSource = new RemoteDataSource({
+      const dataSource = new VuuDataSource({
         columns,
         filter,
         sort,
@@ -102,7 +102,7 @@ describe("RemoteDataSource", () => {
             });
           })
       );
-      const dataSource = new RemoteDataSource({ table });
+      const dataSource = new VuuDataSource({ table });
       await dataSource.subscribe({}, callback);
 
       expect(serverSubscribe).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => resolvedPromise
       );
-      const dataSource = new RemoteDataSource({ table });
+      const dataSource = new VuuDataSource({ table });
 
       await dataSource.subscribe({}, callback);
 
@@ -152,7 +152,7 @@ describe("RemoteDataSource", () => {
       });
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(() => pr);
-      const dataSource = new RemoteDataSource({ table });
+      const dataSource = new VuuDataSource({ table });
 
       setTimeout(() => resolvePromise({ subscribe: serverSubscribe }), 50);
 
@@ -195,7 +195,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => resolvedPromise
       );
-      const dataSource = new RemoteDataSource({
+      const dataSource = new VuuDataSource({
         aggregations,
         bufferSize: 200,
         columns,
@@ -247,7 +247,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => resolvedPromise
       );
-      const dataSource = new RemoteDataSource({
+      const dataSource = new VuuDataSource({
         aggregations,
         columns,
         filter,
@@ -298,7 +298,7 @@ describe("RemoteDataSource", () => {
       });
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(() => pr);
-      const dataSource = new RemoteDataSource({ table });
+      const dataSource = new VuuDataSource({ table });
 
       setTimeout(() => {
         // dataSource is blocked inside subscribe function, awaiting server ...
@@ -336,7 +336,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const range = { from: 0, to: 20 };
@@ -354,7 +354,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const aggregations = [{ column: "col1", aggType: 1 } as const];
@@ -373,7 +373,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const columns = ["col1", "col2"];
@@ -391,7 +391,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const filter = { filter: 'exchange="SETS"' };
@@ -409,7 +409,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const groupBy = ["col1", "col2"];
@@ -428,7 +428,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       let config: DataSourceConfig = {
@@ -474,7 +474,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const config: DataSourceConfig = {
@@ -509,7 +509,7 @@ describe("RemoteDataSource", () => {
         // @ts-ignore
         () => Promise.resolve({ send: serverSend, subscribe: callback })
       );
-      const dataSource = new RemoteDataSource({ table, viewport: "vp1" });
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const config: DataSourceConfig = {

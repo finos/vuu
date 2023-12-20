@@ -2,27 +2,27 @@
   border-right-color: var(--cell-borderColor);
   border-right-style: solid;
   border-right-width: 1px;
-    display: inline-block;
-    height: 100%;
-    overflow:hidden;
-    padding: 0 11px 0 12px;
-    text-overflow: ellipsis;
-    vertical-align: top;
-  }
+  display: inline-block;
+  height: 100%;
+  overflow:hidden;
+  padding: var(--vuuTableCell-padding, 0 11px 0 12px);
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
 
-  .vuuTableCell-right {
+.vuuTableCell-right {
     text-align: right;
-  }
+}
 
-  .vuuTableCell-editable {
+.vuuTableCell-editable {
     display: inline-flex;
     line-height: 18px;
     padding-bottom: 1px;
     padding-top: 1px;
     text-overflow: unset;
-  }
+}
   
-  .vuuTableCell:focus {
+.vuuTableCell:focus {
     outline: var(--vuuTableCell-outline, solid var(--vuu-color-purple-10) 2px);
     outline-offset: -2px;
     /** This is to achieve a white background to outline dashes */

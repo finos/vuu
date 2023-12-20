@@ -232,6 +232,7 @@ const TableCore = ({
         <div
           {...tableProps}
           className={`${classBase}-table`}
+          role="table"
           tabIndex={disableFocus ? undefined : -1}
         >
           {showColumnHeaders ? (

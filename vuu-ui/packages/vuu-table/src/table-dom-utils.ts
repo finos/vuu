@@ -40,7 +40,7 @@ export function getRowIndex(rowEl?: HTMLElement) {
   if (rowEl) {
     const idx: string | null = rowEl.ariaRowIndex;
     if (idx !== null) {
-      return parseInt(idx, 10);
+      return parseInt(idx, 10) - 1;
     }
   }
   return -1;
