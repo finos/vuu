@@ -82,6 +82,13 @@ export default defineConfig({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setupNodeEvents(on, config) {
       // implement node event listeners here
+      on("task", {
+        log(message: string) {
+          console.log(message);
+
+          return null;
+        },
+      });
     },
     chromeWebSecurity: false,
     defaultCommandTimeout: 10000,

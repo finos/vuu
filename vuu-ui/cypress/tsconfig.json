@@ -6,5 +6,5 @@
       "./support"
     ]
   },
-  "include": ["**/*.tsx", "../cypress.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "../cypress.d.ts"]
 }

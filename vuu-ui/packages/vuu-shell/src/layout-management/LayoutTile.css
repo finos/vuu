@@ -1,0 +1,28 @@
+.vuuLayoutTile-layoutTile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0px;
+  flex: 1 1 auto;
+  cursor: pointer;
+}
+
+.vuuLayoutTile-layoutName {
+  color: var(--light-text-primary, #15171B);
+  font-weight: 600;
+  line-height: 133.333%;
+  text-transform: capitalize;
+}
+
+.vuuLayoutTile-screenshot {
+  width: 60px;
+  height: 45.6px;
+  border: 1px solid #D6D7DA;
+}
+
+.vuuLayoutTile-layoutDetails {
+  color: var(--light-text-secondary, #606477);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 150%;
+}

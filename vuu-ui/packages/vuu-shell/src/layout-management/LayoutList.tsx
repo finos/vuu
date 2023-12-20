@@ -2,6 +2,7 @@ import { HTMLAttributes } from "react";
 import { List } from "@finos/vuu-ui-controls";
 import { LayoutMetadata } from "./layoutTypes";
 import { useLayoutManager } from "./useLayoutManager";
+import { LayoutTile } from "./LayoutTile";
 
 import "./LayoutList.css";
 
@@ -11,7 +12,7 @@ type LayoutGroups = {
 
 const classBase = "vuuLayoutList";
 
-export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
+export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
   const { layoutMetadata, loadLayoutById } = useLayoutManager();
 
   const handleLoadLayout = (layoutId?: string) => {
@@ -34,7 +35,12 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
   }, {});
 
   return (
-    <div className={classBase} {...props}>
+    <div
+      className={classBase}
+      {...props}
+      role="listbox"
+      aria-label="my layouts"
+    >
       <div className={`${classBase}-header`}>My Layouts</div>
       <List<[string, LayoutMetadata[]]>
         height="auto"
@@ -43,29 +49,16 @@ export const LayoutsList = (props: HTMLAttributes<HTMLDivElement>) => {
           if (!item) return <></>;
           const [groupName, layoutMetadata] = item;
           return (
-            <>
+            <div role="list" aria-label={groupName}>
               <div className={`${classBase}-groupName`}>{groupName}</div>
               {layoutMetadata.map((metadata) => (
-                <div
-                  className={`${classBase}-layoutContainer`}
-                  key={metadata?.id}
-                  onClick={() => handleLoadLayout(metadata?.id)}
-                >
-                  <img
-                    className={`${classBase}-screenshot`}
-                    src={metadata?.screenshot}
-                  />
-                  <div>
-                    <div className={`${classBase}-layoutName`}>
-                      {metadata?.name}
-                    </div>
-                    <div className={`${classBase}-layoutDetails`}>
-                      <div>{`${metadata?.user}, ${metadata?.created}`}</div>
-                    </div>
-                  </div>
-                </div>
+                <LayoutTile
+                  key={metadata.id}
+                  metadata={metadata}
+                  handleLoadLayout={handleLoadLayout}
+                />
               ))}
-            </>
+            </div>
           );
         }}
       />

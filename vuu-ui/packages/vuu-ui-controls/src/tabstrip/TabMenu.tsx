@@ -69,6 +69,7 @@ export const TabMenu = ({
       menuOptions={menuOptions}
       onMenuClose={onMenuClose}
       tabIndex={-1}
+      aria-label="context menu"
     />
   );
 };

@@ -142,6 +142,7 @@ export const Tabstrip = ({
         overflowIcon="more-horiz"
         ref={rootRef}
         style={style}
+        role="tablist"
       >
         {tabs}
       </OverflowContainer>
