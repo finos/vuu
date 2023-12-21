@@ -8,11 +8,11 @@ import { toPng } from "html-to-image";
 export const takeScreenshot = (node: HTMLElement): Promise<string> => {
   return new Promise((resolve, reject) => {
     toPng(node, {
-      cacheBust: true,
+      cacheBust: true /*,
       filter: (child) =>
         // remove content of table rows
         child.nodeType === Node.TEXT_NODE ||
-        child.getAttribute("role") !== "row",
+        child.getAttribute("role") !== "row",*/,
     })
       .then((screenshot) => {
         if (!screenshot) {

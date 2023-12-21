@@ -1,6 +1,6 @@
-import { takeScreenshot } from "../src/screenshot-utils";
+import { takeScreenshot } from "../../src/layout-management/screenshot-utils";
 import { describe, expect, it, vi } from "vitest";
-import { expectPromiseRejectsWithError } from "./utils";
+import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 import htmlToImage from "html-to-image";
 
 const node = document.createElement("div");
@@ -17,9 +17,7 @@ describe("takeScreenshot", () => {
   });
 
   it("rejects with error message when toPng() promise is rejected", async () => {
-
     htmlToImage.toPng = vi.fn().mockRejectedValue({});
-
 
     expectPromiseRejectsWithError(
       () => takeScreenshot(node),

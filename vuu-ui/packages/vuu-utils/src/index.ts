@@ -36,4 +36,3 @@ export * from "./ThemeProvider";
 export * from "./url-utils";
 export * from "./useId";
 export * from "./useLayoutEffectSkipFirst";
-export * from "./screenshot-utils";
