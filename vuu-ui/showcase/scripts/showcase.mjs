@@ -11,5 +11,5 @@ execWait("npm run dev");
 console.log(`opening showcase at ${chalk.green("http://localhost:5173/")} ...`);
 
 setTimeout(() => {
-  open("http://localhost:5173/", { app: { name: "google chrome" } });
+  open("http://localhost:5173/");
 }, 3000);
