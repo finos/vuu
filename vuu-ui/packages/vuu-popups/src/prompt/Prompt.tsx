@@ -1,6 +1,6 @@
-import { useThemeAttributes } from "@finos/vuu-shell";
+import { useThemeAttributes } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, useLayoutEffect, useRef } from "react";
 import { PopupComponentProps, useAnchoredPosition } from "../popup";
 

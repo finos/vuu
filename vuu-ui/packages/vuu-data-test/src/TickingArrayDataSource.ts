@@ -1,23 +1,22 @@
 import {
   ArrayDataSource,
-  ArrayDataSourceConstructorProps,
-  MenuRpcResponse,
-  RpcResponse,
+  ArrayDataSourceConstructorProps
+} from "@finos/vuu-data-local";
+import {
+  DataSourceRow, MenuRpcResponse, RpcResponse,
+  SelectionItem,
   SubscribeCallback,
-  SubscribeProps,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
-} from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
+  SubscribeProps, VuuUIMessageInRPCEditReject,
+  VuuUIMessageInRPCEditResponse
+} from "@finos/vuu-data-types";
 import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
   VuuMenu,
   VuuRange,
-  VuuRowDataItemType,
+  VuuRowDataItemType
 } from "@finos/vuu-protocol-types";
-import { SelectionItem } from "@finos/vuu-table-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";

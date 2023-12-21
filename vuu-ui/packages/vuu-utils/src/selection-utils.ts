@@ -1,10 +1,10 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
 import {
+  DataSourceRow,
   RangeTuple,
   Selection,
   SelectionItem,
-  TableSelectionModel,
-} from "@finos/vuu-table-types";
+} from "@finos/vuu-data-types";
+import { TableSelectionModel } from "@finos/vuu-table-types";
 import { metadataKeys } from "./column-utils";
 
 const NO_SELECTION: number[] = [];

@@ -6,24 +6,13 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data";
-import { TableConfig } from "@finos/vuu-table-types";
-import { HTMLAttributes } from "react";
+import { TableSettingsProps } from "@finos/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 
 import "./TableSettingsPanel.css";
 
 const classBase = "vuuTableSettingsPanel";
-
-export interface TableSettingsProps extends HTMLAttributes<HTMLDivElement> {
-  availableColumns: SchemaColumn[];
-  onAddCalculatedColumn: () => void;
-  onConfigChange: (config: TableConfig) => void;
-  onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
-  onNavigateToColumn?: (columnName: string) => void;
-  tableConfig: TableConfig;
-}
 
 /**
   The TableSettingsPanel assumes 'ownership' of the tableSettings.
@@ -37,7 +26,6 @@ export const TableSettingsPanel = ({
   onDataSourceConfigChange,
   onNavigateToColumn,
   tableConfig: tableConfigProp,
-  ...htmlAttributes
 }: TableSettingsProps) => {
   const {
     columnItems,
@@ -55,7 +43,7 @@ export const TableSettingsPanel = ({
   });
 
   return (
-    <div {...htmlAttributes} className={classBase}>
+    <div className={classBase}>
       <FormField>
         <FormFieldLabel>Column Labels</FormFieldLabel>
         <ToggleButtonGroup

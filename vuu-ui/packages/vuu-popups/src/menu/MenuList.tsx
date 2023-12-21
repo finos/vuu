@@ -1,3 +1,4 @@
+import cx from "clsx";
 import React, {
   FC,
   HTMLAttributes,
@@ -7,11 +8,10 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import cx from "classnames";
 //TODO do we want this dependency ?
-import { useId } from "@finos/vuu-layout";
-import { useKeyboardNavigation } from "./use-keyboard-navigation";
+import { useId } from "@finos/vuu-utils";
 import { isMenuItemGroup } from "./use-items-with-ids-next";
+import { useKeyboardNavigation } from "./use-keyboard-navigation";
 
 import "./MenuList.css";
 

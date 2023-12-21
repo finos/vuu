@@ -9,7 +9,7 @@ import {
   isValueListRenderer,
   registerComponent,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 
 import { memo, useCallback } from "react";
 import { dataAndColumnUnchanged } from "../cell-utils";

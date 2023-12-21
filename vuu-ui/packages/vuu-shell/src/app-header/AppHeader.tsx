@@ -2,13 +2,13 @@ import { HTMLAttributes, useCallback } from "react";
 import { VuuUser } from "../shell";
 // import { UserProfile } from "../user-profile";
 // import { ThemeSwitch } from "../theme-switch";
-import { ThemeMode } from "../theme-provider";
-import cx from "classnames";
 import { Toolbar } from "@finos/vuu-layout";
+import { ThemeMode } from "@finos/vuu-utils";
+import cx from "clsx";
 import { logout } from "../login";
 
-import "./AppHeader.css";
 import { Button } from "@salt-ds/core";
+import "./AppHeader.css";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {

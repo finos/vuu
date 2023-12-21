@@ -1,7 +1,7 @@
 import {
   authenticate as vuuAuthenticate,
   connectToServer,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-remote";
 import { useEffect, useState } from "react";
 import { ContentStatus } from "@salt-ds/lab";
 

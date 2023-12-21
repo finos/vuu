@@ -1,4 +1,4 @@
-import { useId } from "@finos/vuu-layout";
+import { useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
 import {
   ForwardedRef,
@@ -16,8 +16,8 @@ import {
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
 import { List, ListProps } from "../list";
-import { useCombobox } from "./useCombobox";
 import { ChevronIcon } from "../list/ChevronIcon";
+import { useCombobox } from "./useCombobox";
 
 //TODO why do we need onSelect from input ?
 export interface ComboBoxProps<

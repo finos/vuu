@@ -1,4 +1,4 @@
-import { DataSource, TableSchema } from "@finos/vuu-data";
+import { DataSource, TableSchema } from "@finos/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,
@@ -10,7 +10,7 @@ import {
   VuuInput,
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { DataSourceRow } from "@finos/vuu-data-types";
 import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
 

@@ -1,5 +1,5 @@
-import { DataSource } from "@finos/vuu-data";
-import { SuggestionFetcher } from "packages/vuu-data-react/src";
+import { DataSource } from "@finos/vuu-data-types";
+import { SuggestionFetcher } from "@finos/vuu-data-react";
 import basketModule from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import simulModule from "./simul/simul-module";

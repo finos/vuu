@@ -1,5 +1,5 @@
 import { CSSProperties, HTMLAttributes } from "react";
-import cx from "classnames";
+import cx from "clsx";
 import { useSplitterResizing } from "./useSplitterResizing";
 
 import "./GridLayout.css";

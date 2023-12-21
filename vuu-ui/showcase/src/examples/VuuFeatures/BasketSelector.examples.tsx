@@ -1,9 +1,7 @@
-import { BasketSelector } from "feature-basket-trading";
+import { ArrayDataSource } from "@finos/vuu-data-local";
+import { createBasketTradingRow, vuuModule } from "@finos/vuu-data-test";
+import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo } from "react";
-import { vuuModule } from "@finos/vuu-data-test";
-import { Basket } from "feature-basket-trading";
-import { ArrayDataSource } from "@finos/vuu-data";
-import { createBasketTradingRow } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 

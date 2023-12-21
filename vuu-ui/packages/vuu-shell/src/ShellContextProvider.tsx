@@ -1,14 +1,10 @@
-import { ColumnDescriptor, ListOption } from "@finos/vuu-table-types";
+import { DefaultColumnConfiguration, ListOption } from "@finos/vuu-table-types";
 import { RpcResponseHandler } from "@finos/vuu-data-react";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
 import { VuuTable } from "@finos/vuu-protocol-types";
 
 export type LookupTableProvider = (table: VuuTable) => ListOption[];
 
-export type DefaultColumnConfiguration = <T extends string = string>(
-  tableName: T,
-  columnName: string
-) => Partial<ColumnDescriptor> | undefined;
 export interface ShellContextProps {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   getLookupValues?: LookupTableProvider;

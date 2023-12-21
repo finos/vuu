@@ -1,11 +1,11 @@
 import { useViewContext } from "@finos/vuu-layout";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
-  RemoteDataSource,
   TableSchema,
   ViewportRpcResponse,
-} from "@finos/vuu-data";
+} from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
@@ -14,16 +14,18 @@ export type basketDataSourceKey =
   | "data-source-basket"
   | "data-source-basket-trading-control"
   | "data-source-basket-trading-search"
-  | "data-source-basket-trading-constituent-join";
+  | "data-source-basket-trading-constituent-join"
+  | "data-source-basket-constituent";
 
 const NO_CONFIG = {};
 
 export const useBasketTradingDataSources = ({
+  basketConstituentSchema,
   basketSchema,
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
-}: Omit<BasketTradingFeatureProps, "basketConstituentSchema"> & {
+}: BasketTradingFeatureProps & {
   basketInstanceId: string;
 }) => {
   const { notify } = useNotifications();
@@ -63,13 +65,14 @@ export const useBasketTradingDataSources = ({
         100,
         basketFilter,
       ],
+      ["data-source-basket-constituent", basketConstituentSchema, 100],
     ];
 
     const dataSources: DataSource[] = [];
     for (const [key, schema, bufferSize, config] of dataSourceConfig) {
-      let dataSource = loadSession?.(key) as RemoteDataSource;
+      let dataSource = loadSession?.(key) as VuuDataSource;
       if (dataSource === undefined) {
-        dataSource = new RemoteDataSource({
+        dataSource = new VuuDataSource({
           ...config,
           bufferSize,
           viewport: `${id}-${key}`,
@@ -83,10 +86,11 @@ export const useBasketTradingDataSources = ({
     }
     return dataSources;
   }, [
+    basketInstanceId,
     basketSchema,
     basketTradingSchema,
-    basketInstanceId,
     basketTradingConstituentJoinSchema,
+    basketConstituentSchema,
     loadSession,
     id,
     title,
@@ -116,26 +120,32 @@ export const useBasketTradingDataSources = ({
     [dataSourceBasketTradingControl, notify]
   );
 
-  const handleTakeOffMarket = useCallback((basketInstanceId: string) => {
-    dataSourceBasketTradingControl
-      .rpcCall?.<ViewportRpcResponse>({
-        namedParams: {},
-        params: [basketInstanceId],
-        rpcName: "takeOffMarket",
-        type: "VIEW_PORT_RPC_CALL",
-      })
-      .then((response) => {
-        if (response?.action.type === "VP_RCP_FAILURE") {
-          notify({
-            type: NotificationLevel.Error,
-            header: "Failed to take off market",
-            body: "Please contact your support team",
-          });
-          console.error(response.action.msg);
-        }
-      });
-  }, []);
+  const handleTakeOffMarket = useCallback(
+    (basketInstanceId: string) => {
+      dataSourceBasketTradingControl
+        .rpcCall?.<ViewportRpcResponse>({
+          namedParams: {},
+          params: [basketInstanceId],
+          rpcName: "takeOffMarket",
+          type: "VIEW_PORT_RPC_CALL",
+        })
+        .then((response) => {
+          if (response?.action.type === "VP_RCP_FAILURE") {
+            notify({
+              type: NotificationLevel.Error,
+              header: "Failed to take off market",
+              body: "Please contact your support team",
+            });
+            console.error(response.action.msg);
+          }
+        });
+    },
+    [dataSourceBasketTradingControl, notify]
+  );
 
+  // Note: we do not need to return the BasketConstituent dataSource, we just stash it
+  // in session state from where it will be used by the AddInstrument button in Col
+  // Header
   return {
     dataSourceBasket,
     dataSourceBasketTradingControl,

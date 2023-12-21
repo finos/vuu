@@ -9,12 +9,12 @@ import {
   NavigationOutOfBoundsHandler,
 } from "@finos/vuu-layout";
 import { PromptProps } from "@finos/vuu-popups";
+import { EditableLabelProps } from "@finos/vuu-ui-controls";
 import {
   dispatchMouseEvent,
   filterAsQuery,
   isMultiClauseFilter,
 } from "@finos/vuu-utils";
-import { EditableLabelProps } from "@salt-ds/lab";
 import {
   FocusEventHandler,
   KeyboardEvent,

@@ -1,24 +1,14 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { HTMLAttributes, MouseEventHandler, useCallback, useRef } from "react";
-import { useCell } from "../useCell";
-import { ColumnMenu } from "../column-menu";
+import { HeaderCellProps } from "@finos/vuu-table-types";
+import cx from "clsx";
+import { MouseEventHandler, useCallback, useRef } from "react";
 import { SortIndicator } from "../column-header-pill";
-import cx from "classnames";
-import {
-  ColumnResizer,
-  TableColumnResizeHandler,
-  useTableColumnResize,
-} from "../column-resizing";
+import { ColumnMenu } from "../column-menu";
+import { ColumnResizer, useTableColumnResize } from "../column-resizing";
+import { useCell } from "../useCell";
 
 import "./HeaderCell.css";
 
 const classBase = "vuuTableHeaderCell";
-
-export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
-  classBase?: string;
-  column: RuntimeColumnDescriptor;
-  onResize?: TableColumnResizeHandler;
-}
 
 export const HeaderCell = ({
   className: classNameProp,

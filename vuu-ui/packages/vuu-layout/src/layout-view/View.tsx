@@ -1,5 +1,6 @@
+import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import React, {
   ForwardedRef,
   forwardRef,
@@ -11,7 +12,6 @@ import React, {
 } from "react";
 import { Header as VuuHeader } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
-import { useId } from "../utils";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
 import { ViewContext, ViewContextAPI } from "./ViewContext";

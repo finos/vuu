@@ -1,5 +1,4 @@
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
-import { Switch } from "@salt-ds/lab";
+import { FormField, FormFieldLabel, Input, Switch } from "@salt-ds/core";
 import { ColumnDescriptor, ColumnTypeFormatting } from "@finos/vuu-table-types";
 import { getTypeFormattingFromColumn } from "@finos/vuu-utils";
 import {

@@ -1,10 +1,9 @@
-import { TableSchema } from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
 import { FilterBuilderMenu } from "../filter-builder-menu";
 import { FilterClauseEditor, FilterClauseEditorProps } from "../filter-clause";

@@ -1,8 +1,8 @@
-import { useControlled } from "@finos/vuu-ui-controls";
+import { TableSchema } from "@finos/vuu-data-types";
 import { Filter, NamedFilter } from "@finos/vuu-filter-types";
-import { useCallback } from "react";
-import { TableSchema } from "packages/vuu-data/src";
 import { useLayoutManager } from "@finos/vuu-shell";
+import { useControlled } from "@finos/vuu-ui-controls";
+import { useCallback } from "react";
 
 export interface FiltersHookProps {
   defaultFilters?: Filter[];

@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { RowProps } from "@finos/vuu-table";
 import { MouseEvent, useCallback } from "react";
 

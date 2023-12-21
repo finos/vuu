@@ -9,7 +9,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import cx from "classnames";
+import cx from "clsx";
 import "./DockLayout.css";
 import { ResizeStrategy } from "@finos/vuu-layout";
 

@@ -1,20 +1,22 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  DataSourceRow,
+  SubscribeCallback,
+  ViewportRpcResponse,
+} from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
-import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import {
   ContextMenuConfiguration,
   NotificationLevel,
   useNotifications,
 } from "@finos/vuu-popups";
+import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
-import { VuuDataRow, VuuDataRowDto } from "packages/vuu-protocol-types";
-import { SubscribeCallback, ViewportRpcResponse } from "packages/vuu-data/src";
 
 export class Basket {
   basketId: string;
@@ -52,13 +54,6 @@ export type BasketTradingHookProps = Pick<
   | "basketTradingConstituentJoinSchema"
 >;
 
-const toDataDto = (dataSourceRow: VuuDataRow, columnMap: ColumnMap) => {
-  Object.entries(columnMap).reduce<VuuDataRowDto>((dto, [colName, index]) => {
-    dto[colName] = dataSourceRow[index];
-    return dto;
-  }, {});
-};
-
 type BasketState = {
   basketInstanceId?: string;
   dialog?: JSX.Element;
@@ -95,6 +90,7 @@ export const useBasketTrading = ({
   } = useBasketTradingDataSources({
     basketInstanceId,
     basketSchema,
+    basketConstituentSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
   });

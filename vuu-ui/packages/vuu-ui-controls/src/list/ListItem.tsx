@@ -1,5 +1,5 @@
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
-import cx from "classnames";
+import cx from "clsx";
 import { ListItemProps, ListItemType } from "./listTypes";
 import { Highlighter } from "./Highlighter";
 import { CheckboxIcon } from "./CheckboxIcon";

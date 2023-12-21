@@ -34,3 +34,10 @@ body {
   top:0;
   width: 100vw;
 }
+
+.vuuShowcase-StandaloneRoot:has([data-showcase-center]){
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+}

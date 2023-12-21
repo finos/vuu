@@ -1,5 +1,5 @@
 import { DataItemCommitHandler } from "@finos/vuu-table-types";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { dispatchCustomEvent } from "@finos/vuu-utils";
 import {

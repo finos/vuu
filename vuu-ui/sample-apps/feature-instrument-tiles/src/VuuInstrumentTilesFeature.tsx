@@ -1,10 +1,10 @@
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
-  RemoteDataSource,
+  DataSourceFilter,
   TableSchema,
-} from "@finos/vuu-data";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+} from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
@@ -56,13 +56,13 @@ const VuuInstrumentTilesFeature = ({
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as RemoteDataSource;
+    let ds = loadSession?.("data-source") as VuuDataSource;
     if (ds) {
       console.log({ ds });
       return ds;
     }
 
-    ds = new RemoteDataSource({
+    ds = new VuuDataSource({
       bufferSize: 200,
       viewport: id,
       table: instrumentPricesSchema.table,

@@ -5,7 +5,7 @@ import {
   ListItemProps,
   ListProps,
 } from "@finos/vuu-ui-controls";
-import cx from "classnames";
+import cx from "clsx";
 import {
   cloneElement,
   HTMLAttributes,

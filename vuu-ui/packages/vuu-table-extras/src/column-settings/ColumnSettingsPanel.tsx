@@ -1,5 +1,4 @@
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
+import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import {
   getCalculatedColumnName,
@@ -13,8 +12,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import cx from "classnames";
-import { HTMLAttributes } from "react";
+import cx from "clsx";
 import { ColumnExpressionPanel } from "../column-expression-panel";
 import { ColumnFormattingPanel } from "../column-formatting-settings";
 import { ColumnNameLabel } from "./ColumnNameLabel";
@@ -32,15 +30,6 @@ const getColumnLabel = (column: ColumnDescriptor) => {
     return label ?? name;
   }
 };
-
-export interface ColumnSettingsProps extends HTMLAttributes<HTMLDivElement> {
-  column: ColumnDescriptor;
-  onConfigChange: (config: TableConfig) => void;
-  onCancelCreateColumn: () => void;
-  onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
-  tableConfig: TableConfig;
-  vuuTable: VuuTable;
-}
 
 export const ColumnSettingsPanel = ({
   column: columnProp,

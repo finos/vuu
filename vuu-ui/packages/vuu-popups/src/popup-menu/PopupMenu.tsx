@@ -1,3 +1,7 @@
+import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+import { useId } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
+import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEvent,
@@ -5,17 +9,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { MenuOpenHandler, useContextMenu } from "../menu";
 import {
-  MenuOpenHandler,
   PopupCloseCallback,
   PopupCloseReason,
   reasonIsClickAway,
-  useContextMenu,
-} from "@finos/vuu-popups";
-import cx from "classnames";
-import { Button } from "@salt-ds/core";
-import { useId } from "@finos/vuu-layout";
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+} from "../popup/popup-service";
 
 import "./PopupMenu.css";
 

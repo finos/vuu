@@ -11,6 +11,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@finos/vuu-protocol-types": "0.0.26"
@@ -18,5 +19,6 @@
   "peerDependencies": {
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
-  }
+  },
+  "sideEffects": false
 }

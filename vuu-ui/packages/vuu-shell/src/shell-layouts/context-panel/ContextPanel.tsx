@@ -1,5 +1,5 @@
 import { Button } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { useCallback, useMemo } from "react";
 import {
   layoutFromJson,

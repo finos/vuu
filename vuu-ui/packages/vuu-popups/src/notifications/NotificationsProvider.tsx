@@ -1,5 +1,5 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
-import classNames from "classnames";
+import classNames from "clsx";
 import { getUniqueId } from "@finos/vuu-utils";
 
 import "./notifications.css";
@@ -93,9 +93,7 @@ export const ToastNotification = (props: ToastNotificationProps) => {
   const [right, setRight] = useState(-toastWidth - toastContainerRightPadding);
 
   useEffect(() => {
-    setTimeout(
-      () => setRight(toastContainerRightPadding)
-    );
+    setTimeout(() => setRight(toastContainerRightPadding));
 
     if (animated) {
       setTimeout(

@@ -1,7 +1,8 @@
 import {
   ColumnDescriptor,
-  RuntimeColumnDescriptor,
   PinLocation,
+  ResizePhase,
+  RuntimeColumnDescriptor,
   TableAttributes,
   TableConfig,
   TableHeadings,
@@ -11,6 +12,7 @@ import {
   applyGroupByToColumns,
   applySortToColumns,
   getCellRenderer,
+  getColumnHeaderRenderer,
   getColumnLabel,
   getTableHeadings,
   getValueFormatter,
@@ -26,8 +28,11 @@ import {
   subscribedOnly,
 } from "@finos/vuu-utils";
 
-import { DataSource, DataSourceConfig } from "@finos/vuu-data";
-import { TableSchema } from "@finos/vuu-data/src/message-utils";
+import {
+  DataSource,
+  DataSourceConfig,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
 import { buildValidationChecker } from "@finos/vuu-ui-controls";
 import { Reducer, useReducer } from "react";
@@ -107,8 +112,6 @@ export interface ColumnActionPin {
   column: ColumnDescriptor;
   pin?: PinLocation;
 }
-
-export type ResizePhase = "begin" | "resize" | "end";
 
 export interface ColumnActionResize {
   type: "resizeColumn";
@@ -297,12 +300,12 @@ const columnDescriptorToRuntimeColumDescriptor =
       ...rest
     } = column;
 
-    const runtimeColumnWithDefaults = {
+    const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
       ...rest,
       align,
       CellRenderer: getCellRenderer(column),
-      HeaderCellLabelRenderer: getCellRenderer(column, "col-label"),
-      HeaderCellContentRenderer: getCellRenderer(column, "col-content"),
+      HeaderCellLabelRenderer: getColumnHeaderRenderer(column),
+      HeaderCellContentRenderer: getColumnHeaderRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,

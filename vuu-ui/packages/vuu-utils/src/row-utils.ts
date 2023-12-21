@@ -1,6 +1,6 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { metadataKeys } from "@finos/vuu-utils";
 import { MutableRefObject } from "react";
+import { metadataKeys } from "./column-utils";
 
 const { IDX } = metadataKeys;
 

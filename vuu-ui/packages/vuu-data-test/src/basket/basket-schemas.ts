@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data-types";
 
 export type BasketsTableName =
   | "algoType"

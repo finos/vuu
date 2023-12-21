@@ -5,7 +5,7 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
-import { makeRpcCall } from "@finos/vuu-data";
+import { makeRpcCall } from "@finos/vuu-data-remote";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 

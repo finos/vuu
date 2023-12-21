@@ -1,7 +1,7 @@
 import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
 import { Table, TableProps } from "@finos/vuu-table";
 import { HTMLAttributes } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./FilterTable.css";
 

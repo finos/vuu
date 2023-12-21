@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
 import { Dropdown } from "@finos/vuu-ui-controls";
 import {
   getCalculatedColumnExpression,
@@ -12,7 +12,6 @@ import {
   ColumnExpressionSubmitHandler,
   useColumnExpressionSuggestionProvider,
 } from "../column-expression-input";
-import { ColumnSettingsProps } from "../column-settings";
 import { useColumnExpression } from "./useColumnExpression";
 
 const classBase = "vuuColumnExpressionPanel";

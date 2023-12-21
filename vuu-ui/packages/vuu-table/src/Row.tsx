@@ -13,7 +13,7 @@ import {
   isNotHidden,
   RowSelected,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties, memo, MouseEvent, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
@@ -92,7 +92,7 @@ export const Row = memo(
     return (
       <div
         {...htmlAttributes}
-        aria-rowindex={row[0]}
+        aria-rowindex={row[0] + 1}
         key={`row-${row[0]}`}
         role="row"
         className={className}

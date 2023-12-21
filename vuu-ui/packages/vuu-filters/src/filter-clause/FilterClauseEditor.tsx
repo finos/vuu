@@ -1,9 +1,9 @@
-import { TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data-types";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause } from "@finos/vuu-filter-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { NumericInput } from "./NumericInput";

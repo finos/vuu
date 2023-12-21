@@ -1,6 +1,6 @@
-import { VuuInput, VuuInputProps } from "@finos/vuu-ui-controls";
-import cx from "classnames";
+import cx from "clsx";
 import { ForwardedRef, forwardRef } from "react";
+import { VuuInput, VuuInputProps } from "../vuu-input";
 
 import "./ExpandoInput.css";
 

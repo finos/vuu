@@ -1,15 +1,16 @@
+import { OverflowContainer } from "@finos/vuu-layout";
 import {
   ColumnDescriptor,
   GroupColumnDescriptor,
+  HeaderCellProps,
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
-import cx from "classnames";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
+import cx from "clsx";
 import { useCallback, useRef, useState } from "react";
-import { ColumnResizer, useTableColumnResize } from "../column-resizing";
-import { HeaderCellProps } from "./HeaderCell";
-import { useCell } from "../useCell";
 import { ColumnHeaderPill, GroupColumnPill } from "../column-header-pill";
-import { OverflowContainer, useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { ColumnResizer, useTableColumnResize } from "../column-resizing";
+import { useCell } from "../useCell";
 
 import "./GroupHeaderCell.css";
 

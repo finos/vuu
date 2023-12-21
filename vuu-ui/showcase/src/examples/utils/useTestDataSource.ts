@@ -1,7 +1,7 @@
-import { RemoteDataSource, TableSchema } from "@finos/vuu-data";
+import { VuuDataSource } from "@finos/vuu-data-remote";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { useMemo, useRef } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 import { toDataSourceColumns } from "@finos/vuu-utils";
@@ -69,7 +69,7 @@ export const useTestDataSource = ({
   tablename?: string;
   tableSchema?: TableSchema;
 }) => {
-  const dataSourceRef = useRef<RemoteDataSource | undefined>();
+  const dataSourceRef = useRef<VuuDataSource | undefined>();
 
   const [columns, config, columnNames, table] = useMemo(() => {
     const configuredColumns = configureColumns(
@@ -106,7 +106,7 @@ export const useTestDataSource = ({
     }
 
     if (!activeDataSource || activeTable !== table) {
-      dataSourceRef.current = new RemoteDataSource(dataConfig);
+      dataSourceRef.current = new VuuDataSource(dataConfig);
     }
     tableRef.current = table;
 

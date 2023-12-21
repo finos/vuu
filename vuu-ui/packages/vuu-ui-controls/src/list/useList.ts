@@ -1,4 +1,4 @@
-import { useLayoutEffectSkipFirst } from "@finos/vuu-layout";
+import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent,

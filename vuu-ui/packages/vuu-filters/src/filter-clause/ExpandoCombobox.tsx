@@ -6,7 +6,7 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
-import cx from "classnames";
+import cx from "clsx";
 import {
   FormEvent,
   ForwardedRef,

@@ -1,18 +1,6 @@
-import {
-  Children,
-  DependencyList,
-  EffectCallback,
-  isValidElement,
-  ReactElement,
-  ReactNode,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { Children, isValidElement, ReactElement, ReactNode } from "react";
 
 const EMPTY_ARRAY: ReactElement[] = [];
-
-let vuuComponentIdCount = 0;
 
 export const asReactElements = (children: ReactNode): ReactElement[] => {
   const isArray = Array.isArray(children);
@@ -27,21 +15,3 @@ export const asReactElements = (children: ReactNode): ReactElement[] => {
     return EMPTY_ARRAY;
   }
 };
-
-export const useLayoutEffectSkipFirst = (
-  func: EffectCallback,
-  deps: DependencyList
-) => {
-  const goodToGo = useRef(false);
-  useLayoutEffect(() => {
-    if (goodToGo.current) {
-      func();
-    } else {
-      goodToGo.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-};
-
-export const useId = (id?: string) =>
-  useMemo(() => id ?? `vuu-${++vuuComponentIdCount}`, [id]);

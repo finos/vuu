@@ -1,12 +1,9 @@
-import { Heading, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import {
+  Heading,
+  ResizePhase,
+  RuntimeColumnDescriptor,
+} from "@finos/vuu-table-types";
 import { RefObject, useCallback, useRef, useState } from "react";
-import { ResizePhase } from "../useTableModel";
-
-export type TableColumnResizeHandler = (
-  phase: ResizePhase,
-  columnName: string,
-  width?: number
-) => void;
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {

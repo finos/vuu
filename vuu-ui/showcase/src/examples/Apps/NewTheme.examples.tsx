@@ -1,4 +1,5 @@
-import { byModule } from "@finos/vuu-data";
+import { getAllSchemas } from "@finos/vuu-data-test";
+import { TableSchema } from "@finos/vuu-data-types";
 import { registerComponent } from "@finos/vuu-layout";
 import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
@@ -13,10 +14,9 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { CSSProperties, useMemo } from "react";
-import { FilterTableFeatureProps } from "feature-vuu-filter-table";
-import { getAllSchemas } from "@finos/vuu-data-test";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
+import { FilterTableFeatureProps } from "feature-vuu-filter-table";
+import { CSSProperties, useMemo } from "react";
 
 import "./NewTheme.examples.css";
 
@@ -27,6 +27,23 @@ const user = { username: "test-user", token: "test-token" };
 const schemas = getAllSchemas();
 
 let displaySequence = 1;
+
+// Sort TableScheas by module
+const byModule = (schema1: TableSchema, schema2: TableSchema) => {
+  const m1 = schema1.table.module.toLowerCase();
+  const m2 = schema2.table.module.toLowerCase();
+  if (m1 < m2) {
+    return -1;
+  } else if (m1 > m2) {
+    return 1;
+  } else if (schema1.table.table < schema2.table.table) {
+    return -1;
+  } else if (schema1.table.table > schema2.table.table) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
 
 type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
 type Environment = "development" | "production";

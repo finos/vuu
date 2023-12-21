@@ -1,7 +1,7 @@
-import cx from "classnames";
+import cx from "clsx";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { LayoutStartPanel } from "./LayoutStartPanel";
-import { View, ViewProps } from "@finos/vuu-layout";
+import { View, ViewProps } from "../layout-view";
 
 import "./Placeholder.css";
 

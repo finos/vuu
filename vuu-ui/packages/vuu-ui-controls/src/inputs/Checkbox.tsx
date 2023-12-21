@@ -1,16 +1,16 @@
-import { CheckboxIcon } from "@finos/vuu-ui-controls/src/list/CheckboxIcon";
+import { CheckboxIcon } from "../list/CheckboxIcon";
 
 import "./Checkbox.css";
 
 type CheckboxProps = {
-  onToggle: () => void,
-  className?: string,
-  checked: boolean,
-  label: string
-}
+  onToggle: () => void;
+  className?: string;
+  checked: boolean;
+  label: string;
+};
 
 export const Checkbox = (props: CheckboxProps): JSX.Element => {
-  const {onToggle, checked, label} = props;
+  const { onToggle, checked, label } = props;
 
   return (
     <div
@@ -21,5 +21,5 @@ export const Checkbox = (props: CheckboxProps): JSX.Element => {
       <CheckboxIcon tabIndex={0} checked={checked} />
       {label}
     </div>
-  )
-}
+  );
+};

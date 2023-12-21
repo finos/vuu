@@ -1,5 +1,5 @@
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   ForwardedRef,
   forwardRef,

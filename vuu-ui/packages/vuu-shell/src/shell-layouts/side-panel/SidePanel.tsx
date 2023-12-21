@@ -1,5 +1,5 @@
 import { CSSProperties, HTMLAttributes, useMemo } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./SidePanel.css";
 // import { useLayoutManager } from "../../layout-management";

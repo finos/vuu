@@ -1,13 +1,11 @@
-import { SyntheticEvent } from "react";
-
-import { Tree, useItemsWithIds } from "@finos/vuu-ui-controls";
+import { Tree, TreeSourceNode, useItemsWithIds } from "@finos/vuu-ui-controls";
 import { groupByInitialLetter, usa_states_cities } from "./List/List.data";
 import { folderData } from "./Tree.data";
 
 let displaySequence = 1;
 
 export const SimpleTree = () => {
-  const handleChange = (e: SyntheticEvent, selected: string[]) => {
+  const handleChange = (selected: TreeSourceNode[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -34,7 +32,12 @@ export const SimpleTree = () => {
         <Tree
           onSelectionChange={handleChange}
           selection="checkbox"
-          source={groupByInitialLetter(usa_states_cities, "groups-only")}
+          source={
+            groupByInitialLetter(
+              usa_states_cities,
+              "groups-only"
+            ) as TreeSourceNode[]
+          }
         />
       </div>
       <input type="text" />
@@ -53,7 +56,7 @@ const iconTreeStyle = `
 `;
 
 export const SimpleTreeIcons = () => {
-  const handleChange = (e: SyntheticEvent, selected: string[]) => {
+  const handleChange = (selected: TreeSourceNode[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -82,7 +85,7 @@ export const SimpleTreeIcons = () => {
 SimpleTreeIcons.displaySequence = displaySequence++;
 
 export const DragDropTreeIcons = () => {
-  const handleChange = (e: SyntheticEvent, selected: string[]) => {
+  const handleChange = (selected: TreeSourceNode[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
   return (
@@ -113,7 +116,7 @@ export const DragDropTreeIcons = () => {
 DragDropTreeIcons.displaySequence = displaySequence++;
 
 export const RevealSelected = () => {
-  const handleChange = (e: SyntheticEvent, selected: string[]) => {
+  const handleChange = (selected: TreeSourceNode[]) => {
     console.log(`selected ${selected.join(",")}`);
   };
 

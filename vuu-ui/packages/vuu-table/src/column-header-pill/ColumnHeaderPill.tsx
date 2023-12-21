@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 

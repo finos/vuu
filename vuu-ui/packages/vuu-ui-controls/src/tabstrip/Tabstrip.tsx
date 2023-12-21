@@ -1,6 +1,7 @@
-import { asReactElements, OverflowContainer, useId } from "@finos/vuu-layout";
+import { asReactElements, OverflowContainer } from "@finos/vuu-layout";
+import { useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import React, { useMemo, useRef } from "react";
 import { TabProps, TabstripProps } from "./TabsTypes";
 import { useTabstrip } from "./useTabstrip";

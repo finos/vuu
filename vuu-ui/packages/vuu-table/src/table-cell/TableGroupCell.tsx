@@ -2,7 +2,7 @@ import { GroupColumnDescriptor, TableCellProps } from "@finos/vuu-table-types";
 import { getGroupValueAndOffset, metadataKeys } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { useCell } from "../useCell";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./TableGroupCell.css";
 

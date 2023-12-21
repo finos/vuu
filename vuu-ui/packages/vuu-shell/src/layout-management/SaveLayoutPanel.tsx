@@ -1,5 +1,5 @@
 import { Checkbox, ComboBox, RadioButton } from "@finos/vuu-ui-controls";
-import { takeScreenshot } from "@finos/vuu-utils";
+import { takeScreenshot } from "./screenshot-utils";
 import { Button, FormField, FormFieldLabel, Input, Text } from "@salt-ds/core";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { LayoutMetadataDto } from "./layoutTypes";
@@ -32,7 +32,9 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [checkValues, setCheckValues] = useState<string[]>([]);
   const [radioValue, setRadioValue] = useState<RadioValue>(radioValues[0]);
   const [screenshot, setScreenshot] = useState<string | undefined>();
-  const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<string | undefined>();
+  const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     if (componentId) {

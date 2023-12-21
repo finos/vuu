@@ -8,7 +8,7 @@ import {
   UP1,
   UP2,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { useDirection } from "./useDirection";
 
 import "./BackgroundCell.css";

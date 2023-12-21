@@ -8,7 +8,7 @@ import {
   useRef,
 } from "react";
 
-import { useId } from "@finos/vuu-layout";
+import { useId } from "@finos/vuu-utils";
 import {
   CollectionProvider,
   itemToString as defaultItemToString,
@@ -17,10 +17,10 @@ import {
   useCollectionItems,
 } from "../common-hooks";
 import { List, ListProps } from "../list";
+import { forwardCallbackProps } from "../utils";
 import { DropdownBase, MaybeChildProps } from "./DropdownBase";
 import { DropdownButton } from "./DropdownButton";
 import { DropdownBaseProps } from "./dropdownTypes";
-import { forwardCallbackProps } from "../utils";
 import { useDropdown } from "./useDropdown";
 
 export interface DropdownProps<

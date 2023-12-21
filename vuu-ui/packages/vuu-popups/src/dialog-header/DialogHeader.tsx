@@ -1,6 +1,6 @@
 import { Button, Text } from "@salt-ds/core";
 import { HTMLAttributes } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./DialogHeader.css";
 

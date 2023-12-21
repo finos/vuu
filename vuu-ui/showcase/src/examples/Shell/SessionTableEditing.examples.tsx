@@ -1,3 +1,10 @@
+import { ArrayDataSource } from "@finos/vuu-data-local";
+import {
+  ContextMenuItemDescriptor,
+  DataSource,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import {
   ContextMenuProvider,
   Dialog,
@@ -5,15 +12,9 @@ import {
   useContextMenu,
 } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
 import { SessionEditingForm } from "@finos/vuu-shell";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { ArrayDataSource, DataSource } from "@finos/vuu-data";
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@finos/vuu-data-types";
+import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
 
 let displaySequence = 0;
 

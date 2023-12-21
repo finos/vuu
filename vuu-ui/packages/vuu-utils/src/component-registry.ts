@@ -4,6 +4,7 @@ import {
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
   EditValidationRule,
+  HeaderCellProps,
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
 import {
@@ -11,7 +12,6 @@ import {
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
-import { HeaderCellProps } from "@finos/vuu-table";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
@@ -33,6 +33,7 @@ export interface ConfigurationEditorProps {
 export type ConfigEditorComponent = FC<CellConfigPanelProps>;
 
 const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
+const columnHeaderRenderersMap = new Map<string, FC<HeaderCellProps>>();
 const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
 const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
@@ -45,6 +46,8 @@ export type EditRuleValidator = (
 
 export type ComponentType =
   | "cell-renderer"
+  | "column-header-content-renderer"
+  | "column-header-label-renderer"
   | "cell-config-panel"
   | "data-edit-validator";
 
@@ -83,6 +86,13 @@ const isCellRenderer = (
   component: unknown
 ): component is FC<TableCellRendererProps> => type === "cell-renderer";
 
+const isColumnHeaderRenderer = (
+  type: ComponentType,
+  component: unknown
+): component is FC<HeaderCellProps> =>
+  type === "column-header-content-renderer" ||
+  type === "column-header-label-renderer";
+
 const isCellConfigPanel = (
   type: ComponentType,
   component: unknown
@@ -107,6 +117,8 @@ export function registerComponent<
 ): void {
   if (isCellRenderer(type, component)) {
     cellRenderersMap.set(componentName, component);
+  } else if (isColumnHeaderRenderer(type, component)) {
+    columnHeaderRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {
     cellConfigPanelsMap.set(componentName, component);
   } else if (isEditRuleValidator(type, component)) {
@@ -144,16 +156,12 @@ export const getRegisteredCellRenderers = (
 export const getCellRendererOptions = (renderName: string) =>
   optionsMap.get(renderName);
 
-export function getCellRenderer(
-  column: ColumnDescriptor,
-  cellType: "cell" | "col-content" | "col-label" = "cell"
-) {
-  if (cellType === "cell") {
-    return dataCellRenderer(column);
-  } else if (cellType === "col-label" && column.colHeaderLabelRenderer) {
-    return cellRenderersMap.get(column.colHeaderLabelRenderer);
-  } else if (cellType === "col-content" && column.colHeaderContentRenderer) {
-    return cellRenderersMap.get(column.colHeaderContentRenderer);
+export function getCellRenderer(column: ColumnDescriptor) {
+  return dataCellRenderer(column);
+}
+export function getColumnHeaderRenderer(column: ColumnDescriptor) {
+  if (column.colHeaderContentRenderer) {
+    return columnHeaderRenderersMap.get(column.colHeaderContentRenderer);
   }
 }
 

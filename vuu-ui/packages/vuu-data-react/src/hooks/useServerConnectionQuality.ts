@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ConnectionManager } from "@finos/vuu-data";
+import { ConnectionManager } from "@finos/vuu-data-remote";
 
 export const useServerConnectionQuality = () => {
   const [messagesPerSecond, setMessagesPerSecond] = useState<number>(0);

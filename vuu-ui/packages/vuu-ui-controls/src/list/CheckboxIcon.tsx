@@ -1,7 +1,7 @@
 // TODO why do we need explicit React import - its not needed anywhere else
 // but we see a 'React is not defined' issue in showcase without it
 import React, { HTMLAttributes } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./CheckboxIcon.css";
 

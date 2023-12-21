@@ -10,19 +10,16 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.8.0",
-    "@salt-ds/icons": "1.5.1",
-    "@salt-ds/lab": "1.0.0-alpha.15",
-    "@finos/vuu-data": "0.0.26",
+    "@salt-ds/core": "1.13.2",
     "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
-    "@finos/vuu-shell": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26"
   },
   "peerDependencies": {
-    "classnames": "^2.2.6",
+    "clsx": "^2.0.0",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
-  }
+  },
+  "sideEffects": false
 }

@@ -5,7 +5,7 @@ import {
   MenuBuilder,
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
-import cx from "classnames";
+import cx from "clsx";
 import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
 import "./TabMenu.css";
@@ -57,7 +57,13 @@ export const TabMenu = ({
         tabIndex: index,
       },
     ],
-    [allowClose, allowRename, controlledComponentId, index]
+    [
+      allowClose,
+      allowRename,
+      controlledComponentId,
+      controlledComponentTitle,
+      index,
+    ]
   );
 
   return (

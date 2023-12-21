@@ -1,6 +1,7 @@
-import { getServerAPI, TableSchema } from "@finos/vuu-data";
+import { getServerAPI } from "@finos/vuu-data-remote";
+import { TableSchema } from "@finos/vuu-data-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export const useVuuTables = () => {
   const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();

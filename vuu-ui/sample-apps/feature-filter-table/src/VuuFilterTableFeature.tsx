@@ -1,9 +1,9 @@
-import { TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import { FlexboxLayout } from "@finos/vuu-layout";
-import { DataSourceStats } from "@finos/vuu-table-extras";
-import cx from "classnames";
 import { ContextMenuProvider } from "@finos/vuu-popups";
+import { DataSourceStats } from "@finos/vuu-table-extras";
+import cx from "clsx";
 import { useFilterTable } from "./useFilterTable";
 
 import "./VuuFilterTableFeature.css";

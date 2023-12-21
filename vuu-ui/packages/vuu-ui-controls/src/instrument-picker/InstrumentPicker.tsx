@@ -1,17 +1,19 @@
-import { TableSchema } from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { useId } from "@finos/vuu-layout";
+import { DataSourceRow, TableSchema } from "@finos/vuu-data-types";
 import { Table, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
-import { ColumnMap } from "@finos/vuu-utils";
+import { ColumnMap, useId } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
 import { DropdownBase, OpenChangeHandler } from "../dropdown";
-import "./SearchCell";
+import { SearchCell } from "./SearchCell";
 import { useInstrumentPicker } from "./useInstrumentPicker";
 
 import "./InstrumentPicker.css";
 
 const classBase = "vuuInstrumentPicker";
+
+if (typeof SearchCell !== "function") {
+  console.warn("Instrument Picker: SearchCell module not loaded ");
+}
 
 export interface InstrumentPickerProps
   extends Omit<HTMLAttributes<HTMLElement>, "onSelect"> {

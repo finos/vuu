@@ -1,6 +1,6 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import {
   FocusEvent,

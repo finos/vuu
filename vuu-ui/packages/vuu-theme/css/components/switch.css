@@ -1,7 +1,6 @@
 .saltSwitch {
     --switch-color: var(--vuu-color-gray-45); 
     --vuu-icon-left: -1px;
-
 }
 
 .saltSwitch-track {
@@ -13,7 +12,7 @@
     width: 26px;
 }
 
-.saltSwitch:hover .saltSwitch-track {
+.saltSwitch:not(.saltSwitch-disabled):hover .saltSwitch-track {
     --switch-color: var(--vuu-color-pink-10);  
 }
 
@@ -30,6 +29,10 @@
     --switch-color: var(--vuu-color-purple-10);  
 }
 
+.saltSwitch-disabled {
+    --switch-color: var(--vuu-color-gray-30); 
+}
+
 .saltSwitch-checked .saltSwitch-thumb,
 .saltSwitch-checked:hover .saltSwitch-thumb {
     background-color: white;
@@ -42,10 +45,8 @@
     content: "";
     left: var(--vuu-icon-left, auto);
     height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
-    -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
-    mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+    mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
     mask-repeat: no-repeat;
-    -webkit-mask-repeat: no-repeat;
     position: absolute;
     top: var(--vuu-icon-top, auto);
     width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));

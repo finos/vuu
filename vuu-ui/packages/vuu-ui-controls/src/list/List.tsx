@@ -1,6 +1,7 @@
-import { MeasuredContainer, MeasuredSize, useId } from "@finos/vuu-layout";
+import { MeasuredContainer, MeasuredSize } from "@finos/vuu-layout";
+import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   cloneElement,
   ForwardedRef,
@@ -12,17 +13,17 @@ import {
   useState,
 } from "react";
 import {
-  isSelected,
-  LIST_FOCUS_VISIBLE,
-  useCollectionItems,
-  useImperativeScrollingAPI,
-} from "./common-hooks";
-import {
   CollectionIndexer,
   CollectionItem,
   itemToString as defaultItemToString,
   SelectionStrategy,
 } from "../common-hooks";
+import {
+  isSelected,
+  LIST_FOCUS_VISIBLE,
+  useCollectionItems,
+  useImperativeScrollingAPI,
+} from "./common-hooks";
 
 import { ListItem as DefaultListItem, ListItemProxy } from "./ListItem";
 import { ListItemProps, ListProps } from "./listTypes";

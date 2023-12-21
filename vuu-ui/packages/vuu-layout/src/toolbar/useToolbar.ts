@@ -1,4 +1,3 @@
-import type { OverflowItem, ToolbarProps } from "@finos/vuu-layout";
 import { isValidNumber } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
@@ -7,6 +6,8 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { OverflowItem } from "../overflow-container";
+import { ToolbarProps } from "./Toolbar";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { useSelection } from "./useSelection";
 

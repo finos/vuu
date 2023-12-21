@@ -1,5 +1,8 @@
-import { DataSource } from "@finos/vuu-data";
-import { ContextMenuItemDescriptor, MenuBuilder } from "@finos/vuu-data-types";
+import {
+  ContextMenuItemDescriptor,
+  DataSource,
+  MenuBuilder,
+} from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor, PinLocation } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 

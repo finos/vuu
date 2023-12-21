@@ -6,7 +6,6 @@ import {
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { ArrowDownIcon, ArrowUpIcon } from "@salt-ds/icons";
 import { usa_states } from "./List.data";
 
 let displaySequence = 1;
@@ -92,13 +91,13 @@ export const FullyControlledDropdown = () => {
           disabled={!open || highlightedIndex === usa_states.length - 1}
           onClick={handleArrowDown}
         >
-          <ArrowDownIcon />
+          <span data-icon="chevron-down" />
         </Button>
         <Button
           disabled={!open || highlightedIndex <= 0}
           onClick={handleArrowUp}
         >
-          <ArrowUpIcon />
+          <span data-icon="chevron-down" />
         </Button>
         <Button disabled={!open} onClick={handleSelect}>
           Select

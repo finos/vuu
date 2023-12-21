@@ -1,6 +1,6 @@
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { getColumnStyle } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { useMemo } from "react";
 
 export const useCell = (

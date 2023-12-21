@@ -67,7 +67,6 @@ export function formatDate(pattern: DateTimePattern): (d: Date) => string {
 
   return (d) => {
     const dateStr = dateTimeFormat.format(d);
-    console.log({ dateStr });
     return postProcessor ? postProcessor(dateStr) : dateStr;
   };
 }

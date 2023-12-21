@@ -1,24 +1,29 @@
 import {
+  MenuActionConfig,
+  SuggestionFetcher,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
+import {
+  DataSourceFilter,
   DataSourceVisualLinkCreatedMessage,
-  isTypeaheadSuggestionProvider,
   SchemaColumn,
   TypeaheadSuggestionProvider,
   VuuFeatureInvocationMessage,
-} from "@finos/vuu-data";
-import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
-import { DataSourceFilter } from "@finos/vuu-data-types";
-import { SuggestionFetcher } from "@finos/vuu-data-react";
-import { TableConfig } from "@finos/vuu-table-types";
+} from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
 import { useShellContext } from "@finos/vuu-shell";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+import { TableConfig } from "@finos/vuu-table-types";
+import {
+  applyDefaultColumnConfig,
+  isTypeaheadSuggestionProvider,
+} from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
+import { TypeaheadParams } from "packages/vuu-protocol-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
-import { TypeaheadParams } from "packages/vuu-protocol-types";
 
 const NO_CONFIG: FilterTableConfig = {};
 

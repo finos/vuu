@@ -1,5 +1,5 @@
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties, ForwardedRef, forwardRef } from "react";
 import { FlexboxProps } from "./flexboxTypes";
 import { useSplitterResizing } from "./useSplitterResizing";

@@ -1,4 +1,4 @@
-import { useIdMemo as useId } from "@salt-ds/core";
+import { useId } from "@finos/vuu-utils";
 import React, { useCallback, useRef } from "react";
 import {
   useLayoutCreateNewChild,
@@ -10,9 +10,9 @@ import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";
 import { getDefaultTabLabel } from "../layout-reducer";
+import { Placeholder } from "../placeholder";
 
 import "./Stack.css";
-import { Placeholder } from "../placeholder";
 
 const defaultCreateNewChild = () => (
   <Placeholder

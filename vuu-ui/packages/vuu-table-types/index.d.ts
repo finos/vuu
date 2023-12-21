@@ -6,17 +6,13 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
+import type { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ValueFormatter } from "@finos/vuu-table";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { FunctionComponent, MouseEvent } from "react";
+import type { HTMLAttributes } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
-
-export type RangeTuple = [from: number, to: number];
-export type SelectionItem = number | RangeTuple;
-export type Selection = SelectionItem[];
-export type SelectionChangeHandler = (selection: Selection) => void;
 
 export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
@@ -275,3 +271,48 @@ export type GridAction =
   | ScrollAction
   | GridActionResizeCol
   | GridActionSelection;
+
+/**
+ * Describes the props for a Column Configuration Editor, for which
+ * an implementation is provided in vuu-table-extras
+ */
+export interface ColumnSettingsProps {
+  column: ColumnDescriptor;
+  onConfigChange: (config: TableConfig) => void;
+  onCancelCreateColumn: () => void;
+  onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
+  tableConfig: TableConfig;
+  vuuTable: VuuTable;
+}
+
+/**
+ * Describes the props for a Table Configuration Editor, for which
+ * an implementation is provided in vuu-table-extras
+ */
+export interface TableSettingsProps {
+  availableColumns: SchemaColumn[];
+  onAddCalculatedColumn: () => void;
+  onConfigChange: (config: TableConfig) => void;
+  onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
+  onNavigateToColumn?: (columnName: string) => void;
+  tableConfig: TableConfig;
+}
+
+export type DefaultColumnConfiguration = <T extends string = string>(
+  tableName: T,
+  columnName: string
+) => Partial<ColumnDescriptor> | undefined;
+
+export type ResizePhase = "begin" | "resize" | "end";
+
+export type TableColumnResizeHandler = (
+  phase: ResizePhase,
+  columnName: string,
+  width?: number
+) => void;
+
+export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
+  classBase?: string;
+  column: RuntimeColumnDescriptor;
+  onResize?: TableColumnResizeHandler;
+}

@@ -1,10 +1,13 @@
 /* eslint-disable no-sequences */
-import { DataSource } from "@finos/vuu-data";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { removeColumnFromFilter } from "@finos/vuu-utils";
 import { VuuFilter } from "@finos/vuu-protocol-types";
-import { DataSourceFilter, MenuActionHandler } from "@finos/vuu-data-types";
+import {
+  DataSource,
+  DataSourceFilter,
+  MenuActionHandler,
+} from "@finos/vuu-data-types";
 import { PersistentColumnAction } from "../useTableModel";
 import {
   addGroupColumn,

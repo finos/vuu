@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes } from "react";
 
 import "./ChevronIcon.css";
@@ -13,7 +13,5 @@ interface ChevronProps extends HTMLAttributes<HTMLSpanElement> {
 
 export const ChevronIcon = (props: ChevronProps) => {
   const { direction, ...htmlAttributes } = props;
-  return (
-    <span {...htmlAttributes} className={cx(classBase, direction)} />
-  )
+  return <span {...htmlAttributes} className={cx(classBase, direction)} />;
 };

@@ -8,25 +8,27 @@ import React, {
 import {
   ApplicationJSON,
   ApplicationSettings,
-  loadingApplicationJson,
   LayoutJSON,
-  LayoutPersistenceManager,
-  LocalLayoutPersistenceManager,
-  RemoteLayoutPersistenceManager,
   resolveJSONPath,
-  defaultApplicationJson,
   ApplicationSetting,
 } from "@finos/vuu-layout";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
+import {
+  defaultApplicationJson,
+  PersistenceManager,
+  loadingApplicationJson,
+  LocalPersistenceManager,
+  RemotePersistenceManager,
+} from "../persistence-management";
 
-let _persistenceManager: LayoutPersistenceManager;
+let _persistenceManager: PersistenceManager;
 
 const getPersistenceManager = () => {
   if (_persistenceManager === undefined) {
     _persistenceManager = process.env.LOCAL
-      ? new LocalLayoutPersistenceManager()
-      : new RemoteLayoutPersistenceManager();
+      ? new LocalPersistenceManager()
+      : new RemotePersistenceManager();
   }
   return _persistenceManager;
 };

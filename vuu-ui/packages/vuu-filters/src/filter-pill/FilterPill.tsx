@@ -1,10 +1,9 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { useId } from "@finos/vuu-layout";
-import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups/src";
+import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
-import { filterAsQuery, isMultiClauseFilter } from "@finos/vuu-utils";
-import cx from "classnames";
+import { filterAsQuery, isMultiClauseFilter, useId } from "@finos/vuu-utils";
+import cx from "clsx";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
 import { filterClauses } from "../filter-utils";

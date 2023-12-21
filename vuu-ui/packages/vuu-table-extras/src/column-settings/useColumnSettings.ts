@@ -2,6 +2,7 @@ import {
   ColumnDescriptor,
   TableConfig,
   ColumnTypeFormatting,
+  ColumnSettingsProps,
 } from "@finos/vuu-table-types";
 
 import {
@@ -22,7 +23,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { ColumnSettingsProps } from "./ColumnSettingsPanel";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {

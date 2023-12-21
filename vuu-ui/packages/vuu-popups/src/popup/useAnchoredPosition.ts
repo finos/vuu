@@ -89,7 +89,7 @@ export const useAnchoredPosition = ({
   useLayoutEffect(() => {
     if (placement === "absolute" && positionProp) {
       setPosition(positionProp);
-    } else if (anchorElement.current) {
+    } else if (anchorElement.current && placement !== "auto") {
       const dimensions =
         popupRef.current === null
           ? undefined

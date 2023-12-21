@@ -1,25 +1,20 @@
 import {
   DataSourceConfig,
+  DataSourceRow,
   DataSourceSubscribedMessage,
-  JsonDataSource,
-} from "@finos/vuu-data";
-import { DataSourceRow } from "@finos/vuu-data-types";
+  SelectionChangeHandler,
+} from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
   RowClickHandler,
   RuntimeColumnDescriptor,
-  SelectionChangeHandler,
+  TableColumnResizeHandler,
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
-import {
-  MeasuredProps,
-  MeasuredSize,
-  useLayoutEffectSkipFirst,
-} from "@finos/vuu-layout";
+import { MeasuredProps, MeasuredSize } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
-import { useTableAndColumnSettings } from "@finos/vuu-table-extras";
 import {
   DragStartHandler,
   useDragDropNext as useDragDrop,
@@ -32,6 +27,7 @@ import {
   isValidNumber,
   metadataKeys,
   updateColumn,
+  useLayoutEffectSkipFirst,
 } from "@finos/vuu-utils";
 import {
   FocusEvent,
@@ -42,7 +38,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TableColumnResizeHandler } from "./column-resizing";
 import {
   buildContextMenuDescriptors,
   useHandleTableContextMenu,
@@ -66,6 +61,7 @@ import {
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { useVirtualViewport } from "./useVirtualViewport";
+import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -249,6 +245,7 @@ export const useTable = ({
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
+    // We need to factor this out of Table
     onFeatureInvocation,
     renderBufferSize,
     onSizeChange: onDataRowcountChange,
@@ -436,11 +433,11 @@ export const useTable = ({
       const key = row[KEY];
 
       if (row[IS_EXPANDED]) {
-        (dataSource as JsonDataSource).closeTreeNode(key, true);
+        dataSource.closeTreeNode(key, true);
         if (isJson) {
           const idx = columns.indexOf(column);
-          const rows = (dataSource as JsonDataSource).getRowsAtDepth(idx + 1);
-          if (!rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
+          const rows = dataSource.getRowsAtDepth?.(idx + 1);
+          if (rows && !rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
             dispatchColumnAction({
               type: "hideColumns",
               columns: columns.slice(idx + 2),
@@ -450,10 +447,10 @@ export const useTable = ({
       } else {
         dataSource.openTreeNode(key);
         if (isJson) {
-          const childRows = (dataSource as JsonDataSource).getChildRows(key);
+          const childRows = dataSource.getChildRows?.(key);
           const idx = columns.indexOf(column) + 1;
           const columnsToShow = [columns[idx]];
-          if (childRows.some((row) => row[IS_LEAF])) {
+          if (childRows && childRows.some((row) => row[IS_LEAF])) {
             columnsToShow.push(columns[idx + 1]);
           }
           if (columnsToShow.some((col) => col.hidden)) {

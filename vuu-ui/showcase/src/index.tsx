@@ -1,7 +1,10 @@
 import "@finos/vuu-icons/index.css";
-import { ThemeProvider } from "@finos/vuu-shell";
 import "@finos/vuu-theme/index.css";
-import { getUrlParameter, hasUrlParameter } from "@finos/vuu-utils";
+import {
+  getUrlParameter,
+  hasUrlParameter,
+  ThemeProvider,
+} from "@finos/vuu-utils";
 import "@salt-ds/theme/index.css";
 import ReactDOM from "react-dom";
 import { ExamplesModule } from "./App";

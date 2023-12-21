@@ -1,6 +1,6 @@
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu } from "@finos/vuu-popups";
-import cx from "classnames";
+import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEvent,

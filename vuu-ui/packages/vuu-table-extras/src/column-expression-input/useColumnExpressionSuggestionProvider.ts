@@ -13,11 +13,6 @@ import {
 } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
-import {
-  ColumnExpressionOperator,
-  ColumnExpressionSuggestionType,
-  IExpressionSuggestionProvider,
-} from "@finos/vuu-table-extras";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
@@ -25,6 +20,11 @@ import {
   columnFunctionDescriptors,
 } from "./column-function-descriptors";
 import { functionDocInfo } from "./functionDocInfo";
+import {
+  ColumnExpressionOperator,
+  ColumnExpressionSuggestionType,
+  IExpressionSuggestionProvider,
+} from "./useColumnExpressionEditor";
 
 const NO_OPERATORS = [] as Completion[];
 

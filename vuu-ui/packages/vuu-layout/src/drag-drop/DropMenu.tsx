@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { DropTarget } from "./DropTarget";
 

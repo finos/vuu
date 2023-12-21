@@ -1,14 +1,31 @@
+import {
+  SetPropsAction,
+  useLayoutProviderDispatch,
+  useViewContext,
+} from "@finos/vuu-layout";
 import { registerComponent } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { SetPropsAction, useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { MouseEventHandler, useCallback } from "react";
-import "./ColHeaderAddSymbol.css";
+import { DataSource } from "packages/vuu-data-types";
 import { InstrumentSearchProps } from "packages/vuu-ui-controls/src";
+import { MouseEventHandler, useCallback, useMemo } from "react";
+import "./ColHeaderAddSymbol.css";
 
 const classBase = "vuuColHeaderAddSymbol";
 
 export const ColHeaderAddSymbol = () => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
+  const { loadSession } = useViewContext();
+
+  const dataSource = useMemo(() => {
+    const ds = loadSession?.("data-source-basket-constituent") as DataSource;
+    if (ds) {
+      return ds;
+    } else {
+      throw Error(
+        "ColHeaderAddSymbol expects Basket Constituent datasource to be available in session store"
+      );
+    }
+  }, [loadSession]);
 
   const handleClick = useCallback<MouseEventHandler>(
     (e) => {
@@ -25,14 +42,14 @@ export const ColHeaderAddSymbol = () => {
                 allowDragDrop: "drag-copy",
                 id: "basket-instruments",
               },
-              table: { module: "BASKET", table: "basketConstituent" },
+              dataSource,
             } as InstrumentSearchProps,
           },
           title: "Add Ticker",
         },
       } as SetPropsAction);
     },
-    [dispatchLayoutAction]
+    [dataSource, dispatchLayoutAction]
   );
 
   return (
@@ -45,6 +62,6 @@ export const ColHeaderAddSymbol = () => {
 registerComponent(
   "col-header-add-symbol",
   ColHeaderAddSymbol,
-  "cell-renderer",
+  "column-header-content-renderer",
   {}
 );

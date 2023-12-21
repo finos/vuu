@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data";
+import { TableSchema } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import {
