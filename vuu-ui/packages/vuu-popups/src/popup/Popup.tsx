@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, RefObject } from "react";
 import { Position, useAnchoredPosition } from "./useAnchoredPosition";
 

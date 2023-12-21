@@ -7,7 +7,7 @@ import {
   TableHeadings,
 } from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { GroupHeaderCellNext, HeaderCell } from "../header-cell";
 import { useTableHeader } from "./useTableHeader";
 

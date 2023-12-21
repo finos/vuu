@@ -5,7 +5,7 @@ import {
   MenuBuilder,
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./FilterPillMenu.css";
 import {

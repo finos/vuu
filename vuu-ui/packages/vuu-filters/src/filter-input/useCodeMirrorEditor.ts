@@ -12,7 +12,7 @@ import {
 } from "@finos/vuu-codemirror";
 import { walkTree } from "@finos/vuu-filter-parser";
 import { Filter } from "@finos/vuu-filter-types";
-import cx from "classnames";
+import cx from "clsx";
 import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 import { filterLanguageSupport } from "./FilterLanguage";
 import { vuuHighlighting } from "./highlighting";

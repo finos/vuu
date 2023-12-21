@@ -2,7 +2,7 @@ import { Tooltip, useTooltip } from "@finos/vuu-popups";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { isValidNumber, useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   FocusEventHandler,
   ForwardedRef,

@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { createContext, useCallback, useContext, useState } from "react";
 
 import "./ListVisualizer.css";

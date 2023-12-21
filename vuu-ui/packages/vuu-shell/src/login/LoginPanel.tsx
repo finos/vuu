@@ -9,7 +9,7 @@ import {
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import { VuuLogo } from "./VuuLogo";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./LoginPanel.css";
 

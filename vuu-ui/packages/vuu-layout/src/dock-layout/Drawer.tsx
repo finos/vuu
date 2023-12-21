@@ -1,5 +1,5 @@
 import { Button, useControlled } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties, HTMLAttributes, useCallback } from "react";
 
 import "./Drawer.css";

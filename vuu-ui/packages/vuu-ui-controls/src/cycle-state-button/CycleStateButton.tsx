@@ -1,5 +1,5 @@
 import { Button, ButtonProps } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { CommitResponse } from "packages/vuu-table-types";
 import {
   VuuColumnDataType,

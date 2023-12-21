@@ -18,10 +18,11 @@
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-table-extras": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
-    "@finos/vuu-utils": "0.0.26"
+    "@finos/vuu-utils": "0.0.26",
+    "html-to-image": "^1.11.11"
   },
   "peerDependencies": {
-    "classnames": "^2.2.6",
+    "clsx": "^2.0.0",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   }

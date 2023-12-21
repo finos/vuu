@@ -1,6 +1,6 @@
 import { DataSource } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, useEffect, useState } from "react";
 
 import "./DatasourceStats.css";

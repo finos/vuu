@@ -5,7 +5,7 @@ import {
   valueChangeDirection,
 } from "@finos/vuu-utils";
 import { HTMLAttributes, memo, useMemo, useRef } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 const classBase = "vuuPriceTicker";
 

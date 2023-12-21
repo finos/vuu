@@ -13,7 +13,7 @@ import {
   shallowEquals,
 } from "@finos/vuu-utils";
 import { Button, useIdMemo } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   ChangeEvent,
   FocusEvent,

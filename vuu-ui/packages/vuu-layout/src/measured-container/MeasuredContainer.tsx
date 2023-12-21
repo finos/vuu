@@ -1,7 +1,7 @@
 import { CSSProperties, forwardRef, ForwardedRef, HTMLAttributes } from "react";
 import { MeasuredSize, useMeasuredContainer } from "./useMeasuredContainer";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./MeasuredContainer.css";
 

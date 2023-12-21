@@ -6,7 +6,7 @@ import React, {
   cloneElement,
   useContext,
 } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 export const DEFAULT_DENSITY: Density = "medium";
 export const DEFAULT_THEME = "salt-theme";

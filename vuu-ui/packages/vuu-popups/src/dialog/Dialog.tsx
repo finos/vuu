@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { useThemeAttributes } from "@finos/vuu-utils";
 import { HTMLAttributes, useCallback, useLayoutEffect, useRef } from "react";
 import { DialogHeader } from "../dialog-header";

@@ -19,7 +19,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   CSSProperties,
   FC,

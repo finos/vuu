@@ -1,5 +1,5 @@
 import { partition } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, ReactElement } from "react";
 import { registerComponent } from "../registry/ComponentRegistry";
 import Drawer from "./Drawer";

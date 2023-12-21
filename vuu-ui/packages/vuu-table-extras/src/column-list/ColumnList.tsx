@@ -6,7 +6,7 @@ import {
   ListProps,
 } from "@finos/vuu-ui-controls";
 import { Checkbox, Switch } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEventHandler,

@@ -1,5 +1,5 @@
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { ForwardedRef, forwardRef, useMemo } from "react";
 import { useBreakpoints } from "../responsive";
 import { asReactElements } from "../utils";

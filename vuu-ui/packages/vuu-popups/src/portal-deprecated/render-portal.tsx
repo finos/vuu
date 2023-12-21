@@ -1,6 +1,6 @@
 import * as ReactDOM from "react-dom";
 import { ReactElement } from "react";
-import cx from "classnames";
+import cx from "clsx";
 
 let containerId = 1;
 

@@ -2,7 +2,7 @@ import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { useEditableText } from "@finos/vuu-ui-controls";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./InputCell.css";
 

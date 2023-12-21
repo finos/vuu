@@ -1,6 +1,6 @@
 import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import React, {
   ForwardedRef,
   forwardRef,

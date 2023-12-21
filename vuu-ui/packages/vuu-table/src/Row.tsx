@@ -13,7 +13,7 @@ import {
   isNotHidden,
   RowSelected,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties, memo, MouseEvent, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 

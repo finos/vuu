@@ -1,7 +1,7 @@
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { Children, cloneElement, forwardRef, useRef } from "react";
 import { forwardCallbackProps } from "../utils";
 import { DropdownBaseProps } from "./dropdownTypes";

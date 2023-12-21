@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import cx from "classnames";
+import cx from "clsx";
 
 import {
   getCalculatedColumnDetails,

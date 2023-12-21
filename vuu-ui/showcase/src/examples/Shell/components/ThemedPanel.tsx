@@ -1,6 +1,6 @@
 import { ThemeSwitch } from "@finos/vuu-shell";
 import { ThemeMode, ThemeProvider } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEventHandler,

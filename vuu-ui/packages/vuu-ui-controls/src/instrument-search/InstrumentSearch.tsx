@@ -8,7 +8,7 @@ import {
   useControlledTableNavigation,
 } from "@finos/vuu-table";
 import { Input } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { HTMLAttributes, RefCallback, useCallback } from "react";
 import { SearchCell } from "./SearchCell";
 

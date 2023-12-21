@@ -1,7 +1,7 @@
 import { CSSProperties, MouseEventHandler, ReactNode, RefObject } from "react";
 import { Portal } from "../portal";
 import { TooltipPlacement, useAnchoredPosition } from "./useAnchoredPosition";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./Tooltip.css";
 

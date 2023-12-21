@@ -1,6 +1,6 @@
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import React, {
   ForwardedRef,
   forwardRef,

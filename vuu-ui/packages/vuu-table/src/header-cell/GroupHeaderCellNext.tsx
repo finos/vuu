@@ -6,7 +6,7 @@ import {
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { useCallback, useRef, useState } from "react";
 import { ColumnHeaderPill, GroupColumnPill } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";

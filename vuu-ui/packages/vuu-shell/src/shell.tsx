@@ -12,7 +12,7 @@ import {
   ThemeProvider,
   useThemeAttributes,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import {
   HTMLAttributes,
   ReactNode,

@@ -5,7 +5,7 @@ import {
   isValidNumber,
   registerComponent,
 } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties } from "react";
 
 import "./ProgressCell.css";

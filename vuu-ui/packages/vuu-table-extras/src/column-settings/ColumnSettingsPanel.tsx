@@ -12,7 +12,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { ColumnExpressionPanel } from "../column-expression-panel";
 import { ColumnFormattingPanel } from "../column-formatting-settings";
 import { ColumnNameLabel } from "./ColumnNameLabel";

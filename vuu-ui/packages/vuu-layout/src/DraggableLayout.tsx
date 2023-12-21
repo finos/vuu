@@ -1,4 +1,4 @@
-import classnames from "classnames";
+import classnames from "clsx";
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 import { registerComponent } from "./registry/ComponentRegistry";
 

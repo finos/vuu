@@ -1,5 +1,5 @@
 import React from "react";
-import cx from "classnames";
+import cx from "clsx";
 import { typeOf } from "../../utils";
 
 import "./layout-tree-viewer.css";

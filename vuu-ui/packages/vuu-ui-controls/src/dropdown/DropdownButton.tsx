@@ -1,5 +1,5 @@
 import { Button, ButtonProps } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import { AriaAttributes, ForwardedRef, forwardRef } from "react";
 
 import "./DropdownButton.css";

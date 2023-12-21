@@ -16,7 +16,7 @@ import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { Basket } from "../useBasketTrading";
 import { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
-import cx from "classnames";
+import cx from "clsx";
 
 import "./BasketToolbar.css";
 

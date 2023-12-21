@@ -1,5 +1,5 @@
 import { HeaderCellProps } from "@finos/vuu-table-types";
-import cx from "classnames";
+import cx from "clsx";
 import { MouseEventHandler, useCallback, useRef } from "react";
 import { SortIndicator } from "../column-header-pill";
 import { ColumnMenu } from "../column-menu";

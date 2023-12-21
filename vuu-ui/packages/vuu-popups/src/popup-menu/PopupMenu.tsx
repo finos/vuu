@@ -1,7 +1,7 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import cx from "classnames";
+import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEvent,

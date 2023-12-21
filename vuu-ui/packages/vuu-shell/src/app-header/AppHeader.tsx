@@ -4,7 +4,7 @@ import { VuuUser } from "../shell";
 // import { ThemeSwitch } from "../theme-switch";
 import { Toolbar } from "@finos/vuu-layout";
 import { ThemeMode } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { logout } from "../login";
 
 import { Button } from "@salt-ds/core";

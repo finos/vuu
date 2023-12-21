@@ -3,7 +3,7 @@ import { Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { useThemeAttributes } from "@finos/vuu-utils";
-import cx from "classnames";
+import cx from "clsx";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList } from "../feature-list";

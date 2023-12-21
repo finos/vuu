@@ -1,4 +1,4 @@
-import cx from "classnames";
+import cx from "clsx";
 import { ForwardedRef, forwardRef } from "react";
 import { VuuInput, VuuInputProps } from "../vuu-input";
 
