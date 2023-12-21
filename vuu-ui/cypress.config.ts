@@ -27,29 +27,6 @@ const viteConfig: UserConfig = {
     },
   },
 };
-// if (isCI) {
-//   viteConfig = mergeConfig(viteConfig, {
-//     resolve: {
-//       alias: {
-//         "@salt-ds/core": path.resolve(__dirname, "./dist/salt-ds-core"),
-//         "@salt-ds/data-grid": path.resolve(
-//           __dirname,
-//           "./dist/salt-ds-data-grid"
-//         ),
-//         "@salt-ds/lab": path.resolve(__dirname, "./dist/salt-ds-lab"),
-//         "@salt-ds/icons": path.resolve(__dirname, "./dist/salt-ds-icons"),
-//       },
-//     },
-//     optimizeDeps: {
-//       include: [
-//         "@salt-ds/core",
-//         "@salt-ds/data-grid",
-//         "@salt-ds/lab",
-//         "@salt-ds/icons",
-//       ],
-//     },
-//   } as UserConfig);
-// }
 
 export default defineConfig({
   viewportWidth: 1280,
@@ -78,7 +55,7 @@ export default defineConfig({
   },
 
   e2e: {
-    baseUrl: "http://localhost:5173/",
+    baseUrl: "http://localhost:4173/",
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setupNodeEvents(on, config) {
       // implement node event listeners here

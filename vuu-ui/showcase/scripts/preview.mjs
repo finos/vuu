@@ -8,8 +8,8 @@ import "./copy-preview.mjs";
 
 execWait("node ../node_modules/.bin/vite preview");
 
-console.log(`opening showcase at ${chalk.green("http://127.0.0.1:4173/")} ...`);
+console.log(`opening showcase at ${chalk.green("http://localhost:4173/")} ...`);
 
 setTimeout(() => {
-  open("http://127.0.0.1:4173/");
+  open("http://localhost:4173/");
 }, 1000);

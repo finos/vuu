@@ -49,21 +49,21 @@ jobs:
           install: false
           working-directory: ./vuu-ui
           browser: chrome
-          build: npm run build
-          start: npm run showcase
-          wait-on: "http://localhost:5173"
+          build: npm run showcase:build
+          start: npm run showcase:preview
+          wait-on: "http://localhost:4173"
       - name: Run end-to-end tests in Edge
         uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
         with:
           install: false
           working-directory: ./vuu-ui
           browser: edge
-          build: npm run build
-          start: npm run showcase
-          wait-on: "http://localhost:5173"
+          build: npm run showcase:build
+          start: npm run showcase:preview
+          wait-on: "http://localhost:4173"
 
-  # ensure the vuu example and showcase still build
-  vuu-and-showcase-build:
+  # ensure the vuu example still builds
+  vuu-app-build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -76,7 +76,5 @@ jobs:
         run: cd ./vuu-ui && npm install
       - name: Build Vuu Libraries
         run: cd ./vuu-ui && npm run build
-      - name: Build showcase
-        run: cd ./vuu-ui && npm run showcase:build
       - name: Build Vuu app
         run: cd ./vuu-ui && npm run build:app
