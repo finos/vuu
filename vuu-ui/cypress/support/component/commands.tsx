@@ -5,7 +5,7 @@ import "cypress-axe";
 import { Options } from "cypress-axe";
 // import { PerformanceResult, PerformanceTester } from "./PerformanceTester";
 import { ReactNode } from "react";
-import { ThemeProvider } from "@finos/vuu-shell";
+import { ThemeProvider } from "@finos/vuu-utils";
 
 const SupportedThemeModeValues = ["light", "dark"] as const;
 type SupportedThemeMode = (typeof SupportedThemeModeValues)[number];
