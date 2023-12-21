@@ -9,6 +9,12 @@
   --saltText-color: var(--text-secondary-foreground, #606477);
 }
 
+.spinner{
+  width: 100px;
+  height:100px;
+  background-image: var(--svg-spinner);
+}
+
 .saveLayoutPanel-panelContainer {
   display: flex;
   flex-direction: column;
@@ -69,13 +75,9 @@
 }
 
 .saveLayoutPanel-screenshot {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background: lightgray 50% / cover no-repeat;
   width: 273px;
   height: 186px;
-  flex-shrink: 0;
 }
 
 .saveLayoutPanel-buttonsContainer {
