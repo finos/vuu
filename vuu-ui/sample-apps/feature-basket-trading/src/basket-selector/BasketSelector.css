@@ -1,10 +1,8 @@
 .vuuBasketSelector {
-    --basket-selector-height: var(--vuuBasketSelector-height, 61px);
+    --basket-selector-height: 61px;
     align-items: center;
     border: solid 1px var(--vuu-color-gray-45);
     border-radius: 6px;
-    container-name: basket-selector;
-    container-type: size;
     display: inline-block;
     height: var(--basket-selector-height);
     min-width: 450px;
@@ -100,15 +98,4 @@
     display: flex;
     flex: 0 0 36px;
     justify-content: center;
-}
-
-@container basket-selector (height <  59px) {
-    .vuuBasketSelector-basketDetails {
-        grid-template-columns: max-content min-content min-content 1fr;
-        grid-template-rows: 1fr;
-        padding: 4px 8px;
-    }
-    label {
-        display: none;
-    }
 }

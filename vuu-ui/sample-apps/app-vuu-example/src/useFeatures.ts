@@ -27,7 +27,7 @@ export const useFeatures = ({
       leftNavLocation = "vuu-tables",
       ...feature
     } of Object.values(featuresProp)) {
-      const { schema, schemas } = featureProps;
+      const { schema, schemas, ViewProps } = featureProps;
       const target =
         leftNavLocation === "vuu-tables" ? tableFeatures : features;
       if (isWildcardSchema(schema) && tables) {
@@ -50,6 +50,7 @@ export const useFeatures = ({
           ComponentProps: {
             tableSchema,
           },
+          ViewProps,
         });
       } else if (Array.isArray(schemas)) {
         target.push({
@@ -63,6 +64,7 @@ export const useFeatures = ({
             },
             {}
           ),
+          ViewProps,
         });
       } else {
         target.push(feature);

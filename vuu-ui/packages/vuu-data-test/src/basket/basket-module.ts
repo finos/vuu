@@ -133,10 +133,11 @@ async function addConstituent(rpcRequest: ClientToServerViewportRpcCall) {
 }
 async function sendToMarket(rpcRequest: ClientToServerViewportRpcCall) {
   const [basketInstanceId] = rpcRequest.params;
-  console.log(`RPC call erceived ${rpcRequest.rpcName} ${basketInstanceId}`);
+  basketTrading.update(basketInstanceId, "status", "ON_MARKET");
 }
 async function takeOffMarket(rpcRequest: ClientToServerViewportRpcCall) {
-  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
+  const [basketInstanceId] = rpcRequest.params;
+  basketTrading.update(basketInstanceId, "status", "OFF-MARKET");
 }
 
 async function createNewBasket(rpcRequest: ClientToServerViewportRpcCall) {

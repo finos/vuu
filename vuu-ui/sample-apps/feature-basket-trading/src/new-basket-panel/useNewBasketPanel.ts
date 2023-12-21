@@ -36,17 +36,13 @@ export const useNewBasketPanel = ({
     }
   }, [basketDataSource, basketId, basketName, onSaveBasket]);
 
-  const handleSelectBasket = useCallback<TableRowSelectHandler>(
-    (row) => {
-      const basketId = row[KEY] as string;
-      console.log({ basketId, columnMap });
-      setBasketId(basketId);
-      setTimeout(() => {
-        saveButtonRef.current?.focus();
-      }, 60);
-    },
-    [columnMap]
-  );
+  const handleSelectBasket = useCallback<TableRowSelectHandler>((row) => {
+    const basketId = row[KEY] as string;
+    setBasketId(basketId);
+    setTimeout(() => {
+      saveButtonRef.current?.focus();
+    }, 60);
+  }, []);
 
   const handleChangeBasketName = useCallback<Commithandler<string>>(
     (evt, value) => {
