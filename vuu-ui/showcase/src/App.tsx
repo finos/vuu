@@ -97,7 +97,6 @@ export const App = ({ stories }: AppProps) => {
 
   const handleThemeChange = useCallback(
     (_evt, theme: ThemeDescriptor | null) => {
-      console.log(`theme change ${theme}`);
       if (theme) {
         setTheme(theme);
       }

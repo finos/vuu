@@ -78,6 +78,7 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
         <Stack
           active={activeTabIndex}
           className={`${classBase}-stack`}
+          showTabs={false}
           style={{ flex: 1 }}
         >
           <BasketTableEdit

@@ -1,4 +1,5 @@
 import { VuuTable } from "@finos/vuu-protocol-types";
+import { ViewProps } from "packages/vuu-layout/src";
 
 declare global {
   const vuuConfig: Promise<VuuConfig>;
@@ -15,6 +16,7 @@ export interface FeatureConfig {
   featureProps?: {
     schema?: "*" | VuuTable;
     schemas?: VuuTable[];
+    ViewProps?: Partial<ViewProps>;
   };
 }
 
