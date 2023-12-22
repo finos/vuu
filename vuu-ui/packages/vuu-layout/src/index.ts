@@ -3,6 +3,7 @@ export { default as Component } from "./Component";
 export * from "./drag-drop";
 export * from "./LayoutContainer";
 export * from "./flexbox";
+export * from "./grid-layout";
 export { Action } from "./layout-action";
 export * from "./layout-header";
 export * from "./layout-provider";

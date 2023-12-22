@@ -1,0 +1,18 @@
+.vuuGridSplitter {
+    background-color: cornflowerblue;
+}
+.vuuGridSplitter-horizontal {
+    cursor: ew-resize;
+    transform: translate(-2px,0);
+    width: 4px;
+}
+.vuuGridSplitter-vertical {
+    cursor: ns-resize;
+    height: 4px;
+    transform: translate(0, -2px);
+}
+
+.vuuGridSplitter-horizontal[data-align="end"]{
+    justify-self: end;
+    transform: translate(2px, 0px);
+}

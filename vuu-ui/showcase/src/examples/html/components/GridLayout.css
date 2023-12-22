@@ -1,3 +1,20 @@
 .vuuGridLayout {
+    --vuu-grid-gap: 6px;
     display: grid;
+    padding: var(--vuu-grid-gap);
+}
+
+.vuuGridLayoutItem {
+    border: solid 1px white;
+    position: relative;
+}
+
+.vuuGridLayoutItem-active {
+    border: dashed 1px blue;
+    position: relative;
+}
+
+.vuuGridLayoutItem > *  {
+    position: absolute;
+    inset: var(--vuu-grid-gap);
 }
