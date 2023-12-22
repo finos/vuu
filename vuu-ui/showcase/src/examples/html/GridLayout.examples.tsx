@@ -1,43 +1,318 @@
 let displaySequence = 1;
-
-import { GridLayout } from "./components/GridLayout";
+import { useCallback, useRef } from "react";
+import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
+  // prettier-ignore
+
+  const layoutApi = useRef<LayoutAPI>(null)
+
+  const splitSelectedRow = useCallback(() => {
+    const activeComponent = document.querySelector(".component-active");
+    if (activeComponent && layoutApi.current) {
+      console.log("split active");
+      layoutApi.current.splitGridRow(activeComponent.id);
+    }
+  }, []);
+
+  const splitSelectedCol = useCallback(() => {
+    const activeComponent = document.querySelector(".component-active");
+    if (activeComponent && layoutApi.current) {
+      console.log("split active");
+      layoutApi.current.splitGridCol(activeComponent.id);
+    }
+  }, []);
+
   return (
-    <GridLayout colCount={24} id="GridLayoutA" rowCount={13}>
-      <div className="component" id="component-A1" />
-      <div className="component" id="component-A2" />
-      <div className="component" id="component-A3" />
-      <div className="component" id="component-A4" />
-      <div className="component" id="component-A5" />
-    </GridLayout>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        width: "100vw",
+      }}
+    >
+      <div style={{ flex: "0 0 40px" }}>
+        <button onClick={splitSelectedRow}>Split across the middle</button>
+        <button onClick={splitSelectedCol}>Split down the middle</button>
+      </div>
+      <GridLayout
+        colCount={2}
+        id="GridLayoutA"
+        rowCount={2}
+        layoutAPI={layoutApi}
+      >
+        <GridLayoutItem
+          id="green-H"
+          resizeable="hv"
+          style={{
+            gridColumnStart: 1,
+            gridColumnEnd: 2,
+            gridRowStart: 1,
+            gridRowEnd: 2,
+          }}
+        >
+          <div
+            style={{
+              background: "green",
+            }}
+          />
+        </GridLayoutItem>
+        <GridLayoutItem
+          id="brown-H"
+          resizeable="hv"
+          style={{
+            gridColumnStart: 2,
+            gridColumnEnd: 3,
+            gridRowStart: 1,
+            gridRowEnd: 2,
+          }}
+        >
+          <div style={{ background: "brown" }} />
+        </GridLayoutItem>
+        <GridLayoutItem
+          id="black-H"
+          resizeable="hv"
+          style={{
+            gridColumnStart: 1,
+            gridColumnEnd: 2,
+            gridRowStart: 2,
+            gridRowEnd: 3,
+          }}
+        >
+          <div style={{ background: "black" }} />
+        </GridLayoutItem>
+        <GridLayoutItem
+          id="yellow-H"
+          resizeable="hv"
+          style={{
+            gridColumnStart: 2,
+            gridColumnEnd: 3,
+            gridRowStart: 2,
+            gridRowEnd: 3,
+          }}
+        >
+          <div style={{ background: "yellow" }} />
+        </GridLayoutItem>
+      </GridLayout>
+    </div>
   );
 };
 GridLayoutA.displaySequence = displaySequence++;
 
+export const GridLayoutC = () => {
+  return (
+    <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
+      <GridLayoutItem
+        id="green-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="brown-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 3,
+        }}
+      >
+        <div style={{ background: "brown" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="yellow-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+      >
+        <div style={{ background: "yellow" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+GridLayoutC.displaySequence = displaySequence++;
+
 export const GridLayoutB = () => {
   return (
-    <GridLayout colCount={1} id="GridLayoutB" rowCount={3}>
-      <div className="component" id="component-B1" />
-      <div className="component" id="component-B2" tabIndex={0} />
-      <div className="component" id="component-B3" data-resizeable="v" />
-      <div className="component" id="component-B4" data-resizeable="v" />
-      <div className="component" id="component-B5" data-resizeable="v" />
+    <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
+      <GridLayoutItem
+        id="green-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 3,
+        }}
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="brown-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+      >
+        <div style={{ background: "brown" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="yellow-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+      >
+        <div style={{ background: "yellow" }} />
+      </GridLayoutItem>
     </GridLayout>
   );
 };
 GridLayoutB.displaySequence = displaySequence++;
 
-export const GridLayoutC = () => {
+export const GridLayoutD = () => {
   return (
-    <GridLayout colCount={3} id="GridLayoutC" rowCount={2}>
-      <div className="component" id="component-C1" />
-      <div className="component" id="component-C2" tabIndex={0} />
-      <div className="component" id="component-C3" data-resizeable="v" />
-      <div className="component" id="component-C4" data-resizeable="v" />
-      <div className="component" id="component-C5" data-resizeable="v" />
+    <GridLayout colCount={2} id="GridLayoutD" rowCount={3}>
+      <GridLayoutItem
+        id="green-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="brown-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 3,
+        }}
+      >
+        <div style={{ background: "brown" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="black-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 2,
+          gridRowEnd: 4,
+        }}
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="yellow-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 3,
+          gridRowEnd: 4,
+        }}
+      >
+        <div style={{ background: "yellow" }} />
+      </GridLayoutItem>
     </GridLayout>
   );
 };
-GridLayoutC.displaySequence = displaySequence++;
+GridLayoutD.displaySequence = displaySequence++;
+
+export const GridLayoutE = () => {
+  return (
+    <GridLayout colCount={2} id="GridLayoutE" rowCount={3}>
+      <GridLayoutItem
+        id="green-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 3,
+        }}
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="brown-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+      >
+        <div style={{ background: "brown" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="black-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 3,
+          gridRowEnd: 4,
+        }}
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="yellow-H"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 2,
+          gridRowEnd: 4,
+        }}
+      >
+        <div style={{ background: "yellow" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+GridLayoutE.displaySequence = displaySequence++;
