@@ -124,8 +124,18 @@
 }
 
 
+[data-resizeable*="h"] + [data-resizeable*="h"]:before {
+    background-color: lightgray;
+    content:' ';
+    cursor: ew-resize;
+    width: 6px;
+    left:-6px;
+    position: absolute;
+    top:0;
+    height: 100%;
+}
 
-[data-resizeable="v"] + [data-resizeable="v"]:before {
+[data-resizeable*="v"] + [data-resizeable*="v"]:after {
     background-color: lightgray;
     content:' ';
     cursor: ns-resize;
@@ -136,7 +146,10 @@
     width: 100%;
 }
 
-.component.resizing:before {
+.component.resizing-h:before {
+    background-color: blue;;
+}
+.component.resizing-v:after {
     background-color: blue;;
 }
 
@@ -145,7 +158,7 @@
     transition: 300ms;
 }
 
-#GridLayoutC:has(.resizing){
+#GridLayoutC:has(.resizing-v){
     transition: none;;
 }
 
@@ -154,24 +167,62 @@
     grid-column: 2/-1;
     grid-row: 1/2   
 }
-#component-C2 {
+#component-cyan {
     background-color: cyan;    
     grid-column: 1/2;
     grid-row: 1/-1   
 }
 
-#component-C3 {
+#component-green {
     background-color: green;    
-    grid-column: 2/-2;
+    grid-column: 2/3;
     grid-row: 2/3   
 }
-#component-C4 {
+#component-brown {
     background-color: brown;    
-    grid-column: 2/-2;
+    grid-column: 2/3;
     grid-row: 3/4   
 }
-#component-C5 {
+#component-black {
     background-color: black; 
-    grid-column: 3/-1;
+    grid-column: 3/4;
+    grid-row: 2/3   
+}
+#component-yellow {
+    background-color: yellow; 
+    grid-column: 3/4;
+    grid-row: 3/4   
+}
+#GridLayoutD {
+    grid-template-columns: repeat(var(--col-count), 1fr);
+    grid-template-rows: repeat(var(--row-count), 1fr);
+    column-gap: 0;
+    row-gap:0;
+    transition: 300ms;
+}
+
+#GridLayoutD:has(.resizing-v, .resizing-h){
+    transition: none;;
+}
+
+#green-D {
+    background-color: green;    
+    grid-column: 1/2;
+    grid-row: 1/2;
+    padding-bottom: 6px; 
+}
+#brown-D {
+    background-color: brown;    
+    grid-column: 2/3;
+    grid-row: 1/2   
+}
+#black-D {
+    background-color: black; 
+    grid-column: 1/2;
+    grid-row: 2/3   
+}
+#yellow-D {
+    background-color: yellow; 
+    grid-column: 2/3;
     grid-row: 2/3   
 }

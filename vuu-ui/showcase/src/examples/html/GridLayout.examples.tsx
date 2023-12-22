@@ -30,14 +30,29 @@ export const GridLayoutB = () => {
 GridLayoutB.displaySequence = displaySequence++;
 
 export const GridLayoutC = () => {
+  // prettier-ignore
   return (
     <GridLayout colCount={3} id="GridLayoutC" rowCount={2}>
-      <div className="component" id="component-C1" />
-      <div className="component" id="component-C2" tabIndex={0} />
-      <div className="component" id="component-C3" data-resizeable="v" />
-      <div className="component" id="component-C4" data-resizeable="v" />
-      <div className="component" id="component-C5" data-resizeable="v" />
+      <div className="component" id="component-C1" data-text="C1"/>
+      <div className="component" id="component-cyan" tabIndex={0}/>
+      <div className="component" id="component-green" data-resizeable="v"/>
+      <div className="component" id="component-brown" data-resizeable="v" />
+      <div className="component" id="component-black" data-resizeable="v"/>
+      <div className="component" id="component-yellow" data-resizeable="v"/>
     </GridLayout>
   );
 };
 GridLayoutC.displaySequence = displaySequence++;
+
+export const GridLayoutD = () => {
+  // prettier-ignore
+  return (
+    <GridLayout colCount={2} id="GridLayoutD" rowCount={2}>
+      <div className="component" data-color="green" id="green-D" data-resizeable="hv"/>
+      <div className="component" data-color="brown" id="brown-D" data-resizeable="hv" />
+      <div className="component" data-color="black" id="black-D" data-resizeable="hv"/>
+      <div className="component" data-color="yellow" id="yellow-D" data-resizeable="hv"/>
+    </GridLayout>
+  );
+};
+GridLayoutD.displaySequence = displaySequence++;

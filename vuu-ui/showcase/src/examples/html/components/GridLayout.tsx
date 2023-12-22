@@ -1,6 +1,6 @@
 import { CSSProperties, HTMLAttributes } from "react";
 import cx from "clsx";
-import { useSplitterResizing } from "./useSplitterResizing";
+import { useGridSplitterResizing } from "./useGridSplitterResizing";
 
 import "./GridLayout.css";
 
@@ -20,10 +20,12 @@ export const GridLayout = ({
   rows,
   ...htmlAttributes
 }: GridLayoutProps) => {
-  const { gridTemplateRows, ...splitterProps } = useSplitterResizing({
+  const { gridTemplateRows, ...splitterProps } = useGridSplitterResizing({
     rowCount,
     rows,
   });
+
+  console.log({ gridTemplateRows });
 
   const style = {
     "--col-count": colCount,

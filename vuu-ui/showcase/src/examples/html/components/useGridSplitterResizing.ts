@@ -394,8 +394,9 @@ export const useGridSplitterResizing = ({
   );
 
   const handleTrackSizedToZero = useCallback(
-    (currentMousePos: number) => {
+    (gridTracks: number[], currentMousePos: number) => {
       const {
+        contraItems,
         grid,
         indexOfResizedItem,
         resizeElement,
@@ -405,16 +406,17 @@ export const useGridSplitterResizing = ({
       } = resizingState.current;
       const trackProperty = resizeOrientation === "vertical" ? "rows" : "cols";
       const tracks = resizingState.current[trackProperty];
-      let gridTracks = tracks.slice();
 
-      // we know no other elements adjoin this track except for the resized and contra elements.
-      // if the contra elements span at least 2 tracks, we can remove it.
-      if (resizeItems.every(spansMultipleTracks)) {
-        if (gridTracks[indexOfResizedItem] === 0) {
-          if (simpleResize && resizeOrientation) {
+      let returnTracks: number[] = gridTracks;
+
+      if (gridTracks[indexOfResizedItem] === 0) {
+        if (simpleResize && resizeOrientation) {
+          // we know no other elements adjoin this track except for the resized and contra elements.
+          // if the contra elements span at least 2 tracks, we can remove it.
+          if (resizeItems.every(spansMultipleTracks)) {
             console.log("%cremoveTrack", "color:red;font-weight:bold;");
 
-            gridTracks = removeTrack(indexOfResizedItem);
+            returnTracks = removeTrack(indexOfResizedItem);
 
             measureAndStoreGridItemDetails(
               grid,
@@ -424,23 +426,31 @@ export const useGridSplitterResizing = ({
 
             resizingState.current.mousePos = currentMousePos;
             resizingState.current.resizeDirection = null;
+          } else {
+            console.log("we've gone too far, veto further shrinkage");
           }
-        } else if (gridTracks[indexOfResizedItem] < 0) {
-          gridTracks = flipResizeTracks();
+        }
+      } else if (gridTracks[indexOfResizedItem] < 0) {
+        if (resizeItems.every(spansMultipleTracks)) {
+          console.log("flipResizeTracks");
+          returnTracks = flipResizeTracks();
           resizingState.current.indexOfResizedItem += 1;
           resizingState.current.mousePos += tracks[indexOfResizedItem];
 
           if (resizeOrientation === "vertical") {
-            resizingState.current.rows = gridTracks;
+            resizingState.current.rows = returnTracks;
           } else {
-            resizingState.current.cols = gridTracks;
+            resizingState.current.cols = returnTracks;
           }
+
+          // resizingRef.current = false;
+          // resizingState.current[trackProperty] = gridTracks;
+        } else {
+          console.log("we've gone too far, veto further shrinkage");
         }
-      } else {
-        console.log("we've gone too far, veto further shrinkage");
       }
 
-      return gridTracks;
+      return returnTracks;
     },
     [flipResizeTracks, measureAndStoreGridItemDetails, removeTrack]
   );
@@ -465,7 +475,7 @@ export const useGridSplitterResizing = ({
         gridTracks[indexOfResizedItem] += moveBy;
 
         if (gridTracks[indexOfResizedItem] <= 0) {
-          gridTracks = handleTrackSizedToZero(currentMousePos);
+          gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
         }
       }
 
