@@ -56,3 +56,16 @@ export const GridLayoutD = () => {
   );
 };
 GridLayoutD.displaySequence = displaySequence++;
+
+export const GridLayoutE = () => {
+  // prettier-ignore
+  return (
+    <GridLayout colCount={2} id="GridLayoutD" rowCount={3}>
+      <div className="component" data-color="green" id="green-E" data-resizeable="hv"/>
+      <div className="component" data-color="brown" id="brown-E" data-resizeable="hv" />
+      <div className="component" data-color="black" id="black-E" data-resizeable="hv"/>
+      <div className="component" data-color="yellow" id="yellow-E" data-resizeable="hv"/>
+    </GridLayout>
+  );
+};
+GridLayoutE.displaySequence = displaySequence++;

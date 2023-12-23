@@ -38,7 +38,10 @@ export const getColumn = (el: HTMLElement): GridPos => {
   }
 };
 
-export const getRow = (el: HTMLElement): GridPos => {
+export const getRow = (el: HTMLElement | undefined): GridPos => {
+  if (el === undefined) {
+    throw Error("getRow invoked with null element");
+  }
   const value = getComputedStyle(el)
     .getPropertyValue("grid-row")
     .split("/")

@@ -193,6 +193,7 @@
     grid-column: 3/4;
     grid-row: 3/4   
 }
+
 #GridLayoutD {
     grid-template-columns: repeat(var(--col-count), 1fr);
     grid-template-rows: repeat(var(--row-count), 1fr);
@@ -225,4 +226,33 @@
     background-color: yellow; 
     grid-column: 2/3;
     grid-row: 2/3   
+}
+
+#GridLayoutE {
+    grid-template-columns: repeat(var(--col-count), 1fr);
+    grid-template-rows: repeat(var(--row-count), 1fr);
+    column-gap: 0;
+    row-gap:0;
+}
+
+#green-E {
+    background-color: green;    
+    grid-column: 1/2;
+    grid-row: 1/2;
+    padding-bottom: 6px; 
+}
+#brown-E {
+    background-color: brown;    
+    grid-column: 2/3;
+    grid-row: 1/3   
+}
+#black-E {
+    background-color: black; 
+    grid-column: 1/2;
+    grid-row: 2/4   
+}
+#yellow-E {
+    background-color: yellow; 
+    grid-column: 2/3;
+    grid-row: 3/4   
 }

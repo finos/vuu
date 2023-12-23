@@ -29,15 +29,8 @@ export class ResizeItem implements GridPosition {
     return [this.from, this.to];
   }
   get expanded(): GridPos {
+    console.log("ResizeItem expanded");
     return [this.from, this.to + 1];
-  }
-  get flip(): GridPos {
-    console.log(
-      `ResizeItem flip from ${this.from}, to ${this.to} => [${this.from + 1},${
-        this.to
-      }]`
-    );
-    return [this.from + 1, this.to];
   }
   get shrunk(): GridPos {
     // return [this.from + 1, this.to];
@@ -45,29 +38,23 @@ export class ResizeItem implements GridPosition {
   }
 
   get span() {
-    return this.to - this.from + 1;
+    return this.to - this.from;
   }
 }
 
 export class ContraItem extends ResizeItem {
   get expanded(): GridPos {
+    console.log("ContraItem expanded");
     return [this.from, this.to];
   }
   get shrunk(): GridPos {
-    return [this.from, this.to + 1];
-  }
-  get flip(): GridPos {
-    console.log(
-      `ContraItem flip from ${this.from}, to ${this.to} => [${this.from},${
-        this.to + 1
-      }]`
-    );
     return [this.from, this.to + 1];
   }
 }
 
 export class ContraItemOtherColumn extends ResizeItem {
   get expanded(): GridPos {
+    console.log("ContraItemOtherColumn expanded");
     return [this.from, this.to + 1];
   }
   get shrunk(): GridPos {
@@ -77,6 +64,7 @@ export class ContraItemOtherColumn extends ResizeItem {
 
 export class SiblingItemOtherColumn extends ResizeItem {
   get expanded(): GridPos {
+    console.log("SiblingItemOtherColumn expanded");
     return [this.from + 1, this.to + 1];
   }
   get shrunk(): GridPos {
