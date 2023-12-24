@@ -1,6 +1,7 @@
 let displaySequence = 1;
 
-import { GridLayout } from "./components/GridLayout";
+import { useCallback, useRef } from "react";
+import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
@@ -18,12 +19,12 @@ GridLayoutA.displaySequence = displaySequence++;
 
 export const GridLayoutB = () => {
   return (
-    <GridLayout colCount={1} id="GridLayoutB" rowCount={3}>
-      <div className="component" id="component-B1" />
-      <div className="component" id="component-B2" tabIndex={0} />
-      <div className="component" id="component-B3" data-resizeable="v" />
-      <div className="component" id="component-B4" data-resizeable="v" />
-      <div className="component" id="component-B5" data-resizeable="v" />
+    <GridLayout colCount={1} id="GridLayoutB" rowCount={4}>
+      <div className="component" id="left-sidebar" tabIndex={0} />
+      <div className="component" id="red-B" data-resizeable="v" />
+      <div className="component" id="green-B" data-resizeable="v" />
+      <div className="component" id="brown-B" data-resizeable="v" />
+      <div className="component" id="black-B" data-resizeable="v" />
     </GridLayout>
   );
 };
@@ -32,13 +33,13 @@ GridLayoutB.displaySequence = displaySequence++;
 export const GridLayoutC = () => {
   // prettier-ignore
   return (
-    <GridLayout colCount={3} id="GridLayoutC" rowCount={2}>
-      <div className="component" id="component-C1" data-text="C1"/>
-      <div className="component" id="component-cyan" tabIndex={0}/>
-      <div className="component" id="component-green" data-resizeable="v"/>
-      <div className="component" id="component-brown" data-resizeable="v" />
-      <div className="component" id="component-black" data-resizeable="v"/>
-      <div className="component" id="component-yellow" data-resizeable="v"/>
+    <GridLayout colCount={3} id="GridLayoutC" rowCount={3}>
+      <div className="component" id="left-sidebar" tabIndex={0}/>
+      <div className="component" id="red-C" data-text="C1"/>
+      <div className="component" id="green-C" data-resizeable="hv"/>
+      <div className="component" id="brown-C" data-resizeable="hv" />
+      <div className="component" id="black-C" data-resizeable="hv"/>
+      <div className="component" id="yellow-C" data-resizeable="hv"/>
     </GridLayout>
   );
 };
@@ -69,3 +70,90 @@ export const GridLayoutE = () => {
   );
 };
 GridLayoutE.displaySequence = displaySequence++;
+
+export const GridLayoutF = () => {
+  // prettier-ignore
+  return (
+    <GridLayout colCount={2} id="GridLayoutF" rowCount={3}>
+      <div className="component" id="red-F" data-text="C1"/>
+      <div className="component" id="green-F" data-resizeable="hv"/>
+      <div className="component" id="brown-F" data-resizeable="hv" />
+      <div className="component" id="black-F" data-resizeable="hv"/>
+      <div className="component" id="yellow-F" data-resizeable="hv"/>
+    </GridLayout>
+  );
+};
+GridLayoutF.displaySequence = displaySequence++;
+
+export const GridLayoutG = () => {
+  // prettier-ignore
+  return (
+    <GridLayout colCount={3} id="GridLayoutG" rowCount={3}>
+      <div className="component" id="red-G" data-resizeable="h"/>
+      <div className="component" id="cyan-G" data-resizeable="h"/>
+      <div className="component" id="green-G" data-resizeable="hv"/>
+      <div className="component" id="brown-G" data-resizeable="hv" />
+      <div className="component" id="black-G" data-resizeable="hv"/>
+      <div className="component" id="yellow-G" data-resizeable="hv"/>
+    </GridLayout>
+  );
+};
+GridLayoutF.displaySequence = displaySequence++;
+
+export const GridLayoutH = () => {
+  // prettier-ignore
+
+  const layoutApi = useRef<LayoutAPI>(null)
+
+  const splitSelectedRow = useCallback(() => {
+    const activeComponent = document.querySelector(".component-active");
+    if (activeComponent && layoutApi.current) {
+      console.log("split active");
+      layoutApi.current.splitGridRow(activeComponent.id);
+    }
+  }, []);
+
+  const splitSelectedCol = useCallback(() => {
+    const activeComponent = document.querySelector(".component-active");
+    if (activeComponent && layoutApi.current) {
+      console.log("split active");
+      layoutApi.current.splitGridCol(activeComponent.id);
+    }
+  }, []);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        width: "100vw",
+      }}
+    >
+      <div style={{ flex: "0 0 40px" }}>
+        <button onClick={splitSelectedRow}>Split across the middle</button>
+        <button onClick={splitSelectedCol}>Split down the middle</button>
+      </div>
+      <GridLayout
+        colCount={2}
+        id="GridLayoutH"
+        rowCount={2}
+        layoutAPI={layoutApi}
+      >
+        <GridLayoutItem id="green-H" data-resizeable="hv">
+          <div style={{ background: "green" }} />
+        </GridLayoutItem>
+        <GridLayoutItem id="brown-H" data-resizeable="hv">
+          <div style={{ background: "brown" }} />
+        </GridLayoutItem>
+        <GridLayoutItem id="black-H" data-resizeable="hv">
+          <div style={{ background: "black" }} />
+        </GridLayoutItem>
+        <GridLayoutItem id="yellow-H" data-resizeable="hv">
+          <div style={{ background: "yellow" }} />
+        </GridLayoutItem>
+      </GridLayout>
+    </div>
+  );
+};
+GridLayoutH.displaySequence = displaySequence++;

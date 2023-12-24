@@ -3,6 +3,7 @@ import {
   ContraItemOtherColumn,
   GridItem,
   GridPos,
+  NonAdjacentItem,
   SiblingItemOtherColumn,
 } from "./grid-layout-types";
 
@@ -16,11 +17,21 @@ export const getColumns = (el: HTMLElement) =>
     .split(" ")
     .map((value) => parseInt(value, 10));
 
+export const setColumns = (el: HTMLElement, cols: number[]) => {
+  const trackTemplate = cols.map((r) => `${r}px`).join(" ");
+  el.style.gridTemplateColumns = trackTemplate;
+};
+
 export const getRows = (el: HTMLElement) =>
   getComputedStyle(el)
     .getPropertyValue("grid-template-rows")
     .split(" ")
     .map((value) => parseInt(value, 10));
+
+export const setRows = (el: HTMLElement, rows: number[]) => {
+  const trackTemplate = rows.map((r) => `${r}px`).join(" ");
+  el.style.gridTemplateRows = trackTemplate;
+};
 
 const NO_POSITION: GridPos = [-1, -1];
 
@@ -67,7 +78,8 @@ const collectColItems = (
   contraItems: GridItem[],
   contraItemsMaybe: GridItem[],
   contraItemsOtherTrack: GridItem[],
-  siblingItemsOtherTrack: GridItem[]
+  siblingItemsOtherTrack: GridItem[],
+  nonAdjacentItems: GridItem[]
 ) => {
   const { id } = element;
   const row = getRow(element);
@@ -97,6 +109,12 @@ const collectColItems = (
         col: new SiblingItemOtherColumn(col),
       });
     }
+  } else {
+    console.log(`${id} is a non adjacent item`);
+    nonAdjacentItems.push({
+      id,
+      col: new NonAdjacentItem(col),
+    });
   }
 };
 
@@ -107,7 +125,8 @@ const collectRowItems = (
   contraItems: GridItem[],
   contraItemsMaybe: GridItem[],
   contraItemsOtherTrack: GridItem[],
-  siblingItemsOtherTrack: GridItem[]
+  siblingItemsOtherTrack: GridItem[],
+  nonAdjacentItems: GridItem[]
 ) => {
   const { id } = element;
   const row = getRow(element);
@@ -136,6 +155,12 @@ const collectRowItems = (
         row: new SiblingItemOtherColumn(row),
       });
     }
+  } else {
+    console.log(`${id} is a non adjacent item`);
+    nonAdjacentItems.push({
+      id,
+      row: new NonAdjacentItem(row),
+    });
   }
 };
 
@@ -143,11 +168,14 @@ export const getGridItemsAdjoiningTrack = (
   grid: HTMLElement,
   targetElement: HTMLElement,
   resizeOrientation: ResizeOrientation
-): [GridItem[], GridItem[], GridItem[], GridItem[]] | [GridItem[]] => {
+):
+  | [GridItem[], GridItem[], GridItem[], GridItem[], GridItem[]]
+  | [GridItem[]] => {
   const contraItems: GridItem[] = [];
   const contraItemsMaybe: GridItem[] = [];
   const contraItemsOtherTrack: GridItem[] = [];
   const siblingItemsOtherTrack: GridItem[] = [];
+  const nonAdjacentItems: GridItem[] = [];
 
   const rowPosition = getRow(targetElement);
   const colPosition = getColumn(targetElement);
@@ -164,11 +192,13 @@ export const getGridItemsAdjoiningTrack = (
         contraItems,
         contraItemsMaybe,
         contraItemsOtherTrack,
-        siblingItemsOtherTrack
+        siblingItemsOtherTrack,
+        nonAdjacentItems
       );
     }
   }
   if (contraItemsOtherTrack.length === 0) {
+    // Single Track resize
     return [contraItems];
   } else {
     return [
@@ -176,6 +206,7 @@ export const getGridItemsAdjoiningTrack = (
       contraItemsMaybe,
       contraItemsOtherTrack,
       siblingItemsOtherTrack,
+      nonAdjacentItems,
     ];
   }
 };
@@ -251,5 +282,78 @@ export const trackRemoved = (
   }
   if (changeFrom || changeTo) {
     setTrack(el, track);
+  }
+};
+
+const equalsGridPos = ([from1, to1]: GridPos, [from2, to2]: GridPos) =>
+  from1 === from2 && to1 === to2;
+
+const immediatelyPrecedesGridPos = ([from1]: GridPos, [, to2]: GridPos) =>
+  from1 === to2;
+
+const immediatelyFollowsGridPos = ([, to1]: GridPos, [from2]: GridPos) =>
+  from2 === to1;
+
+const followsGridPos = (pos1: GridPos, pos2: GridPos) => {
+  return false;
+};
+const overlapsGridPos = (pos1: GridPos, pos2: GridPos) => {
+  return false;
+};
+
+export const splitGridTracks = (
+  grid: HTMLElement | null,
+  gridPos: GridPos,
+  orientation: ResizeOrientation
+): [GridPos, GridPos] | undefined => {
+  if (grid === null) {
+    throw Error("splitGridRows called on null grid");
+  }
+
+  const [getTracks, setTracks, getTrack, setTrack] =
+    orientation === "vertical"
+      ? [getRows, setRows, getRow, setGridRow]
+      : [getColumns, setColumns, getColumn, setGridColumn];
+
+  const [from, to] = gridPos;
+  const tracks = getTracks(grid);
+  const trackCount = to - from;
+  let size = 0;
+  const startIndex = from - 1;
+  for (let i = startIndex; i < to - 1; i++) {
+    size += tracks[i];
+  }
+
+  for (const node of grid.childNodes) {
+    const element = node as HTMLElement;
+    const track = getTrack(element);
+    const [colFrom, colTo] = track;
+    if (equalsGridPos(gridPos, track)) {
+      console.log(`col ${track} equals gridPos ${gridPos}`);
+      const newPos = [colFrom, colTo + 1] as GridPos;
+      setTrack(element, newPos);
+    } else if (immediatelyPrecedesGridPos(gridPos, track)) {
+      console.log(`col ${track} precedes gridPos ${gridPos}`);
+    } else if (immediatelyFollowsGridPos(gridPos, track)) {
+      console.log(`col ${track} follows gridPos ${gridPos}`);
+      const newPos = [colFrom + 1, colTo + 1] as GridPos;
+      setTrack(element, newPos);
+    } else if (followsGridPos(gridPos, track)) {
+      console.log(`col ${track} follows gridPos ${gridPos}`);
+    } else if (overlapsGridPos(gridPos, track)) {
+      console.log(`col ${track} overlaps gridPos ${gridPos}`);
+    } else {
+      console.log(`col ${track} can be ignored, precedes  gridPos ${gridPos}`);
+    }
+  }
+
+  if (trackCount === 1) {
+    const newSize = size / 2;
+    tracks.splice(startIndex, 1, newSize, newSize);
+    setTracks(grid, tracks);
+    return [
+      [from, to],
+      [to, to + 1],
+    ];
   }
 };

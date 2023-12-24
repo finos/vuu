@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { MouseEventHandler, useCallback, useRef, useState } from "react";
 import {
   getColumn,
   getColumns,
@@ -10,9 +10,17 @@ import {
   setGridColumn,
   setGridRow,
   spansMultipleTracks,
+  splitGridCols,
+  splitGridTracks,
   trackRemoved,
 } from "./grid-dom-utils";
-import { ColItem, GridItem, ResizeItem, RowItem } from "./grid-layout-types";
+import {
+  ColItem,
+  GridItem,
+  GridPos,
+  ResizeItem,
+  RowItem,
+} from "./grid-layout-types";
 import { GridLayoutProps } from "./GridLayout";
 
 export type SplitterResizingHookProps = Pick<
@@ -28,6 +36,7 @@ type ResizeState = {
   grid?: HTMLElement;
   indexOfResizedItem: number;
   mousePos: number;
+  nonAdjacentItems?: GridItem[];
   resizeDirection: ResizeDirection | null;
   resizeElement?: HTMLElement;
   resizeOrientation: ResizeOrientation | null;
@@ -43,13 +52,14 @@ const initialState: ResizeState = {
   grid: undefined,
   indexOfResizedItem: -1,
   mousePos: -1,
-  simpleResize: false,
+  nonAdjacentItems: undefined,
   resizeDirection: null,
   resizeElement: undefined,
   resizeOrientation: null,
   resizeItems: [],
   rows: [],
   siblingItemsOtherTrack: undefined,
+  simpleResize: false,
 };
 
 const getDirection = (moveBy: number): ResizeDirection | null => {
@@ -76,6 +86,7 @@ export const useGridSplitterResizing = ({
   // rows = ["80px"].concat(Array(rowCount).fill("1fr")),
   rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const resizingState = useRef<ResizeState>(initialState);
 
   const resizingRef = useRef(true);
@@ -95,6 +106,7 @@ export const useGridSplitterResizing = ({
         contraItemsMaybe,
         contraItemsOtherTrack,
         siblingItemsOtherTrack,
+        nonAdjacentItems,
       ] = getGridItemsAdjoiningTrack(grid, resizeElement, resizeOrientation);
 
       if (Array.isArray(contraItemsMaybe) && contraItemsMaybe.length > 0) {
@@ -109,6 +121,7 @@ export const useGridSplitterResizing = ({
       state.contraItems = contraItems;
       state.contraItemsOtherTrack = contraItemsOtherTrack;
       state.grid = grid;
+      state.nonAdjacentItems = nonAdjacentItems;
       state.resizeElement = resizeElement;
       state.resizeOrientation = resizeOrientation;
       state.siblingItemsOtherTrack = siblingItemsOtherTrack;
@@ -120,6 +133,7 @@ export const useGridSplitterResizing = ({
         contraItemsMaybe,
         contraItemsOtherTrack,
         siblingItemsOtherTrack,
+        nonAdjacentItems,
       });
     },
     []
@@ -228,13 +242,32 @@ export const useGridSplitterResizing = ({
     const {
       contraItemsOtherTrack,
       contraItems,
+      grid,
+      indexOfResizedItem,
+      nonAdjacentItems,
       resizeOrientation,
       resizeItems,
       siblingItemsOtherTrack,
     } = resizingState.current;
 
-    const setExpanded: any =
-      resizeOrientation === "vertical" ? setRowExpanded : setColExpanded;
+    const [setExpanded, setTrack]: any =
+      resizeOrientation === "vertical"
+        ? [setRowExpanded, setGridRow]
+        : [setColExpanded, setGridColumn];
+
+    if (grid && nonAdjacentItems) {
+      const targetEdge = indexOfResizedItem + 1;
+      for (const item of nonAdjacentItems) {
+        const { id, col, row: gridItem = col } = item;
+        if (gridItem?.includes(targetEdge)) {
+          const [from, to] = gridItem.value;
+          setTrack(id, [from, to + 1]);
+        } else if (gridItem?.after(targetEdge)) {
+          const [from, to] = gridItem.value;
+          setTrack(id, [from + 1, to + 1]);
+        }
+      }
+    }
 
     resizeItems.forEach(setExpanded);
     contraItems.forEach(setExpanded);
@@ -677,9 +710,53 @@ export const useGridSplitterResizing = ({
     [mouseMove]
   );
 
+  const selectedRef = useRef<string>();
+  const clickHandler = useCallback<MouseEventHandler>((e) => {
+    const targetElement = e.target as HTMLElement;
+    const { left, top } = targetElement.getBoundingClientRect();
+
+    if (e.clientY < top || e.clientX < left) {
+      return;
+    }
+
+    if (selectedRef.current) {
+      const el = document.getElementById(selectedRef.current) as HTMLElement;
+      el.classList.remove("component-active");
+    }
+
+    selectedRef.current = targetElement.id;
+    targetElement.classList.add("component-active");
+  }, []);
+
+  const splitGridCol = useCallback((id: string) => {
+    const target = document.getElementById(id) as HTMLElement;
+    const col = getColumn(target);
+    const splitTracks = splitGridTracks(
+      containerRef.current,
+      col,
+      "horizontal"
+    );
+    if (splitTracks) {
+      setGridColumn(target, splitTracks[0]);
+    }
+  }, []);
+  const splitGridRow = useCallback((id: string) => {
+    const target = document.getElementById(id) as HTMLElement;
+    const row = getRow(target);
+    const splitTracks = splitGridTracks(containerRef.current, row, "vertical");
+    if (splitTracks) {
+      setGridRow(target, splitTracks[0]);
+    }
+    console.log({ splitTracks });
+  }, []);
+
   return {
+    containerRef,
     gridTemplateRows: rows.join(" "),
+    onClick: clickHandler,
     onMouseDown,
     onMouseUp,
+    splitGridCol,
+    splitGridRow,
   };
 };
