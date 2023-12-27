@@ -72,6 +72,7 @@ export default async function main(customConfig) {
   const debug = getCommandLineArg("--debug");
   const development = watch || debug || getCommandLineArg("--dev");
   const cjs = getCommandLineArg("--cjs") ? " --cjs" : "";
+  const jsonOutput = getCommandLineArg("--json");
   const outdir = `${DIST_PATH}/${packageName}${debug ? "-debug" : ""}`;
 
   const hasWorker = fs.existsSync(workerTS);
@@ -235,7 +236,10 @@ export default async function main(customConfig) {
     process.exit(1);
   });
 
-  console.log(`[${scopedPackageName}]`);
+  const jsonResult = jsonOutput ? { name: scopedPackageName } : undefined;
+  if (!jsonOutput) {
+    console.log(`[${scopedPackageName}]`);
+  }
 
   const jsOut = esmOutput?.result.metafile.outputs?.[`${outdir}/esm/index.js`];
   const cssOut =
@@ -254,15 +258,23 @@ export default async function main(customConfig) {
 
     if (cssOut) {
       relocateCSSToPackageRoot();
-      console.log(`    \tindex.css:     ${formatBytes(cssOut.bytes)}`);
+      if (jsonResult) {
+        jsonResult.css = formatBytes(cssOut.bytes);
+      } else {
+        console.log(`    \tindex.css:     ${formatBytes(cssOut.bytes)}`);
+      }
     }
 
     if (jsOut) {
-      console.log(
-        `\tesm/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
-          esmOutput.duration
-        )})`
-      );
+      if (jsonResult) {
+        jsonResult.javascript = formatBytes(jsOut.bytes);
+      } else {
+        console.log(
+          `\tesm/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
+            esmOutput.duration
+          )})`
+        );
+      }
     }
 
     if (cjs) {
@@ -278,5 +290,9 @@ export default async function main(customConfig) {
         );
       }
     }
+  }
+
+  if (jsonOutput && jsonResult) {
+    console.log(JSON.stringify(jsonResult));
   }
 }
