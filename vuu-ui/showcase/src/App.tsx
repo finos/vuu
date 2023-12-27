@@ -5,42 +5,9 @@ import { Button, Text } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
+import { byDisplaySequence, ExamplesModule } from "./showcase-utils";
 
 import "./App.css";
-
-export type VuuExample = {
-  (props?: any): JSX.Element;
-  displaySequence: number;
-};
-
-export interface ExamplesModule {
-  [key: string]: ExamplesModule | VuuExample;
-}
-
-type VuuTuple = [string, VuuExample | ExamplesModule];
-
-const isVuuExample = (item: VuuExample | ExamplesModule): item is VuuExample =>
-  typeof item === "function";
-
-const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
-  if (isVuuExample(f1) && isVuuExample(f2)) {
-    const { displaySequence: ds1 } = f1;
-    const { displaySequence: ds2 } = f2;
-
-    if (ds1 === undefined && ds2 === undefined) {
-      return 0;
-    }
-    if (ds2 === undefined) {
-      return -1;
-    }
-    if (ds1 === undefined) {
-      return 1;
-    }
-    return ds1 - ds2;
-  } else {
-    return 0;
-  }
-};
 
 const sourceFromImports = (
   stories: ExamplesModule,
@@ -52,6 +19,8 @@ const sourceFromImports = (
     .sort(byDisplaySequence)
     .map<TreeSourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
+      // TODO how can we know when a potential docs node has docs
+      console.log(`id=${id}`);
       if (typeof stories === "function") {
         return {
           id,
@@ -79,7 +48,9 @@ const availableThemes: ThemeDescriptor[] = [
 ];
 
 export const App = ({ stories }: AppProps) => {
+  console.log({ stories });
   const navigate = useNavigate();
+  // // TODO cache source in localStorage
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);

@@ -1,34 +1,116 @@
 {
-  "DataGrid": {
-    "Grid": "./src/examples/DataGrid/Grid.stories.jsx"
+  "Apps": {
+    "NewTheme": "src/examples/AppsNewTheme.examples.tsx"
+  },
+  "DataTable": {
+    "FilterTable": "src/examples/DataTableFilterTable.examples.tsx",
+    "JsonTable": "src/examples/DataTableJsonTable.examples.tsx"
+  },
+  "Filters": {
+    "FilterBar": {
+      "FilterBar": "src/examples/Filters/FilterBarFilterBar.examples.tsx",
+      "FilterClause": "src/examples/Filters/FilterBarFilterClause.examples.tsx",
+      "FilterPill": "src/examples/Filters/FilterBarFilterPill.examples.tsx"
+    },
+    "FilterInput": {
+      "FilterInput": "src/examples/Filters/FilterInputFilterInput.examples.tsx"
+    }
   },
   "Layout": {
-    "DockLayout": "./src/examples/Layout/DockLayout.stories.jsx",
-    "Dialog": "./src/examples/Layout/Dialog.stories.jsx",
-    "DraggableLayout": "./src/examples/Layout/DraggableLayout.stories.jsx",
-    "DropMenu": "./src/examples/Layout/DropMenu.stories.jsx",
-    "Flexbox": "./src/examples/Layout/Flexbox.stories.jsx",
-    "FluidGrid": "./src/examples/Layout/FluidGrid.stories.jsx",
-    "Palette": "./src/examples/Layout/Palette.stories.jsx",
-    "Stack": "./src/examples/Layout/Stack.stories.jsx",
-    "StackLayout": "./src/examples/Layout/StackLayout.stories.jsx",
-    "View": "./src/examples/Layout/View.stories.jsx"
+    "DockLayout": "src/examples/LayoutDockLayout.examples.tsx",
+    "DraggableLayout": "src/examples/LayoutDraggableLayout.examples.tsx",
+    "DropMenu": "src/examples/LayoutDropMenu.examples.tsx",
+    "Flexbox": "src/examples/LayoutFlexbox.examples.tsx",
+    "FluidGrid": "src/examples/LayoutFluidGrid.examples.tsx",
+    "Header": "src/examples/LayoutHeader.examples.tsx",
+    "LayoutsBrowser": "src/examples/LayoutLayoutsBrowser.examples.tsx",
+    "MeasuredContainer": "src/examples/LayoutMeasuredContainer.examples.tsx",
+    "OverflowContainer": "src/examples/LayoutOverflowContainer.examples.tsx",
+    "Palette": "src/examples/LayoutPalette.examples.tsx",
+    "SavePanel": "src/examples/LayoutSavePanel.examples.tsx",
+    "Stack": "src/examples/LayoutStack.examples.tsx",
+    "Toolbar": "src/examples/LayoutToolbar.examples.tsx",
+    "View": "src/examples/LayoutView.examples.tsx"
   },
-  "ParsedInput": {
-    "ParsedInput": "./src/examples/ParsedInput/ParsedInput.stories.jsx"
+  "Performance": {
+    "Performance": "src/examples/PerformancePerformance.examples.tsx"
   },
-  "Tools": {
-    "LayoutConfigurator": "./src/examples/Tools/LayoutConfigurator.stories.jsx"
+  "Popups": {
+    "ContextMenu": "src/examples/PopupsContextMenu.examples.tsx",
+    "Dialog": "src/examples/PopupsDialog.examples.tsx",
+    "Notifications": {
+      "Notifications": "src/examples/Popups/NotificationsNotifications.examples.tsx"
+    },
+    "PopupMenu": "src/examples/PopupsPopupMenu.examples.tsx",
+    "Tooltip": "src/examples/PopupsTooltip.examples.tsx"
   },
-  "UIControls": {
-    "Button": "./src/examples/UIControls/Button.stories.jsx",
-    "Combobox": "./src/examples/UIControls/Combobox.stories.jsx",
-    "DatePicker": "./src/examples/UIControls/DatePicker.stories.jsx",
-    "Dropdown": "./src/examples/UIControls/Dropdown.stories.jsx",
-    "DropdownList": "./src/examples/UIControls/DropdownList.stories.jsx",
-    "Form": "./src/examples/UIControls/Form.stories.jsx",
-    "List": "./src/examples/UIControls/List.stories.jsx",
-    "Menu": "./src/examples/UIControls/Menu.stories.jsx",
-    "Tree": "./src/examples/UIControls/Tree.stories.jsx"
+  "Shell": {
+    "AppHeader": "src/examples/ShellAppHeader.examples.tsx",
+    "ConnectionMetrics": "src/examples/ShellConnectionMetrics.examples.tsx",
+    "ConnectionStatus": "src/examples/ShellConnectionStatus.examples.tsx",
+    "Feature": "src/examples/ShellFeature.examples.tsx",
+    "LeftNav": "src/examples/ShellLeftNav.examples.tsx",
+    "LoginPanel": "src/examples/ShellLoginPanel.examples.tsx",
+    "SessionTableEditing": "src/examples/ShellSessionTableEditing.examples.tsx",
+    "Shell": "src/examples/ShellShell.examples.tsx",
+    "ThemeProvider": "src/examples/ShellThemeProvider.examples.tsx",
+    "ThemeSwitch": "src/examples/ShellThemeSwitch.examples.tsx"
+  },
+  "ShowcaseControls": {
+    "Tree": "src/examples/ShowcaseControlsTree.examples.tsx"
+  },
+  "Table": {
+    "BASKET": "src/examples/TableBASKET.examples.tsx",
+    "SIMUL": "src/examples/TableSIMUL.examples.tsx",
+    "Table": "src/examples/TableTable.examples.tsx",
+    "TableLayout": "src/examples/TableTableLayout.examples.tsx",
+    "TableList": "src/examples/TableTableList.examples.tsx"
+  },
+  "TableExtras": {
+    "ColumnExpressionInput": "src/examples/TableExtrasColumnExpressionInput.examples.tsx",
+    "ColumnExpressionPanel": "src/examples/TableExtrasColumnExpressionPanel.examples.tsx",
+    "ColumnSettings": {
+      "ColumnSettings": "src/examples/TableExtras/ColumnSettingsColumnSettings.examples.tsx"
+    },
+    "TableSettings": {
+      "TableSettings": "src/examples/TableExtras/TableSettingsTableSettings.examples.tsx"
+    }
+  },
+  "UiControls": {
+    "Combobox": "src/examples/UiControlsCombobox.examples.tsx",
+    "DragDrop": "src/examples/UiControlsDragDrop.examples.tsx",
+    "Dropdown": "src/examples/UiControlsDropdown.examples.tsx",
+    "EditableLabel": "src/examples/UiControlsEditableLabel.examples.tsx",
+    "InstrumentPicker": "src/examples/UiControlsInstrumentPicker.examples.tsx",
+    "InstrumentSearch": "src/examples/UiControlsInstrumentSearch.examples.tsx",
+    "List": "src/examples/UiControlsList.examples.tsx",
+    "Tabstrip": "src/examples/UiControlsTabstrip.examples.tsx"
+  },
+  "VUU": {
+    "Vuu": "src/examples/VUUVuu.examples.tsx"
+  },
+  "VuuFeatures": {
+    "BasketSelector": "src/examples/VuuFeaturesBasketSelector.examples.tsx",
+    "BasketToolbar": "src/examples/VuuFeaturesBasketToolbar.examples.tsx",
+    "BasketTradingFeature": "src/examples/VuuFeaturesBasketTradingFeature.examples.tsx",
+    "FilterTableFeature": "src/examples/VuuFeaturesFilterTableFeature.examples.tsx",
+    "InstrumentTilesFeature": "src/examples/VuuFeaturesInstrumentTilesFeature.examples.tsx",
+    "NewBasketPanel": "src/examples/VuuFeaturesNewBasketPanel.examples.tsx",
+    "TableNextFeature": "src/examples/VuuFeaturesTableNextFeature.examples.tsx"
+  },
+  "html": {
+    "GridLayout": "src/examples/htmlGridLayout.examples.tsx",
+    "LayoutExperiments": "src/examples/htmlLayoutExperiments.examples.tsx",
+    "SvgFun": "src/examples/htmlSvgFun.examples.tsx"
+  },
+  "salt": {
+    "Accordion": "src/examples/saltAccordion.examples.tsx",
+    "Button": "src/examples/saltButton.examples.tsx",
+    "Checkbox": "src/examples/saltCheckbox.examples.tsx",
+    "FormField": "src/examples/saltFormField.examples.tsx",
+    "Input": "src/examples/saltInput.examples.tsx",
+    "Progress": "src/examples/saltProgress.examples.tsx",
+    "Switch": "src/examples/saltSwitch.examples.tsx",
+    "ToggleButton": "src/examples/saltToggleButton.examples.tsx"
   }
 }

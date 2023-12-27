@@ -1,4 +1,3 @@
-// import { ComponentAnatomy } from '@heswell/component-anatomy';
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useState } from "react";
 

@@ -1,10 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { App, ExamplesModule } from "./App";
+import { App } from "./App";
+import { ExamplesModule } from "./showcase-utils";
 
 import "./index.css";
 
-const createRoutes = (stories: ExamplesModule, prefix = ""): JSX.Element[] =>
-  Object.entries(stories)
+const createRoutes = (examples: ExamplesModule, prefix = ""): JSX.Element[] =>
+  Object.entries(examples)
     .filter(([path]) => path !== "default")
     .reduce<JSX.Element[]>((routes, [label, Value]) => {
       const id = `${prefix}${label}`;

@@ -32,7 +32,7 @@
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "showcase": "cd showcase && npm run showcase",
-    "showcase:preview": "cd showcase && npm run preview",
+    "showcase:preview": "serve ./showcase/dist",
     "showcase:build": " cd showcase && node scripts/build.mjs",
     "test:cypress": "cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
@@ -58,7 +58,6 @@
     "semver": "^7.5.2"
   },
   "devDependencies": {
-    "@heswell/component-anatomy": "0.0.5",
     "@lezer/generator": "^1.2.2",
     "@testing-library/cypress": "10.0.1",
     "@testing-library/dom": "^9.0.0",

@@ -7,4 +7,5 @@ export * as EditableLabel from "./EditableLabel.examples";
 export * as InstrumentPicker from "./InstrumentPicker.examples";
 export * as InstrumentSearch from "./InstrumentSearch.examples";
 export * as List from "./List.examples";
+export * as Tree from "./Tree.examples";
 export * as Tabstrip from "./Tabstrip.examples";

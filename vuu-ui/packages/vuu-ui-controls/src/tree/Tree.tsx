@@ -89,7 +89,6 @@ const Tree = forwardRef(function Tree(
 ) {
   const id = useId(idProp);
   const rootRef = useRef<HTMLUListElement>(null);
-
   // returns the full source data
   const [, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
     revealSelected: revealSelected
