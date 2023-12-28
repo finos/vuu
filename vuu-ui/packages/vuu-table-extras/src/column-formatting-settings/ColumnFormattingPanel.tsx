@@ -1,7 +1,6 @@
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
-  ColumnTypeFormatting,
   ColumnTypeRendering,
 } from "@finos/vuu-table-types";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
@@ -11,23 +10,22 @@ import {
   getCellRendererOptions,
   getConfigurationEditor,
   isColumnTypeRenderer,
-  isDateTimeColumn,
   isTypeDescriptor,
 } from "@finos/vuu-utils";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo } from "react";
-import { NumericFormattingSettings } from "./NumericFormattingSettings";
-import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
+import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
+import { LongTypeFormattingSettings } from "./LongTypeFormattingSettings";
 import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuColumnFormattingPanel";
 
 export interface ColumnFormattingPanelProps
-  extends HTMLAttributes<HTMLDivElement> {
+  extends HTMLAttributes<HTMLDivElement>,
+    FormattingSettingsProps {
   availableRenderers: CellRendererDescriptor[];
   column: ColumnDescriptor;
-  onChangeFormatting: (formatting: ColumnTypeFormatting) => void;
   onChangeRendering: (renderProps: ColumnTypeRendering) => void;
 }
 
@@ -38,12 +36,14 @@ export const ColumnFormattingPanel = ({
   className,
   column,
   onChangeFormatting,
+  onChangeType,
   onChangeRendering,
   ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
   const formattingSettingsForType = useMemo(
-    () => formattingSettingsByColType({ column, onChange: onChangeFormatting }),
-    [column, onChangeFormatting]
+    () =>
+      formattingSettingsByColType({ column, onChangeFormatting, onChangeType }),
+    [column, onChangeFormatting, onChangeType]
   );
 
   const ConfigEditor = useMemo<
@@ -119,15 +119,12 @@ export const ColumnFormattingPanel = ({
 function formattingSettingsByColType(props: FormattingSettingsProps) {
   const { column } = props;
 
-  if (isDateTimeColumn(column)) {
-    return <DateTimeFormattingSettings {...props} column={column} />;
-  }
-
   switch (column.serverDataType) {
     case "double":
     case "int":
+      return <BaseNumericFormattingSettings {...props} />;
     case "long":
-      return <NumericFormattingSettings {...props} />;
+      return <LongTypeFormattingSettings {...props} />;
     default:
       return null;
   }

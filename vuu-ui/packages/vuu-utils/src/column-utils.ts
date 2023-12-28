@@ -21,6 +21,7 @@ import type {
   ColumnTypeDescriptor,
   ColumnTypeFormatting,
   ColumnTypeRendering,
+  ColumnTypeSimple,
   ColumnTypeWithValidationRules,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
@@ -153,21 +154,6 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
   name,
 });
-
-export const isSimpleColumnType = (value: unknown): value is ColumnTypeSimple =>
-  typeof value === "string" &&
-  ["string", "number", "boolean", "json", "date", "time", "checkbox"].includes(
-    value
-  );
-
-export declare type ColumnTypeSimple =
-  | "string"
-  | "number"
-  | "boolean"
-  | "json"
-  | "date"
-  | "time"
-  | "checkbox";
 
 /**
  *
@@ -766,31 +752,30 @@ export const getDefaultColumnType = (
   }
 };
 
-export const updateColumnType = <T extends ColumnDescriptor = ColumnDescriptor>(
+export const updateColumnFormatting = <
+  T extends ColumnDescriptor = ColumnDescriptor
+>(
   column: T,
   formatting: ColumnTypeFormatting
 ): T => {
   const { serverDataType, type = getDefaultColumnType(serverDataType) } =
     column;
 
-  if (typeof type === "string" || type === undefined) {
-    return {
-      ...column,
-      type: {
-        name: type,
-        formatting,
-      },
-    } as T;
+  if (isTypeDescriptor(type)) {
+    return { ...column, type: { ...type, formatting } };
   } else {
-    return {
-      ...column,
-      type: {
-        ...type,
-        formatting,
-      },
-    } as T;
+    return { ...column, type: { name: type, formatting } };
   }
 };
+
+export function updateColumnType<T extends ColumnDescriptor = ColumnDescriptor>(
+  column: T,
+  type: ColumnTypeSimple
+): T {
+  return isTypeDescriptor(column.type)
+    ? { ...column, type: { ...column.type, name: type } }
+    : { ...column, type };
+}
 
 export const updateColumnRenderProps = <
   T extends ColumnDescriptor = ColumnDescriptor
@@ -798,24 +783,10 @@ export const updateColumnRenderProps = <
   column: T,
   renderer: ColumnTypeRendering
 ): T => {
-  const { serverDataType, type } = column;
-  if (type === undefined) {
-    return {
-      ...column,
-      type: {
-        name: getDefaultColumnType(serverDataType),
-        renderer,
-      },
-    };
-  } else if (isSimpleColumnType(type)) {
-    return {
-      ...column,
-      type: {
-        name: type,
-        renderer,
-      },
-    };
-  } else {
+  const { serverDataType, type = getDefaultColumnType(serverDataType) } =
+    column;
+
+  if (isTypeDescriptor(type)) {
     return {
       ...column,
       type: {
@@ -824,6 +795,8 @@ export const updateColumnRenderProps = <
         renderer,
       },
     };
+  } else {
+    return { ...column, type: { name: type, renderer } };
   }
 };
 

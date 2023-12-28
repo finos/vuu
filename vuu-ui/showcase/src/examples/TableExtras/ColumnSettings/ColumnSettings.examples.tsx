@@ -11,7 +11,8 @@ import {
 import {
   CellRendererDescriptor,
   ColumnRenderPropsChangeHandler,
-  isTypeDescriptor,
+  updateColumnFormatting,
+  updateColumnType,
 } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
@@ -55,6 +56,7 @@ export const ColumnFormattingPanelDouble = () => {
       availableRenderers={availableRenderers}
       column={column}
       onChangeFormatting={() => console.log("onChangeFormatting")}
+      onChangeType={() => console.log("onChangeType")}
       onChangeRendering={handleChangeRendering}
       style={{
         border: "solid 1px lightgray",
@@ -92,13 +94,11 @@ export const ColumnFormattingPanelDateTime = () => {
   );
 
   const onChangeFormatting = useCallback((formatting: ColumnTypeFormatting) => {
-    setColumn((col) => ({
-      ...col,
-      type: {
-        ...(isTypeDescriptor(col.type) ? col.type : { name: col.type }),
-        formatting,
-      },
-    }));
+    setColumn((col) => updateColumnFormatting(col, formatting));
+  }, []);
+
+  const onChangeType = useCallback((t) => {
+    setColumn((col) => updateColumnType(col, t));
   }, []);
 
   return (
@@ -107,6 +107,7 @@ export const ColumnFormattingPanelDateTime = () => {
       column={column}
       onChangeFormatting={onChangeFormatting}
       onChangeRendering={handleChangeRendering}
+      onChangeType={onChangeType}
       style={{
         border: "solid 1px lightgray",
         margin: 20,

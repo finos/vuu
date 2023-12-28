@@ -38,6 +38,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "ric", serverDataType: "string" },
         { name: "supported", serverDataType: "boolean" },
         { name: "wishlist", serverDataType: "boolean" },
+        { name: "lastUpdated", serverDataType: "long" },
       ],
       key: "ric",
       table: { module: "SIMUL", table: "instruments" },

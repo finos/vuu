@@ -9,7 +9,7 @@ describe("isDateTimePattern", () => {
     { pattern: { date: "dd/mm/yyyy", time: "hh:mm:ss" }, expected: true },
     { pattern: undefined, expected: false },
   ])(
-    "returns $expected when pattern is a DateTimePattern",
+    "returns true only when pattern is a DateTimePattern",
     ({ pattern, expected }) => {
       const actual = isDateTimePattern(pattern);
       expect(actual).toEqual(expected);

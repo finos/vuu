@@ -16,14 +16,9 @@ import {
 import { DateTimeColumnDescriptor } from "@finos/vuu-table-types";
 import { FormattingSettingsProps } from "./types";
 
-import "./DateTimeFormattingSettings.css";
-
-const classBase = "vuuDateTimeFormattingSettings";
-
 export const DateTimeFormattingSettings: React.FC<
   FormattingSettingsProps<DateTimeColumnDescriptor>
-> = (props) => {
-  const { column, onChange } = props;
+> = ({ column, onChangeFormatting: onChange }) => {
   const formatting = getTypeFormattingFromColumn(column);
   const { pattern = fallbackDateTimePattern } = formatting;
   const toggleValue = useMemo(() => getToggleValue(pattern), [pattern]);
@@ -79,9 +74,9 @@ export const DateTimeFormattingSettings: React.FC<
   );
 
   return (
-    <div className={classBase}>
-      <FormField>
-        <FormFieldLabel>{"Date/Time pattern"}</FormFieldLabel>
+    <>
+      <FormField labelPlacement="left">
+        <FormFieldLabel>{"Display"}</FormFieldLabel>
         <ToggleButtonGroup
           className="vuuToggleButtonGroup"
           onChange={onToggleChange}
@@ -99,7 +94,7 @@ export const DateTimeFormattingSettings: React.FC<
         .filter((v) => !!pattern[v])
         .map((v) => (
           <FormField labelPlacement="left" key={v}>
-            <FormFieldLabel>{`${labelByType[v]}`}</FormFieldLabel>
+            <FormFieldLabel>{`${labelByType[v]} pattern`}</FormFieldLabel>
             <Dropdown<Required<DateTimePattern>[typeof v]>
               onSelectionChange={onDropdownChange(v)}
               selected={pattern[v]}
@@ -108,7 +103,7 @@ export const DateTimeFormattingSettings: React.FC<
             />
           </FormField>
         ))}
-    </div>
+    </>
   );
 };
 

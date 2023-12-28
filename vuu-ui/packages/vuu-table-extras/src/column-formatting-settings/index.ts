@@ -1,3 +1,3 @@
 export * from "./ColumnFormattingPanel";
-export * from "./NumericFormattingSettings";
+export * from "./BaseNumericFormattingSettings";
 export * from "./DateTimeFormattingSettings";
