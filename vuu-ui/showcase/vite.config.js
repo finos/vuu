@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import mdx from "@mdx-js/rollup";
 
 export default defineConfig({
   build: {
@@ -16,7 +15,6 @@ export default defineConfig({
     jsx: `automatic`,
     target: "esnext",
   },
-  plugins: [mdx()],
   server: {
     proxy: {
       "/api/authn": {

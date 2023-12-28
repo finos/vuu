@@ -13,7 +13,11 @@ export const ButtonGroupWithTextOnly = () => {
   };
 
   return (
-    <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
+    <ToggleButtonGroup
+      data-showcase-center
+      onChange={handleChange}
+      value={selectedIndex}
+    >
       <ToggleButton value={0}>Alert</ToggleButton>
       <ToggleButton value={1}>Home</ToggleButton>
       <ToggleButton value={2}>Search</ToggleButton>
@@ -47,6 +51,7 @@ export const ButtonGroupWithIconOnly = () => {
   return (
     <div
       className="vuuToggleButtonExample"
+      data-showcase-center
       style={{
         display: "flex",
         height: 150,

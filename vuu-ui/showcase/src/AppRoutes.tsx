@@ -2,8 +2,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { App } from "./App";
 import { ExamplesModule } from "./showcase-utils";
 
-import "./index.css";
-
 const createRoutes = (examples: ExamplesModule, prefix = ""): JSX.Element[] =>
   Object.entries(examples)
     .filter(([path]) => path !== "default")

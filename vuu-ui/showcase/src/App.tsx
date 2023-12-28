@@ -1,7 +1,7 @@
 import { Flexbox } from "@finos/vuu-layout";
 import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 import { Density, ThemeMode, ThemeProvider } from "@finos/vuu-utils";
-import { Button, Text } from "@salt-ds/core";
+import { Button, Text, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
@@ -43,8 +43,9 @@ export interface AppProps {
 type ThemeDescriptor = { label?: string; id: string };
 
 const availableThemes: ThemeDescriptor[] = [
-  { id: "vuu", label: "Vuu Classic" },
-  { id: "salt", label: "Salt Classic" },
+  { id: "no-theme", label: "No Theme" },
+  { id: "salt", label: "Salt" },
+  { id: "vuu", label: "Vuu" },
 ];
 
 export const App = ({ stories }: AppProps) => {
@@ -58,15 +59,22 @@ export const App = ({ stories }: AppProps) => {
   const [themeMode] = useState<ThemeMode>("light");
   const [density] = useState<Density>("high");
 
+  const theme = useMemo(() => availableThemes[themeIndex], [themeIndex]);
+
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone&theme=vuu`, "_blank");
+    window.open(`${location.href}?standalone&theme=${theme.id}`, "_blank");
+  }, [theme.id]);
+
+  const handleThemeChange = useCallback((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    setThemeIndex(parseInt(value));
   }, []);
 
   return (
     <ThemeProvider
       applyThemeClasses
       density="high"
-      theme="salt"
+      theme="vuu"
       themeMode="light"
     >
       <Flexbox
@@ -96,13 +104,22 @@ export const App = ({ stories }: AppProps) => {
               style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
               <div
-                className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
+                className="vuuToolbarProxy ShowcaseContentToolbar"
                 style={{
                   height: 30,
-                  border: "solid 1px var(--salt-container-primary-borderColor)",
                 }}
                 data-mode="light"
               >
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  onChange={handleThemeChange}
+                  value={themeIndex}
+                >
+                  <ToggleButton value={0}>No Theme</ToggleButton>
+                  <ToggleButton value={1}>SALT</ToggleButton>
+                  <ToggleButton value={2}>VUU</ToggleButton>
+                </ToggleButtonGroup>
+
                 <Button
                   data-align="end"
                   data-icon="open-in"
@@ -117,7 +134,7 @@ export const App = ({ stories }: AppProps) => {
                   position: "relative",
                 }}
               >
-                <IFrame />
+                <IFrame theme={theme.id} />
               </div>
             </Flexbox>
           </ThemeProvider>

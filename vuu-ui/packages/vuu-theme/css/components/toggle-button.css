@@ -8,6 +8,10 @@
     height: var(--vuuToggleButton-height, 24px);
 }
 
+.saltToggleButton {
+    white-space: nowrap;
+}
+
 .vuuIconToggleButton {
     --vuu-icon-size: var(--vuuIconToggleButton-iconSize, 48px);
     width: 48px;
