@@ -1,3 +1,4 @@
+import { el } from "@faker-js/faker";
 import {
   ContraItem,
   ContraItemOtherColumn,
@@ -10,6 +11,13 @@ import {
 export type ResizeDirection = "shrink" | "expand";
 
 export type ResizeOrientation = "horizontal" | "vertical";
+
+export const isSplitter = (element: HTMLElement) =>
+  element.classList.contains("vuuGridSplitter");
+export const isVerticalSplitter = (element: HTMLElement) =>
+  element.classList.contains("vuuGridSplitter-vertical");
+export const isHorizontalSplitter = (element: HTMLElement) =>
+  element.classList.contains("vuuGridSplitter-horizontal");
 
 export const getColumns = (el: HTMLElement) =>
   getComputedStyle(el)
@@ -184,7 +192,7 @@ export const getGridItemsAdjoiningTrack = (
     resizeOrientation === "vertical" ? collectRowItems : collectColItems;
 
   for (const node of grid.childNodes) {
-    if (node !== targetElement) {
+    if (node !== targetElement && !isSplitter(node as HTMLElement)) {
       collectItems(
         colPosition,
         rowPosition,

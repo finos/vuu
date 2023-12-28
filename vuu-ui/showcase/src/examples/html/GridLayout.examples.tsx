@@ -1,7 +1,12 @@
 let displaySequence = 1;
 
 import { useCallback, useRef } from "react";
-import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
+import {
+  GridLayout,
+  GridLayoutItem,
+  GridSplitter,
+  LayoutAPI,
+} from "./components/GridLayout";
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
@@ -98,7 +103,7 @@ export const GridLayoutG = () => {
     </GridLayout>
   );
 };
-GridLayoutF.displaySequence = displaySequence++;
+GridLayoutG.displaySequence = displaySequence++;
 
 export const GridLayoutH = () => {
   // prettier-ignore
@@ -140,18 +145,38 @@ export const GridLayoutH = () => {
         rowCount={2}
         layoutAPI={layoutApi}
       >
-        <GridLayoutItem id="green-H" data-resizeable="hv">
+        <GridLayoutItem id="green-H" resizeable="hv">
           <div style={{ background: "green" }} />
         </GridLayoutItem>
-        <GridLayoutItem id="brown-H" data-resizeable="hv">
+        <GridLayoutItem id="brown-H" resizeable="hv">
           <div style={{ background: "brown" }} />
         </GridLayoutItem>
-        <GridLayoutItem id="black-H" data-resizeable="hv">
+        <GridLayoutItem id="black-H" resizeable="hv">
           <div style={{ background: "black" }} />
         </GridLayoutItem>
-        <GridLayoutItem id="yellow-H" data-resizeable="hv">
+        <GridLayoutItem id="yellow-H" resizeable="hv">
           <div style={{ background: "yellow" }} />
         </GridLayoutItem>
+        <GridSplitter
+          aria-controls="brown-H"
+          orientation="horizontal"
+          style={{ gridColumn: 2, gridRow: "1/2" }}
+        />
+        <GridSplitter
+          aria-controls="yellow-H"
+          orientation="horizontal"
+          style={{ gridColumn: 2, gridRow: "2/3" }}
+        />
+        <GridSplitter
+          aria-controls="black-H"
+          orientation="vertical"
+          style={{ gridColumn: "1/2", gridRow: 2 }}
+        />
+        <GridSplitter
+          aria-controls="yellow-H"
+          orientation="vertical"
+          style={{ gridColumn: "2/3", gridRow: 2 }}
+        />
       </GridLayout>
     </div>
   );
