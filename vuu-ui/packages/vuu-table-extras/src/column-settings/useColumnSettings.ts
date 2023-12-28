@@ -52,6 +52,10 @@ const stringCellRenderers: CellRendererDescriptor[] = [
   ...getRegisteredCellRenderers("string"),
 ];
 
+const booleanCellRenderers: CellRendererDescriptor[] = [
+  ...getRegisteredCellRenderers("boolean"),
+];
+
 const getAvailableCellRenderers = (
   column: ColumnDescriptor
 ): CellRendererDescriptor[] => {
@@ -64,6 +68,8 @@ const getAvailableCellRenderers = (
       return integerCellRenderers;
     case "double":
       return doubleCellRenderers;
+    case "boolean":
+      return booleanCellRenderers;
     default:
       return stringCellRenderers;
   }
