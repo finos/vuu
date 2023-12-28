@@ -3,18 +3,19 @@ package org.finos.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{Column, DataType, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Column, DataType, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter {
 
   private def doFilterByIndexIfPossible(parentSelectionKeys: Map[String, Int], parentColumn: Column,
-                                        childColumn: Column, source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+                                        childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
 
     if (parentSelectionKeys.isEmpty) {
-      ImmutableArray.empty[String]
+      InMemTablePrimaryKeys(ImmutableArray.empty[String])
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: StringIndexedField) if childColumn.dataType == DataType.StringDataType =>
@@ -39,12 +40,12 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     }
   }
 
-  def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): ImmutableArray[String] = {
-    index.find(parentSelected)
+  def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
+    InMemTablePrimaryKeys(index.find(parentSelected))
   }
 
 
-  private def doFilterByBruteForce(parentDataValues: Map[Any, Int], childColumn: Column, source: RowSource, primaryKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  private def doFilterByBruteForce(parentDataValues: Map[Any, Int], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray
     val childColumns = ViewPortColumnCreator.create(source.asTable, List(childColumn.name))
 
@@ -53,10 +54,10 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
       parentDataValues.contains(childField)
     })
 
-    ImmutableArray.from(filtered)
+    InMemTablePrimaryKeys(ImmutableArray.from(filtered))
   }
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
     val parentSelectionKeys = viewPortVisualLink.parentVp.getSelection
     val parentColumn = viewPortVisualLink.parentColumn
@@ -69,17 +70,17 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
 }
 
 case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter {
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       checker.canSeeRow(source.pullRow(key, vpColumns))
     }).toArray
 
-    ImmutableArray.from[String](filtered)
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
 }
 
 case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
     val firstStep = first.dofilter(source, primaryKeys, vpColumns)
 
@@ -91,12 +92,12 @@ case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter w
 
 case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogging {
 
-  override def dofilter(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns: ViewPortColumns): ImmutableArray[String] = {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
     val pks = primaryKeys.toArray
 
     logger.debug(s"starting filter with ${pks.length}")
-    val filtered = clause.filterAll(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns)
+    val filtered = clause.filterAll(source: RowSource, primaryKeys, vpColumns)
     logger.debug(s"complete filter with ${filtered.length}")
     filtered
   }
@@ -104,14 +105,14 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns, permission: Option[RowPermissionChecker]): ImmutableArray[String]
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, permission: Option[RowPermissionChecker]): TablePrimaryKeys
   def filter: Filter
   def sort: Sort
 }
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], vpColumns:ViewPortColumns, checkerOption: Option[RowPermissionChecker]): ImmutableArray[String] = {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
         try {
       val realizedFilter = checkerOption match {
         case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
@@ -119,6 +120,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
       }
 
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
+
       val sortedKeys = sort.doSort(source, filteredKeys, vpColumns)
       logger.debug("sorted")
       sortedKeys
@@ -134,7 +136,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
 
 class NoFilterNoSort() extends FilterAndSort {
 
-  override def filterAndSort(source: RowSource, primaryKeys: ImmutableArray[String], viewPortColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): ImmutableArray[String] = {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
     primaryKeys
   }
   override def filter: Filter = NoFilter

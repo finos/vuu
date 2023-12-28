@@ -10,7 +10,6 @@ import org.finos.vuu.provider.JoinTableProvider
 object VuuInMemPluginType extends PluginType
 
 class VuuInMemPlugin extends DefaultPlugin {
-
   registerFeature(TableFeature)
   registerFeature(JoinTableFeature)
   registerFeature(SessionTableFeature)

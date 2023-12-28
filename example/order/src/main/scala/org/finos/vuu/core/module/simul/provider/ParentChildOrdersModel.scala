@@ -76,8 +76,8 @@ case class OrderPermission(name: String, mask: Int)
 
 class ParentChildOrdersModel(implicit clock: Clock,
                              lifecycleContainer: LifecycleContainer,
-                             randomNumbers: RandomNumbers,
-                             orderStore: OrderStore) {
+                             randomNumbers: RandomNumbers){
+                             //orderStore: OrderStore) {
 
   private final val queue = new DelayQueue[DelayQueueAction]()
   private final var cycleNumber = 0l
@@ -198,7 +198,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
       case InsertParent(parent, _, _, childCount) =>
         notifyOnParentInsert(parent)
         //activeOrders.put(parent.id, parent)
-        orderStore.storeParentOrder(parent)
+        //orderStore.storeParentOrder(parent)
         val timeToAmend = randomNumbers.seededRand(1000, 10000)
         val timeToCancel = randomNumbers.seededRand(10000, 120000)
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
@@ -251,7 +251,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
       case InsertChild(child, parent, _, _) =>
         notifyOnChildInsert(child)
         val updatedParent = parent.copy(activeChildren = parent.activeChildren + 1, remainingQty = parent.remainingQty - child.quantity)
-        orderStore.storeChildOrder(updatedParent, child)
+        //orderStore.storeChildOrder(updatedParent, child)
 //        activeOrders.put(updatedParent.id, updatedParent)
 //        activeChildrenByParentId.get(parent.id) match {
 //          case null =>
