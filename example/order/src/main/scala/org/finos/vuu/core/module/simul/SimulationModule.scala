@@ -11,6 +11,8 @@ import org.finos.vuu.core.module.simul.provider._
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.data.order.ignite.IgniteOrderStore
+import org.finos.vuu.data.order.{MapOrderStore, OrderStore}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
@@ -129,6 +131,8 @@ object SimulationModule extends DefaultModule {
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
+    //implicit val orderStore: OrderStore = IgniteOrderStore.apply()
+    //implicit val orderStore: OrderStore = new MapOrderStore()
 
     val ordersModel = new ParentChildOrdersModel()
 

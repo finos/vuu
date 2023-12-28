@@ -8,6 +8,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree.TreeNodeState
@@ -94,13 +95,13 @@ trait ViewPort {
 
   def getRange: ViewPortRange
 
-  def setKeys(keys: ImmutableArray[String]): Unit
+  def setKeys(keys: ViewPortKeys): Unit
 
-  def setKeysAndNotify(key: String, keys: ImmutableArray[String]): Unit
+  def setKeysAndNotify(key: String, keys: ViewPortKeys): Unit
 
-  def getKeys: ImmutableArray[String]
+  def getKeys: ViewPortKeys
 
-  def getKeysInRange: ImmutableArray[String]
+  def getKeysInRange: ViewPortKeys
 
   def getVisualLink: Option[ViewPortVisualLink]
 
@@ -125,8 +126,6 @@ trait ViewPort {
   def getTreeNodeStateStore: TreeNodeState
 
   def getStructure: ViewPortStructuralFields
-
-
   def getStructuralHashCode(): Int
 
   def getTableUpdateCount(): Long
@@ -225,7 +224,7 @@ class ViewPortImpl(val id: String,
   override def setSelection(rowIndices: Array[Int]): Unit = {
     viewPortLock.synchronized {
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
-      selection = rowIndices.filter(this.keys(_) != null).map(idx => (this.keys(idx), idx)).toMap
+      selection = rowIndices.filter(this.keys.get(_) != null).map(idx => (this.keys.get(idx), idx)).toMap
       for ((key, idx) <- selection ++ oldSelection) {
         publishHighPriorityUpdate(key, idx)
       }
@@ -251,7 +250,7 @@ class ViewPortImpl(val id: String,
 
   def removeSubscriptionsForRange(range: ViewPortRange): Unit = {
     (range.from until (range.to - 1)).foreach(i => {
-      val key = if (keys.length > i) keys(i) else null
+      val key = if (keys.length > i) keys.get(i) else null
       if (key != null) {
         unsubscribeForKey(key)
       }
@@ -260,7 +259,7 @@ class ViewPortImpl(val id: String,
 
   def addSubscriptionsForRange(range: ViewPortRange): Unit = {
     (range.from until (range.to - 1)).foreach(i => {
-      val key = if (keys.length > i) keys(i) else null
+      val key = if (keys.length > i) keys.get(i) else null
       if (key != null) {
         subscribeForKey(key, i)
       }
@@ -272,12 +271,12 @@ class ViewPortImpl(val id: String,
 
   def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
 
-    val currentKeys = keys.toArray
+    //val currentKeys = keys.toArray
 
     val from = currentRange.from
     val to = currentRange.to
 
-    val inrangeKeys = currentKeys.slice(from, to)
+    val inrangeKeys = keys.slice(from, to)
 
     logger.info(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
 
@@ -299,7 +298,7 @@ class ViewPortImpl(val id: String,
   override def filterAndSort: FilterAndSort = structuralFields.get().filtAndSort
 
   @volatile
-  private var keys: ImmutableArray[String] = ImmutableArray.from[String](new Array[String](0))
+  private var keys: ViewPortKeys = EmptyViewPortKeys
   @volatile
   private var selection: Map[String, Int] = Map()
 
@@ -328,46 +327,48 @@ class ViewPortImpl(val id: String,
 
   override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = rowKeyToIndex
 
-  override def getKeys: ImmutableArray[String] = keys
+  override def getKeys: ViewPortKeys = keys
 
   override def delete(): Unit = {
-    this.setKeys(ImmutableArray.empty[String])
+    this.setKeys(EmptyViewPortKeys)
   }
 
   @volatile var keyBuildCounter: Long = 0
 
   override def keyBuildCount: Long = keyBuildCounter
 
-  override def getKeysInRange: ImmutableArray[String] = {
-    val currentKeys = keys.toArray
+  override def getKeysInRange: ViewPortKeys = {
+    //val currentKeys = keys.toArray
 
     val activeRange = range.get()
 
     val from = activeRange.from
     val to = activeRange.to
 
-    val inrangeKeys = currentKeys.slice(from, to)
+    val inrangeKeys = keys.sliceToKeys(from, to)
 
-    ImmutableArray.from(inrangeKeys)
+    inrangeKeys
+
+    //ImmutableArray.from(inrangeKeys)
   }
 
-  def setKeysPre(newKeys: ImmutableArray[String]): Unit = {
+  def setKeysPre(newKeys: ViewPortKeys): Unit = {
     //send ViewPort
     removeNoLongerSubscribedKeys(newKeys)
   }
 
-  def setKeysInternal(newKeys: ImmutableArray[String]): Unit = {
+  def setKeysInternal(newKeys: ViewPortKeys): Unit = {
     keys = newKeys
   }
 
-  def setKeysPost(sendSizeUpdate: Boolean, newKeys: ImmutableArray[String]): Unit = {
+  def setKeysPost(sendSizeUpdate: Boolean, newKeys: ViewPortKeys): Unit = {
     if (sendSizeUpdate) {
       outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
 
-  override def setKeysAndNotify(key: String, newKeys: ImmutableArray[String]): Unit = {
+  override def setKeysAndNotify(key: String, newKeys: ViewPortKeys): Unit = {
     val sendSizeUpdate = newKeys.length != keys.length
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
@@ -375,7 +376,7 @@ class ViewPortImpl(val id: String,
     setKeysPost(sendSizeUpdate, newKeys)
   }
 
-  override def setKeys(newKeys: ImmutableArray[String]): Unit = {
+  override def setKeys(newKeys: ViewPortKeys): Unit = {
     val sendSizeUpdate = (newKeys.length != keys.length ) || newKeys.length == 0
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
@@ -401,7 +402,7 @@ class ViewPortImpl(val id: String,
 
   protected def hasChangedIndex(oldIndex: Int, newIndex: Int): Boolean = oldIndex != newIndex
 
-  protected def subscribeToNewKeys(newKeys: ImmutableArray[String]): Unit = {
+  protected def subscribeToNewKeys(newKeys: ViewPortKeys): Unit = {
 
     var index = 0
 
@@ -411,7 +412,7 @@ class ViewPortImpl(val id: String,
 
     while (index < newKeys.length) {
 
-      val key = newKeys(index)
+      val key = newKeys.get(index)
 
       val oldIndex = rowKeyToIndex.put(key, index)
 
@@ -442,7 +443,7 @@ class ViewPortImpl(val id: String,
   }
 
 
-  protected def removeNoLongerSubscribedKeys(newKeys: ImmutableArray[String]): Unit = {
+  protected def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
     val newKeySet = new util.HashSet[String]()
 
     var i = 0
@@ -450,7 +451,7 @@ class ViewPortImpl(val id: String,
     //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
     //this will check every key and remove it
     while (i < newKeys.length) {
-      newKeySet.add(newKeys(i))
+      newKeySet.add(newKeys.get(i))
       i += 1
     }
 

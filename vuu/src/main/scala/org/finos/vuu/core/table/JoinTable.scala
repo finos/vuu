@@ -7,6 +7,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -590,7 +591,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     })
   }
 
-  override def primaryKeys: ImmutableArray[String] = joinData.keysByJoinIndex(0)
+  override def primaryKeys: TablePrimaryKeys = InMemTablePrimaryKeys(joinData.keysByJoinIndex(0))
 
   def getFKForPK(pk: String): Map[String, String] = {
     joinData.getKeyValuesByTable(pk)

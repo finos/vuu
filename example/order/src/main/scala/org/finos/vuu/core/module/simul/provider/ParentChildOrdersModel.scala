@@ -3,12 +3,13 @@ package org.finos.vuu.core.module.simul.provider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionSet
+import org.finos.vuu.data.order.{ChildOrder, OrderStore, ParentOrder}
 
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
-case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int, owner: String = "", permissionMask: Int = 0)
-
-case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
+//case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int, owner: String = "", permissionMask: Int = 0)
+//
+//case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
 
 trait OrderListener {
   def onNewParentOrder(parentOrder: ParentOrder)
@@ -73,7 +74,10 @@ case class Strategy(name: String)
 
 case class OrderPermission(name: String, mask: Int)
 
-class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: LifecycleContainer, randomNumbers: RandomNumbers) {
+class ParentChildOrdersModel(implicit clock: Clock,
+                             lifecycleContainer: LifecycleContainer,
+                             randomNumbers: RandomNumbers){
+                             //orderStore: OrderStore) {
 
   private final val queue = new DelayQueue[DelayQueueAction]()
   private final var cycleNumber = 0l
@@ -85,8 +89,8 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
   private final val MAX_EVENTS_PER_CYCLE = 100
 
 
-  private val activeOrders = new ConcurrentHashMap[Int, ParentOrder]()
-  private val activeChildrenByParentId = new ConcurrentHashMap[Int, List[ChildOrder]]()
+  //private val activeOrders = new ConcurrentHashMap[Int, ParentOrder]()
+  //private val activeChildrenByParentId = new ConcurrentHashMap[Int, List[ChildOrder]]()
 
   private var listeners: List[OrderListener] = List()
 
@@ -193,7 +197,8 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
     action match {
       case InsertParent(parent, _, _, childCount) =>
         notifyOnParentInsert(parent)
-        activeOrders.put(parent.id, parent)
+        //activeOrders.put(parent.id, parent)
+        //orderStore.storeParentOrder(parent)
         val timeToAmend = randomNumbers.seededRand(1000, 10000)
         val timeToCancel = randomNumbers.seededRand(10000, 120000)
         var timeToCreateChild = randomNumbers.seededRand(1000, 3000)
@@ -246,13 +251,14 @@ class ParentChildOrdersModel(implicit clock: Clock, lifecycleContainer: Lifecycl
       case InsertChild(child, parent, _, _) =>
         notifyOnChildInsert(child)
         val updatedParent = parent.copy(activeChildren = parent.activeChildren + 1, remainingQty = parent.remainingQty - child.quantity)
-        activeOrders.put(updatedParent.id, updatedParent)
-        activeChildrenByParentId.get(parent.id) match {
-          case null =>
-            activeChildrenByParentId.put(parent.id, List(child))
-          case children: List[ChildOrder] =>
-            activeChildrenByParentId.put(parent.id, List(child) ++ children)
-        }
+        //orderStore.storeChildOrder(updatedParent, child)
+//        activeOrders.put(updatedParent.id, updatedParent)
+//        activeChildrenByParentId.get(parent.id) match {
+//          case null =>
+//            activeChildrenByParentId.put(parent.id, List(child))
+//          case children: List[ChildOrder] =>
+//            activeChildrenByParentId.put(parent.id, List(child) ++ children)
+//        }
 
       case AmendChild(child, parent, _, _) =>
       //notifyOnChildAmend(child)

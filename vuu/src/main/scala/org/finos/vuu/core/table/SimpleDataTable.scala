@@ -7,6 +7,7 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.ClientSessionId
 
 import java.util
@@ -160,7 +161,9 @@ object EmptyRowData extends RowData {
 }
 
 
-case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primaryKeyValues: ImmutableArray[String]) {
+case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys) extends TableData {
+
+  def primaryKeyValues: TablePrimaryKeys = this.primaryKeyValuesInternal
 
   def dataByKey(key: String): RowData = data.get(key)
 
@@ -169,7 +172,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
   protected def merge(update: RowWithData, data: RowWithData): RowWithData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowWithData): SimpleDataTableData = {
+  def update(key: String, update: RowWithData): TableData = {
 
     val table = data.synchronized {
 
@@ -188,7 +191,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
     table
   }
 
-  def delete(key: String): SimpleDataTableData = {
+  def delete(key: String): TableData = {
 
     data.synchronized {
 
@@ -201,7 +204,7 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], primary
   def deleteAll(): SimpleDataTableData = {
     data.synchronized {
       data.clear()
-      SimpleDataTableData(data, ImmutableArray.empty)
+      SimpleDataTableData(data, InMemTablePrimaryKeys(ImmutableArray.empty))
     }
   }
 
@@ -252,9 +255,9 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
     indices.get(column)
   }
 
-  override def primaryKeys: ImmutableArray[String] = data.primaryKeyValues
+  override def primaryKeys: TablePrimaryKeys = data.primaryKeyValues
 
-  @volatile protected var data = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), ImmutableArray.from(new Array[String](0)))
+  @volatile protected var data: TableData = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), InMemTablePrimaryKeys(ImmutableArray.empty))
 
   @volatile private var updateCounterInternal: Long = 0
   override def updateCounter: Long = updateCounterInternal
@@ -458,7 +461,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
     onUpdateCounter.inc()
 
-    val rowData = data.data.get(rowKey)
+    val rowData = data.dataByKey(rowKey)
 
     delete(rowKey)
 

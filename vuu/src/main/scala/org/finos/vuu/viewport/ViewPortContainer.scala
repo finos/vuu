@@ -14,6 +14,8 @@ import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.feature.EmptyViewPortKeys
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.rpc.EditRpcHandler
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -443,8 +445,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
       val keys = ImmutableArray.empty[String]; //tree.toKeys()
-      viewPort.setKeys(keys)
-      sessionTable.setTree(EmptyTree, keys)
+      viewPort.setKeys(EmptyViewPortKeys)
+      sessionTable.setTree(EmptyTree, InMemTablePrimaryKeys(keys))
 
       val structure = viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
@@ -487,14 +489,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
 
-      groupByTable.setTree(EmptyTree, ImmutableArray.empty)
+      groupByTable.setTree(EmptyTree, InMemTablePrimaryKeys(ImmutableArray.empty))
 
       val sessionTable = tableContainer.createTreeSessionTable(sourceTable, clientSession)
 
       val keys = ImmutableArray.empty[String]
 
-      viewPort.setKeys(keys)
-      sessionTable.setTree(EmptyTree, keys)
+      viewPort.setKeys(EmptyViewPortKeys)
+      sessionTable.setTree(EmptyTree, InMemTablePrimaryKeys(keys))
 
       logger.info("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
 
@@ -510,7 +512,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       //its important that the sequence of these operations is preserved, i.e. we should only remove the table after
       //the
-      viewPort.setKeys(keys)
+      viewPort.setKeys(EmptyViewPortKeys)
       viewPort.changeStructure(structure)
       tableContainer.removeGroupBySessionTable(groupByTable)
       groupByTable.delete()
@@ -737,11 +739,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           (millis, _) => { updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)}
         )
         timeItThen[Unit](
-          {action.table.setTree(tree, keys)},
+          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
           (millis, _) => { updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
         )
         timeItThen[Unit](
-          {viewPort.setKeys(keys)},
+          {viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
           (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
         )
         timeItThen[Unit](
@@ -770,10 +772,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           (millis, _) => {updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)}
         )
         timeItThen[Unit](
-          {action.table.setTree(tree, keys)},
+          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
           (millis, _) => {updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
         )
-        timeItThen[Unit]({viewPort.setKeys(keys)},
+        timeItThen[Unit]({viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
           (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
         )
         timeItThen[Unit](
@@ -792,11 +794,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val tree = action.table.getTree.applyNewNodeState(latestNodeState, action)
         val keys = tree.toKeys()
         timeItThen[Unit](
-          {action.table.setTree(tree, keys)},
+          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
           (millis, _) => {updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
         )
         timeItThen[Unit](
-          {viewPort.setKeys(keys)},
+          {viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
           (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
         )
         timeItThen[Unit](
@@ -847,7 +849,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         val (millis, _) = TimeIt.timeIt {
           val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker())
-          viewPort.setKeys(sorted)
+          viewPort.setKeys(viewPort.getKeys.create(sorted))
         }
 
         viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("vp.flat.cycle." + s))).update(millis)

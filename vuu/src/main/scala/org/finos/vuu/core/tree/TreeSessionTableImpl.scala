@@ -7,6 +7,8 @@ import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{GroupByColumns, GroupByTableDef, TableDef}
 import org.finos.vuu.core.table._
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport._
@@ -52,7 +54,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
   private val wrappedObservers: ConcurrentMap[String, WrappedKeyObserver[RowKeyUpdate]] = new ConcurrentHashMap[String, WrappedKeyObserver[RowKeyUpdate]]()
 
   @volatile
-  private var keys = ImmutableArray.empty[String]
+  private var keys: TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.empty[String])
 
   @volatile
   private var tree: Tree = EmptyTree
@@ -226,11 +228,11 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   override def toString: String = name
 
-  override def primaryKeys: ImmutableArray[String] = keys
+  override def primaryKeys: TablePrimaryKeys = keys
 
-  def sourceTableKeys: ImmutableArray[String] = source.primaryKeys
+  def sourceTableKeys: TablePrimaryKeys = source.primaryKeys
 
-  def setTree(tree: Tree, keys: ImmutableArray[String]): Unit = {
+  def setTree(tree: Tree, keys: TablePrimaryKeys): Unit = {
     logger.debug("set tree")
     this.keys = keys
     this.tree = tree

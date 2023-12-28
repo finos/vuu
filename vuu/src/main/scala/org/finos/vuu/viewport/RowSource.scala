@@ -39,7 +39,7 @@ trait RowSource extends KeyedObservable[RowKeyUpdate] {
 
   def readRow(key: String, columns: List[String], processor: RowProcessor): Unit
 
-  def primaryKeys: ImmutableArray[String]
+  def primaryKeys: TablePrimaryKeys
 
   def pullRow(key: String, columns: ViewPortColumns): RowData
 
