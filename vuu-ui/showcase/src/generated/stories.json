@@ -84,7 +84,8 @@
     "InstrumentPicker": "src/examples/UiControlsInstrumentPicker.examples.tsx",
     "InstrumentSearch": "src/examples/UiControlsInstrumentSearch.examples.tsx",
     "List": "src/examples/UiControlsList.examples.tsx",
-    "Tabstrip": "src/examples/UiControlsTabstrip.examples.tsx"
+    "Tabstrip": "src/examples/UiControlsTabstrip.examples.tsx",
+    "Tree": "src/examples/UiControlsTree.examples.tsx"
   },
   "VUU": {
     "Vuu": "src/examples/VUUVuu.examples.tsx"

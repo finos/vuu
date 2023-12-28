@@ -39,4 +39,5 @@ async function findAllMdxDocs(dir, results = []) {
 
 const mdxDocs = await findAllMdxDocs(targetDir);
 
+// await buildAll(mdxDocs);
 export default async () => buildAll(mdxDocs);
