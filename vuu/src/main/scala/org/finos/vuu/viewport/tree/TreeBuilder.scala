@@ -7,8 +7,9 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.{AntlrBasedFilter, RowPermissionFilter, Sort, TwoStepCompoundFilter}
-import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData}
+import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.viewport.{GroupBy, ViewPortColumns}
 
@@ -41,7 +42,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
   import org.finos.vuu.core.DataConstants._
 
-  private def applyFilter(): ImmutableArray[String] = {
+  private def applyFilter(): TablePrimaryKeys = {
 
     if ((filter != null && !isEmptyString(filter.filter)) || checkerOption.isDefined) {
 
@@ -72,7 +73,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
       table.sourceTable.primaryKeys
   }
 
-  private def applySort(filteredKeys: ImmutableArray[String]): ImmutableArray[String] = {
+  private def applySort(filteredKeys: TablePrimaryKeys): TablePrimaryKeys = {
     sort match {
       case Some(aSort) =>
         val keys = aSort.doSort(table.sourceTable, filteredKeys, vpColumns)
@@ -159,7 +160,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
     }
   }
 
-  private def buildEntireTree(sortedKeys: ImmutableArray[String], onlyBranches: Boolean, latestNodeState: TreeNodeStateStore, updateCounter: Long, paramsHashCode: Int): Tree = {
+  private def buildEntireTree(sortedKeys: TablePrimaryKeys, onlyBranches: Boolean, latestNodeState: TreeNodeStateStore, updateCounter: Long, paramsHashCode: Int): Tree = {
 
     val tree = new TreeImpl(new TreeNodeImpl(false, "$root", "", new JList[TreeNode](), null, 0, Map(), Aggregation.createAggregations(groupBy)), latestNodeState, groupBy, updateCounter, paramsHashCode, buildAction = Some(buildAction))
 
