@@ -9,11 +9,11 @@
         <version>0.9.36-SNAPSHOT</version>
     </parent>
 
-    <artifactId>feature</artifactId>
+    <artifactId>plugin</artifactId>
     <packaging>pom</packaging>
 
     <modules>
-        <module>ignite-feature</module>
+        <module>ignite-plugin</module>
         <!--module>inmem-feature</module-->
         <!--module>editable</module>
         <module>main</module>
