@@ -2,6 +2,7 @@ import { SchemaColumn } from "@finos/vuu-data-types";
 import { updateTableConfig } from "@finos/vuu-table";
 import {
   ColumnDescriptor,
+  DateTimeTableAttributes,
   TableConfig,
   TableSettingsProps,
 } from "@finos/vuu-table-types";
@@ -20,6 +21,7 @@ import {
   useState,
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
+import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 
 const sortOrderFromAvailableColumns = (
   availableColumns: SchemaColumn[],
@@ -194,6 +196,23 @@ export const useTableSettings = ({
     []
   );
 
+  const handleChangeDateTimeAttribute = useCallback<
+    <T extends keyof DateTimeTableAttributes>(
+      key: T
+    ) => SingleSelectionHandler<DateTimeTableAttributes[T]>
+  >(
+    (key) => (_, value) => {
+      setColumnState((s) => ({
+        ...s,
+        tableConfig: {
+          ...s.tableConfig,
+          dateTime: { ...s.tableConfig.dateTime, [key]: value },
+        },
+      }));
+    },
+    []
+  );
+
   useLayoutEffectSkipFirst(() => {
     onConfigChange?.(tableConfig);
   }, [onConfigChange, tableConfig]);
@@ -211,6 +230,7 @@ export const useTableSettings = ({
     onChangeColumnLabels: handleChangeColumnLabels,
     onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
+    onChangeDateTimeAttribute: handleChangeDateTimeAttribute,
     onMoveListItem: handleMoveListItem,
     tableConfig,
   };

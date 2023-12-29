@@ -10,6 +10,7 @@ import {
 import {
   FormField,
   FormFieldLabel,
+  Switch,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
@@ -23,55 +24,13 @@ export const DateTimeFormattingSettings: React.FC<
   const { pattern = fallbackDateTimePattern } = formatting;
   const toggleValue = useMemo(() => getToggleValue(pattern), [pattern]);
 
-  const [fallbackState, setFallbackState] = useState<Required<DateTimePattern>>(
-    {
-      time: pattern.time ?? defaultPatternsByType.time,
-      date: pattern.date ?? defaultPatternsByType.date,
-    }
-  );
-
   const onPatternChange = useCallback(
     (pattern: DateTimePattern) => onChange({ ...formatting, pattern }),
     [onChange, formatting]
   );
 
-  const onDropdownChange = useCallback<
-    <T extends keyof DateTimePattern>(
-      key: T
-    ) => SingleSelectionHandler<Required<DateTimePattern>[T]>
-  >(
-    (key) => (_, p) => {
-      const updatedPattern = { ...(pattern ?? {}), [key]: p };
-      setFallbackState((s) => ({
-        time: updatedPattern.time ?? s.time,
-        date: updatedPattern.date ?? s.date,
-      }));
-      onPatternChange(updatedPattern);
-    },
-    [onPatternChange, pattern]
-  );
-
-  const onToggleChange = useCallback(
-    (evnt: SyntheticEvent<HTMLButtonElement, Event>) => {
-      const value = evnt.currentTarget.value as ToggleValue;
-      switch (value) {
-        case "time":
-          return onPatternChange({
-            [value]: pattern[value] ?? fallbackState[value],
-          });
-        case "date":
-          return onPatternChange({
-            [value]: pattern[value] ?? fallbackState[value],
-          });
-        case "both":
-          return onPatternChange({
-            time: pattern.time ?? fallbackState.time,
-            date: pattern.date ?? fallbackState.date,
-          });
-      }
-    },
-    [onPatternChange, pattern, fallbackState]
-  );
+  const { onDropdownChange, onSwitchChange, onToggleChange } =
+    useDateTimeFormattingSettings({ pattern, onPatternChange });
 
   return (
     <>
@@ -103,6 +62,11 @@ export const DateTimeFormattingSettings: React.FC<
             />
           </FormField>
         ))}
+
+      <FormField labelPlacement="left">
+        <FormFieldLabel>{"Show time-zone"}</FormFieldLabel>
+        <Switch checked={!!pattern.showTimeZone} onChange={onSwitchChange} />
+      </FormField>
     </>
   );
 };
@@ -115,4 +79,72 @@ type ToggleValue = (typeof toggleValues)[number];
 
 function getToggleValue(pattern: DateTimePattern): ToggleValue {
   return !pattern.time ? "date" : !pattern.date ? "time" : "both";
+}
+
+type RequiredDateTimePattern = Required<Pick<DateTimePattern, "date" | "time">>;
+
+function useDateTimeFormattingSettings(props: {
+  pattern: DateTimePattern;
+  onPatternChange: (p: DateTimePattern) => void;
+}) {
+  const { pattern, onPatternChange } = props;
+  const [fallbackState, setFallbackState] = useState<RequiredDateTimePattern>({
+    time: pattern.time ?? defaultPatternsByType.time,
+    date: pattern.date ?? defaultPatternsByType.date,
+  });
+
+  const onDropdownChange = useCallback<
+    <T extends keyof RequiredDateTimePattern>(
+      key: T
+    ) => SingleSelectionHandler<RequiredDateTimePattern[T]>
+  >(
+    (key) => (_, p) => {
+      const updatedPattern = { ...(pattern ?? {}), [key]: p };
+      setFallbackState((s) => ({
+        time: updatedPattern.time ?? s.time,
+        date: updatedPattern.date ?? s.date,
+      }));
+      onPatternChange(updatedPattern);
+    },
+    [onPatternChange, pattern]
+  );
+
+  const onToggleChange = useCallback(
+    (evnt: SyntheticEvent<HTMLButtonElement, Event>) => {
+      const value = evnt.currentTarget.value as ToggleValue;
+      switch (value) {
+        case "time":
+          return onPatternChange({
+            ...pattern,
+            time: pattern.time ?? fallbackState.time,
+            date: undefined,
+          });
+        case "date":
+          return onPatternChange({
+            ...pattern,
+            time: undefined,
+            date: pattern.date ?? fallbackState.date,
+          });
+        case "both":
+          return onPatternChange({
+            ...pattern,
+            time: pattern.time ?? fallbackState.time,
+            date: pattern.date ?? fallbackState.date,
+          });
+      }
+    },
+    [onPatternChange, pattern, fallbackState]
+  );
+
+  const onSwitchChange = useCallback<
+    React.ChangeEventHandler<HTMLInputElement>
+  >(
+    (e) => {
+      const { checked: showTimeZone } = e.target;
+      onPatternChange({ ...pattern, showTimeZone });
+    },
+    [onPatternChange, pattern]
+  );
+
+  return { onDropdownChange, onSwitchChange, onToggleChange };
 }

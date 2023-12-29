@@ -32,7 +32,7 @@ export class LocalPersistenceManager implements PersistenceManager {
           const newMetadata: LayoutMetadata = {
             ...metadata,
             id,
-            created: formatDate({ date: "dd.mm.yyyy" })(new Date()),
+            created: formatDate({ date: "ddmmyyyy" })(new Date()),
           };
 
           this.saveLayoutsWithMetadata(

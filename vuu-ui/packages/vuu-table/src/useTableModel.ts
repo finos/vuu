@@ -289,8 +289,11 @@ const columnDescriptorToRuntimeColumDescriptor =
     column: ColumnDescriptor & { key?: number },
     index: number
   ): RuntimeColumnDescriptor => {
-    const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
-      tableAttributes;
+    const {
+      columnDefaultWidth = DEFAULT_COLUMN_WIDTH,
+      columnFormatHeader,
+      dateTime: dateTimeTableAttributes,
+    } = tableAttributes;
     const serverDataType = getDataType(column, tableSchema);
     const {
       align = getDefaultAlignment(serverDataType),
@@ -315,7 +318,11 @@ const columnDescriptorToRuntimeColumDescriptor =
       name,
       originalIdx: index,
       serverDataType,
-      valueFormatter: getValueFormatter(column, serverDataType),
+      valueFormatter: getValueFormatter(
+        column,
+        serverDataType,
+        dateTimeTableAttributes
+      ),
       width: width,
     };
 

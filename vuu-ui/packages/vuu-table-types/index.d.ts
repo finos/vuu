@@ -52,6 +52,11 @@ export interface TableCellRendererProps
   onCommit?: DataItemCommitHandler;
 }
 
+export declare type DateTimeTableAttributes = {
+  timeZone?: string;
+  locale?: string;
+};
+
 export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
@@ -59,6 +64,7 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
+  dateTime?: DateTimeTableAttributes;
 }
 
 /**

@@ -78,7 +78,7 @@ export const ColumnFormattingPanelDateTime = () => {
     type: {
       name: "date/time",
       formatting: {
-        pattern: { date: "MMMM dd, yyyy", time: "hh:mm:ss" },
+        pattern: { date: "ddMMMMyyyy", time: "hh:mm:ss" },
       },
     },
   });
