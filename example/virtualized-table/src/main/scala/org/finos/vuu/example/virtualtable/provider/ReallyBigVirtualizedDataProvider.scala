@@ -3,7 +3,7 @@ package org.finos.vuu.example.virtualtable.provider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
-import org.finos.vuu.plugin.virtualized.table.VirtualizedSessionTable
+import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
 
@@ -28,6 +28,9 @@ class ReallyBigVirtualizedDataProvider(val table: DataTable)(implicit clock: Clo
     val endIndex = range.to
 
     val bigOrders = cache.loadOrdersInRange(startIndex, endIndex)
+
+    internalTable.setRange(VirtualizedRange(startIndex, endIndex))
+    internalTable.setSize(100_000_000)
 
     bigOrders.foreach({case(index, order) => {
       val rowWithData = RowWithData(order.orderId.toString,
