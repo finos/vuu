@@ -18,6 +18,7 @@ object IgniteLocalConfig {
 
     cfg.setClientMode(clientMode)
     cfg.setPeerClassLoadingEnabled(true)
+    cfg.setWorkDirectory("./target/ignite")
 
     cfg.setCacheConfiguration(
       createParentOrderCacheConfig(),
