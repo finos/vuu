@@ -37,4 +37,6 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId, sessionTableDef:
     case Some(r) => r.size
     case None => 0
   }
+
+  override def primaryKeys: TablePrimaryKeys = super.primaryKeys
 }
