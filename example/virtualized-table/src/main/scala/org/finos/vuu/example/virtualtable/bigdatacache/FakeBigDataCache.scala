@@ -17,9 +17,10 @@ class FakeBigDataCache {
       random.setSeed(i)
       val quantity = random.nextInt()
       val price = random.nextLong()
-      val side = random.nextBoolean() match {
-        case true => "Buy"
-        case false => "Sell"
+      val side = if (random.nextBoolean()) {
+        "Buy"
+      } else {
+        "Sell"
       }
       val trader = "trader1"
       (i, BigDataOrder(i, quantity, price, side, trader))
