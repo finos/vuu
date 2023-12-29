@@ -1,7 +1,7 @@
 package org.finos.vuu.core.module.basket.TestHelper
 
+import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 import org.finos.vuu.core.table.RowWithData
-import org.finos.vuu.core.module.basket.BasketModule.{Sides, BasketColumnNames => B, BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT,  BasketTradingConstituentColumnNames => BTC}
 
 object TestDataFactory {
   def uuid = java.util.UUID.randomUUID.toString
