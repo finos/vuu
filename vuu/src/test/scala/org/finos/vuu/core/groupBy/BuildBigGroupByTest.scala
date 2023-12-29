@@ -49,7 +49,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.info("[PERF] Starting perf test, building flat table....")
 
-    val table = new SimpleDataTable(pricesDef, joinProvider)
+    val table = new InMemDataTable(pricesDef, joinProvider)
 
     (1 to 5_000_000).foreach(i => {
 

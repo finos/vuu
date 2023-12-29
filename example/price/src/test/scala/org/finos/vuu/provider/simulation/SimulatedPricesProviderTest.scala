@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{Columns, SimpleDataTable, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, InMemDataTable, ViewPortColumnCreator}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -41,7 +41,7 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
   implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer
   val joinProvider = new TestFriendlyJoinTableProvider
   val pricesDef = getDef
-  val table = new SimpleDataTable(pricesDef, joinProvider)
+  val table = new InMemDataTable(pricesDef, joinProvider)
   val provider = new SimulatedPricesProvider(table)
 
   Feature("check simulated provider") {

@@ -8,4 +8,5 @@ trait TableData {
   def delete(key: String): TableData
   def deleteAll(): TableData
   def primaryKeyValues: TablePrimaryKeys
+  def setKeyAt(index: Int, key: String): Unit
 }

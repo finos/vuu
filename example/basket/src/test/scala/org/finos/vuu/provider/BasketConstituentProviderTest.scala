@@ -7,7 +7,7 @@
 //import org.finos.vuu.core.module.FieldDefString
 //import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC}
 //import org.finos.vuu.core.module.basket.provider.BasketConstituentProvider
-//import org.finos.vuu.core.table.{Column, Columns, SimpleDataTable, ViewPortColumnCreator}
+//import org.finos.vuu.core.table.{Column, Columns, InMemDataTable, ViewPortColumnCreator}
 //import org.scalatest.BeforeAndAfter
 //import org.scalatest.featurespec.AnyFeatureSpec
 //import org.scalatest.matchers.should.Matchers
@@ -32,7 +32,7 @@
 //    VisualLinks(),
 //    joinFields = BC.RicBasketId
 //  )
-//  val table = new SimpleDataTable(tableDef, joinProvider)
+//  val table = new InMemDataTable(tableDef, joinProvider)
 //  val provider = new BasketConstituentProvider(table)
 //  val columns: Array[Column] = provider.table.getTableDef.columns
 //  val headers: Array[String] = columns.map(_.name)

@@ -39,7 +39,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
-      val table = new SimpleDataTable(pricesDef, joinProvider)
+      val table = new InMemDataTable(pricesDef, joinProvider)
 
       val provider = new MockProvider(table)
 

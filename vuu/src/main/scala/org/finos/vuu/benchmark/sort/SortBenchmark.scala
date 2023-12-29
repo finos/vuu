@@ -3,7 +3,7 @@ package org.finos.vuu.benchmark.sort
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.sort.GenericSort2
-import org.finos.vuu.core.table.{SimpleDataTable, TablePrimaryKeys, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{InMemDataTable, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.net.{SortDef, SortSpec}
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.runner.Runner
@@ -17,14 +17,14 @@ class SortBenchmark {
 
   import org.finos.vuu.benchmark.BenchmarkHelper._
 
-  var table: SimpleDataTable = null
+  var table: InMemDataTable = null
 
   @Setup(Level.Invocation)
   def setup(size: Int): Unit = {
     table = createBigTable(size)
   }
 
-  def doSort(table: SimpleDataTable, sort: GenericSort2): TablePrimaryKeys = {
+  def doSort(table: InMemDataTable, sort: GenericSort2): TablePrimaryKeys = {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().filter(_.name.equals("exchange")).map(_.name).toList)
     sort.doSort(table, table.primaryKeys, viewPortColumns)
   }

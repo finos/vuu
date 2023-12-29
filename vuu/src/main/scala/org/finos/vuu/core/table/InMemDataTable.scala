@@ -20,6 +20,8 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
 
+  protected def createDataTableData(): TableData
+
   def updateCounter: Long
 
   def incrementUpdateCounter(): Unit
@@ -161,9 +163,13 @@ object EmptyRowData extends RowData {
 }
 
 
-case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys) extends TableData {
+case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys) extends TableData {
 
   def primaryKeyValues: TablePrimaryKeys = this.primaryKeyValuesInternal
+
+  override def setKeyAt(index: Int, key: String): Unit = {
+    primaryKeyValues.set(index, key)
+  }
 
   def dataByKey(key: String): RowData = data.get(key)
 
@@ -180,10 +186,10 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], private
         case row: RowWithData =>
           val mergedData = merge(update, row)
           data.put(key, mergedData)
-          SimpleDataTableData(data, primaryKeyValues)
+          InMemDataTableData(data, primaryKeyValues)
         case EmptyRowData =>
           data.put(key, update)
-          SimpleDataTableData(data, primaryKeyValues + key)
+          InMemDataTableData(data, primaryKeyValues + key)
       }
 
     }
@@ -197,21 +203,21 @@ case class SimpleDataTableData(data: ConcurrentHashMap[String, RowData], private
 
       data.remove(key)
 
-      SimpleDataTableData(data, primaryKeyValues.-(key))
+      InMemDataTableData(data, primaryKeyValues.-(key))
     }
   }
 
-  def deleteAll(): SimpleDataTableData = {
+  def deleteAll(): InMemDataTableData = {
     data.synchronized {
       data.clear()
-      SimpleDataTableData(data, InMemTablePrimaryKeys(ImmutableArray.empty))
+      InMemDataTableData(data, InMemTablePrimaryKeys(ImmutableArray.empty))
     }
   }
 
 }
 
 
-class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] {
+class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] {
 
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
@@ -234,8 +240,11 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   def plusName(s: String): String = tableDef.name + "." + s
 
+  override protected def createDataTableData(): TableData = {
+    InMemDataTableData(new ConcurrentHashMap[String, RowData](), InMemTablePrimaryKeys(ImmutableArray.empty))
+  }
 
-  override def toString: String = s"SimpleDataTable($name, rows=${this.primaryKeys.length})"
+  override def toString: String = s"InMemDataTable($name, rows=${this.primaryKeys.length})"
 
   private val eventIntoJoiner = metrics.counter(plusName("JoinTableProviderImpl.eventIntoJoiner.count"))
 
@@ -257,7 +266,7 @@ class SimpleDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvide
 
   override def primaryKeys: TablePrimaryKeys = data.primaryKeyValues
 
-  @volatile protected var data: TableData = SimpleDataTableData(new ConcurrentHashMap[String, RowData](), InMemTablePrimaryKeys(ImmutableArray.empty))
+  @volatile protected var data: TableData = createDataTableData()
 
   @volatile private var updateCounterInternal: Long = 0
   override def updateCounter: Long = updateCounterInternal

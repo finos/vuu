@@ -6,7 +6,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import io.vertx.core.impl.ConcurrentHashSet
 import org.finos.toolbox.jmx.MetricsProvider
 
-class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider) extends SimpleDataTable(tableDef, joinProvider) with StrictLogging {
+class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider) extends InMemDataTable(tableDef, joinProvider) with StrictLogging {
 
   private val onTrySubscribe = metrics.counter(plusName("trySubscribe.count"))
   private val totalSubscribe = metrics.counter(plusName("total.count"))

@@ -17,4 +17,5 @@ case class InMemTablePrimaryKeys(keys: ImmutableArray[String]) extends TablePrim
   override def remove(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(keys - key)
   override def -(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(keys - key)
   override def get(index: Int): String = keys.getIndex(index)
+  override def set(index: Int, key: String): TablePrimaryKeys = InMemTablePrimaryKeys(keys.set(index, key))
 }
