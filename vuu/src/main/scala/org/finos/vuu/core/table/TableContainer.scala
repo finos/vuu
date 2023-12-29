@@ -106,7 +106,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
   }
 
   def createTable(tableDef: TableDef): DataTable = {
-    val table = new SimpleDataTable(tableDef, joinTableProvider)
+    val table = new InMemDataTable(tableDef, joinTableProvider)
     tables.put(table.getTableDef.name, table)
     table
   }
@@ -119,8 +119,8 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
     table
   }
 
-  def createSimpleSessionTable(source: RowSource, session: ClientSessionId): SimpleSessionDataTable = {
-    val table = new SimpleSessionDataTable(session, source.asTable.getTableDef.asInstanceOf[SessionTableDef], joinTableProvider)
+  def createSimpleSessionTable(source: RowSource, session: ClientSessionId): InMemSessionDataTable = {
+    val table = new InMemSessionDataTable(session, source.asTable.getTableDef.asInstanceOf[SessionTableDef], joinTableProvider)
     val existing = tables.put(table.name, table)
     assert(existing == null, "we should never replace an existing table with session id")
     table

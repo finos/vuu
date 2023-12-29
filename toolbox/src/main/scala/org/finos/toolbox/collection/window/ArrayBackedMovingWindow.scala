@@ -71,9 +71,11 @@ class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: C
 
   override def getRange(): WindowRange = range.copy()
 
-  override def empty(): Unit = {
-    lock.synchronized {
-        internalData = new Array[DATA](bufferSize)
-      }
-    }
+  override def iterator: Iterator[DATA] = this.internalData.iterator
+
+  //  override def empty(): Unit = {
+//    lock.synchronized {
+//        internalData = new Array[DATA](bufferSize)
+//      }
+//    }
 }

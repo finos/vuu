@@ -5,12 +5,12 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, RowWithData, InMemDataTable, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
 object FilterAndSortFixture {
 
-  def getFilteredRows(table: SimpleDataTable, clause: FilterClause): Iterable[RowWithData] = {
+  def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val filter = AntlrBasedFilter(clause)
     val resultKeys = filter.dofilter(table, table.primaryKeys, vpColumns)
@@ -56,7 +56,7 @@ object FilterAndSortFixture {
        |""".stripMargin
   }
 
-  def doSort(table: SimpleDataTable, sort: Sort): List[(String, RowWithData)] = {
+  def doSort(table: InMemDataTable, sort: Sort): List[(String, RowWithData)] = {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
@@ -64,7 +64,7 @@ object FilterAndSortFixture {
     asTable
   }
 
-  def setupTable(): SimpleDataTable = {
+  def setupTable(): InMemDataTable = {
     setupTable(List.empty,
       row("tradeTime" -> 5L, "quantity" -> 500.0d, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 2L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
@@ -76,7 +76,7 @@ object FilterAndSortFixture {
     )
   }
 
-  def setupTable2(): SimpleDataTable = {
+  def setupTable2(): InMemDataTable = {
     setupTable(indices = List("orderId", "ric", "tradeTime", "onMkt"), rows =
       row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 2L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
@@ -92,7 +92,7 @@ object FilterAndSortFixture {
     )
   }
 
-  def setupTable(indices: List[String], rows: RowWithData*): SimpleDataTable = {
+  def setupTable(indices: List[String], rows: RowWithData*): InMemDataTable = {
     val columns = Columns.fromNames(
       "orderId:String",
       "trader:String",
@@ -109,7 +109,7 @@ object FilterAndSortFixture {
       indices = Indices(indices.map(Index):_*),
       joinFields = "ric", "orderId", "ccyCross"
     )
-    val table: SimpleDataTable = new SimpleDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl)
+    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl)
     rows.foreach(row => table.processUpdate(row.key, row, 0L))
     table
   }
