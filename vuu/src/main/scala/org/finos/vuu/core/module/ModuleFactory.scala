@@ -64,6 +64,10 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
     ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
+  def addSessionTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
+    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+  }
+
   def addSessionTable(tableDef: TableDef): ModuleFactoryNode = {
     ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
