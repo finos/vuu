@@ -14,7 +14,7 @@ import static scala.jdk.javaapi.CollectionConverters.asScala;
 
 public class MyExampleModule extends DefaultModule {
 
-    private final String NAME = "MY_MOD";
+    public static final String NAME = "MY_MOD";
 
     public ViewServerModule create(final TableDefContainer tableDefContainer){
         return ModuleFactory.withNamespace(NAME, tableDefContainer)
