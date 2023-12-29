@@ -7,11 +7,10 @@
         <groupId>org.finos.vuu</groupId>
         <artifactId>plugin</artifactId>
         <version>0.9.36-SNAPSHOT</version>
-        <!--relativePath>../pom.xml</relativePath-->
     </parent>
 
     <groupId>org.finos.vuu.plugin</groupId>
-    <artifactId>ignite-plugin</artifactId>
+    <artifactId>virtualized-table-plugin</artifactId>
 
     <dependencies>
         <dependency>
