@@ -24,6 +24,12 @@
             <version>0.9.36-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
         <!--dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>inmem-feature</artifactId>

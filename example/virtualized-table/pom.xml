@@ -5,18 +5,22 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.vuu</groupId>
-        <artifactId>plugin</artifactId>
+        <artifactId>example</artifactId>
         <version>0.9.36-SNAPSHOT</version>
-        <!--relativePath>../pom.xml</relativePath-->
     </parent>
 
-    <groupId>org.finos.vuu.plugin</groupId>
-    <artifactId>ignite-plugin</artifactId>
+    <artifactId>virtualized-table</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
+            <version>0.9.36-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu.plugin</groupId>
+            <artifactId>virtualized-table-plugin</artifactId>
             <version>0.9.36-SNAPSHOT</version>
         </dependency>
 
@@ -27,18 +31,6 @@
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>price</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>order</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -59,8 +51,6 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
-
-
 
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -215,6 +205,40 @@
                     </jvmArgs>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/antlr4</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
