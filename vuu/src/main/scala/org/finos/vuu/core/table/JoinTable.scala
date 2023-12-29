@@ -314,6 +314,8 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
 class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTable], joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
+  override protected def createDataTableData(): TableData = ???
+
   override def name: String = tableDef.name
 
   override def linkableName: String = name

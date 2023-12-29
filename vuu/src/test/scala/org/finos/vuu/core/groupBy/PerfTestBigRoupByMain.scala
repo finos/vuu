@@ -29,7 +29,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
 
-  val table = new SimpleDataTable(pricesDef, joinProvider)
+  val table = new InMemDataTable(pricesDef, joinProvider)
 
   (1 to 1_000_000).foreach( i => {
 

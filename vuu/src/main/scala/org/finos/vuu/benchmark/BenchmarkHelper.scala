@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.{Columns, RowWithData, SimpleDataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, RowWithData, InMemDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.tree.TreeSessionTable
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
@@ -17,7 +17,7 @@ object BenchmarkHelper {
   implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
   val joinProvider = JoinTableProviderImpl() // new EsperJoinTableProviderImpl()
-  def createBigTable(rows: Int): SimpleDataTable = {
+  def createBigTable(rows: Int): InMemDataTable = {
     val tableContainer = new TableContainer(joinProvider)
 
     //      val outQueue          = new OutboundRowPublishQueue()
@@ -33,7 +33,7 @@ object BenchmarkHelper {
       "ric"
     )
 
-    val table = new SimpleDataTable(pricesDef, joinProvider)
+    val table = new InMemDataTable(pricesDef, joinProvider)
 
     (1 to rows).foreach(i => {
 
@@ -48,7 +48,7 @@ object BenchmarkHelper {
     table
   }
 
-  def createTreeBuilder(table: SimpleDataTable): TreeBuilder = {
+  def createTreeBuilder(table: InMemDataTable): TreeBuilder = {
     val client = ClientSessionId("A", "B")
 
     val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)

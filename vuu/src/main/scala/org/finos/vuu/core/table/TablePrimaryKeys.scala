@@ -13,6 +13,7 @@ object EmptyTablePrimaryKeys extends TablePrimaryKeys{
   override def iterator: Iterator[String] = Array().iterator
 
   override def get(index: Int): String = null
+  override def set(index: Int, key: String): TablePrimaryKeys = this
 }
 
 trait TablePrimaryKeys extends Iterable[String] {
@@ -23,7 +24,7 @@ trait TablePrimaryKeys extends Iterable[String] {
   def -(key: String): TablePrimaryKeys
   def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys
   def get(index: Int): String
-
+  def set(index: Int, key: String): TablePrimaryKeys
 }
 
 

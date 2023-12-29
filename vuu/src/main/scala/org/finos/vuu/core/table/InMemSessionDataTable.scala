@@ -6,7 +6,7 @@ import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 
-class SimpleSessionDataTable(val clientSessionId: ClientSessionId, sessionTableDef: SessionTableDef, joinTableProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock) extends SimpleDataTable(sessionTableDef, joinTableProvider)(metrics) with SessionTable {
+class InMemSessionDataTable(val clientSessionId: ClientSessionId, sessionTableDef: SessionTableDef, joinTableProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock) extends InMemDataTable(sessionTableDef, joinTableProvider)(metrics) with SessionTable {
 
   final val createInstant = clock.now()
   override def name: String = s"session:$clientSessionId/simple-" + sessionTableDef.name + "_" + createInstant.toString
@@ -18,6 +18,6 @@ class SimpleSessionDataTable(val clientSessionId: ClientSessionId, sessionTableD
     data.deleteAll()
   }
 
-  override def toString: String = s"SimpleSessionDataTable($name, rows=${this.primaryKeys.length})"
+  override def toString: String = s"InMemSessionDataTable($name, rows=${this.primaryKeys.length})"
 }
 

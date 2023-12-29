@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Benchmark)
 class TreeBenchmark {
 
-  var table: SimpleDataTable = null
+  var table: InMemDataTable = null
   var treeBuilder: TreeBuilder = null
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
@@ -31,7 +31,7 @@ class TreeBenchmark {
     treeBuilder = createTreeBuilder(table)
   }
 
-  def doTree(table: SimpleDataTable, treeBuilder: TreeBuilder): Tree = {
+  def doTree(table: InMemDataTable, treeBuilder: TreeBuilder): Tree = {
     treeBuilder.buildEntireTree()
   }
 

@@ -42,7 +42,7 @@ object TreeSessionTable {
 
 class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, joinProvider: JoinTableProvider)
                           (implicit metrics: MetricsProvider, clock: Clock)
-  extends SimpleDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
+  extends InMemDataTable(new GroupByTableDef("", source.asTable.getTableDef), joinProvider)
     with SessionTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   final val createInstant = clock.now()

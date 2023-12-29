@@ -44,7 +44,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val typeNames = orderEntryDef.columns.map( c => c.dataType.getTypeName )
 
-      val orderEntry = new SimpleDataTable(orderEntryDef, joinProvider)
+      val orderEntry = new InMemDataTable(orderEntryDef, joinProvider)
 
       val provider = new RpcProvider(orderEntry)
 
