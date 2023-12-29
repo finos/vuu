@@ -5,7 +5,7 @@ import org.finos.vuu.core.table.{RowData, RowWithData, TableData, TablePrimaryKe
 
 class VirtualizedSessionTableData extends TableData {
 
-  private val primaryKeys: VirtualizedTableKeys = new VirtualizedTableKeys(10_000)
+  private val primaryKeys: VirtualizedTableKeys = VirtualizedTableKeys(VirtualizedRange(0, 0, 0), Array())
 
   override def dataByKey(key: String): RowData = ???
 
