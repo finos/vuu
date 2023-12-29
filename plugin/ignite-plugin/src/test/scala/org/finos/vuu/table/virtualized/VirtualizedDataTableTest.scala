@@ -97,7 +97,7 @@ class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWh
 
       val primaryKeys3 = virtualizedTable.primaryKeys.toArray
 
-      Then("we verify we don't have the data in the cache")
+      Then("we verify we do have the update keys in our cache")
       primaryKeys3 should equal(
         Array("0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015")
       )
