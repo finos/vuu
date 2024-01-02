@@ -72,11 +72,24 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   private val viewPortRunner = if(config.threading.viewportThreads == 1){
     new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
   }else {
-      new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () =>  {
-      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => ViewPortWorkItem(vp, viewPortContainer)) })
+      new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () => {
+        viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => {
+          pluginRegistry.withPlugin(vp.table.asTable.getTableDef.pluginType) {
+            plugin => plugin.viewPortCallableFactory.createWorkItem(vp, viewPortContainer)
+          }
+        })
+      })
     {
-      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortCallable(r, viewPortContainer)
-      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortWorkItem(r.get(), viewPortContainer)
+      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = {
+        pluginRegistry.withPlugin(r.get().table.asTable.getTableDef.pluginType) {
+          plugin => plugin.viewPortCallableFactory.createCallable(r, viewPortContainer)
+        }
+      }
+      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = {
+        pluginRegistry.withPlugin(r.get().table.asTable.getTableDef.pluginType) {
+          plugin => plugin.viewPortCallableFactory.createWorkItem(r.get(), viewPortContainer)
+        }
+      }
     }
   }
 
@@ -86,11 +99,11 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     new LifeCycleRunner("groupByRunner", () => viewPortContainer.runGroupByOnce())
   } else {
     new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner-Tree[${config.threading.treeThreads}]", config.threading.treeThreads, () => {
-      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => ViewPortTreeWorkItem(vp, viewPortContainer))
+      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && vp.hasGroupBy).map(vp => InMemViewPortTreeWorkItem(vp, viewPortContainer))
     }) {
-      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = ViewPortTreeCallable(r, viewPortContainer)
+      override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = InMemViewPortTreeCallable(r, viewPortContainer)
 
-      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = ViewPortTreeWorkItem(r.get(), viewPortContainer)
+      override def newWorkItem(r: FutureTask[ViewPort]): WorkItem[ViewPort] = InMemViewPortTreeWorkItem(r.get(), viewPortContainer)
     }
   }
 

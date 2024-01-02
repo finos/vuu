@@ -1,7 +1,7 @@
 package org.finos.vuu.feature.ignite
 
 import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.vuu.feature.{FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortFactory, ViewPortKeysCreator}
+import org.finos.vuu.feature.{FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTreeCallableFactory}
 import org.finos.vuu.plugin.{DefaultPlugin, PluginType}
 
 object VuuIgnitePluginType extends PluginType
@@ -25,4 +25,8 @@ object VuuIgnitePlugin extends DefaultPlugin {
   override def filterFactory: FilterFactory = ???
 
   override def sortFactory: SortFactory = ???
+
+  override def viewPortCallableFactory: ViewPortCallableFactory = ???
+
+  override def viewPortTreeCallableFactory: ViewPortTreeCallableFactory = ???
 }
