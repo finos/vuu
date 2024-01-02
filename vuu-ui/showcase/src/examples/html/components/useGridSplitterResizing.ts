@@ -1,13 +1,27 @@
-import { MouseEventHandler, useCallback, useRef } from "react";
 import {
+  GridLayoutModel,
+  GridLayoutModelItem,
+  ISplitter,
+  SplitterAlign,
+} from "@finos/vuu-layout";
+import {
+  MouseEventHandler,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  classNameLayoutItem,
   getColumn,
   getColumns,
   getGridItemsAdjoiningTrack,
+  getGridLayoutItem,
   getRow,
   getRows,
   isHorizontalSplitter,
   isSplitter,
-  isVerticalSplitter,
   ResizeDirection,
   ResizeOrientation,
   setGridColumn,
@@ -21,7 +35,7 @@ import { GridLayoutProps } from "./GridLayout";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
-  "rowCount" | "rows"
+  "id" | "rowCount" | "rows"
 >;
 
 type ResizeState = {
@@ -79,10 +93,13 @@ const setRowExpanded = ({ id, row }: RowItem) => setGridRow(id, row.expanded);
 const setRowShrunk = ({ id, row }: RowItem) => setGridRow(id, row.shrunk);
 
 export const useGridSplitterResizing = ({
+  id,
   rowCount,
-  // rows = ["80px"].concat(Array(rowCount).fill("1fr")),
   rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
+  const [splitters, setSplitters] = useState<ISplitter[]>([]);
+  const layoutModel = useMemo(() => new GridLayoutModel(id, 2, 2), [id]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const resizingState = useRef<ResizeState>(initialState);
 
@@ -92,7 +109,8 @@ export const useGridSplitterResizing = ({
     (
       grid: HTMLElement | undefined,
       resizeElement: HTMLElement | undefined,
-      resizeOrientation: ResizeOrientation
+      resizeOrientation: ResizeOrientation,
+      splitterAlign: SplitterAlign = "start"
     ) => {
       if (grid === undefined || resizeElement === undefined) {
         throw Error(`measureAndStoreGridItemDetails missing required param`);
@@ -104,7 +122,12 @@ export const useGridSplitterResizing = ({
         contraItemsOtherTrack,
         siblingItemsOtherTrack,
         nonAdjacentItems,
-      ] = getGridItemsAdjoiningTrack(grid, resizeElement, resizeOrientation);
+      ] = getGridItemsAdjoiningTrack(
+        grid,
+        resizeElement,
+        resizeOrientation,
+        splitterAlign
+      );
 
       if (Array.isArray(contraItemsMaybe) && contraItemsMaybe.length > 0) {
         // if  contraItemsMaybe together fill the track, they go into contraItems
@@ -123,7 +146,6 @@ export const useGridSplitterResizing = ({
       state.resizeOrientation = resizeOrientation;
       state.siblingItemsOtherTrack = siblingItemsOtherTrack;
       state.simpleResize = simpleResize;
-      // state.splitterElement = splitterElement;
 
       console.log({
         simpleResize,
@@ -267,7 +289,13 @@ export const useGridSplitterResizing = ({
       }
     }
 
-    resizeItems.forEach(setExpanded);
+    resizeItems.forEach((item: GridItem) => {
+      if (item.id.endsWith("splitter")) {
+        // nothing
+      } else {
+        setExpanded(item);
+      }
+    });
     contraItems.forEach(setExpanded);
     contraItemsOtherTrack?.forEach(setExpanded);
     siblingItemsOtherTrack?.forEach(setExpanded);
@@ -601,7 +629,6 @@ export const useGridSplitterResizing = ({
       if (resizeDirection === null && newDirection === null) {
         return;
       } else if (resizeDirection === null && newDirection === "expand") {
-        console.log(`initiate ${resizeOrientation} expand `);
         console.log(`initiateExpand ${resizeOrientation}`);
         return initiateExpand(moveBy);
       } else if (resizeDirection === null && newDirection === "shrink") {
@@ -644,6 +671,7 @@ export const useGridSplitterResizing = ({
 
       const resizeOrientation: ResizeOrientation | undefined =
         isHorizontalSplitter(splitterElement) ? "horizontal" : "vertical";
+      const splitterAlign = splitterElement.dataset.align as SplitterAlign;
 
       const resizeId = splitterElement.getAttribute("aria-controls");
       const resizeElement = resizeId ? document.getElementById(resizeId) : null;
@@ -655,42 +683,44 @@ export const useGridSplitterResizing = ({
 
       const mousePos = resizeOrientation === "vertical" ? e.clientY : e.clientX;
 
-      measureAndStoreGridItemDetails(grid, resizeElement, resizeOrientation);
+      measureAndStoreGridItemDetails(
+        grid,
+        resizeElement,
+        resizeOrientation,
+        splitterAlign
+      );
 
       const cols = getColumns(grid);
       const rows = getRows(grid);
 
-      // We have mouse down on a splitter (rendered outside the owner component)
-      // Can we make this more definitive ?
-      if (resizeOrientation === "vertical") {
-        const row = getRow(resizeElement);
-        const [from] = row;
-        const resizeItem = new ResizeItem(row);
+      const resizeItem = ResizeItem.fromElement(
+        resizeElement,
+        resizeOrientation
+      );
+      const splitterItem = ResizeItem.fromElement(
+        splitterElement,
+        resizeOrientation
+      );
+      resizingState.current = {
+        ...resizingState.current,
+        cols,
+        indexOfResizedItem: resizeItem.index,
+        mousePos,
+        resizeDirection: null,
+        rows,
+      };
 
-        resizingState.current = {
-          ...resizingState.current,
-          cols,
-          indexOfResizedItem: from - 1,
-          mousePos,
-          resizeDirection: null,
-          resizeItems: [{ id: resizeElement.id, row: resizeItem }],
-          rows,
-        };
+      if (resizeOrientation === "vertical") {
+        resizingState.current.resizeItems = [
+          { id: splitterElement.id, row: splitterItem },
+          { id: resizeElement.id, row: resizeItem },
+        ];
         resizeElement.classList.add("resizing-v");
       } else if (resizeOrientation === "horizontal") {
-        const col = getColumn(resizeElement);
-        const [from] = col;
-        const resizeItem = new ResizeItem(col);
-
-        resizingState.current = {
-          ...resizingState.current,
-          cols,
-          indexOfResizedItem: from - 1,
-          mousePos,
-          resizeDirection: null,
-          resizeItems: [{ id: resizeElement.id, col: resizeItem }],
-          rows,
-        };
+        resizingState.current.resizeItems = [
+          { id: splitterElement.id, col: splitterItem },
+          { id: resizeElement.id, col: resizeItem },
+        ];
         resizeElement.classList.add("resizing-h");
       }
       if (grid) {
@@ -711,23 +741,27 @@ export const useGridSplitterResizing = ({
 
   const selectedRef = useRef<string>();
   const clickHandler = useCallback<MouseEventHandler>((e) => {
-    const targetElement = e.target as HTMLElement;
-    if (isSplitter(targetElement)) {
-      // ignore
-    } else {
-      const { left, top } = targetElement.getBoundingClientRect();
+    const gridLayoutItem = getGridLayoutItem(e.target as HTMLElement);
+    if (gridLayoutItem) {
+      if (isSplitter(gridLayoutItem)) {
+        // ignore
+      } else {
+        const { left, top } = gridLayoutItem.getBoundingClientRect();
 
-      if (e.clientY < top || e.clientX < left) {
-        return;
+        if (e.clientY < top || e.clientX < left) {
+          return;
+        }
+
+        if (selectedRef.current) {
+          const el = document.getElementById(
+            selectedRef.current
+          ) as HTMLElement;
+          el.classList.remove(`${classNameLayoutItem}-active`);
+        }
+
+        selectedRef.current = gridLayoutItem.id;
+        gridLayoutItem.classList.add(`${classNameLayoutItem}-active`);
       }
-
-      if (selectedRef.current) {
-        const el = document.getElementById(selectedRef.current) as HTMLElement;
-        el.classList.remove("component-active");
-      }
-
-      selectedRef.current = targetElement.id;
-      targetElement.classList.add("component-active");
     }
   }, []);
 
@@ -753,6 +787,24 @@ export const useGridSplitterResizing = ({
     console.log({ splitTracks });
   }, []);
 
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.childNodes.forEach((node) => {
+        const gridLayoutItem = node as HTMLElement;
+        if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
+          const { id } = gridLayoutItem;
+          const col = getColumn(gridLayoutItem);
+          const row = getRow(gridLayoutItem);
+          layoutModel.addGridItem(
+            new GridLayoutModelItem(id, col[0], col[1], row[0], row[1])
+          );
+        }
+      });
+      const splitters = layoutModel.getSplitterPositions();
+      setSplitters(splitters);
+    }
+  }, [layoutModel]);
+
   return {
     containerRef,
     gridTemplateRows: rows.join(" "),
@@ -761,5 +813,6 @@ export const useGridSplitterResizing = ({
     onMouseUp,
     splitGridCol,
     splitGridRow,
+    splitters,
   };
 };

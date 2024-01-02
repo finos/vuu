@@ -1,3 +1,5 @@
+import { getColumn, getRow, ResizeOrientation } from "./grid-dom-utils";
+
 export type GridPos = [number, number];
 export type ColItem = {
   id: string;
@@ -21,11 +23,20 @@ export interface GridPosition {
 }
 
 export class ResizeItem implements GridPosition {
+  static fromElement = (el: HTMLElement, orientation: ResizeOrientation) => {
+    return orientation === "vertical"
+      ? new ResizeItem(getRow(el))
+      : new ResizeItem(getColumn(el));
+  };
   protected from: number;
   protected to: number;
   constructor([from, to]: GridPos) {
     this.from = from;
     this.to = to;
+  }
+
+  get index() {
+    return this.value[0] - 1;
   }
   get value(): GridPos {
     return [this.from, this.to];

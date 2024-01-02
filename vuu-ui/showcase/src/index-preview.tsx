@@ -3,7 +3,6 @@ import { AppRoutes } from "./AppRoutes";
 import * as stories from "./examples";
 
 import "@salt-ds/theme/index.css";
-import "@heswell/component-anatomy/esm/index.css";
 
 import "@fontsource/open-sans/300.css";
 import "@fontsource/open-sans/300-italic.css";

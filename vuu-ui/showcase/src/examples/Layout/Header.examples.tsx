@@ -3,8 +3,6 @@ import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, useState } from "react";
 
-import "@heswell/component-anatomy/esm/index.css";
-
 let displaySequence = 1;
 
 const toolbarStyle = {

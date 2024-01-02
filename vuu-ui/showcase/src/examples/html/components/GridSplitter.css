@@ -11,3 +11,8 @@
     height: 4px;
     transform: translate(0, -2px);
 }
+
+.vuuGridSplitter-horizontal[data-align="end"]{
+    justify-self: end;
+    transform: translate(2px, 0px);
+}
