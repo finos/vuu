@@ -51,6 +51,7 @@ export const ColumnSettingsPanel = ({
     onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRendering,
+    onChangeType,
     onEditCalculatedColumn,
     onInputCommit,
     onSave,
@@ -161,6 +162,7 @@ export const ColumnSettingsPanel = ({
         column={column}
         onChangeFormatting={onChangeFormatting}
         onChangeRendering={onChangeRendering}
+        onChangeType={onChangeType}
       />
 
       {editCalculatedColumn ? (

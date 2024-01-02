@@ -1,11 +1,15 @@
-import { DateTimeColumnTypeSimple } from "@finos/vuu-table-types";
-import { DateTimeColumnDescriptor, isTypeDescriptor } from "../column-utils";
+import { DateTimeColumnDescriptor } from "@finos/vuu-table-types";
+import { isTypeDescriptor } from "../column-utils";
 import { DateTimePattern, isDateTimePattern } from "./types";
 
-export const defaultPatternByTypes: Record<
-  DateTimeColumnTypeSimple,
-  DateTimePattern
-> = { time: "hh:mm:ss", date: "dd.mm.yyyy" };
+export const defaultPatternsByType = {
+  time: "hh:mm:ss",
+  date: "dd.mm.yyyy",
+} as const;
+
+export const fallbackDateTimePattern: DateTimePattern = {
+  date: defaultPatternsByType["date"],
+};
 
 export function dateTimePattern(
   type: DateTimeColumnDescriptor["type"]
@@ -14,9 +18,7 @@ export function dateTimePattern(
     if (type.formatting && isDateTimePattern(type.formatting.pattern)) {
       return type.formatting.pattern;
     }
-
-    return defaultPatternByTypes[type.name];
-  } else {
-    return defaultPatternByTypes[type];
   }
+
+  return fallbackDateTimePattern;
 }

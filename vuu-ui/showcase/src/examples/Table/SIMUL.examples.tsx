@@ -51,6 +51,8 @@ const getDefaultColumnConfig = (
           formatting: { decimals: 2, zeroPad: true },
         },
       };
+    case "wishlist":
+      return { editable: true };
   }
 };
 
@@ -103,7 +105,10 @@ export const Instruments = () => <SimulTable tableName="instruments" />;
 Instruments.displaySequence = displaySequence++;
 
 export const InstrumentsExtended = () => (
-  <SimulTable tableName="instrumentsExtended" />
+  <SimulTable
+    tableName="instrumentsExtended"
+    getDefaultColumnConfig={getDefaultColumnConfig}
+  />
 );
 InstrumentsExtended.displaySequence = displaySequence++;
 

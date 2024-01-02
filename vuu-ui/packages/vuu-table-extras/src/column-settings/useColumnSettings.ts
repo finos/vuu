@@ -3,6 +3,7 @@ import {
   TableConfig,
   ColumnTypeFormatting,
   ColumnSettingsProps,
+  ColumnTypeSimple,
 } from "@finos/vuu-table-types";
 
 import {
@@ -13,6 +14,7 @@ import {
   isValidPinLocation,
   setCalculatedColumnName,
   updateColumnRenderProps,
+  updateColumnFormatting,
   updateColumnType,
 } from "@finos/vuu-utils";
 import {
@@ -50,6 +52,10 @@ const stringCellRenderers: CellRendererDescriptor[] = [
   ...getRegisteredCellRenderers("string"),
 ];
 
+const booleanCellRenderers: CellRendererDescriptor[] = [
+  ...getRegisteredCellRenderers("boolean"),
+];
+
 const getAvailableCellRenderers = (
   column: ColumnDescriptor
 ): CellRendererDescriptor[] => {
@@ -62,6 +68,8 @@ const getAvailableCellRenderers = (
       return integerCellRenderers;
     case "double":
       return doubleCellRenderers;
+    case "boolean":
+      return booleanCellRenderers;
     default:
       return stringCellRenderers;
   }
@@ -180,9 +188,18 @@ export const useColumnSettings = ({
 
   const handleChangeFormatting = useCallback(
     (formatting: ColumnTypeFormatting) => {
-      const newColumn: ColumnDescriptor = updateColumnType(column, formatting);
+      const newColumn = updateColumnFormatting(column, formatting);
       setColumn(newColumn);
       onConfigChange(replaceColumn(tableConfig, newColumn));
+    },
+    [column, onConfigChange, tableConfig]
+  );
+
+  const handleChangeType = useCallback(
+    (type: ColumnTypeSimple) => {
+      const updatedColumn = updateColumnType(column, type);
+      setColumn(updatedColumn);
+      onConfigChange(replaceColumn(tableConfig, updatedColumn));
     },
     [column, onConfigChange, tableConfig]
   );
@@ -247,6 +264,7 @@ export const useColumnSettings = ({
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRendering: handleChangeRendering,
+    onChangeType: handleChangeType,
     onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
     onSave: handleSaveCalculatedColumn,

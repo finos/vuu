@@ -193,8 +193,6 @@ export const EditableTableNextArrayData = () => {
               },
             },
           };
-        case "wishlist":
-          return { editable: true };
       }
     },
     []

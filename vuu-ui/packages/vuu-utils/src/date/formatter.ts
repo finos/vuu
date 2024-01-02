@@ -1,9 +1,9 @@
+import { isNotNullOrUndefined } from "../ts-utils";
 import { DatePattern, DateTimePattern, TimePattern } from "./types";
 
 type DateTimeFormatConfig = {
   locale?: string;
   options: Intl.DateTimeFormatOptions;
-  postProcessor?: (s: string) => string;
 };
 
 // Time format config
@@ -31,9 +31,8 @@ const baseDateFormatOptions: Intl.DateTimeFormatOptions = {
 };
 const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
   "dd.mm.yyyy": {
-    locale: "en-GB",
+    locale: "de-De",
     options: { ...baseDateFormatOptions },
-    postProcessor: (s) => s.replaceAll("/", "."),
   },
   "dd/mm/yyyy": { locale: "en-GB", options: { ...baseDateFormatOptions } },
   "dd MMM yyyy": {
@@ -55,18 +54,17 @@ const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
   },
 };
 
-const formatConfigByDateTimePatterns: Record<
-  DateTimePattern,
-  DateTimeFormatConfig
-> = { ...formatConfigByDatePatterns, ...formatConfigByTimePatterns };
+function getFormatConfigs(pattern: DateTimePattern) {
+  return [
+    pattern.date ? formatConfigByDatePatterns[pattern.date] : null,
+    pattern.time ? formatConfigByTimePatterns[pattern.time] : null,
+  ];
+}
 
 export function formatDate(pattern: DateTimePattern): (d: Date) => string {
-  const { locale, options, postProcessor } =
-    formatConfigByDateTimePatterns[pattern];
-  const dateTimeFormat = Intl.DateTimeFormat(locale, options);
+  const dateTimeFormats = getFormatConfigs(pattern)
+    .filter(isNotNullOrUndefined)
+    .map((c) => Intl.DateTimeFormat(c.locale, c.options));
 
-  return (d) => {
-    const dateStr = dateTimeFormat.format(d);
-    return postProcessor ? postProcessor(dateStr) : dateStr;
-  };
+  return (d) => dateTimeFormats.map((dtf) => dtf.format(d)).join(" ");
 }

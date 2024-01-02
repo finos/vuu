@@ -2,13 +2,13 @@ import {
   ColumnDescriptor,
   ColumnTypeValueMap,
   ColumnTypeFormatting,
+  DateTimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import { roundDecimal } from "./round-decimal";
 import {
   isDateTimeColumn,
   isTypeDescriptor,
   isMappedValueTypeRenderer,
-  DateTimeColumnDescriptor,
 } from "./column-utils";
 import { formatDate } from "./date";
 import { dateTimePattern } from "./date/helpers";

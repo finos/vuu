@@ -1,3 +1,5 @@
+import { ColumnTypeFormatting } from "@finos/vuu-table-types";
+
 const supportedDatePatterns = [
   "dd.mm.yyyy",
   "dd/mm/yyyy",
@@ -10,17 +12,25 @@ const supportedDatePatterns = [
 
 const supportedTimePatterns = ["hh:mm:ss", "hh:mm:ss a"] as const;
 
+export const supportedDateTimePatterns = {
+  date: supportedDatePatterns,
+  time: supportedTimePatterns,
+};
+
 export type DatePattern = (typeof supportedDatePatterns)[number];
 export type TimePattern = (typeof supportedTimePatterns)[number];
-export type DateTimePattern = DatePattern | TimePattern;
 
-const isDatePattern = (pattern: string): pattern is DatePattern =>
+export type DateTimePattern =
+  | { date?: DatePattern; time: TimePattern }
+  | { date: DatePattern; time?: TimePattern };
+
+const isDatePattern = (pattern?: string): pattern is DatePattern =>
   supportedDatePatterns.includes(pattern as DatePattern);
 
-const isTimePattern = (pattern: string): pattern is TimePattern =>
+const isTimePattern = (pattern?: string): pattern is TimePattern =>
   supportedTimePatterns.includes(pattern as TimePattern);
 
 export const isDateTimePattern = (
-  pattern?: string
+  pattern?: ColumnTypeFormatting["pattern"]
 ): pattern is DateTimePattern =>
-  pattern !== undefined && (isDatePattern(pattern) || isTimePattern(pattern));
+  isDatePattern(pattern?.date) || isTimePattern(pattern?.time);

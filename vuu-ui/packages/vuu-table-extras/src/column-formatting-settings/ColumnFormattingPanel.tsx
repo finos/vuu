@@ -1,7 +1,6 @@
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
-  ColumnTypeFormatting,
   ColumnTypeRendering,
 } from "@finos/vuu-table-types";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
@@ -16,15 +15,17 @@ import {
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo } from "react";
-import { NumericFormattingSettings } from "./NumericFormattingSettings";
+import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
+import { LongTypeFormattingSettings } from "./LongTypeFormattingSettings";
+import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuColumnFormattingPanel";
 
 export interface ColumnFormattingPanelProps
-  extends HTMLAttributes<HTMLDivElement> {
+  extends HTMLAttributes<HTMLDivElement>,
+    FormattingSettingsProps {
   availableRenderers: CellRendererDescriptor[];
   column: ColumnDescriptor;
-  onChangeFormatting: (formatting: ColumnTypeFormatting) => void;
   onChangeRendering: (renderProps: ColumnTypeRendering) => void;
 }
 
@@ -35,24 +36,15 @@ export const ColumnFormattingPanel = ({
   className,
   column,
   onChangeFormatting,
+  onChangeType,
   onChangeRendering,
   ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
-  const contentForType = useMemo(() => {
-    switch (column.serverDataType) {
-      case "double":
-      case "int":
-      case "long":
-        return (
-          <NumericFormattingSettings
-            column={column}
-            onChange={onChangeFormatting}
-          />
-        );
-      default:
-        return null;
-    }
-  }, [column, onChangeFormatting]);
+  const formattingSettingsForType = useMemo(
+    () =>
+      formattingSettingsByColType({ column, onChangeFormatting, onChangeType }),
+    [column, onChangeFormatting, onChangeType]
+  );
 
   const ConfigEditor = useMemo<
     React.FC<ConfigurationEditorProps> | undefined
@@ -81,7 +73,7 @@ export const ColumnFormattingPanel = ({
   const handleChangeRenderer = useCallback<
     SingleSelectionHandler<CellRendererDescriptor>
   >(
-    (evt, cellRendererDescriptor) => {
+    (_, cellRendererDescriptor) => {
       const renderProps: ColumnTypeRendering = {
         name: cellRendererDescriptor.name,
       };
@@ -112,7 +104,7 @@ export const ColumnFormattingPanel = ({
       <div
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
-        {contentForType}
+        {formattingSettingsForType}
         {ConfigEditor ? (
           <ConfigEditor
             column={column as ColumnDescriptorCustomRenderer}
@@ -123,3 +115,17 @@ export const ColumnFormattingPanel = ({
     </div>
   );
 };
+
+function formattingSettingsByColType(props: FormattingSettingsProps) {
+  const { column } = props;
+
+  switch (column.serverDataType) {
+    case "double":
+    case "int":
+      return <BaseNumericFormattingSettings {...props} />;
+    case "long":
+      return <LongTypeFormattingSettings {...props} />;
+    default:
+      return null;
+  }
+}
