@@ -2,8 +2,9 @@ package org.finos.vuu.feature.inmem
 
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.vuu.api.{JoinTableDef, TableDef}
-import org.finos.vuu.core.table.{DataTable, JoinTable, InMemDataTable, TableContainer}
+import org.finos.vuu.core.table.{DataTable, InMemDataTable, JoinTable, TableContainer}
 import org.finos.vuu.feature._
+import org.finos.vuu.feature.inmem.viewport.{InMemViewPortCallableFactory, InMemViewPortTreeCallableFactory}
 import org.finos.vuu.plugin.{DefaultPlugin, PluginType}
 import org.finos.vuu.provider.JoinTableProvider
 
@@ -42,4 +43,10 @@ class VuuInMemPlugin extends DefaultPlugin {
   override def tableFactory(implicit metrics: MetricsProvider): TableFactory = (tableDef: TableDef, joinTableProvider: JoinTableProvider) => {
     new InMemDataTable(tableDef, joinTableProvider)
   }
+
+  final val viewPortCallableFactoryInstance = new InMemViewPortCallableFactory()
+  final val viewPortTreeCallableFactoryInstance = new InMemViewPortTreeCallableFactory()
+
+  override def viewPortCallableFactory: ViewPortCallableFactory = viewPortCallableFactoryInstance
+  override def viewPortTreeCallableFactory: ViewPortTreeCallableFactory = viewPortTreeCallableFactoryInstance
 }

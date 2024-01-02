@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.thread.WorkItem
 
-object ViewPortWorkItem extends StrictLogging {
+object InMemViewPortWorkItem extends StrictLogging {
   def apply(viewPort: ViewPort, container: ViewPortContainer): WorkItem[ViewPort] = {
     try {
       new WorkItem[ViewPort] {
@@ -27,7 +27,7 @@ object ViewPortWorkItem extends StrictLogging {
   }
 }
 
-object ViewPortTreeWorkItem extends StrictLogging {
+object InMemViewPortTreeWorkItem extends StrictLogging {
   def apply(viewPort: ViewPort, container: ViewPortContainer): WorkItem[ViewPort] = {
     try {
       new WorkItem[ViewPort] {

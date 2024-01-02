@@ -7,7 +7,7 @@ import java.util.concurrent.{Callable, FutureTask}
 trait ViewPortCallableMBean {
   def apply(r: FutureTask[ViewPort], viewPortContainer: ViewPortContainer): Callable[ViewPort]
 }
-object ViewPortCallable extends StrictLogging with ViewPortCallableMBean {
+object InMemViewPortCallable extends StrictLogging with ViewPortCallableMBean {
 
   def apply(r: FutureTask[ViewPort], viewPortContainer: ViewPortContainer): Callable[ViewPort] = {
     () => {
@@ -23,7 +23,7 @@ object ViewPortCallable extends StrictLogging with ViewPortCallableMBean {
   }
 }
 
-object ViewPortTreeCallable extends StrictLogging with ViewPortCallableMBean {
+object InMemViewPortTreeCallable extends StrictLogging with ViewPortCallableMBean {
 
   def apply(r: FutureTask[ViewPort], viewPortContainer: ViewPortContainer): Callable[ViewPort] = {
     () => {

@@ -7,13 +7,14 @@ case class BigDataOrder(orderId: Long, quantity: Int, price: Long, side: String,
 class FakeBigDataCache {
 
   private val random = new Random()
+  private final val DATASET_SIZE = 1_000_000 //this would be dynamically loaded from the data source in a real example
 
-  def loadOrdersInRange(from: Int, to: Int): List[(Int, BigDataOrder)] = {
+  def loadOrdersInRange(from: Int, to: Int): (Int, List[(Int, BigDataOrder)]) = {
 
     //lets fake some processing time, 30 millis should do....
     Thread.sleep(30)
 
-    (from until to).map( i => {
+    val bigOrdersWithIndex = (from until to).map( i => {
       random.setSeed(i)
       val quantity = random.nextInt()
       val price = random.nextLong()
@@ -26,6 +27,7 @@ class FakeBigDataCache {
       (i, BigDataOrder(i, quantity, price, side, trader))
     }).toList
 
+    //we return the total size of the dataset, as well as the records, with the index in the data set
+    (DATASET_SIZE, bigOrdersWithIndex)
   }
-
 }

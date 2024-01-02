@@ -27,10 +27,10 @@ class ReallyBigVirtualizedDataProvider(val table: DataTable)(implicit clock: Clo
     val startIndex = range.from
     val endIndex = range.to
 
-    val bigOrders = cache.loadOrdersInRange(startIndex, endIndex)
+    val (totalSize, bigOrders) = cache.loadOrdersInRange(startIndex, endIndex)
 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
-    internalTable.setSize(100_000_000)
+    internalTable.setSize(totalSize)
 
     bigOrders.foreach({case(index, order) => {
       val rowWithData = RowWithData(order.orderId.toString,
