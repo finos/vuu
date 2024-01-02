@@ -9,4 +9,5 @@ export const dataAndColumnUnchanged = (
   p1: TableCellRendererProps
 ) =>
   p.column === p1.column &&
-  p.row[p.columnMap[p.column.name]] === p1.row[p1.columnMap[p1.column.name]];
+  p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
+    p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);

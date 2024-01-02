@@ -1,0 +1,105 @@
+
+.vuuBackgroundCell {
+  --background-animation-duration: 10s;
+  color: var(--vuuBackgroundCell-color, var(--vuu-color-gray-80));
+  padding-right: var(--salt-size-unit);
+  position: relative;
+  z-index: -1;
+}
+
+.vuuBackgroundCell-arrowBackground,
+.vuuBackgroundCell-arrowOnly {
+  padding-left: 14px;
+}
+
+.vuuBackgroundCell-arrow {
+  background-color: var(--background-cell-background);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.vuuBackgroundCell-arrow {
+  text-align: left;
+}
+.vuuBackgroundCell-arrow + .num {
+  padding-left: 8px;
+}
+
+.right .vuuBackgroundCell-arrow {
+  text-align: right;
+}
+.right .vuuBackgroundCell-arrow + .num {
+  padding-right: 8px;
+}
+
+.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-arrow {
+  background-color: transparent;
+}
+
+.vuuBackgroundCell-backgroundOnly.up1,
+.vuuBackgroundCell-arrowBackground.up1 {
+  animation-duration: var(--background-animation-duration);
+  animation-name: vuubgup1;
+}
+
+.vuuBackgroundCell-backgroundOnly.up2,
+.vuuBackgroundCell-arrowBackground.up2 {
+  animation-duration: var(--background-animation-duration);
+  animation-name: vuubgup2;
+}
+
+.vuuBackgroundCell-backgroundOnly.down1,
+.vuuBackgroundCell-arrowBackground.down1 {
+  animation-duration: var(--background-animation-duration);
+  animation-name: vuubgdown1;
+}
+
+.vuuBackgroundCell-backgroundOnly.down2,
+.vuuBackgroundCell-arrowBackground.down2 {
+  animation-duration: var(--background-animation-duration);
+  animation-name: vuubgdown2;
+}
+
+.up1.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuuarrowup1;
+}
+
+.up2.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuuarrowup2;
+}
+
+.down1.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuuarrowdown1;
+}
+
+.down2.vuuBackgroundCell-arrowOnly > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuuarrowdown2;
+}
+
+.up1.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuubgarrowup1;
+}
+
+.up2.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuubgarrowup2;
+}
+
+.down1.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuubgarrowdown1;
+}
+
+.down2.vuuBackgroundCell-arrowBackground > .vuuBackgroundCell-arrow {
+  animation-duration: 30s;
+  animation-name: vuubgarrowdown2;
+}

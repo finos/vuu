@@ -1,3 +1,4 @@
+import { dataAndColumnUnchanged } from "@finos/vuu-table";
 import { ColumnType, TableCellProps } from "@finos/vuu-table-types";
 import {
   DOWN1,
@@ -9,10 +10,11 @@ import {
   UP2,
 } from "@finos/vuu-utils";
 import cx from "clsx";
+import { memo } from "react";
 import { useDirection } from "./useDirection";
 
 import "./BackgroundCell.css";
-import "./FlashingBackground.css";
+import "./BackgroundKeyframes.css";
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
@@ -37,8 +39,11 @@ const getFlashStyle = (colType?: ColumnType) => {
   return FlashStyle.BackgroundOnly;
 };
 
-// export to avoid tree shaking, component is not consumed directly
-export const BackgroundCell = ({ column, columnMap, row }: TableCellProps) => {
+export const BackgroundCell = memo(function BackgroundCell({
+  column,
+  columnMap,
+  row,
+}: TableCellProps) {
   //TODO what about click handling
 
   const { name, type, valueFormatter } = column;
@@ -66,11 +71,12 @@ export const BackgroundCell = ({ column, columnMap, row }: TableCellProps) => {
 
   return (
     <div className={className} tabIndex={-1}>
-      <div className={`${classBase}-flasher`}>{arrow}</div>
+      <div className={`${classBase}-arrow`}>{arrow}</div>
       {valueFormatter(row[dataIdx])}
     </div>
   );
-};
+},
+dataAndColumnUnchanged);
 
 registerComponent(
   "vuu.price-move-background",
