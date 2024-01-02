@@ -247,13 +247,13 @@ export const useBasketTrading = ({
             params: [ric],
           })
           .then((response) => {
-            if (response?.action.type === "VP_RCP_SUCCESS") {
+            if (response?.action.type === "VP_RPC_SUCCESS") {
               notify?.({
                 type: NotificationLevel.Success,
                 header: "Add Constituent to Basket",
                 body: `${ric} added to basket`,
               });
-            } else if (response?.action.type === "VP_RCP_FAILURE") {
+            } else if (response?.action.type === "VP_RPC_FAILURE") {
               notify?.({
                 type: NotificationLevel.Error,
                 header: "Add Constituent to Basket",

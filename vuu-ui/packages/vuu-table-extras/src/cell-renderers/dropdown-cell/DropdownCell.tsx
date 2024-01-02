@@ -9,7 +9,7 @@ import {
 import { dispatchCustomEvent, registerComponent } from "@finos/vuu-utils";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { memo, useCallback, useState } from "react";
-import { dataAndColumnUnchanged } from "@finos/vuu-table/src/cell-renderers/cell-utils";
+import { dataAndColumnUnchanged } from "@finos/vuu-table";
 
 import "./DropdownCell.css";
 

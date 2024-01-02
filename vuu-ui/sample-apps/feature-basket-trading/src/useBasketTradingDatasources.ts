@@ -107,7 +107,7 @@ export const useBasketTradingDataSources = ({
           type: "VIEW_PORT_RPC_CALL",
         })
         .then((response) => {
-          if (response?.action.type === "VP_RCP_FAILURE") {
+          if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
               type: NotificationLevel.Error,
               header: "Failed to Send to market",
@@ -130,7 +130,7 @@ export const useBasketTradingDataSources = ({
           type: "VIEW_PORT_RPC_CALL",
         })
         .then((response) => {
-          if (response?.action.type === "VP_RCP_FAILURE") {
+          if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
               type: NotificationLevel.Error,
               header: "Failed to take off market",

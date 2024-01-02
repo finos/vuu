@@ -86,12 +86,15 @@ const isCellRenderer = (
   component: unknown
 ): component is FC<TableCellRendererProps> => type === "cell-renderer";
 
-const isColumnHeaderRenderer = (
+const isColumnHeaderContentRenderer = (
   type: ComponentType,
   component: unknown
 ): component is FC<HeaderCellProps> =>
-  type === "column-header-content-renderer" ||
-  type === "column-header-label-renderer";
+  type === "column-header-content-renderer";
+const isColumnHeaderLabelRenderer = (
+  type: ComponentType,
+  component: unknown
+): component is FC<HeaderCellProps> => type === "column-header-label-renderer";
 
 const isCellConfigPanel = (
   type: ComponentType,
@@ -117,7 +120,9 @@ export function registerComponent<
 ): void {
   if (isCellRenderer(type, component)) {
     cellRenderersMap.set(componentName, component);
-  } else if (isColumnHeaderRenderer(type, component)) {
+  } else if (isColumnHeaderContentRenderer(type, component)) {
+    columnHeaderRenderersMap.set(componentName, component);
+  } else if (isColumnHeaderLabelRenderer(type, component)) {
     columnHeaderRenderersMap.set(componentName, component);
   } else if (isCellConfigPanel(type, component)) {
     cellConfigPanelsMap.set(componentName, component);
@@ -159,9 +164,14 @@ export const getCellRendererOptions = (renderName: string) =>
 export function getCellRenderer(column: ColumnDescriptor) {
   return dataCellRenderer(column);
 }
-export function getColumnHeaderRenderer(column: ColumnDescriptor) {
+export function getColumnHeaderContentRenderer(column: ColumnDescriptor) {
   if (column.colHeaderContentRenderer) {
     return columnHeaderRenderersMap.get(column.colHeaderContentRenderer);
+  }
+}
+export function getColumnHeaderLabelRenderer(column: ColumnDescriptor) {
+  if (column.colHeaderLabelRenderer) {
+    return columnHeaderRenderersMap.get(column.colHeaderLabelRenderer);
   }
 }
 

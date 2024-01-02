@@ -12,7 +12,8 @@ import {
   applyGroupByToColumns,
   applySortToColumns,
   getCellRenderer,
-  getColumnHeaderRenderer,
+  getColumnHeaderContentRenderer,
+  getColumnHeaderLabelRenderer,
   getColumnLabel,
   getTableHeadings,
   getValueFormatter,
@@ -304,8 +305,8 @@ const columnDescriptorToRuntimeColumDescriptor =
       ...rest,
       align,
       CellRenderer: getCellRenderer(column),
-      HeaderCellLabelRenderer: getColumnHeaderRenderer(column),
-      HeaderCellContentRenderer: getColumnHeaderRenderer(column),
+      HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
+      HeaderCellLabelRenderer: getColumnHeaderLabelRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,

@@ -1,6 +1,7 @@
 export { GroupHeaderCellNext } from "./header-cell";
 export * from "./header-cell";
 export * from "./Table";
+export * from "./table-cell";
 export * from "./table-config";
 export * from "./cell-renderers";
 export type { RowProps } from "./Row";

@@ -1,61 +1,77 @@
-/* @property --background-cell-background {
-  syntax: '<color>'; 
-  initial-value: transparent;
-  inherits: false;
-} */
 
-/* @property color {
-  syntax: '<color>'; 
-  initial-value: #15171B;
-  inherits: false;
-} */
-
-@keyframes reactbgup1 {
-    from {
+@keyframes vuubgup1 {
+    0% {
       background-color: var(--vuu-color-green-50);
       color: white;
     }
-    to {
-      background-color: transparent;
-      color: var(--vuu-color-gray-80);
 
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--vuu-color-gray-80);
+    }  
+
+    100% {
+      background-color: transparent;
+      color: var(--vuu-color-gray-80);
     }
   }
   
-  @keyframes reactbgup2 {
-    from {
+  @keyframes vuubgup2 {
+    0% {
       background-color: var(--vuu-color-green-50);
-      color: #ffffff;
+      color: white;
     }
-    to {
+
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--vuu-color-gray-80);
+    }  
+
+    100% {
       background-color: transparent;
       color: var(--vuu-color-gray-80);
     }
   }
   
-  @keyframes reactbgdown1 {
-    from {
+  @keyframes vuubgdown1 {
+    0% {
       background-color: var(--vuu-color-red-50);
       color: white;
     }
-    to {
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--vuu-color-gray-80);
+    }  
+    100% {
       background-color: transparent;
       color: var(--vuu-color-gray-80);
     }
   }
   
-  @keyframes reactbgdown2 {
-    from {
+  @keyframes vuubgdown2 {
+    0% {
       background-color: var(--vuu-color-red-50);
       color: white;
     }
-    to {
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--vuu-color-gray-80);
+    }  
+    100% {
       background-color: transparent;
       color: var(--vuu-color-gray-80);
     }
   }
   
-  @keyframes reactarrowup1 {
+  @keyframes vuuarrowup1 {
     from {
       color: var(--salt-differential-positive-foreground);
     }
@@ -64,7 +80,7 @@
     }
   }
   
-  @keyframes reactarrowup2 {
+  @keyframes vuuarrowup2 {
     from {
       color: var(--salt-differential-positive-foreground);
     }
@@ -73,7 +89,7 @@
     }
   }
   
-  @keyframes reactarrowdown1 {
+  @keyframes vuuarrowdown1 {
     from {
       color: var(--salt-differential-negative-foreground);
     }
@@ -82,7 +98,7 @@
     }
   }
   
-  @keyframes reactarrowdown2 {
+  @keyframes vuuarrowdown2 {
     from {
       color: var(--salt-differential-negative-foreground);
     }
@@ -91,7 +107,7 @@
     }
   }
   
-  @keyframes reactbgarrowup1 {
+  @keyframes vuubgarrowup1 {
     0% {
       color: var(--salt-differential-positive-foreground);
       background-color: var(--vuu-color-green-50);
@@ -106,7 +122,7 @@
     }
   }
   
-  @keyframes reactbgarrowup2 {
+  @keyframes vuubgarrowup2 {
     0% {
       color: var(--salt-differential-positive-foreground);
       background-color: var(--vuu-color-green-50);
@@ -121,7 +137,7 @@
     }
   }
   
-  @keyframes reactbgarrowdown1 {
+  @keyframes vuubgarrowdown1 {
     0% {
       color: var(--salt-differential-negative-foreground);
       background-color: var(--vuu-color-red-50);
@@ -136,7 +152,7 @@
     }
   }
   
-  @keyframes reactbgarrowdown2 {
+  @keyframes vuubgarrowdown2 {
     0% {
       color: var(--salt-differential-negative-foreground);
       background-color: var(--vuu-color-red-50);
