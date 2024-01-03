@@ -10,7 +10,7 @@ const NO_HANDLERS = {};
 const canToggleItem = (item: CollectionItem<unknown>) =>
   Array.isArray(item.childNodes);
 // TODO how do we determine this and where does this function belong = in the collectionHook ?
-const canSelectItem = (item: CollectionItem<unknown>) => true;
+const canSelectItem = (_: CollectionItem<unknown>) => true;
 
 const toggleIconClicked = (el: HTMLElement) => {
   const closestToggle = el.closest(

@@ -87,7 +87,7 @@ export const Shell = ({
     useLayoutContextMenuItems(setDialogState);
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
-    (layout, layoutChangeReason) => {
+    (layout) => {
       try {
         saveApplicationLayout(layout);
       } catch {

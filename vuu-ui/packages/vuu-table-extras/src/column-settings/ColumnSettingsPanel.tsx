@@ -66,7 +66,6 @@ export const ColumnSettingsPanel = ({
   const {
     serverDataType,
     align = getDefaultAlignment(serverDataType),
-    name,
     pin,
     width,
   } = column;

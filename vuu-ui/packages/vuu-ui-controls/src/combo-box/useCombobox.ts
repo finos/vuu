@@ -107,7 +107,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 }: ComboboxHookProps<Item, S>): ComboboxHookResult<Item, S> => {
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
-  const { data, setFilterPattern } = collectionHook;
+  const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
   // used to track multi selection
   const selectedRef = useRef<Item | null | Item[]>(isMultiSelect ? [] : null);

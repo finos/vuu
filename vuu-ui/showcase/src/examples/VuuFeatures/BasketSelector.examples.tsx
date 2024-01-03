@@ -48,7 +48,7 @@ export const DefaultBasketSelector = () => {
     console.log("Add Basket");
   }, []);
 
-  const handleSelectBasket = useCallback(() => {}, []);
+  const handleSelectBasket = useCallback(() => null, []);
 
   return (
     <BasketSelector

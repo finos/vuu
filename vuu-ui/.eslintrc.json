@@ -35,8 +35,11 @@
     ],
 
     "no-unused-vars": 0,
-    "prefer-const": ["error", {"destructuring": "all"}],
-    "@typescript-eslint/no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+    "prefer-const": ["error", { "destructuring": "all" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "ignoreRestSiblings": true, "argsIgnorePattern": "_" }
+    ]
   },
   "overrides": [
     {

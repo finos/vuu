@@ -1,5 +1,5 @@
 import { MouseEventHandler, useCallback, useRef } from "react";
-import { getRow, getRowIndex, getRows } from "./grid-dom-utils";
+import { getRowIndex, getRows } from "./grid-dom-utils";
 import { GridLayoutProps } from "./GridLayout";
 
 export type SplitterResizingHookProps = Pick<

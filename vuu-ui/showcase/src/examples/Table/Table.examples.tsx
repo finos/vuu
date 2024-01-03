@@ -132,7 +132,7 @@ ControlledNavigation.displaySequence = displaySequence++;
 
 export const EditableTableNextArrayData = () => {
   const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(
-    () => (tableName, columnName) => {
+    () => (_, columnName) => {
       switch (columnName) {
         case "bbg":
           return {
@@ -481,7 +481,7 @@ export const GroupHeaderCellNextOneColumn = () => {
     };
   }, []);
   const handleRemoveColumn = useCallback((column) => {
-    console.log("remove column");
+    console.log(`remove column ${column.name}`);
   }, []);
 
   return (
@@ -554,7 +554,7 @@ GroupHeaderCellNextTwoColumn.displaySequence = displaySequence++;
 export const GroupHeaderCellNextThreeColumn = () => {
   const valueFormatter = defaultValueFormatter;
 
-  const [column, setColumn] = useState<GroupColumnDescriptor>({
+  const [column] = useState<GroupColumnDescriptor>({
     groupConfirmed: true,
     key: 0,
     label: "group-column",
@@ -617,7 +617,7 @@ GroupHeaderCellNextThreeColumn.displaySequence = displaySequence++;
 export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
   const valueFormatter = defaultValueFormatter;
 
-  const [column, setColumn] = useState<GroupColumnDescriptor>({
+  const [column] = useState<GroupColumnDescriptor>({
     groupConfirmed: true,
     key: 0,
     label: "group-column",
@@ -665,7 +665,7 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
 };
 GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;
 
-const SymbolHeader = ({ column }: HeaderCellProps) => {
+const SymbolHeader = (_: HeaderCellProps) => {
   const handleClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
     console.log("click");

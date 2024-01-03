@@ -16,7 +16,7 @@ export const SavePanel = () => {
       title={"Save Layout"}
       hideCloseButton
     >
-      <SaveLayoutPanel onCancel={() => {}} onSave={handleSave} />
+      <SaveLayoutPanel onCancel={() => null} onSave={handleSave} />
     </Dialog>
   );
 };
