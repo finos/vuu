@@ -1,12 +1,11 @@
 import { TableSchema } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import {
   ContextMenuConfiguration,
   ContextMenuProvider,
 } from "@finos/vuu-popups";
 import { useMemo } from "react";
-import columns from "./basketConstituentEditColumns";
 import { ColHeaderAddSymbol } from "../cell-renderers";
 
 import "./BasketTableEdit.css";
@@ -18,11 +17,13 @@ if (typeof ColHeaderAddSymbol !== "function") {
 }
 
 export interface BasketTableEditProps extends Omit<TableProps, "config"> {
+  columns: ColumnDescriptor[];
   contextMenuConfig: ContextMenuConfiguration;
   tableSchema: TableSchema;
 }
 
 export const BasketTableEdit = ({
+  columns,
   contextMenuConfig,
   dataSource,
   tableSchema,

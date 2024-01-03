@@ -1,5 +1,6 @@
 import {
   TableConfig,
+  TableConfigChangeHandler,
   TableRowClickHandler,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
@@ -42,7 +43,6 @@ const { IDX, RENDER_IDX } = metadataKeys;
 
 // TODO implement a Model object to represent a row data for better API
 export type TableRowSelectHandler = (row: DataSourceRow) => void;
-
 export type TableNavigationStyle = "none" | "cell" | "row";
 
 export interface TableProps
@@ -79,7 +79,7 @@ export interface TableProps
    * is changed. By persisting this value and providing it to the Table as a
    * prop, table state can be persisted across sessions.
    */
-  onConfigChange?: (config: TableConfig) => void;
+  onConfigChange?: TableConfigChangeHandler;
   onDragStart?: DragStartHandler;
   onDrop?: (dragDropState: DragDropState) => void;
   /**

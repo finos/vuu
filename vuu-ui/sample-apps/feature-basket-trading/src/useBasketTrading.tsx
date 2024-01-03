@@ -11,12 +11,19 @@ import {
   useNotifications,
 } from "@finos/vuu-popups";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import {
+  ColumnDescriptor,
+  TableConfig,
+  TableConfigChangeHandler,
+} from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
 import { NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
+import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
 
 export class Basket {
   basketId: string;
@@ -69,6 +76,16 @@ export const useBasketTrading = ({
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
   const { notify } = useNotifications();
+
+  const editColumns = useMemo<ColumnDescriptor[]>(() => {
+    const config = load?.("basket-edit-table-config") as TableConfig;
+    return config?.columns ?? defaultEditColumns;
+  }, [load]);
+
+  const liveColumns = useMemo<ColumnDescriptor[]>(() => {
+    const config = load?.("basket-live-columns") as TableConfig;
+    return config?.columns ?? defaultLiveColumns;
+  }, [load]);
 
   const basketConstituentMap = useMemo(
     () => buildColumnMap(basketConstituentSchema.columns),
@@ -266,6 +283,27 @@ export const useBasketTrading = ({
     [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify]
   );
 
+  // const handleTableConfigChange = useCallback<TableConfigChangeHandler>(
+  //   (config) => {
+  //     save?.(config, "table-config");
+  //   },
+  //   [save]
+  // );
+
+  const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(
+    (config) => {
+      save?.(config, "basket-edit-table-config");
+    },
+    [save]
+  );
+
+  const handleConfigChangeLive = useCallback<TableConfigChangeHandler>(
+    (config) => {
+      save?.(config, "basket-live-table-config");
+    },
+    [save]
+  );
+
   useEffect(() => {
     dataSourceBasketTradingControl.resume?.();
     return () => {
@@ -280,8 +318,12 @@ export const useBasketTrading = ({
     basketDesignContextMenuConfig,
     basketSelectorProps,
     dataSourceBasketTradingConstituentJoin,
+    editColumns,
+    liveColumns,
     onClickAddBasket: handleAddBasket,
     onCommitBasketChange: handleCommitBasketChange,
+    onConfigChangeEdit: handleConfigChangeEdit,
+    onConfigChangeLive: handleConfigChangeLive,
     onDropInstrument: handleDropInstrument,
     onSendToMarket,
     onTakeOffMarket,
