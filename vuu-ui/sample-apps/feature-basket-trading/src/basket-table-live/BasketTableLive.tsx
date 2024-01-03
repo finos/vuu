@@ -1,7 +1,4 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
-import { useMemo } from "react";
 import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
 
 if (
@@ -16,30 +13,12 @@ import "./BasketTableLive.css";
 
 const classBase = "vuuBasketTableLive";
 
-export interface BasketTableLiveProps extends Omit<TableProps, "config"> {
-  columns: ColumnDescriptor[];
-  tableSchema: TableSchema;
-}
-
-export const BasketTableLive = ({
-  columns,
-  tableSchema,
-  ...props
-}: BasketTableLiveProps) => {
-  const tableConfig = useMemo<TableConfig>(
-    () => ({
-      columns,
-      rowSeparators: true,
-    }),
-    []
-  );
-
+export const BasketTableLive = ({ ...props }: TableProps) => {
   return (
     <Table
       {...props}
       renderBufferSize={20}
       className={classBase}
-      config={tableConfig}
       rowHeight={21}
     />
   );

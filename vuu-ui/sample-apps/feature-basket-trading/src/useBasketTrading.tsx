@@ -11,11 +11,7 @@ import {
   useNotifications,
 } from "@finos/vuu-popups";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
-import {
-  ColumnDescriptor,
-  TableConfig,
-  TableConfigChangeHandler,
-} from "@finos/vuu-table-types";
+import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
@@ -77,14 +73,24 @@ export const useBasketTrading = ({
   const { load, save } = useViewContext();
   const { notify } = useNotifications();
 
-  const editColumns = useMemo<ColumnDescriptor[]>(() => {
+  const editConfig = useMemo<TableConfig>(() => {
     const config = load?.("basket-edit-table-config") as TableConfig;
-    return config?.columns ?? defaultEditColumns;
+    return (
+      config ?? {
+        columns: defaultEditColumns,
+        rowSeparators: true,
+      }
+    );
   }, [load]);
 
-  const liveColumns = useMemo<ColumnDescriptor[]>(() => {
-    const config = load?.("basket-live-columns") as TableConfig;
-    return config?.columns ?? defaultLiveColumns;
+  const liveConfig = useMemo<TableConfig>(() => {
+    const config = load?.("basket-live-table-config") as TableConfig;
+    return (
+      config ?? {
+        columns: defaultLiveColumns,
+        rowSeparators: true,
+      }
+    );
   }, [load]);
 
   const basketConstituentMap = useMemo(
@@ -161,12 +167,15 @@ export const useBasketTrading = ({
     }));
   }, []);
 
-  const handleSaveNewBasket = useCallback((basketName, basketId) => {
-    setBasketState((state) => ({
-      ...state,
-      dialog: undefined,
-    }));
-  }, []);
+  const handleSaveNewBasket = useCallback(
+    (/*basketName, basketId*/) => {
+      setBasketState((state) => ({
+        ...state,
+        dialog: undefined,
+      }));
+    },
+    []
+  );
 
   const handleSelectBasket = useCallback(
     (basketInstanceId: string) => {
@@ -318,8 +327,8 @@ export const useBasketTrading = ({
     basketDesignContextMenuConfig,
     basketSelectorProps,
     dataSourceBasketTradingConstituentJoin,
-    editColumns,
-    liveColumns,
+    editConfig,
+    liveConfig,
     onClickAddBasket: handleAddBasket,
     onCommitBasketChange: handleCommitBasketChange,
     onConfigChangeEdit: handleConfigChangeEdit,

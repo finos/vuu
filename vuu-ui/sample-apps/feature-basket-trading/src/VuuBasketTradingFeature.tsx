@@ -35,8 +35,8 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     basketSelectorProps,
     dataSourceBasketTradingConstituentJoin,
     dialog,
-    editColumns,
-    liveColumns,
+    editConfig,
+    liveConfig,
     onClickAddBasket,
     onCommitBasketChange,
     onConfigChangeEdit,
@@ -86,20 +86,18 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
           style={{ flex: 1 }}
         >
           <BasketTableEdit
-            columns={editColumns}
+            config={editConfig}
             data-tab-title="Design"
             contextMenuConfig={basketDesignContextMenuConfig}
             dataSource={dataSourceBasketTradingConstituentJoin}
             onConfigChange={onConfigChangeEdit}
             onDrop={onDropInstrument}
-            tableSchema={basketTradingConstituentJoinSchema}
           />
           <BasketTableLive
-            columns={liveColumns}
+            config={liveConfig}
             data-tab-title="On Market"
             dataSource={dataSourceBasketTradingConstituentJoin}
             onConfigChange={onConfigChangeLive}
-            tableSchema={basketTradingConstituentJoinSchema}
           />
         </Stack>
       </FlexboxLayout>
