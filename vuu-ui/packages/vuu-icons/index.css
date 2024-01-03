@@ -84,8 +84,8 @@ span[data-icon] {
   background-color: var(--vuu-icon-color, var(--saltIcon-color, var(--salt-text-secondary-foreground)));
   left: var(--vuu-icon-left, auto);
   height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
-  /* -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size); */
   mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+  -webkit-mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
   position: absolute;
