@@ -1,0 +1,19 @@
+name: Setup Vuu UI
+description: "Installs NodeJS and project dependencies"
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16"
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: npm-${{ hashFiles('package-lock.json') }}
+        restore-keys: npm-
+    - name: Install dependencies
+      shell: bash
+      run: cd ./vuu-ui && npm install

@@ -6,15 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-      - run: cd ./vuu-ui && npm install
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run build
