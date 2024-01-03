@@ -1,12 +1,13 @@
 package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.collection.window.MovingWindow
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table._
 
-class VirtualizedSessionTableData(cacheSize: Int) extends TableData {
+class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends TableData {
 
-  final val rowCache: RollingCache[String, RowData] = RowDataCache(cacheSize)
-  final val keysWindow: MovingWindow[String] = RollingKeysWindow(cacheSize)
+  final val rowCache: WindowedCache[String, RowData] = RowDataCache(cacheSize)
+  final val keysWindow: MovingWindow[String] = WindowedTableKeys(cacheSize)
 
   @volatile var length: Int = 0
 

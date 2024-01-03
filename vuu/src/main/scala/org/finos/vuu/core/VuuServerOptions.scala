@@ -67,10 +67,14 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads
   override def treeThreads: Int = treeViewPortThreads
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(), wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(), security: VuuSecurityOptions = VuuSecurityOptions(), threading: VuuThreadingOptions = VuuThreadingOptions(), modules: List[ViewServerModule] = List()) {
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(), wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(), security: VuuSecurityOptions = VuuSecurityOptions(),
+                           threading: VuuThreadingOptions = VuuThreadingOptions(),
+                           modules: List[ViewServerModule] = List(),
+                           plugins: List[Plugin] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
-  def withPlugin(plugin: Plugin): VuuServerConfig = ???
+  def withPlugin(plugin: Plugin): VuuServerConfig = {
+    this.copy(plugins = plugins ++ List(plugin))
+  }
 }
-

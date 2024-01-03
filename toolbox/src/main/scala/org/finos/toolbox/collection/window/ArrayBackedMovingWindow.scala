@@ -73,9 +73,13 @@ class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: C
 
   override def iterator: Iterator[DATA] = this.internalData.iterator
 
-  //  override def empty(): Unit = {
-//    lock.synchronized {
-//        internalData = new Array[DATA](bufferSize)
-//      }
-//    }
+  override def copy(): MovingWindow[DATA] = {
+    lock.synchronized {
+      val newWindow = new ArrayBackedMovingWindow[DATA](bufferSize = this.bufferSize)
+      newWindow.range.from = this.range.from
+      newWindow.range.to = this.range.to
+      newWindow.internalData = this.internalData.clone()
+      newWindow
+    }
+  }
 }

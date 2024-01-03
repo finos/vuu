@@ -24,7 +24,7 @@ trait TableContainerMBean {
   def getSubscribedKeys(name: String): String
 }
 
-class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, clock: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
+class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, clock: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
 
   private val tables = new ConcurrentHashMap[String, DataTable]()
 
@@ -78,7 +78,7 @@ class TableContainer(joinTableProvider: JoinTableProvider)(implicit val metrics:
   def getNonSessionTables: Array[ViewPortTable] = {
     val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
     tableList
-      .filter(!isSessionTable(_))
+      //.filter(!isSessionTable(_))
       .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
   }
 

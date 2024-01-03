@@ -2,11 +2,13 @@ package org.finos.vuu.test
 
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.api.ViewPortDef
+import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.sort.{FilterAndSort, Sort}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext}
+import org.finos.vuu.plugin.Plugin
 import org.finos.vuu.provider.{MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree.TreeNodeState
@@ -94,11 +96,14 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
   override def permissionChecker(): Option[RowPermissionChecker] = viewPort.permissionChecker()
 }
 
-trait TestVuuServer {
-
+trait TestVuuServer extends IVuuServer {
+  def registerProvider(dataTable: DataTable, provider: Provider): Unit
+  def registerPlugin(plugin: Plugin): Unit
   def login(user: String, token: String): Unit
   def getProvider(module: String, table: String): MockProvider
   def createViewPort(module: String, tableName: String): TestViewPort
+  def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): TestViewPort
+
   def session: ClientSessionId
   def runOnce(): Unit
   def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit

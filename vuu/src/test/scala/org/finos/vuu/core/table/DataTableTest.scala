@@ -6,7 +6,9 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer}
@@ -25,14 +27,13 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       implicit val metrics = new MetricsProviderImpl
 
       val joinProvider   = JoinTableProviderImpl()
-
       val tableContainer = new TableContainer(joinProvider)
-
       val outQueue          = new OutboundRowPublishQueue()
-
       val providerContainer = new ProviderContainer(joinProvider)
+      val pluginRegistry = new DefaultPluginRegistry
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
 
-      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 

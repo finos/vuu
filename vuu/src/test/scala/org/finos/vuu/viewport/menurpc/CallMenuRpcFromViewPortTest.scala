@@ -7,8 +7,10 @@ import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -26,7 +28,10 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
   def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
-    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+    val pluginRegistry = new DefaultPluginRegistry
+    pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
     viewPortContainer
   }

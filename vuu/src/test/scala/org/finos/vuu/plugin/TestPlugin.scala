@@ -2,7 +2,7 @@ package org.finos.vuu.plugin
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.DataTable
-import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTreeCallableFactory}
+import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
 import org.finos.vuu.provider.JoinTableProvider
 
 object TestPlugin{
@@ -36,4 +36,6 @@ class TestPlugin extends Plugin with TableFactory {
   override def viewPortCallableFactory: ViewPortCallableFactory = ???
 
   override def viewPortTreeCallableFactory: ViewPortTreeCallableFactory = ???
+
+  override def viewPortTableCreator: ViewPortTableCreator = ???
 }

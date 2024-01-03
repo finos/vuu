@@ -1,12 +1,16 @@
 package org.finos.vuu.viewport
 
+import io.vertx.core.spi.metrics.Metrics
+import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.SessionTableDef
-import org.finos.vuu.core.table.{SessionTable, InMemDataTable, InMemSessionDataTable, TableContainer}
+import org.finos.vuu.core.table.{InMemDataTable, InMemSessionDataTable, SessionTable, TableContainer}
+import org.finos.vuu.feature.ViewPortTableCreator
 import org.finos.vuu.net.ClientSessionId
 
-object ViewPortTableCreator {
+object InMemViewPortTableCreator extends ViewPortTableCreator {
 
-  def create(table: RowSource, clientSession: ClientSessionId, groupBy: GroupBy, tableContainer: TableContainer): RowSource = {
+  def create(table: RowSource, clientSession: ClientSessionId, groupBy: GroupBy, tableContainer: TableContainer)(implicit metrics: MetricsProvider, clock: Clock): RowSource = {
     if (groupBy == NoGroupBy) {
       table.asTable match {
         case sessionTable: InMemSessionDataTable =>
