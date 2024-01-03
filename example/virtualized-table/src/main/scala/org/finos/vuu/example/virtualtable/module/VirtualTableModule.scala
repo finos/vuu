@@ -24,7 +24,7 @@ object VirtualTableModule extends DefaultModule{
         keyField = "orderId",
         Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
       ),
-      (table, vs) => new ReallyBigVirtualizedDataProvider(table),
+      (table, vs) => new ReallyBigVirtualizedDataProvider(),
       (table, _, _, _) => ViewPortDef(
         columns = table.getTableDef.columns,
         service = new VirtualService()

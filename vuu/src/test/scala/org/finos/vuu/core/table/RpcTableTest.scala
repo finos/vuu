@@ -6,7 +6,9 @@ import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer}
 import org.scalatest.OneInstancePerTest
@@ -35,8 +37,10 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
       //val highPriorityQueue = new OutboundRowPublishQueue()
 
       val providerContainer = new ProviderContainer(joinProvider)
+      val pluginRegistry = new DefaultPluginRegistry
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
 
-      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
       val orderEntryDef = TableDef("orderEntry", "clOrderId", Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric")
 

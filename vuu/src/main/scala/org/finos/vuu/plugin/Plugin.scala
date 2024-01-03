@@ -1,7 +1,7 @@
 package org.finos.vuu.plugin
 
 import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTreeCallableFactory}
+import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
 
 trait Plugin {
     def hasFeature(feature: Feature): Boolean
@@ -16,4 +16,6 @@ trait Plugin {
     def sortFactory: SortFactory
     def viewPortCallableFactory: ViewPortCallableFactory
     def viewPortTreeCallableFactory: ViewPortTreeCallableFactory
+    def viewPortTableCreator: ViewPortTableCreator
+
 }

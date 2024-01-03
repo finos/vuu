@@ -27,6 +27,12 @@
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
+            <artifactId>virtualized-table</artifactId>
+            <version>0.9.36-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>

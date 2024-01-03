@@ -17,6 +17,8 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
   @volatile private var dataSetSize: Int = 0
   @volatile private var range = VirtualizedRange(0, 0)
 
+  override def toString: String = s"VirtualizedSessionTable(tableDef=${sessionTableDef.name}, name=${name})"
+
   override def primaryKeys: TablePrimaryKeys = super.primaryKeys
 
   override protected def createDataTableData(): TableData = {

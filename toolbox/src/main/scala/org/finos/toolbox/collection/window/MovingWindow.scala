@@ -9,4 +9,5 @@ trait MovingWindow[DATA] extends Iterable[DATA] {
   def getRange(): WindowRange
   //def empty(): Unit
   override def iterator: Iterator[DATA]
+  def copy(): MovingWindow[DATA]
 }

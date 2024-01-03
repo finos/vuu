@@ -12,6 +12,8 @@ import org.finos.vuu.viewport.ViewPortContainer
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -37,7 +39,10 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       val providerContainer = new ProviderContainer(joinProvider)
 
-      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+      val pluginRegistry = new DefaultPluginRegistry
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
       val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 

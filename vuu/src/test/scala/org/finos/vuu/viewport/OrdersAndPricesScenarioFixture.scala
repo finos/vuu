@@ -6,6 +6,8 @@ import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderCont
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.joda.time.LocalDateTime
 
 object OrdersAndPricesScenarioFixture {
@@ -46,8 +48,10 @@ object OrdersAndPricesScenarioFixture {
     val pricesProvider = new MockProvider(prices)
 
     val providerContainer = new ProviderContainer(joinProvider)
+    val pluginRegistry = new DefaultPluginRegistry
+    pluginRegistry.registerPlugin(new VuuInMemPlugin)
 
-    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
     //val viewPortContainer = setupViewPort()
 

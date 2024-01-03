@@ -5,7 +5,9 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.CoreServerApiHandler
 import org.finos.vuu.core.table.TableContainer
+import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net.{ClientSessionId, HeartBeatResponse, RequestContext}
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.ViewPortContainer
@@ -21,7 +23,10 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
     val joinTableProvider = JoinTableProviderImpl()
     val tableContainer = new TableContainer(joinTableProvider)
     val providerContainer = new ProviderContainer(joinTableProvider)
-    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+    val pluginRegistry = new DefaultPluginRegistry
+    pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
     coreServerApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
   }
 
