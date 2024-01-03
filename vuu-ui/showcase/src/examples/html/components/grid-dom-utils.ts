@@ -212,7 +212,7 @@ const collectRowItems = (
 
 export const getGridItemsAdjoiningTrack = (
   grid: HTMLElement,
-  gridItemId: HTMLElement,
+  targetElement: HTMLElement,
   resizeOrientation: ResizeOrientation,
   splitterAlign: SplitterAlign
 ):
