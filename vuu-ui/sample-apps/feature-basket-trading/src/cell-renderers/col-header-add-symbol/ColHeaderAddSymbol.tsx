@@ -5,9 +5,10 @@ import {
 } from "@finos/vuu-layout";
 import { registerComponent } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { DataSource } from "packages/vuu-data-types";
-import { InstrumentSearchProps } from "packages/vuu-ui-controls/src";
+import type { DataSource } from "@finos/vuu-data-types";
+import type { InstrumentSearchProps } from "@finos/vuu-ui-controls/src";
 import { MouseEventHandler, useCallback, useMemo } from "react";
+
 import "./ColHeaderAddSymbol.css";
 
 const classBase = "vuuColHeaderAddSymbol";

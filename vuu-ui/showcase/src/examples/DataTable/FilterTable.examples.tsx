@@ -1,17 +1,17 @@
-import { FilterTable } from "@finos/vuu-datatable";
-import { TableConfig } from "@finos/vuu-table-types";
-import { Filter } from "@finos/vuu-filter-types";
-import { useCallback, useMemo, useState } from "react";
-import { useTestDataSource } from "../utils";
-import { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   getAllSchemas,
   getSchema,
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
-import { ActiveItemChangeHandler } from "packages/vuu-layout/src";
-import { TableProps } from "packages/vuu-table/src";
+import type { DataSourceFilter } from "@finos/vuu-data-types";
+import { FilterTable } from "@finos/vuu-datatable";
+import type { Filter } from "@finos/vuu-filter-types";
+import type { ActiveItemChangeHandler } from "@finos/vuu-layout";
+import type { TableProps } from "@finos/vuu-table";
+import type { TableConfig } from "@finos/vuu-table-types";
+import { useCallback, useMemo, useState } from "react";
+import { useTestDataSource } from "../utils";
 
 let displaySequence = 1;
 const schemas = getAllSchemas();
