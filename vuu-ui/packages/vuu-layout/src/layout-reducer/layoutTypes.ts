@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NamedFilter } from "packages/vuu-filter-types";
+import { NamedFilter } from "@finos/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";

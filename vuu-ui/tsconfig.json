@@ -34,10 +34,10 @@
   "references": [
     { "path": "packages/vuu-codemirror" },
     { "path": "packages/vuu-data-local" },
+    { "path": "packages/vuu-data-react" },
     { "path": "packages/vuu-data-remote" },
     { "path": "packages/vuu-data-types" },
     { "path": "packages/vuu-data-ag-grid" },
-    { "path": "packages/vuu-data-react" },
     { "path": "packages/vuu-data-test" },
     { "path": "packages/vuu-data-types" },
     { "path": "packages/vuu-datatable" },

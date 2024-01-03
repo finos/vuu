@@ -1,5 +1,5 @@
-import { VuuTable } from "@finos/vuu-protocol-types";
-import { ViewProps } from "packages/vuu-layout/src";
+import type { VuuTable } from "@finos/vuu-protocol-types";
+import type { ViewProps } from "@finos/vuu-layout";
 
 declare global {
   const vuuConfig: Promise<VuuConfig>;

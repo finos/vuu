@@ -10,7 +10,7 @@ import {
   DataSourceRow,
   Selection,
   SelectionChangeHandler,
-} from "packages/vuu-data-types";
+} from "@finos/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,

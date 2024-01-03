@@ -11,20 +11,22 @@ function buildPackage(packageName) {
 }
 
 const packages = [
-  "vuu-utils",
-  "vuu-data",
-  "vuu-data-test",
-  "vuu-data-react",
+  "vuu-codemirror",
   "vuu-data-ag-grid",
+  "vuu-data-local",
+  "vuu-data-react",
+  "vuu-data-remote",
+  "vuu-data-test",
+  "vuu-datatable",
   "vuu-filter-parser",
   "vuu-filters",
+  "vuu-layout",
   "vuu-popups",
-  "vuu-datatable",
+  "vuu-shell",
   "vuu-table",
   "vuu-table-extras",
-  "vuu-layout",
-  "vuu-shell",
   "vuu-ui-controls",
+  "vuu-utils",
 ];
 
 packages.forEach(buildPackage);

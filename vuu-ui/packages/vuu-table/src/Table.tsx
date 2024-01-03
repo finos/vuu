@@ -35,7 +35,7 @@ import { useTable } from "./useTable";
 import { TableHeader } from "./table-header/TableHeader";
 
 import "./Table.css";
-import { DragDropState } from "packages/vuu-ui-controls/src/drag-drop/DragDropState";
+import type { DragDropState } from "@finos/vuu-ui-controls";
 
 const classBase = "vuuTable";
 

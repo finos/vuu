@@ -10,7 +10,7 @@ import { useCallback, useState } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { JsonTable } from "@finos/vuu-datatable";
-import { JsonData } from "packages/vuu-utils/src";
+import type { JsonData } from "@finos/vuu-utils";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 

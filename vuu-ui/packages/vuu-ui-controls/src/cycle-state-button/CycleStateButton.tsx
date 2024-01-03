@@ -1,10 +1,10 @@
 import { Button, ButtonProps } from "@salt-ds/core";
 import cx from "clsx";
-import { CommitResponse } from "packages/vuu-table-types";
-import {
+import type { CommitResponse } from "@finos/vuu-table-types";
+import type {
   VuuColumnDataType,
   VuuRowDataItemType,
-} from "packages/vuu-protocol-types";
+} from "@finos/vuu-protocol-types";
 import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
 
 const classBase = "vuuCycleStateButton";

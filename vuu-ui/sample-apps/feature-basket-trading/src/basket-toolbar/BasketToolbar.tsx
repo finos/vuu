@@ -6,15 +6,15 @@ import {
   useEditableText,
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
-import {
+import type {
   CommitResponse,
   DataItemCommitHandler,
-} from "packages/vuu-table-types";
-import { VuuRowDataItemType } from "packages/vuu-protocol-types";
+} from "@finos/vuu-table-types";
+import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { HTMLAttributes, useCallback } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { Basket } from "../useBasketTrading";
-import { BasketStatus } from "../VuuBasketTradingFeature";
+import type { BasketStatus } from "../VuuBasketTradingFeature";
 import { BasketMenu } from "./BasketMenu";
 import cx from "clsx";
 

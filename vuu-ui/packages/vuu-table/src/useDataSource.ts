@@ -7,7 +7,7 @@ import {
 } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
-import { GridAction } from "packages/vuu-table-types";
+import { GridAction } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 

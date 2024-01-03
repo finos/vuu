@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "packages/vuu-table-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 
 const hidden = true;
 const ticking = {

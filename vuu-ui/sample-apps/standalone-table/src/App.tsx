@@ -5,7 +5,7 @@ import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 // import "@finos/vuu-theme/index.css";
 
 import "./App.css";
-// import { ThemeProvider } from "packages/vuu-utils/src";
+// import { ThemeProvider } from "@finos/vuu-utils";
 
 export const App = () => {
   const columnDescriptors = [{ name: "Column 1" }, { name: "Column 2" }];

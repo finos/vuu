@@ -5,8 +5,8 @@ import {
   InstrumentSearch,
   useDragDropProvider,
 } from "@finos/vuu-ui-controls";
-import { DataSourceRow } from "packages/vuu-data-types";
-import { GlobalDropHandler } from "packages/vuu-ui-controls/src/drag-drop/useGlobalDragDrop";
+import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { GlobalDropHandler } from "@finos/vuu-ui-controls";
 import {
   HTMLAttributes,
   useCallback,

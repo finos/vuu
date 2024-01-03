@@ -1,10 +1,10 @@
 import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
-import { Filter } from "@finos/vuu-filter-types";
+import type { Filter } from "@finos/vuu-filter-types";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input } from "@salt-ds/core";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import { ActiveItemChangeHandler } from "packages/vuu-layout/src";
+import type { ActiveItemChangeHandler } from "@finos/vuu-layout";
 
 let displaySequence = 1;
 
