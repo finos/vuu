@@ -414,25 +414,30 @@ class ViewPortImpl(val id: String,
 
       val key = newKeys.get(index)
 
-      val oldIndex = rowKeyToIndex.put(key, index)
+      //with virtualized tables, we can have null keys as they are pending to be loaded.
+      //we should just ignore them until they are loaded.
+      if(key != null){
 
-      if (isInRange(index)) {
+        val oldIndex = rowKeyToIndex.put(key, index)
 
-        if (!isObservedAlready(key)) {
+        if (isInRange(index)) {
 
-          subscribeForKey(key, index)
+          if (!isObservedAlready(key)) {
 
-          newlyAddedObs += 1
+            subscribeForKey(key, index)
 
-          publishHighPriorityUpdate(key, index)
+            newlyAddedObs += 1
 
-        } else if (hasChangedIndex(oldIndex, index)) {
-          publishHighPriorityUpdate(key, index)
+            publishHighPriorityUpdate(key, index)
+
+          } else if (hasChangedIndex(oldIndex, index)) {
+            publishHighPriorityUpdate(key, index)
+          }
+
+        } else {
+          unsubscribeForKey(key)
+          removedObs += 1
         }
-
-      } else {
-        unsubscribeForKey(key)
-        removedObs += 1
       }
 
       index += 1
@@ -450,10 +455,15 @@ class ViewPortImpl(val id: String,
 
     //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
     //this will check every key and remove it
-    while (i < newKeys.length) {
+
+    newKeys.toArray().foreach( key => {
       newKeySet.add(newKeys.get(i))
-      i += 1
-    }
+    })
+
+//    while (i < newKeys.length) {
+//      newKeySet.add(newKeys.get(i))
+//      i += 1
+//    }
 
     val iterator = subscribedKeys.entrySet().iterator()
 

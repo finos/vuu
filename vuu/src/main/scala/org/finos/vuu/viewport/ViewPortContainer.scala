@@ -18,6 +18,7 @@ import org.finos.vuu.feature.EmptyViewPortKeys
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.rpc.EditRpcHandler
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
+import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree._
@@ -47,7 +48,7 @@ trait ViewPortContainerMBean {
 
 }
 
-class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
+class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer, val pluginRegistry: PluginRegistry)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
   import org.finos.vuu.core.VuuServerMetrics._
 
@@ -543,7 +544,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = core.sort.UserDefinedFilterAndSort(aFilter, aSort)
 
-    val aTable = ViewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
+    val aTable = pluginRegistry.withPlugin(table.asTable.getTableDef.pluginType){
+        plugin => plugin.viewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
+    }
 
     val viewPortDefFunc = getViewPortDefinition(table.asTable)
 

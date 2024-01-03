@@ -4,25 +4,27 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
+import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module._
 import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer}
+import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net._
+import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider._
 import org.finos.vuu.test.rpc.RpcDynamicProxy
 import org.finos.vuu.test.{TestViewPort, TestVuuServer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer, ViewPortRange}
 
 import scala.reflect.classTag
 
-class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging with IVuuServer {
+class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging {
 
   private val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
@@ -42,7 +44,11 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   lifecycle(this).dependsOn(providerContainer)
 
-  val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+  val pluginRegistry = new DefaultPluginRegistry
+  pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+
+  val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
   val moduleContainer = new ModuleContainer
 
@@ -105,6 +111,12 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
         tableDef.setModule(module)
         createJoinTable(tableDef)
 
+      case tableDef: SessionTableDef =>
+        tableDef.setModule(module)
+        val table = createTable(tableDef)
+        val provider = module.getProviderForTable(table, this)
+        registerProvider(table, provider)
+
       case tableDef: TableDef if tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createAutoSubscribeTable(tableDef)
@@ -134,12 +146,14 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     }
   }
 
-  override def createViewPort(module: String, tableName: String): TestViewPort = {
+  override def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): TestViewPort = {
     val table = tableContainer.getTable(tableName)
     val columns = ViewPortColumnCreator.create(table, table.getTableDef.columns.map(_.name).toList)
-    val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, table, DefaultRange, columns)
+    val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, table, viewPortRange, columns)
     new TestViewPort(viewport)
   }
+
+  override def createViewPort(module: String, tableName: String): TestViewPort = createViewPort(module, tableName, DefaultRange)
 
   override def session: ClientSessionId = {
     clientSessionId
@@ -197,4 +211,10 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   override def requestContext: RequestContext = {
     RequestContext(RequestId.oneNew(), clientSessionId, queue, "TOKEN")
   }
+
+  override def registerPlugin(plugin: Plugin): Unit = pluginRegistry.registerPlugin(plugin)
+
+
+
+
 }

@@ -46,10 +46,11 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   final val providerContainer = new ProviderContainer(joinProvider)
   lifecycle(this).dependsOn(providerContainer)
 
-  final val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+  final val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
   final val moduleContainer = new ModuleContainer
 
+  config.plugins.foreach(pluginRegistry.registerPlugin)
   config.modules.foreach(module => registerModule(module))
 
   final val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)

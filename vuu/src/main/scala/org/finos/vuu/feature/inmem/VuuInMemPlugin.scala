@@ -7,6 +7,7 @@ import org.finos.vuu.feature._
 import org.finos.vuu.feature.inmem.viewport.{InMemViewPortCallableFactory, InMemViewPortTreeCallableFactory}
 import org.finos.vuu.plugin.{DefaultPlugin, PluginType}
 import org.finos.vuu.provider.JoinTableProvider
+import org.finos.vuu.viewport.InMemViewPortTableCreator
 
 object VuuInMemPluginType extends PluginType
 
@@ -49,4 +50,6 @@ class VuuInMemPlugin extends DefaultPlugin {
 
   override def viewPortCallableFactory: ViewPortCallableFactory = viewPortCallableFactoryInstance
   override def viewPortTreeCallableFactory: ViewPortTreeCallableFactory = viewPortTreeCallableFactoryInstance
+
+  override def viewPortTableCreator: ViewPortTableCreator = InMemViewPortTableCreator
 }

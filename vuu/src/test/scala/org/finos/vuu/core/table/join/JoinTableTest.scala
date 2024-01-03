@@ -6,7 +6,9 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table._
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -34,7 +36,10 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
-      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+      val pluginRegistry = new DefaultPluginRegistry
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
       viewPortContainer
     }

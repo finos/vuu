@@ -5,7 +5,9 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api._
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -23,7 +25,10 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
   def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer)(implicit clock: Clock, metrics: MetricsProvider): ViewPortContainer = {
 
-    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer)
+    val pluginRegistry = new DefaultPluginRegistry
+    pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
     viewPortContainer
   }
