@@ -1,9 +1,5 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
-import { useMemo } from "react";
 import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
-import columns from "./basketConstituentLiveColumns";
 
 if (
   typeof ProgressCell !== "function" ||
@@ -17,28 +13,12 @@ import "./BasketTableLive.css";
 
 const classBase = "vuuBasketTableLive";
 
-export interface BasketTableLiveProps extends Omit<TableProps, "config"> {
-  tableSchema: TableSchema;
-}
-
-export const BasketTableLive = ({
-  tableSchema,
-  ...props
-}: BasketTableLiveProps) => {
-  const tableConfig = useMemo<TableConfig>(
-    () => ({
-      columns,
-      rowSeparators: true,
-    }),
-    []
-  );
-
+export const BasketTableLive = ({ ...props }: TableProps) => {
   return (
     <Table
       {...props}
       renderBufferSize={20}
       className={classBase}
-      config={tableConfig}
       rowHeight={21}
     />
   );

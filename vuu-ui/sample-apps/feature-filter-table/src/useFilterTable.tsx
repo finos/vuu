@@ -13,14 +13,14 @@ import {
 import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
+import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useShellContext } from "@finos/vuu-shell";
-import { TableConfig } from "@finos/vuu-table-types";
+import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import {
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { TypeaheadParams } from "packages/vuu-protocol-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
@@ -108,8 +108,8 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     [save]
   );
 
-  const handleTableConfigChange = useCallback(
-    (config: TableConfig) => {
+  const handleTableConfigChange = useCallback<TableConfigChangeHandler>(
+    (config) => {
       save?.(config, "table-config");
     },
     [save]

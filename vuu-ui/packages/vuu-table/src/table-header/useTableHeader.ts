@@ -43,7 +43,11 @@ export const useTableHeader = ({
         ? tableConfig.columns.findIndex(ofColumn(nextColumn))
         : -1;
 
-      onMoveColumn(moveColumnTo(tableConfig.columns, column, insertPos));
+      if (moveTo > moveFrom && insertPos !== -1) {
+        onMoveColumn(moveColumnTo(tableConfig.columns, column, insertPos - 1));
+      } else {
+        onMoveColumn(moveColumnTo(tableConfig.columns, column, insertPos));
+      }
     },
     [columns, onMoveColumn, tableConfig.columns]
   );

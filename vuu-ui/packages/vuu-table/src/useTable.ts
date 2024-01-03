@@ -603,6 +603,9 @@ export const useTable = ({
 
   const onMoveColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
+      console.log(`useTable onMoveColumn`, {
+        columns,
+      });
       const newTableConfig = {
         ...tableConfig,
         columns,
