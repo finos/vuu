@@ -1,5 +1,4 @@
 import { Table } from "@finos/vuu-table";
-import { ArrayDataSource } from "@finos/vuu-data-local";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 
 // import "@finos/vuu-icons/index.css";

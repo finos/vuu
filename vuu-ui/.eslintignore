@@ -18,3 +18,4 @@ storybook-static
 showcase/dist
 target
 packages/shell/src/feature/Feature.jsx
+**/inlined-worker.js

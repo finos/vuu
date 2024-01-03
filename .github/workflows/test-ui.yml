@@ -1,26 +1,26 @@
-name: "Test"
+name: "Test UI"
 on:
   workflow_dispatch:
   pull_request:
 
 jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - run: cd ./vuu-ui && npm run lint
+      - run: cd ./vuu-ui && npm run typecheck
+
   vitest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-      - name: Install dependencies
-        run: cd ./vuu-ui && npm install
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
   cypress-e2e:
@@ -31,18 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-      - name: Install dependencies
-        run: cd ./vuu-ui && npm install
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
       - name: Run end-to-end tests in Chrome
         uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
         with:
@@ -68,12 +58,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-      - name: Install dependencies
-        run: cd ./vuu-ui && npm install
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
       - name: Build Vuu Libraries
         run: cd ./vuu-ui && npm run build
       - name: Build Vuu app

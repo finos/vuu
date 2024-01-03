@@ -21,7 +21,7 @@ export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
       [onCommit]
     );
 
-    return !!column.editable ? (
+    return column.editable ? (
       <Checkbox checked={isChecked} onClick={handleCommit(!isChecked)} />
     ) : (
       <CheckboxIcon checked={isChecked} disabled={true} />

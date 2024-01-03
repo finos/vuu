@@ -8,10 +8,6 @@ import { IFrame } from "./components";
 
 import "./App.css";
 
-// export type VuuExample = ((props?: unknown) => ReactElement) & {
-//   displaySequence?: number;
-// };
-
 export type VuuExample = {
   (props?: any): JSX.Element;
   displaySequence: number;

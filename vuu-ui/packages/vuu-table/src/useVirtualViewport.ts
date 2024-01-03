@@ -12,13 +12,12 @@ export interface VirtualViewportHookProps {
 }
 
 export const useVirtualViewport = ({
-  columns,
   getRowAtPosition,
   setRange,
   viewportMeasurements,
 }: VirtualViewportHookProps) => {
   const firstRowRef = useRef<number>(0);
-  const { contentWidth, rowCount: viewportRowCount } = viewportMeasurements;
+  const { rowCount: viewportRowCount } = viewportMeasurements;
 
   const handleVerticalScroll = useCallback(
     (scrollTop: number) => {

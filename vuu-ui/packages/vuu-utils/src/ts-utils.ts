@@ -1,4 +1,4 @@
-export function isNotNullOrUndefined<T extends any>(
+export function isNotNullOrUndefined<T>(
   value: T | undefined | null
 ): value is NonNullable<T> {
   return value !== undefined && value !== null;

@@ -1,34 +1,13 @@
 import "./global-mocks";
-import { describe, expect, vi, it } from "vitest";
-import {
-  ServerProxy,
-  TEST_setRequestId,
-} from "../src/server-proxy/server-proxy";
-import { Viewport } from "../src/server-proxy/viewport";
+import { describe, vi, it } from "vitest";
+import { TEST_setRequestId } from "../src/server-proxy/server-proxy";
 import {
   COMMON_ATTRS,
-  COMMON_ROW_ATTRS,
   COMMON_TABLE_ROW_ATTRS,
   createServerProxyAndSubscribeToViewport,
   createTableRows,
-  createTableGroupRows,
-  createSubscription,
   sizeRow,
-  updateTableRow,
 } from "./test-utils";
-import {
-  DataSourceDataMessage,
-  DataSourceEnabledMessage,
-  DataSourceSubscribedMessage,
-} from "../src";
-import { VuuRow } from "@finos/vuu-protocol-types";
-
-const SERVER_MESSAGE_CONSTANTS = {
-  module: "CORE",
-  sessionId: "dsdsd",
-  token: "test",
-  user: "user",
-};
 
 const mockConnection = {
   send: vi.fn(),

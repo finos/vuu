@@ -1,7 +1,5 @@
 import { Contribution, HeaderProps } from "@finos/vuu-layout";
-import { Header, useViewContext } from "@finos/vuu-layout";
-import { Button } from "@salt-ds/core";
-import { useCallback, useRef } from "react";
+import { Header } from "@finos/vuu-layout";
 import "./VuuBlotterHeader.css";
 
 const classBase = "VuuBlotterHeader";

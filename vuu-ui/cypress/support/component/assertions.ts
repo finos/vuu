@@ -102,7 +102,7 @@ declare global {
  * @example
  * cy.findByRole('option).should('be.highlighted')
  */
-const isHighlighted: ChaiPlugin = (_chai, utils) => {
+const isHighlighted: ChaiPlugin = (_chai) => {
   function assertIsHighlighted(this: AssertionStatic) {
     const root = this._obj.get(0);
     // make sure it's an Element
@@ -134,7 +134,7 @@ chai.use(isHighlighted);
  * @example
  * cy.findByRole('option).should('have.focusVisible')
  */
-const hasFocusVisible: ChaiPlugin = (_chai, utils) => {
+const hasFocusVisible: ChaiPlugin = (_chai) => {
   function assertHasFocusVisible(this: AssertionStatic) {
     const root = this._obj.get(0);
     // make sure it's an Element
@@ -166,7 +166,7 @@ chai.use(hasFocusVisible);
  * @example
  * cy.findByRole('option).should('be.highlighted')
  */
-const hasAriaSelected: ChaiPlugin = (_chai, utils) => {
+const hasAriaSelected: ChaiPlugin = (_chai) => {
   function assertHasAriaSelected(this: AssertionStatic) {
     const root = this._obj.get(0);
     // make sure it's an Element

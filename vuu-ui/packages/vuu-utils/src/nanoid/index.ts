@@ -2,9 +2,9 @@
 // couldn't get original code to work as npm import without crypro warnings -
 // seemed to be picking up node version, not browser version
 
-export const uuid = (size: number = 21): string => {
-  let id: string = '';
-  let bytes = crypto.getRandomValues(new Uint8Array(size));
+export const uuid = (size = 21): string => {
+  let id = '';
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
 
   // A compact alternative for `for (var i = 0; i < step; i++)`.
   while (size--) {
@@ -13,7 +13,7 @@ export const uuid = (size: number = 21): string => {
     // range to the 0-63 value range. Therefore, adding hacks, such
     // as empty string fallback or magic numbers, is unneccessary because
     // the bitmask trims bytes down to the alphabet size.
-    let byte = bytes[size] & 63;
+    const byte = bytes[size] & 63;
     if (byte < 36) {
       // `0-9a-z`
       id += byte.toString(36);

@@ -14,7 +14,8 @@
     "showcase"
   ],
   "scripts": {
-    "lint": "eslint . --ext .js,.jsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "prettier": "prettier './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",

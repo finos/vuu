@@ -24,15 +24,6 @@ function launchChrome(headless = false) {
   });
 }
 
-// launchChrome().then(async (chrome) => {
-//   console.log(`Chrome debuggable on port: ${chrome.port}`);
-//   const version = await CDP.Version({ port: chrome.port });
-//   console.log(version["User-Agent"]);
-//   const protocol = await CDP({port: chrome.port});
-
-//   chrome.kill();
-// });
-
 (async function () {
   const chrome = await launchChrome();
   const protocol = await CDP({ port: chrome.port });
@@ -41,44 +32,6 @@ function launchChrome(headless = false) {
   // See API docs: https://chromedevtools.github.io/devtools-protocol/
   const { Page, Tracing } = protocol;
   await Page.enable();
-
-  // const manifest = await Page.getAppManifest();
-
-  // if (manifest.url) {
-  //   console.log("Manifest: " + manifest.url);
-  //   console.log(manifest.data);
-  // } else {
-  //   console.log("Site has no app manifest");
-  // }
-
-  // const categories = await Tracing.getCategories();
-  // console.log({ categories });
-
-  const config = {
-    tracing: {
-      traceConfig: {
-        includedCategories: [
-          "-*",
-          "devtools.timeline",
-          "v8.execute",
-          "disabled-by-default-devtools.timeline",
-          "disabled-by-default-devtools.timeline.frame",
-          "toplevel",
-          "blink.console",
-          "blink.user_timing",
-          "latencyInfo",
-          "disabled-by-default-devtools.timeline",
-          "disabled-by-default-devtools.timeline.frame",
-          "disabled-by-default-devtools.timeline.stack",
-          "disabled-by-default-devtools.screenshot",
-          "disabled-by-default-v8.cpu_profiler",
-        ],
-        //   excludedCategories: ["-*"],
-      },
-    },
-    cdpPort: 9222,
-    maxTimeout: 50000,
-  };
 
   let data = [];
 
@@ -90,7 +43,6 @@ function launchChrome(headless = false) {
     console.log({ evt });
   });
 
-  //   await Tracing.start(config.tracing);
   await Tracing.start({
     traceConfig: {
       includedCategories: [
