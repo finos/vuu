@@ -132,7 +132,7 @@ describe("GridLayoutModel", () => {
     });
 
     describe("WHEN we have a 2 x 2 layout, 2 columns, misaligned rows, aligned bottom", () => {
-      it.only("THEN we have 3 initial splitters, including a multi-track splitter", () => {
+      it("THEN we have 3 initial splitters, including a multi-track splitter", () => {
         const model = new GridLayoutModel(2, 3);
         model.addGridItem(new Item("green", 1, 2, 1, 3));
         model.addGridItem(new Item("brown", 2, 3, 1, 2));
@@ -152,32 +152,115 @@ describe("GridLayoutModel", () => {
 
   describe("getGridItemsAdjoiningTrack", () => {
     describe("WHEN we have a 2 x 1 layout", () => {
-      it("THEN first cell is contra for second cell", () => {
+      it("THEN first cell is horizontal contra for second cell", () => {
         const model = new GridLayoutModel(2, 1);
         model.addGridItem(new Item("green", 1, 2, 1, 2));
         model.addGridItem(new Item("brown", 2, 3, 1, 2));
 
-        expect(
-          model.getGridItemsAdjoiningTrack("brown", "horizontal", "start")
-        ).toEqual({});
+        const { contra, contraOtherTrack } = model.getGridItemsAdjoiningTrack(
+          "brown",
+          "horizontal",
+          "start"
+        );
+        expect(contra.length).toEqual(1);
+        const [gridItem] = contra;
+        expect(gridItem.id).toEqual("green");
+        expect(contraOtherTrack).toBeUndefined;
+
+        const [contraItem] = contra;
+        expect(contraItem.id).toEqual("green");
+      });
+    });
+
+    describe("WHEN we have a 1 x 2 layout", () => {
+      it("THEN first cell is horizontal contra for second cell", () => {
+        const model = new GridLayoutModel(1, 2);
+        model.addGridItem(new Item("green", 1, 2, 1, 2));
+        model.addGridItem(new Item("brown", 1, 2, 2, 3));
+
+        const { contra, contraOtherTrack } = model.getGridItemsAdjoiningTrack(
+          "brown",
+          "vertical",
+          "start"
+        );
+        expect(contra.length).toEqual(1);
+        const [gridItem] = contra;
+        expect(gridItem.id).toEqual("green");
+        expect(contraOtherTrack).toBeUndefined;
       });
     });
   });
 
-  //   describe("prepareToResize", () => {
-  //     describe("WHEN we have 4 equal sized grid items in a 2 x 2 layout", () => {
-  //       describe("WHEN user initiates a resize on a vertical splitter, first row", () => {
-  //         it("THEN model identifies adjacent items", () => {
-  //           const model = new GridLayoutModel(2, 2);
-  //           model.addGridItem(new Item("green", 1, 2, 1, 2));
-  //           model.addGridItem(new Item("brown", 2, 3, 1, 2));
-  //           model.addGridItem(new Item("black", 1, 2, 2, 3));
-  //           model.addGridItem(new Item("yellow", 2, 3, 2, 3));
-  //           model.prepareToResize("brown");
-  //           const {adjacentItems} = model;
-  //           expect()
-  //         });
-  //       });
-  //     });
-  //   });
+  describe("WHEN we have a 2 x 2 layout", () => {
+    const model = new GridLayoutModel(2, 2);
+    model.addGridItem(new Item("green", 1, 2, 1, 2));
+    model.addGridItem(new Item("brown", 2, 3, 1, 2));
+    model.addGridItem(new Item("black", 1, 2, 2, 3));
+    model.addGridItem(new Item("yellow", 2, 3, 2, 3));
+
+    it("THEN first row first cell is horizontal contra for first row second cell", () => {
+      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+        model.getGridItemsAdjoiningTrack("brown", "horizontal", "start");
+
+      expect(contra.length).toEqual(1);
+      expect(contraOtherTrack?.length).toEqual(1);
+      expect(siblingsOtherTrack?.length).toEqual(1);
+      expect(nonAdjacent?.length).toEqual(0);
+
+      const [contraItem] = contra;
+      expect(contraItem.id).toEqual("green");
+    });
+
+    it("THEN second row first cell is horizontal contra for second row second cell", () => {
+      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+        model.getGridItemsAdjoiningTrack("yellow", "horizontal", "start");
+
+      expect(contra.length).toEqual(1);
+      expect(contraOtherTrack?.length).toEqual(1);
+      expect(siblingsOtherTrack?.length).toEqual(1);
+      expect(nonAdjacent?.length).toEqual(0);
+
+      const [contraItem] = contra;
+      expect(contraItem.id).toEqual("black");
+    });
+
+    it("THEN first row first cell is vertical contra for second row first cell", () => {
+      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+        model.getGridItemsAdjoiningTrack("black", "vertical", "start");
+
+      expect(contra.length).toEqual(1);
+      expect(contraOtherTrack?.length).toEqual(1);
+      expect(siblingsOtherTrack?.length).toEqual(1);
+      expect(nonAdjacent?.length).toEqual(0);
+
+      const [contraItem] = contra;
+      expect(contraItem.id).toEqual("green");
+    });
+
+    it("THEN first row second cell is vertical contra for second row second cell", () => {
+      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+        model.getGridItemsAdjoiningTrack("yellow", "vertical", "start");
+
+      expect(contra.length).toEqual(1);
+      expect(contraOtherTrack?.length).toEqual(1);
+      expect(siblingsOtherTrack?.length).toEqual(1);
+      expect(nonAdjacent?.length).toEqual(0);
+
+      const [contraItem] = contra;
+      expect(contraItem.id).toEqual("brown");
+    });
+  });
+  describe("WHEN we have  2 columns, with 2 rows in the second column", () => {
+    it("THEN we have a simple resize, with multiple contras", () => {
+      const model = new GridLayoutModel(2, 2);
+      model.addGridItem(new Item("green", 1, 2, 1, 3));
+      model.addGridItem(new Item("brown", 2, 3, 1, 2));
+      model.addGridItem(new Item("yellow", 2, 3, 2, 3));
+
+      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+        model.getGridItemsAdjoiningTrack("green", "horizontal", "end");
+
+      expect(contra.length).toEqual(2);
+    });
+  });
 });

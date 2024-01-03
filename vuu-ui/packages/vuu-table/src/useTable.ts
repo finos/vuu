@@ -1,10 +1,10 @@
-import {
+import type {
   DataSourceConfig,
   DataSourceRow,
   DataSourceSubscribedMessage,
   SelectionChangeHandler,
 } from "@finos/vuu-data-types";
-import {
+import type {
   ColumnDescriptor,
   DataCellEditHandler,
   TableRowClickHandlerInternal,
@@ -47,7 +47,7 @@ import {
   buildContextMenuDescriptors,
   useHandleTableContextMenu,
 } from "./context-menu";
-import { TableProps } from "./Table";
+import type { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
 import { useCellEditing } from "./useCellEditing";
 import { useDataSource } from "./useDataSource";

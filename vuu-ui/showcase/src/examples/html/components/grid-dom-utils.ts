@@ -1,12 +1,5 @@
-import { SplitterAlign } from "packages/vuu-layout/src";
-import {
-  ContraItem,
-  ContraItemOtherColumn,
-  GridItem,
-  GridPos,
-  NonAdjacentItem,
-  SiblingItemOtherColumn,
-} from "./grid-layout-types";
+import { GridLayoutModelPosition } from "packages/vuu-layout/src";
+import { GridItem, GridPos } from "./grid-layout-types";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
 
@@ -89,217 +82,26 @@ export const getRowIndex = (el: HTMLElement) => {
   return from - 1;
 };
 
-const collectColItems = (
-  colPosition: GridPos,
-  rowPosition: GridPos,
-  element: HTMLElement,
-  splitterAlign: SplitterAlign,
-  contraItems: GridItem[],
-  contraItemsMaybe: GridItem[],
-  contraItemsOtherTrack: GridItem[],
-  siblingItemsOtherTrack: GridItem[],
-  nonAdjacentItems: GridItem[]
-) => {
-  const { id } = element;
-  const row = getRow(element);
-  const col = getColumn(element);
-
-  console.log(
-    `related item  (${id}) at row ${row} column ${col} splitter align ${splitterAlign}`
-  );
-  // A splitter with align start (the default) operates at the leading edge of the track, end splitters
-  // operate at the trailing track edge.
-  const positionIndex = splitterAlign === "start" ? 0 : 1;
-  if (col.includes(colPosition[positionIndex])) {
-    if (occupiesSameTrack(rowPosition, row)) {
-      console.log(`${id} is contra-resize item`);
-      contraItems.push({ id, col: new ContraItem(col) });
-    } else if (withinSameTrack(rowPosition, row)) {
-      if (row[0] === row[1]) {
-        if (itemOnOtherSideOfSplitter(colPosition, col)) {
-          console.log(`${id} is a splitter on the other side`);
-          contraItemsOtherTrack.push({
-            id,
-            col: new ContraItemOtherColumn(col),
-          });
-        } else {
-          console.log(`${id} is a sibling item splitter`);
-          siblingItemsOtherTrack.push({
-            id,
-            col: new SiblingItemOtherColumn(col),
-          });
-        }
-      } else {
-        console.log(`${id} is maybe a contra-resize item`);
-        contraItemsMaybe.push({ id, col: new ContraItem(col) });
-      }
-    } else if (itemIsSiblingSplitter(colPosition, col)) {
-      console.log(`${id} is a splitter sibling`);
-      siblingItemsOtherTrack.push({
-        id,
-        col: new SiblingItemOtherColumn(col),
-      });
-    } else if (itemOnOtherSideOfSplitter(colPosition, col)) {
-      console.log(
-        `${id} is on the other side of the splitter but in another row`
-      );
-      contraItemsOtherTrack.push({
-        id,
-        col: new ContraItemOtherColumn(col),
-      });
-    } else {
-      console.log(`${id} is a column sibling`);
-      siblingItemsOtherTrack.push({
-        id,
-        col: new SiblingItemOtherColumn(col),
-      });
-    }
-  } else {
-    console.log(`${id} is a non adjacent item`);
-    nonAdjacentItems.push({
-      id,
-      col: new NonAdjacentItem(col),
-    });
-  }
-};
-
-const collectRowItems = (
-  colPosition: GridPos,
-  rowPosition: GridPos,
-  element: HTMLElement,
-  splitterAlign: SplitterAlign,
-  contraItems: GridItem[],
-  contraItemsMaybe: GridItem[],
-  contraItemsOtherTrack: GridItem[],
-  siblingItemsOtherTrack: GridItem[],
-  nonAdjacentItems: GridItem[]
-) => {
-  const { id } = element;
-  const row = getRow(element);
-  const col = getColumn(element);
-  console.log(`related item  (${id}) at row ${row} column ${col}`);
-  // The splitter always operates at the leading row
-  if (row.includes(rowPosition[0])) {
-    if (occupiesSameTrack(colPosition, col)) {
-      console.log(`${id} is contra-resize item`);
-      contraItems.push({ id, row: new ContraItem(row) });
-    } else if (withinSameTrack(colPosition, col)) {
-      console.log(`${id} is maybe a contra-resize item`);
-      contraItemsMaybe.push({ id, row: new ContraItem(row) });
-    } else if (itemOnOtherSideOfSplitter(rowPosition, row)) {
-      console.log(
-        `${id} is on the other side of the splitter but in another column`
-      );
-      contraItemsOtherTrack.push({
-        id,
-        row: new ContraItemOtherColumn(row),
-      });
-    } else {
-      console.log(`${id} is a row sibling`);
-      siblingItemsOtherTrack.push({
-        id,
-        row: new SiblingItemOtherColumn(row),
-      });
-    }
-  } else {
-    console.log(`${id} is a non adjacent item`);
-    nonAdjacentItems.push({
-      id,
-      row: new NonAdjacentItem(row),
-    });
-  }
-};
-
-export const getGridItemsAdjoiningTrack = (
-  grid: HTMLElement,
-  gridItemId: HTMLElement,
-  resizeOrientation: ResizeOrientation,
-  splitterAlign: SplitterAlign
-):
-  | [GridItem[], GridItem[], GridItem[], GridItem[], GridItem[]]
-  | [GridItem[]] => {
-  const contraItems: GridItem[] = [];
-  const contraItemsMaybe: GridItem[] = [];
-  const contraItemsOtherTrack: GridItem[] = [];
-  const siblingItemsOtherTrack: GridItem[] = [];
-  const nonAdjacentItems: GridItem[] = [];
-
-  const rowPosition = getRow(targetElement);
-  const colPosition = getColumn(targetElement);
-
-  const collectItems =
-    resizeOrientation === "vertical" ? collectRowItems : collectColItems;
-
-  for (const node of grid.childNodes) {
-    const element = node as HTMLElement;
-    if (element !== targetElement && !isSplitter(element)) {
-      collectItems(
-        colPosition,
-        rowPosition,
-        element,
-        splitterAlign,
-        contraItems,
-        contraItemsMaybe,
-        contraItemsOtherTrack,
-        siblingItemsOtherTrack,
-        nonAdjacentItems
-      );
-    }
-  }
-  if (contraItemsOtherTrack.length === 0) {
-    // Single Track resize
-    return [contraItems];
-  } else {
-    return [
-      contraItems,
-      contraItemsMaybe,
-      contraItemsOtherTrack,
-      siblingItemsOtherTrack,
-      nonAdjacentItems,
-    ];
-  }
-};
-
-const occupiesSameTrack = (
-  [sourceFrom, sourceTo]: GridPos,
-  [targetFrom, targetTo]: GridPos
-) => targetFrom === sourceFrom && targetTo === sourceTo;
-
-const withinSameTrack = (
-  [sourceFrom, sourceTo]: GridPos,
-  [targetFrom, targetTo]: GridPos
-) => targetFrom >= sourceFrom && targetTo <= sourceTo;
-
-const itemIsSiblingSplitter = (
-  [sourceFrom]: GridPos,
-  [targetFrom, targetTo]: GridPos
-) => targetFrom === targetTo && targetTo === sourceFrom;
-
-const itemOnOtherSideOfSplitter = (
-  [sourceFrom]: GridPos,
-  [, targetTo]: GridPos
-) => targetTo === sourceFrom;
-
 export const setGridColumn = (
   target: string | HTMLElement,
-  [from, to]: GridPos
+  { start, end }: GridLayoutModelPosition
 ) => {
   const el =
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
       : target;
-  el.style.setProperty("grid-column", `${from}/${to}`);
+  el.style.setProperty("grid-column", `${start}/${end}`);
 };
 
 export const setGridRow = (
   target: string | HTMLElement,
-  [from, to]: GridPos
+  { start, end }: GridLayoutModelPosition
 ) => {
   const el =
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
       : target;
-  el.style.setProperty("grid-row", `${from}/${to}`);
+  el.style.setProperty("grid-row", `${start}/${end}`);
 };
 
 export const spansMultipleTracks = (gridItem: GridItem) => {
