@@ -364,7 +364,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val columns = vp.getColumns
         val keys = vp.getKeysInRange
 
-        val rows = keys.toArray.map(key => vp.table.pullRowAsArray(key, columns))
+        val rows = keys.map(key => vp.table.pullRowAsArray(key, columns)).toArray
 
         val headers = if (vp.hasGroupBy)
           Array[String]("depth", "isOpen", "key", "isLeaf") ++ columns.getColumns().map(_.name).toArray[String]
