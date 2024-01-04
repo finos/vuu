@@ -26,7 +26,7 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
       withVuuServer(VirtualTableModule()) {
         vuuServer =>
 
-          vuuServer.registerPlugin(new VirtualizedTablePlugin())
+          vuuServer.registerPlugin(VirtualizedTablePlugin)
 
           vuuServer.login("testUser", "testToken")
 
