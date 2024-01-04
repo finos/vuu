@@ -1,5 +1,6 @@
 package org.finos.vuu.data.order.ignite
 
+import com.typesafe.scalalogging.StrictLogging
 import org.apache.ignite.cache.CachePeekMode
 import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, SqlFieldsQuery}
 import org.apache.ignite.cluster.ClusterState
@@ -33,7 +34,7 @@ object IgniteOrderStore {
 }
 
 class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrder],
-                       private val childOrderCache: IgniteCache[Int, ChildOrder]) extends OrderStore {
+                       private val childOrderCache: IgniteCache[Int, ChildOrder]) extends OrderStore with StrictLogging {
 
 
   def storeParentOrder(parentOrder: ParentOrder): Unit = {
@@ -98,10 +99,18 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   }
 
   def findWindow(startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
-    val query = childOrderCache.query(new SqlFieldsQuery(s"select * from ChildOrder limit $rowCount offset $startIndex"))
+    val query = new SqlFieldsQuery(s"select * from ChildOrder order by id limit ? offset ?")
+    query.setArgs(rowCount, startIndex)
+    val results = childOrderCache.query(query)
 
+    var counter = 0
     val buffer = mutable.ListBuffer[ChildOrder]()
-    query.forEach(item => buffer.addOne(toChildOrder(item)))
+    results.forEach(item => {
+      buffer.addOne(toChildOrder(item))
+      counter += 1
+    })
+
+    logger.debug(s"Loaded $counter rows, from index : $startIndex, rowCou")
 
     buffer
   }
