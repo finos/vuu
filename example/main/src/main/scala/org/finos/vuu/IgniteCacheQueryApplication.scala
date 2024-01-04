@@ -1,7 +1,6 @@
-package org.finos.vuu.data.order.ignite
+package org.finos.vuu
 
-import org.apache.ignite.{IgniteCache, Ignition}
-import org.finos.vuu.data.order.{ChildOrder, ParentOrder}
+import org.finos.vuu.data.order.ignite.IgniteOrderStore
 
 import java.time.{Duration, Instant}
 
@@ -12,15 +11,10 @@ import java.time.{Duration, Instant}
  * 3. [[IgniteCacheQueryApplication]] - a showcase class that queries Ignite for slices of ChildOrders <br>
  */
 object IgniteCacheQueryApplication extends App {
-  //private val clientConfig = IgniteLocalConfig.create(true)
-  //val ignite = Ignition.getOrStart(clientConfig)
-
-  //val childOrderCache: IgniteCache[Int, ChildOrder] = ignite.getOrCreateCache(IgniteLocalConfig.childOrderCacheName)
-  //val parentOrderCache: IgniteCache[Int, ParentOrder] = ignite.getOrCreateCache(IgniteLocalConfig.parentOrderCacheName)
   val orderStore = IgniteOrderStore()
 
   private val windowSize = 100
-  private var offset = 0
+  private var offset = 500
   //private var remaining = orderStore.childOrderCount()
 
   //while (remaining > 0) {

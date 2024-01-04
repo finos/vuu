@@ -3,7 +3,7 @@ package org.finos.vuu.example.virtualtable.provider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.data.order.ignite.IgniteOrderStore
-import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable}
+import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
 
@@ -34,6 +34,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
         ))
       internalTable.processUpdateForIndex(index.getAndIncrement(), childOrder.id.toString, row, clock.now())
     })
+    viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
 
   override def subscribe(key: String): Unit = {}

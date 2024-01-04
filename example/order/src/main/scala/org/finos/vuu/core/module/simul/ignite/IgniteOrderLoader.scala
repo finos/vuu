@@ -19,7 +19,7 @@ object IgniteOrderLoader extends App {
   private val childOrderCounter = new LongAdder()
   private val executor = Executors.newWorkStealingPool()
 
-  (0 until (10_000)).foreach(i =>
+  (0 until (5_000)).foreach(i =>
   executor.execute { () =>
     val parent = ordersModel.createParent()
     val childrenToCreate = randomNumbers.seededRand(100, 250)
