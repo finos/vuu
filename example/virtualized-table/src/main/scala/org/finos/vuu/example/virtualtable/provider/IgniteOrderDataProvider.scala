@@ -9,11 +9,12 @@ import org.finos.vuu.viewport.ViewPort
 
 import java.util.concurrent.atomic.AtomicInteger
 
-class IgniteOrderDataProvider(final val table: DataTable,
-                              final val igniteStore: IgniteOrderStore)(implicit clock: Clock) extends VirtualizedProvider {
-  private final val internalTable = table.asInstanceOf[VirtualizedSessionTable]
+class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit clock: Clock) extends VirtualizedProvider {
+
 
   override def runOnce(viewPort: ViewPort): Unit = {
+
+    val internalTable = viewPort.table.asTable.asInstanceOf[VirtualizedSessionTable]
 
     val range = viewPort.getRange
     val totalSize = igniteStore.childOrderCount().toInt
@@ -35,15 +36,15 @@ class IgniteOrderDataProvider(final val table: DataTable,
     })
   }
 
-  override def subscribe(key: String): Unit = ???
+  override def subscribe(key: String): Unit = {}
 
-  override def doStart(): Unit = ???
+  override def doStart(): Unit = {}
 
-  override def doStop(): Unit = ???
+  override def doStop(): Unit = {}
 
-  override def doInitialize(): Unit = ???
+  override def doInitialize(): Unit = {}
 
-  override def doDestroy(): Unit = ???
+  override def doDestroy(): Unit = {}
 
-  override val lifecycleId: String = ???
+  override val lifecycleId: String = "org.finos.vuu.example.virtualtable.provider.IgniteOrderDataProvider"
 }
