@@ -10,9 +10,10 @@ class VirtualizedViewPortKeys(tablePrimaryKeys: TablePrimaryKeys) extends ViewPo
   override def create(tableKeys: TablePrimaryKeys): ViewPortKeys = ???
 
   override def get(index: Int): String = tablePrimaryKeys.get(index)
-  override def slice(from: Int, to: Int): Array[String] = tablePrimaryKeys.sliceTableKeys(from, to).toArray
+  override def sliceToArray(from: Int, to: Int): Array[String] = tablePrimaryKeys.sliceTableKeys(from, to).toArray
   override def sliceToKeys(from: Int, to: Int): ViewPortKeys = ???
   override def length: Int = tablePrimaryKeys.length
   override def toArray(): Array[String] = tablePrimaryKeys.toArray
   def setDataInRange(from: Int, to: Int, data: Array[String]): Unit = ???
+  override def iterator: Iterator[String] = tablePrimaryKeys.iterator
 }
