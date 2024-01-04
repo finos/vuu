@@ -4,6 +4,7 @@ import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
 import org.apache.ignite.configuration.{CacheConfiguration, DataStorageConfiguration, IgniteConfiguration}
 import org.finos.vuu.data.order.ChildOrder
 
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
@@ -18,7 +19,7 @@ object IgniteLocalConfig {
 
     cfg.setClientMode(clientMode)
     cfg.setPeerClassLoadingEnabled(true)
-    cfg.setWorkDirectory("./target/ignite")
+    cfg.setWorkDirectory(Paths.get("./target/ignite").toFile.getAbsolutePath)
 
     cfg.setCacheConfiguration(
       createParentOrderCacheConfig(),

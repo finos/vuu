@@ -10,7 +10,7 @@ import org.finos.vuu.example.virtualtable.provider.IgniteOrderDataProvider
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 
 
-class IgniteOrderDataModule extends DefaultModule {
+object IgniteOrderDataModule extends DefaultModule {
   final val NAME = "IGNITE_ORDER_VIRTUAL"
 
   def apply(igniteOrderStore: IgniteOrderStore)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
@@ -21,7 +21,7 @@ class IgniteOrderDataModule extends DefaultModule {
           keyField = "orderId",
           Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
         ),
-        (table, _) => new IgniteOrderDataProvider(table, igniteOrderStore),
+        (table, _) => new IgniteOrderDataProvider(igniteOrderStore),
         (table, _, _, _) => ViewPortDef(
           columns = table.getTableDef.columns,
           service = new VirtualService()

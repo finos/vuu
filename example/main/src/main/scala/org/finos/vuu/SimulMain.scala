@@ -16,7 +16,8 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.example.virtualtable.module.VirtualTableModule
+import org.finos.vuu.data.order.ignite.IgniteOrderStore
+import org.finos.vuu.example.virtualtable.module.{IgniteOrderDataModule, VirtualTableModule}
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
@@ -89,6 +90,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
     .withModule(VirtualTableModule())
+    .withModule(IgniteOrderDataModule(IgniteOrderStore()))
     .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
