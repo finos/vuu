@@ -33,7 +33,7 @@ export class ShellWithNewTheme {
     creator: string,
     date: Date
   ) => {
-    const formattedDate = formatDate({ date: "dd.mm.yyyy" })(date);
+    const formattedDate = formatDate({ date: "ddmmyyyy" })(date);
     const layoutTileName = `${layoutName} ${creator}, ${formattedDate}`;
 
     return cy

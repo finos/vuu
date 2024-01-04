@@ -3,6 +3,7 @@ import {
   ColumnTypeValueMap,
   ColumnTypeFormatting,
   DateTimeColumnDescriptor,
+  DateTimeTableAttributes,
 } from "@finos/vuu-table-types";
 import { roundDecimal } from "./round-decimal";
 import {
@@ -23,9 +24,12 @@ const DEFAULT_NUMERIC_FORMAT: ColumnTypeFormatting = {};
 export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
-const dateFormatter = (column: DateTimeColumnDescriptor) => {
+const dateFormatter = (
+  column: DateTimeColumnDescriptor,
+  opts?: DateTimeTableAttributes
+) => {
   const pattern = dateTimePattern(column.type);
-  const formatter = formatDate(pattern);
+  const formatter = formatDate(pattern, opts);
 
   return (value: unknown) => {
     if (typeof value === "number" && value !== 0) {
@@ -74,10 +78,11 @@ const mapFormatter = (map: ColumnTypeValueMap) => {
 
 export const getValueFormatter = (
   column: ColumnDescriptor,
-  serverDataType = column.serverDataType
+  serverDataType = column.serverDataType,
+  opts?: DateTimeTableAttributes
 ): ValueFormatter => {
   if (isDateTimeColumn(column)) {
-    return dateFormatter(column);
+    return dateFormatter(column, opts);
   }
 
   const { type } = column;

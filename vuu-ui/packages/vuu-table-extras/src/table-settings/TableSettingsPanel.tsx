@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   Button,
   FormField,
@@ -6,7 +8,15 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { TableSettingsProps } from "@finos/vuu-table-types";
+import {
+  localeOptions,
+  timeZoneOptions,
+  getDefaultLocaleAndTimeZone,
+} from "@finos/vuu-utils";
+import {
+  DateTimeTableAttributes,
+  TableSettingsProps,
+} from "@finos/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 
@@ -33,6 +43,7 @@ export const TableSettingsPanel = ({
     onChangeColumnLabels,
     onChangeTableAttribute,
     onColumnChange,
+    onChangeDateTimeAttribute,
     onMoveListItem,
     tableConfig,
   } = useTableSettings({
@@ -101,6 +112,12 @@ export const TableSettingsPanel = ({
         <Input className="vuuInput" />
       </FormField>
 
+      <DateTimeAttributesSettings
+        dateTimeAttrs={tableConfig.dateTime ?? {}}
+        onLocaleChange={onChangeDateTimeAttribute("locale")}
+        onTimeZoneChange={onChangeDateTimeAttribute("timeZone")}
+      />
+
       <ColumnList
         columnItems={columnItems}
         onChange={onColumnChange}
@@ -115,5 +132,49 @@ export const TableSettingsPanel = ({
         </span>
       </div>
     </div>
+  );
+};
+
+const DateTimeAttributesSettings: React.FC<{
+  dateTimeAttrs: DateTimeTableAttributes;
+  onLocaleChange: SingleSelectionHandler<string>;
+  onTimeZoneChange: SingleSelectionHandler<string>;
+}> = ({ dateTimeAttrs, onLocaleChange, onTimeZoneChange }) => {
+  const { locale: defaultLocale, timeZone: defaultTimeZone } =
+    getDefaultLocaleAndTimeZone();
+  const { locale = defaultLocale, timeZone = defaultTimeZone } = dateTimeAttrs;
+
+  const localesSource = useMemo(
+    () => [...new Set([...localeOptions, locale, defaultLocale])].sort(),
+    [locale, defaultLocale]
+  );
+
+  const timeZonesSource = useMemo(
+    () => [...new Set([...timeZoneOptions, timeZone, defaultTimeZone])].sort(),
+    [timeZone, defaultTimeZone]
+  );
+
+  return (
+    <>
+      <FormField>
+        <FormFieldLabel>Date/time locale</FormFieldLabel>
+        <Dropdown
+          onSelectionChange={onLocaleChange}
+          selected={locale}
+          source={localesSource}
+          width="100%"
+        />
+      </FormField>
+
+      <FormField>
+        <FormFieldLabel>Time-zone</FormFieldLabel>
+        <Dropdown
+          onSelectionChange={onTimeZoneChange}
+          selected={timeZone}
+          source={timeZonesSource}
+          width="100%"
+        />
+      </FormField>
+    </>
   );
 };

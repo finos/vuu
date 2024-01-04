@@ -4,7 +4,7 @@ import { DateTimePattern, isDateTimePattern } from "./types";
 
 export const defaultPatternsByType = {
   time: "hh:mm:ss",
-  date: "dd.mm.yyyy",
+  date: "ddmmyyyy",
 } as const;
 
 export const fallbackDateTimePattern: DateTimePattern = {

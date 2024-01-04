@@ -5,7 +5,7 @@ import {
 } from "../../src/date/helpers";
 import { DateTimePattern } from "../../src/date/types";
 
-const testPattern: DateTimePattern = { date: "mm/dd/yyyy" };
+const testPattern: DateTimePattern = { date: "ddmmyyyy" };
 
 describe("dateTimePattern", () => {
   it("returns exact pattern when found in descriptor type", () => {
