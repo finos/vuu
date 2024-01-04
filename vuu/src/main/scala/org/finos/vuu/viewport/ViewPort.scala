@@ -276,7 +276,7 @@ class ViewPortImpl(val id: String,
     val from = currentRange.from
     val to = currentRange.to
 
-    val inrangeKeys = keys.slice(from, to)
+    val inrangeKeys = keys.sliceToArray(from, to)
 
     logger.info(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
 

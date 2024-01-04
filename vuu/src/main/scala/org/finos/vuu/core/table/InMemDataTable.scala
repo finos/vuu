@@ -71,7 +71,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
     val columns = getTableDef.columns
     val keys = primaryKeys
 
-    val selectedKeys = keys.toArray.slice(start, end) //.slice(start, end)//drop(start).take(end - start)
+    val selectedKeys = keys.toArray.slice(start, end) //.sliceToArray(start, end)//drop(start).take(end - start)
 
     val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
 
