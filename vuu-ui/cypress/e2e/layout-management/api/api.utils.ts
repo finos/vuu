@@ -8,6 +8,9 @@ export type LayoutResponseDto = {
 };
 
 export const LAYOUT_API_BASE_URL = "http://localhost:8081/api";
+export const APPLICATION_LAYOUT_URL =
+  LAYOUT_API_BASE_URL + "/application-layouts/";
+export const USER_LAYOUT_URL = LAYOUT_API_BASE_URL + "/layouts/";
 
 export const TEST_LAYOUT_ID_ALIAS = "TEST_LAYOUT_ID";
 export const DEFAULT_APPLICATION_LAYOUT_ALIAS = "DEFAULT_APPLICATION_LAYOUT";
@@ -23,74 +26,88 @@ export const TEST_METADATA_DTO: LayoutMetadataDto = {
   user: "Test User",
 };
 
-export const getLayout = async (id: string): Promise<Response> => {
-  const url = LAYOUT_API_BASE_URL + "/layouts/" + id;
-  const options = {
-    method: "GET",
-  };
-
-  return new Promise((resolve, reject) => {
-    fetch(url, options).then((response) => {
-      if (response.status !== 200) reject(response);
-      resolve(response);
+export const getLayout = (id: string): Cypress.Chainable => {
+  return cy
+    .request({
+      method: "GET",
+      url: USER_LAYOUT_URL + id,
+    })
+    .then((response) => {
+      return response;
     });
-  });
 };
 
-export const createLayout = async (
+export const createLayout = (
   definition: LayoutJSON,
   metadata: LayoutMetadataDto
-): Promise<Response> => {
-  const url = LAYOUT_API_BASE_URL + "/layouts";
-  const options = {
-    method: "POST",
+): Cypress.Chainable => {
+  return cy
+    .request({
+      method: "POST",
+      url: USER_LAYOUT_URL,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        metadata,
+        definition,
+      },
+    })
+    .then((response) => {
+      return response;
+    });
+};
+
+export const deleteLayout = (id: string): Cypress.Chainable => {
+  return cy
+    .request({
+      method: "DELETE",
+      url: USER_LAYOUT_URL + id,
+    })
+    .then((response) => {
+      return response;
+    });
+};
+
+export const getApplicationLayout = (username: string): Cypress.Chainable => {
+  return cy
+    .request({
+      method: "GET",
+      url: APPLICATION_LAYOUT_URL,
+      headers: { username },
+    })
+    .then((response) => {
+      return response;
+    });
+};
+
+export const deleteApplicationLayout = (
+  username: string
+): Cypress.Chainable => {
+  return cy
+    .request({
+      method: "DELETE",
+      url: APPLICATION_LAYOUT_URL,
+      headers: {
+        username,
+      },
+    })
+    .then((response) => {
+      return response;
+    });
+};
+
+export const persistApplicationLayout = (
+  username: string,
+  body: any
+): Cypress.Chainable => {
+  return cy.request({
+    method: "PUT",
+    url: APPLICATION_LAYOUT_URL,
     headers: {
       "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      metadata,
-      definition,
-    }),
-  };
-
-  return new Promise((resolve, reject) => {
-    fetch(url, options).then((response) => {
-      if (response.status !== 201) reject(response);
-      resolve(response);
-    });
-  });
-};
-
-export const deleteLayout = async (id: string): Promise<Response> => {
-  const url = LAYOUT_API_BASE_URL + "/layouts/" + id;
-  const options = {
-    method: "DELETE",
-  };
-
-  return new Promise((resolve, reject) => {
-    fetch(url, options).then((response) => {
-      if (response.status !== 204) reject(response);
-      resolve(response);
-    });
-  });
-};
-
-export const getApplicationLayout = async (
-  username: string
-): Promise<Response> => {
-  const url = LAYOUT_API_BASE_URL + "/application-layouts";
-
-  const options = {
-    method: "GET",
-    headers: {
       username,
     },
-  };
-
-  return new Promise((resolve, reject) => {
-    fetch(url, options).then((response) => {
-      if (response.status !== 200) reject(response);
-      resolve(response);
-    });
+    body,
   });
 };
