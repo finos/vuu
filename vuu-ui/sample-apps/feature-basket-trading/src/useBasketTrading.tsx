@@ -15,7 +15,7 @@ import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
 import { BasketChangeHandler } from "./basket-toolbar";
-import { NewBasketPanel } from "./new-basket-panel";
+import { BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
@@ -167,16 +167,6 @@ export const useBasketTrading = ({
     }));
   }, []);
 
-  const handleSaveNewBasket = useCallback(
-    (/*basketName, basketId*/) => {
-      setBasketState((state) => ({
-        ...state,
-        dialog: undefined,
-      }));
-    },
-    []
-  );
-
   const handleSelectBasket = useCallback(
     (basketInstanceId: string) => {
       save?.({ basketInstanceId }, "basket-state");
@@ -191,6 +181,17 @@ export const useBasketTrading = ({
     ]
   );
 
+  const handleBasketCreated = useCallback<BasketCreatedHandler>(
+    (basketName, basketId, instanceId) => {
+      handleSelectBasket(instanceId);
+      setBasketState((state) => ({
+        ...state,
+        dialog: undefined,
+      }));
+    },
+    [handleSelectBasket]
+  );
+
   const handleAddBasket = useCallback(() => {
     setBasketState((state) => ({
       ...state,
@@ -199,15 +200,15 @@ export const useBasketTrading = ({
           basketDataSource={dataSourceBasket}
           basketSchema={basketSchema}
           onClose={handleCloseNewBasketPanel}
-          onSaveBasket={handleSaveNewBasket}
+          onBasketCreated={handleBasketCreated}
         />
       ),
     }));
   }, [
     basketSchema,
     dataSourceBasket,
+    handleBasketCreated,
     handleCloseNewBasketPanel,
-    handleSaveNewBasket,
   ]);
 
   const basketSelectorProps = useMemo<Omit<BasketSelectorProps, "basket">>(
@@ -261,9 +262,6 @@ export const useBasketTrading = ({
     (dragDropState) => {
       const constituentRow = dragDropState.payload;
       if (constituentRow) {
-        console.log(
-          `useBasketTrading handleDropInstrument ${constituentRow.join(",")}`
-        );
         const ric = constituentRow[basketConstituentMap.ric];
         dataSourceBasketTradingConstituentJoin
           .rpcCall?.<ViewportRpcResponse>({
@@ -273,7 +271,7 @@ export const useBasketTrading = ({
             params: [ric],
           })
           .then((response) => {
-            if (response?.action.type === "VP_RPC_SUCCESS") {
+            if (response?.action.type === "VP_CREATE_SUCCESS") {
               notify?.({
                 type: NotificationLevel.Success,
                 header: "Add Constituent to Basket",
@@ -291,13 +289,6 @@ export const useBasketTrading = ({
     },
     [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify]
   );
-
-  // const handleTableConfigChange = useCallback<TableConfigChangeHandler>(
-  //   (config) => {
-  //     save?.(config, "table-config");
-  //   },
-  //   [save]
-  // );
 
   const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(
     (config) => {

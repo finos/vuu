@@ -45,6 +45,10 @@ export const useBasketTradingDataSources = ({
         }
       : NO_CONFIG;
 
+    const constituentSort: DataSourceConfig = {
+      sort: { sortDefs: [{ column: "description", sortType: "D" }] },
+    };
+
     const dataSourceConfig: [
       basketDataSourceKey,
       TableSchema,
@@ -65,7 +69,12 @@ export const useBasketTradingDataSources = ({
         100,
         basketFilter,
       ],
-      ["data-source-basket-constituent", basketConstituentSchema, 100],
+      [
+        "data-source-basket-constituent",
+        basketConstituentSchema,
+        100,
+        constituentSort,
+      ],
     ];
 
     const dataSources: DataSource[] = [];

@@ -215,8 +215,9 @@ export interface ServerToClientRPC {
 // TODO flesh out as we know more
 export interface ServerToClientViewportRpcResponse {
   action: {
+    key?: string;
     msg?: string;
-    type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS";
+    type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS" | "VP_CREATE_SUCCESS";
   };
   type: "VIEW_PORT_RPC_REPONSE";
   method: string;

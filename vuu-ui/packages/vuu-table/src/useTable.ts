@@ -22,6 +22,7 @@ import {
 import {
   applySort,
   buildColumnMap,
+  getIndexFromRowElement,
   isGroupColumn,
   isJsonGroup,
   isValidNumber,
@@ -637,15 +638,12 @@ export const useTable = ({
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
       const { initialDragElement } = dragDropState;
-      const rowIndex = initialDragElement.ariaRowIndex;
-      if (rowIndex) {
-        const index = parseInt(rowIndex);
-        const row = dataRef.current.find((row) => row[0] === index);
-        if (row) {
-          dragDropState.setPayload(row);
-        } else {
-          // should we abort the operation ?
-        }
+      const rowIndex = getIndexFromRowElement(initialDragElement);
+      const row = dataRef.current.find((row) => row[0] === rowIndex);
+      if (row) {
+        dragDropState.setPayload(row);
+      } else {
+        // should we abort the operation ?
       }
       onDragStart?.(dragDropState);
     },
@@ -672,6 +670,7 @@ export const useTable = ({
 
   return {
     ...containerProps,
+    "aria-rowcount": dataSource.size,
     draggableRow,
     onBlur: editingBlur,
     onDoubleClick: editingDoubleClick,

@@ -32,3 +32,21 @@ export const virtualRowPositioning = (
     return result;
   },
 ];
+
+export const getIndexFromRowElement = (rowElement: HTMLElement) => {
+  const rowIndex = rowElement.ariaRowIndex;
+  if (rowIndex != null) {
+    const index = parseInt(rowIndex) - 1;
+    if (!isNaN(index)) {
+      return index;
+    } else {
+      throw Error(
+        `getIndexFromRowElement row element aria rowindex invalid ${rowIndex}`
+      );
+    }
+  } else {
+    throw Error(
+      "getIndexFromRowElement row element does not have aria rowindex"
+    );
+  }
+};
