@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 public class ApplicationLayoutDto {
     private String username;
-    private ObjectNode definition;
+    private ObjectNode applicationLayout;
 }

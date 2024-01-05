@@ -39,13 +39,15 @@ public class ApplicationLayoutController {
     /**
      * Creates or updates the unique application layout for the requesting user.
      *
-     * @param layoutDefinition JSON representation of the application layout to be created
+     * @param applicationLayout JSON representation of all relevant data about the application
+     *                          layout to be created
      * @param username         the user making the request
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping
-    public void persistApplicationLayout(@RequestHeader("username") String username, @RequestBody ObjectNode layoutDefinition) {
-        service.persistApplicationLayout(username, layoutDefinition);
+    public void persistApplicationLayout(@RequestHeader("username") String username,
+        @RequestBody ObjectNode applicationLayout) {
+        service.persistApplicationLayout(username, applicationLayout);
     }
 
     /**

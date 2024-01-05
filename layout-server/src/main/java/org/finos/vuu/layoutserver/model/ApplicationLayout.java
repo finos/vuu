@@ -21,5 +21,5 @@ public class ApplicationLayout {
 
     @Convert(converter = ObjectNodeConverter.class)
     @Column(columnDefinition = "JSON")
-    private ObjectNode definition;
+    private ObjectNode applicationLayout;
 }
