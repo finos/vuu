@@ -1,4 +1,4 @@
-import { DataSource, TableSchema } from "@finos/vuu-data-types";
+import { DataSource, DataSourceRow, TableSchema } from "@finos/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,
@@ -11,21 +11,26 @@ import {
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
-import { DataSourceRow } from "@finos/vuu-data-types";
 import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
+import { useNewBasketPanel } from "./useNewBasketPanel";
 
 import "./NewBasketPanel.css";
-import { useNewBasketPanel } from "./useNewBasketPanel";
 
 const classBase = "vuuBasketNewBasketPanel";
 
 const displayName = (key: number) => (row: DataSourceRow) => String(row[key]);
 
+export type BasketCreatedHandler = (
+  basketName: string,
+  basketId: string,
+  instanceId: string
+) => void;
+
 export interface NewBasketPanelProps extends HTMLAttributes<HTMLDivElement> {
   basketDataSource: DataSource;
   basketSchema: TableSchema;
   onClose: () => void;
-  onSaveBasket: (basketName: string, basketId: string) => void;
+  onBasketCreated: BasketCreatedHandler;
 }
 
 const searchColumns = ["name"];
@@ -35,7 +40,7 @@ export const NewBasketPanel = ({
   basketDataSource,
   basketSchema,
   onClose,
-  onSaveBasket,
+  onBasketCreated,
   ...htmlAttributes
 }: NewBasketPanelProps) => {
   const {
@@ -49,7 +54,7 @@ export const NewBasketPanel = ({
   } = useNewBasketPanel({
     basketDataSource,
     basketSchema,
-    onSaveBasket,
+    onBasketCreated,
   });
 
   const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(

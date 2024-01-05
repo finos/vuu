@@ -1,7 +1,7 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { buildColumnMap, getIndexFromRowElement } from "@finos/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
@@ -23,15 +23,13 @@ export const useTableContextMenu = ({
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
-      // const { current: currentData } = dataRef;
-      // const { current: currentDataSource } = dataSourceRef;
       const target = evt.target as HTMLElement;
       const cellEl = target?.closest("div[role='cell']");
-      const rowEl = target?.closest("div[role='row']");
-      if (cellEl && rowEl /*&& currentData && currentDataSource*/) {
+      const rowEl = target?.closest("div[role='row']") as HTMLElement;
+      if (cellEl && rowEl) {
         const { selectedRowsCount } = dataSource;
         const columnMap = buildColumnMap(columns);
-        const rowIndex = parseInt(rowEl.ariaRowIndex ?? "-1");
+        const rowIndex = getIndexFromRowElement(rowEl);
         const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
         const row = data.find(([idx]) => idx === rowIndex);
         const columnName = columns[cellIndex];

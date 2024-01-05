@@ -103,7 +103,7 @@ export const BasketSelector = ({
           className={`${classBase}-instrumentSearch`}
           dataSource={dataSourceBasketTradingSearch}
           placeHolder="Enter Basket Name"
-          searchColumns={["basketId"]}
+          searchColumns={["basketName"]}
         />
         <div className={`${classBase}-buttonBar`}>
           <Button onClick={onClickAddBasket} variant="secondary">
