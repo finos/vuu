@@ -102,7 +102,8 @@
 }
 
 .vuuTable-body {
-  height: var(--content-height)
+  height: var(--content-height);
+  position: relative;
 }
 
 .vuuPinLeft, .vuuPinRight {

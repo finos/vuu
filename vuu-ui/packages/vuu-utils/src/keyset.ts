@@ -14,7 +14,7 @@ export class KeySet {
 
   public next(): number {
     if (this.free.length > 0) {
-      return this.free.pop() as number;
+      return this.free.shift() as number;
     } else {
       return this.nextKeyValue++;
     }
@@ -59,7 +59,7 @@ export class KeySet {
 
   public toDebugString() {
     return Array.from(this.keys.entries())
-      .map<string>((k, v) => `${k}=>${v}`)
+      .map<string>(([k, v]) => `${k}=>${v}`)
       .join(",");
   }
 }

@@ -49,7 +49,7 @@ describe("KeySet", () => {
       keySet.reset({ from: 2, to: 12 });
       expect(keySet.keys.size).toEqual(10);
       expect([...keySet.keys.keys()]).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-      expect([...keySet.keys.values()]).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 1, 0]);
+      expect([...keySet.keys.values()]).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 0, 1]);
     });
 
     it("re-initialises a keyset, forwards, no overlap", () => {
@@ -59,7 +59,7 @@ describe("KeySet", () => {
       expect([...keySet.keys.keys()]).toEqual([
         10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
       ]);
-      expect([...keySet.keys.values()]).toEqual([9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+      expect([...keySet.keys.values()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("re-initialises a keyset, backwards, with overlap", () => {
@@ -69,7 +69,7 @@ describe("KeySet", () => {
       expect([...keySet.keys.keys()]).toEqual([
         10, 11, 12, 13, 14, 15, 16, 17, 8, 9,
       ]);
-      expect([...keySet.keys.values()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 9, 8]);
+      expect([...keySet.keys.values()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("re-initialises a keyset, backwards, no overlap", () => {
@@ -77,7 +77,7 @@ describe("KeySet", () => {
       keySet.reset({ from: 0, to: 10 });
       expect(keySet.keys.size).toEqual(10);
       expect([...keySet.keys.keys()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-      expect([...keySet.keys.values()]).toEqual([9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+      expect([...keySet.keys.values()]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
   });
 

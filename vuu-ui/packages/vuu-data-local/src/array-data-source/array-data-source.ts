@@ -439,9 +439,7 @@ export class ArrayDataSource
   }
 
   set range(range: VuuRange) {
-    if (range.from !== this.#range.from || range.to !== this.#range.to) {
-      this.setRange(range);
-    }
+    this.setRange(range);
   }
 
   protected delete(row: VuuRowDataItemType[]) {
@@ -492,9 +490,13 @@ export class ArrayDataSource
   };
 
   private setRange(range: VuuRange, forceFullRefresh = false) {
-    this.#range = range;
-    this.keys.reset(range);
-    this.sendRowsToClient(forceFullRefresh);
+    if (range.from !== this.#range.from || range.to !== this.#range.to) {
+      this.#range = range;
+      this.keys.reset(range);
+      this.sendRowsToClient(forceFullRefresh);
+    } else if (forceFullRefresh) {
+      this.sendRowsToClient(forceFullRefresh);
+    }
   }
 
   sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {

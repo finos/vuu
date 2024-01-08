@@ -217,6 +217,7 @@ NavigationHookProps) => {
     } else {
       const focusedRow = tableCell.closest("[role='row']");
       if (focusedRow) {
+        // aria index is 1 based
         const rowIdx = parseInt(focusedRow.ariaRowIndex ?? "-1", 10);
         // TODO will get trickier when we introduce horizontal virtualisation
         const colIdx = Array.from(focusedRow.childNodes).indexOf(tableCell);
@@ -236,10 +237,12 @@ NavigationHookProps) => {
             focusableCell.current = activeCell;
             activeCell.setAttribute("tabindex", "0");
           }
-          const [direction, distance] = howFarIsCellOutsideViewport(activeCell);
-          if (direction && distance) {
-            requestScroll?.({ type: "scroll-distance", distance, direction });
-          }
+          requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
+          // const [direction, distance] = howFarIsCellOutsideViewport(activeCell);
+          // if (direction && distance) {
+          //   console.log(`request scroll ${direction} ${distance}`);
+          //   requestScroll?.({ type: "scroll-distance", distance, direction });
+          // }
           console.log(`activeCell focus`);
           activeCell.focus({ preventScroll: true });
         }
@@ -336,18 +339,9 @@ NavigationHookProps) => {
 
   const scrollRowIntoViewIfNecessary = useCallback(
     (rowIndex: number) => {
-      const { current: container } = containerRef;
-      const activeRow = container?.querySelector(
-        `[aria-rowindex="${rowIndex}"]`
-      ) as HTMLElement;
-      if (activeRow) {
-        const [direction, distance] = howFarIsRowOutsideViewport(activeRow);
-        if (direction && distance) {
-          requestScroll?.({ type: "scroll-distance", distance, direction });
-        }
-      }
+      requestScroll?.({ type: "scroll-row", rowIndex });
     },
-    [containerRef, requestScroll]
+    [requestScroll]
   );
 
   const moveHighlightedRow = useCallback(
@@ -358,6 +352,7 @@ NavigationHookProps) => {
         : nextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
       if (nextRowIdx !== highlighted) {
         setHighlightedIndex(nextRowIdx);
+        // TO(DO make this a scroll request)
         scrollRowIntoViewIfNecessary(nextRowIdx);
       }
     },

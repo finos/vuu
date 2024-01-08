@@ -90,6 +90,7 @@ export interface TableHookProps
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
+      | "scrollingApiRef"
     > {
   containerRef: RefObject<HTMLDivElement>;
   headerHeight: number;
@@ -136,6 +137,7 @@ export const useTable = ({
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
+  scrollingApiRef,
   selectionModel,
   size,
 }: TableHookProps) => {
@@ -227,7 +229,10 @@ export const useTable = ({
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
-    to: viewportMeasurements.rowCount,
+    to:
+      viewportMeasurements.rowCount === 0
+        ? 0
+        : viewportMeasurements.rowCount + 1,
   });
 
   const onSubscribed = useCallback(
@@ -474,18 +479,18 @@ export const useTable = ({
   });
 
   const handleVerticalScroll = useCallback(
-    (scrollTop: number) => {
+    (scrollTop: number, pctScrollTop: number) => {
+      setPctScrollTop(pctScrollTop);
       onVerticalScroll(scrollTop);
     },
-    [onVerticalScroll]
+    [onVerticalScroll, setPctScrollTop]
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
-    maxScrollLeft: viewportMeasurements.maxScrollContainerScrollHorizontal,
-    maxScrollTop: viewportMeasurements.maxScrollContainerScrollVertical,
     rowHeight,
+    scrollingApiRef,
     onVerticalScroll: handleVerticalScroll,
-    viewportRowCount: viewportMeasurements.rowCount,
+    viewportMeasurements,
   });
 
   const {
@@ -680,6 +685,7 @@ export const useTable = ({
     columnMap,
     columns,
     data,
+    getRowOffset,
     handleContextMenuAction,
     headings,
     highlightedIndex: highlightedIndexRef.current,

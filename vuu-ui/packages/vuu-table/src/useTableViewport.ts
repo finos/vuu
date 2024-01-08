@@ -24,8 +24,10 @@ export interface TableViewportHookProps {
 }
 
 export interface ViewportMeasurements {
+  appliedPageSize: number;
   contentHeight: number;
   horizontalScrollbarHeight: number;
+  isVirtualScroll: boolean;
   maxScrollContainerScrollHorizontal: number;
   maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
@@ -44,14 +46,17 @@ export interface TableViewportHookResult extends ViewportMeasurements {
 }
 
 // Too simplistic, it depends on rowHeight
-const MAX_RAW_ROWS = 1_500_000;
+// const MAX_RAW_ROWS = 1_000_000;
+const MAX_RAW_ROWS = 100_000;
 
 const UNMEASURED_VIEWPORT: TableViewportHookResult = {
+  appliedPageSize: 0,
   contentHeight: 0,
   contentWidth: 0,
   getRowAtPosition: () => -1,
   getRowOffset: () => -1,
   horizontalScrollbarHeight: 0,
+  isVirtualScroll: false,
   maxScrollContainerScrollHorizontal: 0,
   maxScrollContainerScrollVertical: 0,
   pinnedWidthLeft: 0,
@@ -94,32 +99,33 @@ export const useTableViewport = ({
   size,
 }: TableViewportHookProps): TableViewportHookResult => {
   const pctScrollTopRef = useRef(0);
-  const appliedRowCount = Math.min(rowCount, MAX_RAW_ROWS);
-  const appliedContentHeight = appliedRowCount * rowHeight;
+  // TODO we are limited by pixels not an arbitraty number of rows
+  const pixelContentHeight = rowHeight * Math.min(rowCount, MAX_RAW_ROWS);
   const virtualContentHeight = rowCount * rowHeight;
-  const virtualisedExtent = virtualContentHeight - appliedContentHeight;
+  const virtualisedExtent = virtualContentHeight - pixelContentHeight;
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns),
     [columns]
   );
 
-  const [actualRowOffset, actualRowAtPosition] = useMemo<RowPositioning>(
-    () => actualRowPositioning(rowHeight),
-    [rowHeight]
-  );
+  const totalHeaderHeightRef = useRef(headerHeight);
+  useMemo(() => {
+    totalHeaderHeightRef.current = headerHeight * (1 + headings.length);
+  }, [headerHeight, headings.length]);
 
-  const [getRowOffset, getRowAtPosition] = useMemo<RowPositioning>(() => {
-    if (virtualisedExtent) {
-      return virtualRowPositioning(
-        rowHeight,
-        virtualisedExtent,
-        pctScrollTopRef
-      );
-    } else {
-      return [actualRowOffset, actualRowAtPosition];
-    }
-  }, [actualRowAtPosition, actualRowOffset, virtualisedExtent, rowHeight]);
+  const [getRowOffset, getRowAtPosition, isVirtualScroll] =
+    useMemo<RowPositioning>(() => {
+      if (virtualisedExtent) {
+        return virtualRowPositioning(
+          rowHeight,
+          virtualisedExtent,
+          pctScrollTopRef
+        );
+      } else {
+        return actualRowPositioning(rowHeight);
+      }
+    }, [virtualisedExtent, rowHeight]);
 
   const setPctScrollTop = useCallback((scrollPct: number) => {
     pctScrollTopRef.current = scrollPct;
@@ -127,37 +133,42 @@ export const useTableViewport = ({
 
   return useMemo(() => {
     if (size) {
-      const headingsDepth = headings.length;
+      const { current: totalHeaderHeight } = totalHeaderHeightRef;
+      // TODO determine this at runtime
       const scrollbarSize = 15;
       const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
       const horizontalScrollbarHeight =
         contentWidth > size.width ? scrollbarSize : 0;
-      const totalHeaderHeight = headerHeight * (1 + headingsDepth);
       const maxScrollContainerScrollVertical =
-        appliedContentHeight -
+        pixelContentHeight -
         ((size?.height ?? 0) - horizontalScrollbarHeight) +
         totalHeaderHeight;
       const maxScrollContainerScrollHorizontal =
         contentWidth - size.width + pinnedWidthLeft;
       const visibleRows = (size.height - headerHeight) / rowHeight;
       const count = Number.isInteger(visibleRows)
-        ? visibleRows + 1
+        ? visibleRows
         : Math.ceil(visibleRows);
       const viewportBodyHeight = size.height - totalHeaderHeight;
       const verticalScrollbarWidth =
-        appliedContentHeight > viewportBodyHeight ? scrollbarSize : 0;
+        pixelContentHeight > viewportBodyHeight ? scrollbarSize : 0;
+
+      const appliedPageSize =
+        count * rowHeight * (pixelContentHeight / virtualContentHeight);
 
       return {
-        contentHeight: appliedContentHeight,
+        appliedPageSize,
+        contentHeight: pixelContentHeight,
+        contentWidth,
         getRowAtPosition,
         getRowOffset,
+        isVirtualScroll,
         horizontalScrollbarHeight,
         maxScrollContainerScrollHorizontal,
         maxScrollContainerScrollVertical,
         pinnedWidthLeft,
         pinnedWidthRight,
         rowCount: count,
-        contentWidth,
         setPctScrollTop,
         totalHeaderHeight,
         verticalScrollbarWidth,
@@ -167,16 +178,17 @@ export const useTableViewport = ({
       return UNMEASURED_VIEWPORT;
     }
   }, [
-    size,
-    headings.length,
+    getRowAtPosition,
+    getRowOffset,
+    headerHeight,
+    isVirtualScroll,
     pinnedWidthLeft,
     unpinnedWidth,
     pinnedWidthRight,
-    appliedContentHeight,
-    headerHeight,
+    pixelContentHeight,
     rowHeight,
-    getRowAtPosition,
-    getRowOffset,
     setPctScrollTop,
+    size,
+    virtualContentHeight,
   ]);
 };

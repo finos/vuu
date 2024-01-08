@@ -24,7 +24,7 @@ export const useVirtualViewport = ({
       const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
-        setRange({ from: firstRow, to: firstRow + viewportRowCount });
+        setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
       }
     },
     [getRowAtPosition, setRange, viewportRowCount]
@@ -32,7 +32,7 @@ export const useVirtualViewport = ({
 
   useEffect(() => {
     const { current: from } = firstRowRef;
-    const rowRange = { from, to: from + viewportRowCount };
+    const rowRange = { from, to: from + viewportRowCount + 1 };
     setRange(rowRange);
   }, [setRange, viewportRowCount]);
 

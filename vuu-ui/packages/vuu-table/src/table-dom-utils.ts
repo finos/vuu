@@ -1,5 +1,8 @@
 import { RefObject } from "react";
 
+/**
+ * [rowIndex, colIndex
+ */
 export type CellPos = [number, number];
 
 export const headerCellQuery = (colIdx: number) =>
