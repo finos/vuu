@@ -51,18 +51,17 @@ class BasketCreateTest extends VuuServerTestCase {
           constituentProvider.tick(s"BT.L.$basketId", Map(BC.RicBasketId -> s"BT.L.$basketId", BC.Ric -> "BT.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "SELL", BC.Description -> "British Telecom"))
 
           //given constituent with price but missing last price
-//          constituentProvider.tick(s"BP.L.$basketId", Map(BC.RicBasketId -> s"BP.L.$basketId", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Beyond Petroleum"))
-//          pricesProvider.tick("BP.L", Map("ric" -> "BP.L", "bid" -> 5.3, "phase" -> "C"))
+          constituentProvider.tick(s"BP.L.$basketId", Map(BC.RicBasketId -> s"BP.L.$basketId", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Beyond Petroleum"))
+          pricesProvider.tick("BP.L", Map("ric" -> "BP.L", "bid" -> 5.3, "phase" -> "C"))
 
           val viewportPrices = vuuServer.createViewPort(PriceModule.NAME, "prices")
 
           vuuServer.runOnce()
 
-          //todo last price is null, no ric in the prices table
           assertVpEq(combineQsForVp(viewportPrices)) {
             Table(
               ("ric", "bid", "ask", "bidSize", "askSize", "last", "open", "close", "phase", "scenario"),
-           //   ("BP.L", 5.3, null, null, null, null, null, null, "C", null),
+              ("BP.L", 5.3, null, null, null, null, null, null, "C", null),
               ("VOD.L", 1.3, 1.6, null, null, 1.5, null, null, "C", null),
             )
           }
@@ -98,7 +97,7 @@ class BasketCreateTest extends VuuServerTestCase {
           assertVpEq(filterByVp(viewportBasketTradingCons, updates)) {
             Table(
               ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
-  //            (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
               (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
               (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, 1.5, 2, 0, "PENDING"),
             )

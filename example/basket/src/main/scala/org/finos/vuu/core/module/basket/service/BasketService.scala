@@ -17,13 +17,14 @@ import java.util.concurrent.atomic.AtomicInteger
 object BasketTradeId {
 
   private val counter: AtomicInteger = new AtomicInteger(0)
-  def oneNew(user:String): String = {
+
+  def oneNew(user: String): String = {
     val counterValue = counter.incrementAndGet()
     user + "-" + "".padTo(5 - counterValue.toString.length, "0").mkString + counterValue
   }
 }
 
-trait BasketServiceIF{
+trait BasketServiceIF {
   def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction
 }
 
@@ -34,7 +35,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
   private def getConstituentsForSourceBasket(basketId: String): List[RowData] = {
     val table = tableContainer.getTable(BasketConstituentTable)
     val keys = table.primaryKeys.toList
-    keys.map( key => table.pullRow(key) ).filter(_.get(BC.BasketId).toString == basketId)
+    keys.map(key => table.pullRow(key)).filter(_.get(BC.BasketId).toString == basketId)
   }
 
   private def mkTradingConstituentRow(side: String, sourceBasketId: String, basketTradeInstanceId: String, constituentKey: String,
@@ -51,7 +52,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
         BTC.Side -> side,
         BTC.Weighting -> weighting,
         BTC.PriceStrategyId -> 2,
-        BTC.LimitPrice -> limitPrice.getOrElse(null),
+        BTC.LimitPrice -> limitPrice.orNull,
         BTC.Algo -> -1,
         BTC.OrderStatus -> OrderStates.PENDING,
         BTC.FilledQty -> 0
@@ -76,7 +77,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
     val priceTable = tableContainer.getTable(PriceModule.PriceTable)
     tableContainer.getTable(BasketModule.BasketTradingConstituentTable) match {
       case table: DataTable =>
-        constituents.foreach( rowData => {
+        constituents.foreach(rowData => {
           val ric = rowData.get(BTC.Ric).toString
           val constituentKey = s"$basketTradeId.$ric"
           val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
@@ -94,7 +95,11 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
 
   private def getLastPrice(priceTable: DataTable, ric: String): Option[Double] = {
     priceTable.pullRow(ric) match {
-      case row: RowWithData => Some(row.get("last").asInstanceOf[Double])
+      case row: RowWithData =>
+        row.get("last") match {
+          case null => None
+          case price: Double => Some(price)
+        }
       case EmptyRowData => None
     }
   }
