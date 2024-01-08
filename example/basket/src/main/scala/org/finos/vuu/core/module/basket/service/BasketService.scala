@@ -6,7 +6,7 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.RequestContext
 import org.finos.vuu.order.oms.OmsApi
@@ -38,7 +38,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
   }
 
   private def mkTradingConstituentRow(side: String, sourceBasketId: String, basketTradeInstanceId: String, constituentKey: String,
-                                      quantity: Long, weighting: Double, limitPrice: Double, basketConsRow: RowData): RowWithData = {
+                                      quantity: Long, weighting: Double, limitPrice: Option[Double], basketConsRow: RowData): RowWithData = {
     RowWithData(
       constituentKey,
       Map(
@@ -51,7 +51,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
         BTC.Side -> side,
         BTC.Weighting -> weighting,
         BTC.PriceStrategyId -> 2,
-        BTC.LimitPrice -> limitPrice,
+        BTC.LimitPrice -> limitPrice.getOrElse(null),
         BTC.Algo -> -1,
         BTC.OrderStatus -> OrderStates.PENDING,
         BTC.FilledQty -> 0
@@ -82,7 +82,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
           val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
           val quantity = (weighting * 100).asInstanceOf[Long]
           val side = rowData.get(BTC.Side).toString
-          val limitPrice = priceTable.pullRow(ric).get("last").asInstanceOf[Double]
+          val limitPrice = getLastPrice(priceTable, ric)
           table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, limitPrice, rowData), clock.now())
         })
       case null =>
@@ -90,5 +90,12 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
     }
 
     ViewPortCreateSuccess(basketTradeId)
+  }
+
+  private def getLastPrice(priceTable: DataTable, ric: String): Option[Double] = {
+    priceTable.pullRow(ric) match {
+      case row: RowWithData => Some(row.get("last").asInstanceOf[Double])
+      case EmptyRowData => None
     }
+  }
 }
