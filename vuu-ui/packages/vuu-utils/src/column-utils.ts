@@ -961,3 +961,21 @@ export const applyDefaultColumnConfig = (
     return columns;
   }
 };
+
+export const getColumnByName = (
+  schema: TableSchema,
+  name?: string
+): SchemaColumn | undefined => {
+  if (name === undefined) {
+    return undefined;
+  } else {
+    const column = schema.columns.find((col) => col.name === name);
+    if (column) {
+      return column;
+    } else {
+      throw Error(
+        `getColumnByName no column '${name}' in schema for ${schema.table.table}`
+      );
+    }
+  }
+};

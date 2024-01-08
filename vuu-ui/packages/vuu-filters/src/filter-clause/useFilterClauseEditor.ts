@@ -2,12 +2,12 @@ import { TableSchema } from "@finos/vuu-data-types";
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
+  getColumnByName,
   isMultiValueFilter,
   isSingleValueFilter,
   isValidFilterClauseOp,
 } from "@finos/vuu-utils";
 
-import { getColumnByName } from "@finos/vuu-data-remote";
 import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   KeyboardEvent,
