@@ -96,9 +96,6 @@ describe("User Layouts", () => {
     });
   });
 
-  // TODO This test is failing
-  //  - it fails because the afterEach is attempting to delete what this test has deleted, resulting in 404
-  //  - and because we're expecting a 404 on the get, but it's counting a 404 as a test fail
   context("DELETE /layouts/:id", () => {
     it("should return a 204 and layout should be deleted", () => {
       cy.request({

@@ -1,4 +1,4 @@
-import { LayoutJSON } from "@finos/vuu-layout";
+import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 
 export type LayoutResponseDto = {
@@ -31,6 +31,7 @@ export const getLayout = (id: string): Cypress.Chainable => {
     .request({
       method: "GET",
       url: USER_LAYOUT_URL + id,
+      failOnStatusCode: false,
     })
     .then((response) => {
       return response;
@@ -63,6 +64,7 @@ export const deleteLayout = (id: string): Cypress.Chainable => {
     .request({
       method: "DELETE",
       url: USER_LAYOUT_URL + id,
+      failOnStatusCode: false,
     })
     .then((response) => {
       return response;
@@ -99,7 +101,7 @@ export const deleteApplicationLayout = (
 
 export const persistApplicationLayout = (
   username: string,
-  body: any
+  applicationLayout: ApplicationJSON
 ): Cypress.Chainable => {
   return cy.request({
     method: "PUT",
@@ -108,6 +110,6 @@ export const persistApplicationLayout = (
       "Content-Type": "application/json",
       username,
     },
-    body,
+    body: JSON.stringify(applicationLayout),
   });
 };

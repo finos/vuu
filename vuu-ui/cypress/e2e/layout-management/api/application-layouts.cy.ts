@@ -9,14 +9,15 @@ import {
 } from "./api.utils";
 import { ApplicationJSON, ApplicationSettings } from "@finos/vuu-layout";
 
-// TODO Tests are failing due to JSON object comparison, experiment with different variations of casting, JSON.stringify, etc.
-
 describe("Application Layouts", () => {
   const testUser = "Test User";
 
   before(() => {
     getApplicationLayout(testUser).then((response) => {
-      Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS, response.body.definition);
+      Cypress.env(
+        DEFAULT_APPLICATION_LAYOUT_ALIAS,
+        response.body.applicationLayout
+      );
     });
   });
 
@@ -25,9 +26,9 @@ describe("Application Layouts", () => {
       getApplicationLayout(testUser).then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body).to.have.property("username");
-        expect(response.body).to.have.property("definition");
-        expect(response.body.definition).to.contain(
-          Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS)
+        expect(response.body).to.have.property("applicationLayout");
+        expect(JSON.stringify(response.body.applicationLayout)).to.equal(
+          JSON.stringify(Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS))
         );
       });
     });
@@ -56,11 +57,11 @@ describe("Application Layouts", () => {
 
       getApplicationLayout(testUser)
         .then((response) => {
-          originalApplicationLayout = response.body.definition;
+          originalApplicationLayout = response.body.applicationLayout;
         })
         .then(() => {
           persistApplicationLayout(testUser, requestBody).then((response) => {
-            expect(response.body).to.not.exist;
+            expect(response.body).to.be.empty;
             expect(response.status).to.eq(201);
           });
         })
@@ -68,9 +69,11 @@ describe("Application Layouts", () => {
           getApplicationLayout(testUser).then((response) => {
             expect(response.status).to.eq(200);
             expect(response.body).to.have.property("username", testUser);
-            expect(response.body).to.have.property("definition");
-            expect(response.body.definition).to.contain(requestBody);
-            expect(response.body.definition).to.not.contain(
+            expect(response.body).to.have.property("applicationLayout");
+            expect(JSON.stringify(response.body.applicationLayout)).to.equal(
+              JSON.stringify(requestBody)
+            );
+            expect(response.body.applicationLayout).to.not.contain(
               originalApplicationLayout
             );
           });
@@ -112,13 +115,15 @@ describe("Application Layouts", () => {
       persistApplicationLayout(testUser, requestBody)
         .then((response) => {
           expect(response.status).to.eq(201);
-          expect(response.body).to.not.exist;
+          expect(response.body).to.be.empty;
         })
         .then(() => {
           getApplicationLayout(testUser).then((response) => {
             expect(response.status).to.eq(200);
             expect(response.body).to.have.property("settings");
-            expect(response.body.settings).to.contain(settings);
+            expect(JSON.stringify(response.body.settings)).to.equal(
+              JSON.stringify(settings)
+            );
           });
         });
     });
