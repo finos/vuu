@@ -18,12 +18,10 @@ import { ListItem, ListItemType } from "../../list";
 
 import { useCalendarContext } from "./CalendarContext";
 
-import calendarNavigationCss from "./CalendarNavigation.css";
+import "./CalendarNavigation.css";
 import { DateValue, isSameMonth, isSameYear } from "@internationalized/date";
 import { formatDate, monthDiff, monthsForLocale } from "./utils";
-import { SelectionChangeHandler } from "../../common-hooks";
-import { useWindow } from "@salt-ds/window";
-import { useComponentCssInjection } from "@salt-ds/styles";
+import { SingleSelectionHandler } from "../../common-hooks";
 
 type DropdownItem = {
   value: DateValue;
@@ -141,13 +139,6 @@ export const CalendarNavigation = forwardRef<
     ...rest
   } = props;
 
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "salt-calendar-navigation",
-    css: calendarNavigationCss,
-    window: targetWindow,
-  });
-
   const {
     moveToPreviousMonth,
     moveToNextMonth,
@@ -171,20 +162,20 @@ export const CalendarNavigation = forwardRef<
     moveToNextMonth(event);
   };
 
-  const handleMonthSelect: SelectionChangeHandler<DropdownItem> = (
+  const handleMonthSelect: SingleSelectionHandler<DropdownItem> = (
     event,
     month
   ) => {
-    if (month) {
+    if (month && event) {
       moveToMonth(event, month.value);
     }
   };
 
-  const handleYearSelect: SelectionChangeHandler<DropdownItem> = (
+  const handleYearSelect: SingleSelectionHandler<DropdownItem> = (
     event,
     year
   ) => {
-    if (year) {
+    if (year && event) {
       moveToMonth(event, year.value);
     }
   };

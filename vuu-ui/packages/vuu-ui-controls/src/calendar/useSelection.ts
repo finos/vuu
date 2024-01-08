@@ -1,7 +1,7 @@
 import { makePrefixer, useControlled } from "@salt-ds/core";
 import { clsx } from "clsx";
 import { KeyboardEventHandler, MouseEventHandler, SyntheticEvent } from "react";
-import { isPlainObject } from "../utils";
+import { isPlainObject } from "../common-hooks/isPlainObject";
 import { useCalendarContext } from "./internal/CalendarContext";
 import { CalendarDate, DateValue, isSameDay } from "@internationalized/date";
 
@@ -137,12 +137,13 @@ export function useSelectionCalendar(props: useSelectionCalendarProps) {
           setSelectedDateState(newSelectedDate);
           props.onSelectedDateChange?.(event, newSelectedDate);
           break;
-        case "multiselect":
+        case "multiselect": {
           const newDates = addOrRemoveFromArray(selectedDate, newSelectedDate);
           setSelectedDateState(newDates);
           props.onSelectedDateChange?.(event, newDates);
           break;
-        case "range":
+        }
+        case "range": {
           let base = selectedDate;
           if (isRangeOrOffsetSelectionValue(base)) {
             if (base?.startDate && base?.endDate) {
@@ -161,13 +162,15 @@ export function useSelectionCalendar(props: useSelectionCalendarProps) {
           setSelectedDateState(base);
           props.onSelectedDateChange?.(event, base);
           break;
-        case "offset":
+        }
+        case "offset": {
           const newRange = {
             startDate: getStartDateOffset(newSelectedDate),
             endDate: getEndDateOffset(newSelectedDate),
           };
           setSelectedDateState(newRange);
           props.onSelectedDateChange?.(event, newRange);
+        }
       }
     }
   };
@@ -368,7 +371,7 @@ export function useSelectionDay({ date }: { date: DateValue }) {
         selected || selectedEnd || selectedStart || selectedSpan
           ? "true"
           : undefined,
-      "aria-disabled": !!isDayUnselectable(date) ? "true" : undefined,
+      "aria-disabled": isDayUnselectable(date) ? "true" : undefined,
     },
   };
 }

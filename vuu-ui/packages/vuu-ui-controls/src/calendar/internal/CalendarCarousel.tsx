@@ -13,10 +13,8 @@ import {
 } from "@salt-ds/core";
 import { useCalendarContext } from "./CalendarContext";
 
-import calendarCarouselCss from "./CalendarCarousel.css";
+import "./CalendarCarousel.css";
 import { formatDate, monthDiff } from "./utils";
-import { useWindow } from "@salt-ds/window";
-import { useComponentCssInjection } from "@salt-ds/styles";
 
 export type CalendarCarouselProps = Omit<CalendarMonthProps, "date">;
 
@@ -37,13 +35,6 @@ export const CalendarCarousel = forwardRef<
   CalendarCarouselProps
 >(function CalendarCarousel(props, ref) {
   const { ...rest } = props;
-
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "salt-calendar-carousel",
-    css: calendarCarouselCss,
-    window: targetWindow,
-  });
 
   const {
     state: { visibleMonth },

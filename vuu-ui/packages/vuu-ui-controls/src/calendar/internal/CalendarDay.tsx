@@ -1,14 +1,12 @@
-import { makePrefixer, Tooltip, TooltipProps } from "@salt-ds/core";
+import { makePrefixer, Tooltip, TooltipProps, useForkRef } from "@salt-ds/core";
 import { CloseIcon } from "@salt-ds/icons";
 import { clsx } from "clsx";
 import { ComponentPropsWithRef, forwardRef, ReactElement, useRef } from "react";
 import { DateValue } from "@internationalized/date";
 
 import { DayStatus, useCalendarDay } from "../useCalendarDay";
-import calendarDayCss from "./CalendarDay.css";
+import "./CalendarDay.css";
 import { formatDate } from "./utils";
-import { useWindow } from "@salt-ds/window";
-import { useComponentCssInjection } from "@salt-ds/styles";
 
 export type DateFormatter = (day: Date) => string | undefined;
 
@@ -28,14 +26,10 @@ export const CalendarDay = forwardRef<HTMLButtonElement, CalendarDayProps>(
   function CalendarDay(props, ref) {
     const { className, day, renderDayContents, month, TooltipProps, ...rest } =
       props;
-    const targetWindow = useWindow();
-    useComponentCssInjection({
-      testId: "salt-calendar-day",
-      css: calendarDayCss,
-      window: targetWindow,
-    });
 
     const dayRef = useRef<HTMLButtonElement>(null);
+    const forkedRef = useForkRef(ref, dayRef);
+
     const { status, dayProps, unselectableReason } = useCalendarDay(
       {
         date: day,
@@ -58,7 +52,7 @@ export const CalendarDay = forwardRef<HTMLButtonElement, CalendarDayProps>(
         <button
           aria-label={formatDate(day)}
           {...dayProps}
-          ref={dayRef}
+          ref={forkedRef}
           {...rest}
           className={clsx(
             withBaseName(),

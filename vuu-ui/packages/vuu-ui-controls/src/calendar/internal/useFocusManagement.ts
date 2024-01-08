@@ -34,6 +34,7 @@ export function useFocusManagement({ date }: { date: DateValue }) {
         newDate = startOfWeek(date, getCurrentLocale());
         break;
       case "End":
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore TODO bug in @internationalized/date
         newDate = endOfWeek(date, getCurrentLocale());
         break;

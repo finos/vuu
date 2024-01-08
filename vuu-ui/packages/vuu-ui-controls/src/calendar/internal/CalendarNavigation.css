@@ -16,6 +16,7 @@
   display: grid;
   grid-template-columns: min-content auto auto min-content;
   grid-gap: var(--calendar-navigation-gap);
+  align-items: center;
 }
 
 .saltCalendarNavigation-hideYearDropdown {
