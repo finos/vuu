@@ -43,13 +43,13 @@ class PricesService(val table: DataTable, val provider: Provider) extends RpcHan
 object PriceModule {
 
   final val NAME = "PRICE"
-
+  final val PriceTable = "prices"
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addTable(
         AutoSubscribeTableDef(
-          name = "prices",
+          name = PriceTable,
           keyField = "ric",
           Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
             "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),

@@ -5,11 +5,13 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
+import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.RequestContext
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
+
 import java.util.concurrent.atomic.AtomicInteger
 
 object BasketTradeId {
@@ -36,7 +38,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
   }
 
   private def mkTradingConstituentRow(side: String, sourceBasketId: String, basketTradeInstanceId: String, constituentKey: String,
-                                      quantity: Long, weighting: Double, basketConsRow: RowData): RowWithData = {
+                                      quantity: Long, weighting: Double, limitPrice: Double, basketConsRow: RowData): RowWithData = {
     RowWithData(
       constituentKey,
       Map(
@@ -49,6 +51,7 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
         BTC.Side -> side,
         BTC.Weighting -> weighting,
         BTC.PriceStrategyId -> 2,
+        BTC.LimitPrice -> limitPrice,
         BTC.Algo -> -1,
         BTC.OrderStatus -> OrderStates.PENDING,
         BTC.FilledQty -> 0
@@ -70,14 +73,17 @@ class BasketService(val table: DataTable, val tableContainer: TableContainer, va
         logger.error("Cannot find the Basket Trading table.")
     }
 
+    val priceTable = tableContainer.getTable(PriceModule.PriceTable)
     tableContainer.getTable(BasketModule.BasketTradingConstituentTable) match {
       case table: DataTable =>
         constituents.foreach( rowData => {
-          val constituentKey = basketTradeId + "." + rowData.get(BTC.Ric)
+          val ric = rowData.get(BTC.Ric).toString
+          val constituentKey = s"$basketTradeId.$ric"
           val weighting = rowData.get(BTC.Weighting).asInstanceOf[Double]
           val quantity = (weighting * 100).asInstanceOf[Long]
           val side = rowData.get(BTC.Side).toString
-          table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, rowData), clock.now())
+          val limitPrice = priceTable.pullRow(ric).get("last").asInstanceOf[Double]
+          table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, limitPrice, rowData), clock.now())
         })
       case null =>
         logger.error("Cannot find the Basket Trading Constituent.")
