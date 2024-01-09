@@ -1,6 +1,5 @@
 package org.finos.vuu.layoutserver.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.vuu.layoutserver.model.ApplicationLayout;
 import org.finos.vuu.layoutserver.repository.ApplicationLayoutRepository;
@@ -36,7 +35,7 @@ class ApplicationLayoutServiceTest {
     }
 
     @Test
-    public void getApplicationLayout_noLayout_returnsDefault() throws JsonProcessingException {
+    public void getApplicationLayout_noLayout_returnsDefault() {
         when(mockRepo.findById(anyString())).thenReturn(Optional.empty());
 
         ApplicationLayout actualLayout = service.getApplicationLayout("new user");
@@ -45,15 +44,16 @@ class ApplicationLayoutServiceTest {
         ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
         assertThat(actualLayout.getUsername()).isNull();
-        assertThat(actualLayout.getDefinition()).isEqualTo(expectedDefinition);
+        assertThat(actualLayout.getApplicationLayout()).isEqualTo(expectedDefinition);
+        assertThat(actualLayout.getSettings()).isNull();
     }
 
     @Test
-    public void getApplicationLayout_layoutExists_returnsLayout() throws JsonProcessingException {
+    public void getApplicationLayout_layoutExists_returnsLayout() {
         String user = "user";
 
         ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
-        ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition);
+        ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition, null);
 
         when(mockRepo.findById(user)).thenReturn(Optional.of(expectedLayout));
 
@@ -63,14 +63,14 @@ class ApplicationLayoutServiceTest {
     }
 
     @Test
-    public void createApplicationLayout_validDefinition_callsRepoSave() throws JsonProcessingException {
+    public void createApplicationLayout_validDefinition_callsRepoSave() {
         String user = "user";
         ObjectNode definition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
 
-        service.persistApplicationLayout(user, definition);
+        service.persistApplicationLayout(user, definition, null);
 
         verify(mockRepo, times(1))
-                .save(new ApplicationLayout(user, definition));
+                .save(new ApplicationLayout(user, definition, null));
     }
     
     @Test

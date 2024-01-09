@@ -19,10 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,9 +53,8 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(get(BASE_URL).header("username", "new user"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username", nullValue()))
                 // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
-                .andExpect(jsonPath("$.definition.defaultLayoutKey", is("default-layout-value")));
+                .andExpect(jsonPath("$.applicationLayout.defaultLayoutKey", is("default-layout-value")));
     }
 
     @Test
@@ -85,17 +88,22 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(get(BASE_URL).header("username", user))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username", is(user)))
-                .andExpect(jsonPath("$.definition", is(definition)));
+                .andExpect(jsonPath("$.applicationLayout", is(definition)));
     }
 
     @Test
     public void persistApplicationLayout_noLayoutExists_returns201AndPersistsLayout() throws Exception {
         String user = "user";
         String definition = "{\"key\": \"value\"}";
+        String settings = "{\"settingsKey\": \"settingsValue\"}";
+
+        String requestBody = "{" +
+                "\"applicationLayout\": " + definition + "," +
+                "\"settings\": " + settings +
+                "}";
 
         mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(definition)
+                        .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$").doesNotExist());
@@ -103,7 +111,8 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.getDefinition()).isEqualTo(objectMapper.readTree(definition));
+        assertThat(persistedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(definition));
+        assertThat(persistedLayout.getSettings()).isEqualTo(objectMapper.readTree(settings));
     }
 
     @Test
@@ -116,9 +125,15 @@ public class ApplicationLayoutIntegrationTest {
         persistApplicationLayout(user, initialDefinition);
 
         String newDefinition = "{\"new-key\": \"new-value\"}";
+        String settings = "{\"settingsKey\": \"settingsValue\"}";
+
+        String requestBody = "{" +
+                "\"applicationLayout\": " + newDefinition + "," +
+                "\"settings\": " + settings +
+                "}";
 
         mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(newDefinition)
+                        .content(requestBody)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$").doesNotExist());
@@ -128,7 +143,8 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.getDefinition()).isEqualTo(objectMapper.readTree(newDefinition));
+        assertThat(retrievedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(newDefinition));
+        assertThat(retrievedLayout.getSettings()).isEqualTo(objectMapper.readTree(settings));
     }
 
     @Test
@@ -176,6 +192,6 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     private void persistApplicationLayout(String user, Map<String, String> definition) {
-        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, ObjectNode.class)));
+        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, ObjectNode.class), null));
     }
 }

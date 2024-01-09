@@ -20,8 +20,8 @@ public class ApplicationLayoutService {
     private final ApplicationLayoutRepository repository;
     private final DefaultApplicationLayoutLoader defaultLoader;
 
-    public void persistApplicationLayout(String username, ObjectNode applicationLayout) {
-        repository.save(new ApplicationLayout(username, applicationLayout));
+    public void persistApplicationLayout(String username, ObjectNode applicationLayout, ObjectNode settings) {
+        repository.save(new ApplicationLayout(username, applicationLayout, settings));
     }
 
     public ApplicationLayout getApplicationLayout(String username) {

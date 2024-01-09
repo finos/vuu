@@ -1,6 +1,5 @@
 package org.finos.vuu.layoutserver.controller;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.finos.vuu.layoutserver.dto.response.ApplicationLayoutDto;
 import org.finos.vuu.layoutserver.service.ApplicationLayoutService;
@@ -39,15 +38,17 @@ public class ApplicationLayoutController {
     /**
      * Creates or updates the unique application layout for the requesting user.
      *
-     * @param applicationLayout JSON representation of all relevant data about the application
+     * @param applicationLayoutDto JSON representation of all relevant data about the application
      *                          layout to be created
      * @param username         the user making the request
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping
     public void persistApplicationLayout(@RequestHeader("username") String username,
-        @RequestBody ObjectNode applicationLayout) {
-        service.persistApplicationLayout(username, applicationLayout);
+        @RequestBody ApplicationLayoutDto applicationLayoutDto) {
+        service.persistApplicationLayout(username,
+                applicationLayoutDto.getApplicationLayout(),
+                applicationLayoutDto.getSettings());
     }
 
     /**
