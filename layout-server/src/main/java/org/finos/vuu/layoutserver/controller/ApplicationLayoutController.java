@@ -38,9 +38,9 @@ public class ApplicationLayoutController {
     /**
      * Creates or updates the unique application layout for the requesting user.
      *
-     * @param applicationLayoutDto JSON representation of all relevant data about the application
-     *                          layout to be created
-     * @param username         the user making the request
+     * @param applicationLayoutDto JSON representation of all relevant data about the application layout to be created,
+     *                            containing top-level nodes for the layout itself, and for associated settings
+     * @param username the user making the request
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping
@@ -55,7 +55,7 @@ public class ApplicationLayoutController {
      * Deletes the application layout for the requesting user. A 404 will be returned if there is no existing
      * application layout.
      *
-     * @param username         the user making the request
+     * @param username the user making the request
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping
