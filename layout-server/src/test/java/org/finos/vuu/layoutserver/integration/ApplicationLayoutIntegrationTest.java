@@ -54,7 +54,7 @@ public class ApplicationLayoutIntegrationTest {
         mockMvc.perform(get(BASE_URL).header("username", "new user"))
                 .andExpect(status().isOk())
                 // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
-                .andExpect(jsonPath("$.applicationLayout.defaultLayoutKey", is("default-layout-value")));
+                .andExpect(jsonPath("$.defaultLayoutKey", is("default-layout-value")));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ApplicationLayoutIntegrationTest {
 
         mockMvc.perform(get(BASE_URL).header("username", user))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.applicationLayout", is(definition)));
+                .andExpect(jsonPath("$", is(definition)));
     }
 
     @Test
@@ -111,8 +111,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(definition));
-        assertThat(persistedLayout.getSettings()).isEqualTo(objectMapper.readTree(settings));
+        assertThat(persistedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(requestBody));
     }
 
     @Test
@@ -143,8 +142,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(newDefinition));
-        assertThat(retrievedLayout.getSettings()).isEqualTo(objectMapper.readTree(settings));
+        assertThat(retrievedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(requestBody));
     }
 
     @Test
@@ -192,6 +190,6 @@ public class ApplicationLayoutIntegrationTest {
     }
 
     private void persistApplicationLayout(String user, Map<String, String> definition) {
-        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, ObjectNode.class), null));
+        repository.save(new ApplicationLayout(user, objectMapper.convertValue(definition, ObjectNode.class)));
     }
 }

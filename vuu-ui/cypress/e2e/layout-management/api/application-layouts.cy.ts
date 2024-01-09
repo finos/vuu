@@ -32,7 +32,6 @@ describe("Application Layouts", () => {
         expect(response.status).to.eq(200);
 
         expect(response.body).to.have.property("applicationLayout");
-        expect(response.body).to.have.property("settings");
 
         expect(JSON.stringify(response.body.applicationLayout)).to.equal(
           JSON.stringify(Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS))

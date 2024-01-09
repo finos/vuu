@@ -25,7 +25,7 @@ public class DefaultApplicationLayoutLoader {
 
     private void loadDefaultLayout() {
         ObjectNode definition = loadDefaultLayoutJsonFile();
-        defaultLayout = new ApplicationLayout(null, definition, null);
+        defaultLayout = new ApplicationLayout(null, definition);
     }
 
     private ObjectNode loadDefaultLayoutJsonFile() {

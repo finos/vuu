@@ -45,7 +45,6 @@ class ApplicationLayoutServiceTest {
 
         assertThat(actualLayout.getUsername()).isNull();
         assertThat(actualLayout.getApplicationLayout()).isEqualTo(expectedDefinition);
-        assertThat(actualLayout.getSettings()).isNull();
     }
 
     @Test
@@ -53,7 +52,7 @@ class ApplicationLayoutServiceTest {
         String user = "user";
 
         ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
-        ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition, null);
+        ApplicationLayout expectedLayout = new ApplicationLayout(user, expectedDefinition);
 
         when(mockRepo.findById(user)).thenReturn(Optional.of(expectedLayout));
 
@@ -67,10 +66,10 @@ class ApplicationLayoutServiceTest {
         String user = "user";
         ObjectNode definition = objectNodeConverter.convertToEntityAttribute("{\"id\":\"main-tabs\"}");
 
-        service.persistApplicationLayout(user, definition, null);
+        service.persistApplicationLayout(user, definition);
 
         verify(mockRepo, times(1))
-                .save(new ApplicationLayout(user, definition, null));
+                .save(new ApplicationLayout(user, definition));
     }
     
     @Test

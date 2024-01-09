@@ -22,8 +22,4 @@ public class ApplicationLayout {
     @Convert(converter = ObjectNodeConverter.class)
     @Column(columnDefinition = "JSON")
     private ObjectNode applicationLayout;
-
-    @Convert(converter = ObjectNodeConverter.class)
-    @Column(columnDefinition = "JSON")
-    private ObjectNode settings;
 }
