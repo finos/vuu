@@ -95,15 +95,9 @@ public class ApplicationLayoutIntegrationTest {
     public void persistApplicationLayout_noLayoutExists_returns201AndPersistsLayout() throws Exception {
         String user = "user";
         String definition = "{\"key\": \"value\"}";
-        String settings = "{\"settingsKey\": \"settingsValue\"}";
-
-        String requestBody = "{" +
-                "\"applicationLayout\": " + definition + "," +
-                "\"settings\": " + settings +
-                "}";
 
         mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(requestBody)
+                        .content(definition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$").doesNotExist());
@@ -111,7 +105,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout persistedLayout = repository.findById(user).orElseThrow();
 
         assertThat(persistedLayout.getUsername()).isEqualTo(user);
-        assertThat(persistedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(requestBody));
+        assertThat(persistedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(definition));
     }
 
     @Test
@@ -124,15 +118,9 @@ public class ApplicationLayoutIntegrationTest {
         persistApplicationLayout(user, initialDefinition);
 
         String newDefinition = "{\"new-key\": \"new-value\"}";
-        String settings = "{\"settingsKey\": \"settingsValue\"}";
-
-        String requestBody = "{" +
-                "\"applicationLayout\": " + newDefinition + "," +
-                "\"settings\": " + settings +
-                "}";
 
         mockMvc.perform(put(BASE_URL).header("username", user)
-                        .content(requestBody)
+                        .content(newDefinition)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$").doesNotExist());
@@ -142,7 +130,7 @@ public class ApplicationLayoutIntegrationTest {
         ApplicationLayout retrievedLayout = repository.findById(user).orElseThrow();
 
         assertThat(retrievedLayout.getUsername()).isEqualTo(user);
-        assertThat(retrievedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(requestBody));
+        assertThat(retrievedLayout.getApplicationLayout()).isEqualTo(objectMapper.readTree(newDefinition));
     }
 
     @Test

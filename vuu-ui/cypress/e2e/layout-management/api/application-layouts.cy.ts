@@ -98,7 +98,7 @@ describe("Application Layouts", () => {
               JSON.stringify(requestBody)
             );
 
-            expect(response.body.applicationLayout).to.not.contain(
+            expect(response.body.applicationLayout).to.not.equal(
               originalApplicationLayout
             );
             expect(response.body.settings).to.not.equal(

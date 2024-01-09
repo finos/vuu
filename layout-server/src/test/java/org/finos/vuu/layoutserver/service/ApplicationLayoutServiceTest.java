@@ -41,7 +41,8 @@ class ApplicationLayoutServiceTest {
         ApplicationLayout actualLayout = service.getApplicationLayout("new user");
 
         // Expecting application layout as defined in /test/resources/defaultApplicationLayout.json
-        ObjectNode expectedDefinition = objectNodeConverter.convertToEntityAttribute("{\"defaultLayoutKey\":\"default-layout-value\"}");
+        ObjectNode expectedDefinition =
+                objectNodeConverter.convertToEntityAttribute("{\"defaultLayoutKey\":\"default-layout-value\"}");
 
         assertThat(actualLayout.getUsername()).isNull();
         assertThat(actualLayout.getApplicationLayout()).isEqualTo(expectedDefinition);
