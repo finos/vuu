@@ -9,7 +9,7 @@ export const headerCellQuery = (colIdx: number) =>
   `.vuuTable-col-headers .vuuTableHeaderCell:nth-child(${colIdx})`;
 
 export const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `.vuuTable-body > [aria-rowindex='${rowIdx}'] > [role='cell']:nth-child(${
+  `.vuuTable-body > [aria-rowindex='${rowIdx + 1}'] > [role='cell']:nth-child(${
     colIdx + 1
   })`;
 

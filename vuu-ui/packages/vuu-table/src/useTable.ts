@@ -61,7 +61,6 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { useVirtualViewport } from "./useVirtualViewport";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
@@ -471,24 +470,18 @@ export const useTable = ({
     [columns, dataSource, dispatchColumnAction]
   );
 
-  const { onVerticalScroll } = useVirtualViewport({
-    columns,
-    getRowAtPosition,
-    setRange,
-    viewportMeasurements,
-  });
-
   const handleVerticalScroll = useCallback(
-    (scrollTop: number, pctScrollTop: number) => {
+    (_: number, pctScrollTop: number) => {
       setPctScrollTop(pctScrollTop);
-      onVerticalScroll(scrollTop);
     },
-    [onVerticalScroll, setPctScrollTop]
+    [setPctScrollTop]
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
+    getRowAtPosition,
     rowHeight,
     scrollingApiRef,
+    setRange,
     onVerticalScroll: handleVerticalScroll,
     viewportMeasurements,
   });

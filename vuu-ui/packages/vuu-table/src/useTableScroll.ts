@@ -1,7 +1,9 @@
-import { getRowElementAtIndex } from "@finos/vuu-utils";
+import { getRowElementAtIndex, RowAtPositionFunc } from "@finos/vuu-utils";
+import { VuuRange } from "@finos/vuu-protocol-types";
 import {
   ForwardedRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -113,19 +115,24 @@ const useCallbackRef = <T = HTMLElement>({
 };
 
 export interface TableScrollHookProps {
+  getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
   rowHeight: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
+  setRange: (range: VuuRange) => void;
   viewportMeasurements: ViewportMeasurements;
 }
 
 export const useTableScroll = ({
+  getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
   scrollingApiRef,
+  setRange,
   viewportMeasurements,
 }: TableScrollHookProps) => {
+  const firstRowRef = useRef<number>(0);
   const contentContainerScrolledRef = useRef(false);
   const scrollPosRef = useRef({ scrollTop: 0, scrollLeft: 0 });
   const scrollbarContainerRef = useRef<HTMLDivElement | null>(null);
@@ -136,8 +143,21 @@ export const useTableScroll = ({
     isVirtualScroll,
     maxScrollContainerScrollHorizontal: maxScrollLeft,
     maxScrollContainerScrollVertical: maxScrollTop,
+    rowCount: viewportRowCount,
     totalHeaderHeight,
   } = viewportMeasurements;
+
+  const handleVerticalScroll = useCallback(
+    (scrollTop: number, pctScrollTop: number) => {
+      onVerticalScroll?.(scrollTop, pctScrollTop);
+      const firstRow = getRowAtPosition(scrollTop);
+      if (firstRow !== firstRowRef.current) {
+        firstRowRef.current = firstRow;
+        setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
+      }
+    },
+    [getRowAtPosition, onVerticalScroll, setRange, viewportRowCount]
+  );
 
   const handleScrollbarContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
@@ -171,14 +191,14 @@ export const useTableScroll = ({
 
       if (scrollPos.scrollTop !== scrollTop) {
         scrollPos.scrollTop = scrollTop;
-        onVerticalScroll?.(scrollTop, pctScrollTop);
+        handleVerticalScroll(scrollTop, pctScrollTop);
       }
       if (scrollPos.scrollLeft !== scrollLeft) {
         scrollPos.scrollLeft = scrollLeft;
         onHorizontalScroll?.(scrollLeft);
       }
     }
-  }, [maxScrollLeft, maxScrollTop, onHorizontalScroll, onVerticalScroll]);
+  }, [handleVerticalScroll, maxScrollLeft, maxScrollTop, onHorizontalScroll]);
 
   const handleAttachScrollbarContainer = useCallback(
     (el: HTMLDivElement) => {
@@ -226,25 +246,6 @@ export const useTableScroll = ({
     onDetach: handleDetachScrollbarContainer,
   });
 
-  const scrollRowIntoViewIfNecessary = useCallback((rowIndex: number) => {
-    // TODO
-    // requestScroll?.({ type: "scroll-row-into-view", rowIndex });
-    const { current: container } = contentContainerRef;
-    const activeRow = container?.querySelector(
-      `[aria-rowindex="${rowIndex}"]`
-    ) as HTMLElement;
-    if (activeRow) {
-      const [direction, distance] = howFarIsRowOutsideViewport(
-        activeRow,
-        totalHeaderHeight
-      );
-      if (direction && distance) {
-        // requestScroll?.({ type: "scroll-distance", distance, direction });
-      }
-    }
-  }, []);
-
-  //TODO should this be async ?
   const requestScroll: ScrollRequestHandler = useCallback(
     (scrollRequest) => {
       const { current: scrollbarContainer } = contentContainerRef;
@@ -252,20 +253,25 @@ export const useTableScroll = ({
         const { scrollLeft, scrollTop } = scrollbarContainer;
         contentContainerScrolledRef.current = false;
         if (scrollRequest.type === "scroll-row") {
-          if (isVirtualScroll) {
-            console.log("virtual scroll row required");
-          } else {
-            const activeRow = getRowElementAtIndex(
-              scrollbarContainer,
-              scrollRequest.rowIndex
+          const activeRow = getRowElementAtIndex(
+            scrollbarContainer,
+            scrollRequest.rowIndex
+          );
+          if (activeRow !== null) {
+            const [direction, distance] = howFarIsRowOutsideViewport(
+              activeRow,
+              totalHeaderHeight
             );
-            if (activeRow !== null) {
-              const [direction, distance] = howFarIsRowOutsideViewport(
-                activeRow,
-                totalHeaderHeight
-              );
-              console.log(`direction === ${direction}`);
-              if (direction && distance) {
+            if (direction && distance) {
+              if (isVirtualScroll) {
+                console.log(
+                  `virtual scroll row required ${direction} ${distance} 
+                  first Row ${firstRowRef.current}`
+                );
+                // const from = firstRowRef.current + 1;
+                // console.log(`setRange from ${from}`);
+                // setRange({ from, to: from + viewportRowCount + 1 });
+              } else {
                 let newScrollLeft = scrollLeft;
                 let newScrollTop = scrollTop;
                 if (direction === "up" || direction === "down") {
@@ -315,7 +321,15 @@ export const useTableScroll = ({
         }
       }
     },
-    [appliedPageSize, isVirtualScroll, maxScrollLeft, maxScrollTop]
+    [
+      appliedPageSize,
+      isVirtualScroll,
+      maxScrollLeft,
+      maxScrollTop,
+      setRange,
+      totalHeaderHeight,
+      viewportRowCount,
+    ]
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
@@ -344,6 +358,12 @@ export const useTableScroll = ({
     },
     [scrollHandles]
   );
+
+  useEffect(() => {
+    const { current: from } = firstRowRef;
+    const rowRange = { from, to: from + viewportRowCount + 1 };
+    setRange(rowRange);
+  }, [setRange, viewportRowCount]);
 
   return {
     /** Ref to be assigned to ScrollbarContainer */
