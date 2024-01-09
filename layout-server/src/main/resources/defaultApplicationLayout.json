@@ -1,22 +1,27 @@
 {
-  "id": "main-tabs",
   "type": "Stack",
+  "id": "main-tabs",
   "props": {
     "className": "vuuShell-mainTabs",
     "TabstripProps": {
       "allowAddTab": true,
+      "allowCloseTab": true,
       "allowRenameTab": true,
       "animateSelectionThumb": false,
-      "className": "vuuShellMainTabstrip",
-      "location": "main-tab"
+      "location": "main-tab",
+      "tabClassName": "MainTab"
     },
     "preserve": true,
     "active": 0
   },
   "children": [
     {
-      "type": "Placeholder",
-      "title": "Page 1"
+      "props": {
+        "id": "tab1",
+        "title": "Tab 1",
+        "className": "vuuShell-Placeholder"
+      },
+      "type": "Placeholder"
     }
   ]
 }
