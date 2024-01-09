@@ -3,11 +3,12 @@
 import {
   APPLICATION_LAYOUT_URL,
   DEFAULT_APPLICATION_LAYOUT_ALIAS,
+  DEFAULT_APPLICATION_SETTINGS_ALIAS,
   deleteApplicationLayout,
   getApplicationLayout,
   persistApplicationLayout,
 } from "./api.utils";
-import { ApplicationJSON, ApplicationSettings } from "@finos/vuu-layout";
+import { ApplicationJSON, ApplicationSettings, LayoutJSON } from "@finos/vuu-layout";
 
 describe("Application Layouts", () => {
   const testUser = "Test User";
@@ -18,6 +19,10 @@ describe("Application Layouts", () => {
         DEFAULT_APPLICATION_LAYOUT_ALIAS,
         response.body.applicationLayout
       );
+      Cypress.env(
+        DEFAULT_APPLICATION_SETTINGS_ALIAS,
+        response.body.settings
+      );
     });
   });
 
@@ -25,10 +30,15 @@ describe("Application Layouts", () => {
     it("should return a 200 with the default application layout", () => {
       getApplicationLayout(testUser).then((response) => {
         expect(response.status).to.eq(200);
-        expect(response.body).to.have.property("username");
+
         expect(response.body).to.have.property("applicationLayout");
+        expect(response.body).to.have.property("settings");
+
         expect(JSON.stringify(response.body.applicationLayout)).to.equal(
           JSON.stringify(Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS))
+        );
+        expect(JSON.stringify(response.body.settings)).to.equal(
+          JSON.stringify(Cypress.env(DEFAULT_APPLICATION_SETTINGS_ALIAS))
         );
       });
     });
@@ -36,9 +46,14 @@ describe("Application Layouts", () => {
 
   context("PUT /application-layouts", () => {
     beforeEach(() => {
+      const requestBody: ApplicationJSON = {
+        applicationLayout: Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS),
+        settings: Cypress.env(DEFAULT_APPLICATION_SETTINGS_ALIAS),
+      }
+
       persistApplicationLayout(
         testUser,
-        Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS)
+        requestBody,
       );
     });
 
@@ -47,17 +62,25 @@ describe("Application Layouts", () => {
     });
 
     it("should update the application layout for the user", () => {
-      let originalApplicationLayout: any;
+      let originalApplicationLayout: LayoutJSON;
+      let originalApplicationSettings: ApplicationSettings;
 
       const requestBody: ApplicationJSON = {
-        layout: {
+        applicationLayout: {
           type: "Updated",
+        },
+        settings: {
+          leftNav: {
+            activeTabIndex: 1,
+            expanded: false,
+          },
         },
       };
 
       getApplicationLayout(testUser)
         .then((response) => {
           originalApplicationLayout = response.body.applicationLayout;
+          originalApplicationSettings = response.body.settings;
         })
         .then(() => {
           persistApplicationLayout(testUser, requestBody).then((response) => {
@@ -68,13 +91,19 @@ describe("Application Layouts", () => {
         .then(() => {
           getApplicationLayout(testUser).then((response) => {
             expect(response.status).to.eq(200);
-            expect(response.body).to.have.property("username", testUser);
+
             expect(response.body).to.have.property("applicationLayout");
-            expect(JSON.stringify(response.body.applicationLayout)).to.equal(
+            expect(response.body).to.have.property("settings");
+
+            expect(JSON.stringify(response.body)).to.equal(
               JSON.stringify(requestBody)
             );
+
             expect(response.body.applicationLayout).to.not.contain(
               originalApplicationLayout
+            );
+            expect(response.body.settings).to.not.equal(
+              originalApplicationSettings
             );
           });
         });
@@ -82,7 +111,7 @@ describe("Application Layouts", () => {
 
     it("should send a request without settings and return a 201", () => {
       const requestBody: ApplicationJSON = {
-        layout: Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS),
+        applicationLayout: Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS),
       };
 
       cy.request({
@@ -108,7 +137,7 @@ describe("Application Layouts", () => {
         },
       };
       const requestBody: ApplicationJSON = {
-        layout: Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS),
+        applicationLayout: Cypress.env(DEFAULT_APPLICATION_LAYOUT_ALIAS),
         settings,
       };
 
@@ -144,7 +173,6 @@ describe("Application Layouts", () => {
         .then(() => {
           getApplicationLayout(testUser).then((response) => {
             expect(response.status).to.eq(200);
-            expect(response.body).to.have.property("username", null);
           });
         });
     });

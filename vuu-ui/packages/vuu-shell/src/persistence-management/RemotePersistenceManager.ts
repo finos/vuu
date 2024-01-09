@@ -13,7 +13,6 @@ const applicationLayoutsSaveLocation = "application-layouts";
 
 export type CreateLayoutResponseDto = { metadata: LayoutMetadata };
 export type GetLayoutResponseDto = { definition: LayoutJSON };
-export type GetApplicationResponseDto = { definition: ApplicationJSON };
 
 export class RemotePersistenceManager implements PersistenceManager {
   username: string = getAuthDetailsFromCookies()[0];
@@ -170,7 +169,7 @@ export class RemotePersistenceManager implements PersistenceManager {
           if (!response.ok) {
             reject(new Error(response.statusText));
           }
-          response.json().then((applicationJSON: GetApplicationResponseDto) => {
+          response.json().then((applicationJSON: ApplicationJSON) => {
             if (!applicationJSON) {
               reject(
                 new Error(
@@ -178,7 +177,7 @@ export class RemotePersistenceManager implements PersistenceManager {
                 )
               );
             }
-            resolve(applicationJSON.definition);
+            resolve(applicationJSON);
           });
         })
         .catch((error: Error) => {

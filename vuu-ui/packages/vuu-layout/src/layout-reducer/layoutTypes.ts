@@ -35,7 +35,7 @@ export interface ApplicationSettings {
 export type ApplicationSetting = ValueOf<ApplicationSettings>;
 
 export interface ApplicationJSON {
-  layout: LayoutJSON;
+  applicationLayout: LayoutJSON;
   settings?: ApplicationSettings;
 }
 

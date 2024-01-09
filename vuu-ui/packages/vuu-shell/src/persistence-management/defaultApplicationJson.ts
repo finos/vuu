@@ -16,7 +16,7 @@ export const warningLayout: LayoutJSON = {
 };
 
 export const loadingApplicationJson: Readonly<ApplicationJSON> = {
-  layout: {
+  applicationLayout: {
     type: "Component",
     id: "loading-main",
     props: {},
@@ -24,7 +24,7 @@ export const loadingApplicationJson: Readonly<ApplicationJSON> = {
 };
 
 export const defaultApplicationJson: ApplicationJSON = {
-  layout: {
+  applicationLayout: {
     type: "Stack",
     id: "main-tabs",
     props: {

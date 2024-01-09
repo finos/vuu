@@ -149,7 +149,7 @@ export const Shell = ({
       >
         <LayoutProvider
           {...LayoutProps}
-          layout={applicationJson.layout}
+          layout={applicationJson.applicationLayout}
           onLayoutChange={handleLayoutChange}
         >
           <DraggableLayout
