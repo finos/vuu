@@ -1,8 +1,7 @@
+import { isPlainObject } from "./isPlainObject";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ItemToStringFunction = (item: any) => string;
-
-const isPlainObject = (obj: unknown) =>
-  Object.prototype.toString.call(obj) === "[object Object]";
 
 export function itemToString(item: unknown): string {
   if (typeof item === "string") {
