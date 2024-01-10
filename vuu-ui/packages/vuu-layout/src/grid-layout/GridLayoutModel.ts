@@ -1,4 +1,9 @@
-import { collectColItems, collectRowItems } from "./grid-layout-utils";
+import {
+  AdjacentItems,
+  collectItemsByColumnPosition,
+  collectItemsByRowPosition,
+  occupySameTrack,
+} from "./grid-layout-utils";
 
 export type GridLayoutModelPosition = {
   end: number;
@@ -14,6 +19,7 @@ export interface IGridLayoutModelItem {
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
 export type GridLayoutResizePosition = "before" | "after" | "above" | "below";
+export type GridLayoutResizeType = "shrink" | "grow";
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
@@ -37,14 +43,6 @@ export class GridLayoutModelItem implements IGridLayoutModelItem {
     this.row = { start: rowFrom, end: rowTo };
   }
 }
-
-export type AdjacentItems = {
-  contraItems: IGridLayoutModelItem[];
-  contraItemsMaybe?: IGridLayoutModelItem[];
-  contraItemsOtherTrack?: IGridLayoutModelItem[];
-  siblingItemsOtherTrack?: IGridLayoutModelItem[];
-  nonAdjacentItems?: IGridLayoutModelItem[];
-};
 
 type GridItemMap = Map<number, IGridLayoutModelItem[]>;
 type GridItemMaps = {
@@ -357,50 +355,64 @@ export class GridLayoutModel {
   }
 
   getGridItemsAdjoiningTrack(
-    gridItemId: string,
+    resizeGridItemId: string,
     resizeOrientation: GridLayoutResizeDirection,
     splitterAlign: SplitterAlign
   ): AdjacentItems {
-    const contraItems: IGridLayoutModelItem[] = [];
-    const contraItemsMaybe: IGridLayoutModelItem[] = [];
-    const contraItemsOtherTrack: IGridLayoutModelItem[] = [];
-    const siblingItemsOtherTrack: IGridLayoutModelItem[] = [];
-    const nonAdjacentItems: IGridLayoutModelItem[] = [];
+    const items: AdjacentItems = {
+      contra: [],
+      contraMaybe: [],
+      contraOtherTrack: [],
+      siblingsOtherTrack: [],
+      nonAdjacent: [],
+    };
 
-    const targetGridItem = this.gridItems.find(({ id }) => id === gridItemId);
-    if (targetGridItem === undefined) {
+    const resizeGridItem = this.gridItems.find(
+      ({ id }) => id === resizeGridItemId
+    );
+    if (resizeGridItem === undefined) {
       throw Error("getGridItemsAdjoiningTrack gridItem not found");
     }
 
     const collectItems =
-      resizeOrientation === "vertical" ? collectRowItems : collectColItems;
+      resizeOrientation === "vertical"
+        ? collectItemsByRowPosition
+        : collectItemsByColumnPosition;
 
     for (const gridItem of this.gridItems) {
-      if (gridItem !== targetGridItem) {
-        collectItems(
-          targetGridItem,
-          gridItem,
-          splitterAlign,
-          contraItems,
-          contraItemsMaybe,
-          contraItemsOtherTrack,
-          siblingItemsOtherTrack,
-          nonAdjacentItems
+      if (gridItem !== resizeGridItem) {
+        collectItems(resizeGridItem, gridItem, splitterAlign, items);
+      }
+    }
+
+    if (items.contraMaybe.length === 1) {
+      console.log(`where do we put a single maybe contra ?`);
+    } else if (items.contraMaybe.length > 1) {
+      if (
+        occupySameTrack(resizeGridItem, items.contraMaybe, resizeOrientation)
+      ) {
+        items.contra.push(
+          ...items.contraMaybe.splice(0, items.contraMaybe.length)
         );
       }
     }
 
-    if (contraItemsOtherTrack.length === 0) {
-      // Single Track resize
-      return { contraItems };
-    } else {
-      return {
-        contraItems,
-        contraItemsMaybe,
-        contraItemsOtherTrack,
-        siblingItemsOtherTrack,
-        nonAdjacentItems,
-      };
-    }
+    // if (Array.isArray(contraItemsMaybe) && contraItemsMaybe.length > 0) {
+    //   // if  contraItemsMaybe together fill the track, they go into contraItems
+    //   contraItemsOtherTrack?.push(...contraItemsMaybe);
+    // }
+
+    return items;
+  }
+
+  repositionComponentsforResize(
+    resizeItems: IGridLayoutModelItem[],
+    adjacentItems: AdjacentItems,
+    resizeType: GridLayoutResizeType
+  ) {
+    console.log(`repositionComponentsforResize (${resizeType})`, {
+      resizeItems,
+      adjacentItems,
+    });
   }
 }
