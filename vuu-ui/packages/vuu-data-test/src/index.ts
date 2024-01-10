@@ -1,3 +1,4 @@
+export * from "./ArrayProxy";
 export * from "./schemas";
 export * from "./TickingArrayDataSource";
 export * from "./vuu-row-generator";

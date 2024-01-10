@@ -13,7 +13,6 @@ import { MovingWindow } from "./moving-window";
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
-  // onConfigChange?: (message: DataSourceConfigMessage) => void;
   onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
@@ -38,7 +37,6 @@ export const useDataSource = ({
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  // const rafHandle = useRef<number | null>(null);
   const rangeRef = useRef<VuuRange>(NULL_RANGE);
 
   const dataWindow = useMemo(
@@ -100,21 +98,6 @@ export const useDataSource = ({
     };
   }, [dataSource]);
 
-  // Keep until we'tre sure we don't need it for updates
-  // const refreshIfUpdated = useCallback(() => {
-  //   if (isMounted.current) {
-  //     console.log(`RAF updated data ? ${hasUpdated.current}`);
-  //     if (hasUpdated.current) {
-  //       forceUpdate({});
-  //       hasUpdated.current = false;
-  //     }
-  //     rafHandle.current = requestAnimationFrame(refreshIfUpdated);
-  //   }
-  // }, [forceUpdate]);
-  // useEffect(() => {
-  //   rafHandle.current = requestAnimationFrame(refreshIfUpdated);
-  // }, [refreshIfUpdated]);
-
   useEffect(() => {
     if (dataSource.status === "disabled") {
       dataSource.enable?.(datasourceMessageHandler);
@@ -129,6 +112,8 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (range: VuuRange) => {
+      // TODO can we directly call setData here when we do an
+      // in-situ row scroll ?
       const fullRange = getFullRange(range, renderBufferSize);
       dataWindow.setRange(fullRange);
       dataSource.range = rangeRef.current = fullRange;
