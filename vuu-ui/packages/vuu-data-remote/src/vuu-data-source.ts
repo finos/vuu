@@ -263,7 +263,6 @@ export class VuuDataSource
 
   resume() {
     console.log(`resume #${this.viewport}, current status ${this.#status}`);
-
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
