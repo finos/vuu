@@ -38,7 +38,6 @@ export const BasketSelectorRow = ({
   return (
     <div
       {...htmlAttributes}
-      aria-rowindex={row[0]}
       className={cx(classBase, "vuuTableRow", {
         [`${classBase}-highlighted`]: highlighted,
       })}

@@ -260,6 +260,7 @@ const TableCore = ({
           <div className={`${classBase}-body`}>
             {data.map((data) => (
               <Row
+                aria-rowindex={data[0] + 1}
                 columnMap={columnMap}
                 columns={columns}
                 highlighted={highlightedIndex === data[IDX]}

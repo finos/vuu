@@ -241,7 +241,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    console.log(`unsubscribe noop ${this.tableName}`);
+    console.log(`unsubscribe noop`);
   }
 
   suspend() {
@@ -257,7 +257,7 @@ export class ArrayDataSource
     // const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
-    console.log(`resume noop ${this.tableName}`);
+    console.log(`resume noop`);
     if (isSuspended) {
       this.#status = "subscribed";
     }
@@ -265,12 +265,12 @@ export class ArrayDataSource
   }
 
   disable() {
-    console.log(`disable noop ${this.tableName}`);
+    console.log(`disable noop`);
     return this;
   }
 
   enable() {
-    console.log(`enable noop ${this.tableName}`);
+    console.log(`enable noop`);
     return this;
   }
 

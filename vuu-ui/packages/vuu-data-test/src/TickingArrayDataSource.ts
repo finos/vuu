@@ -63,8 +63,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#rpcServices = rpcServices;
     this.#table = table;
 
-    this.tableName = table?.schema.table.table;
-
     if (table) {
       table.on("insert", this.insert);
       table.on("update", this.updateRow);
