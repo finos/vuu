@@ -28,6 +28,7 @@
     "launch:table": "node ./scripts/launch-table.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
     "launch:showcase": " cd showcase && node scripts/launch.mjs",
+    "layout-server": "cd ../layout-server && mvn spring-boot:run",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",

@@ -40,8 +40,8 @@ jobs:
           working-directory: ./vuu-ui
           browser: chrome
           build: npm run showcase:build
-          start: npm run showcase:preview
-          wait-on: "http://localhost:4173"
+          start: npm run showcase:preview, npm run layout-server
+          wait-on: http://localhost:4173, http://localhost:8081/api/swagger-ui/index.html
       - name: Run end-to-end tests in Edge
         uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
         with:
@@ -50,7 +50,7 @@ jobs:
           browser: edge
           build: npm run showcase:build
           start: npm run showcase:preview
-          wait-on: "http://localhost:4173"
+          wait-on: http://localhost:4173, http://localhost:8081/api/swagger-ui/index.html
 
   # ensure the vuu example still builds
   vuu-app-build:
