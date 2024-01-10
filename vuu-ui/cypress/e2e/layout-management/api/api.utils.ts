@@ -7,10 +7,12 @@ export type LayoutResponseDto = {
   metadata: LayoutMetadata;
 };
 
-export const LAYOUT_API_BASE_URL = "http://localhost:8081/api";
+const LAYOUT_API_BASE_URL = "http://localhost:8081/api";
+
 export const APPLICATION_LAYOUT_URL =
   LAYOUT_API_BASE_URL + "/application-layouts/";
-export const USER_LAYOUT_URL = LAYOUT_API_BASE_URL + "/layouts/";
+export const USER_LAYOUT_URL =
+  LAYOUT_API_BASE_URL + "/layouts/";
 
 export const TEST_LAYOUT_ID_ALIAS = "TEST_LAYOUT_ID";
 export const DEFAULT_APPLICATION_LAYOUT_ALIAS = "DEFAULT_APPLICATION_LAYOUT";

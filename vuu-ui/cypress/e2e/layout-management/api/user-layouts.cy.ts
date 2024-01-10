@@ -5,10 +5,10 @@ import {
   createLayout,
   deleteLayout,
   getLayout,
-  LAYOUT_API_BASE_URL,
   TEST_LAYOUT_ID_ALIAS,
   TEST_LAYOUT_JSON,
   TEST_METADATA_DTO,
+  USER_LAYOUT_URL,
 } from "./api.utils";
 
 describe("User Layouts", () => {
@@ -56,7 +56,7 @@ describe("User Layouts", () => {
     it("should return a 200", () => {
       cy.request({
         method: "GET",
-        url: LAYOUT_API_BASE_URL + "/layouts/metadata",
+        url: USER_LAYOUT_URL + "metadata",
       }).then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body).to.have.lengthOf(1);
@@ -78,7 +78,7 @@ describe("User Layouts", () => {
       cy.request({
         method: "PUT",
         url:
-          LAYOUT_API_BASE_URL + "/layouts/" + Cypress.env(TEST_LAYOUT_ID_ALIAS),
+          USER_LAYOUT_URL + Cypress.env(TEST_LAYOUT_ID_ALIAS),
         body: {
           metadata: TEST_METADATA_DTO,
           definition: { ...TEST_LAYOUT_JSON, type: "Column" },
@@ -101,7 +101,7 @@ describe("User Layouts", () => {
       cy.request({
         method: "DELETE",
         url:
-          LAYOUT_API_BASE_URL + "/layouts/" + Cypress.env(TEST_LAYOUT_ID_ALIAS),
+          USER_LAYOUT_URL + Cypress.env(TEST_LAYOUT_ID_ALIAS),
       })
         .then((response) => {
           expect(response.status).to.eq(204);
