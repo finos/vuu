@@ -1,38 +1,66 @@
 .vuuLayoutList {
+    --vuuLayoutList-width: 90%;
     --vuuMeasuredContainer-flex: 1 1 1px;
     align-self: stretch;
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    padding-right: 6px;
+
+    /* compatible with Chrome, Edge, and Safari */
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background: #D9D9D9;
+    }
 }
 
 .vuuLayoutList-header {
-    color: var(--light-text-primary, #15171B);
+    display: flex;
     flex: 0 0 47px;
+    width: var(--vuuLayoutList-width);
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(119, 124, 148, 0.10);
+    color: var(--light-text-primary, #15171B);
     font-weight: 700;
     letter-spacing: 0.48px;
-    text-transform: uppercase;
-    display: flex;
-    padding: 16px 0px;
-    border-bottom: 1px solid rgba(119, 124, 148, 0.10);
     line-height: 200%;
+    text-transform: uppercase;
 }
 
 .vuuLayoutList-groupName {
     display: flex;
     padding-top: 24px;
+    width: var(--vuuLayoutList-width);
     color: var(--light-text-secondary, #606477);
+    font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
+    font-family: Nunito Sans;
+    font-size: 12px;
+    font-style: normal;
     font-weight: 700;
-    letter-spacing: 0.48px;
     line-height: 200%;
+    letter-spacing: 0.48px;
+    text-transform: uppercase;
 }
 
 .vuuLayoutList-layoutContainer {
     display: flex;
     align-items: center;
+    width: 90%;
+    height: auto;
     gap: 8px;
-    padding: 8px 0px;
+    padding: 8px 0;
     flex: 1 1 auto;
     cursor: pointer;
 }
