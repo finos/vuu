@@ -37,6 +37,11 @@ export type Direction = "fwd" | "bwd";
 export const FWD: Direction = "fwd";
 export const BWD: Direction = "bwd";
 
+export interface MousePosition {
+  clientX: number;
+  clientY: number;
+}
+
 export interface MouseOffset {
   x: number;
   y: number;

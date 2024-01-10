@@ -1,5 +1,5 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { useDragDropNext as useDragDrop } from "@finos/vuu-ui-controls";
+import { useDragDrop as useDragDrop } from "@finos/vuu-ui-controls";
 import {
   isValidNumber,
   MEASURES,

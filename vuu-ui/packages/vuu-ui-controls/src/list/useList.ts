@@ -17,7 +17,7 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "../common-hooks";
-import { DragStartHandler, useDragDropNext as useDragDrop } from "../drag-drop";
+import { DragStartHandler, useDragDrop as useDragDrop } from "../drag-drop";
 import {
   closestListItemIndex,
   useCollapsibleGroups,

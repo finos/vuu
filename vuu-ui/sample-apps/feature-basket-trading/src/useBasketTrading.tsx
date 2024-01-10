@@ -193,7 +193,6 @@ export const useBasketTrading = ({
   );
 
   const handleAddBasket = useCallback(() => {
-    console.log(`handleAddBasket`);
     setBasketState((state) => ({
       ...state,
       dialog: (

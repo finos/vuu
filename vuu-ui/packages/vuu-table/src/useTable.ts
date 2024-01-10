@@ -17,7 +17,7 @@ import { MeasuredProps, MeasuredSize } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
-  useDragDropNext as useDragDrop,
+  useDragDrop as useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
@@ -200,13 +200,6 @@ export const useTable = ({
     return [stateColumns ?? runtimeColumns, setSize];
   }, [runtimeColumns, stateColumns]);
 
-  // console.log({
-  //   config,
-  //   tableConfig,
-  //   runtimeColumns,
-  //   columns,
-  // });
-
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
     [dataSource.columns]
@@ -260,7 +253,6 @@ export const useTable = ({
 
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`settings changed`);
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -660,11 +652,6 @@ export const useTable = ({
       orientation: "vertical",
       itemQuery: ".vuuTableRow",
     });
-
-  // console.log({
-  //   tableAttributes,
-  //   config: tableConfig,
-  // });
 
   return {
     ...containerProps,

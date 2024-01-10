@@ -4,7 +4,7 @@ import {
   InternalDragDropProps,
   InternalDragHookResult,
   ViewportRange,
-} from "./dragDropTypesNext";
+} from "./dragDropTypes";
 
 export const useDragDropCopy = ({
   selected,

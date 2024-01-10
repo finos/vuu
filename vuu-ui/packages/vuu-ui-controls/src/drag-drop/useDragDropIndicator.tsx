@@ -5,7 +5,7 @@ import {
   InternalDragHookResult,
   Direction,
   ViewportRange,
-} from "./dragDropTypesNext";
+} from "./dragDropTypes";
 import { useDropIndicator } from "./useDropIndicator";
 
 import {

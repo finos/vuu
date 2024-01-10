@@ -1,6 +1,6 @@
 import { Portal } from "@finos/vuu-popups";
 import { forwardRef } from "react";
-import { Rect } from "./dragDropTypesNext";
+import { Rect } from "./dragDropTypes";
 
 import "./DropIndicator.css";
 

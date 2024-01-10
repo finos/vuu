@@ -1,6 +1,6 @@
 import type { orientationType } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
-import { Direction } from "./dragDropTypesNext";
+import { Direction } from "./dragDropTypes";
 import { createDragSpacer as createDragDisplacer } from "./Draggable";
 import {
   MeasuredDropTarget,

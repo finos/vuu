@@ -5,7 +5,7 @@ import {
   InternalDragDropProps,
   InternalDragHookResult,
   ViewportRange,
-} from "./dragDropTypesNext";
+} from "./dragDropTypes";
 import { useDragDisplacers } from "./useDragDisplacers";
 import { dispatchMouseEvent } from "@finos/vuu-utils";
 import {
@@ -28,7 +28,6 @@ export const useDragDropNaturalMovement = ({
   viewportRange,
 }: InternalDragDropProps): InternalDragHookResult => {
   const dragDirectionRef = useRef<Direction | undefined>();
-
   const isScrollable = useRef(false);
   /** current position of dragged element */
   const dragPosRef = useRef<number>(-1);
