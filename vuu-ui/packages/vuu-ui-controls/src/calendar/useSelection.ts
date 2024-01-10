@@ -22,7 +22,7 @@ interface BaseUseSelectionCalendarProps<SelectionVariantType> {
 
 type SingleSelectionValueType = DateValue;
 type MultiSelectionValueType = DateValue[];
-type RangeSelectionValueType = {
+export type RangeSelectionValueType = {
   startDate?: DateValue;
   endDate?: DateValue;
 };
