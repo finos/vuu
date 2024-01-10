@@ -57,6 +57,8 @@ export const SimpleTable = () => {
     );
     return new ArrayDataSource({
       columnDescriptors: config.columns,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       data,
     });
   }, [config.columns]);
@@ -114,6 +116,8 @@ export const TableScrollingAPI = () => {
     );
     return new ArrayDataSource({
       columnDescriptors: config.columns,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       data,
     });
   }, [config.columns]);
