@@ -2,7 +2,7 @@ import { boxContainsPoint, dispatchCustomEvent } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { MeasuredTarget } from "./DragDropProvider";
 import { DragDropState } from "./DragDropState";
-import { MouseOffset } from "./dragDropTypesNext";
+import { MouseOffset } from "./dragDropTypes";
 
 export type ResumeDragHandler = (dragDropState: DragDropState) => boolean;
 export type GlobalDropHandler = (dragDropState: DragDropState) => void;
@@ -93,9 +93,6 @@ export const useGlobalDragDrop = ({
 
   const resumeDrag = useCallback<ResumeDragHandler>(
     (dragDropState) => {
-      console.log(`resume drag of `, {
-        el: dragDropState.draggableElement,
-      });
       dragDropStateRef.current = dragDropState;
       document.addEventListener("mousemove", dragMouseMoveHandler, false);
       document.addEventListener("mouseup", dragMouseUpHandler, false);
