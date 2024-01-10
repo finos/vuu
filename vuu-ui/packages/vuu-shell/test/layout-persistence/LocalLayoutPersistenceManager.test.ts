@@ -27,6 +27,16 @@ vi.mock("@finos/vuu-filters", async () => {
   };
 });
 
+const username = "vuu user";
+
+vi.mock("@finos/vuu-shell", async () => {
+  return {
+    getAuthDetailsFromCookies: (): [string, string] => {
+      return [username, "token"];
+        },
+  };
+});
+
 const persistenceManager = new LocalPersistenceManager();
 
 const existingId = "existing_id";
@@ -38,7 +48,7 @@ const existingMetadata: LayoutMetadata = {
   name: "Existing Layout",
   group: "Group 1",
   screenshot: "screenshot",
-  user: "vuu user",
+  user: username,
   created: newDate,
 };
 
@@ -51,14 +61,14 @@ const metadataToAdd: LayoutMetadataDto = {
   name: "New Layout",
   group: "Group 1",
   screenshot: "screenshot",
-  user: "vuu user",
+  user: username,
 };
 
 const metadataToUpdate: Omit<LayoutMetadata, "id"> = {
   name: "New Layout",
   group: "Group 1",
   screenshot: "screenshot",
-  user: "vuu user",
+  user: username,
   created: newDate,
 };
 
@@ -66,8 +76,8 @@ const layoutToAdd: LayoutJSON = {
   type: "t",
 };
 
-const metadataSaveLocation = "layouts/metadata";
-const layoutsSaveLocation = "layouts/layouts";
+const metadataSaveLocation = `layouts/metadata/${username}`;
+const layoutsSaveLocation = `layouts/layouts/${username}`;
 
 afterEach(() => {
   localStorage.clear();
