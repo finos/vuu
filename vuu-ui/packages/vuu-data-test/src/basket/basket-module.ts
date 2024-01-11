@@ -91,6 +91,8 @@ function createTradingBasket(basketId: string, basketName: string) {
     (c) => c[key] === basketId
   );
 
+  const { instanceId } = tableMaps.basketTrading;
+
   constituents.forEach(([, , description, , ric, , , quantity, weighting]) => {
     const algo = "";
     const algoParams = "";
@@ -103,7 +105,6 @@ function createTradingBasket(basketId: string, basketName: string) {
     const side = "BUY";
     const venue = "venue";
 
-    const { instanceId } = tableMaps.basketTrading;
     const basketInstanceId = basketTradingRow[instanceId];
     const basketTradingConstituentRow: VuuRowDataItemType[] = [
       algo,
@@ -126,6 +127,9 @@ function createTradingBasket(basketId: string, basketName: string) {
     ];
     basketTradingConstituent.insert(basketTradingConstituentRow);
   });
+
+  // return the key
+  return basketTradingRow[instanceId] as string;
 }
 
 async function addConstituent(rpcRequest: ClientToServerViewportRpcCall) {
@@ -144,7 +148,13 @@ async function createNewBasket(rpcRequest: ClientToServerViewportRpcCall) {
   const {
     params: [basketId, basketName],
   } = rpcRequest;
-  createTradingBasket(basketId, basketName);
+  const key = createTradingBasket(basketId, basketName);
+  return {
+    action: {
+      type: "VP_CREATE_SUCCESS",
+      key,
+    },
+  };
 }
 
 //-------------------

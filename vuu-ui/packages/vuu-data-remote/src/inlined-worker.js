@@ -193,7 +193,7 @@ var KeySet = class {
   }
   next() {
     if (this.free.length > 0) {
-      return this.free.pop();
+      return this.free.shift();
     } else {
       return this.nextKeyValue++;
     }
@@ -231,7 +231,7 @@ var KeySet = class {
     return key;
   }
   toDebugString() {
-    return Array.from(this.keys.entries()).map((k, v) => \`\${k}=>\${v}\`).join(",");
+    return Array.from(this.keys.entries()).map(([k, v]) => \`\${k}=>\${v}\`).join(",");
   }
 };
 

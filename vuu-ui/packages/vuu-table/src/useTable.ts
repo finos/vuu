@@ -17,7 +17,7 @@ import { MeasuredProps, MeasuredSize } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
-  useDragDropNext as useDragDrop,
+  useDragDrop as useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
@@ -61,7 +61,6 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { useVirtualViewport } from "./useVirtualViewport";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
@@ -90,6 +89,7 @@ export interface TableHookProps
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
+      | "scrollingApiRef"
     > {
   containerRef: RefObject<HTMLDivElement>;
   headerHeight: number;
@@ -136,6 +136,7 @@ export const useTable = ({
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
+  scrollingApiRef,
   selectionModel,
   size,
 }: TableHookProps) => {
@@ -199,13 +200,6 @@ export const useTable = ({
     return [stateColumns ?? runtimeColumns, setSize];
   }, [runtimeColumns, stateColumns]);
 
-  // console.log({
-  //   config,
-  //   tableConfig,
-  //   runtimeColumns,
-  //   columns,
-  // });
-
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
     [dataSource.columns]
@@ -227,7 +221,10 @@ export const useTable = ({
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
-    to: viewportMeasurements.rowCount,
+    to:
+      viewportMeasurements.rowCount === 0
+        ? 0
+        : viewportMeasurements.rowCount + 1,
   });
 
   const onSubscribed = useCallback(
@@ -256,7 +253,6 @@ export const useTable = ({
 
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
-      console.log(`settings changed`);
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -466,26 +462,20 @@ export const useTable = ({
     [columns, dataSource, dispatchColumnAction]
   );
 
-  const { onVerticalScroll } = useVirtualViewport({
-    columns,
-    getRowAtPosition,
-    setRange,
-    viewportMeasurements,
-  });
-
   const handleVerticalScroll = useCallback(
-    (scrollTop: number) => {
-      onVerticalScroll(scrollTop);
+    (_: number, pctScrollTop: number) => {
+      setPctScrollTop(pctScrollTop);
     },
-    [onVerticalScroll]
+    [setPctScrollTop]
   );
 
   const { requestScroll, ...scrollProps } = useTableScroll({
-    maxScrollLeft: viewportMeasurements.maxScrollContainerScrollHorizontal,
-    maxScrollTop: viewportMeasurements.maxScrollContainerScrollVertical,
+    getRowAtPosition,
     rowHeight,
+    scrollingApiRef,
+    setRange,
     onVerticalScroll: handleVerticalScroll,
-    viewportRowCount: viewportMeasurements.rowCount,
+    viewportMeasurements,
   });
 
   const {
@@ -663,11 +653,6 @@ export const useTable = ({
       itemQuery: ".vuuTableRow",
     });
 
-  // console.log({
-  //   tableAttributes,
-  //   config: tableConfig,
-  // });
-
   return {
     ...containerProps,
     "aria-rowcount": dataSource.size,
@@ -680,6 +665,7 @@ export const useTable = ({
     columnMap,
     columns,
     data,
+    getRowOffset,
     handleContextMenuAction,
     headings,
     highlightedIndex: highlightedIndexRef.current,

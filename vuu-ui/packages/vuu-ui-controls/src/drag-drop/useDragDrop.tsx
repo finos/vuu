@@ -16,7 +16,8 @@ import {
   InternalDragDropProps,
   InternalDragHookResult,
   MouseOffset,
-} from "./dragDropTypesNext";
+  MousePosition,
+} from "./dragDropTypes";
 import { Draggable } from "./Draggable";
 import {
   cloneElement,
@@ -29,7 +30,7 @@ import {
 import { ScrollStopHandler, useAutoScroll } from "./useAutoScroll";
 import { useDragDropCopy } from "./useDragDropCopy";
 import { useDragDropIndicator } from "./useDragDropIndicator";
-import { useDragDropNaturalMovement } from "./useDragDropNaturalMovementNext";
+import { useDragDropNaturalMovement } from "./useDragDropNaturalMovement";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
 
 const NULL_DRAG_DROP_RESULT = {
@@ -71,7 +72,7 @@ const dragThreshold = 3;
 const getDraggableElement = (
   el: EventTarget | null,
   query: string
-): HTMLElement => (el as HTMLElement).closest(query) as HTMLElement;
+): HTMLElement => (el as HTMLElement)?.closest(query) as HTMLElement;
 
 const getLastElement = (
   container: HTMLElement,
@@ -83,7 +84,7 @@ const getLastElement = (
   return [lastElement, isOverflowElement(lastElement)];
 };
 
-export const useDragDropNext: DragDropHook = ({
+export const useDragDrop: DragDropHook = ({
   allowDragDrop,
   containerRef,
   draggableClassName,
@@ -112,6 +113,10 @@ export const useDragDropNext: DragDropHook = ({
   const mouseDownTimer = useRef<number | null>(null);
   /** do we actually have scrollable content  */
   const isScrollableRef = useRef(false);
+
+  /** save this on mousedown. We cannot rely on the target of mousemove being same element*/
+  const mousedownElementRef = useRef<HTMLElement | null>(null);
+
   /** current mouse position */
   const mousePosRef = useRef<MouseOffset>({ x: 0, y: 0 });
   /** mouse position when mousedown initiated drag */
@@ -463,10 +468,10 @@ export const useDragDropNext: DragDropHook = ({
   );
 
   const dragStart = useCallback(
-    (evt: MouseEvent) => {
-      const { target } = evt;
-      const dragElement = getDraggableElement(target, itemQuery);
+    (mousePosition: MousePosition) => {
       const { current: container } = containerRef;
+      const { current: target } = mousedownElementRef;
+      const dragElement = getDraggableElement(target, itemQuery);
       if (container && dragElement) {
         const scrollableContainer = getScrollableContainer(
           container,
@@ -483,7 +488,7 @@ export const useDragDropNext: DragDropHook = ({
         const draggableRect = dragElement.getBoundingClientRect();
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(
-          evt,
+          mousePosition,
           dragElement
         ));
 
@@ -512,6 +517,8 @@ export const useDragDropNext: DragDropHook = ({
 
         onDragStart?.(dragDropState);
         attachDragHandlers();
+
+        mousedownElementRef.current = null;
       }
     },
     [
@@ -529,9 +536,10 @@ export const useDragDropNext: DragDropHook = ({
 
   const preDragMouseMoveHandler = useCallback(
     (evt: MouseEvent) => {
+      const { current: mouseDownPosition } = startPosRef;
       const { CLIENT_POS, POS } = dimensions(orientation);
       const { [CLIENT_POS]: clientPos } = evt;
-      const mouseMoveDistance = Math.abs(clientPos - startPosRef.current[POS]);
+      const mouseMoveDistance = Math.abs(clientPos - mouseDownPosition[POS]);
       if (mouseMoveDistance > dragThreshold && containerRef.current) {
         if (mouseDownTimer.current) {
           window.clearTimeout(mouseDownTimer.current);
@@ -540,7 +548,11 @@ export const useDragDropNext: DragDropHook = ({
         document.removeEventListener("mousemove", preDragMouseMoveHandler);
         document.removeEventListener("mouseup", preDragMouseUpHandler, false);
 
-        dragStart(evt);
+        const mousePosition = {
+          clientX: mouseDownPosition.x,
+          clientY: mouseDownPosition.y,
+        };
+        dragStart(mousePosition);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -559,7 +571,6 @@ export const useDragDropNext: DragDropHook = ({
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
       // TODO runtime check here for valid drop targets ?
-
       const { current: container } = containerRef;
       // We don't want to prevent other handlers on this element from working
       // but we do want to stop a drag drop being initiated on a bubbled event.
@@ -568,6 +579,12 @@ export const useDragDropNext: DragDropHook = ({
         const { clientX, clientY } = evt;
         mousePosRef.current.x = startPosRef.current.x = clientX;
         mousePosRef.current.y = startPosRef.current.y = clientY;
+        mousedownElementRef.current = evt.target as HTMLElement;
+
+        const mousePosition = {
+          clientX,
+          clientY,
+        };
 
         document.addEventListener("mousemove", preDragMouseMoveHandler, false);
         document.addEventListener("mouseup", preDragMouseUpHandler, false);
@@ -581,7 +598,7 @@ export const useDragDropNext: DragDropHook = ({
             false
           );
           document.removeEventListener("mouseup", preDragMouseUpHandler, false);
-          dragStart(evt.nativeEvent);
+          dragStart(mousePosition);
         }, 500);
       }
     },

@@ -1,0 +1,18 @@
+.saltCalendarCarousel-track {
+  display: grid;
+  grid-auto-flow: column;
+}
+
+.saltCalendarCarousel-track > * {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.saltCalendarCarousel-track > :nth-child(2) {
+  position: relative;
+}
+
+.saltCalendarCarousel-shouldAnimate {
+  transition: transform 200ms ease-in-out;
+}

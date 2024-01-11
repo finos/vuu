@@ -9,10 +9,10 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
+    "@finos/vuu-data-local": "0.0.26",
     "@thomaschaplin/isin-generator": "1.0.3"
   },
   "devDependencies": {
-    "@finos/vuu-data": "0.0.26",
     "@finos/vuu-table-types": "0.0.26"
   }
 }

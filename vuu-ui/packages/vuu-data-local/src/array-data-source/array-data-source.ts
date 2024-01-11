@@ -54,6 +54,8 @@ import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
 
+const { debug, info } = logger("ArrayDataSource");
+
 const { KEY } = metadataKeys;
 
 export interface ArrayDataSourceConstructorProps
@@ -64,7 +66,6 @@ export interface ArrayDataSourceConstructorProps
   keyColumn?: string;
   rangeChangeRowset?: "delta" | "full";
 }
-const { debug } = logger("ArrayDataSource");
 
 const toDataSourceRow =
   (key: number) =>
@@ -232,6 +233,7 @@ export class ArrayDataSource
       if (range) {
         // set range and trigger dispatch of initial rows
         this.range = range;
+        this.sendRowsToClient();
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
       }
@@ -239,26 +241,36 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    console.log("unsubscribe noop");
+    console.log(`unsubscribe noop`);
   }
 
   suspend() {
-    // console.log("noop");
+    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
+    info?.(`suspend #${this.viewport}, current status ${this.#status}`);
+    this.#status = "suspended";
+
     return this;
   }
 
   resume() {
-    // console.log("resume noop");
+    console.log(`resume #${this.viewport}, current status ${this.#status}`);
+    // const isDisabled = this.#status.startsWith("disabl");
+    const isSuspended = this.#status === "suspended";
+    info?.(`resume #${this.viewport}, current status ${this.#status}`);
+    console.log(`resume noop`);
+    if (isSuspended) {
+      this.#status = "subscribed";
+    }
     return this;
   }
 
   disable() {
-    // console.log("disable noop");
+    console.log(`disable noop`);
     return this;
   }
 
   enable() {
-    // console.log("enable noop");
+    console.log(`enable noop`);
     return this;
   }
 
@@ -439,9 +451,7 @@ export class ArrayDataSource
   }
 
   set range(range: VuuRange) {
-    if (range.from !== this.#range.from || range.to !== this.#range.to) {
-      this.setRange(range);
-    }
+    this.setRange(range);
   }
 
   protected delete(row: VuuRowDataItemType[]) {
@@ -492,9 +502,13 @@ export class ArrayDataSource
   };
 
   private setRange(range: VuuRange, forceFullRefresh = false) {
-    this.#range = range;
-    this.keys.reset(range);
-    this.sendRowsToClient(forceFullRefresh);
+    if (range.from !== this.#range.from || range.to !== this.#range.to) {
+      this.#range = range;
+      this.keys.reset(range);
+      this.sendRowsToClient(forceFullRefresh);
+    } else if (forceFullRefresh) {
+      this.sendRowsToClient(forceFullRefresh);
+    }
   }
 
   sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {

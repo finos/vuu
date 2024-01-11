@@ -245,7 +245,7 @@ export const LayoutManagementProvider = (
       getPersistenceManager()
         .loadLayout(id)
         .then((layoutJson) => {
-          const { layout: currentLayout } = applicationJSONRef.current;
+         const { layout: currentLayout } = applicationJSONRef.current;
           setApplicationLayout({
             ...currentLayout,
             children: (currentLayout.children || []).concat(layoutJson),

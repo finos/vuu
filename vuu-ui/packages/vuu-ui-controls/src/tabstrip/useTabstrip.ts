@@ -8,7 +8,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useDragDropNext as useDragDrop } from "../drag-drop";
+import { useDragDrop as useDragDrop } from "../drag-drop";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";

@@ -156,6 +156,8 @@ const ShellWithNewTheme = () => {
 };
 
 export const ShellWithNewThemeAndLayoutManagement = () => {
+  document.cookie = `vuu-username=${user.username}`;
+  
   return (
     <NotificationsProvider>
       <LayoutManagementProvider>

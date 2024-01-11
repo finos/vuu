@@ -36,6 +36,7 @@ import { TableHeader } from "./table-header/TableHeader";
 
 import "./Table.css";
 import type { DragDropState } from "@finos/vuu-ui-controls";
+import { ScrollingAPI } from "./useTableScroll";
 
 const classBase = "vuuTable";
 
@@ -99,6 +100,11 @@ export interface TableProps
   renderBufferSize?: number;
   rowHeight?: number;
   /**
+   * imperative API for scrolling table
+   */
+  scrollingApiRef?: ForwardedRef<ScrollingAPI>;
+
+  /**
    * Selection Bookends style the left and right edge of a selection block.
    * They are optional, value defaults to zero.
    * TODO this should just live in CSS
@@ -132,8 +138,9 @@ const TableCore = ({
   onRowClick: onRowClickProp,
   onSelect,
   onSelectionChange,
-  renderBufferSize = 0,
+  renderBufferSize = 5,
   rowHeight = 20,
+  scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
   headerHeight = showColumnHeaders ? 25 : 0,
@@ -148,6 +155,7 @@ const TableCore = ({
     columns,
     data,
     draggableRow,
+    getRowOffset,
     handleContextMenuAction,
     headings,
     highlightedIndex,
@@ -187,11 +195,12 @@ const TableCore = ({
     onSelectionChange,
     renderBufferSize,
     rowHeight,
+    scrollingApiRef,
     selectionModel,
     size,
   });
 
-  const className = cx(`${classBase}-contentContainer`, {
+  const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
     // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
@@ -225,7 +234,7 @@ const TableCore = ({
         <div className={`${classBase}-scrollbarContent`} />
       </div>
       <div
-        className={className}
+        className={contentContainerClassName}
         ref={scrollProps.contentContainerRef}
         style={cssVariables}
       >
@@ -251,6 +260,7 @@ const TableCore = ({
           <div className={`${classBase}-body`}>
             {data.map((data) => (
               <Row
+                aria-rowindex={data[0] + 1}
                 columnMap={columnMap}
                 columns={columns}
                 highlighted={highlightedIndex === data[IDX]}
@@ -258,9 +268,7 @@ const TableCore = ({
                 onClick={onRowClick}
                 onDataEdited={onDataEdited}
                 row={data}
-                offset={
-                  rowHeight * data[IDX] + viewportMeasurements.totalHeaderHeight
-                }
+                offset={getRowOffset(data)}
                 onToggleGroup={onToggleGroup}
                 zebraStripes={tableAttributes.zebraStripes}
               />
@@ -296,6 +304,7 @@ export const Table = forwardRef(function TableNext(
     onSelectionChange,
     renderBufferSize,
     rowHeight,
+    scrollingApiRef,
     selectionModel,
     showColumnHeaders,
     headerHeight,
@@ -349,6 +358,7 @@ export const Table = forwardRef(function TableNext(
           onSelectionChange={onSelectionChange}
           renderBufferSize={renderBufferSize}
           rowHeight={rowHeight}
+          scrollingApiRef={scrollingApiRef}
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}
           size={size}

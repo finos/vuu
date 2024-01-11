@@ -1,5 +1,6 @@
-import { useControlled } from "@salt-ds/core";
 import { VuuRange } from "@finos/vuu-protocol-types";
+import { getIndexFromRowElement } from "@finos/vuu-utils";
+import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
   MouseEvent,
@@ -8,7 +9,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
+import { TableNavigationStyle } from "./Table";
 import {
   CellPos,
   closestRowIndex,
@@ -16,7 +17,7 @@ import {
   getTableCell,
   headerCellQuery,
 } from "./table-dom-utils";
-import { TableNavigationStyle } from "./Table";
+import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -215,9 +216,9 @@ NavigationHookProps) => {
       const colIdx = parseInt(tableCell.dataset.idx ?? "-1", 10);
       return [-1, colIdx];
     } else {
-      const focusedRow = tableCell.closest("[role='row']");
+      const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
       if (focusedRow) {
-        const rowIdx = parseInt(focusedRow.ariaRowIndex ?? "-1", 10);
+        const rowIdx = getIndexFromRowElement(focusedRow);
         // TODO will get trickier when we introduce horizontal virtualisation
         const colIdx = Array.from(focusedRow.childNodes).indexOf(tableCell);
         return [rowIdx, colIdx];
@@ -236,11 +237,9 @@ NavigationHookProps) => {
             focusableCell.current = activeCell;
             activeCell.setAttribute("tabindex", "0");
           }
-          const [direction, distance] = howFarIsCellOutsideViewport(activeCell);
-          if (direction && distance) {
-            requestScroll?.({ type: "scroll-distance", distance, direction });
-          }
-          console.log(`activeCell focus`);
+          // TODO needs to be scroll cell
+          console.log(`scroll row ${cellPos[0]}`);
+          requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
           activeCell.focus({ preventScroll: true });
         }
       }
@@ -336,18 +335,9 @@ NavigationHookProps) => {
 
   const scrollRowIntoViewIfNecessary = useCallback(
     (rowIndex: number) => {
-      const { current: container } = containerRef;
-      const activeRow = container?.querySelector(
-        `[aria-rowindex="${rowIndex}"]`
-      ) as HTMLElement;
-      if (activeRow) {
-        const [direction, distance] = howFarIsRowOutsideViewport(activeRow);
-        if (direction && distance) {
-          requestScroll?.({ type: "scroll-distance", distance, direction });
-        }
-      }
+      requestScroll?.({ type: "scroll-row", rowIndex });
     },
-    [containerRef, requestScroll]
+    [requestScroll]
   );
 
   const moveHighlightedRow = useCallback(
@@ -358,6 +348,7 @@ NavigationHookProps) => {
         : nextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
       if (nextRowIdx !== highlighted) {
         setHighlightedIndex(nextRowIdx);
+        // TO(DO make this a scroll request)
         scrollRowIntoViewIfNecessary(nextRowIdx);
       }
     },

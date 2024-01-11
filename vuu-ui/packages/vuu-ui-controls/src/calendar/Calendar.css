@@ -1,0 +1,7 @@
+.saltCalendar {
+  width: min-content;
+}
+
+.saltCalendar .saltIcon {
+  display: inline-block;
+}

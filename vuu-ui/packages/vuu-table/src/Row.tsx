@@ -92,7 +92,6 @@ export const Row = memo(
     return (
       <div
         {...htmlAttributes}
-        aria-rowindex={row[0] + 1}
         key={`row-${row[0]}`}
         role="row"
         className={className}
