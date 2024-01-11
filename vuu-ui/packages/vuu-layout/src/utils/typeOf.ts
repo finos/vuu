@@ -24,4 +24,5 @@ export function typeOf(element?: LayoutModel | WithType): string | undefined {
 
 export const isTypeOf = (element: ReactElement, type: string) => typeOf(element) === type;
 
-export const isLayoutJSON = (layout: LayoutJSON): layout is LayoutJSON=> "type" in layout;
+export const isLayoutJSON = (layout: LayoutJSON): layout is LayoutJSON =>
+  layout !== undefined && "type" in layout;

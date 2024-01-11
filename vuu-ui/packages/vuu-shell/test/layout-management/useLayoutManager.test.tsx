@@ -25,7 +25,9 @@ const defaultLayout = vi.hoisted(() => ({
 
 const newLayout: LayoutJSON = {
   type: "Stack",
-  title: "test-layout-edited",
+  props: {
+    title: "test-layout-edited",
+  },
 };
 
 const metadata: LayoutMetadata = {
@@ -160,7 +162,10 @@ describe("LayoutManagementProvider", () => {
 
       result.current.saveLayout(metadata);
 
-      expect(persistence.createLayout).toHaveBeenCalled();
+      expect(persistence.createLayout).toHaveBeenCalledWith(
+        metadata,
+        newLayout
+      );
     });
 
     it("doesn't call createLayout, triggers error notification and logs error when layout path can't be resolved ", () => {
@@ -169,6 +174,7 @@ describe("LayoutManagementProvider", () => {
 
       vi.mocked(persistence.createLayout).mockResolvedValueOnce(metadata);
       vi.mocked(resolveJSONPath).mockReturnValue(undefined);
+      vi.mocked(isLayoutJSON).mockReturnValue(true);
 
       result.current.saveLayout(metadata);
 
