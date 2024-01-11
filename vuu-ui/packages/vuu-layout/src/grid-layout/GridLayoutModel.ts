@@ -19,7 +19,7 @@ export interface IGridLayoutModelItem {
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
 export type GridLayoutResizePosition = "before" | "after" | "above" | "below";
-export type GridLayoutResizeType = "shrink" | "grow";
+export type GridLayoutResizeType = "shrink" | "expand";
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
@@ -44,6 +44,7 @@ export class GridLayoutModelItem implements IGridLayoutModelItem {
   }
 }
 
+type GridItemIndex = Map<string, IGridLayoutModelItem>;
 type GridItemMap = Map<number, IGridLayoutModelItem[]>;
 type GridItemMaps = {
   end: GridItemMap;
@@ -93,7 +94,7 @@ const fillSameTrack = (
   }
 };
 
-// FIlter function factory for GridItems
+// Filter function factory for GridItems
 const occupiesSameTrack =
   (
     { column, row }: IGridLayoutModelItem,
@@ -117,6 +118,8 @@ export class GridLayoutModel {
   columnCount: number;
   gridItems: IGridLayoutModelItem[] = [];
   rowCount: number;
+
+  private index: GridItemIndex = new Map();
 
   private columnMaps: GridItemMaps = {
     start: new Map(),
@@ -191,6 +194,52 @@ export class GridLayoutModel {
     }
   }
 
+  private setGridRow = (
+    gridItemId: string,
+    { start, end }: GridLayoutModelPosition
+  ) => {
+    const gridItem = this.index.get(gridItemId);
+    if (gridItem) {
+      gridItem.row.start = start;
+      gridItem.row.end = end;
+    } else {
+      throw Error(`setGridRow gridItem #${gridItemId} not found`);
+    }
+  };
+
+  private setGridColumn = (
+    gridItemId: string,
+    { start, end }: GridLayoutModelPosition
+  ) => {
+    const gridItem = this.index.get(gridItemId);
+    if (gridItem) {
+      gridItem.column.start = start;
+      gridItem.column.end = end;
+    } else {
+      throw Error(`setGridColumn gridItem #${gridItemId} not found`);
+    }
+  };
+
+  private setColExpanded = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+
+  private setRowExpanded = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+
+  private setShiftColForward = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+
+  private setShiftRowForward = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+
   //TODO we only check one sibling away, need to do this in a loop
   private findMatchingContras(
     gridItem: IGridLayoutModelItem,
@@ -231,8 +280,13 @@ export class GridLayoutModel {
     // TODO assert that item is within current columns, rows or extend these
     this.gridItems.push(gridItem);
     const { column, row } = gridItem;
+    this.index.set(gridItem.id, gridItem);
     this.storeItem(this.columnMaps, column, gridItem);
     this.storeItem(this.rowMaps, row, gridItem);
+  }
+
+  getGridItem(gridItemId: string) {
+    return this.index.get(gridItemId);
   }
 
   getSplitterPositions(): ISplitter[] {
@@ -406,13 +460,74 @@ export class GridLayoutModel {
   }
 
   repositionComponentsforResize(
-    resizeItems: IGridLayoutModelItem[],
+    // TODO we only need one
+    resizeItem: IGridLayoutModelItem,
     adjacentItems: AdjacentItems,
+    resizeDirection: GridLayoutResizeDirection,
     resizeType: GridLayoutResizeType
-  ) {
+  ): [string, GridLayoutModelPosition][] {
     console.log(`repositionComponentsforResize (${resizeType})`, {
-      resizeItems,
+      resizeItem,
       adjacentItems,
     });
+
+    // TODO is thgis dependent in splitterAlign ?
+    const indexOfResizedItem =
+      resizeDirection === "vertical"
+        ? resizeItem.row.start - 1
+        : resizeItem.column.start - 1;
+
+    const updates: [string, GridLayoutModelPosition][] = [];
+
+    const [setExpanded, setShiftForward, setTrack]: any =
+      resizeDirection === "vertical"
+        ? [this.setRowExpanded, this.setShiftRowForward, this.setGridRow]
+        : [this.setColExpanded, this.setShiftColForward, this.setGridColumn];
+
+    if (resizeType === "expand") {
+      if (adjacentItems.nonAdjacent.length > 0) {
+        const targetEdge = indexOfResizedItem + 1;
+        for (const item of adjacentItems.nonAdjacent) {
+          const { id, column, row: gridPosition = column } = item;
+          const { start, end } = gridPosition;
+
+          if ([start, end].includes(targetEdge)) {
+            updates.push([id, { start, end: end + 1 }]);
+          } else if (start > targetEdge) {
+            updates.push([id, { start: start + 1, end: end + 1 }]);
+          }
+        }
+      }
+
+      updates.push(setExpanded(resizeItem));
+      adjacentItems.contraOtherTrack.forEach((item) => {
+        updates.push(setExpanded(item));
+      });
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setShiftForward(item));
+      });
+
+      updates.forEach(([id, position]) => {
+        setTrack(id, position);
+      });
+    } else {
+      const [setExpanded, setShiftForward]: any =
+        resizeDirection === "vertical"
+          ? [this.setRowExpanded, this.setShiftRowForward]
+          : [this.setColExpanded, this.setShiftColForward];
+
+      adjacentItems.contra.forEach((item) => {
+        updates.push(setExpanded(item));
+      });
+      updates.push(setShiftForward(resizeItem));
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setExpanded(item));
+      });
+      updates.forEach(([id, position]) => {
+        setTrack(id, position);
+      });
+    }
+
+    return updates;
   }
 }
