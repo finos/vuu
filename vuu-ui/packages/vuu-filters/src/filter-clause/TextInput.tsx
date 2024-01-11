@@ -58,24 +58,14 @@ export const TextInput = forwardRef(function TextInput(
   const getSuggestions = suggestionProvider();
 
   const handleSingleValueSelectionChange = useCallback<SingleSelectionHandler>(
-    (evt, value) => onInputComplete(value),
+    (_, value) => onInputComplete(value),
     [onInputComplete]
   );
 
   const handleMultiValueSelectionChange = useCallback<MultiSelectionHandler>(
-    (evt, value) => {
-      if (value.length === 1) {
-        onInputComplete(value[0]);
-      } else if (value.length > 1) {
-        onInputComplete(value);
-      }
-    },
+    (_, values) => onInputComplete(values),
     [onInputComplete]
   );
-
-  useEffect(() => {
-    // setValueInputValue("");
-  }, [column]);
 
   useEffect(() => {
     if (table) {
@@ -130,7 +120,6 @@ export const TextInput = forwardRef(function TextInput(
     }
     switch (operator) {
       case "in":
-        //TODO multiselect
         return (
           <ExpandoCombobox
             InputProps={InputProps}
