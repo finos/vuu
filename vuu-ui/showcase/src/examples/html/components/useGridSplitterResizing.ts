@@ -49,7 +49,7 @@ type ResizeState = {
   resizeDirection: ResizeDirection | null;
   resizeElement?: HTMLElement;
   resizeOrientation: ResizeOrientation | null;
-  resizeItems: IGridLayoutModelItem[];
+  resizeItem?: IGridLayoutModelItem;
   rows: number[];
   splitterAlign: SplitterAlign;
   splitterElement?: HTMLElement;
@@ -64,7 +64,7 @@ const initialState: ResizeState = {
   resizeDirection: null,
   resizeElement: undefined,
   resizeOrientation: null,
-  resizeItems: [],
+  resizeItem: undefined,
   rows: [],
   simpleResize: false,
   splitterAlign: "start",
@@ -86,23 +86,6 @@ const getDirection = (
     return null;
   }
 };
-
-const setColExpanded = ({ id, column: { start, end } }: IGridLayoutModelItem) =>
-  setGridColumn(id, { start, end: end + 1 });
-
-const setRowExpanded = ({ id, row: { start, end } }: IGridLayoutModelItem) =>
-  setGridRow(id, { start, end: end + 1 });
-
-const setShiftColForward = ({
-  id,
-  column: { start, end },
-}: IGridLayoutModelItem) =>
-  setGridColumn(id, { start: start + 1, end: end + 1 });
-
-const setShiftRowForward = ({
-  id,
-  row: { start, end },
-}: IGridLayoutModelItem) => setGridRow(id, { start: start + 1, end: end + 1 });
 
 export const useGridSplitterResizing = ({
   id,
@@ -232,65 +215,57 @@ export const useGridSplitterResizing = ({
   }, []);
 
   const restoreComponentPositions = useCallback(() => {
-    const { adjacentItems, resizeItems, resizeOrientation } =
+    const { adjacentItems, resizeItem, resizeOrientation } =
       resizingState.current;
 
     const setValue: any =
       resizeOrientation === "vertical" ? setRowValue : setColValue;
 
     adjacentItems.contra.forEach(setValue);
-    resizeItems.forEach(setValue);
+    setValue(resizeItem);
     adjacentItems.contraOtherTrack.forEach(setValue);
     adjacentItems.siblingsOtherTrack.forEach(setValue);
   }, []);
 
   const repositionComponentsForExpand = useCallback(() => {
-    const {
-      adjacentItems,
-      grid,
-      indexOfResizedItem,
-      resizeOrientation,
-      resizeItems,
-    } = resizingState.current;
-
-    const [setExpanded, setShiftForward, setTrack]: any =
-      resizeOrientation === "vertical"
-        ? [setRowExpanded, setShiftRowForward, setGridRow]
-        : [setColExpanded, setShiftColForward, setGridColumn];
-
-    if (grid && adjacentItems.nonAdjacent.length > 0) {
-      const targetEdge = indexOfResizedItem + 1;
-      for (const item of adjacentItems.nonAdjacent) {
-        const { id, column, row: gridPosition = column } = item;
-        const { start, end } = gridPosition;
-        if ([start, end].includes(targetEdge)) {
-          setTrack(id, { start, end: end + 1 });
-        } else if (start > targetEdge) {
-          setTrack(id, { start: start + 1, end: end + 1 });
-        }
-      }
-    }
-
-    resizeItems.forEach((item) => {
-      setExpanded(item);
-    });
-    adjacentItems.contraOtherTrack.forEach(setExpanded);
-    adjacentItems.siblingsOtherTrack.forEach(setShiftForward);
-  }, []);
-
-  const repositionComponentsForShrink = useCallback(() => {
-    const { adjacentItems, resizeItems, resizeOrientation } =
+    const { adjacentItems, resizeOrientation, resizeItem } =
       resizingState.current;
 
-    const [setExpanded, setShiftForward]: any =
-      resizeOrientation === "vertical"
-        ? [setRowExpanded, setShiftRowForward]
-        : [setColExpanded, setShiftColForward];
+    if (resizeOrientation && resizeItem) {
+      const updates = layoutModel.repositionComponentsforResize(
+        resizeItem,
+        adjacentItems,
+        resizeOrientation,
+        "expand"
+      );
+      const setTrack =
+        resizeOrientation === "vertical" ? setGridRow : setGridColumn;
 
-    adjacentItems.contra.forEach(setExpanded);
-    resizeItems.forEach(setShiftForward);
-    adjacentItems.siblingsOtherTrack?.forEach(setExpanded);
-  }, []);
+      updates.forEach(([id, position]) => {
+        setTrack(id, position);
+      });
+    }
+  }, [layoutModel]);
+
+  const repositionComponentsForShrink = useCallback(() => {
+    const { adjacentItems, resizeOrientation, resizeItem } =
+      resizingState.current;
+
+    if (resizeOrientation && resizeItem) {
+      const updates = layoutModel.repositionComponentsforResize(
+        resizeItem,
+        adjacentItems,
+        resizeOrientation,
+        "shrink"
+      );
+      const setTrack =
+        resizeOrientation === "vertical" ? setGridRow : setGridColumn;
+
+      updates.forEach(([id, position]) => {
+        setTrack(id, position);
+      });
+    }
+  }, [layoutModel]);
 
   const setGridTrackTemplate = (tracks: number[]) => {
     const { grid, resizeOrientation } = resizingState.current;
@@ -379,7 +354,7 @@ export const useGridSplitterResizing = ({
         indexOfResizedItem,
         resizeDirection,
         resizeElement,
-        resizeItems,
+        resizeItem,
         resizeOrientation,
         simpleResize,
       } = resizingState.current;
@@ -397,7 +372,7 @@ export const useGridSplitterResizing = ({
           // we know no other elements adjoin this track except for the resized and contra elements.
           // if the contra elements span at least 2 tracks, we can remove it.
           if (
-            (isShrinking && resizeItems.every(spansMultipleTracks)) ||
+            (isShrinking && spansMultipleTracks(resizeItem)) ||
             (!isShrinking && contraItems.every(spansMultipleTracks))
           ) {
             returnTracks = removeTrack(index);
@@ -416,7 +391,7 @@ export const useGridSplitterResizing = ({
               (item) => item.id === resizeElement?.id
             );
             if (resizeItem) {
-              resizingState.current.resizeItems = [resizeItem];
+              resizingState.current.resizeItem = resizeItem;
             }
           } else {
             console.log("we've gone too far, veto further shrinkage");
@@ -426,7 +401,7 @@ export const useGridSplitterResizing = ({
         console.log(`handleTrackSizedToZero (flip) ${resizeDirection} `);
 
         if (
-          resizeItems.every(spansMultipleTracks) ||
+          spansMultipleTracks(resizeItem) ||
           contraItems.every(spansMultipleTracks)
         ) {
           returnTracks = flipResizeTracks();
@@ -499,7 +474,6 @@ export const useGridSplitterResizing = ({
         adjacentItems,
         cols,
         indexOfResizedItem,
-        resizeItems,
         resizeOrientation,
         rows,
         simpleResize,
@@ -526,13 +500,12 @@ export const useGridSplitterResizing = ({
         setGridTrackTemplate(gridTracks);
       }
 
-      if (adjacentItems.contra.length > 0 && !simpleResize) {
+      if (
+        adjacentItems.contra.length > 0 &&
+        !simpleResize &&
+        resizeOrientation
+      ) {
         repositionComponentsForExpand();
-        const result = layoutModel.repositionComponentsforResize(
-          resizeItems,
-          adjacentItems,
-          "grow"
-        );
       }
     },
     [repositionComponentsForExpand]
@@ -712,7 +685,7 @@ export const useGridSplitterResizing = ({
         splitterAlign,
       };
 
-      resizingState.current.resizeItems = [resizeItem];
+      resizingState.current.resizeItem = resizeItem;
       if (resizeOrientation === "vertical") {
         resizeElement.classList.add("resizing-v");
       } else if (resizeOrientation === "horizontal") {
