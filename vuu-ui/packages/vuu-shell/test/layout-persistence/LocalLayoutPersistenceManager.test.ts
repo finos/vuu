@@ -5,7 +5,7 @@ import { LayoutJSON } from "@finos/vuu-layout";
 import {
   getLocalEntity,
   saveLocalEntity,
-} from "../../../vuu-filters/src/local-config";
+} from "@finos/vuu-filters/src/local-config";
 import { formatDate } from "@finos/vuu-utils";
 import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 import { LocalPersistenceManager } from "../../src/persistence-management/LocalPersistenceManager";
