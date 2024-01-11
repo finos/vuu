@@ -1,9 +1,4 @@
-import {
-  CalendarDate,
-  CalendarDateTime,
-  DateValue,
-  ZonedDateTime,
-} from "@internationalized/date";
+import { DateValue } from "@internationalized/date";
 import { CalendarProps } from "../calendar/Calendar";
 import { RangeSelectionValueType } from "../calendar";
 

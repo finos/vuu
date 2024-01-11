@@ -167,12 +167,12 @@ export const useFilters = ({
   );
 
   const handleChangeFilter = useCallback(
-    (filter: Filter) => {
+    (oldFilter: Filter, newFilter: Filter) => {
       let index = -1;
       const newFilters = filters.map((f, i) => {
-        if (f === filter) {
+        if (f === oldFilter) {
           index = i;
-          return filter;
+          return newFilter;
         } else {
           return f;
         }

@@ -252,43 +252,40 @@ export const useFilterBar = ({
     [deleteFilter, editPillLabel, filters, focusFilterClause]
   );
 
+  const addIfNewElseUpdate = useCallback(
+    (edited: Filter, existing: Filter | undefined) => {
+      if (existing === undefined) {
+        const idx = onAddFilter(edited);
+        editPillLabel(idx);
+        return idx;
+      } else {
+        return onChangeFilter(existing, edited);
+      }
+    },
+    [editPillLabel, onAddFilter, onChangeFilter]
+  );
+
   const handleMenuAction = useCallback<MenuActionHandler>(
     ({ menuId }) => {
       switch (menuId) {
         case "apply-save": {
-          // TODO save these into state together
-          const isNewFilter = editingFilter.current === undefined;
-          const newFilter = editFilter as Filter;
-          const changeHandler = isNewFilter ? onAddFilter : onChangeFilter;
-          const indexOfNewFilter = changeHandler(newFilter);
-
-          if (isNewFilter) {
-            editPillLabel(indexOfNewFilter);
-          }
-
+          const editedFilter = editFilter as Filter;
+          const idx = addIfNewElseUpdate(editedFilter, editingFilter.current);
+          setActiveFilterIndex(appendIfNotPresent(idx));
           setEditFilter(undefined);
-
-          setActiveFilterIndex((indices) =>
-            indices.includes(indexOfNewFilter)
-              ? indices
-              : indices.concat(indexOfNewFilter)
-          );
-
+          editingFilter.current = undefined;
           setShowMenu(false);
           return true;
         }
-
         case "and-clause": {
           const newFilter = addClause(
             editFilter as Filter,
             EMPTY_FILTER_CLAUSE
           );
-          console.log({ newFilter });
           setEditFilter(newFilter);
           setShowMenu(false);
           return true;
         }
-
         case "or-clause":
           setEditFilter((filter) =>
             addClause(filter as Filter, {}, { combineWith: "or" })
@@ -299,7 +296,7 @@ export const useFilterBar = ({
           return false;
       }
     },
-    [editFilter, editPillLabel, onAddFilter, onChangeFilter]
+    [editFilter, addIfNewElseUpdate]
   );
 
   useEffect(() => {
@@ -471,3 +468,6 @@ export const useFilterBar = ({
     showMenu,
   };
 };
+
+const appendIfNotPresent = (n: number) => (ns: number[]) =>
+  ns.includes(n) ? ns : ns.concat(n);
