@@ -20,7 +20,8 @@ const defaultConfig = {
 };
 
 const workerTS = "src/worker.ts";
-const indexTS = "src/index.ts";
+const indexTS = "index.ts";
+const indexSrcTS = "src/index.ts";
 const indexDTS = "index.d.ts";
 const indexJS = "src/index.js";
 const indexCSS = "index.css";
@@ -75,16 +76,36 @@ export default async function main(customConfig) {
   const jsonOutput = getCommandLineArg("--json");
   const outdir = `${DIST_PATH}/${packageName}${debug ? "-debug" : ""}`;
 
+  const FONT_FILES = ["*.woff", "*.woff2"];
+
   const hasWorker = fs.existsSync(workerTS);
   const hasReadme = fs.existsSync(README);
+  const isTypeScriptSrc = fs.existsSync(indexSrcTS);
   const isTypeScript = fs.existsSync(indexTS);
   const isTypeLib = fs.existsSync(indexDTS);
   const isJavaScript = fs.existsSync(indexJS);
+  const hasRootCss = fs.existsSync(indexCSS);
+
+  const getEntryPoints = () => {
+    const entryPoint = isTypeScriptSrc
+      ? indexSrcTS
+      : isTypeScript
+      ? indexTS
+      : isJavaScript
+      ? indexJS
+      : indexCSS;
+    const entryPoints = [entryPoint];
+    // We may have a top-level css as well as typescript (icons)
+    if (hasRootCss && !entryPoint.endsWith(".css")) {
+      entryPoints.push(indexCSS);
+    }
+    return entryPoints;
+  };
 
   const buildConfig = {
-    entryPoints: [isTypeScript ? indexTS : isJavaScript ? indexJS : indexCSS],
+    entryPoints: getEntryPoints(),
     env: development ? "development" : "production",
-    external: external.concat(externalVuu),
+    external: external.concat(externalVuu).concat(FONT_FILES),
     outdir: `${outdir}/esm`,
     name: scopedPackageName,
     target,
@@ -95,23 +116,31 @@ export default async function main(customConfig) {
     fs.mkdirSync(outdir, { recursive: true });
   }
 
-  const GeneratedFiles = /^(worker|index)\.(js|css)(\.map)|(esm)?$/;
+  const GeneratedFiles = /^((worker|index)\.(js|css))|((\.map)|(esm))$/;
 
   async function writePackageJSON(options) {
     return new Promise((resolve, reject) => {
       const {
-        files = getDefaultFilesToPublish(options),
+        files: filesFromPackageJson,
         // eslint-disable-next-line no-unused-vars
         main,
         // eslint-disable-next-line no-unused-vars
         scripts,
+        style: styleFromPackageJson,
         types,
         ...packageRest
       } = packageJson;
-      if (files) {
+
+      let files = getDefaultFilesToPublish(options);
+      let defaultStyle = undefined;
+
+      if (filesFromPackageJson) {
         const filesToPublish = isTypeLib
           ? [indexDTS]
-          : files.filter((fileName) => !GeneratedFiles.test(fileName));
+          : filesFromPackageJson.filter(
+              (fileName) => !GeneratedFiles.test(fileName)
+            );
+        files = filesToPublish.concat(files);
         if (filesToPublish.length) {
           filesToPublish.forEach((fileName) => {
             const filePath = fileName.replace(/^\//, "./");
@@ -128,11 +157,21 @@ export default async function main(customConfig) {
           });
         }
       }
-      const newPackage = { ...packageRest, files };
+
+      const cssFile = files.find((f) => f.endsWith(".css"));
+      if (cssFile) {
+        defaultStyle = cssFile;
+      }
+
+      const newPackage = {
+        ...packageRest,
+        files,
+        style: styleFromPackageJson ?? defaultStyle,
+      };
 
       if (isTypeLib) {
         newPackage.types = types;
-      } else {
+      } else if (options.includeJS) {
         newPackage.module = "esm/index.js";
         if (cjs) {
           newPackage.main = "cjs/index.js";
@@ -255,7 +294,6 @@ export default async function main(customConfig) {
 
   if (jsOut || cssOut) {
     await writeMetaFile(esmOutput.result.metafile, outdir);
-
     if (cssOut) {
       relocateCSSToPackageRoot();
       if (jsonResult) {
