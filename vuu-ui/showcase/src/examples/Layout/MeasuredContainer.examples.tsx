@@ -1,4 +1,4 @@
-import { MeasuredContainer } from "@finos/vuu-layout";
+import { MeasuredContainer } from "@finos/vuu-ui-controls";
 import { isValidNumber } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 

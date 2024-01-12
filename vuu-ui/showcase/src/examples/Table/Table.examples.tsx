@@ -5,18 +5,10 @@ import {
   vuuModule,
 } from "@finos/vuu-data-test";
 import {
-  ColumnDescriptor,
-  DefaultColumnConfiguration,
-  GroupColumnDescriptor,
-  HeaderCellProps,
-  TableConfig,
-} from "@finos/vuu-table-types";
-import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
   registerComponent,
-  Toolbar,
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
@@ -25,6 +17,14 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
+import {
+  ColumnDescriptor,
+  DefaultColumnConfiguration,
+  GroupColumnDescriptor,
+  HeaderCellProps,
+  TableConfig,
+} from "@finos/vuu-table-types";
+import { Toolbar } from "@finos/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,

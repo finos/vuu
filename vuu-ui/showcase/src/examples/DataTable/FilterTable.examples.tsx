@@ -7,9 +7,9 @@ import {
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import type { Filter } from "@finos/vuu-filter-types";
-import type { ActiveItemChangeHandler } from "@finos/vuu-layout";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
+import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 import { useCallback, useMemo, useState } from "react";
 import { useTestDataSource } from "../utils";
 

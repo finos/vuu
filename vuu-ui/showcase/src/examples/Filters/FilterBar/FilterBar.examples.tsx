@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input } from "@salt-ds/core";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import type { ActiveItemChangeHandler } from "@finos/vuu-layout";
+import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 
