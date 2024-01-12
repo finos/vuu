@@ -1,38 +1,37 @@
 .vuuExpandoCombobox {
-    --expando-combobox-height: var(--vuuExpandoCombobox-height, 24px);
-    --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSizew, 12px);
+  --expando-combobox-height: var(--vuuExpandoCombobox-height, 24px);
+  --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSizew, 12px);
 
-    --saltInput-outline: none;
-    --saltInput-fontSize: var(--expando-combobox-fontSize);
-    --saltInput-height: var(--expando-combobox-height);
-    --saltInput-minWidth: 4px;
+  --saltInput-outline: none;
+  --saltInput-fontSize: var(--expando-combobox-fontSize);
+  --saltInput-height: var(--expando-combobox-height);
+  --saltInput-minWidth: 4px;
 
-    display: inline-flex;
-    flex-direction: column;
-    height: var(--expando-combobox-height);
-    min-width: 4px;
-    padding: 0;
-
+  display: inline-flex;
+  flex-direction: column;
+  height: var(--expando-combobox-height);
+  min-width: 4px;
+  padding: 0;
 }
 
 .vuuExpandoCombobox .saltInput {
-    background-color: transparent;
-    position: absolute;
+  background-color: transparent;
+  position: absolute;
 }
 
 .vuuExpandoCombobox .vuuDropdown {
-    height: 100%;
+  height: 100%;
 }
 
 /** double up the selector just to increase specificity, won't need when we use cascade layers */
 .vuuExpandoCombobox-Input.saltInput {
-    border: none;
-    left:0px;
-    margin:0;
-    min-height: 100%;
-    padding:0;
-    right: 0px;
-    width: auto;
+  border: none;
+  left: 0px;
+  margin: 0;
+  min-height: 100%;
+  padding: 0;
+  right: 0px;
+  width: auto;
 }
 
 .vuuExpandoCombobox .saltInput-input {
@@ -41,20 +40,26 @@
   display: block;
   flex: 1;
   font: inherit;
-  margin:0;
-  min-width:0;
+  margin: 0;
+  min-width: 0;
   outline: none;
   padding: 0;
-  
+}
+
+.vuuExpandoCombobox .saltInput-input::selection {
+  background-color: var(
+    --salt-text-background-selected,
+    var(--vuu-color-blue-40)
+  );
 }
 
 .vuuExpandoCombobox:before {
-    content: attr(data-text);
-    display: block;
-    font-size: var(--expando-combobox-fontSize);
-    height: 0px;
-    overflow: hidden;
-    /* visibility: hidden; */
-    white-space: pre-wrap;
-    /* position: absolute; */
-  }
+  content: attr(data-text);
+  display: block;
+  font-size: var(--expando-combobox-fontSize);
+  height: 0px;
+  overflow: hidden;
+  /* visibility: hidden; */
+  white-space: pre-wrap;
+  /* position: absolute; */
+}

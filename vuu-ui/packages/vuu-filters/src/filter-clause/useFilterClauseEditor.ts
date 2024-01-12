@@ -197,10 +197,10 @@ export const useFilterClauseEditor = ({
     getFilterClauseValue(filterClause)
   );
 
-  const handleSelectionChangeColumn = useCallback<
+  const handleColumnSelect = useCallback<
     SingleSelectionHandler<ColumnDescriptor>
   >(
-    (evt, column) => {
+    (_, column) => {
       setSelectedColumn(column ?? undefined);
       setOperator(undefined);
       setValue(undefined);
@@ -242,8 +242,8 @@ export const useFilterClauseEditor = ({
     [onCancel, setOperator]
   );
 
-  const handleSelectionChangeOperator = useCallback<SingleSelectionHandler>(
-    (evt, selected) => {
+  const handleOperatorSelect = useCallback<SingleSelectionHandler>(
+    (_, selected) => {
       const op = selected;
       if (op === undefined || isValidFilterClauseOp(op)) {
         setOperator(op);
@@ -293,35 +293,17 @@ export const useFilterClauseEditor = ({
         // If value is valid, move on to next field
         const input = evt.target as HTMLInputElement;
         const field = input.closest("[data-field]") as HTMLElement;
-        if (field.dataset.field === "column") {
-          const column = findColumn(input.value);
-          if (column) {
-            setSelectedColumn(column);
-            focusNextElement();
-          }
-        } else if (field.dataset.field === "value") {
-          if (operator === "starts") {
-            // // don't let this bubble to the Toolbar, it would be
-            // // interpreted as selection
-            evt.stopPropagation();
-            const newValue = input.value;
-            setValue(newValue);
-            onChange({
-              column: selectedColumn?.name,
-              op: operator,
-              value: newValue,
-            });
-          }
+        if (field.dataset.field === "value" && operator === "starts") {
+          // // don't let this bubble to the Toolbar, it would be
+          // // interpreted as selection
+          evt.stopPropagation();
+          const newValue = input.value;
+          setValue(newValue);
+          handleChangeValue(newValue);
         }
       }
     },
-    [
-      findColumn,
-      onChange,
-      operator,
-      removeAndNavigateToNextInputIfAtBoundary,
-      selectedColumn?.name,
-    ]
+    [handleChangeValue, operator, removeAndNavigateToNextInputIfAtBoundary]
   );
 
   const handleClear = useCallback(
@@ -371,8 +353,8 @@ export const useFilterClauseEditor = ({
     onClear: handleClear,
     onClearKeyDown: handleClearKeyDown,
     onDeselectValue: handleDeselectValue,
-    onSelectionChangeColumn: handleSelectionChangeColumn,
-    onSelectionChangeOperator: handleSelectionChangeOperator,
+    onColumnSelect: handleColumnSelect,
+    onOperatorSelect: handleOperatorSelect,
     operator,
     operatorRef,
     selectedColumn,

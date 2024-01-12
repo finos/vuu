@@ -45,6 +45,7 @@ export interface ComboboxHookProps<
       | "itemsToString"
       | "onDeselect"
       | "onSetSelectedText"
+      | "onListItemSelect"
       | "value"
     >,
     Omit<ComponentSelectionProps<Item, S>, "onSelect">,
@@ -91,6 +92,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
   listRef,
+  onListItemSelect,
   onOpenChange,
   onSelectionChange,
   onSetSelectedText,
@@ -293,6 +295,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     label: "combobox",
     onKeyboardNavigation: handleKeyboardNavigation,
     onSelectionChange: handleSelectionChange,
+    onSelect: onListItemSelect,
     selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionKeys,
     selectionStrategy,

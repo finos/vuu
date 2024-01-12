@@ -50,8 +50,8 @@ export const FilterClauseEditor = ({
     onClear,
     onClearKeyDown,
     onDeselectValue,
-    onSelectionChangeColumn,
-    onSelectionChangeOperator,
+    onColumnSelect,
+    onOperatorSelect,
     operator,
     operatorRef,
     selectedColumn,
@@ -129,7 +129,7 @@ export const FilterClauseEditor = ({
         data-field="column"
         initialHighlightedIndex={0}
         itemToString={(column) => column.name}
-        onSelectionChange={onSelectionChangeColumn}
+        onListItemSelect={onColumnSelect}
         ref={columnRef}
         source={columns}
         title="column"
@@ -144,7 +144,7 @@ export const FilterClauseEditor = ({
           })}
           data-field="operator"
           initialHighlightedIndex={0}
-          onSelectionChange={onSelectionChangeOperator}
+          onListItemSelect={onOperatorSelect}
           ref={operatorRef}
           source={getOperators(selectedColumn)}
           title="operator"
