@@ -1,4 +1,4 @@
-import { MeasuredSize } from "@finos/vuu-layout";
+import { MeasuredSize } from "@finos/vuu-ui-controls";
 import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
 

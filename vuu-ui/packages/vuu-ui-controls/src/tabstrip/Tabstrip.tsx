@@ -1,5 +1,5 @@
-import { asReactElements, OverflowContainer } from "@finos/vuu-layout";
-import { useId } from "@finos/vuu-utils";
+import { OverflowContainer } from "@finos/vuu-ui-controls";
+import { asReactElements, useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";

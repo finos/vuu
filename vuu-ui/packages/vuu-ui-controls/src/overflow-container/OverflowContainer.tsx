@@ -1,5 +1,5 @@
 import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
-import { orientationType, useId } from "@finos/vuu-utils";
+import { asReactElements, orientationType, useId } from "@finos/vuu-utils";
 
 import cx from "clsx";
 import React, {
@@ -8,7 +8,6 @@ import React, {
   forwardRef,
   HTMLAttributes,
 } from "react";
-import { asReactElements } from "../utils";
 import { OverflowItem } from "./overflow-utils";
 import { useOverflowContainer } from "./useOverflowContainer";
 

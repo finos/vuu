@@ -1,4 +1,3 @@
-import { isOverflowElement } from "@finos/vuu-layout";
 import { dispatchCustomEvent } from "@finos/vuu-utils";
 import {
   MouseEventHandler,
@@ -8,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { isOverflowElement } from "../overflow-container";
 import { useDragDropProvider } from "./DragDropProvider";
 import { DragDropState } from "./DragDropState";
 import {

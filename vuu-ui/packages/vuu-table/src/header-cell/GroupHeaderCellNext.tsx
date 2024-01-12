@@ -1,4 +1,4 @@
-import { OverflowContainer } from "@finos/vuu-layout";
+import { OverflowContainer } from "@finos/vuu-ui-controls";
 import {
   ColumnDescriptor,
   GroupColumnDescriptor,

@@ -25,6 +25,7 @@ export * from "./keyset";
 export * from "./logging-utils";
 export * from "./menu-utils";
 export * from "./nanoid";
+export * from "./react-utils";
 export * from "./round-decimal";
 export * from "./perf-utils";
 export * from "./range-utils";

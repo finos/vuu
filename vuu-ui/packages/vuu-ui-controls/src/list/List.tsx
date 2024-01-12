@@ -1,4 +1,3 @@
-import { MeasuredContainer, MeasuredSize } from "@finos/vuu-layout";
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
@@ -32,6 +31,7 @@ import { useListHeight } from "./useListHeight";
 import { useScrollPosition } from "./useScrollPosition";
 
 import "./List.css";
+import { MeasuredContainer, MeasuredSize } from "../measured-container";
 
 const defaultEmptyMessage = "No data to display";
 

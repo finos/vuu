@@ -1,23 +1,24 @@
 import {
-  TableConfig,
-  TableConfigChangeHandler,
-  TableRowClickHandler,
-  TableSelectionModel,
-} from "@finos/vuu-table-types";
-import {
   DataSource,
   DataSourceRow,
   SchemaColumn,
   SelectionChangeHandler,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
+import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
+  TableConfig,
+  TableConfigChangeHandler,
+  TableRowClickHandler,
+  TableSelectionModel,
+} from "@finos/vuu-table-types";
+import {
+  DragStartHandler,
+  dragStrategy,
   MeasuredContainer,
   MeasuredContainerProps,
   MeasuredSize,
-} from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { DragStartHandler, dragStrategy } from "@finos/vuu-ui-controls";
+} from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
@@ -31,11 +32,11 @@ import {
   useState,
 } from "react";
 import { Row as DefaultRow, RowProps } from "./Row";
-import { useTable } from "./useTable";
 import { TableHeader } from "./table-header/TableHeader";
+import { useTable } from "./useTable";
 
-import "./Table.css";
 import type { DragDropState } from "@finos/vuu-ui-controls";
+import "./Table.css";
 import { ScrollingAPI } from "./useTableScroll";
 
 const classBase = "vuuTable";

@@ -3,14 +3,13 @@ import {
   SelectionStrategy,
   SpecialKeyMultipleSelection,
 } from "@finos/vuu-ui-controls";
-import { useId } from "@finos/vuu-utils";
+import { asReactElements, useId } from "@finos/vuu-utils";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";
 import {
   OverflowContainer,
   OverflowContainerProps,
 } from "../overflow-container";
-import { asReactElements } from "../utils";
 import { useToolbar } from "./useToolbar";
 
 import "./Toolbar.css";

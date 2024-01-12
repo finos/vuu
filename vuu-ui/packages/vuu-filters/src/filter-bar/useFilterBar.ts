@@ -4,12 +4,12 @@ import {
   FilterClause,
   FilterWithPartialClause,
 } from "@finos/vuu-filter-types";
+import { PromptProps } from "@finos/vuu-popups";
 import {
   ActiveItemChangeHandler,
+  EditableLabelProps,
   NavigationOutOfBoundsHandler,
-} from "@finos/vuu-layout";
-import { PromptProps } from "@finos/vuu-popups";
-import { EditableLabelProps } from "@finos/vuu-ui-controls";
+} from "@finos/vuu-ui-controls";
 import {
   dispatchMouseEvent,
   filterAsQuery,

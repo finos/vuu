@@ -4,8 +4,7 @@
  * to support pinned columns.
  */
 import { RuntimeColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
-import { useCallback, useMemo, useRef } from "react";
-import { MeasuredSize } from "@finos/vuu-layout";
+import { MeasuredSize } from "@finos/vuu-ui-controls";
 import {
   actualRowPositioning,
   RowAtPositionFunc,
@@ -13,6 +12,7 @@ import {
   RowPositioning,
   virtualRowPositioning,
 } from "@finos/vuu-utils";
+import { useCallback, useMemo, useRef } from "react";
 
 export interface TableViewportHookProps {
   columns: RuntimeColumnDescriptor[];
