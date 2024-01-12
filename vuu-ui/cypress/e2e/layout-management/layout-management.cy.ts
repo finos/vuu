@@ -18,6 +18,7 @@ context("Layout Management", () => {
 
     // Update open layout
     page.getTab(0).dblclick();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.focused().type(`${savedLayoutName}{enter}`);
 
     // Save the updated layout
@@ -37,6 +38,7 @@ context("Layout Management", () => {
 
     // Update open layout again
     page.getTab(0).dblclick();
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
     cy.focused().type(`${updatedLayoutName}{enter}`);
 
     // Load saved layout
