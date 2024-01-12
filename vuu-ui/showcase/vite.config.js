@@ -8,8 +8,8 @@ export default defineConfig({
   },
   define: {
     "process.env.NODE_DEBUG": false,
-    "process.env.LOCAL": true,
-    "process.env.LAYOUT_BASE_URL": `"http://127.0.0.1:8081/api"`,
+    "process.env.LOCAL": false,
+    "process.env.LAYOUT_BASE_URL": `"https://localhost:8081/api"`,
   },
   esbuild: {
     jsx: `automatic`,
