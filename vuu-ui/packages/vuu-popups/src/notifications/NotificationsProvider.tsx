@@ -107,6 +107,7 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     <Portal>
       <div
         className={classNames(`${classBase}-toast`, notification.type)}
+        role="status"
         style={{
           height: toastHeight,
           right,
