@@ -2,7 +2,7 @@ import { HTMLAttributes, useCallback } from "react";
 import { VuuUser } from "../shell";
 // import { UserProfile } from "../user-profile";
 // import { ThemeSwitch } from "../theme-switch";
-import { Toolbar } from "@finos/vuu-layout";
+import { Toolbar } from "@finos/vuu-ui-controls";
 import { ThemeMode } from "@finos/vuu-utils";
 import cx from "clsx";
 import { logout } from "../login";

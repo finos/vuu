@@ -1,4 +1,4 @@
-import { NavigationOutOfBoundsHandler, Toolbar } from "@finos/vuu-layout";
+import { NavigationOutOfBoundsHandler, Toolbar } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, MouseEvent, useCallback, useState } from "react";
 

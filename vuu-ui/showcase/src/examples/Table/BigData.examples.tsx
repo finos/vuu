@@ -1,12 +1,11 @@
 import { ArrayDataSource } from "@finos/vuu-data-local";
 import { ArrayProxy, RowAtIndexFunc } from "@finos/vuu-data-test";
 import { DataSource } from "@finos/vuu-data-types";
-import { Toolbar } from "@finos/vuu-layout/src";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { noScrolling, Table } from "@finos/vuu-table";
+import { noScrolling, ScrollingAPI, Table } from "@finos/vuu-table";
 import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
+import { Toolbar } from "@finos/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
-import { ScrollingAPI } from "@finos/vuu-table";
 import {
   ChangeEventHandler,
   useCallback,

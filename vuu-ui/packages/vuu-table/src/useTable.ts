@@ -13,10 +13,11 @@ import {
   TableConfig,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
-import { MeasuredProps, MeasuredSize } from "@finos/vuu-layout";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
+  MeasuredProps,
+  MeasuredSize,
   useDragDrop as useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {

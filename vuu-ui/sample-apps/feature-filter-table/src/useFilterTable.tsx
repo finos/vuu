@@ -12,10 +12,11 @@ import {
 } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
-import { ActiveItemChangeHandler, useViewContext } from "@finos/vuu-layout";
+import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useShellContext } from "@finos/vuu-shell";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
+import { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,

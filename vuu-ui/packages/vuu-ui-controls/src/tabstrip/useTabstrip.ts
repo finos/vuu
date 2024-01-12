@@ -1,5 +1,5 @@
 import type { MenuActionHandler } from "@finos/vuu-data-types";
-import type { OverflowItem } from "@finos/vuu-layout";
+import type { OverflowItem } from "@finos/vuu-ui-controls";
 import { dispatchMouseEvent, orientationType } from "@finos/vuu-utils";
 import {
   KeyboardEvent,

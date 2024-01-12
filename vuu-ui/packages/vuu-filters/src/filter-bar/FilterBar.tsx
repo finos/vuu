@@ -1,7 +1,7 @@
 import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
-import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-layout";
 import { Prompt } from "@finos/vuu-popups";
+import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -9,8 +9,8 @@ import { FilterBuilderMenu } from "../filter-builder-menu";
 import { FilterClauseEditor, FilterClauseEditorProps } from "../filter-clause";
 import { FilterPill } from "../filter-pill";
 import { filterClauses as getFilterClauses } from "../filter-utils";
-import { useFilterBar } from "./useFilterBar";
 import { FilterBarMenu } from "./FilterBarMenu";
+import { useFilterBar } from "./useFilterBar";
 
 import "./FilterBar.css";
 
