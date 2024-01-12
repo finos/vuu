@@ -132,9 +132,10 @@ export default async function main(customConfig) {
       } = packageJson;
 
       let files = getDefaultFilesToPublish(options);
+
       let defaultStyle = undefined;
 
-      if (filesFromPackageJson) {
+      if (filesFromPackageJson || isTypeLib) {
         const filesToPublish = isTypeLib
           ? [indexDTS]
           : filesFromPackageJson.filter(
