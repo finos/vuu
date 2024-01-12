@@ -122,11 +122,31 @@ describe("GridLayoutModel", () => {
         model.addGridItem(new Item("red", 2, 3, 3, 4));
 
         const splitters = model.getSplitterPositions();
+        expect(splitters.length).toEqual(3);
         // prettier-ignore
         expect(splitters).toEqual([
           {align: "start", id: "blue-splitter-h", orientation: "horizontal", controls: "blue", column: {start: 2, end: 3}, row: {start: 1, end: 4}},
           {align: "start", id: "black-splitter-v", orientation: "vertical", controls: "black", column: {start: 1, end: 2}, row: {start: 2, end: 4}},
-            {align: "start", id: "red-splitter-v", orientation: "vertical", controls: "red", column: {start: 2, end: 3}, row: {start: 3, end: 4}}
+          {align: "start", id: "red-splitter-v", orientation: "vertical", controls: "red", column: {start: 2, end: 3}, row: {start: 3, end: 4}}
+        ])
+      });
+    });
+
+    describe("WHEN we have a 2 x 2 layout, 2 columns, misaligned rows, aligned left", () => {
+      it("THEN we have 3 initial splitters, including a multi-track splitter", () => {
+        const model = new GridLayoutModel(2, 3);
+        model.addGridItem(new Item("green", 1, 2, 1, 2));
+        model.addGridItem(new Item("blue", 2, 4, 1, 2));
+        model.addGridItem(new Item("black", 1, 3, 2, 3));
+        model.addGridItem(new Item("red", 3, 4, 2, 3));
+
+        const splitters = model.getSplitterPositions();
+        expect(splitters.length).toEqual(3);
+        // prettier-ignore
+        expect(splitters).toEqual([
+          {align: "start", id: "blue-splitter-h", orientation: "horizontal", controls: "blue", column: {start: 2, end: 4}, row: {start: 1, end: 2}},
+          {align: "start", id: "black-splitter-v", orientation: "vertical", controls: "black", column: {start: 1, end: 4}, row: {start: 2, end: 3}},
+          {align: "start", id: "red-splitter-h", orientation: "horizontal", controls: "red", column: {start: 3, end: 4}, row: {start: 2, end: 3}}
         ])
       });
     });
@@ -140,6 +160,8 @@ describe("GridLayoutModel", () => {
         model.addGridItem(new Item("red", 2, 3, 2, 4));
 
         const splitters = model.getSplitterPositions();
+
+        expect(splitters.length).toEqual(3);
         // prettier-ignore
         expect(splitters).toEqual([
           {align: "start", id: "black-splitter-v", orientation: "vertical", controls: "black", column: {start: 1, end: 2}, row: {start: 3, end: 4}},

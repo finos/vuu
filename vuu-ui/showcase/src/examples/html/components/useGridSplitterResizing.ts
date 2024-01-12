@@ -244,6 +244,10 @@ export const useGridSplitterResizing = ({
       updates.forEach(([id, position]) => {
         setTrack(id, position);
       });
+
+      const splitters = layoutModel.getSplitterPositions();
+      console.log({ splitters });
+      setSplitters(splitters);
     }
   }, [layoutModel]);
 
@@ -264,6 +268,10 @@ export const useGridSplitterResizing = ({
       updates.forEach(([id, position]) => {
         setTrack(id, position);
       });
+
+      const splitters = layoutModel.getSplitterPositions();
+      console.log({ splitters });
+      setSplitters(splitters);
     }
   }, [layoutModel]);
 
@@ -769,6 +777,7 @@ export const useGridSplitterResizing = ({
         }
       });
       const splitters = layoutModel.getSplitterPositions();
+      console.log({ splitters });
       setSplitters(splitters);
     }
   }, [layoutModel]);
