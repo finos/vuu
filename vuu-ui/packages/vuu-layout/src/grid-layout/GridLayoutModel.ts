@@ -18,8 +18,13 @@ export interface IGridLayoutModelItem {
 
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
-export type GridLayoutResizePosition = "before" | "after" | "above" | "below";
+export type GridLayoutRelativePosition =
+  | "aboveInSameColumn"
+  | "belowInSameColumn"
+  | "rightInSameRow"
+  | "leftInSameRow";
 export type GridLayoutResizeType = "shrink" | "expand";
+export type GridLayoutTrack = "column" | "row";
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
@@ -64,30 +69,41 @@ const storeMapValue = (
   }
 };
 
+const removeMapValue = (
+  map: GridItemMap,
+  key: number,
+  value: IGridLayoutModelItem
+) => {
+  const values = map.get(key);
+  if (values?.includes(value)) {
+    if (values.length === 1) {
+      map.delete(key);
+    } else {
+      map.set(
+        key,
+        values.filter((i) => i !== value)
+      );
+    }
+  }
+};
+
 const getFullPosition = (
   items: IGridLayoutModelItem[],
-  position: GridLayoutResizePosition
+  track: GridLayoutTrack
 ): [number, number] => {
-  if (position === "before" || position === "after") {
-    return [
-      Math.min(...items.map((i) => i.row.start)),
-      Math.max(...items.map((i) => i.row.end)),
-    ];
-  } else {
-    return [
-      Math.min(...items.map((i) => i.column.start)),
-      Math.max(...items.map((i) => i.column.end)),
-    ];
-  }
+  return [
+    Math.min(...items.map((i) => i[track].start)),
+    Math.max(...items.map((i) => i[track].end)),
+  ];
 };
 
 const fillSameTrack = (
   { column, row }: IGridLayoutModelItem,
   contraItems: IGridLayoutModelItem[],
-  position: GridLayoutResizePosition
+  track: GridLayoutTrack
 ) => {
-  const [start, end] = getFullPosition(contraItems, position);
-  if (position === "before" || position === "after") {
+  const [start, end] = getFullPosition(contraItems, track);
+  if (track === "row") {
     return start === row.start && end === row.end;
   } else {
     return start === column.start && end === column.end;
@@ -163,11 +179,12 @@ export class GridLayoutModel {
     return [contraItemsBefore ?? [], contraItemsAfter ?? []];
   }
 
+  // TODO sort out the use of position here, its all messed up
   private getNextSibling(
     gridItem: IGridLayoutModelItem,
-    position: GridLayoutResizePosition
+    position: GridLayoutRelativePosition
   ) {
-    if (position === "after") {
+    if (position === "belowInSameColumn") {
       // get column sibling(s) that start where this row ends
       const nextSiblings = this.rowMaps.start
         .get(gridItem.row.end)
@@ -179,7 +196,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "before") {
+    } else if (position === "aboveInSameColumn") {
       // get column sibling(s) that end where this row starts
       const nextSiblings = this.rowMaps.end
         .get(gridItem.row.start)
@@ -187,6 +204,30 @@ export class GridLayoutModel {
           (item) =>
             item.column.start >= gridItem.column.start &&
             item.column.end <= gridItem.column.end
+        );
+      if (nextSiblings?.length === 1) {
+        return nextSiblings[0];
+      }
+    } else if (position === "rightInSameRow") {
+      // get row sibling(s) that end where this row starts
+      const nextSiblings = this.columnMaps.start
+        .get(gridItem.column.end)
+        ?.filter(
+          (item) =>
+            item.row.start >= gridItem.row.start &&
+            item.row.end <= gridItem.row.end
+        );
+      if (nextSiblings?.length === 1) {
+        return nextSiblings[0];
+      }
+    } else if (position === "leftInSameRow") {
+      // get row sibling(s) that end where this row starts
+      const nextSiblings = this.columnMaps.end
+        .get(gridItem.column.start)
+        ?.filter(
+          (item) =>
+            item.row.start >= gridItem.row.start &&
+            item.row.end <= gridItem.row.end
         );
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
@@ -200,8 +241,17 @@ export class GridLayoutModel {
   ) => {
     const gridItem = this.index.get(gridItemId);
     if (gridItem) {
-      gridItem.row.start = start;
-      gridItem.row.end = end;
+      const { start: previousStart, end: previousEnd } = gridItem.row;
+      if (start !== previousStart) {
+        gridItem.row.start = start;
+        removeMapValue(this.rowMaps.start, previousStart, gridItem);
+        storeMapValue(this.rowMaps.start, start, gridItem);
+      }
+      if (end !== previousEnd) {
+        gridItem.row.end = end;
+        removeMapValue(this.rowMaps.end, previousEnd, gridItem);
+        storeMapValue(this.rowMaps.end, end, gridItem);
+      }
     } else {
       throw Error(`setGridRow gridItem #${gridItemId} not found`);
     }
@@ -213,8 +263,18 @@ export class GridLayoutModel {
   ) => {
     const gridItem = this.index.get(gridItemId);
     if (gridItem) {
-      gridItem.column.start = start;
-      gridItem.column.end = end;
+      const { start: previousStart, end: previousEnd } = gridItem.column;
+
+      if (start !== previousStart) {
+        gridItem.column.start = start;
+        removeMapValue(this.columnMaps.start, previousStart, gridItem);
+        storeMapValue(this.columnMaps.start, start, gridItem);
+      }
+      if (end !== previousEnd) {
+        gridItem.column.end = end;
+        removeMapValue(this.columnMaps.end, previousEnd, gridItem);
+        storeMapValue(this.columnMaps.end, end, gridItem);
+      }
     } else {
       throw Error(`setGridColumn gridItem #${gridItemId} not found`);
     }
@@ -243,27 +303,38 @@ export class GridLayoutModel {
   //TODO we only check one sibling away, need to do this in a loop
   private findMatchingContras(
     gridItem: IGridLayoutModelItem,
-    contraItems: IGridLayoutModelItem[]
+    contraItems: IGridLayoutModelItem[],
+    resizeDirection: GridLayoutResizeDirection = "horizontal"
   ): [number, number] | undefined {
-    const fullSpan = getFullPosition(contraItems, "after");
-    if (fullSpan[0] === gridItem.row.start) {
+    const [track, position, contraPosition]: [
+      GridLayoutTrack,
+      GridLayoutRelativePosition,
+      GridLayoutRelativePosition
+    ] =
+      resizeDirection === "horizontal"
+        ? ["row", "belowInSameColumn", "aboveInSameColumn"]
+        : ["column", "rightInSameRow", "leftInSameRow"];
+    const fullSpan = getFullPosition(contraItems, track);
+    if (fullSpan[0] === gridItem[track].start) {
       const siblings = [gridItem];
       // add sibling(s) below until we have a match with fullSpan
       // need to review the position, this feels counter intuitive
-      const nextSibling = this.getNextSibling(gridItem, "after");
+      const nextSibling =
+        this.getNextSibling(gridItem, position) ||
+        this.getNextSibling(gridItem, contraPosition);
       if (nextSibling) {
         siblings.push(nextSibling);
-        const fullSiblingPos = getFullPosition(siblings, "after");
+        const fullSiblingPos = getFullPosition(siblings, track);
         if (fullSiblingPos[1] === fullSpan[1]) {
           return fullSpan;
         }
       }
-    } else if (fullSpan[1] === gridItem.row.end) {
+    } else if (fullSpan[1] === gridItem[track].end) {
       const siblings = [gridItem];
-      const nextSibling = this.getNextSibling(gridItem, "before");
+      const nextSibling = this.getNextSibling(gridItem, contraPosition);
       if (nextSibling) {
         siblings.push(nextSibling);
-        const fullSiblingPos = getFullPosition(siblings, "after");
+        const fullSiblingPos = getFullPosition(siblings, track);
         if (fullSiblingPos[0] === fullSpan[0]) {
           return fullSpan;
         }
@@ -294,29 +365,21 @@ export class GridLayoutModel {
     for (const gridItem of this.gridItems) {
       const { column, id, row } = gridItem;
 
-      // First the horizontal tracks
+      // First a horizontal resize
       const [contraItemsLeft, contraItemsRight] = this.getContraItems(
         gridItem,
         "horizontal"
       );
-      if (contraItemsRight.length > 1) {
+      console.log({ contraItemsLeft, contraItemsRight });
+
+      if (column.start > 1) {
         const contraFillSameTrack = fillSameTrack(
           gridItem,
-          contraItemsRight,
-          "after"
+          contraItemsLeft,
+          "row"
         );
+
         if (contraFillSameTrack) {
-          splitterPositions.push({
-            align: "end",
-            column,
-            controls: id,
-            id: `${id}-splitter-h`,
-            orientation: "horizontal",
-            row,
-          });
-        }
-      } else if (column.start > 1) {
-        if (fillSameTrack(gridItem, contraItemsLeft, "before")) {
           splitterPositions.push({
             align: "start",
             column,
@@ -326,9 +389,13 @@ export class GridLayoutModel {
             row,
           });
         } else if (contraItemsLeft.length === 1) {
-          console.log(`${id} 1 contra, does not fill same track`);
+          console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsLeft.length > 1) {
-          const fullSpan = this.findMatchingContras(gridItem, contraItemsLeft);
+          const fullSpan = this.findMatchingContras(
+            gridItem,
+            contraItemsLeft,
+            "horizontal"
+          );
           if (fullSpan) {
             splitterPositions.push({
               align: "start",
@@ -342,19 +409,88 @@ export class GridLayoutModel {
         } else {
           throw Error(`no contraItems for ${id}`);
         }
+      } else if (contraItemsRight.length > 1) {
+        const contraFillSameTrack = fillSameTrack(
+          gridItem,
+          contraItemsRight,
+          "row"
+        );
+        if (contraFillSameTrack) {
+          splitterPositions.push({
+            align: "end",
+            column,
+            controls: id,
+            id: `${id}-splitter-h`,
+            orientation: "horizontal",
+            row,
+          });
+        } else {
+          console.log(`${id} mismatched contras`);
+          // TODO why do columns shift slightly when we do this ?
+          const fullSpan = this.findMatchingContras(gridItem, contraItemsRight);
+          if (fullSpan) {
+            splitterPositions.push({
+              align: "end",
+              column,
+              controls: id,
+              id: `${id}-splitter-h`,
+              orientation: "horizontal",
+              row: { start: fullSpan[0], end: fullSpan[1] },
+            });
+          }
+        }
       }
 
-      // ...then the vertical tracks
+      // ...then vertical resize
       const [contraItemsAbove, contraItemsBelow] = this.getContraItems(
         gridItem,
         "vertical"
       );
 
-      if (contraItemsBelow.length > 1) {
+      console.log({ contraItemsAbove, contraItemsBelow });
+      if (row.start > 1) {
+        const contraFillSameTrack = fillSameTrack(
+          gridItem,
+          contraItemsAbove,
+          "column"
+        );
+
+        if (contraFillSameTrack) {
+          splitterPositions.push({
+            align: "start",
+            column,
+            controls: id,
+            id: `${id}-splitter-v`,
+            orientation: "vertical",
+            row,
+          });
+        } else if (contraItemsAbove.length === 1) {
+          console.log(`${id} 1 contra, does not fill same track, ignore`);
+        } else if (contraItemsAbove.length > 1) {
+          const fullSpan = this.findMatchingContras(
+            gridItem,
+            contraItemsAbove,
+            "vertical"
+          );
+          if (fullSpan) {
+            console.log(`fullSPabe above ${id}`);
+            splitterPositions.push({
+              align: "start",
+              column: { start: fullSpan[0], end: fullSpan[1] },
+              controls: id,
+              id: `${id}-splitter-v`,
+              orientation: "vertical",
+              row,
+            });
+          }
+        } else {
+          throw Error(`no contraItems for ${id}`);
+        }
+      } else if (contraItemsBelow.length > 1) {
         const contraFillSameTrack = fillSameTrack(
           gridItem,
           contraItemsBelow,
-          "below"
+          "column"
         );
         if (contraFillSameTrack) {
           splitterPositions.push({
@@ -365,42 +501,20 @@ export class GridLayoutModel {
             orientation: "vertical",
             row,
           });
-        }
-      } else if (row.start > 1) {
-        const contraFillSameTrack = fillSameTrack(
-          gridItem,
-          contraItemsAbove,
-          "above"
-        );
-
-        if (contraItemsAbove.length === 1) {
-          if (contraFillSameTrack) {
-            splitterPositions.push({
-              align: "start",
-              column,
-              controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
-              row,
-            });
-          } else {
-            console.log(`1 contra, does not fill same track`);
-          }
-        } else if (contraItemsAbove.length > 1) {
-          if (contraFillSameTrack) {
-            splitterPositions.push({
-              align: "start",
-              column,
-              controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
-              row,
-            });
-          } else {
-            console.log("mismatched contras");
-          }
         } else {
-          throw Error(`no contraItems for ${id}`);
+          console.log(`${id} mismatched contras`);
+          // TODO why do columns shift slightly when we do this ?
+          const fullSpan = this.findMatchingContras(gridItem, contraItemsBelow);
+          if (fullSpan) {
+            splitterPositions.push({
+              align: "end",
+              column: { start: fullSpan[0], end: fullSpan[1] },
+              controls: id,
+              id: `${id}-splitter-v`,
+              orientation: "vertical",
+              row,
+            });
+          }
         }
       }
     }
