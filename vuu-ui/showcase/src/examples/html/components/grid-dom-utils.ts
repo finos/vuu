@@ -1,9 +1,7 @@
-import { GridLayoutModelPosition } from "packages/vuu-layout/src";
+import { GridLayoutModelPosition } from "@finos/vuu-layout";
 import { GridItem, GridPos } from "./grid-layout-types";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
-
-export type ResizeDirection = "shrink" | "expand";
 
 export type ResizeOrientation = "horizontal" | "vertical";
 
