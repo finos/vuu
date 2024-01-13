@@ -16,6 +16,7 @@ export interface IGridLayoutModelItem {
   row: GridLayoutModelPosition;
 }
 
+export type GridLayoutResizeOperation = "contract" | "expand";
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
 export type GridLayoutRelativePosition =
@@ -23,7 +24,6 @@ export type GridLayoutRelativePosition =
   | "belowInSameColumn"
   | "rightInSameRow"
   | "leftInSameRow";
-export type GridLayoutResizeType = "shrink" | "expand";
 export type GridLayoutTrack = "column" | "row";
 
 export interface ISplitter extends IGridLayoutModelItem {
@@ -285,10 +285,20 @@ export class GridLayoutModel {
     column: { start, end },
   }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
 
+  private setColContracted = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem) => [id, { start, end: end - 1 }];
+
   private setRowExpanded = ({
     id,
     row: { start, end },
   }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+
+  private setRowContracted = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem) => [id, { start, end: end - 1 }];
 
   private setShiftColForward = ({
     id,
@@ -299,6 +309,16 @@ export class GridLayoutModel {
     id,
     row: { start, end },
   }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+
+  private setShiftColBackward = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem) => [id, { start: start - 1, end: end - 1 }];
+
+  private setShiftRowBackward = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem) => [id, { start: start - 1, end: end - 1 }];
 
   //TODO we only check one sibling away, need to do this in a loop
   private findMatchingContras(
@@ -370,7 +390,6 @@ export class GridLayoutModel {
         gridItem,
         "horizontal"
       );
-      console.log({ contraItemsLeft, contraItemsRight });
 
       if (column.start > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -397,6 +416,16 @@ export class GridLayoutModel {
             "horizontal"
           );
           if (fullSpan) {
+            const doomedIndex = splitterPositions.findIndex(
+              (s) =>
+                s.align === "end" &&
+                s.row.start === fullSpan[0] &&
+                s.row.end === fullSpan[1]
+            );
+            if (doomedIndex !== -1) {
+              splitterPositions.splice(doomedIndex, 1);
+            }
+
             splitterPositions.push({
               align: "start",
               column,
@@ -425,18 +454,32 @@ export class GridLayoutModel {
             row,
           });
         } else {
-          console.log(`${id} mismatched contras`);
           // TODO why do columns shift slightly when we do this ?
-          const fullSpan = this.findMatchingContras(gridItem, contraItemsRight);
+
+          const fullSpan = this.findMatchingContras(
+            gridItem,
+            contraItemsRight,
+            "horizontal"
+          );
           if (fullSpan) {
-            splitterPositions.push({
-              align: "end",
-              column,
-              controls: id,
-              id: `${id}-splitter-h`,
-              orientation: "horizontal",
-              row: { start: fullSpan[0], end: fullSpan[1] },
-            });
+            const existingFullSpan = splitterPositions.find(
+              (s) =>
+                s.align === "start" &&
+                s.row.start === fullSpan[0] &&
+                s.row.end === fullSpan[1]
+            );
+            if (!existingFullSpan) {
+              splitterPositions.push({
+                align: "end",
+                column,
+                controls: id,
+                id: `${id}-splitter-h`,
+                orientation: "horizontal",
+                row: { start: fullSpan[0], end: fullSpan[1] },
+              });
+            } else {
+              console.log(`got one already`);
+            }
           }
         }
       }
@@ -447,7 +490,6 @@ export class GridLayoutModel {
         "vertical"
       );
 
-      console.log({ contraItemsAbove, contraItemsBelow });
       if (row.start > 1) {
         const contraFillSameTrack = fillSameTrack(
           gridItem,
@@ -473,7 +515,16 @@ export class GridLayoutModel {
             "vertical"
           );
           if (fullSpan) {
-            console.log(`fullSPabe above ${id}`);
+            const doomedIndex = splitterPositions.findIndex(
+              (s) =>
+                s.align === "end" &&
+                s.column.start === fullSpan[0] &&
+                s.column.end === fullSpan[1]
+            );
+            if (doomedIndex !== -1) {
+              splitterPositions.splice(doomedIndex, 1);
+            }
+
             splitterPositions.push({
               align: "start",
               column: { start: fullSpan[0], end: fullSpan[1] },
@@ -502,18 +553,29 @@ export class GridLayoutModel {
             row,
           });
         } else {
-          console.log(`${id} mismatched contras`);
           // TODO why do columns shift slightly when we do this ?
-          const fullSpan = this.findMatchingContras(gridItem, contraItemsBelow);
+          const fullSpan = this.findMatchingContras(
+            gridItem,
+            contraItemsBelow,
+            "vertical"
+          );
           if (fullSpan) {
-            splitterPositions.push({
-              align: "end",
-              column: { start: fullSpan[0], end: fullSpan[1] },
-              controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
-              row,
-            });
+            const existingFullSpan = splitterPositions.find(
+              (s) =>
+                s.align === "start" &&
+                s.column.start === fullSpan[0] &&
+                s.column.end === fullSpan[1]
+            );
+            if (!existingFullSpan) {
+              splitterPositions.push({
+                align: "end",
+                column: { start: fullSpan[0], end: fullSpan[1] },
+                controls: id,
+                id: `${id}-splitter-v`,
+                orientation: "vertical",
+                row,
+              });
+            }
           }
         }
       }
@@ -573,32 +635,40 @@ export class GridLayoutModel {
     return items;
   }
 
-  repositionComponentsforResize(
+  repositionGridItemsforResize(
     // TODO we only need one
     resizeItem: IGridLayoutModelItem,
     adjacentItems: AdjacentItems,
     resizeDirection: GridLayoutResizeDirection,
-    resizeType: GridLayoutResizeType
+    resizeOperation: GridLayoutResizeOperation,
+    operationFlipped = false
   ): [string, GridLayoutModelPosition][] {
-    console.log(`repositionComponentsforResize (${resizeType})`, {
-      resizeItem,
-      adjacentItems,
-    });
-
     // TODO is thgis dependent in splitterAlign ?
     const indexOfResizedItem =
       resizeDirection === "vertical"
         ? resizeItem.row.start - 1
         : resizeItem.column.start - 1;
 
+    let restorativeUpdates: [string, GridLayoutModelPosition][] = [];
     const updates: [string, GridLayoutModelPosition][] = [];
+
+    if (operationFlipped) {
+      // If we're flipping directly from contract to expand
+      // or vice versa, we first revert the previous operation.
+      restorativeUpdates = this.restoreGridItemPositions(
+        resizeItem,
+        adjacentItems,
+        resizeDirection,
+        resizeOperation === "expand" ? "contract" : "expand"
+      );
+    }
 
     const [setExpanded, setShiftForward, setTrack]: any =
       resizeDirection === "vertical"
         ? [this.setRowExpanded, this.setShiftRowForward, this.setGridRow]
         : [this.setColExpanded, this.setShiftColForward, this.setGridColumn];
 
-    if (resizeType === "expand") {
+    if (resizeOperation === "expand") {
       if (adjacentItems.nonAdjacent.length > 0) {
         const targetEdge = indexOfResizedItem + 1;
         for (const item of adjacentItems.nonAdjacent) {
@@ -642,6 +712,69 @@ export class GridLayoutModel {
       });
     }
 
+    if (restorativeUpdates.length > 0) {
+      updates.splice(
+        updates.length,
+        0,
+        ...restorativeUpdates.filter(
+          ([id]) => updates.findIndex(([updateId]) => updateId === id) === -1
+        )
+      );
+    }
+
     return updates;
+  }
+
+  restoreGridItemPositions(
+    resizeItem: IGridLayoutModelItem,
+    adjacentItems: AdjacentItems,
+    resizeDirection: GridLayoutResizeDirection,
+    anulledResizeOperation: GridLayoutResizeOperation
+  ) {
+    const [setContracted, setShiftBackward, setTrack]: any =
+      resizeDirection === "vertical"
+        ? [this.setRowContracted, this.setShiftRowBackward, this.setGridRow]
+        : [this.setColContracted, this.setShiftColBackward, this.setGridColumn];
+
+    const updates: [string, GridLayoutModelPosition][] = [];
+    console.log(`restoreGridItemPositions `, {
+      anulledResizeOperation,
+      resizeItem,
+      adjacentItems,
+      resizeDirection,
+    });
+
+    if (anulledResizeOperation === "contract") {
+      updates.push(setShiftBackward(resizeItem));
+      adjacentItems.contra.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+    } else {
+      updates.push(setContracted(resizeItem));
+      adjacentItems.contraOtherTrack.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setShiftBackward(item));
+      });
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
+  toDebugString() {
+    return `
+      ${this.gridItems.map(
+        ({ id, column, row }) =>
+          `\n${id}\t\tcol ${column.start}/${column.end}\t row ${row.start}/${row.end}`
+      )}
+    `;
   }
 }
