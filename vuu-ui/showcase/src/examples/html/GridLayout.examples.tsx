@@ -43,7 +43,8 @@ export const GridLayoutA = () => {
         layoutAPI={layoutApi}
       >
         <GridLayoutItem
-          id="green-H"
+          header
+          id="green"
           resizeable="hv"
           style={{
             gridColumnStart: 1,
@@ -51,6 +52,7 @@ export const GridLayoutA = () => {
             gridRowStart: 1,
             gridRowEnd: 2,
           }}
+          title="Green"
         >
           <div
             style={{
@@ -59,7 +61,8 @@ export const GridLayoutA = () => {
           />
         </GridLayoutItem>
         <GridLayoutItem
-          id="blue-H"
+          header
+          id="blue"
           resizeable="hv"
           style={{
             gridColumnStart: 2,
@@ -67,11 +70,13 @@ export const GridLayoutA = () => {
             gridRowStart: 1,
             gridRowEnd: 2,
           }}
+          title="Blue"
         >
           <div style={{ background: "blue" }} />
         </GridLayoutItem>
         <GridLayoutItem
-          id="black-H"
+          header
+          id="black"
           resizeable="hv"
           style={{
             gridColumnStart: 1,
@@ -79,11 +84,13 @@ export const GridLayoutA = () => {
             gridRowStart: 2,
             gridRowEnd: 3,
           }}
+          title="Black"
         >
           <div style={{ background: "black" }} />
         </GridLayoutItem>
         <GridLayoutItem
-          id="red-H"
+          header
+          id="red"
           resizeable="hv"
           style={{
             gridColumnStart: 2,
@@ -91,11 +98,61 @@ export const GridLayoutA = () => {
             gridRowStart: 2,
             gridRowEnd: 3,
           }}
+          title="Red"
         >
           <div style={{ background: "red" }} />
         </GridLayoutItem>
       </GridLayout>
     </div>
+  );
+};
+
+export const GridLayoutBlankSpace = () => {
+  return (
+    <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
+      <GridLayoutItem
+        header
+        id="blue"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Blue"
+      >
+        <div style={{ background: "blue" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="black"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+        title="Black"
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="red"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+        title="Red"
+      >
+        <div style={{ background: "red" }} />
+      </GridLayoutItem>
+    </GridLayout>
   );
 };
 
@@ -313,9 +370,9 @@ export const GridLayoutE = () => {
 
 export const GridLayoutF = () => {
   return (
-    <GridLayout colCount={2} id="GridLayoutE" rowCount={3}>
+    <GridLayout colCount={2} id="GridLayoutE" rowCount={2}>
       <GridLayoutItem
-        id="green-H"
+        id="green"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -331,7 +388,7 @@ export const GridLayoutF = () => {
         />
       </GridLayoutItem>
       <GridLayoutItem
-        id="blue-H"
+        id="blue"
         resizeable="hv"
         style={{
           gridColumnStart: 3,
@@ -343,7 +400,7 @@ export const GridLayoutF = () => {
         <div style={{ background: "blue" }} />
       </GridLayoutItem>
       <GridLayoutItem
-        id="black-H"
+        id="black"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -355,7 +412,7 @@ export const GridLayoutF = () => {
         <div style={{ background: "black" }} />
       </GridLayoutItem>
       <GridLayoutItem
-        id="red-H"
+        id="red"
         resizeable="hv"
         style={{
           gridColumnStart: 2,
@@ -369,7 +426,6 @@ export const GridLayoutF = () => {
     </GridLayout>
   );
 };
-GridLayoutF.displaySequence = displaySequence++;
 
 export const GridLayoutG = () => {
   return (
@@ -383,6 +439,7 @@ export const GridLayoutG = () => {
           gridRowStart: 1,
           gridRowEnd: 2,
         }}
+        title="Green"
       >
         <div
           style={{
@@ -399,6 +456,7 @@ export const GridLayoutG = () => {
           gridRowStart: 1,
           gridRowEnd: 2,
         }}
+        title="Blue"
       >
         <div style={{ background: "blue" }} />
       </GridLayoutItem>
@@ -411,6 +469,7 @@ export const GridLayoutG = () => {
           gridRowStart: 2,
           gridRowEnd: 3,
         }}
+        title="Black"
       >
         <div style={{ background: "black" }} />
       </GridLayoutItem>
@@ -423,6 +482,300 @@ export const GridLayoutG = () => {
           gridRowStart: 2,
           gridRowEnd: 3,
         }}
+        title="Red"
+      >
+        <div style={{ background: "red" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
+export const GridLayoutH = () => {
+  return (
+    <GridLayout
+      colCount={2}
+      id="GridLayoutE"
+      rowCount={3}
+      style={{
+        gridTemplateRows: "1fr 32px 1fr",
+      }}
+    >
+      <GridLayoutItem
+        header
+        id="green"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="blue"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 4,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Blue"
+      >
+        <div style={{ background: "blue" }} />
+      </GridLayoutItem>
+
+      <GridLayoutItem
+        id="tabs"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 4,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+      >
+        <div style={{ background: "brown", bottom: 0 }} />
+      </GridLayoutItem>
+
+      <GridLayoutItem
+        id="black"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 4,
+          gridRowStart: 3,
+          gridRowEnd: 4,
+        }}
+        title="Black"
+      >
+        <div style={{ background: "black", top: 0 }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="red"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 4,
+          gridRowStart: 3,
+          gridRowEnd: 4,
+        }}
+        title="Red"
+      >
+        <div style={{ background: "red", top: 0 }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
+export const SingleRowFixedItemLeft = () => {
+  return (
+    <GridLayout colCount={4} id="GridLayoutE" rowCount={1}>
+      <GridLayoutItem
+        header
+        id="green"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="blue"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Blue"
+      >
+        <div style={{ background: "blue" }} />
+      </GridLayoutItem>
+
+      <GridLayoutItem
+        header
+        id="black"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 3,
+          gridColumnEnd: 4,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Black"
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="red"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 4,
+          gridColumnEnd: 5,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Red"
+      >
+        <div style={{ background: "red" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
+export const SingleRowFixedItemCenter = () => {
+  return (
+    <GridLayout colCount={4} id="GridLayoutE" rowCount={1}>
+      <GridLayoutItem
+        header
+        id="green"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="blue"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Blue"
+      >
+        <div style={{ background: "blue" }} />
+      </GridLayoutItem>
+
+      <GridLayoutItem
+        header
+        id="black"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 3,
+          gridColumnEnd: 4,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Black"
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="red"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 4,
+          gridColumnEnd: 5,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Red"
+      >
+        <div style={{ background: "red" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
+export const SingleColumnFixedItemCenter = () => {
+  return (
+    <GridLayout
+      colCount={1}
+      id="GridLayoutE"
+      rowCount={4}
+      style={{
+        gridTemplateRows: "1fr 1fr 1fr 1fr",
+      }}
+    >
+      <GridLayoutItem
+        header
+        id="green"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <div
+          style={{
+            background: "green",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="blue"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 2,
+          gridRowEnd: 3,
+        }}
+        title="Blue"
+      >
+        <div style={{ background: "blue" }} />
+      </GridLayoutItem>
+
+      <GridLayoutItem
+        header
+        id="black"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 3,
+          gridRowEnd: 4,
+        }}
+        title="Black"
+      >
+        <div style={{ background: "black" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="red"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 4,
+          gridRowEnd: 5,
+        }}
+        title="Red"
       >
         <div style={{ background: "red" }} />
       </GridLayoutItem>

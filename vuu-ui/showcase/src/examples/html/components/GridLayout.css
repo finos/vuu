@@ -5,6 +5,7 @@
 }
 
 .vuuGridLayoutItem {
+    --vuu-header-height: var(--header-height, 25px);
     border: solid 1px white;
     position: relative;
 }
@@ -16,5 +17,18 @@
 
 .vuuGridLayoutItem > *  {
     position: absolute;
-    inset: var(--vuu-grid-gap);
+    inset: calc(var(--vuu-header-height) + var(--vuu-grid-gap)) var(--vuu-grid-gap) var(--vuu-grid-gap) var(--vuu-grid-gap);
+}
+
+.vuuGridLayoutItemHeader {
+    align-items: center;
+    background-color: #ccc;
+    display: flex;
+    inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap);
+    height: var(--vuu-header-height);
+    padding: 0 6px;
+}
+
+.vuuGridLayoutItemHeader-close {
+    margin-left: auto;
 }

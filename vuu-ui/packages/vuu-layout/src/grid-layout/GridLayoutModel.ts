@@ -1,21 +1,35 @@
+import { getColumns, getRows } from "./grid-dom-utils";
 import {
   AdjacentItems,
   collectItemsByColumnPosition,
   collectItemsByRowPosition,
   occupySameTrack,
 } from "./grid-layout-utils";
+import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 
 export type GridLayoutModelPosition = {
   end: number;
   start: number;
 };
 
-export interface IGridLayoutModelItem {
-  column: GridLayoutModelPosition;
-  id: string;
-  row: GridLayoutModelPosition;
-}
+export type ResizeState = {
+  adjacentItems: AdjacentItems;
+  cols: number[];
+  simpleResize: boolean;
+  grid: HTMLElement;
+  indexOfPrimaryResizeTrack: number;
+  indexOfSecondaryResizeTrack: number;
+  mousePos: number;
+  resizeOperation: GridLayoutResizeOperation | null;
+  resizeElement: HTMLElement;
+  resizeDirection: GridLayoutResizeDirection;
+  resizeItem: IGridLayoutModelItem;
+  rows: number[];
+  splitterAlign: SplitterAlign;
+  splitterElement: HTMLElement;
+};
 
+export type GridLayoutResizeOperation = "contract" | "expand";
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
 export type GridLayoutRelativePosition =
@@ -23,8 +37,16 @@ export type GridLayoutRelativePosition =
   | "belowInSameColumn"
   | "rightInSameRow"
   | "leftInSameRow";
-export type GridLayoutResizeType = "shrink" | "expand";
 export type GridLayoutTrack = "column" | "row";
+export type GridLayoutModelItemResizeable = "h" | "v" | "vh";
+
+export interface IGridLayoutModelItem {
+  closeable?: boolean;
+  column: GridLayoutModelPosition;
+  id: string;
+  resizeable?: GridLayoutModelItemResizeable;
+  row: GridLayoutModelPosition;
+}
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
@@ -38,14 +60,12 @@ export class GridLayoutModelItem implements IGridLayoutModelItem {
   row: GridLayoutModelPosition;
   constructor(
     id: string,
-    colFrom: number,
-    colTo: number,
-    rowFrom: number,
-    rowTo: number
+    column: GridLayoutModelPosition,
+    row: GridLayoutModelPosition
   ) {
     this.id = id;
-    this.column = { start: colFrom, end: colTo };
-    this.row = { start: rowFrom, end: rowTo };
+    this.column = column;
+    this.row = row;
   }
 }
 
@@ -55,6 +75,11 @@ type GridItemMaps = {
   end: GridItemMap;
   start: GridItemMap;
 };
+
+type GridItemUpdate = [string, GridLayoutModelPosition];
+
+const flipDirection = (resizeDirection: GridLayoutResizeDirection) =>
+  resizeDirection === "horizontal" ? "vertical" : "horizontal";
 
 const storeMapValue = (
   map: GridItemMap,
@@ -66,6 +91,27 @@ const storeMapValue = (
     values.push(value);
   } else {
     map.set(key, [value]);
+  }
+};
+
+const clearMapValue = (
+  map: GridItemMap,
+  key: number,
+  value: IGridLayoutModelItem
+) => {
+  const values = map.get(key);
+  if (values && values.includes(value)) {
+    if (values.length === 1) {
+      map.delete(key);
+    } else {
+      map.set(
+        key,
+        values.filter((v) => v !== value)
+      );
+    }
+    values.push(value);
+  } else {
+    throw Error("GridLayoutModel.clearMapValue, map does not include value");
   }
 };
 
@@ -131,9 +177,7 @@ const occupiesSameTrack =
   };
 
 export class GridLayoutModel {
-  columnCount: number;
   gridItems: IGridLayoutModelItem[] = [];
-  rowCount: number;
 
   private index: GridItemIndex = new Map();
 
@@ -153,6 +197,15 @@ export class GridLayoutModel {
   ) {
     storeMapValue(maps.start, start, item);
     storeMapValue(maps.end, end, item);
+  }
+
+  private clearItemFromStore(
+    maps: GridItemMaps,
+    { end, start }: GridLayoutModelPosition,
+    item: IGridLayoutModelItem
+  ) {
+    clearMapValue(maps.start, start, item);
+    clearMapValue(maps.end, end, item);
   }
 
   private getContraItems(
@@ -179,12 +232,15 @@ export class GridLayoutModel {
     return [contraItemsBefore ?? [], contraItemsAfter ?? []];
   }
 
-  // TODO sort out the use of position here, its all messed up
   private getNextSibling(
     gridItem: IGridLayoutModelItem,
-    position: GridLayoutRelativePosition
+    resizeDirection: GridLayoutResizeDirection,
+    position: "before" | "after"
   ) {
-    if (position === "belowInSameColumn") {
+    const isH = resizeDirection === "horizontal";
+    const isV = resizeDirection === "vertical";
+
+    if (isV && position === "after") {
       // get column sibling(s) that start where this row ends
       const nextSiblings = this.rowMaps.start
         .get(gridItem.row.end)
@@ -196,7 +252,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "aboveInSameColumn") {
+    } else if (isV && position === "before") {
       // get column sibling(s) that end where this row starts
       const nextSiblings = this.rowMaps.end
         .get(gridItem.row.start)
@@ -208,7 +264,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "rightInSameRow") {
+    } else if (isH && position === "after") {
       // get row sibling(s) that end where this row starts
       const nextSiblings = this.columnMaps.start
         .get(gridItem.column.end)
@@ -220,7 +276,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "leftInSameRow") {
+    } else if (isH && position === "before") {
       // get row sibling(s) that end where this row starts
       const nextSiblings = this.columnMaps.end
         .get(gridItem.column.start)
@@ -233,6 +289,31 @@ export class GridLayoutModel {
         return nextSiblings[0];
       }
     }
+  }
+
+  private getSiblings(
+    gridItem: IGridLayoutModelItem,
+    resizeDirection: GridLayoutResizeDirection
+  ) {
+    const preceedingSiblings = [];
+    const followingSiblings = [];
+
+    const track: GridLayoutTrack =
+      resizeDirection === "horizontal" ? "column" : "row";
+
+    if (gridItem[track].start > 1) {
+      let sibling = this.getNextSibling(gridItem, resizeDirection, "before");
+      while (sibling) {
+        preceedingSiblings.push(sibling);
+        sibling = this.getNextSibling(sibling, resizeDirection, "before");
+      }
+    }
+    let sibling = this.getNextSibling(gridItem, resizeDirection, "after");
+    while (sibling) {
+      followingSiblings.push(sibling);
+      sibling = this.getNextSibling(sibling, resizeDirection, "after");
+    }
+    return [preceedingSiblings, followingSiblings];
   }
 
   private setGridRow = (
@@ -283,45 +364,81 @@ export class GridLayoutModel {
   private setColExpanded = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end + 1 }];
+
+  private setColContracted = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end - 1 }];
 
   private setRowExpanded = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end + 1 }];
+
+  private setRowContracted = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end - 1 }];
 
   private setShiftColForward = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start + 1, end: end + 1 },
+  ];
 
   private setShiftRowForward = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start + 1, end: end + 1 },
+  ];
+
+  private setShiftColBackward = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start - 1, end: end - 1 },
+  ];
+
+  private setShiftRowBackward = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start - 1, end: end - 1 },
+  ];
+  private setShiftColStartBackward = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
+
+  private setShiftRowStartBackward = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
 
   //TODO we only check one sibling away, need to do this in a loop
-  private findMatchingContras(
+  private findSpanOfMatchedContrasAndSiblings(
     gridItem: IGridLayoutModelItem,
     contraItems: IGridLayoutModelItem[],
     resizeDirection: GridLayoutResizeDirection = "horizontal"
   ): [number, number] | undefined {
-    const [track, position, contraPosition]: [
-      GridLayoutTrack,
-      GridLayoutRelativePosition,
-      GridLayoutRelativePosition
-    ] =
-      resizeDirection === "horizontal"
-        ? ["row", "belowInSameColumn", "aboveInSameColumn"]
-        : ["column", "rightInSameRow", "leftInSameRow"];
+    const track: GridLayoutTrack =
+      resizeDirection === "horizontal" ? "row" : "column";
+    const siblingDirection = flipDirection(resizeDirection);
     const fullSpan = getFullPosition(contraItems, track);
     if (fullSpan[0] === gridItem[track].start) {
       const siblings = [gridItem];
       // add sibling(s) below until we have a match with fullSpan
       // need to review the position, this feels counter intuitive
       const nextSibling =
-        this.getNextSibling(gridItem, position) ||
-        this.getNextSibling(gridItem, contraPosition);
+        this.getNextSibling(gridItem, siblingDirection, "after") ||
+        this.getNextSibling(gridItem, siblingDirection, "before");
       if (nextSibling) {
         siblings.push(nextSibling);
         const fullSiblingPos = getFullPosition(siblings, track);
@@ -331,7 +448,11 @@ export class GridLayoutModel {
       }
     } else if (fullSpan[1] === gridItem[track].end) {
       const siblings = [gridItem];
-      const nextSibling = this.getNextSibling(gridItem, contraPosition);
+      const nextSibling = this.getNextSibling(
+        gridItem,
+        siblingDirection,
+        "before"
+      );
       if (nextSibling) {
         siblings.push(nextSibling);
         const fullSiblingPos = getFullPosition(siblings, track);
@@ -340,11 +461,6 @@ export class GridLayoutModel {
         }
       }
     }
-  }
-
-  constructor(columns: number, rows: number) {
-    this.columnCount = columns;
-    this.rowCount = rows;
   }
 
   addGridItem(gridItem: IGridLayoutModelItem) {
@@ -356,21 +472,52 @@ export class GridLayoutModel {
     this.storeItem(this.rowMaps, row, gridItem);
   }
 
+  removeGridItem(gridItemId: string) {
+    console.log(`remove GridItem #${gridItemId}`);
+
+    const gridItem = this.getGridItem(gridItemId);
+    if (gridItem) {
+      const { column, row } = gridItem;
+      const indexOfDoomedItem = this.gridItems.indexOf(gridItem);
+      this.gridItems.splice(indexOfDoomedItem, 1);
+      this.index.delete(gridItemId);
+      this.clearItemFromStore(this.columnMaps, column, gridItem);
+      this.clearItemFromStore(this.rowMaps, row, gridItem);
+    }
+
+    return [[], []];
+  }
+
   getGridItem(gridItemId: string) {
     return this.index.get(gridItemId);
   }
 
+  fillEmptyAreas() {
+    console.log("fillEmptyAreas");
+    const { gridItems } = this;
+
+    const grid = getGridMatrix(gridItems);
+    const emptyExtents = getEmptyExtents(grid);
+    emptyExtents.forEach((gridItem) => this.addGridItem(gridItem));
+  }
+
   getSplitterPositions(): ISplitter[] {
+    const start = performance.now();
     const splitterPositions: ISplitter[] = [];
     for (const gridItem of this.gridItems) {
-      const { column, id, row } = gridItem;
+      const { column, id, resizeable = "", row } = gridItem;
 
-      // First a horizontal resize
+      // 1) Horizontal resizing - the vertically aligned splitters
+      const [leftSiblings, rightSiblings] = this.getSiblings(
+        gridItem,
+        "horizontal"
+      );
+
       const [contraItemsLeft, contraItemsRight] = this.getContraItems(
         gridItem,
         "horizontal"
       );
-      console.log({ contraItemsLeft, contraItemsRight });
+      const isResizeable = resizeable.indexOf("h") !== -1;
 
       if (column.start > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -379,7 +526,7 @@ export class GridLayoutModel {
           "row"
         );
 
-        if (contraFillSameTrack) {
+        if (contraItemsLeft.length === 0) {
           splitterPositions.push({
             align: "start",
             column,
@@ -388,15 +535,57 @@ export class GridLayoutModel {
             orientation: "horizontal",
             row,
           });
+        } else if (contraFillSameTrack) {
+          // If we have only a single contra left and that contra is not resizeable, skip
+          const { length: resizeableItemsLeft } = leftSiblings.filter(
+            ({ resizeable = "" }) => resizeable.indexOf("h") !== -1
+          );
+          const { length: resizeableItemsRight } = rightSiblings.filter((i) =>
+            i.resizeable?.match(/h/)
+          );
+
+          //TODO multipls contras need to be rolled into resizeableItemsLeft
+          if (contraItemsLeft.length > 1) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: `${id}-splitter-h`,
+              orientation: "horizontal",
+              row,
+            });
+          } else if (
+            resizeableItemsLeft >= 1 &&
+            (isResizeable || resizeableItemsRight >= 1)
+          ) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: `${id}-splitter-h`,
+              orientation: "horizontal",
+              row,
+            });
+          }
         } else if (contraItemsLeft.length === 1) {
           console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsLeft.length > 1) {
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsLeft,
             "horizontal"
           );
           if (fullSpan) {
+            const doomedIndex = splitterPositions.findIndex(
+              (s) =>
+                s.align === "end" &&
+                s.row.start === fullSpan[0] &&
+                s.row.end === fullSpan[1]
+            );
+            if (doomedIndex !== -1) {
+              splitterPositions.splice(doomedIndex, 1);
+            }
+
             splitterPositions.push({
               align: "start",
               column,
@@ -406,8 +595,6 @@ export class GridLayoutModel {
               row: { start: fullSpan[0], end: fullSpan[1] },
             });
           }
-        } else {
-          throw Error(`no contraItems for ${id}`);
         }
       } else if (contraItemsRight.length > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -425,29 +612,55 @@ export class GridLayoutModel {
             row,
           });
         } else {
-          console.log(`${id} mismatched contras`);
           // TODO why do columns shift slightly when we do this ?
-          const fullSpan = this.findMatchingContras(gridItem, contraItemsRight);
+
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
+            gridItem,
+            contraItemsRight,
+            "horizontal"
+          );
           if (fullSpan) {
-            splitterPositions.push({
-              align: "end",
-              column,
-              controls: id,
-              id: `${id}-splitter-h`,
-              orientation: "horizontal",
-              row: { start: fullSpan[0], end: fullSpan[1] },
-            });
+            const existingFullSpan = splitterPositions.find(
+              (s) =>
+                s.align === "start" &&
+                s.row.start === fullSpan[0] &&
+                s.row.end === fullSpan[1]
+            );
+            if (!existingFullSpan) {
+              splitterPositions.push({
+                align: "end",
+                column,
+                controls: id,
+                id: `${id}-splitter-h`,
+                orientation: "horizontal",
+                row: { start: fullSpan[0], end: fullSpan[1] },
+              });
+            } else {
+              console.log(`got one already`);
+            }
           }
         }
       }
 
-      // ...then vertical resize
-      const [contraItemsAbove, contraItemsBelow] = this.getContraItems(
+      // 2) Vertical resizing - the horizontally aligned splitters
+
+      const [splitterId, orientation]: [string, GridLayoutResizeDirection] = [
+        `${id}-splitter-v`,
+        "vertical",
+      ];
+
+      const [topSiblings, bottomSiblings] = this.getSiblings(
         gridItem,
-        "vertical"
+        orientation
       );
 
-      console.log({ contraItemsAbove, contraItemsBelow });
+      const [contraItemsAbove, contraItemsBelow] = this.getContraItems(
+        gridItem,
+        orientation
+      );
+
+      const isResizeableV = resizeable.indexOf("v") !== -1;
+
       if (row.start > 1) {
         const contraFillSameTrack = fillSameTrack(
           gridItem,
@@ -455,36 +668,77 @@ export class GridLayoutModel {
           "column"
         );
 
-        if (contraFillSameTrack) {
+        if (contraItemsAbove.length === 0) {
           splitterPositions.push({
             align: "start",
             column,
             controls: id,
-            id: `${id}-splitter-v`,
-            orientation: "vertical",
+            id: splitterId,
+            orientation,
             row,
           });
+        } else if (contraFillSameTrack) {
+          // If we have only a single contra left and that contra is not resizeable, skip
+          const { length: resizeableItemsAbove } = topSiblings.filter(
+            ({ resizeable = "" }) => resizeable.indexOf("v") !== -1
+          );
+          const { length: resizeableItemsBelow } = bottomSiblings.filter((i) =>
+            i.resizeable?.match(/v/)
+          );
+          //TODO multipls contras need to be rolled into resizeableItemsLeft
+          if (contraItemsAbove.length > 1) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: splitterId,
+              orientation,
+              row,
+            });
+          } else if (
+            resizeableItemsAbove >= 1 &&
+            (isResizeableV || resizeableItemsBelow >= 1)
+          ) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: splitterId,
+              orientation,
+              row,
+            });
+          }
         } else if (contraItemsAbove.length === 1) {
           console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsAbove.length > 1) {
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsAbove,
-            "vertical"
+            orientation
           );
           if (fullSpan) {
-            console.log(`fullSPabe above ${id}`);
+            const doomedIndex = splitterPositions.findIndex(
+              (s) =>
+                s.align === "end" &&
+                s.column.start === fullSpan[0] &&
+                s.column.end === fullSpan[1]
+            );
+            if (doomedIndex !== -1) {
+              splitterPositions.splice(doomedIndex, 1);
+            }
+
             splitterPositions.push({
               align: "start",
               column: { start: fullSpan[0], end: fullSpan[1] },
               controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
+              id: splitterId,
+              orientation,
               row,
             });
           }
         } else {
-          throw Error(`no contraItems for ${id}`);
+          console.log(`no contraItems for ${id}`);
+          // throw Error(`no contraItems for ${id}`);
         }
       } else if (contraItemsBelow.length > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -497,27 +751,42 @@ export class GridLayoutModel {
             align: "end",
             column,
             controls: id,
-            id: `${id}-splitter-v`,
-            orientation: "vertical",
+            id: splitterId,
+            orientation,
             row,
           });
         } else {
-          console.log(`${id} mismatched contras`);
           // TODO why do columns shift slightly when we do this ?
-          const fullSpan = this.findMatchingContras(gridItem, contraItemsBelow);
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
+            gridItem,
+            contraItemsBelow,
+            orientation
+          );
           if (fullSpan) {
-            splitterPositions.push({
-              align: "end",
-              column: { start: fullSpan[0], end: fullSpan[1] },
-              controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
-              row,
-            });
+            const existingFullSpan = splitterPositions.find(
+              (s) =>
+                s.align === "start" &&
+                s.column.start === fullSpan[0] &&
+                s.column.end === fullSpan[1]
+            );
+            if (!existingFullSpan) {
+              splitterPositions.push({
+                align: "end",
+                column: { start: fullSpan[0], end: fullSpan[1] },
+                controls: id,
+                id: splitterId,
+                orientation,
+                row,
+              });
+            }
           }
         }
       }
     }
+    const end = performance.now();
+    console.log(`getSplitterPositions took ${end - start}ms`, {
+      splitterPositions,
+    });
 
     return splitterPositions;
   }
@@ -527,7 +796,7 @@ export class GridLayoutModel {
     resizeOrientation: GridLayoutResizeDirection,
     splitterAlign: SplitterAlign
   ): AdjacentItems {
-    const items: AdjacentItems = {
+    const items: AdjacentItems & { contraMaybe: IGridLayoutModelItem[] } = {
       contra: [],
       contraMaybe: [],
       contraOtherTrack: [],
@@ -553,15 +822,12 @@ export class GridLayoutModel {
       }
     }
 
-    if (items.contraMaybe.length === 1) {
+    const { contraMaybe, ...adjacentItems } = items;
+    if (contraMaybe.length === 1) {
       console.log(`where do we put a single maybe contra ?`);
-    } else if (items.contraMaybe.length > 1) {
-      if (
-        occupySameTrack(resizeGridItem, items.contraMaybe, resizeOrientation)
-      ) {
-        items.contra.push(
-          ...items.contraMaybe.splice(0, items.contraMaybe.length)
-        );
+    } else if (contraMaybe.length > 1) {
+      if (occupySameTrack(resizeGridItem, contraMaybe, resizeOrientation)) {
+        items.contra.push(...contraMaybe.splice(0, contraMaybe.length));
       }
     }
 
@@ -570,35 +836,43 @@ export class GridLayoutModel {
     //   contraItemsOtherTrack?.push(...contraItemsMaybe);
     // }
 
-    return items;
+    return adjacentItems;
   }
 
-  repositionComponentsforResize(
+  repositionGridItemsforResize(
     // TODO we only need one
     resizeItem: IGridLayoutModelItem,
     adjacentItems: AdjacentItems,
     resizeDirection: GridLayoutResizeDirection,
-    resizeType: GridLayoutResizeType
+    resizeOperation: GridLayoutResizeOperation,
+    operationFlipped = false
   ): [string, GridLayoutModelPosition][] {
-    console.log(`repositionComponentsforResize (${resizeType})`, {
-      resizeItem,
-      adjacentItems,
-    });
-
     // TODO is thgis dependent in splitterAlign ?
     const indexOfResizedItem =
       resizeDirection === "vertical"
         ? resizeItem.row.start - 1
         : resizeItem.column.start - 1;
 
+    let restorativeUpdates: [string, GridLayoutModelPosition][] = [];
     const updates: [string, GridLayoutModelPosition][] = [];
+
+    if (operationFlipped) {
+      // If we're flipping directly from contract to expand
+      // or vice versa, we first revert the previous operation.
+      restorativeUpdates = this.restoreGridItemPositions(
+        resizeItem,
+        adjacentItems,
+        resizeDirection,
+        resizeOperation === "expand" ? "contract" : "expand"
+      );
+    }
 
     const [setExpanded, setShiftForward, setTrack]: any =
       resizeDirection === "vertical"
         ? [this.setRowExpanded, this.setShiftRowForward, this.setGridRow]
         : [this.setColExpanded, this.setShiftColForward, this.setGridColumn];
 
-    if (resizeType === "expand") {
+    if (resizeOperation === "expand") {
       if (adjacentItems.nonAdjacent.length > 0) {
         const targetEdge = indexOfResizedItem + 1;
         for (const item of adjacentItems.nonAdjacent) {
@@ -642,6 +916,246 @@ export class GridLayoutModel {
       });
     }
 
+    if (restorativeUpdates.length > 0) {
+      updates.splice(
+        updates.length,
+        0,
+        ...restorativeUpdates.filter(
+          ([id]) => updates.findIndex(([updateId]) => updateId === id) === -1
+        )
+      );
+    }
     return updates;
+  }
+
+  restoreGridItemPositions(
+    resizeItem: IGridLayoutModelItem,
+    adjacentItems: AdjacentItems,
+    resizeDirection: GridLayoutResizeDirection,
+    anulledResizeOperation: GridLayoutResizeOperation
+  ) {
+    const [setContracted, setShiftBackward, setTrack]: any =
+      resizeDirection === "vertical"
+        ? [this.setRowContracted, this.setShiftRowBackward, this.setGridRow]
+        : [this.setColContracted, this.setShiftColBackward, this.setGridColumn];
+
+    const updates: [string, GridLayoutModelPosition][] = [];
+
+    if (anulledResizeOperation === "contract") {
+      updates.push(setShiftBackward(resizeItem));
+      adjacentItems.contra.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+    } else {
+      updates.push(setContracted(resizeItem));
+      adjacentItems.contraOtherTrack.forEach((item) => {
+        updates.push(setContracted(item));
+      });
+      adjacentItems.siblingsOtherTrack.forEach((item) => {
+        updates.push(setShiftBackward(item));
+      });
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
+  /*
+ When we remove a track edge, all following track edges will be reduced by 1.
+ Any gridItem bound to an edge greater than the one being removed must be
+ adjusted.
+ */
+  removeTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
+    const gridPosition = trackIndex + 1;
+    const updates: GridItemUpdate[] = [];
+
+    const [
+      { end: endMap, start: startMap },
+      setContracted,
+      setShiftStartBackward,
+      setTrack,
+    ] =
+      resizeDirection === "vertical"
+        ? [
+            this.rowMaps,
+            this.setRowContracted,
+            this.setShiftRowStartBackward,
+            this.setGridRow,
+          ]
+        : [
+            this.columnMaps,
+            this.setColContracted,
+            this.setShiftColStartBackward,
+            this.setGridColumn,
+          ];
+
+    for (const [position, gridItems] of startMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (existingUpdate) {
+            existingUpdate[1].start -= 1;
+          } else {
+            updates.push(setShiftStartBackward(item));
+          }
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (existingUpdate) {
+            existingUpdate[1].end -= 1;
+          } else {
+            updates.push(setContracted(item));
+          }
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
+  flipResizeTracks(
+    trackIndex: number,
+    resizeDirection: GridLayoutResizeDirection
+  ) {
+    const trackStart = trackIndex + 1;
+    const trackEnd = trackIndex + 2;
+    const updates: GridItemUpdate[] = [];
+
+    const track: GridLayoutTrack =
+      resizeDirection === "vertical" ? "row" : "column";
+
+    const [{ end: endMap, start: startMap }, setTrack] =
+      resizeDirection === "vertical"
+        ? [this.rowMaps, this.setGridRow]
+        : [this.columnMaps, this.setGridColumn];
+
+    for (const [position, gridItems] of startMap) {
+      if (position === trackStart) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: trackEnd, end: item[track].end }]);
+        });
+      } else if (position === trackEnd) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: trackStart, end: item[track].end }]);
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position === trackEnd) {
+        gridItems.forEach((item) => {
+          updates.push([
+            item.id,
+            { start: item[track].start, end: trackStart },
+          ]);
+        });
+      } else if (position === trackStart) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: item[track].start, end: trackEnd }]);
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
+  measureGridItemDetails({
+    grid,
+    cols = getColumns(grid),
+    rows = getRows(grid),
+    resizeElement,
+    resizeDirection,
+    resizeItem,
+    splitterAlign = "start",
+    ...rest
+  }: Omit<
+    ResizeState,
+    | "adjacentItems"
+    | "cols"
+    | "indexOfPrimaryResizeTrack"
+    | "indexOfSecondaryResizeTrack"
+    | "resizeOperation"
+    | "rows"
+    | "simpleResize"
+  > & {
+    cols?: number[];
+    rows?: number[];
+  }): ResizeState {
+    const adjacentItems = this.getGridItemsAdjoiningTrack(
+      resizeElement.id,
+      resizeDirection,
+      splitterAlign
+    );
+
+    const track: GridLayoutTrack =
+      resizeDirection === "horizontal" ? "column" : "row";
+
+    const [indexOfPrimaryResizeTrack, indexOfSecondaryResizeTrack] =
+      splitterAlign === "start"
+        ? [resizeItem[track].start - 1, resizeItem[track].start - 2]
+        : [resizeItem[track].end - 2, resizeItem[track].end - 1];
+
+    console.log(
+      `
+    indexOfPrimaryResizeTrack = ${indexOfPrimaryResizeTrack}
+    indexOfSecondaryResizeTrack = ${indexOfSecondaryResizeTrack},
+    `,
+      {
+        contraItems: adjacentItems.contra,
+      }
+    );
+
+    const simpleResize =
+      adjacentItems.contraOtherTrack.length === 0 ||
+      (adjacentItems.contra.length === 0 &&
+        adjacentItems.contraOtherTrack.length > 0);
+
+    return {
+      ...rest,
+      adjacentItems,
+      cols,
+      grid,
+      indexOfPrimaryResizeTrack,
+      indexOfSecondaryResizeTrack,
+      resizeElement,
+      resizeItem,
+      resizeDirection,
+      resizeOperation: null,
+      rows,
+      simpleResize,
+      splitterAlign,
+    };
+
+    console.log({ adjacentItems, simpleResize });
+  }
+
+  toDebugString() {
+    return `
+      ${this.gridItems
+        .map(
+          ({ id, column, resizeable = "", row }) =>
+            `\n${id}\t\tcol ${column.start}/${column.end}\t row ${row.start}/${row.end}\t${resizeable}`
+        )
+        .join("")}
+    `;
   }
 }

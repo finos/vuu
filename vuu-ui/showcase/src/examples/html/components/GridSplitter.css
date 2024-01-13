@@ -16,3 +16,16 @@
     justify-self: end;
     transform: translate(2px, 0px);
 }
+
+.vuuGridSplitter[aria-controls="blue"]{
+    background-color: blue;
+}
+.vuuGridSplitter[aria-controls="red"]{
+    background-color: red;
+}
+.vuuGridSplitter[aria-controls="black"]{
+    background-color: black;
+}
+.vuuGridSplitter[aria-controls="green"]{
+    background-color: green;
+}

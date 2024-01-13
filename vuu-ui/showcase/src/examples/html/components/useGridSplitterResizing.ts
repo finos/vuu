@@ -1,12 +1,15 @@
 import {
-  AdjacentItems,
   GridLayoutModel,
-  GridLayoutModelItem,
-  IGridLayoutModelItem,
   ISplitter,
-  NO_ADJACENT_ITEMS,
+  GridLayoutResizeOperation,
   SplitterAlign,
+  GridLayoutModelPosition,
+  GridLayoutResizeDirection,
+  GridLayoutProviderDispatch,
+  GridLayoutTrack,
+  ResizeState,
 } from "@finos/vuu-layout";
+import { queryClosest } from "@finos/vuu-utils";
 import {
   MouseEventHandler,
   useCallback,
@@ -20,182 +23,121 @@ import {
   getColumn,
   getColumns,
   getGridLayoutItem,
+  getGridItemProps,
   getRow,
   getRows,
   isHorizontalSplitter,
   isSplitter,
-  ResizeDirection,
-  ResizeOrientation,
   setGridColumn,
   setGridRow,
   spansMultipleTracks,
   splitGridTracks,
-  trackRemoved,
-} from "./grid-dom-utils";
+  setGridTrackTemplate,
+} from "@finos/vuu-layout";
 import { GridLayoutProps } from "./GridLayout";
+
+const ERROR_NO_RESIZE = "Resize operationn invoked, no resize in operation";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
-  "id" | "rowCount" | "rows"
+  "children" | "id" | "rowCount" | "rows"
 >;
 
-type ResizeState = {
-  adjacentItems: AdjacentItems;
-  cols: number[];
-  simpleResize: boolean;
-  grid?: HTMLElement;
-  indexOfResizedItem: number;
-  mousePos: number;
-  resizeDirection: ResizeDirection | null;
-  resizeElement?: HTMLElement;
-  resizeOrientation: ResizeOrientation | null;
-  resizeItem?: IGridLayoutModelItem;
-  rows: number[];
-  splitterAlign: SplitterAlign;
-  splitterElement?: HTMLElement;
-};
+/**
+ * Get the current mouse position, either x or y depending on direction
+ * of resize.
+ */
+const getCurrentMousePos = (state: ResizeState, evt: MouseEvent) =>
+  state.resizeDirection === "vertical" ? evt.clientY : evt.clientX;
 
-const initialState: ResizeState = {
-  adjacentItems: NO_ADJACENT_ITEMS,
-  cols: [],
-  grid: undefined,
-  indexOfResizedItem: -1,
-  mousePos: -1,
-  resizeDirection: null,
-  resizeElement: undefined,
-  resizeOrientation: null,
-  resizeItem: undefined,
-  rows: [],
-  simpleResize: false,
-  splitterAlign: "start",
-};
+/**
+ * Distance between mouse starting position and current position, sign
+ * taking into account relative position of splitter;
+ */
+const getMoveDistance = (state: ResizeState, currentMousePos: number) =>
+  state.splitterAlign === "start"
+    ? state.mousePos - currentMousePos
+    : currentMousePos - state.mousePos;
 
-const getDirection = (
-  moveBy: number,
-  splitterAlign: SplitterAlign = "start"
-): ResizeDirection | null => {
-  if (moveBy > 0 && splitterAlign === "start") {
+const getResizeOperation = (
+  moveBy: number
+): GridLayoutResizeOperation | null => {
+  if (moveBy > 0) {
     return "expand";
-  } else if (moveBy < 0 && splitterAlign === "start") {
-    return "shrink";
-  } else if (moveBy > 0 && splitterAlign === "end") {
-    return "shrink";
-  } else if (moveBy < 0 && splitterAlign === "end") {
-    return "expand";
+  } else if (moveBy < 0) {
+    return "contract";
   } else {
     return null;
   }
 };
+/**
+ * return either cols or rows dependning on resze direction
+ */
+const getTracks = (state: ResizeState, clone = false) => {
+  const tracks = state[state.resizeDirection === "vertical" ? "rows" : "cols"];
+  return clone ? tracks.slice() : tracks;
+};
 
 export const useGridSplitterResizing = ({
-  id,
+  children: childrenProp,
   rowCount,
   rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
+  const [children, setChildren] = useState(childrenProp);
   const [splitters, setSplitters] = useState<ISplitter[]>([]);
-  const layoutModel = useMemo(() => new GridLayoutModel(id, 2, 2), [id]);
+  const layoutModel = useMemo(() => new GridLayoutModel(), []);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const resizingState = useRef<ResizeState>(initialState);
-
-  const resizingRef = useRef(true);
-
-  const measureAndStoreGridItemDetails = useCallback(
-    (
-      grid: HTMLElement | undefined,
-      resizeElement: HTMLElement | undefined,
-      resizeOrientation: ResizeOrientation,
-      splitterAlign: SplitterAlign = "start"
-    ) => {
-      if (grid === undefined || resizeElement === undefined) {
-        throw Error(`measureAndStoreGridItemDetails missing required param`);
-      }
-      const { current: state } = resizingState;
-
-      const items = layoutModel.getGridItemsAdjoiningTrack(
-        resizeElement.id,
-        resizeOrientation,
-        splitterAlign
-      );
-
-      console.log({ items });
-
-      // Simple resize is one where we do not need to dynamically add/remove tracks
-      const simpleResize =
-        items.contraOtherTrack.length === 0 ||
-        (items.contra.length === 0 && items.contraOtherTrack.length > 0);
-      state.adjacentItems = items;
-      state.grid = grid;
-      state.resizeElement = resizeElement;
-      state.resizeOrientation = resizeOrientation;
-      state.simpleResize = simpleResize;
-    },
-    [layoutModel]
-  );
+  const resizingState = useRef<ResizeState | undefined>();
 
   // reset the anchored track for resize item(s) and contra item(s)
-  const flipResizeTracks = useCallback(() => {
-    console.log("flip resize tracks");
+  const flipResizeTracks = useCallback((currentMousePos: number) => {
+    if (!resizingState.current) {
+      throw Error(ERROR_NO_RESIZE);
+    }
     const {
-      cols,
-      grid,
-      indexOfResizedItem,
-      resizeDirection,
-      resizeOrientation,
-      rows,
+      indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+      indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
+      mousePos,
+      resizeOperation,
     } = resizingState.current;
 
-    const [tracks, getTrack, setTrack] =
-      resizeOrientation === "vertical"
-        ? [rows, getRow, setGridRow]
-        : [cols, getColumn, setGridColumn];
-    const newTracks = tracks.slice();
+    const moveBy = currentMousePos - mousePos;
+    const newTracks = getTracks(resizingState.current, true);
 
-    if (resizeDirection === "shrink") {
-      const targetTrackSize = tracks[indexOfResizedItem];
-      newTracks[indexOfResizedItem - 1] += targetTrackSize;
+    console.log(
+      `%cflip resize tracks original mousePos ${mousePos}, newPos ${currentMousePos}
+        tracks ${newTracks.join(",")}
+      `,
+      "color:blue;font-weight: bold;"
+    );
+
+    if (resizeOperation === "contract") {
+      const targetTrackSize = newTracks[indexOfPrimaryResizedItem];
+      newTracks[indexOfSecondaryResizedItem] += targetTrackSize;
       // Note, should be moveBy
-      newTracks[indexOfResizedItem] = 0;
+      newTracks[indexOfPrimaryResizedItem] = 0;
     } else {
-      const targetTrackSize = tracks[indexOfResizedItem - 1];
-      newTracks[indexOfResizedItem] += targetTrackSize;
+      const targetTrackSize = newTracks[indexOfPrimaryResizedItem - 1];
+      const resizeAmount = targetTrackSize - Math.abs(moveBy);
+      newTracks[indexOfPrimaryResizedItem] += targetTrackSize;
+
       // Note, should be moveBy
-      newTracks[indexOfResizedItem - 1] = 0;
-    }
-
-    if (grid) {
-      const [targetEdge1, targetEdge2] =
-        resizeDirection === "shrink"
-          ? [indexOfResizedItem + 1, indexOfResizedItem + 2]
-          : [indexOfResizedItem, indexOfResizedItem + 1];
-
-      for (const node of grid.childNodes) {
-        const el = node as HTMLElement;
-        const [from, to] = getTrack(el);
-
-        if (to === targetEdge2) {
-          setTrack(el, [from, to - 1]);
-        }
-        if (to === targetEdge1) {
-          setTrack(el, [from, to + 1]);
-        }
-        if (from === targetEdge1) {
-          setTrack(el, [from + 1, to]);
-        }
-        if (from === targetEdge2) {
-          setTrack(el, [from - 1, to]);
-        }
-      }
+      newTracks[indexOfSecondaryResizedItem] = Math.abs(resizeAmount);
+      newTracks[indexOfSecondaryResizedItem - 1] -= Math.abs(resizeAmount);
     }
 
     return newTracks;
   }, []);
 
   const removeTrack = useCallback((indexOfTrack: number) => {
-    const { cols, grid, resizeDirection, resizeOrientation, rows } =
-      resizingState.current;
-    const tracks = resizeOrientation === "vertical" ? rows : cols;
-    const isShrinking = resizeDirection === "shrink";
+    const { current: state } = resizingState;
+    if (!state) {
+      throw Error(ERROR_NO_RESIZE);
+    }
+
+    const tracks = getTracks(state);
+    const isShrinking = state.resizeOperation === "contract";
     const trackToBeRemoved = tracks[indexOfTrack];
 
     tracks.splice(indexOfTrack, 1);
@@ -205,443 +147,485 @@ export const useGridSplitterResizing = ({
       tracks[indexOfTrack] += trackToBeRemoved;
     }
 
-    if (grid) {
-      const targetTrack = indexOfTrack + 1;
-      for (const node of grid.childNodes) {
-        trackRemoved(node as HTMLElement, targetTrack, resizeOrientation);
-      }
-    }
     return tracks;
   }, []);
 
-  const restoreComponentPositions = useCallback(() => {
-    const { adjacentItems, resizeItem, resizeOrientation } =
-      resizingState.current;
-
-    const setValue: any =
-      resizeOrientation === "vertical" ? setRowValue : setColValue;
-
-    adjacentItems.contra.forEach(setValue);
-    setValue(resizeItem);
-    adjacentItems.contraOtherTrack.forEach(setValue);
-    adjacentItems.siblingsOtherTrack.forEach(setValue);
-  }, []);
-
-  const repositionComponentsForExpand = useCallback(() => {
-    const { adjacentItems, resizeOrientation, resizeItem } =
-      resizingState.current;
-
-    if (resizeOrientation && resizeItem) {
-      const updates = layoutModel.repositionComponentsforResize(
-        resizeItem,
-        adjacentItems,
-        resizeOrientation,
-        "expand"
-      );
+  const applyUpdates = useCallback(
+    (
+      resizeOrientation: GridLayoutResizeDirection,
+      updates: [string, GridLayoutModelPosition][]
+    ) => {
       const setTrack =
         resizeOrientation === "vertical" ? setGridRow : setGridColumn;
 
       updates.forEach(([id, position]) => {
-        setTrack(id, position);
+        if (id !== "placeholder") {
+          setTrack(id, position);
+        }
       });
+    },
+    []
+  );
 
-      const splitters = layoutModel.getSplitterPositions();
-      console.log({ splitters });
-      setSplitters(splitters);
-    }
-  }, [layoutModel]);
+  const restoreComponentPositions = useCallback(
+    (anulledResizeOperation: GridLayoutResizeOperation) => {
+      if (resizingState.current) {
+        const {
+          adjacentItems,
+          resizeItem,
+          resizeDirection: resizeOrientation,
+        } = resizingState.current;
 
-  const repositionComponentsForShrink = useCallback(() => {
-    const { adjacentItems, resizeOrientation, resizeItem } =
-      resizingState.current;
+        if (resizeItem && resizeOrientation) {
+          const updates = layoutModel.restoreGridItemPositions(
+            resizeItem,
+            adjacentItems,
+            resizeOrientation,
+            anulledResizeOperation
+          );
+          applyUpdates(resizeOrientation, updates);
+        }
 
-    if (resizeOrientation && resizeItem) {
-      const updates = layoutModel.repositionComponentsforResize(
-        resizeItem,
-        adjacentItems,
-        resizeOrientation,
-        "shrink"
-      );
-      const setTrack =
-        resizeOrientation === "vertical" ? setGridRow : setGridColumn;
+        const splitters = layoutModel.getSplitterPositions();
+        console.log({ splitters });
+        setSplitters(splitters);
+      }
+    },
+    [applyUpdates, layoutModel]
+  );
 
-      updates.forEach(([id, position]) => {
-        setTrack(id, position);
-      });
+  const repositionComponentsForExpand = useCallback(
+    (flippedFromContract: boolean) => {
+      if (resizingState.current) {
+        const {
+          adjacentItems,
+          resizeDirection: resizeOrientation,
+          resizeItem,
+        } = resizingState.current;
 
-      const splitters = layoutModel.getSplitterPositions();
-      console.log({ splitters });
-      setSplitters(splitters);
-    }
-  }, [layoutModel]);
+        if (resizeOrientation && resizeItem) {
+          const updates = layoutModel.repositionGridItemsforResize(
+            resizeItem,
+            adjacentItems,
+            resizeOrientation,
+            "expand",
+            flippedFromContract
+          );
 
-  const setGridTrackTemplate = (tracks: number[]) => {
-    const { grid, resizeOrientation } = resizingState.current;
-    const trackTemplate = tracks.map((r) => `${r}px`).join(" ");
-    if (grid && resizeOrientation === "vertical") {
-      grid.style.gridTemplateRows = trackTemplate;
-    } else if (grid && resizeOrientation === "horizontal") {
-      grid.style.gridTemplateColumns = trackTemplate;
-    }
-  };
+          applyUpdates(resizeOrientation, updates);
+
+          const splitters = layoutModel.getSplitterPositions();
+          setSplitters(splitters);
+        }
+      }
+    },
+    [applyUpdates, layoutModel]
+  );
+
+  const repositionComponentsForContract = useCallback(
+    (flippedFromExpand: boolean) => {
+      if (resizingState.current) {
+        const { adjacentItems, resizeDirection, resizeItem } =
+          resizingState.current;
+
+        if (resizeDirection && resizeItem) {
+          const updates = layoutModel.repositionGridItemsforResize(
+            resizeItem,
+            adjacentItems,
+            resizeDirection,
+            "contract",
+            flippedFromExpand
+          );
+          applyUpdates(resizeDirection, updates);
+
+          const splitters = layoutModel.getSplitterPositions();
+          setSplitters(splitters);
+        }
+      }
+    },
+    [applyUpdates, layoutModel]
+  );
 
   const flipToExpand = useCallback(
     (moveBy: number) => {
-      const {
-        cols,
-        contraItems,
-        indexOfResizedItem,
-        resizeOrientation,
-        rows,
-        simpleResize,
-      } = resizingState.current;
-      const tracks = resizeOrientation === "vertical" ? rows : cols;
-      const gridTracks = tracks.slice();
-      if (contraItems.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-      } else {
-        gridTracks[indexOfResizedItem] += moveBy;
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-      }
-      setGridTrackTemplate(gridTracks);
-      if (contraItems.length > 0 && !simpleResize) {
-        repositionComponentsForExpand();
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems: { contra: contraItems },
+          indexOfPrimaryResizeTrack,
+          indexOfSecondaryResizeTrack,
+          simpleResize,
+        } = state;
+        const gridTracks = getTracks(state, true);
+        if (contraItems.length > 0 && !simpleResize) {
+          gridTracks[indexOfPrimaryResizeTrack] = Math.abs(moveBy);
+          gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+        } else {
+          gridTracks[indexOfPrimaryResizeTrack] += moveBy;
+          gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+        }
+        setGridTrackTemplate(state, gridTracks);
+        if (contraItems.length > 0 && !simpleResize) {
+          // // We could avoid this call if we could handle a flip in the call below
+          // restoreComponentPositions("contract");
+          repositionComponentsForExpand(true);
+        }
       }
     },
     [repositionComponentsForExpand]
   );
 
-  const flipToShrink = useCallback(
+  const flipToContract = useCallback(
     (moveBy: number) => {
-      const {
-        cols,
-        contraItems,
-        indexOfResizedItem,
-        resizeOrientation,
-        rows,
-        simpleResize,
-      } = resizingState.current;
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems: { contra: contraItems },
+          indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+          indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
+          simpleResize,
+        } = state;
 
-      const tracks = resizeOrientation === "vertical" ? rows : cols;
-      const gridTracks = tracks.slice();
-      if (contraItems.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] += moveBy;
-      } else {
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-        gridTracks[indexOfResizedItem] += moveBy;
-      }
-      setGridTrackTemplate(gridTracks);
-      if (contraItems.length > 0 && !simpleResize) {
-        repositionComponentsForShrink();
+        const gridTracks = getTracks(state, true);
+        if (contraItems.length > 0 && !simpleResize) {
+          gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+          gridTracks[indexOfSecondaryResizedItem] += moveBy;
+        } else {
+          gridTracks[indexOfSecondaryResizedItem] -= moveBy;
+          gridTracks[indexOfPrimaryResizedItem] += moveBy;
+        }
+        setGridTrackTemplate(state, gridTracks);
+        if (contraItems.length > 0 && !simpleResize) {
+          // We could avoid this call if we could handle a flip in the call below
+          // restoreComponentPositions("expand");
+          repositionComponentsForContract(true);
+        }
       }
     },
-    [repositionComponentsForShrink]
+    [repositionComponentsForContract]
   );
 
-  const restoreOriginalLayout = useCallback(() => {
-    const { cols, contraItems, indexOfResizedItem, resizeOrientation, rows } =
-      resizingState.current;
+  const restoreOriginalLayout = useCallback(
+    (anulledResizeOperation: GridLayoutResizeOperation) => {
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems: { contra: contraItems },
+          indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        } = state;
 
-    const tracks = resizeOrientation === "vertical" ? rows : cols;
-    if (contraItems.length > 0) {
-      tracks.splice(indexOfResizedItem, 1);
-    }
-    setGridTrackTemplate(tracks);
-    if (contraItems.length > 0) {
-      restoreComponentPositions();
-    }
-  }, [restoreComponentPositions]);
+        const tracks = getTracks(state);
+        if (contraItems.length > 0) {
+          tracks.splice(indexOfPrimaryResizedItem, 1);
+        }
+        setGridTrackTemplate(state, tracks);
+        if (contraItems.length > 0) {
+          restoreComponentPositions(anulledResizeOperation);
+        }
+      }
+    },
+    [restoreComponentPositions]
+  );
 
   const handleTrackSizedToZero = useCallback(
-    (gridTracks: number[], currentMousePos: number) => {
-      const {
-        contraItems,
-        grid,
-        indexOfResizedItem,
-        resizeDirection,
-        resizeElement,
-        resizeItem,
-        resizeOrientation,
-        simpleResize,
-      } = resizingState.current;
-      const trackProperty = resizeOrientation === "vertical" ? "rows" : "cols";
-      const tracks = resizingState.current[trackProperty];
-      const isShrinking = resizeDirection === "shrink";
-      const index = isShrinking ? indexOfResizedItem : indexOfResizedItem - 1;
+    (gridTracks: number[], mousePos: number) => {
+      console.log(
+        `handleTrackResizedToZero currentMousePos ${mousePos}
+        gridTracks [${gridTracks.join(",")}]`
+      );
 
+      const { current: state } = resizingState;
+      if (!state) {
+        throw Error(ERROR_NO_RESIZE);
+      }
+
+      const {
+        adjacentItems: { contra: contraItems },
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
+        resizeOperation,
+        resizeItem,
+        resizeDirection,
+        simpleResize,
+      } = state;
+      const tracks = getTracks(state);
+      const isContracting = resizeOperation === "contract";
+      const trackIndex = isContracting
+        ? indexOfPrimaryResizedItem
+        : indexOfSecondaryResizedItem;
       let returnTracks: number[] = gridTracks;
 
-      if (gridTracks[index] === 0) {
-        console.log(`handleTrackSizedToZero (reset) ${resizeDirection}`);
-
-        if (simpleResize && resizeOrientation) {
+      if (simpleResize) {
+        if (gridTracks[trackIndex] === 0) {
+          console.log(
+            `handleTrackSizedToZero (exactly zero) ${resizeOperation} remove track`
+          );
           // we know no other elements adjoin this track except for the resized and contra elements.
           // if the contra elements span at least 2 tracks, we can remove it.
           if (
-            (isShrinking && spansMultipleTracks(resizeItem)) ||
-            (!isShrinking && contraItems.every(spansMultipleTracks))
+            (isContracting &&
+              spansMultipleTracks(resizeItem, resizeDirection)) ||
+            (!isContracting &&
+              contraItems.every((item) =>
+                spansMultipleTracks(item, resizeDirection)
+              ))
           ) {
-            returnTracks = removeTrack(index);
-            measureAndStoreGridItemDetails(
-              grid,
-              resizeElement,
-              resizeOrientation
+            const updates = layoutModel.removeTrack(
+              trackIndex,
+              resizeDirection
             );
-            if (!isShrinking) {
-              resizingState.current.indexOfResizedItem -= 1;
-            }
-            resizingState.current.mousePos = currentMousePos;
-            resizingState.current.resizeDirection = null;
+            applyUpdates(resizeDirection, updates);
 
-            const resizeItem = layoutModel.gridItems.find(
-              (item) => item.id === resizeElement?.id
+            returnTracks = removeTrack(trackIndex);
+
+            const splitters = layoutModel.getSplitterPositions();
+            setSplitters(splitters);
+
+            resizingState.current = layoutModel.measureGridItemDetails({
+              ...state,
+              mousePos,
+            });
+          } else {
+            console.log("we've gone too far, veto further shrinkage");
+          }
+        } else if (gridTracks[trackIndex] < 0) {
+          console.log(`handleTrackSizedToZero (flip) ${resizeOperation} `);
+
+          if (
+            spansMultipleTracks(resizeItem, resizeDirection) ||
+            contraItems.every((item) =>
+              spansMultipleTracks(item, resizeDirection)
+            )
+          ) {
+            const updates = layoutModel.flipResizeTracks(
+              trackIndex,
+              resizeDirection
             );
-            if (resizeItem) {
-              resizingState.current.resizeItem = resizeItem;
+
+            applyUpdates(resizeDirection, updates);
+            returnTracks = flipResizeTracks(mousePos);
+
+            const splitters = layoutModel.getSplitterPositions();
+            setSplitters(splitters);
+
+            if (isContracting) {
+              state.indexOfPrimaryResizeTrack += 1;
+              state.indexOfSecondaryResizeTrack += 1;
+              state.mousePos += tracks[indexOfPrimaryResizedItem];
+            } else {
+              state.indexOfPrimaryResizeTrack -= 1;
+              state.indexOfSecondaryResizeTrack -= 1;
+              state.mousePos -= tracks[indexOfPrimaryResizedItem - 1];
+            }
+
+            if (resizeDirection === "vertical") {
+              state.rows = returnTracks;
+            } else {
+              state.cols = returnTracks;
             }
           } else {
             console.log("we've gone too far, veto further shrinkage");
           }
         }
-      } else if (gridTracks[index] < 0) {
-        console.log(`handleTrackSizedToZero (flip) ${resizeDirection} `);
-
-        if (
-          spansMultipleTracks(resizeItem) ||
-          contraItems.every(spansMultipleTracks)
-        ) {
-          returnTracks = flipResizeTracks();
-          if (resizeDirection === "shrink") {
-            resizingState.current.indexOfResizedItem += 1;
-            resizingState.current.mousePos += tracks[indexOfResizedItem];
-          } else {
-            resizingState.current.indexOfResizedItem -= 1;
-            resizingState.current.mousePos -= tracks[indexOfResizedItem - 1];
-          }
-
-          if (resizeOrientation === "vertical") {
-            resizingState.current.rows = returnTracks;
-          } else {
-            resizingState.current.cols = returnTracks;
-          }
-        } else {
-          console.log("we've gone too far, veto further shrinkage");
-        }
       }
 
       return returnTracks;
     },
-    [
-      flipResizeTracks,
-      layoutModel.gridItems,
-      measureAndStoreGridItemDetails,
-      removeTrack,
-    ]
+    [applyUpdates, flipResizeTracks, layoutModel, removeTrack]
   );
 
   const continueExpand = useCallback(
     (moveBy: number, currentMousePos: number) => {
-      const {
-        adjacentItems,
-        cols,
-        indexOfResizedItem,
-        resizeOrientation,
-        rows,
-        simpleResize,
-        splitterAlign,
-      } = resizingState.current;
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems,
+          indexOfPrimaryResizeTrack,
+          indexOfSecondaryResizeTrack,
+          simpleResize,
+        } = state;
 
-      const tracks = resizeOrientation === "vertical" ? rows : cols;
-      let gridTracks = tracks.slice();
-      if (adjacentItems.contra.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-      } else {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
+        let gridTracks = getTracks(state, true);
+
+        if (adjacentItems.contra.length > 0 && !simpleResize) {
+          gridTracks[indexOfPrimaryResizeTrack] = Math.abs(moveBy);
+          gridTracks[indexOfPrimaryResizeTrack - 1] -= moveBy;
         } else {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem + 1] += moveBy;
+          gridTracks[indexOfPrimaryResizeTrack] += moveBy;
+          gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+          if (gridTracks[indexOfSecondaryResizeTrack] <= 0) {
+            gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
+          }
         }
-        if (gridTracks[indexOfResizedItem - 1] <= 0) {
-          gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
-        }
-      }
 
-      setGridTrackTemplate(gridTracks);
+        setGridTrackTemplate(state, gridTracks);
+      }
     },
     [handleTrackSizedToZero]
   );
 
   const initiateExpand = useCallback(
     (moveBy: number) => {
-      const {
-        adjacentItems,
-        cols,
-        indexOfResizedItem,
-        resizeOrientation,
-        rows,
-        simpleResize,
-        splitterAlign,
-      } = resizingState.current;
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems,
+          indexOfPrimaryResizeTrack,
+          indexOfSecondaryResizeTrack,
+          simpleResize,
+        } = state;
 
-      const tracks = resizeOrientation === "vertical" ? rows : cols;
-      const gridTracks = tracks.slice();
+        const tracks = getTracks(state);
+        const gridTracks = getTracks(state, true);
 
-      if (simpleResize) {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
+        if (simpleResize) {
+          gridTracks[indexOfPrimaryResizeTrack] += moveBy;
+          gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+          setGridTrackTemplate(state, gridTracks);
         } else {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem + 1] += moveBy;
+          tracks.splice(indexOfPrimaryResizeTrack, 0, 0);
+          gridTracks.splice(indexOfPrimaryResizeTrack, 0, 0);
+          gridTracks[indexOfPrimaryResizeTrack] = Math.abs(moveBy);
+          gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+          setGridTrackTemplate(state, gridTracks);
         }
-        setGridTrackTemplate(gridTracks);
-      } else {
-        tracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-        setGridTrackTemplate(gridTracks);
-      }
 
-      if (
-        adjacentItems.contra.length > 0 &&
-        !simpleResize &&
-        resizeOrientation
-      ) {
-        repositionComponentsForExpand();
+        if (adjacentItems.contra.length > 0 && !simpleResize) {
+          repositionComponentsForExpand(false);
+        }
       }
     },
     [repositionComponentsForExpand]
   );
 
-  const continueShrink = useCallback(
+  const continueContract = useCallback(
     (moveBy: number, currentMousePos: number) => {
-      const {
-        adjacentItems,
-        indexOfResizedItem,
-        resizeOrientation,
-        simpleResize,
-        splitterAlign,
-      } = resizingState.current;
-      const trackProperty = resizeOrientation === "vertical" ? "rows" : "cols";
-      const tracks = resizingState.current[trackProperty];
-      let gridTracks = tracks.slice();
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems,
+          indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+          indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
+          simpleResize,
+        } = state;
 
-      if (adjacentItems.contra.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem + 1] += moveBy;
-      } else {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
-          gridTracks[indexOfResizedItem] += moveBy;
+        let gridTracks = getTracks(state, true);
+
+        if (adjacentItems.contra.length > 0 && !simpleResize) {
+          gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+          gridTracks[indexOfPrimaryResizedItem + 1] += moveBy;
         } else {
-          gridTracks[indexOfResizedItem + 1] += moveBy;
-          gridTracks[indexOfResizedItem] -= moveBy;
+          gridTracks[indexOfPrimaryResizedItem] += moveBy;
+          gridTracks[indexOfSecondaryResizedItem] -= moveBy;
+          if (gridTracks[indexOfPrimaryResizedItem] <= 0) {
+            gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
+          }
         }
 
-        if (gridTracks[indexOfResizedItem] <= 0) {
-          gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
-        }
+        setGridTrackTemplate(state, gridTracks);
       }
-
-      setGridTrackTemplate(gridTracks);
     },
     [handleTrackSizedToZero]
   );
 
-  const initiateShrink = useCallback(
+  const initiateContract = useCallback(
     (moveBy: number) => {
-      const {
-        adjacentItems,
-        cols,
-        indexOfResizedItem,
-        resizeOrientation,
-        rows,
-        simpleResize,
-        splitterAlign,
-      } = resizingState.current;
+      const { current: state } = resizingState;
+      if (state) {
+        const {
+          adjacentItems,
+          indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+          indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
+          simpleResize,
+        } = state;
 
-      const tracks = resizeOrientation === "vertical" ? rows : cols;
-      const gridTracks = tracks.slice();
+        const tracks = getTracks(state);
+        const gridTracks = getTracks(state, true);
 
-      if (simpleResize) {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem - 1] += moveBy;
+        if (simpleResize) {
+          gridTracks[indexOfPrimaryResizedItem] += moveBy;
+          gridTracks[indexOfSecondaryResizedItem] -= moveBy;
+          setGridTrackTemplate(state, gridTracks);
         } else {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem + 1] -= moveBy;
+          // TODO aren't we going to end up here with different
+          // gridTrack values in DOM and state ?
+          tracks.splice(indexOfPrimaryResizedItem, 0, 0);
+          gridTracks.splice(indexOfPrimaryResizedItem, 0, 0);
+          gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+          gridTracks[indexOfPrimaryResizedItem + 1] += moveBy;
+          setGridTrackTemplate(state, gridTracks);
         }
-        setGridTrackTemplate(gridTracks);
-      } else {
-        tracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem + 1] += moveBy;
-        setGridTrackTemplate(gridTracks);
-      }
 
-      if (adjacentItems.contra.length > 0 && !simpleResize) {
-        repositionComponentsForShrink();
+        if (adjacentItems.contra.length > 0 && !simpleResize) {
+          repositionComponentsForContract(false);
+        }
       }
     },
-    [repositionComponentsForShrink]
+    [repositionComponentsForContract]
   );
 
   const mouseMove = useCallback(
     (e: MouseEvent) => {
-      if (resizingRef.current === false) {
-        return;
-      }
-      const { mousePos, resizeDirection, resizeOrientation, splitterAlign } =
-        resizingState.current;
+      const { current: state } = resizingState;
+      if (state) {
+        const { resizeOperation } = state;
 
-      const pos = resizeOrientation === "vertical" ? e.clientY : e.clientX;
-      const moveBy = mousePos - pos;
-      const newDirection = getDirection(moveBy, splitterAlign);
-      resizingState.current.resizeDirection = newDirection;
+        const currentMousePos = getCurrentMousePos(state, e);
+        const moveBy = getMoveDistance(state, currentMousePos);
+        const newOperation = getResizeOperation(moveBy);
+        state.resizeOperation = newOperation;
 
-      if (resizeDirection === null && newDirection === null) {
-        return;
-      } else if (resizeDirection === null && newDirection === "expand") {
-        console.log(`initiateExpand ${resizeOrientation}`);
-        return initiateExpand(moveBy);
-      } else if (resizeDirection === null && newDirection === "shrink") {
-        console.log(`initiateShrink ${resizeOrientation}`);
-        return initiateShrink(moveBy);
-      } else if (resizeDirection === "expand" && newDirection === "expand") {
-        console.log(`continueExpand ${resizeOrientation}`);
-        return continueExpand(moveBy, pos);
-      } else if (resizeDirection === "shrink" && newDirection === "shrink") {
-        console.log(`continueShrink ${resizeOrientation}`);
-        return continueShrink(moveBy, pos);
-      } else if (newDirection === null) {
-        console.log("restore original layout");
-        restoreOriginalLayout();
-      } else if (resizeDirection === "expand" && newDirection === "shrink") {
-        console.log("reverse direction flip To Shrink");
-        return flipToShrink(moveBy);
-      } else if (resizeDirection === "shrink" && newDirection === "expand") {
-        console.log("referse direction flip To Expand");
-        return flipToExpand(moveBy);
+        //TODO ignore if same as previous moveBy
+
+        if (resizeOperation === null && newOperation === null) {
+          return;
+        } else if (resizeOperation === null && newOperation === "expand") {
+          console.log(`initiateExpand `);
+          return initiateExpand(moveBy);
+        } else if (resizeOperation === null && newOperation === "contract") {
+          console.log(`initiateContract ${state.resizeDirection}`);
+          return initiateContract(moveBy);
+        } else if (resizeOperation === "expand" && newOperation === "expand") {
+          console.log(`continueExpand `);
+          return continueExpand(moveBy, currentMousePos);
+        } else if (
+          resizeOperation === "contract" &&
+          newOperation === "contract"
+        ) {
+          console.log(`continueToContract`);
+          return continueContract(moveBy, currentMousePos);
+        } else if (newOperation === null) {
+          console.log("restore original layout");
+          restoreOriginalLayout(resizeOperation as GridLayoutResizeOperation);
+        } else if (
+          resizeOperation === "expand" &&
+          newOperation === "contract"
+        ) {
+          console.log("reverse direction flip To Contract");
+          return flipToContract(moveBy);
+        } else if (
+          resizeOperation === "contract" &&
+          newOperation === "expand"
+        ) {
+          console.log("referse direction flip To Expand");
+          return flipToExpand(moveBy);
+        }
       }
     },
     [
       continueExpand,
-      continueShrink,
+      continueContract,
       flipToExpand,
-      flipToShrink,
+      flipToContract,
       initiateExpand,
-      initiateShrink,
+      initiateContract,
       restoreOriginalLayout,
     ]
   );
 
+  // TODO need to identify the expanding track and the contracting track
+  // these may not necessarily be adjacent, when resizeable attribute of
+  // gridItems is taken into account
   const onMouseDown = useCallback<MouseEventHandler>(
     (e) => {
       const splitterElement = e.target as HTMLElement;
@@ -649,29 +633,25 @@ export const useGridSplitterResizing = ({
         return;
       }
 
-      const resizeOrientation: ResizeOrientation | undefined =
-        isHorizontalSplitter(splitterElement) ? "horizontal" : "vertical";
+      const resizeDirection: GridLayoutResizeDirection = isHorizontalSplitter(
+        splitterElement
+      )
+        ? "horizontal"
+        : "vertical";
+
       const splitterAlign = splitterElement.dataset.align as SplitterAlign;
 
       const resizeId = splitterElement.getAttribute("aria-controls");
       const resizeElement = resizeId ? document.getElementById(resizeId) : null;
-      if (!resizeElement) {
-        throw Error(`cannot find element associated with Splitter`);
+      const grid = queryClosest(resizeElement, ".vuuGridLayout");
+
+      if (!grid || !resizeElement) {
+        throw Error(
+          `cannot find either grid or element associated with Splitter`
+        );
       }
 
-      const grid = resizeElement.closest(".vuuGridLayout") as HTMLElement;
-
-      const mousePos = resizeOrientation === "vertical" ? e.clientY : e.clientX;
-
-      measureAndStoreGridItemDetails(
-        grid,
-        resizeElement,
-        resizeOrientation,
-        splitterAlign
-      );
-
-      const cols = getColumns(grid);
-      const rows = getRows(grid);
+      const mousePos = resizeDirection === "vertical" ? e.clientY : e.clientX;
 
       const resizeItem = layoutModel.gridItems.find(
         (item) => item.id === resizeElement.id
@@ -680,30 +660,27 @@ export const useGridSplitterResizing = ({
       if (!resizeItem) {
         throw Error("resize item not found");
       }
-      resizingState.current = {
-        ...resizingState.current,
-        cols,
-        indexOfResizedItem:
-          resizeOrientation === "vertical"
-            ? resizeItem.row.start - 1
-            : resizeItem.column.start - 1,
-        mousePos,
-        resizeDirection: null,
-        rows,
-        splitterAlign,
-      };
 
-      resizingState.current.resizeItem = resizeItem;
-      if (resizeOrientation === "vertical") {
+      resizingState.current = layoutModel.measureGridItemDetails({
+        grid,
+        resizeElement,
+        resizeDirection,
+        resizeItem,
+        splitterAlign,
+        splitterElement,
+        mousePos,
+      });
+
+      if (resizeDirection === "vertical") {
         resizeElement.classList.add("resizing-v");
-      } else if (resizeOrientation === "horizontal") {
+      } else if (resizeDirection === "horizontal") {
         resizeElement.classList.add("resizing-h");
       }
       if (grid) {
         document.addEventListener("mousemove", mouseMove);
       }
     },
-    [layoutModel.gridItems, measureAndStoreGridItemDetails, mouseMove]
+    [layoutModel, mouseMove]
   );
 
   const onMouseUp = useCallback<MouseEventHandler>(
@@ -711,8 +688,10 @@ export const useGridSplitterResizing = ({
       document.removeEventListener("mousemove", mouseMove);
       const target = e.target as HTMLElement;
       target.classList.remove("resizing-h", "resizing-v");
+
+      console.log(layoutModel.toDebugString());
     },
-    [mouseMove]
+    [layoutModel, mouseMove]
   );
 
   const selectedRef = useRef<string>();
@@ -764,26 +743,46 @@ export const useGridSplitterResizing = ({
   }, []);
 
   useLayoutEffect(() => {
+    /*
+     * Initialise the GridModel content
+     */
     if (containerRef.current) {
       containerRef.current.childNodes.forEach((node) => {
         const gridLayoutItem = node as HTMLElement;
         if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
-          const { id } = gridLayoutItem;
-          const col = getColumn(gridLayoutItem);
-          const row = getRow(gridLayoutItem);
-          layoutModel.addGridItem(
-            new GridLayoutModelItem(id, col[0], col[1], row[0], row[1])
-          );
+          const { column, id, resizeable, row } =
+            getGridItemProps(gridLayoutItem);
+          layoutModel.addGridItem({ id, column, resizeable, row });
         }
       });
+      layoutModel.fillEmptyAreas();
       const splitters = layoutModel.getSplitterPositions();
-      console.log({ splitters });
       setSplitters(splitters);
     }
   }, [layoutModel]);
 
+  const dispatchGridLayoutAction = useCallback<GridLayoutProviderDispatch>(
+    (action) => {
+      if (action.type === "close") {
+        setChildren((c) => c.filter((c) => c.props.id !== action.id));
+        const [horizontalUpdates, verticalUpdates] = layoutModel.removeGridItem(
+          action.id
+        );
+
+        applyUpdates("horizontal", horizontalUpdates);
+        applyUpdates("vertical", verticalUpdates);
+
+        const splitters = layoutModel.getSplitterPositions();
+        setSplitters(splitters);
+      }
+    },
+    [applyUpdates, layoutModel]
+  );
+
   return {
+    children,
     containerRef,
+    dispatchGridLayoutAction,
     gridTemplateRows: rows.join(" "),
     onClick: clickHandler,
     onMouseDown,
