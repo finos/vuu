@@ -55,7 +55,7 @@ export const App = ({ stories }: AppProps) => {
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
-  const [theme] = useState<ThemeDescriptor>(availableThemes[0]);
+  const [themeIndex, setThemeIndex] = useState(2);
   const [themeMode] = useState<ThemeMode>("light");
   const [density] = useState<Density>("high");
 
