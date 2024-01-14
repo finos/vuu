@@ -9,6 +9,7 @@ import {
   SplitterAlign,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
+  GridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import {
   MouseEventHandler,
@@ -23,6 +24,7 @@ import {
   getColumn,
   getColumns,
   getGridLayoutItem,
+  getGridItemProps,
   getRow,
   getRows,
   isHorizontalSplitter,
@@ -828,12 +830,8 @@ export const useGridSplitterResizing = ({
       containerRef.current.childNodes.forEach((node) => {
         const gridLayoutItem = node as HTMLElement;
         if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
-          const { id } = gridLayoutItem;
-          const col = getColumn(gridLayoutItem);
-          const row = getRow(gridLayoutItem);
-          layoutModel.addGridItem(
-            new GridLayoutModelItem(id, col[0], col[1], row[0], row[1])
-          );
+          const { column, id, row } = getGridItemProps(gridLayoutItem);
+          layoutModel.addGridItem(new GridLayoutModelItem(id, column, row));
         }
       });
       const splitters = layoutModel.getSplitterPositions();
@@ -842,8 +840,18 @@ export const useGridSplitterResizing = ({
     }
   }, [layoutModel]);
 
+  const dispatchGridLayoutAction = useCallback<GridLayoutProviderDispatch>(
+    (action) => {
+      if (action.type === "close") {
+        console.log(`dispatchGridLayoutAction close ${action.id}`);
+      }
+    },
+    []
+  );
+
   return {
     containerRef,
+    dispatchGridLayoutAction,
     gridTemplateRows: rows.join(" "),
     onClick: clickHandler,
     onMouseDown,

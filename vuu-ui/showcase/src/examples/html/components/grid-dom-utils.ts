@@ -75,6 +75,16 @@ export const getRow = (el: HTMLElement | undefined): GridPos => {
   }
 };
 
+export const getGridItemProps = (el: HTMLElement) => {
+  const col = getColumn(el);
+  const row = getRow(el);
+  return {
+    column: { start: col[0], end: col[1] },
+    id: el.id,
+    row: { start: row[0], end: row[1] },
+  };
+};
+
 export const getRowIndex = (el: HTMLElement) => {
   const [from] = getRow(el);
   return from - 1;

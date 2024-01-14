@@ -38,14 +38,12 @@ export class GridLayoutModelItem implements IGridLayoutModelItem {
   row: GridLayoutModelPosition;
   constructor(
     id: string,
-    colFrom: number,
-    colTo: number,
-    rowFrom: number,
-    rowTo: number
+    column: GridLayoutModelPosition,
+    row: GridLayoutModelPosition
   ) {
     this.id = id;
-    this.column = { start: colFrom, end: colTo };
-    this.row = { start: rowFrom, end: rowTo };
+    this.column = column;
+    this.row = row;
   }
 }
 
