@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { LayoutModel, WithType } from '../layout-reducer';
+import { LayoutJSON, LayoutModel, WithType } from '../layout-reducer';
 
 export function typeOf(element?: LayoutModel | WithType): string | undefined {
   if (element) {
@@ -23,3 +23,6 @@ export function typeOf(element?: LayoutModel | WithType): string | undefined {
 }
 
 export const isTypeOf = (element: ReactElement, type: string) => typeOf(element) === type;
+
+export const isLayoutJSON = (layout: LayoutJSON): layout is LayoutJSON =>
+  layout !== undefined && "type" in layout;

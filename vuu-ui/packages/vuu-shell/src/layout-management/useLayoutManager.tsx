@@ -11,6 +11,7 @@ import {
   LayoutJSON,
   resolveJSONPath,
   ApplicationSetting,
+  isLayoutJSON,
 } from "@finos/vuu-layout";
 import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
@@ -164,8 +165,12 @@ export const LayoutManagementProvider = (
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
-      setApplicationLayout(layout, false);
-      getPersistenceManager().saveApplicationJSON(applicationJSONRef.current);
+      if (isLayoutJSON(layout)) {
+        setApplicationLayout(layout, false);
+        getPersistenceManager().saveApplicationJSON(applicationJSONRef.current);
+      } else {
+        console.error("Tried to save invalid application layout", layout);
+      }
     },
     [setApplicationLayout]
   );
@@ -177,7 +182,7 @@ export const LayoutManagementProvider = (
         "#main-tabs.ACTIVE_CHILD"
       );
 
-      if (layoutToSave) {
+      if (layoutToSave && isLayoutJSON(layoutToSave)) {
         getPersistenceManager()
           .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
@@ -197,10 +202,11 @@ export const LayoutManagementProvider = (
             console.error("Error occurred while saving layout", error);
           });
       } else {
+        console.error("Tried to save invalid layout", layoutToSave);
         notify({
           type: NotificationLevel.Error,
           header: "Failed to Save Layout",
-          body: "Cannot save undefined layout",
+          body: "Cannot save invalid layout",
         });
       }
     },
