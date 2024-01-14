@@ -15,7 +15,7 @@ import {
   useCollectionItems,
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
-import { List, ListProps } from "../list";
+import { List, ListControlProps, ListProps } from "../list";
 import { ChevronIcon } from "../list/ChevronIcon";
 import { useCombobox } from "./useCombobox";
 
@@ -31,7 +31,10 @@ export interface ComboBoxProps<
     Omit<ComponentSelectionProps<Item, S>, "onSelect">,
     Pick<ListProps<Item, S>, "ListItem" | "itemToString" | "source" | "width"> {
   InputProps?: InputProps;
-  ListProps?: Omit<ListProps<Item>, "ListItem" | "itemToString" | "source">;
+  ListProps?: Omit<
+    ListProps<Item>,
+    "ListItem" | "itemToString" | "source" | "onSelect" | "onSelectionChange"
+  >;
   allowBackspaceClearsSelection?: boolean;
   allowFreeText?: boolean;
   defaultValue?: string;
@@ -40,6 +43,7 @@ export interface ComboBoxProps<
   itemsToString?: (items: Item[]) => string;
   onDeselect?: () => void;
   onSetSelectedText?: (text: string) => void;
+  onListItemSelect?: ListProps<Item, S>["onSelect"];
   disableFilter?: boolean;
   value?: string;
 }
@@ -78,6 +82,7 @@ export const ComboBox = forwardRef(function Combobox<
     onDeselect,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
+    onListItemSelect,
     selected: selectedProp,
     selectionKeys,
     selectionStrategy,
@@ -154,6 +159,7 @@ export const ComboBox = forwardRef(function Combobox<
     isOpen: isOpenProp,
     itemToString,
     itemsToString,
+    onListItemSelect,
     onOpenChange: onOpenChangeProp,
     onSelectionChange,
     onSetSelectedText,
@@ -207,7 +213,7 @@ export const ComboBox = forwardRef(function Combobox<
           highlightedIndex={highlightedIndex}
           itemTextHighlightPattern={String(inputProps.value) || undefined}
           listHandlers={listHandlers}
-          onSelectionChange={onSelectionChange}
+          onSelectionChange={onSelectionChange} // not really needed, since onClick in listHandlers will be used instead.
           ref={listRef}
           selected={selected}
           selectionStrategy={selectionStrategy}
