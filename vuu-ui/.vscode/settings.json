@@ -1,25 +1,6 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.activeBackground": "#a2b875",
-        "activityBar.activeBorder": "#4c7c93",
-        "activityBar.background": "#a2b875",
-        "activityBar.foreground": "#15202b",
-        "activityBar.inactiveForeground": "#15202b99",
-        "activityBarBadge.background": "#4c7c93",
-        "activityBarBadge.foreground": "#e7e7e7",
-        "sash.hoverBorder": "#a2b875",
-        "statusBar.background": "#8ba555",
-        "statusBar.foreground": "#15202b",
-        "statusBarItem.hoverBackground": "#6f8344",
-        "statusBarItem.remoteBackground": "#8ba555",
-        "statusBarItem.remoteForeground": "#15202b",
-        "titleBar.activeBackground": "#8ba555",
-        "titleBar.activeForeground": "#15202b",
-        "titleBar.inactiveBackground": "#8ba55599",
-        "titleBar.inactiveForeground": "#15202b99",
-        "commandCenter.border": "#15202b99"
-    },
-    "peacock.color": "#8ba555",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
     "typescript.tsdk": "node_modules/typescript/lib",
     "css.customData": [
         "./.vscode/custom-css.json"
