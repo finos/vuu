@@ -126,6 +126,22 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [itemToString, onSelectionChange]
   );
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const getDefaultSelected = (): any => {
+    if (initialValue.current === undefined) {
+      return undefined;
+    } else if (Array.isArray(initialValue.current)) {
+      return props.source?.filter(
+        (item) => itemToString(item) === initialValue.current
+      );
+    } else {
+      return props.source?.find(
+        (item) => itemToString(item) === initialValue.current
+      );
+    }
+  };
+
   const popupProps = {
     minWidth: "fit-content",
   };
@@ -139,6 +155,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       <ComboBox<Item, S>
         {...props}
         PopupProps={popupProps}
+        defaultSelected={getDefaultSelected()}
         defaultValue={initialValue.current}
         fullWidth
         ListProps={ListProps}

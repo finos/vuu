@@ -15,7 +15,7 @@ import {
   useCollectionItems,
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
-import { List, ListControlProps, ListProps } from "../list";
+import { List, ListProps } from "../list";
 import { ChevronIcon } from "../list/ChevronIcon";
 import { useCombobox } from "./useCombobox";
 
@@ -97,7 +97,7 @@ export const ComboBox = forwardRef(function Combobox<
   const listRef = useRef<HTMLDivElement>(null);
 
   const valueFromSelected = (item: Item | null | Item[]) => {
-    return Array.isArray(item) && item.length > 0 ? item[0] : undefined;
+    return Array.isArray(item) ? item[0] : item ?? undefined;
   };
 
   const getInitialValue = (

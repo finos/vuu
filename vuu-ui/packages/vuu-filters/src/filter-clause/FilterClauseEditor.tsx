@@ -113,6 +113,7 @@ export const FilterClauseEditor = ({
     operator,
     InputProps,
     filterClause,
+    onDeselectValue,
     onChangeValue,
     valueRef,
     suggestionProvider,

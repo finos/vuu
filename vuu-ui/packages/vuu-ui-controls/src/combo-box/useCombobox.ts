@@ -111,8 +111,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
-  // used to track multi selection
-  const selectedRef = useRef<Item | null | Item[]>(isMultiSelect ? [] : null);
+  const selectedRef = useRef(selectedProp ?? defaultSelected);
   // Input select events are used to identify user navigation within the input text.
   // The initial select event fired on focus is an exception that we ignore.
   const ignoreSelectOnFocus = useRef(true);
@@ -216,13 +215,13 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
           } else {
             (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
           }
-          selectedRef.current = null;
+          selectedRef.current = undefined;
           return true;
         } else if (selected && !isMultiSelect) {
           if (
             selected &&
             !Array.isArray(selected) &&
-            itemToString(selected) === text
+            itemToString(selected as Item) === text
           ) {
             // it has already been selected, nothing to do
           }
@@ -333,7 +332,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   const handleInputKeyDown = useCallback<KeyboardEventHandler>(
     (e) => {
       if (e.key === "Backspace" && allowBackspaceClearsSelection) {
-        selectedRef.current = null;
+        selectedRef.current = undefined;
         onDeselect?.();
       }
     },
@@ -400,10 +399,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     } else {
       setHighlightedIndex(initialHighlightedIndex);
     }
-    // TODO may need to scrollIntoView
-    // if (itemCount === 0) {
-    //   setIsOpen(false);
-    // }
   }, [
     highlightSelectedItem,
     itemCount,
@@ -413,12 +408,8 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     setIsOpen,
   ]);
 
-  // const activeDescendant: string | undefined = selectionChanged
-  //   ? ""
-  //   : undefined;
   const mergedInputProps = {
     ...inputProps.inputProps,
-    // "aria-owns": listId,
     "aria-label": ariaLabel,
     autoComplete: "off",
     onKeyDown: handleInputKeyDown,

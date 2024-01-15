@@ -89,13 +89,28 @@ export const ComboboxDefaultSelection = () => {
     []
   );
   return (
-    <ComboBox
-      defaultSelected={"Texas"}
-      source={usa_states}
-      onSelectionChange={handleSelectionChange}
-      style={{ background: "yellow" }}
-      width={120}
-    />
+    <div data-showcase-center style={{ height: 40, display: "flex", gap: 12 }}>
+      <ComboBox
+        defaultSelected={"Alabama"}
+        defaultValue="Alabama"
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        width={120}
+      />
+      <ComboBox
+        defaultSelected={"Alabama"}
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        width={120}
+      />
+      <ComboBox
+        defaultSelected={"Texas"}
+        defaultValue="Texas"
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        width={120}
+      />
+    </div>
   );
 };
 

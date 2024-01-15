@@ -183,12 +183,6 @@ export const useFilterClauseEditor = ({
     filterClause.op
   );
 
-  const findColumn = useCallback(
-    (columnName: string) =>
-      tableSchema.columns.find((col) => col.name === columnName),
-    [tableSchema.columns]
-  );
-
   const setOperator = useCallback((op) => {
     _setOperator(op);
   }, []);
