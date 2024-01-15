@@ -296,7 +296,9 @@ export const useFilterBar = ({
         }
         case "or-clause":
           setEditFilter((filter) =>
-            addClause(filter as Filter, {}, { combineWith: "or" })
+            addClause(filter as Filter, EMPTY_FILTER_CLAUSE, {
+              combineWith: "or",
+            })
           );
           setShowMenu(false);
           return true;
@@ -349,15 +351,14 @@ export const useFilterBar = ({
   };
 
   const handleChangeFilterClause = useCallback(
-    (filterClause: Partial<FilterClause>) => {
+    (idx: number) => (filterClause: Partial<FilterClause>) => {
       console.log(`handleCHangeFilterClause ${JSON.stringify(filterClause)}`);
       if (filterClause !== undefined) {
-        const newFilter = replaceClause(editFilter, filterClause);
-        setEditFilter(newFilter);
+        setEditFilter((ef) => replaceClause(ef, filterClause, idx));
         setShowMenu(true);
       }
     },
-    [editFilter]
+    []
   );
 
   const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(

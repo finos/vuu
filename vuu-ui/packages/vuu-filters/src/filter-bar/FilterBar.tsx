@@ -2,7 +2,7 @@ import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { Prompt } from "@finos/vuu-popups";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
-import { TableConfig } from "packages/vuu-table-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -98,21 +98,23 @@ export const FilterBar = ({
       // TODO what about the relationship between these clauses,which will no longer be self-evident
       // in a flat list
       const filterClauses = getFilterClauses(editFilter);
-      filterClauses.forEach((f, i) => {
-        items.push(
-          <FilterClauseEditor
-            {...FilterClauseEditorProps}
-            columnDescriptors={columnDescriptors}
-            filterClause={f}
-            key={`editor-${i}`}
-            onCancel={onCancelFilterClause}
-            onChange={onChangeFilterClause}
-            onBlur={onBlurFilterClause}
-            onFocus={onFocusFilterClause}
-            tableSchema={tableSchema}
-          />
-        );
-      });
+      items.push(
+        <div className={`${classBase}-Editor`} key={`editor`}>
+          {filterClauses.map((f, i) => (
+            <FilterClauseEditor
+              {...FilterClauseEditorProps}
+              columnDescriptors={columnDescriptors}
+              filterClause={f}
+              key={`editor-${i}`}
+              onCancel={onCancelFilterClause}
+              onChange={onChangeFilterClause(i)}
+              onBlur={onBlurFilterClause}
+              onFocus={onFocusFilterClause}
+              tableSchema={tableSchema}
+            />
+          ))}
+        </div>
+      );
       if (showMenu) {
         items.push(
           <FilterBuilderMenu
@@ -145,7 +147,6 @@ export const FilterBar = ({
       ref={rootRef}
     >
       <FilterBarMenu />
-      {/* <span className={`${classBase}-icon`} data-icon="tune" /> */}
       <Toolbar
         activeItemIndex={activeFilterIndex}
         height={28}
