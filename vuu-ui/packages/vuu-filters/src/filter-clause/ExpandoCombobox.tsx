@@ -132,8 +132,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     if (initialValue.current === undefined) {
       return undefined;
     } else if (Array.isArray(initialValue.current)) {
-      return props.source?.filter(
-        (item) => itemToString(item) === initialValue.current
+      return props.source?.filter((item) =>
+        initialValue.current.includes(itemToString(item))
       );
     } else {
       return props.source?.find(

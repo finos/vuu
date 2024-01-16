@@ -1,8 +1,9 @@
-import { TableSchema } from "@finos/vuu-data-types";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import { FilterClause } from "@finos/vuu-filter-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
+import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
@@ -15,7 +16,6 @@ import {
 } from "./useFilterClauseEditor";
 
 import "./FilterClauseEditor.css";
-import { Button } from "@salt-ds/core";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {

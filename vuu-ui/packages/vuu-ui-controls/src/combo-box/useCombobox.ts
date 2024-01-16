@@ -109,14 +109,16 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 }: ComboboxHookProps<Item, S>): ComboboxHookResult<Item, S> => {
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
+  const noSelection = () => (isMultiSelect ? [] : null);
+
   const { setFilterPattern } = collectionHook;
   const setHighlightedIndexRef = useRef<null | ((i: number) => void)>(null);
-  const selectedRef = useRef(selectedProp ?? defaultSelected);
+  const selectedRef = useRef(selectedProp ?? defaultSelected ?? noSelection());
   // Input select events are used to identify user navigation within the input text.
   // The initial select event fired on focus is an exception that we ignore.
   const ignoreSelectOnFocus = useRef(true);
 
-  const [isOpen, setIsOpen] = useControlled<boolean>({
+  const [isOpen, _setIsOpen] = useControlled<boolean>({
     controlled: isOpenProp,
     default: defaultIsOpen ?? false,
     name: "useDropdownList",
@@ -131,6 +133,14 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const [disableAriaActiveDescendant, setDisableAriaActiveDescendant] =
     useState(true);
+
+  const setIsOpen = useCallback(
+    (isOpen: boolean) => {
+      _setIsOpen(isOpen);
+      setDisableAriaActiveDescendant(!isOpen);
+    },
+    [_setIsOpen]
+  );
 
   const highlightSelectedItem = useCallback((selected) => {
     if (Array.isArray(selected)) {
@@ -215,7 +225,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
           } else {
             (onSelectionChange as SingleSelectionHandler<string>)?.(null, text);
           }
-          selectedRef.current = undefined;
+          selectedRef.current = null;
           return true;
         } else if (selected && !isMultiSelect) {
           if (
@@ -273,7 +283,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   );
 
   const handleKeyboardNavigation = useCallback(() => {
-    setDisableAriaActiveDescendant(false);
+    // setDisableAriaActiveDescendant(false);
   }, []);
 
   const {
@@ -332,7 +342,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   const handleInputKeyDown = useCallback<KeyboardEventHandler>(
     (e) => {
       if (e.key === "Backspace" && allowBackspaceClearsSelection) {
-        selectedRef.current = undefined;
+        selectedRef.current = null;
         onDeselect?.();
       }
     },
@@ -368,7 +378,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       } else {
         listOnBlur?.(evt);
         inputOnBlur?.(evt);
-        setDisableAriaActiveDescendant(true);
+        // setDisableAriaActiveDescendant(true);
         ignoreSelectOnFocus.current = true;
       }
     },
@@ -381,7 +391,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       if (ignoreSelectOnFocus.current) {
         ignoreSelectOnFocus.current = false;
       } else {
-        setDisableAriaActiveDescendant(true);
+        // setDisableAriaActiveDescendant(true);
       }
       inputOnSelect?.(event);
     },

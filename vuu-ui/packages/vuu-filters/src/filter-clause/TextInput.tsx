@@ -52,6 +52,10 @@ export const TextInput = forwardRef(function TextInput(
   }: TextInputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  console.log(`TextInput ${value} operator = ${operator}`);
+
+  const isMultiValue = operator === "in";
+
   const [valueInputValue, setValueInputValue] = useState(value ?? "");
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
 
@@ -69,9 +73,10 @@ export const TextInput = forwardRef(function TextInput(
 
   useEffect(() => {
     if (table) {
-      const params: TypeaheadParams = valueInputValue
-        ? [table, column.name, valueInputValue]
-        : [table, column.name];
+      const params: TypeaheadParams =
+        valueInputValue && !isMultiValue
+          ? [table, column.name, valueInputValue]
+          : [table, column.name];
       getSuggestions(params)
         .then((suggestions) => {
           if (suggestions.length === 0 && valueInputValue) {
@@ -84,7 +89,7 @@ export const TextInput = forwardRef(function TextInput(
           console.error("Error getting suggestions", err);
         });
     }
-  }, [table, column, valueInputValue, getSuggestions]);
+  }, [table, column, valueInputValue, getSuggestions, isMultiValue]);
 
   const handleInputChange = useCallback((evt: FormEvent<HTMLInputElement>) => {
     const { value } = evt.target as HTMLInputElement;
