@@ -3,7 +3,7 @@ package org.finos.vuu.core.filter
 import com.typesafe.scalalogging.StrictLogging
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.antlr.v4.runtime.{BailErrorStrategy, BaseErrorListener, CharStreams, CommonTokenStream, RecognitionException, Recognizer}
-import org.finos.vuu.grammar.{FilterLexer, FilterParser}
+import org.finos.vuu.grammar.{FilterLexer, FilterParser, FilterVisitor}
 
 object FilterSpecParser extends StrictLogging {
 
@@ -13,7 +13,7 @@ object FilterSpecParser extends StrictLogging {
       throw new ParseCancellationException(e)
   }
 
-  def parse(s: String): FilterClause = {
+  def parse[T](s: String, eval: FilterVisitor[T]): T = {
     logger.debug(s"Parsing filterspec [$s]")
 
     val input = CharStreams.fromString(s)
@@ -27,10 +27,29 @@ object FilterSpecParser extends StrictLogging {
     parser.setErrorHandler(new BailErrorStrategy)
 
     val tree = parser.start()
-    val eval = new FilterTreeVisitor()
     val result = eval.visit(tree)
     logger.debug(s"Parsed $result")
     result
   }
 
+
+  def parse(s: String): FilterClause = {
+    logger.debug(s"Parsing filterspec [$s]")
+
+    val input = CharStreams.fromString(s)
+    val lexer = new FilterLexer(input)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new FilterParser(tokens)
+
+    // do not try to make sense of broken syntax
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(new BailOnErrorListener)
+    parser.setErrorHandler(new BailErrorStrategy)
+
+    val tree = parser.start()
+    val eval = new FilterTreeVisitor()
+    val result = eval.visit(tree)
+    logger.debug(s"Parsed $result")
+    result
+  }
 }

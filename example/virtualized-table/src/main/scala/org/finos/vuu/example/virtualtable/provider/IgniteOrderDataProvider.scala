@@ -1,5 +1,6 @@
 package org.finos.vuu.example.virtualtable.provider
 
+import org.apache.ignite.cache.query.IndexQueryCriterion
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.data.order.ignite.IgniteOrderStore
@@ -11,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit clock: Clock) extends VirtualizedProvider {
 
-
   override def runOnce(viewPort: ViewPort): Unit = {
 
     val internalTable = viewPort.table.asTable.asInstanceOf[VirtualizedSessionTable]
@@ -21,6 +21,11 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 
     internalTable.setSize(totalSize)
     internalTable.setRange(VirtualizedRange(range.from, range.to))
+
+    //todo get filters
+    //todo find child by range + sort criteria + filter criteria
+    //val iterator = igniteStore.findChildOrderFilteredBy(List[IndexQueryCriterion]())
+
     val iterator = igniteStore.findWindow(range.from, range.to)
     val index = new AtomicInteger(range.from) // todo: get rid of working assumption here that the dataset is fairly immutable.
     iterator.foreach(childOrder => {
