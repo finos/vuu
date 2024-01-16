@@ -112,8 +112,6 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (range: VuuRange) => {
-      // TODO can we directly call setData here when we do an
-      // in-situ row scroll ?
       const fullRange = getFullRange(range, renderBufferSize);
       dataWindow.setRange(fullRange);
       dataSource.range = rangeRef.current = fullRange;

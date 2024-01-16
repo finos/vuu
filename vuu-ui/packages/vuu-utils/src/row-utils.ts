@@ -38,9 +38,9 @@ export const virtualRowPositioning = (
   virtualisedExtent: number,
   pctScrollTop: MutableRefObject<number>
 ): RowPositioning => [
-  (row) => {
+  (row, offset = 0) => {
     const rowOffset = pctScrollTop.current * virtualisedExtent;
-    return row[IDX] * rowHeight - rowOffset;
+    return (row[IDX] - offset) * rowHeight - rowOffset;
   },
   /*
     Return index position of closest row 

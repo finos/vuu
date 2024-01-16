@@ -34,7 +34,8 @@ const columnGenerator: ColumnGenerator = (count) => {
 };
 
 const rowGenerator: RowGenerator<string> = (columns: string[]) => (index) => {
-  return [`row ${index + 1}`].concat(
+  const rowIndex = index + 1;
+  return [`row ${rowIndex.toLocaleString()}`].concat(
     Array(columns.length)
       .fill(true)
       .map((v, j) => `value ${j + 1} @ ${index + 1}`)
@@ -45,13 +46,15 @@ export const SimpleTable = () => {
   const config = useMemo<TableConfig>(
     () => ({
       columns: columnGenerator(5),
+      rowSeparators: true,
+      zebraStripes: true,
     }),
     []
   );
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
-      1_000_000_000,
+      10_000_000_000,
       rowGenerator(config.columns.map((col) => col.name))
     );
     return new ArrayDataSource({

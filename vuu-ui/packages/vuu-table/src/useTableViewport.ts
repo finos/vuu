@@ -7,6 +7,7 @@ import { RuntimeColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
 import { MeasuredSize } from "@finos/vuu-ui-controls";
 import {
   actualRowPositioning,
+  measurePinnedColumns,
   RowAtPositionFunc,
   RowOffsetFunc,
   RowPositioning,
@@ -42,7 +43,8 @@ export interface ViewportMeasurements {
 export interface TableViewportHookResult extends ViewportMeasurements {
   getRowAtPosition: RowAtPositionFunc;
   getRowOffset: RowOffsetFunc;
-  setPctScrollTop: (scrollPct: number) => void;
+  setInSituRowOffset: (rowIndexOffset: number) => void;
+  setScrollTop: (scrollTop: number, scrollPct: number) => void;
 }
 
 // Too simplistic, it depends on rowHeight
@@ -62,32 +64,11 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   pinnedWidthLeft: 0,
   pinnedWidthRight: 0,
   rowCount: 0,
-  setPctScrollTop: () => undefined,
+  setInSituRowOffset: () => undefined,
+  setScrollTop: () => undefined,
   totalHeaderHeight: 0,
   verticalScrollbarWidth: 0,
   viewportBodyHeight: 0,
-};
-
-const measurePinnedColumns = (columns: RuntimeColumnDescriptor[]) => {
-  let pinnedWidthLeft = 0;
-  let pinnedWidthRight = 0;
-  let unpinnedWidth = 0;
-  for (const column of columns) {
-    const { hidden, pin, width } = column;
-    const visibleWidth = hidden ? 0 : width;
-    if (pin === "left") {
-      pinnedWidthLeft += visibleWidth;
-    } else if (pin === "right") {
-      pinnedWidthRight += visibleWidth;
-    } else {
-      unpinnedWidth += visibleWidth;
-    }
-  }
-  return {
-    pinnedWidthLeft: pinnedWidthLeft + 4,
-    pinnedWidthRight: pinnedWidthRight + 4,
-    unpinnedWidth,
-  };
 };
 
 export const useTableViewport = ({
@@ -98,6 +79,7 @@ export const useTableViewport = ({
   rowHeight,
   size,
 }: TableViewportHookProps): TableViewportHookResult => {
+  const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
   // TODO we are limited by pixels not an arbitraty number of rows
   const pixelContentHeight = rowHeight * Math.min(rowCount, MAX_RAW_ROWS);
@@ -117,18 +99,26 @@ export const useTableViewport = ({
   const [getRowOffset, getRowAtPosition, isVirtualScroll] =
     useMemo<RowPositioning>(() => {
       if (virtualisedExtent) {
-        return virtualRowPositioning(
-          rowHeight,
-          virtualisedExtent,
-          pctScrollTopRef
-        );
+        const [_getRowOffset, getRowAtPosition, _isVirtual] =
+          virtualRowPositioning(rowHeight, virtualisedExtent, pctScrollTopRef);
+        const getOffset: RowOffsetFunc = (row) => {
+          return _getRowOffset(row, inSituRowOffsetRef.current);
+        };
+        return [getOffset, getRowAtPosition, _isVirtual];
       } else {
         return actualRowPositioning(rowHeight);
       }
     }, [virtualisedExtent, rowHeight]);
 
-  const setPctScrollTop = useCallback((scrollPct: number) => {
+  const setScrollTop = useCallback((_: number, scrollPct: number) => {
     pctScrollTopRef.current = scrollPct;
+  }, []);
+
+  const setInSituRowOffset = useCallback((rowIndexOffset: number) => {
+    inSituRowOffsetRef.current = Math.max(
+      0,
+      inSituRowOffsetRef.current + rowIndexOffset
+    );
   }, []);
 
   return useMemo(() => {
@@ -169,7 +159,8 @@ export const useTableViewport = ({
         pinnedWidthLeft,
         pinnedWidthRight,
         rowCount: count,
-        setPctScrollTop,
+        setInSituRowOffset,
+        setScrollTop,
         totalHeaderHeight,
         verticalScrollbarWidth,
         viewportBodyHeight,
@@ -187,7 +178,8 @@ export const useTableViewport = ({
     pinnedWidthRight,
     pixelContentHeight,
     rowHeight,
-    setPctScrollTop,
+    setInSituRowOffset,
+    setScrollTop,
     size,
     virtualContentHeight,
   ]);

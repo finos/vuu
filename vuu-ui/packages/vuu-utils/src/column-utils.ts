@@ -406,6 +406,28 @@ export const sortPinnedColumns = (
   }
 };
 
+export const measurePinnedColumns = (columns: RuntimeColumnDescriptor[]) => {
+  let pinnedWidthLeft = 0;
+  let pinnedWidthRight = 0;
+  let unpinnedWidth = 0;
+  for (const column of columns) {
+    const { hidden, pin, width } = column;
+    const visibleWidth = hidden ? 0 : width;
+    if (pin === "left") {
+      pinnedWidthLeft += visibleWidth;
+    } else if (pin === "right") {
+      pinnedWidthRight += visibleWidth;
+    } else {
+      unpinnedWidth += visibleWidth;
+    }
+  }
+  return {
+    pinnedWidthLeft: pinnedWidthLeft + 4,
+    pinnedWidthRight: pinnedWidthRight + 4,
+    unpinnedWidth,
+  };
+};
+
 export const getTableHeadings = (
   columns: RuntimeColumnDescriptor[]
 ): TableHeadings => {

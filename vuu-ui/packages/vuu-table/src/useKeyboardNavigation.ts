@@ -184,7 +184,6 @@ NavigationHookProps) => {
             activeCell.setAttribute("tabindex", "0");
           }
           // TODO needs to be scroll cell
-          console.log(`scroll row ${cellPos[0]}`);
           requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
           activeCell.focus({ preventScroll: true });
         }

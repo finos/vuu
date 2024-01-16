@@ -9,6 +9,7 @@ import {
   useRef,
 } from "react";
 import { ViewportMeasurements } from "./useTableViewport";
+import { howFarIsRowOutsideViewport } from "./table-dom-utils";
 
 export type ScrollDirectionVertical = "up" | "down";
 export type ScrollDirectionHorizontal = "left" | "right";
@@ -64,35 +65,6 @@ interface CallbackRefHookProps<T = HTMLElement> {
   label?: string;
 }
 
-const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
-
-export const howFarIsRowOutsideViewport = (
-  rowEl: HTMLElement,
-  totalHeaderHeight: number,
-  contentContainer = rowEl.closest(".vuuTable-contentContainer")
-): readonly [ScrollDirection | undefined, number | undefined] => {
-  //TODO lots of scope for optimisation here
-  if (contentContainer) {
-    // TODO take totalHeaderHeight into consideration
-    const viewport = contentContainer?.getBoundingClientRect();
-    const upperBoundary = viewport.top + totalHeaderHeight;
-    const row = rowEl.getBoundingClientRect();
-    if (row) {
-      if (row.bottom > viewport.bottom) {
-        return ["down", row.bottom - viewport.bottom];
-      } else if (row.top < upperBoundary) {
-        return ["up", row.top - upperBoundary];
-      } else {
-        return NO_SCROLL_NECESSARY;
-      }
-    } else {
-      throw Error("Whats going on, row not found");
-    }
-  } else {
-    throw Error("Whats going on, scrollbar container not found");
-  }
-};
-
 const useCallbackRef = <T = HTMLElement>({
   onAttach,
   onDetach,
@@ -118,6 +90,12 @@ export interface TableScrollHookProps {
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
+  /**
+   * When we have a virtualized scroll container, keyboard navigation is
+   * performed `in situ`. We shift the range of rows rendered within the
+   * viewport, whithout actually moving the scroll position
+   */
+  onVerticalScrollInSitu?: (rowIndexOffsetCount: number) => void;
   rowHeight: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
   setRange: (range: VuuRange) => void;
@@ -128,6 +106,7 @@ export const useTableScroll = ({
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
+  onVerticalScrollInSitu,
   scrollingApiRef,
   setRange,
   viewportMeasurements,
@@ -264,13 +243,14 @@ export const useTableScroll = ({
             );
             if (direction && distance) {
               if (isVirtualScroll) {
-                console.log(
-                  `virtual scroll row required ${direction} ${distance} 
-                  first Row ${firstRowRef.current}`
-                );
-                // const from = firstRowRef.current + 1;
-                // console.log(`setRange from ${from}`);
-                // setRange({ from, to: from + viewportRowCount + 1 });
+                const offset = direction === "down" ? 1 : -1;
+                onVerticalScrollInSitu?.(offset);
+                const firstRow = firstRowRef.current + offset;
+                firstRowRef.current = firstRow;
+                setRange({
+                  from: firstRow,
+                  to: firstRow + viewportRowCount + 1,
+                });
               } else {
                 let newScrollLeft = scrollLeft;
                 let newScrollTop = scrollTop;
@@ -296,7 +276,12 @@ export const useTableScroll = ({
         } else if (scrollRequest.type === "scroll-page") {
           const { direction } = scrollRequest;
           if (isVirtualScroll) {
-            console.log(`need a virtual page scroll`);
+            const offset =
+              direction === "down" ? viewportRowCount : -viewportRowCount;
+            onVerticalScrollInSitu?.(offset);
+            const firstRow = firstRowRef.current + offset;
+            firstRowRef.current = firstRow;
+            setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
           } else {
             const scrollBy =
               direction === "down" ? appliedPageSize : -appliedPageSize;
@@ -326,6 +311,7 @@ export const useTableScroll = ({
       isVirtualScroll,
       maxScrollLeft,
       maxScrollTop,
+      onVerticalScrollInSitu,
       setRange,
       totalHeaderHeight,
       viewportRowCount,
