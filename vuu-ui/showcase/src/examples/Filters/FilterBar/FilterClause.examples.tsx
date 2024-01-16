@@ -1,6 +1,7 @@
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { FilterClause } from "@finos/vuu-filter-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import {
   ExpandoCombobox,
   ExpandoComboboxProps,
@@ -91,11 +92,6 @@ export const DataBoundTextInputEmpty = () => {
 
   const [value, setValue] = useState("");
 
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-  });
-
   const handleInputComplete = useCallback((value: string | string[]) => {
     setValue(String(value));
   }, []);
@@ -103,7 +99,6 @@ export const DataBoundTextInputEmpty = () => {
   return (
     <TextInput
       column={column}
-      filterClause={filterClause}
       onInputComplete={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
@@ -125,12 +120,6 @@ export const DataBoundTextInputLoaded = () => {
 
   const [value, setValue] = useState("EUR");
 
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-    value: "EUR",
-  });
-
   const handleInputComplete = useCallback((value: string | string[]) => {
     setValue(String(value));
   }, []);
@@ -138,7 +127,6 @@ export const DataBoundTextInputLoaded = () => {
   return (
     <TextInput
       column={column}
-      filterClause={filterClause}
       onInputComplete={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
@@ -155,12 +143,9 @@ export const MultiSelectExpandoComboBox = () => {
     []
   );
 
-  const handleSelectionChange = useCallback<MultiSelectionHandler>(
-    (evt, ccy) => {
-      console.log(`select ccy ${ccy.join(",")}`);
-    },
-    []
-  );
+  const handleSelectionChange = useCallback<MultiSelectionHandler>((_, ccy) => {
+    console.log(`select ccy ${ccy.join(",")}`);
+  }, []);
 
   return (
     <ExpandoCombobox
@@ -184,6 +169,7 @@ export const NewFilterClause = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
+        columnDescriptors={columnDescriptors(tableSchema.columns)}
         filterClause={EMPTY_FILTER_CLAUSE}
         onChange={onChange}
         suggestionProvider={typeaheadHook}
@@ -206,6 +192,7 @@ export const PartialFilterClauseColumnOnly = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
+        columnDescriptors={columnDescriptors(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -229,6 +216,7 @@ export const PartialFilterClauseColumnAndOperator = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
+        columnDescriptors={columnDescriptors(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -254,6 +242,7 @@ export const CompleteFilterClauseTextEquals = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
+        columnDescriptors={columnDescriptors(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -262,3 +251,6 @@ export const CompleteFilterClauseTextEquals = () => {
   );
 };
 CompleteFilterClauseTextEquals.displaySequence = displaySequence++;
+
+const columnDescriptors = (columns: TableSchema["columns"]) =>
+  columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});

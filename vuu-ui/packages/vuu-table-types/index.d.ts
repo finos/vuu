@@ -246,7 +246,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   resizing?: boolean;
   sortable?: boolean;
   sorted?: ColumnSort;
-  type?: ColumnType;
   valueFormatter: ValueFormatter;
   width: number;
 }

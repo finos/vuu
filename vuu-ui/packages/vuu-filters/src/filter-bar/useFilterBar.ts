@@ -32,6 +32,7 @@ import { FilterMenuOptions } from "../filter-pill-menu";
 import { addClause, removeLastClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
 import { useFilters } from "./useFilters";
+import { ColumnDescriptor, TableConfig } from "packages/vuu-table-types";
 
 export interface FilterBarHookProps
   extends Pick<
@@ -43,6 +44,7 @@ export interface FilterBarHookProps
     | "onFiltersChanged"
     | "showMenu"
     | "tableSchema"
+    | "tableConfig"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -58,6 +60,7 @@ export const useFilterBar = ({
   onFiltersChanged,
   showMenu: showMenuProp,
   tableSchema,
+  tableConfig,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
@@ -68,6 +71,11 @@ export const useFilterBar = ({
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
+
+  const columnMap = useMemo(
+    () => columnDescriptorsByName(tableConfig.columns),
+    [tableConfig.columns]
+  );
 
   const {
     filters,
@@ -101,7 +109,7 @@ export const useFilterBar = ({
   );
 
   const focusFilterClause = useCallback(
-    (index = 0) => {
+    (_ = 0) => {
       requestAnimationFrame(() => {
         const input = containerRef.current?.querySelector(
           ".vuuFilterClause .saltInput-input"
@@ -135,13 +143,13 @@ export const useFilterBar = ({
 
   const applyFilter = useCallback(
     (filter?: Filter) => {
-      const filterQuery = filter ? filterAsQuery(filter) : "";
+      const filterQuery = filter ? filterAsQuery(filter, { columnMap }) : "";
       onApplyFilter({
         filter: filterQuery,
         filterStruct: filter,
       });
     },
-    [onApplyFilter]
+    [columnMap, onApplyFilter]
   );
 
   const deleteConfirmed = useCallback(
@@ -452,6 +460,7 @@ export const useFilterBar = ({
     addButtonProps,
     editFilter,
     filters,
+    columnDescriptors: columnMap,
     onBlurFilterClause: handleBlurFilterClause,
     onCancelFilterClause: handleCancelFilterClause,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
@@ -471,3 +480,9 @@ export const useFilterBar = ({
 
 const appendIfNotPresent = (n: number) => (ns: number[]) =>
   ns.includes(n) ? ns : ns.concat(n);
+
+function columnDescriptorsByName(
+  columns: TableConfig["columns"]
+): Record<string, ColumnDescriptor> {
+  return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
+}

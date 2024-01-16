@@ -12,6 +12,7 @@ import {
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
+import { filterAsQuery } from "./filterAsQuery";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -63,22 +64,6 @@ export function isMultiClauseFilter(
 ): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
-
-export const filterValue = (value: string | number | boolean) =>
-  typeof value === "string" ? `"${value}"` : value;
-
-export const quotedStrings = (value: string | number | boolean) =>
-  typeof value === "string" ? `"${value}"` : value;
-
-export const filterAsQuery = (f: Filter): string => {
-  if (isMultiClauseFilter(f)) {
-    return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
-  } else if (isMultiValueFilter(f)) {
-    return `${f.column} ${f.op} [${f.values.map(quotedStrings).join(",")}]`;
-  } else {
-    return `${f.column} ${f.op} ${filterValue(f.value)}`;
-  }
-};
 
 export const removeColumnFromFilter = (
   column: RuntimeColumnDescriptor,

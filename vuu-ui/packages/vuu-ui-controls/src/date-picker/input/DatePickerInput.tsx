@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
-import { DateValue, CalendarDate } from "@internationalized/date";
+import { DateValue } from "@internationalized/date";
+import { toCalendarDate } from "@finos/vuu-utils";
 import { clsx } from "clsx";
 import { BasePickerInputProps } from "./types";
 
@@ -32,7 +33,3 @@ export const DatePickerInput: React.FC<Props> = (props) => {
     />
   );
 };
-
-function toCalendarDate(d: Date): CalendarDate {
-  return new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate());
-}

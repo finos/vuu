@@ -36,7 +36,7 @@ import type {
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
-import { isFilterClause, isMultiClauseFilter } from "./filter-utils";
+import { isFilterClause, isMultiClauseFilter } from "./filters/utils";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row

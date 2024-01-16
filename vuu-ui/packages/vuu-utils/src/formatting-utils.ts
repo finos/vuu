@@ -10,8 +10,7 @@ import {
   isTypeDescriptor,
   isMappedValueTypeRenderer,
 } from "./column-utils";
-import { formatDate } from "./date";
-import { dateTimePattern } from "./date/helpers";
+import { dateTimePattern, formatDate } from "./date";
 
 export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {

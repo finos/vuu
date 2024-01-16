@@ -10,7 +10,7 @@ export * from "./datasource-action-utils";
 export * from "./datasource-utils";
 export * from "./date";
 export * from "./debug-utils";
-export * from "./filter-utils";
+export * from "./filters";
 export * from "./html-utils";
 export * from "./event-emitter";
 export * from "./formatting-utils";

@@ -8,6 +8,12 @@ import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 
+const lastUpdatedColumn = {
+  name: "lastUpdated",
+  serverDataType: "long",
+  type: "date/time",
+} as const;
+
 export const DefaultFilterBar = ({
   filters: filtersProp = [],
   onApplyFilter,
@@ -18,6 +24,7 @@ export const DefaultFilterBar = ({
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const tableSchema = getSchema("instruments");
+  const columns = [...tableSchema.columns, lastUpdatedColumn];
   const { typeaheadHook } = vuuModule("SIMUL");
 
   const handleApplyFilter = useCallback(
@@ -65,7 +72,8 @@ export const DefaultFilterBar = ({
         onApplyFilter={handleApplyFilter}
         onChangeActiveFilterIndex={handleChangeActiveFilterIndex}
         onFiltersChanged={handleFiltersChanged}
-        tableSchema={tableSchema}
+        tableSchema={{ ...tableSchema, columns }}
+        tableConfig={{ columns }}
       />
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
       <Input style={{ margin: 20, width: 100 }} />

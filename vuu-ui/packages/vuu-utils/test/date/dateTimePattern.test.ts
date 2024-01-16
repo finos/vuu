@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   dateTimePattern,
   fallbackDateTimePattern,
-} from "../../src/date/helpers";
+} from "../../src/date/dateTimePattern";
 import { DateTimePattern } from "../../src/date/types";
 
 const testPattern: DateTimePattern = { date: "mm/dd/yyyy" };

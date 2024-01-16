@@ -54,6 +54,7 @@ export const DefaultFilterTable = () => {
     onChangeFilter: handleChangeFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema,
+    tableConfig,
   };
 
   const tableProps = {
@@ -80,7 +81,7 @@ DefaultFilterTable.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstruments = () => {
   const schema = schemas.instruments;
-  const { dataSource, ...restTableProps } = useMemo<
+  const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">
   >(
     () => ({
@@ -117,10 +118,12 @@ export const FilterTableArrayDataInstruments = () => {
     onApplyFilter: handleApplyFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema: getSchema("instruments"),
+    tableConfig: config,
   };
 
   const tableProps = {
     ...restTableProps,
+    config,
     dataSource,
     height: 645,
     renderBufferSize: 20,

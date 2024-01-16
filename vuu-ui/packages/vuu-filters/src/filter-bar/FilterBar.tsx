@@ -2,6 +2,7 @@ import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { Prompt } from "@finos/vuu-popups";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
+import { TableConfig } from "packages/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -23,6 +24,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
+  tableConfig: TableConfig;
 }
 
 const classBase = "vuuFilterBar";
@@ -37,12 +39,14 @@ export const FilterBar = ({
   onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
+  tableConfig,
   ...htmlAttributes
 }: FilterBarProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeFilterIndex,
     addButtonProps,
+    columnDescriptors,
     editFilter,
     filters,
     onBlurFilterClause,
@@ -67,6 +71,7 @@ export const FilterBar = ({
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
+    tableConfig,
     tableSchema,
   });
 
@@ -80,7 +85,12 @@ export const FilterBar = ({
     if (editFilter === undefined) {
       filters.forEach((filter, i) => {
         items.push(
-          <FilterPill {...pillProps} filter={filter} key={`filter-${i}`} />
+          <FilterPill
+            {...pillProps}
+            columnDescriptors={columnDescriptors}
+            filter={filter}
+            key={`filter-${i}`}
+          />
         );
       });
       return items;
@@ -88,11 +98,12 @@ export const FilterBar = ({
       // TODO what about the relationship between these clauses,which will no longer be self-evident
       // in a flat list
       const filterClauses = getFilterClauses(editFilter);
-      filterClauses.forEach((filterClause, i) => {
+      filterClauses.forEach((f, i) => {
         items.push(
           <FilterClauseEditor
             {...FilterClauseEditorProps}
-            filterClause={filterClause}
+            columnDescriptors={columnDescriptors}
+            filterClause={f}
             key={`editor-${i}`}
             onCancel={onCancelFilterClause}
             onChange={onChangeFilterClause}

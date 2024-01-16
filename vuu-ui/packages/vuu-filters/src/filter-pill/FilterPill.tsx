@@ -2,31 +2,22 @@ import { MenuActionHandler } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
-import { filterAsQuery, isMultiClauseFilter, useId } from "@finos/vuu-utils";
+import { useId } from "@finos/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, useCallback, useRef } from "react";
+import { HTMLAttributes, useCallback, useMemo, useRef } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
-import { filterClauses } from "../filter-utils";
 import { filterAsReactNode } from "./filterAsReactNode";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import "./FilterPill.css";
+import { getFilterLabel } from "./getFilterLabel";
 
 const classBase = "vuuFilterPill";
-
-const getFilterLabel = (filter: Filter) => {
-  if (filter.name) {
-    return filter.name;
-  } else if (isMultiClauseFilter(filter)) {
-    const [firstClause] = filterClauses(filter);
-    return `${filterAsQuery(firstClause as Filter)} ${filter.op} ...`;
-  } else {
-    return filterAsQuery(filter);
-  }
-};
 
 export interface FilterPillProps
   extends Pick<Partial<EditableLabelProps>, "onExitEditMode">,
     HTMLAttributes<HTMLDivElement> {
+  columnDescriptors?: Record<string, ColumnDescriptor>;
   editable?: boolean;
   filter: Filter;
   index?: number;
@@ -37,6 +28,7 @@ export interface FilterPillProps
 
 export const FilterPill = ({
   className: classNameProp,
+  columnDescriptors,
   editable = true,
   filter,
   id: idProp,
@@ -52,7 +44,12 @@ export const FilterPill = ({
       onBeginEdit?.(filter);
     }, [filter, onBeginEdit]);
 
-  const label = getFilterLabel(filter);
+  const getLabel = getFilterLabel(columnDescriptors);
+  const label = useMemo(
+    () => filter.name ?? getLabel(filter),
+    [getLabel, filter]
+  );
+
   const id = useId(idProp);
 
   const handleMenuClose = useCallback<PopupCloseCallback>((reason) => {
@@ -78,7 +75,7 @@ export const FilterPill = ({
   const { anchorProps, tooltipProps } = useTooltip({
     id,
     placement: "below",
-    tooltipContent: filterAsReactNode(filter),
+    tooltipContent: filterAsReactNode(filter, getLabel),
   });
 
   return (
@@ -106,16 +103,7 @@ export const FilterPill = ({
           onMenuClose={handleMenuClose}
         />
       ) : null}
-      {tooltipProps ? (
-        <Tooltip
-          {...tooltipProps}
-          // style={
-          //   {
-          //     "--vuuTooltip-background": tooltipBackground.current,
-          //   } as CSSProperties
-          // }
-        />
-      ) : null}
+      {tooltipProps && <Tooltip {...tooltipProps} />}
     </div>
   );
 };

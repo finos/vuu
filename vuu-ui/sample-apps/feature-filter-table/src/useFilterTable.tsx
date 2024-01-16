@@ -160,6 +160,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         }
       : undefined,
     activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
+    tableConfig,
     filters,
     onApplyFilter: handleApplyFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
@@ -169,9 +170,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const tableProps = {
     availableColumns: availableColumnsFromState ?? tableSchema.columns,
-    config: {
-      ...tableConfig,
-    },
+    config: { ...tableConfig },
     dataSource,
     height: "auto",
     onAvailableColumnsChange: handleAvailableColumnsChange,
