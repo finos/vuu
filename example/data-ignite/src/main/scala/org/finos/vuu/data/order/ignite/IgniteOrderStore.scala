@@ -2,13 +2,13 @@ package org.finos.vuu.data.order.ignite
 
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.ignite.cache.CachePeekMode
-import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, SqlFieldsQuery}
+import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, IndexQueryCriterion, SqlFieldsQuery}
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.data.order.{ChildOrder, OrderStore, ParentOrder}
 
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.jdk.CollectionConverters._
 import scala.jdk.javaapi.CollectionConverters.asJava
 
 object IgniteOrderStore {
@@ -36,7 +36,6 @@ object IgniteOrderStore {
 class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrder],
                        private val childOrderCache: IgniteCache[Int, ChildOrder]) extends OrderStore with StrictLogging {
 
-
   def storeParentOrder(parentOrder: ParentOrder): Unit = {
     parentOrderCache.put(parentOrder.id, parentOrder)
   }
@@ -57,6 +56,20 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
   def findParentOrderById(id: Int): ParentOrder = {
     parentOrderCache.get(id)
+  }
+
+  def findChildOrderFilteredBy(filterQueryCriteria: List[IndexQueryCriterion]): Iterable[ChildOrder] = {
+  //  val filter: IgniteBiPredicate[Int, ChildOrder]  = (key, p) => p.openQty > 0
+
+    val query: IndexQuery[Int, ChildOrder] =
+      new IndexQuery[Int, ChildOrder](classOf[ChildOrder])
+        .setCriteria(filterQueryCriteria.asJava)
+       // .setFilter(filter)
+
+    childOrderCache
+      .query(query)
+      .getAll.asScala
+      .map(x => x.getValue)
   }
 
   def findChildOrderByParentId(parentId: Int): Iterable[ChildOrder] = {
