@@ -15,7 +15,6 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    // "noEmit": true,
     "jsx": "react-jsx",
     "sourceMap": true
   },
@@ -28,9 +27,10 @@
     "sample-apps/*/src",
     "global.d.ts",
     "packages/vuu-data-test/src/UpdateGenerator.ts",
-    "sample-apps/standalone-table/index.tsx"
-, "packages/vuu-icons/index.ts"  ],
-  "exclude": ["**/*.cy.*", "**/*.test.*"],
+    "sample-apps/standalone-table/index.tsx",
+    "packages/vuu-icons/index.ts"
+  ],
+  "exclude": ["**/*.test.*"],
   "references": [
     { "path": "packages/vuu-codemirror" },
     { "path": "packages/vuu-data-local" },

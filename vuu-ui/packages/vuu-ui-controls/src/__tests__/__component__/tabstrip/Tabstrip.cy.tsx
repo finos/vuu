@@ -1,8 +1,5 @@
-import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
 import { DefaultTabstripNext } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
-
-import { version } from "react";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
 const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";
@@ -36,11 +33,11 @@ describe("WHEN initial size is sufficient to display all contents", () => {
   describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
     it("THEN first 4 tabs will be displayed, with overflow indicator", () => {
       cy.mount(<DefaultTabstripNext width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "400px");
+      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
-        .should("have.length", 5);
+        .should("have.length", 4);
       cy.get(".vuuTabstrip").debug();
       cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
       cy.get(`.wrapped`).should("have.length", 1);
@@ -52,11 +49,11 @@ describe("WHEN initial size is sufficient to display all contents", () => {
   describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
     it("THEN  as last tab is selected, last but one will be overflowed", () => {
       cy.mount(<DefaultTabstripNext activeTabIndex={4} width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "400px");
+      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
-        .should("have.length", 5);
+        .should("have.length", 4);
       cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
       cy.get(`${OVERFLOW_ITEMS}:nth-child(4).wrapped`).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("have.length", 1);
