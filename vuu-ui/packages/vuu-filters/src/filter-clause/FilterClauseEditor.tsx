@@ -125,7 +125,7 @@ export const FilterClauseEditor = ({
         className={cx(`${classBase}Field`, `${classBase}Column`)}
         data-field="column"
         initialHighlightedIndex={0}
-        itemToString={(column) => column.name}
+        itemToString={(column) => (column as ColumnDescriptor).name}
         onListItemSelect={onColumnSelect}
         ref={columnRef}
         source={columns}

@@ -28,9 +28,9 @@ export interface ExpandoComboboxProps<
   Item = string,
   S extends SelectionStrategy = "default"
 > extends Omit<ComboBoxProps<Item, S>, "itemToString" | "value"> {
-  itemToString: <I = Item>(item: I) => string;
+  itemToString?: (item: unknown) => string;
   onInputChange?: (evt: FormEvent<HTMLInputElement>) => void;
-  value: string | string[];
+  value?: string | string[];
 }
 
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
