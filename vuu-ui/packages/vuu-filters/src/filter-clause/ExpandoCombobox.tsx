@@ -27,8 +27,10 @@ const NO_INPUT_PROPS = {};
 export interface ExpandoComboboxProps<
   Item = string,
   S extends SelectionStrategy = "default"
-> extends ComboBoxProps<Item, S> {
+> extends Omit<ComboBoxProps<Item, S>, "itemToString" | "value"> {
+  itemToString: <I = Item>(item: I) => string;
   onInputChange?: (evt: FormEvent<HTMLInputElement>) => void;
+  value: string | string[];
 }
 
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
@@ -52,8 +54,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   const { itemToString = defaultToString } = props;
   const initialValue = useRef(value);
 
-  const itemsToString = useCallback(
-    (items: Item[]) => {
+  const itemsToString = useCallback<<I = Item>(items: I[]) => string>(
+    (items) => {
       const [first, ...rest] = items;
       if (rest.length) {
         return `${itemToString(first)} + ${rest.length}`;
@@ -78,7 +80,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   }, []);
 
   const [InputProps, ListProps] = useMemo<
-    // [ComboBoxProps["InputProps"], ComboBoxProps["ListProps"]]
     [ComboBoxProps["InputProps"], any]
   >(() => {
     const { inputProps, ...restInputProps } = InputPropsProp;
@@ -156,7 +157,11 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         {...props}
         PopupProps={popupProps}
         defaultSelected={getDefaultSelected()}
-        defaultValue={initialValue.current}
+        defaultValue={
+          Array.isArray(initialValue.current)
+            ? itemsToString<string>(initialValue.current)
+            : initialValue.current
+        }
         fullWidth
         ListProps={ListProps}
         InputProps={InputProps}

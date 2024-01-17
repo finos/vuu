@@ -99,6 +99,11 @@ export const ComboBox = forwardRef(function Combobox<
   const listRef = useRef<HTMLDivElement>(null);
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
+  console.log({
+    where: "ComboBox",
+    defaultSelected,
+  });
+
   const valueFromSelected = (item: Item | null | Item[]) => {
     return Array.isArray(item)
       ? itemsToString?.(item) ?? item[0]

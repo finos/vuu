@@ -174,7 +174,6 @@ export const useFilterClauseEditor = ({
 }: FilterClauseEditorHookProps) => {
   const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
-  const valueRef = useRef<HTMLDivElement>(null);
 
   const [selectedColumn, setSelectedColumn] = useState<
     ColumnDescriptor | undefined
@@ -353,6 +352,5 @@ export const useFilterClauseEditor = ({
     operatorRef,
     selectedColumn,
     value,
-    valueRef,
   };
 };

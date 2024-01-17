@@ -56,7 +56,6 @@ export const FilterClauseEditor = ({
     operatorRef,
     selectedColumn,
     value,
-    valueRef,
   } = useFilterClauseEditor({
     filterClause,
     onCancel,
@@ -81,10 +80,9 @@ export const FilterClauseEditor = ({
             onDeselect={onDeselectValue}
             onInputComplete={onChangeValue}
             operator={operator}
-            ref={valueRef}
             suggestionProvider={suggestionProvider}
             table={table}
-            value={value as string}
+            value={value as string | string[]}
           />
         );
       case "int":
@@ -98,7 +96,6 @@ export const FilterClauseEditor = ({
             filterClause={filterClause}
             onInputComplete={onChangeValue}
             operator={operator}
-            ref={valueRef}
           />
         );
       case undefined:
@@ -115,7 +112,6 @@ export const FilterClauseEditor = ({
     filterClause,
     onDeselectValue,
     onChangeValue,
-    valueRef,
     suggestionProvider,
     table,
     value,

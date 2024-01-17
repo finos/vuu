@@ -32,7 +32,7 @@ export interface TextInputProps
   ref: RefObject<HTMLDivElement>;
   operator: string;
   suggestionProvider?: () => SuggestionFetcher;
-  value: string;
+  value: string | string[];
 }
 
 const NO_DATA_MATCH = ["No matching data"];
@@ -52,11 +52,17 @@ export const TextInput = forwardRef(function TextInput(
   }: TextInputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
-  console.log(`TextInput ${value} operator = ${operator}`);
-
   const isMultiValue = operator === "in";
 
-  const [valueInputValue, setValueInputValue] = useState(value ?? "");
+  // If we have a multiselect text value which we are editing, this will render
+  // a comma delimited list of the selected values. That is not what we display
+  // by default when using a multiselect combo. Its not a huge problem - as soon
+  // as user focuses this component and we display dropdown, input text is cleared
+  // (so user can type to filter list) until dropdown closes again. <ight need to
+  // revisit.
+  const [valueInputValue, setValueInputValue] = useState(
+    value?.toString() ?? ""
+  );
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
 
   const getSuggestions = suggestionProvider();

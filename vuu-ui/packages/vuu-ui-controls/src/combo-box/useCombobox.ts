@@ -250,7 +250,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
 
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
-      // console.log(`openChange<${open}> ${label}  ${closeReason}`);
       if (open && isMultiSelect) {
         setTextValue("", false);
       }
@@ -282,10 +281,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     [handleOpenChange, isMultiSelect]
   );
 
-  const handleKeyboardNavigation = useCallback(() => {
-    // setDisableAriaActiveDescendant(false);
-  }, []);
-
   const {
     focusVisible,
     setHighlightedIndex,
@@ -302,7 +297,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     disableHighlightOnFocus: true,
     disableTypeToSelect: true,
     label: "combobox",
-    onKeyboardNavigation: handleKeyboardNavigation,
     onSelectionChange: handleSelectionChange,
     onSelect: onListItemSelect,
     selected: collectionHook.itemToCollectionItemId(selectedProp as any),
