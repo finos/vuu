@@ -1,20 +1,23 @@
 import { describe, expect, it } from "vitest";
-import {
-  GridLayoutModel,
-  GridLayoutModelItem as Item,
-} from "../src/grid-layout/GridLayoutModel";
+import { GridLayoutModel } from "../src/grid-layout/GridLayoutModel";
 
 describe("GridLayoutModel", () => {
   describe("getSplitterPositions", () => {
     describe("WHEN we have a 2 x 1 layout", () => {
       it("THEN we have 1 initial splitter", () => {
         const model = new GridLayoutModel(2, 1);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -26,12 +29,18 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 1 x 2 layout", () => {
       it("THEN we have 1 initial splitter", () => {
         const model = new GridLayoutModel(1, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 1, end: 2 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -43,18 +52,30 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 2 x 2 layout", () => {
       it("THEN we have 4 initial splitters", () => {
         const model = new GridLayoutModel(2, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("black", { start: 1, end: 2 }, { start: 2, end: 3 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "black",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -70,15 +91,24 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have  2 columns, with 2 rows in the first column", () => {
       it("THEN we have a splitter that spans two rows", () => {
         const model = new GridLayoutModel(2, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 3 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 1, end: 2 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 3 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -92,15 +122,24 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have  2 columns, with 2 rows in the second column", () => {
       it("THEN we have a splitter that spans two rows, align end", () => {
         const model = new GridLayoutModel(2, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 3 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 3 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -114,15 +153,24 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have  2 rows, with 2 columns in the first column", () => {
       it("THEN we have a splitter that spans two rows", () => {
         const model = new GridLayoutModel(2, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 1, end: 3 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 1, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -135,15 +183,24 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have  2 rows, with 2 columns in the second column", () => {
       it("THEN we have a splitter that spans two rows, align end", () => {
         const model = new GridLayoutModel(2, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 3 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 1, end: 2 }, { start: 2, end: 3 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         // prettier-ignore
@@ -156,18 +213,30 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 2 x 2 layout, 2 columns, misaligned rows, aligned top", () => {
       it("THEN we have 3 initial splitters, including a multi-track splitter", () => {
         const model = new GridLayoutModel(2, 3);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 3 })
-        );
-        model.addGridItem(
-          new Item("black", { start: 1, end: 2 }, { start: 2, end: 4 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 2, end: 3 }, { start: 3, end: 4 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 3 },
+        });
+        model.addGridItem({
+          id: "black",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 2, end: 4 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 3, end: 4 },
+        });
 
         const splitters = model.getSplitterPositions();
         expect(splitters.length).toEqual(3);
@@ -183,18 +252,30 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 2 x 2 layout, 2 columns, misaligned rows, aligned left", () => {
       it("THEN we have 3 initial splitters, including a multi-track splitter", () => {
         const model = new GridLayoutModel(2, 3);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 4 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("black", { start: 1, end: 3 }, { start: 2, end: 3 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 3, end: 4 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 4 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "black",
+          column: { start: 1, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 3, end: 4 },
+          resizeable: "vh",
+          row: { start: 2, end: 3 },
+        });
 
         const splitters = model.getSplitterPositions();
         expect(splitters.length).toEqual(3);
@@ -210,18 +291,30 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 2 x 2 layout, 2 columns, misaligned rows, aligned bottom", () => {
       it("THEN we have 3 initial splitters, including a multi-track splitter", () => {
         const model = new GridLayoutModel(2, 3);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 3 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("black", { start: 1, end: 2 }, { start: 3, end: 4 })
-        );
-        model.addGridItem(
-          new Item("red", { start: 2, end: 3 }, { start: 2, end: 4 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 1, end: 3 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "black",
+          column: { start: 1, end: 2 },
+          resizeable: "vh",
+          row: { start: 3, end: 4 },
+        });
+        model.addGridItem({
+          id: "red",
+          column: { start: 2, end: 3 },
+          resizeable: "vh",
+          row: { start: 2, end: 4 },
+        });
 
         const splitters = model.getSplitterPositions();
 
@@ -240,12 +333,16 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 2 x 1 layout", () => {
       it("THEN first cell is horizontal contra for second cell", () => {
         const model = new GridLayoutModel(2, 1);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 2, end: 3 },
+          row: { start: 1, end: 2 },
+        });
 
         const { contra, contraOtherTrack } = model.getGridItemsAdjoiningTrack(
           "blue",
@@ -265,12 +362,16 @@ describe("GridLayoutModel", () => {
     describe("WHEN we have a 1 x 2 layout", () => {
       it("THEN first cell is horizontal contra for second cell", () => {
         const model = new GridLayoutModel(1, 2);
-        model.addGridItem(
-          new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-        );
-        model.addGridItem(
-          new Item("blue", { start: 1, end: 2 }, { start: 2, end: 3 })
-        );
+        model.addGridItem({
+          id: "green",
+          column: { start: 1, end: 2 },
+          row: { start: 1, end: 2 },
+        });
+        model.addGridItem({
+          id: "blue",
+          column: { start: 1, end: 2 },
+          row: { start: 2, end: 3 },
+        });
 
         const { contra, contraOtherTrack } = model.getGridItemsAdjoiningTrack(
           "blue",
@@ -287,18 +388,26 @@ describe("GridLayoutModel", () => {
 
   describe("WHEN we have a 2 x 2 layout", () => {
     const model = new GridLayoutModel(2, 2);
-    model.addGridItem(
-      new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-    );
-    model.addGridItem(
-      new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-    );
-    model.addGridItem(
-      new Item("black", { start: 1, end: 2 }, { start: 2, end: 3 })
-    );
-    model.addGridItem(
-      new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-    );
+    model.addGridItem({
+      id: "green",
+      column: { start: 1, end: 2 },
+      row: { start: 1, end: 2 },
+    });
+    model.addGridItem({
+      id: "blue",
+      column: { start: 2, end: 3 },
+      row: { start: 1, end: 2 },
+    });
+    model.addGridItem({
+      id: "black",
+      column: { start: 1, end: 2 },
+      row: { start: 2, end: 3 },
+    });
+    model.addGridItem({
+      id: "red",
+      column: { start: 2, end: 3 },
+      row: { start: 2, end: 3 },
+    });
 
     it("THEN first row first cell is horizontal contra for first row second cell", () => {
       const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
@@ -355,15 +464,21 @@ describe("GridLayoutModel", () => {
   describe("WHEN we have  2 columns, with 2 rows in the second column", () => {
     it("THEN we have a simple resize, with multiple contras", () => {
       const model = new GridLayoutModel(2, 2);
-      model.addGridItem(
-        new Item("green", { start: 1, end: 2 }, { start: 1, end: 3 })
-      );
-      model.addGridItem(
-        new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-      );
-      model.addGridItem(
-        new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-      );
+      model.addGridItem({
+        id: "green",
+        column: { start: 1, end: 2 },
+        row: { start: 1, end: 3 },
+      });
+      model.addGridItem({
+        id: "blue",
+        column: { start: 2, end: 3 },
+        row: { start: 1, end: 2 },
+      });
+      model.addGridItem({
+        id: "red",
+        column: { start: 2, end: 3 },
+        row: { start: 2, end: 3 },
+      });
 
       const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
         model.getGridItemsAdjoiningTrack("green", "horizontal", "end");
@@ -394,21 +509,27 @@ describe("GridLayoutModel", () => {
       describe("WHEN we expand top right item by dragging vertical splitter to the left", () => {
         it("THEN we update blue, black and red", () => {
           const model = new GridLayoutModel(2, 2);
-          model.addGridItem(
-            new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-          );
-          const blueItem = new Item(
-            "blue",
-            { start: 2, end: 3 },
-            { start: 1, end: 2 }
-          );
+          model.addGridItem({
+            id: "green",
+            column: { start: 1, end: 2 },
+            row: { start: 1, end: 2 },
+          });
+          const blueItem = {
+            id: "blue",
+            column: { start: 2, end: 3 },
+            row: { start: 1, end: 2 },
+          };
           model.addGridItem(blueItem);
-          model.addGridItem(
-            new Item("black", { start: 1, end: 2 }, { start: 2, end: 3 })
-          );
-          model.addGridItem(
-            new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-          );
+          model.addGridItem({
+            id: "black",
+            column: { start: 1, end: 2 },
+            row: { start: 2, end: 3 },
+          });
+          model.addGridItem({
+            id: "red",
+            column: { start: 2, end: 3 },
+            row: { start: 2, end: 3 },
+          });
 
           const adjacentItems = model.getGridItemsAdjoiningTrack(
             "blue",
@@ -453,21 +574,27 @@ describe("GridLayoutModel", () => {
       describe("WHEN we shrink top right item by dragging vertical splitter to the right", () => {
         it("THEN we update blue, black and red", () => {
           const model = new GridLayoutModel(2, 2);
-          model.addGridItem(
-            new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-          );
-          const blueItem = new Item(
-            "blue",
-            { start: 2, end: 3 },
-            { start: 1, end: 2 }
-          );
+          model.addGridItem({
+            id: "green",
+            column: { start: 1, end: 2 },
+            row: { start: 1, end: 2 },
+          });
+          const blueItem = {
+            id: "blue",
+            column: { start: 2, end: 3 },
+            row: { start: 1, end: 2 },
+          };
           model.addGridItem(blueItem);
-          model.addGridItem(
-            new Item("black", { start: 1, end: 2 }, { start: 2, end: 3 })
-          );
-          model.addGridItem(
-            new Item("red", { start: 2, end: 3 }, { start: 2, end: 3 })
-          );
+          model.addGridItem({
+            id: "black",
+            column: { start: 1, end: 2 },
+            row: { start: 2, end: 3 },
+          });
+          model.addGridItem({
+            id: "red",
+            column: { start: 2, end: 3 },
+            row: { start: 2, end: 3 },
+          });
 
           const adjacentItems = model.getGridItemsAdjoiningTrack(
             "blue",
@@ -512,20 +639,26 @@ describe("GridLayoutModel", () => {
       describe("WHEN we shrink bottom right item by dragging vertical splitter to the right", () => {
         it("THEN we update ", () => {
           const model = new GridLayoutModel(2, 2);
-          model.addGridItem(
-            new Item("green", { start: 1, end: 2 }, { start: 1, end: 2 })
-          );
-          model.addGridItem(
-            new Item("blue", { start: 2, end: 3 }, { start: 1, end: 2 })
-          );
-          model.addGridItem(
-            new Item("black", { start: 1, end: 2 }, { start: 2, end: 3 })
-          );
-          const redItem = new Item(
-            "red",
-            { start: 2, end: 3 },
-            { start: 2, end: 3 }
-          );
+          model.addGridItem({
+            id: "green",
+            column: { start: 1, end: 2 },
+            row: { start: 1, end: 2 },
+          });
+          model.addGridItem({
+            id: "blue",
+            column: { start: 2, end: 3 },
+            row: { start: 1, end: 2 },
+          });
+          model.addGridItem({
+            id: "black",
+            column: { start: 1, end: 2 },
+            row: { start: 2, end: 3 },
+          });
+          const redItem = {
+            id: "red",
+            column: { start: 2, end: 3 },
+            row: { start: 2, end: 3 },
+          };
           model.addGridItem(redItem);
 
           const adjacentItems = model.getGridItemsAdjoiningTrack(

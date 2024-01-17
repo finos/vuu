@@ -17,7 +17,7 @@ import {
   ISplitter,
   useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
-import { ResizeOrientation } from "./grid-dom-utils";
+import { ResizeOrientation } from "@finos/vuu-layout/src/grid-layout/grid-dom-utils";
 
 const classBase = "vuuGridLayout";
 const classBaseItem = "vuuGridLayoutItem";
@@ -60,6 +60,7 @@ export interface GridLayoutProps extends HTMLAttributes<HTMLDivElement> {
 
 export interface GridLayoutItemProps extends HTMLAttributes<HTMLDivElement> {
   header?: boolean;
+  id: string;
   label?: string;
   resizeable?: GridResizeable;
 }
@@ -116,7 +117,7 @@ export interface LayoutAPI {
 
 export const GridLayout = ({
   id,
-  children,
+  children: childrenProp,
   colCount,
   className,
   layoutAPI,
@@ -126,6 +127,7 @@ export const GridLayout = ({
   ...htmlAttributes
 }: GridLayoutProps) => {
   const {
+    children,
     dispatchGridLayoutAction,
     gridTemplateRows,
     splitGridCol,
@@ -134,6 +136,7 @@ export const GridLayout = ({
     splitters,
     ...layoutProps
   } = useGridSplitterResizing({
+    children: childrenProp,
     id,
     rowCount,
     rows,
@@ -147,8 +150,6 @@ export const GridLayout = ({
     }),
     [splitGridCol, splitGridRow]
   );
-
-  console.log({ gridTemplateRows });
 
   const style = {
     "--col-count": colCount,

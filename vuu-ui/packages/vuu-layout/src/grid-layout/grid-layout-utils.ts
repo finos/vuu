@@ -7,7 +7,6 @@ import {
 
 export type AdjacentItems = {
   contra: IGridLayoutModelItem[];
-  contraMaybe: IGridLayoutModelItem[];
   contraOtherTrack: IGridLayoutModelItem[];
   siblingsOtherTrack: IGridLayoutModelItem[];
   nonAdjacent: IGridLayoutModelItem[];
@@ -15,7 +14,6 @@ export type AdjacentItems = {
 
 export const NO_ADJACENT_ITEMS: AdjacentItems = {
   contra: [],
-  contraMaybe: [],
   contraOtherTrack: [],
   siblingsOtherTrack: [],
   nonAdjacent: [],
@@ -57,9 +55,9 @@ export const collectItemsByColumnPosition = (
   resizeGridItem: IGridLayoutModelItem,
   gridItem: IGridLayoutModelItem,
   splitterAlign: SplitterAlign,
-  items: AdjacentItems
+  items: AdjacentItems & { contraMaybe: IGridLayoutModelItem[] }
 ) => {
-  const { column: colPosition, id, row: rowPosition } = resizeGridItem;
+  const { column: colPosition, row: rowPosition } = resizeGridItem;
   const { column: col, row } = gridItem;
 
   // A splitter with align start (the default) operates at the leading edge of the track, end splitters
@@ -83,9 +81,9 @@ export const collectItemsByRowPosition = (
   resizeGridItem: IGridLayoutModelItem,
   gridItem: IGridLayoutModelItem,
   splitterAlign: SplitterAlign,
-  items: AdjacentItems
+  items: AdjacentItems & { contraMaybe: IGridLayoutModelItem[] }
 ) => {
-  const { column: colPosition, id, row: rowPosition } = resizeGridItem;
+  const { column: colPosition, row: rowPosition } = resizeGridItem;
   const { column: col, row } = gridItem;
 
   // A splitter with align start (the default) operates at the leading edge of the track, end splitters
