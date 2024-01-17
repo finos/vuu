@@ -1,4 +1,8 @@
-import { GridLayoutModelPosition } from "@finos/vuu-layout";
+import {
+  GridLayoutModelPosition,
+  GridLayoutResizeDirection,
+  IGridLayoutModelItem,
+} from "@finos/vuu-layout";
 import { GridItem, GridPos } from "./grid-layout-types";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
@@ -75,12 +79,20 @@ export const getRow = (el: HTMLElement | undefined): GridPos => {
   }
 };
 
-export const getGridItemProps = (el: HTMLElement) => {
+export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
   const col = getColumn(el);
   const row = getRow(el);
+  const resizeable = el.classList.contains("vuuGridLayoutItem-resizeable-v")
+    ? "v"
+    : el.classList.contains("vuuGridLayoutItem-resizeable-h")
+    ? "h"
+    : el.classList.contains("vuuGridLayoutItem-resizeable-vh")
+    ? "vh"
+    : undefined;
   return {
     column: { start: col[0], end: col[1] },
     id: el.id,
+    resizeable,
     row: { start: row[0], end: row[1] },
   };
 };
@@ -112,41 +124,13 @@ export const setGridRow = (
   el.style.setProperty("grid-row", `${start}/${end}`);
 };
 
-export const spansMultipleTracks = (gridItem: GridItem) => {
-  const { col, row: track = col } = gridItem;
-  if (track) {
-    return track.span > 1;
-  }
-  throw Error("spanMultipleLines, invalid GridItem");
-};
-
-export const trackRemoved = (
-  el: HTMLElement,
-  targetTrack: number,
-  orientation: ResizeOrientation | null
+export const spansMultipleTracks = (
+  gridItem: IGridLayoutModelItem,
+  direction: GridLayoutResizeDirection
 ) => {
-  if (orientation === null) {
-    throw Error("trackRemoved called with no resizeOrientation");
-  }
-  const [getTrack, setTrack] =
-    orientation === "vertical"
-      ? [getRow, setGridRow]
-      : [getColumn, setGridColumn];
-
-  const track = getTrack(el);
-  const [from, to] = track;
-  const changeFrom = from > targetTrack;
-  const changeTo = to > targetTrack;
-
-  if (changeFrom) {
-    track[0] -= 1;
-  }
-  if (changeTo) {
-    track[1] -= 1;
-  }
-  if (changeFrom || changeTo) {
-    setTrack(el, track);
-  }
+  const track = direction === "horizontal" ? "column" : "row";
+  const { start, end } = gridItem[track];
+  return end - start > 1;
 };
 
 const equalsGridPos = ([from1, to1]: GridPos, [from2, to2]: GridPos) =>

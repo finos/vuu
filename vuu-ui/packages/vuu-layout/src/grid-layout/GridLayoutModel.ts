@@ -10,12 +10,6 @@ export type GridLayoutModelPosition = {
   start: number;
 };
 
-export interface IGridLayoutModelItem {
-  column: GridLayoutModelPosition;
-  id: string;
-  row: GridLayoutModelPosition;
-}
-
 export type GridLayoutResizeOperation = "contract" | "expand";
 export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
@@ -25,6 +19,15 @@ export type GridLayoutRelativePosition =
   | "rightInSameRow"
   | "leftInSameRow";
 export type GridLayoutTrack = "column" | "row";
+export type GridLayoutModelItemResizeable = "h" | "v" | "vh";
+
+export interface IGridLayoutModelItem {
+  closeable?: boolean;
+  column: GridLayoutModelPosition;
+  id: string;
+  resizeable?: GridLayoutModelItemResizeable;
+  row: GridLayoutModelPosition;
+}
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
@@ -53,6 +56,8 @@ type GridItemMaps = {
   end: GridItemMap;
   start: GridItemMap;
 };
+
+type GridItemUpdate = [string, GridLayoutModelPosition];
 
 const storeMapValue = (
   map: GridItemMap,
@@ -177,7 +182,6 @@ export class GridLayoutModel {
     return [contraItemsBefore ?? [], contraItemsAfter ?? []];
   }
 
-  // TODO sort out the use of position here, its all messed up
   private getNextSibling(
     gridItem: IGridLayoutModelItem,
     position: GridLayoutRelativePosition
@@ -233,6 +237,32 @@ export class GridLayoutModel {
     }
   }
 
+  private getSiblings(
+    gridItem: IGridLayoutModelItem,
+    resizeDirection: GridLayoutResizeDirection
+  ) {
+    const leftSiblings = [];
+    const rightSiblings = [];
+
+    if (resizeDirection === "horizontal") {
+      if (gridItem.column.start > 1) {
+        let sibling = this.getNextSibling(gridItem, "leftInSameRow");
+        while (sibling) {
+          leftSiblings.push(sibling);
+          sibling = this.getNextSibling(sibling, "leftInSameRow");
+        }
+      }
+      let sibling = this.getNextSibling(gridItem, "rightInSameRow");
+      while (sibling) {
+        rightSiblings.push(sibling);
+        sibling = this.getNextSibling(sibling, "rightInSameRow");
+      }
+    } else {
+      // TODO
+    }
+    return [leftSiblings, rightSiblings];
+  }
+
   private setGridRow = (
     gridItemId: string,
     { start, end }: GridLayoutModelPosition
@@ -281,42 +311,63 @@ export class GridLayoutModel {
   private setColExpanded = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end + 1 }];
 
   private setColContracted = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end - 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end - 1 }];
 
   private setRowExpanded = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end + 1 }];
 
   private setRowContracted = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start, end: end - 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start, end: end - 1 }];
 
   private setShiftColForward = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start + 1, end: end + 1 },
+  ];
 
   private setShiftRowForward = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start + 1, end: end + 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start + 1, end: end + 1 },
+  ];
 
   private setShiftColBackward = ({
     id,
     column: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start - 1, end: end - 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start - 1, end: end - 1 },
+  ];
 
   private setShiftRowBackward = ({
     id,
     row: { start, end },
-  }: IGridLayoutModelItem) => [id, { start: start - 1, end: end - 1 }];
+  }: IGridLayoutModelItem): GridItemUpdate => [
+    id,
+    { start: start - 1, end: end - 1 },
+  ];
+  private setShiftColStartBackward = ({
+    id,
+    column: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
+
+  private setShiftRowStartBackward = ({
+    id,
+    row: { start, end },
+  }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
 
   //TODO we only check one sibling away, need to do this in a loop
   private findMatchingContras(
@@ -379,15 +430,23 @@ export class GridLayoutModel {
   }
 
   getSplitterPositions(): ISplitter[] {
+    const start = performance.now();
     const splitterPositions: ISplitter[] = [];
     for (const gridItem of this.gridItems) {
-      const { column, id, row } = gridItem;
+      const { column, id, resizeable = "", row } = gridItem;
 
-      // First a horizontal resize
+      const [leftSiblings, rightSiblings] = this.getSiblings(
+        gridItem,
+        "horizontal"
+      );
+
+      // First horizontal resizing, identify the vertically aligned
+      // splitters, adjusting grid column positions
       const [contraItemsLeft, contraItemsRight] = this.getContraItems(
         gridItem,
         "horizontal"
       );
+      const isResizeable = resizeable.indexOf("h") !== -1;
 
       if (column.start > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -397,14 +456,27 @@ export class GridLayoutModel {
         );
 
         if (contraFillSameTrack) {
-          splitterPositions.push({
-            align: "start",
-            column,
-            controls: id,
-            id: `${id}-splitter-h`,
-            orientation: "horizontal",
-            row,
-          });
+          // If we have only a single contra left and that contra is not resizeable, skip
+          const { length: resizeableItemsLeft } = leftSiblings.filter(
+            ({ resizeable = "" }) => resizeable.indexOf("h") !== -1
+          );
+          const { length: resizeableItemsRight } = rightSiblings.filter((i) =>
+            i.resizeable?.match(/h/)
+          );
+
+          if (
+            resizeableItemsLeft >= 1 &&
+            (isResizeable || resizeableItemsRight >= 1)
+          ) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: `${id}-splitter-h`,
+              orientation: "horizontal",
+              row,
+            });
+          }
         } else if (contraItemsLeft.length === 1) {
           console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsLeft.length > 1) {
@@ -482,7 +554,8 @@ export class GridLayoutModel {
         }
       }
 
-      // ...then vertical resize
+      // Vertical resizing - these are the horizontally aligned splitters,
+      // adjusting grid row positions
       const [contraItemsAbove, contraItemsBelow] = this.getContraItems(
         gridItem,
         "vertical"
@@ -578,6 +651,8 @@ export class GridLayoutModel {
         }
       }
     }
+    const end = performance.now();
+    console.log(`getSPlitterPositions took ${end - start}ms`);
 
     return splitterPositions;
   }
@@ -587,7 +662,7 @@ export class GridLayoutModel {
     resizeOrientation: GridLayoutResizeDirection,
     splitterAlign: SplitterAlign
   ): AdjacentItems {
-    const items: AdjacentItems = {
+    const items: AdjacentItems & { contraMaybe: IGridLayoutModelItem[] } = {
       contra: [],
       contraMaybe: [],
       contraOtherTrack: [],
@@ -613,15 +688,12 @@ export class GridLayoutModel {
       }
     }
 
-    if (items.contraMaybe.length === 1) {
+    const { contraMaybe, ...adjacentItems } = items;
+    if (contraMaybe.length === 1) {
       console.log(`where do we put a single maybe contra ?`);
-    } else if (items.contraMaybe.length > 1) {
-      if (
-        occupySameTrack(resizeGridItem, items.contraMaybe, resizeOrientation)
-      ) {
-        items.contra.push(
-          ...items.contraMaybe.splice(0, items.contraMaybe.length)
-        );
+    } else if (contraMaybe.length > 1) {
+      if (occupySameTrack(resizeGridItem, contraMaybe, resizeOrientation)) {
+        items.contra.push(...contraMaybe.splice(0, contraMaybe.length));
       }
     }
 
@@ -630,7 +702,7 @@ export class GridLayoutModel {
     //   contraItemsOtherTrack?.push(...contraItemsMaybe);
     // }
 
-    return items;
+    return adjacentItems;
   }
 
   repositionGridItemsforResize(
@@ -735,12 +807,6 @@ export class GridLayoutModel {
         : [this.setColContracted, this.setShiftColBackward, this.setGridColumn];
 
     const updates: [string, GridLayoutModelPosition][] = [];
-    console.log(`restoreGridItemPositions `, {
-      anulledResizeOperation,
-      resizeItem,
-      adjacentItems,
-      resizeDirection,
-    });
 
     if (anulledResizeOperation === "contract") {
       updates.push(setShiftBackward(resizeItem));
@@ -767,12 +833,126 @@ export class GridLayoutModel {
     return updates;
   }
 
+  /*
+ When we remove a track edge, all following track edges will be reduced by 1.
+ Any gridItem bound to an edge greater than the one being removed must be
+ adjusted.
+ */
+  removeTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
+    const gridPosition = trackIndex + 1;
+    const updates: GridItemUpdate[] = [];
+
+    const [
+      { end: endMap, start: startMap },
+      setContracted,
+      setShiftStartBackward,
+      setTrack,
+    ] =
+      resizeDirection === "vertical"
+        ? [
+            this.rowMaps,
+            this.setRowContracted,
+            this.setShiftRowStartBackward,
+            this.setGridRow,
+          ]
+        : [
+            this.columnMaps,
+            this.setColContracted,
+            this.setShiftColStartBackward,
+            this.setGridColumn,
+          ];
+
+    for (const [position, gridItems] of startMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (existingUpdate) {
+            existingUpdate[1].start -= 1;
+          } else {
+            updates.push(setShiftStartBackward(item));
+          }
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (existingUpdate) {
+            existingUpdate[1].end -= 1;
+          } else {
+            updates.push(setContracted(item));
+          }
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
+  flipResizeTracks(
+    trackIndex: number,
+    resizeDirection: GridLayoutResizeDirection
+  ) {
+    const trackStart = trackIndex + 1;
+    const trackEnd = trackIndex + 2;
+    const updates: GridItemUpdate[] = [];
+
+    const track: GridLayoutTrack =
+      resizeDirection === "vertical" ? "row" : "column";
+
+    const [{ end: endMap, start: startMap }, setTrack] =
+      resizeDirection === "vertical"
+        ? [this.rowMaps, this.setGridRow]
+        : [this.columnMaps, this.setGridColumn];
+
+    for (const [position, gridItems] of startMap) {
+      if (position === trackStart) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: trackEnd, end: item[track].end }]);
+        });
+      } else if (position === trackEnd) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: trackStart, end: item[track].end }]);
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position === trackEnd) {
+        gridItems.forEach((item) => {
+          updates.push([
+            item.id,
+            { start: item[track].start, end: trackStart },
+          ]);
+        });
+      } else if (position === trackStart) {
+        gridItems.forEach((item) => {
+          updates.push([item.id, { start: item[track].start, end: trackEnd }]);
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    return updates;
+  }
+
   toDebugString() {
     return `
-      ${this.gridItems.map(
-        ({ id, column, row }) =>
-          `\n${id}\t\tcol ${column.start}/${column.end}\t row ${row.start}/${row.end}`
-      )}
+      ${this.gridItems
+        .map(
+          ({ id, column, resizeable = "", row }) =>
+            `\n${id}\t\tcol ${column.start}/${column.end}\t row ${row.start}/${row.end}\t${resizeable}`
+        )
+        .join("")}
     `;
   }
 }
