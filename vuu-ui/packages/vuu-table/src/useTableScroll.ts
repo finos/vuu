@@ -154,7 +154,8 @@ export const useTableScroll = ({
         behavior: "auto",
       });
     }
-  }, [maxScrollLeft, maxScrollTop]);
+    onVerticalScrollInSitu?.(0);
+  }, [maxScrollLeft, maxScrollTop, onVerticalScrollInSitu]);
 
   const handleContentContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
@@ -171,13 +172,20 @@ export const useTableScroll = ({
       if (scrollPos.scrollTop !== scrollTop) {
         scrollPos.scrollTop = scrollTop;
         handleVerticalScroll(scrollTop, pctScrollTop);
+        onVerticalScrollInSitu?.(0);
       }
       if (scrollPos.scrollLeft !== scrollLeft) {
         scrollPos.scrollLeft = scrollLeft;
         onHorizontalScroll?.(scrollLeft);
       }
     }
-  }, [handleVerticalScroll, maxScrollLeft, maxScrollTop, onHorizontalScroll]);
+  }, [
+    handleVerticalScroll,
+    maxScrollLeft,
+    maxScrollTop,
+    onHorizontalScroll,
+    onVerticalScrollInSitu,
+  ]);
 
   const handleAttachScrollbarContainer = useCallback(
     (el: HTMLDivElement) => {
@@ -347,7 +355,10 @@ export const useTableScroll = ({
 
   useEffect(() => {
     const { current: from } = firstRowRef;
-    const rowRange = { from, to: from + viewportRowCount + 1 };
+    const rowRange = { from, to: from + viewportRowCount };
+    console.log(
+      `useTableScroll useEffect<viewportRowCount> ${viewportRowCount} ${rowRange.from} ${rowRange.to}`
+    );
     setRange(rowRange);
   }, [setRange, viewportRowCount]);
 

@@ -21,6 +21,7 @@ export class KeySet {
   }
 
   public reset({ from, to }: VuuRange) {
+    console.log(`reset keys ${from} to ${to}`);
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
         this.free.push(keyValue);

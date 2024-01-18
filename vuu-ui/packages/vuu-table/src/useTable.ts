@@ -237,10 +237,7 @@ export const useTable = ({
 
   const initialRange = useInitialValue<VuuRange>({
     from: 0,
-    to:
-      viewportMeasurements.rowCount === 0
-        ? 0
-        : viewportMeasurements.rowCount + 1,
+    to: viewportMeasurements.rowCount,
   });
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
@@ -253,20 +250,13 @@ export const useTable = ({
     range: initialRange,
   });
 
-  const handleInSituVerticalScroll = useCallback(
-    (rowIndexOffset: number) => {
-      viewportHookSetInSituRowOffset(rowIndexOffset);
-    },
-    [viewportHookSetInSituRowOffset]
-  );
-
   const { requestScroll, ...scrollProps } = useTableScroll({
     getRowAtPosition,
     rowHeight,
     scrollingApiRef,
     setRange,
     onVerticalScroll: viewportHookSetScrollTop,
-    onVerticalScrollInSitu: handleInSituVerticalScroll,
+    onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
     viewportMeasurements,
   });
 

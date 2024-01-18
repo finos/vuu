@@ -150,6 +150,7 @@ const TableCore = ({
   containerRef: RefObject<HTMLDivElement>;
   size: MeasuredSize;
 }) => {
+  console.log(`Table renderBufferSize ${renderBufferSize}`);
   const id = useId(idProp);
   const {
     columnMap,
@@ -204,9 +205,7 @@ const TableCore = ({
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
-    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
-    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
 
   const cssVariables = {
@@ -221,6 +220,9 @@ const TableCore = ({
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
+
+  console.log(`keys
+  ${data.map((d) => d[RENDER_IDX])}`);
 
   return (
     <ContextMenuProvider

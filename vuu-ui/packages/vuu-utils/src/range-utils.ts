@@ -12,12 +12,21 @@ interface FromToRange {
 
 export const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
 
+export const rangesAreSame = (
+  r1: VuuRange | undefined,
+  r2: VuuRange | undefined
+) => {
+  return r1?.from === r2?.from && r1?.to === r2?.to;
+};
+
 export function getFullRange(
   { from, to }: VuuRange,
   bufferSize = 0,
   rowCount: number = Number.MAX_SAFE_INTEGER
 ): FromToRange {
-  if (bufferSize === 0) {
+  if (from === 0 && to === 0) {
+    return { from, to };
+  } else if (bufferSize === 0) {
     if (rowCount < from) {
       return { from: 0, to: 0 };
     } else {
@@ -26,22 +35,19 @@ export function getFullRange(
   } else if (from === 0) {
     return { from, to: Math.min(to + bufferSize, rowCount) };
   } else {
-    const rangeSize = to - from;
-    const buff = Math.round(bufferSize / 2);
-    const shortfallBefore = from - buff < 0;
-    const shortFallAfter = rowCount - (to + buff) < 0;
-
-    if (shortfallBefore && shortFallAfter) {
+    const shortfallBefore = from - bufferSize < 0;
+    const shortfallAfter = rowCount - (to + bufferSize) < 0;
+    if (shortfallBefore && shortfallAfter) {
       return { from: 0, to: rowCount };
     } else if (shortfallBefore) {
-      return { from: 0, to: rangeSize + bufferSize };
-    } else if (shortFallAfter) {
+      return { from: 0, to: to + bufferSize };
+    } else if (shortfallAfter) {
       return {
-        from: Math.max(0, rowCount - (rangeSize + bufferSize)),
+        from: Math.max(0, from - bufferSize),
         to: rowCount,
       };
     } else {
-      return { from: from - buff, to: to + buff };
+      return { from: from - bufferSize, to: to + bufferSize };
     }
   }
 }

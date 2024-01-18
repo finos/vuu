@@ -114,11 +114,21 @@ export const useTableViewport = ({
     pctScrollTopRef.current = scrollPct;
   }, []);
 
+  /**
+   * The inSituRowOffset is used to simulate scrolling through a very large dataset
+   * without actually moving the scroll position. It is triggered by keyboard
+   * navigation. A simulated scroll operation will always be of one or more rows.
+   * A value of zero is a request to reset the offset.
+   */
   const setInSituRowOffset = useCallback((rowIndexOffset: number) => {
-    inSituRowOffsetRef.current = Math.max(
-      0,
-      inSituRowOffsetRef.current + rowIndexOffset
-    );
+    if (rowIndexOffset === 0) {
+      inSituRowOffsetRef.current = 0;
+    } else {
+      inSituRowOffsetRef.current = Math.max(
+        0,
+        inSituRowOffsetRef.current + rowIndexOffset
+      );
+    }
   }, []);
 
   return useMemo(() => {

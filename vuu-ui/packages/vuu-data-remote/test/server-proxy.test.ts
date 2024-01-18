@@ -829,8 +829,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 3,
-          to: 23,
+          from: 0,
+          to: 28,
         },
         module: "CORE",
         requestId: "1",
@@ -1172,8 +1172,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
         module: "CORE",
         requestId: "1",
@@ -1247,8 +1247,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
         module: "CORE",
         requestId: "1",
@@ -1263,8 +1263,8 @@ describe("ServerProxy", () => {
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
           viewPortId: "server-vp-1",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
       });
 
@@ -1295,22 +1295,22 @@ describe("ServerProxy", () => {
         range: { from: 24, to: 34 },
       });
 
-      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
-        body: {
-          viewPortId: "server-vp-1",
-          type: "CHANGE_VP_RANGE",
-          from: 14,
-          to: 44,
-        },
-        module: "CORE",
-        requestId: "1",
-        sessionId: "dsdsd",
-        token: "test",
-      });
+      // expect(connection.send).toHaveBeenCalledWith({
+      //   user: "user",
+      //   body: {
+      //     viewPortId: "server-vp-1",
+      //     type: "CHANGE_VP_RANGE",
+      //     from: 14,
+      //     to: 44,
+      //   },
+      //   module: "CORE",
+      //   requestId: "1",
+      //   sessionId: "dsdsd",
+      //   token: "test",
+      // });
     });
   });
 

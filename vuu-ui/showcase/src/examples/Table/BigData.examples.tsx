@@ -1,9 +1,8 @@
 import { ArrayDataSource } from "@finos/vuu-data-local";
-import { ArrayProxy, RowAtIndexFunc } from "@finos/vuu-data-test";
+import { ArrayProxy } from "@finos/vuu-data-test";
 import { DataSource } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { noScrolling, ScrollingAPI, Table } from "@finos/vuu-table";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { Toolbar } from "@finos/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import {
@@ -13,34 +12,9 @@ import {
   useRef,
   useState,
 } from "react";
+import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 let displaySequence = 1;
-
-type RowGenerator<T = VuuRowDataItemType> = (
-  columns: string[]
-) => RowAtIndexFunc<T[]>;
-
-export type ColumnGenerator = (count: number) => ColumnDescriptor[];
-
-const columnGenerator: ColumnGenerator = (count) => {
-  return [{ name: "row number", width: 150 }].concat(
-    Array(count)
-      .fill(true)
-      .map((_, i) => {
-        const name = `column ${i + 1}`;
-        return { name, width: 150 };
-      })
-  );
-};
-
-const rowGenerator: RowGenerator<string> = (columns: string[]) => (index) => {
-  const rowIndex = index + 1;
-  return [`row ${rowIndex.toLocaleString()}`].concat(
-    Array(columns.length)
-      .fill(true)
-      .map((v, j) => `value ${j + 1} @ ${index + 1}`)
-  );
-};
 
 export const SimpleTable = () => {
   const config = useMemo<TableConfig>(

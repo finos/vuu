@@ -6,7 +6,7 @@ import {
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getFullRange, NULL_RANGE } from "@finos/vuu-utils";
+import { getFullRange, NULL_RANGE, rangesAreSame } from "@finos/vuu-utils";
 import { GridAction } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
@@ -37,7 +37,9 @@ export const useDataSource = ({
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  const rangeRef = useRef<VuuRange>(NULL_RANGE);
+  const rangeRef = useRef<VuuRange>(range);
+
+  console.log(`useDataSource initialRange ${range.from} ${range.to}`);
 
   const dataWindow = useMemo(
     () => new MovingWindow(getFullRange(range, renderBufferSize)),
@@ -47,6 +49,8 @@ export const useDataSource = ({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
+      console.log(`Data ${updates.length} >>>
+      ${updates.map((u) => u[1])}`);
       for (const row of updates) {
         dataWindow.add(row);
       }
@@ -112,10 +116,16 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (range: VuuRange) => {
-      const fullRange = getFullRange(range, renderBufferSize);
-      dataWindow.setRange(fullRange);
-      dataSource.range = rangeRef.current = fullRange;
-      dataSource.emit("range", range);
+      if (!rangesAreSame(range, rangeRef.current)) {
+        const fullRange = getFullRange(range, renderBufferSize);
+        console.log(`useDataSource setRange ${range.from} - ${range.to} 
+          renderBufferSize = ${renderBufferSize}
+          fullRange = ${fullRange.from} - ${fullRange.to}
+        `);
+        dataWindow.setRange(fullRange);
+        dataSource.range = rangeRef.current = fullRange;
+        dataSource.emit("range", range);
+      }
     },
     [dataSource, dataWindow, renderBufferSize]
   );

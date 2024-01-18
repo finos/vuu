@@ -58,8 +58,10 @@ const getDefaultColumnConfig = (
 
 const SimulTable = ({
   getDefaultColumnConfig,
+  renderBufferSize = 0,
   tableName,
-}: {
+  ...props
+}: Partial<TableProps> & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   tableName: SimulTableName;
 }) => {
@@ -85,6 +87,7 @@ const SimulTable = ({
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -94,7 +97,8 @@ const SimulTable = ({
         <Table
           {...tableProps}
           onConfigChange={handleConfigChange}
-          renderBufferSize={0}
+          renderBufferSize={renderBufferSize}
+          {...props}
         />
       </DemoTableContainer>
     </ContextMenuProvider>

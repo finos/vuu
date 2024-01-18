@@ -31,6 +31,8 @@ import {
   registerComponent as registerCellRenderer,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
+import { ArrayDataSource } from "@finos/vuu-data-local";
+import { DataSource } from "@finos/vuu-data-types";
 import {
   CSSProperties,
   MouseEventHandler,
@@ -39,10 +41,53 @@ import {
   useState,
 } from "react";
 import { useTestDataSource } from "../utils";
+import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import "./Table.examples.css";
 
 let displaySequence = 1;
+
+export const TestTable = ({
+  headerHeight = 25,
+  height = 625,
+  renderBufferSize = 5,
+  rowCount = 1000,
+  rowHeight = 20,
+  width = 1000,
+}) => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: columnGenerator(5),
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    []
+  );
+
+  const dataSource = useMemo<DataSource>(() => {
+    const generateRow = rowGenerator(config.columns.map((col) => col.name));
+    const data = new Array(rowCount)
+      .fill(0)
+      .map((_, index) => generateRow(index));
+    return new ArrayDataSource({
+      columnDescriptors: config.columns,
+      data,
+    });
+  }, [config.columns, rowCount]);
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      headerHeight={headerHeight}
+      height={height}
+      renderBufferSize={renderBufferSize}
+      rowHeight={20}
+      width={width}
+    />
+  );
+};
+TestTable.displaySequence = displaySequence++;
 
 export const NavigationStyle = () => {
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
