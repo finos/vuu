@@ -1,8 +1,9 @@
-import { TableSchema } from "@finos/vuu-data-types";
 import { SuggestionFetcher } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import { FilterClause } from "@finos/vuu-filter-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
+import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
@@ -15,7 +16,6 @@ import {
 } from "./useFilterClauseEditor";
 
 import "./FilterClauseEditor.css";
-import { Button } from "@salt-ds/core";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -56,7 +56,6 @@ export const FilterClauseEditor = ({
     operatorRef,
     selectedColumn,
     value,
-    valueRef,
   } = useFilterClauseEditor({
     filterClause,
     onCancel,
@@ -81,10 +80,9 @@ export const FilterClauseEditor = ({
             onDeselect={onDeselectValue}
             onInputComplete={onChangeValue}
             operator={operator}
-            ref={valueRef}
             suggestionProvider={suggestionProvider}
             table={table}
-            value={value as string}
+            value={value as string | string[]}
           />
         );
       case "int":
@@ -98,7 +96,6 @@ export const FilterClauseEditor = ({
             filterClause={filterClause}
             onInputComplete={onChangeValue}
             operator={operator}
-            ref={valueRef}
           />
         );
       case undefined:
@@ -113,8 +110,8 @@ export const FilterClauseEditor = ({
     operator,
     InputProps,
     filterClause,
+    onDeselectValue,
     onChangeValue,
-    valueRef,
     suggestionProvider,
     table,
     value,
@@ -128,7 +125,7 @@ export const FilterClauseEditor = ({
         className={cx(`${classBase}Field`, `${classBase}Column`)}
         data-field="column"
         initialHighlightedIndex={0}
-        itemToString={(column) => column.name}
+        itemToString={(column) => (column as ColumnDescriptor).name}
         onListItemSelect={onColumnSelect}
         ref={columnRef}
         source={columns}

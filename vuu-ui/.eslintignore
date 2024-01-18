@@ -19,3 +19,5 @@ showcase/dist
 target
 packages/shell/src/feature/Feature.jsx
 **/inlined-worker.js
+cypress.config.ts
+cypress

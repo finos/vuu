@@ -10,12 +10,13 @@ import {
 import {
   CollectionProvider,
   ComponentSelectionProps,
+  isMultiSelection,
   itemToString as defaultItemToString,
   SelectionStrategy,
   useCollectionItems,
 } from "../common-hooks";
 import { DropdownBase, DropdownBaseProps } from "../dropdown";
-import { List, ListControlProps, ListProps } from "../list";
+import { List, ListProps } from "../list";
 import { ChevronIcon } from "../list/ChevronIcon";
 import { useCombobox } from "./useCombobox";
 
@@ -73,6 +74,7 @@ export const ComboBox = forwardRef(function Combobox<
     onChange,
     onSelect,
     onSetSelectedText,
+    openOnFocus = true,
     getFilterRegex,
     id: idProp,
     initialHighlightedIndex = -1,
@@ -95,9 +97,17 @@ export const ComboBox = forwardRef(function Combobox<
 ) {
   const id = useId(idProp);
   const listRef = useRef<HTMLDivElement>(null);
+  const isMultiSelect = isMultiSelection(selectionStrategy);
+
+  console.log({
+    where: "ComboBox",
+    defaultSelected,
+  });
 
   const valueFromSelected = (item: Item | null | Item[]) => {
-    return Array.isArray(item) && item.length > 0 ? item[0] : undefined;
+    return Array.isArray(item)
+      ? itemsToString?.(item) ?? item[0]
+      : item ?? undefined;
   };
 
   const getInitialValue = (
@@ -110,7 +120,7 @@ export const ComboBox = forwardRef(function Combobox<
       ? valueFromSelected(items2)
       : undefined;
 
-    return item ? itemToString(item) : "";
+    return typeof item === "string" ? item : item ? itemToString(item) : "";
   };
 
   const initialValue = getInitialValue(selectedProp, defaultSelected);
@@ -121,7 +131,7 @@ export const ComboBox = forwardRef(function Combobox<
     children,
     options: {
       disableFilter,
-      filterPattern: initialValue,
+      filterPattern: isMultiSelect ? undefined : initialValue,
       getFilterRegex,
       itemToString,
     },
@@ -182,9 +192,9 @@ export const ComboBox = forwardRef(function Combobox<
       <ChevronIcon
         direction={isOpen ? "up" : "down"}
         onClick={handleDropdownIconClick}
+        role="button"
       />
     );
-
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
@@ -193,7 +203,7 @@ export const ComboBox = forwardRef(function Combobox<
         id={id}
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        openOnFocus
+        openOnFocus={openOnFocus}
         ref={forwardedRef}
         width={width}
       >

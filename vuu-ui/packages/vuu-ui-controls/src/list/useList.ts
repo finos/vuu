@@ -72,12 +72,6 @@ export const useList = <Item, S extends SelectionStrategy>({
     onKeyboardNavigation?.(evt, nextIndex);
   };
 
-  // console.log(
-  //   `useList ${label}
-  //   defaultSelected ${JSON.stringify(defaultSelected)}
-  //   selectedProp ${JSON.stringify(selected)} `
-  // );
-
   // TODO where do these belong ?
   const handleSelect = useCallback<SelectHandler>(
     (evt, selectedId) => {

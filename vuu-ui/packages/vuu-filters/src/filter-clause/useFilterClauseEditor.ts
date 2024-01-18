@@ -174,19 +174,12 @@ export const useFilterClauseEditor = ({
 }: FilterClauseEditorHookProps) => {
   const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
-  const valueRef = useRef<HTMLDivElement>(null);
 
   const [selectedColumn, setSelectedColumn] = useState<
     ColumnDescriptor | undefined
   >(getColumnByName(tableSchema, filterClause.column));
   const [operator, _setOperator] = useState<FilterClauseOp | undefined>(
     filterClause.op
-  );
-
-  const findColumn = useCallback(
-    (columnName: string) =>
-      tableSchema.columns.find((col) => col.name === columnName),
-    [tableSchema.columns]
   );
 
   const setOperator = useCallback((op) => {
@@ -359,6 +352,5 @@ export const useFilterClauseEditor = ({
     operatorRef,
     selectedColumn,
     value,
-    valueRef,
   };
 };

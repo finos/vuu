@@ -85,6 +85,22 @@ export const FilterBarOneSimpleFilter = () => {
 };
 FilterBarOneSimpleFilter.displaySequence = displaySequence++;
 
+export const FilterBarOneMultiValueFilter = () => {
+  return (
+    <DefaultFilterBar
+      filters={[
+        {
+          column: "currency",
+          name: "Filter One",
+          op: "in",
+          values: ["CAD", "EUR"],
+        },
+      ]}
+    />
+  );
+};
+FilterBarOneMultiValueFilter.displaySequence = displaySequence++;
+
 export const FilterBarMultipleFilters = () => {
   return (
     <DefaultFilterBar

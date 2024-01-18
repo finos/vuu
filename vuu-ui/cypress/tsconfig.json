@@ -2,9 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "types": ["cypress", "@testing-library/cypress"],
-    "typeRoots": [
-      "./support"
-    ]
   },
   "include": ["**/*.ts", "**/*.tsx", "../cypress.d.ts"]
 }

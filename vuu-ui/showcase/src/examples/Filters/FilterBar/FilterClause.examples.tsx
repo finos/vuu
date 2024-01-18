@@ -54,7 +54,7 @@ export const DefaultExpandoComboBox = (
   );
 
   const getColumnName = useCallback(
-    (column: ColumnDescriptor) => column.name,
+    (column) => (column as ColumnDescriptor).name,
     []
   );
 

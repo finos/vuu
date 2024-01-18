@@ -1,6 +1,7 @@
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import {
   ComboBox,
+  ComboBoxProps,
   MultiSelectionHandler,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
@@ -10,7 +11,11 @@ import { FormEvent, useCallback, useMemo } from "react";
 
 let displaySequence = 1;
 
-export const DefaultCombobox = () => {
+export const DefaultCombobox = ({
+  source = usa_states.slice(0, 10),
+  width = 120,
+  ...props
+}: Partial<ComboBoxProps>) => {
   const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (evt, selected) => {
       console.log(`selectionChange ${selected}`);
@@ -19,9 +24,10 @@ export const DefaultCombobox = () => {
   );
   return (
     <ComboBox
-      source={usa_states}
+      source={source}
       onSelectionChange={handleSelectionChange}
-      width={120}
+      width={width}
+      {...props}
     />
   );
 };
@@ -67,6 +73,7 @@ export const OpenOnFocus = () => {
       <ComboBox
         source={usa_states}
         onSelectionChange={handleSelectionChange}
+        openOnFocus={false}
         width={200}
       />
       <ComboBox
@@ -83,19 +90,50 @@ OpenOnFocus.displaySequence = displaySequence++;
 
 export const ComboboxDefaultSelection = () => {
   const handleSelectionChange = useCallback<SingleSelectionHandler>(
-    (evt, selected) => {
+    (_, selected) => {
       console.log(`selectionChange ${selected}`);
     },
     []
   );
+  const handleMultipleSelectionChange = useCallback<MultiSelectionHandler>(
+    (_, selected) => {
+      console.log(`selectionChange ${selected}`);
+    },
+    []
+  );
+
+  const itemsToString = (items: string[]) => {
+    return `${items.length} items`;
+  };
+
   return (
-    <ComboBox
-      defaultSelected={"Texas"}
-      source={usa_states}
-      onSelectionChange={handleSelectionChange}
-      style={{ background: "yellow" }}
-      width={120}
-    />
+    <div
+      data-showcase-center
+      style={{ alignItems: "center", height: 40, display: "flex", gap: 12 }}
+    >
+      <ComboBox
+        defaultSelected={"Alabama"}
+        defaultValue="Alabama"
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        width={120}
+      />
+      <ComboBox
+        defaultSelected={"Texas"}
+        defaultValue="Texas"
+        source={usa_states}
+        onSelectionChange={handleSelectionChange}
+        width={120}
+      />
+      <ComboBox
+        defaultSelected={["Alabama", "Arkansas"]}
+        itemsToString={itemsToString}
+        selectionStrategy="multiple"
+        source={usa_states}
+        onSelectionChange={handleMultipleSelectionChange}
+        width={120}
+      />
+    </div>
   );
 };
 
@@ -118,14 +156,7 @@ export const ComboboxAllowFreeText = () => {
 ComboboxAllowFreeText.displaySequence = displaySequence++;
 
 export const ComboboxDefaultHighlightedIndex = () => {
-  return (
-    <ComboBox
-      initialHighlightedIndex={0}
-      source={usa_states}
-      style={{ background: "yellow" }}
-      width={120}
-    />
-  );
+  return <DefaultCombobox initialHighlightedIndex={0} />;
 };
 ComboboxDefaultHighlightedIndex.displaySequence = displaySequence++;
 
@@ -259,6 +290,10 @@ export const MultiSelectComboboxDefaultSelected = () => {
     console.log(`value = ${value}`);
   }, []);
 
+  const itemsToString = (items: string[]) => {
+    return `${items.length} items`;
+  };
+
   const handleSelectionChange = useCallback((evt, selected) => {
     console.log(`selectionChange ${selected.join(",")}`);
   }, []);
@@ -276,6 +311,7 @@ export const MultiSelectComboboxDefaultSelected = () => {
   return (
     <ComboBox
       InputProps={InputProps}
+      itemsToString={itemsToString}
       defaultSelected={["Alabama", "Texas"]}
       onSelectionChange={handleSelectionChange}
       source={usa_states}

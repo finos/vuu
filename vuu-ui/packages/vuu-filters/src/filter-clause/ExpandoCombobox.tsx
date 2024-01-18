@@ -27,8 +27,10 @@ const NO_INPUT_PROPS = {};
 export interface ExpandoComboboxProps<
   Item = string,
   S extends SelectionStrategy = "default"
-> extends ComboBoxProps<Item, S> {
+> extends Omit<ComboBoxProps<Item, S>, "itemToString" | "value"> {
+  itemToString?: (item: unknown) => string;
   onInputChange?: (evt: FormEvent<HTMLInputElement>) => void;
+  value?: string | string[];
 }
 
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
@@ -52,8 +54,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   const { itemToString = defaultToString } = props;
   const initialValue = useRef(value);
 
-  const itemsToString = useCallback(
-    (items: Item[]) => {
+  const itemsToString = useCallback<<I = Item>(items: I[]) => string>(
+    (items) => {
       const [first, ...rest] = items;
       if (rest.length) {
         return `${itemToString(first)} + ${rest.length}`;
@@ -78,7 +80,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   }, []);
 
   const [InputProps, ListProps] = useMemo<
-    // [ComboBoxProps["InputProps"], ComboBoxProps["ListProps"]]
     [ComboBoxProps["InputProps"], any]
   >(() => {
     const { inputProps, ...restInputProps } = InputPropsProp;
@@ -126,6 +127,22 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [itemToString, onSelectionChange]
   );
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const getDefaultSelected = (): any => {
+    if (initialValue.current === undefined) {
+      return undefined;
+    } else if (Array.isArray(initialValue.current)) {
+      return props.source?.filter((item) =>
+        initialValue.current.includes(itemToString(item))
+      );
+    } else {
+      return props.source?.find(
+        (item) => itemToString(item) === initialValue.current
+      );
+    }
+  };
+
   const popupProps = {
     minWidth: "fit-content",
   };
@@ -139,7 +156,12 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       <ComboBox<Item, S>
         {...props}
         PopupProps={popupProps}
-        defaultValue={initialValue.current}
+        defaultSelected={getDefaultSelected()}
+        defaultValue={
+          Array.isArray(initialValue.current)
+            ? itemsToString<string>(initialValue.current)
+            : initialValue.current
+        }
         fullWidth
         ListProps={ListProps}
         InputProps={InputProps}
