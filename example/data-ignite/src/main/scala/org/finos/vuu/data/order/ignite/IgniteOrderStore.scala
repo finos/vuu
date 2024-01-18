@@ -58,6 +58,25 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     parentOrderCache.get(id)
   }
 
+  def findChildOrder(sqlFilterClause: String, startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
+
+    val query = new SqlFieldsQuery(s"select * from ChildOrder where $sqlFilterClause order by id limit ? offset ?")
+    query.setArgs(rowCount, startIndex)
+
+    val results = childOrderCache.query(query)
+
+    var counter = 0
+    val buffer = mutable.ListBuffer[ChildOrder]()
+    results.forEach(item => {
+      buffer.addOne(toChildOrder(item))
+      counter += 1
+    })
+
+    logger.debug(s"Loaded $counter rows, from index : $startIndex, rowCou")
+
+    buffer
+
+  }
   def findChildOrderFilteredBy(filterQueryCriteria: List[IndexQueryCriterion]): Iterable[ChildOrder] = {
   //  val filter: IgniteBiPredicate[Int, ChildOrder]  = (key, p) => p.openQty > 0
 
@@ -114,6 +133,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   def findWindow(startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
     val query = new SqlFieldsQuery(s"select * from ChildOrder order by id limit ? offset ?")
     query.setArgs(rowCount, startIndex)
+ //   val query = new SqlFieldsQuery(s"select * from ChildOrder")
     val results = childOrderCache.query(query)
 
     var counter = 0
