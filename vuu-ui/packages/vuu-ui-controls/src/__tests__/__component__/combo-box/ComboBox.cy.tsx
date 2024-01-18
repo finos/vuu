@@ -1,4 +1,4 @@
-import { DefaultCombobox } from "../../../../../../showcase/src/examples/UiControls/ComboBox.examples";
+import { DefaultCombobox } from "../../../../../../showcase/src/examples/UiControls/Combobox.examples";
 
 describe("Given a ComboBox", () => {
   it("should be able to filter and select an option with a mouse", () => {
