@@ -39,6 +39,18 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     assert(persistedParentOrder.activeChildren == 1)
   }
 
+  test("Ignite Store And Find Window of rows") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 2)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3)
+
+    val childOrder = orderStore.findWindow(1,1)
+    assert(childOrder != null)
+    assert(childOrder.size == 1)
+    assert(childOrder.head.id == 2)
+  }
+
   //https://ignite.apache.org/docs/latest/key-value-api/using-cache-queries#additional-filtering
   //https://ptupitsyn.github.io/Getting-Started-With-Apache-Ignite-Net-3-Sql/
   test("Ignite Store with custom filters") {
@@ -53,12 +65,35 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     )
 
     val childOrder = orderStore.findChildOrderFilteredBy(filterQueries)
-    val persistedParentOrder = orderStore.findParentOrderById(1)
 
+    val persistedParentOrder = orderStore.findParentOrderById(1)
     assert(childOrder != null)
     assert(childOrder.size == 2)
     assert(persistedParentOrder != null)
     assert(persistedParentOrder.activeChildren == 2)
+  }
+
+  test("Ignite Store with custom sql filters") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 2)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3)
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
+
+    // "Order where parentID = parentValue or second = something"
+    // "Order where parentID = parentValue and second = something OR (foo = bar and chris = true)"
+    val filterQueries = "parentId=2"
+
+    val childOrder = orderStore.findChildOrder(filterQueries, 1,2)
+
+    assert(childOrder != null)
+    assert(childOrder.size == 2)
+    assert(childOrder.head.id == 5)
+    assert(childOrder.last.id == 6)
   }
 
   private def GivenParentOrder(parentOrderId: Int): ParentOrder = {

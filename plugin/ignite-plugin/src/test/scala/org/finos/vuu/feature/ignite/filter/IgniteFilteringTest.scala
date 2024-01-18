@@ -7,7 +7,7 @@ import org.scalatest.BeforeAndAfter
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class IgniteFilteringTest extends AnyFeatureSpec with BeforeAndAfter with Matchers{
+class IgniteFilteringTest extends AnyFeatureSpec with BeforeAndAfter with Matchers {
 
   //todo virtualised table filtering tests (with ignite data or can use fake big data source?)
   private var filterTreeVisitor: IgniteFilterTreeVisitor = _
@@ -21,9 +21,9 @@ class IgniteFilteringTest extends AnyFeatureSpec with BeforeAndAfter with Matche
     Scenario("Equality comparison to STRING") {
 
       givenOrderExistInIgnite(
-        createTestOrder(id = 1, ric = "VOD.L", parentId = 11),
-        createTestOrder(id = 2, ric = "AAPL.L", parentId = 11),
-        createTestOrder(id = 3, ric = "AAPL.GA", parentId = 10),
+        createTestOrder(id = 1, ric = "VOD.L"),
+        createTestOrder(id = 2, ric = "AAPL.L"),
+        createTestOrder(id = 3, ric = "AAPL.GA"),
       )
 
       val filterResult = applyFilter("ric = \"AAPL.L\"")
