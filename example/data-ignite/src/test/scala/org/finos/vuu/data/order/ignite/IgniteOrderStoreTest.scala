@@ -39,7 +39,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     assert(persistedParentOrder.activeChildren == 1)
   }
 
-  test("Ignite Store And Find Window of rows") {
+  test("Ignite Store And Find Window of Rows") {
     var parentOrder: ParentOrder = GivenParentOrder(1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 2)
@@ -83,13 +83,32 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
-    val filterQueries = "parentId=2"
+    val filterQueries = "parentId = 2"
     val childOrder = orderStore.findChildOrder(filterQueries, 1,2)
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
     assert(childOrder.head.id == 5)
     assert(childOrder.last.id == 6)
+  }
+
+
+  test("Ignite Store With Custom Sql Filters Include String") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 2)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3)
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
+
+    val filterQueries = "ric = \'ric\'"
+    val childOrder = orderStore.findChildOrder(filterQueries, 0, 100)
+
+    assert(childOrder != null)
+    assert(childOrder.size == 6)
   }
 
   test("Ignite Store With Empty Custom Sql Filters") {
