@@ -19,7 +19,7 @@ object IgniteOrderDataModule extends DefaultModule {
         VirtualizedSessionTableDef(
           name = "bigOrders",
           keyField = "orderId",
-          Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
+          Columns.fromNames("orderId".int(), "ric".string(), "quantity".int(), "price".double(), "side".string(), "strategy".string(), "parentOrderId".int())
         ),
         (table, _) => new IgniteOrderDataProvider(igniteOrderStore),
         (table, _, _, _) => ViewPortDef(

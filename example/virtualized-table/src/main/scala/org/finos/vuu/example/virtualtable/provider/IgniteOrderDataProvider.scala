@@ -2,8 +2,10 @@ package org.finos.vuu.example.virtualtable.provider
 
 import org.apache.ignite.cache.query.IndexQueryCriterion
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.data.order.ignite.IgniteOrderStore
+import org.finos.vuu.feature.ignite.filter.{IgniteFilterClause, IgniteFilterTreeVisitor}
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
@@ -24,18 +26,30 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 
     //todo get filters
     //todo find child by range + sort criteria + filter criteria
-    //val iterator = igniteStore.findChildOrderFilteredBy(List[IndexQueryCriterion]())
 
-    val iterator = igniteStore.findWindow(range.from, range.to)
+//    val filterTreeVisitor = new IgniteFilterTreeVisitor
+//    val clause = FilterSpecParser.parse[IgniteFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
+//    val criteria = clause.toCriteria()
+//    val iterator = igniteStore.findChildOrderFilteredBy(criteria)
+
+    //val clause = FilterSpecParser.parse[IgniteFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
+
+    val sqlFilterClause =  ""
+    val iterator = igniteStore.findChildOrder(sqlFilterClause, range.from, range.to)
+
+//    val iterator = igniteStore.findWindow(range.from, range.to)
+
     val index = new AtomicInteger(range.from) // todo: get rid of working assumption here that the dataset is fairly immutable.
     iterator.foreach(childOrder => {
       val row = RowWithData(childOrder.id.toString,
         Map(
           "orderId" -> childOrder.id,
+          "ric" -> childOrder.ric,
           "price" -> childOrder.price,
-          "quantity" -> childOrder.exchange,
+          "quantity" -> childOrder.quantity,
           "side" -> childOrder.side,
-          "trader" -> "N/A"
+          "strategy" -> childOrder.strategy,
+          "parentOrderId" -> childOrder.parentId
         ))
       internalTable.processUpdateForIndex(index.getAndIncrement(), childOrder.id.toString, row, clock.now())
     })
