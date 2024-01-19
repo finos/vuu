@@ -99,6 +99,8 @@ class IgniteTestStore (private val orderCache: IgniteCache[Int, TestOrderEntity]
 
     val whereClause = if (sqlFilterClause == null || sqlFilterClause.isEmpty) "" else s" where $sqlFilterClause"
     val value = s"select * from TestOrderEntity$whereClause"
+
+    logger.info("Querying ignite for "+ value)
     val query = new SqlFieldsQuery(value)
 
     val results = orderCache.query(query)
