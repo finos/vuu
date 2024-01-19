@@ -33,11 +33,11 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 //    val iterator = igniteStore.findChildOrderFilteredBy(criteria)
 
     //val clause = FilterSpecParser.parse[IgniteFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
-
-    val sqlFilterClause =  ""
-    val iterator = igniteStore.findChildOrder(sqlFilterClause, range.from, range.to)
-
-//    val iterator = igniteStore.findWindow(range.from, range.to)
+//
+//    val sqlFilterClause =  ""
+//    val iterator = igniteStore.findChildOrder(sqlFilterClause, range.from, range.to)
+    val rowCount = if(range.to > range.from) range.to - range.from else 1
+    val iterator = igniteStore.findWindow(range.from, rowCount)
 
     val index = new AtomicInteger(range.from) // todo: get rid of working assumption here that the dataset is fairly immutable.
     iterator.foreach(childOrder => {
