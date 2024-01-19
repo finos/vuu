@@ -1,6 +1,6 @@
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { TableSchema } from "@finos/vuu-data-types";
-import { FilterClause } from "@finos/vuu-filter-types";
+import { ColumnDescriptorsByName, FilterClause } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
@@ -18,7 +18,7 @@ import "./FilterClauseEditor.css";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  columnDescriptors: Record<string, ColumnDescriptor>;
+  columnsByName: ColumnDescriptorsByName;
   filterClause: Partial<FilterClause>;
   onCancel?: FilterClauseCancelHandler;
   onChange: (filterClause: Partial<FilterClause>) => void;
@@ -32,7 +32,7 @@ const classBase = "vuuFilterClause";
 
 export const FilterClauseEditor = ({
   className,
-  columnDescriptors,
+  columnsByName,
   onCancel,
   onChange,
   onDropdownClose,
@@ -59,13 +59,10 @@ export const FilterClauseEditor = ({
     filterClause,
     onCancel,
     onChange,
-    columnDescriptors,
+    columnsByName,
   });
 
-  const columns = useMemo(
-    () => Object.values(columnDescriptors),
-    [columnDescriptors]
-  );
+  const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
 
   return (
     <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>

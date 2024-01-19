@@ -73,7 +73,7 @@ export const DefaultFilterBar = ({
         onChangeActiveFilterIndex={handleChangeActiveFilterIndex}
         onFiltersChanged={handleFiltersChanged}
         tableSchema={{ ...tableSchema, columns }}
-        tableConfig={{ columns }}
+        columnDescriptors={columns}
       />
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
       <Input style={{ margin: 20, width: 100 }} />

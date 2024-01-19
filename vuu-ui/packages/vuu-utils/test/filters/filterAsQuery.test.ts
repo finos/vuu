@@ -86,7 +86,7 @@ describe("filterAsQuery", () => {
         value: date.getTime(),
       },
       {
-        columnMap: {
+        columnsByName: {
           lastUpdated: { name: "lastUpdated", type: "date/time" },
         },
       }

@@ -1,4 +1,8 @@
-import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
+import {
+  ColumnDescriptorsByName,
+  FilterClause,
+  FilterClauseOp,
+} from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   isMultiValueFilter,
@@ -158,7 +162,7 @@ export type FilterClauseCancelHandler = (
   reason: FilterClauseCancelType
 ) => void;
 export interface FilterClauseEditorHookProps {
-  columnDescriptors: Record<string, ColumnDescriptor>;
+  columnsByName: ColumnDescriptorsByName;
   filterClause: Partial<FilterClause>;
   onCancel?: FilterClauseCancelHandler;
   onChange: (filterClause: Partial<FilterClause>) => void;
@@ -168,14 +172,14 @@ export const useFilterClauseEditor = ({
   filterClause,
   onCancel,
   onChange,
-  columnDescriptors,
+  columnsByName,
 }: FilterClauseEditorHookProps) => {
   const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
 
   const [selectedColumn, setSelectedColumn] = useState<
     ColumnDescriptor | undefined
-  >(filterClause.column ? columnDescriptors[filterClause.column] : undefined);
+  >(filterClause.column ? columnsByName[filterClause.column] : undefined);
   const [operator, _setOperator] = useState<FilterClauseOp | undefined>(
     filterClause.op
   );

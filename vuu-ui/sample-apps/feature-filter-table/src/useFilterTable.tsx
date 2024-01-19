@@ -160,7 +160,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         }
       : undefined,
     activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
-    tableConfig,
+    columnDescriptors: tableConfig.columns,
     filters,
     onApplyFilter: handleApplyFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,

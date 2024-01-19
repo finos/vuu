@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { defaultPatternsByType, formatDate } from "packages/vuu-utils/src";
+import { defaultPatternsByType, formatDate } from "@finos/vuu-utils";
 import { DefaultFilterBar } from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors

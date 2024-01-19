@@ -2,7 +2,7 @@ import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { Prompt } from "@finos/vuu-popups";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
-import { TableConfig } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -18,13 +18,13 @@ import "./FilterBar.css";
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
   activeFilterIndex?: number[];
+  columnDescriptors: ColumnDescriptor[];
   filters: Filter[];
   onApplyFilter: (filter: DataSourceFilter) => void;
   onChangeActiveFilterIndex: ActiveItemChangeHandler;
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
-  tableConfig: TableConfig;
 }
 
 const classBase = "vuuFilterBar";
@@ -33,20 +33,20 @@ export const FilterBar = ({
   activeFilterIndex: activeFilterIndexProp = [],
   FilterClauseEditorProps,
   className: classNameProp,
+  columnDescriptors,
   filters: filtersProp,
   onApplyFilter,
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
-  tableConfig,
   ...htmlAttributes
 }: FilterBarProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeFilterIndex,
     addButtonProps,
-    columnDescriptors,
+    columnsByName,
     editFilter,
     filters,
     onBlurFilterClause,
@@ -66,12 +66,12 @@ export const FilterBar = ({
   } = useFilterBar({
     activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
+    columnDescriptors,
     filters: filtersProp,
     onApplyFilter,
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
     showMenu: showMenuProp,
-    tableConfig,
     tableSchema,
   });
 
@@ -87,7 +87,7 @@ export const FilterBar = ({
         items.push(
           <FilterPill
             {...pillProps}
-            columnDescriptors={columnDescriptors}
+            columnsByName={columnsByName}
             filter={filter}
             key={`filter-${i}`}
           />
@@ -95,15 +95,13 @@ export const FilterBar = ({
       });
       return items;
     } else if (editFilter) {
-      // TODO what about the relationship between these clauses,which will no longer be self-evident
-      // in a flat list
       const filterClauses = getFilterClauses(editFilter);
       items.push(
         <div className={`${classBase}-Editor`} key={`editor`}>
           {filterClauses.map((f, i) => (
             <FilterClauseEditor
               {...FilterClauseEditorProps}
-              columnDescriptors={columnDescriptors}
+              columnsByName={columnsByName}
               filterClause={f}
               key={`editor-${i}`}
               onCancel={onCancelFilterClause}

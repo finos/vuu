@@ -169,7 +169,7 @@ export const NewFilterClause = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
-        columnDescriptors={columnDescriptors(tableSchema.columns)}
+        columnsByName={columnDescriptorsByName(tableSchema.columns)}
         filterClause={EMPTY_FILTER_CLAUSE}
         onChange={onChange}
         suggestionProvider={typeaheadHook}
@@ -192,7 +192,7 @@ export const PartialFilterClauseColumnOnly = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
-        columnDescriptors={columnDescriptors(tableSchema.columns)}
+        columnsByName={columnDescriptorsByName(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -216,7 +216,7 @@ export const PartialFilterClauseColumnAndOperator = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
-        columnDescriptors={columnDescriptors(tableSchema.columns)}
+        columnsByName={columnDescriptorsByName(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -242,7 +242,7 @@ export const CompleteFilterClauseTextEquals = () => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClauseEditor
-        columnDescriptors={columnDescriptors(tableSchema.columns)}
+        columnsByName={columnDescriptorsByName(tableSchema.columns)}
         filterClause={filterClause}
         onChange={onChange}
         tableSchema={tableSchema}
@@ -252,5 +252,5 @@ export const CompleteFilterClauseTextEquals = () => {
 };
 CompleteFilterClauseTextEquals.displaySequence = displaySequence++;
 
-const columnDescriptors = (columns: TableSchema["columns"]) =>
+const columnDescriptorsByName = (columns: TableSchema["columns"]) =>
   columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});

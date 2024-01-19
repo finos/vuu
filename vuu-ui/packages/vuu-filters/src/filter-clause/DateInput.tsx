@@ -45,8 +45,8 @@ function getInitialState(value: Props["value"]) {
 
 const getEpochMillisConverter =
   (op: NumericFilterClauseOp) =>
-  (date: DateValue, timezone?: string): number => {
-    const d = date.toDate(timezone ?? getLocalTimeZone());
+  (date: DateValue, timezone: string = getLocalTimeZone()): number => {
+    const d = date.toDate(timezone);
     switch (op) {
       case ">":
       case "<=":
@@ -54,8 +54,8 @@ const getEpochMillisConverter =
         return d.getTime();
       case ">=":
       case "<":
-      case "=":
-      case "!=":
+      case "=": // converted to "< `start of next day` and >= `start of this day`" when query is created
+      case "!=": // converted to ">= `start of next day` or < `start of this day`" when query is created
         d.setHours(0, 0, 0, 0);
         return d.getTime();
     }

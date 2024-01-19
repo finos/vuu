@@ -49,12 +49,12 @@ export const DefaultFilterTable = () => {
   );
 
   const filterBarProps = {
+    columnDescriptors: config.columns,
     filters: [],
     onApplyFilter: handleApplyFilter,
     onChangeFilter: handleChangeFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema,
-    tableConfig,
   };
 
   const tableProps = {
@@ -114,11 +114,11 @@ export const FilterTableArrayDataInstruments = () => {
   );
 
   const filterBarProps = {
+    columnDescriptors: config.columns,
     filters: [],
     onApplyFilter: handleApplyFilter,
     onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     tableSchema: getSchema("instruments"),
-    tableConfig: config,
   };
 
   const tableProps = {

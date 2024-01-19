@@ -1,3 +1,5 @@
+import { ColumnDescriptor } from "@finos/vuu-table-types";
+
 export declare type NumericFilterClauseOp =
   | "="
   | "!="
@@ -90,3 +92,5 @@ export declare type FilterState = {
   filterQuery: string;
   filterName?: string;
 };
+
+export declare type ColumnDescriptorsByName = Record<string, ColumnDescriptor>;

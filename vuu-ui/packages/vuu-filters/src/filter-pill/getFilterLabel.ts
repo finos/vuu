@@ -1,4 +1,5 @@
 import {
+  ColumnDescriptorsByName,
   Filter,
   FilterClause,
   MultiValueFilterClause,
@@ -9,9 +10,9 @@ import {
   formatDate,
   isDateTimeColumn,
   isMultiClauseFilter,
+  dateTimePattern,
+  defaultPatternsByType,
 } from "@finos/vuu-utils";
-import { dateTimePattern, defaultPatternsByType } from "@finos/vuu-utils";
-import { ColumnDescriptor } from "packages/vuu-table-types";
 import { filterClauses } from "../filter-utils";
 
 function applyFormatter<T>(
@@ -27,9 +28,9 @@ function applyFormatter<T>(
 
 function formatFilterValue(
   filter: FilterClause,
-  columnMap?: Record<string, ColumnDescriptor>
+  columnsByName?: ColumnDescriptorsByName
 ): FilterClause {
-  const column = columnMap?.[filter.column];
+  const column = columnsByName?.[filter.column];
   if (column && isDateTimeColumn(column)) {
     const pattern = dateTimePattern(column.type);
     const formatter = (n: number) =>
@@ -48,15 +49,15 @@ function formatFilterValue(
 }
 
 export const getFilterLabel =
-  (columnMap?: Record<string, ColumnDescriptor>) => (filter: Filter) => {
+  (columnsByName?: ColumnDescriptorsByName) => (filter: Filter) => {
     if (isMultiClauseFilter(filter)) {
       const [firstClause] = filterClauses(filter);
       const formattedFilter = formatFilterValue(
         firstClause as FilterClause,
-        columnMap
+        columnsByName
       );
       return `${filterAsQuery(formattedFilter)} ${filter.op} ...`;
     } else {
-      return filterAsQuery(formatFilterValue(filter, columnMap));
+      return filterAsQuery(formatFilterValue(filter, columnsByName));
     }
   };

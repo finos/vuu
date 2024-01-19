@@ -1,5 +1,5 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { ColumnDescriptorsByName, Filter } from "@finos/vuu-filter-types";
 import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups";
 import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
@@ -7,7 +7,6 @@ import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo, useRef } from "react";
 import { FilterPillMenu } from "../filter-pill-menu";
 import { filterAsReactNode } from "./filterAsReactNode";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import "./FilterPill.css";
 import { getFilterLabel } from "./getFilterLabel";
@@ -17,7 +16,7 @@ const classBase = "vuuFilterPill";
 export interface FilterPillProps
   extends Pick<Partial<EditableLabelProps>, "onExitEditMode">,
     HTMLAttributes<HTMLDivElement> {
-  columnDescriptors?: Record<string, ColumnDescriptor>;
+  columnsByName?: ColumnDescriptorsByName;
   editable?: boolean;
   filter: Filter;
   index?: number;
@@ -28,7 +27,7 @@ export interface FilterPillProps
 
 export const FilterPill = ({
   className: classNameProp,
-  columnDescriptors,
+  columnsByName,
   editable = true,
   filter,
   id: idProp,
@@ -44,7 +43,7 @@ export const FilterPill = ({
       onBeginEdit?.(filter);
     }, [filter, onBeginEdit]);
 
-  const getLabel = getFilterLabel(columnDescriptors);
+  const getLabel = getFilterLabel(columnsByName);
   const label = useMemo(
     () => filter.name ?? getLabel(filter),
     [getLabel, filter]

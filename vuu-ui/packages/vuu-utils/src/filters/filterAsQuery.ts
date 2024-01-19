@@ -1,5 +1,8 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Filter, SingleValueFilterClause } from "@finos/vuu-filter-types";
+import {
+  ColumnDescriptorsByName,
+  Filter,
+  SingleValueFilterClause,
+} from "@finos/vuu-filter-types";
 import { isDateTimeColumn } from "../column-utils";
 import { isMultiClauseFilter, isMultiValueFilter } from "./utils";
 
@@ -11,7 +14,7 @@ const quotedStrings = (value: string | number | boolean) =>
 
 export const filterAsQuery = (
   f: Filter,
-  opts?: { columnMap?: Record<string, ColumnDescriptor> }
+  opts?: { columnsByName?: ColumnDescriptorsByName }
 ): string => {
   if (isMultiClauseFilter(f)) {
     return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
@@ -24,9 +27,9 @@ export const filterAsQuery = (
 
 function singleValueFilterAsQuery(
   f: SingleValueFilterClause,
-  opts?: { columnMap?: Record<string, ColumnDescriptor> }
+  opts?: { columnsByName?: ColumnDescriptorsByName }
 ): string {
-  const column = opts?.columnMap?.[f.column];
+  const column = opts?.columnsByName?.[f.column];
   if (column && isDateTimeColumn(column)) {
     return dateFilterAsQuery(f as SingleValueFilterClause<number>);
   } else {
