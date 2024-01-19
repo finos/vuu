@@ -53,7 +53,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
 
   //https://ignite.apache.org/docs/latest/key-value-api/using-cache-queries#additional-filtering
   //https://ptupitsyn.github.io/Getting-Started-With-Apache-Ignite-Net-3-Sql/
-  test("Ignite Store with custom filters") {
+  test("Ignite Store With Custom Index Query Filters") {
     var parentOrder: ParentOrder = GivenParentOrder(1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 2)
@@ -63,7 +63,6 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     val filterQueries = List(
       IndexQueryCriteriaBuilder.eq("parentId", 1),
     )
-
     val childOrder = orderStore.findChildOrderFilteredBy(filterQueries)
 
     val persistedParentOrder = orderStore.findParentOrderById(1)
@@ -73,7 +72,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     assert(persistedParentOrder.activeChildren == 2)
   }
 
-  test("Ignite Store with custom sql filters") {
+  test("Ignite Store With Custom Sql Filters") {
     var parentOrder: ParentOrder = GivenParentOrder(1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 2)
@@ -84,16 +83,28 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
-    // "Order where parentID = parentValue or second = something"
-    // "Order where parentID = parentValue and second = something OR (foo = bar and chris = true)"
     val filterQueries = "parentId=2"
-
     val childOrder = orderStore.findChildOrder(filterQueries, 1,2)
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
     assert(childOrder.head.id == 5)
     assert(childOrder.last.id == 6)
+  }
+
+  test("Ignite Store With Empty Custom Sql Filters") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
+
+    val filterQueries = ""
+    val childOrder = orderStore.findChildOrder(filterQueries, 0, 100)
+
+    assert(childOrder != null)
+    assert(childOrder.size == 3)
   }
 
   private def GivenParentOrder(parentOrderId: Int): ParentOrder = {
