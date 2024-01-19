@@ -5,7 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.data.order.ignite.IgniteOrderStore
-import org.finos.vuu.feature.ignite.filter.{IgniteFilterClause, IgniteFilterTreeVisitor}
+import org.finos.vuu.feature.ignite.filter.{IgniteIndexFilterClause, IgniteIndexFilterTreeVisitor}
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort

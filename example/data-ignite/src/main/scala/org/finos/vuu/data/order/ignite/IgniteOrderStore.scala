@@ -60,7 +60,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
   def findChildOrder(sqlFilterClause: String, startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
 
-    val whereClause = if(sqlFilterClause == null || sqlFilterClause.isEmpty) "" else s" where $sqlFilterClause";
+    val whereClause = if(sqlFilterClause == null || sqlFilterClause.isEmpty) "" else s" where $sqlFilterClause"
     val query = new SqlFieldsQuery(s"select * from ChildOrder$whereClause order by id limit ? offset ?")
     query.setArgs(rowCount, startIndex)
 
