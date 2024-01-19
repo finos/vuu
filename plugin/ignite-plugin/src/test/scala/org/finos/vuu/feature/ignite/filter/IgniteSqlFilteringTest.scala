@@ -17,7 +17,7 @@ class IgniteSqlFilteringTest extends AnyFeatureSpec with BeforeAndAfter with Mat
   }
 
   Feature("Applying the parsed filters yields expected results") {
-    Scenario("Equality comparison to STRING") {
+    Scenario("EQUALITY comparison to STRING") {
 
       givenOrderExistInIgnite(
         createTestOrderEntity(id = 1, ric = "VOD.L"),
@@ -30,6 +30,42 @@ class IgniteSqlFilteringTest extends AnyFeatureSpec with BeforeAndAfter with Mat
       assertFilteredData(
         filterResult.toArray,
         Array(createTestOrderEntity(id = 2, ric = "AAPL.L"))
+      )
+    }
+    Scenario("GREATER THAN clause") {
+
+      givenOrderExistInIgnite(
+        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 600),
+        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
+        createTestOrderEntity(id = 3, ric = "AAPL.GA", quantity = 1000),
+      )
+
+      val filterResult = applyFilter("quantity > 500")
+
+      assertFilteredData(
+        filterResult.toArray,
+        Array(
+          createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 600),
+          createTestOrderEntity(id = 3, ric = "AAPL.GA", quantity = 1000),
+        )
+      )
+    }
+
+    Scenario("AND clause for two conditions") {
+
+      givenOrderExistInIgnite(
+        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 1000),
+        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
+        createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
+      )
+
+      val filterResult = applyFilter("ric = \"AAPL.L\" and quantity > 500")
+
+      assertFilteredData(
+        filterResult.toArray,
+        Array(
+          createTestOrderEntity(id = 3, ric = "AAPL.L",  quantity = 1000),
+        )
       )
     }
   }
