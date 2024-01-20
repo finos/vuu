@@ -150,7 +150,6 @@ const TableCore = ({
   containerRef: RefObject<HTMLDivElement>;
   size: MeasuredSize;
 }) => {
-  console.log(`Table renderBufferSize ${renderBufferSize}`);
   const id = useId(idProp);
   const {
     columnMap,
@@ -220,9 +219,6 @@ const TableCore = ({
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
-
-  console.log(`keys
-  ${data.map((d) => d[RENDER_IDX])}`);
 
   return (
     <ContextMenuProvider

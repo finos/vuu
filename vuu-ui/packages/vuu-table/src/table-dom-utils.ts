@@ -34,8 +34,8 @@ export const getTableCell = (
   }
 };
 
-export const cellIsEditable = (cell: HTMLDivElement) =>
-  cell.classList.contains("vuuTableCell-editable");
+export const cellIsEditable = (cell: HTMLDivElement | null) =>
+  cell?.classList.contains("vuuTableCell-editable");
 
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;

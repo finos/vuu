@@ -29,8 +29,6 @@ export interface ViewportMeasurements {
   contentHeight: number;
   horizontalScrollbarHeight: number;
   isVirtualScroll: boolean;
-  maxScrollContainerScrollHorizontal: number;
-  maxScrollContainerScrollVertical: number;
   pinnedWidthLeft: number;
   pinnedWidthRight: number;
   rowCount: number;
@@ -48,8 +46,7 @@ export interface TableViewportHookResult extends ViewportMeasurements {
 }
 
 // Too simplistic, it depends on rowHeight
-// const MAX_RAW_ROWS = 1_000_000;
-const MAX_RAW_ROWS = 100_000;
+const MAX_RAW_ROWS = 1_000_000;
 
 const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   appliedPageSize: 0,
@@ -59,8 +56,6 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   getRowOffset: () => -1,
   horizontalScrollbarHeight: 0,
   isVirtualScroll: false,
-  maxScrollContainerScrollHorizontal: 0,
-  maxScrollContainerScrollVertical: 0,
   pinnedWidthLeft: 0,
   pinnedWidthRight: 0,
   rowCount: 0,
@@ -139,12 +134,6 @@ export const useTableViewport = ({
       const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
       const horizontalScrollbarHeight =
         contentWidth > size.width ? scrollbarSize : 0;
-      const maxScrollContainerScrollVertical =
-        pixelContentHeight -
-        ((size?.height ?? 0) - horizontalScrollbarHeight) +
-        totalHeaderHeight;
-      const maxScrollContainerScrollHorizontal =
-        contentWidth - size.width + pinnedWidthLeft;
       const visibleRows = (size.height - headerHeight) / rowHeight;
       const count = Number.isInteger(visibleRows)
         ? visibleRows
@@ -164,8 +153,6 @@ export const useTableViewport = ({
         getRowOffset,
         isVirtualScroll,
         horizontalScrollbarHeight,
-        maxScrollContainerScrollHorizontal,
-        maxScrollContainerScrollVertical,
         pinnedWidthLeft,
         pinnedWidthRight,
         rowCount: count,

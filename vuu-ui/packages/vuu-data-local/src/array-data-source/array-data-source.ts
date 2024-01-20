@@ -504,8 +504,8 @@ export class ArrayDataSource
   private setRange(range: VuuRange, forceFullRefresh = false) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       this.#range = range;
-      this.keys.reset(range);
-      this.sendRowsToClient(forceFullRefresh);
+      const keysResequenced = this.keys.reset(range);
+      this.sendRowsToClient(forceFullRefresh || keysResequenced);
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
     }

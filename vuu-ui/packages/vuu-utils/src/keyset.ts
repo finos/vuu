@@ -1,49 +1,66 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
 
+const EMPTY: number[] = [];
 export class KeySet {
-  private keys: Map<number, number>;
-  private free: number[];
-  private nextKeyValue: number;
+  private keys = new Map<number, number>();
+  private nextKeyValue = 0;
+  private range: VuuRange;
 
   constructor(range: VuuRange) {
-    this.keys = new Map<number, number>();
-    this.free = [];
-    this.nextKeyValue = 0;
-    this.reset(range);
+    this.range = range;
+    this.init(range);
   }
 
-  public next(): number {
-    if (this.free.length > 0) {
-      return this.free.shift() as number;
+  public next(free: number[] = EMPTY): number {
+    if (free.length > 0) {
+      return free.shift() as number;
     } else {
       return this.nextKeyValue++;
     }
   }
 
-  public reset({ from, to }: VuuRange) {
-    console.log(`reset keys ${from} to ${to}`);
+  private init({ from, to }: VuuRange) {
+    this.keys.clear();
+    this.nextKeyValue = 0;
+
+    for (let rowIndex = from; rowIndex < to; rowIndex++) {
+      const nextKeyValue = this.next();
+      this.keys.set(rowIndex, nextKeyValue);
+    }
+
+    return true;
+  }
+
+  public reset(range: VuuRange) {
+    const { from, to } = range;
+
+    const newSize = to - from;
+    const currentSize = this.range.to - this.range.from;
+    this.range = range;
+
+    if (currentSize > newSize) {
+      // We re-initialize the range when the range size reduces, even though this will
+      // potentially re-render all items.
+      return this.init(range);
+    }
+
+    const freeKeys: number[] = [];
+
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
-        this.free.push(keyValue);
+        freeKeys.push(keyValue);
         this.keys.delete(rowIndex);
       }
     });
 
-    const size = to - from;
-    if (this.keys.size + this.free.length > size) {
-      this.free.length = Math.max(0, size - this.keys.size);
-    }
-
     for (let rowIndex = from; rowIndex < to; rowIndex++) {
       if (!this.keys.has(rowIndex)) {
-        const nextKeyValue = this.next();
+        const nextKeyValue = this.next(freeKeys);
         this.keys.set(rowIndex, nextKeyValue);
       }
     }
 
-    if (this.nextKeyValue > this.keys.size) {
-      this.nextKeyValue = this.keys.size;
-    }
+    return false;
   }
 
   public keyFor(rowIndex: number): number {
@@ -59,8 +76,10 @@ export class KeySet {
   }
 
   public toDebugString() {
-    return Array.from(this.keys.entries())
-      .map<string>(([k, v]) => `${k}=>${v}`)
-      .join(",");
+    return `${this.keys.size} keys
+${Array.from(this.keys.entries())
+  .sort(([key1], [key2]) => key1 - key2)
+  .map<string>(([k, v]) => `${k}=>${v}`)
+  .join(",")}]\n`;
   }
 }

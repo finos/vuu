@@ -14,10 +14,22 @@ import {
   RowSelected,
 } from "@finos/vuu-utils";
 import cx from "clsx";
-import { CSSProperties, memo, MouseEvent, useCallback } from "react";
+import { CSSProperties, memo, MouseEvent, useCallback, useEffect } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import "./Row.css";
+
+// const cellStyle = { background: "green", width: 150 };
+// const MyCell = () => {
+//   useEffect(() => {
+//     console.log("MyCell mounted");
+//     return () => {
+//       console.log("MyCell unmounted");
+//     };
+//   }, []);
+
+//   return <div className="vuuTableCell" style={cellStyle} />;
+// };
 
 export interface RowProps {
   className?: string;
@@ -92,7 +104,6 @@ export const Row = memo(
     return (
       <div
         {...htmlAttributes}
-        key={`row-${row[0]}`}
         role="row"
         className={className}
         onClick={handleRowClick}

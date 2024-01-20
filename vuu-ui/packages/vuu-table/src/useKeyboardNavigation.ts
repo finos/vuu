@@ -218,22 +218,34 @@ NavigationHookProps) => {
       new Promise((resolve) => {
         let newRowIdx = rowIdx;
         switch (key) {
-          case "PageDown":
+          case "PageDown": {
             newRowIdx = Math.min(rowCount - 1, rowIdx + viewportRowCount);
-            requestScroll?.({ type: "scroll-page", direction: "down" });
+            if (newRowIdx !== rowIdx) {
+              requestScroll?.({ type: "scroll-page", direction: "down" });
+            }
             break;
-          case "PageUp":
+          }
+          case "PageUp": {
             newRowIdx = Math.max(0, rowIdx - viewportRowCount);
-            requestScroll?.({ type: "scroll-page", direction: "up" });
+            if (newRowIdx !== rowIdx) {
+              requestScroll?.({ type: "scroll-page", direction: "up" });
+            }
             break;
-          case "Home":
+          }
+          case "Home": {
             newRowIdx = 0;
-            requestScroll?.({ type: "scroll-end", direction: "home" });
+            if (newRowIdx !== rowIdx) {
+              requestScroll?.({ type: "scroll-end", direction: "home" });
+            }
             break;
-          case "End":
+          }
+          case "End": {
             newRowIdx = rowCount - 1;
-            requestScroll?.({ type: "scroll-end", direction: "end" });
+            if (newRowIdx !== rowIdx) {
+              requestScroll?.({ type: "scroll-end", direction: "end" });
+            }
             break;
+          }
         }
         setTimeout(() => {
           resolve([newRowIdx, colIdx]);

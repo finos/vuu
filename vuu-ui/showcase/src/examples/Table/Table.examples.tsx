@@ -282,8 +282,8 @@ export const TableNextVuuInstruments = () => {
     <Table
       config={tableConfig}
       dataSource={dataSource}
-      height={645}
-      renderBufferSize={50}
+      height={625}
+      renderBufferSize={5}
       width={715}
     />
   );

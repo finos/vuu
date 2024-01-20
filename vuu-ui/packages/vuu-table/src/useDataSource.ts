@@ -39,8 +39,6 @@ export const useDataSource = ({
   const hasUpdated = useRef(false);
   const rangeRef = useRef<VuuRange>(range);
 
-  console.log(`useDataSource initialRange ${range.from} ${range.to}`);
-
   const dataWindow = useMemo(
     () => new MovingWindow(getFullRange(range, renderBufferSize)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,8 +47,6 @@ export const useDataSource = ({
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
-      console.log(`Data ${updates.length} >>>
-      ${updates.map((u) => u[1])}`);
       for (const row of updates) {
         dataWindow.add(row);
       }
@@ -118,10 +114,6 @@ export const useDataSource = ({
     (range: VuuRange) => {
       if (!rangesAreSame(range, rangeRef.current)) {
         const fullRange = getFullRange(range, renderBufferSize);
-        console.log(`useDataSource setRange ${range.from} - ${range.to} 
-          renderBufferSize = ${renderBufferSize}
-          fullRange = ${fullRange.from} - ${fullRange.to}
-        `);
         dataWindow.setRange(fullRange);
         dataSource.range = rangeRef.current = fullRange;
         dataSource.emit("range", range);

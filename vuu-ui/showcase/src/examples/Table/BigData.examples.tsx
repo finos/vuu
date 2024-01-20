@@ -28,7 +28,7 @@ export const SimpleTable = () => {
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
-      10_000_000_000,
+      1_000_000_000,
       rowGenerator(config.columns.map((col) => col.name))
     );
     return new ArrayDataSource({

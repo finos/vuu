@@ -1,6 +1,6 @@
 import { DataItemCommitHandler, TableCellProps } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
-import { MouseEventHandler, useCallback } from "react";
+import { MouseEventHandler, useCallback, useEffect } from "react";
 import { useCell } from "../useCell";
 
 import "./TableCell.css";
