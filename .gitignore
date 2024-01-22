@@ -5,11 +5,7 @@
 /.idea/
 target/
 /gc.log
-/toolbox/toolbox.iml
-/example/**/*.iml
-/vuu-ui/vuu-ui.iml
-/vuu/vuu.iml
-/vuu-parent.iml
+/**/*.iml
 /vuu-book/src/.DS_Store
 .DS_Store
 

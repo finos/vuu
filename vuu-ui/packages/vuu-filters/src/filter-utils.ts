@@ -86,7 +86,6 @@ export const addClause = (
   clause: Partial<Filter>,
   { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
 ): FilterWithPartialClause => {
-  console.log({ existingFilter, clause });
   if (
     isMultiClauseFilter(existingFilter) &&
     existingFilter.op === combineWith

@@ -227,6 +227,87 @@ describe("The mouse user", () => {
       });
     });
   });
+
+  describe("WHEN adds two filters", () => {
+    const filter1 = {
+      column: "currency",
+      op: "!=",
+      value: "USD",
+      name: 'currency != "USD"',
+    };
+    const filter2 = {
+      column: "currency",
+      op: "!=",
+      value: "CAD",
+      name: 'currency != "CAD"',
+    };
+
+    beforeEach(() => {
+      const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+      const onApplyFilter = cy.stub().as("applyFilterHandler");
+      cy.mount(
+        <DefaultFilterBar
+          onApplyFilter={onApplyFilter}
+          onFiltersChanged={onFiltersChanged}
+        />
+      );
+      cy.get(ADD_BUTTON).realClick();
+      clickListItems(filter1.column, filter1.op, filter1.value);
+      clickButton("APPLY AND SAVE");
+      waitUntilEditableLabelIsFocused(".vuuFilterPill");
+      cy.realPress("Enter");
+
+      cy.get(ADD_BUTTON).realClick();
+      clickListItems(filter2.column, filter2.op, filter2.value);
+      clickButton("APPLY AND SAVE");
+      waitUntilEditableLabelIsFocused(".vuuFilterPill");
+      cy.realPress("Enter");
+    });
+
+    it("THEN filtersChangedHandler & applyFilterHandler callbacks are invoked with correct values", () => {
+      cy.get("@filtersChangedHandler").should("be.calledWith", [
+        filter1,
+        filter2,
+      ]);
+
+      cy.get("@applyFilterHandler").should("be.calledWith", {
+        filter: 'currency != "USD" and currency != "CAD"',
+        filterStruct: { op: "and", filters: [filter1, filter2] },
+      });
+    });
+
+    it("AND WHEN second filter is deleted THEN changes are correctly applied", () => {
+      findOverflowItem('[data-index="1"]')
+        .find(".vuuFilterPillMenu")
+        .realClick();
+      clickButton("Delete");
+      clickButton("Remove");
+
+      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
+        filter1,
+      ]);
+      cy.get("@applyFilterHandler").should("be.calledWithExactly", {
+        filter: 'currency != "USD"',
+        filterStruct: filter1,
+      });
+    });
+
+    it("AND WHEN first filter is deleted THEN changes are correctly applied", () => {
+      findOverflowItem('[data-index="0"]')
+        .find(".vuuFilterPillMenu")
+        .realClick();
+      clickButton("Delete");
+      clickButton("Remove");
+
+      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
+        filter2,
+      ]);
+      cy.get("@applyFilterHandler").should("be.calledWithExactly", {
+        filter: 'currency != "CAD"',
+        filterStruct: filter2,
+      });
+    });
+  });
 });
 
 describe("The keyboard user", () => {
