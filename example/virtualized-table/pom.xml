@@ -25,6 +25,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.finos.vuu.plugin</groupId>
+            <artifactId>ignite-plugin</artifactId>
+            <version>0.9.36-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
             <version>0.9.36-SNAPSHOT</version>
