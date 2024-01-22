@@ -82,7 +82,7 @@
         <module>toolbox</module>
         <module>vuu</module>
         <module>vuu-ui</module>
-        <module>layout-server</module>
+        <!--module>layout-server</module-->
         <module>benchmark</module>
         <module>example</module>
     </modules>
