@@ -17,7 +17,7 @@ object IgniteOrderDataModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(
         VirtualizedSessionTableDef(
-          name = "bigOrders",
+          name = "bigOrders2",
           keyField = "orderId",
           Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
         ),

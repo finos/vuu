@@ -126,6 +126,7 @@ trait ViewPort {
   def getTreeNodeStateStore: TreeNodeState
 
   def getStructure: ViewPortStructuralFields
+
   def getStructuralHashCode(): Int
 
   def getTableUpdateCount(): Long
@@ -161,12 +162,12 @@ case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     permissionChecker: Option[RowPermissionChecker])
 
 class ViewPortImpl(val id: String,
-                        //table: RowSource,
-                        val session: ClientSessionId,
-                        val outboundQ: PublishQueue[ViewPortUpdate],
-                        val structuralFields: AtomicReference[ViewPortStructuralFields],
-                        val range: AtomicReference[ViewPortRange]
-                       )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
+                   //table: RowSource,
+                   val session: ClientSessionId,
+                   val outboundQ: PublishQueue[ViewPortUpdate],
+                   val structuralFields: AtomicReference[ViewPortStructuralFields],
+                   val range: AtomicReference[ViewPortRange]
+                  )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
 
@@ -377,7 +378,7 @@ class ViewPortImpl(val id: String,
   }
 
   override def setKeys(newKeys: ViewPortKeys): Unit = {
-    val sendSizeUpdate = (newKeys.length != keys.length ) || newKeys.length == 0
+    val sendSizeUpdate = (newKeys.length != keys.length) || newKeys.length == 0
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
     setKeysPost(sendSizeUpdate, newKeys)
@@ -410,29 +411,53 @@ class ViewPortImpl(val id: String,
 
     var removedObs = 0
 
+    (range.get().from until range.get().to).foreach(i => {
+
+      if (i <= keys.length) {
+
+
+        val key = newKeys.get(i)
+
+        if (key != null) {
+
+          val oldIndex = rowKeyToIndex.put(key, i)
+
+          if (!isObservedAlready(key)) {
+
+            subscribeForKey(key, i)
+
+            newlyAddedObs += 1
+
+            publishHighPriorityUpdate(key, i)
+          } else if (hasChangedIndex(oldIndex, i)) {
+            publishHighPriorityUpdate(key, i)
+          }
+        }
+      }
+    })
+
     while (index < newKeys.length) {
 
       val key = newKeys.get(index)
 
       //with virtualized tables, we can have null keys as they are pending to be loaded.
       //we should just ignore them until they are loaded.
-      if(key != null){
+      if (key != null) {
 
         val oldIndex = rowKeyToIndex.put(key, index)
 
         if (isInRange(index)) {
-
-          if (!isObservedAlready(key)) {
-
-            subscribeForKey(key, index)
-
-            newlyAddedObs += 1
-
-            publishHighPriorityUpdate(key, index)
-
-          } else if (hasChangedIndex(oldIndex, index)) {
-            publishHighPriorityUpdate(key, index)
-          }
+          //          if (!isObservedAlready(key)) {
+          //
+          //            subscribeForKey(key, index)
+          //
+          //            newlyAddedObs += 1
+          //
+          //            publishHighPriorityUpdate(key, index)
+          //
+          //          } else if (hasChangedIndex(oldIndex, index)) {
+          //            publishHighPriorityUpdate(key, index)
+          //          }
 
         } else {
           unsubscribeForKey(key)
@@ -456,14 +481,14 @@ class ViewPortImpl(val id: String,
     //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
     //this will check every key and remove it
 
-    newKeys.toArray().foreach( key => {
+    newKeys.toArray().foreach(key => {
       newKeySet.add(newKeys.get(i))
     })
 
-//    while (i < newKeys.length) {
-//      newKeySet.add(newKeys.get(i))
-//      i += 1
-//    }
+    //    while (i < newKeys.length) {
+    //      newKeySet.add(newKeys.get(i))
+    //      i += 1
+    //    }
 
     val iterator = subscribedKeys.entrySet().iterator()
 

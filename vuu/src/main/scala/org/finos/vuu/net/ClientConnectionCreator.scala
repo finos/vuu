@@ -88,7 +88,7 @@ class DefaultMessageHandler(val channel: Channel,
 
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
 
-    val updates = outbound.filter(vpu => vpu.vpRequestId == vpu.vp.getRequestId).flatMap(vp => formatOneRowUpdate(vp)).toArray
+    val updates = outbound.filter(vpu => vpu != null && vpu.vpRequestId == vpu.vp.getRequestId).flatMap(vp => formatOneRowUpdate(vp)).toArray
     //val updates = outbound.flatMap(vp => formatOneRowUpdate(vp)).toArray
 
     val updateId = RequestId.oneNew()

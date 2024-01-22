@@ -4,8 +4,6 @@ import java.util.PriorityQueue
 
 class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge: (VALUE, VALUE) => VALUE, compareEqFun: (KEY, KEY) => Int) extends CoalescingQueue[VALUE, KEY] {
 
-  case class PrioritizedItem[KEY](KEY: KEY, highPriority: Boolean)
-
   private val keysInOrder = new PriorityQueue[PrioritizedItem[KEY]]((o1: PrioritizedItem[KEY], o2: PrioritizedItem[KEY]) => {
     if (o1.highPriority && !o2.highPriority) {
       -1
@@ -15,7 +13,6 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
       compareEqFun(o1.KEY, o2.KEY)
     }
   })
-
   private val values = new java.util.HashMap[KEY, VALUE]()
   private val lock = new Object
 
@@ -27,13 +24,10 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
     }
   }
 
-  override def pushHighPriority(item: VALUE): Unit = {
-    lock.synchronized {
-      enqueue(fn(item), item, true)
-    }
-  }
-
   private def enqueue(key: KEY, value: VALUE, highPriority: Boolean) = {
+
+    if(key != null && value != null){
+
     lock.synchronized {
       values.get(key) match {
         case null =>
@@ -46,19 +40,18 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
           }
       }
     }
+    }
+  }
+
+  override def pushHighPriority(item: VALUE): Unit = {
+    lock.synchronized {
+      enqueue(fn(item), item, true)
+    }
   }
 
   def isEmpty() = lock.synchronized {
     values.isEmpty
   }
-
-   private def dequeue: VALUE = {
-    lock.synchronized {
-      val key = keysInOrder.poll()
-      values.remove(key.KEY)
-    }
-  }
-
 
   def popUpTo(i: Int): Seq[VALUE] = {
     lock.synchronized {
@@ -73,4 +66,13 @@ class CoalescingPriorityQueueImpl[VALUE <: AnyRef, KEY](fn: VALUE => KEY, merge:
     val v = dequeue
     Option(v)
   }
+
+   private def dequeue: VALUE = {
+    lock.synchronized {
+      val key = keysInOrder.poll()
+      values.remove(key.KEY)
+    }
+  }
+
+  case class PrioritizedItem[KEY](KEY: KEY, highPriority: Boolean)
 }

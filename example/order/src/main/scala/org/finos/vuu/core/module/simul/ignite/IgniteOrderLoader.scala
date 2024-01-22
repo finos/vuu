@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.LongAdder
 
 object IgniteOrderLoader extends App {
   implicit val clock: Clock = new DefaultClock()
-  implicit val lifecycleContainer = new LifecycleContainer()
+  implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer()
   implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
   implicit val orderStore: OrderStore = IgniteOrderStore.apply()
 
@@ -19,7 +19,7 @@ object IgniteOrderLoader extends App {
   private val childOrderCounter = new LongAdder()
   private val executor = Executors.newWorkStealingPool()
 
-  (0 until (5_000)).foreach(i =>
+  (0 until (50_000)).foreach(i =>
   executor.execute { () =>
     val parent = ordersModel.createParent()
     val childrenToCreate = randomNumbers.seededRand(100, 250)
