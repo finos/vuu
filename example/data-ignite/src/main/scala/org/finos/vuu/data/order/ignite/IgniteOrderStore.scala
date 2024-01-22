@@ -73,7 +73,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
       counter += 1
     })
 
-    logger.info(s"Loaded Ignite ChildOrder for $counter rows, from index : $startIndex")
+    logger.info(s"Loaded Ignite ChildOrder for $counter rows, from index : $startIndex where $whereClause")
 
     buffer
 
