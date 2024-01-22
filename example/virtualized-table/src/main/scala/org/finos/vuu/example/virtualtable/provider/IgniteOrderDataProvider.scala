@@ -24,17 +24,17 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
     internalTable.setRange(VirtualizedRange(range.from, range.to))
 
 
-//    val sqlFilterClause =
-//      if (viewPort.filterSpec.filter == null || viewPort.filterSpec.filter.isEmpty) {
-//        ""
-//      }
-//      else {
-//        val filterTreeVisitor = new IgniteSqlFilterTreeVisitor
-//        val clause = FilterSpecParser.parse[IgniteSqlFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
-//        clause.toSql()
-//      }
+    val sqlFilterClause =
+      if (viewPort.filterSpec.filter == null || viewPort.filterSpec.filter.isEmpty) {
+        ""
+      }
+      else {
+        val filterTreeVisitor = new IgniteSqlFilterTreeVisitor
+        val clause = FilterSpecParser.parse[IgniteSqlFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
+        clause.toSql()
+      }
 
-    val sqlFilterClause = ""
+//    val sqlFilterClause = ""
 
     val rowCount = if(range.to > range.from) range.to - range.from else 1
     val iterator = igniteStore.findChildOrder(sqlFilterClause = sqlFilterClause, startIndex = range.from, rowCount = rowCount)
