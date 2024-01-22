@@ -42,6 +42,8 @@ export interface FilterBarHookProps
     | "filters"
     | "onApplyFilter"
     | "onChangeActiveFilterIndex"
+    | "onFilterDeleted"
+    | "onFilterRenamed"
     | "onFiltersChanged"
     | "showMenu"
     | "tableSchema"
@@ -57,6 +59,8 @@ export const useFilterBar = ({
   filters: filtersProp,
   onApplyFilter,
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
+  onFilterDeleted,
+  onFilterRenamed,
   onFiltersChanged,
   showMenu: showMenuProp,
   tableSchema,
@@ -95,6 +99,8 @@ export const useFilterBar = ({
     activeFilterIndex: activeFilterIdexProp,
     applyFilter,
     filters: filtersProp,
+    onFilterDeleted,
+    onFilterRenamed,
     onFiltersChanged,
     tableSchema,
   });
@@ -162,7 +168,7 @@ export const useFilterBar = ({
         }
       });
     },
-    [focusFilterPill, onDeleteFilter]
+    [filters.length, focusFilterPill, onDeleteFilter]
   );
 
   const getDeletePrompt = useMemo(

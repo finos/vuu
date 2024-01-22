@@ -16,16 +16,16 @@ export interface FilterTableFeatureProps {
 
 const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   const {
-    buildViewserverMenuOptions,
+    buildFilterTableMenuOptions,
     filterBarProps,
-    handleMenuAction,
+    handleFilterTableMenuAction,
     tableProps,
   } = useFilterTable({ tableSchema });
 
   return (
     <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
+      menuActionHandler={handleFilterTableMenuAction}
+      menuBuilder={buildFilterTableMenuOptions}
     >
       <FlexboxLayout
         className={classBase}
