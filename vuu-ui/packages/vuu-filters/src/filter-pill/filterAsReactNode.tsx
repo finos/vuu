@@ -1,32 +1,30 @@
-import {
-  filterValue,
-  isMultiClauseFilter,
-  isMultiValueFilter,
-  quotedStrings,
-} from "@finos/vuu-utils";
+import { isMultiClauseFilter, isMultiValueFilter } from "@finos/vuu-utils";
 import { Filter } from "@finos/vuu-filter-types";
 import { ReactNode } from "react";
+import { getFilterLabel } from "./getFilterLabel";
 
-export const filterAsReactNode = (f: Filter): ReactNode => {
+export const filterAsReactNode = (
+  f: Filter,
+  getLabel: (f: Filter) => string = getFilterLabel()
+): ReactNode => {
   if (isMultiClauseFilter(f)) {
+    const heading = f.op === "and" ? "Match all ..." : "Match any ...";
     return (
-      <div>
-        <span>Match all ...</span>
+      <ul>
+        <span>{heading}</span>
         {f.filters.map((f, i) => (
-          <div key={i}>{filterAsReactNode(f)}</div>
+          <li key={i}>{filterAsReactNode(f, getLabel)}</li>
         ))}
-      </div>
+      </ul>
     );
   } else if (isMultiValueFilter(f)) {
     if (f.values.length > 3) {
-      return `${f.column} ${f.op} [${f.values
-        .slice(0, 3)
-        .map(quotedStrings)
-        .join(",")} ...]`;
+      const values = f.values.slice(0, 3);
+      return `${getLabel({ ...f, values }).slice(0, -1)},...]`;
     } else {
-      return `${f.column} ${f.op} [${f.values.map(quotedStrings).join(",")}]`;
+      return getLabel(f);
     }
   } else {
-    return `${f.column} ${f.op} ${filterValue(f.value)}`;
+    return getLabel(f);
   }
 };

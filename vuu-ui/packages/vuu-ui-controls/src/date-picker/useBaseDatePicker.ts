@@ -13,6 +13,7 @@ type Props =
   | ({ variant: "default" } & InheritedProps<DateValue>);
 
 export function useBaseDatePicker(props: Props) {
+  const { onBlur } = props;
   const [visibleMonth, setVisibleMonth] = useState<DateValue | undefined>(
     props.variant === "default"
       ? props.selectedDate
@@ -22,10 +23,10 @@ export function useBaseDatePicker(props: Props) {
   const handleOnBlur: React.FocusEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (!e.currentTarget.contains(e.relatedTarget)) {
-        props.onBlur?.();
+        onBlur?.();
       }
     },
-    [props.onBlur]
+    [onBlur]
   );
 
   return {

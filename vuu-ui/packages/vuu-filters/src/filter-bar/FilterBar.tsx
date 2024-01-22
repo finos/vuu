@@ -2,6 +2,7 @@ import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { Prompt } from "@finos/vuu-popups";
 import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -17,6 +18,7 @@ import "./FilterBar.css";
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
   activeFilterIndex?: number[];
+  columnDescriptors: ColumnDescriptor[];
   filters: Filter[];
   onApplyFilter: (filter: DataSourceFilter) => void;
   onChangeActiveFilterIndex: ActiveItemChangeHandler;
@@ -31,6 +33,7 @@ export const FilterBar = ({
   activeFilterIndex: activeFilterIndexProp = [],
   FilterClauseEditorProps,
   className: classNameProp,
+  columnDescriptors,
   filters: filtersProp,
   onApplyFilter,
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
@@ -43,6 +46,7 @@ export const FilterBar = ({
   const {
     activeFilterIndex,
     addButtonProps,
+    columnsByName,
     editFilter,
     filters,
     onBlurFilterClause,
@@ -62,6 +66,7 @@ export const FilterBar = ({
   } = useFilterBar({
     activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
+    columnDescriptors,
     filters: filtersProp,
     onApplyFilter,
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
@@ -80,28 +85,34 @@ export const FilterBar = ({
     if (editFilter === undefined) {
       filters.forEach((filter, i) => {
         items.push(
-          <FilterPill {...pillProps} filter={filter} key={`filter-${i}`} />
+          <FilterPill
+            {...pillProps}
+            columnsByName={columnsByName}
+            filter={filter}
+            key={`filter-${i}`}
+          />
         );
       });
       return items;
     } else if (editFilter) {
-      // TODO what about the relationship between these clauses,which will no longer be self-evident
-      // in a flat list
       const filterClauses = getFilterClauses(editFilter);
-      filterClauses.forEach((filterClause, i) => {
-        items.push(
-          <FilterClauseEditor
-            {...FilterClauseEditorProps}
-            filterClause={filterClause}
-            key={`editor-${i}`}
-            onCancel={onCancelFilterClause}
-            onChange={onChangeFilterClause}
-            onBlur={onBlurFilterClause}
-            onFocus={onFocusFilterClause}
-            tableSchema={tableSchema}
-          />
-        );
-      });
+      items.push(
+        <div className={`${classBase}-Editor`} key={`editor`}>
+          {filterClauses.map((f, i) => (
+            <FilterClauseEditor
+              {...FilterClauseEditorProps}
+              columnsByName={columnsByName}
+              filterClause={f}
+              key={`editor-${i}`}
+              onCancel={onCancelFilterClause}
+              onChange={onChangeFilterClause(i)}
+              onBlur={onBlurFilterClause}
+              onFocus={onFocusFilterClause}
+              tableSchema={tableSchema}
+            />
+          ))}
+        </div>
+      );
       if (showMenu) {
         items.push(
           <FilterBuilderMenu
@@ -134,7 +145,6 @@ export const FilterBar = ({
       ref={rootRef}
     >
       <FilterBarMenu />
-      {/* <span className={`${classBase}-icon`} data-icon="tune" /> */}
       <Toolbar
         activeItemIndex={activeFilterIndex}
         height={28}

@@ -1,5 +1,7 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
+  ColumnDescriptorsByName,
   Filter,
   FilterClause,
   FilterWithPartialClause,
@@ -37,6 +39,7 @@ export interface FilterBarHookProps
   extends Pick<
     FilterBarProps,
     | "activeFilterIndex"
+    | "columnDescriptors"
     | "filters"
     | "onApplyFilter"
     | "onChangeActiveFilterIndex"
@@ -58,6 +61,7 @@ export const useFilterBar = ({
   onFiltersChanged,
   showMenu: showMenuProp,
   tableSchema,
+  columnDescriptors,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
@@ -68,6 +72,11 @@ export const useFilterBar = ({
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
+
+  const columnsByName = useMemo(
+    () => columnDescriptorsByName(columnDescriptors),
+    [columnDescriptors]
+  );
 
   const {
     filters,
@@ -101,7 +110,7 @@ export const useFilterBar = ({
   );
 
   const focusFilterClause = useCallback(
-    (index = 0) => {
+    (_ = 0) => {
       requestAnimationFrame(() => {
         const input = containerRef.current?.querySelector(
           ".vuuFilterClause .saltInput-input"
@@ -135,13 +144,10 @@ export const useFilterBar = ({
 
   const applyFilter = useCallback(
     (filter?: Filter) => {
-      const filterQuery = filter ? filterAsQuery(filter) : "";
-      onApplyFilter({
-        filter: filterQuery,
-        filterStruct: filter,
-      });
+      const query = filter ? filterAsQuery(filter, { columnsByName }) : "";
+      onApplyFilter({ filter: query, filterStruct: filter });
     },
-    [onApplyFilter]
+    [columnsByName, onApplyFilter]
   );
 
   const deleteConfirmed = useCallback(
@@ -288,7 +294,9 @@ export const useFilterBar = ({
         }
         case "or-clause":
           setEditFilter((filter) =>
-            addClause(filter as Filter, {}, { combineWith: "or" })
+            addClause(filter as Filter, EMPTY_FILTER_CLAUSE, {
+              combineWith: "or",
+            })
           );
           setShowMenu(false);
           return true;
@@ -341,15 +349,14 @@ export const useFilterBar = ({
   };
 
   const handleChangeFilterClause = useCallback(
-    (filterClause: Partial<FilterClause>) => {
+    (idx: number) => (filterClause: Partial<FilterClause>) => {
       console.log(`handleCHangeFilterClause ${JSON.stringify(filterClause)}`);
       if (filterClause !== undefined) {
-        const newFilter = replaceClause(editFilter, filterClause);
-        setEditFilter(newFilter);
+        setEditFilter((ef) => replaceClause(ef, filterClause, idx));
         setShowMenu(true);
       }
     },
-    [editFilter]
+    []
   );
 
   const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
@@ -450,6 +457,7 @@ export const useFilterBar = ({
   return {
     activeFilterIndex,
     addButtonProps,
+    columnsByName,
     editFilter,
     filters,
     onBlurFilterClause: handleBlurFilterClause,
@@ -471,3 +479,9 @@ export const useFilterBar = ({
 
 const appendIfNotPresent = (n: number) => (ns: number[]) =>
   ns.includes(n) ? ns : ns.concat(n);
+
+function columnDescriptorsByName(
+  columns: ColumnDescriptor[]
+): ColumnDescriptorsByName {
+  return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
+}

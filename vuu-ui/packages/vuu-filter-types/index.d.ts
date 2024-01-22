@@ -1,3 +1,5 @@
+import { ColumnDescriptor } from "@finos/vuu-table-types";
+
 export declare type NumericFilterClauseOp =
   | "="
   | "!="
@@ -37,10 +39,11 @@ export interface SingleValueFilterClause<T = string | number | boolean>
   value: T;
 }
 
-export interface MultiValueFilterClause extends NamedFilter {
+export interface MultiValueFilterClause<T = string[] | number[] | boolean[]>
+  extends NamedFilter {
   op: MultipleValueFilterClauseOp;
   column: string;
-  values: string[] | number[] | boolean[];
+  values: T;
 }
 
 export declare type FilterClause =
@@ -63,12 +66,12 @@ export interface OrFilter extends MultiClauseFilter {
 /**
  * A Filter structure that can represent any of the filters supported by the Vuu server.
  * Note that a filter in this form is never passed directly to the Vuu server. For that,
- * a string based filter language is used. Any filter can be expressed in string form 
+ * a string based filter language is used. Any filter can be expressed in string form
  * or the structure described here.
  * an example of a simple filter expressed in both formats:
- * 
+ *
  * 'currency = "EUR"'
- * 
+ *
   {
    op: "=".
    column: 'currency'
@@ -81,7 +84,7 @@ export declare type Filter = FilterClause | MultiClauseFilter;
  This interface is only valid for a Filter that is being edioted
  */
 export interface FilterWithPartialClause extends MultiClauseFilter {
-  filters: Array<Filter | Partial<Filter>>;
+  filters: Array<Partial<Filter>>;
 }
 
 export declare type FilterState = {
@@ -89,3 +92,5 @@ export declare type FilterState = {
   filterQuery: string;
   filterName?: string;
 };
+
+export declare type ColumnDescriptorsByName = Record<string, ColumnDescriptor>;

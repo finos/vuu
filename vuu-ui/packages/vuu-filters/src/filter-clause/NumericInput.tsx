@@ -25,10 +25,7 @@ export const NumericInput = forwardRef(function NumericInput(
   {
     InputProps,
     className,
-    column,
-    // filterClause,
     onInputComplete,
-    // operator,
     value: valueProp,
   }: NumericInputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>

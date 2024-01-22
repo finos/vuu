@@ -1,15 +1,14 @@
 import { SuggestionFetcher } from "@finos/vuu-data-react";
 import { TableSchema } from "@finos/vuu-data-types";
-import { FilterClause } from "@finos/vuu-filter-types";
+import { ColumnDescriptorsByName, FilterClause } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes, useMemo } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
-import { NumericInput } from "./NumericInput";
 import { getOperators } from "./operator-utils";
-import { TextInput } from "./TextInput";
+import { InputElement } from "./InputElement";
 import {
   FilterClauseCancelHandler,
   useFilterClauseEditor,
@@ -19,6 +18,7 @@ import "./FilterClauseEditor.css";
 
 export interface FilterClauseEditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  columnsByName: ColumnDescriptorsByName;
   filterClause: Partial<FilterClause>;
   onCancel?: FilterClauseCancelHandler;
   onChange: (filterClause: Partial<FilterClause>) => void;
@@ -32,6 +32,7 @@ const classBase = "vuuFilterClause";
 
 export const FilterClauseEditor = ({
   className,
+  columnsByName,
   onCancel,
   onChange,
   onDropdownClose,
@@ -41,8 +42,6 @@ export const FilterClauseEditor = ({
   tableSchema,
   ...htmlAttributes
 }: FilterClauseEditorProps) => {
-  const { table, columns } = tableSchema;
-
   const {
     InputProps,
     columnRef,
@@ -60,62 +59,10 @@ export const FilterClauseEditor = ({
     filterClause,
     onCancel,
     onChange,
-    tableSchema,
+    columnsByName,
   });
 
-  const getInputElement = useCallback(() => {
-    if (selectedColumn === null || operator === undefined) {
-      return null;
-    }
-    switch (selectedColumn?.serverDataType) {
-      case "string":
-      case "char":
-        return (
-          <TextInput
-            InputProps={InputProps}
-            className={cx(`${classBase}Field`, `${classBase}Value`)}
-            column={selectedColumn}
-            data-field="value"
-            filterClause={filterClause}
-            onDeselect={onDeselectValue}
-            onInputComplete={onChangeValue}
-            operator={operator}
-            suggestionProvider={suggestionProvider}
-            table={table}
-            value={value as string | string[]}
-          />
-        );
-      case "int":
-      case "long":
-      case "double":
-        return (
-          <NumericInput
-            InputProps={InputProps}
-            className={cx(`${classBase}Field`, `${classBase}Value`)}
-            column={selectedColumn}
-            filterClause={filterClause}
-            onInputComplete={onChangeValue}
-            operator={operator}
-          />
-        );
-      case undefined:
-        console.log("returning undefined");
-        return undefined;
-      default:
-        console.log("returning unsupported");
-        return null;
-    }
-  }, [
-    selectedColumn,
-    operator,
-    InputProps,
-    filterClause,
-    onDeselectValue,
-    onChangeValue,
-    suggestionProvider,
-    table,
-    value,
-  ]);
+  const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
 
   return (
     <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
@@ -148,7 +95,16 @@ export const FilterClauseEditor = ({
           value={operator ?? ""}
         />
       ) : null}
-      {getInputElement()}
+      <InputElement
+        InputProps={InputProps}
+        onChangeValue={onChangeValue}
+        onDeselectValue={onDeselectValue}
+        operator={operator}
+        selectedColumn={selectedColumn}
+        suggestionProvider={suggestionProvider}
+        table={tableSchema.table}
+        value={value}
+      />
       {value !== undefined ? (
         <Button
           className={`${classBase}-clearButton`}

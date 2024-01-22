@@ -23,7 +23,7 @@ export const DatePicker = (props: BaseDatePickerProps<DateValue>) => {
       onSelectedDateChange(d);
       handleVisibleMonthChange(d);
     },
-    [onSelectedDateChange]
+    [onSelectedDateChange, handleVisibleMonthChange]
   );
 
   return (

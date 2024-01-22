@@ -26,7 +26,7 @@ export const DateRangePicker = (
       onSelectedDateChange(r);
       handleVisibleMonthChange(r.endDate ?? r.startDate);
     },
-    [onSelectedDateChange]
+    [onSelectedDateChange, handleVisibleMonthChange]
   );
 
   return (

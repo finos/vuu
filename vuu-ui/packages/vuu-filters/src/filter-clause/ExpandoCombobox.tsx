@@ -110,7 +110,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   }, [InputPropsProp, handleInputChange, ListPropsProp]);
 
   const handleSelectionChange = useCallback(
-    (evt, selected) => {
+    (_, selected) => {
       if (Array.isArray(selected)) {
         (onSelectionChange as MultiSelectionHandler<Item>)?.(
           null,

@@ -1,6 +1,5 @@
-import { clear } from "console";
-import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
+import { defaultPatternsByType, formatDate } from "@finos/vuu-utils";
 import { DefaultFilterBar } from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors
@@ -61,7 +60,7 @@ describe("The mouse user", () => {
       cy.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 3);
       cy.get(OVERFLOW_CONTAINER)
         .find('[data-index="0"] > *')
-        .should("have.class", "vuuFilterClause");
+        .should("have.class", "vuuFilterBar-Editor");
 
       cy.get(OVERFLOW_CONTAINER)
         .find('[data-index="1"] > *')
@@ -137,43 +136,38 @@ describe("The mouse user", () => {
   });
 
   describe("WHEN user clicks APPLY AND SAVE", () => {
-    it("THEN filtersChangedHandler callback is invoked", () => {
-      const onFiltersChanged = cy.stub().as("filtersChangedHandler");
-      cy.mount(<DefaultFilterBar onFiltersChanged={onFiltersChanged} />);
-      cy.get(ADD_BUTTON).realClick();
-      clickListItems("currency", "=", "USD");
-      clickButton("APPLY AND SAVE");
-      cy.get("@filtersChangedHandler").should("be.calledWith", [
-        { column: "currency", op: "=", value: "USD" },
-      ]);
-    });
+    const testFilter = {
+      column: "currency",
+      op: "!=",
+      value: "USD",
+    };
 
-    it("THEN filter is applied", () => {
+    beforeEach(() => {
       const onFiltersChanged = cy.stub().as("filtersChangedHandler");
-      const onFilterApplied = cy.stub().as("onFilterApplied");
+      const onApplyFilter = cy.stub().as("applyFilterHandler");
       cy.mount(
         <DefaultFilterBar
-          onApplyFilter={onFilterApplied}
+          onApplyFilter={onApplyFilter}
           onFiltersChanged={onFiltersChanged}
         />
       );
       cy.get(ADD_BUTTON).realClick();
-      clickListItems("currency", "=", "USD");
+      clickListItems(testFilter.column, testFilter.op, testFilter.value);
       clickButton("APPLY AND SAVE");
-      cy.get("@filtersChangedHandler").should("be.calledWith", [
-        { column: "currency", op: "=", value: "USD" },
-      ]);
-      cy.get("@onFilterApplied").should("be.calledWith", {
-        filter: 'currency = "USD"',
-        filterStruct: { column: "currency", op: "=", value: "USD" },
+    });
+
+    it("THEN filtersChangedHandler callback is invoked", () => {
+      cy.get("@filtersChangedHandler").should("be.calledWith", [testFilter]);
+    });
+
+    it("THEN filter is applied", () => {
+      cy.get("@applyFilterHandler").should("be.calledWith", {
+        filter: 'currency != "USD"',
+        filterStruct: testFilter,
       });
     });
 
     it("THEN filter pill is displayed, label is in edit state and focused", () => {
-      cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
-      clickListItems("currency", "=", "USD");
-      clickButton("APPLY AND SAVE");
       cy.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 2);
       findOverflowItem(".vuuFilterPill").should("have.length", 1);
       findOverflowItem(".vuuFilterPill")
@@ -187,11 +181,6 @@ describe("The mouse user", () => {
 
     describe("WHEN user overtypes label and presses ENTER", () => {
       it("THEN label is applied and exits edit mode", () => {
-        const onFiltersChanged = cy.stub().as("filtersChangedHandler");
-        cy.mount(<DefaultFilterBar onFiltersChanged={onFiltersChanged} />);
-        cy.get(ADD_BUTTON).realClick();
-        clickListItems("currency", "=", "USD");
-        clickButton("APPLY AND SAVE");
         waitUntilEditableLabelIsFocused(".vuuFilterPill");
         cy.realType("test");
         cy.realPress("Enter");
@@ -199,19 +188,42 @@ describe("The mouse user", () => {
           .find(".vuuEditableLabel")
           .should("not.have.class", "vuuEditableLabel-editing");
         cy.get("@filtersChangedHandler").should("be.calledWith", [
-          { column: "currency", op: "=", value: "USD", name: "test" },
+          { ...testFilter, name: "test" },
         ]);
       });
 
       it("THEN filter pill has focus", () => {
-        cy.mount(<DefaultFilterBar />);
-        cy.get(ADD_BUTTON).realClick();
-        clickListItems("currency", "=", "USD");
-        clickButton("APPLY AND SAVE");
         waitUntilEditableLabelIsFocused(".vuuFilterPill");
         cy.realType("test");
         cy.realPress("Enter");
         findOverflowItem(".vuuFilterPill").should("be.focused");
+      });
+    });
+
+    describe("AND WHEN user edits the saved filter", () => {
+      it("THEN onFiltersChanged & onApplyFilter is called with new filter", () => {
+        const filterName = "EditedFilter";
+        const newFilter = { ...testFilter, value: "CAD", name: filterName };
+
+        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        cy.realType(filterName);
+        cy.realPress("Enter");
+
+        // Edit an existing filter
+        findOverflowItem(".vuuFilterPill")
+          .find(".vuuFilterPillMenu")
+          .realClick();
+        clickButton("Edit");
+        clickListItems(newFilter.column, newFilter.op, newFilter.value);
+        clickButton("APPLY AND SAVE");
+
+        cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
+          newFilter,
+        ]);
+        cy.get("@applyFilterHandler").should("be.calledWithExactly", {
+          filter: 'currency != "CAD"',
+          filterStruct: newFilter,
+        });
       });
     });
   });
@@ -320,4 +332,111 @@ describe("The keyboard user", () => {
       });
     });
   });
+});
+
+const getDate = (t: "start-today" | "start-tomorrow" | "end-today") => {
+  const today = new Date();
+  switch (t) {
+    case "start-today":
+      today.setHours(0, 0, 0, 0);
+      return today;
+    case "start-tomorrow":
+      return new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + 1
+      );
+    case "end-today":
+      today.setHours(23, 59, 59, 999);
+      return today;
+  }
+};
+
+describe("WHEN a user applies a date filter", () => {
+  const DATE_COLUMN = "lastUpdated";
+  const todayDateFormatted = formatDate({ date: defaultPatternsByType.date })(
+    new Date()
+  );
+  const startOfToday = getDate("start-today").getTime();
+  const endOfToday = getDate("end-today").getTime();
+  const startOfTomorrow = getDate("start-tomorrow").getTime();
+
+  beforeEach(() => {
+    const onApplyFilter = cy.stub().as("applyFilterHandler");
+    const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+    cy.mount(
+      <DefaultFilterBar
+        onApplyFilter={onApplyFilter}
+        onFiltersChanged={onFiltersChanged}
+      />
+    );
+  });
+
+  const testParams: Array<{
+    op: string;
+    expectedValue: number;
+    expectedQuery: string;
+  }> = [
+    {
+      op: "=",
+      expectedValue: startOfToday,
+      expectedQuery: `${DATE_COLUMN} >= ${startOfToday} and ${DATE_COLUMN} < ${startOfTomorrow}`,
+    },
+    {
+      op: "!=",
+      expectedValue: startOfToday,
+      expectedQuery: `${DATE_COLUMN} < ${startOfToday} or ${DATE_COLUMN} >= ${startOfTomorrow}`,
+    },
+    {
+      op: ">",
+      expectedValue: endOfToday,
+      expectedQuery: `${DATE_COLUMN} > ${endOfToday}`,
+    },
+    {
+      op: ">=",
+      expectedValue: startOfToday,
+      expectedQuery: `${DATE_COLUMN} >= ${startOfToday}`,
+    },
+    {
+      op: "<",
+      expectedValue: startOfToday,
+      expectedQuery: `${DATE_COLUMN} < ${startOfToday}`,
+    },
+    {
+      op: "<=",
+      expectedValue: endOfToday,
+      expectedQuery: `${DATE_COLUMN} <= ${endOfToday}`,
+    },
+  ];
+
+  testParams.forEach(({ op, expectedValue, expectedQuery }) =>
+    it(`AND uses ${op} THEN resulting filter query can be understood by the VUU
+     server while the filter on the ui appears as selected by the user`, () => {
+      const expectedFilter = {
+        column: DATE_COLUMN,
+        op,
+        value: expectedValue,
+        name: `${DATE_COLUMN} ${op} "${todayDateFormatted}"`,
+      };
+
+      // Add date filter
+      cy.get(ADD_BUTTON).realClick();
+      clickListItems(DATE_COLUMN, op);
+      findOverflowItem(".vuuDatePicker-calendarIconButton").realClick();
+      cy.get(".saltCalendarDay-today").realClick();
+      cy.realPress("ArrowRight");
+      clickButton("APPLY AND SAVE");
+      waitUntilEditableLabelIsFocused(".vuuFilterPill");
+      cy.realPress("Enter");
+
+      // Check called handlers
+      cy.get("@applyFilterHandler").should("be.calledWithExactly", {
+        filter: expectedQuery,
+        filterStruct: expectedFilter,
+      });
+      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
+        expectedFilter,
+      ]);
+    })
+  );
 });
