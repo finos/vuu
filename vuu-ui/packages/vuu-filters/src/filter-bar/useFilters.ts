@@ -1,38 +1,23 @@
+import { useCallback } from "react";
 import { TableSchema } from "@finos/vuu-data-types";
 import { Filter, NamedFilter } from "@finos/vuu-filter-types";
 import { useLayoutManager } from "@finos/vuu-shell";
-import { useControlled } from "@finos/vuu-ui-controls";
-import { useCallback } from "react";
+import { FilterStateHookProps, useFilterState } from "./useFilterState";
 
-export interface FiltersHookProps {
-  defaultFilters?: Filter[];
-  filters?: Filter[];
+export interface FiltersHookProps extends FilterStateHookProps {
   onFiltersChanged?: (filters: Filter[]) => void;
   tableSchema?: TableSchema;
 }
 
 export const useFilters = ({
-  defaultFilters,
-  filters: filtersProp,
   onFiltersChanged,
   tableSchema,
+  ...filterStateHookProps
 }: FiltersHookProps) => {
-  const [filters, setFilters] = useControlled<Filter[]>({
-    controlled: filtersProp,
-    default: defaultFilters ?? [],
-    name: "useFilters",
-    state: "Filters",
-  });
-
   const { getApplicationSettings, saveApplicationSettings } =
     useLayoutManager();
-
-  type SavedFilterMap = {
-    [key: string]: NamedFilter[];
-  };
-
-  const hasFilter = (filters: NamedFilter[], name: string) =>
-    filters.findIndex((f) => f.name === name) !== -1;
+  const { filterState, onFilterStateChange, onActiveIndicesChange } =
+    useFilterState(filterStateHookProps);
 
   const saveFilterToSettings = useCallback(
     (filter: Filter, name?: string) => {
@@ -45,7 +30,7 @@ export const useFilters = ({
         const key = `${module}:${table}`;
         if (savedFilters) {
           if (savedFilters[key]) {
-            if (hasFilter(savedFilters[key], name)) {
+            if (hasFilterWithName(savedFilters[key], name)) {
               newFilters = {
                 ...savedFilters,
                 [key]: savedFilters[key].map((f) =>
@@ -55,7 +40,7 @@ export const useFilters = ({
             } else if (
               filter?.name &&
               filter?.name !== name &&
-              hasFilter(savedFilters[key], filter.name)
+              hasFilterWithName(savedFilters[key], filter.name)
             ) {
               newFilters = {
                 ...savedFilters,
@@ -90,23 +75,20 @@ export const useFilters = ({
 
   const removeFilterFromSettings = useCallback(
     (filter: Filter | NamedFilter) => {
-      if (tableSchema && filter.name) {
-        const savedFilters = getApplicationSettings(
-          "filters"
-        ) as SavedFilterMap;
+      if (!tableSchema || !filter.name) return;
 
-        const { module, table } = tableSchema.table;
-        const key = `${module}:${table}`;
+      const savedFilters = getApplicationSettings("filters") as SavedFilterMap;
+      if (!savedFilters) return;
 
-        if (
-          savedFilters[key]?.findIndex((f) => f.name === filter.name) !== -1
-        ) {
-          const newSavedFilters = {
-            ...savedFilters,
-            [key]: savedFilters[key].filter((f) => f.name !== filter.name),
-          };
-          saveApplicationSettings(newSavedFilters, "filters");
-        }
+      const { module, table } = tableSchema.table;
+      const key = `${module}:${table}`;
+
+      if (hasFilterWithName(savedFilters[key], filter.name)) {
+        const newSavedFilters = {
+          ...savedFilters,
+          [key]: savedFilters[key].filter((f) => f.name !== filter.name),
+        };
+        saveApplicationSettings(newSavedFilters, "filters");
       }
     },
     [getApplicationSettings, saveApplicationSettings, tableSchema]
@@ -114,23 +96,20 @@ export const useFilters = ({
 
   const handleAddFilter = useCallback(
     (filter: Filter) => {
-      const index = filters.length;
-      const newFilters = filters.concat(filter);
-      setFilters(newFilters);
+      const index = filterState.filters.length;
+      const newFilters = filterState.filters.concat(filter);
+      const newIndices = appendIfNotPresent(filterState.activeIndices, index);
+      onFilterStateChange({ filters: newFilters, activeIndices: newIndices });
       onFiltersChanged?.(newFilters);
       return index;
     },
-    [filters, onFiltersChanged, setFilters]
+    [filterState, onFiltersChanged, onFilterStateChange]
   );
 
   const handleDeleteFilter = useCallback(
     (filter: Filter) => {
-      console.log(`handleDeleteFilter`, {
-        filter,
-      });
-
       let index = -1;
-      const newFilters = filters.filter((f, i) => {
+      const newFilters = filterState.filters.filter((f, i) => {
         if (f !== filter) {
           return true;
         } else {
@@ -138,18 +117,29 @@ export const useFilters = ({
           return false;
         }
       });
-      setFilters(newFilters);
+
+      const newIndices = removeIndexAndDecrementLarger(
+        filterState.activeIndices,
+        index
+      );
+
+      onFilterStateChange({ filters: newFilters, activeIndices: newIndices });
       onFiltersChanged?.(newFilters);
       removeFilterFromSettings(filter);
       return index;
     },
-    [filters, onFiltersChanged, removeFilterFromSettings, setFilters]
+    [
+      filterState,
+      onFiltersChanged,
+      onFilterStateChange,
+      removeFilterFromSettings,
+    ]
   );
 
   const handleRenameFilter = useCallback(
     (filter: Filter, name: string) => {
       let index = -1;
-      const newFilters = filters.map((f, i) => {
+      const newFilters = filterState.filters.map((f, i) => {
         if (f === filter) {
           index = i;
           return { ...filter, name };
@@ -157,19 +147,19 @@ export const useFilters = ({
           return f;
         }
       });
-      setFilters(newFilters);
+      onFilterStateChange({ ...filterState, filters: newFilters });
       onFiltersChanged?.(newFilters);
       saveFilterToSettings(filter, name);
 
       return index;
     },
-    [filters, onFiltersChanged, saveFilterToSettings, setFilters]
+    [filterState, onFiltersChanged, onFilterStateChange, saveFilterToSettings]
   );
 
   const handleChangeFilter = useCallback(
     (oldFilter: Filter, newFilter: Filter) => {
       let index = -1;
-      const newFilters = filters.map((f, i) => {
+      const newFilters = filterState.filters.map((f, i) => {
         if (f === oldFilter) {
           index = i;
           return newFilter;
@@ -177,18 +167,41 @@ export const useFilters = ({
           return f;
         }
       });
-      setFilters(newFilters);
+      onFilterStateChange({ ...filterState, filters: newFilters });
       onFiltersChanged?.(newFilters);
+
       return index;
     },
-    [filters, onFiltersChanged, setFilters]
+    [filterState, onFiltersChanged, onFilterStateChange]
   );
 
   return {
-    filters,
+    ...filterState,
+    activeFilterIndex: filterState.activeIndices,
+    onChangeActiveFilterIndex: onActiveIndicesChange,
     onAddFilter: handleAddFilter,
     onChangeFilter: handleChangeFilter,
     onDeleteFilter: handleDeleteFilter,
     onRenameFilter: handleRenameFilter,
   };
+};
+
+type SavedFilterMap = {
+  [key: string]: NamedFilter[];
+};
+
+const hasFilterWithName = (filters: NamedFilter[], name: string) =>
+  filters.findIndex((f) => f.name === name) !== -1;
+
+const appendIfNotPresent = (ns: number[], n: number) =>
+  ns.includes(n) ? ns : ns.concat(n);
+
+const removeIndexAndDecrementLarger = (
+  indices: number[],
+  idxToRemove: number
+) => {
+  return indices.reduce<number[]>((res, i) => {
+    if (i === idxToRemove) return res;
+    return res.concat(i > idxToRemove ? i - 1 : i);
+  }, []);
 };
