@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.36-SNAPSHOT</version>
+        <version>0.9.61-SNAPSHOT</version>
     </parent>
 
     <artifactId>data-ignite</artifactId>
@@ -16,7 +16,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>data-order</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>

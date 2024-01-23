@@ -30,12 +30,6 @@
             <version>${guava.version}</version>
         </dependency>
 
-        <!--dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>inmem-feature</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
-        </dependency-->
-
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
