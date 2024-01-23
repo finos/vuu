@@ -102,7 +102,7 @@ export class DataWindow {
   }
 
   getData(from: number, to: number): any[] {
-    const { from: clientFrom, to: clientTo } = this.range;
+    const { from: clientFrom } = this.range;
     const startOffset = Math.max(0, from - clientFrom);
     const endOffset = Math.min(to - clientFrom, this.rowCount ?? to);
     return this.data.slice(startOffset, endOffset);

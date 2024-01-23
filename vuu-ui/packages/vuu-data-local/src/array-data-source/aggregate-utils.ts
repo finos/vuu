@@ -13,7 +13,6 @@ export const aggregateData = (
   columnMap: ColumnMap,
   groupMap: GroupMap
 ) => {
-  const aggColumn = getAggColumn(columnMap, aggregations);
   const aggType = aggregations[aggregations.length - 1].aggType;
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
 

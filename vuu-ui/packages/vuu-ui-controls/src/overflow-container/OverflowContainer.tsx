@@ -39,7 +39,6 @@ const WrapContainer = React.memo(
     onSwitchWrappedItemIntoView,
     orientation = "horizontal",
     overflowIcon,
-    overflowPosition = "end",
   }: OverflowContainerProps) => {
     const childElements = asReactElements(children);
     const {

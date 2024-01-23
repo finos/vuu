@@ -65,7 +65,7 @@ export async function connect(
   return makeConnection(connectionString, protocol, callback);
 }
 
-async function reconnect(connection: WebsocketConnection) {
+async function reconnect(_: WebsocketConnection) {
   //TODO it's not enough to reconnect with a new websocket, we have to log back in as well
   // Temp don't try to reconnect at all until better interop with a proxy is implemented
   // makeConnection(

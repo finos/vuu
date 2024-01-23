@@ -83,22 +83,13 @@ export const App = ({ stories }: AppProps) => {
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
-  const [theme, setTheme] = useState<ThemeDescriptor>(availableThemes[0]);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
-  const [density, setDensity] = useState<Density>("high");
+  const [theme] = useState<ThemeDescriptor>(availableThemes[0]);
+  const [themeMode] = useState<ThemeMode>("light");
+  const [density] = useState<Density>("high");
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone&theme=vuu`, "_blank");
   }, []);
-
-  const handleThemeChange = useCallback(
-    (_evt, theme: ThemeDescriptor | null) => {
-      if (theme) {
-        setTheme(theme);
-      }
-    },
-    []
-  );
 
   return (
     <ThemeProvider

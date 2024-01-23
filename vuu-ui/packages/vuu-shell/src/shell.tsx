@@ -72,7 +72,7 @@ export const Shell = ({
   className: classNameProp,
   leftSidePanelLayout,
   loginUrl,
-  saveLocation = "remote",
+  saveLocation: _,
   saveUrl,
   serverUrl,
   user,

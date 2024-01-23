@@ -40,21 +40,11 @@ const maxAsk = (
   );
 };
 
-const minAsk = (
-  bid: number,
-  ask: number,
-  spreadMultipler: number,
-  priceMaxDelta: number
-) => {
+const minAsk = (bid: number, ask: number) => {
   return Math.max(bid + 1, (ask - bid) / 2 + bid);
 };
 
-const maxBid = (
-  bid: number,
-  ask: number,
-  spreadMultipler: number,
-  priceMaxDelta: number
-) => {
+const maxBid = (bid: number, ask: number) => {
   const result = Math.min(ask - 1, (ask - bid) / 2 + bid);
   return result < 1 ? bid + 1 : result;
 };
@@ -84,8 +74,8 @@ export const generateNextBidAsk = (
   let tempAsk = ask;
   if (Math.abs(bid - ask) <= 1) tempAsk = ask + 1;
   const minBidValue = minBid(bid, tempAsk, spreadMultipler, priceMaxDelta);
-  const maxBidValue = maxBid(bid, tempAsk, spreadMultipler, priceMaxDelta);
-  const minAskValue = minAsk(bid, tempAsk, spreadMultipler, priceMaxDelta);
+  const maxBidValue = maxBid(bid, tempAsk);
+  const minAskValue = minAsk(bid, tempAsk);
   const maxAskValue = maxAsk(bid, tempAsk, spreadMultipler, priceMaxDelta);
   const newBid =
     Math.round(nextRandomDouble(minBidValue, maxBidValue) * 100) / 100.0;

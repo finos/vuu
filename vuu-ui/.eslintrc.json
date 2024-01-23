@@ -37,8 +37,12 @@
     "no-unused-vars": 0,
     "prefer-const": ["error", { "destructuring": "all" }],
     "@typescript-eslint/no-unused-vars": [
-      "warn",
-      { "ignoreRestSiblings": true, "argsIgnorePattern": "_" }
+      "error",
+      {
+        "ignoreRestSiblings": true,
+        "argsIgnorePattern": "^_$",
+        "varsIgnorePattern": "^_$"
+      }
     ]
   },
   "overrides": [
