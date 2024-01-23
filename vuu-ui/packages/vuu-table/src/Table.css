@@ -45,8 +45,9 @@
   position: absolute;
   top: var(--total-header-height);
   width: var(--table-width);
-}
 
+
+}
 
 .vuuTable-scrollbarContainer::-webkit-scrollbar {
   border: none;

@@ -56,7 +56,19 @@ const getMaxScroll = (container: HTMLElement) => {
   return [scrollWidth - clientWidth, scrollHeight - clientHeight];
 };
 
-const getPctScroll = (container: HTMLElement, approximateBoundaries = true) => {
+const getScrollDirection = (
+  prevScrollPositions: ScrollPos | undefined,
+  scrollPos: number
+) => {
+  if (prevScrollPositions === undefined) {
+    return undefined;
+  } else {
+    const { scrollTop: prevTop } = prevScrollPositions;
+    return scrollPos > prevTop ? "fwd" : "bwd";
+  }
+};
+
+const getPctScroll = (container: HTMLElement, currentScrollPos?: ScrollPos) => {
   const {
     clientHeight,
     clientWidth,
@@ -69,16 +81,24 @@ const getPctScroll = (container: HTMLElement, approximateBoundaries = true) => {
   const maxScrollLeft = scrollWidth - clientWidth;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
   const maxScrollTop = scrollHeight - clientHeight;
-  const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
+  let pctScrollTop = scrollTop / (scrollHeight - clientHeight);
 
-  if (approximateBoundaries) {
-    if (pctScrollTop > 0.99) {
-      return [pctScrollLeft, 1];
-    } else if (pctScrollTop < 0.02) {
-      return [pctScrollLeft, 0];
-    }
+  const scrollDirection = getScrollDirection(currentScrollPos, scrollTop);
+
+  if (scrollDirection === "fwd" && pctScrollTop > 0.99) {
+    pctScrollTop = 1;
+  } else if (scrollDirection === "bwd" && pctScrollTop < 0.02) {
+    pctScrollTop = 0;
   }
-  return [pctScrollLeft, pctScrollTop, maxScrollLeft, maxScrollTop];
+
+  return [
+    scrollLeft,
+    pctScrollLeft,
+    maxScrollLeft,
+    scrollTop,
+    pctScrollTop,
+    maxScrollTop,
+  ];
 };
 
 export const noScrolling: ScrollingAPI = {
@@ -113,6 +133,11 @@ const useCallbackRef = <T = HTMLElement>({
   return callbackRef;
 };
 
+type ScrollPos = {
+  scrollLeft: number;
+  scrollTop: number;
+};
+
 export interface TableScrollHookProps {
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
@@ -140,8 +165,15 @@ export const useTableScroll = ({
 }: TableScrollHookProps) => {
   const firstRowRef = useRef<number>(0);
   const contentContainerScrolledRef = useRef(false);
+  const contentContainerPosRef = useRef<ScrollPos>({
+    scrollTop: 0,
+    scrollLeft: 0,
+  });
   const scrollbarContainerScrolledRef = useRef(false);
-  const scrollPosRef = useRef({ scrollTop: 0, scrollLeft: 0 });
+  const scrollbarContainerPosRef = useRef<ScrollPos>({
+    scrollTop: 0,
+    scrollLeft: 0,
+  });
   const scrollbarContainerRef = useRef<HTMLDivElement | null>(null);
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -168,18 +200,19 @@ export const useTableScroll = ({
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: contentContainerScrolled } = contentContainerScrolledRef;
-    const { current: scrollPos } = scrollPosRef;
+    const { current: scrollPos } = scrollbarContainerPosRef;
+
     if (contentContainerScrolled) {
       contentContainerScrolledRef.current = false;
     } else if (contentContainer && scrollbarContainer) {
       scrollbarContainerScrolledRef.current = true;
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
-      const approximateBoundaries =
-        scrollPos.scrollTop > 0 && scrollPos.scrollTop < maxScrollTop;
-      const [pctScrollLeft, pctScrollTop] = getPctScroll(
-        scrollbarContainer,
-        approximateBoundaries
-      );
+      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
+        getPctScroll(scrollbarContainer, scrollPos);
+
+      scrollPos.scrollLeft = scrollLeft;
+      scrollPos.scrollTop = scrollTop;
+
+      const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
       const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
       const contentScrollTop = pctScrollTop * maxScrollTop;
 
@@ -197,12 +230,17 @@ export const useTableScroll = ({
       scrollbarContainerScrolledRef;
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
-    const { current: scrollPos } = scrollPosRef;
+    const { current: scrollPos } = contentContainerPosRef;
 
     if (contentContainer && scrollbarContainer) {
-      const { scrollLeft, scrollTop } = contentContainer;
-      const [pctScrollLeft, pctScrollTop, maxScrollLeft, maxScrollTop] =
-        getPctScroll(contentContainer);
+      const [
+        scrollLeft,
+        pctScrollLeft,
+        maxScrollLeft,
+        scrollTop,
+        pctScrollTop,
+        maxScrollTop,
+      ] = getPctScroll(contentContainer);
 
       contentContainerScrolledRef.current = true;
 

@@ -46,7 +46,7 @@ export interface TableViewportHookResult extends ViewportMeasurements {
 }
 
 // Too simplistic, it depends on rowHeight
-const MAX_RAW_ROWS = 1_000_000;
+const MAX_PIXEL_HEIGHT = 10_000_000;
 
 const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   appliedPageSize: 0,
@@ -77,7 +77,7 @@ export const useTableViewport = ({
   const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
   // TODO we are limited by pixels not an arbitraty number of rows
-  const pixelContentHeight = rowHeight * Math.min(rowCount, MAX_RAW_ROWS);
+  const pixelContentHeight = Math.min(rowHeight * rowCount, MAX_PIXEL_HEIGHT);
   const virtualContentHeight = rowCount * rowHeight;
   const virtualisedExtent = virtualContentHeight - pixelContentHeight;
 

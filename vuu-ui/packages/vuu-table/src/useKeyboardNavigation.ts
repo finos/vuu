@@ -247,9 +247,9 @@ NavigationHookProps) => {
             break;
           }
         }
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           resolve([newRowIdx, colIdx]);
-        }, 90);
+        });
       }),
     [requestScroll, rowCount, viewportRowCount]
   );
