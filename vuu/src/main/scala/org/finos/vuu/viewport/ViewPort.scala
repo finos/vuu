@@ -402,6 +402,8 @@ class ViewPortImpl(val id: String,
 
   protected def hasChangedIndex(oldIndex: Int, newIndex: Int): Boolean = oldIndex != newIndex
 
+  import scala.jdk.CollectionConverters.MapHasAsScala
+
   protected def subscribeToNewKeys(newKeys: ViewPortKeys): Unit = {
 
     var index = 0
@@ -410,17 +412,25 @@ class ViewPortImpl(val id: String,
 
     var removedObs = 0
 
-    while (index < newKeys.length) {
+    val range = this.range.get()
+
+    val existingSubs = MapHasAsScala(subscribedKeys).asScala.toMap
+
+    val keyAdded = scala.collection.mutable.Set[String]()
+
+    for(index <- range.from until Math.min(newKeys.length, range.to)){
 
       val key = newKeys.get(index)
 
-      //with virtualized tables, we can have null keys as they are pending to be loaded.
-      //we should just ignore them until they are loaded.
-      if(key != null){
+      //logger.info(s"In subscribeToNewKeys: index = $index, key = $key")
+
+      if(key != null) {
 
         val oldIndex = rowKeyToIndex.put(key, index)
 
         if (isInRange(index)) {
+
+          keyAdded += key
 
           if (!isObservedAlready(key)) {
 
@@ -433,15 +443,60 @@ class ViewPortImpl(val id: String,
           } else if (hasChangedIndex(oldIndex, index)) {
             publishHighPriorityUpdate(key, index)
           }
-
-        } else {
-          unsubscribeForKey(key)
-          removedObs += 1
         }
+      }else{
+        logger.warn("Key is null@Index=" + index)
       }
 
-      index += 1
     }
+
+
+
+    existingSubs.foreach({case(key, value) => {
+      val index = rowKeyToIndex.getOrDefault(key, -1)
+
+      if (key != null && index != -1 && !keyAdded.contains(key)) {
+        unsubscribeForKey(key)
+        removedObs += 1
+      }
+    }
+    })
+//      val item = existingSubs.next()
+//      val key = item.getKey
+
+    //}
+
+//    while (index < newKeys.length) {
+//
+//
+//      //with virtualized tables, we can have null keys as they are pending to be loaded.
+//      //we should just ignore them until they are loaded.
+//      if(key != null){
+//
+//        val oldIndex = rowKeyToIndex.put(key, index)
+//
+//        if (isInRange(index)) {
+//
+//          if (!isObservedAlready(key)) {
+//
+//            subscribeForKey(key, index)
+//
+//            newlyAddedObs += 1
+//
+//            publishHighPriorityUpdate(key, index)
+//
+//          } else if (hasChangedIndex(oldIndex, index)) {
+//            publishHighPriorityUpdate(key, index)
+//          }
+//
+//        } else {
+//          unsubscribeForKey(key)
+//          removedObs += 1
+//        }
+//      }
+//
+//      index += 1
+//    }
 
     if (newlyAddedObs > 0)
       logger.debug(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
@@ -451,19 +506,9 @@ class ViewPortImpl(val id: String,
   protected def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
     val newKeySet = new util.HashSet[String]()
 
-    var i = 0
-
-    //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
-    //this will check every key and remove it
-
     newKeys.foreach( key => {
       newKeySet.add(key)
     })
-
-//    while (i < newKeys.length) {
-//      newKeySet.add(newKeys.get(i))
-//      i += 1
-//    }
 
     val iterator = subscribedKeys.entrySet().iterator()
 
