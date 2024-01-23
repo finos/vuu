@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>plugin</artifactId>
-        <version>0.9.36-SNAPSHOT</version>
+        <version>0.9.61-SNAPSHOT</version>
     </parent>
 
     <groupId>org.finos.vuu.plugin</groupId>
@@ -16,13 +16,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -31,13 +31,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -96,7 +96,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

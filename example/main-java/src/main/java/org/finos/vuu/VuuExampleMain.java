@@ -20,6 +20,7 @@ import org.finos.vuu.net.Authenticator;
 import org.finos.vuu.net.LoggedInTokenValidator;
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator;
 import org.finos.vuu.net.http.VuuHttp2ServerOptions;
+import org.finos.vuu.plugin.Plugin;
 import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
@@ -72,7 +73,8 @@ public class VuuExampleMain
                 VuuThreadingOptions.apply()
                         .withTreeThreads(4)
                         .withViewPortThreads(4),
-                        new scala.collection.mutable.ListBuffer<ViewServerModule>().toList()
+                        new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
+                        new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))

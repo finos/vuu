@@ -90,7 +90,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
     .withModule(VirtualTableModule())
-    .withModule(IgniteOrderDataModule(IgniteOrderStore()))
+    //.withModule(IgniteOrderDataModule(IgniteOrderStore()))
     .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
