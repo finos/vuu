@@ -478,14 +478,14 @@ class ViewPortImpl(val id: String,
 
   def unsubscribeForKey(key: String): Unit = {
     subscribedKeys.remove(key)
-    logger.info(s"Unsubscribed to key [${key}]")
+    logger.trace(s"Unsubscribed to key [${key}]")
     rowKeyToIndex.remove(key)
     removeObserver(key)
   }
 
   def subscribeForKey(key: String, index: Int): Unit = {
     subscribedKeys.put(key, "-")
-    logger.info(s"Subscribed to key [${key}]")
+    logger.trace(s"Subscribed to key [${key}]")
     rowKeyToIndex.put(key, index)
     addObserver(key)
   }
