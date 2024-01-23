@@ -68,7 +68,6 @@ export class KeySet {
     if (key === undefined) {
       console.log(`key not found
         keys: ${this.toDebugString()}
-        free : ${this.free.join(",")}  
       `);
       throw Error(`KeySet, no key found for rowIndex ${rowIndex}`);
     }
