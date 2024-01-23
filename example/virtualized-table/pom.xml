@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.36-SNAPSHOT</version>
+        <version>0.9.61-SNAPSHOT</version>
     </parent>
 
     <artifactId>virtualized-table</artifactId>
@@ -15,25 +15,25 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>ignite-plugin</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.36-SNAPSHOT</version>
+            <version>0.9.61-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -93,7 +93,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
+                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
