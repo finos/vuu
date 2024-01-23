@@ -456,8 +456,8 @@ class ViewPortImpl(val id: String,
     //TODO: CJS this is not correct, we should only subscribe to keys within the VP range
     //this will check every key and remove it
 
-    newKeys.toArray().foreach( key => {
-      newKeySet.add(newKeys.get(i))
+    newKeys.foreach( key => {
+      newKeySet.add(key)
     })
 
 //    while (i < newKeys.length) {
@@ -478,12 +478,14 @@ class ViewPortImpl(val id: String,
 
   def unsubscribeForKey(key: String): Unit = {
     subscribedKeys.remove(key)
+    logger.info(s"Unsubscribed to key [${key}]")
     rowKeyToIndex.remove(key)
     removeObserver(key)
   }
 
   def subscribeForKey(key: String, index: Int): Unit = {
     subscribedKeys.put(key, "-")
+    logger.info(s"Subscribed to key [${key}]")
     rowKeyToIndex.put(key, index)
     addObserver(key)
   }
