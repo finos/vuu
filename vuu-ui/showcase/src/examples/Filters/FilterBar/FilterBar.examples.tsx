@@ -1,8 +1,15 @@
 import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
 import type { Filter } from "@finos/vuu-filter-types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { Input } from "@salt-ds/core";
+import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 
@@ -17,6 +24,8 @@ const lastUpdatedColumn = {
 export const DefaultFilterBar = ({
   filters: filtersProp = [],
   onApplyFilter,
+  onFilterDeleted,
+  onFilterRenamed,
   onFiltersChanged,
   style,
 }: Partial<FilterBarProps>) => {
@@ -71,6 +80,8 @@ export const DefaultFilterBar = ({
         filters={filters}
         onApplyFilter={handleApplyFilter}
         onChangeActiveFilterIndex={handleChangeActiveFilterIndex}
+        onFilterDeleted={onFilterDeleted}
+        onFilterRenamed={onFilterRenamed}
         onFiltersChanged={handleFiltersChanged}
         tableSchema={{ ...tableSchema, columns }}
         columnDescriptors={columns}
@@ -109,7 +120,10 @@ export const FilterBarOneMultiValueFilter = () => {
 };
 FilterBarOneMultiValueFilter.displaySequence = displaySequence++;
 
-export const FilterBarMultipleFilters = () => {
+export const FilterBarMultipleFilters = ({
+  onFilterDeleted,
+  onFilterRenamed,
+}: Partial<FilterBarProps>) => {
   return (
     <DefaultFilterBar
       filters={[
@@ -137,7 +151,67 @@ export const FilterBarMultipleFilters = () => {
           ],
         },
       ]}
+      onFilterDeleted={onFilterDeleted}
+      onFilterRenamed={onFilterRenamed}
     />
   );
 };
 FilterBarMultipleFilters.displaySequence = displaySequence++;
+
+export const FilterBarMultipleFilterSets = () => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const handleChangeFilterSet = useCallback(
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      const { value } = evt.target as HTMLButtonElement;
+      const index = parseInt(value);
+      setSelectedIndex(index);
+    },
+    []
+  );
+  const filters = useMemo<Filter[]>(() => {
+    if (selectedIndex === 0) {
+      return [
+        { column: "currency", name: "Filter One", op: "=", value: "EUR" },
+        { column: "exchange", name: "Filter Two", op: "=", value: "XLON" },
+        {
+          column: "ric",
+          name: "Filter Three",
+          op: "in",
+          values: ["AAPL", "BP.L", "VOD.L"],
+        },
+      ];
+    } else if (selectedIndex === 1) {
+      return [
+        {
+          column: "ric",
+          name: "Filter Four",
+          op: "in",
+          values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
+        },
+        {
+          op: "and",
+          name: "Filter Five",
+          filters: [
+            { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
+            { column: "exchange", op: "=", value: "NASDAQ" },
+            { column: "price", op: ">", value: 1000 },
+          ],
+        },
+      ];
+    } else {
+      throw Error(`selectedIndex ${selectedIndex} out of range`);
+    }
+  }, [selectedIndex]);
+
+  console.log({ filters });
+  return (
+    <div>
+      <ToggleButtonGroup value={selectedIndex} onChange={handleChangeFilterSet}>
+        <ToggleButton value={0}>Filter Set 1 (three filters)</ToggleButton>
+        <ToggleButton value={1}>Filter Set 2 (two filters)</ToggleButton>
+      </ToggleButtonGroup>
+      <DefaultFilterBar filters={filters} />
+    </div>
+  );
+};
+FilterBarMultipleFilterSets.displaySequence = displaySequence++;

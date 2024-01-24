@@ -1,6 +1,9 @@
 // TODO try and get TS path alias working to avoid relative paths like this
 import { defaultPatternsByType, formatDate } from "@finos/vuu-utils";
-import { DefaultFilterBar } from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
+import {
+  DefaultFilterBar,
+  FilterBarMultipleFilters,
+} from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors
 const OVERFLOW_CONTAINER = ".vuuOverflowContainer-wrapContainer";
@@ -520,4 +523,46 @@ describe("WHEN a user applies a date filter", () => {
       ]);
     })
   );
+});
+
+describe("Deleting and renaming filters", () => {
+  describe("WHEN user deletes a filter", () => {
+    it("THEN onFilterDeleted callback is called", () => {
+      const onFilterDeleted = cy.stub().as("onFilterDeleted");
+      cy.mount(<FilterBarMultipleFilters onFilterDeleted={onFilterDeleted} />);
+
+      findOverflowItem('[data-index="0"]').findByRole("button").realClick();
+      clickButton("Delete");
+      clickButton("Remove");
+
+      cy.get("@onFilterDeleted").should("be.calledWithExactly", {
+        column: "currency",
+        name: "Filter One",
+        op: "=",
+        value: "EUR",
+      });
+    });
+  });
+
+  describe("WHEN user renames a filter", () => {
+    it("THEN onFilterRenamed callback is called", () => {
+      const onFilterRenamed = cy.stub().as("onFilterRenamed");
+      cy.mount(<FilterBarMultipleFilters onFilterRenamed={onFilterRenamed} />);
+
+      findOverflowItem('[data-index="0"]').findByText("Filter One").dblclick();
+      cy.realType("Test");
+      cy.realPress("Enter");
+
+      cy.get("@onFilterRenamed").should(
+        "be.calledWithExactly",
+        {
+          column: "currency",
+          name: "Filter One",
+          op: "=",
+          value: "EUR",
+        },
+        "Test"
+      );
+    });
+  });
 });

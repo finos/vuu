@@ -22,6 +22,8 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   filters: Filter[];
   onApplyFilter: (filter: DataSourceFilter) => void;
   onChangeActiveFilterIndex: ActiveItemChangeHandler;
+  onFilterDeleted?: (filter: Filter) => void;
+  onFilterRenamed?: (filter: Filter, name: string) => void;
   onFiltersChanged?: (filters: Filter[]) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
@@ -37,6 +39,8 @@ export const FilterBar = ({
   filters: filtersProp,
   onApplyFilter,
   onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
+  onFilterDeleted,
+  onFilterRenamed,
   onFiltersChanged,
   showMenu: showMenuProp = false,
   tableSchema,
@@ -71,6 +75,8 @@ export const FilterBar = ({
     onApplyFilter,
     onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
     onFiltersChanged,
+    onFilterDeleted,
+    onFilterRenamed,
     showMenu: showMenuProp,
     tableSchema,
   });
