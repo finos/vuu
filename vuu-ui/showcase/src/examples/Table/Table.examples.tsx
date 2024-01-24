@@ -82,7 +82,7 @@ export const TestTable = ({
       headerHeight={headerHeight}
       height={height}
       renderBufferSize={renderBufferSize}
-      rowHeight={20}
+      rowHeight={rowHeight}
       width={width}
     />
   );

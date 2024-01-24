@@ -190,7 +190,7 @@ export const useTableScroll = ({
       const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
-        setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
+        setRange({ from: firstRow, to: firstRow + viewportRowCount });
       }
     },
     [getRowAtPosition, onVerticalScroll, setRange, viewportRowCount]
@@ -368,7 +368,7 @@ export const useTableScroll = ({
             onVerticalScrollInSitu?.(offset);
             const firstRow = firstRowRef.current + offset;
             firstRowRef.current = firstRow;
-            setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
+            setRange({ from: firstRow, to: firstRow + viewportRowCount });
           } else {
             const scrollBy =
               direction === "down" ? appliedPageSize : -appliedPageSize;

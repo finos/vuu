@@ -56,10 +56,11 @@ const getDefaultColumnConfig = (
   }
 };
 
-const SimulTable = ({
+export const SimulTable = ({
   getDefaultColumnConfig,
+  height = 625,
   renderBufferSize = 0,
-  tableName,
+  tableName = "instruments",
   ...props
 }: Partial<TableProps> & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
@@ -96,6 +97,7 @@ const SimulTable = ({
       <DemoTableContainer>
         <Table
           {...tableProps}
+          height={height}
           onConfigChange={handleConfigChange}
           renderBufferSize={renderBufferSize}
           {...props}
@@ -104,9 +106,7 @@ const SimulTable = ({
     </ContextMenuProvider>
   );
 };
-
-export const Instruments = () => <SimulTable tableName="instruments" />;
-Instruments.displaySequence = displaySequence++;
+SimulTable.displaySequence = displaySequence++;
 
 export const InstrumentsExtended = () => (
   <SimulTable

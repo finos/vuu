@@ -112,6 +112,7 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (range: VuuRange) => {
+      console.log(`set Range ${range.from} ${range.to}`);
       if (!rangesAreSame(range, rangeRef.current)) {
         const fullRange = getFullRange(range, renderBufferSize);
         dataWindow.setRange(fullRange);
