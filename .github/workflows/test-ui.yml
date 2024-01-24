@@ -52,6 +52,28 @@ jobs:
           start: npm run showcase:preview
           wait-on: "http://localhost:4173"
 
+  cypress-component:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Run component tests in Chrome
+        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        with:
+          component: true
+          install: false
+          working-directory: ./vuu-ui
+          browser: chrome
+      - name: Run component tests in Edge
+        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        with:
+          component: true
+          install: false
+          working-directory: ./vuu-ui
+          browser: edge
+
   # ensure the vuu example still builds
   vuu-app-build:
     runs-on: ubuntu-latest
