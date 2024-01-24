@@ -3,8 +3,8 @@ package org.finos.vuu.core.module.simul.provider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.data.order.{ChildOrder, ParentOrder}
 import org.finos.vuu.provider.Provider
 
 class ParentOrdersProvider(val table: DataTable, val model: ParentChildOrdersModel)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
@@ -31,11 +31,11 @@ class ParentOrdersProvider(val table: DataTable, val model: ParentChildOrdersMod
     override def onCancelChildOrder(child: ChildOrder): Unit = {}
   })
 
-  def processDelete(po: ParentOrder) = {
+  def processDelete(po: ParentOrder): Unit = {
     table.processDelete(po.id.toString)
   }
 
-  def processUpsert(po: ParentOrder) = {
+  def processUpsert(po: ParentOrder): Unit = {
     //id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String
     table.processUpdate(po.id.toString, RowWithData(po.id.toString, Map("id" -> po.id.toString, "idAsInt" -> po.id, "ric" -> po.ric, "price" -> po.price, "quantity" -> po.quantity,
       "side" -> po.side, "account" -> po.account, "exchange" -> po.exchange, "ccy" -> po.ccy,

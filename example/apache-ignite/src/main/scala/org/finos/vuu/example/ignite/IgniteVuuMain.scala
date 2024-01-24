@@ -1,4 +1,4 @@
-package org.finos.vuu
+package org.finos.vuu.example.ignite
 
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
@@ -9,14 +9,12 @@ import org.finos.vuu.core._
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.authn.AuthNModule
 import org.finos.vuu.core.module.auths.PermissionModule
-import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.editable.EditableModule
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.example.virtualtable.module.VirtualTableModule
+import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
@@ -29,7 +27,7 @@ import org.finos.vuu.state.MemoryBackedVuiStateStore
 chrome://flags/#allow-insecure-localhost
  */
 
-object SimulMain extends App with StrictLogging {
+object IgniteVuuMain extends App with StrictLogging {
 
   JmxInfra.enableJmx()
 
@@ -37,8 +35,6 @@ object SimulMain extends App with StrictLogging {
   implicit val clock: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-
-  val omsApi = OmsApi()
 
   logger.info("[VUU] Starting...")
 
@@ -79,22 +75,11 @@ object SimulMain extends App with StrictLogging {
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4)
-  ).withModule(PriceModule())
-    .withModule(SimulationModule())
-    .withModule(MetricsModule())
-    .withModule(VuiStateModule(store))
-    .withModule(TypeAheadModule())
-    .withModule(AuthNModule(authenticator, loginTokenValidator))
-    .withModule(EditableModule())
-    .withModule(PermissionModule())
-    .withModule(BasketModule(omsApi))
-    .withModule(VirtualTableModule())
-    //.withModule(IgniteOrderDataModule(IgniteOrderStore()))
-    .withPlugin(VirtualizedTablePlugin)
+  ).withModule(MetricsModule())
+   .withModule(IgniteOrderDataModule(IgniteOrderStore()))
+   .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
-
-  //  LifecycleGraphviz("vuu", lifecycle.dependencyGraph)
 
   lifecycle.start()
 
