@@ -9,12 +9,7 @@ import {
   useState,
 } from "react";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
-import {
-  Input,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonGroupProps,
-} from "@salt-ds/core";
+import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 
@@ -29,6 +24,8 @@ const lastUpdatedColumn = {
 export const DefaultFilterBar = ({
   filters: filtersProp = [],
   onApplyFilter,
+  onFilterDeleted,
+  onFilterRenamed,
   onFiltersChanged,
   style,
 }: Partial<FilterBarProps>) => {
@@ -83,6 +80,8 @@ export const DefaultFilterBar = ({
         filters={filters}
         onApplyFilter={handleApplyFilter}
         onChangeActiveFilterIndex={handleChangeActiveFilterIndex}
+        onFilterDeleted={onFilterDeleted}
+        onFilterRenamed={onFilterRenamed}
         onFiltersChanged={handleFiltersChanged}
         tableSchema={{ ...tableSchema, columns }}
         columnDescriptors={columns}
@@ -121,7 +120,10 @@ export const FilterBarOneMultiValueFilter = () => {
 };
 FilterBarOneMultiValueFilter.displaySequence = displaySequence++;
 
-export const FilterBarMultipleFilters = () => {
+export const FilterBarMultipleFilters = ({
+  onFilterDeleted,
+  onFilterRenamed,
+}: Partial<FilterBarProps>) => {
   return (
     <DefaultFilterBar
       filters={[
@@ -149,6 +151,8 @@ export const FilterBarMultipleFilters = () => {
           ],
         },
       ]}
+      onFilterDeleted={onFilterDeleted}
+      onFilterRenamed={onFilterRenamed}
     />
   );
 };

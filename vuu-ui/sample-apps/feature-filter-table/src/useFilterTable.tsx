@@ -46,11 +46,13 @@ type SavedFilterMap = {
   [key: string]: Omit<NamedFilter, "name"> & { name: string }[];
 };
 
+const hasFilterWithName = (filters: NamedFilter[], name: string) =>
+  filters.findIndex((f) => f.name === name) !== -1;
+
 export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   const { dispatch, load, save } = useViewContext();
   const { getApplicationSettings, saveApplicationSettings } =
     useLayoutManager();
-  console.log({ getApplicationSettings, saveApplicationSettings });
 
   const savedFilters = useMemo(() => {
     const {
@@ -77,9 +79,6 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
       ),
     [dataSource]
   );
-
-  const hasFilterWithName = (filters: NamedFilter[], name: string) =>
-    filters.findIndex((f) => f.name === name) !== -1;
 
   const removeFilterFromSettings = useCallback(
     (filter: Filter | NamedFilter) => {

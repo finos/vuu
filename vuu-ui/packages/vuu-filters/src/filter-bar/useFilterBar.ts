@@ -378,7 +378,6 @@ export const useFilterBar = ({
 
   const handleKeyDownMenu = useCallback<KeyboardEventHandler>(
     (evt) => {
-      console.log(`keydown from List ${evt.key}`);
       const { current: container } = containerRef;
       if (evt.key === "Backspace" && container) {
         evt.preventDefault();
