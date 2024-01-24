@@ -30,3 +30,5 @@ vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/utils.mjs
 example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
 example/virtualized-table/src/main/scala/org/finos/vuu/example/virtualtable/bigdatacache/FakeBigDataCache.scala
+example/apache-ignite/src/main/resources/certs/key.pem
+example/apache-ignite/src/main/resources/certs/cert.pem
