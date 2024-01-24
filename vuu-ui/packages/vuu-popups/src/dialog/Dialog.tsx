@@ -38,7 +38,7 @@ export const Dialog = ({
 
   const rootRef = useRef<HTMLDialogElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
+  const [themeClass, _, dataMode] = useThemeAttributes();
   const { position } = useAnchoredPosition({
     anchorElement,
     offsetLeft,

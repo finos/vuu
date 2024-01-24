@@ -17,7 +17,7 @@ import {
   getTableCell,
   headerCellQuery,
 } from "./table-dom-utils";
-import { ScrollDirection, ScrollRequestHandler } from "./useTableScroll";
+import { ScrollRequestHandler } from "./useTableScroll";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -55,60 +55,6 @@ export const isPagingKey = (key: string): key is PageKey =>
   PageKeys.includes(key);
 
 const NULL_CELL_POS: CellPos = [-1, -1];
-
-const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
-
-const howFarIsRowOutsideViewport = (
-  rowEl: HTMLElement,
-  contentContainer = rowEl.closest(".vuuTable-contentContainer")
-): readonly [ScrollDirection | undefined, number | undefined] => {
-  //TODO lots of scope for optimisation here
-  if (contentContainer) {
-    const viewport = contentContainer?.getBoundingClientRect();
-    const row = rowEl.getBoundingClientRect();
-    if (row) {
-      if (row.bottom > viewport.bottom) {
-        return ["down", row.bottom - viewport.bottom];
-      } else if (row.top < viewport.top) {
-        return ["up", row.top - viewport.top];
-      } else {
-        return NO_SCROLL_NECESSARY;
-      }
-    } else {
-      throw Error("Whats going on, row not found");
-    }
-  } else {
-    throw Error("Whats going on, scrollbar container not found");
-  }
-};
-
-const howFarIsCellOutsideViewport = (
-  cellEl: HTMLElement
-): readonly [ScrollDirection | undefined, number | undefined] => {
-  //TODO lots of scope for optimisation here
-  const contentContainer = cellEl.closest(".vuuTable-contentContainer");
-  if (contentContainer) {
-    const rowEl = cellEl.closest(".vuuTableRow") as HTMLElement;
-    if (rowEl) {
-      const result = howFarIsRowOutsideViewport(rowEl, contentContainer);
-      if (result !== NO_SCROLL_NECESSARY) {
-        return result;
-      }
-      const viewport = contentContainer?.getBoundingClientRect();
-      const cell = cellEl.closest(".vuuTableCell")?.getBoundingClientRect();
-      if (cell) {
-        if (cell.right > viewport.right) {
-          return ["right", cell.right + 6 - viewport.right];
-        } else if (cell.left < viewport.left) {
-          return ["left", cell.left - viewport.left];
-        }
-      } else {
-        throw Error("Whats going on, cell not found");
-      }
-    }
-  }
-  return NO_SCROLL_NECESSARY;
-};
 
 function nextCellPos(
   key: ArrowKey,

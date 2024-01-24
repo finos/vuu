@@ -160,7 +160,7 @@ export const useKeyboardNavigation = ({
   restoreLastFocus,
   selected,
   // TODO
-  viewportItemCount,
+  viewportItemCount: _,
 }: NavigationHookProps): NavigationHookResult => {
   const lastFocus = useRef(-1);
   const [, forceRender] = useState({});

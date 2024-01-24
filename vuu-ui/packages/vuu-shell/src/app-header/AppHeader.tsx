@@ -26,7 +26,7 @@ export const AppHeader = ({
   loginUrl,
   onNavigate,
   onSwitchTheme,
-  themeMode = "light",
+  themeMode: _,
   user,
   ...htmlAttributes
 }: AppHeaderProps) => {

@@ -26,7 +26,7 @@ interface CollapsibleHookProps<Item> {
   onToggle?: (node: Item) => void;
 }
 
-interface CollapsibleHookResult<Item> {
+interface CollapsibleHookResult {
   onClick?: ListHandlers["onClick"];
   onKeyDown?: ListHandlers["onKeyDown"];
 }
@@ -36,7 +36,7 @@ export const useCollapsibleGroups = <Item>({
   collectionHook,
   highlightedIdx,
   onToggle,
-}: CollapsibleHookProps<Item>): CollapsibleHookResult<Item> => {
+}: CollapsibleHookProps<Item>): CollapsibleHookResult => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === ArrowRight || e.key === Enter) {

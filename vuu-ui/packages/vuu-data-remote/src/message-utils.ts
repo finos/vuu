@@ -1,5 +1,4 @@
 import {
-  SchemaColumn,
   TableSchema,
   VuuUIMessageOut,
   WithRequestId,

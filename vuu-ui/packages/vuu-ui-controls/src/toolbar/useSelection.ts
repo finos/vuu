@@ -37,10 +37,8 @@ export interface SelectionHookResult {
 
 // TODO use SelectionProps
 export const useSelection = ({
-  containerRef,
   defaultSelected,
   highlightedIdx,
-  itemQuery,
   onSelectionChange,
   selected: selectedProp,
   selectionStrategy,

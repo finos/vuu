@@ -8,18 +8,6 @@ import "./App.css";
 // import { ThemeProvider } from "@finos/vuu-utils";
 
 export const App = () => {
-  const columnDescriptors = [{ name: "Column 1" }, { name: "Column 2" }];
-  // const dataSource = new ArrayDataSource({
-  //   columnDescriptors,
-  //   data: [
-  //     ["test1", 1000],
-  //     ["test2", 2000],
-  //     ["test3", 3000],
-  //     ["test4", 4000],
-  //     ["test5", 5000],
-  //     ["test6", 6000],
-  //   ],
-  // });
   const schema = getSchema("instruments");
   const dataSource =
     vuuModule<SimulTableName>("SIMUL").createDataSource("instruments");
