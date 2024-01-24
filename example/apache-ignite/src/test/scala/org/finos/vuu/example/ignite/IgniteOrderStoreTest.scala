@@ -5,12 +5,16 @@ import org.apache.ignite.{Ignite, IgniteCache}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.funsuite.AnyFunSuiteLike
+import org.scalatest.matchers.should.Matchers
 
-class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
+class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matchers {
   private var ignite: Ignite = _
   private var parentOrderCache: IgniteCache[Int, ParentOrder] = _
   private var childOrderCache: IgniteCache[Int, ChildOrder] = _
   private var orderStore: IgniteOrderStore = _
+
+  private val emptySortQueries: String = ""
+  private val emptyFilterQueries: String = ""
 
   before {
     ignite = TestUtils.setupIgnite()
@@ -84,7 +88,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
     val filterQueries = "parentId = 2"
-    val childOrder = orderStore.findChildOrder(filterQueries, 1,2)
+    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1)
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
@@ -105,7 +109,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
     val filterQueries = "ric = \'ric\'"
-    val childOrder = orderStore.findChildOrder(filterQueries, 0, 100)
+    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 100, 0)
 
     assert(childOrder != null)
     assert(childOrder.size == 6)
@@ -119,13 +123,43 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter {
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
 
-    val filterQueries = ""
-    val childOrder = orderStore.findChildOrder(filterQueries, 0, 100)
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, emptySortQueries, 100, 0)
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
   }
 
+  test("Ignite Store With Custom Sql Sort Single Column") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3)
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
+
+    val sortByValues = "parentId ASC"
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0)
+
+    assert(childOrder != null)
+    assert(childOrder.size == 3)
+    childOrder.map(c => c.id).toArray shouldBe Array(1,3,2)
+  }
+
+  test("Ignite Store With Custom Sql Sort Multiple Columns") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3)
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
+
+    val sortByValues = "parentId DESC, id ASC"
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0)
+
+    assert(childOrder != null)
+    assert(childOrder.size == 3)
+    childOrder.map(c => c.id).toArray shouldBe Array(2, 1, 3)
+  }
   private def GivenParentOrder(parentOrderId: Int): ParentOrder = {
     val parentOrder = TestUtils.createParentOrder(parentOrderId)
     orderStore.storeParentOrder(parentOrder)
