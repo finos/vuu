@@ -11,25 +11,20 @@ class IgniteSqlSortBuilder {
   private type MapToIgniteColumnName = String => Option[String]
   private val AscendingSql = "ASC"
   private val DescendingSql = "DESC"
-  def toSql(sortColumnsToDirections: SortSpecInternal, columnMapper: MapToIgniteColumnName): String = {
-    sortColumnsToDirections.map {
-      case (tableColumnName, sortDirection) => {
-        val igniteColumnName = columnMapper(tableColumnName) match {
-          case Some(value) => value
-          case None => "" //todo handle no mapping found
-        }
-        s"$igniteColumnName ${toSQL(sortDirection)}"
-      }
-    }
-  }.mkString(", ")
+  def toSql(sortColumnsToDirections: SortSpecInternal, columnMapper: MapToIgniteColumnName): String =
+    sortColumnsToDirections
+      .flatMap{case (columnName, direction) => toSortString(columnName,direction,columnMapper)}
+      .mkString(", ")
 
+  private def toSortString(tableColumnName:String, sortDirection: SortDirection.TYPE, columnMapper: MapToIgniteColumnName): Option[String] = {
+    columnMapper(tableColumnName) match {
+      case Some(value) => Some(s"$value ${toSQL(sortDirection)}")
+      case None => None
+    }
+  }
   private def toSQL(direction: SortDirection.TYPE) =
     direction match {
       case SortDirection.Ascending => AscendingSql
       case SortDirection.Descending => DescendingSql
     }
-  //todo introduce NoSort type
-
-
-
 }
