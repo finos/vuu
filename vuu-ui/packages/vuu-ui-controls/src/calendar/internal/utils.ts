@@ -1,6 +1,5 @@
 import {
   createCalendar,
-  DateFormatter,
   DateValue,
   getLocalTimeZone,
   isSameMonth,
@@ -9,6 +8,7 @@ import {
   startOfYear,
   today,
 } from "@internationalized/date";
+import { getDateFormatter } from "@finos/vuu-utils";
 
 const localTimezone = getLocalTimeZone();
 
@@ -16,20 +16,18 @@ export function getCurrentLocale() {
   return navigator.languages[0];
 }
 
-export function getDateFormatter(options?: Intl.DateTimeFormatOptions) {
-  return new DateFormatter(getCurrentLocale(), options);
-}
-
 export function formatDate(
   date: DateValue,
   options?: Intl.DateTimeFormatOptions
 ) {
-  const formatter = getDateFormatter(options);
+  const formatter = getDateFormatter(getCurrentLocale(), options);
   return formatter.format(date.toDate(localTimezone));
 }
 
 export function getCalender() {
-  const calendarIdentifier = getDateFormatter().resolvedOptions().calendar;
+  const calendarIdentifier = getDateFormatter(
+    getCurrentLocale()
+  ).resolvedOptions().calendar;
   return createCalendar(calendarIdentifier);
 }
 

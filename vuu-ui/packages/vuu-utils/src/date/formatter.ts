@@ -1,8 +1,9 @@
+import { DateFormatter } from "@internationalized/date";
 import { isNotNullOrUndefined } from "../ts-utils";
 import { DatePattern, DateTimePattern, TimePattern } from "./types";
 
 type DateTimeFormatConfig = {
-  locale?: string;
+  locale: string;
   options: Intl.DateTimeFormatOptions;
 };
 
@@ -62,9 +63,16 @@ function getFormatConfigs(pattern: DateTimePattern) {
 }
 
 export function formatDate(pattern: DateTimePattern): (d: Date) => string {
-  const dateTimeFormats = getFormatConfigs(pattern)
+  const formatters = getFormatConfigs(pattern)
     .filter(isNotNullOrUndefined)
-    .map((c) => Intl.DateTimeFormat(c.locale, c.options));
+    .map((c) => getDateFormatter(c.locale, c.options));
 
-  return (d) => dateTimeFormats.map((dtf) => dtf.format(d)).join(" ");
+  return (d) => formatters.map((f) => f.format(d)).join(" ");
+}
+
+export function getDateFormatter(
+  locale: string,
+  options?: Intl.DateTimeFormatOptions
+) {
+  return new DateFormatter(locale, options);
 }
