@@ -4,7 +4,6 @@ import {
   SyntheticEvent,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,23 +12,20 @@ import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 
-let displaySequence = 1;
-
 const lastUpdatedColumn = {
   name: "lastUpdated",
   serverDataType: "long",
   type: "date/time",
 } as const;
 
-export const DefaultFilterBar = ({
-  filters: filtersProp = [],
+const DefaultFilterBarCore = ({
+  filters = [],
   onApplyFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFiltersChanged,
   style,
 }: Partial<FilterBarProps>) => {
-  const [filters, setFilters] = useState<Filter[]>(filtersProp);
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const tableSchema = getSchema("instruments");
@@ -49,7 +45,6 @@ export const DefaultFilterBar = ({
     (filters: Filter[]) => {
       onFiltersChanged?.(filters);
       console.log(`filters changed ${JSON.stringify(filters, null, 2)}`);
-      setFilters(filters);
     },
     [onFiltersChanged]
   );
@@ -89,6 +84,32 @@ export const DefaultFilterBar = ({
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
       <Input style={{ margin: 20, width: 100 }} />
     </div>
+  );
+};
+
+let displaySequence = 1;
+
+export const DefaultFilterBar = ({
+  filters: filtersProp = [],
+  onFiltersChanged,
+  ...rest
+}: Partial<FilterBarProps>) => {
+  const [filters, setFilters] = useState(filtersProp);
+
+  const handleFiltersChange = useCallback(
+    (filters: Filter[]) => {
+      onFiltersChanged?.(filters);
+      setFilters(filters);
+    },
+    [onFiltersChanged]
+  );
+
+  return (
+    <DefaultFilterBarCore
+      {...rest}
+      filters={filters}
+      onFiltersChanged={handleFiltersChange}
+    />
   );
 };
 DefaultFilterBar.displaySequence = displaySequence++;
@@ -159,59 +180,86 @@ export const FilterBarMultipleFilters = ({
 FilterBarMultipleFilters.displaySequence = displaySequence++;
 
 export const FilterBarMultipleFilterSets = () => {
+  const [filterSets, setFilterSets] = useState(initialFilterSets);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const handleChangeFilterSet = useCallback(
+
+  const handleChangeSelectedIndex = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
       const { value } = evt.target as HTMLButtonElement;
       const index = parseInt(value);
       setSelectedIndex(index);
     },
-    []
+    [filterSets]
   );
-  const filters = useMemo<Filter[]>(() => {
-    if (selectedIndex === 0) {
-      return [
-        { column: "currency", name: "Filter One", op: "=", value: "EUR" },
-        { column: "exchange", name: "Filter Two", op: "=", value: "XLON" },
-        {
-          column: "ric",
-          name: "Filter Three",
-          op: "in",
-          values: ["AAPL", "BP.L", "VOD.L"],
-        },
-      ];
-    } else if (selectedIndex === 1) {
-      return [
-        {
-          column: "ric",
-          name: "Filter Four",
-          op: "in",
-          values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
-        },
-        {
-          op: "and",
-          name: "Filter Five",
-          filters: [
-            { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
-            { column: "exchange", op: "=", value: "NASDAQ" },
-            { column: "price", op: ">", value: 1000 },
-          ],
-        },
-      ];
-    } else {
-      throw Error(`selectedIndex ${selectedIndex} out of range`);
-    }
-  }, [selectedIndex]);
 
-  console.log({ filters });
+  const handleChangeFilters = useCallback(
+    (filters: Filter[]) => {
+      setFilterSets((s) => [
+        ...s.slice(0, selectedIndex),
+        filters,
+        ...s.slice(selectedIndex + 1),
+      ]);
+    },
+    [selectedIndex]
+  );
+
   return (
     <div>
-      <ToggleButtonGroup value={selectedIndex} onChange={handleChangeFilterSet}>
-        <ToggleButton value={0}>Filter Set 1 (three filters)</ToggleButton>
-        <ToggleButton value={1}>Filter Set 2 (two filters)</ToggleButton>
+      <ToggleButtonGroup
+        value={selectedIndex}
+        onChange={handleChangeSelectedIndex}
+      >
+        {filterSets.map((fs, i) => (
+          <ToggleButton key={i} value={i}>
+            {`Filter Set ${i + 1} (${fs.length} filters)`}
+          </ToggleButton>
+        ))}
       </ToggleButtonGroup>
-      <DefaultFilterBar filters={filters} />
+      <DefaultFilterBarCore
+        filters={filterSets[selectedIndex]}
+        onFiltersChanged={handleChangeFilters}
+      />
     </div>
   );
 };
+
+const initialFilterSets: Filter[][] = [
+  [
+    {
+      column: "currency",
+      name: "Filter One",
+      op: "=",
+      value: "EUR",
+    },
+    {
+      column: "exchange",
+      name: "Filter Two",
+      op: "=",
+      value: "XLON",
+    },
+    {
+      column: "ric",
+      name: "Filter Three",
+      op: "in",
+      values: ["AAPL", "BP.L", "VOD.L"],
+    },
+  ],
+  [
+    {
+      column: "ric",
+      name: "Filter Four",
+      op: "in",
+      values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
+    },
+    {
+      op: "and",
+      name: "Filter Five",
+      filters: [
+        { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
+        { column: "exchange", op: "=", value: "NASDAQ" },
+        { column: "price", op: ">", value: 1000 },
+      ],
+    },
+  ],
+];
 FilterBarMultipleFilterSets.displaySequence = displaySequence++;
