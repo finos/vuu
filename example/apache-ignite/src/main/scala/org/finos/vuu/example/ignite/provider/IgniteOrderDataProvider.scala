@@ -22,8 +22,6 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
     val totalSize = igniteStore.childOrderCount().toInt
 
     internalTable.setSize(totalSize)
-    internalTable.setRange(VirtualizedRange(range.from, range.to))
-
 
     val sqlFilterClause =
       if (viewPort.filterSpec.filter == null || viewPort.filterSpec.filter.isEmpty) {
@@ -42,13 +40,16 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
     val startIndex = Math.max(range.from - 5000, 0)
     val endIndex = range.to + 5000
 
+    internalTable.setRange(VirtualizedRange(startIndex, endIndex))
+
     logger.info(s"Loading data between $startIndex and $endIndex")
 
     val iterator = igniteStore.findChildOrder(sqlFilterClause = sqlFilterClause, startIndex = startIndex, rowCount = endIndex)
 
     logger.info(s"Loaded data between $startIndex and $endIndex")
 
-    val index = new AtomicInteger(range.from) // todo: get rid of working assumption here that the dataset is fairly immutable.
+    val index = new AtomicInteger(startIndex) // todo: get rid of working assumption here that the dataset is fairly immutable.
+
     iterator.foreach(childOrder => {
       val row = RowWithData(childOrder.id.toString,
         Map(
