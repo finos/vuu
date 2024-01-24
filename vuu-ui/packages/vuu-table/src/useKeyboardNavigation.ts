@@ -247,9 +247,19 @@ NavigationHookProps) => {
             break;
           }
         }
-        requestAnimationFrame(() => {
+        // Introduce a delay to allow the scroll operation to complete,
+        // which will trigger a range reset and rerender of rows. We
+        // might need to tweak how this works. If we introduce too big
+        // a delay, we risk seeing the newly rendered rows, with the focus
+        // still on the old cell, which will be apparent as a brief flash
+        // of the old cell focus before switching to correct cell. If we were
+        // to change the way re assign keys such that we can guarantee that
+        // when we page down, rows in same position get same keys, then same
+        // cell would be focussed in new page as previous and issue would not
+        // arise.
+        setTimeout(() => {
           resolve([newRowIdx, colIdx]);
-        });
+        }, 35);
       }),
     [requestScroll, rowCount, viewportRowCount]
   );
