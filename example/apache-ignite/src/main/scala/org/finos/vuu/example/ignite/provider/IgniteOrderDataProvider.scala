@@ -30,21 +30,20 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
       else {
         val filterTreeVisitor = new IgniteSqlFilterTreeVisitor
         val clause = FilterSpecParser.parse[IgniteSqlFilterClause](viewPort.filterSpec.filter, filterTreeVisitor)
-        clause.toSql()
+        clause.toSql(internalTable.getTableDef)
       }
 
-//    val sqlFilterClause = ""
-
     val rowCount = if(range.to > range.from) range.to - range.from else 1
-
     val startIndex = Math.max(range.from - 5000, 0)
     val endIndex = range.to + 5000
 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
+    val sqlSortQueries = ""
+
     logger.info(s"Loading data between $startIndex and $endIndex")
 
-    val iterator = igniteStore.findChildOrder(sqlFilterClause = sqlFilterClause, startIndex = startIndex, rowCount = endIndex)
+    val iterator = igniteStore.findChildOrder(sqlFilterQueries = sqlFilterClause, sqlSortQueries = sqlSortQueries, startIndex = startIndex, rowCount = endIndex)
 
     logger.info(s"Loaded data between $startIndex and $endIndex")
 
