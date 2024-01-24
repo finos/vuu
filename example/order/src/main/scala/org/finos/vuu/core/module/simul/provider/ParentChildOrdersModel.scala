@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.simul.provider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionSet
-import org.finos.vuu.data.order.{ChildOrder, OrderStore, ParentOrder}
+import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
@@ -12,19 +12,19 @@ import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 //case class ChildOrder(parentId: Int, id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, strategy: String, exchange: String, ccy: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String)
 
 trait OrderListener {
-  def onNewParentOrder(parentOrder: ParentOrder)
+  def onNewParentOrder(parentOrder: ParentOrder): Unit
 
-  def onAmendParentOrder(parentOrder: ParentOrder)
+  def onAmendParentOrder(parentOrder: ParentOrder): Unit
 
-  def onCancelParentOrder(parentOrder: ParentOrder)
+  def onCancelParentOrder(parentOrder: ParentOrder): Unit
 
-  def onDeleteParentOrder(parentOrder: ParentOrder)
+  def onDeleteParentOrder(parentOrder: ParentOrder): Unit
 
-  def onNewChildOrder(child: ChildOrder)
+  def onNewChildOrder(child: ChildOrder): Unit
 
-  def onAmendChildOrder(child: ChildOrder)
+  def onAmendChildOrder(child: ChildOrder): Unit
 
-  def onCancelChildOrder(child: ChildOrder)
+  def onCancelChildOrder(child: ChildOrder): Unit
 }
 
 trait DelayQueueAction extends Delayed {
@@ -137,35 +137,35 @@ class ParentChildOrdersModel(implicit clock: Clock,
     OrderPermission("HT", PermissionSet.HighTouchPermission)
   )
 
-  def registerOrderListener(listener: OrderListener) = {
+  def registerOrderListener(listener: OrderListener): Unit = {
     listeners = listeners ++ List(listener)
   }
 
-  def notifyOnParentInsert(parentOrder: ParentOrder) = {
+  def notifyOnParentInsert(parentOrder: ParentOrder): Unit = {
     listeners.foreach(l => l.onNewParentOrder(parentOrder))
   }
 
-  def notifyOnChildInsert(childOrder: ChildOrder) = {
+  def notifyOnChildInsert(childOrder: ChildOrder): Unit = {
     listeners.foreach(l => l.onNewChildOrder(childOrder))
   }
 
-  def notifyOnChildAmend(childOrder: ChildOrder) = {
+  def notifyOnChildAmend(childOrder: ChildOrder): Unit = {
     listeners.foreach(l => l.onAmendChildOrder(childOrder))
   }
 
-  def notifyOnChildCancel(childOrder: ChildOrder) = {
+  def notifyOnChildCancel(childOrder: ChildOrder): Unit = {
     listeners.foreach(l => l.onCancelChildOrder(childOrder))
   }
 
-  def notifyOnParentAmend(parentOrder: ParentOrder) = {
+  def notifyOnParentAmend(parentOrder: ParentOrder): Unit = {
     listeners.foreach(l => l.onAmendParentOrder(parentOrder))
   }
 
-  def notifyOnParentCancel(parentOrder: ParentOrder) = {
+  def notifyOnParentCancel(parentOrder: ParentOrder): Unit = {
     listeners.foreach(l => l.onCancelParentOrder(parentOrder))
   }
 
-  def notifyOnParentDelete(parentOrder: ParentOrder) = {
+  def notifyOnParentDelete(parentOrder: ParentOrder): Unit = {
     listeners.foreach(l => l.onDeleteParentOrder(parentOrder))
   }
 
@@ -193,7 +193,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
     }
   }
 
-  def processOneAction(action: DelayQueueAction) = {
+  def processOneAction(action: DelayQueueAction): Unit = {
     action match {
       case InsertParent(parent, _, _, childCount) =>
         notifyOnParentInsert(parent)

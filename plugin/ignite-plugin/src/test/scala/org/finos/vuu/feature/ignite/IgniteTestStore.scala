@@ -7,7 +7,6 @@ import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, Ind
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.configuration.{CacheConfiguration, IgniteConfiguration}
 import org.apache.ignite.lang.IgniteBiPredicate
-import org.finos.vuu.data.order.ChildOrder
 
 import java.util
 import scala.collection.mutable

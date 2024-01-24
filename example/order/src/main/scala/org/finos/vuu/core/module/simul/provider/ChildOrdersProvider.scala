@@ -2,8 +2,8 @@ package org.finos.vuu.core.module.simul.provider
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.data.order.{ChildOrder, ParentOrder}
 import org.finos.vuu.provider.Provider
 
 class ChildOrdersProvider(val table: DataTable, model: ParentChildOrdersModel)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
@@ -32,11 +32,11 @@ class ChildOrdersProvider(val table: DataTable, model: ParentChildOrdersModel)(i
     }
   })
 
-  def processDelete(po: ChildOrder) = {
+  def processDelete(po: ChildOrder): Unit = {
     table.processDelete(po.id.toString)
   }
 
-  def processUpsert(co: ChildOrder) = {
+  def processUpsert(co: ChildOrder): Unit = {
     //id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String
     table.processUpdate(co.id.toString, RowWithData(co.id.toString, Map("id" -> co.id.toString, "idAsInt" -> co.id, "ric" -> co.ric, "price" -> co.price, "quantity" -> co.quantity,
       "side" -> co.side, "parentOrderId" -> co.parentId, "exchange" -> co.exchange, "ccy" -> co.ccy,

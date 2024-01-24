@@ -11,8 +11,6 @@ import org.finos.vuu.core.module.simul.provider._
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.data.order.ignite.IgniteOrderStore
-import org.finos.vuu.data.order.{MapOrderStore, OrderStore}
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider

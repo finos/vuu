@@ -38,11 +38,6 @@
             <artifactId>price</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>data-ignite</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
