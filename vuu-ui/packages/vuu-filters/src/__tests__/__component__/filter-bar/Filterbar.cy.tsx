@@ -53,6 +53,24 @@ describe("WHEN it initially renders", () => {
     container.get(OVERFLOW_INDICATOR).should("exist");
     container.get(OVERFLOW_INDICATOR).should("have.css", "width", "0px");
   });
+  it("AND WHEN filterState passed THEN it calls onApplyFilter with currently active filters", () => {
+    const onApplyFilter = cy.stub().as("onApplyFilter");
+    const filter = { column: "currency", op: "!=", value: "CAD" } as const;
+    cy.mount(
+      <DefaultFilterBar
+        onApplyFilter={onApplyFilter}
+        filterState={{
+          filters: [filter, { ...filter, value: "USD" }],
+          activeIndices: [1],
+        }}
+      />
+    );
+
+    cy.get("@onApplyFilter").should("be.calledWithExactly", {
+      filter: 'currency != "USD"',
+      filterStruct: { ...filter, value: "USD" },
+    });
+  });
 });
 
 describe("The mouse user", () => {
@@ -146,12 +164,12 @@ describe("The mouse user", () => {
     };
 
     beforeEach(() => {
-      const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+      const onFilterStateChanged = cy.stub().as("filterStateChangeHandler");
       const onApplyFilter = cy.stub().as("applyFilterHandler");
       cy.mount(
         <DefaultFilterBar
           onApplyFilter={onApplyFilter}
-          onFiltersChanged={onFiltersChanged}
+          onFilterStateChanged={onFilterStateChanged}
         />
       );
       cy.get(ADD_BUTTON).realClick();
@@ -159,8 +177,11 @@ describe("The mouse user", () => {
       clickButton("APPLY AND SAVE");
     });
 
-    it("THEN filtersChangedHandler callback is invoked", () => {
-      cy.get("@filtersChangedHandler").should("be.calledWith", [testFilter]);
+    it("THEN filterStateChangeHandler callback is invoked", () => {
+      cy.get("@filterStateChangeHandler").should("be.calledWith", {
+        filters: [testFilter],
+        activeIndices: [0],
+      });
     });
 
     it("THEN filter is applied", () => {
@@ -190,9 +211,10 @@ describe("The mouse user", () => {
         findOverflowItem(".vuuFilterPill")
           .find(".vuuEditableLabel")
           .should("not.have.class", "vuuEditableLabel-editing");
-        cy.get("@filtersChangedHandler").should("be.calledWith", [
-          { ...testFilter, name: "test" },
-        ]);
+        cy.get("@filterStateChangeHandler").should("be.calledWith", {
+          filters: [{ ...testFilter, name: "test" }],
+          activeIndices: [0],
+        });
       });
 
       it("THEN filter pill has focus", () => {
@@ -220,9 +242,10 @@ describe("The mouse user", () => {
         clickListItems(newFilter.column, newFilter.op, newFilter.value);
         clickButton("APPLY AND SAVE");
 
-        cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
-          newFilter,
-        ]);
+        cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
+          filters: [newFilter],
+          activeIndices: [0],
+        });
         cy.get("@applyFilterHandler").should("be.calledWithExactly", {
           filter: 'currency != "CAD"',
           filterStruct: newFilter,
@@ -246,12 +269,12 @@ describe("The mouse user", () => {
     };
 
     beforeEach(() => {
-      const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+      const onFilterStateChanged = cy.stub().as("filterStateChangeHandler");
       const onApplyFilter = cy.stub().as("applyFilterHandler");
       cy.mount(
         <DefaultFilterBar
           onApplyFilter={onApplyFilter}
-          onFiltersChanged={onFiltersChanged}
+          onFilterStateChanged={onFilterStateChanged}
         />
       );
       cy.get(ADD_BUTTON).realClick();
@@ -267,15 +290,31 @@ describe("The mouse user", () => {
       cy.realPress("Enter");
     });
 
-    it("THEN filtersChangedHandler & applyFilterHandler callbacks are invoked with correct values", () => {
-      cy.get("@filtersChangedHandler").should("be.calledWith", [
-        filter1,
-        filter2,
-      ]);
+    it("THEN filterStateChangeHandler & applyFilterHandler callbacks are invoked with correct values", () => {
+      cy.get("@filterStateChangeHandler").should("be.calledWith", {
+        filters: [filter1, filter2],
+        activeIndices: [0, 1],
+      });
 
       cy.get("@applyFilterHandler").should("be.calledWith", {
         filter: 'currency != "USD" and currency != "CAD"',
         filterStruct: { op: "and", filters: [filter1, filter2] },
+      });
+    });
+
+    it("AND WHEN one filter is made inactive THEN changes are correctly applied", () => {
+      findOverflowItem('[data-index="0"]').realClick({ shiftKey: true });
+      findOverflowItem('[data-index="0"]').find("[aria-selected='false']");
+      findOverflowItem('[data-index="1"]').find("[aria-selected='true']");
+
+      cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
+        filters: [filter1, filter2],
+        activeIndices: [1],
+      });
+
+      cy.get("@applyFilterHandler").should("be.calledWithExactly", {
+        filter: 'currency != "CAD"',
+        filterStruct: filter2,
       });
     });
 
@@ -286,11 +325,15 @@ describe("The mouse user", () => {
       clickButton("Delete");
       clickButton("Remove");
 
-      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
-        filter1,
-      ]);
+      findOverflowItem(".vuuFilterPill").should("have.length", 1);
+      findOverflowItem(".vuuFilterPill").contains(filter1.name);
+
+      cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
+        filters: [filter1],
+        activeIndices: [0],
+      });
       cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: 'currency != "USD"',
+        filter: filter1.name,
         filterStruct: filter1,
       });
     });
@@ -302,11 +345,15 @@ describe("The mouse user", () => {
       clickButton("Delete");
       clickButton("Remove");
 
-      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
-        filter2,
-      ]);
+      findOverflowItem(".vuuFilterPill").should("have.length", 1);
+      findOverflowItem(".vuuFilterPill").contains(filter2.name);
+
+      cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
+        filters: [filter2],
+        activeIndices: [0],
+      });
       cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: 'currency != "CAD"',
+        filter: filter2.name,
         filterStruct: filter2,
       });
     });
@@ -447,11 +494,11 @@ describe("WHEN a user applies a date filter", () => {
 
   beforeEach(() => {
     const onApplyFilter = cy.stub().as("applyFilterHandler");
-    const onFiltersChanged = cy.stub().as("filtersChangedHandler");
+    const onFilterStateChanged = cy.stub().as("filterStateChangeHandler");
     cy.mount(
       <DefaultFilterBar
         onApplyFilter={onApplyFilter}
-        onFiltersChanged={onFiltersChanged}
+        onFilterStateChanged={onFilterStateChanged}
       />
     );
   });
@@ -518,9 +565,10 @@ describe("WHEN a user applies a date filter", () => {
         filter: expectedQuery,
         filterStruct: expectedFilter,
       });
-      cy.get("@filtersChangedHandler").should("be.calledWithExactly", [
-        expectedFilter,
-      ]);
+      cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
+        filters: [expectedFilter],
+        activeIndices: [0],
+      });
     })
   );
 });

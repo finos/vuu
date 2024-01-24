@@ -8,15 +8,10 @@ import {
 } from "@finos/vuu-filter-types";
 import { PromptProps } from "@finos/vuu-popups";
 import {
-  ActiveItemChangeHandler,
   EditableLabelProps,
   NavigationOutOfBoundsHandler,
 } from "@finos/vuu-ui-controls";
-import {
-  dispatchMouseEvent,
-  filterAsQuery,
-  isMultiClauseFilter,
-} from "@finos/vuu-utils";
+import { dispatchMouseEvent, isMultiClauseFilter } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEvent,
@@ -32,21 +27,20 @@ import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
 import { addClause, removeLastClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
-import { useFilters } from "./useFilters";
+import { useFilterState } from "./useFilterState";
+import { useApplyFilterOnChange } from "./useApplyFilterOnChange";
 
 export interface FilterBarHookProps
   extends Pick<
     FilterBarProps,
-    | "activeFilterIndex"
     | "columnDescriptors"
-    | "filters"
+    | "defaultFilterState"
+    | "filterState"
     | "onApplyFilter"
-    | "onChangeActiveFilterIndex"
     | "onFilterDeleted"
     | "onFilterRenamed"
-    | "onFiltersChanged"
+    | "onFilterStateChanged"
     | "showMenu"
-    | "tableSchema"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
@@ -54,17 +48,15 @@ export interface FilterBarHookProps
 const EMPTY_FILTER_CLAUSE: Partial<Filter> = {};
 
 export const useFilterBar = ({
-  activeFilterIndex: activeFilterIdexProp = [],
+  columnDescriptors,
   containerRef,
-  filters: filtersProp,
+  defaultFilterState,
+  filterState,
   onApplyFilter,
-  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFilterDeleted,
   onFilterRenamed,
-  onFiltersChanged,
+  onFilterStateChanged,
   showMenu: showMenuProp,
-  tableSchema,
-  columnDescriptors,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
@@ -79,14 +71,6 @@ export const useFilterBar = ({
     [columnDescriptors]
   );
 
-  const applyFilter = useCallback(
-    (filter?: Filter) => {
-      const query = filter ? filterAsQuery(filter, { columnsByName }) : "";
-      onApplyFilter({ filter: query, filterStruct: filter });
-    },
-    [columnsByName, onApplyFilter]
-  );
-
   const {
     activeFilterIndex,
     filters,
@@ -95,14 +79,19 @@ export const useFilterBar = ({
     onDeleteFilter,
     onRenameFilter,
     onChangeActiveFilterIndex,
-  } = useFilters({
-    activeFilterIndex: activeFilterIdexProp,
-    applyFilter,
-    filters: filtersProp,
+  } = useFilterState({
+    defaultFilterState,
+    filterState,
     onFilterDeleted,
     onFilterRenamed,
-    onFiltersChanged,
-    tableSchema,
+    onFilterStateChanged,
+  });
+
+  useApplyFilterOnChange({
+    activeFilterIndex,
+    columnsByName,
+    filters,
+    onApplyFilter,
   });
 
   const editPillLabel = useCallback(
@@ -300,14 +289,6 @@ export const useFilterBar = ({
     [editFilter, addIfNewElseUpdate]
   );
 
-  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
-    (itemIndex) => {
-      onChangeActiveFilterIndex(itemIndex);
-      onChangeActiveFilterIndexProp?.(itemIndex);
-    },
-    [onChangeActiveFilterIndexProp, onChangeActiveFilterIndex]
-  );
-
   const handleClickAddFilter = useCallback(() => {
     setEditFilter({});
   }, [setEditFilter]);
@@ -434,7 +415,7 @@ export const useFilterBar = ({
     filters,
     onBlurFilterClause: handleBlurFilterClause,
     onCancelFilterClause: handleCancelFilterClause,
-    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
+    onChangeActiveFilterIndex,
     onClickAddFilter: handleClickAddFilter,
     onClickRemoveFilter: handleClickRemoveFilter,
     onChangeFilterClause: handleChangeFilterClause,

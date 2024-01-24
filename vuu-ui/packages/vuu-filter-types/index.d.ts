@@ -87,10 +87,9 @@ export interface FilterWithPartialClause extends MultiClauseFilter {
   filters: Array<Partial<Filter>>;
 }
 
-export declare type FilterState = {
-  filter: Filter | undefined;
-  filterQuery: string;
-  filterName?: string;
-};
-
 export declare type ColumnDescriptorsByName = Record<string, ColumnDescriptor>;
+
+export declare type FilterState = {
+  filters: Filter[];
+  activeIndices: number[];
+};
