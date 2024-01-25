@@ -5,6 +5,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -121,6 +122,8 @@ trait ViewPort {
 
   def filterSpec: FilterSpec
 
+  def sortSpecInternal: SortSpecInternal
+
   def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit
 
   def getTreeNodeStateStore: TreeNodeState
@@ -156,8 +159,11 @@ trait ViewPort {
 //when we make a structural change to the viewport, it is via one of these fields
 case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     viewPortDef: ViewPortDef,
-                                    filtAndSort: FilterAndSort, filterSpec: FilterSpec,
-                                    groupBy: GroupBy, theTreeNodeState: TreeNodeState,
+                                    filtAndSort: FilterAndSort,
+                                    filterSpec: FilterSpec,
+                                    sortSpec: SortSpecInternal,
+                                    groupBy: GroupBy,
+                                    theTreeNodeState: TreeNodeState,
                                     permissionChecker: Option[RowPermissionChecker])
 
 class ViewPortImpl(val id: String,
@@ -268,6 +274,7 @@ class ViewPortImpl(val id: String,
 
   //def setColumns(columns: List[Column])
   override def filterSpec: FilterSpec = structuralFields.get().filterSpec
+  override def sortSpecInternal: SortSpecInternal = structuralFields.get().sortSpec
 
   def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
 
