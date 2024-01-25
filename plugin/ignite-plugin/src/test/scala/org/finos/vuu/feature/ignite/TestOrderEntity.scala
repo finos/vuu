@@ -20,3 +20,19 @@ object TestOrderEntity{
     )
   }
 }
+
+object ColumnMap {
+
+  private type TableToIgniteColumns = Map[String, String]
+
+  private val orderMap : TableToIgniteColumns =  Map(
+    "orderId" -> "id",
+    "ric" -> "ric",
+    "price" -> "price",
+    "quantity" -> "quantity",
+    "parentOrderId" -> "parentId",
+  )
+  def toIgniteColumn(tableColumn: String): Option[String] =
+    orderMap.get(tableColumn)
+
+}

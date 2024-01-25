@@ -41,7 +41,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
     val sortBuilder = new IgniteSqlSortBuilder
-    val sqlSortQueries = ""
+    val sqlSortQueries = sortBuilder.toSql(viewPort.sortSpecInternal, tableColumn => ColumnMap.toIgniteColumn(tableColumn))
 
     logger.info(s"Loading data between $startIndex and $endIndex")
 
@@ -78,4 +78,22 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = "org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider"
+}
+
+object ColumnMap {
+
+  private type TableToIgniteColumns = Map[String, String]
+
+  private val orderMap : TableToIgniteColumns =  Map(
+    "orderId" -> "id",
+    "ric" -> "ric",
+    "price" -> "price",
+    "quantity" -> "quantity",
+    "side" -> "side",
+    "strategy" -> "strategy",
+    "parentOrderId" -> "parentId",
+  )
+  def toIgniteColumn(tableColumn: String): Option[String] =
+    orderMap.get(tableColumn)
+
 }

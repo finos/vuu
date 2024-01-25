@@ -115,8 +115,9 @@ class IgniteSqlSortingTest extends IgniteTestsBase {
     applySort(Map((columnName, sortDirection)))
   }
   private def applySort(columnNameToDirection:Map[String, SortDirection.TYPE]): Iterable[TestOrderEntity] = {
-    val sortQuery = sortBuilder.toSql(columnNameToDirection)
+    val sortQuery = sortBuilder.toSql(columnNameToDirection, x => mapToMatchingIgniteColumnName(x))
     igniteTestStore.getSortBy(sortQuery)
   }
 
+  private def mapToMatchingIgniteColumnName(tableColumnName:String) = Some(tableColumnName)
 }
