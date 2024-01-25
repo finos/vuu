@@ -5,11 +5,10 @@ import {
   vuuModule,
 } from "@finos/vuu-data-test";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { FilterTable } from "@finos/vuu-datatable";
-import type { Filter } from "@finos/vuu-filter-types";
+import { FilterTable, FilterTableProps } from "@finos/vuu-datatable";
+import type { FilterState } from "@finos/vuu-filter-types";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
-import type { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 import { useCallback, useMemo, useState } from "react";
 import { useTestDataSource } from "../utils";
 
@@ -24,36 +23,26 @@ export const DefaultFilterTable = () => {
 
   const [tableConfig] = useState<TableConfig>(config);
 
+  const [filterState, setFilterState] = useState<FilterState>({
+    filters: [],
+    activeIndices: [],
+  });
+
   const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
-    console.log("apply filter", {
-      filter,
-    });
+    console.log("apply filter", { filter });
     dataSource.filter = filter;
   }, []);
 
-  const handleChangeFilter = useCallback(
-    (filter: Filter, newFilter: Filter) => {
-      console.log("change filter", {
-        filter,
-        newFilter,
-      });
-    },
-    []
-  );
+  const handleFilterStateChange = useCallback((fs: FilterState) => {
+    console.log("filter state changed:", fs);
+    setFilterState(fs);
+  }, []);
 
-  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
-    (index) => {
-      console.log(`active filters ${index.join(",")}`);
-    },
-    []
-  );
-
-  const filterBarProps = {
+  const filterBarProps: FilterTableProps["FilterBarProps"] = {
     columnDescriptors: config.columns,
-    filters: [],
+    filterState,
     onApplyFilter: handleApplyFilter,
-    onChangeFilter: handleChangeFilter,
-    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
+    onFilterStateChanged: handleFilterStateChange,
     tableSchema,
   };
 
@@ -96,28 +85,29 @@ export const FilterTableArrayDataInstruments = () => {
     [schema]
   );
 
+  const [filterState, setFilterState] = useState<FilterState>({
+    filters: [],
+    activeIndices: [],
+  });
+
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
-      console.log("apply filter", {
-        filter,
-      });
+      console.log("apply filter", { filter });
       dataSource.filter = filter;
     },
     [dataSource]
   );
 
-  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
-    (index) => {
-      console.log(`active filters ${index.join(",")}`);
-    },
-    []
-  );
+  const handleFilterStateChange = useCallback((fs: FilterState) => {
+    console.log("filter state changed:", fs);
+    setFilterState(fs);
+  }, []);
 
-  const filterBarProps = {
+  const filterBarProps: FilterTableProps["FilterBarProps"] = {
     columnDescriptors: config.columns,
-    filters: [],
+    filterState,
     onApplyFilter: handleApplyFilter,
-    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
+    onFilterStateChanged: handleFilterStateChange,
     tableSchema: getSchema("instruments"),
   };
 

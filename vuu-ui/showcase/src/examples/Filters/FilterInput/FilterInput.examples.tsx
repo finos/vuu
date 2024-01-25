@@ -1,6 +1,6 @@
 import { NamedDataSourceFilter } from "@finos/vuu-data-types";
 import { JsonTable } from "@finos/vuu-datatable";
-import { Filter, FilterState } from "@finos/vuu-filter-types";
+import { Filter } from "@finos/vuu-filter-types";
 import {
   addFilter,
   FilterInput,
@@ -21,9 +21,15 @@ let displaySequence = 1;
 
 const { columns, table } = getSchema("instruments");
 
+type State = {
+  filter: Filter | undefined;
+  filterQuery: string;
+  filterName?: string;
+};
+
 export const DefaultFilterInput = () => {
   const namedFilters = useMemo(() => new Map<string, string>(), []);
-  const [filterState, setFilterState] = useState<FilterState>({
+  const [filterState, setFilterState] = useState<State>({
     filter: undefined,
     filterQuery: "",
   });
@@ -42,7 +48,7 @@ export const DefaultFilterInput = () => {
       mode: FilterSubmissionMode = "replace",
       filterName?: string
     ) => {
-      let newFilterState: FilterState;
+      let newFilterState: State;
       if (newFilter && mode === "and") {
         const fullFilter = addFilter(filterState.filter, newFilter) as Filter;
         newFilterState = {
@@ -93,7 +99,7 @@ DefaultFilterInput.displaySequence = displaySequence++;
 export const DefaultFilterInputWithPersistence = () => {
   const user = { username: "test-user", token: "test-token" };
   const namedFilters = useMemo(() => new Map<string, string>(), []);
-  const [filterState, setFilterState] = useState<FilterState>({
+  const [filterState, setFilterState] = useState<State>({
     filter: undefined,
     filterQuery: "",
   });
@@ -116,7 +122,7 @@ export const DefaultFilterInputWithPersistence = () => {
       mode: FilterSubmissionMode = "replace",
       filterName
     ) => {
-      let newFilterState: FilterState;
+      let newFilterState: State;
       if (newFilter && mode === "and") {
         const fullFilter = addFilter(filterState.filter, newFilter) as Filter;
         newFilterState = {
@@ -195,7 +201,7 @@ export const FilterInputTabs = () => {
   );
 
   const namedFilters = useMemo(() => new Map<string, string>(), []);
-  const [filterState, setFilterState] = useState<FilterState>({
+  const [filterState, setFilterState] = useState<State>({
     filter: undefined,
     filterQuery: "",
   });
@@ -218,7 +224,7 @@ export const FilterInputTabs = () => {
       if (mode === "tab") {
         alert("create a new tab");
       } else {
-        let newFilterState: FilterState;
+        let newFilterState: State;
         if (newFilter && mode === "and") {
           const fullFilter = addFilter(filterState.filter, newFilter) as Filter;
           newFilterState = {

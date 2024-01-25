@@ -1,67 +1,146 @@
-import { useCallback, useState } from "react";
-import { Filter } from "@finos/vuu-filter-types";
+import { useCallback } from "react";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import { useControlled } from "@finos/vuu-ui-controls";
 
-export interface FilterStateHookProps {
-  activeFilterIndex: number[];
-  applyFilter: (f?: Filter) => void;
-  defaultFilters?: Filter[];
-  filters?: Filter[];
+export interface FiltersHookProps {
+  defaultFilterState?: FilterState;
+  filterState?: FilterState;
+  onFilterDeleted?: (filter: Filter) => void;
+  onFilterRenamed?: (filter: Filter, name: string) => void;
+  onFilterStateChanged?: (s: FilterState) => void;
 }
 
-export function useFilterState({
-  activeFilterIndex: activeFilterIdexProp,
-  applyFilter,
-  defaultFilters,
-  filters: filtersProp,
-}: FilterStateHookProps) {
-  const [filters, setFilters] = useControlled<Filter[]>({
-    controlled: filtersProp,
-    default: defaultFilters ?? [],
-    name: "useFilters",
-    state: "Filters",
+export const useFilterState = ({
+  defaultFilterState,
+  onFilterDeleted,
+  onFilterRenamed,
+  onFilterStateChanged,
+  filterState: filterStateProp,
+}: FiltersHookProps) => {
+  const [filterState, setFilterState] = useControlled<FilterState>({
+    controlled: filterStateProp,
+    default: defaultFilterState ?? { filters: [], activeIndices: [] },
+    name: "useFilterState",
+    state: "FilterState",
   });
 
-  const [activeIndices, setActiveIndices] =
-    useState<number[]>(activeFilterIdexProp);
-
-  const onApplyFilter = useCallback(
-    ({ activeIndices, filters }: FilterState) => {
-      if (activeIndices.length > 0) {
-        const activeFilters = activeIndices.map((i) => filters[i]);
-        if (activeFilters.length === 1) {
-          const [filter] = activeFilters;
-          applyFilter(filter);
-        } else {
-          applyFilter({ op: "and", filters: activeFilters });
-        }
-      } else {
-        applyFilter();
-      }
+  const handleFilterStateChange = useCallback(
+    (s: FilterState) => {
+      setFilterState(s);
+      onFilterStateChanged?.(s);
     },
-    [applyFilter]
+    [onFilterStateChanged, setFilterState]
   );
 
-  const onFilterStateChange = useCallback(
-    ({ filters, activeIndices }: FilterState) => {
-      setFilters(filters);
-      setActiveIndices(activeIndices);
-      onApplyFilter({ filters, activeIndices });
+  const handleAddFilter = useCallback(
+    (filter: Filter) => {
+      const index = filterState.filters.length;
+      const newFilters = filterState.filters.concat(filter);
+      const newIndices = appendIfNotPresent(filterState.activeIndices, index);
+      handleFilterStateChange({
+        filters: newFilters,
+        activeIndices: newIndices,
+      });
+      return index;
     },
-    [onApplyFilter]
+    [filterState, handleFilterStateChange]
+  );
+
+  const handleDeleteFilter = useCallback(
+    (filter: Filter) => {
+      let index = -1;
+      const newFilters = filterState.filters.filter((f, i) => {
+        if (f !== filter) {
+          return true;
+        } else {
+          index = i;
+          return false;
+        }
+      });
+
+      const newIndices = removeIndexAndDecrementLarger(
+        filterState.activeIndices,
+        index
+      );
+
+      handleFilterStateChange({
+        filters: newFilters,
+        activeIndices: newIndices,
+      });
+      onFilterDeleted?.(filter);
+      return index;
+    },
+    [
+      filterState.filters,
+      filterState.activeIndices,
+      handleFilterStateChange,
+      onFilterDeleted,
+    ]
+  );
+
+  const handleRenameFilter = useCallback(
+    (filter: Filter, name: string) => {
+      let index = -1;
+      const newFilters = filterState.filters.map((f, i) => {
+        if (f === filter) {
+          index = i;
+          return { ...filter, name };
+        } else {
+          return f;
+        }
+      });
+      handleFilterStateChange({ ...filterState, filters: newFilters });
+      onFilterRenamed?.(filter, name);
+
+      return index;
+    },
+    [filterState, handleFilterStateChange, onFilterRenamed]
+  );
+
+  const handleChangeFilter = useCallback(
+    (oldFilter: Filter, newFilter: Filter) => {
+      let index = -1;
+      const newFilters = filterState.filters.map((f, i) => {
+        if (f === oldFilter) {
+          index = i;
+          return newFilter;
+        } else {
+          return f;
+        }
+      });
+      handleFilterStateChange({ ...filterState, filters: newFilters });
+
+      return index;
+    },
+    [filterState, handleFilterStateChange]
   );
 
   const handleActiveIndicesChange = useCallback(
     (indices: number[]) =>
-      onFilterStateChange({ filters, activeIndices: indices }),
-    [filters, onFilterStateChange]
+      handleFilterStateChange({ ...filterState, activeIndices: indices }),
+    [filterState, handleFilterStateChange]
   );
 
   return {
-    filterState: { activeIndices, filters },
-    onActiveIndicesChange: handleActiveIndicesChange,
-    onFilterStateChange,
+    activeFilterIndex: filterState.activeIndices,
+    filters: filterState.filters,
+    onChangeActiveFilterIndex: handleActiveIndicesChange,
+    onAddFilter: handleAddFilter,
+    onChangeFilter: handleChangeFilter,
+    onDeleteFilter: handleDeleteFilter,
+    onRenameFilter: handleRenameFilter,
   };
-}
+};
 
-type FilterState = { filters: Filter[]; activeIndices: number[] };
+const appendIfNotPresent = (ns: number[], n: number) =>
+  ns.includes(n) ? ns : ns.concat(n);
+
+const removeIndexAndDecrementLarger = (
+  indices: number[],
+  idxToRemove: number
+) => {
+  return indices.reduce<number[]>((res, i) => {
+    if (i === idxToRemove) return res;
+    return res.concat(i > idxToRemove ? i - 1 : i);
+  }, []);
+};

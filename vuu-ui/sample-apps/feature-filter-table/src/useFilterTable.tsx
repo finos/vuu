@@ -13,19 +13,18 @@ import {
   TypeaheadSuggestionProvider,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
-import { Filter, NamedFilter } from "@finos/vuu-filter-types";
+import { Filter, FilterState, NamedFilter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useLayoutManager, useShellContext } from "@finos/vuu-shell";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
-import { ActiveItemChangeHandler } from "@finos/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 
@@ -161,30 +160,17 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     }
   }, [dataSource, getSuggestions]);
 
-  const activeRef = useRef<number[]>(
-    filterbarConfigFromState?.activeFilterIndex ?? []
-  );
-  const [filters, setFilters] = useState<Filter[]>(
-    filterbarConfigFromState?.filters ?? []
-  );
+  const [filterState, setFilterState] = useState<FilterState>({
+    filters: filterbarConfigFromState?.filterState?.filters ?? [],
+    activeIndices: filterbarConfigFromState?.filterState?.activeIndices ?? [],
+  });
 
-  const handleFiltersChanged = useCallback(
-    (filters: Filter[]) => {
-      save?.(
-        { activeFilterIndex: activeRef.current, filters },
-        "filterbar-config"
-      );
-      setFilters(filters);
+  const handleFilterStateChanged = useCallback(
+    (filterState: FilterState) => {
+      save?.({ filterState }, "filterbar-config");
+      setFilterState(filterState);
     },
     [save]
-  );
-
-  const handleChangeActiveFilterIndex = useCallback<ActiveItemChangeHandler>(
-    (activeIndex) => {
-      activeRef.current = activeIndex;
-      save?.({ activeFilterIndex: activeIndex, filters }, "filterbar-config");
-    },
-    [filters, save]
   );
 
   const handleApplyFilter = useCallback(
@@ -269,14 +255,12 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
           suggestionProvider,
         }
       : undefined,
-    activeFilterIndex: filterbarConfigFromState?.activeFilterIndex,
     columnDescriptors: tableConfig.columns,
-    filters,
+    filterState,
     onApplyFilter: handleApplyFilter,
-    onChangeActiveFilterIndex: handleChangeActiveFilterIndex,
     onFilterDeleted: handleFilterDeleted,
     onFilterRenamed: handleFilterRenamed,
-    onFiltersChanged: handleFiltersChanged,
+    onFilterStateChanged: handleFilterStateChanged,
     tableSchema,
   };
 

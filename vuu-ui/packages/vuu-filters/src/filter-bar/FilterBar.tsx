@@ -1,7 +1,7 @@
 import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter, FilterState } from "@finos/vuu-filter-types";
 import { Prompt } from "@finos/vuu-popups";
-import { ActiveItemChangeHandler, Toolbar } from "@finos/vuu-ui-controls";
+import { Toolbar } from "@finos/vuu-ui-controls";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
@@ -17,14 +17,18 @@ import "./FilterBar.css";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
-  activeFilterIndex?: number[];
+  /**
+   * This is used to apply tailored filters based on column types and other attributes.
+   * NOTE: Always make sure that these are passed with proper re-render optimization, otherwise,
+   *       might end up with infinite state updates.
+   */
   columnDescriptors: ColumnDescriptor[];
-  filters: Filter[];
+  defaultFilterState?: FilterState;
+  filterState?: FilterState;
   onApplyFilter: (filter: DataSourceFilter) => void;
-  onChangeActiveFilterIndex: ActiveItemChangeHandler;
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
-  onFiltersChanged?: (filters: Filter[]) => void;
+  onFilterStateChanged?: (state: FilterState) => void;
   showMenu?: boolean;
   tableSchema: TableSchema;
 }
@@ -32,16 +36,15 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
-  activeFilterIndex: activeFilterIndexProp = [],
   FilterClauseEditorProps,
   className: classNameProp,
   columnDescriptors,
-  filters: filtersProp,
+  defaultFilterState,
+  filterState,
   onApplyFilter,
-  onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
   onFilterDeleted,
   onFilterRenamed,
-  onFiltersChanged,
+  onFilterStateChanged,
   showMenu: showMenuProp = false,
   tableSchema,
   ...htmlAttributes
@@ -68,17 +71,15 @@ export const FilterBar = ({
     promptProps,
     showMenu,
   } = useFilterBar({
-    activeFilterIndex: activeFilterIndexProp,
     containerRef: rootRef,
     columnDescriptors,
-    filters: filtersProp,
+    defaultFilterState,
+    filterState,
     onApplyFilter,
-    onChangeActiveFilterIndex: onChangeActiveFilterIndexProp,
-    onFiltersChanged,
+    onFilterStateChanged,
     onFilterDeleted,
     onFilterRenamed,
     showMenu: showMenuProp,
-    tableSchema,
   });
 
   const className = cx(classBase, classNameProp, {
