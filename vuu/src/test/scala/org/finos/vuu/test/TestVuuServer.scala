@@ -4,6 +4,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.{FilterAndSort, Sort}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.ViewPortKeys
@@ -67,6 +68,8 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
 
   override def filterSpec: FilterSpec = viewPort.filterSpec
 
+  override def sortSpecInternal: SortSpecInternal = viewPort.sortSpecInternal
+
   override def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit = viewPort.changeStructure(newStructuralFields)
 
   override def getTreeNodeStateStore: TreeNodeState = viewPort.getTreeNodeStateStore
@@ -94,6 +97,7 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
   override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = viewPort.setPermissionChecker(checker)
 
   override def permissionChecker(): Option[RowPermissionChecker] = viewPort.permissionChecker()
+
 }
 
 trait TestVuuServer extends IVuuServer {

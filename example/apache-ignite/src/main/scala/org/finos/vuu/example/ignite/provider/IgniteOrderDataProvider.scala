@@ -6,6 +6,7 @@ import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.feature.ignite.filter.{IgniteSqlFilterClause, IgniteSqlFilterTreeVisitor}
+import org.finos.vuu.feature.ignite.sort.IgniteSqlSortBuilder
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
@@ -39,6 +40,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
+    val sortBuilder = new IgniteSqlSortBuilder
     val sqlSortQueries = ""
 
     logger.info(s"Loading data between $startIndex and $endIndex")

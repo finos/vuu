@@ -422,6 +422,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
+    val sortSpecInternal = SortSpecInternalFactory.create(sort)
+
     val aSort = parseSort(sort, columns)
 
     val aFilter = parseFilter(filterSpec)
@@ -454,6 +456,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
+        sortSpec = sortSpecInternal,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
         permissionChecker
@@ -474,6 +477,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
+        sortSpec = sortSpecInternal,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
         permissionChecker
@@ -506,6 +510,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
+        sortSpec = sortSpecInternal,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
         permissionChecker
@@ -521,9 +526,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     } else {
       logger.info("[VP] default else condition in change() call")
       val structure = viewport.ViewPortStructuralFields(table = viewPort.table,
-        columns = columns, viewPortDef = viewPort.getStructure.viewPortDef,
-        filtAndSort = filtAndSort, filterSpec = filterSpec,
-        groupBy = groupBy, viewPort.getTreeNodeStateStore, permissionChecker
+        columns = columns,
+        viewPortDef = viewPort.getStructure.viewPortDef,
+        filtAndSort = filtAndSort,
+        filterSpec = filterSpec,
+        sortSpec = sortSpecInternal,
+        groupBy = groupBy,
+        viewPort.getTreeNodeStateStore,
+        permissionChecker
       )
       //viewPort.setRequestId(requestId)
       viewPort.changeStructure(structure)
@@ -537,6 +547,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
              range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val id = createId(clientSession.user)
+
+    val sortSpecInternal = SortSpecInternalFactory.create(sort)
 
     val aSort = parseSort(sort, columns)
 
@@ -552,7 +564,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
 
-    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, groupBy, ClosedTreeNodeState, None)
+    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, sortSpecInternal, groupBy, ClosedTreeNodeState, None)
 
     val viewPort = new ViewPortImpl(id, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
