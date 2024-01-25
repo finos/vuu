@@ -529,8 +529,7 @@ export class Viewport {
       }
 
       // always reset the keys here, even if we're not going to return rows immediately.
-      const keysResequenced = this.keys.reset(this.dataWindow.clientRange);
-      console.log(`keys reset, resequenced ${keysResequenced}`);
+      this.keys.reset(this.dataWindow.clientRange);
 
       const toClient = this.isTree ? toClientRowTree : toClientRow;
       if (clientRows.length) {

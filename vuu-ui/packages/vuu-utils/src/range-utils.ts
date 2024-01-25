@@ -22,29 +22,29 @@ export const rangesAreSame = (
 export function getFullRange(
   { from, to }: VuuRange,
   bufferSize = 0,
-  rowCount: number = Number.MAX_SAFE_INTEGER
+  totalRowCount: number = Number.MAX_SAFE_INTEGER
 ): FromToRange {
   if (from === 0 && to === 0) {
     return { from, to };
   } else if (bufferSize === 0) {
-    if (rowCount < from) {
+    if (totalRowCount < from) {
       return { from: 0, to: 0 };
     } else {
-      return { from, to: Math.min(to, rowCount) };
+      return { from, to: Math.min(to, totalRowCount) };
     }
   } else if (from === 0) {
-    return { from, to: Math.min(to + bufferSize, rowCount) };
+    return { from, to: Math.min(to + bufferSize, totalRowCount) };
   } else {
     const shortfallBefore = from - bufferSize < 0;
-    const shortfallAfter = rowCount - (to + bufferSize) < 0;
+    const shortfallAfter = totalRowCount - (to + bufferSize) < 0;
     if (shortfallBefore && shortfallAfter) {
-      return { from: 0, to: rowCount };
+      return { from: 0, to: totalRowCount };
     } else if (shortfallBefore) {
       return { from: 0, to: to + bufferSize };
     } else if (shortfallAfter) {
       return {
         from: Math.max(0, from - bufferSize),
-        to: rowCount,
+        to: totalRowCount,
       };
     } else {
       return { from: from - bufferSize, to: to + bufferSize };

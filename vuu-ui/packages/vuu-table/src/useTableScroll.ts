@@ -336,7 +336,7 @@ export const useTableScroll = ({
                 firstRowRef.current = firstRow;
                 setRange({
                   from: firstRow,
-                  to: firstRow + viewportRowCount + 1,
+                  to: firstRow + viewportRowCount,
                 });
               } else {
                 let newScrollLeft = scrollLeft;

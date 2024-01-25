@@ -21,6 +21,10 @@ export interface TableViewportHookProps {
   headings: TableHeadings;
   rowCount: number;
   rowHeight: number;
+  /**
+   * this is the solid left/right `border` rendered on the selection block
+   */
+  selectionEndSize?: number;
   size: MeasuredSize | undefined;
 }
 
@@ -72,6 +76,7 @@ export const useTableViewport = ({
   headings,
   rowCount,
   rowHeight,
+  selectionEndSize = 4,
   size,
 }: TableViewportHookProps): TableViewportHookResult => {
   const inSituRowOffsetRef = useRef(0);
@@ -82,8 +87,8 @@ export const useTableViewport = ({
   const virtualisedExtent = virtualContentHeight - pixelContentHeight;
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
-    () => measurePinnedColumns(columns),
-    [columns]
+    () => measurePinnedColumns(columns, selectionEndSize),
+    [columns, selectionEndSize]
   );
 
   const totalHeaderHeightRef = useRef(headerHeight);
