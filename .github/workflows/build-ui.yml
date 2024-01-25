@@ -1,5 +1,5 @@
 name: "Front End CI Build"
-on: push
+on: [push, pull_request]
 
 jobs:
   build_vuu_ui:
