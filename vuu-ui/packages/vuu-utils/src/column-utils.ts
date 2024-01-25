@@ -358,7 +358,7 @@ export const sortPinnedColumns = (
   const leftPinnedColumns: RuntimeColumnDescriptor[] = [];
   const rightPinnedColumns: RuntimeColumnDescriptor[] = [];
   const restColumns: RuntimeColumnDescriptor[] = [];
-  // let pinnedWidthLeft = 0;
+  // 4 is the selectionEndSize, need to consider how we make this available
   let pinnedWidthLeft = 4;
   for (const column of columns) {
     // prettier-ignore
@@ -406,6 +406,31 @@ export const sortPinnedColumns = (
   }
 };
 
+export const measurePinnedColumns = (
+  columns: RuntimeColumnDescriptor[],
+  selectionEndSize: number
+) => {
+  let pinnedWidthLeft = 0;
+  let pinnedWidthRight = 0;
+  let unpinnedWidth = 0;
+  for (const column of columns) {
+    const { hidden, pin, width } = column;
+    const visibleWidth = hidden ? 0 : width;
+    if (pin === "left") {
+      pinnedWidthLeft += visibleWidth;
+    } else if (pin === "right") {
+      pinnedWidthRight += visibleWidth;
+    } else {
+      unpinnedWidth += visibleWidth;
+    }
+  }
+  return {
+    pinnedWidthLeft: pinnedWidthLeft + selectionEndSize,
+    pinnedWidthRight: pinnedWidthRight + selectionEndSize,
+    unpinnedWidth,
+  };
+};
+
 export const getTableHeadings = (
   columns: RuntimeColumnDescriptor[]
 ): TableHeadings => {
@@ -439,6 +464,8 @@ export const getTableHeadings = (
 
 export const getColumnStyle = ({
   pin,
+  // the 4 is `selectionEndSize`, unfortunate if we need to be passed it from cell
+  // need to think about how to make this available
   pinnedOffset = pin === "left" ? 0 : 4,
   width,
 }: RuntimeColumnDescriptor) =>

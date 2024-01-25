@@ -272,8 +272,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
     onFeatureInvocation: handleVuuFeatureInvoked,
-    // renderBufferSize: 50,
-    renderBufferSize: 0,
+    renderBufferSize: 10,
   };
 
   // It is important that these values are not assigned in advance. They

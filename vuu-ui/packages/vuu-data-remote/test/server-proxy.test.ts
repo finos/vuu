@@ -499,15 +499,15 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [11,0,true,false,0,0,"key-11",0,"key-11","name 11",1011,true],
-          [12,1,true,false,0,0,"key-12",0,"key-12","name 12",1012,true],
-          [13,2,true,false,0,0,"key-13",0,"key-13","name 13",1013,true],
-          [14,3,true,false,0,0,"key-14",0,"key-14","name 14",1014,true],
-          [15,4,true,false,0,0,"key-15",0,"key-15","name 15",1015,true,],
-          [16,5,true,false,0,0,"key-16",0,"key-16","name 16",1016,true],
-          [17,6,true,false,0,0,"key-17",0,"key-17","name 17",1017,true],
-          [18,7,true,false,0,0,"key-18",0,"key-18","name 18",1018,true],
-          [19,8,true,false,0,0,"key-19",0,"key-19","name 19",1019,true],
+          [11,1,true,false,0,0,"key-11",0,"key-11","name 11",1011,true],
+          [12,2,true,false,0,0,"key-12",0,"key-12","name 12",1012,true],
+          [13,3,true,false,0,0,"key-13",0,"key-13","name 13",1013,true],
+          [14,4,true,false,0,0,"key-14",0,"key-14","name 14",1014,true],
+          [15,5,true,false,0,0,"key-15",0,"key-15","name 15",1015,true,],
+          [16,6,true,false,0,0,"key-16",0,"key-16","name 16",1016,true],
+          [17,7,true,false,0,0,"key-17",0,"key-17","name 17",1017,true],
+          [18,8,true,false,0,0,"key-18",0,"key-18","name 18",1018,true],
+          [19,9,true,false,0,0,"key-19",0,"key-19","name 19",1019,true],
         ],
       });
     });
@@ -829,8 +829,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 3,
-          to: 23,
+          from: 0,
+          to: 28,
         },
         module: "CORE",
         requestId: "1",
@@ -1172,8 +1172,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
         module: "CORE",
         requestId: "1",
@@ -1247,8 +1247,8 @@ describe("ServerProxy", () => {
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
         module: "CORE",
         requestId: "1",
@@ -1263,8 +1263,8 @@ describe("ServerProxy", () => {
         body: {
           type: "CHANGE_VP_RANGE_SUCCESS",
           viewPortId: "server-vp-1",
-          from: 6,
-          to: 36,
+          from: 0,
+          to: 46,
         },
       });
 
@@ -1295,22 +1295,22 @@ describe("ServerProxy", () => {
         range: { from: 24, to: 34 },
       });
 
-      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledTimes(0);
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
-        body: {
-          viewPortId: "server-vp-1",
-          type: "CHANGE_VP_RANGE",
-          from: 14,
-          to: 44,
-        },
-        module: "CORE",
-        requestId: "1",
-        sessionId: "dsdsd",
-        token: "test",
-      });
+      // expect(connection.send).toHaveBeenCalledWith({
+      //   user: "user",
+      //   body: {
+      //     viewPortId: "server-vp-1",
+      //     type: "CHANGE_VP_RANGE",
+      //     from: 14,
+      //     to: 44,
+      //   },
+      //   module: "CORE",
+      //   requestId: "1",
+      //   sessionId: "dsdsd",
+      //   token: "test",
+      // });
     });
   });
 

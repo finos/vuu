@@ -206,28 +206,6 @@ export const useTable = ({
     [dataSource.columns]
   );
 
-  const {
-    getRowAtPosition,
-    getRowOffset,
-    setPctScrollTop,
-    ...viewportMeasurements
-  } = useTableViewport({
-    columns,
-    headerHeight,
-    headings,
-    rowCount,
-    rowHeight,
-    size: size,
-  });
-
-  const initialRange = useInitialValue<VuuRange>({
-    from: 0,
-    to:
-      viewportMeasurements.rowCount === 0
-        ? 0
-        : viewportMeasurements.rowCount + 1,
-  });
-
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
@@ -242,6 +220,26 @@ export const useTable = ({
     [dispatchColumnAction]
   );
 
+  const {
+    getRowAtPosition,
+    getRowOffset,
+    setInSituRowOffset: viewportHookSetInSituRowOffset,
+    setScrollTop: viewportHookSetScrollTop,
+    ...viewportMeasurements
+  } = useTableViewport({
+    columns,
+    headerHeight,
+    headings,
+    rowCount,
+    rowHeight,
+    size: size,
+  });
+
+  const initialRange = useInitialValue<VuuRange>({
+    from: 0,
+    to: viewportMeasurements.rowCount,
+  });
+
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     // We need to factor this out of Table
@@ -252,6 +250,17 @@ export const useTable = ({
     range: initialRange,
   });
 
+  const { requestScroll, ...scrollProps } = useTableScroll({
+    getRowAtPosition,
+    rowHeight,
+    scrollingApiRef,
+    setRange,
+    onVerticalScroll: viewportHookSetScrollTop,
+    onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
+    viewportMeasurements,
+  });
+
+  // TODO does this belong here ?
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
       dispatchColumnAction({
@@ -462,22 +471,6 @@ export const useTable = ({
     },
     [columns, dataSource, dispatchColumnAction]
   );
-
-  const handleVerticalScroll = useCallback(
-    (_: number, pctScrollTop: number) => {
-      setPctScrollTop(pctScrollTop);
-    },
-    [setPctScrollTop]
-  );
-
-  const { requestScroll, ...scrollProps } = useTableScroll({
-    getRowAtPosition,
-    rowHeight,
-    scrollingApiRef,
-    setRange,
-    onVerticalScroll: handleVerticalScroll,
-    viewportMeasurements,
-  });
 
   const {
     highlightedIndexRef,

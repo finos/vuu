@@ -27,5 +27,5 @@
     "sample-apps/*/src",
     "global.d.ts"
   ],
-  "exclude": ["**/*.cy.*", "**/*.test.*"]
+  "exclude": ["**/*test-utils.ts", "**/*.cy.*", "**/*.test.*"]
 }

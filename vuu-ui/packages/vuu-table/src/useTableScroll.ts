@@ -9,6 +9,7 @@ import {
   useRef,
 } from "react";
 import { ViewportMeasurements } from "./useTableViewport";
+import { howFarIsRowOutsideViewport } from "./table-dom-utils";
 
 export type ScrollDirectionVertical = "up" | "down";
 export type ScrollDirectionHorizontal = "left" | "right";
@@ -45,12 +46,59 @@ export interface ScrollingAPI {
   scrollToKey: (rowKey: string) => void;
 }
 
-const getPctScroll = (container: HTMLElement) => {
-  const { scrollLeft, scrollTop } = container;
+/**
+ * Return the maximum scroll positions for gioven container
+ * @param container
+ * @returns [maxScrollLeft, maxScrollTop]
+ */
+const getMaxScroll = (container: HTMLElement) => {
   const { clientHeight, clientWidth, scrollHeight, scrollWidth } = container;
+  return [scrollWidth - clientWidth, scrollHeight - clientHeight];
+};
+
+const getScrollDirection = (
+  prevScrollPositions: ScrollPos | undefined,
+  scrollPos: number
+) => {
+  if (prevScrollPositions === undefined) {
+    return undefined;
+  } else {
+    const { scrollTop: prevTop } = prevScrollPositions;
+    return scrollPos > prevTop ? "fwd" : "bwd";
+  }
+};
+
+const getPctScroll = (container: HTMLElement, currentScrollPos?: ScrollPos) => {
+  const {
+    clientHeight,
+    clientWidth,
+    scrollHeight,
+    scrollLeft,
+    scrollTop,
+    scrollWidth,
+  } = container;
+
+  const maxScrollLeft = scrollWidth - clientWidth;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
-  const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
-  return [pctScrollLeft, pctScrollTop];
+  const maxScrollTop = scrollHeight - clientHeight;
+  let pctScrollTop = scrollTop / (scrollHeight - clientHeight);
+
+  const scrollDirection = getScrollDirection(currentScrollPos, scrollTop);
+
+  if (scrollDirection === "fwd" && pctScrollTop > 0.99) {
+    pctScrollTop = 1;
+  } else if (scrollDirection === "bwd" && pctScrollTop < 0.02) {
+    pctScrollTop = 0;
+  }
+
+  return [
+    scrollLeft,
+    pctScrollLeft,
+    maxScrollLeft,
+    scrollTop,
+    pctScrollTop,
+    maxScrollTop,
+  ];
 };
 
 export const noScrolling: ScrollingAPI = {
@@ -63,35 +111,6 @@ interface CallbackRefHookProps<T = HTMLElement> {
   onDetach: (el: T) => void;
   label?: string;
 }
-
-const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
-
-export const howFarIsRowOutsideViewport = (
-  rowEl: HTMLElement,
-  totalHeaderHeight: number,
-  contentContainer = rowEl.closest(".vuuTable-contentContainer")
-): readonly [ScrollDirection | undefined, number | undefined] => {
-  //TODO lots of scope for optimisation here
-  if (contentContainer) {
-    // TODO take totalHeaderHeight into consideration
-    const viewport = contentContainer?.getBoundingClientRect();
-    const upperBoundary = viewport.top + totalHeaderHeight;
-    const row = rowEl.getBoundingClientRect();
-    if (row) {
-      if (row.bottom > viewport.bottom) {
-        return ["down", row.bottom - viewport.bottom];
-      } else if (row.top < upperBoundary) {
-        return ["up", row.top - upperBoundary];
-      } else {
-        return NO_SCROLL_NECESSARY;
-      }
-    } else {
-      throw Error("Whats going on, row not found");
-    }
-  } else {
-    throw Error("Whats going on, scrollbar container not found");
-  }
-};
 
 const useCallbackRef = <T = HTMLElement>({
   onAttach,
@@ -114,10 +133,21 @@ const useCallbackRef = <T = HTMLElement>({
   return callbackRef;
 };
 
+type ScrollPos = {
+  scrollLeft: number;
+  scrollTop: number;
+};
+
 export interface TableScrollHookProps {
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
+  /**
+   * When we have a virtualized scroll container, keyboard navigation is
+   * performed `in situ`. We shift the range of rows rendered within the
+   * viewport, whithout actually moving the scroll position
+   */
+  onVerticalScrollInSitu?: (rowIndexOffsetCount: number) => void;
   rowHeight: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
   setRange: (range: VuuRange) => void;
@@ -128,21 +158,28 @@ export const useTableScroll = ({
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
+  onVerticalScrollInSitu,
   scrollingApiRef,
   setRange,
   viewportMeasurements,
 }: TableScrollHookProps) => {
   const firstRowRef = useRef<number>(0);
   const contentContainerScrolledRef = useRef(false);
-  const scrollPosRef = useRef({ scrollTop: 0, scrollLeft: 0 });
+  const contentContainerPosRef = useRef<ScrollPos>({
+    scrollTop: 0,
+    scrollLeft: 0,
+  });
+  const scrollbarContainerScrolledRef = useRef(false);
+  const scrollbarContainerPosRef = useRef<ScrollPos>({
+    scrollTop: 0,
+    scrollLeft: 0,
+  });
   const scrollbarContainerRef = useRef<HTMLDivElement | null>(null);
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     appliedPageSize,
     isVirtualScroll,
-    maxScrollContainerScrollHorizontal: maxScrollLeft,
-    maxScrollContainerScrollVertical: maxScrollTop,
     rowCount: viewportRowCount,
     totalHeaderHeight,
   } = viewportMeasurements;
@@ -153,7 +190,7 @@ export const useTableScroll = ({
       const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
-        setRange({ from: firstRow, to: firstRow + viewportRowCount + 1 });
+        setRange({ from: firstRow, to: firstRow + viewportRowCount });
       }
     },
     [getRowAtPosition, onVerticalScroll, setRange, viewportRowCount]
@@ -163,42 +200,70 @@ export const useTableScroll = ({
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: contentContainerScrolled } = contentContainerScrolledRef;
+    const { current: scrollPos } = scrollbarContainerPosRef;
+
     if (contentContainerScrolled) {
       contentContainerScrolledRef.current = false;
     } else if (contentContainer && scrollbarContainer) {
-      const [pctScrollLeft, pctScrollTop] = getPctScroll(scrollbarContainer);
-      const rootScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-      const rootScrollTop = pctScrollTop * maxScrollTop;
+      scrollbarContainerScrolledRef.current = true;
+      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
+        getPctScroll(scrollbarContainer, scrollPos);
+
+      scrollPos.scrollLeft = scrollLeft;
+      scrollPos.scrollTop = scrollTop;
+
+      const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
+      const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
+      const contentScrollTop = pctScrollTop * maxScrollTop;
+
       contentContainer.scrollTo({
-        left: rootScrollLeft,
-        top: rootScrollTop,
+        left: contentScrollLeft,
+        top: contentScrollTop,
         behavior: "auto",
       });
     }
-  }, [maxScrollLeft, maxScrollTop]);
+    onVerticalScrollInSitu?.(0);
+  }, [onVerticalScrollInSitu]);
 
   const handleContentContainerScroll = useCallback(() => {
+    const { current: scrollbarContainerScrolled } =
+      scrollbarContainerScrolledRef;
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
-    const { current: scrollPos } = scrollPosRef;
+    const { current: scrollPos } = contentContainerPosRef;
 
     if (contentContainer && scrollbarContainer) {
-      const { scrollLeft, scrollTop } = contentContainer;
-      const [pctScrollLeft, pctScrollTop] = getPctScroll(contentContainer);
+      const [
+        scrollLeft,
+        pctScrollLeft,
+        maxScrollLeft,
+        scrollTop,
+        pctScrollTop,
+        maxScrollTop,
+      ] = getPctScroll(contentContainer);
+
       contentContainerScrolledRef.current = true;
-      scrollbarContainer.scrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-      scrollbarContainer.scrollTop = pctScrollTop * maxScrollTop;
+
+      if (scrollbarContainerScrolled) {
+        scrollbarContainerScrolledRef.current = false;
+      } else {
+        scrollbarContainer.scrollLeft = Math.round(
+          pctScrollLeft * maxScrollLeft
+        );
+        scrollbarContainer.scrollTop = pctScrollTop * maxScrollTop;
+      }
 
       if (scrollPos.scrollTop !== scrollTop) {
         scrollPos.scrollTop = scrollTop;
         handleVerticalScroll(scrollTop, pctScrollTop);
+        onVerticalScrollInSitu?.(0);
       }
       if (scrollPos.scrollLeft !== scrollLeft) {
         scrollPos.scrollLeft = scrollLeft;
         onHorizontalScroll?.(scrollLeft);
       }
     }
-  }, [handleVerticalScroll, maxScrollLeft, maxScrollTop, onHorizontalScroll]);
+  }, [handleVerticalScroll, onHorizontalScroll, onVerticalScrollInSitu]);
 
   const handleAttachScrollbarContainer = useCallback(
     (el: HTMLDivElement) => {
@@ -248,13 +313,14 @@ export const useTableScroll = ({
 
   const requestScroll: ScrollRequestHandler = useCallback(
     (scrollRequest) => {
-      const { current: scrollbarContainer } = contentContainerRef;
-      if (scrollbarContainer) {
-        const { scrollLeft, scrollTop } = scrollbarContainer;
+      const { current: contentContainer } = contentContainerRef;
+      if (contentContainer) {
+        const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
+        const { scrollLeft, scrollTop } = contentContainer;
         contentContainerScrolledRef.current = false;
         if (scrollRequest.type === "scroll-row") {
           const activeRow = getRowElementAtIndex(
-            scrollbarContainer,
+            contentContainer,
             scrollRequest.rowIndex
           );
           if (activeRow !== null) {
@@ -264,13 +330,14 @@ export const useTableScroll = ({
             );
             if (direction && distance) {
               if (isVirtualScroll) {
-                console.log(
-                  `virtual scroll row required ${direction} ${distance} 
-                  first Row ${firstRowRef.current}`
-                );
-                // const from = firstRowRef.current + 1;
-                // console.log(`setRange from ${from}`);
-                // setRange({ from, to: from + viewportRowCount + 1 });
+                const offset = direction === "down" ? 1 : -1;
+                onVerticalScrollInSitu?.(offset);
+                const firstRow = firstRowRef.current + offset;
+                firstRowRef.current = firstRow;
+                setRange({
+                  from: firstRow,
+                  to: firstRow + viewportRowCount,
+                });
               } else {
                 let newScrollLeft = scrollLeft;
                 let newScrollTop = scrollTop;
@@ -285,7 +352,7 @@ export const useTableScroll = ({
                     maxScrollLeft
                   );
                 }
-                scrollbarContainer.scrollTo({
+                contentContainer.scrollTo({
                   top: newScrollTop,
                   left: newScrollLeft,
                   behavior: "smooth",
@@ -296,7 +363,12 @@ export const useTableScroll = ({
         } else if (scrollRequest.type === "scroll-page") {
           const { direction } = scrollRequest;
           if (isVirtualScroll) {
-            console.log(`need a virtual page scroll`);
+            const offset =
+              direction === "down" ? viewportRowCount : -viewportRowCount;
+            onVerticalScrollInSitu?.(offset);
+            const firstRow = firstRowRef.current + offset;
+            firstRowRef.current = firstRow;
+            setRange({ from: firstRow, to: firstRow + viewportRowCount });
           } else {
             const scrollBy =
               direction === "down" ? appliedPageSize : -appliedPageSize;
@@ -304,7 +376,7 @@ export const useTableScroll = ({
               Math.max(0, scrollTop + scrollBy),
               maxScrollTop
             );
-            scrollbarContainer.scrollTo({
+            contentContainer.scrollTo({
               top: newScrollTop,
               left: scrollLeft,
               behavior: "auto",
@@ -313,9 +385,9 @@ export const useTableScroll = ({
         } else if (scrollRequest.type === "scroll-end") {
           const { direction } = scrollRequest;
           const scrollTo = direction === "end" ? maxScrollTop : 0;
-          scrollbarContainer.scrollTo({
+          contentContainer.scrollTo({
             top: scrollTo,
-            left: scrollbarContainer.scrollLeft,
+            left: contentContainer.scrollLeft,
             behavior: "auto",
           });
         }
@@ -324,8 +396,7 @@ export const useTableScroll = ({
     [
       appliedPageSize,
       isVirtualScroll,
-      maxScrollLeft,
-      maxScrollTop,
+      onVerticalScrollInSitu,
       setRange,
       totalHeaderHeight,
       viewportRowCount,
@@ -361,7 +432,7 @@ export const useTableScroll = ({
 
   useEffect(() => {
     const { current: from } = firstRowRef;
-    const rowRange = { from, to: from + viewportRowCount + 1 };
+    const rowRange = { from, to: from + viewportRowCount };
     setRange(rowRange);
   }, [setRange, viewportRowCount]);
 

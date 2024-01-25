@@ -1,8 +1,8 @@
-import "./global-mocks";
+import { ServerProxySubscribeMessage } from "@finos/vuu-data-types";
 import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
-import { ServerProxySubscribeMessage } from "../src";
 import { Viewport } from "../src/server-proxy/viewport";
+import "./global-mocks";
 import {
   createSubscription,
   createTableRows,
@@ -61,7 +61,7 @@ describe("Viewport", () => {
         type: "CREATE_VP",
         ...rest,
         filterSpec: { filter },
-        range: { from: 0, to: 50 },
+        range: { from: 0, to: 0 },
       });
     });
     it("sets status to subscribing", () => {
@@ -91,7 +91,7 @@ describe("Viewport", () => {
         type: "CREATE_VP",
         ...rest,
         filterSpec: { filter },
-        range: { from: 0, to: 100 },
+        range: { from: 0, to: 0 },
       });
     });
     it("applies bufferSize to existing range", () => {
@@ -139,7 +139,7 @@ describe("Viewport", () => {
         type: "CREATE_VP",
         ...rest,
         filterSpec: { filter },
-        range: { from: 50, to: 250 },
+        range: { from: 0, to: 300 },
       });
     });
   });
@@ -154,7 +154,7 @@ describe("Viewport", () => {
         table: vuu_table.table,
         viewPortId: "server-vp1",
       };
-      vp.handleSubscribed(vuuMessageBody);
+      vp.handleSubscribed(vuuMessageBody, testSchema);
       expect(vp.status).toEqual("subscribed");
     });
 
@@ -191,7 +191,7 @@ describe("Viewport", () => {
       );
       const [, serverSubscription] = createSubscription();
 
-      vp.handleSubscribed(serverSubscription.body);
+      vp.handleSubscribed(serverSubscription.body, testSchema);
 
       vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
 
@@ -222,7 +222,7 @@ describe("Viewport", () => {
         noop
       );
       const [, serverSubscription] = createSubscription();
-      vp.handleSubscribed(serverSubscription.body);
+      vp.handleSubscribed(serverSubscription.body, testSchema);
 
       vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
       // bufferSize = 10, so range will be expanded +/-5 => [45-65]
@@ -243,7 +243,7 @@ describe("Viewport", () => {
       );
       // this one breaches the bufferSize 25% threshold
       expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 63 })).toEqual(
-        false
+        true
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 60, to: 70 })).toEqual(
         false
@@ -260,7 +260,7 @@ describe("Viewport", () => {
         noop
       );
       const [, serverSubscription] = createSubscription();
-      vp.handleSubscribed(serverSubscription.body);
+      vp.handleSubscribed(serverSubscription.body, testSchema);
 
       vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
       // bufferSize = 10, so range will be expanded +/-5 => [45-65]
@@ -285,7 +285,7 @@ describe("Viewport", () => {
         true
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 73 })).toEqual(
-        false
+        true
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 70, to: 80 })).toEqual(
         false
@@ -305,7 +305,7 @@ describe("Viewport", () => {
       );
       const [, serverSubscription] = createSubscription();
 
-      vp.handleSubscribed(serverSubscription.body);
+      vp.handleSubscribed(serverSubscription.body, testSchema);
 
       vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
 

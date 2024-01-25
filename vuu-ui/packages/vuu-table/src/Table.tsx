@@ -204,9 +204,7 @@ const TableCore = ({
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
-    // [`${classBase}-highlight`]: tableAttributes.showHighlightedRow,
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
-    // [`${classBase}-loading`]: isDataLoading(tableProps.columns),
   });
 
   const cssVariables = {

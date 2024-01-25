@@ -56,10 +56,13 @@ const getDefaultColumnConfig = (
   }
 };
 
-const SimulTable = ({
+export const SimulTable = ({
   getDefaultColumnConfig,
-  tableName,
-}: {
+  height = 625,
+  renderBufferSize = 0,
+  tableName = "instruments",
+  ...props
+}: Partial<TableProps> & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   tableName: SimulTableName;
 }) => {
@@ -85,6 +88,7 @@ const SimulTable = ({
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -93,16 +97,16 @@ const SimulTable = ({
       <DemoTableContainer>
         <Table
           {...tableProps}
+          height={height}
           onConfigChange={handleConfigChange}
-          renderBufferSize={0}
+          renderBufferSize={renderBufferSize}
+          {...props}
         />
       </DemoTableContainer>
     </ContextMenuProvider>
   );
 };
-
-export const Instruments = () => <SimulTable tableName="instruments" />;
-Instruments.displaySequence = displaySequence++;
+SimulTable.displaySequence = displaySequence++;
 
 export const InstrumentsExtended = () => (
   <SimulTable

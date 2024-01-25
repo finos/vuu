@@ -92,7 +92,6 @@ export const Row = memo(
     return (
       <div
         {...htmlAttributes}
-        key={`row-${row[0]}`}
         role="row"
         className={className}
         onClick={handleRowClick}

@@ -13,6 +13,7 @@ import {
   PostMessageToClientCallback,
   ServerProxySubscribeMessage,
 } from "../src";
+import { TableSchema } from "@finos/vuu-data-types";
 
 export const COMMON_ATTRS = {
   module: "TEST",
@@ -161,7 +162,7 @@ export const updateTableRow = (
   };
 };
 
-export const testSchema = {
+export const testSchema: TableSchema = {
   columns: [
     { name: "col-1", serverDataType: "string" },
     { name: "col-2", serverDataType: "string" },
