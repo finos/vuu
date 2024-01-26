@@ -5,7 +5,7 @@ import org.finos.vuu.core.table.column.CalculatedColumnClause
 
 object DataType {
 
-  final val charDataType: Class[Char] = classOf[Char]
+  final val CharDataType: Class[Char] = classOf[Char]
   final val StringDataType: Class[String] = classOf[String]
   final val BooleanDataType: Class[Boolean] = classOf[Boolean]
   final val IntegerDataType: Class[Int] = classOf[Int]
@@ -15,7 +15,7 @@ object DataType {
 
   def fromString(s: String): Class[_] = {
     s.trim.toLowerCase match {
-      case "char" => charDataType
+      case "char" => CharDataType
       case "string" => StringDataType
       case "double" => DoubleDataType
       case "boolean" => BooleanDataType

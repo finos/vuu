@@ -1,7 +1,9 @@
 package org.finos.vuu.feature.ignite.filter
 
+import org.finos.vuu.core.filter.FilterTreeVisitor
 import org.finos.vuu.grammar.FilterBaseVisitor
 import org.finos.vuu.grammar.FilterParser._
+
 import scala.jdk.CollectionConverters._
 
 class IgniteSqlFilterTreeVisitor extends FilterBaseVisitor[IgniteSqlFilterClause] {
@@ -15,10 +17,28 @@ class IgniteSqlFilterTreeVisitor extends FilterBaseVisitor[IgniteSqlFilterClause
   override def visitAndExpression(ctx: AndExpressionContext): IgniteSqlFilterClause =
     AndIgniteSqlFilterClause(ctx.term().asScala.map(visit).toList)
 
+  override def visitSubexpression(ctx: SubexpressionContext): IgniteSqlFilterClause =
+    visitOrExpression(ctx.orExpression())
+
   override def visitOperationEq(ctx: OperationEqContext): IgniteSqlFilterClause =
     EqIgniteSqlFilterClause(ctx.ID().getText, ctx.scalar().getText)
 
-  override def visitOperationGt(ctx: OperationGtContext): IgniteSqlFilterClause =
-    GreaterThanIgniteSqlFilterClause(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+  override def visitOperationNeq(ctx: OperationNeqContext): IgniteSqlFilterClause =
+    NeqIgniteSqlFilterClause(ctx.ID().getText, ctx.scalar().getText)
 
+  override def visitOperationGt(ctx: OperationGtContext): IgniteSqlFilterClause =
+    GtIgniteSqlFilterClause(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+
+  override def visitOperationLt(ctx: OperationLtContext): IgniteSqlFilterClause =
+    LtIgniteSqlFilterClause(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+
+  override def visitOperationStarts(ctx: OperationStartsContext): IgniteSqlFilterClause =
+    StartsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+
+  override def visitOperationEnds(ctx: OperationEndsContext): IgniteSqlFilterClause =
+    EndsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+
+  override def visitOperationIn(ctx: OperationInContext): IgniteSqlFilterClause = {
+    InIgniteSqlFilterClause(ctx.ID().getText, FilterTreeVisitor.operationInValues(ctx))
+  }
 }

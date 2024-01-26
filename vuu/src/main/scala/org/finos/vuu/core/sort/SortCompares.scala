@@ -14,7 +14,7 @@ object SortCompares {
 
     val compareValue = if(activeColumn.dataType.equals(DataType.StringDataType)){
         compareString(o1, o2, activeColumn, direction)
-    }else if(activeColumn.dataType.equals(DataType.charDataType)){
+    }else if(activeColumn.dataType.equals(DataType.CharDataType)){
         compareChar(o1, o2, activeColumn, direction)
     } else if (activeColumn.dataType.equals(DataType.IntegerDataType)) {
       compareInt(o1, o2, activeColumn, direction)

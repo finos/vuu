@@ -1,11 +1,9 @@
 package org.finos.vuu.api
 
-import org.finos.vuu.core.VuuServer
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
-import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.viewport.ViewPort
 
 object Fields {
@@ -145,15 +143,11 @@ class TableDef(val name: String,
   def deleteColumnName() = s"$name._isDeleted"
 
   def columnForName(name: String): Column = {
-    val column = columns.find(c => c.name == name)
-    if (column.isEmpty)
-      null
-    else
-      column.get
+    columns.find(c => c.name == name).orNull
   }
 
   def columnExists(name: String): Boolean = {
-    columns.find(_.name == name).isDefined
+    columns.exists(_.name == name)
   }
 
   def fullyQuallifiedColumnName(column: String): String = s"$name.$column"

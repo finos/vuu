@@ -1,15 +1,16 @@
 package org.finos.vuu.feature.ignite
 
-import org.scalatest.BeforeAndAfter
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class IgniteTestsBase extends AnyFeatureSpec with BeforeAndAfter with Matchers {
+class IgniteTestsBase extends AnyFeatureSpec with BeforeAndAfterEach with Matchers {
 
-  protected var igniteTestStore: IgniteTestStore = _
+  protected val igniteTestStore: IgniteTestStore = IgniteTestStore()
 
-  before {
-    igniteTestStore = IgniteTestStore()
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    igniteTestStore.clear()
   }
 
   def givenOrderExistInIgnite(existingData: TestOrderEntity*): Unit = {
