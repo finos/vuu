@@ -66,7 +66,7 @@ object Columns {
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased.get(c.name).get, c.index, c.dataType, table, c).asInstanceOf[Column])
+    table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
   //def calculated(name: String, definition: String): Array[Column] = ???
@@ -123,6 +123,8 @@ class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTabl
 }
 
 class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: TableDef, val sourceColumn: Column) extends SimpleColumn(name, index, dataType) {
+
+  override def toString: String = s"JoinColumn($name, ${sourceTable.name}:${sourceColumn.name})"
 
   override def hashCode(): Int = (sourceTable.name + "." + sourceColumn + "@" + name).hashCode
 
