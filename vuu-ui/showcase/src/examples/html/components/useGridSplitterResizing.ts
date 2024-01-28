@@ -9,6 +9,7 @@ import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   GridLayoutProviderDispatch,
+  GridLayoutTrack,
 } from "@finos/vuu-layout";
 import {
   MouseEventHandler,
@@ -46,7 +47,8 @@ type ResizeState = {
   cols: number[];
   simpleResize: boolean;
   grid?: HTMLElement;
-  indexOfResizedItem: number;
+  indexOfPrimaryResizeTrack: number;
+  indexOfSecondaryResizeTrack: number;
   mousePos: number;
   resizeOperation: GridLayoutResizeOperation | null;
   resizeElement?: HTMLElement;
@@ -61,7 +63,8 @@ const initialState: ResizeState = {
   adjacentItems: NO_ADJACENT_ITEMS,
   cols: [],
   grid: undefined,
-  indexOfResizedItem: -1,
+  indexOfPrimaryResizeTrack: -1,
+  indexOfSecondaryResizeTrack: -1,
   mousePos: -1,
   resizeOperation: null,
   resizeElement: undefined,
@@ -73,17 +76,12 @@ const initialState: ResizeState = {
 };
 
 const getResizeOperation = (
-  moveBy: number,
-  splitterAlign: SplitterAlign = "start"
+  moveBy: number
 ): GridLayoutResizeOperation | null => {
-  if (moveBy > 0 && splitterAlign === "start") {
+  if (moveBy > 0) {
     return "expand";
-  } else if (moveBy < 0 && splitterAlign === "start") {
+  } else if (moveBy < 0) {
     return "contract";
-  } else if (moveBy > 0 && splitterAlign === "end") {
-    return "contract";
-  } else if (moveBy < 0 && splitterAlign === "end") {
-    return "expand";
   } else {
     return null;
   }
@@ -140,7 +138,8 @@ export const useGridSplitterResizing = ({
     console.log("flip resize tracks");
     const {
       cols,
-      indexOfResizedItem,
+      indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+      indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
       resizeOperation,
       resizeDirection: resizeOrientation,
       rows,
@@ -150,15 +149,15 @@ export const useGridSplitterResizing = ({
     const newTracks = tracks.slice();
 
     if (resizeOperation === "contract") {
-      const targetTrackSize = tracks[indexOfResizedItem];
-      newTracks[indexOfResizedItem - 1] += targetTrackSize;
+      const targetTrackSize = tracks[indexOfPrimaryResizedItem];
+      newTracks[indexOfSecondaryResizedItem] += targetTrackSize;
       // Note, should be moveBy
-      newTracks[indexOfResizedItem] = 0;
+      newTracks[indexOfPrimaryResizedItem] = 0;
     } else {
-      const targetTrackSize = tracks[indexOfResizedItem - 1];
-      newTracks[indexOfResizedItem] += targetTrackSize;
+      const targetTrackSize = tracks[indexOfPrimaryResizedItem - 1];
+      newTracks[indexOfPrimaryResizedItem] += targetTrackSize;
       // Note, should be moveBy
-      newTracks[indexOfResizedItem - 1] = 0;
+      newTracks[indexOfSecondaryResizedItem] = 0;
     }
 
     return newTracks;
@@ -290,7 +289,8 @@ export const useGridSplitterResizing = ({
       const {
         cols,
         adjacentItems: { contra: contraItems },
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
         resizeDirection: resizeOrientation,
         rows,
         simpleResize,
@@ -298,11 +298,11 @@ export const useGridSplitterResizing = ({
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       const gridTracks = tracks.slice();
       if (contraItems.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
+        gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+        gridTracks[indexOfSecondaryResizedItem] -= moveBy;
       } else {
-        gridTracks[indexOfResizedItem] += moveBy;
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
+        gridTracks[indexOfPrimaryResizedItem] += moveBy;
+        gridTracks[indexOfSecondaryResizedItem] -= moveBy;
       }
       setGridTrackTemplate(gridTracks);
       if (contraItems.length > 0 && !simpleResize) {
@@ -319,7 +319,8 @@ export const useGridSplitterResizing = ({
       const {
         cols,
         adjacentItems: { contra: contraItems },
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
         resizeDirection: resizeOrientation,
         rows,
         simpleResize,
@@ -328,11 +329,11 @@ export const useGridSplitterResizing = ({
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       const gridTracks = tracks.slice();
       if (contraItems.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] += moveBy;
+        gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+        gridTracks[indexOfSecondaryResizedItem] += moveBy;
       } else {
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
-        gridTracks[indexOfResizedItem] += moveBy;
+        gridTracks[indexOfSecondaryResizedItem] -= moveBy;
+        gridTracks[indexOfPrimaryResizedItem] += moveBy;
       }
       setGridTrackTemplate(gridTracks);
       if (contraItems.length > 0 && !simpleResize) {
@@ -349,14 +350,14 @@ export const useGridSplitterResizing = ({
       const {
         cols,
         adjacentItems: { contra: contraItems },
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
         resizeDirection: resizeOrientation,
         rows,
       } = resizingState.current;
 
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       if (contraItems.length > 0) {
-        tracks.splice(indexOfResizedItem, 1);
+        tracks.splice(indexOfPrimaryResizedItem, 1);
       }
       setGridTrackTemplate(tracks);
       if (contraItems.length > 0) {
@@ -370,7 +371,8 @@ export const useGridSplitterResizing = ({
     (gridTracks: number[], currentMousePos: number) => {
       const {
         adjacentItems: { contra: contraItems },
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
         resizeOperation,
         resizeItem,
         resizeDirection,
@@ -380,9 +382,8 @@ export const useGridSplitterResizing = ({
       const tracks = resizingState.current[trackProperty];
       const isContracting = resizeOperation === "contract";
       const trackIndex = isContracting
-        ? indexOfResizedItem
-        : indexOfResizedItem - 1;
-
+        ? indexOfPrimaryResizedItem
+        : indexOfSecondaryResizedItem;
       let returnTracks: number[] = gridTracks;
 
       if (simpleResize && resizeDirection && resizeItem) {
@@ -410,7 +411,7 @@ export const useGridSplitterResizing = ({
             setSplitters(splitters);
 
             if (!isContracting) {
-              resizingState.current.indexOfResizedItem -= 1;
+              resizingState.current.indexOfPrimaryResizeTrack -= 1;
             }
             resizingState.current.mousePos = currentMousePos;
             resizingState.current.resizeOperation = null;
@@ -439,11 +440,13 @@ export const useGridSplitterResizing = ({
             setSplitters(splitters);
 
             if (resizeOperation === "contract") {
-              resizingState.current.indexOfResizedItem += 1;
-              resizingState.current.mousePos += tracks[indexOfResizedItem];
+              resizingState.current.indexOfPrimaryResizeTrack += 1;
+              resizingState.current.mousePos +=
+                tracks[indexOfPrimaryResizedItem];
             } else {
-              resizingState.current.indexOfResizedItem -= 1;
-              resizingState.current.mousePos -= tracks[indexOfResizedItem - 1];
+              resizingState.current.indexOfPrimaryResizeTrack -= 1;
+              resizingState.current.mousePos -=
+                tracks[indexOfPrimaryResizedItem - 1];
             }
 
             if (resizeDirection === "vertical") {
@@ -471,27 +474,22 @@ export const useGridSplitterResizing = ({
       const {
         adjacentItems,
         cols,
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack,
+        indexOfSecondaryResizeTrack,
         resizeDirection: resizeOrientation,
         rows,
         simpleResize,
-        splitterAlign,
       } = resizingState.current;
 
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       let gridTracks = tracks.slice();
       if (adjacentItems.contra.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
+        gridTracks[indexOfPrimaryResizeTrack] = Math.abs(moveBy);
+        gridTracks[indexOfPrimaryResizeTrack - 1] -= moveBy;
       } else {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
-        } else {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem + 1] += moveBy;
-        }
-        if (gridTracks[indexOfResizedItem - 1] <= 0) {
+        gridTracks[indexOfPrimaryResizeTrack] += moveBy;
+        gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
+        if (gridTracks[indexOfSecondaryResizeTrack] <= 0) {
           gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
         }
       }
@@ -506,30 +504,25 @@ export const useGridSplitterResizing = ({
       const {
         adjacentItems,
         cols,
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack,
+        indexOfSecondaryResizeTrack,
         resizeDirection: resizeOrientation,
         rows,
         simpleResize,
-        splitterAlign,
       } = resizingState.current;
 
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       const gridTracks = tracks.slice();
 
       if (simpleResize) {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
-        } else {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem + 1] += moveBy;
-        }
+        gridTracks[indexOfPrimaryResizeTrack] += moveBy;
+        gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
         setGridTrackTemplate(gridTracks);
       } else {
-        tracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem - 1] -= moveBy;
+        tracks.splice(indexOfPrimaryResizeTrack, 0, 0);
+        gridTracks.splice(indexOfPrimaryResizeTrack, 0, 0);
+        gridTracks[indexOfPrimaryResizeTrack] = Math.abs(moveBy);
+        gridTracks[indexOfSecondaryResizeTrack] -= moveBy;
         setGridTrackTemplate(gridTracks);
       }
 
@@ -548,28 +541,22 @@ export const useGridSplitterResizing = ({
     (moveBy: number, currentMousePos: number) => {
       const {
         adjacentItems,
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
         resizeDirection: resizeOrientation,
         simpleResize,
-        splitterAlign,
       } = resizingState.current;
       const trackProperty = resizeOrientation === "vertical" ? "rows" : "cols";
       const tracks = resizingState.current[trackProperty];
       let gridTracks = tracks.slice();
 
       if (adjacentItems.contra.length > 0 && !simpleResize) {
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem + 1] += moveBy;
+        gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+        gridTracks[indexOfPrimaryResizedItem + 1] += moveBy;
       } else {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem - 1] -= moveBy;
-          gridTracks[indexOfResizedItem] += moveBy;
-        } else {
-          gridTracks[indexOfResizedItem + 1] += moveBy;
-          gridTracks[indexOfResizedItem] -= moveBy;
-        }
-
-        if (gridTracks[indexOfResizedItem] <= 0) {
+        gridTracks[indexOfPrimaryResizedItem] += moveBy;
+        gridTracks[indexOfSecondaryResizedItem] -= moveBy;
+        if (gridTracks[indexOfPrimaryResizedItem] <= 0) {
           gridTracks = handleTrackSizedToZero(gridTracks, currentMousePos);
         }
       }
@@ -584,30 +571,25 @@ export const useGridSplitterResizing = ({
       const {
         adjacentItems,
         cols,
-        indexOfResizedItem,
+        indexOfPrimaryResizeTrack: indexOfPrimaryResizedItem,
+        indexOfSecondaryResizeTrack: indexOfSecondaryResizedItem,
         resizeDirection: resizeOrientation,
         rows,
         simpleResize,
-        splitterAlign,
       } = resizingState.current;
 
       const tracks = resizeOrientation === "vertical" ? rows : cols;
       const gridTracks = tracks.slice();
 
       if (simpleResize) {
-        if (splitterAlign === "start") {
-          gridTracks[indexOfResizedItem] -= moveBy;
-          gridTracks[indexOfResizedItem - 1] += moveBy;
-        } else {
-          gridTracks[indexOfResizedItem] += moveBy;
-          gridTracks[indexOfResizedItem + 1] -= moveBy;
-        }
+        gridTracks[indexOfPrimaryResizedItem] += moveBy;
+        gridTracks[indexOfSecondaryResizedItem] -= moveBy;
         setGridTrackTemplate(gridTracks);
       } else {
-        tracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks.splice(indexOfResizedItem, 0, 0);
-        gridTracks[indexOfResizedItem] = Math.abs(moveBy);
-        gridTracks[indexOfResizedItem + 1] += moveBy;
+        tracks.splice(indexOfPrimaryResizedItem, 0, 0);
+        gridTracks.splice(indexOfPrimaryResizedItem, 0, 0);
+        gridTracks[indexOfPrimaryResizedItem] = Math.abs(moveBy);
+        gridTracks[indexOfPrimaryResizedItem + 1] += moveBy;
         setGridTrackTemplate(gridTracks);
       }
 
@@ -631,8 +613,9 @@ export const useGridSplitterResizing = ({
       } = resizingState.current;
 
       const pos = resizeOrientation === "vertical" ? e.clientY : e.clientX;
-      const moveBy = mousePos - pos;
-      const newOperation = getResizeOperation(moveBy, splitterAlign);
+      const moveBy =
+        splitterAlign === "start" ? mousePos - pos : pos - mousePos;
+      const newOperation = getResizeOperation(moveBy);
       resizingState.current.resizeOperation = newOperation;
 
       if (resizeOperation === null && newOperation === null) {
@@ -684,8 +667,11 @@ export const useGridSplitterResizing = ({
         return;
       }
 
-      const resizeOrientation: ResizeOrientation | undefined =
+      const resizeDirection: GridLayoutResizeDirection | undefined =
         isHorizontalSplitter(splitterElement) ? "horizontal" : "vertical";
+      const track: GridLayoutTrack =
+        resizeDirection === "horizontal" ? "column" : "row";
+
       const splitterAlign = splitterElement.dataset.align as SplitterAlign;
 
       const resizeId = splitterElement.getAttribute("aria-controls");
@@ -696,12 +682,12 @@ export const useGridSplitterResizing = ({
 
       const grid = resizeElement.closest(".vuuGridLayout") as HTMLElement;
 
-      const mousePos = resizeOrientation === "vertical" ? e.clientY : e.clientX;
+      const mousePos = resizeDirection === "vertical" ? e.clientY : e.clientX;
 
       measureAndStoreGridItemDetails(
         grid,
         resizeElement,
-        resizeOrientation,
+        resizeDirection,
         splitterAlign
       );
 
@@ -723,13 +709,20 @@ export const useGridSplitterResizing = ({
       // rename this, its actually the edge of a track (row or column), which will
       // then ne used to index into the grodColumnROws/gridColumnTracks sizes
 
+      const [indexOfPrimaryResizeTrack, indexOfSecondaryResizeTrack] =
+        splitterAlign === "start"
+          ? [resizeItem[track].start - 1, resizeItem[track].start - 2]
+          : [resizeItem[track].end - 2, resizeItem[track].end - 1];
+
+      console.log(`
+indexOfPrimaryResizeTrack = ${indexOfPrimaryResizeTrack}
+indexOfSecondaryResizeTrack = ${indexOfSecondaryResizeTrack}`);
+
       resizingState.current = {
         ...resizingState.current,
         cols,
-        indexOfResizedItem:
-          resizeOrientation === "vertical"
-            ? resizeItem.row.start - 1
-            : resizeItem.column.start - 1,
+        indexOfPrimaryResizeTrack,
+        indexOfSecondaryResizeTrack,
         mousePos,
         resizeOperation: null,
         rows,
@@ -737,9 +730,9 @@ export const useGridSplitterResizing = ({
       };
 
       resizingState.current.resizeItem = resizeItem;
-      if (resizeOrientation === "vertical") {
+      if (resizeDirection === "vertical") {
         resizeElement.classList.add("resizing-v");
-      } else if (resizeOrientation === "horizontal") {
+      } else if (resizeDirection === "horizontal") {
         resizeElement.classList.add("resizing-h");
       }
       if (grid) {

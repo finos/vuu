@@ -59,6 +59,9 @@ type GridItemMaps = {
 
 type GridItemUpdate = [string, GridLayoutModelPosition];
 
+const flipDirection = (resizeDirection: GridLayoutResizeDirection) =>
+  resizeDirection === "horizontal" ? "vertical" : "horizontal";
+
 const storeMapValue = (
   map: GridItemMap,
   key: number,
@@ -184,9 +187,13 @@ export class GridLayoutModel {
 
   private getNextSibling(
     gridItem: IGridLayoutModelItem,
-    position: GridLayoutRelativePosition
+    resizeDirection: GridLayoutResizeDirection,
+    position: "before" | "after"
   ) {
-    if (position === "belowInSameColumn") {
+    const isH = resizeDirection === "horizontal";
+    const isV = resizeDirection === "vertical";
+
+    if (isV && position === "after") {
       // get column sibling(s) that start where this row ends
       const nextSiblings = this.rowMaps.start
         .get(gridItem.row.end)
@@ -198,7 +205,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "aboveInSameColumn") {
+    } else if (isV && position === "before") {
       // get column sibling(s) that end where this row starts
       const nextSiblings = this.rowMaps.end
         .get(gridItem.row.start)
@@ -210,7 +217,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "rightInSameRow") {
+    } else if (isH && position === "after") {
       // get row sibling(s) that end where this row starts
       const nextSiblings = this.columnMaps.start
         .get(gridItem.column.end)
@@ -222,7 +229,7 @@ export class GridLayoutModel {
       if (nextSiblings?.length === 1) {
         return nextSiblings[0];
       }
-    } else if (position === "leftInSameRow") {
+    } else if (isH && position === "before") {
       // get row sibling(s) that end where this row starts
       const nextSiblings = this.columnMaps.end
         .get(gridItem.column.start)
@@ -241,26 +248,25 @@ export class GridLayoutModel {
     gridItem: IGridLayoutModelItem,
     resizeDirection: GridLayoutResizeDirection
   ) {
-    const leftSiblings = [];
-    const rightSiblings = [];
+    const preceedingSiblings = [];
+    const followingSiblings = [];
 
-    if (resizeDirection === "horizontal") {
-      if (gridItem.column.start > 1) {
-        let sibling = this.getNextSibling(gridItem, "leftInSameRow");
-        while (sibling) {
-          leftSiblings.push(sibling);
-          sibling = this.getNextSibling(sibling, "leftInSameRow");
-        }
-      }
-      let sibling = this.getNextSibling(gridItem, "rightInSameRow");
+    const track: GridLayoutTrack =
+      resizeDirection === "horizontal" ? "column" : "row";
+
+    if (gridItem[track].start > 1) {
+      let sibling = this.getNextSibling(gridItem, resizeDirection, "before");
       while (sibling) {
-        rightSiblings.push(sibling);
-        sibling = this.getNextSibling(sibling, "rightInSameRow");
+        preceedingSiblings.push(sibling);
+        sibling = this.getNextSibling(sibling, resizeDirection, "before");
       }
-    } else {
-      // TODO
     }
-    return [leftSiblings, rightSiblings];
+    let sibling = this.getNextSibling(gridItem, resizeDirection, "after");
+    while (sibling) {
+      followingSiblings.push(sibling);
+      sibling = this.getNextSibling(sibling, resizeDirection, "after");
+    }
+    return [preceedingSiblings, followingSiblings];
   }
 
   private setGridRow = (
@@ -370,27 +376,22 @@ export class GridLayoutModel {
   }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
 
   //TODO we only check one sibling away, need to do this in a loop
-  private findMatchingContras(
+  private findSpanOfMatchedContrasAndSiblings(
     gridItem: IGridLayoutModelItem,
     contraItems: IGridLayoutModelItem[],
     resizeDirection: GridLayoutResizeDirection = "horizontal"
   ): [number, number] | undefined {
-    const [track, position, contraPosition]: [
-      GridLayoutTrack,
-      GridLayoutRelativePosition,
-      GridLayoutRelativePosition
-    ] =
-      resizeDirection === "horizontal"
-        ? ["row", "belowInSameColumn", "aboveInSameColumn"]
-        : ["column", "rightInSameRow", "leftInSameRow"];
+    const track: GridLayoutTrack =
+      resizeDirection === "horizontal" ? "row" : "column";
+    const siblingDirection = flipDirection(resizeDirection);
     const fullSpan = getFullPosition(contraItems, track);
     if (fullSpan[0] === gridItem[track].start) {
       const siblings = [gridItem];
       // add sibling(s) below until we have a match with fullSpan
       // need to review the position, this feels counter intuitive
       const nextSibling =
-        this.getNextSibling(gridItem, position) ||
-        this.getNextSibling(gridItem, contraPosition);
+        this.getNextSibling(gridItem, siblingDirection, "after") ||
+        this.getNextSibling(gridItem, siblingDirection, "before");
       if (nextSibling) {
         siblings.push(nextSibling);
         const fullSiblingPos = getFullPosition(siblings, track);
@@ -400,7 +401,11 @@ export class GridLayoutModel {
       }
     } else if (fullSpan[1] === gridItem[track].end) {
       const siblings = [gridItem];
-      const nextSibling = this.getNextSibling(gridItem, contraPosition);
+      const nextSibling = this.getNextSibling(
+        gridItem,
+        siblingDirection,
+        "before"
+      );
       if (nextSibling) {
         siblings.push(nextSibling);
         const fullSiblingPos = getFullPosition(siblings, track);
@@ -435,13 +440,12 @@ export class GridLayoutModel {
     for (const gridItem of this.gridItems) {
       const { column, id, resizeable = "", row } = gridItem;
 
+      // 1) Horizontal resizing - the vertically aligned splitters
       const [leftSiblings, rightSiblings] = this.getSiblings(
         gridItem,
         "horizontal"
       );
 
-      // First horizontal resizing, identify the vertically aligned
-      // splitters, adjusting grid column positions
       const [contraItemsLeft, contraItemsRight] = this.getContraItems(
         gridItem,
         "horizontal"
@@ -464,7 +468,17 @@ export class GridLayoutModel {
             i.resizeable?.match(/h/)
           );
 
-          if (
+          //TODO multipls contras need to be rolled into resizeableItemsLeft
+          if (contraItemsLeft.length > 1) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: `${id}-splitter-h`,
+              orientation: "horizontal",
+              row,
+            });
+          } else if (
             resizeableItemsLeft >= 1 &&
             (isResizeable || resizeableItemsRight >= 1)
           ) {
@@ -480,7 +494,7 @@ export class GridLayoutModel {
         } else if (contraItemsLeft.length === 1) {
           console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsLeft.length > 1) {
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsLeft,
             "horizontal"
@@ -526,7 +540,7 @@ export class GridLayoutModel {
         } else {
           // TODO why do columns shift slightly when we do this ?
 
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsRight,
             "horizontal"
@@ -554,12 +568,24 @@ export class GridLayoutModel {
         }
       }
 
-      // Vertical resizing - these are the horizontally aligned splitters,
-      // adjusting grid row positions
+      // 2) Vertical resizing - the horizontally aligned splitters
+
+      const [splitterId, orientation]: [string, GridLayoutResizeDirection] = [
+        `${id}-splitter-v`,
+        "vertical",
+      ];
+
+      const [topSiblings, bottomSiblings] = this.getSiblings(
+        gridItem,
+        orientation
+      );
+
       const [contraItemsAbove, contraItemsBelow] = this.getContraItems(
         gridItem,
-        "vertical"
+        orientation
       );
+
+      const isResizeableV = resizeable.indexOf("v") !== -1;
 
       if (row.start > 1) {
         const contraFillSameTrack = fillSameTrack(
@@ -569,21 +595,43 @@ export class GridLayoutModel {
         );
 
         if (contraFillSameTrack) {
-          splitterPositions.push({
-            align: "start",
-            column,
-            controls: id,
-            id: `${id}-splitter-v`,
-            orientation: "vertical",
-            row,
-          });
+          // If we have only a single contra left and that contra is not resizeable, skip
+          const { length: resizeableItemsAbove } = topSiblings.filter(
+            ({ resizeable = "" }) => resizeable.indexOf("v") !== -1
+          );
+          const { length: resizeableItemsBelow } = bottomSiblings.filter((i) =>
+            i.resizeable?.match(/v/)
+          );
+          //TODO multipls contras need to be rolled into resizeableItemsLeft
+          if (contraItemsAbove.length > 1) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: splitterId,
+              orientation,
+              row,
+            });
+          } else if (
+            resizeableItemsAbove >= 1 &&
+            (isResizeableV || resizeableItemsBelow >= 1)
+          ) {
+            splitterPositions.push({
+              align: "start",
+              column,
+              controls: id,
+              id: splitterId,
+              orientation,
+              row,
+            });
+          }
         } else if (contraItemsAbove.length === 1) {
           console.log(`${id} 1 contra, does not fill same track, ignore`);
         } else if (contraItemsAbove.length > 1) {
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsAbove,
-            "vertical"
+            orientation
           );
           if (fullSpan) {
             const doomedIndex = splitterPositions.findIndex(
@@ -600,8 +648,8 @@ export class GridLayoutModel {
               align: "start",
               column: { start: fullSpan[0], end: fullSpan[1] },
               controls: id,
-              id: `${id}-splitter-v`,
-              orientation: "vertical",
+              id: splitterId,
+              orientation,
               row,
             });
           }
@@ -619,16 +667,16 @@ export class GridLayoutModel {
             align: "end",
             column,
             controls: id,
-            id: `${id}-splitter-v`,
-            orientation: "vertical",
+            id: splitterId,
+            orientation,
             row,
           });
         } else {
           // TODO why do columns shift slightly when we do this ?
-          const fullSpan = this.findMatchingContras(
+          const fullSpan = this.findSpanOfMatchedContrasAndSiblings(
             gridItem,
             contraItemsBelow,
-            "vertical"
+            orientation
           );
           if (fullSpan) {
             const existingFullSpan = splitterPositions.find(
@@ -642,8 +690,8 @@ export class GridLayoutModel {
                 align: "end",
                 column: { start: fullSpan[0], end: fullSpan[1] },
                 controls: id,
-                id: `${id}-splitter-v`,
-                orientation: "vertical",
+                id: splitterId,
+                orientation,
                 row,
               });
             }
@@ -652,7 +700,9 @@ export class GridLayoutModel {
       }
     }
     const end = performance.now();
-    console.log(`getSPlitterPositions took ${end - start}ms`);
+    console.log(`getSplitterPositions took ${end - start}ms`, {
+      splitterPositions,
+    });
 
     return splitterPositions;
   }

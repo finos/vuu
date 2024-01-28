@@ -148,8 +148,6 @@ export const GridLayout = ({
     [splitGridCol, splitGridRow]
   );
 
-  console.log({ gridTemplateRows });
-
   const style = {
     "--col-count": colCount,
     "--row-count": rowCount,
