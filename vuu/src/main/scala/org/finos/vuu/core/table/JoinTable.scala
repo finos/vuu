@@ -62,10 +62,10 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
   }
 
   def primaryKeyIndicesByTable: List[Boolean] = {
-    columns.map(c => c match {
+    columns.map {
       case jc: JoinColumn => isPrimaryKeyColumn(jc)
-
-    }).toList
+      case _ => false
+    }.toList
   }
 
   def getKeyValuesByTable(origPrimaryKey: String): Map[String, String] = {
@@ -429,7 +429,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       .map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
 
     val calculatedColumns = columns.getColumns()
-      .filter(_.isInstanceOf[CalculatedColumn]).toList
+      .filter(_.isInstanceOf[CalculatedColumn])
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
@@ -469,53 +469,60 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
 
-    val columnsByTable = columns.getColumns()
-      .map(c => c.asInstanceOf[JoinColumn])
-      .groupBy(_.sourceTable.name)
+    val asRowData = pullRow(key, columns)
 
-    val keysByTable = joinData.getKeyValuesByTable(key)
+    val asArray = asRowData.toArray(columns.getColumns())
 
-    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
-      Array()
-    else {
+    asArray
 
-      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) =>
-
-        val table = sourceTables(tableName)
-
-        val fk = if (keysByTable == null) null
-        else
-          keysByTable.get(tableName) match {
-            case Some(fk) => fk
-            case None => null
-          }
-
-        //val sourceColumns = columnList.map(jc => jc.sourceColumn)
-        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
-
-        if (fk == null) {
-          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
-          previous
-        }
-        else {
-          table.pullRow(fk, sourceColumns) match {
-            case EmptyRowData =>
-              previous
-            case data: RowWithData =>
-              previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
-          }
-        }
-      })
-
-      if (foldedMap.isEmpty) {
-        Array()
-      } else {
-        columns.getColumns().map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
-          case None => ""
-          case Some(x) => x
-        }).toArray[Any]
-      }
-    }
+//    val columnsByTable = columns.getColumns()
+//      .filter(_.isInstanceOf[JoinColumn])
+//      .map(c => c.asInstanceOf[JoinColumn])
+//      .groupBy(_.sourceTable.name)
+//
+//    val keysByTable = joinData.getKeyValuesByTable(key)
+//
+//    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
+//      Array()
+//    else {
+//
+//      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) =>
+//
+//        val table = sourceTables(tableName)
+//
+//        val fk = if (keysByTable == null) null
+//        else
+//          keysByTable.get(tableName) match {
+//            case Some(fk) => fk
+//            case None => null
+//          }
+//
+//        //val sourceColumns = columnList.map(jc => jc.sourceColumn)
+//        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
+//
+//        if (fk == null) {
+//          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
+//          previous
+//        }
+//        else {
+//          table.pullRow(fk, sourceColumns) match {
+//            case EmptyRowData =>
+//              previous
+//            case data: RowWithData =>
+//              previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
+//          }
+//        }
+//      })
+//
+//      if (foldedMap.isEmpty) {
+//        Array()
+//      } else {
+//        columns.getColumns().map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
+//          case None => ""
+//          case Some(x) => x
+//        }).toArray[Any]
+//      }
+//    }
   }
 
   def notifyListeners(rowKey: String): Unit = {
