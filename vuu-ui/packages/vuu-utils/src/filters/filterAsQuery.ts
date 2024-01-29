@@ -12,12 +12,24 @@ const filterValue = (value: string | number | boolean) =>
 const quotedStrings = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;
 
+const removeOuterMostParentheses = (s: string) => s.replace(/^\((.*)\)$/, "$1");
+
 export const filterAsQuery = (
   f: Filter,
   opts?: { columnsByName?: ColumnDescriptorsByName }
 ): string => {
+  return removeOuterMostParentheses(filterAsQueryCore(f, opts));
+};
+
+const filterAsQueryCore = (
+  f: Filter,
+  opts?: { columnsByName?: ColumnDescriptorsByName }
+): string => {
   if (isMultiClauseFilter(f)) {
-    return f.filters.map((filter) => filterAsQuery(filter)).join(` ${f.op} `);
+    const multiClauseFilter = f.filters
+      .map((filter) => filterAsQueryCore(filter, opts))
+      .join(` ${f.op} `);
+    return `(${multiClauseFilter})`;
   } else if (isMultiValueFilter(f)) {
     return `${f.column} ${f.op} [${f.values.map(quotedStrings).join(",")}]`;
   } else {
@@ -49,7 +61,7 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
           value: f.value + ONE_DAY_IN_MILIS,
         },
       ];
-      return filterAsQuery({ op: "and", filters });
+      return filterAsQueryCore({ op: "and", filters });
     }
     case "!=": {
       const filters: Array<Filter> = [
@@ -60,7 +72,7 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
           value: f.value + ONE_DAY_IN_MILIS,
         },
       ];
-      return filterAsQuery({ op: "or", filters });
+      return filterAsQueryCore({ op: "or", filters });
     }
     default:
       return defaultSingleValueFilterAsQuery(f);
