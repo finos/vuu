@@ -125,6 +125,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case null => false
       case s: String => s == value
       case i: Int => i == value.toInt
+      case i: Long => i == value.toLong
       case f: Float => f == value.toFloat
       case d: Double => d == value.toDouble
       case b: Boolean => b == value.equalsIgnoreCase("true")
