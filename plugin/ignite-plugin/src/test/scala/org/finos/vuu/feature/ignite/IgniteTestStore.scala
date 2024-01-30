@@ -61,6 +61,7 @@ object IgniteTestStore {
     fields.put("ric", classOf[String].getName)
     fields.put("price", classOf[Double].getName)
     fields.put("quantity", classOf[Int].getName)
+    fields.put("rating", classOf[Char].getName)
     fields
   }
 
@@ -79,6 +80,8 @@ class IgniteTestStore (private val orderCache: IgniteCache[Int, TestOrderEntity]
 
   def get(key: Int): TestOrderEntity =
     orderCache.get(key)
+
+  def clear(): Unit = orderCache.clear()
 
   def getFilteredBy(filterQueryCriteria: List[IndexQueryCriterion]): Iterable[TestOrderEntity] = {
     //  val filter: IgniteBiPredicate[Int, TestOrder]  = (key, p) => p.filledQty > 0

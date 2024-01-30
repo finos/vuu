@@ -5,7 +5,8 @@ case class TestOrderEntity(
                       id: Int,
                       ric: String,
                       price: Double,
-                      quantity: Int){
+                      quantity: Int,
+                      rating: Char){
 
 }
 
@@ -17,6 +18,7 @@ object TestOrderEntity{
       ric = cols.get(2).asInstanceOf[String],
       price = cols.get(3).asInstanceOf[Double],
       quantity = cols.get(4).asInstanceOf[Int],
+      rating = cols.get(5).asInstanceOf[Char]
     )
   }
 }
@@ -31,6 +33,7 @@ object ColumnMap {
     "price" -> "price",
     "quantity" -> "quantity",
     "parentOrderId" -> "parentId",
+    "rating" -> "rating",
   )
   def toIgniteColumn(tableColumn: String): Option[String] =
     orderMap.get(tableColumn)

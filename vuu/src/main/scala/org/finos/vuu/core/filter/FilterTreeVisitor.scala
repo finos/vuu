@@ -36,13 +36,17 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] {
     EndsClause(ctx.ID().getText, ctx.STRING().getText)
 
   override def visitOperationIn(ctx: OperationInContext): FilterClause = {
-    val setElements = Option(ctx.set().NUMBER()) #::  Option(ctx.set().STRING()) #:: LazyList.empty
-    val scalarList = setElements
+    InClause(ctx.ID().getText, FilterTreeVisitor.operationInValues(ctx))
+  }
+}
+
+object FilterTreeVisitor {
+  def operationInValues(ctx: OperationInContext): List[String] = {
+    val setElements = Option(ctx.set().NUMBER()) #:: Option(ctx.set().STRING()) #:: LazyList.empty
+    setElements
       .flatten
       .flatMap(_.asScala)
       .map(_.getText)
       .toList
-
-    InClause(ctx.ID().getText, scalarList)
   }
 }
