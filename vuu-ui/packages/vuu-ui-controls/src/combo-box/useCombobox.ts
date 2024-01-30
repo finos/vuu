@@ -6,7 +6,6 @@ import {
   KeyboardEventHandler,
   MouseEvent,
   RefCallback,
-  RefObject,
   SyntheticEvent,
   useCallback,
   useRef,
@@ -69,7 +68,6 @@ export interface ComboboxHookResult<Item, S extends SelectionStrategy>
     >,
     Partial<DropdownHookResult> {
   InputProps: InputProps;
-  listRef: RefObject<HTMLDivElement>;
   onOpenChange: OpenChangeHandler;
   selected?: S extends MultiSelectionStrategy ? Item[] : Item | null;
   setContainerRef: RefCallback<HTMLDivElement>;
@@ -285,7 +283,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   );
 
   const {
-    containerRef: listRef,
     focusVisible,
     setHighlightedIndex,
     highlightedIndex,
@@ -468,7 +465,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       ...listHookListHandlers,
       onClick: handleListClick,
     },
-    listRef,
     selected: selectedRef.current as SelectionType<Item, S>,
     setContainerRef,
   };
