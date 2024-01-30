@@ -7,7 +7,7 @@ import org.finos.toolbox.thread.{LifeCycleRunOncePerThreadExecutorRunner, LifeCy
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{ColumnValueProvider, DataTable, InMemColumnValueProvider, TableContainer}
+import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net._
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
@@ -23,9 +23,6 @@ import java.util.concurrent.{Callable, FutureTask}
 
 /**
  * Vuu Server
- *
- *
- * demo - who is doing it, what env we are using, send headlines / notes we want to hit to key trader guys
  */
 class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
 
@@ -144,10 +141,6 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     table.setProvider(provider)
   }
 
-  def registerColumnValueProvider(table: DataTable, columnValueProvider: ColumnValueProvider): Unit = {
-    table.setColumnValueProvider(columnValueProvider)
-  }
-
   private def registerModule(module: ViewServerModule): VuuServer = {
 
     val vs = this
@@ -164,9 +157,6 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
-      override def getColumnValueProviderForTable(table: DataTable, viewserver: IVuuServer): ColumnValueProvider = {
-        module.getColumnValueProviderForTable(table, viewserver)
-      }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = module.viewPortDefs
     }
@@ -179,17 +169,13 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
       case tableDef: JoinTableDef =>
         tableDef.setModule(module)
-        val table = createJoinTable(tableDef)
-        val columnValueProvider = module.getColumnValueProviderForTable(table, this)
-        registerColumnValueProvider(table, columnValueProvider)
+        createJoinTable(tableDef)
 
       case tableDef: TableDef if tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createAutoSubscribeTable(tableDef)
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
-        val columnValueProvider = module.getColumnValueProviderForTable(table, this)
-        registerColumnValueProvider(table, columnValueProvider)
 
       case tableDef: TableDef if !tableDef.autosubscribe =>
         tableDef.setModule(module)
@@ -197,8 +183,6 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
         logger.info(s"Loading provider for table ${table.name}...")
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
-        val columnValueProvider = module.getColumnValueProviderForTable(table, this)
-        registerColumnValueProvider(table, columnValueProvider)
     }
 
     module.viewPortDefs.foreach({ case (table, vpFunc) =>
