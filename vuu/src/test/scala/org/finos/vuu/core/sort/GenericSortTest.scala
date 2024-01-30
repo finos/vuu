@@ -78,7 +78,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
           RowWithData("NYC-0004",Map("ric" -> "AAPL.L","orderId" -> "NYC-0004","onMkt" -> false,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 5l,"quantity" -> null)),
           RowWithData("LDN-0003",Map("ric" -> "VOD.L","orderId" -> "LDN-0003","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 3l,"quantity" -> null)),
           RowWithData("NYC-0010",Map("ric" -> "VOD.L","orderId" -> "NYC-0010","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
-          RowWithData("NYC-0011",Map("ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
+          RowWithData("NYC-0011",Map("ric" -> "VOD/L","orderId" -> "NYC-0011","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> 105.0d)),
           RowWithData("NYC-0012",Map("ric" -> "VOD\\L","orderId" -> "NYC-0012","onMkt" -> true,"trader" -> "steve","ccyCross" -> "GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
           RowWithData("NYC-0013",Map("ric" -> "VOD\\L","orderId" -> "NYC-0013","onMkt" -> true,"trader" -> "rahúl","ccyCross" -> "$GBPUSD","tradeTime" -> 6l,"quantity" -> null)),
           RowWithData("LDN-0001",Map("ric" -> "VOD.L","orderId" -> "LDN-0001","onMkt" -> true,"trader" -> "chris","ccyCross" -> "GBPUSD","tradeTime" -> 2l,"quantity" -> 100.0d)),

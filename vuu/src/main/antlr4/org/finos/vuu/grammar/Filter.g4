@@ -7,7 +7,9 @@ term           : '(' orExpression ')' # subexpression
                | ID '='      scalar   # operationEq
                | ID '!='     scalar   # operationNeq
                | ID '>'      NUMBER   # operationGt
+               | ID '>='     NUMBER   # operationGte
                | ID '<'      NUMBER   # operationLt
+               | ID '<='     NUMBER   # operationLte
                | ID 'starts' STRING   # operationStarts
                | ID 'ends'   STRING   # operationEnds
                | ID 'in'     set      # operationIn
