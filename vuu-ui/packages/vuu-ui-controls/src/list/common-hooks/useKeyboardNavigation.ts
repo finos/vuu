@@ -91,9 +91,12 @@ const pageDown = (
     scrollTop + clientHeight,
     scrollHeight - clientHeight
   );
-  if (newScrollTop !== scrollTop && index < lastIndexPosition) {
+  // If there is no scroll movement, we are already scrolled to last page, or
+  // no scroll movement is necessary, highlight last item
+  if (newScrollTop === scrollTop && index < lastIndexPosition) {
+    return lastIndexPosition;
+  } else if (newScrollTop !== scrollTop && index < lastIndexPosition) {
     containerEl.scrollTo(0, newScrollTop);
-    // Might need to do this in a timeout, in case virtualized content has rendered
     let nextIdx = index;
     let nextRect;
     do {
@@ -108,33 +111,29 @@ const pageDown = (
   }
 };
 
-const pageUp = async (
+const pageUp = (
   containerEl: HTMLElement,
   itemEl: HTMLElement,
   index: number
-): Promise<number | undefined> => {
+) => {
   const { top: itemTop } = itemEl.getBoundingClientRect();
   const { scrollTop, clientHeight } = containerEl;
   const newScrollTop = Math.max(scrollTop - clientHeight, 0);
-  if (newScrollTop !== scrollTop && index > 0) {
+  if (newScrollTop === scrollTop && index > 0) {
+    return 0;
+  } else if (newScrollTop !== scrollTop && index > 0) {
     containerEl.scrollTo(0, newScrollTop);
-    return new Promise((resolve) => {
-      // We must defer this operation until after render. If Items are virtualized.
-      // we need to allow them to be rendered.
-      requestAnimationFrame(() => {
-        let nextIdx = index;
-        let nextRect;
-        do {
-          nextIdx -= 1;
-          nextRect = getElementByDataIndex(
-            containerEl,
-            nextIdx,
-            true
-          ).getBoundingClientRect();
-        } while (nextRect.top > itemTop && nextIdx > 0);
-        resolve(nextIdx);
-      });
-    });
+    let nextIdx = index;
+    let nextRect;
+    do {
+      nextIdx -= 1;
+      nextRect = getElementByDataIndex(
+        containerEl,
+        nextIdx,
+        true
+      ).getBoundingClientRect();
+    } while (nextRect.top > itemTop && nextIdx > 0);
+    return nextIdx;
   }
 };
 
@@ -183,10 +182,7 @@ export const useKeyboardNavigation = ({
   );
 
   const nextPageItemIdx = useCallback(
-    async (
-      key: "PageDown" | "PageUp" | "Home" | "End",
-      index: number
-    ): Promise<number> => {
+    (key: "PageDown" | "PageUp" | "Home" | "End", index: number) => {
       const itemEl = getElementByDataIndex(containerRef.current, index, true);
       let result: number | undefined;
       if (itemEl) {
@@ -195,7 +191,7 @@ export const useKeyboardNavigation = ({
           result =
             key === PageDown
               ? pageDown(containerEl, itemEl, itemCount, index)
-              : await pageUp(containerEl, itemEl, index);
+              : pageUp(containerEl, itemEl, index);
         }
       }
       return result ?? index;
@@ -296,7 +292,7 @@ export const useKeyboardNavigation = ({
     async (e: KeyboardEvent) => {
       const nextIdx =
         e.key === PageDown || e.key === PageUp
-          ? await nextPageItemIdx(e.key, highlightedIndex)
+          ? nextPageItemIdx(e.key, highlightedIndex)
           : nextFocusableItemIdx(e.key, highlightedIndex);
 
       if (nextIdx !== highlightedIndex) {
@@ -322,7 +318,7 @@ export const useKeyboardNavigation = ({
         e.preventDefault();
         e.stopPropagation();
         keyboardNavigation.current = true;
-        void navigateChildItems(e);
+        navigateChildItems(e);
       } else if (isCharacterKey(e)) {
         keyboardNavigation.current = true;
       }

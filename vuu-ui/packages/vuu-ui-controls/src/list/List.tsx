@@ -95,8 +95,6 @@ export const List = forwardRef(function List<
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<MeasuredSize | undefined>();
   const handleResize = useCallback((size: MeasuredSize) => {
@@ -128,7 +126,6 @@ export const List = forwardRef(function List<
     itemCount: collectionHook.data.length,
     itemGapSize,
     itemHeight: itemHeightProp,
-    rootRef: containerRef,
     size,
   });
 
@@ -142,6 +139,8 @@ export const List = forwardRef(function List<
   });
 
   const {
+    containerRef,
+    setContainerRef,
     draggable,
     draggedItemIndex,
     dropIndicator,
@@ -156,7 +155,6 @@ export const List = forwardRef(function List<
     allowDragDrop,
     collapsibleHeaders,
     collectionHook,
-    containerRef,
     contentRef: contentContainerRef,
     defaultHighlightedIndex,
     defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
@@ -174,7 +172,6 @@ export const List = forwardRef(function List<
     onSelectionChange,
     onHighlight,
     restoreLastFocus,
-    scrollContainerRef,
     selected: collectionHook.itemToCollectionItemId(selectedProp as any),
     selectionStrategy,
     selectionKeys,
@@ -186,6 +183,7 @@ export const List = forwardRef(function List<
   useImperativeScrollingAPI({
     collectionHook,
     forwardedRef: scrollingApiRef,
+    // this should surely be scrollContainerRef
     scrollableRef: containerRef,
     scrollIntoView,
   });
@@ -373,7 +371,7 @@ export const List = forwardRef(function List<
       height={computedListHeight ?? height}
       id={`${id}`}
       onResize={handleResize}
-      ref={useForkRef<HTMLDivElement>(containerRef, forwardedRef)}
+      ref={useForkRef<HTMLDivElement>(setContainerRef, forwardedRef)}
       role="listbox"
       onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
@@ -385,7 +383,7 @@ export const List = forwardRef(function List<
           <ListPlaceholder />
         </>
       ) : (
-        <div className={`${classBase}-viewport`} ref={scrollContainerRef}>
+        <div className={`${classBase}-viewport`}>
           <div
             className={`${classBase}-scrollingContentContainer`}
             ref={contentContainerRef}

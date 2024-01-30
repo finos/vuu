@@ -6,7 +6,6 @@ import {
   MultiSelectionHandler,
   SelectHandler,
   SingleSelectionHandler,
-  VirtualizedList,
 } from "@finos/vuu-ui-controls";
 
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
@@ -14,7 +13,6 @@ import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
   SyntheticEvent,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -172,32 +170,6 @@ export const ListHeight100Pct = () => {
   );
 };
 ListHeight100Pct.displaySequence = displaySequence++;
-
-export const DefaultVirtualisedList = () => {
-  const [data, setData] = useState<string[]>([]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setData(usa_states);
-    }, 1000);
-  }, []);
-
-  const handleSelect = useCallback((evt, item) => {
-    console.log("select", {
-      item,
-    });
-  }, []);
-
-  return (
-    <VirtualizedList
-      aria-label="Listbox example"
-      maxWidth={292}
-      onSelect={handleSelect}
-      source={data}
-    />
-  );
-};
-DefaultVirtualisedList.displaySequence = displaySequence++;
 
 export const MultiSelectionList = () => {
   const handleSelect = useCallback((evt, selected) => {

@@ -37,7 +37,7 @@ export interface TextInputProps
 
 const NO_DATA_MATCH = ["No matching data"];
 
-export const TextInput = forwardRef(function TextInput(
+export const FilterClauseTextValueEditor = forwardRef(function TextInput(
   {
     InputProps: InputPropsProp = {},
     className,
@@ -103,7 +103,7 @@ export const TextInput = forwardRef(function TextInput(
   }, []);
 
   const InputProps = useMemo(() => {
-    if (operator === "starts" || operator === "ends") {
+    if (operator !== "in") {
       const { inputProps, ...restInputProps } = InputPropsProp;
       return {
         ...restInputProps,
@@ -126,9 +126,6 @@ export const TextInput = forwardRef(function TextInput(
   }, [InputPropsProp, onInputComplete, operator, valueInputValue]);
 
   const getValueInputField = useCallback(() => {
-    if (typeaheadValues.length === 0) {
-      return null;
-    }
     switch (operator) {
       case "in":
         return (
@@ -188,6 +185,7 @@ export const TextInput = forwardRef(function TextInput(
           <ExpandoCombobox<string>
             InputProps={InputProps}
             allowBackspaceClearsSelection
+            allowFreeText
             className={className}
             data-field={dataField}
             initialHighlightedIndex={0}
@@ -202,8 +200,9 @@ export const TextInput = forwardRef(function TextInput(
         );
     }
   }, [
-    operator,
+    InputPropsProp,
     InputProps,
+    operator,
     className,
     dataField,
     typeaheadValues,

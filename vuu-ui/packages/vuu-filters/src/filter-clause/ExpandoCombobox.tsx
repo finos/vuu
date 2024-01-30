@@ -44,7 +44,9 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     onInputChange,
     onSelectionChange,
     selectionStrategy,
+    source,
     style,
+    title,
     value = "",
     ...props
   }: ExpandoComboboxProps<Item, S>,
@@ -133,11 +135,11 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     if (initialValue.current === undefined) {
       return undefined;
     } else if (Array.isArray(initialValue.current)) {
-      return props.source?.filter((item) =>
+      return source?.filter((item) =>
         initialValue.current.includes(itemToString(item))
       );
     } else {
-      return props.source?.find(
+      return source?.find(
         (item) => itemToString(item) === initialValue.current
       );
     }
@@ -156,6 +158,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       <ComboBox<Item, S>
         {...props}
         PopupProps={popupProps}
+        allowEnterCommitsText
         defaultSelected={getDefaultSelected()}
         defaultValue={
           Array.isArray(initialValue.current)
@@ -169,6 +172,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         onSelectionChange={handleSelectionChange}
         onSetSelectedText={handleSetSelectedText}
         selectionStrategy={selectionStrategy}
+        source={source}
       />
     </div>
   );

@@ -82,28 +82,11 @@ describe("KeySet", () => {
       const keySet = new KeySet({ from: 0, to: 0 });
 
       keySet.reset({ from: 0, to: 35 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
-
       keySet.reset({ from: 25, to: 66 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
-
       keySet.reset({ from: 55, to: 96 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
-
       keySet.reset({ from: 25, to: 66 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
-
       keySet.reset({ from: 0, to: 36 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
-
       keySet.reset({ from: 25, to: 66 });
-      console.log(keySet.toDebugString());
-      console.log(` nextKeyValue ${keySet["nextKeyValue"]}`);
       // prettier-ignore
       expect([...keySet.keys.entries()]).toEqual([
         [25,25], [26,26], [27,27], [28,28], [29,29], [30,30], [31,31], [32,32], [33,33], [34,34], [35,35], [36,0], [37,1],

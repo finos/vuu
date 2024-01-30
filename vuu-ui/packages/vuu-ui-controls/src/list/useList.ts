@@ -2,9 +2,8 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent,
-  RefObject,
+  RefCallback,
   useCallback,
-  useMemo,
   useRef,
 } from "react";
 import {
@@ -17,7 +16,7 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "../common-hooks";
-import { DragStartHandler, useDragDrop as useDragDrop } from "../drag-drop";
+import { DragStartHandler, useDragDrop } from "../drag-drop";
 import {
   closestListItemIndex,
   useCollapsibleGroups,
@@ -34,7 +33,6 @@ export const useList = <Item, S extends SelectionStrategy>({
   allowDragDrop = false,
   collapsibleHeaders,
   collectionHook: dataHook,
-  containerRef,
   contentRef,
   defaultHighlightedIndex,
   defaultSelected,
@@ -56,7 +54,6 @@ export const useList = <Item, S extends SelectionStrategy>({
   onSelect,
   onSelectionChange,
   restoreLastFocus,
-  scrollContainerRef,
   selected,
   selectionStrategy,
   selectionKeys,
@@ -64,6 +61,9 @@ export const useList = <Item, S extends SelectionStrategy>({
   tabToSelect,
   viewportRange,
 }: ListHookProps<Item, S>): ListHookResult<Item> => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
   const lastSelection = useRef<string[] | undefined>(
     selected || defaultSelected
   );
@@ -84,17 +84,12 @@ export const useList = <Item, S extends SelectionStrategy>({
     [dataHook, onSelect]
   );
 
-  const scrollContainer = useMemo<RefObject<HTMLElement>>(() => {
-    if (scrollContainerRef) {
-      return scrollContainerRef;
-    } else {
-      return {
-        current:
-          containerRef.current?.querySelector(".vuuList-scrollContainer") ??
-          null,
-      };
+  const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
+    if (el) {
+      containerRef.current = el;
+      scrollContainerRef.current = el.querySelector(".vuuList-viewport");
     }
-  }, [containerRef, scrollContainerRef]);
+  }, []);
 
   const handleSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, selected) => {
@@ -128,7 +123,7 @@ export const useList = <Item, S extends SelectionStrategy>({
     setHighlightedIndex,
     ...keyboardHook
   } = useKeyboardNavigation({
-    containerRef: scrollContainer,
+    containerRef: scrollContainerRef,
     defaultHighlightedIndex,
     disableHighlightOnFocus,
     highlightedIndex: highlightedIndexProp,
@@ -245,7 +240,7 @@ export const useList = <Item, S extends SelectionStrategy>({
   // not when a control is manipulating the list
   const { isScrolling: isViewportScrolling, scrollIntoView } =
     useViewportTracking({
-      containerRef: scrollContainer,
+      containerRef: scrollContainerRef,
       contentRef,
       highlightedIdx: highlightedIndex,
       indexPositions: dataHook.data,
@@ -311,6 +306,8 @@ export const useList = <Item, S extends SelectionStrategy>({
   };
 
   return {
+    containerRef,
+    setContainerRef,
     focusVisible: keyboardHook.focusVisible,
     controlledHighlighting: keyboardHook.controlledHighlighting,
     highlightedIndex,

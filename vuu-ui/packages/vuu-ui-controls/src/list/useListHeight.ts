@@ -1,5 +1,5 @@
 import { MeasuredSize } from "@finos/vuu-ui-controls";
-import { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
 
 export interface ListHeightHookProps {
@@ -9,7 +9,6 @@ export interface ListHeightHookProps {
   itemCount: number;
   itemGapSize: number;
   itemHeight?: number;
-  rootRef: RefObject<HTMLElement>;
   size: MeasuredSize | undefined;
 }
 

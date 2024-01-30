@@ -6,7 +6,7 @@ import {
   ExpandoCombobox,
   ExpandoComboboxProps,
   FilterClauseEditor,
-  TextInput,
+  FilterClauseTextValueEditor,
 } from "@finos/vuu-filters";
 import {
   ExpandoInput,
@@ -97,7 +97,7 @@ export const DataBoundTextInputEmpty = () => {
   }, []);
 
   return (
-    <TextInput
+    <FilterClauseTextValueEditor
       column={column}
       onInputComplete={handleInputComplete}
       operator="="
@@ -125,7 +125,7 @@ export const DataBoundTextInputLoaded = () => {
   }, []);
 
   return (
-    <TextInput
+    <FilterClauseTextValueEditor
       column={column}
       onInputComplete={handleInputComplete}
       operator="="
@@ -179,6 +179,34 @@ export const NewFilterClause = () => {
   );
 };
 NewFilterClause.displaySequence = displaySequence++;
+
+export const NewFilterClauseNoCompletions = () => {
+  const tableSchema = getSchema("instruments");
+
+  const alwaysEmptyTypeaheadHook = useMemo(() => {
+    const suggestionFetcher = async () => {
+      return [];
+    };
+
+    return () => suggestionFetcher;
+  }, []);
+
+  const onChange = (filterClause: Partial<FilterClause>) =>
+    console.log("Filter Change", filterClause);
+
+  return (
+    <div style={{ padding: "10px" }}>
+      <FilterClauseEditor
+        columnsByName={columnDescriptorsByName(tableSchema.columns)}
+        filterClause={EMPTY_FILTER_CLAUSE}
+        onChange={onChange}
+        suggestionProvider={alwaysEmptyTypeaheadHook}
+        tableSchema={tableSchema}
+      />
+    </div>
+  );
+};
+NewFilterClauseNoCompletions.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnOnly = () => {
   useAutoLoginToVuuServer();
