@@ -19,6 +19,7 @@ import scala.jdk.CollectionConverters
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
+  @volatile private var columnValueProvider: ColumnValueProvider = null
 
   protected def createDataTableData(): TableData
 
@@ -31,6 +32,10 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def setProvider(aProvider: Provider): Unit = provider = aProvider
 
   def getProvider: Provider = provider
+
+  def setColumnValueProvider(aCVProvider: ColumnValueProvider): Unit = columnValueProvider = aCVProvider
+
+  def getColumnValueProvider: ColumnValueProvider = columnValueProvider
 
   def asTable: DataTable = this
 

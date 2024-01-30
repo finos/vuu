@@ -43,7 +43,7 @@ object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
-  }
+}
 
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
