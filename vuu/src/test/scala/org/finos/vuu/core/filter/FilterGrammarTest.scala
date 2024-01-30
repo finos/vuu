@@ -2,7 +2,7 @@ package org.finos.vuu.core.filter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.finos.vuu.core.filter.FilterSpecParser.{parse => filterClause}
-import org.finos.vuu.core.sort.FilterAndSortFixture._
+import org.finos.vuu.core.sort.FilterAndSortFixture.{row, _}
 import org.finos.vuu.core.table.RowWithData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -43,8 +43,10 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       val filterExpressions = Table(
         "Foo > 1",
         "Foo > 1.1",
+        "Foo >= 1.5",
         "Foo < 1",
         "Foo < 1.1",
+        "Foo <= 1.5",
       )
       forAll(filterExpressions)(assertParsable)
     }
@@ -66,6 +68,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
     Scenario("Composite boolean expressions") {
       val filterExpressions = Table(
         "Foo<1 and Bar<1.1",
+        "Foo <= 1 and Bar >= 1.1",
         "Foo>1.1 and Bar=1 and Baz=1",
         "Foo=1 or Bar!=1",
         "Foo=1.2 or Bar!=1.2 or Baz=\"1\"",
@@ -74,9 +77,9 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         "Foo=1 or Bar=1 and Baz=1",
         "(Foo=1 or Bar=1) and Baz=1",
         "Foo=1 or (Bar=1 and Baz=1)",
-        "Foo=1 or (Bar=1 or Bar=1 and Baz=1)",
+        "Foo=1 or (Bar=1 or Bar<=1 and Baz=1)",
         "Foo=1 or (Bar=1 or Bar=1) and Baz=1",
-        "(Foo=1 or Bar=1 or Bar=1) and Baz=1",
+        "(Foo=1 or Bar>=1 or Bar=1) and Baz=1",
         "(Foo=1 or Bar starts \"1\" or Bar=1) and Baz=1",
       )
       forAll(filterExpressions)(assertParsable)
@@ -110,6 +113,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         "Foo > true",
         "Foo > .5",
         "Foo > 1.",
+        "Foo >= *.",
         "Foo > [ 1, 2, 3 ]",
       )
       forAll(filterExpressions)(assertNotParsable)
@@ -156,7 +160,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d),
         row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
         row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
       )
@@ -175,7 +179,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
         row("tradeTime" -> 6L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
         row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
+        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
         row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
         row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD")
       )
@@ -185,7 +189,19 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       assertFilteredRows("tradeTime > 4",
         row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
         row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
+        row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
+        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d)
+      )
+    }
+
+    Scenario("Greater than equal") {
+      assertFilteredRows("tradeTime >= 5",
+        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
+        row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
         row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
@@ -197,7 +213,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       assertFilteredRows("tradeTime > 4 or orderId = \"LDN-0002\"",
         row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
         row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
+        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
         row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
@@ -221,13 +237,23 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       )
     }
 
-    Scenario("Less than") {
+    Scenario("Lesser than") {
       assertFilteredRows("quantity < 100")
+    }
+
+    Scenario("Lesser than equal") {
+      assertFilteredRows("quantity <= 105",
+        row("ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 2l, "quantity" -> 100.0d),
+        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
+        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1l, "quantity" -> 100.0d),
+        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5l, "quantity" -> 100.0d),
+        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6l, "quantity" -> 100.0d)
+      )
     }
 
     Scenario("Equality to STRING containing reserved chars in the grammar") {
       assertFilteredRows("ric = \"VOD/L\"",
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
+        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d)
       )
     }
 

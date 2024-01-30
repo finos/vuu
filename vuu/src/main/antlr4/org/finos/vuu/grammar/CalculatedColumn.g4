@@ -5,7 +5,9 @@ FALSE : 'false';
 //AND : 'and';
 //OR : 'or';
 LT : '<';
+LTE : '<=';
 GT : '>';
+GTE : '>=';
 EQ : '=';
 NEQ : '!=';
 IN : 'in';
@@ -42,7 +44,7 @@ REPLACE : 'replace';
 expression : EQ term EOF;
 
 //operator : PLUS | MULTIPLY | DIVIDE | SUBTRACT;
-operator : LT | GT | EQ | NEQ | IN | STARTS | ENDS | PLUS | MULTIPLY | DIVIDE | SUBTRACT;
+operator : LT | LTE | GT | GTE | EQ | NEQ | IN | STARTS | ENDS | PLUS | MULTIPLY | DIVIDE | SUBTRACT;
 
 term : atom  | //=foo, or =100
        atom operator atom | //=foo* 100, or =bid*price

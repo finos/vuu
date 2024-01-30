@@ -26,8 +26,18 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] {
   override def visitOperationGt(ctx: OperationGtContext): FilterClause =
     GreaterThanClause(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
 
+  override def visitOperationGte(ctx: OperationGteContext): FilterClause = {
+    val (field, value) = (ctx.ID().getText, ctx.NUMBER().getText)
+    OrClause(List(GreaterThanClause(field, value.toDouble), EqualsClause(field, value)))
+  }
+
   override def visitOperationLt(ctx: OperationLtContext): FilterClause =
     LessThanClause(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+
+  override def visitOperationLte(ctx: OperationLteContext): FilterClause = {
+    val (field, value) = (ctx.ID().getText, ctx.NUMBER().getText)
+    OrClause(List(LessThanClause(field, value.toDouble), EqualsClause(field, value)))
+  }
 
   override def visitOperationStarts(ctx: OperationStartsContext): FilterClause =
     StartsClause(ctx.ID().getText, ctx.STRING().getText)

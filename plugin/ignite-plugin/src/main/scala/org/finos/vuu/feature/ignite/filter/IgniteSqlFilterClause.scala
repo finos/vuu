@@ -48,12 +48,9 @@ case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends I
 }
 
 //todo why is number cast double? need to cast back to original type?
-case class GtIgniteSqlFilterClause(columnName: String, value: Double) extends IgniteSqlFilterClause {
-  override def toSql(tableDef: TableDef): String = s"$columnName > $value"
-}
-
-case class LtIgniteSqlFilterClause(columnName: String, value: Double) extends IgniteSqlFilterClause {
-  override def toSql(tableDef: TableDef): String = s"$columnName < $value"
+case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: Double) extends IgniteSqlFilterClause {
+  override def toSql(tableDef: TableDef) = s"$columnName ${op.value} $value"
+  override def toString = s"RangeIgniteSqlFilterClause[$op]($columnName, $value)"
 }
 
 case class StartsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
@@ -84,6 +81,14 @@ case class InIgniteSqlFilterClause(columnName: String, values: List[String]) ext
     }
     s"$columnName IN (${processedValues.mkString(",")})"
   }
+}
+
+sealed abstract class RangeOp(val value: String)
+object RangeOp {
+  final case object GT extends RangeOp(value = ">")
+  final case object GTE extends RangeOp(value = ">=")
+  final case object LT extends RangeOp(value = "<")
+  final case object LTE extends RangeOp(value = "<=")
 }
 
 private object quotedString {
