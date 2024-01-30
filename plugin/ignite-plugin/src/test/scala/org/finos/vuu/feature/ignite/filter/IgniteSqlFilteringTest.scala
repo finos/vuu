@@ -27,46 +27,31 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   )
 
   Feature("Parse and apply GREATER THAN filter") {
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "AAPL.L", price = 50.5, quantity = 200)
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", price = 100.0, quantity = 1000)
+
     Scenario("Support comparison to INT") {
-      givenOrderExistInIgnite(
-        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 600),
-        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
-        createTestOrderEntity(id = 3, ric = "AAPL.GA", quantity = 1000),
-      )
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("quantity > 500")
 
-      assertEquavalent(
-        filterResult.toArray,
-        Array(
-          createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 600),
-          createTestOrderEntity(id = 3, ric = "AAPL.GA", quantity = 1000),
-        )
-      )
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
     }
 
-    Scenario("AND clause for two conditions") {
-      givenOrderExistInIgnite(
-        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 1000),
-        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
-        createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
-      )
+    Scenario("Support comparison to DOUBLE") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("ric = \"AAPL.L\" and quantity > 500")
+      val filterResult = applyFilter("price > 50.0")
 
-      assertEquavalent(
-        filterResult.toArray,
-        Array(
-          createTestOrderEntity(id = 3, ric = "AAPL.L",  quantity = 1000),
-        )
-      )
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
   }
 
   Feature("Parse and apply LESSER THAN filter") {
     val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)
     val testOrder2 = createTestOrderEntity(id = 2, ric = "AAPL.L", price = 50.0, quantity = 200)
-    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", price = 250.0, quantity = 1000)
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", price = 100.5, quantity = 1000)
 
     Scenario("Support comparison to INT") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
@@ -79,7 +64,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("Support comparison to DOUBLE") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("price < 100.0")
+      val filterResult = applyFilter("price < 50.1")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
