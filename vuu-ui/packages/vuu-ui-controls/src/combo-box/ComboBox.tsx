@@ -1,12 +1,6 @@
 import { useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
-import {
-  ForwardedRef,
-  forwardRef,
-  ReactElement,
-  useCallback,
-  useRef,
-} from "react";
+import { ForwardedRef, forwardRef, ReactElement, useCallback } from "react";
 import {
   CollectionProvider,
   ComponentSelectionProps,
@@ -37,6 +31,7 @@ export interface ComboBoxProps<
     "ListItem" | "itemToString" | "source" | "onSelect" | "onSelectionChange"
   >;
   allowBackspaceClearsSelection?: boolean;
+  allowEnterCommitsText?: boolean;
   allowFreeText?: boolean;
   defaultValue?: string;
   getFilterRegex?: (inputValue: string) => RegExp;
@@ -56,12 +51,13 @@ export const ComboBox = forwardRef(function Combobox<
   S extends SelectionStrategy = "default"
 >(
   {
-    InputProps,
+    InputProps: InputPropsProp,
     ListProps,
     PopupProps,
     ListItem,
     "aria-label": ariaLabel,
     allowBackspaceClearsSelection,
+    allowEnterCommitsText,
     allowFreeText,
     children,
     defaultIsOpen,
@@ -96,7 +92,6 @@ export const ComboBox = forwardRef(function Combobox<
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
   const id = useId(idProp);
-  const listRef = useRef<HTMLDivElement>(null);
   const isMultiSelect = isMultiSelection(selectionStrategy);
 
   const valueFromSelected = (item: Item | null | Item[]) => {
@@ -135,14 +130,16 @@ export const ComboBox = forwardRef(function Combobox<
   const {
     focusVisible,
     highlightedIndex,
-    inputProps: { endAdornment: endAdornmentProp, ...inputProps },
+    InputProps: { endAdornment: endAdornmentProp, ...InputProps },
     isOpen,
     listHandlers,
     listControlProps: controlProps,
     onOpenChange,
     selected,
+    setContainerRef,
   } = useCombobox<Item, S>({
-    InputProps,
+    InputProps: InputPropsProp,
+    allowEnterCommitsText,
     allowBackspaceClearsSelection,
     allowFreeText,
     ariaLabel,
@@ -154,7 +151,6 @@ export const ComboBox = forwardRef(function Combobox<
     initialHighlightedIndex,
     itemCount: collectionHook.data.length,
     label: props.title,
-    listRef,
     onBlur,
     onDeselect,
     onFocus,
@@ -190,22 +186,22 @@ export const ComboBox = forwardRef(function Combobox<
         role="button"
       />
     );
+
   return (
     <CollectionProvider<Item> collectionHook={collectionHook}>
       <DropdownBase
         {...props}
         PopupProps={PopupProps}
         id={id}
-        isOpen={isOpen}
+        isOpen={isOpen && collectionHook.data.length > 0}
         onOpenChange={onOpenChange}
         openOnFocus={openOnFocus}
         ref={forwardedRef}
         width={width}
       >
         <Input
-          {...inputProps}
+          {...InputProps}
           disabled={disabled}
-          // ref={useForkRef(setInputRef, setHookInputRef)}
           {...controlProps}
           endAdornment={endAdornment}
         />
@@ -216,10 +212,10 @@ export const ComboBox = forwardRef(function Combobox<
           defaultSelected={undefined}
           focusVisible={focusVisible}
           highlightedIndex={highlightedIndex}
-          itemTextHighlightPattern={String(inputProps.value) || undefined}
+          itemTextHighlightPattern={String(InputProps.value) || undefined}
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange} // not really needed, since onClick in listHandlers will be used instead.
-          ref={listRef}
+          ref={setContainerRef}
           selected={selected}
           selectionStrategy={selectionStrategy}
           tabIndex={-1}

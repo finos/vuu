@@ -1,13 +1,13 @@
 import { TableSchema } from "@finos/vuu-data-types";
 import cx from "clsx";
 import { NumericInput } from "./NumericInput";
-import { TextInput } from "./TextInput";
+import { FilterClauseTextValueEditor } from "./FilterClauseTextValueEditor";
 import { useFilterClauseEditor } from "./useFilterClauseEditor";
 
-import { DateInput } from "./DateInput";
-import { isDateTimeColumn } from "@finos/vuu-utils";
-import { FilterClauseEditorProps } from "./FilterClauseEditor";
 import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
+import { isDateTimeColumn } from "@finos/vuu-utils";
+import { DateInput } from "./DateInput";
+import { FilterClauseEditorProps } from "./FilterClauseEditor";
 
 const classBase = "vuuFilterClause";
 
@@ -24,7 +24,7 @@ type InputElementProps = Pick<
     table: TableSchema["table"];
   };
 
-export const InputElement: React.FC<InputElementProps> = ({
+export const FilterClauseValueEditor: React.FC<InputElementProps> = ({
   selectedColumn,
   operator,
   InputProps,
@@ -52,7 +52,7 @@ export const InputElement: React.FC<InputElementProps> = ({
     case "string":
     case "char":
       return (
-        <TextInput
+        <FilterClauseTextValueEditor
           InputProps={InputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
           column={selectedColumn}

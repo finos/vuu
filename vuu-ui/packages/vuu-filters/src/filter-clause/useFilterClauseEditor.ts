@@ -105,7 +105,6 @@ const navigateToNextInputIfAtBoundary = (
         const nextField = field.previousSibling as HTMLElement;
         const nextInput = nextField?.querySelector("input");
         evt.preventDefault();
-        console.log("%cfocus nextInput", "color:green;font-weight:bold");
 
         nextInput?.focus();
         requestAnimationFrame(() => {
@@ -278,27 +277,15 @@ export const useFilterClauseEditor = ({
     setValue(undefined);
   }, []);
 
-  const handleKeyDownInput = useCallback(
+  const handleKeyDownCaptureInput = useCallback(
     (evt: KeyboardEvent<HTMLInputElement>) => {
       if (["ArrowLeft", "ArrowRight"].includes(evt.key)) {
         navigateToNextInputIfAtBoundary(evt);
       } else if (evt.key === "Backspace") {
         removeAndNavigateToNextInputIfAtBoundary(evt);
-      } else if (evt.key === "Enter") {
-        // If value is valid, move on to next field
-        const input = evt.target as HTMLInputElement;
-        const field = input.closest("[data-field]") as HTMLElement;
-        if (field.dataset.field === "value" && operator === "starts") {
-          // // don't let this bubble to the Toolbar, it would be
-          // // interpreted as selection
-          evt.stopPropagation();
-          const newValue = input.value;
-          setValue(newValue);
-          handleChangeValue(newValue);
-        }
       }
     },
-    [handleChangeValue, operator, removeAndNavigateToNextInputIfAtBoundary]
+    [removeAndNavigateToNextInputIfAtBoundary]
   );
 
   const handleClear = useCallback(
@@ -330,10 +317,10 @@ export const useFilterClauseEditor = ({
   const InputProps = useMemo(
     () => ({
       inputProps: {
-        onKeyDownCapture: handleKeyDownInput,
+        onKeyDownCapture: handleKeyDownCaptureInput,
       },
     }),
-    [handleKeyDownInput]
+    [handleKeyDownCaptureInput]
   );
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import {
   FocusEvent,
   KeyboardEventHandler,
   MouseEvent,
-  RefObject,
+  RefCallback,
   SyntheticEvent,
   useCallback,
   useRef,
@@ -39,6 +39,7 @@ export interface ComboboxHookProps<
     Pick<
       ComboBoxProps<Item>,
       | "allowBackspaceClearsSelection"
+      | "allowEnterCommitsText"
       | "allowFreeText"
       | "defaultValue"
       | "initialHighlightedIndex"
@@ -58,7 +59,6 @@ export interface ComboboxHookProps<
   id: string;
   itemCount: number;
   itemToString?: (item: Item) => string;
-  listRef: RefObject<HTMLDivElement>;
 }
 
 export interface ComboboxHookResult<Item, S extends SelectionStrategy>
@@ -67,13 +67,15 @@ export interface ComboboxHookResult<Item, S extends SelectionStrategy>
       "focusVisible" | "highlightedIndex" | "listControlProps" | "listHandlers"
     >,
     Partial<DropdownHookResult> {
-  inputProps: InputProps;
+  InputProps: InputProps;
   onOpenChange: OpenChangeHandler;
   selected?: S extends MultiSelectionStrategy ? Item[] : Item | null;
+  setContainerRef: RefCallback<HTMLDivElement>;
 }
 
 export const useCombobox = <Item, S extends SelectionStrategy>({
   allowBackspaceClearsSelection,
+  allowEnterCommitsText,
   allowFreeText,
   ariaLabel,
   collectionHook,
@@ -91,7 +93,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   itemCount,
   itemsToString,
   itemToString = defaultItemToString as (item: Item) => string,
-  listRef,
   onListItemSelect,
   onOpenChange,
   onSelectionChange,
@@ -100,7 +101,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   selectionKeys = EnterOnly,
   selectionStrategy,
   value: valueProp,
-  InputProps: inputProps = {
+  InputProps = {
     onBlur,
     onFocus,
     onChange,
@@ -288,9 +289,9 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     listControlProps,
     listHandlers: listHookListHandlers,
     selected,
+    setContainerRef,
   } = useList<Item, S>({
     collectionHook,
-    containerRef: listRef,
     defaultHighlightedIndex: initialHighlightedIndex,
     defaultSelected: collectionHook.itemToCollectionItemId(defaultSelected),
     disableAriaActiveDescendant,
@@ -333,17 +334,38 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     [setFilterPattern, setIsOpen, setValue]
   );
 
-  const handleInputKeyDown = useCallback<KeyboardEventHandler>(
+  const handleInputKeyDown = useCallback<
+    KeyboardEventHandler<HTMLInputElement>
+  >(
     (e) => {
-      if (e.key === "Backspace" && allowBackspaceClearsSelection) {
+      if (
+        e.key === "Enter" &&
+        value !== undefined &&
+        value !== "" &&
+        allowEnterCommitsText
+      ) {
+        setIsOpen(false);
+      }
+
+      InputProps.inputProps?.onKeyDown?.(e);
+      if (e.isDefaultPrevented()) {
+        // no more to do;
+      } else if (e.key === "Backspace" && allowBackspaceClearsSelection) {
         selectedRef.current = null;
         onDeselect?.();
       }
     },
-    [allowBackspaceClearsSelection, onDeselect]
+    [
+      InputProps.inputProps,
+      allowBackspaceClearsSelection,
+      allowEnterCommitsText,
+      onDeselect,
+      setIsOpen,
+      value,
+    ]
   );
 
-  const { onFocus: inputOnFocus = onFocus } = inputProps;
+  const { onFocus: inputOnFocus = onFocus } = InputProps;
   const { onFocus: listOnFocus } = listControlProps;
   const handleInputFocus = useCallback(
     (evt: FocusEvent<HTMLInputElement>) => {
@@ -362,7 +384,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     [id]
   );
 
-  const { onBlur: inputOnBlur = onBlur } = inputProps;
+  const { onBlur: inputOnBlur = onBlur } = InputProps;
   const { onBlur: listOnBlur } = listControlProps;
   // TODO do we need this check at all, given that DropdownV=BAse will close dropdown
   const handleInputBlur = useCallback(
@@ -379,7 +401,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     [listFocused, listOnBlur, inputOnBlur]
   );
 
-  const { onSelect: inputOnSelect } = inputProps;
+  const { onSelect: inputOnSelect } = InputProps;
   const handleInputSelect = useCallback(
     (event: SyntheticEvent<HTMLDivElement>) => {
       if (ignoreSelectOnFocus.current) {
@@ -413,7 +435,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
   ]);
 
   const mergedInputProps = {
-    ...inputProps.inputProps,
+    ...InputProps.inputProps,
     "aria-label": ariaLabel,
     autoComplete: "off",
     onKeyDown: handleInputKeyDown,
@@ -424,8 +446,8 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
     highlightedIndex,
     isOpen,
     onOpenChange: handleOpenChange,
-    inputProps: {
-      ...inputProps,
+    InputProps: {
+      ...InputProps,
       // "aria-activedescendant": activeDescendant,
       id: `${id}-input`,
       inputProps: mergedInputProps,
@@ -444,5 +466,6 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
       onClick: handleListClick,
     },
     selected: selectedRef.current as SelectionType<Item, S>,
+    setContainerRef,
   };
 };

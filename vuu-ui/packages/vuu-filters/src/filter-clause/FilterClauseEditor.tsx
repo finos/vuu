@@ -8,7 +8,7 @@ import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { getOperators } from "./operator-utils";
-import { InputElement } from "./InputElement";
+import { FilterClauseValueEditor } from "./FilterClauseValueEditor";
 import {
   FilterClauseCancelHandler,
   useFilterClauseEditor,
@@ -95,7 +95,7 @@ export const FilterClauseEditor = ({
           value={operator ?? ""}
         />
       ) : null}
-      <InputElement
+      <FilterClauseValueEditor
         InputProps={InputProps}
         onChangeValue={onChangeValue}
         onDeselectValue={onDeselectValue}

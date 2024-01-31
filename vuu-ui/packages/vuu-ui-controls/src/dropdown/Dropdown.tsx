@@ -89,6 +89,7 @@ export const Dropdown = forwardRef(function Dropdown<
     listHandlers,
     listControlProps,
     selected,
+    setContainerRef,
     ...dropdownListHook
   } = useDropdown<Item, S>({
     collectionHook,
@@ -167,7 +168,7 @@ export const Dropdown = forwardRef(function Dropdown<
           listHandlers={listHandlers}
           onSelectionChange={onSelectionChange}
           onSelect={onSelect}
-          ref={listRef}
+          ref={setContainerRef}
           selected={selected === undefined ? undefined : itemIdToItem(selected)}
           selectionStrategy={selectionStrategy}
         />

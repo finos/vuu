@@ -7,6 +7,7 @@ import React, {
   MouseEventHandler,
   PropsWithChildren,
   Ref,
+  RefCallback,
   RefObject,
 } from "react";
 
@@ -256,7 +257,6 @@ export interface ListHookProps<
     | "tabToSelect"
   > {
   collectionHook: CollectionHookResult<Item>;
-  containerRef: RefObject<HTMLElement>;
   contentRef?: RefObject<HTMLElement>;
   defaultHighlightedIndex?: number;
   defaultSelected?: string[];
@@ -272,7 +272,6 @@ export interface ListHookProps<
     currentIndex: number
   ) => void;
   onKeyDown?: (evt: KeyboardEvent) => void;
-  scrollContainerRef?: RefObject<HTMLElement>;
   selected?: string[];
   // selectionStrategy: S;
   viewportRange?: ViewportRange;
@@ -283,6 +282,8 @@ export interface ListHookResult<Item>
     Pick<SelectionHookResult, "selected" | "setSelected">,
     Partial<Omit<NavigationHookResult, "listProps">>,
     Omit<DragHookResult, "isDragging" | "isScrolling"> {
+  containerRef: RefObject<HTMLDivElement>;
+  setContainerRef: RefCallback<HTMLDivElement>;
   keyboardNavigation: RefObject<boolean>;
   listHandlers: ListHandlers;
   listItemHeaderHandlers: Partial<ListHandlers>;
