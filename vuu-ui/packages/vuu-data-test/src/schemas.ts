@@ -7,16 +7,22 @@ import {
   type SimulTableName,
   schemas as simulSchemas,
 } from "./simul/simul-schemas";
+import {
+  type TestTableName,
+  schemas as testSchemas,
+} from "./test/test-schemas";
 
-export type VuuTableName = BasketsTableName | SimulTableName;
+export type VuuTableName = BasketsTableName | SimulTableName | TestTableName;
 export const schemas: Record<VuuTableName, TableSchema> = {
   ...basketSchemas,
   ...simulSchemas,
+  ...testSchemas,
 };
 
 const allSchemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
   ...basketSchemas,
   ...simulSchemas,
+  ...testSchemas,
 };
 
 export const getAllSchemas = () => schemas;

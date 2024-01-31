@@ -4,8 +4,10 @@ import basketModule from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import simulModule from "./simul/simul-module";
 import { SimulTableName } from "./simul/simul-schemas";
+import testModule from "./test/test-module";
+import { TestTableName } from "./test/test-schemas";
 
-export type VuuModuleName = "BASKET" | "SIMUL";
+export type VuuModuleName = "BASKET" | "SIMUL" | "TEST";
 
 export interface VuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -14,10 +16,13 @@ export interface VuuModule<T extends string = string> {
 
 const vuuModules: Record<
   VuuModuleName,
-  VuuModule<BasketsTableName> | VuuModule<SimulTableName>
+  | VuuModule<BasketsTableName>
+  | VuuModule<SimulTableName>
+  | VuuModule<TestTableName>
 > = {
   BASKET: basketModule,
   SIMUL: simulModule,
+  TEST: testModule,
 };
 
 export const vuuModule = <T extends string = string>(

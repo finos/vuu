@@ -1,4 +1,3 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { TableSchema } from "@finos/vuu-data-types";
 
 export type SimulTableName =
@@ -143,12 +142,3 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
       table: { module: "SIMUL", table: "prices" },
     },
   };
-
-export type ColumnState = { [key: string]: TableSchema };
-
-export interface ColumnActionUpdate {
-  type: "updateColumn";
-  column: ColumnDescriptor;
-}
-
-export type ColumnAction = ColumnActionUpdate;

@@ -2,25 +2,16 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
 import { UpdateGenerator } from "./rowUpdates";
 
-type RowAtIndexFunc<T = unknown> = (index: number) => T | undefined;
+type GenerateRowFunc = (index: number) => VuuRowDataItemType[];
 
-export const VuuColumnGenerator = (columnCount: number): string[] =>
-  ["Row No"].concat(
-    Array(columnCount)
-      .fill("")
-      .map((_, i) => `Column ${i + 1}`)
-  );
-
-export type RowGeneratorFactory<T = VuuRowDataItemType> = (
-  columns: string[]
-) => RowAtIndexFunc<T[]>;
+export type RowGeneratorFactory = (columns: string[]) => GenerateRowFunc;
 
 export type ColumnGeneratorFn = (
   columns?: number | string[],
   columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
 ) => ColumnDescriptor[];
 
-export const DefaultRowGenerator: RowGeneratorFactory<string> =
+export const DefaultRowGenerator: RowGeneratorFactory =
   (columns: string[]) => (index) => {
     return [`row ${index + 1}`].concat(
       Array(columns.length)
@@ -47,7 +38,7 @@ export const DefaultColumnGenerator: ColumnGeneratorFn = (
   }
 };
 
-const defaultGenerators = {
+export const defaultGenerators = {
   ColumnGenerator: DefaultColumnGenerator,
   RowGenerator: DefaultRowGenerator,
 };
