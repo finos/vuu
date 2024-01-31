@@ -707,27 +707,35 @@ export const getColumnsInViewport = (
 ): [RuntimeColumnDescriptor[], number] => {
   const visibleColumns: RuntimeColumnDescriptor[] = [];
   let preSpan = 0;
+  let rightPinnedOnly = false;
 
-  for (let offset = 0, i = 0; i < columns.length; i++) {
+  for (let columnOffset = 0, i = 0; i < columns.length; i++) {
     const column = columns[i];
-    // TODO we need to measure the pinned columns first
+    // TODO if we were to measure the pinned columns first,
+    // might be able to save rendering some columns ?
     if (column.hidden) {
       continue;
-    } else if (offset + column.width < vpStart) {
+    } else if (rightPinnedOnly) {
+      if (column.pin === "right") {
+        visibleColumns.push(column);
+      }
+    } else if (columnOffset + column.width < vpStart) {
       if (column.pin === "left") {
         visibleColumns.push(column);
-      } else if (offset + column.width + columns[i + 1]?.width > vpStart) {
+      } else if (
+        columnOffset + column.width + columns[i + 1]?.width >
+        vpStart
+      ) {
         visibleColumns.push(column);
       } else {
         preSpan += column.width;
       }
-    } else if (offset > vpEnd) {
-      visibleColumns.push(column);
-      break;
+    } else if (columnOffset > vpEnd) {
+      rightPinnedOnly = true;
     } else {
       visibleColumns.push(column);
     }
-    offset += column.width;
+    columnOffset += column.width;
   }
 
   return [visibleColumns, preSpan];

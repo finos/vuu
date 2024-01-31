@@ -191,6 +191,7 @@ export type GridModelReducer = Reducer<InternalTableModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
+  console.log(`TableModelReducer ${action.type}`);
   info?.(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init":

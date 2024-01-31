@@ -16,7 +16,7 @@ const manyColumnGenerator = RowGenerator(
 const tables: Record<TestTableName, Table> = {
   TwoHundredColumns: new Table(
     schemas.TwoHundredColumns,
-    new Array(1000).fill(1).map((_, i) => manyColumnGenerator(i)),
+    new Array(100).fill(1).map((_, i) => manyColumnGenerator(i)),
     buildDataColumnMap(schemas.TwoHundredColumns)
   ),
 };

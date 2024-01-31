@@ -29,6 +29,7 @@ export interface TableHeaderProps {
   onSortColumn: ColumnSortHandler;
   tableConfig: TableConfig;
   tableId: string;
+  virtualColSpan?: number;
 }
 
 export const TableHeader = memo(
@@ -43,6 +44,7 @@ export const TableHeader = memo(
     onSortColumn,
     tableConfig,
     tableId,
+    virtualColSpan = 0,
   }: TableHeaderProps) => {
     const {
       containerRef,
@@ -69,6 +71,13 @@ export const TableHeader = memo(
           </div>
         ))}
         <div className={`${classBase}-col-headers`} role="row">
+          {virtualColSpan > 0 ? (
+            <div
+              role="cell"
+              className="vuuTableCell"
+              style={{ width: virtualColSpan }}
+            />
+          ) : null}
           {columns.filter(isNotHidden).map((col, i) =>
             isGroupColumn(col) ? (
               <GroupHeaderCellNext

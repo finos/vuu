@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { applyWidthToColumns } from "../src/column-utils";
 import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { getColumnsInViewport } from "../src/column-utils";
 
 describe("applyWidthToColumns applies static width to columns correctly", () => {
   describe("static layouts", () => {
@@ -342,6 +343,116 @@ describe("Applies Flex layout correctly", () => {
         { name: "ID", label: "id", width: 100, key: 1 },
         { name: "ID", label: "id", width: 100, key: 2 },
       ]);
+
+describe("getColumnsInViewport", () => {
+  const allColumns = [
+    { name: "1", width: 100 },
+    { name: "2", width: 100 },
+    { name: "3", width: 100 },
+    { name: "4", width: 100 },
+    { name: "5", width: 100 },
+    { name: "6", width: 100 },
+    { name: "7", width: 100 },
+    { name: "8", width: 100 },
+    { name: "9", width: 100 },
+  ] as RuntimeColumnDescriptor[];
+
+  describe("WHEN at leftmost scroll position", () => {
+    describe("WHEN all columns fit within viewport, with space to spare", () => {
+      it("THEN all columns are returned", () => {
+        const columns = allColumns.slice(0, 3);
+        expect(getColumnsInViewport(columns, 0, 500)).toEqual([columns, 0]);
+      });
+    });
+    describe("WHEN all columns fit exactly within viewport", () => {
+      it("THEN all columns are returned", () => {
+        const columns = allColumns.slice(0, 5);
+        expect(getColumnsInViewport(columns, 0, 500)).toEqual([columns, 0]);
+      });
+    });
+    describe("WHEN all columns do not quite fit within viewport (within 200px tolerance)", () => {
+      it("THEN all columns are returned", () => {
+        const columns = allColumns.slice(0, 6);
+        expect(getColumnsInViewport(columns, 0, 500)).toEqual([columns, 0]);
+      });
+    });
+    describe("WHEN columns extends well beyond the viewport", () => {
+      it("THEN not all columns are returned", () => {
+        const columns = allColumns;
+        expect(getColumnsInViewport(columns, 0, 500)).toEqual([
+          columns.slice(0, 6),
+          0,
+        ]);
+      });
+      describe("AND some columns are pinned right", () => {
+        const columns = [
+          { name: "1", width: 100 },
+          { name: "2", width: 100 },
+          { name: "3", width: 100 },
+          { name: "4", width: 100 },
+          { name: "5", width: 100 },
+          { name: "6", width: 100 },
+          { name: "7", width: 100 },
+          { name: "8", width: 100 },
+          { name: "9", width: 100, pin: "right" },
+        ] as RuntimeColumnDescriptor[];
+
+        it("THEN pinned columns are always included", () => {
+          expect(getColumnsInViewport(columns, 0, 500)).toEqual([
+            columns.slice(0, 6).concat([
+              {
+                name: "9",
+                width: 100,
+                pin: "right",
+              } as RuntimeColumnDescriptor,
+            ]),
+            0,
+          ]);
+        });
+      });
+    });
+  });
+
+  describe("WHEN somewhere in middle of scrollable content", () => {
+    it("THEN only columns within visibleviewport are returned", () => {
+      const columns = allColumns;
+      expect(getColumnsInViewport(columns, 300, 600)).toEqual([
+        columns.slice(2, 7),
+        200,
+      ]);
+    });
+  });
+
+  describe("WHEN at end of scrollable content", () => {
+    it("THEN only columns within visibleviewport are returned", () => {
+      const columns = allColumns;
+      expect(getColumnsInViewport(columns, 500, 900)).toEqual([
+        columns.slice(4),
+        400,
+      ]);
+    });
+
+    describe("AND some columns are pinned left", () => {
+      const columns = [
+        { name: "1", width: 100, pin: "left" },
+        { name: "2", width: 100 },
+        { name: "3", width: 100 },
+        { name: "4", width: 100 },
+        { name: "5", width: 100 },
+        { name: "6", width: 100 },
+        { name: "7", width: 100 },
+        { name: "8", width: 100 },
+        { name: "9", width: 100 },
+      ] as RuntimeColumnDescriptor[];
+
+      it("THEN pinned columns are always included", () => {
+        expect(getColumnsInViewport(columns, 500, 900)).toEqual([
+          [
+            { name: "1", width: 100, pin: "left" } as RuntimeColumnDescriptor,
+          ].concat(columns.slice(4)),
+          300,
+        ]);
+      });
     });
   });
 });

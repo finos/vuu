@@ -30,6 +30,7 @@ export interface RowProps {
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   style?: CSSProperties;
+  virtualColSpan?: number;
   zebraStripes?: boolean;
 }
 
@@ -48,6 +49,7 @@ export const Row = memo(
     onClick,
     onDataEdited,
     onToggleGroup,
+    virtualColSpan = 0,
     zebraStripes = false,
     ...htmlAttributes
   }: RowProps) => {
@@ -98,6 +100,13 @@ export const Row = memo(
         style={style}
       >
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
+        {virtualColSpan > 0 ? (
+          <div
+            role="cell"
+            className="vuuTableCell"
+            style={{ width: virtualColSpan }}
+          />
+        ) : null}
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);

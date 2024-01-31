@@ -168,10 +168,10 @@ export const useTable = ({
   useLayoutEffectSkipFirst(() => {
     dispatchColumnAction({
       type: "init",
+      tableConfig: config,
       dataSource,
-      tableConfig,
     });
-  }, [tableConfig, dataSource, dispatchColumnAction]);
+  }, [config, dataSource, dispatchColumnAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
@@ -251,6 +251,7 @@ export const useTable = ({
   });
 
   const { requestScroll, ...scrollProps } = useTableScroll({
+    columns,
     getRowAtPosition,
     rowHeight,
     scrollingApiRef,
@@ -263,6 +264,8 @@ export const useTable = ({
   // TODO does this belong here ?
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
+      console.log("handleConfigEditedInSettingsPanel dispatch init");
+
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -578,14 +581,6 @@ export const useTable = ({
     [onRowClickProp, selectionHookOnRowClick]
   );
 
-  useLayoutEffectSkipFirst(() => {
-    dispatchColumnAction({
-      type: "init",
-      tableConfig: config,
-      dataSource,
-    });
-  }, [config, dataSource, dispatchColumnAction]);
-
   const onMoveColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
       console.log(`useTable onMoveColumn`, {
@@ -595,6 +590,7 @@ export const useTable = ({
         ...tableConfig,
         columns,
       };
+      console.log("onMoveColumn dispatch init");
 
       dispatchColumnAction({
         type: "init",
