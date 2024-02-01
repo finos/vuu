@@ -38,7 +38,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 
     val startIndex = Math.max(range.from - extraRowsCount, 0)
     val endIndex = range.to + extraRowsCount
-    val rowCount = if (startIndex > endIndex) endIndex - startIndex else 1
+    val rowCount = if (endIndex > startIndex) endIndex - startIndex else 1
 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
