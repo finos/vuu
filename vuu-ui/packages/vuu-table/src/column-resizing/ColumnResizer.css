@@ -1,5 +1,5 @@
 .vuuColumnResizerNext {
-    background-color: var(--columnResizer-color);
+    background-color: var(--columnResizeThumb-color);
     cursor: col-resize;
     height: var(--header-height);
     margin-left: var(--columnResizer-left, auto);

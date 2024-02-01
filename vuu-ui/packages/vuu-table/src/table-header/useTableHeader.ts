@@ -1,7 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useDragDrop as useDragDrop } from "@finos/vuu-ui-controls";
 import { moveColumnTo, visibleColumnAtIndex } from "@finos/vuu-utils";
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { MouseEventHandler, RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
 
 export interface TableHeaderHookProps
@@ -14,13 +14,38 @@ export interface TableHeaderHookProps
   onSortColumn: (column: ColumnDescriptor, addToExistingSort: boolean) => void;
 }
 
+// const mouseEnterHandler = (e: MouseEvent) => {
+//   console.log("mouse enter", {
+//     target: e.target,
+//   });
+// };
+// const mouseLeaveHandler = (e: MouseEvent) => {
+//   const el = e.target as HTMLElement;
+// };
+
 export const useTableHeader = ({
   columns,
   onMoveColumn,
   onSortColumn,
   tableConfig,
 }: TableHeaderHookProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
+    // if (el) {
+    //   el.addEventListener("mouseenter", mouseEnterHandler);
+    //   el.addEventListener("mouseleave", mouseLeaveHandler);
+    // } else {
+    //   containerRef.current?.removeEventListener(
+    //     "mouseenter",
+    //     mouseEnterHandler
+    //   );
+    //   containerRef.current?.removeEventListener(
+    //     "mouseleave",
+    //     mouseLeaveHandler
+    //   );
+    // }
+    containerRef.current = el;
+  }, []);
 
   const handleDropColumnHeader = useCallback(
     (moveFrom: number, moveTo: number) => {
@@ -83,10 +108,10 @@ export const useTableHeader = ({
   });
 
   return {
-    containerRef,
     draggableColumn,
     draggedColumnIndex: dragDropHook.draggedItemIndex,
     onClick: handleColumnHeaderClick,
     onMouseDown: columnHeaderDragMouseDown,
+    setContainerRef,
   };
 };

@@ -43,6 +43,8 @@
 }
 
 .vuuTableHeaderCell-resizing {
+  --columnResizeThumb-color: var(--vuu-color-purple-10);
+  --columnResizer-color: var(--vuu-color-purple-10);
   --columnResizer-height: var(--table-height);
 }
 

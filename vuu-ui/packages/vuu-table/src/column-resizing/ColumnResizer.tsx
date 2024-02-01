@@ -6,8 +6,8 @@ const NOOP = () => undefined;
 
 const baseClass = "vuuColumnResizerNext";
 export interface TableColumnResizerProps {
-  onDrag: (evt: MouseEvent, moveBy: number) => void;
-  onDragEnd: (evt: MouseEvent) => void;
+  onDrag: (evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => void;
+  onDragEnd: (evt: MouseEvent, totalDistanceMoved: number) => void;
   onDragStart: (evt: React.MouseEvent) => void;
 }
 
@@ -16,7 +16,7 @@ export const ColumnResizer = ({
   onDragEnd = NOOP,
   onDragStart = NOOP,
 }: TableColumnResizerProps) => {
-  const position = useRef(0);
+  const positionRef = useRef({ start: 0, now: 0 });
 
   const onMouseMove = useCallback(
     (e: MouseEvent) => {
@@ -28,12 +28,16 @@ export const ColumnResizer = ({
         e.preventDefault();
       }
 
+      const { current: position } = positionRef;
+
       const x = Math.round(e.clientX);
-      const moveBy = x - position.current;
-      position.current = x;
+      const moveBy = x - position.now;
+      const distanceMoved = position.now - position.start;
+
+      positionRef.current.now = x;
 
       if (moveBy !== 0) {
-        onDrag(e, moveBy);
+        onDrag(e, moveBy, distanceMoved);
       }
     },
     [onDrag]
@@ -43,15 +47,19 @@ export const ColumnResizer = ({
     (e: MouseEvent) => {
       window.removeEventListener("mouseup", onMouseUp);
       window.removeEventListener("mousemove", onMouseMove);
-      onDragEnd(e);
+
+      const { current: position } = positionRef;
+      const distanceMoved = position.now - position.start;
+      onDragEnd(e, distanceMoved);
     },
     [onDragEnd, onMouseMove]
   );
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      const { current: position } = positionRef;
       onDragStart(e);
-      position.current = Math.round(e.clientX);
+      position.now = position.start = Math.round(e.clientX);
 
       window.addEventListener("mouseup", onMouseUp);
       window.addEventListener("mousemove", onMouseMove);

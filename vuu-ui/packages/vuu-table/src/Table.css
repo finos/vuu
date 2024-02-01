@@ -123,6 +123,11 @@
     z-index: 1;
 }
 
+.vuuTable-col-headings:hover {
+  --columnResizer-height: var(--header-height);
+  --columnResizer-color: var(--salt-separable-tertiary-borderColor);
+}
+
   .vuuTable-col-headers {
     background-color: var(--table-background);
     white-space: nowrap;

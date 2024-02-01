@@ -47,11 +47,11 @@ export const TableHeader = memo(
     virtualColSpan = 0,
   }: TableHeaderProps) => {
     const {
-      containerRef,
       draggableColumn,
       draggedColumnIndex,
       onClick,
       onMouseDown,
+      setContainerRef,
     } = useTableHeader({
       columns,
       onMoveColumn,
@@ -60,7 +60,7 @@ export const TableHeader = memo(
     });
 
     return (
-      <div className={`${classBase}-col-headings`} ref={containerRef}>
+      <div className={`${classBase}-col-headings`} ref={setContainerRef}>
         {headings.map((colHeaders, i) => (
           <div className="vuuTable-heading" key={i}>
             {colHeaders.map(({ label, width }, j) => (

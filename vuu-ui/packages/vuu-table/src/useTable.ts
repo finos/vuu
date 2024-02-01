@@ -397,10 +397,11 @@ export const useTable = ({
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
-          if (isValidNumber(width)) {
-            setColumnSize(columnName, width);
-          }
+          // if (isValidNumber(width)) {
+          //   setColumnSize(columnName, width);
+          // }
         } else if (phase === "end") {
+          console.log(`final width ${width}`);
           if (isValidNumber(width)) {
             dispatchColumnAction({
               type: "resizeColumn",
@@ -420,6 +421,7 @@ export const useTable = ({
             );
           }
         } else {
+          console.log("begin resize");
           setStateColumns(undefined);
           dispatchColumnAction({
             type: "resizeColumn",
