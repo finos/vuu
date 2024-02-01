@@ -234,6 +234,8 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
+  /** A 1 based index for aria-colindex */
+  index?: number;
   isGroup?: boolean;
   isSystemColumn?: boolean;
   // TODO remove this - we alwayd rely on columnmap

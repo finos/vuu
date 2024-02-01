@@ -209,8 +209,8 @@ export const useTableScroll = ({
   useEffect(() => {
     const [visibleColumns, offset] = getColumnsInViewport(
       columns,
-      scrollbarContainerPosRef.current.scrollLeft,
-      scrollbarContainerPosRef.current.scrollLeft + viewportWidth + 200
+      contentContainerPosRef.current.scrollLeft,
+      contentContainerPosRef.current.scrollLeft + viewportWidth + 200
     );
 
     if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {

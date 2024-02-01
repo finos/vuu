@@ -306,6 +306,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,
+      index: index + 1,
       label: getLabel(label, columnFormatHeader),
       name,
       originalIdx: index,

@@ -81,6 +81,7 @@ export const TableHeader = memo(
           {columns.filter(isNotHidden).map((col, i) =>
             isGroupColumn(col) ? (
               <GroupHeaderCellNext
+                aria-colindex={col.index}
                 column={col}
                 data-index={i}
                 key={col.name}
@@ -90,6 +91,7 @@ export const TableHeader = memo(
               />
             ) : (
               <HeaderCell
+                aria-colindex={col.index}
                 className={cx({
                   "vuuDraggable-dragAway": i === draggedColumnIndex,
                 })}

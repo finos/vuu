@@ -38,6 +38,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -158,7 +159,7 @@ export const useTable = ({
   }, []);
 
   const {
-    columns: runtimeColumns,
+    columns,
     dispatchColumnAction,
     headings,
     tableAttributes,
@@ -184,22 +185,6 @@ export const useTable = ({
     },
     [dataSource, dispatchColumnAction, onConfigChange]
   );
-
-  /**
-  stateColumns are required only for the duration of a column resize operation.
-  We want to minimize the scope of rendering whilst a resize operation is in progress
-  and we do not need to persist transient size values. When the resize is complete, we
-  trigger a config change, clear the stateColumns and revert to using the runtimeColumns
-  managed by the table model, to which the ersize change will have been applied.
-   */
-  const [stateColumns, setStateColumns] = useState<RuntimeColumnDescriptor[]>();
-  const [columns, setColumnSize] = useMemo(() => {
-    const setSize = (columnName: string, width: number) => {
-      const cols = updateColumn(runtimeColumns, columnName, { width });
-      setStateColumns(cols);
-    };
-    return [stateColumns ?? runtimeColumns, setSize];
-  }, [runtimeColumns, stateColumns]);
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
@@ -392,16 +377,19 @@ export const useTable = ({
     [dataSource]
   );
 
+  const resizeCells = useRef<HTMLElement[] | undefined>();
+
   const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
-          // if (isValidNumber(width)) {
-          //   setColumnSize(columnName, width);
-          // }
+          resizeCells.current?.forEach((cell) => {
+            console.log();
+            cell.style.width = `${width}px`;
+          });
         } else if (phase === "end") {
-          console.log(`final width ${width}`);
+          resizeCells.current = undefined;
           if (isValidNumber(width)) {
             dispatchColumnAction({
               type: "resizeColumn",
@@ -409,7 +397,6 @@ export const useTable = ({
               column,
               width,
             });
-            setStateColumns(undefined);
             onConfigChange?.(
               stripInternalProperties(
                 updateTableConfig(tableConfig, {
@@ -421,8 +408,12 @@ export const useTable = ({
             );
           }
         } else {
-          console.log("begin resize");
-          setStateColumns(undefined);
+          const byColIndex = `[aria-colindex='${column.index}']`;
+          resizeCells.current = Array.from(
+            containerRef.current?.querySelectorAll(
+              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`
+            ) ?? []
+          );
           dispatchColumnAction({
             type: "resizeColumn",
             phase,
@@ -436,7 +427,7 @@ export const useTable = ({
         );
       }
     },
-    [columns, tableConfig, dispatchColumnAction, onConfigChange]
+    [columns, dispatchColumnAction, onConfigChange, tableConfig, containerRef]
   );
 
   const onToggleGroup = useCallback(
