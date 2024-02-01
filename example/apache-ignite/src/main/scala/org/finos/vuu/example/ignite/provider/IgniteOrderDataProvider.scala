@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
+  private val extraRowsCount = 5000 //fetch extra rows to reduce need to re-fetch when view port change by small amount
+
   override def runOnce(viewPort: ViewPort): Unit = {
 
     val internalTable = viewPort.table.asTable.asInstanceOf[VirtualizedSessionTable]
@@ -34,9 +36,9 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
         clause.toSql(internalTable.getTableDef)
       }
 
-    val rowCount = if(range.to > range.from) range.to - range.from else 1
-    val startIndex = Math.max(range.from - 5000, 0)
-    val endIndex = range.to + 5000
+    val startIndex = Math.max(range.from - extraRowsCount, 0)
+    val endIndex = range.to + extraRowsCount
+    val rowCount = if (startIndex > endIndex) endIndex - startIndex else 1
 
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
@@ -45,7 +47,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)(implicit 
 
     logger.info(s"Loading data between $startIndex and $endIndex")
 
-    val iterator = igniteStore.findChildOrder(sqlFilterQueries = sqlFilterClause, sqlSortQueries = sqlSortQueries, startIndex = startIndex, rowCount = endIndex)
+    val iterator = igniteStore.findChildOrder(sqlFilterQueries = sqlFilterClause, sqlSortQueries = sqlSortQueries, rowCount = rowCount, startIndex = startIndex)
 
     logger.info(s"Loaded data between $startIndex and $endIndex")
 
