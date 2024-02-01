@@ -66,6 +66,7 @@
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.9</scalatest.version>
+        <scalamock.version>5.2.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
         <jackson.version>2.14.2</jackson.version>
         <aeron.version>1.17.0</aeron.version>
@@ -178,6 +179,13 @@
                     <artifactId>scala-reflect</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock_2.13</artifactId>
+            <version>${scalamock.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

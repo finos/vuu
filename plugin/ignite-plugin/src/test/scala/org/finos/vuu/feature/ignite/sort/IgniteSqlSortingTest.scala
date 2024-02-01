@@ -2,9 +2,11 @@ package org.finos.vuu.feature.ignite.sort
 
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.feature.ignite.TestInput.createTestOrderEntity
+import org.finos.vuu.feature.ignite.schema.{SchemaField, SchemaMapper}
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
+import org.scalamock.scalatest.MockFactory
 
-class IgniteSqlSortingTest extends IgniteTestsBase {
+class IgniteSqlSortingTest extends IgniteTestsBase with MockFactory {
 
   val sortBuilder = new IgniteSqlSortBuilder()
 
@@ -114,10 +116,17 @@ class IgniteSqlSortingTest extends IgniteTestsBase {
   private def applySort(columnName: String, sortDirection: SortDirection.TYPE): Iterable[TestOrderEntity] = {
     applySort(Map((columnName, sortDirection)))
   }
-  private def applySort(columnNameToDirection:Map[String, SortDirection.TYPE]): Iterable[TestOrderEntity] = {
-    val sortQuery = sortBuilder.toSql(columnNameToDirection, x => mapToMatchingIgniteColumnName(x))
+
+  private def applySort(columnNameToDirection: Map[String, SortDirection.TYPE]): Iterable[TestOrderEntity] = {
+    val sortQuery = sortBuilder.toSql(columnNameToDirection, mockSchemaMapper(columnNameToDirection.keys))
     igniteTestStore.getSortBy(sortQuery)
   }
 
-  private def mapToMatchingIgniteColumnName(tableColumnName:String) = Some(tableColumnName)
+  private def mockSchemaMapper(fields: Iterable[String]): SchemaMapper = {
+    val schemaMapper = stub[SchemaMapper]
+    fields.foreach (field =>
+      (schemaMapper.externalSchemaField _).when(field).returns(Option(SchemaField(field, classOf[Any], -1)))
+    )
+    schemaMapper
+  }
 }

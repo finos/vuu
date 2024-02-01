@@ -6,6 +6,7 @@ import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, Ind
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore, ParentOrder}
+import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -58,25 +59,17 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     parentOrderCache.get(id)
   }
 
-  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterable[ChildOrder] = {
+  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): LazyList[ChildOrder] = {
     val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
     val orderByClause = if(sqlSortQueries == null || sqlSortQueries.isEmpty) " order by id" else s" order by $sqlSortQueries"
     val query = new SqlFieldsQuery(s"select * from ChildOrder$whereClause$orderByClause limit ? offset ?")
     query.setArgs(rowCount, startIndex)
 
-    val results = childOrderCache.query(query)
+    val results = LazyList.from(childOrderCache.query(query).asScala).map(i => toChildOrder(i.asScala.toList))
 
-    var counter = 0
-    val buffer = mutable.ListBuffer[ChildOrder]()
-    results.forEach(item => {
-      buffer.addOne(toChildOrder(item))
-      counter += 1
-    })
+    logger.info(s"Loaded Ignite ChildOrder for ${results.size} rows, from index : $startIndex where $whereClause order by $sqlSortQueries")
 
-    logger.info(s"Loaded Ignite ChildOrder for $counter rows, from index : $startIndex where $whereClause order by $sqlSortQueries")
-
-    buffer
-
+    results
   }
   def findChildOrderFilteredBy(filterQueryCriteria: List[IndexQueryCriterion]): Iterable[ChildOrder] = {
   //  val filter: IgniteBiPredicate[Int, ChildOrder]  = (key, p) => p.openQty > 0
@@ -102,30 +95,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
       .map(x => x.getValue)
   }
 
-  // todo - make it metadata aware and extract to another class.
-  private def toChildOrder(cols: java.util.List[_]): ChildOrder = {
-    ChildOrder(
-      parentId = cols.get(0).asInstanceOf[Int],
-      id = cols.get(1).asInstanceOf[Int],
-      ric = cols.get(2).asInstanceOf[String],
-      price = cols.get(3).asInstanceOf[Double],
-      quantity = cols.get(4).asInstanceOf[Int],
-      side = cols.get(5).asInstanceOf[String],
-      account = cols.get(6).asInstanceOf[String],
-      strategy = cols.get(7).asInstanceOf[String],
-      exchange = cols.get(8).asInstanceOf[String],
-      ccy = cols.get(9).asInstanceOf[String],
-      volLimit = cols.get(10).asInstanceOf[Double],
-      filledQty = cols.get(11).asInstanceOf[Int],
-      openQty = cols.get(12).asInstanceOf[Int],
-      averagePrice = cols.get(13).asInstanceOf[Double],
-      status = cols.get(14).asInstanceOf[String]
-    )
-  }
-
-  def parentOrderCount(): Long = {
-    parentOrderCache.sizeLong(CachePeekMode.ALL)
-  }
+  private def toChildOrder = IgniteChildOrderEntity.getListToChildOrder
 
   def childOrderCount(): Long = {
     childOrderCache.sizeLong(CachePeekMode.ALL)
@@ -137,14 +107,10 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
  //   val query = new SqlFieldsQuery(s"select * from ChildOrder")
     val results = childOrderCache.query(query)
 
-    var counter = 0
     val buffer = mutable.ListBuffer[ChildOrder]()
-    results.forEach(item => {
-      buffer.addOne(toChildOrder(item))
-      counter += 1
-    })
+    results.forEach(item => buffer.addOne(toChildOrder(item.asScala.toList)))
 
-    logger.debug(s"Loaded $counter rows, from index : $startIndex, rowCou")
+    logger.debug(s"Loaded ${buffer.length} rows, from index : $startIndex, rowCou")
 
     buffer
   }

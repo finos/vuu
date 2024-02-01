@@ -13,7 +13,7 @@ object IgniteOrderLoaderMain extends App {
   implicit val clock: Clock = new DefaultClock()
   implicit val lifecycleContainer = new LifecycleContainer()
   implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
-  implicit val orderStore: OrderStore = IgniteOrderStore.apply()
+  implicit val orderStore: OrderStore = IgniteOrderStore()
 
   private val ordersModel = new ParentChildOrdersModel()
   private val childOrderCounter = new LongAdder()

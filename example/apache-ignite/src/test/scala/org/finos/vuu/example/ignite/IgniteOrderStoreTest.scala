@@ -170,7 +170,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     val updatedParentOrder = parentOrder.copy(activeChildren = parentOrder.activeChildren + 1)
     orderStore.storeChildOrder(
       updatedParentOrder,
-      TestUtils.createChildOrder(parentOrder.id, childOrderId))
+      TestUtils.createChildOrder(childOrderId, parentId = parentOrder.id))
     updatedParentOrder
   }
 
