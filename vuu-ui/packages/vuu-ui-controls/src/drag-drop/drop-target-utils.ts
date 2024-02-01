@@ -325,7 +325,7 @@ export const getNextDropTarget = (
       }
     }
   }
-  throw Error("no dropTraget identified");
+  throw Error("no dropTarget identified");
 };
 
 /**

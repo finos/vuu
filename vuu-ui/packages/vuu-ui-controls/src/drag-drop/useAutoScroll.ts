@@ -39,7 +39,7 @@ export const useAutoScroll = ({
   );
 
   const startScrolling = useCallback(
-    (direction: "fwd" | "bwd", scrollRate: number, scrollUnit = 30) => {
+    (direction: "fwd" | "bwd", scrollRate: number, scrollUnit = 100) => {
       const { current: container } = containerRef;
       if (container) {
         const { SCROLL_POS, SCROLL_SIZE, CLIENT_SIZE } =
@@ -52,6 +52,7 @@ export const useAutoScroll = ({
         const maxScroll =
           direction === "fwd" ? scrollSize - clientSize - scrollPos : scrollPos;
         const nextScroll = Math.min(maxScroll, scrollUnit);
+        console.log(`nextScroll ${nextScroll}`);
 
         if (direction === "fwd") {
           lastScrollDirectionRef.current = "fwd";

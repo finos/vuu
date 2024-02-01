@@ -5,6 +5,7 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { TableConfig } from "@finos/vuu-table-types";
+import { getSchema } from "@finos/vuu-data-test";
 import { useMemo } from "react";
 
 let displaySequence = 1;
@@ -135,6 +136,34 @@ export const DefaultColumnList = () => {
   );
 };
 DefaultColumnList.displaySequence = displaySequence++;
+
+export const ManyColumnList = () => {
+  const columns = useMemo<ColumnItem[]>(() => {
+    const schema = getSchema("TwoHundredColumns");
+    return schema.columns.map((col) => ({
+      ...col,
+      subscribed: true,
+      isCalculated: false,
+    }));
+  }, []);
+
+  const handleChange = () => {
+    console.log("handleChange");
+  };
+  const handleMoveListItem = () => {
+    console.log("handleMoveListItem");
+  };
+
+  return (
+    <ColumnList
+      columnItems={columns}
+      style={{ width: 300, height: 600 }}
+      onChange={handleChange}
+      onMoveListItem={handleMoveListItem}
+    />
+  );
+};
+ManyColumnList.displaySequence = displaySequence++;
 
 export const DefaultSettingsPanel = () => {
   const [availableColumns, tableConfig] = useMemo<
