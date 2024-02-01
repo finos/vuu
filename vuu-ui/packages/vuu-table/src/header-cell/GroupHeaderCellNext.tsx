@@ -104,7 +104,7 @@ export const GroupHeaderCellNext = ({
             <GroupColumnPill
               {...columnPillProps}
               column={column}
-              key={column.key}
+              key={column.name}
             />
           );
         })}

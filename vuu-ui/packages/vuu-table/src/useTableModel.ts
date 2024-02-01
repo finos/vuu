@@ -285,16 +285,12 @@ const getLabel = (
 
 const columnDescriptorToRuntimeColumDescriptor =
   (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
-  (
-    column: ColumnDescriptor & { key?: number },
-    index: number
-  ): RuntimeColumnDescriptor => {
+  (column: ColumnDescriptor, index: number): RuntimeColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       tableAttributes;
     const serverDataType = getDataType(column, tableSchema);
     const {
       align = getDefaultAlignment(serverDataType),
-      key,
       name,
       label = getColumnLabel(column),
       width = columnDefaultWidth,
@@ -311,7 +307,6 @@ const columnDescriptorToRuntimeColumDescriptor =
         ? buildValidationChecker(column.type.renderer.rules)
         : undefined,
       label: getLabel(label, columnFormatHeader),
-      key: key ?? index + KEY_OFFSET,
       name,
       originalIdx: index,
       serverDataType,
@@ -322,10 +317,7 @@ const columnDescriptorToRuntimeColumDescriptor =
     if (isGroupColumn(runtimeColumnWithDefaults)) {
       runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
         (col) =>
-          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(
-            col,
-            col.key
-          )
+          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, index)
       );
     }
 

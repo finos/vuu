@@ -237,7 +237,7 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   isGroup?: boolean;
   isSystemColumn?: boolean;
   // TODO remove this - we alwayd rely on columnmap
-  key: number;
+  // key: number;
   label: string;
   locked?: boolean;
   marginLeft?: number;

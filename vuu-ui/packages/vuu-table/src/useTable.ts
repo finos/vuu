@@ -436,12 +436,12 @@ export const useTable = ({
         );
       }
     },
-    [columns, tableConfig, dispatchColumnAction, onConfigChange, setColumnSize]
+    [columns, tableConfig, dispatchColumnAction, onConfigChange]
   );
 
   const onToggleGroup = useCallback(
     (row: DataSourceRow, column: RuntimeColumnDescriptor) => {
-      const isJson = isJsonGroup(column, row);
+      const isJson = isJsonGroup(column, row, columnMap);
       const key = row[KEY];
 
       if (row[IS_EXPANDED]) {
@@ -474,7 +474,7 @@ export const useTable = ({
         }
       }
     },
-    [columns, dataSource, dispatchColumnAction]
+    [columnMap, columns, dataSource, dispatchColumnAction]
   );
 
   const {

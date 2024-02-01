@@ -83,12 +83,12 @@ export const Row = memo(
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
-        if (isGroupColumn(column) || isJsonGroup(column, row)) {
+        if (isGroupColumn(column) || isJsonGroup(column, row, columnMap)) {
           evt.stopPropagation();
           onToggleGroup?.(row, column);
         }
       },
-      [onToggleGroup, row]
+      [columnMap, onToggleGroup, row]
     );
 
     return (
@@ -116,7 +116,7 @@ export const Row = memo(
             <Cell
               column={column}
               columnMap={columnMap}
-              key={column.key}
+              key={column.name}
               onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
               onDataEdited={onDataEdited}
               row={row}
