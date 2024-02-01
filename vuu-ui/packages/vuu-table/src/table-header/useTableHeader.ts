@@ -14,15 +14,6 @@ export interface TableHeaderHookProps
   onSortColumn: (column: ColumnDescriptor, addToExistingSort: boolean) => void;
 }
 
-// const mouseEnterHandler = (e: MouseEvent) => {
-//   console.log("mouse enter", {
-//     target: e.target,
-//   });
-// };
-// const mouseLeaveHandler = (e: MouseEvent) => {
-//   const el = e.target as HTMLElement;
-// };
-
 export const useTableHeader = ({
   columns,
   onMoveColumn,
@@ -30,21 +21,14 @@ export const useTableHeader = ({
   tableConfig,
 }: TableHeaderHookProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
-    // if (el) {
-    //   el.addEventListener("mouseenter", mouseEnterHandler);
-    //   el.addEventListener("mouseleave", mouseLeaveHandler);
-    // } else {
-    //   containerRef.current?.removeEventListener(
-    //     "mouseenter",
-    //     mouseEnterHandler
-    //   );
-    //   containerRef.current?.removeEventListener(
-    //     "mouseleave",
-    //     mouseLeaveHandler
-    //   );
-    // }
     containerRef.current = el;
+    if (el) {
+      scrollingContainerRef.current = el.closest(".vuuTable-contentContainer");
+    } else {
+      scrollingContainerRef.current = null;
+    }
   }, []);
 
   const handleDropColumnHeader = useCallback(
@@ -102,9 +86,10 @@ export const useTableHeader = ({
     allowDragDrop: true,
     containerRef,
     draggableClassName: `vuuTable`,
+    itemQuery: ".vuuTableHeaderCell",
     onDrop: handleDropColumnHeader,
     orientation: "horizontal",
-    itemQuery: ".vuuTableHeaderCell",
+    scrollingContainerRef,
   });
 
   return {

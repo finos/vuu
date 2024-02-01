@@ -5,6 +5,7 @@ import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { SchemaColumn } from "packages/vuu-data-types";
 import { ColumnDescriptor } from "packages/vuu-table-types";
+import { DemoTableContainer } from "./DemoTableContainer";
 
 let displaySequence = 1;
 
@@ -37,7 +38,9 @@ const TestTable = ({ tableName }: { tableName: TestTableName }) => {
       menuActionHandler={handleMenuAction}
       menuBuilder={buildViewserverMenuOptions}
     >
-      <Table {...tableProps} renderBufferSize={50} />
+      <DemoTableContainer>
+        <Table {...tableProps} renderBufferSize={50} />
+      </DemoTableContainer>
     </ContextMenuProvider>
   );
 };

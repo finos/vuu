@@ -95,6 +95,7 @@ export const useDragDrop: DragDropHook = ({
   onDrop,
   onDropSettle,
   orientation,
+  scrollingContainerRef,
   ...dragDropProps
 }) => {
   const dragBoundaries = useRef<DragBoundary>({
@@ -240,6 +241,7 @@ export const useDragDrop: DragDropHook = ({
           scrollPos > 0 &&
           mousePos - mouseOffset[POS] <= dragBoundaries.current.start;
         const fwd = canScrollFwd && mousePos - mouseOffset[POS] >= viewportEnd;
+
         return bwd ? "bwd" : fwd ? "fwd" : "";
       }
     },
@@ -300,7 +302,6 @@ export const useDragDrop: DragDropHook = ({
   } = useDragDropHook({
     ...dragDropProps,
     containerRef,
-    // draggableRef,
     isDragSource,
     isDropTarget,
     itemQuery,
@@ -473,10 +474,9 @@ export const useDragDrop: DragDropHook = ({
       const { current: target } = mousedownElementRef;
       const dragElement = getDraggableElement(target, itemQuery);
       if (container && dragElement) {
-        const scrollableContainer = getScrollableContainer(
-          container,
-          itemQuery
-        );
+        const scrollableContainer =
+          scrollingContainerRef?.current ??
+          getScrollableContainer(container, itemQuery);
 
         isScrollableRef.current = isContainerScrollable(
           scrollableContainer,
@@ -484,7 +484,7 @@ export const useDragDrop: DragDropHook = ({
         );
         scrollableContainerRef.current = scrollableContainer;
 
-        const containerRect = container.getBoundingClientRect();
+        const containerRect = scrollableContainer.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(
@@ -529,6 +529,7 @@ export const useDragDrop: DragDropHook = ({
       itemQuery,
       onDragStart,
       orientation,
+      scrollingContainerRef,
       setDragBoundaries,
       terminateDrag,
     ]

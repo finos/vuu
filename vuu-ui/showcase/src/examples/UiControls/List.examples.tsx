@@ -265,12 +265,15 @@ export const DraggableListItems = () => {
     <List
       aria-label="Drag Drop Listbox example"
       allowDragDrop
+      data-showcase-center
       // itemHeight={24}
       onSelect={handleSelect}
       maxWidth={292}
       onMoveListItem={handleDrop}
       selectionStrategy="multiple"
       source={data}
+      style={{ border: "solid 1px blue" }}
+      width={300}
     />
   );
 };

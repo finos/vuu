@@ -195,10 +195,6 @@ export const useTableScroll = ({
     viewportWidth,
   } = viewportMeasurements;
 
-  useEffect(() => {
-    console.log(`useTableScroll columns changed`);
-  }, [columns]);
-
   const columnsWithinViewportRef = useRef<RuntimeColumnDescriptor[]>([]);
   const [columnsWithinViewport, setColumnsWithinViewport] = useState<
     RuntimeColumnDescriptor[]

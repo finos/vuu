@@ -99,6 +99,7 @@ export type DropHandler = (
 
 export interface DragDropProps {
   allowDragDrop?: boolean | dragStrategy;
+  containerRef: RefObject<HTMLElement>;
   /** this is the className that will be assigned during drag to the dragged element  */
   draggableClassName: string;
   extendedDropZone?: boolean;
@@ -106,12 +107,12 @@ export interface DragDropProps {
   id?: string;
   isDragSource?: boolean;
   isDropTarget?: boolean;
+  itemQuery?: string;
   onDragStart?: DragStartHandler;
   onDrop: DropHandler;
   onDropSettle?: (toIndex: number) => void;
   orientation: orientationType;
-  containerRef: RefObject<HTMLElement>;
-  itemQuery?: string;
+  scrollingContainerRef?: RefObject<HTMLElement>;
   // selected?: CollectionItem<unknown> | CollectionItem<unknown>[] | null;
   viewportRange?: ViewportRange;
 }

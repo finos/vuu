@@ -22,7 +22,6 @@ import {
   isGroupColumn,
   isPinned,
   logger,
-  metadataKeys,
   replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
@@ -41,7 +40,6 @@ import { Reducer, useReducer } from "react";
 const { info } = logger("useTableModel");
 
 const DEFAULT_COLUMN_WIDTH = 100;
-const KEY_OFFSET = metadataKeys.count;
 
 const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
   serverDataType === undefined;
@@ -191,7 +189,6 @@ export type GridModelReducer = Reducer<InternalTableModel, GridModelAction>;
 export type ColumnActionDispatch = (action: GridModelAction) => void;
 
 const columnReducer: GridModelReducer = (state, action) => {
-  console.log(`TableModelReducer ${action.type}`);
   info?.(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init":

@@ -18,7 +18,7 @@ import {
   DragStartHandler,
   MeasuredProps,
   MeasuredSize,
-  useDragDrop as useDragDrop,
+  useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
@@ -576,9 +576,6 @@ export const useTable = ({
 
   const onMoveColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
-      console.log(`useTable onMoveColumn`, {
-        columns,
-      });
       const newTableConfig = {
         ...tableConfig,
         columns,
