@@ -23,7 +23,6 @@ export const useAutoScroll = ({
 
   const stopScrolling = useCallback(
     (atEnd = false) => {
-      console.log("[useAutoScroll] stopScrolling");
       if (scrollTimer.current !== null) {
         clearTimeout(scrollTimer.current);
         scrollTimer.current = null;
@@ -52,7 +51,6 @@ export const useAutoScroll = ({
         const maxScroll =
           direction === "fwd" ? scrollSize - clientSize - scrollPos : scrollPos;
         const nextScroll = Math.min(maxScroll, scrollUnit);
-        console.log(`nextScroll ${nextScroll}`);
 
         if (direction === "fwd") {
           lastScrollDirectionRef.current = "fwd";
@@ -65,7 +63,10 @@ export const useAutoScroll = ({
         }
 
         if (nextScroll === maxScroll) {
-          stopScrolling(true);
+          // delay this to allow any scroll listeners to do their work
+          requestAnimationFrame(() => {
+            stopScrolling(true);
+          });
         } else {
           isScrolling.current = true;
           scrollTimer.current = window.setTimeout(() => {

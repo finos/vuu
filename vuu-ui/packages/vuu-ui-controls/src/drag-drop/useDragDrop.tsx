@@ -33,11 +33,16 @@ import { useDragDropIndicator } from "./useDragDropIndicator";
 import { useDragDropNaturalMovement } from "./useDragDropNaturalMovement";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
 
+const NULL_DROP_OPTIONS = {
+  fromIndex: -1,
+  toIndex: -1,
+} as const;
+
 const NULL_DRAG_DROP_RESULT = {
   beginDrag: () => undefined,
   drag: () => undefined,
   draggableRef: { current: null },
-  drop: () => undefined,
+  drop: () => NULL_DROP_OPTIONS,
   isDragging: false,
   isScrolling: false,
   handleScrollStart: () => undefined,
@@ -271,18 +276,18 @@ export const useDragDrop: DragDropHook = ({
   });
 
   const handleDrop = useCallback<DropHandler>(
-    (fromIndex, toIndex, options) => {
+    (options) => {
       //TODO why do we need both this and dropIndexRef ?
-      dropPosRef.current = toIndex;
+      dropPosRef.current = options.toIndex;
       if (options.isExternal) {
-        onDrop?.(fromIndex, toIndex, {
+        onDrop?.({
           ...options,
           payload: dragDropStateRef.current?.payload,
         });
       } else {
-        onDrop?.(fromIndex, toIndex, options);
+        onDrop?.(options);
       }
-      dropIndexRef.current = toIndex;
+      dropIndexRef.current = options.toIndex;
       if (id) {
         onEndOfDragOperation?.(id);
       }
@@ -305,7 +310,6 @@ export const useDragDrop: DragDropHook = ({
     isDragSource,
     isDropTarget,
     itemQuery,
-    onDrop: handleDrop,
     orientation,
   });
   // To avoid circular ref between hooks
@@ -365,6 +369,7 @@ export const useDragDrop: DragDropHook = ({
       const lastClientPos = mousePosRef.current[POS];
       const dragDistance = Math.abs(lastClientPos - clientPos);
       const { current: dragDropState } = dragDropStateRef;
+      const { current: boundary } = dragBoundaries;
 
       if (dragHandedOvertoProvider(dragDistance, clientContraPos)) {
         return;
@@ -385,26 +390,29 @@ export const useDragDrop: DragDropHook = ({
           const mouseMoveDirection = lastClientPos < clientPos ? "fwd" : "bwd";
           const scrollDirection = getScrollDirection(clientPos);
           const dragPos = mousePosRef.current[POS] - mouseOffset[POS];
+          const START = orientation === "horizontal" ? "left" : "top";
 
           if (
             scrollDirection &&
             isScrollableRef.current &&
             !isScrolling.current
           ) {
-            handleScrollStart?.();
+            handleScrollStart?.(scrollDirection);
             startScrolling(scrollDirection, 1);
+
+            if (scrollDirection === "fwd") {
+              draggableElement.style[START] = `${boundary.end}px`;
+            } else {
+              draggableElement.style[START] = `${boundary.start}px`;
+            }
           } else if (!scrollDirection && isScrolling.current) {
             stopScrolling();
           }
 
           if (!isScrolling.current) {
             const renderDragPos = Math.round(
-              Math.max(
-                dragBoundaries.current.start,
-                Math.min(dragBoundaries.current.end, dragPos)
-              )
+              Math.max(boundary.start, Math.min(boundary.end, dragPos))
             );
-            const START = orientation === "horizontal" ? "left" : "top";
             draggableElement.style[START] = `${renderDragPos}px`;
             drag(renderDragPos, mouseMoveDirection);
           }
@@ -427,15 +435,15 @@ export const useDragDrop: DragDropHook = ({
     if (dragDropStateRef.current) {
       settlingItemRef.current = dragDropStateRef.current.draggableElement;
     }
-    // The implementation hook is currently invoking the onDrop callback, we should move it into here
-    drop();
+    const dropOptions = drop();
+    handleDrop(dropOptions);
     setDraggableStatus((status) => ({
       ...status,
       draggedItemIndex: -1,
       isDragging: false,
     }));
     // TODO clear the dragDropState
-  }, [drop, removeDragHandlers]);
+  }, [drop, handleDrop, removeDragHandlers]);
 
   dragMouseMoveHandlerRef.current = dragMouseMoveHandler;
   dragMouseUpHandlerRef.current = dragMouseUpHandler;
@@ -473,18 +481,17 @@ export const useDragDrop: DragDropHook = ({
       const { current: container } = containerRef;
       const { current: target } = mousedownElementRef;
       const dragElement = getDraggableElement(target, itemQuery);
-      if (container && dragElement) {
-        const scrollableContainer =
-          scrollingContainerRef?.current ??
-          getScrollableContainer(container, itemQuery);
-
+      const scrollableContainer =
+        scrollingContainerRef?.current ??
+        getScrollableContainer(container, itemQuery);
+      if (container && scrollableContainer && dragElement) {
         isScrollableRef.current = isContainerScrollable(
           scrollableContainer,
           orientation
         );
         scrollableContainerRef.current = scrollableContainer;
 
-        const containerRect = scrollableContainer.getBoundingClientRect();
+        const containerRect = scrollableContainer?.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(

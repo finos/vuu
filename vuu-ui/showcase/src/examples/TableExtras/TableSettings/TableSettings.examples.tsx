@@ -4,9 +4,9 @@ import {
   ColumnList,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { TableConfig } from "@finos/vuu-table-types";
+import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { getSchema } from "@finos/vuu-data-test";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
@@ -138,7 +138,7 @@ export const DefaultColumnList = () => {
 DefaultColumnList.displaySequence = displaySequence++;
 
 export const ManyColumnList = () => {
-  const columns = useMemo<ColumnItem[]>(() => {
+  const initialColumns = useMemo<ColumnItem[]>(() => {
     const schema = getSchema("TwoHundredColumns");
     return schema.columns.map((col) => ({
       ...col,
@@ -147,11 +147,24 @@ export const ManyColumnList = () => {
     }));
   }, []);
 
+  const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
+
+  const handleMoveListItem = useCallback((fromIndex, toIndex) => {
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setColumns((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
+  }, []);
+
   const handleChange = () => {
     console.log("handleChange");
-  };
-  const handleMoveListItem = () => {
-    console.log("handleMoveListItem");
   };
 
   return (

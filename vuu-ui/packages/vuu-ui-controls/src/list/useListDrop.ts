@@ -60,7 +60,8 @@ export const useListDrop = <Item>({
   );
 
   const handleDrop = useCallback<DropHandler>(
-    (fromIndex, toIndex, options) => {
+    (options) => {
+      const { fromIndex, toIndex } = options;
       if (hasSelection(selected)) {
         selectedByIndexRef.current = reorderSelectedIndices(
           selected,
@@ -70,7 +71,7 @@ export const useListDrop = <Item>({
       }
 
       if (options.isExternal) {
-        onDrop?.(fromIndex, toIndex, options);
+        onDrop?.(options);
       } else {
         onMoveListItem?.(fromIndex, toIndex);
       }

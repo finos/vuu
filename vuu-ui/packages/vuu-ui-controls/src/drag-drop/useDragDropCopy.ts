@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 
-import {
+import type {
   InternalDragDropProps,
   InternalDragHookResult,
   ViewportRange,
@@ -27,7 +27,7 @@ export const useDragDropCopy = ({
   );
 
   const drag = useCallback(() => undefined, []);
-  const drop = useCallback(() => undefined, []);
+  const drop = useCallback(() => ({ fromIndex: -1, toIndex: -1 }), []);
 
   return {
     beginDrag,

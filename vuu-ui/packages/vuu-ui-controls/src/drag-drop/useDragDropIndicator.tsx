@@ -5,6 +5,7 @@ import {
   InternalDragHookResult,
   Direction,
   ViewportRange,
+  DropOptions,
 } from "./dragDropTypes";
 import { useDropIndicator } from "./useDropIndicator";
 
@@ -24,7 +25,6 @@ const NOT_OVERFLOWED = ':not([data-overflowed="true"])';
 const NOT_HIDDEN = ':not([aria-hidden="true"])';
 
 export const useDragDropIndicator = ({
-  onDrop,
   orientation = "horizontal",
   containerRef,
   itemQuery = "*",
@@ -281,7 +281,7 @@ export const useDragDropIndicator = ({
     [containerRef, orientation, positionDropIndicator]
   );
 
-  const drop = useCallback(() => {
+  const drop = useCallback((): DropOptions => {
     clearSpacer();
     const { current: draggedItem } = draggedItemRef;
     const { current: dropTarget } = dropTargetRef;
@@ -300,41 +300,36 @@ export const useDragDropIndicator = ({
       dropTargetRef.current = null;
       dragDirectionRef.current = undefined;
 
+      setDropIndicator(undefined);
+      setShowOverflow(false);
+
       //TODO why is this different from Natural Movement ?
       if (overflowMenuShowingRef.current) {
-        onDrop(fromIndex, -1, {
+        return {
           fromIndex,
           toIndex: -1,
-        });
+        };
       } else {
         if (fromIndex < originalDropTargetIndex) {
-          onDrop(
+          return {
             fromIndex,
-            dropBefore ? currentDropTargetIndex : currentDropTargetIndex + 1,
-            {
-              fromIndex,
-              toIndex: dropBefore
-                ? currentDropTargetIndex
-                : currentDropTargetIndex + 1,
-            }
-          );
+            toIndex: dropBefore
+              ? currentDropTargetIndex
+              : currentDropTargetIndex + 1,
+          };
         } else {
-          onDrop(
+          return {
             fromIndex,
-            dropBefore ? originalDropTargetIndex : originalDropTargetIndex + 1,
-            {
-              fromIndex,
-              toIndex: dropBefore
-                ? originalDropTargetIndex
-                : originalDropTargetIndex + 1,
-            }
-          );
+            toIndex: dropBefore
+              ? originalDropTargetIndex
+              : originalDropTargetIndex + 1,
+          };
         }
       }
-      setDropIndicator(undefined);
+    } else {
+      throw Error(`useDragDropIndicator drop error`);
     }
-    setShowOverflow(false);
-  }, [clearSpacer, onDrop]);
+  }, [clearSpacer]);
 
   const releaseDrag = useCallback(() => {
     // TODO

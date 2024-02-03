@@ -198,33 +198,8 @@ export const measureDropTargets = (
   return dragThresholds;
 };
 
-/**
-  The index of the dropped item is its array offset within the
-  dropTargets. If there is no scrolling involved, this will be
-  the same as the 'absolute' index position. If the dropTargets have
-  been scrolled, though, we will only have a window of the full
-  dataset, corresponding to the current scroll viewport. In that case
-  we need to determine the offset and factor that into the 'absolute'
-  index.
- */
-export const getIndexOfDraggedItem = (
-  dropTargets: MeasuredDropTarget[],
-  absoluteIndex = false
-) => {
-  const indexOfDraggedItem = dropTargets.findIndex((d) => d.isDraggedItem);
-  if (absoluteIndex) {
-    const { index: draggedItemOriginalIndex } = dropTargets[indexOfDraggedItem];
-    const minIndex = dropTargets
-      .filter((d) => !d.isDraggedItem)
-      .reduce((min, d) => Math.min(min, d.index), Number.MAX_SAFE_INTEGER);
-    const scrolled =
-      minIndex > 0 && !(draggedItemOriginalIndex === 0 && minIndex === 1);
-    if (scrolled) {
-      return minIndex + indexOfDraggedItem;
-    }
-  }
-  return indexOfDraggedItem;
-};
+export const getIndexOfDraggedItem = (dropTargets: MeasuredDropTarget[]) =>
+  dropTargets.findIndex((d) => d.isDraggedItem);
 
 // As the draggedItem is moved, displacing existing items, mirror
 // the movements within the dropTargets collection
@@ -356,19 +331,28 @@ export const dropTargetsDebugString = (dropTargets: MeasuredDropTarget[]) =>
     )
     .join("");
 
-export const getScrollableContainer = (
-  container: HTMLElement,
+export const getItemParentContainer = (
+  container: HTMLElement | null,
   itemQuery: string
 ) => {
-  // TODO if this is too fragile a way to identify scrollable container, we
-  // can add a prop to pass it 'scrollableContainerQuery'
-  const firstItem = container.querySelector(
+  const firstItem = container?.querySelector(
     `${itemQuery}:not([aria-hidden="true"])`
   );
-  // generally, we expect the immediateParent to be a contentContainer, the
-  // parent of that will be the scrollable container. This may or may not be
-  // the outer container (likely not)
-  const immediateParent = firstItem?.parentElement;
+  if (firstItem) {
+    // generally, we expect the immediateParent to be a contentContainer, the
+    // parent of that will be the scrollable container. This may or may not be
+    // the outer container (likely not)
+    return firstItem.parentElement;
+  } else {
+    return null;
+  }
+};
+
+export const getScrollableContainer = (
+  container: HTMLElement | null,
+  itemQuery: string
+) => {
+  const immediateParent = getItemParentContainer(container, itemQuery);
   if (immediateParent === container) {
     return container;
   } else {
@@ -377,11 +361,15 @@ export const getScrollableContainer = (
 };
 
 export const isContainerScrollable = (
-  scrollableContainer: HTMLElement,
+  scrollableContainer: HTMLElement | null,
   orientation: orientationType
 ) => {
-  const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
-  const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } =
-    scrollableContainer;
-  return scrollSize > clientSize;
+  if (scrollableContainer === null) {
+    return false;
+  } else {
+    const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
+    const { [SCROLL_SIZE]: scrollSize, [CLIENT_SIZE]: clientSize } =
+      scrollableContainer;
+    return scrollSize > clientSize;
+  }
 };

@@ -22,6 +22,10 @@
   padding: 0 1px;
 }
 
+.vuuDraggable-list-item {
+  --vuuList-item-background: var(--salt-selectable-background-hover);
+}
+
 .vuuList-contentSized {
   box-sizing: content-box;
 }

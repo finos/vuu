@@ -15,7 +15,7 @@ export type DragDisplacersHookResult = {
     useTransition?: boolean,
     direction?: Direction | "static",
     orientation?: "horizontal" | "vertical"
-  ) => void;
+  ) => number;
   displaceLastItem: (
     dropTargets: MeasuredDropTarget[],
     dropTarget: MeasuredDropTarget,
@@ -23,8 +23,14 @@ export type DragDisplacersHookResult = {
     useTransition?: boolean,
     direction?: Direction | "static",
     orientation?: "horizontal" | "vertical"
-  ) => void;
+  ) => number;
   clearSpacers: (useAnimation?: boolean) => void;
+  /** Insert the sized spacer at start or end of collection */
+  setTerminalSpacer: (
+    container: HTMLElement,
+    position: "start" | "end",
+    size: number
+  ) => void;
 };
 
 export type DragDisplacersHook = (
@@ -79,6 +85,23 @@ export const useDragDisplacers: DragDisplacersHook = (
     [animateTransition, orientation, spacers]
   );
 
+  const setTerminalSpacer = useCallback(
+    (container: HTMLElement, position: "start" | "end", size: number) => {
+      clearSpacers();
+
+      const propertyName = orientation === "horizontal" ? "width" : "height";
+      const [spacer] = spacers;
+      spacer.style.cssText = `${propertyName}: ${size}px`;
+
+      if (position === "start") {
+        container.firstChild?.before(spacer);
+      } else {
+        container.lastChild?.after(spacer);
+      }
+    },
+    [clearSpacers, orientation, spacers]
+  );
+
   const cancelAnyPendingAnimation = useCallback(() => {
     if (animationFrame.current) {
       cancelAnimationFrame(animationFrame.current);
@@ -93,7 +116,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       size: number,
       useTransition = false,
       direction: Direction | "static" = "static"
-    ) => {
+    ): number => {
       if (dropTarget) {
         const propertyName = orientation === "horizontal" ? "width" : "height";
         const [spacer1, spacer2] = spacers;
@@ -129,7 +152,9 @@ export const useDragDisplacers: DragDisplacersHook = (
         if (direction !== "static") {
           mutateDropTargetsSwitchDropTargetPosition(dropTargets, direction);
         }
+        return direction === "bwd" ? dropTarget.index : dropTarget.index + 1;
       }
+      return -1;
     },
     [
       animateTransition,
@@ -146,7 +171,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       size: number,
       useTransition = false,
       direction: Direction | "static" = "static"
-    ) => {
+    ): number => {
       const propertyName = orientation === "horizontal" ? "width" : "height";
       const [spacer1, spacer2] = spacers;
 
@@ -175,6 +200,8 @@ export const useDragDisplacers: DragDisplacersHook = (
       if (direction !== "static") {
         mutateDropTargetsSwitchDropTargetPosition(dropTargets, direction);
       }
+
+      return dropTarget.index;
     },
     [
       animateTransition,
@@ -189,5 +216,6 @@ export const useDragDisplacers: DragDisplacersHook = (
     displaceItem,
     displaceLastItem,
     clearSpacers,
+    setTerminalSpacer,
   };
 };

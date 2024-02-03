@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Direction,
+  DropOptions,
   InternalDragDropProps,
   InternalDragHookResult,
   ViewportRange,
@@ -11,6 +12,7 @@ import { dispatchMouseEvent } from "@finos/vuu-utils";
 import {
   dimensions,
   getIndexOfDraggedItem,
+  getItemParentContainer,
   getNextDropTarget,
   MeasuredDropTarget,
   measureDropTargets,
@@ -18,15 +20,22 @@ import {
   NOT_OVERFLOWED,
 } from "./drop-target-utils";
 
+type DragPosition = {
+  direction?: Direction;
+  insertionPosition: number;
+};
+
 export const useDragDropNaturalMovement = ({
-  onDrop,
-  orientation = "horizontal",
   containerRef,
+  orientation = "horizontal",
   itemQuery = "*",
   selected,
   viewportRange,
 }: InternalDragDropProps): InternalDragHookResult => {
-  const dragDirectionRef = useRef<Direction | undefined>();
+  const dragPositionRef = useRef<DragPosition>({
+    direction: undefined,
+    insertionPosition: -1,
+  });
   const isScrollable = useRef(false);
   /** current position of dragged element */
   const dragPosRef = useRef<number>(-1);
@@ -35,7 +44,7 @@ export const useDragDropNaturalMovement = ({
 
   const [showOverflow, setShowOverflow] = useState(false);
 
-  const { clearSpacers, displaceItem, displaceLastItem } =
+  const { clearSpacers, displaceItem, displaceLastItem, setTerminalSpacer } =
     useDragDisplacers(orientation);
 
   const draggedItemRef = useRef<MeasuredDropTarget>();
@@ -49,53 +58,70 @@ export const useDragDropNaturalMovement = ({
   const rangeRef = useRef<ViewportRange>();
   rangeRef.current = viewportRange;
 
-  const handleScrollStart = useCallback(() => {
-    clearSpacers();
-  }, [clearSpacers]);
+  const handleScrollStart = useCallback(
+    (scrollDirection: "fwd" | "bwd") => {
+      const itemContainer = getItemParentContainer(
+        containerRef.current,
+        itemQuery
+      );
+      const { current: draggedItem } = draggedItemRef;
+
+      // When we start scrolling, insert a spacer at the start of end of the collection.
+      // This is what we will need if user scrolls right to end and it will give the correct
+      // scrollHeight. Ig user stops scrolling before start/end we will reposition the
+      // spacer(s) appropriately
+      if (itemContainer && draggedItem) {
+        setTerminalSpacer(
+          itemContainer,
+          scrollDirection === "fwd" ? "end" : "start",
+          draggedItem.size
+        );
+      }
+    },
+    [containerRef, itemQuery, setTerminalSpacer]
+  );
 
   const handleScrollStop = useCallback(
-    (scrollDirection: "fwd" | "bwd", _scrollPos: number, atEnd: boolean) => {
+    (scrollDirection: "fwd" | "bwd") => {
       const { current: container } = containerRef;
       const { current: draggedItem } = draggedItemRef;
+      const { current: dragPosition } = dragPositionRef;
       if (container && draggedItem) {
-        measuredDropTargets.current = measureDropTargets(
+        const dropTargets = (measuredDropTargets.current = measureDropTargets(
           container,
           orientation,
           fullItemQuery,
           rangeRef.current
-        );
-        if (scrollDirection === "fwd") {
-          measuredDropTargets.current.push(draggedItem);
-        } else {
-          measuredDropTargets.current.unshift(draggedItem);
-        }
+        ));
 
-        const { size } = draggedItem;
-        const dragPos = dragPosRef.current;
-        const midPos = dragPos + size / 2;
-        const { current: dropTargets } = measuredDropTargets;
-        const dropTarget = getNextDropTarget(dropTargets, midPos, size, "fwd");
+        const dropTargetAtBoundary =
+          scrollDirection === "fwd" ? dropTargets.at(-1) : dropTargets.at(0);
 
-        if (dropTarget) {
-          const targetIndex = indexOf(dropTarget);
-          const nextInsertPos = targetIndex;
-          const nextDropTarget = dropTargets[nextInsertPos];
-
-          if (atEnd && scrollDirection === "fwd") {
-            displaceLastItem(
-              dropTargets,
-              dropTargets[dropTargets.length - 1],
-              size,
-              false,
-              "static"
-            );
+        if (dropTargetAtBoundary) {
+          const { mid, end, size, start } = dropTargetAtBoundary;
+          if (scrollDirection === "fwd") {
+            const draggedDropTarget = {
+              ...draggedItem,
+              start: Math.round(start + size),
+              mid: Math.round(mid + size),
+              end: Math.round(end + size),
+            };
+            dropTargets.push(draggedDropTarget);
+            dragPosition.insertionPosition = dropTargetAtBoundary.index + 1;
           } else {
-            displaceItem(dropTargets, nextDropTarget, size, true, "static");
+            const draggedDropTarget = {
+              ...draggedItem,
+              start: Math.round(start - size),
+              mid: Math.round(mid - size),
+              end: Math.round(end - size),
+            };
+            dropTargets.unshift(draggedDropTarget);
+            dragPosition.insertionPosition = 0;
           }
         }
       }
     },
-    [containerRef, displaceItem, displaceLastItem, fullItemQuery, orientation]
+    [containerRef, fullItemQuery, orientation]
   );
 
   const beginDrag = useCallback(
@@ -109,6 +135,8 @@ export const useDragDropNaturalMovement = ({
         console.log("its a selected element, and we have a multi select");
       }
       const { current: container } = containerRef;
+      const { current: dragPosition } = dragPositionRef;
+
       if (container && dragElement) {
         const internalDrag = container.contains(dragElement);
         const { SCROLL_SIZE, CLIENT_SIZE } = dimensions(orientation);
@@ -132,7 +160,10 @@ export const useDragDropNaturalMovement = ({
             const displaceFunction = draggedItem.isLast
               ? displaceLastItem
               : displaceItem;
-            displaceFunction(
+
+            // This should return the insertion position of dragged item
+            // which depends on both dro[Target and direction]
+            dragPosition.insertionPosition = displaceFunction(
               dropTargets,
               draggedItem,
               draggedItem.size,
@@ -228,6 +259,7 @@ export const useDragDropNaturalMovement = ({
   const drag = useCallback(
     (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => {
       const { current: draggedItem } = draggedItemRef;
+      const { current: dragPosition } = dragPositionRef;
 
       if (draggedItem) {
         if (containerRef.current) {
@@ -255,7 +287,7 @@ export const useDragDropNaturalMovement = ({
                   ? displaceLastItem
                   : displaceItem;
 
-              displaceFunc(
+              dragPosition.insertionPosition = displaceFunc(
                 dropTargets,
                 nextDropTarget,
                 size,
@@ -270,51 +302,37 @@ export const useDragDropNaturalMovement = ({
               setShowOverflow((overflowMenuShowingRef.current = false));
             }
           }
-
-          dragDirectionRef.current = mouseMoveDirection;
+          dragPosition.direction = mouseMoveDirection;
         }
       }
     },
     [containerRef, displaceItem, displaceLastItem, hidePopup, showPopup]
   );
 
-  const drop = useCallback(() => {
+  const drop = useCallback((): DropOptions => {
     clearSpacers();
     const { current: dropTargets } = measuredDropTargets;
+    const { current: dragPosition } = dragPositionRef;
     const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
     const draggedItem = dropTargets[indexOfDraggedItem];
-    if (draggedItem) {
-      dragDirectionRef.current = undefined;
+    const { insertionPosition } = dragPosition;
+    const { index: fromIndex, isExternal } = draggedItem;
 
-      if (overflowMenuShowingRef.current) {
-        onDrop(draggedItem.index, -1, {
-          fromIndex: draggedItem.index,
-          toIndex: -1,
-          isExternal: draggedItem.isExternal,
-        });
-      } else {
-        const absoluteIndexDraggedItem = getIndexOfDraggedItem(
-          dropTargets,
-          true
-        );
-        onDrop(draggedItem.index, absoluteIndexDraggedItem, {
-          fromIndex: draggedItem.index,
-          toIndex: absoluteIndexDraggedItem,
-          isExternal: draggedItem.isExternal,
-        });
-      }
+    if (overflowMenuShowingRef.current) {
+      setShowOverflow(false);
     }
-    setShowOverflow(false);
 
-    if (containerRef.current) {
-      // TODO we're not catching every scenario where we need to control
-      // the final scroll position here.
-      const scrollTop = containerRef.current?.scrollTop;
-      if (indexOfDraggedItem < dropTargets.length) {
-        containerRef.current.scrollTop = scrollTop;
-      }
-    }
-  }, [clearSpacers, containerRef, onDrop]);
+    dragPosition.direction = undefined;
+    dragPosition.insertionPosition = -1;
+
+    const toIndex = overflowMenuShowingRef.current
+      ? -1
+      : fromIndex < insertionPosition
+      ? insertionPosition - 1
+      : insertionPosition;
+
+    return { fromIndex, toIndex, isExternal };
+  }, [clearSpacers]);
 
   const releaseDrag = useCallback(() => {
     clearSpacers(true);
