@@ -1,11 +1,5 @@
 import ReactDOM from "react-dom";
-import { Showcase } from "./Showcase";
-import type { ExamplesModule } from "./showcase-utils";
-
-// The Showcase chrome is always rendered with Vuu styling, hence we always need the Vuu theme
-import "./themes/vuu";
-
-import "./index.css";
+import { type ExamplesModule, Showcase } from "@finos/vuu-showcase";
 
 const root = document.getElementById("root") as HTMLDivElement;
 

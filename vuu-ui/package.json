@@ -11,7 +11,8 @@
   "workspaces": [
     "packages/**",
     "sample-apps/**",
-    "showcase"
+    "showcase",
+    "tools/vuu-showcase"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

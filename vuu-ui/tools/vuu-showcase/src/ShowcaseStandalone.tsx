@@ -7,6 +7,8 @@ import {
 import { ReactNode, useMemo, useState } from "react";
 import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
 
+import "./Showcase.css";
+
 export const ShowcaseStandalone = ({
   density = "high",
   theme = "vuu",
@@ -17,8 +19,29 @@ export const ShowcaseStandalone = ({
   themeMode?: ThemeMode;
 }) => {
   const [component, setComponent] = useState<ReactNode>(null);
+  const [themeReady, setThemeReady] = useState(false);
+
+  useMemo(() => {
+    switch (theme) {
+      case "vuu":
+        console.log("load vuu theme");
+        import("./themes/vuu").then(() => {
+          setThemeReady(true);
+        });
+        break;
+      case "salt":
+        import("./themes/salt").then(() => {
+          setThemeReady(true);
+        });
+        break;
+      default:
+        console.log(`no theme needed`);
+    }
+  }, []);
+
   useMemo(async () => {
     const url = new URL(document.location.href);
+    console.log(`url pathnasme ${url.pathname}`);
     const [targetPaths, exampleName] = pathToExample(url.pathname.slice(1));
     console.log({
       pathname: url.pathname,
@@ -30,6 +53,7 @@ export const ShowcaseStandalone = ({
     const path = [exampleName];
     for (const importPath of targetPaths) {
       try {
+        console.log(`importPath ${importPath}`);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         targetExamples = await import(/* @vite-ignore */ importPath);
@@ -63,14 +87,18 @@ export const ShowcaseStandalone = ({
     }
   }, []);
 
-  return (
-    <ThemeProvider
-      applyThemeClasses
-      theme={theme}
-      density={density}
-      themeMode={themeMode}
-    >
-      <div className="vuuShowcase-StandaloneRoot">{component}</div>
-    </ThemeProvider>
-  );
+  if (themeReady || theme === "no-theme") {
+    return (
+      <ThemeProvider
+        applyThemeClasses
+        theme={theme}
+        density={density}
+        themeMode={themeMode}
+      >
+        <div className="vuuShowcase-StandaloneRoot">{component}</div>
+      </ThemeProvider>
+    );
+  } else {
+    return null;
+  }
 };

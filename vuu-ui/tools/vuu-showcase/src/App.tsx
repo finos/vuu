@@ -20,7 +20,7 @@ const sourceFromImports = (
     .map<TreeSourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
       // TODO how can we know when a potential docs node has docs
-      console.log(`id=${id}`);
+      // console.log(`id=${id}`);
       if (typeof stories === "function") {
         return {
           id,

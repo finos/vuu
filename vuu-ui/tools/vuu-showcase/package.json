@@ -1,0 +1,27 @@
+{
+  "name": "@finos/vuu-showcase",
+  "version": "0.0.1",
+  "author": "heswell",
+  "main": "src/index.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/run-build.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@finos/vuu-icons": "0.0.26",
+    "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-theme": "0.0.26",
+    "@finos/vuu-ui-controls": "0.0.26",
+    "@finos/vuu-utils": "0.0.26",
+    "@salt-ds/core": "1.13.2",
+    "@salt-ds/theme": "1.7.1"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": ">=17.0.2",
+    "react-dom": ">=17.0.2",
+    "react-router-dom": "^6.2.1"
+  }
+}

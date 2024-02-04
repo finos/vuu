@@ -44,11 +44,12 @@ export const pathToExample = (path: string): [string[], string] => {
   if (exampleName === "") {
     return [[], ""];
   } else {
+    const root = env === "development" ? "/src" : "";
     return [
       [
-        `./examples/${importPath}/${exampleName}${suffix}`,
-        `./examples/${importPath}.examples${suffix}`,
-        `./examples/${importPath}/index${suffix}`,
+        `${root}/examples/${importPath}/${exampleName}${suffix}`,
+        `${root}/examples/${importPath}.examples${suffix}`,
+        `${root}/examples/${importPath}/index${suffix}`,
       ],
       exampleName,
     ];
