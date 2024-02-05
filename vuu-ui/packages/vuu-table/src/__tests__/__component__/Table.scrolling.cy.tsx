@@ -4,7 +4,7 @@ import { TwoHundredColumns } from "../../../../../showcase/src/examples/Table/TE
 import {
   assertRenderedColumns,
   assertRenderedRows,
-  withAriaIndex,
+  withAriaRowIndex,
 } from "./table-test-utils";
 
 describe("Table scrolling and keyboard navigation", () => {
@@ -33,15 +33,15 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         cy.realPress("PageDown");
 
-        cy.findByRole("row", withAriaIndex(25)).should("not.exist");
-        cy.findByRole("row", withAriaIndex(26)).should("exist");
+        cy.findByRole("row", withAriaRowIndex(25)).should("not.exist");
+        cy.findByRole("row", withAriaRowIndex(26)).should("exist");
 
         cy.get(".vuuTable-contentContainer")
           .then((el) => el[0].scrollTop)
           .should("equal", 600);
 
         // row 31 should be top row in viewport
-        cy.findByRole("row", withAriaIndex(31)).should(
+        cy.findByRole("row", withAriaRowIndex(31)).should(
           "have.css",
           "transform",
           "matrix(1, 0, 0, 1, 0, 600)"
@@ -217,7 +217,8 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.get(".vuuTable-scrollbarContainer").scrollTo(110, 0);
         assertRenderedColumns({
           rendered: { from: 1, to: 9 },
-          visible: { from: 1, to: 6 },
+          // the leading edge of column 7 is visible because of space we leave for scrollbar
+          visible: { from: 1, to: 7 },
         });
       });
     });

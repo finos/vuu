@@ -82,7 +82,7 @@ export const SimulTable = ({
   );
 
   const handleConfigChange = useCallback((config) => {
-    console.log(JSON.stringify(config, null, 2));
+    // console.log(JSON.stringify(config, null, 2));
   }, []);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({

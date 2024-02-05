@@ -165,6 +165,11 @@ export const useTable = ({
     tableAttributes,
     tableConfig,
   } = useTableModel(config, dataSource);
+  console.log(
+    `useTable (after call to useTableModel) ${columns
+      .map((c) => c.name)
+      .join(",")}`
+  );
 
   useLayoutEffectSkipFirst(() => {
     dispatchColumnAction({
@@ -580,7 +585,11 @@ export const useTable = ({
         ...tableConfig,
         columns,
       };
-      console.log("onMoveColumn dispatch init");
+      console.log(
+        `onMoveColumn dispatch init columns = ${columns
+          .map((c) => c.name)
+          .join(",")}`
+      );
 
       dispatchColumnAction({
         type: "init",

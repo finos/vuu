@@ -202,13 +202,11 @@ export const useTableScroll = ({
   } = viewportMeasurements;
 
   const columnsWithinViewportRef = useRef<RuntimeColumnDescriptor[]>([]);
-  const [columnsWithinViewport, setColumnsWithinViewport] = useState<
-    RuntimeColumnDescriptor[]
-  >([]);
+  const [, forceRefresh] = useState({});
 
   const preSpanRef = useRef(0);
 
-  useEffect(() => {
+  useMemo(() => {
     const [visibleColumns, offset] = getColumnsInViewport(
       columns,
       contentContainerPosRef.current.scrollLeft,
@@ -216,13 +214,8 @@ export const useTableScroll = ({
         viewportWidth +
         HORIZONTAL_SCROLL_BUFFER
     );
-
-    if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {
-      preSpanRef.current = offset;
-      setColumnsWithinViewport(
-        (columnsWithinViewportRef.current = visibleColumns)
-      );
-    }
+    preSpanRef.current = offset;
+    columnsWithinViewportRef.current = visibleColumns;
   }, [viewportWidth, columns]);
 
   const handleHorizontalScroll = useCallback(
@@ -239,18 +232,17 @@ export const useTableScroll = ({
         const [visibleColumns, pre] = getColumnsInViewport(
           columns,
           scrollLeft,
-          scrollLeft + viewportWidth + 200
+          scrollLeft + viewportWidth + HORIZONTAL_SCROLL_BUFFER
         );
 
-        if (itemsChanged(columnsWithinViewport, visibleColumns)) {
+        if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {
           preSpanRef.current = pre;
-          setColumnsWithinViewport(
-            (columnsWithinViewportRef.current = visibleColumns)
-          );
+          columnsWithinViewportRef.current = visibleColumns;
+          forceRefresh({});
         }
       }
     },
-    [columns, columnsWithinViewport, onHorizontalScroll, viewportWidth]
+    [columns, onHorizontalScroll, viewportWidth]
   );
   const handleVerticalScroll = useCallback(
     (scrollTop: number, pctScrollTop: number) => {
@@ -478,9 +470,11 @@ export const useTableScroll = ({
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
+    // TODO not complete yet
     () => ({
       scrollToIndex: (rowIndex: number) => {
         if (scrollbarContainerRef.current) {
+          // TODO hardcoded rowHeight
           const scrollPos = (rowIndex - 30) * 20;
           scrollbarContainerRef.current.scrollTop = scrollPos;
         }
@@ -511,7 +505,7 @@ export const useTableScroll = ({
   }, [setRange, viewportRowCount]);
 
   return {
-    columnsWithinViewport,
+    columnsWithinViewport: columnsWithinViewportRef.current,
     /** Ref to be assigned to ScrollbarContainer */
     scrollbarContainerRef: scrollbarContainerCallbackRef,
     /** Ref to be assigned to ContentContainer */

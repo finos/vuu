@@ -59,6 +59,8 @@ export const TableHeader = memo(
       tableConfig,
     });
 
+    console.log(`columns ${columns.map((c) => c.name).join(",")}`);
+
     return (
       <div className={`${classBase}-col-headings`} ref={setContainerRef}>
         {headings.map((colHeaders, i) => (
