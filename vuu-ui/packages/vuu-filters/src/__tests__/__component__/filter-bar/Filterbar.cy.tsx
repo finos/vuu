@@ -554,7 +554,7 @@ describe("WHEN a user applies a date filter", () => {
       cy.get(ADD_BUTTON).realClick();
       clickListItems(DATE_COLUMN, op);
       findOverflowItem(".vuuDatePicker-calendarIconButton").realClick();
-      cy.get(".saltCalendarDay-today").realClick();
+      cy.get(".saltCalendarDay-today:not(.saltCalendarDay-hidden)").realClick();
       cy.realPress("ArrowRight");
       clickButton("APPLY AND SAVE");
       waitUntilEditableLabelIsFocused(".vuuFilterPill");
