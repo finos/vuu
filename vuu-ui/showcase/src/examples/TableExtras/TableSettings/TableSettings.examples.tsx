@@ -4,7 +4,7 @@ import {
   ColumnList,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
-import { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@finos/vuu-table-types";
 import { getSchema } from "@finos/vuu-data-test";
 import { useCallback, useMemo, useState } from "react";
 

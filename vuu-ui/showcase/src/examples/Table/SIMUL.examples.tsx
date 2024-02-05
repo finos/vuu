@@ -81,7 +81,7 @@ export const SimulTable = ({
     [getDefaultColumnConfig, schema, tableName]
   );
 
-  const handleConfigChange = useCallback((config) => {
+  const handleConfigChange = useCallback(() => {
     // console.log(JSON.stringify(config, null, 2));
   }, []);
 
