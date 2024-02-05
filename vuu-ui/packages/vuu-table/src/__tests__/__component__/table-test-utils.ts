@@ -4,6 +4,20 @@ export const withAriaIndex = (index: number) => ({
   name: (_: string, el: Element) => el.ariaRowIndex === `${index}`,
 });
 
+export const assertRenderedColumns = ({
+  rendered,
+  visible,
+}: {
+  rendered: VuuRange;
+  visible: VuuRange;
+}) => {
+  const { from, to } = rendered;
+  const renderedColumnCount = to - from + 1;
+  cy.findByRole("row", withAriaIndex(1))
+    .findAllByRole("cell")
+    .should("have.length", renderedColumnCount);
+};
+
 export const assertRenderedRows = (
   { from, to }: VuuRange,
   renderBufferSize: number,

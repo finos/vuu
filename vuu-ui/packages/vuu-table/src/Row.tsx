@@ -101,11 +101,7 @@ export const Row = memo(
       >
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
         {virtualColSpan > 0 ? (
-          <div
-            role="cell"
-            className="vuuTableCell"
-            style={{ width: virtualColSpan }}
-          />
+          <div className="vuuTableCell" style={{ width: virtualColSpan }} />
         ) : null}
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);

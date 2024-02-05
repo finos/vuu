@@ -53,6 +53,12 @@ export interface ScrollingAPI {
   scrollToKey: (rowKey: string) => void;
 }
 
+/** How far we allow horizontal scroll movement before we recheck the rendered columns */
+const SCROLL_MOVE_CHECK_THRESHOLD = 100;
+
+/** The buffer size in pixels that we allow for rendering columns just outside the viewport */
+const HORIZONTAL_SCROLL_BUFFER = 200;
+
 /**
  * Return the maximum scroll positions for gioven container
  * @param container
@@ -206,7 +212,9 @@ export const useTableScroll = ({
     const [visibleColumns, offset] = getColumnsInViewport(
       columns,
       contentContainerPosRef.current.scrollLeft,
-      contentContainerPosRef.current.scrollLeft + viewportWidth + 200
+      contentContainerPosRef.current.scrollLeft +
+        viewportWidth +
+        HORIZONTAL_SCROLL_BUFFER
     );
 
     if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {
@@ -222,7 +230,10 @@ export const useTableScroll = ({
       contentContainerPosRef.current.scrollLeft = scrollLeft;
       onHorizontalScroll?.(scrollLeft);
 
-      if (Math.abs(scrollLeft - lastHorizontalScrollCheckPoint.current) > 100) {
+      if (
+        Math.abs(scrollLeft - lastHorizontalScrollCheckPoint.current) >
+        SCROLL_MOVE_CHECK_THRESHOLD
+      ) {
         lastHorizontalScrollCheckPoint.current = scrollLeft;
 
         const [visibleColumns, pre] = getColumnsInViewport(

@@ -16,7 +16,7 @@ export const DefaultRowGenerator: RowGeneratorFactory =
     return [`row ${index + 1}`].concat(
       Array(columns.length)
         .fill(true)
-        .map((v, j) => `value ${j + 1} @ ${index + 1}`)
+        .map((v, j) => `value ${j + 2} @ ${index + 1}`)
     );
   };
 
@@ -29,7 +29,7 @@ export const DefaultColumnGenerator: ColumnGeneratorFn = (
       Array(columns)
         .fill(true)
         .map((_, i) => {
-          const name = `column ${i + 1}`;
+          const name = `column ${i + 2}`;
           return { name, width: 100, ...columnConfig[name] };
         })
     );

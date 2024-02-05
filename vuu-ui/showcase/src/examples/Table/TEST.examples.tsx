@@ -14,19 +14,25 @@ const extendColumnConfig = (
   config: Partial<ColumnDescriptor>
 ) => columns.map<ColumnDescriptor>((col) => ({ ...col, ...config }));
 
-const TestTable = ({ tableName }: { tableName: TestTableName }) => {
+const TestTable = ({
+  tableName,
+  ...props
+}: Partial<TableProps> & { tableName: TestTableName }) => {
   const schema = getSchema(tableName);
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
+      ...props,
       config: {
-        columns: extendColumnConfig(schema.columns, { width: 150 }),
+        columns: extendColumnConfig(schema.columns, {
+          width: 150,
+        }),
         rowSeparators: true,
         zebraStripes: true,
       },
       dataSource: vuuModule<TestTableName>("TEST").createDataSource(tableName),
     }),
-    [schema.columns, tableName]
+    [props, schema.columns, tableName]
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
@@ -45,7 +51,11 @@ const TestTable = ({ tableName }: { tableName: TestTableName }) => {
   );
 };
 
-export const TwoHundredColumns = () => (
-  <TestTable tableName="TwoHundredColumns" />
+export const TwoHundredColumns = (props: Partial<TableProps>) => (
+  <TestTable tableName="TwoHundredColumns" {...props} />
 );
 TwoHundredColumns.displaySequence = displaySequence++;
+
+export const TestColumns = () => (
+  <TestTable tableName="TwoHundredColumns" width={915} />
+);
