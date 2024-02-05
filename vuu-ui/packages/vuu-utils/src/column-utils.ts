@@ -48,6 +48,10 @@ export interface ColumnMap {
 
 const SORT_ASC = "asc";
 const NO_HEADINGS: TableHeadings = [];
+const DEFAULT_COL_WIDTH = 100;
+const DEFAULT_MAX_WIDTH = 250;
+const DEFAULT_MIN_WIDTH = 50;
+const DEFAULT_FLEX = 0;
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
 
@@ -1006,3 +1010,172 @@ export const getColumnByName = (
     }
   }
 };
+
+//New added column functionality issue #639
+
+export type ColumnLayout = "Static" | "Fit";
+
+export type columnOptions = {
+  availableWidth?: number;
+  columnLayout?: ColumnLayout;
+  defaultWidth?: number;
+  defaultMinWidth?: number;
+  defaultMaxWidth?: number;
+  defaultFlex?: number;
+};
+
+export function applyWidthToColumns(
+  columns: RuntimeColumnDescriptor[],
+  options:
+    | {
+        columnLayout: "Static";
+        defaultMinWidth?: number;
+        defaultMaxWidth?: number;
+        defaultWidth?: number;
+      }
+    | {
+        columnLayout: "Fit";
+        availableWidth?: number;
+        defaultMinWidth?: number;
+        defaultMaxWidth?: number;
+        defaultWidth?: number;
+      }
+): RuntimeColumnDescriptor[];
+
+export function applyWidthToColumns(
+  columns: RuntimeColumnDescriptor[],
+  options: columnOptions & { defaultMinWidth?: number }
+): RuntimeColumnDescriptor[] {
+  const {
+    availableWidth = 0,
+    columnLayout = "Static",
+    defaultWidth = DEFAULT_COL_WIDTH,
+    defaultMinWidth = DEFAULT_MIN_WIDTH,
+    defaultMaxWidth = DEFAULT_MAX_WIDTH,
+    defaultFlex = DEFAULT_FLEX,
+  } = options;
+
+  if (columnLayout === "Static") {
+    return columns.map((column) => {
+      if (typeof column.width === "number") {
+        return column;
+      } else {
+        return {
+          ...column,
+          width: defaultWidth,
+        };
+      }
+    });
+  } else if (columnLayout === "Fit") {
+    const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
+      columns.reduce(
+        (aggregated, column) => {
+          const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
+            aggregated;
+          const {
+            minWidth = defaultMinWidth,
+            maxWidth = defaultMaxWidth,
+            width = defaultWidth,
+            flex = 0,
+          } = column;
+          return {
+            totalMinWidth: totalMinWidth + minWidth,
+            totalMaxWidth: totalMaxWidth + maxWidth,
+            totalWidth: totalWidth + width,
+            flexCount: flexCount + flex,
+          };
+        },
+        { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 }
+      );
+
+    if (totalMinWidth > availableWidth || totalMaxWidth < availableWidth) {
+      return columns;
+    } else if (totalWidth > availableWidth) {
+      const excessWidth = totalWidth - availableWidth;
+      const inFlexMode = flexCount > 0;
+      let excessWidthPerColumn = excessWidth / (flexCount || columns.length);
+      let columnsNotYetAtMinWidth = columns.length;
+      let unassignedExcess = 0;
+      let newColumns = columns.map((column) => {
+        const {
+          minWidth = defaultMinWidth,
+          width = defaultWidth,
+          flex = 0,
+        } = column;
+        if (inFlexMode && flex === 0) {
+          return column;
+        }
+        const adjustedWidth = width - excessWidthPerColumn;
+        if (adjustedWidth < minWidth) {
+          columnsNotYetAtMinWidth -= 1;
+          unassignedExcess += minWidth - adjustedWidth;
+          return { ...column, width: column.minWidth };
+        } else {
+          return { ...column, width: adjustedWidth };
+        }
+      });
+      if (unassignedExcess === 0) {
+        return newColumns;
+      } else {
+        excessWidthPerColumn = unassignedExcess / columnsNotYetAtMinWidth;
+        newColumns = newColumns.map((column) => {
+          const adjustedWidth = column.width - excessWidthPerColumn;
+          if (column.width !== column.minWidth) {
+            return { ...column, width: adjustedWidth };
+          } else {
+            return column;
+          }
+        });
+        return newColumns;
+      }
+    } else if (totalWidth < availableWidth) {
+      {
+        const additionalWidth = availableWidth - totalWidth;
+        const inFlexMode = flexCount > 0;
+        let additionalWidthPerColumn =
+          additionalWidth / (flexCount || columns.length);
+        let columnsNotYetReachedMaxWidth = columns.length;
+        let unassignedAdditionalWidth = 0;
+        let newColumns = columns.map((column) => {
+          const {
+            maxWidth = defaultMaxWidth,
+            width = defaultWidth,
+            flex = 0,
+          } = column;
+          if (inFlexMode && flex === 0) {
+            return column;
+          }
+          const adjustedWidth = width + additionalWidthPerColumn;
+          if (adjustedWidth > maxWidth) {
+            columnsNotYetReachedMaxWidth -= 1;
+            unassignedAdditionalWidth += adjustedWidth - column.maxWidth;
+            return { ...column, width: column.maxWidth };
+          } else {
+            return { ...column, width: adjustedWidth, canStretch: true };
+          }
+        });
+        const unassignedAdditionalColumnWidth =
+          additionalWidth - newColumns.reduce((sum, col) => sum + col.width, 0);
+        const columnsNotYetAtMaxWidth = newColumns.filter(
+          (col) => col.canStretch
+        ).length;
+        if (unassignedAdditionalColumnWidth > columnsNotYetAtMaxWidth) {
+          additionalWidthPerColumn =
+            unassignedAdditionalColumnWidth / columnsNotYetAtMaxWidth;
+          newColumns = newColumns.map((column) => {
+            if (column.canStretch) {
+              const adjustedWidth = Math.min(
+                column.width + additionalWidthPerColumn
+              );
+              return { ...column, width: adjustedWidth };
+            } else {
+              return column;
+            }
+          });
+        }
+        return newColumns.map(({ canStretch, ...column }) => column);
+      }
+    }
+  }
+  return columns;
+}
