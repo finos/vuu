@@ -14,6 +14,7 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
+import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
@@ -54,6 +55,11 @@ object IgniteVuuMain extends App with StrictLogging {
   val certPath = defaultConfig.getString("vuu.certPath")
   val keyPath = defaultConfig.getString("vuu.keyPath")
 
+  logger.info("[Ignite] Starting ignite in server mode")
+  private val igniteOrderStore = IgniteOrderStore(clientMode = false)
+  private val igniteOrderGenerator = new IgniteOrderGenerator(igniteOrderStore)
+  igniteOrderGenerator.save()
+
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
       //only specify webroot if we want to load the source locally, we'll load it from the jar
@@ -75,9 +81,10 @@ object IgniteVuuMain extends App with StrictLogging {
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4)
-  ).withModule(MetricsModule())
-   .withModule(IgniteOrderDataModule(IgniteOrderStore()))
-   .withPlugin(VirtualizedTablePlugin)
+  ).withModule(TypeAheadModule())
+    .withModule(MetricsModule())
+    .withModule(IgniteOrderDataModule(igniteOrderStore))
+    .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
 
@@ -86,4 +93,5 @@ object IgniteVuuMain extends App with StrictLogging {
   logger.info("[VUU] Ready.")
 
   vuuServer.join()
+
 }
