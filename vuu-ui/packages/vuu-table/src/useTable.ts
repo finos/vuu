@@ -165,11 +165,6 @@ export const useTable = ({
     tableAttributes,
     tableConfig,
   } = useTableModel(config, dataSource);
-  console.log(
-    `useTable (after call to useTableModel) ${columns
-      .map((c) => c.name)
-      .join(",")}`
-  );
 
   useLayoutEffectSkipFirst(() => {
     dispatchColumnAction({
@@ -254,8 +249,6 @@ export const useTable = ({
   // TODO does this belong here ?
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
-      console.log("handleConfigEditedInSettingsPanel dispatch init");
-
       dispatchColumnAction({
         type: "init",
         tableConfig,
@@ -390,7 +383,6 @@ export const useTable = ({
       if (column) {
         if (phase === "resize") {
           resizeCells.current?.forEach((cell) => {
-            console.log();
             cell.style.width = `${width}px`;
           });
         } else if (phase === "end") {
@@ -585,11 +577,6 @@ export const useTable = ({
         ...tableConfig,
         columns,
       };
-      console.log(
-        `onMoveColumn dispatch init columns = ${columns
-          .map((c) => c.name)
-          .join(",")}`
-      );
 
       dispatchColumnAction({
         type: "init",

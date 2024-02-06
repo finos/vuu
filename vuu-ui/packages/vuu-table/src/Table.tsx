@@ -220,13 +220,6 @@ const TableCore = ({
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
-  console.log(`Table render
-  columns ${columns.map((c) => c.name).join(",")}
-  columns within viewport ${scrollProps.columnsWithinViewport
-    .map((c) => c.name)
-    .join(",")}
-  `);
-
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}

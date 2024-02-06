@@ -216,7 +216,6 @@ export const useDragDrop: DragDropHook = ({
     }
     dropIndexRef.current = -1;
     onDropSettle?.(toIndex);
-    console.log("setState draggable status nullify draggable");
     setDraggableStatus((status) => ({
       ...status,
       draggable: undefined,
@@ -434,15 +433,10 @@ export const useDragDrop: DragDropHook = ({
   const dragMouseUpHandler = useCallback(() => {
     removeDragHandlers();
     if (dragDropStateRef.current) {
-      console.log(`dragMouseUpHandler assign settling`);
       settlingItemRef.current = dragDropStateRef.current.draggableElement;
     }
     const dropOptions = drop();
-    console.log(`dragMouseUpHandler ${JSON.stringify(dropOptions, null, 2)}`);
     handleDrop(dropOptions);
-    console.log(
-      "dragMouseUpHandler setState draggable status nullify draggedItemIndex, isDragging"
-    );
 
     setDraggableStatus((status) => ({
       ...status,
@@ -628,7 +622,6 @@ export const useDragDrop: DragDropHook = ({
         `${itemQuery}[data-index="${dropPos}"]`
       );
       if (droppedItem) {
-        console.log(`droppedItem ${droppedItem.textContent} at pos ${dropPos}`);
         droppedItem.classList.add("vuuDropTarget-settling");
         requestAnimationFrame(() => {
           const { top: targetTop, left: targetLeft } =
@@ -640,7 +633,6 @@ export const useDragDrop: DragDropHook = ({
           const style = getComputedStyle(settlingItem);
           const currentLeft = parseInt(style.getPropertyValue("left"));
           const currentTop = parseInt(style.getPropertyValue("top"));
-          console.log(`currentLeft ${currentLeft} targetLeft ${targetLeft}`);
           if (currentLeft !== targetLeft || currentTop !== targetTop) {
             settlingItem.classList.add("vuuDraggable-settling");
             settlingItem.style.top = `${targetTop}px`;
