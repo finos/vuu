@@ -55,7 +55,7 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
 
   override def getColumnValueProvider: ColumnValueProvider = {
     logger.info(s"[TESTING] provider from virtualized table")
-    super.getProvider.asInstanceOf[VirtualizedProvider]
+    this.getProvider.asInstanceOf[ColumnValueProvider]
   }
 
   def setRange(range: VirtualizedRange): Unit = {

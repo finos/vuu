@@ -63,6 +63,13 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = "org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider"
+
+  override def getUniqueValues(columnName: String): Array[String] =
+    igniteStore.getDistinct(columnName, 10).toArray
+
+  override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] =
+    igniteStore.getDistinct(columnName, starts, 10).toArray
+
 }
 
 object IgniteOrderDataProvider {
