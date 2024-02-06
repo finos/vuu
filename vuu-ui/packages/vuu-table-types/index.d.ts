@@ -204,6 +204,7 @@ export interface ColumnDescriptor {
   /** The Label to display on column in Table */
   label?: string;
   locked?: boolean;
+  maxWidth?: number;
   minWidth?: number;
   name: string;
   pin?: PinLocation;
@@ -226,6 +227,7 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
   HeaderCellLabelRenderer?: FunctionComponent<HeaderCellProps>;
   HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
+  canStretch?: boolean;
   className?: string;
   clientSideEditValidationCheck?: ClientSideValidationChecker;
   endPin?: true | undefined;

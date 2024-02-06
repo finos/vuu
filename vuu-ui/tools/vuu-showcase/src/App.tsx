@@ -1,46 +1,13 @@
 import { Flexbox } from "@finos/vuu-layout";
 import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
 import { Density, ThemeMode, ThemeProvider } from "@finos/vuu-utils";
-import { Button, Text } from "@salt-ds/core";
+import { Button, Text, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
+import { byDisplaySequence, ExamplesModule } from "./showcase-utils";
 
 import "./App.css";
-
-export type VuuExample = {
-  (props?: any): JSX.Element;
-  displaySequence: number;
-};
-
-export interface ExamplesModule {
-  [key: string]: ExamplesModule | VuuExample;
-}
-
-type VuuTuple = [string, VuuExample | ExamplesModule];
-
-const isVuuExample = (item: VuuExample | ExamplesModule): item is VuuExample =>
-  typeof item === "function";
-
-const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
-  if (isVuuExample(f1) && isVuuExample(f2)) {
-    const { displaySequence: ds1 } = f1;
-    const { displaySequence: ds2 } = f2;
-
-    if (ds1 === undefined && ds2 === undefined) {
-      return 0;
-    }
-    if (ds2 === undefined) {
-      return -1;
-    }
-    if (ds1 === undefined) {
-      return 1;
-    }
-    return ds1 - ds2;
-  } else {
-    return 0;
-  }
-};
 
 const sourceFromImports = (
   stories: ExamplesModule,
@@ -52,6 +19,8 @@ const sourceFromImports = (
     .sort(byDisplaySequence)
     .map<TreeSourceNode>(([label, stories]) => {
       const id = `${prefix}${label}`;
+      // TODO how can we know when a potential docs node has docs
+      // console.log(`id=${id}`);
       if (typeof stories === "function") {
         return {
           id,
@@ -74,28 +43,38 @@ export interface AppProps {
 type ThemeDescriptor = { label?: string; id: string };
 
 const availableThemes: ThemeDescriptor[] = [
-  { id: "vuu", label: "Vuu Classic" },
-  { id: "salt", label: "Salt Classic" },
+  { id: "no-theme", label: "No Theme" },
+  { id: "salt", label: "Salt" },
+  { id: "vuu", label: "Vuu" },
 ];
 
 export const App = ({ stories }: AppProps) => {
+  console.log({ stories });
   const navigate = useNavigate();
+  // // TODO cache source in localStorage
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
-  const [theme] = useState<ThemeDescriptor>(availableThemes[0]);
+  const [themeIndex, setThemeIndex] = useState(2);
   const [themeMode] = useState<ThemeMode>("light");
   const [density] = useState<Density>("high");
 
+  const theme = useMemo(() => availableThemes[themeIndex], [themeIndex]);
+
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone&theme=vuu`, "_blank");
+    window.open(`${location.href}?standalone&theme=${theme.id}`, "_blank");
+  }, [theme.id]);
+
+  const handleThemeChange = useCallback((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    setThemeIndex(parseInt(value));
   }, []);
 
   return (
     <ThemeProvider
       applyThemeClasses
       density="high"
-      theme="salt"
+      theme="vuu"
       themeMode="light"
     >
       <Flexbox
@@ -125,13 +104,22 @@ export const App = ({ stories }: AppProps) => {
               style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
               <div
-                className="vuuToolbarProxy ShowcaseContentToolbar salt-theme salt-density-high"
+                className="vuuToolbarProxy ShowcaseContentToolbar"
                 style={{
                   height: 30,
-                  border: "solid 1px var(--salt-container-primary-borderColor)",
                 }}
                 data-mode="light"
               >
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  onChange={handleThemeChange}
+                  value={themeIndex}
+                >
+                  <ToggleButton value={0}>No Theme</ToggleButton>
+                  <ToggleButton value={1}>SALT</ToggleButton>
+                  <ToggleButton value={2}>VUU</ToggleButton>
+                </ToggleButtonGroup>
+
                 <Button
                   data-align="end"
                   data-icon="open-in"
@@ -146,7 +134,7 @@ export const App = ({ stories }: AppProps) => {
                   position: "relative",
                 }}
               >
-                <IFrame />
+                <IFrame theme={theme.id} />
               </div>
             </Flexbox>
           </ThemeProvider>

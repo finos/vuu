@@ -1,6 +1,5 @@
 import {
   byFileName,
-  copyFolderSync,
   formatBytes,
   formatDuration,
   padRight,
@@ -91,23 +90,14 @@ async function main() {
   const publicContent = fs.readdirSync(`./public`);
   publicContent.forEach((file) => {
     if (file !== ".DS_Store") {
-      if (typeof fs.cp === "function") {
-        // node v16.7 +
-        fs.cp(
-          path.resolve("public", file),
-          path.resolve(outdir, file),
-          { recursive: true },
-          (err) => {
-            if (err) throw err;
-          }
-        );
-      } else {
-        // delete once we no longer need to support node16 < .7
-        copyFolderSync(
-          path.resolve("public", file),
-          path.resolve(outdir, file)
-        );
-      }
+      fs.cp(
+        path.resolve("public", file),
+        path.resolve(outdir, file),
+        { recursive: true },
+        (err) => {
+          if (err) throw err;
+        }
+      );
     }
   });
 

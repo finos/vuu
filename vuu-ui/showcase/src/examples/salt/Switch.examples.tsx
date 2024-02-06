@@ -1,4 +1,3 @@
-// import { ComponentAnatomy } from '@heswell/component-anatomy';
 import { Switch, SwitchProps } from "@salt-ds/core";
 import { ChangeEvent, useState } from "react";
 

@@ -51,7 +51,7 @@ const NO_HEADINGS: TableHeadings = [];
 const DEFAULT_COL_WIDTH = 100;
 const DEFAULT_MAX_WIDTH = 250;
 const DEFAULT_MIN_WIDTH = 50;
-const DEFAULT_FLEX = 0;
+// const DEFAULT_FLEX = 0;
 
 export type SortCriteriaItem = string | [string, "asc"]; // TODO where is 'desc'?
 
@@ -1052,7 +1052,7 @@ export function applyWidthToColumns(
     defaultWidth = DEFAULT_COL_WIDTH,
     defaultMinWidth = DEFAULT_MIN_WIDTH,
     defaultMaxWidth = DEFAULT_MAX_WIDTH,
-    defaultFlex = DEFAULT_FLEX,
+    // defaultFlex = DEFAULT_FLEX,
   } = options;
 
   if (columnLayout === "Static") {
@@ -1096,7 +1096,7 @@ export function applyWidthToColumns(
       let excessWidthPerColumn = excessWidth / (flexCount || columns.length);
       let columnsNotYetAtMinWidth = columns.length;
       let unassignedExcess = 0;
-      let newColumns = columns.map((column) => {
+      let newColumns = columns.map<RuntimeColumnDescriptor>((column) => {
         const {
           minWidth = defaultMinWidth,
           width = defaultWidth,
@@ -1109,7 +1109,7 @@ export function applyWidthToColumns(
         if (adjustedWidth < minWidth) {
           columnsNotYetAtMinWidth -= 1;
           unassignedExcess += minWidth - adjustedWidth;
-          return { ...column, width: column.minWidth };
+          return { ...column, width: minWidth };
         } else {
           return { ...column, width: adjustedWidth };
         }
@@ -1134,8 +1134,8 @@ export function applyWidthToColumns(
         const inFlexMode = flexCount > 0;
         let additionalWidthPerColumn =
           additionalWidth / (flexCount || columns.length);
-        let columnsNotYetReachedMaxWidth = columns.length;
-        let unassignedAdditionalWidth = 0;
+        // let columnsNotYetReachedMaxWidth = columns.length;
+        // let unassignedAdditionalWidth = 0;
         let newColumns = columns.map((column) => {
           const {
             maxWidth = defaultMaxWidth,
@@ -1147,9 +1147,9 @@ export function applyWidthToColumns(
           }
           const adjustedWidth = width + additionalWidthPerColumn;
           if (adjustedWidth > maxWidth) {
-            columnsNotYetReachedMaxWidth -= 1;
-            unassignedAdditionalWidth += adjustedWidth - column.maxWidth;
-            return { ...column, width: column.maxWidth };
+            // columnsNotYetReachedMaxWidth -= 1;
+            // unassignedAdditionalWidth += adjustedWidth - maxWidth;
+            return { ...column, width: maxWidth };
           } else {
             return { ...column, width: adjustedWidth, canStretch: true };
           }
@@ -1162,7 +1162,7 @@ export function applyWidthToColumns(
         if (unassignedAdditionalColumnWidth > columnsNotYetAtMaxWidth) {
           additionalWidthPerColumn =
             unassignedAdditionalColumnWidth / columnsNotYetAtMaxWidth;
-          newColumns = newColumns.map((column) => {
+          newColumns = newColumns.map<RuntimeColumnDescriptor>((column) => {
             if (column.canStretch) {
               const adjustedWidth = Math.min(
                 column.width + additionalWidthPerColumn

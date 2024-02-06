@@ -63,7 +63,7 @@ export interface TreeProps extends HTMLAttributes<HTMLUListElement> {
   defaultSelected?: any;
   groupSelection?: GroupSelection;
   onHighlight?: (index: number) => void;
-  onSelectionChange: (selected: TreeSourceNode[]) => void;
+  onSelectionChange?: (selected: TreeSourceNode[]) => void;
   revealSelected?: boolean;
   selected?: string[];
   selection?: TreeSelection;
@@ -89,7 +89,6 @@ const Tree = forwardRef(function Tree(
 ) {
   const id = useId(idProp);
   const rootRef = useRef<HTMLUListElement>(null);
-
   // returns the full source data
   const [, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
     revealSelected: revealSelected
