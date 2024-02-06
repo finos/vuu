@@ -1,12 +1,11 @@
 import { BasketTable } from "./BasketTable";
 
-import { default as Basket } from "./Basket";
-import { VuuExample } from "showcase/src/showcase-utils";
+// import { default as Basket } from "./Basket";
 
 let displaySequence = 1;
 
-(Basket as VuuExample).displaySequence = displaySequence++;
-export { Basket };
+export const Basket = () => <BasketTable tableName="basket" />;
+Basket.displaySequence = displaySequence++;
 
 export const BasketConstituent = () => (
   <BasketTable tableName="basketConstituent" />

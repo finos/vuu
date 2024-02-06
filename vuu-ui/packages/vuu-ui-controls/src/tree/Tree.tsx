@@ -63,7 +63,7 @@ export interface TreeProps extends HTMLAttributes<HTMLUListElement> {
   defaultSelected?: any;
   groupSelection?: GroupSelection;
   onHighlight?: (index: number) => void;
-  onSelectionChange: (selected: TreeSourceNode[]) => void;
+  onSelectionChange?: (selected: TreeSourceNode[]) => void;
   revealSelected?: boolean;
   selected?: string[];
   selection?: TreeSelection;
