@@ -1,6 +1,7 @@
 import {
   assertModuleExportsAtLeastOneComponent,
   Density,
+  getUrlParameter,
   ThemeMode,
   ThemeProvider,
 } from "@finos/vuu-utils";
@@ -11,7 +12,7 @@ import "./Showcase.css";
 
 export const ShowcaseStandalone = ({
   density = "high",
-  theme = "vuu",
+  theme: themeProp,
   themeMode = "light",
 }: {
   density?: Density;
@@ -20,6 +21,11 @@ export const ShowcaseStandalone = ({
 }) => {
   const [component, setComponent] = useState<ReactNode>(null);
   const [themeReady, setThemeReady] = useState(false);
+
+  const theme = useMemo(
+    () => themeProp ?? getUrlParameter("theme", "vuu"),
+    [themeProp]
+  );
 
   useMemo(() => {
     switch (theme) {

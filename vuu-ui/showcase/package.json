@@ -5,10 +5,9 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "node ./scripts/build.mjs",
     "dev": "vite",
     "docs": "node ./scripts/build-docs.mjs",
-    "preview": "node ./scripts/preview.mjs",
     "showcase": "node ./scripts/showcase.mjs",
     "stories": "node ./scripts/parse-stories.mjs"
   },
