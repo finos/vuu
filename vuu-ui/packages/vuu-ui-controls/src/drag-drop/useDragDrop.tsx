@@ -28,15 +28,10 @@ import {
   NOT_OVERFLOWED,
 } from "./drop-target-utils";
 import { ScrollStopHandler, useAutoScroll } from "./useAutoScroll";
-import { useDragDropCopy } from "./useDragDropCopy";
+import { useDragDropCopy, NULL_DROP_OPTIONS } from "./useDragDropCopy";
 import { useDragDropIndicator } from "./useDragDropIndicator";
 import { useDragDropNaturalMovement } from "./useDragDropNaturalMovement";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
-
-const NULL_DROP_OPTIONS = {
-  fromIndex: -1,
-  toIndex: -1,
-} as const;
 
 const NULL_DRAG_DROP_RESULT = {
   beginDrag: () => undefined,
@@ -492,7 +487,7 @@ export const useDragDrop: DragDropHook = ({
         );
         scrollableContainerRef.current = scrollableContainer;
 
-        const containerRect = scrollableContainer?.getBoundingClientRect();
+        const containerRect = scrollableContainer.getBoundingClientRect();
         const draggableRect = dragElement.getBoundingClientRect();
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(

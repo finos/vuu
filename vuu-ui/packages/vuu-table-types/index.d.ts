@@ -238,8 +238,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   index?: number;
   isGroup?: boolean;
   isSystemColumn?: boolean;
-  // TODO remove this - we alwayd rely on columnmap
-  // key: number;
   label: string;
   locked?: boolean;
   marginLeft?: number;
