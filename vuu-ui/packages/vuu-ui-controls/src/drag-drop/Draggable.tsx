@@ -62,6 +62,7 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
       <Portal>
         <Popup
           anchorElement={{ current: document.body }}
+          className="vuuPopup"
           placement="absolute"
           position={position}
         >

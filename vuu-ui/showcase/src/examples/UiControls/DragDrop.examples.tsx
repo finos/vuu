@@ -3,6 +3,7 @@ import {
   DragDropProvider,
   DragStartHandler,
   DropHandler,
+  DropOptions,
   List,
   MoveItemHandler,
 } from "@finos/vuu-ui-controls";
@@ -79,14 +80,13 @@ export const DraggableListsOneWayDrag = () => {
   }, []);
 
   const handleDrop2 = useCallback<DropHandler>(
-    (fromIndex, toIndex, options) => {
+    ({ toIndex, payload }: DropOptions) => {
       setState2((data) => {
         const newData = data.slice();
-        const payload = options.payload as string;
         if (toIndex === -1) {
-          return newData.concat(payload);
+          return newData.concat(payload as string);
         } else {
-          newData.splice(toIndex, 0, payload);
+          newData.splice(toIndex, 0, payload as string);
           return newData;
         }
       });

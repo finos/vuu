@@ -1,5 +1,8 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { useDragDrop as useDragDrop } from "@finos/vuu-ui-controls";
+import {
+  DropOptions,
+  useDragDrop as useDragDrop,
+} from "@finos/vuu-ui-controls";
 import {
   isValidNumber,
   MEASURES,
@@ -158,7 +161,7 @@ export const useOverflowContainer = ({
   }, []);
 
   const handleDrop = useCallback(
-    (fromIndex: number, toIndex: number) => {
+    ({ fromIndex, toIndex }: DropOptions) => {
       onMoveItem?.(fromIndex, toIndex);
     },
     [onMoveItem]

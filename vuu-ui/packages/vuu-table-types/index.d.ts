@@ -234,9 +234,10 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
+  /** A 1 based index for aria-colindex */
+  index?: number;
   isGroup?: boolean;
   isSystemColumn?: boolean;
-  key: number;
   label: string;
   locked?: boolean;
   marginLeft?: number;

@@ -245,7 +245,7 @@ const TableCore = ({
         >
           {showColumnHeaders ? (
             <TableHeader
-              columns={columns}
+              columns={scrollProps.columnsWithinViewport}
               headings={headings}
               onMoveColumn={onMoveColumn}
               onMoveGroupColumn={onMoveGroupColumn}
@@ -254,6 +254,7 @@ const TableCore = ({
               onSortColumn={onSortColumn}
               tableConfig={tableConfig}
               tableId={id}
+              virtualColSpan={scrollProps.virtualColSpan}
             />
           ) : null}
           <div className={`${classBase}-body`}>
@@ -261,7 +262,7 @@ const TableCore = ({
               <Row
                 aria-rowindex={data[0] + 1}
                 columnMap={columnMap}
-                columns={columns}
+                columns={scrollProps.columnsWithinViewport}
                 highlighted={highlightedIndex === data[IDX]}
                 key={data[RENDER_IDX]}
                 onClick={onRowClick}
@@ -269,6 +270,7 @@ const TableCore = ({
                 row={data}
                 offset={getRowOffset(data)}
                 onToggleGroup={onToggleGroup}
+                virtualColSpan={scrollProps.virtualColSpan}
                 zebraStripes={tableAttributes.zebraStripes}
               />
             ))}

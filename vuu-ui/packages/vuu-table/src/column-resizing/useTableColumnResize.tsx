@@ -14,7 +14,7 @@ export interface CellResizeHookProps {
 
 export interface CellResizeHookResult {
   isResizing: boolean;
-  onDrag: (evt: MouseEvent, moveBy: number) => void;
+  onDrag: (evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => void;
   onDragStart: (evt: React.MouseEvent) => void;
   onDragEnd: (evt: MouseEvent) => void;
 }
@@ -24,28 +24,30 @@ export const useTableColumnResize = ({
   onResize,
   rootRef,
 }: CellResizeHookProps): CellResizeHookResult => {
-  const widthRef = useRef(0);
+  const widthRef = useRef({ start: 0, now: 0 });
+
   const [isResizing, setResizing] = useState(false);
   const { name } = column;
 
   const handleResizeStart = useCallback(() => {
     if (onResize && rootRef.current) {
-      const { width } = rootRef.current.getBoundingClientRect();
-      widthRef.current = Math.round(width);
+      const { current: width } = widthRef;
+      const { width: measuredWidth } = rootRef.current.getBoundingClientRect();
+      width.start = width.now = Math.round(measuredWidth);
       setResizing(true);
       onResize?.("begin", name);
     }
   }, [name, onResize, rootRef]);
 
   const handleResize = useCallback(
-    (_evt: MouseEvent, moveBy: number) => {
+    (_evt: MouseEvent, moveBy: number, totalDistanceMoved) => {
       if (rootRef.current) {
         if (onResize) {
-          const { width } = rootRef.current.getBoundingClientRect();
-          const newWidth = Math.round(width) + moveBy;
-          if (newWidth !== widthRef.current && newWidth > 0) {
+          const { current: width } = widthRef;
+          const newWidth = width.start + totalDistanceMoved;
+          if (newWidth !== width.now && newWidth > 0) {
             onResize("resize", name, newWidth);
-            widthRef.current = newWidth;
+            width.now = newWidth;
           }
         }
       }
@@ -55,7 +57,8 @@ export const useTableColumnResize = ({
 
   const handleResizeEnd = useCallback(() => {
     if (onResize) {
-      onResize("end", name, widthRef.current);
+      const { current: width } = widthRef;
+      onResize("end", name, width.now);
       setTimeout(() => {
         // clickHandler in HeaderCell checks isResizing before firing. Because onMouseUp
         // fires before click, we need to delay setting isResizing back to false, just

@@ -1,5 +1,10 @@
-import { getRowElementAtIndex, RowAtPositionFunc } from "@finos/vuu-utils";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import {
+  getColumnsInViewport,
+  getRowElementAtIndex,
+  itemsChanged,
+  RowAtPositionFunc,
+} from "@finos/vuu-utils";
+import type { VuuRange } from "@finos/vuu-protocol-types";
 import {
   ForwardedRef,
   useCallback,
@@ -7,9 +12,11 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from "react";
-import { ViewportMeasurements } from "./useTableViewport";
+import type { ViewportMeasurements } from "./useTableViewport";
 import { howFarIsRowOutsideViewport } from "./table-dom-utils";
+import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 
 export type ScrollDirectionVertical = "up" | "down";
 export type ScrollDirectionHorizontal = "left" | "right";
@@ -45,6 +52,12 @@ export interface ScrollingAPI {
   scrollToIndex: (itemIndex: number) => void;
   scrollToKey: (rowKey: string) => void;
 }
+
+/** How far we allow horizontal scroll movement before we recheck the rendered columns */
+const SCROLL_MOVE_CHECK_THRESHOLD = 100;
+
+/** The buffer size in pixels that we allow for rendering columns just outside the viewport */
+const HORIZONTAL_SCROLL_BUFFER = 200;
 
 /**
  * Return the maximum scroll positions for gioven container
@@ -139,6 +152,7 @@ type ScrollPos = {
 };
 
 export interface TableScrollHookProps {
+  columns: RuntimeColumnDescriptor[];
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
@@ -155,6 +169,7 @@ export interface TableScrollHookProps {
 }
 
 export const useTableScroll = ({
+  columns,
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
@@ -176,24 +191,78 @@ export const useTableScroll = ({
   });
   const scrollbarContainerRef = useRef<HTMLDivElement | null>(null);
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastHorizontalScrollCheckPoint = useRef(0);
 
   const {
     appliedPageSize,
     isVirtualScroll,
     rowCount: viewportRowCount,
     totalHeaderHeight,
+    viewportWidth,
   } = viewportMeasurements;
 
+  const columnsWithinViewportRef = useRef<RuntimeColumnDescriptor[]>([]);
+  const [, forceRefresh] = useState({});
+
+  const preSpanRef = useRef(0);
+
+  useMemo(() => {
+    const [visibleColumns, offset] = getColumnsInViewport(
+      columns,
+      contentContainerPosRef.current.scrollLeft,
+      contentContainerPosRef.current.scrollLeft +
+        viewportWidth +
+        HORIZONTAL_SCROLL_BUFFER
+    );
+    preSpanRef.current = offset;
+    columnsWithinViewportRef.current = visibleColumns;
+  }, [viewportWidth, columns]);
+
+  const handleHorizontalScroll = useCallback(
+    (scrollLeft: number) => {
+      contentContainerPosRef.current.scrollLeft = scrollLeft;
+      onHorizontalScroll?.(scrollLeft);
+
+      if (
+        Math.abs(scrollLeft - lastHorizontalScrollCheckPoint.current) >
+        SCROLL_MOVE_CHECK_THRESHOLD
+      ) {
+        lastHorizontalScrollCheckPoint.current = scrollLeft;
+
+        const [visibleColumns, pre] = getColumnsInViewport(
+          columns,
+          scrollLeft,
+          scrollLeft + viewportWidth + HORIZONTAL_SCROLL_BUFFER
+        );
+
+        if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {
+          preSpanRef.current = pre;
+          columnsWithinViewportRef.current = visibleColumns;
+          forceRefresh({});
+        }
+      }
+    },
+    [columns, onHorizontalScroll, viewportWidth]
+  );
   const handleVerticalScroll = useCallback(
     (scrollTop: number, pctScrollTop: number) => {
+      contentContainerPosRef.current.scrollTop = scrollTop;
+
       onVerticalScroll?.(scrollTop, pctScrollTop);
       const firstRow = getRowAtPosition(scrollTop);
       if (firstRow !== firstRowRef.current) {
         firstRowRef.current = firstRow;
         setRange({ from: firstRow, to: firstRow + viewportRowCount });
       }
+      onVerticalScrollInSitu?.(0);
     },
-    [getRowAtPosition, onVerticalScroll, setRange, viewportRowCount]
+    [
+      getRowAtPosition,
+      onVerticalScroll,
+      onVerticalScrollInSitu,
+      setRange,
+      viewportRowCount,
+    ]
   );
 
   const handleScrollbarContainerScroll = useCallback(() => {
@@ -254,16 +323,13 @@ export const useTableScroll = ({
       }
 
       if (scrollPos.scrollTop !== scrollTop) {
-        scrollPos.scrollTop = scrollTop;
         handleVerticalScroll(scrollTop, pctScrollTop);
-        onVerticalScrollInSitu?.(0);
       }
       if (scrollPos.scrollLeft !== scrollLeft) {
-        scrollPos.scrollLeft = scrollLeft;
-        onHorizontalScroll?.(scrollLeft);
+        handleHorizontalScroll(scrollLeft);
       }
     }
-  }, [handleVerticalScroll, onHorizontalScroll, onVerticalScrollInSitu]);
+  }, [handleVerticalScroll, handleHorizontalScroll]);
 
   const handleAttachScrollbarContainer = useCallback(
     (el: HTMLDivElement) => {
@@ -404,9 +470,11 @@ export const useTableScroll = ({
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
+    // TODO not complete yet
     () => ({
       scrollToIndex: (rowIndex: number) => {
         if (scrollbarContainerRef.current) {
+          // TODO hardcoded rowHeight
           const scrollPos = (rowIndex - 30) * 20;
           scrollbarContainerRef.current.scrollTop = scrollPos;
         }
@@ -437,11 +505,14 @@ export const useTableScroll = ({
   }, [setRange, viewportRowCount]);
 
   return {
+    columnsWithinViewport: columnsWithinViewportRef.current,
     /** Ref to be assigned to ScrollbarContainer */
     scrollbarContainerRef: scrollbarContainerCallbackRef,
     /** Ref to be assigned to ContentContainer */
     contentContainerRef: contentContainerCallbackRef,
     /** Scroll the table  */
     requestScroll,
+    /** number of leading columns not rendered because of virtualization  */
+    virtualColSpan: preSpanRef.current,
   };
 };

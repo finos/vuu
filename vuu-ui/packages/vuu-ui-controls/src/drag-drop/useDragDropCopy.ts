@@ -1,10 +1,15 @@
 import { useCallback, useRef } from "react";
 
-import {
+import type {
   InternalDragDropProps,
   InternalDragHookResult,
   ViewportRange,
 } from "./dragDropTypes";
+
+export const NULL_DROP_OPTIONS = {
+  fromIndex: -1,
+  toIndex: -1,
+} as const;
 
 export const useDragDropCopy = ({
   selected,
@@ -27,7 +32,7 @@ export const useDragDropCopy = ({
   );
 
   const drag = useCallback(() => undefined, []);
-  const drop = useCallback(() => undefined, []);
+  const drop = useCallback(() => NULL_DROP_OPTIONS, []);
 
   return {
     beginDrag,

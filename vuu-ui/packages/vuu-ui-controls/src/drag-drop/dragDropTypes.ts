@@ -68,8 +68,8 @@ export interface InternalDragHookResult
   extends Omit<DragHookResult, "isDragging" | "isScrolling"> {
   beginDrag: (dragElement: HTMLElement) => void;
   drag: (dragPos: number, mouseMoveDirection: "fwd" | "bwd") => void;
-  drop: () => void;
-  handleScrollStart?: () => void;
+  drop: () => DropOptions;
+  handleScrollStart?: (scrollDirection: "fwd" | "bwd") => void;
   handleScrollStop?: (
     scrollDirection: "fwd" | "bwd",
     _scrollPos: number,
@@ -83,7 +83,7 @@ export interface InternalDragHookResult
 }
 
 export interface DropOptions {
-  fromIndex?: number;
+  fromIndex: number;
   toIndex: number;
   isExternal?: boolean;
   payload?: unknown;
@@ -91,14 +91,11 @@ export interface DropOptions {
 
 export type DragStartHandler = (dragDropState: DragDropState) => void;
 
-export type DropHandler = (
-  fromIndex: number,
-  toIndex: number,
-  options: DropOptions
-) => void;
+export type DropHandler = (options: DropOptions) => void;
 
 export interface DragDropProps {
   allowDragDrop?: boolean | dragStrategy;
+  containerRef: RefObject<HTMLElement>;
   /** this is the className that will be assigned during drag to the dragged element  */
   draggableClassName: string;
   extendedDropZone?: boolean;
@@ -106,12 +103,16 @@ export interface DragDropProps {
   id?: string;
   isDragSource?: boolean;
   isDropTarget?: boolean;
+  itemQuery?: string;
   onDragStart?: DragStartHandler;
   onDrop: DropHandler;
   onDropSettle?: (toIndex: number) => void;
   orientation: orientationType;
-  containerRef: RefObject<HTMLElement>;
-  itemQuery?: string;
+  /**
+   * The scrolling container does not necessarily have to be a
+   * descendant of the container, it may be an ancestor element;
+   */
+  scrollingContainerRef?: RefObject<HTMLElement>;
   // selected?: CollectionItem<unknown> | CollectionItem<unknown>[] | null;
   viewportRange?: ViewportRange;
 }
@@ -119,7 +120,7 @@ export interface DragDropProps {
 export type DragDropHook = (props: DragDropProps) => DragHookResult;
 
 export interface InternalDragDropProps
-  extends Omit<DragDropProps, "draggableClassName" | "id"> {
+  extends Omit<DragDropProps, "draggableClassName" | "id" | "onDrop"> {
   isDragSource?: boolean;
   isDropTarget?: boolean;
   selected?: unknown;

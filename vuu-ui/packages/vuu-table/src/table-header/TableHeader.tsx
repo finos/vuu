@@ -29,6 +29,7 @@ export interface TableHeaderProps {
   onSortColumn: ColumnSortHandler;
   tableConfig: TableConfig;
   tableId: string;
+  virtualColSpan?: number;
 }
 
 export const TableHeader = memo(
@@ -43,13 +44,14 @@ export const TableHeader = memo(
     onSortColumn,
     tableConfig,
     tableId,
+    virtualColSpan = 0,
   }: TableHeaderProps) => {
     const {
-      containerRef,
       draggableColumn,
       draggedColumnIndex,
       onClick,
       onMouseDown,
+      setContainerRef,
     } = useTableHeader({
       columns,
       onMoveColumn,
@@ -58,7 +60,7 @@ export const TableHeader = memo(
     });
 
     return (
-      <div className={`${classBase}-col-headings`} ref={containerRef}>
+      <div className={`${classBase}-col-headings`} ref={setContainerRef}>
         {headings.map((colHeaders, i) => (
           <div className="vuuTable-heading" key={i}>
             {colHeaders.map(({ label, width }, j) => (
@@ -69,9 +71,17 @@ export const TableHeader = memo(
           </div>
         ))}
         <div className={`${classBase}-col-headers`} role="row">
+          {virtualColSpan > 0 ? (
+            <div
+              role="cell"
+              className="vuuTableCell"
+              style={{ width: virtualColSpan }}
+            />
+          ) : null}
           {columns.filter(isNotHidden).map((col, i) =>
             isGroupColumn(col) ? (
               <GroupHeaderCellNext
+                aria-colindex={col.index}
                 column={col}
                 data-index={i}
                 key={col.name}
@@ -81,6 +91,7 @@ export const TableHeader = memo(
               />
             ) : (
               <HeaderCell
+                aria-colindex={col.index}
                 className={cx({
                   "vuuDraggable-dragAway": i === draggedColumnIndex,
                 })}

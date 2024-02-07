@@ -1,6 +1,11 @@
 // TODO try and get TS path alias working to avoid relative paths like this
 import { TestTable } from "../../../../../showcase/src/examples/Table/Table.examples";
-import { assertRenderedRows, withAriaIndex } from "./table-test-utils";
+import { TwoHundredColumns } from "../../../../../showcase/src/examples/Table/TEST.examples";
+import {
+  assertRenderedColumns,
+  assertRenderedRows,
+  withAriaRowIndex,
+} from "./table-test-utils";
 
 describe("Table scrolling and keyboard navigation", () => {
   const RENDER_BUFFER = 5;
@@ -28,15 +33,15 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         cy.realPress("PageDown");
 
-        cy.findByRole("row", withAriaIndex(25)).should("not.exist");
-        cy.findByRole("row", withAriaIndex(26)).should("exist");
+        cy.findByRole("row", withAriaRowIndex(25)).should("not.exist");
+        cy.findByRole("row", withAriaRowIndex(26)).should("exist");
 
         cy.get(".vuuTable-contentContainer")
           .then((el) => el[0].scrollTop)
           .should("equal", 600);
 
         // row 31 should be top row in viewport
-        cy.findByRole("row", withAriaIndex(31)).should(
+        cy.findByRole("row", withAriaRowIndex(31)).should(
           "have.css",
           "transform",
           "matrix(1, 0, 0, 1, 0, 600)"
@@ -178,6 +183,54 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.mount(<TestTable {...tableConfig} />);
         cy.get(".vuuTable-scrollbarContainer").scrollTo(0, 10000);
         assertRenderedRows({ from: 500, to: 530 }, RENDER_BUFFER, ROW_COUNT);
+      });
+    });
+  });
+
+  describe("horizontal virtualization", () => {
+    describe("WHEN table has many columns", () => {
+      it("THEN only those columns within the viewport are rendered", () => {
+        // this width allows for exactly 6 visible columns, we allow a buffer of 200px
+        // so 2 out-of-viewport colums are rendered
+        cy.mount(<TwoHundredColumns width={915} />);
+        assertRenderedColumns({
+          rendered: { from: 1, to: 8 },
+          visible: { from: 1, to: 6 },
+        });
+      });
+    });
+
+    describe("WHEN table is scrolled horizontally no more than 100px", () => {
+      it("THEN rendering is unchanged", () => {
+        cy.mount(<TwoHundredColumns width={915} />);
+        cy.get(".vuuTable-scrollbarContainer").scrollTo(100, 0);
+        assertRenderedColumns({
+          rendered: { from: 1, to: 8 },
+          visible: { from: 1, to: 6 },
+        });
+      });
+    });
+
+    describe("WHEN table is scrolled beyond the 100px buffer", () => {
+      it("THEN additional column(s) are rendered", () => {
+        cy.mount(<TwoHundredColumns width={915} />);
+        cy.get(".vuuTable-scrollbarContainer").scrollTo(110, 0);
+        assertRenderedColumns({
+          rendered: { from: 1, to: 9 },
+          // the leading edge of column 7 is visible because of space we leave for scrollbar
+          visible: { from: 1, to: 7 },
+        });
+      });
+    });
+
+    describe("WHEN table is scrolled exactly one viewport width", () => {
+      it("THEN next set of columns are rendered", () => {
+        cy.mount(<TwoHundredColumns width={915} />);
+        cy.get(".vuuTable-scrollbarContainer").scrollTo(900, 0);
+        assertRenderedColumns({
+          rendered: { from: 6, to: 14 },
+          visible: { from: 7, to: 12 },
+        });
       });
     });
   });

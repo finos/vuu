@@ -8,7 +8,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useDragDrop as useDragDrop } from "../drag-drop";
+import { DropOptions, useDragDrop as useDragDrop } from "../drag-drop";
 import { isTabMenuOptions } from "./TabMenuOptions";
 import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
@@ -100,7 +100,7 @@ export const useTabstrip = ({
     );
 
   const handleDrop = useCallback(
-    (fromIndex: number, toIndex: number) => {
+    ({ fromIndex, toIndex }: DropOptions) => {
       const { current: selected } = lastSelection;
       console.log(
         `useTabstrip handleDrop ${fromIndex} - ${toIndex}  ${selected}`

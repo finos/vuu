@@ -205,7 +205,6 @@ export const DraggableListItemsNoScroll = () => {
   const [data, setData] = useState(usa_states.slice(0, 10));
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    console.log(`drop ${fromIndex} ${toIndex}`);
     setData((data) => {
       const newData = data.slice();
       const [tab] = newData.splice(fromIndex, 1);
@@ -242,7 +241,6 @@ export const DraggableListItems = () => {
   const [data, setData] = useState(usa_states);
 
   const handleDrop = useCallback((fromIndex, toIndex) => {
-    console.log(`drop ${fromIndex} ${toIndex}`);
     setData((data) => {
       const newData = data.slice();
       const [tab] = newData.splice(fromIndex, 1);
@@ -265,12 +263,15 @@ export const DraggableListItems = () => {
     <List
       aria-label="Drag Drop Listbox example"
       allowDragDrop
+      data-showcase-center
       // itemHeight={24}
       onSelect={handleSelect}
       maxWidth={292}
       onMoveListItem={handleDrop}
       selectionStrategy="multiple"
       source={data}
+      style={{ border: "solid 1px blue" }}
+      width={300}
     />
   );
 };

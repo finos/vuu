@@ -508,7 +508,6 @@ export const GroupHeaderCellNextOneColumn = () => {
     const valueFormatter = defaultValueFormatter;
     return {
       groupConfirmed: true,
-      key: 0,
       label: "group-column",
       name: "group-column",
       isGroup: true,
@@ -557,14 +556,12 @@ export const GroupHeaderCellNextTwoColumn = () => {
       isGroup: true,
       columns: [
         {
-          key: 1,
           name: "currency",
           label: "currency",
           valueFormatter,
           width: 100,
         },
         {
-          key: 2,
           name: "exchange",
           label: "exchange",
           valueFormatter,
@@ -601,27 +598,23 @@ export const GroupHeaderCellNextThreeColumn = () => {
 
   const [column] = useState<GroupColumnDescriptor>({
     groupConfirmed: true,
-    key: 0,
     label: "group-column",
     name: "group-column",
     isGroup: true,
     columns: [
       {
-        key: 1,
         name: "currency",
         label: "currency",
         valueFormatter,
         width: 100,
       },
       {
-        key: 2,
         name: "exchange",
         label: "exchange",
         valueFormatter,
         width: 100,
       },
       {
-        key: 3,
         name: "price",
         label: "proce",
         valueFormatter,
@@ -664,27 +657,23 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
 
   const [column] = useState<GroupColumnDescriptor>({
     groupConfirmed: true,
-    key: 0,
     label: "group-column",
     name: "group-column",
     isGroup: true,
     columns: [
       {
-        key: 1,
         name: "currency",
         label: "currency",
         valueFormatter,
         width: 100,
       },
       {
-        key: 2,
         name: "exchange",
         label: "exchange",
         valueFormatter,
         width: 100,
       },
       {
-        key: 3,
         name: "price",
         label: "price",
         valueFormatter,

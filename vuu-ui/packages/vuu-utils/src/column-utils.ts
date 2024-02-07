@@ -97,12 +97,6 @@ export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
 export const isValidPinLocation = (v: string): v is PinLocation =>
   isValidColumnAlignment(v) || v === "floating" || v === "";
 
-export const isKeyedColumn = (
-  column: ColumnDescriptor
-): column is RuntimeColumnDescriptor => {
-  return typeof (column as RuntimeColumnDescriptor).key === "number";
-};
-
 export const fromServerDataType = (
   serverDataType: VuuColumnDataType
 ): ColumnTypeSimple => {
@@ -208,8 +202,6 @@ export function buildColumnMap(
     return columns.reduce((map, column, i) => {
       if (typeof column === "string") {
         map[column] = start + i;
-      } else if (isKeyedColumn(column)) {
-        map[column.name] = column.key;
       } else {
         map[column.name] = start + i;
       }
@@ -328,7 +320,6 @@ export function extractGroupColumn(
     });
 
     const groupCol = {
-      key: -1,
       name: "group-col",
       heading: ["group-col"],
       isGroup: true,
@@ -349,9 +340,13 @@ export const isGroupColumn = (
 export const isJsonAttribute = (value: unknown) =>
   typeof value === "string" && value.endsWith("+");
 
-export const isJsonGroup = (column: RuntimeColumnDescriptor, row: VuuDataRow) =>
+export const isJsonGroup = (
+  column: RuntimeColumnDescriptor,
+  row: VuuDataRow,
+  columnMap: ColumnMap
+) =>
   (column.type as ColumnTypeDescriptor)?.name === "json" &&
-  isJsonAttribute(row[column.key]);
+  isJsonAttribute(row[columnMap[column.name]]);
 
 export const isJsonColumn = (column: RuntimeColumnDescriptor) =>
   (column.type as ColumnTypeDescriptor)?.name === "json";
@@ -707,27 +702,35 @@ export const getColumnsInViewport = (
 ): [RuntimeColumnDescriptor[], number] => {
   const visibleColumns: RuntimeColumnDescriptor[] = [];
   let preSpan = 0;
+  let rightPinnedOnly = false;
 
-  for (let offset = 0, i = 0; i < columns.length; i++) {
+  for (let columnOffset = 0, i = 0; i < columns.length; i++) {
     const column = columns[i];
-    // TODO we need to measure the pinned columns first
+    // TODO if we were to measure the pinned columns first,
+    // might be able to save rendering some columns ?
     if (column.hidden) {
       continue;
-    } else if (offset + column.width < vpStart) {
+    } else if (rightPinnedOnly) {
+      if (column.pin === "right") {
+        visibleColumns.push(column);
+      }
+    } else if (columnOffset + column.width < vpStart) {
       if (column.pin === "left") {
         visibleColumns.push(column);
-      } else if (offset + column.width + columns[i + 1]?.width > vpStart) {
+      } else if (
+        columnOffset + column.width + columns[i + 1]?.width >
+        vpStart
+      ) {
         visibleColumns.push(column);
       } else {
         preSpan += column.width;
       }
-    } else if (offset > vpEnd) {
-      visibleColumns.push(column);
-      break;
+    } else if (columnOffset > vpEnd) {
+      rightPinnedOnly = true;
     } else {
       visibleColumns.push(column);
     }
-    offset += column.width;
+    columnOffset += column.width;
   }
 
   return [visibleColumns, preSpan];
@@ -751,7 +754,8 @@ const { DEPTH, IS_LEAF } = metadataKeys;
 // Get the value for a specific columns within a grouped column
 export const getGroupValueAndOffset = (
   columns: RuntimeColumnDescriptor[],
-  row: DataSourceRow
+  row: DataSourceRow,
+  columnMap: ColumnMap
 ): [unknown, number] => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
@@ -762,8 +766,8 @@ export const getGroupValueAndOffset = (
     return ["$root", 0];
   } else {
     // offset 1 for now to allow for $root
-    const { key, valueFormatter } = columns[depth - 1];
-    const value = valueFormatter(row[key]);
+    const { name, valueFormatter } = columns[depth - 1];
+    const value = valueFormatter(row[columnMap[name]]);
     return [value, depth - 1];
   }
 };

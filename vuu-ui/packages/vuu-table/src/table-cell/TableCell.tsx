@@ -15,7 +15,7 @@ export const TableCell = ({
   row,
 }: TableCellProps) => {
   const { className, style } = useCell(column, classBase);
-  const { CellRenderer, name, valueFormatter } = column;
+  const { CellRenderer, index, name, valueFormatter } = column;
   const dataIdx = columnMap[name];
 
   const handleDataItemEdited = useCallback<DataItemCommitHandler>(
@@ -47,6 +47,7 @@ export const TableCell = ({
 
   return (
     <div
+      aria-colindex={index}
       className={className}
       onClick={onClick ? handleClick : undefined}
       role="cell"

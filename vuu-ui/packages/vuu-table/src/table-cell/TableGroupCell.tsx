@@ -10,9 +10,14 @@ const { IS_LEAF } = metadataKeys;
 
 const classBase = "vuuTableGroupCell";
 
-export const TableGroupCell = ({ column, onClick, row }: TableCellProps) => {
+export const TableGroupCell = ({
+  column,
+  columnMap,
+  onClick,
+  row,
+}: TableCellProps) => {
   const { columns } = column as GroupColumnDescriptor;
-  const [value, offset] = getGroupValueAndOffset(columns, row);
+  const [value, offset] = getGroupValueAndOffset(columns, row, columnMap);
   const { className, style } = useCell(column, classBase);
 
   const handleClick = useCallback(

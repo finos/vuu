@@ -40,6 +40,7 @@ export interface ViewportMeasurements {
   totalHeaderHeight: number;
   verticalScrollbarWidth: number;
   viewportBodyHeight: number;
+  viewportWidth: number;
 }
 
 export interface TableViewportHookResult extends ViewportMeasurements {
@@ -68,6 +69,7 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   totalHeaderHeight: 0,
   verticalScrollbarWidth: 0,
   viewportBodyHeight: 0,
+  viewportWidth: 0,
 };
 
 export const useTableViewport = ({
@@ -150,6 +152,8 @@ export const useTableViewport = ({
       const appliedPageSize =
         count * rowHeight * (pixelContentHeight / virtualContentHeight);
 
+      const viewportWidth = size.width;
+
       return {
         appliedPageSize,
         contentHeight: pixelContentHeight,
@@ -166,6 +170,7 @@ export const useTableViewport = ({
         totalHeaderHeight,
         verticalScrollbarWidth,
         viewportBodyHeight,
+        viewportWidth,
       };
     } else {
       return UNMEASURED_VIEWPORT;

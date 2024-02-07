@@ -373,7 +373,6 @@ export const List = forwardRef(function List<
       onResize={handleResize}
       ref={useForkRef<HTMLDivElement>(setContainerRef, forwardedRef)}
       role="listbox"
-      onScroll={onVerticalScroll}
       style={{ ...styleProp, ...sizeStyles }}
       tabIndex={listDisabled || disableFocus ? undefined : tabIndex}
     >
@@ -383,7 +382,7 @@ export const List = forwardRef(function List<
           <ListPlaceholder />
         </>
       ) : (
-        <div className={`${classBase}-viewport`}>
+        <div className={`${classBase}-viewport`} onScroll={onVerticalScroll}>
           <div
             className={`${classBase}-scrollingContentContainer`}
             ref={contentContainerRef}

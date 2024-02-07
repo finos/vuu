@@ -18,7 +18,7 @@ import {
   DragStartHandler,
   MeasuredProps,
   MeasuredSize,
-  useDragDrop as useDragDrop,
+  useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
@@ -38,6 +38,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -158,7 +159,7 @@ export const useTable = ({
   }, []);
 
   const {
-    columns: runtimeColumns,
+    columns,
     dispatchColumnAction,
     headings,
     tableAttributes,
@@ -168,10 +169,10 @@ export const useTable = ({
   useLayoutEffectSkipFirst(() => {
     dispatchColumnAction({
       type: "init",
+      tableConfig: config,
       dataSource,
-      tableConfig,
     });
-  }, [tableConfig, dataSource, dispatchColumnAction]);
+  }, [config, dataSource, dispatchColumnAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
@@ -184,22 +185,6 @@ export const useTable = ({
     },
     [dataSource, dispatchColumnAction, onConfigChange]
   );
-
-  /**
-  stateColumns are required only for the duration of a column resize operation.
-  We want to minimize the scope of rendering whilst a resize operation is in progress
-  and we do not need to persist transient size values. When the resize is complete, we
-  trigger a config change, clear the stateColumns and revert to using the runtimeColumns
-  managed by the table model, to which the ersize change will have been applied.
-   */
-  const [stateColumns, setStateColumns] = useState<RuntimeColumnDescriptor[]>();
-  const [columns, setColumnSize] = useMemo(() => {
-    const setSize = (columnName: string, width: number) => {
-      const cols = updateColumn(runtimeColumns, columnName, { width });
-      setStateColumns(cols);
-    };
-    return [stateColumns ?? runtimeColumns, setSize];
-  }, [runtimeColumns, stateColumns]);
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
@@ -251,6 +236,7 @@ export const useTable = ({
   });
 
   const { requestScroll, ...scrollProps } = useTableScroll({
+    columns,
     getRowAtPosition,
     rowHeight,
     scrollingApiRef,
@@ -389,15 +375,18 @@ export const useTable = ({
     [dataSource]
   );
 
+  const resizeCells = useRef<HTMLElement[] | undefined>();
+
   const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
       const column = columns.find((column) => column.name === columnName);
       if (column) {
         if (phase === "resize") {
-          if (isValidNumber(width)) {
-            setColumnSize(columnName, width);
-          }
+          resizeCells.current?.forEach((cell) => {
+            cell.style.width = `${width}px`;
+          });
         } else if (phase === "end") {
+          resizeCells.current = undefined;
           if (isValidNumber(width)) {
             dispatchColumnAction({
               type: "resizeColumn",
@@ -405,7 +394,6 @@ export const useTable = ({
               column,
               width,
             });
-            setStateColumns(undefined);
             onConfigChange?.(
               stripInternalProperties(
                 updateTableConfig(tableConfig, {
@@ -417,7 +405,12 @@ export const useTable = ({
             );
           }
         } else {
-          setStateColumns(undefined);
+          const byColIndex = `[aria-colindex='${column.index}']`;
+          resizeCells.current = Array.from(
+            containerRef.current?.querySelectorAll(
+              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`
+            ) ?? []
+          );
           dispatchColumnAction({
             type: "resizeColumn",
             phase,
@@ -431,12 +424,12 @@ export const useTable = ({
         );
       }
     },
-    [columns, tableConfig, dispatchColumnAction, onConfigChange, setColumnSize]
+    [columns, dispatchColumnAction, onConfigChange, tableConfig, containerRef]
   );
 
   const onToggleGroup = useCallback(
     (row: DataSourceRow, column: RuntimeColumnDescriptor) => {
-      const isJson = isJsonGroup(column, row);
+      const isJson = isJsonGroup(column, row, columnMap);
       const key = row[KEY];
 
       if (row[IS_EXPANDED]) {
@@ -469,7 +462,7 @@ export const useTable = ({
         }
       }
     },
-    [columns, dataSource, dispatchColumnAction]
+    [columnMap, columns, dataSource, dispatchColumnAction]
   );
 
   const {
@@ -578,19 +571,8 @@ export const useTable = ({
     [onRowClickProp, selectionHookOnRowClick]
   );
 
-  useLayoutEffectSkipFirst(() => {
-    dispatchColumnAction({
-      type: "init",
-      tableConfig: config,
-      dataSource,
-    });
-  }, [config, dataSource, dispatchColumnAction]);
-
   const onMoveColumn = useCallback(
     (columns: ColumnDescriptor[]) => {
-      console.log(`useTable onMoveColumn`, {
-        columns,
-      });
       const newTableConfig = {
         ...tableConfig,
         columns,

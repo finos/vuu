@@ -1,7 +1,10 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { useDragDrop as useDragDrop } from "@finos/vuu-ui-controls";
+import {
+  DropOptions,
+  useDragDrop as useDragDrop,
+} from "@finos/vuu-ui-controls";
 import { moveColumnTo, visibleColumnAtIndex } from "@finos/vuu-utils";
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { MouseEventHandler, RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
 
 export interface TableHeaderHookProps
@@ -20,10 +23,19 @@ export const useTableHeader = ({
   onSortColumn,
   tableConfig,
 }: TableHeaderHookProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
+  const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
+    containerRef.current = el;
+    if (el) {
+      scrollingContainerRef.current = el.closest(".vuuTable-contentContainer");
+    } else {
+      scrollingContainerRef.current = null;
+    }
+  }, []);
 
   const handleDropColumnHeader = useCallback(
-    (moveFrom: number, moveTo: number) => {
+    ({ fromIndex: moveFrom, toIndex: moveTo }: DropOptions) => {
       const column = columns[moveFrom];
       // columns are what get rendered, so these are the columns that
       // the drop operation relates to. We must translate these into
@@ -77,16 +89,17 @@ export const useTableHeader = ({
     allowDragDrop: true,
     containerRef,
     draggableClassName: `vuuTable`,
+    itemQuery: ".vuuTableHeaderCell",
     onDrop: handleDropColumnHeader,
     orientation: "horizontal",
-    itemQuery: ".vuuTableHeaderCell",
+    scrollingContainerRef,
   });
 
   return {
-    containerRef,
     draggableColumn,
     draggedColumnIndex: dragDropHook.draggedItemIndex,
     onClick: handleColumnHeaderClick,
     onMouseDown: columnHeaderDragMouseDown,
+    setContainerRef,
   };
 };

@@ -15,8 +15,8 @@ const classBase = "vuuProgressCell";
 const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
   //TODO what about click handling
 
-  const { type } = column;
-  const value = row[column.key];
+  const { name, type } = column;
+  const value = row[columnMap[name]];
   let showProgress = false;
   let percentage = 0;
 

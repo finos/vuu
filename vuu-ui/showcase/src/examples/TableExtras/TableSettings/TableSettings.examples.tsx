@@ -5,7 +5,8 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { TableConfig } from "@finos/vuu-table-types";
-import { useMemo } from "react";
+import { getSchema } from "@finos/vuu-data-test";
+import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
@@ -135,6 +136,47 @@ export const DefaultColumnList = () => {
   );
 };
 DefaultColumnList.displaySequence = displaySequence++;
+
+export const ManyColumnList = () => {
+  const initialColumns = useMemo<ColumnItem[]>(() => {
+    const schema = getSchema("TwoHundredColumns");
+    return schema.columns.map((col) => ({
+      ...col,
+      subscribed: true,
+      isCalculated: false,
+    }));
+  }, []);
+
+  const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
+
+  const handleMoveListItem = useCallback((fromIndex, toIndex) => {
+    console.log(`drop ${fromIndex} ${toIndex}`);
+    setColumns((data) => {
+      const newData = data.slice();
+      const [tab] = newData.splice(fromIndex, 1);
+      if (toIndex === -1) {
+        return newData.concat(tab);
+      } else {
+        newData.splice(toIndex, 0, tab);
+        return newData;
+      }
+    });
+  }, []);
+
+  const handleChange = () => {
+    console.log("handleChange");
+  };
+
+  return (
+    <ColumnList
+      columnItems={columns}
+      style={{ width: 300, height: 600 }}
+      onChange={handleChange}
+      onMoveListItem={handleMoveListItem}
+    />
+  );
+};
+ManyColumnList.displaySequence = displaySequence++;
 
 export const DefaultSettingsPanel = () => {
   const [availableColumns, tableConfig] = useMemo<
