@@ -25,12 +25,13 @@ export const DefaultColumnGenerator: ColumnGeneratorFn = (
   columnConfig = {}
 ) => {
   if (typeof columns === "number") {
-    return [{ name: "row number", width: 150 }].concat(
+    return [{ label: "Row Number", name: "rownum", width: 150 }].concat(
       Array(columns)
         .fill(true)
         .map((_, i) => {
-          const name = `column ${i + 2}`;
-          return { name, width: 100, ...columnConfig[name] };
+          const name = `column_${i + 1}`;
+          const label = `Column ${i + 1}`;
+          return { label, name, width: 100, ...columnConfig[name] };
         })
     );
   } else {
