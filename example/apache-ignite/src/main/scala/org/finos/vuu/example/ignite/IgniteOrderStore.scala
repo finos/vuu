@@ -59,15 +59,14 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     parentOrderCache.get(id)
   }
 
-  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): LazyList[ChildOrder] = {
+  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
     val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
     val orderByClause = if(sqlSortQueries == null || sqlSortQueries.isEmpty) " order by id" else s" order by $sqlSortQueries"
     val query = new SqlFieldsQuery(s"select * from ChildOrder$whereClause$orderByClause limit ? offset ?")
     query.setArgs(rowCount, startIndex)
 
-    val results = LazyList.from(childOrderCache.query(query).asScala).map(i => toChildOrder(i.asScala.toList))
-
-    logger.info(s"Loaded Ignite ChildOrder for ${results.size} rows, from index : $startIndex where $whereClause order by $sqlSortQueries")
+    val results = childOrderCache.query(query).asScala.iterator.map(i => toChildOrder(i.asScala.toList))
+    logger.info(s"Loaded Ignite ChildOrder for $rowCount rows, from index : $startIndex where $whereClause order by $sqlSortQueries")
 
     results
   }

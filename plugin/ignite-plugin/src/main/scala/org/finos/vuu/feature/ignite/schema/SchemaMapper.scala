@@ -24,7 +24,7 @@ object SchemaMapper {
   private def validateSchema(externalSchema: ExternalStoreEntitySchema,
                              internalColumns: Array[Column],
                              fieldsMap: Map[String, String]): ValidationError = {
-    LazyList(
+    Iterator(
       () => hasUniqueColumnNames(fieldsMap.values.toList),
       () => externalFieldsInMapConformsToExternalSchema(externalSchema, fieldsMap.keys),
       () => internalFieldsInMapMatchTableColumns(internalColumns, fieldsMap.values)

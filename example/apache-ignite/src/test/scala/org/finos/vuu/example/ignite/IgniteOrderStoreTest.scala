@@ -88,7 +88,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
     val filterQueries = "parentId = 2"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1)
+    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 2)

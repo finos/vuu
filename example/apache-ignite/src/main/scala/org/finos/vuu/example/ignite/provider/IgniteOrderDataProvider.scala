@@ -45,6 +45,8 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
       .map(toTableRow)
       .foreach(rowData => updateTableRowAtIndex(index.getAndIncrement(), rowData))
 
+    logger.info(s"Updated ${index.get() - startIndex} table rows")
+
     viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
 

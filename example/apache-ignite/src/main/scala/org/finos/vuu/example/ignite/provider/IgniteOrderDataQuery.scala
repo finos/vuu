@@ -13,7 +13,7 @@ class IgniteOrderDataQuery private (private val igniteOrderStore: IgniteOrderSto
 
   private val filterAndSortSpecToSql = FilterAndSortSpecToSql(schemaMapper)
 
-  def fetch(filterSpec: FilterSpec, sortSpec: SortSpecInternal, startIndex: Long, rowCount: Int): LazyList[ChildOrder] = {
+  def fetch(filterSpec: FilterSpec, sortSpec: SortSpecInternal, startIndex: Long, rowCount: Int): Iterator[ChildOrder] = {
     igniteOrderStore.findChildOrder(
       filterAndSortSpecToSql.filterToSql(filterSpec),
       filterAndSortSpecToSql.sortToSql(sortSpec),
