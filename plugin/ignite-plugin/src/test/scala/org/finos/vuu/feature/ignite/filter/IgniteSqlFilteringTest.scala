@@ -1,30 +1,15 @@
 package org.finos.vuu.feature.ignite.filter
 
-import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.filter.FilterSpecParser
-import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.table.Columns
+import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
+import org.finos.vuu.feature.ignite.schema.{ExternalStoreEntitySchema, SchemaField, SchemaMapper}
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
 
 class IgniteSqlFilteringTest extends IgniteTestsBase {
 
   private val filterTreeVisitor: IgniteSqlFilterTreeVisitor = new IgniteSqlFilterTreeVisitor
-  private val tableDef = TableDef(
-    name = "bigOrders",
-    keyField = "orderId",
-    Columns.fromNames(
-      "id".int(),
-      "parentId".string(),
-      "ric".string(),
-      "quantity".int(),
-      "price".double(),
-      "side".string(),
-      "strategy".string(),
-      "parentOrderId".int(),
-      "rating".char()
-    )
-  )
+  private val testSchemaMapper = SchemaMapper(new TestEntitySchema, internalColumns, fieldsMap)
 
   Feature("Parse and apply GREATER THAN filter") {
     val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)
@@ -45,6 +30,22 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       val filterResult = applyFilter("price > 50.0")
 
       assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
+    }
+
+    Scenario("Support mapped column names") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key > 2")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("id > 2")
+
+      filterResult.size shouldEqual 3
     }
   }
 
@@ -68,6 +69,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2, testOrder3))
     }
+
+    Scenario("Support mapped column names") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key >= 3")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
+    }
   }
 
   Feature("Parse and apply LESSER THAN filter") {
@@ -90,6 +99,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
+
+    Scenario("Support mapped column names") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key < 2")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1))
+    }
   }
 
   Feature("Parse and apply LESSER THAN EQUAL filter") {
@@ -109,6 +126,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("price <= 50.0")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
+    }
+
+    Scenario("Support mapped column names") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key <= 2")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
@@ -150,6 +175,22 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       assertEquavalent(filterResult.toArray, Array(testOrder1))
     }
+
+    Scenario("Support mapped column name") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key = 2")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder2))
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("id = 2")
+
+      filterResult.size shouldEqual 3
+    }
   }
 
   Feature("Parse and apply NOT-EQUAL filter") {
@@ -188,63 +229,75 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
+
+    Scenario("Support mapped column name") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key != 1")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("id != 1")
+
+      filterResult.size shouldEqual 3
+    }
   }
 
   Feature("Parse and apply AND filter") {
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 1000)
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200)
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000)
+
     //todo assert exception or handle error
     ignore("Support one clause") {
-      givenOrderExistInIgnite(
-        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 1000),
-        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
-        createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
-      )
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("ric = \"AAPL.L\" and")
 
-      assertEquavalent(
-        filterResult.toArray,
-        Array(
-          createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
-          createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
-        )
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3)
       )
     }
 
     Scenario("Support two clause") {
-      givenOrderExistInIgnite(
-        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 1000),
-        createTestOrderEntity(id = 2, ric = "AAPL.L", quantity = 200),
-        createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
-      )
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("ric = \"AAPL.L\" and quantity > 500")
 
-      assertEquavalent(
-        filterResult.toArray,
-        Array(
-          createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 1000),
-        )
-      )
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
+    }
+
+    Scenario("ignores the clause if it returns empty sql (aka invalid)") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ric = \"AAPL.L\" and doesNotExist > 500")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
   }
 
   Feature("Parse and apply OR filter") {
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 150)
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "VOD.L", quantity = 200)
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 150)
+
     Scenario("Support two clauses") {
-      givenOrderExistInIgnite(
-        createTestOrderEntity(id = 1, ric = "VOD.L", quantity = 150),
-        createTestOrderEntity(id = 2, ric = "VOD.L", quantity = 200),
-        createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 150),
-      )
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("ric = \"AAPL.L\" or quantity > 180")
 
-      assertEquavalent(
-        filterResult.toArray,
-        Array(
-          createTestOrderEntity(id = 2, ric = "VOD.L", quantity = 200),
-          createTestOrderEntity(id = 3, ric = "AAPL.L", quantity = 150),
-        )
-      )
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
+    }
+
+    Scenario("ignores the clause if it returns empty sql (aka invalid)") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ric = \"AAPL.L\" or doesNotExist > 180")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
   }
 
@@ -296,7 +349,15 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("empty filter for non-string column types") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("id starts \"1\"")
+      val filterResult = applyFilter("key starts \"1\"")
+
+      filterResult.size shouldEqual 3
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ricX starts \"V\"")
 
       filterResult.size shouldEqual 3
     }
@@ -318,16 +379,24 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("empty filter for non-string column types") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("id ends \"1\"")
+      val filterResult = applyFilter("key ends \"1\"")
+
+      filterResult.size shouldEqual 3
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ricX ends \"DN\"")
 
       filterResult.size shouldEqual 3
     }
   }
 
   Feature("Parse and apply IN filter") {
-    val testOrder1 = createTestOrderEntity(id = 1, ric = "BABA.HK", rating = 'B', price = 10.5)
-    val testOrder2 = createTestOrderEntity(id = 2, ric = "VAD.DDN", rating = 'C', price = 5.0)
-    val testOrder3 = createTestOrderEntity(id = 3, ric = "NVD.LDN", rating = 'D', price = 3)
+    val testOrder1 = createTestOrderEntity(id = 1, parentId = 2, ric = "BABA.HK", rating = 'B', price = 10.5)
+    val testOrder2 = createTestOrderEntity(id = 2, parentId = 3, ric = "VAD.DDN", rating = 'C', price = 5.0)
+    val testOrder3 = createTestOrderEntity(id = 3, parentId = 4, ric = "NVD.LDN", rating = 'D', price = 3)
 
     Scenario("supports String column type") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
@@ -348,7 +417,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("supports Int column type") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("id in [1, 3]")
+      val filterResult = applyFilter("parentId in [2, 4]")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
     }
@@ -360,15 +429,61 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
     }
+
+    Scenario("supports mapped column name") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("key in [1, 3]")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("id in [1, 3]")
+
+      filterResult.size shouldEqual 3
+    }
   }
 
   private def applyFilter(filter: String): Iterable[TestOrderEntity] = {
     info(s"FILTER: $filter")
     val clause = FilterSpecParser.parse[IgniteSqlFilterClause](filter, filterTreeVisitor)
     info(s"CLAUSE: $clause")
-    val criteria = clause.toSql(tableDef)
+    val criteria = clause.toSql(testSchemaMapper)
     info(s"SQL WHERE: $criteria")
     igniteTestStore.getFilteredBy(criteria)
+  }
+
+  private def fieldsMap: Map[String, String] = Map(
+    "id"       -> "key",
+    "ric"      -> "ric",
+    "price"    -> "price",
+    "quantity" -> "quantity",
+    "parentId" -> "parentId",
+    "rating"   -> "rating"
+  )
+
+  private def internalColumns: Array[Column] = Array(
+  ("key", classOf[Int]),
+  ("ric", classOf[String]),
+  ("price", classOf[Double]),
+  ("quantity", classOf[Int]),
+  ("parentId", classOf[Int]),
+  ("rating", classOf[String]),
+  ).zipWithIndex.map({ case ((name, t), i) => SimpleColumn(name, i, t) })
+
+  private class TestEntitySchema extends ExternalStoreEntitySchema {
+    override val schemaFields: List[SchemaField] = List(
+      SchemaField("id", classOf[Int], 0),
+      SchemaField("parentId", classOf[String], 1),
+      SchemaField("ric", classOf[String], 2),
+      SchemaField("strategy", classOf[String], 3),
+      SchemaField("quantity", classOf[Int], 4),
+      SchemaField("price", classOf[Double], 5),
+      SchemaField("rating", classOf[Char], 6),
+    )
   }
 
 }

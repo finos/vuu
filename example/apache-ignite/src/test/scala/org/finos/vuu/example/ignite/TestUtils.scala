@@ -5,22 +5,32 @@ import org.apache.ignite.calcite.CalciteQueryEngineConfiguration
 import org.apache.ignite.configuration.{IgniteConfiguration, SqlConfiguration}
 import org.apache.ignite.{Ignite, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
+import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
 
 import java.util
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
 object TestUtils {
-  def createChildOrder(parentId: Int, id: Int): ChildOrder = {
-    ChildOrder(parentId = parentId,
+  def createChildOrder(
+                        id: Int,
+                        parentId: Int = 1,
+                        ric: String = "ric",
+                        price: Double = 1.22,
+                        quantity: Int = 100,
+                        side: String = "Buy",
+                        account: String = "account",
+                        ccy: String = "EUR"): ChildOrder = {
+    ChildOrder(
+      parentId = parentId,
       id = id,
-      ric = "ric",
-      price = 1.22,
-      quantity = 100,
-      side = "Buy",
-      account = "account",
+      ric = ric,
+      price = price,
+      quantity = quantity,
+      side = side,
+      account = account,
+      ccy = ccy,
       strategy = "",
       exchange = "",
-      ccy = "EUR",
       volLimit = 100,
       filledQty = 0,
       openQty = 100,
@@ -60,32 +70,7 @@ object TestUtils {
     //childOrderCacheConfiguration.setIndexedTypes(classOf[Int], classOf[ChildOrder])
     childOrderCacheConfiguration.setName("childOrderCache")
 
-    val fields = new util.LinkedHashMap[String, String]()
-    fields.put("parentId", classOf[Int].getName)
-    fields.put("id", classOf[Int].getName)
-    fields.put("ric", classOf[String].getName)
-    fields.put("price", classOf[Double].getName)
-    fields.put("quantity", classOf[Int].getName)
-    fields.put("side", classOf[String].getName)
-    fields.put("account", classOf[String].getName)
-    fields.put("strategy", classOf[String].getName)
-    fields.put("exchange", classOf[String].getName)
-    fields.put("ccy", classOf[String].getName)
-    fields.put("volLimit", classOf[Double].getName)
-    fields.put("filledQty", classOf[Int].getName)
-    fields.put("openQty", classOf[Int].getName)
-    fields.put("averagePrice", classOf[Double].getName)
-    fields.put("status", classOf[String].getName)
-
-    val indexes = new util.ArrayList[QueryIndex]()
-    indexes.add(new QueryIndex(List("id").asJavaCollection, QueryIndexType.SORTED).setName("ID_IDX"))
-    indexes.add(new QueryIndex(List("parentId").asJavaCollection, QueryIndexType.SORTED).setName("PARENTID_IDX"))
-
-    val queryEntity: QueryEntity = new QueryEntity(classOf[Int], classOf[ChildOrder])
-      .setFields(fields)
-      .setIndexes(indexes)
-
-    childOrderCacheConfiguration.setQueryEntities(List(queryEntity).asJavaCollection)
+    childOrderCacheConfiguration.setQueryEntities(List(IgniteChildOrderEntity.buildQueryEntity).asJavaCollection)
     igniteConfiguration.setCacheConfiguration(parentOrderCacheConfiguration, childOrderCacheConfiguration)
 
     val sqlConfiguration = new SqlConfiguration
