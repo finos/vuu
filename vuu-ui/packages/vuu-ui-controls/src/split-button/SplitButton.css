@@ -1,0 +1,38 @@
+.vuuSplitButton {
+    --vuuPopupMenu-iconSize: 20px;
+    --primary-border-radius: 6px 0 0 6px;
+    --secondary-border-radius: 0 6px 6px 0;
+
+    align-items: center;
+    border: none;
+    display: flex;
+    height: 26px;
+}
+
+.vuuPortal:has(.vuuSplitButton-menu) {
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.vuuSplitButton:has(.vuuPopupMenu-open) {
+    --primary-border-radius: 6px 0 0 0;
+    --secondary-border-radius: 0 6px 0 0;
+}
+
+.vuuSplitButton-primary {
+    --saltButton-height: 26px;
+    border-width: 1px;
+    border-color: var(--vuu-color-gray-50);
+    border-style: solid none solid solid;
+    border-radius: var(--primary-border-radius);
+    padding: 0 16px;
+}
+
+.vuuSplitButton-secondary {
+    --saltButton-height: 26px;
+    border-width: 1px;
+    border-color: var(--vuu-color-gray-50);
+    border-style: solid;
+    border-radius: var(--secondary-border-radius);
+}

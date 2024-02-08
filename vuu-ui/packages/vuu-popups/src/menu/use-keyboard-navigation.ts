@@ -11,6 +11,13 @@ import { isNavigationKey } from "./key-code";
 import { isValidNumber } from "@finos/vuu-utils";
 import { MenuOpenHandler } from "./MenuList";
 
+export type MenuCloseReason = "tab-away" | "close-child-menu";
+
+export type MenuCloseHandler = (
+  evt: KeyboardEvent,
+  reason: MenuCloseReason
+) => void;
+
 export interface KeyboardNavigationProps {
   autoHighlightFirstItem?: boolean;
   count: number;
@@ -18,7 +25,7 @@ export interface KeyboardNavigationProps {
   highlightedIndex?: number;
   onActivate: (idx: number) => void;
   onHighlight?: (idx: number) => void;
-  onCloseMenu: (idx: number) => void;
+  onCloseMenu: MenuCloseHandler;
   onOpenMenu?: MenuOpenHandler;
 }
 
@@ -129,13 +136,13 @@ export const useKeyboardNavigation = ({
           onOpenMenu?.(menuItemEl, true);
         }
       } else if (e.key === "ArrowLeft" && !isRoot(e.target as HTMLElement)) {
-        onCloseMenu(highlightedIndex);
+        onCloseMenu(e, "close-child-menu");
       } else if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
         onActivate && onActivate(highlightedIndex);
       } else if (e.key === "Tab") {
-        onCloseMenu(-1);
+        onCloseMenu(e, "tab-away");
       }
     },
     [

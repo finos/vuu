@@ -186,10 +186,13 @@ const showContextMenu = (
 
   const handleClose = (reason?: PopupCloseReason) => {
     if (reasonIsMenuAction(reason)) {
+      if (reason?.closedBy === "popup-service") {
+        return;
+      }
       handleContextMenuAction(reason);
       // TODO this results in onClose being called twice on component
       // cant simply be removed, some refactoring work needed
-      PopupService.hidePopup();
+      PopupService.hidePopup(reason);
     }
     contextMenuProps?.onClose?.(reason);
   };

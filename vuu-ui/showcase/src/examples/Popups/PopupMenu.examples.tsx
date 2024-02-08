@@ -1,10 +1,17 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { ContextMenuProvider, PopupMenu } from "@finos/vuu-popups";
-import { useMemo } from "react";
+import {
+  ContextMenuProvider,
+  MenuCloseHandler,
+  PopupMenu,
+  PopupMenuProps,
+} from "@finos/vuu-popups";
+import { useCallback, useMemo } from "react";
 
 let displaySequence = 1;
 
-export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
+export const DefaultPopupMenu = ({
+  menuActionHandler,
+}: Partial<PopupMenuProps>) => {
   const menuBuilder = useMemo<MenuBuilder>(
     () => () =>
       [
@@ -20,32 +27,49 @@ export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
     []
   );
 
-  const menuHandler = useMemo<MenuActionHandler>(
-    () =>
-      ({ menuId }) => {
+  const menuHandler = useMemo<MenuActionHandler>(() => {
+    if (menuActionHandler) {
+      return menuActionHandler;
+    } else {
+      return ({ menuId }) => {
         console.log(`Menu Action ${menuId} invoked`);
         if (menuId === "action-1" || menuId === "action-1") {
           // invoke our action here
           return true;
         }
-      },
-    []
-  );
+      };
+    }
+  }, [menuActionHandler]);
+
+  const onMenuOpen = useCallback(() => {
+    console.log("Menu opened");
+  }, []);
+
+  const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
+    console.log(`Menu closed`, {
+      reason,
+    });
+  }, []);
 
   return (
     <div
       style={{
         border: "solid 1px #ccc",
         gap: 24,
-        height,
+        height: 300,
         padding: 12,
-        width,
+        width: 600,
         display: "flex",
         alignItems: "center",
       }}
     >
-      <input defaultValue="test" />
-      <PopupMenu menuBuilder={menuBuilder} menuActionHandler={menuHandler} />
+      <input data-testid="input" defaultValue="test" />
+      <PopupMenu
+        menuBuilder={menuBuilder}
+        menuActionHandler={menuHandler}
+        onMenuOpen={onMenuOpen}
+        onMenuClose={onMenuClose}
+      />
     </div>
   );
 };

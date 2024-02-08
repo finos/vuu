@@ -4,7 +4,7 @@
     --vuu-icon-color: var(--vuuPopupMenu-iconColor,#606477);
     --vuu-icon-height: 20px;
     --vuu-icon-left: 2px;
-    --vuu-icon-size: 16px;
+    --vuu-icon-size: var(--vuuPopupMenu-iconSize, 16px);
     --vuu-icon-top: 2px;
     --vuu-icon-width: 20px;
 
@@ -13,7 +13,7 @@
     border-radius: var(--vuuPopupMenu-borderRadius, 4px);
     cursor: pointer;
     display: inline-block;
-    margin-top: 2px;
+    /* margin-top: 2px; */
     padding: 2px;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .vuuPopupMenu-open {
-    --saltButton-background: var(--salt-actionable-secondary-background-active);
+    --vuuPopupMenu-background: var(--salt-actionable-secondary-background-active);
     --vuu-icon-color: white;
 }
 

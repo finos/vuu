@@ -16,6 +16,7 @@ export * from "./measured-container";
 export * from "./overflow-container";
 export * from "./price-ticker";
 export * from "./price-ticker";
+export * from "./split-button";
 export * from "./tabstrip";
 export * from "./toolbar";
 export * from "./tree";
