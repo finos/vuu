@@ -1,9 +1,11 @@
 package org.finos.vuu.example.ignite.provider
 
+import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.sort.SortDirection
-import org.finos.vuu.core.table.{Column, SimpleColumn}
+import org.finos.vuu.core.table.{Column, Columns}
 import org.finos.vuu.example.ignite.IgniteOrderStore
-import org.finos.vuu.example.ignite.schema.IgniteEntitySchemaBuilder
+import org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryTest.{entitySchema, internalColumns, internalColumnsByExternalFields}
+import org.finos.vuu.example.ignite.schema.{IgniteEntitySchema, IgniteEntitySchemaBuilder}
 import org.finos.vuu.feature.ignite.schema.SchemaMapper
 import org.finos.vuu.net.FilterSpec
 import org.scalamock.scalatest.MockFactory
@@ -13,7 +15,7 @@ import org.scalatest.matchers.should.Matchers
 class IgniteOrderDataQueryTest extends AnyFeatureSpec with Matchers with MockFactory {
 
   private val igniteStore: IgniteOrderStore = mock[IgniteOrderStore]
-  private val schemaMapper = SchemaMapper(entitySchema, externalFieldByColumns)
+  private val schemaMapper = SchemaMapper(entitySchema, internalColumns, internalColumnsByExternalFields)
   private val igniteDataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
 
   Feature("toInternalRow") {
@@ -40,14 +42,18 @@ class IgniteOrderDataQueryTest extends AnyFeatureSpec with Matchers with MockFac
       igniteDataQuery.fetch(filterSpec, sortSpec, 0, 0)
     }
   }
-
-  private def externalFieldByColumns: Map[String, Column] = Map(
-    "key" -> SimpleColumn("id", 0, classOf[Int]),
-    "name" -> SimpleColumn("name", 1, classOf[String]),
-    "value" -> SimpleColumn("value", 2, classOf[String]),
-  )
-
-  private def entitySchema = IgniteEntitySchemaBuilder().withCaseClass[TestDto].build()
 }
 
 private case class TestDto(key: Int, name: String, value: Int)
+
+private object IgniteOrderDataQueryTest {
+  val internalColumns: Array[Column] = Columns.fromNames("id".int(), "name".string(), "value".string())
+
+  val internalColumnsByExternalFields: Map[String, String] = Map(
+    "key" -> "id",
+    "name" -> "name",
+    "value" -> "value",
+  )
+
+  val entitySchema: IgniteEntitySchema = IgniteEntitySchemaBuilder().withCaseClass[TestDto].build()
+}

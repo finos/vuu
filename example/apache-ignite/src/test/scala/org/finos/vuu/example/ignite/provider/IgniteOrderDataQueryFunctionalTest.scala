@@ -4,7 +4,9 @@ import org.apache.ignite.IgniteCache
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
+import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
 import org.finos.vuu.example.ignite.{IgniteOrderStore, TestUtils}
+import org.finos.vuu.feature.ignite.schema.SchemaMapper
 import org.finos.vuu.net.FilterSpec
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
@@ -15,7 +17,8 @@ class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with Matchers {
   private val parentOrderCache: IgniteCache[Int, ParentOrder] = ignite.getOrCreateCache("parentOrderCache")
   private val childOrderCache: IgniteCache[Int, ChildOrder] = ignite.getOrCreateCache("childOrderCache")
   private val orderStore = new IgniteOrderStore(parentOrderCache, childOrderCache)
-  private val dataQuery = IgniteOrderDataQuery(orderStore, IgniteOrderDataModule.schemaMapper)
+  private val schemaMapper = SchemaMapper(IgniteChildOrderEntity.getSchema, IgniteOrderDataModule.columns, IgniteOrderDataProvider.columnNameByExternalField)
+  private val dataQuery = IgniteOrderDataQuery(orderStore, schemaMapper)
 
   test("Can parse and apply filtering and sorting when fetching") {
     val testOrder1 = TestUtils.createChildOrder(1, ric = "ABC.HK", price = 5.55)

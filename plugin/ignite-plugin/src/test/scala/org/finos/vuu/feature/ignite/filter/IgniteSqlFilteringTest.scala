@@ -9,7 +9,7 @@ import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
 class IgniteSqlFilteringTest extends IgniteTestsBase {
 
   private val filterTreeVisitor: IgniteSqlFilterTreeVisitor = new IgniteSqlFilterTreeVisitor
-  private val testSchemaMapper = SchemaMapper(new TestEntitySchema, columnsByExternalField)
+  private val testSchemaMapper = SchemaMapper(new TestEntitySchema, internalColumns, fieldsMap)
 
   Feature("Parse and apply GREATER THAN filter") {
     val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)
@@ -456,19 +456,26 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     igniteTestStore.getFilteredBy(criteria)
   }
 
-  private def columnsByExternalField: Map[String, Column] = Map(
-    "id"       -> ("key", classOf[Int]),
-    "ric"      -> ("ric", classOf[String]),
-    "price"    -> ("price", classOf[Double]),
-    "quantity" -> ("quantity", classOf[Int]),
-    "parentId" -> ("parentId", classOf[Int]),
-    "rating"   -> ("rating", classOf[String])
-  ).zipWithIndex
-    .map({ case ((extField, (name, t)), i) => (extField, SimpleColumn(name, i, t)) })
-    .toMap
+  private def fieldsMap: Map[String, String] = Map(
+    "id"       -> "key",
+    "ric"      -> "ric",
+    "price"    -> "price",
+    "quantity" -> "quantity",
+    "parentId" -> "parentId",
+    "rating"   -> "rating"
+  )
+
+  private def internalColumns: Array[Column] = Array(
+  ("key", classOf[Int]),
+  ("ric", classOf[String]),
+  ("price", classOf[Double]),
+  ("quantity", classOf[Int]),
+  ("parentId", classOf[Int]),
+  ("rating", classOf[String]),
+  ).zipWithIndex.map({ case ((name, t), i) => SimpleColumn(name, i, t) })
 
   private class TestEntitySchema extends ExternalStoreEntitySchema {
-    override def schemaFields: List[SchemaField] = List(
+    override val schemaFields: List[SchemaField] = List(
       SchemaField("id", classOf[Int], 0),
       SchemaField("parentId", classOf[String], 1),
       SchemaField("ric", classOf[String], 2),

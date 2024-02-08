@@ -14,11 +14,9 @@ import scala.reflect.runtime.universe.{MethodSymbol, TypeTag, typeOf}
 case class IgniteEntitySchema private (private val columnDef: mutable.LinkedHashMap[ColumnName, IgniteDataType],
                               queryIndex: List[QueryIndex]) extends ExternalStoreEntitySchema {
 
-  private val _schemaFields: List[SchemaField] = columnDef.zipWithIndex.map(
+  override val schemaFields: List[SchemaField] = columnDef.zipWithIndex.map(
     {case ((name, dType), i) => SchemaField(name, dType, i)}
   ).toList
-
-  override def schemaFields: List[SchemaField] = _schemaFields
 
   def queryEntity(keyClass: Class[_], valueClass: Class[_]): QueryEntity = {
     val fields = new java.util.LinkedHashMap[String, String](
@@ -77,19 +75,18 @@ case class IgniteEntitySchemaBuilder(private val fieldDef: mutable.LinkedHashMap
   }
 
   def build(): IgniteEntitySchema = {
-    val validationResult = validateSchema
-    if (!validationResult.valid) throw new InvalidIndexException(validationResult.error)
+    val validationError = validateSchema
+    if (validationError.nonEmpty) throw new InvalidIndexException(validationError.get)
 
     IgniteEntitySchema(fieldDef, index.toList)
   }
 
-  private case class ValidationResult(valid: Boolean, error: String)
+  private type ValidationError = Option[String]
   private def validateSchema = indexAppliedOnAbsentField()
-  private def indexAppliedOnAbsentField(): ValidationResult = {
+  private def indexAppliedOnAbsentField(): ValidationError = {
     index.foreach(_.getFieldNames.asScala.foreach(name =>
-      if (!fieldDef.contains(name))
-        return ValidationResult(valid = false, s"Field `$name` not found in schema.")
+      if (!fieldDef.contains(name)) return Some(s"Field `$name` not found in schema.")
     ))
-    ValidationResult(valid = true, null)
+    None
   }
 }

@@ -1,31 +1,16 @@
 package org.finos.vuu.feature.ignite.schema
 
-import org.finos.vuu.core.table.{Column, SimpleColumn}
+import org.finos.vuu.core.module.vui.VuiStateModule.stringToFieldDef
+import org.finos.vuu.core.table.{Column, Columns, SimpleColumn}
 import org.finos.vuu.feature.ignite.schema.SchemaMapper.InvalidSchemaMapException
+import org.finos.vuu.feature.ignite.schema.SchemaMapperTest.{fieldsMap, tableColumns}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class SchemaMapperTest extends AnyFeatureSpec with Matchers {
 
   private val testExternalSchema = new TestEntitySchema
-  private val tableColumnsByExternalField = testTableColumnsByExternalField()
-  private val schemaMapper = SchemaMapper(testExternalSchema, tableColumnsByExternalField)
-
-  Feature("validation") {
-    Scenario("fails when mapped external field not found in external schema") {
-      val exception = intercept[InvalidSchemaMapException](
-        SchemaMapper(testExternalSchema, Map("not-exists" -> SimpleColumn("ric", 0, classOf[Int])))
-      )
-      exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex "[Ff]ield `not-exists` not found"
-    }
-  }
-
-  Feature("tableColumns") {
-    Scenario("can extract and return internal table columns") {
-      schemaMapper.tableColumns shouldEqual tableColumnsByExternalField.values.toArray
-    }
-  }
+  private val schemaMapper = SchemaMapper(testExternalSchema, tableColumns, fieldsMap)
 
   Feature("toTableRowData") {
     Scenario("can convert an ordered list of external values to a map conforming to internal schema") {
@@ -52,10 +37,47 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
       column.get shouldEqual SimpleColumn("ric", 1, classOf[String])
     }
   }
+
+
+  Feature("validation on instantiation") {
+    Scenario("fails when mapped external field not found in external schema") {
+      val exception = intercept[InvalidSchemaMapException](
+        SchemaMapper(testExternalSchema, Columns.fromNames("ric".int()), Map("non-existent" -> "ric"))
+      )
+      exception shouldBe a[RuntimeException]
+      exception.getMessage should include regex s"[Ff]ield `non-existent` not found"
+    }
+
+    Scenario("fails when mapped internal field not found in internal columns") {
+      val exception = intercept[InvalidSchemaMapException](
+        SchemaMapper(testExternalSchema, Columns.fromNames("id".int()), Map("externalId" -> "absent-col"))
+      )
+      exception shouldBe a[RuntimeException]
+      exception.getMessage should include regex "[Cc]olumn `absent-col` not found"
+    }
+
+    Scenario("fails when a passed internal column is not present in mapped fields") {
+      val exception = intercept[InvalidSchemaMapException](
+        SchemaMapper(testExternalSchema, tableColumns.slice(0, 2), fieldsMap.slice(0, 1))
+      )
+      exception shouldBe a[RuntimeException]
+      exception.getMessage should include regex "[Mm]ore .* columns .* than mapped fields"
+    }
+
+    Scenario("fails when a external->internal map contains duplicated internal field") {
+      val exception = intercept[InvalidSchemaMapException](SchemaMapper(
+        testExternalSchema,
+        Columns.fromNames("id".int(), "ric".string()),
+        Map("externalId" -> "id", "externalRic" -> "id")
+      ))
+      exception shouldBe a[RuntimeException]
+      exception.getMessage should include("duplicated column names")
+    }
+  }
 }
 
 private class TestEntitySchema extends ExternalStoreEntitySchema {
-  override def schemaFields: List[SchemaField] = List(
+  override val schemaFields: List[SchemaField] = List(
     SchemaField("externalId", classOf[Int], 0),
     SchemaField("externalRic", classOf[String], 1),
     SchemaField("type", classOf[String], 2),
@@ -63,13 +85,20 @@ private class TestEntitySchema extends ExternalStoreEntitySchema {
   )
 }
 
-private object testTableColumnsByExternalField {
-  def apply(): Map[String, Column] = {
-    Map(
-      "externalId" -> SimpleColumn("id", 0, classOf[Int]),
-      "externalRic" -> SimpleColumn("ric", 1, classOf[String]),
-      "type" -> SimpleColumn("type", 2, classOf[String]),
-      "price" -> SimpleColumn("price", 3, classOf[Double]),
-    )
-  }
+private object SchemaMapperTest {
+
+  val tableColumns: Array[Column] = Columns.fromNames(
+      "id".int(),
+      "ric".string(),
+      "type".string(),
+      "price".double(),
+  )
+
+  val fieldsMap: Map[String, String] = Map(
+    "externalId" -> "id",
+    "externalRic" -> "ric",
+    "type" -> "type",
+    "price" -> "price"
+  )
+
 }
