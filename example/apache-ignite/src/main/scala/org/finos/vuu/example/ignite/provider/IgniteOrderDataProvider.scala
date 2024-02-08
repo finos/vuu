@@ -6,33 +6,31 @@ import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider.columnNameByExternalField
+import org.finos.vuu.example.ignite.query.IndexCalculator
 import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
 import org.finos.vuu.feature.ignite.schema.SchemaMapper
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
-import org.finos.vuu.viewport.ViewPort
+import org.finos.vuu.viewport.{ViewPort, ViewPortRange}
 
 import java.util.concurrent.atomic.AtomicInteger
 
 class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
                              (implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
-  private val extraRowsCount = 5000 //fetch extra rows to reduce need to re-fetch when view port change by small amount
+
   private val schemaMapper = SchemaMapper(IgniteChildOrderEntity.getSchema, IgniteOrderDataModule.columns, columnNameByExternalField)
   private val dataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
+  private val indexCalculator = IndexCalculator(extraRowsCount = 5000)
 
   override def runOnce(viewPort: ViewPort): Unit = {
 
     val internalTable = viewPort.table.asTable.asInstanceOf[VirtualizedSessionTable]
 
-    val range = viewPort.getRange
     val totalSize = igniteStore.childOrderCount().toInt
 
-    internalTable.setSize(totalSize)
+    val (startIndex, endIndex, rowCount) = indexCalculator.calc(viewPort.getRange, totalSize)
 
-    val startIndex = Math.max(range.from - extraRowsCount, 0)
-    val endIndex = range.to + extraRowsCount
-    val rowCount = if (endIndex > startIndex) endIndex - startIndex else 1
-
+    internalTable.setSize(totalSize)//todo should this be long?
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
     logger.info(s"Loading data between $startIndex and $endIndex")
