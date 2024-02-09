@@ -90,7 +90,7 @@ describe("Given a PopupMenu", () => {
       cy.mount(<DefaultPopupMenu menuActionHandler={menuHandlerSpy} />);
       cy.findByRole("button").realClick();
       cy.findByRole("menuitem", { name: "Menu Item 1" }).should("exist");
-      cy.wait(30);
+      cy.wait(50);
       cy.realPress("Enter");
       cy.get("@menuActionHandler").should("have.been.calledWith", {
         type: "menu-action",

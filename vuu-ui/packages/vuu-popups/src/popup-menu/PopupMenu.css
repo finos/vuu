@@ -9,7 +9,7 @@
     --vuu-icon-width: 20px;
 
     background: var(--vuuPopupMenu-background, transparent);
-    border: var(--vuuPopupMenu-border, none);
+    /* border: var(--vuuPopupMenu-border, none); */
     border-radius: var(--vuuPopupMenu-borderRadius, 4px);
     cursor: pointer;
     display: inline-block;

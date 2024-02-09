@@ -9,37 +9,26 @@ import { useCallback, useMemo } from "react";
 
 let displaySequence = 1;
 
+const menuBuilder: MenuBuilder = () => [
+  { action: "action-1", label: "Menu Item 1" },
+  { action: "action-2", label: "Menu Item 2" },
+];
+
+const defaultMenuHandler: MenuActionHandler = ({ menuId }) => {
+  console.log(`Menu Action ${menuId} invoked`);
+  if (menuId === "action-1" || menuId === "action-1") {
+    // invoke our action here
+    return true;
+  }
+};
+
 export const DefaultPopupMenu = ({
   menuActionHandler,
 }: Partial<PopupMenuProps>) => {
-  const menuBuilder = useMemo<MenuBuilder>(
-    () => () =>
-      [
-        {
-          action: "action-1",
-          label: "Menu Item 1",
-        },
-        {
-          action: "action-2",
-          label: "Menu Item 2",
-        },
-      ],
-    []
+  const menuHandler = useMemo<MenuActionHandler>(
+    () => menuActionHandler ?? defaultMenuHandler,
+    [menuActionHandler]
   );
-
-  const menuHandler = useMemo<MenuActionHandler>(() => {
-    if (menuActionHandler) {
-      return menuActionHandler;
-    } else {
-      return ({ menuId }) => {
-        console.log(`Menu Action ${menuId} invoked`);
-        if (menuId === "action-1" || menuId === "action-1") {
-          // invoke our action here
-          return true;
-        }
-      };
-    }
-  }, [menuActionHandler]);
 
   const onMenuOpen = useCallback(() => {
     console.log("Menu opened");
@@ -53,15 +42,8 @@ export const DefaultPopupMenu = ({
 
   return (
     <div
-      style={{
-        border: "solid 1px #ccc",
-        gap: 24,
-        height: 300,
-        padding: 12,
-        width: 600,
-        display: "flex",
-        alignItems: "center",
-      }}
+      data-showcase-center
+      style={{ gap: 24, display: "flex", alignItems: "center" }}
     >
       <input data-testid="input" defaultValue="test" />
       <PopupMenu

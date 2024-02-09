@@ -151,7 +151,7 @@ export const PopupMenu = ({
   return (
     <Button
       {...htmlAttributes}
-      aria-controls={`${id}-menu-root`}
+      aria-controls={menuOpen ? `${id}-menu` : undefined}
       aria-expanded={menuOpen}
       aria-haspopup="menu"
       className={cx(classBase, className, {
