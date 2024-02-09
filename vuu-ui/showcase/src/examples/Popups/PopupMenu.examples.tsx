@@ -1,51 +1,57 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { ContextMenuProvider, PopupMenu } from "@finos/vuu-popups";
-import { useMemo } from "react";
+import {
+  ContextMenuProvider,
+  MenuCloseHandler,
+  PopupMenu,
+  PopupMenuProps,
+} from "@finos/vuu-popups";
+import { useCallback, useMemo } from "react";
 
 let displaySequence = 1;
 
-export const DefaultPopupMenu = ({ height = 300, width = 600 }) => {
-  const menuBuilder = useMemo<MenuBuilder>(
-    () => () =>
-      [
-        {
-          action: "action-1",
-          label: "Menu Item 1",
-        },
-        {
-          action: "action-2",
-          label: "Menu Item 2",
-        },
-      ],
-    []
+const menuBuilder: MenuBuilder = () => [
+  { action: "action-1", label: "Menu Item 1" },
+  { action: "action-2", label: "Menu Item 2" },
+];
+
+const defaultMenuHandler: MenuActionHandler = ({ menuId }) => {
+  console.log(`Menu Action ${menuId} invoked`);
+  if (menuId === "action-1" || menuId === "action-1") {
+    // invoke our action here
+    return true;
+  }
+};
+
+export const DefaultPopupMenu = ({
+  menuActionHandler,
+}: Partial<PopupMenuProps>) => {
+  const menuHandler = useMemo<MenuActionHandler>(
+    () => menuActionHandler ?? defaultMenuHandler,
+    [menuActionHandler]
   );
 
-  const menuHandler = useMemo<MenuActionHandler>(
-    () =>
-      ({ menuId }) => {
-        console.log(`Menu Action ${menuId} invoked`);
-        if (menuId === "action-1" || menuId === "action-1") {
-          // invoke our action here
-          return true;
-        }
-      },
-    []
-  );
+  const onMenuOpen = useCallback(() => {
+    console.log("Menu opened");
+  }, []);
+
+  const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
+    console.log(`Menu closed`, {
+      reason,
+    });
+  }, []);
 
   return (
     <div
-      style={{
-        border: "solid 1px #ccc",
-        gap: 24,
-        height,
-        padding: 12,
-        width,
-        display: "flex",
-        alignItems: "center",
-      }}
+      data-showcase-center
+      style={{ gap: 24, display: "flex", alignItems: "center" }}
     >
-      <input defaultValue="test" />
-      <PopupMenu menuBuilder={menuBuilder} menuActionHandler={menuHandler} />
+      <input data-testid="input" defaultValue="test" />
+      <PopupMenu
+        menuBuilder={menuBuilder}
+        menuActionHandler={menuHandler}
+        onMenuOpen={onMenuOpen}
+        onMenuClose={onMenuClose}
+      />
     </div>
   );
 };

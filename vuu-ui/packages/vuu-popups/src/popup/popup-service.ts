@@ -3,6 +3,7 @@ import React, {
   createElement,
   CSSProperties,
   HTMLAttributes,
+  KeyboardEvent as ReactKeyboardEvent,
   ReactElement,
 } from "react";
 import ReactDOM from "react-dom";
@@ -16,17 +17,26 @@ const _popups: string[] = [];
 
 export type PopupCloseCallback = (reason?: PopupCloseReason) => void;
 
+export type TabAwayClosePopup = {
+  closedBy?: string;
+  type: "tab-away";
+  event: ReactKeyboardEvent;
+};
+
 export type ClickAwayClosePopup = {
+  closedBy?: string;
   type: "click-away";
   mouseEvt: MouseEvent;
 };
 
 export type EscapeClosePopup = {
-  type: "escape";
+  closedBy?: string;
   event: KeyboardEvent;
+  type: "escape";
 };
 
 export type MenuActionClosePopup = {
+  closedBy?: string;
   menuId: string;
   options: ContextMenuOptions;
   type: "menu-action";
@@ -35,7 +45,8 @@ export type MenuActionClosePopup = {
 export type PopupCloseReason =
   | ClickAwayClosePopup
   | EscapeClosePopup
-  | MenuActionClosePopup;
+  | MenuActionClosePopup
+  | TabAwayClosePopup;
 
 export const reasonIsMenuAction = (
   reason?: PopupCloseReason
@@ -228,7 +239,14 @@ export class PopupService {
       true
     );
 
-    PopupService?.onClose?.(reason);
+    PopupService?.onClose?.(
+      reason
+        ? {
+            ...reason,
+            closedBy: "popup-service",
+          }
+        : undefined
+    );
   }
 
   static keepWithinThePage(el: HTMLElement, right: number | "auto" = "auto") {

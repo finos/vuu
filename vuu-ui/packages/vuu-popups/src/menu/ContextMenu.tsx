@@ -5,6 +5,7 @@ import { Portal, PortalProps } from "../portal";
 import { MenuList, MenuListProps } from "./MenuList";
 import { useCascade } from "./use-cascade";
 import { useItemsWithIdsNext } from "./use-items-with-ids-next";
+import { MenuCloseHandler } from "./use-keyboard-navigation";
 import { ContextMenuOptions } from "./useContextMenu";
 
 export interface ContextMenuProps extends Omit<MenuListProps, "onCloseMenu"> {
@@ -27,9 +28,6 @@ export const ContextMenu = ({
   style,
   ...menuListProps
 }: ContextMenuProps) => {
-  const closeHandlerRef = useRef<ContextMenuProps["onClose"]>(onClose);
-  closeHandlerRef.current = onClose;
-
   const id = useId(idProp);
   const closeMenuRef = useRef<(location?: string) => void>(noop);
   const [menus, actions] = useItemsWithIdsNext(childrenProp, id);
@@ -67,10 +65,21 @@ export const ContextMenu = ({
   });
   closeMenuRef.current = closeMenu;
 
-  const handleCloseMenu = () => {
-    navigatingWithKeyboard.current = true;
-    closeMenu();
-  };
+  const handleCloseMenu = useCallback<MenuCloseHandler>(
+    (evt, reason) => {
+      navigatingWithKeyboard.current = true;
+      closeMenu();
+      if (reason === "tab-away") {
+        // TODO we should fire onclose whenever we're closing
+        // the root menu, not just on Tab
+        onClose({
+          event: evt,
+          type: "tab-away",
+        });
+      }
+    },
+    [closeMenu, onClose]
+  );
 
   const handleHighlightMenuItem = () => {
     // console.log(`highlight ${idx}`);

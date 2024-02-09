@@ -11,7 +11,10 @@ import React, {
 //TODO do we want this dependency ?
 import { useId } from "@finos/vuu-utils";
 import { isMenuItemGroup } from "./use-items-with-ids-next";
-import { useKeyboardNavigation } from "./use-keyboard-navigation";
+import {
+  MenuCloseHandler,
+  useKeyboardNavigation,
+} from "./use-keyboard-navigation";
 
 import "./MenuList.css";
 
@@ -80,7 +83,7 @@ export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   isRoot?: boolean;
   listItemProps?: Partial<MenuItemProps>;
   onActivate?: (menuId: string) => void;
-  onCloseMenu: (idx: number) => void;
+  onCloseMenu: MenuCloseHandler;
   openMenu?: MenuOpenHandler;
   onHighlightMenuItem?: (idx: number) => void;
 }

@@ -1,8 +1,9 @@
 import cx from "clsx";
 import { HTMLAttributes, RefObject } from "react";
-import { Position, useAnchoredPosition } from "./useAnchoredPosition";
+import { useAnchoredPosition } from "./useAnchoredPosition";
 
 import "./Popup.css";
+import { Position } from "./getPositionRelativeToAnchor";
 
 export type PopupPlacement =
   | "absolute"
