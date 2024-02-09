@@ -81,6 +81,7 @@ export const useSessionDataSource = ({
     return ds;
   }, [
     dataSourceConfigFromState,
+    dataSourceSessionKey,
     handleDataSourceConfigChange,
     id,
     loadSession,

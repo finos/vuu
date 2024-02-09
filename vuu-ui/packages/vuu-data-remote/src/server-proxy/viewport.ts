@@ -307,8 +307,9 @@ export class Viewport {
       range,
       sort,
       groupBy,
+      table,
     }: ServerToClientCreateViewPortSuccess,
-    tableSchema: TableSchema
+    baseTableSchema: TableSchema
   ) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
@@ -317,7 +318,21 @@ export class Viewport {
     this.groupBy = groupBy;
     this.isTree = groupBy && groupBy.length > 0;
     this.dataWindow.setRange(range.from, range.to);
-    // TODO retrieve the filterStruct
+
+    // If the table we have subscribed to is a session table, the tablename will
+    // be a unique name for this instance. It must be used in subsequent operations
+    // that require table, e.g RPC calls
+    const tableSchema =
+      table === baseTableSchema.table.table
+        ? baseTableSchema
+        : {
+            ...baseTableSchema,
+            table: {
+              ...baseTableSchema.table,
+              session: table,
+            },
+          };
+
     return {
       aggregations,
       type: "subscribed",

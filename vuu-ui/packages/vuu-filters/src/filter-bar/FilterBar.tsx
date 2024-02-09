@@ -30,7 +30,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
   showMenu?: boolean;
-  tableSchema: TableSchema;
+  tableSchema?: TableSchema;
 }
 
 const classBase = "vuuFilterBar";

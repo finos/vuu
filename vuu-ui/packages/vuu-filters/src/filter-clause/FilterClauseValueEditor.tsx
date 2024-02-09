@@ -21,7 +21,7 @@ type InputElementProps = Pick<
   | "value"
 > &
   Pick<FilterClauseEditorProps, "suggestionProvider"> & {
-    table: TableSchema["table"];
+    table?: TableSchema["table"];
   };
 
 export const FilterClauseValueEditor: React.FC<InputElementProps> = ({
