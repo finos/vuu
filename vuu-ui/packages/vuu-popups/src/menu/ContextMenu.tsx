@@ -67,7 +67,6 @@ export const ContextMenu = ({
 
   const handleCloseMenu = useCallback<MenuCloseHandler>(
     (evt, reason) => {
-      console.log("close Menu");
       navigatingWithKeyboard.current = true;
       closeMenu();
       if (reason === "tab-away") {
