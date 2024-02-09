@@ -32,33 +32,22 @@ object SchemaMapper {
   }
 
   private def hasUniqueColumnNames(columnNames: List[String]): ValidationError = {
-    if (columnNames.distinct.size != columnNames.size)
-      return Some(s"Fields map contains duplicated column names")
-
-    None
+    Option.when(columnNames.distinct.size != columnNames.size)(s"Fields map contains duplicated column names")
   }
 
   private def externalFieldsInMapConformsToExternalSchema(externalSchema: ExternalStoreEntitySchema,
                                                           externalFields: Iterable[String]): ValidationError = {
-    externalFields.foreach(field => {
-      val exists = externalSchema.schemaFields.exists(_.name == field)
-      if (!exists) return Some(s"Field `$field` not found in external schema")
-    })
-
-    None
+    externalFields
+      .find(field => externalSchema.schemaFields.forall(_.name != field))
+      .map(f => s"Field `$f` not found in external schema")
   }
 
   private def internalFieldsInMapMatchTableColumns(columns: Array[Column],
                                                    internalFields: Iterable[String]): ValidationError = {
-    internalFields.foreach(columnName =>
-      if (!columns.exists(_.name == columnName))
-        return Option(s"Column `$columnName` not found in internal columns")
-    )
-
-    if (columns.length > internalFields.size)
-      return Option(s"More internal columns passed than mapped fields")
-
-    None
+    internalFields
+      .find(columnName => columns.forall(_.name != columnName))
+      .map(columnName => s"Column `$columnName` not found in internal columns")
+      .orElse(Option.when(columns.length > internalFields.size)(s"More internal columns passed than mapped fields"))
   }
 
   final case class InvalidSchemaMapException(message: String) extends RuntimeException(message)
@@ -82,8 +71,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalStoreEntitySc
 
   private def getExternalSchemaFieldsByColumnName =
     externalSchema.schemaFields.flatMap(f =>
-      if (columnNameByExternalField.contains(f.name)) Some(columnNameByExternalField(f.name), f)
-      else None
+      Option.when(columnNameByExternalField.contains(f.name))(columnNameByExternalField(f.name), f)
     ).toMap
 
   private def getTableColumnByExternalField =
