@@ -33,7 +33,7 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
           .build()
       )
       exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex "[Ff]ield `name` not found"
+      exception.getMessage should include regex s"[Ff]ield `name` in index `NAME_IDX`.*not found"
     }
 
     Scenario("Can build schema by passing each field") {

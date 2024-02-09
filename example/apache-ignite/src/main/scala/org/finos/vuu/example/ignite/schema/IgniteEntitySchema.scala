@@ -84,9 +84,9 @@ case class IgniteEntitySchemaBuilder(private val fieldDef: mutable.LinkedHashMap
   private type ValidationError = Option[String]
   private def validateSchema = indexAppliedOnAbsentField()
   private def indexAppliedOnAbsentField(): ValidationError = {
-    index.foreach(_.getFieldNames.asScala.foreach(name =>
-      if (!fieldDef.contains(name)) return Some(s"Field `$name` not found in schema.")
-    ))
-    None
+    index.iterator
+      .flatMap(i => i.getFieldNames.asScala.map((i.getName, _)))
+      .find({case (_, f) => !fieldDef.contains(f)})
+      .map({case (indexName, f) => s"Field `$f` in index `$indexName` not found in schema."})
   }
 }
