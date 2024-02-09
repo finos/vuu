@@ -3,7 +3,7 @@ import React, {
   createElement,
   CSSProperties,
   HTMLAttributes,
-  KeyboardEvent,
+  KeyboardEvent as ReactKeyboardEvent,
   ReactElement,
 } from "react";
 import ReactDOM from "react-dom";
@@ -20,7 +20,7 @@ export type PopupCloseCallback = (reason?: PopupCloseReason) => void;
 export type TabAwayClosePopup = {
   closedBy?: string;
   type: "tab-away";
-  event: KeyboardEvent;
+  event: ReactKeyboardEvent;
 };
 
 export type ClickAwayClosePopup = {
