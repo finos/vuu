@@ -22,7 +22,7 @@ import {
 } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
-import { TableSchemaTable } from "packages/vuu-data-types";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 
 const selectionKeys = ["Enter", " "];
 
