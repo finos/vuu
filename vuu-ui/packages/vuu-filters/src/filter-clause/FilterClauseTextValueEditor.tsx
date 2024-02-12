@@ -10,7 +10,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import {
   SuggestionFetcher,
   useTypeaheadSuggestions,
@@ -22,8 +22,18 @@ import {
 } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 
 const selectionKeys = ["Enter", " "];
+
+const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
+  if (schemaTable.session) {
+    const { module, session } = schemaTable;
+    return { module, table: session };
+  } else {
+    return schemaTable;
+  }
+};
 
 export interface TextInputProps
   extends FilterClauseValueEditor,
@@ -79,10 +89,11 @@ export const FilterClauseTextValueEditor = forwardRef(function TextInput(
 
   useEffect(() => {
     if (table) {
+      const vuuTable = getVuuTable(table);
       const params: TypeaheadParams =
         valueInputValue && !isMultiValue
-          ? [table, column.name, valueInputValue]
-          : [table, column.name];
+          ? [vuuTable, column.name, valueInputValue]
+          : [vuuTable, column.name];
       getSuggestions(params)
         .then((suggestions) => {
           if (suggestions.length === 0 && valueInputValue) {
@@ -200,7 +211,6 @@ export const FilterClauseTextValueEditor = forwardRef(function TextInput(
         );
     }
   }, [
-    InputPropsProp,
     InputProps,
     operator,
     className,

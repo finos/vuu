@@ -25,7 +25,7 @@ export interface FilterClauseEditorProps
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
   suggestionProvider?: () => SuggestionFetcher;
-  tableSchema: TableSchema;
+  tableSchema?: TableSchema;
 }
 
 const classBase = "vuuFilterClause";
@@ -102,7 +102,7 @@ export const FilterClauseEditor = ({
         operator={operator}
         selectedColumn={selectedColumn}
         suggestionProvider={suggestionProvider}
-        table={tableSchema.table}
+        table={tableSchema?.table}
         value={value}
       />
       {value !== undefined ? (

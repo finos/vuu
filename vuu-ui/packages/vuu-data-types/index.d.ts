@@ -260,10 +260,18 @@ export type SchemaColumn = {
   serverDataType: VuuColumnDataType;
 };
 
+/**
+ * session will be present for session tables only, in which case the table
+ * name represents the 'archetype' table name.
+ */
+export type TableSchemaTable = VuuTable & {
+  session?: string;
+};
+
 export type TableSchema = {
   columns: SchemaColumn[];
   key: string;
-  table: VuuTable;
+  table: TableSchemaTable;
 };
 
 /**

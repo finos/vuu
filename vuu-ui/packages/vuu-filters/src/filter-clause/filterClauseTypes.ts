@@ -1,7 +1,7 @@
-import { VuuTable } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
 import { InputProps } from "@salt-ds/core";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 
 export interface FilterClauseValueEditor<T = string> {
   InputProps?: InputProps;
@@ -9,5 +9,5 @@ export interface FilterClauseValueEditor<T = string> {
   onDeselect?: () => void;
   onInputComplete: (value: T | T[]) => void;
   onOpenChange?: (open: boolean, closeReason: CloseReason) => void;
-  table?: VuuTable;
+  table?: TableSchemaTable;
 }

@@ -2,10 +2,10 @@ import {
   ClientToServerGetUniqueValues,
   ClientToServerGetUniqueValuesStartingWith,
   TypeaheadParams,
-  VuuTable,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
 import { makeRpcCall } from "@finos/vuu-data-remote";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 
@@ -16,7 +16,7 @@ const TYPEAHEAD_MESSAGE_CONSTANTS = {
 };
 
 export const getTypeaheadParams = (
-  table: VuuTable,
+  table: TableSchemaTable,
   column: string,
   text = "",
   selectedValues: string[] = []
@@ -26,9 +26,6 @@ export const getTypeaheadParams = (
   }
   return [table, column];
 };
-
-// const containSpace = (text: string) => text.indexOf(" ") !== -1;
-// const replaceSpace = (text: string) => text.replace(/\s/g, SPECIAL_SPACE);
 
 export const useTypeaheadSuggestions = () =>
   useCallback<SuggestionFetcher>(async (params: TypeaheadParams) => {
