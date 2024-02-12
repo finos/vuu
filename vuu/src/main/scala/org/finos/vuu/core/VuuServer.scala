@@ -112,21 +112,17 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   def createTable(tableDef: TableDef): DataTable = {
     logger.info(s"Creating table ${tableDef.name}")
-    pluginRegistry.withPlugin(tableDef.pluginType){
+    pluginRegistry.withPlugin(tableDef.pluginType) {
       plugin =>
-        val table = plugin.tableFactory.createTable(tableDef, joinProvider)
-        tableContainer.addTable(table)
-        table
+        plugin.tableFactory.createTable(tableDef, tableContainer, joinProvider)
     }
   }
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
     logger.info(s"Creating joinTable ${joinDef.name}")
-    pluginRegistry.withPlugin(joinDef.pluginType){
+    pluginRegistry.withPlugin(joinDef.pluginType) {
       plugin =>
-        val table = plugin.joinTableFactory.createJoinTable(joinDef, tableContainer, joinProvider)
-        tableContainer.addTable(table)
-        table
+        plugin.joinTableFactory.createJoinTable(joinDef, tableContainer, joinProvider)
     }
   }
 
