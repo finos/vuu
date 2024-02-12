@@ -93,7 +93,7 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
   }
 
   def addTable(table: DataTable): Unit = {
-    tables.put(table.getTableDef.name, table)
+    tables.put(table.name, table)
   }
 
   def createAutoSubscribeTable(tableDef: TableDef): DataTable = {
