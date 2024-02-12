@@ -13,7 +13,6 @@ class GenericTypeAheadRpcHandler(val tableContainer: TableContainer) extends Typ
     val tableName = tableMap("table")
 
     tableContainer.getTable(tableName) match {
-      //case virtualisedSessionTable: VirtualizedSessionTable =>
       case dataTable: DataTable =>
         val columValueProvider = dataTable.getColumnValueProvider
         columValueProvider.getUniqueValues(column)
