@@ -25,6 +25,8 @@ object ViewPortVirtualizedTableCreator extends ViewPortTableCreator{
 
     sessionTable.setProvider(provider)
 
+    tableContainer.addTable(sessionTable)
+
     sessionTable
   }
 }
