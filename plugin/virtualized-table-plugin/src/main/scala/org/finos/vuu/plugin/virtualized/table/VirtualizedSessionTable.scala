@@ -4,9 +4,9 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.SessionTableDef
-import org.finos.vuu.core.table.{InMemSessionDataTable, RowWithData, TableData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.provider.JoinTableProvider
+import org.finos.vuu.provider.{JoinTableProvider, VirtualizedProvider}
 
 class VirtualizedSessionTable(clientSessionId: ClientSessionId,
                               sessionTableDef: SessionTableDef,
@@ -52,6 +52,11 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
   override def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = super.processUpdate(rowKey, rowData, timeStamp)
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
+
+  override def getColumnValueProvider: ColumnValueProvider = {
+    logger.info(s"[TESTING] provider from virtualized table")
+    super.getProvider.asInstanceOf[VirtualizedProvider]
+  }
 
   def setRange(range: VirtualizedRange): Unit = {
     this.range = range

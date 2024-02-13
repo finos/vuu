@@ -9,9 +9,11 @@ class GenericTypeAheadRpcHandler(val tableContainer: TableContainer) extends Typ
 
   def getUniqueFieldValues(tableMap: Map[String, String], column: String, ctx: RequestContext): Array[String] = {
 
+    logger.info(s"[TESTING] getting unique field value $column")
     val tableName = tableMap("table")
 
     tableContainer.getTable(tableName) match {
+      //case virtualisedSessionTable: VirtualizedSessionTable =>
       case dataTable: DataTable =>
         val columValueProvider = dataTable.getColumnValueProvider
         columValueProvider.getUniqueValues(column)
@@ -22,6 +24,7 @@ class GenericTypeAheadRpcHandler(val tableContainer: TableContainer) extends Typ
 
   override def getUniqueFieldValuesStartingWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String] = {
 
+    logger.info(s"[TESTING] getting unique field value $column starting with $starts")
     val tableName = tableMap("table")
 
     tableContainer.getTable(tableName) match {

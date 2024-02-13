@@ -69,7 +69,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
     val (counter, buffer) = mapToString(results)
 
-    logger.info(s"Loaded Ignite ChildOrder column $columnName for $counter rows")
+    logger.info(s"Loaded Distinct Ignite ChildOrder column $columnName for $counter rows")
 
     buffer
   }
@@ -82,7 +82,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
     val (counter, buffer) = mapToString(results)
 
-    logger.info(s"Loaded Ignite ChildOrder column $columnName for $counter rows")
+    logger.info(s"Loaded Distinct Ignite ChildOrder column $columnName that starts with $startsWith for $counter rows")
 
     buffer
 

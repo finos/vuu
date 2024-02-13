@@ -19,7 +19,6 @@ import scala.jdk.CollectionConverters
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   @volatile private var provider: Provider = null
-  @volatile private var columnValueProvider: ColumnValueProvider = null
 
   protected def createDataTableData(): TableData
 
@@ -33,9 +32,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getProvider: Provider = provider
 
-  def setColumnValueProvider(aCVProvider: ColumnValueProvider): Unit = columnValueProvider = aCVProvider
-
-  def getColumnValueProvider: ColumnValueProvider = columnValueProvider
+  def getColumnValueProvider: ColumnValueProvider
 
   def asTable: DataTable = this
 
@@ -227,6 +224,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
     .map(c => c -> buildIndexForColumn(c)).toMap[Column, IndexedField[_]]
+
+  private final val columnValueProvider = InMemColumnValueProvider(this)
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
@@ -487,4 +486,5 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     incrementUpdateCounter()
   }
 
+  override def getColumnValueProvider: ColumnValueProvider = columnValueProvider
 }

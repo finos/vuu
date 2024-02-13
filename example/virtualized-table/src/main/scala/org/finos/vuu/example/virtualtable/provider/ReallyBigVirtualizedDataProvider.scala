@@ -78,4 +78,8 @@ class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends Virtualize
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = "org.finos.vuu.example.virtualtable.provider.ReallyBigVirtualizedDataProvider"
+
+  override def getUniqueValues(columnName: String): Array[String] = ???
+
+  override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = ???
 }

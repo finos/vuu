@@ -656,4 +656,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       super.removeKeyObserver(key, observer)
     }
   }
+
+  override def getColumnValueProvider: ColumnValueProvider = InMemColumnValueProvider(this)
 }
