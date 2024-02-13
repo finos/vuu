@@ -14,7 +14,22 @@ trait ColumnValueProvider {
 
 }
 
+class EmptyColumnValueProvider extends ColumnValueProvider {
+  override def getUniqueValues(columnName: String): Array[String] = Array.empty
+
+  override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = Array.empty
+}
+
+object InMemColumnValueProvider {
+  def apply(dataTable: DataTable): InMemColumnValueProvider = {
+    dataTable match {
+      case inMemDataTable: InMemDataTable => new InMemColumnValueProvider(inMemDataTable)
+      case d => throw new UnsupportedOperationException(s"Cannot create InMemColumnValueProvider for data table ${d.name} as this is not InMemDataTable.")
+    }
+  }
+}
 class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging {
+
   override def getUniqueValues(columnName: String): Array[String] =
     dataTable.columnForName(columnName) match {
     case c: Column =>
