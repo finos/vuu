@@ -1,11 +1,10 @@
 package org.finos.vuu.example.ignite
 
-import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
 import org.apache.ignite.calcite.CalciteQueryEngineConfiguration
 import org.apache.ignite.configuration.{IgniteConfiguration, SqlConfiguration}
 import org.apache.ignite.{Ignite, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
-import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
+import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
 
 import java.util
 import scala.jdk.CollectionConverters.IterableHasAsJava
@@ -67,10 +66,9 @@ object TestUtils {
     parentOrderCacheConfiguration.setIndexedTypes(classOf[Int], classOf[ParentOrder])
     parentOrderCacheConfiguration.setName("parentOrderCache")
 
-    //childOrderCacheConfiguration.setIndexedTypes(classOf[Int], classOf[ChildOrder])
     childOrderCacheConfiguration.setName("childOrderCache")
 
-    childOrderCacheConfiguration.setQueryEntities(List(IgniteChildOrderEntity.buildQueryEntity).asJavaCollection)
+    childOrderCacheConfiguration.setQueryEntities(List(ChildOrderEntityObject.buildQueryEntity).asJavaCollection)
     igniteConfiguration.setCacheConfiguration(parentOrderCacheConfiguration, childOrderCacheConfiguration)
 
     val sqlConfiguration = new SqlConfiguration

@@ -3,7 +3,7 @@ package org.finos.vuu.feature.ignite.filter
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
-import org.finos.vuu.feature.ignite.schema.{ExternalStoreEntitySchema, SchemaField, SchemaMapper}
+import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchema, SchemaField, SchemaMapper}
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
 
 class IgniteSqlFilteringTest extends IgniteTestsBase {
@@ -474,7 +474,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   ("rating", classOf[String]),
   ).zipWithIndex.map({ case ((name, t), i) => SimpleColumn(name, i, t) })
 
-  private class TestEntitySchema extends ExternalStoreEntitySchema {
+  private class TestEntitySchema extends ExternalEntitySchema {
     override val schemaFields: List[SchemaField] = List(
       SchemaField("id", classOf[Int], 0),
       SchemaField("parentId", classOf[String], 1),

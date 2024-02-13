@@ -1,18 +1,15 @@
 package org.finos.vuu.example.ignite
 
-import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
 import org.apache.ignite.configuration.{CacheConfiguration, DataStorageConfiguration, IgniteConfiguration}
 import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration
 import org.apache.ignite.logger.slf4j.Slf4jLogger
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
-import org.finos.vuu.core.module.simul.model.ChildOrder
 import org.finos.vuu.example.ignite.IgniteLocalConfig.{backupCount, childOrderCacheName, igniteWorkDir, logger, parentOrderCacheName}
 import org.slf4j.LoggerFactory
-import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
+import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
 
-import java.nio.file.Paths
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
 object IgniteLocalConfig {
@@ -96,7 +93,7 @@ class IgniteLocalConfig(private val clientMode: Boolean,
   private def createChildOrderCacheConfig(): CacheConfiguration[?, ?] = {
     val cacheConfiguration = new CacheConfiguration()
 
-    val queryEntity = IgniteChildOrderEntity.buildQueryEntity
+    val queryEntity = ChildOrderEntityObject.buildQueryEntity
     cacheConfiguration.setQueryEntities(List(queryEntity).asJavaCollection)
     cacheConfiguration.setName(childOrderCacheName)
     cacheConfiguration.setBackups(backupCount)

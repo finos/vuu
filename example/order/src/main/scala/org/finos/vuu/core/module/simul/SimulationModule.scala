@@ -129,8 +129,6 @@ object SimulationModule extends DefaultModule {
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
-    //implicit val orderStore: OrderStore = IgniteOrderStore.apply()
-    //implicit val orderStore: OrderStore = new MapOrderStore()
 
     val ordersModel = new ParentChildOrdersModel()
 
