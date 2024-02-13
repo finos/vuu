@@ -88,7 +88,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
     val filterQueries = "parentId = 2"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1)
+    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
@@ -109,7 +109,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "VOD.L")
 
     val filterQueries = "ric = \'VOD.L\'"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 100, 0)
+    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 6)
@@ -123,7 +123,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
 
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, emptySortQueries, 100, 0)
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, emptySortQueries, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -138,7 +138,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
     val sortByValues = "parentId ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0)
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -154,7 +154,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
     val sortByValues = "parentId DESC, id ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0)
+    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
