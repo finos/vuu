@@ -10,7 +10,7 @@ object TypeAheadModule extends DefaultModule {
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     ModuleFactory.withNamespace(NAME)
-      .addRpcHandler(server => new TypeAheadRpcHandlerImpl(server.tableContainer))
+      .addRpcHandler(server => new GenericTypeAheadRpcHandler(server.tableContainer))
       .asModule()
   }
 
