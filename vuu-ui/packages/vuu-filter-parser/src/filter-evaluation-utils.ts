@@ -52,6 +52,8 @@ export function filterPredicate(
       return testLT(columnMap, filter);
     case "<=":
       return testLE(columnMap, filter);
+    case "ends":
+      return testEW(columnMap, filter);
     case "starts":
       return testSW(columnMap, filter);
     case "and":
@@ -105,6 +107,23 @@ const testLE = (
   filter: SingleValueFilterClause
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] <= filter.value;
+};
+
+const testEW = (
+  columnMap: ColumnMap,
+  filter: SingleValueFilterClause
+): FilterPredicate => {
+  const filterValue = filter.value as string;
+  if (typeof filterValue !== "string") {
+    throw Error("string filter applied to value of wrong type");
+  }
+  return (row) => {
+    const rowValue = row[columnMap[filter.column]];
+    if (typeof rowValue !== "string") {
+      throw Error("string filter applied to value of wrong type");
+    }
+    return rowValue.toLowerCase().endsWith(filterValue.toLowerCase());
+  };
 };
 
 const testSW = (
