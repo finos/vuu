@@ -2,7 +2,7 @@ package org.finos.vuu.core.module
 
 import org.finos.vuu.api.{JoinTableDef, NoViewPortDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.{IVuuServer, VuuServer}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.{ColumnValueProvider, DataTable, EmptyColumnValueProvider, InMemColumnValueProvider, InMemDataTableData, TableContainer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{NullProvider, Provider, ProviderContainer}
@@ -12,10 +12,10 @@ import org.finos.toolbox.time.Clock
 import java.nio.file.Path
 
 
-case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, IVuuServer) => Provider)], joinDefs: List[TableDefContainer => JoinTableDef]) {
+case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, IVuuServer) => Provider, DataTable => ColumnValueProvider)], joinDefs: List[TableDefContainer => JoinTableDef]) {
 
-  def add(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): TableDefs = {
-    TableDefs(realizedTableDefs, tableDefs ++ List((tableDef, func)), joinDefs)
+  def add(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, createCVP: DataTable => ColumnValueProvider): TableDefs = {
+    TableDefs(realizedTableDefs, tableDefs ++ List((tableDef, func, createCVP)), joinDefs)
   }
 
   def addRealized(tableDef: TableDef): TableDefs = {
@@ -28,7 +28,7 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
 
   protected def getJoinDefFuncs(): List[TableDefContainer => JoinTableDef] = joinDefs
 
-  protected def getTableDefsAndProviders(): List[(TableDef, (DataTable, VuuServer) => Provider)] = tableDefs
+  protected def getTableDefsAndProviders(): List[(TableDef, (DataTable, VuuServer) => Provider,DataTable => ColumnValueProvider)] = tableDefs
 
   protected def getRealizedTableDefs(): List[TableDef] = realizedTableDefs
 
@@ -53,23 +53,28 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): ModuleFactoryNode = {
     val noViewPortDefFunc = (dt: DataTable, prov: Provider, providerContainer: ProviderContainer, tableContainer: TableContainer) => NoViewPortDef
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func, (dt:DataTable) => InMemColumnValueProvider(dt)), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func, (dt:DataTable) => InMemColumnValueProvider(dt)), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addSessionTable(tableDef: TableDef, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider, dt => new EmptyColumnValueProvider()), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
+  //todo check usage to see what column value provider to support & the datatable types to support
   def addSessionTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func, (dt:DataTable) => InMemColumnValueProvider(dt)), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+  }
+
+  def addSessionTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, createCVP: DataTable => ColumnValueProvider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
+    ModuleFactoryNode(tableDefs.add(tableDef, func, createCVP), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addSessionTable(tableDef: TableDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider, dt => new EmptyColumnValueProvider()), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addJoinTable(func: TableDefContainer => JoinTableDef): ModuleFactoryNode = {
@@ -103,7 +108,8 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
   def asModule(): ViewServerModule = {
 
     val baseTables = tableDefs.tableDefs
-    val justBaseTables = baseTables.map({ case (tbl, provFunc) => tbl })
+
+    val justBaseTables = baseTables.map({ case (tbl, provFunc, columnValueProvFunc) => tbl })
 
     var mutableTableDefs = TableDefs(justBaseTables, List(), List())
 
@@ -141,14 +147,19 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
       }
 
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
-        baseTables.find({ case (td, func) => td.name == table.name }).get._2(table, viewserver)
+        baseTables.find({ case (td,  provFunc, columnValueProvFunc) => td.name == table.name }).get._2(table, viewserver)
       }
+
+      override def getColumnValueProviderForTable(table: DataTable, viewserver: IVuuServer): ColumnValueProvider =
+        baseTables.find({ case (td, provFunc, columnValueProvFunc) => td.name == table.name }).get._3(table)
+
 
       override def staticFileResources(): List[StaticServedResource] = staticServedResources
 
       override def restServicesUnrealized: List[IVuuServer => RestService] = rest
 
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = parentRef.viewPortDefs ++ joinViewPortDefs
+
     }
 
   }
