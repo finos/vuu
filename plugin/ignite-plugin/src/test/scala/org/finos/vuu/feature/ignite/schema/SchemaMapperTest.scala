@@ -68,7 +68,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
   }
 }
 
-private class TestEntitySchema extends ExternalStoreEntitySchema {
+private class TestEntitySchema extends ExternalEntitySchema {
   override val schemaFields: List[SchemaField] = List(
     SchemaField("externalId", classOf[Int], 0),
     SchemaField("externalRic", classOf[String], 1),

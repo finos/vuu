@@ -5,8 +5,7 @@ import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.core.table.{Column, Columns}
 import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryTest.{entitySchema, internalColumns, internalColumnsByExternalFields}
-import org.finos.vuu.example.ignite.schema.{IgniteEntitySchema, IgniteEntitySchemaBuilder}
-import org.finos.vuu.feature.ignite.schema.SchemaMapper
+import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchemaBuilder, ExternalEntitySchema, SchemaMapper}
 import org.finos.vuu.net.FilterSpec
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -17,19 +16,6 @@ class IgniteOrderDataQueryTest extends AnyFeatureSpec with Matchers with MockFac
   private val igniteStore: IgniteOrderStore = mock[IgniteOrderStore]
   private val schemaMapper = SchemaMapper(entitySchema, internalColumns, internalColumnsByExternalFields)
   private val igniteDataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
-
-  Feature("toInternalRow") {
-    val testEntity = TestDto(1, "TestDto", 100)
-
-    Scenario("can convert a dto to internal row representation") {
-      val internalKey = "id"
-
-      val res = igniteDataQuery.toInternalRow(internalKey)(testEntity)
-
-      res._1 shouldEqual "1"
-      res._2 shouldEqual Map("id" -> testEntity.key, "name" -> testEntity.name, "value" -> testEntity.value)
-    }
-  }
 
   Feature("fetch") {
 
@@ -55,5 +41,5 @@ private object IgniteOrderDataQueryTest {
     "value" -> "value",
   )
 
-  val entitySchema: IgniteEntitySchema = IgniteEntitySchemaBuilder().withCaseClass[TestDto].build()
+  val entitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withCaseClass[TestDto].build()
 }

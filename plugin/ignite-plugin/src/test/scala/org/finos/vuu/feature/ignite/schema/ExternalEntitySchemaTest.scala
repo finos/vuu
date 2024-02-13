@@ -1,37 +1,33 @@
-package org.finos.vuu.example.ignite.schema
+package org.finos.vuu.feature.ignite.schema
 
-import org.apache.ignite.cache.{QueryIndex, QueryIndexType}
-import org.finos.vuu.example.ignite.schema.IgniteEntitySchemaBuilder.InvalidIndexException
-import org.finos.vuu.feature.ignite.schema.SchemaField
+import org.finos.vuu.feature.ignite.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
-import scala.jdk.CollectionConverters.IterableHasAsJava
-
-class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
-  Feature("IgniteEntitySchemaBuilder") {
+class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
+  Feature("ExternalEntitySchemaBuilder") {
     Scenario("Builder can correctly pass index to the schema when index applied to existent fields") {
-      val queryIndex1 = new QueryIndex(List("name").asJavaCollection, QueryIndexType.SORTED).setName("NAME_IDX")
-      val queryIndex2 = new QueryIndex(List("size").asJavaCollection, QueryIndexType.SORTED).setName("SIZE_IDX")
+      val index1 = ("NAME_IDX", List("name"))
+      val index2 = ("SIZE_IDX", List("size"))
 
-      val schema = IgniteEntitySchemaBuilder()
+      val schema = ExternalEntitySchemaBuilder()
         .withColumn("name", classOf[String])
         .withColumn("size", classOf[Int])
-        .withIndex(queryIndex1)
-        .withIndex(queryIndex2)
+        .withIndex(index1._1, index1._2)
+        .withIndex(index2._1, index2._2)
         .build()
 
-      schema.queryIndex shouldEqual List(queryIndex1, queryIndex2)
+      schema.index shouldEqual List(index1, index2)
     }
 
     Scenario("Builder throws when user tries to build a schema with index applied to a non-existent field") {
-      val badIndex = new QueryIndex(List("missing-field").asJavaCollection, QueryIndexType.SORTED).setName("BAD_IDX")
+      val badIndex = ("BAD_IDX", List("missing-field"))
 
       val exception = intercept[InvalidIndexException](
-        IgniteEntitySchemaBuilder()
+        ExternalEntitySchemaBuilder()
           .withColumn("present-field", classOf[String])
-          .withIndex(badIndex)
+          .withIndex(badIndex._1, badIndex._2)
           .build()
       )
 
@@ -40,17 +36,15 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Builder throws when user tries to build a schema with multiple indexes applied to multiple non-existent fields") {
-      val badIndex1 = new QueryIndex(
-        List("missing-field-1", "missing-field-2").asJavaCollection, QueryIndexType.SORTED
-      ).setName("BAD_IDX")
-      val badIndex2 = new QueryIndex(List("missing-field-3").asJavaCollection, QueryIndexType.SORTED).setName("BAD_IDX2")
+      val badIndex1 = ("BAD_IDX", List("missing-field-1", "missing-field-2"))
+      val badIndex2 = ("BAD_IDX2", List("missing-field-3"))
 
       val exception = intercept[InvalidIndexException](
-        IgniteEntitySchemaBuilder()
+        ExternalEntitySchemaBuilder()
           .withColumn("present-field-1", classOf[String])
           .withColumn("present-field-2", classOf[String])
-          .withIndex(badIndex1)
-          .withIndex(badIndex2)
+          .withIndex(badIndex1._1, badIndex1._2)
+          .withIndex(badIndex2._1, badIndex2._2)
           .build()
       )
 
@@ -61,7 +55,7 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Can build schema by passing each field") {
-      val schema = IgniteEntitySchemaBuilder()
+      val schema = ExternalEntitySchemaBuilder()
         .withColumn("name", classOf[String])
         .withColumn("size", classOf[Int])
         .build()
@@ -73,7 +67,7 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Can build schema with a case class") {
-      val schema = IgniteEntitySchemaBuilder().withCaseClass[TestCaseClass].build()
+      val schema = ExternalEntitySchemaBuilder().withCaseClass[TestCaseClass].build()
 
       schema.schemaFields shouldEqual List(
         SchemaField("name", classOf[String], 0),
@@ -83,28 +77,28 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
   }
 
-  Feature("IgniteDataType.fromString") {
+  Feature("ExternalDataType.fromString") {
 
     forAll(Table(
       ("str", "expected"),
-      ("string", IgniteDataType.String),
-      ("int", IgniteDataType.Int),
-      ("long", IgniteDataType.Long),
-      ("double", IgniteDataType.Double),
+      ("string", ExternalDataType.String),
+      ("int", ExternalDataType.Int),
+      ("long", ExternalDataType.Long),
+      ("double", ExternalDataType.Double),
     ))((str, expected) =>
       Scenario(
         s"can convert `$str` to correct ignite data type"
       ) {
-        IgniteDataType.fromString(str) shouldEqual expected
+        ExternalDataType.fromString(str) shouldEqual expected
       }
     )
 
     Scenario("can handle different alphabet casing") {
-      IgniteDataType.fromString("StrIng") shouldEqual IgniteDataType.String
+      ExternalDataType.fromString("StrIng") shouldEqual ExternalDataType.String
     }
 
     Scenario("throws exception when unsupported data type passed") {
-      val exception = intercept[RuntimeException](IgniteDataType.fromString("UnknownDataType"))
+      val exception = intercept[RuntimeException](ExternalDataType.fromString("UnknownDataType"))
       exception shouldBe a[RuntimeException]
     }
   }

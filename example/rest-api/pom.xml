@@ -9,10 +9,14 @@
         <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
-    <artifactId>main</artifactId>
+    <artifactId>rest-api</artifactId>
+
+    <properties>
+        <http4s-blaze.version>0.23.16</http4s-blaze.version>
+        <http4s-dsl.version>0.23.25</http4s-dsl.version>
+    </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
@@ -20,45 +24,24 @@
         </dependency>
 
         <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>basket</artifactId>
+            <groupId>org.finos.vuu.plugin</groupId>
+            <artifactId>virtualized-table-plugin</artifactId>
+            <version>0.9.61-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu.plugin</groupId>
+            <artifactId>ignite-plugin</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
-            <artifactId>virtualized-table</artifactId>
+            <artifactId>vuu</artifactId>
             <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>price</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>order</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>editable</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>permission</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>rest-api</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -97,6 +80,35 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-blaze-client_2.13</artifactId>
+            <version>0.23.16</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-blaze-server_2.13</artifactId>
+            <version>0.23.16</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-dsl_2.13</artifactId>
+            <version>0.23.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.http4s</groupId>
+            <artifactId>http4s-circe_2.13</artifactId>
+            <version>0.23.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.circe</groupId>
+            <artifactId>circe-generic_2.13</artifactId>
+            <version>0.14.6</version>
+        </dependency>
 
     </dependencies>
 
@@ -115,7 +127,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -253,32 +265,20 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>sign</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xmx10G</argument>
-                        <argument>-classpath</argument>
-                        <classpath />
-                        <argument>-Dvuu.webroot=../../vuu-ui/deployed_apps/app-vuu-example</argument>
-                        <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
-                        <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
-                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>org.finos.vuu.SimulMain</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
-
+            </plugin-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -324,7 +324,6 @@
 
         </plugins>
     </build>
-
     <reporting>
         <plugins>
             <plugin>

@@ -4,14 +4,13 @@ import org.finos.vuu.core.table.Column
 
 trait SchemaMapper {
   def tableColumn(extFieldName: String): Option[Column]
-
   def externalSchemaField(columnName: String): Option[SchemaField]
-
   def toTableRowData(values: List[_]): Map[String, Any]
+  def toTableRowData(dto: Product): Map[String, Any]
 }
 
 object SchemaMapper {
-  def apply(externalSchema: ExternalStoreEntitySchema,
+  def apply(externalSchema: ExternalEntitySchema,
             internalColumns: Array[Column],
             columnNameByExternalField: Map[String, String]): SchemaMapper = {
     val validationError = validateSchema(externalSchema, internalColumns, columnNameByExternalField)
@@ -21,7 +20,7 @@ object SchemaMapper {
   }
 
   private type ValidationError = Option[String]
-  private def validateSchema(externalSchema: ExternalStoreEntitySchema,
+  private def validateSchema(externalSchema: ExternalEntitySchema,
                              internalColumns: Array[Column],
                              fieldsMap: Map[String, String]): ValidationError = {
     Iterator(
@@ -35,7 +34,7 @@ object SchemaMapper {
     Option.when(columnNames.distinct.size != columnNames.size)(s"Fields map contains duplicated column names")
   }
 
-  private def externalFieldsInMapConformsToExternalSchema(externalSchema: ExternalStoreEntitySchema,
+  private def externalFieldsInMapConformsToExternalSchema(externalSchema: ExternalEntitySchema,
                                                           externalFields: Iterable[String]): ValidationError = {
     externalFields
       .find(field => externalSchema.schemaFields.forall(_.name != field))
@@ -52,7 +51,7 @@ object SchemaMapper {
   final case class InvalidSchemaMapException(message: String) extends RuntimeException(message)
 }
 
-private class SchemaMapperImpl(private val externalSchema: ExternalStoreEntitySchema,
+private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
                                private val tableColumns: Array[Column],
                                private val columnNameByExternalField: Map[String, String]) extends SchemaMapper {
   private val externalSchemaFieldsByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
@@ -67,6 +66,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalStoreEntitySc
       (column.name, columnValue)
     }).toMap
   }
+  override def toTableRowData(dto: Product): Map[String, Any] = toTableRowData(dto.productIterator.toList)
 
   private def getExternalSchemaFieldsByColumnName =
     externalSchema.schemaFields.flatMap(f =>

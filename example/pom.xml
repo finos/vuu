@@ -22,6 +22,7 @@
         <module>main-java</module>
         <module>virtualized-table</module>
         <module>apache-ignite</module>
+        <module>rest-api</module>
     </modules>
 
 
