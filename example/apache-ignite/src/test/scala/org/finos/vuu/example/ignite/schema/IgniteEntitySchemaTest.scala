@@ -10,11 +10,11 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
 class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
-  private val queryIndex1 = new QueryIndex(List("name").asJavaCollection, QueryIndexType.SORTED).setName("NAME_IDX")
-  private val queryIndex2 = new QueryIndex(List("size").asJavaCollection, QueryIndexType.SORTED).setName("SIZE_IDX")
-
   Feature("IgniteEntitySchemaBuilder") {
     Scenario("Builder can correctly pass index to the schema when index applied to existent fields") {
+      val queryIndex1 = new QueryIndex(List("name").asJavaCollection, QueryIndexType.SORTED).setName("NAME_IDX")
+      val queryIndex2 = new QueryIndex(List("size").asJavaCollection, QueryIndexType.SORTED).setName("SIZE_IDX")
+
       val schema = IgniteEntitySchemaBuilder()
         .withColumn("name", classOf[String])
         .withColumn("size", classOf[Int])
@@ -26,14 +26,38 @@ class IgniteEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Builder throws when user tries to build a schema with index applied to a non-existent field") {
+      val badIndex = new QueryIndex(List("missing-field").asJavaCollection, QueryIndexType.SORTED).setName("BAD_IDX")
+
       val exception = intercept[InvalidIndexException](
         IgniteEntitySchemaBuilder()
-          .withColumn("other-field", classOf[String])
-          .withIndex(queryIndex1)
+          .withColumn("present-field", classOf[String])
+          .withIndex(badIndex)
           .build()
       )
+
       exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex s"[Ff]ield `name` in index `NAME_IDX`.*not found"
+      exception.getMessage should include regex s"[Ff]ield `missing-field` in index `BAD_IDX`.*not found"
+    }
+
+    Scenario("Builder throws when user tries to build a schema with multiple indexes applied to multiple non-existent fields") {
+      val badIndex1 = new QueryIndex(
+        List("missing-field-1", "missing-field-2").asJavaCollection, QueryIndexType.SORTED
+      ).setName("BAD_IDX")
+      val badIndex2 = new QueryIndex(List("missing-field-3").asJavaCollection, QueryIndexType.SORTED).setName("BAD_IDX2")
+
+      val exception = intercept[InvalidIndexException](
+        IgniteEntitySchemaBuilder()
+          .withColumn("present-field-1", classOf[String])
+          .withColumn("present-field-2", classOf[String])
+          .withIndex(badIndex1)
+          .withIndex(badIndex2)
+          .build()
+      )
+
+      exception shouldBe a[RuntimeException]
+      exception.getMessage should include regex s"[Ff]ield `missing-field-1` in index `BAD_IDX`.*not found"
+      exception.getMessage should include regex s"[Ff]ield `missing-field-2` in index `BAD_IDX`.*not found"
+      exception.getMessage should include regex s"[Ff]ield `missing-field-3` in index `BAD_IDX2`.*not found"
     }
 
     Scenario("Can build schema by passing each field") {

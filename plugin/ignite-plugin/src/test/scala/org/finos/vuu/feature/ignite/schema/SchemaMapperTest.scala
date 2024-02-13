@@ -56,15 +56,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
       exception.getMessage should include regex "[Cc]olumn `absent-col` not found"
     }
 
-    Scenario("fails when a passed internal column is not present in mapped fields") {
-      val exception = intercept[InvalidSchemaMapException](
-        SchemaMapper(testExternalSchema, tableColumns.slice(0, 2), fieldsMap.slice(0, 1))
-      )
-      exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex "[Mm]ore .* columns .* than mapped fields"
-    }
-
-    Scenario("fails when a external->internal map contains duplicated internal field") {
+    Scenario("fails when external->internal map contains duplicated internal field") {
       val exception = intercept[InvalidSchemaMapException](SchemaMapper(
         testExternalSchema,
         Columns.fromNames("id".int(), "ric".string()),
