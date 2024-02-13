@@ -14,7 +14,7 @@ trait ColumnValueProvider {
 
 }
 
-class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging{
+class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging {
   override def getUniqueValues(columnName: String): Array[String] =
     dataTable.columnForName(columnName) match {
     case c: Column =>

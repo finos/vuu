@@ -2,13 +2,15 @@ package org.finos.vuu.example.ignite
 
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.ignite.cache.CachePeekMode
-import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriteriaBuilder, IndexQueryCriterion, SqlFieldsQuery}
+import org.apache.ignite.cache.query._
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore, ParentOrder}
 import org.finos.vuu.example.ignite.schema.IgniteChildOrderEntity
 
+import java.util
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 import scala.jdk.javaapi.CollectionConverters.asJava
 
@@ -59,6 +61,33 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     parentOrderCache.get(id)
   }
 
+  def getDistinct(columnName: String, rowCount: Int): Iterable[String] = {
+    val query = new SqlFieldsQuery(s"select distinct $columnName from ChildOrder limit ?")
+    query.setArgs(rowCount)
+
+    val results = childOrderCache.query(query)
+
+    val (counter, buffer) = mapToString(results)
+
+    logger.info(s"Loaded Ignite ChildOrder column $columnName for $counter rows")
+
+    buffer
+  }
+
+  def getDistinct(columnName: String, startsWith: String, rowCount: Int): Iterable[String] = {
+    val query = new SqlFieldsQuery(s"select distinct $columnName from ChildOrder where $columnName LIKE \'$startsWith%\' limit ?")
+    query.setArgs(rowCount)
+    logger.info(query.getSql)
+    val results = childOrderCache.query(query)
+
+    val (counter, buffer) = mapToString(results)
+
+    logger.info(s"Loaded Ignite ChildOrder column $columnName for $counter rows")
+
+    buffer
+
+  }
+
   def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
     val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
     val orderByClause = if(sqlSortQueries == null || sqlSortQueries.isEmpty) " order by id" else s" order by $sqlSortQueries"
@@ -70,6 +99,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
     results
   }
+
   def findChildOrderFilteredBy(filterQueryCriteria: List[IndexQueryCriterion]): Iterable[ChildOrder] = {
   //  val filter: IgniteBiPredicate[Int, ChildOrder]  = (key, p) => p.openQty > 0
 
@@ -95,6 +125,16 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   }
 
   private def toChildOrder = IgniteChildOrderEntity.getListToChildOrder
+
+  private def mapToString(results: FieldsQueryCursor[util.List[_]]): (Int, ListBuffer[String]) = {
+    var counter = 0
+    val buffer = mutable.ListBuffer[String]()
+    results.forEach(row => {
+      buffer.addOne(row.get(0).asInstanceOf[String])
+      counter += 1
+    })
+    (counter, buffer)
+  }
 
   def childOrderCount(): Long = {
     childOrderCache.sizeLong(CachePeekMode.ALL)
