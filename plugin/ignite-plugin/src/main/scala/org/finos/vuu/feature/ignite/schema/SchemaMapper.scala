@@ -27,7 +27,7 @@ object SchemaMapper {
     Iterator(
       () => hasUniqueColumnNames(fieldsMap.values.toList),
       () => externalFieldsInMapConformsToExternalSchema(externalSchema, fieldsMap.keys),
-      () => internalFieldsInMapMatchTableColumns(internalColumns, fieldsMap.values)
+      () => internalFieldsInMapConformsToTableColumns(internalColumns, fieldsMap.values)
     ).map(_()).find(_.nonEmpty).flatten
   }
 
@@ -42,12 +42,11 @@ object SchemaMapper {
       .map(f => s"Field `$f` not found in external schema")
   }
 
-  private def internalFieldsInMapMatchTableColumns(columns: Array[Column],
-                                                   internalFields: Iterable[String]): ValidationError = {
+  private def internalFieldsInMapConformsToTableColumns(columns: Array[Column],
+                                                        internalFields: Iterable[String]): ValidationError = {
     internalFields
       .find(columnName => columns.forall(_.name != columnName))
       .map(columnName => s"Column `$columnName` not found in internal columns")
-      .orElse(Option.when(columns.length > internalFields.size)(s"More internal columns passed than mapped fields"))
   }
 
   final case class InvalidSchemaMapException(message: String) extends RuntimeException(message)
