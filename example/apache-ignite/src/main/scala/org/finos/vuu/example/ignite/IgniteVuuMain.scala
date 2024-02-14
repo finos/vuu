@@ -38,6 +38,7 @@ object IgniteVuuMain extends App with StrictLogging {
   implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
   logger.info("[VUU] Starting...")
+  val runAsIgniteServer = false
 
   val store = new MemoryBackedVuiStateStore()
 
@@ -55,10 +56,10 @@ object IgniteVuuMain extends App with StrictLogging {
   val certPath = defaultConfig.getString("vuu.certPath")
   val keyPath = defaultConfig.getString("vuu.keyPath")
 
-  logger.info("[Ignite] Starting ignite in server mode")
-  private val igniteOrderStore = IgniteOrderStore(clientMode = false)
-  private val igniteOrderGenerator = new IgniteOrderGenerator(igniteOrderStore)
-  igniteOrderGenerator.save()
+  logger.info(s"[Ignite] Starting ignite in ${if(runAsIgniteServer) "Server" else "Client"} mode")
+  private val igniteOrderStore = IgniteOrderStore(clientMode = !runAsIgniteServer)
+  if(runAsIgniteServer)
+    SaveOrdersInIgnite()
 
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
@@ -93,5 +94,10 @@ object IgniteVuuMain extends App with StrictLogging {
   logger.info("[VUU] Ready.")
 
   vuuServer.join()
+
+  private def SaveOrdersInIgnite(): Unit = {
+    val igniteOrderGenerator = new IgniteOrderGenerator(igniteOrderStore)
+    igniteOrderGenerator.save()
+  }
 
 }
