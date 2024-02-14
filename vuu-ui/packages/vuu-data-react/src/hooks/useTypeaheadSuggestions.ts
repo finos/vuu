@@ -1,11 +1,11 @@
+import { makeRpcCall } from "@finos/vuu-data-remote";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 import {
   ClientToServerGetUniqueValues,
   ClientToServerGetUniqueValuesStartingWith,
   TypeaheadParams,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
-import { makeRpcCall } from "@finos/vuu-data-remote";
-import { TableSchemaTable } from "@finos/vuu-data-types";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
 

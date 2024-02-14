@@ -1,8 +1,7 @@
 import { useLookupValues } from "@finos/vuu-data-react";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
+import { dataAndColumnUnchanged, registerComponent } from "@finos/vuu-utils";
 import { memo } from "react";
-import { dataAndColumnUnchanged } from "@finos/vuu-table/src/cell-renderers/cell-utils";
 
 // const classBase = "vuuTableLookupCell";
 

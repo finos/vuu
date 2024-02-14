@@ -1,4 +1,7 @@
-import { DataItemCommitHandler } from "@finos/vuu-table-types";
+import {
+  ClientSideValidationChecker,
+  DataItemCommitHandler,
+} from "@finos/vuu-table-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { dispatchCustomEvent } from "@finos/vuu-utils";
@@ -10,7 +13,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { ClientSideValidationChecker } from "./editable-utils";
 
 export const WarnCommit = (): Promise<true> => {
   console.warn(

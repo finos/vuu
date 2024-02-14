@@ -33,6 +33,7 @@ import type {
   TableHeadings,
   ValueListRenderer,
   DateTimeColumnDescriptor,
+  TableCellRendererProps,
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -1183,3 +1184,16 @@ export function applyWidthToColumns(
   }
   return columns;
 }
+
+/**
+ * A memo compare function for cell renderers. Can be used to suppress
+ * render where column and data are both unchanged. Avoids render
+ * when row changes, where changes in row are unrelated to this cell.
+ */
+export const dataAndColumnUnchanged = (
+  p: TableCellRendererProps,
+  p1: TableCellRendererProps
+) =>
+  p.column === p1.column &&
+  p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
+    p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);

@@ -1,10 +1,10 @@
 // TODO is this hook needed ? it is currently used only in a vuu salt story
-import {
+import type {
   DataSource,
   DataSourceRow,
   SubscribeCallback,
 } from "@finos/vuu-data-types";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import type { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, metadataKeys, WindowRange } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
