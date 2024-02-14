@@ -1,13 +1,13 @@
+import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
+import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   ConfigurationEditorProps,
   registerConfigurationEditor,
 } from "@finos/vuu-utils";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
+import { useCallback, useState } from "react";
 
 import "./BackgroundCellConfigurationEditor.css";
-import { useCallback, useState } from "react";
-import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
 
 const classBase = "vuuBackgroundCellConfiguration";
 

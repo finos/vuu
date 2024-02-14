@@ -20,6 +20,7 @@
     "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
+    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
     "@lezer/lr": "1.3.4",

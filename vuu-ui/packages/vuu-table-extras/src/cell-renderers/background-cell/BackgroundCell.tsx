@@ -1,6 +1,6 @@
-import { dataAndColumnUnchanged } from "@finos/vuu-table";
 import { ColumnType, TableCellProps } from "@finos/vuu-table-types";
 import {
+  dataAndColumnUnchanged,
   DOWN1,
   DOWN2,
   isTypeDescriptor,

@@ -1,10 +1,9 @@
-import { EditValidationRule } from "@finos/vuu-table-types";
+import {
+  ClientSideValidationChecker,
+  EditValidationRule,
+} from "@finos/vuu-table-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { getEditRuleValidator } from "@finos/vuu-utils";
-
-export type ClientSideValidationChecker = (
-  value?: VuuRowDataItemType
-) => string | false | undefined;
 
 export const buildValidationChecker =
   (rules: EditValidationRule[]): ClientSideValidationChecker =>
