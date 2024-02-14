@@ -53,10 +53,8 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
 
-  override def getColumnValueProvider: ColumnValueProvider = {
-    logger.info(s"[TESTING] provider from virtualized table")
+  override def getColumnValueProvider: ColumnValueProvider =
     this.getProvider.asInstanceOf[ColumnValueProvider]
-  }
 
   def setRange(range: VirtualizedRange): Unit = {
     this.range = range

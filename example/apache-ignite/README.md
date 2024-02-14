@@ -2,6 +2,18 @@
 
 # Apache Ignite Sample
 
+## Running VUU and Ignite server as single process
+1. Open static main and set to run as ignite server
+```scala
+org.finos.vuu.example.ignite.IgniteVuuMain
+
+val runAsIgniteServer = ture
+
+```
+2. Run the static main
+
+## Running VUU against Separate Ignite Server
+
 How to run: 
 
 1. Run Ignite Cluster Application (run config for IntelliJ checked in): 
