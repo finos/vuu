@@ -4,7 +4,7 @@ import {
   DataSourceConfig,
   TableSchema,
 } from "@finos/vuu-data-types";
-import { configChanged } from "@finos/vuu-utils";
+import { configChanged, resetRange } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo } from "react";
 
@@ -43,7 +43,7 @@ export const useSessionDataSource = ({
     let ds = loadSession?.(dataSourceSessionKey) as VuuDataSource;
     if (ds) {
       console.log(
-        "%useSessionDataSource DATA SOURCE IN SESSION STATE",
+        "%cuseSessionDataSource DATA SOURCE IN SESSION STATE",
         "color:red;font-weight:bold;"
       );
 
@@ -60,6 +60,11 @@ export const useSessionDataSource = ({
         ds.applyConfig(dataSourceConfigFromState);
       }
 
+      if (ds.range.from > 0) {
+        // UI does not currently restore scroll position, so always reset to top of dataset
+        ds.range = resetRange(ds.range);
+      }
+
       return ds;
     }
 
@@ -68,8 +73,7 @@ export const useSessionDataSource = ({
       tableSchema.columns.map((col) => col.name);
 
     ds = new VuuDataSource({
-      bufferSize: 0,
-      // bufferSize: 200,
+      // bufferSize: 0,
       viewport: id,
       table: tableSchema.table,
       ...dataSourceConfigFromState,

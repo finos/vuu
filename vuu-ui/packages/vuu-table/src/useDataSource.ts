@@ -55,7 +55,7 @@ export const useDataSource = ({
         // TODO do we ever need to worry about missing updates here ?
         forceUpdate({});
       } else {
-        console.log(`ignore update as we're not mounted`);
+        // do nothing
       }
     },
     [dataWindow]
