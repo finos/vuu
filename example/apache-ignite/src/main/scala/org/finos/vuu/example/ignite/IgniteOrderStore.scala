@@ -21,9 +21,8 @@ object IgniteOrderStore {
    * @return an instance of IgniteOrderStore
    */
   def apply(clientMode: Boolean = true, persistenceEnabled: Boolean = false): IgniteOrderStore = {
-    IgniteLocalConfig.setPersistenceEnabled(persistenceEnabled)
-    val config = IgniteLocalConfig.create(clientMode = clientMode)
-    val ignite = Ignition.getOrStart(config)
+    val config = IgniteLocalConfig.create(clientMode = clientMode, persistenceEnabled = persistenceEnabled)
+    val ignite = Ignition.getOrStart(config.igniteConfiguration())
 
     ignite.cluster().state(ClusterState.ACTIVE)
 
