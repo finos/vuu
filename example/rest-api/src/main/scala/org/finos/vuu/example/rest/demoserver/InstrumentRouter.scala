@@ -1,20 +1,36 @@
 package org.finos.vuu.example.rest.demoserver
 
-import cats.effect.IO
-import io.circe.generic.auto._
 import org.finos.vuu.example.rest.model.Instrument
-import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.HttpRoutes
-import org.http4s.dsl.io._
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import io.vertx.core.json.JsonArray
+import io.vertx.core.{Handler, Vertx}
+import io.vertx.ext.web.{Router, RoutingContext}
 
 import java.security.SecureRandom
+import scala.util.Try
 
-object DemoRestService {
-  val instrumentService: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case GET -> Root / "instruments" => Ok(Range.inclusive(1, 1000).map(i => generateInstrument(i)).toList)
+object InstrumentRouter {
+  private final val DEFAULT_LIMIT = 1000
+
+  private val objectMapper = new ObjectMapper()
+  objectMapper.registerModule(DefaultScalaModule)
+
+  def get(vertx: Vertx): Router = {
+    val router = Router.router(vertx)
+    router.get().handler(getAllHandler)
+    router
   }
 
-  private def generateInstrument(id: Long): Instrument = RandomInstrument.create(id)
+  private def getAllHandler: Handler[RoutingContext] = {
+    ctx => {
+      val limit = Try(ctx.queryParam("limit").get(0).toInt).toOption
+      ctx.json(new JsonArray(objectMapper.writeValueAsString(generateInstruments(limit.getOrElse(DEFAULT_LIMIT)))))
+    }
+  }
+
+  private def generateInstruments(number: Int): List[Instrument] =
+    Range.inclusive(1, number).map(id => RandomInstrument.create(id)).toList
 }
 
 object RandomInstrument {

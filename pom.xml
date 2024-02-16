@@ -68,7 +68,7 @@
         <scalatest.version>3.2.9</scalatest.version>
         <scalamock.version>5.2.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
-        <jackson.version>2.14.2</jackson.version>
+        <jackson.version>2.15.4</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
         <netty.version>4.1.90.Final</netty.version>
