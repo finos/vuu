@@ -11,21 +11,10 @@
 
     <artifactId>rest-api</artifactId>
 
-    <properties>
-        <http4s-blaze.version>0.23.16</http4s-blaze.version>
-        <http4s-dsl.version>0.23.25</http4s-dsl.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu.plugin</groupId>
-            <artifactId>virtualized-table-plugin</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>
 
@@ -78,36 +67,6 @@
                     <artifactId>scala-reflect</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.http4s</groupId>
-            <artifactId>http4s-blaze-client_2.13</artifactId>
-            <version>0.23.16</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.http4s</groupId>
-            <artifactId>http4s-blaze-server_2.13</artifactId>
-            <version>0.23.16</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.http4s</groupId>
-            <artifactId>http4s-dsl_2.13</artifactId>
-            <version>0.23.25</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.http4s</groupId>
-            <artifactId>http4s-circe_2.13</artifactId>
-            <version>0.23.25</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.circe</groupId>
-            <artifactId>circe-generic_2.13</artifactId>
-            <version>0.14.6</version>
         </dependency>
 
     </dependencies>
@@ -264,21 +223,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
