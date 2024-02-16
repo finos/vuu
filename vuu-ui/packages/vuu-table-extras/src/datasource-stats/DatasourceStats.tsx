@@ -21,9 +21,12 @@ export const DataSourceStats = ({
   const [size, setSize] = useState(dataSource.size);
   useEffect(() => {
     setSize(dataSource.size);
-
     dataSource.on("resize", setSize);
     dataSource.on("range", setRange);
+    return () => {
+      dataSource.removeListener("resize", setSize);
+      dataSource.removeListener("range", setRange);
+    };
   }, [dataSource]);
 
   const className = cx(classBase, classNameProp);

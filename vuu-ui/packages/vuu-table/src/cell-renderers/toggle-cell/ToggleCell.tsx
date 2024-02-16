@@ -4,6 +4,7 @@ import {
 } from "@finos/vuu-table-types";
 import { CycleStateButtonProps, WarnCommit } from "@finos/vuu-ui-controls";
 import {
+  dataAndColumnUnchanged,
   dispatchCustomEvent,
   isTypeDescriptor,
   isValueListRenderer,
@@ -12,7 +13,6 @@ import {
 import cx from "clsx";
 
 import { memo, useCallback } from "react";
-import { dataAndColumnUnchanged } from "../cell-utils";
 import { CycleStateButton } from "@finos/vuu-ui-controls";
 
 import "./ToggleCell.css";

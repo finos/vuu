@@ -3,6 +3,7 @@ import {
   ColumnTypeValueMap,
   ColumnTypeFormatting,
   DateTimeColumnDescriptor,
+  ValueFormatter,
 } from "@finos/vuu-table-types";
 import { roundDecimal } from "./round-decimal";
 import {
@@ -12,7 +13,6 @@ import {
 } from "./column-utils";
 import { dateTimePattern, formatDate } from "./date";
 
-export type ValueFormatter = (value: unknown) => string;
 export type ValueFormatters = {
   [key: string]: ValueFormatter;
 };

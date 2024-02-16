@@ -7,7 +7,6 @@ import type {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import type { VuuDataRow } from "@finos/vuu-protocol-types";
-import type { ValueFormatter } from "@finos/vuu-table";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { DateTimePattern } from "@finos/vuu-utils";
 import type { FunctionComponent, MouseEvent } from "react";
@@ -17,6 +16,12 @@ export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
 export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
+
+export type ValueFormatter = (value: unknown) => string;
+
+export type ClientSideValidationChecker = (
+  value?: VuuRowDataItemType
+) => string | false | undefined;
 
 export type DataCellEditHandler = (
   row: DataSourceRow,

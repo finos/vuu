@@ -6,10 +6,13 @@ import {
   SingleSelectionHandler,
   WarnCommit,
 } from "@finos/vuu-ui-controls";
-import { dispatchCustomEvent, registerComponent } from "@finos/vuu-utils";
+import {
+  dataAndColumnUnchanged,
+  dispatchCustomEvent,
+  registerComponent,
+} from "@finos/vuu-utils";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { memo, useCallback, useState } from "react";
-import { dataAndColumnUnchanged } from "@finos/vuu-table";
 
 import "./DropdownCell.css";
 
