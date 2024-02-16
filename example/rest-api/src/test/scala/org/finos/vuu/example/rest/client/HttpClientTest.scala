@@ -1,6 +1,8 @@
 package org.finos.vuu.example.rest.client
 
 import io.vertx.core.Vertx
+import org.finos.toolbox.json.JsonUtil
+import org.finos.vuu.example.rest.TestUtils.jsonArrayRegex
 import org.finos.vuu.example.rest.demoserver.{DemoRestServer, DemoRestServerOptions}
 import org.finos.vuu.example.rest.model.Instrument
 import org.scalatest.BeforeAndAfterAll
@@ -9,7 +11,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Seconds, Span}
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers with Eventually {
   private final val PORT = 8091
@@ -31,27 +33,20 @@ class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers
 
   Feature("client can connect to the demo-server") {
     Scenario("can return expected output when GET to a correct endpoint") {
-      var res: Try[List[Instrument]] = Success(List.empty)
+      var res: Try[ClientResponse] = null
 
-      client.get[List[Instrument]]("/instruments?limit=1015").apply {res = _}
+      client.get("/instruments?limit=3").apply {res = _}
 
-      eventually(timeout(Span(2, Seconds)))(res.get should have length 1015)
+      eventually(timeout(Span(2, Seconds)))(res.get.body should include regex jsonArrayRegex(3))
+      JsonUtil.fromJson[List[Instrument]](res.get.body).head shouldBe a [Instrument]
     }
 
-    Scenario("returns error when GET to a non-existent endpoint ") {
-      var res: Try[List[Instrument]] = null
+    Scenario("returns 404 when GET to a non-existent endpoint ") {
+      var res: Try[ClientResponse] = null
 
-      client.get[List[Instrument]]("/hello-world").apply { res = _ }
+      client.get("/hello-world").apply { res = _ }
 
-      eventually(timeout(Span(2, Seconds)))(res.isFailure shouldEqual true)
-    }
-
-    Scenario("returns error when GET to a correct endpoint but errors while parsing body") {
-      var res: Try[Instrument] = null
-
-      client.get[Instrument]("/instruments?limit=1").apply { res = _ }
-
-      eventually(timeout(Span(2, Seconds)))(res.isFailure shouldEqual true)
+      eventually(timeout(Span(2, Seconds)))(res.get.statusCode shouldEqual 404)
     }
   }
 }

@@ -1,47 +1,43 @@
 package org.finos.vuu.example.rest.client
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule, JavaTypeable}
 import io.vertx.core.Vertx
-import io.vertx.core.buffer.Buffer
-import io.vertx.ext.web.client.{HttpResponse, WebClient}
+import io.vertx.ext.web.client.WebClient
 import io.vertx.uritemplate.UriTemplate
 import org.finos.vuu.example.rest.client.HttpClient.Handler
-import org.finos.vuu.example.rest.client.VertXClient.{parseResponseBody, rawClient}
 
-import scala.util.{Failure, Try}
+import java.nio.charset.Charset
+import scala.util.{Failure, Success, Try}
 
 trait HttpClient {
-  def get[T: JavaTypeable](requestUri: String): Handler[T] => Unit
+  def get(requestUri: String): Handler[ClientResponse] => Unit
 }
 
 object HttpClient {
   type Handler[T] = Try[T] => Unit
-  def apply(baseUrl: String): HttpClient = {
-    new VertXClient(baseUrl)
+  def apply(baseUrl: String, mock: Boolean = false): HttpClient = {
+    if (mock) FakeHttpClient() else VertXClient(baseUrl)
   }
 }
 
-object VertXClient {
+private object VertXClient {
   private val rawClient = WebClient.create(Vertx.vertx())
-  private val objectMapper = JsonMapper
-    .builder()
-    .addModule(DefaultScalaModule)
-    .build() :: ClassTagExtensions
 
-  def parseResponseBody[T: JavaTypeable](res: HttpResponse[Buffer]): Try[T] =
-    for {
-      bodyAsStr <- Try(res.body.toJson.toString)
-      result    <- Try(objectMapper.readValue[T](bodyAsStr))
-    } yield result
+  def apply(baseUrl: String): VertXClient = {
+    new VertXClient(rawClient, baseUrl)
+  }
 }
 
-class VertXClient(baseUrl: String) extends HttpClient {
-  override def get[T: JavaTypeable](requestUri: String): Handler[T] => Unit = {
+private class VertXClient(rawClient: WebClient, baseUrl: String) extends HttpClient {
+  override def get(requestUri: String): Handler[ClientResponse] => Unit = {
     handler => rawClient
       .getAbs(UriTemplate.of(baseUrl + requestUri))
       .send()
-      .onSuccess(res => handler(parseResponseBody[T](res)))
+      .onSuccess(res => {
+        val bodyStr = Try(res.body.toString(Charset.forName("UTF-8"))).getOrElse("")
+        handler(Success(ClientResponse(bodyStr, res.statusCode())))
+      })
       .onFailure(cause => handler(Failure(cause)))
   }
 }
+
+case class ClientResponse(body: String, statusCode: Int)
