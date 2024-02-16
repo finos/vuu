@@ -10,6 +10,9 @@
     </parent>
 
     <artifactId>apache-ignite</artifactId>
+    <properties>
+        <ignite.version>2.16.0</ignite.version>
+    </properties>
 
     <dependencies>
 
@@ -39,17 +42,22 @@
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-core</artifactId>
-            <version>2.16.0</version>
+            <version>${ignite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-calcite</artifactId>
-            <version>2.16.0</version>
+            <version>${ignite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-slf4j</artifactId>
-            <version>2.16.0</version>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-kubernetes</artifactId>
+            <version>${ignite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -111,6 +119,222 @@
                         <jvmArg>-Xmx1024m</jvmArg>
                     </jvmArgs>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>ignite</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-Xmx4G</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.net=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.math=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.sql/java.sql=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.time=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.text=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/sun.management=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argument>
+                                <argument>-Djava.net.preferIPv4Stack=true</argument>
+                                <argument>org.finos.vuu.example.ignite.StartIgniteMain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>loader</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-Xmx1G</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.net=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.math=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.sql/java.sql=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.time=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.text=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/sun.management=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argument>
+                                <argument>-Djava.net.preferIPv4Stack=true</argument>
+                                <argument>org.finos.vuu.example.ignite.loader.IgniteOrderLoaderMain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>vuu</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-Xmx4G</argument>
+                                <argument>-classpath</argument>
+                                <classpath />
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</argument>
+                                <argument>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.io=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.nio=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.net=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.math=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.sql/java.sql=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.time=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.base/java.text=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.management/sun.management=ALL-UNNAMED</argument>
+                                <argument>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argument>
+                                <argument>-Dvuu.webroot=../../vuu-ui/deployed_apps/app-vuu-example</argument>
+                                <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
+                                <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
+                                <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
+                                <argument>-Djava.net.preferIPv4Stack=true</argument>
+                                <argument>org.finos.vuu.example.ignite.IgniteVuuMain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>vuu-app</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>app</classifier>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                    <mainClass>
+                                        org.finos.vuu.example.ignite.IgniteVuuMain
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>vuu-ignite-node</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>node</classifier>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                    <mainClass>
+                                        org.finos.vuu.example.ignite.StartIgniteMain
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>vuu-ignite-loader</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>loader</classifier>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                    <mainClass>
+                                        org.finos.vuu.example.ignite.loader.IgniteOrderLoaderMain
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
