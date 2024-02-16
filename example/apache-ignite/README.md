@@ -7,7 +7,7 @@
 ```scala
 org.finos.vuu.example.ignite.IgniteVuuMain
 
-val runAsIgniteServer = ture
+val runAsIgniteServer = true
 
 ```
 2. Run the static main
@@ -18,19 +18,19 @@ How to run:
 
 1. Run Ignite Cluster Application (run config for IntelliJ checked in): 
 
-```scala
+```
 org.finos.vuu.example.ignite.StartIgniteMain
 ```
 
 2. Run loader process to populate orders...
 
-```scala
+```
 org.finos.vuu.example.ignite.loader.IgniteOrderLoaderMain
 ```
 
 3. Run the static main
 
-```scala
+```
 org.finos.vuu.example.ignite.IgniteVuuMain
 
 # required jdk 17 JVM args
