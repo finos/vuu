@@ -9,4 +9,6 @@ object TestUtils {
                      isin: String = "USD0123456789"): Instrument = {
     Instrument(id = id, ccy = ccy, isin = isin, ric = ric)
   }
+
+  def jsonArrayRegex(itemCount: Int): String = s"\\[(\\{[^\\}]*\\},){${itemCount-1}}\\{[^\\}]*\\}\\]"
 }

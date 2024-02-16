@@ -21,10 +21,12 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
   override def doStart(): Unit = {
     logger.info("Populating REST Instruments table...")
     client.getInstruments(limit = INSTRUMENTS_COUNT) {{
-      case Failure(exception) => logger.error("An unexpected error occurred when querying instrument service:", exception.getMessage)
-      case Success(is) => is.map(schemaMapper.toTableRowData).foreach(rowData => {
-        val key = rowData(keyField).toString
-        table.processUpdate(key, RowWithData(key, rowData), clock.now())
+      case Failure(ex) => logger.error("An unexpected error occurred when querying instrument service:", ex)
+      case Success(instruments) => instruments
+        .map(schemaMapper.toTableRowData)
+        .foreach(rowData => {
+          val key = rowData(keyField).toString
+          table.processUpdate(key, RowWithData(key, rowData), clock.now())
       })
     }}
   }
