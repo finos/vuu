@@ -1,8 +1,8 @@
-package org.finos.vuu.feature.ignite.schema
+package org.finos.vuu.util.schema
 
-import org.finos.vuu.feature.ignite.schema.EntitySchema.{ColumnName, Index, IndexName}
-import org.finos.vuu.feature.ignite.schema.ExternalDataType.{ExternalDataType, fromString}
-import org.finos.vuu.feature.ignite.schema.ExternalEntitySchemaBuilder.InvalidIndexException
+import org.finos.vuu.util.schema.EntitySchema.{ColumnName, Index, IndexName}
+import org.finos.vuu.util.schema.ExternalDataType.{ExternalDataType, fromString}
+import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

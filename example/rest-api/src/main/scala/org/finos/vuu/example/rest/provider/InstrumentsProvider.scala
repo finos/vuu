@@ -6,8 +6,8 @@ import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.rest.InstrumentServiceClient
 import org.finos.vuu.example.rest.model.Instrument
 import org.finos.vuu.example.rest.provider.InstrumentsProvider.{INSTRUMENTS_COUNT, columnNameByExternalField, externalSchema}
-import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper}
 import org.finos.vuu.provider.DefaultProvider
+import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper}
 
 import scala.util.{Failure, Success}
 

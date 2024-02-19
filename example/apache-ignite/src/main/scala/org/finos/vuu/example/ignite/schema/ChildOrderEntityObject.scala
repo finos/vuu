@@ -2,7 +2,7 @@ package org.finos.vuu.example.ignite.schema
 
 import org.apache.ignite.cache.QueryEntity
 import org.finos.vuu.core.module.simul.model.ChildOrder
-import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder}
+import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder}
 
 object ChildOrderEntityObject {
   private val _schema = createSchema()

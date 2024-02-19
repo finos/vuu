@@ -1,6 +1,6 @@
-package org.finos.vuu.feature.ignite.schema
+package org.finos.vuu.util.schema
 
-import org.finos.vuu.feature.ignite.schema.ExternalEntitySchemaBuilder.InvalidIndexException
+import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._

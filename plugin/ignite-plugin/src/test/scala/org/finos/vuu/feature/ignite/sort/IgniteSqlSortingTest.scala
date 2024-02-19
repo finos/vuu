@@ -2,8 +2,8 @@ package org.finos.vuu.feature.ignite.sort
 
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.feature.ignite.TestInput.createTestOrderEntity
-import org.finos.vuu.feature.ignite.schema.{SchemaField, SchemaMapper}
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
+import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 import org.scalamock.scalatest.MockFactory
 
 class IgniteSqlSortingTest extends IgniteTestsBase with MockFactory {

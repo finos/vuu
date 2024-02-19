@@ -17,58 +17,6 @@
             <artifactId>vuu</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu.plugin</groupId>
-            <artifactId>ignite-plugin</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-reflect</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.13</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
     </dependencies>
 
     <profiles>
@@ -137,7 +85,6 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-
                         <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
