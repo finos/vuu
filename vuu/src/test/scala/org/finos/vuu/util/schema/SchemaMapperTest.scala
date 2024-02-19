@@ -1,9 +1,9 @@
-package org.finos.vuu.feature.ignite.schema
+package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.module.vui.VuiStateModule.stringToFieldDef
 import org.finos.vuu.core.table.{Column, Columns, SimpleColumn}
-import org.finos.vuu.feature.ignite.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.feature.ignite.schema.SchemaMapperTest.{fieldsMap, tableColumns}
+import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
+import org.finos.vuu.util.schema.SchemaMapperTest.{fieldsMap, tableColumns}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

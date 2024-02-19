@@ -3,9 +3,9 @@ package org.finos.vuu.feature.ignite
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.feature.ignite.filter.{IgniteSqlFilterClause, IgniteSqlFilterTreeVisitor}
-import org.finos.vuu.feature.ignite.schema.SchemaMapper
 import org.finos.vuu.feature.ignite.sort.IgniteSqlSortBuilder
 import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.util.schema.SchemaMapper
 
 trait FilterAndSortSpecToSql {
   def filterToSql(filterSpec: FilterSpec): String

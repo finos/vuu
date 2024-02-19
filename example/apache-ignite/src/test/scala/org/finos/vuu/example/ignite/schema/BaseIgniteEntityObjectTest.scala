@@ -1,6 +1,6 @@
 package org.finos.vuu.example.ignite.schema
 
-import org.finos.vuu.feature.ignite.schema.ExternalEntitySchemaBuilder
+import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

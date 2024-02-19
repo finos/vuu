@@ -3,8 +3,8 @@ package org.finos.vuu.feature.ignite.filter
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
-import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchema, SchemaField, SchemaMapper}
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
+import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaField, SchemaMapper}
 
 class IgniteSqlFilteringTest extends IgniteTestsBase {
 

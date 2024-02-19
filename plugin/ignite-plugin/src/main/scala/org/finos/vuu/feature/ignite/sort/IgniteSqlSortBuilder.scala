@@ -2,7 +2,7 @@ package org.finos.vuu.feature.ignite.sort
 
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.SortDirection
-import org.finos.vuu.feature.ignite.schema.{SchemaMapper, SchemaField}
+import org.finos.vuu.util.schema.SchemaMapper
 
 
 //todo design discussions

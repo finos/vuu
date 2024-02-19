@@ -1,7 +1,7 @@
 package org.finos.vuu.example.ignite.schema
 
 import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
-import org.finos.vuu.feature.ignite.schema.ExternalEntitySchema
+import org.finos.vuu.util.schema.ExternalEntitySchema
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._

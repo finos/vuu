@@ -1,4 +1,4 @@
-package org.finos.vuu.feature.ignite.schema
+package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 

@@ -6,8 +6,8 @@ import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
 import org.finos.vuu.example.ignite.{IgniteOrderStore, TestUtils}
-import org.finos.vuu.feature.ignite.schema.SchemaMapper
 import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.util.schema.SchemaMapper
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 

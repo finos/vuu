@@ -3,7 +3,7 @@ package org.finos.vuu.feature.ignite.filter
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.DataType.{CharDataType, StringDataType}
 import org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClause.EMPTY_SQL
-import org.finos.vuu.feature.ignite.schema.SchemaMapper
+import org.finos.vuu.util.schema.SchemaMapper
 
 private object IgniteSqlFilterClause {
   val EMPTY_SQL = ""

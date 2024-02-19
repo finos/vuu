@@ -5,8 +5,8 @@ import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.core.table.{Column, Columns}
 import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryTest.{entitySchema, internalColumns, internalColumnsByExternalFields}
-import org.finos.vuu.feature.ignite.schema.{ExternalEntitySchemaBuilder, ExternalEntitySchema, SchemaMapper}
 import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
