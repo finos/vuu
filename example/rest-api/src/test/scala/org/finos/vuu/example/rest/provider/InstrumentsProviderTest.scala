@@ -5,76 +5,83 @@ import org.finos.vuu.core.table.{Columns, DataTable, RowWithData}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.example.rest.InstrumentServiceClient
-import org.finos.vuu.example.rest.TestUtils.testInstrument
-import org.finos.vuu.example.rest.client.{ClientResponse, HttpClient}
-import org.finos.vuu.example.rest.provider.InstrumentsProvider.INSTRUMENTS_COUNT
+import org.finos.vuu.example.rest.client.{HttpClient, InstrumentServiceClient}
+import org.finos.vuu.example.rest.model.{Instrument, RandomInstrument}
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import sttp.client4.testing.SyncBackendStub
 
-import scala.util.{Failure, Success}
-
-class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFactory {
+class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFactory with BeforeAndAfterEach {
   private implicit val clock: Clock = new TestFriendlyClock(10001)
-  private val mockHttpClient = mock[HttpClient]
-  private val instrumentsClient = InstrumentServiceClient(mockHttpClient)
-
-  private val mockTable = stub[DataTable]
-  (mockTable.getTableDef _).when().returns(testTableDef())
-
-  private val provider = new InstrumentsProvider(mockTable, instrumentsClient)
+  private final val BASE_URL = "base-url.com"
+  private final val KEY_FIELD = "id"
+  private val mockTable: DataTable = stub[DataTable]
 
   Feature("doStart") {
-    Scenario("can correctly make external call, parse response and update the table") {
-      val instrument = testInstrument(id = 0, ric = "RIC1.L")
-      val expectedRowForInstrument1 = RowWithData("0", Map(
-        "id" -> instrument.id,
-        "currency" -> instrument.ccy,
-        "ric" -> instrument.ric,
-        "isin" -> instrument.isin
-      ))
-      val mockClientResponse = Success(ClientResponse(JsonUtil.toRawJson(List(instrument)), 200))
+    Scenario("can correctly make an external call, parse response and update the table WHEN server responds with 1 instrument") {
+      val instruments = RandomInstrument.create(size = 1)
+      val expectedRow = instruments.map(rowFromInstrument).head
+      val mockBackend = SyncBackendStub
+        .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
+        .thenRespond(JsonUtil.toRawJson(instruments))
 
-      (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
-        .returns(_(mockClientResponse))
+      getInstrumentsProvider(mockBackend).doStart()
 
-      provider.doStart()
+      (mockTable.processUpdate _).verify(expectedRow.get(KEY_FIELD).toString, expectedRow, *).once
+    }
 
-      (mockTable.processUpdate _).verify("0", expectedRowForInstrument1, *).once
+    Scenario("can correctly make an external call, parse response and update the table WHEN server responds with multiple instruments") {
+      val instruments = RandomInstrument.create(size = 10)
+      val expectedRows = instruments.map(rowFromInstrument)
+      val mockBackend = SyncBackendStub
+        .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
+        .thenRespond(JsonUtil.toRawJson(instruments))
+
+      getInstrumentsProvider(mockBackend).doStart()
+
+      expectedRows.foreach(row => (mockTable.processUpdate _).verify(row.get(KEY_FIELD).toString, row, *).once)
     }
 
     Scenario("skips updating table when response is not parsable") {
-      val mockClientResponse = Success(ClientResponse(body = "Some body", statusCode = 200))
+      val mockClientResponse = "Some body"
+      val mockBackend = SyncBackendStub.whenAnyRequest.thenRespond(mockClientResponse)
 
-      (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
-        .returns(_(mockClientResponse))
-
-      provider.doStart()
+      getInstrumentsProvider(mockBackend).doStart()
 
       (mockTable.processUpdate _).verify(*, *, *).never
     }
 
     Scenario("skips updating table when response errors") {
-      val mockClientResponse = Failure(new Exception("Some error"))
+      val mockBackend = SyncBackendStub.whenAnyRequest.thenRespond(throw new Exception("Some error"))
 
-      (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
-        .returns(_(mockClientResponse))
-
-      provider.doStart()
+      getInstrumentsProvider(mockBackend).doStart()
 
       (mockTable.processUpdate _).verify(*, *, *).never
     }
   }
 
+  def getInstrumentsProvider(backendStub: SyncBackendStub): InstrumentsProvider = {
+    (mockTable.getTableDef _).when().returns(testTableDef())
+    val instrumentsClient = InstrumentServiceClient(HttpClient(backendStub), BASE_URL)
+    new InstrumentsProvider(mockTable, instrumentsClient)
+  }
+
   def testTableDef(): TableDef = {
     TableDef(
       name = "testTable",
-      keyField = "id",
+      keyField = KEY_FIELD,
       columns = Columns.fromNames("id".int(), "ric".string(), "isin".string(), "currency".string()),
     )
+  }
+
+  def rowFromInstrument(i: Instrument): RowWithData = {
+    RowWithData(i.id.toString, Map(
+      "id" -> i.id,
+      "currency" -> i.ccy,
+      "ric" -> i.ric,
+      "isin" -> i.isin
+    ))
   }
 }
