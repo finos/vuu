@@ -17,6 +17,11 @@
             <artifactId>vuu</artifactId>
             <version>0.9.61-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.softwaremill.sttp.client4</groupId>
+            <artifactId>core_2.13</artifactId>
+            <version>4.0.0-M9</version>
+        </dependency>
     </dependencies>
 
     <profiles>

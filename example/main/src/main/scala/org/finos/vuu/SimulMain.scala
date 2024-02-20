@@ -16,7 +16,7 @@ import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.example.rest.client.HttpClient
+import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
@@ -90,7 +90,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(EditableModule())
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
-    .withModule(RestModule(HttpClient("url.com", mock = true)))
+    .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig("vuu.restModule")))
     .withModule(VirtualTableModule())
     //.withModule(IgniteOrderDataModule(IgniteOrderStore()))
     .withPlugin(VirtualizedTablePlugin)
