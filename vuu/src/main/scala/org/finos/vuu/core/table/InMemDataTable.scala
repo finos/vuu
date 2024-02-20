@@ -7,6 +7,7 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
+import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -21,6 +22,8 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   protected def createDataTableData(): TableData
 
   def updateCounter: Long
+
+  def newRow(key: String): RowBuilder
 
   def incrementUpdateCounter(): Unit
 
@@ -42,7 +45,11 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getTableDef: TableDef
 
-  def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
+  def processUpdate(rowUpdate: RowData, timeStamp: Long): Unit = {
+    processUpdate(rowUpdate.key(), rowUpdate, timeStamp)
+  }
+
+  def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit
 
   def hasRowChanged(row: RowWithData): Boolean = {
     val existingRow = this.pullRow(row.key)
@@ -170,10 +177,10 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
 
   //protected def merge(update: RowUpdate, data: RowData): RowData = MergeFunctions.mergeLeftToRight(update, data)
 
-  protected def merge(update: RowWithData, data: RowWithData): RowWithData =
+  protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowWithData): TableData = {
+  def update(key: String, update: RowData): TableData = {
 
     val table = data.synchronized {
 
@@ -219,6 +226,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     .map(c => c -> buildIndexForColumn(c)).toMap[Column, IndexedField[_]]
 
   private final val columnValueProvider = InMemColumnValueProvider(this)
+
+  override def newRow(key: String): RowBuilder = {
+    new InMemMapRowBuilder().setKey(key)
+  }
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
@@ -333,7 +344,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   def columns(): Array[Column] = tableDef.columns
   lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
 
-  private def updateIndices(rowkey: String, rowUpdate: RowWithData): Unit = {
+  private def updateIndices(rowkey: String, rowUpdate: RowData): Unit = {
     this.indices.foreach(colTup => {
       val column = colTup._1
       val index = colTup._2
@@ -375,7 +386,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     })
   }
 
-  def update(rowkey: String, rowUpdate: RowWithData): Unit = {
+  def update(rowkey: String, rowUpdate: RowData): Unit = {
     data = data.update(rowkey, rowUpdate)
     updateIndices(rowkey, rowUpdate)
   }
@@ -446,7 +457,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     }
   }
 
-  def processUpdate(rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
+  def processUpdate(rowKey: String, rowData: RowData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
 

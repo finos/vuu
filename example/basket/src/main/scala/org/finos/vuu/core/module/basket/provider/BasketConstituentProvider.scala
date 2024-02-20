@@ -4,6 +4,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.RunOnceLifeCycleRunner
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants
+import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentColumnNames.{BasketId, Change, Description, LastTrade, Ric, RicBasketId, Side, Volume, Weighting}
 import org.finos.vuu.core.module.basket.csv.BasketLoader
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.DefaultProvider
@@ -12,6 +13,16 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
 
   private val runner = new RunOnceLifeCycleRunner("BasketConstituentProvider", runOnce)
   private val basketLoader = new BasketLoader()
+
+  private val ricCol = table.getTableDef.columnForName(Ric)
+  private val basketIdCol = table.getTableDef.columnForName(BasketId)
+  private val ricBasketIdCol = table.getTableDef.columnForName(RicBasketId)
+  private val lastTradeCol = table.getTableDef.columnForName(LastTrade)
+  private val changeCol = table.getTableDef.columnForName(Change)
+  private val weightingCol = table.getTableDef.columnForName(Weighting)
+  private val volumeCol = table.getTableDef.columnForName(Volume)
+  private val sideCol = table.getTableDef.columnForName(Side)
+  private val descCol = table.getTableDef.columnForName(Description)
 
   lifecycle(this).dependsOn(runner)
 
@@ -23,10 +34,13 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
   }
 
   def updateBasketConstituents(basketId: String): Unit = {
+
     val list = basketLoader.loadConstituents(basketId)
+
     list.foreach(row => {
 
       if (row.nonEmpty) {
+
         val symbol = row("Symbol").asInstanceOf[String]
         val name = row("Name")
         val lastTrade = row("Last Trade")
@@ -35,17 +49,20 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
         val weighting = row("Weighting")
         val side = BasketConstants.Side.Buy
         val ricBasketId = symbol + "." + basketId
-        table.processUpdate(ricBasketId, RowWithData(ricBasketId, Map(
-          Ric -> symbol,
-          BasketId -> basketId,
-          RicBasketId -> ricBasketId,
-          LastTrade -> lastTrade,
-          Change -> change,
-          Weighting -> weighting,
-          Volume -> volume,
-          Description -> name,
-          Side -> side
-        )), clock.now())
+
+        val rowData = table.newRow(ricBasketId)
+          .setString(ricCol, symbol)
+          .setString(basketIdCol, basketId)
+          .setString(ricBasketIdCol, ricBasketId)
+          .setString(lastTradeCol, Option(lastTrade).getOrElse("").toString)
+          .setString(changeCol, Option(change).getOrElse("").toString)
+          .setDouble(weightingCol, weighting.asInstanceOf[Double])
+          .setString(volumeCol, Option(volume).getOrElse("").toString)
+          .setString(descCol, name.toString)
+          .setString(sideCol, side)
+          .asRow
+
+        table.processUpdate(rowData, clock.now())
       }
     })
 

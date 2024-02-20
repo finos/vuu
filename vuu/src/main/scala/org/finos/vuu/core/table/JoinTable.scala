@@ -7,6 +7,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.vuu.core.row.RowBuilder
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -104,7 +105,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
     map.toMap
   }
 
-  def rowUpdateToArray(update: RowWithData): Array[Any] = {
+  def rowUpdateToArray(update: RowData): Array[Any] = {
     //val data    = columns.map(update.get(_))
 
     var index = 0
@@ -189,7 +190,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
     }
   }
 
-  def processUpdate(rowKey: String, rowUpdate: RowWithData, joinTable: JoinTable, sourceTables: Map[String, DataTable]): JoinDataTableData = {
+  def processUpdate(rowKey: String, rowUpdate: RowData, joinTable: JoinTable, sourceTables: Map[String, DataTable]): JoinDataTableData = {
 
     val updateByKeyIndex = rowUpdateToArray(rowUpdate)
 
@@ -347,7 +348,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def incrementUpdateCounter(): Unit = updateCounterInternal +=1
 
-  override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit = {
+  override def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
 
@@ -658,4 +659,5 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def getColumnValueProvider: ColumnValueProvider = InMemColumnValueProvider(this)
+  override def newRow(key: String): RowBuilder = ???
 }
