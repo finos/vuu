@@ -3,7 +3,7 @@ import { TableConfig } from "@finos/vuu-table-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { List, ListItem } from "@salt-ds/lab";
+import { List, ListItem } from "@finos/vuu-ui-controls";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 
 let displaySequence = 1;

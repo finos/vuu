@@ -1,5 +1,4 @@
-import { List, ListItem } from "@salt-ds/lab";
-
+import { List, ListItem } from "@finos/vuu-ui-controls";
 import { useVuuTables } from "@finos/vuu-data-react";
 import { useAutoLoginToVuuServer } from "../utils";
 
