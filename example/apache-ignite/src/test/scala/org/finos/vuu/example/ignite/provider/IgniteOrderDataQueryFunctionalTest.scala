@@ -1,6 +1,6 @@
 package org.finos.vuu.example.ignite.provider
 
-import org.apache.ignite.IgniteCache
+import org.apache.ignite.Ignite
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
@@ -10,17 +10,27 @@ import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.util.schema.SchemaMapper
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.BeforeAndAfterAll
 
-class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with Matchers {
-
-  private val ignite = TestUtils.setupIgnite()
-  private val parentOrderCache: IgniteCache[Int, ParentOrder] = ignite.getOrCreateCache("parentOrderCache")
-  private val childOrderCache: IgniteCache[Int, ChildOrder] = ignite.getOrCreateCache("childOrderCache")
-  private val orderStore = new IgniteOrderStore(parentOrderCache, childOrderCache)
+class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with BeforeAndAfterAll with Matchers {
   private val schemaMapper = SchemaMapper(ChildOrderEntityObject.getSchema, IgniteOrderDataModule.columns, IgniteOrderDataProvider.columnNameByExternalField)
-  private val dataQuery = IgniteOrderDataQuery(orderStore, schemaMapper)
+  private var ignite: Ignite = _
+  private var orderStore: IgniteOrderStore = _
+  private var dataQuery: IgniteOrderDataQuery = _
 
-  test("Can parse and apply filtering and sorting when fetching") {
+  override def beforeAll(): Unit = {
+    ignite = TestUtils.setupIgnite(testName = this.toString)
+    val parentOrderCache = ignite.getOrCreateCache[Int, ParentOrder]("parentOrderCache")
+    val childOrderCache = ignite.getOrCreateCache[Int, ChildOrder]("childOrderCache")
+    orderStore = new IgniteOrderStore(parentOrderCache, childOrderCache)
+    dataQuery = IgniteOrderDataQuery(orderStore, schemaMapper)
+  }
+
+  override def afterAll(): Unit = {
+    ignite.close()
+  }
+
+  test("Can parse and apply filters and sort when fetching") {
     val testOrder1 = TestUtils.createChildOrder(1, ric = "ABC.HK", price = 5.55)
     val testOrder2 = TestUtils.createChildOrder(2, ric = "ABC.LDN", price = 6.0)
     val testOrder3 = TestUtils.createChildOrder(3, ric = "ABC.NY", price = 4.5)
