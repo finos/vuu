@@ -1,21 +1,32 @@
-.saltButton {
-    white-space: nowrap;;
+.vuu-theme {
+    
     --saltButton-borderRadius: 6px;
+
+    .saltButton-primary {
+        --saltButton-borderColor: var(--salt-actionable-primary-foreground);
+        --saltButton-borderWidth: 1px;
+        --saltButton-borderStyle: solid;
+    }
+    
 }
 
-.saltButton-primary {
-    --saltButton-borderColor: var(--salt-actionable-primary-foreground);
-    --saltButton-borderWidth: 1px;
-    --saltButton-borderStyle: solid;
-    --vuu-icon-color: var(--saltIcon-color);
+.saltButton {
+    --vuu-icon-color: var(--button-text-color);
+    --button-padding: var(--saltButton-padding, var(--salt-size-unit, 0));
+    white-space: nowrap;;
 }
+
+.saltButton-active {
+    --vuu-icon-color: var(--button-text-color-active); 
+}
+
+.saltButton-disabled {
+    --vuu-icon-color: var(--button-text-color-disabled); 
+}
+
 
 .saltButton-primary:hover {
     --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
-}
-
-.saltButton-secondary {
-    --saltButton-borderStyle: none;
 }
 
 .saltButton:focus-visible {
@@ -27,4 +38,9 @@
 
 .saltButton[data-icon]{
     min-width: 20px;
+    padding-left: calc(var(--button-padding) + var(--vuu-icon-size));
+}
+
+.saltButton[data-icon]:after {
+    left: var(--button-padding);
 }

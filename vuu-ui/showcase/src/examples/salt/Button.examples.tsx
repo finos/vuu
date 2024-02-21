@@ -1,5 +1,6 @@
 import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
+import { Icon } from "@finos/vuu-icons";
 
 let displaySequence = 1;
 
@@ -24,7 +25,17 @@ export const IconButtons = () => {
       }
     >
       <Button data-icon="filter" />
-      <Button data-icon="filter">Filter</Button>
+      <Button>
+        <Icon name="filter" />
+      </Button>
+      <Button>
+        <Icon name="filter" />
+        Filter
+      </Button>
+      <Button>
+        Filter
+        <Icon name="filter" />
+      </Button>
     </div>
   );
 };
