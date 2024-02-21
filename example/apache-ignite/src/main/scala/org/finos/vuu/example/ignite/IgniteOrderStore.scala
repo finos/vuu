@@ -87,14 +87,14 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
   }
 
-  def getCount(sqlFilterQueries: String): Int = {
+  def getCount(sqlFilterQueries: String): Long = {
     //todo should this be COUNT_BIG?
     val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
     val query = new SqlFieldsQuery(s"select COUNT(1) from ChildOrder$whereClause")
     val cursor = childOrderCache.query(query)
 
     val countValue = cursor.getAll().get(0).get(0)
-    countValue.asInstanceOf[Int]
+    countValue.asInstanceOf[Long]
   }
 
   def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {

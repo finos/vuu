@@ -26,7 +26,8 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
 
     val internalTable = viewPort.table.asTable.asInstanceOf[VirtualizedSessionTable]
 
-    val totalSize = igniteStore.childOrderCount().toInt
+    val igniteFilter =  dataQuery.getFilterSql(viewPort.filterSpec)
+    val totalSize: Int = getTotalSize(igniteFilter).toInt
 
     val (startIndex, endIndex, rowCount) = indexCalculator.calc(viewPort.getRange, totalSize)
 
@@ -46,6 +47,12 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
 
     viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
+
+  private def getTotalSize(filter: String): Long =
+    if (filter.nonEmpty)
+      igniteStore.getCount(filter)
+    else
+      igniteStore.childOrderCount()
 
   private def tableUpdater(internalTable: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = internalTable.tableDef.keyField

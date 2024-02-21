@@ -4,7 +4,7 @@ import org.finos.vuu.viewport.ViewPortRange
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
-class CalcIndexTest extends AnyFunSuiteLike with Matchers {
+class IndexCalculatorTest extends AnyFunSuiteLike with Matchers {
 
   test("Get index given view port range is at start") {
     val (starIndex, endIndex, rowCount) =
@@ -46,7 +46,7 @@ class CalcIndexTest extends AnyFunSuiteLike with Matchers {
     rowCount shouldEqual 1
   }
 
-  test("Get zero rows given view port range or zero") {
+  test("Get zero rows given view port range of zero") {
     val (starIndex, endIndex, rowCount) =
       IndexCalculator(extraRowsCount = 0)
         .calc(ViewPortRange(from = 0, to = 0), totalSize = 1000)
@@ -55,4 +55,24 @@ class CalcIndexTest extends AnyFunSuiteLike with Matchers {
     endIndex shouldEqual 0
     rowCount shouldEqual 0
   }
+
+  test("Get zero rows given total size of zero") {
+    val (starIndex, endIndex, rowCount) =
+      IndexCalculator(extraRowsCount = 10)
+        .calc(ViewPortRange(from = 0, to = 100), totalSize = 0)
+
+    starIndex shouldEqual 0
+    endIndex shouldEqual 0
+    rowCount shouldEqual 0
+  }
+
+  test("Throw exception when range is negative") {
+    val exception = intercept[IllegalArgumentException](
+      IndexCalculator(extraRowsCount = 10)
+        .calc(ViewPortRange(from = 0, to = -1), totalSize = 1000)
+    )
+
+    exception.getMessage should include ("Failed to calculate index for view port range to -1. View port range cannot be negative.")
+  }
+
 }
