@@ -57,8 +57,9 @@ object TestUtils {
       activeChildren = 0)
   }
 
-  def setupIgnite(): Ignite = {
+  def setupIgnite(testName: String): Ignite = {
     val igniteConfiguration = new IgniteConfiguration()
+    igniteConfiguration.setIgniteInstanceName(testName)
 
     val parentOrderCacheConfiguration = new org.apache.ignite.configuration.CacheConfiguration[Int, ParentOrder]
     val childOrderCacheConfiguration = new org.apache.ignite.configuration.CacheConfiguration[Int, ChildOrder]

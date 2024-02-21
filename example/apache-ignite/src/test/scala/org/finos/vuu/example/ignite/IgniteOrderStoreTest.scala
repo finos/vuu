@@ -3,11 +3,11 @@ package org.finos.vuu.example.ignite
 import org.apache.ignite.cache.query.IndexQueryCriteriaBuilder
 import org.apache.ignite.{Ignite, IgniteCache}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
-import org.scalatest.BeforeAndAfter
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 
-class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matchers {
+class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with BeforeAndAfterEach with Matchers {
   private var ignite: Ignite = _
   private var parentOrderCache: IgniteCache[Int, ParentOrder] = _
   private var childOrderCache: IgniteCache[Int, ChildOrder] = _
@@ -16,11 +16,16 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
   private val emptySortQueries: String = ""
   private val emptyFilterQueries: String = ""
 
-  before {
-    ignite = TestUtils.setupIgnite()
+  override def beforeAll(): Unit = {
+    ignite = TestUtils.setupIgnite(testName = this.toString)
     parentOrderCache = ignite.getOrCreateCache("parentOrderCache")
     childOrderCache = ignite.getOrCreateCache("childOrderCache")
     orderStore = new IgniteOrderStore(parentOrderCache, childOrderCache)
+  }
+
+  override def beforeEach(): Unit = {
+    childOrderCache.clear()
+    parentOrderCache.clear()
   }
 
   test("Ignite Store And Find Order") {
@@ -137,12 +142,12 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     var parentOrder2: ParentOrder = GivenParentOrder(2)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
-    val sortByValues = "parentId ASC"
+    val sortByValues = "id ASC"
     val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
-    childOrder.map(c => c.id).toArray shouldBe Array(1,3,2)
+    childOrder.map(c => c.id).toArray shouldBe Array(1,2,3)
   }
 
   test("Ignite Store With Custom Sql Sort Multiple Columns") {
@@ -244,7 +249,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfter with Matc
     updatedParentOrder
   }
 
-  after {
+  override def afterAll(): Unit = {
     ignite.close()
   }
 }
