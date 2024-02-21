@@ -182,7 +182,6 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
 
     val count = orderStore.getCount(filterQueries)
 
-    assert(count != null)
     assert(count == 3)
   }
 
