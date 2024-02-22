@@ -8,6 +8,7 @@ export * from "./dropdown";
 export * from "./editable";
 export * from "./editable-label";
 export * from "./expando-input";
+export * from "./icon-button";
 export * from "./inputs";
 export * from "./instrument-picker";
 export * from "./instrument-search";

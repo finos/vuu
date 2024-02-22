@@ -1,6 +1,7 @@
 import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
 import { Icon } from "@finos/vuu-icons";
+import { IconButton } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 
@@ -8,7 +9,11 @@ export const DefaultButton = () => {
   const handleClick = () => {
     console.log("Button click");
   };
-  return <Button onClick={handleClick}>Button</Button>;
+  return (
+    <Button data-showcase-center onClick={handleClick}>
+      Button
+    </Button>
+  );
 };
 DefaultButton.displaySequence = displaySequence++;
 
@@ -24,10 +29,7 @@ export const IconButtons = () => {
         } as CSSProperties
       }
     >
-      <Button data-icon="filter" />
-      <Button>
-        <Icon name="filter" />
-      </Button>
+      <IconButton icon="filter" />
       <Button>
         <Icon name="filter" />
         Filter
@@ -60,66 +62,67 @@ export const ButtonVariations = () => {
       <span>CTA</span>
 
       <span />
-      <Button data-icon="filter" variant="primary" />
-      <Button data-icon="filter" variant="secondary" />
-      <Button data-icon="filter" variant="cta" />
+      <IconButton icon="filter" variant="primary" />
+      <IconButton icon="filter" variant="secondary" />
+      <IconButton icon="filter" variant="cta" />
 
       <span />
-      <Button data-icon="filter" variant="primary">
+      <Button variant="primary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button data-icon="filter" variant="secondary">
+      <Button variant="secondary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button data-icon="filter" variant="cta">
+      <Button variant="cta">
+        <Icon name="filter" />
         Filter
       </Button>
 
       <span>active</span>
-      <Button
+      <IconButton
         className="saltButton-active"
-        data-icon="filter"
+        icon="filter"
         variant="primary"
       />
-      <Button
+      <IconButton
         className="saltButton-active"
-        data-icon="filter"
+        icon="filter"
         variant="secondary"
       />
-      <Button className="saltButton-active" data-icon="filter" variant="cta" />
+      <IconButton className="saltButton-active" icon="filter" variant="cta" />
 
       <span>active</span>
-      <Button
-        className="saltButton-active"
-        data-icon="filter"
-        variant="primary"
-      >
+      <Button className="saltButton-active" variant="primary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button
-        className="saltButton-active"
-        data-icon="filter"
-        variant="secondary"
-      >
+      <Button className="saltButton-active" variant="secondary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button className="saltButton-active" data-icon="filter" variant="cta">
+      <Button className="saltButton-active" variant="cta">
+        <Icon name="filter" />
         Filter
       </Button>
 
       <span>disabled</span>
-      <Button data-icon="filter" disabled variant="primary" />
-      <Button data-icon="filter" disabled variant="secondary" />
-      <Button data-icon="filter" disabled variant="cta" />
+      <IconButton disabled icon="filter" variant="primary" />
+      <IconButton disabled icon="filter" variant="secondary" />
+      <IconButton disabled icon="filter" variant="cta" />
 
       <span>disabled</span>
-      <Button data-icon="filter" disabled variant="primary">
+      <Button disabled variant="primary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button data-icon="filter" disabled variant="secondary">
+      <Button disabled variant="secondary">
+        <Icon name="filter" />
         Filter
       </Button>
-      <Button data-icon="filter" disabled variant="cta">
+      <Button disabled variant="cta">
+        <Icon name="filter" />
         Filter
       </Button>
     </div>

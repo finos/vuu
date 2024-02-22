@@ -1,46 +1,16 @@
 .vuu-theme {
-    
+    /** TODO these will need density variants */
     --saltButton-borderRadius: 6px;
+    --saltButton-padding: 16px;
 
     .saltButton-primary {
         --saltButton-borderColor: var(--salt-actionable-primary-foreground);
         --saltButton-borderWidth: 1px;
         --saltButton-borderStyle: solid;
     }
-    
+
+    .saltButton-primary:not(:disabled):not(:active):not(.saltButton-active):hover {
+        --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
+    }    
 }
 
-.saltButton {
-    --vuu-icon-color: var(--button-text-color);
-    --button-padding: var(--saltButton-padding, var(--salt-size-unit, 0));
-    white-space: nowrap;;
-}
-
-.saltButton-active {
-    --vuu-icon-color: var(--button-text-color-active); 
-}
-
-.saltButton-disabled {
-    --vuu-icon-color: var(--button-text-color-disabled); 
-}
-
-
-.saltButton-primary:hover {
-    --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
-}
-
-.saltButton:focus-visible {
-    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple-10));
-    outline-style: dashed;
-    outline-width: 1px;
-    outline-offset: -1px;
-}
-
-.saltButton[data-icon]{
-    min-width: 20px;
-    padding-left: calc(var(--button-padding) + var(--vuu-icon-size));
-}
-
-.saltButton[data-icon]:after {
-    left: var(--button-padding);
-}
