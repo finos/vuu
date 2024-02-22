@@ -6,10 +6,13 @@ import org.apache.ignite.logger.slf4j.Slf4jLogger
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
-import org.finos.vuu.example.ignite.IgniteLocalConfig.{backupCount, childOrderCacheName, igniteWorkDir, logger, parentOrderCacheName}
-import org.slf4j.LoggerFactory
+import org.apache.ignite.spi.metric.opencensus.OpenCensusMetricExporterSpi
+import org.finos.vuu.example.ignite.IgniteLocalConfig._
 import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
+import org.slf4j.LoggerFactory
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
 object IgniteLocalConfig {
@@ -60,13 +63,13 @@ object IgniteLocalConfig {
   private def igniteWorkDir: String = Option(System.getenv("IGNITE-WORKDIR")).getOrElse(System.getProperty("java.io.tmpdir"))
 
   private def backupCount: Integer = Option(System.getenv("BACKUP-COUNT")).map(it => Integer.valueOf(it)).getOrElse(0)
-
 }
 
 
 class IgniteLocalConfig(private val clientMode: Boolean,
                         private val persistenceEnabled: Boolean,
-                        private val tcpDiscoverySpi: TcpDiscoverySpi) {
+                        private val tcpDiscoverySpi: TcpDiscoverySpi,
+                        private val metricConfig: MetricConfig = MetricConfig.defaultMetricsConfig()) {
   def igniteConfiguration(): IgniteConfiguration = {
     logger.info(s"Ignite Client mode = $clientMode, Persistence Enabled = $persistenceEnabled, TcpDiscovery = $tcpDiscoverySpi")
     val cfg = new IgniteConfiguration()
@@ -75,6 +78,9 @@ class IgniteLocalConfig(private val clientMode: Boolean,
     cfg.setClientMode(clientMode)
     cfg.setPeerClassLoadingEnabled(true)
     cfg.setWorkDirectory(igniteWorkDir)
+    val metricExporterSpi = new OpenCensusMetricExporterSpi
+    metricExporterSpi.setPeriod(metricConfig.exporterPeriod.toMillis)
+    cfg.setMetricExporterSpi(metricExporterSpi)
 
     cfg.setCacheConfiguration(
       createParentOrderCacheConfig(),
@@ -112,4 +118,16 @@ class IgniteLocalConfig(private val clientMode: Boolean,
 
     storageConfiguration
   }
+
+  def metricsPort: Int = metricConfig.port
+}
+
+object MetricConfig {
+  def defaultMetricsConfig(): MetricConfig = {
+    new MetricConfig
+  }
+}
+
+class MetricConfig(val port: Int = Option(System.getenv("METRICS_PORT")).getOrElse("8091").toInt,
+                   val exporterPeriod: Duration = Duration.create(1, TimeUnit.SECONDS)) {
 }
