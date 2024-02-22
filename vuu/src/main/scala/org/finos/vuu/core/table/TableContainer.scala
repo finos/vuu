@@ -72,7 +72,9 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
   def getTables(): Array[ViewPortTable] = {
     val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
     tableList
-      .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
+      .map(table => ViewPortTable(table.name, Option(table.getTableDef.getModule()).map(_.name).getOrElse("null")))
+      .toArray[ViewPortTable]
+      .sortBy(_.table)
   }
 
   def getNonSessionTables: Array[ViewPortTable] = {

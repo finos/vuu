@@ -1,10 +1,9 @@
 package org.finos.vuu.viewport
 
-import io.vertx.core.spi.metrics.Metrics
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.SessionTableDef
-import org.finos.vuu.core.table.{InMemDataTable, InMemSessionDataTable, SessionTable, TableContainer}
+import org.finos.vuu.core.table.{InMemDataTable, InMemSessionDataTable, TableContainer}
 import org.finos.vuu.feature.ViewPortTableCreator
 import org.finos.vuu.net.ClientSessionId
 

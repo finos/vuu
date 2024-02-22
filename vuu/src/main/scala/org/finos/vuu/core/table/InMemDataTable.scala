@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.{SessionTableDef, TableDef}
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index._
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
 import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
@@ -8,12 +8,10 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.net.ClientSessionId
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters
-import scala.jdk.CollectionConverters
 
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
@@ -242,7 +240,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     }
   }
 
-  def plusName(s: String): String = tableDef.name + "." + s
+  def plusName(s: String): String = name + "." + s
 
   override protected def createDataTableData(): TableData = {
     InMemDataTableData(new ConcurrentHashMap[String, RowData](), InMemTablePrimaryKeys(ImmutableArray.empty))

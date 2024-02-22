@@ -6,11 +6,18 @@ import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 
-class InMemSessionDataTable(val clientSessionId: ClientSessionId, sessionTableDef: SessionTableDef, joinTableProvider: JoinTableProvider)(implicit metrics: MetricsProvider, clock: Clock) extends InMemDataTable(sessionTableDef, joinTableProvider)(metrics) with SessionTable {
+class InMemSessionDataTable private (val clientSessionId: ClientSessionId,
+                                     sessionTableDef: SessionTableDef,
+                                     joinTableProvider: JoinTableProvider,
+                                     final val creationTimestamp: Long)
+                                    (implicit metrics: MetricsProvider) extends InMemDataTable(sessionTableDef, joinTableProvider) with SessionTable {
 
-  final val createInstant = clock.now()
-  override def name: String = s"session:$clientSessionId/simple-" + sessionTableDef.name + "_" + createInstant.toString
-  def tableId: String = name + "@" + hashCode()
+  def this(clientSessionId: ClientSessionId, sessionTableDef: SessionTableDef, joinTableProvider: JoinTableProvider)
+          (implicit metrics: MetricsProvider, clock: Clock) = {
+    this(clientSessionId, sessionTableDef, joinTableProvider, creationTimestamp = clock.now())
+  }
+
+  override def name: String = s"session:$clientSessionId/simple-" + sessionTableDef.name + "_" + creationTimestamp.toString
 
   override def sessionId: ClientSessionId = clientSessionId
 
