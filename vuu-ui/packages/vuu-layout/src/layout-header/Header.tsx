@@ -1,5 +1,4 @@
 import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
-import { Button } from "@salt-ds/core";
 import { default as classnames, default as cx } from "clsx";
 import {
   cloneElement,
