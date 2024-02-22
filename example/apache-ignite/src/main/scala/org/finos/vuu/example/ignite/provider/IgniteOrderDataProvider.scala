@@ -29,12 +29,14 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     val igniteFilter =  dataQuery.getFilterSql(viewPort.filterSpec)
     val totalSize: Int = getTotalSize(igniteFilter).toInt
 
-    val (startIndex, endIndex, rowCount) = indexCalculator.calc(viewPort.getRange, totalSize)
+    val viewPortRange = viewPort.getRange
+    logger.info(s"Calculating index for view port range ${viewPortRange.from} and ${viewPortRange.to} for total rows of $totalSize")
+    val (startIndex, endIndex, rowCount) = indexCalculator.calc(viewPortRange, totalSize)
 
     internalTable.setSize(totalSize)//todo should this be long?
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
-    logger.info(s"Loading data between $startIndex and $endIndex")
+    logger.info(s"Loading data between $startIndex and $endIndex for $rowCount rows")
 
     val index = new AtomicInteger(startIndex) // todo: get rid of working assumption here that the dataset is fairly immutable.
     def updateTableRowAtIndex = tableUpdater(internalTable)

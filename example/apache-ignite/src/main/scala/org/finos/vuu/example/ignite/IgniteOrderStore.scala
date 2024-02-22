@@ -94,7 +94,10 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     val cursor = childOrderCache.query(query)
 
     val countValue = cursor.getAll().get(0).get(0)
-    countValue.asInstanceOf[Long]
+    val totalCount = countValue.asInstanceOf[Long]
+
+    logger.info(s"Ignite returned total count of $totalCount for ChildOrder with filter $sqlFilterQueries")
+    totalCount
   }
 
   def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
@@ -146,7 +149,9 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   }
 
   def childOrderCount(): Long = {
-    childOrderCache.sizeLong(CachePeekMode.ALL)
+    val cacheSize = childOrderCache.sizeLong(CachePeekMode.ALL)
+    logger.info(s"Ignite Child order has cache size of $cacheSize")
+    cacheSize
   }
 
   def findWindow(startIndex: Long, rowCount: Int): Iterable[ChildOrder] = {
