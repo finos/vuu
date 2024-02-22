@@ -1,4 +1,4 @@
-import { EditableLabel } from "@finos/vuu-ui-controls";
+import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { default as classnames, default as cx } from "clsx";
 import {
@@ -128,8 +128,8 @@ export const Header = ({
 
   closeable &&
     actionButtons.push(
-      <Button
-        data-icon="close"
+      <IconButton
+        icon="close"
         key="close"
         onClick={handleClose}
         onMouseDown={handleButtonMouseDown}

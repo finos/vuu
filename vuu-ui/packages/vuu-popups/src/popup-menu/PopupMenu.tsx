@@ -1,25 +1,14 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+import { Icon, IconButton } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
-import {
-  HTMLAttributes,
-  MouseEvent,
-  RefObject,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
-import { MenuOpenHandler, useContextMenu } from "../menu";
-import { getPositionRelativeToAnchor } from "../popup/getPositionRelativeToAnchor";
+import { HTMLAttributes, RefObject } from "react";
 import { PopupPlacement } from "../popup/Popup";
-import {
-  PopupCloseCallback,
-  PopupCloseReason,
-  reasonIsClickAway,
-} from "../popup/popup-service";
+import { PopupCloseReason } from "../popup/popup-service";
 
 import "./PopupMenu.css";
+import { usePopupMenu } from "./usePopupMenu";
 
 const classBase = "vuuPopupMenu";
 
@@ -56,116 +45,54 @@ export const PopupMenu = ({
   tabIndex = 0,
   ...htmlAttributes
 }: PopupMenuProps) => {
-  const rootRef = useRef<HTMLButtonElement>(null);
-  const suppressShowMenuRef = useRef(false);
-  const [menuOpen, _setMenuOpen] = useState(false);
   const id = useId(idProp);
-  const [showContextMenu] = useContextMenu(menuBuilder, menuActionHandler);
 
-  const setMenuOpen = useCallback(
-    (isOpen) => {
-      _setMenuOpen(isOpen);
-      if (isOpen) {
-        onMenuOpen?.();
-      }
-    },
-    [onMenuOpen]
-  );
+  const { ariaAttributes, buttonProps, menuOpen, rootRef } = usePopupMenu({
+    anchorElement,
+    id,
+    menuActionHandler,
+    menuBuilder,
+    menuClassName,
+    menuLocation,
+    onMenuClose,
+    onMenuOpen,
+    menuOptions,
+    popupPlacement,
+    tabIndex,
+  });
 
-  const handleOpenMenu = useCallback<MenuOpenHandler>((el) => {
-    console.log(`menu Open `, {
-      el,
-    });
-  }, []);
-
-  const handleMenuClose = useCallback<PopupCloseCallback>(
-    (reason?: PopupCloseReason) => {
-      console.log("onClose");
-      setMenuOpen(false);
-      // If user has clicked the MenuButton whilst menu is open, we want to close it.
-      // The PopupService will close it for us as a 'click-away' event. We don't want
-      // that click on the button to re-open it.
-      if (reasonIsClickAway(reason)) {
-        const target = reason.mouseEvt.target as HTMLElement;
-        if (target === rootRef.current) {
-          suppressShowMenuRef.current = true;
-        }
-        onMenuClose?.(reason);
-      } else {
-        requestAnimationFrame(() => {
-          onMenuClose?.(reason);
-          if (tabIndex !== -1 && reason?.type !== "tab-away") {
-            rootRef.current?.focus();
-          }
-        });
-      }
-    },
-    [onMenuClose, setMenuOpen, tabIndex]
-  );
-
-  const showMenu = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
-      if (suppressShowMenuRef.current) {
-        suppressShowMenuRef.current = false;
-      } else {
-        const anchorEl = anchorElement?.current ?? rootRef.current;
-        if (anchorEl) {
-          const {
-            left: x,
-            top: y,
-            width,
-          } = getPositionRelativeToAnchor(anchorEl, popupPlacement, 0, 0);
-          setMenuOpen(true);
-
-          showContextMenu(e, menuLocation, {
-            ContextMenuProps: {
-              className: menuClassName,
-              id: `${id}-menu`,
-              onClose: handleMenuClose,
-              openMenu: handleOpenMenu,
-              position: {
-                x,
-                y,
-              },
-              style: { width: width ? width - 2 : undefined },
-            },
-            ...menuOptions,
-          });
-        }
-      }
-    },
-    [
-      anchorElement,
-      handleMenuClose,
-      handleOpenMenu,
-      id,
-      menuClassName,
-      menuLocation,
-      menuOptions,
-      popupPlacement,
-      setMenuOpen,
-      showContextMenu,
-    ]
-  );
-
-  return (
-    <Button
-      {...htmlAttributes}
-      aria-controls={menuOpen ? `${id}-menu` : undefined}
-      aria-expanded={menuOpen}
-      aria-haspopup="menu"
-      className={cx(classBase, className, {
-        [`${classBase}-withCaption`]: label !== undefined,
-        [`${classBase}-open`]: menuOpen,
-      })}
-      data-icon={icon}
-      id={id}
-      onClick={showMenu}
-      ref={rootRef}
-      tabIndex={tabIndex}
-      variant="secondary"
-    >
-      {label}
-    </Button>
-  );
+  if (label) {
+    return (
+      <Button
+        {...htmlAttributes}
+        {...ariaAttributes}
+        {...buttonProps}
+        className={cx(classBase, className, `${classBase}-withCaption`, {
+          "saltButton-active": menuOpen,
+        })}
+        ref={rootRef}
+        variant="secondary"
+      >
+        {icon ? <Icon name={icon} /> : null}
+        {label}
+      </Button>
+    );
+  } else if (icon) {
+    return (
+      <IconButton
+        {...htmlAttributes}
+        {...ariaAttributes}
+        {...buttonProps}
+        className={cx(classBase, className, {
+          "saltButton-active": menuOpen,
+        })}
+        icon={icon}
+        ref={rootRef}
+        variant="secondary"
+      />
+    );
+  } else {
+    console.error("PopupMenu must have a label or an icon (or both)");
+    return null;
+  }
 };

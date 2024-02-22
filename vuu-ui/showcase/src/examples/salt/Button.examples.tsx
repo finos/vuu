@@ -1,7 +1,6 @@
 import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
-import { Icon } from "@finos/vuu-icons";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { Icon, IconButton } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 

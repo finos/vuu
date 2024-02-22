@@ -1,6 +1,5 @@
-import { OverflowContainer } from "@finos/vuu-ui-controls";
+import { IconButton, OverflowContainer } from "@finos/vuu-ui-controls";
 import { asReactElements, useId } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";
 import { TabProps, TabstripProps } from "./TabsTypes";
@@ -98,11 +97,11 @@ export const Tabstrip = ({
         })
         .concat(
           allowAddTab ? (
-            <Button
+            <IconButton
               {...tabstripHook.navigationProps}
               aria-label="Create Tab"
               className={`${classBase}-addTabButton`}
-              data-icon="add"
+              icon="add"
               data-overflow-priority="1"
               key="addButton"
               onClick={onClickAddTab}
