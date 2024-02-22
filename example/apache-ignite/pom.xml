@@ -12,6 +12,8 @@
     <artifactId>apache-ignite</artifactId>
     <properties>
         <ignite.version>2.16.0</ignite.version>
+        <opencensus.version>0.31.1</opencensus.version>
+        <prometheus.version>0.16.0</prometheus.version>
     </properties>
 
     <dependencies>
@@ -60,6 +62,11 @@
             <version>${ignite.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-opencensus</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
@@ -95,6 +102,31 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-api</artifactId>
+            <version>${opencensus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-impl</artifactId>
+            <version>${opencensus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opencensus</groupId>
+            <artifactId>opencensus-exporter-stats-prometheus</artifactId>
+            <version>${opencensus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_httpserver</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
