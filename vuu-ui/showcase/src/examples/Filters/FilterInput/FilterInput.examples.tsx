@@ -11,7 +11,7 @@ import {
 import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
 import { useFilterConfig } from "@finos/vuu-filters/src/use-filter-config";
 import { filterAsQuery, JsonData } from "@finos/vuu-utils";
-import { Dropdown, SelectionChangeHandler } from "@salt-ds/lab";
+import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../../utils/useAutoLoginToVuuServer";
@@ -153,7 +153,7 @@ export const DefaultFilterInputWithPersistence = () => {
       filterStruct: filterState.filter,
     });
 
-  const onSelectionChange: SelectionChangeHandler<NamedDataSourceFilter> = (
+  const onSelectionChange: SingleSelectionHandler<NamedDataSourceFilter> = (
     _e,
     selected
   ) => {

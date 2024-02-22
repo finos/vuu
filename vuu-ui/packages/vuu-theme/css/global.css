@@ -1,15 +1,14 @@
 
- .vuu-theme {
-  color: var(--salt-text-primary-foreground);
+.vuu-theme {
+  color: var(--salt-content-primary-foreground);
   font-family: var(--salt-typography-fontFamily);
   font-size: var(--salt-text-fontSize);
   letter-spacing: var(--salt-text-letterSpacing);
   line-height: var(--salt-text-lineHeight);
 }
 
-::selection {
-  background: var(--salt-text-background-selected);
-  color: var(--salt-text-color-selected, inherit);
+.salt-theme ::selection {
+  background: var(--salt-content-foreground-highlight);
 }
 
 .vuu-theme[data-mode="light"] {
