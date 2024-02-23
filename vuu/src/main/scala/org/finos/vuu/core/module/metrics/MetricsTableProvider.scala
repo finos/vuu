@@ -30,7 +30,7 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
 
   def runOnce(): Unit = {
     try {
-      tableContainer.getTables().foreach(vpTable =>
+      tableContainer.getTables.foreach(vpTable =>
         table.processUpdate(vpTable.table, RowWithData(vpTable.table, getMetricsData(vpTable)), clock.now())
       )
     } catch {
