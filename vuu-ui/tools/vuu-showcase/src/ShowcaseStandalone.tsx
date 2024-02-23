@@ -11,9 +11,9 @@ import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
 import "./Showcase.css";
 
 export const ShowcaseStandalone = ({
-  density = "high",
+  density: densityProp,
   theme: themeProp,
-  themeMode = "light",
+  themeMode: themeModeProp,
 }: {
   density?: Density;
   theme?: string;
@@ -25,6 +25,16 @@ export const ShowcaseStandalone = ({
   const theme = useMemo(
     () => themeProp ?? getUrlParameter("theme", "vuu"),
     [themeProp]
+  );
+
+  const themeMode = useMemo(
+    () => themeModeProp ?? getUrlParameter("themeMode", "light"),
+    [themeModeProp]
+  );
+
+  const density = useMemo(
+    () => densityProp ?? getUrlParameter("density", "high"),
+    [densityProp]
   );
 
   useMemo(() => {

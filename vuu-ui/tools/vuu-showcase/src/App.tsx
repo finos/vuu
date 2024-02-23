@@ -41,11 +41,25 @@ export interface AppProps {
 }
 
 type ThemeDescriptor = { label?: string; id: string };
+type ThemeModeDescriptor = { label?: string; id: ThemeMode };
+type DensityDescriptor = { label?: string; id: Density };
 
 const availableThemes: ThemeDescriptor[] = [
   { id: "no-theme", label: "No Theme" },
   { id: "salt", label: "Salt" },
   { id: "vuu", label: "Vuu" },
+];
+
+const availableThemeModes: ThemeModeDescriptor[] = [
+  { id: "light", label: "Light" },
+  { id: "dark", label: "Dark" },
+];
+
+const availableDensity: DensityDescriptor[] = [
+  { id: "high", label: "High" },
+  { id: "medium", label: "Medium" },
+  { id: "low", label: "Low" },
+  { id: "touch", label: "Touch" },
 ];
 
 export const App = ({ stories }: AppProps) => {
@@ -56,10 +70,14 @@ export const App = ({ stories }: AppProps) => {
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
   const [themeIndex, setThemeIndex] = useState(2);
-  const [themeMode] = useState<ThemeMode>("light");
-  const [density] = useState<Density>("high");
+  //const [themeMode] = useState<ThemeMode>("light");
+  //const [density] = useState<Density>("high");
+  const [themeModeIndex, setThemeModeIndex] = useState(0);
+  const [densityIndex, setDensityIndex] = useState(0);
 
   const theme = useMemo(() => availableThemes[themeIndex], [themeIndex]);
+  const themeMode = useMemo(() => availableThemeModes[themeModeIndex], [themeModeIndex]);
+  const density = useMemo(() => availableDensity[densityIndex], [densityIndex]);
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(`${location.href}?standalone&theme=${theme.id}`, "_blank");
@@ -68,6 +86,16 @@ export const App = ({ stories }: AppProps) => {
   const handleThemeChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setThemeIndex(parseInt(value));
+  }, []);
+
+  const handleThemeModeChange = useCallback((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    setThemeModeIndex(parseInt(value));
+  }, []);
+
+  const handleDensityChange = useCallback((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    setDensityIndex(parseInt(value));
   }, []);
 
   return (
@@ -94,9 +122,9 @@ export const App = ({ stories }: AppProps) => {
             source={source}
           />
           <ThemeProvider
-            density={density}
+            density={density.id}
             theme={theme.id}
-            themeMode={themeMode}
+            themeMode={themeMode.id}
           >
             <Flexbox
               className="ShowcaseContentContainer"
@@ -120,6 +148,26 @@ export const App = ({ stories }: AppProps) => {
                   <ToggleButton value={2}>VUU</ToggleButton>
                 </ToggleButtonGroup>
 
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  onChange={handleThemeModeChange}
+                  value={themeModeIndex}
+                >
+                  <ToggleButton value={0}>Light</ToggleButton>
+                  <ToggleButton value={1}>Dark</ToggleButton>
+                </ToggleButtonGroup>
+
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  onChange={handleDensityChange}
+                  value={densityIndex}
+                >
+                  <ToggleButton value={0}>High</ToggleButton>
+                  <ToggleButton value={1}>Medium</ToggleButton>
+                  <ToggleButton value={2}>Low</ToggleButton>
+                  <ToggleButton value={3}>Touch</ToggleButton>
+                </ToggleButtonGroup>
+
                 <Button
                   data-align="end"
                   data-icon="open-in"
@@ -134,7 +182,7 @@ export const App = ({ stories }: AppProps) => {
                   position: "relative",
                 }}
               >
-                <IFrame theme={theme.id} />
+                <IFrame theme={theme.id} themeMode={themeMode.id} density={density.id} />
               </div>
             </Flexbox>
           </ThemeProvider>
