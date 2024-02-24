@@ -2,13 +2,14 @@ import {
   Button,
   FormField,
   FormFieldLabel,
-  Input,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
 import { TableSettingsProps } from "@finos/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
+import { Icon } from "@finos/vuu-ui-controls";
+import { VuuInput } from "@finos/vuu-ui-controls";
 
 import "./TableSettingsPanel.css";
 
@@ -33,6 +34,7 @@ export const TableSettingsPanel = ({
     onChangeColumnLabels,
     onChangeTableAttribute,
     onColumnChange,
+    onCommitColumnWidth,
     onMoveListItem,
     tableConfig,
   } = useTableSettings({
@@ -51,54 +53,48 @@ export const TableSettingsPanel = ({
           onChange={onChangeColumnLabels}
           value={columnLabelsValue}
         >
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="text-strikethrough"
-            value={0}
-          />
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="text-Tt"
-            value={1}
-          />
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="text-T"
-            value={2}
-          />
+          <ToggleButton className="vuuIconToggleButton" value={0}>
+            <Icon name="text-strikethrough" size={48} />
+          </ToggleButton>
+          <ToggleButton className="vuuIconToggleButton" value={1}>
+            <Icon name="text-Tt" size={48} />
+          </ToggleButton>
+          <ToggleButton className="vuuIconToggleButton" value={2}>
+            <Icon name="text-T" size={48} />
+          </ToggleButton>
         </ToggleButtonGroup>
       </FormField>
 
       <FormField>
         <FormFieldLabel>Grid separators</FormFieldLabel>
-        <div className="saltToggleButtonGroup vuuToggleButtonGroup saltToggleButtonGroup-horizontal vuuGridSeparators">
+        <div className="saltToggleButtonGroup vuuStateButtonGroup saltToggleButtonGroup-horizontal">
           <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="row-striping"
             selected={tableConfig.zebraStripes ?? false}
             onChange={onChangeTableAttribute}
             value="zebraStripes"
-          />
+          >
+            <Icon name="row-striping" size={16} />
+          </ToggleButton>
           <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="row-lines"
             selected={tableConfig.rowSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="rowSeparators"
-          />
+          >
+            <Icon name="row-lines" size={16} />
+          </ToggleButton>
           <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="col-lines"
             selected={tableConfig.columnSeparators ?? false}
             onChange={onChangeTableAttribute}
             value="columnSeparators"
-          />
+          >
+            <Icon name="col-lines" size={16} />
+          </ToggleButton>
         </div>
       </FormField>
 
       <FormField>
         <FormFieldLabel>Default Column Width</FormFieldLabel>
-        <Input className="vuuInput" />
+        <VuuInput className="vuuInput" onCommit={onCommitColumnWidth} />
       </FormField>
 
       <ColumnList

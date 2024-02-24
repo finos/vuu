@@ -7,9 +7,6 @@
     --vuuDropdown-height: 24px;
     --vuuDropdown-width: 100%;
     
-  
-    --vuuIconToggleButton-iconSize: 16px;
-
     display: flex;
     flex-direction: column;
     gap: 24px;
