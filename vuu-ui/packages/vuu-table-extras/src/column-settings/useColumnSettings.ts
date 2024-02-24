@@ -16,6 +16,7 @@ import {
   updateColumnRenderProps,
   updateColumnFormatting,
   updateColumnType,
+  queryClosest,
 } from "@finos/vuu-utils";
 import {
   FormEventHandler,
@@ -75,7 +76,7 @@ const getAvailableCellRenderers = (
   }
 };
 
-const getFieldName = (input: HTMLInputElement): string => {
+const getFieldName = (input: HTMLInputElement | HTMLButtonElement): string => {
   const saltFormField = input.closest(".saltFormField") as HTMLElement;
   if (saltFormField && saltFormField.dataset.field) {
     const {
@@ -141,46 +142,56 @@ export const useColumnSettings = ({
     onConfigChange(replaceColumn(tableConfig, column));
   }, [column, onConfigChange, tableConfig]);
 
-  const handleChange = useCallback<FormEventHandler>(
+  const handleChangeToggleButton = useCallback<FormEventHandler>(
     (evt) => {
-      const input = evt.target as HTMLInputElement;
-      const fieldName = getFieldName(input);
-      const { value } = input;
-      switch (fieldName) {
-        case "column-label":
-          setColumn((state) => ({ ...state, label: value }));
-          break;
-        case "column-name":
-          setColumn((state) => setCalculatedColumnName(state, value));
-          break;
-        case "column-width":
-          setColumn((state) => ({ ...state, width: parseInt(value) }));
-          break;
-        case "column-alignment":
-          if (isValidColumnAlignment(value)) {
-            const newColumn: ColumnDescriptor = {
-              ...column,
-              align: value || undefined,
-            };
-            setColumn(newColumn);
-            onConfigChange(replaceColumn(tableConfig, newColumn));
-          }
-          break;
-        case "column-pin":
-          if (isValidPinLocation(value)) {
-            const newColumn: ColumnDescriptor = {
-              ...column,
-              pin: value || undefined,
-            };
-            setColumn(newColumn);
-            onConfigChange(replaceColumn(tableConfig, newColumn));
-
+      const button = queryClosest<HTMLButtonElement>(evt.target, "button");
+      if (button) {
+        const fieldName = getFieldName(button);
+        const { value } = button;
+        switch (fieldName) {
+          case "column-alignment":
+            if (isValidColumnAlignment(value)) {
+              const newColumn: ColumnDescriptor = {
+                ...column,
+                align: value || undefined,
+              };
+              setColumn(newColumn);
+              onConfigChange(replaceColumn(tableConfig, newColumn));
+            }
             break;
-          }
+          case "column-pin":
+            if (isValidPinLocation(value)) {
+              const newColumn: ColumnDescriptor = {
+                ...column,
+                pin: value || undefined,
+              };
+              setColumn(newColumn);
+              onConfigChange(replaceColumn(tableConfig, newColumn));
+
+              break;
+            }
+        }
       }
     },
     [column, onConfigChange, tableConfig]
   );
+
+  const handleChange = useCallback<FormEventHandler>((evt) => {
+    const input = evt.target as HTMLInputElement;
+    const fieldName = getFieldName(input);
+    const { value } = input;
+    switch (fieldName) {
+      case "column-label":
+        setColumn((state) => ({ ...state, label: value }));
+        break;
+      case "column-name":
+        setColumn((state) => setCalculatedColumnName(state, value));
+        break;
+      case "column-width":
+        setColumn((state) => ({ ...state, width: parseInt(value) }));
+        break;
+    }
+  }, []);
 
   const handleChangeCalculatedColumnName = useCallback((name: string) => {
     setColumn((state) => ({ ...state, name }));
@@ -264,6 +275,7 @@ export const useColumnSettings = ({
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRendering: handleChangeRendering,
+    onChangeToggleButton: handleChangeToggleButton,
     onChangeType: handleChangeType,
     onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
