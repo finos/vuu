@@ -710,15 +710,6 @@ export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
   type: "suspend";
 }
 
-export interface VuuUIMessageOutFilter extends ViewportMessageOut {
-  filter: DataSourceFilter;
-  type: "filter";
-}
-export interface VuuUIMessageOutGroupby extends ViewportMessageOut {
-  groupBy: VuuGroupBy;
-  type: "groupBy";
-}
-
 export interface VuuUIMessageOutConfig extends ViewportMessageOut {
   config: WithFullConfig;
   type: "config";
@@ -730,10 +721,8 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutColumns
   | VuuUIMessageOutConfig
   | VuuUIMessageOutCreateLink
-  | VuuUIMessageOutFilter
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
-  | VuuUIMessageOutGroupby
   | VuuUIMessageOutOpenTreeNode
   | VuuUIMessageOutRemoveLink
   | VuuUIMessageOutResume

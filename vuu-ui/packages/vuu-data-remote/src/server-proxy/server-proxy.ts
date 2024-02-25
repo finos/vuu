@@ -14,8 +14,6 @@ import {
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutCreateLink,
-  VuuUIMessageOutFilter,
-  VuuUIMessageOutGroupby,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
