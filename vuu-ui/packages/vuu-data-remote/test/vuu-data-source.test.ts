@@ -398,8 +398,21 @@ describe("RemoteDataSource", () => {
       dataSource.filter = filter;
 
       expect(serverSend).toHaveBeenCalledWith({
-        type: "filter",
-        filter,
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: [],
+          filter: {
+            filter: 'exchange="SETS"',
+            filterStruct: {
+              column: "exchange",
+              op: "=",
+              value: "SETS",
+            },
+          },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });
@@ -416,8 +429,16 @@ describe("RemoteDataSource", () => {
       dataSource.groupBy = groupBy;
 
       expect(serverSend).toHaveBeenCalledWith({
-        type: "groupBy",
-        groupBy,
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: [],
+          filter: {
+            filter: "",
+          },
+          groupBy,
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });

@@ -1631,8 +1631,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "filter",
-        filter: { filter: 'ccy = "EUR"' },
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
       });
 
       serverProxy.handleMessageFromServer({
@@ -1672,8 +1678,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "filter",
-        filter: { filter: 'ccy = "EUR"' },
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
       });
 
       serverProxy.handleMessageFromServer({
@@ -1751,8 +1763,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "filter",
-        filter: { filter: 'ccy = "EUR"' },
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: 'ccy = "EUR"' },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
       });
 
       serverProxy.handleMessageFromServer({
@@ -1844,8 +1862,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -1905,8 +1929,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -1985,8 +2015,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -2067,8 +2103,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -2182,8 +2224,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       serverProxy.handleMessageFromServer({
@@ -2235,8 +2283,14 @@ describe("ServerProxy", () => {
 
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
-        type: "groupBy",
-        groupBy: ["col-4"],
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col-1", "col-2", "col-3", "col-4"],
+          filter: { filter: "" },
+          groupBy: ["col-4"],
+          sort: { sortDefs: [] },
+        },
       });
 
       serverProxy.handleMessageFromServer({

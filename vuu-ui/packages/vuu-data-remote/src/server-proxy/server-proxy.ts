@@ -14,8 +14,6 @@ import {
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutCreateLink,
-  VuuUIMessageOutFilter,
-  VuuUIMessageOutGroupby,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
@@ -419,19 +417,6 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  private groupBy(viewport: Viewport, message: VuuUIMessageOutGroupby) {
-    const requestId = nextRequestId();
-    const request = viewport.groupByRequest(requestId, message.groupBy);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
-  }
-
-  private filter(viewport: Viewport, message: VuuUIMessageOutFilter) {
-    const requestId = nextRequestId();
-    const { filter } = message;
-    const request = viewport.filterRequest(requestId, filter);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
-  }
-
   private setColumns(viewport: Viewport, message: VuuUIMessageOutColumns) {
     const requestId = nextRequestId();
     const { columns } = message;
@@ -638,10 +623,6 @@ export class ServerProxy {
             return this.aggregate(viewport, message);
           case "sort":
             return this.sort(viewport, message);
-          case "groupBy":
-            return this.groupBy(viewport, message);
-          case "filter":
-            return this.filter(viewport, message);
           case "select":
             return this.select(viewport, message);
           case "suspend":

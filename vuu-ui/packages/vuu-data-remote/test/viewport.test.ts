@@ -294,7 +294,7 @@ describe("Viewport", () => {
   });
 
   describe("groupBy", () => {
-    it("clears dataWindow when a groupBy request is received on a non grouped viewport", () => {
+    it("clears dataWindow when a config request with groupBy is received on a non grouped viewport", () => {
       const vp = new Viewport(
         {
           ...constructor_options,
@@ -309,7 +309,13 @@ describe("Viewport", () => {
 
       vp.updateRows([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]);
 
-      vp.groupByRequest("1", ["col-1"]);
+      vp.setConfig("1", {
+        aggregations: [],
+        columns: ["col-1", "col-2", "col-3", "col-4"],
+        filter: { filter: "" },
+        groupBy: ["col-4"],
+        sort: { sortDefs: [] },
+      });
 
       expect(vp["dataWindow"]?.rowCount).toEqual(0);
       expect(vp["dataWindow"]?.["internalData"].length).toEqual(0);

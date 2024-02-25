@@ -32,7 +32,7 @@ import {
 
 import { parseFilter } from "@finos/vuu-filter-parser";
 import {
-  configChanged,
+  isConfigChanged,
   debounce,
   EventEmitter,
   isViewportMenusAction,
@@ -44,6 +44,7 @@ import {
   uuid,
   vanillaConfig,
   withConfigDefaults,
+  DataSourceConfigChanges,
 } from "@finos/vuu-utils";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -435,8 +436,9 @@ export class VuuDataSource
   }
 
   set config(config: DataSourceConfig) {
-    if (this.applyConfig(config)) {
-      if (this.#config && this.viewport && this.server) {
+    const configChanges = this.applyConfig(config);
+    if (configChanges) {
+      if (this.#config && this.viewport) {
         if (config) {
           this.server?.send({
             viewport: this.viewport,
@@ -445,12 +447,16 @@ export class VuuDataSource
           });
         }
       }
-      this.emit("config", this.#config);
+      this.emit("config", this.#config, undefined, configChanges);
     }
   }
 
-  applyConfig(config: DataSourceConfig) {
-    if (configChanged(this.#config, config)) {
+  applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
+    const { noChanges, ...otherChanges } = isConfigChanged(
+      this.#config,
+      config
+    );
+    if (noChanges !== true) {
       if (config) {
         const newConfig: DataSourceConfig =
           config?.filter?.filter && config?.filter.filterStruct === undefined
@@ -463,7 +469,7 @@ export class VuuDataSource
               }
             : config;
         this.#config = withConfigDefaults(newConfig);
-        return true;
+        return otherChanges;
       }
     }
   }
@@ -526,9 +532,7 @@ export class VuuDataSource
         type: "sort",
         sort,
       } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
+      this.server?.send(message);
     }
     this.emit("config", this.#config);
   }
@@ -538,22 +542,10 @@ export class VuuDataSource
   }
 
   set filter(filter: DataSourceFilter) {
-    // TODO should we wait until server ACK before we assign #sort ?
-    this.#config = {
+    this.config = {
       ...this.#config,
       filter,
     };
-    if (this.viewport) {
-      const message = {
-        viewport: this.viewport,
-        type: "filter",
-        filter,
-      } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
-    }
-    this.emit("config", this.#config);
   }
 
   get groupBy() {
@@ -563,21 +555,22 @@ export class VuuDataSource
   set groupBy(groupBy: VuuGroupBy) {
     if (itemsOrOrderChanged(this.groupBy, groupBy)) {
       const wasGrouped = this.#groupBy.length > 0;
-      this.#config = {
+
+      this.config = {
         ...this.#config,
         groupBy,
       };
-      if (this.viewport) {
-        const message = {
-          viewport: this.viewport,
-          type: "groupBy",
-          groupBy: this.#config.groupBy,
-        } as const;
+      // if (this.viewport) {
+      //   const message = {
+      //     viewport: this.viewport,
+      //     type: "groupBy",
+      //     groupBy: this.#config.groupBy,
+      //   } as const;
 
-        if (this.server) {
-          this.server.send(message);
-        }
-      }
+      //   if (this.server) {
+      //     this.server.send(message);
+      //   }
+      // }
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
         this.clientCallback?.({
           clientViewportId: this.viewport,
@@ -587,7 +580,10 @@ export class VuuDataSource
           rows: [],
         });
       }
-      this.emit("config", this.#config);
+      // this.emit("config", this.#config, undefined, {
+      //   ...NO_CONFIG_CHANGES,
+      //   groupByChanged: true,
+      // });
       this.setConfigPending({ groupBy });
     }
   }

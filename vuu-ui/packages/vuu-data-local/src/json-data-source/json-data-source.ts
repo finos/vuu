@@ -31,6 +31,7 @@ import {
   jsonToDataSourceRows,
   KeySet,
   metadataKeys,
+  NO_CONFIG_CHANGES,
   uuid,
   vanillaConfig,
 } from "@finos/vuu-utils";
@@ -285,7 +286,7 @@ export class JsonDataSource
   }
 
   applyConfig() {
-    return true as const;
+    return NO_CONFIG_CHANGES;
   }
 
   get selectedRowsCount() {
