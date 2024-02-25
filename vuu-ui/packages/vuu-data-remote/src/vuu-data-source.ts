@@ -45,7 +45,6 @@ import {
   vanillaConfig,
   withConfigDefaults,
   DataSourceConfigChanges,
-  NO_CONFIG_CHANGES,
 } from "@finos/vuu-utils";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { isDataSourceConfigMessage } from "./data-source";

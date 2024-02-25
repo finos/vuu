@@ -57,8 +57,6 @@ import { getFirstAndLastRows } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
 
-const EMPTY_GROUPBY: VuuGroupBy = [];
-
 const { debug, debugEnabled, error, info, infoEnabled, warn } =
   logger("viewport");
 
