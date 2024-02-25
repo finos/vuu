@@ -16,7 +16,7 @@ import type {
   VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import type { IEventEmitter } from "@finos/vuu-utils";
+import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
 import type {
   DataSourceFilter,
   MenuRpcResponse,
@@ -323,7 +323,11 @@ export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export type DataSourceEvents = {
-  config: (config: DataSourceConfig | undefined, confirmed?: boolean) => void;
+  config: (
+    config: DataSourceConfig | undefined,
+    confirmed?: boolean,
+    configChanges?: DataSourceConfigChanges
+  ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
@@ -391,7 +395,9 @@ export interface DataSource
    * @param config DataSourceConfig
    * @returns true if config has been applied (will not be if existig config is same)
    */
-  applyConfig: (config: DataSourceConfig) => true | undefined;
+  applyConfig: (
+    config: DataSourceConfig
+  ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;

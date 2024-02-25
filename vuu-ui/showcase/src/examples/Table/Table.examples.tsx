@@ -1,9 +1,11 @@
+import { ArrayDataSource } from "@finos/vuu-data-local";
 import {
   getAllSchemas,
   getSchema,
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
+import { DataSource } from "@finos/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
@@ -31,8 +33,6 @@ import {
   registerComponent as registerCellRenderer,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { ArrayDataSource } from "@finos/vuu-data-local";
-import { DataSource } from "@finos/vuu-data-types";
 import {
   CSSProperties,
   MouseEventHandler,
@@ -265,7 +265,7 @@ export const EditableTableNextArrayData = () => {
 };
 EditableTableNextArrayData.displaySequence = displaySequence++;
 
-export const TableNextVuuInstruments = () => {
+export const VuuInstruments = () => {
   const schemas = getAllSchemas();
   const { config, dataSource, error } = useTestDataSource({
     // bufferSize: 1000,
@@ -288,7 +288,7 @@ export const TableNextVuuInstruments = () => {
     />
   );
 };
-TableNextVuuInstruments.displaySequence = displaySequence++;
+VuuInstruments.displaySequence = displaySequence++;
 
 export const FlexLayoutTables = () => {
   const tableConfig = useMemo<TableConfig>(() => {

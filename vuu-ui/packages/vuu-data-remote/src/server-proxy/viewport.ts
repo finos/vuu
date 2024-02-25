@@ -692,20 +692,6 @@ export class Viewport {
     return this.createRequest({ columns });
   }
 
-  filterRequest(requestId: string, dataSourceFilter: DataSourceFilter) {
-    this.awaitOperation(requestId, {
-      type: "filter",
-      data: dataSourceFilter,
-    });
-
-    if (this.useBatchMode) {
-      this.batchMode = true;
-    }
-    const { filter } = dataSourceFilter;
-    info?.(`filterRequest: ${filter}`);
-    return this.createRequest({ filterSpec: { filter } });
-  }
-
   setConfig(requestId: string, config: WithFullConfig) {
     this.awaitOperation(requestId, { type: "config", data: config });
 
@@ -718,6 +704,10 @@ export class Viewport {
     debugEnabled
       ? debug?.(`setConfig ${JSON.stringify(config)}`)
       : info?.(`setConfig`);
+
+    if (!this.isTree && config.groupBy.length > 0) {
+      this.dataWindow?.clear();
+    }
 
     return this.createRequest(
       {
@@ -745,17 +735,6 @@ export class Viewport {
     this.awaitOperation(requestId, { type: "sort", data: sort });
     info?.(`sortRequest: ${JSON.stringify(sort.sortDefs)}`);
     return this.createRequest({ sort });
-  }
-
-  groupByRequest(requestId: string, groupBy: VuuGroupBy = EMPTY_GROUPBY) {
-    this.awaitOperation(requestId, { type: "groupBy", data: groupBy });
-    if (this.useBatchMode) {
-      this.batchMode = true;
-    }
-    if (!this.isTree) {
-      this.dataWindow?.clear();
-    }
-    return this.createRequest({ groupBy });
   }
 
   selectRequest(requestId: string, selected: Selection) {

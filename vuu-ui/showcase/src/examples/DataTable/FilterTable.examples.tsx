@@ -15,7 +15,7 @@ import { useTestDataSource } from "../utils";
 let displaySequence = 1;
 const schemas = getAllSchemas();
 
-export const DefaultFilterTable = () => {
+export const FilterTableVuuInstruments = () => {
   const { config, dataSource, error, tableSchema } = useTestDataSource({
     // bufferSize: 1000,
     schemas,
@@ -28,13 +28,14 @@ export const DefaultFilterTable = () => {
     activeIndices: [],
   });
 
-  const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
-    console.log("apply filter", { filter });
-    dataSource.filter = filter;
-  }, []);
+  const handleApplyFilter = useCallback(
+    (filter: DataSourceFilter) => {
+      dataSource.filter = filter;
+    },
+    [dataSource]
+  );
 
   const handleFilterStateChange = useCallback((fs: FilterState) => {
-    console.log("filter state changed:", fs);
     setFilterState(fs);
   }, []);
 
@@ -66,7 +67,7 @@ export const DefaultFilterTable = () => {
     />
   );
 };
-DefaultFilterTable.displaySequence = displaySequence++;
+FilterTableVuuInstruments.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstruments = () => {
   const schema = schemas.instruments;

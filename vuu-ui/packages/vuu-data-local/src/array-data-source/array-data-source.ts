@@ -31,11 +31,11 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   buildColumnMap,
   ColumnMap,
-  configChanged,
+  isConfigChanged,
   EventEmitter,
   getAddedItems,
   getMissingItems,
-  groupByChanged,
+  isGroupByChanged,
   hasFilter,
   hasGroupBy,
   hasSort,
@@ -370,7 +370,7 @@ export class ArrayDataSource
 
         if (
           this.openTreeNodes.length > 0 &&
-          groupByChanged(originalConfig, config)
+          isGroupByChanged(originalConfig, config)
         ) {
           if (this.#config.groupBy.length === 0) {
             this.openTreeNodes.length = 0;
@@ -419,7 +419,7 @@ export class ArrayDataSource
   }
 
   applyConfig(config: DataSourceConfig) {
-    if (configChanged(this.#config, config)) {
+    if (isConfigChanged(this.#config, config)) {
       if (config) {
         const newConfig: DataSourceConfig =
           config?.filter?.filter && config?.filter.filterStruct === undefined

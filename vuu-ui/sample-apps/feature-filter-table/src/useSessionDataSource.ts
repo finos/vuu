@@ -4,7 +4,7 @@ import {
   DataSourceConfig,
   TableSchema,
 } from "@finos/vuu-data-types";
-import { configChanged, resetRange } from "@finos/vuu-utils";
+import { isConfigChanged, resetRange } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo } from "react";
 
@@ -28,12 +28,15 @@ export const useSessionDataSource = ({
 
   const handleDataSourceConfigChange = useCallback(
     (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      if (
-        // confirmed / unconfirmed messages are used for UI updates, not state saving
-        confirmed === undefined &&
-        configChanged(dataSourceConfigFromState, config)
-      ) {
-        save?.(config, "datasource-config");
+      // confirmed / unconfirmed messages are used for UI updates, not state saving
+      if (confirmed === undefined) {
+        const { noChanges } = isConfigChanged(
+          dataSourceConfigFromState,
+          config
+        );
+        if (noChanges === false) {
+          save?.(config, "datasource-config");
+        }
       }
     },
     [dataSourceConfigFromState, save]
