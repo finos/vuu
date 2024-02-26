@@ -51,6 +51,7 @@ export const ColumnSettingsPanel = ({
     onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRendering,
+    onChangeServerDataType,
     onChangeToggleButton,
     onChangeType,
     onEditCalculatedColumn,
@@ -85,6 +86,7 @@ export const ColumnSettingsPanel = ({
         <ColumnExpressionPanel
           column={column}
           onChangeName={onChangeCalculatedColumnName}
+          onChangeServerDataType={onChangeServerDataType}
           tableConfig={tableConfig}
           vuuTable={vuuTable}
         />
@@ -142,7 +144,7 @@ export const ColumnSettingsPanel = ({
         column={column}
         onChangeFormatting={onChangeFormatting}
         onChangeRendering={onChangeRendering}
-        onChangeType={onChangeType}
+        onChangeColumnType={onChangeType}
       />
 
       {editCalculatedColumn ? (

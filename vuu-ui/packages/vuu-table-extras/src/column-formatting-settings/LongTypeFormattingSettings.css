@@ -1,6 +1,6 @@
 .vuuLongColumnFormattingSettings {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--salt-spacing-200);
   padding-top: 6px;
 }

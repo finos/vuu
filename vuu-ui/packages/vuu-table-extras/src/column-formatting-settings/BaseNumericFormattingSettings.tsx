@@ -1,5 +1,8 @@
 import { FormField, FormFieldLabel, Input, Switch } from "@salt-ds/core";
-import { ColumnTypeFormatting } from "@finos/vuu-table-types";
+import {
+  ColumnTypeFormatting,
+  FormattingSettingsProps,
+} from "@finos/vuu-table-types";
 import { getTypeFormattingFromColumn } from "@finos/vuu-utils";
 import {
   ChangeEvent,
@@ -8,7 +11,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuFormattingSettings";
 

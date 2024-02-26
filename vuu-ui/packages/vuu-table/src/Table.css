@@ -9,6 +9,7 @@
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
+  background: var(--table-background);
   font-family: var(--vuuTable-fontFamily,var(--salt-typography-fontFamily, sans-serif));
   font-size: var(--vuuTable-fontSize,var(--salt-text-fontSize, 12px));
   position: relative;
@@ -16,15 +17,15 @@
 }
 
 .vuuTable-zebra {
-  --row-background-even: var(--vuu-color-gray-25)
+  --row-background-even: var(--salt-container-secondary-background);
 }
 
 .vuuTable-colLines {
-  --cell-borderColor: var(--vuu-color-gray-03);
+  --cell-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-rowLines {
-  --row-borderColor: var(--vuu-color-gray-03);
+  --row-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-highlight .vuuTableRow:hover {

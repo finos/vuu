@@ -436,6 +436,10 @@ export const VuuTableCalculatedColumns = () => {
         },
       },
       {
+        name: "pctFilled:double:=if(volLimit = 0, 0, volLimit/quantity)",
+        serverDataType: "double",
+      },
+      {
         name: 'openEur:boolean:=and(ccy="EUR",openQty>2000)',
         serverDataType: "boolean",
       },

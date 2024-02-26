@@ -171,6 +171,20 @@ export declare type ColumnTypeDescriptorCustomRenderer = {
   renderer: ColumnTypeRendering;
 };
 
+export interface FormattingSettingsProps<
+  T extends ColumnDescriptor = ColumnDescriptor
+> {
+  column: T;
+  onChangeFormatting: (formatting: ColumnTypeFormatting) => void;
+  /** 
+   Triggered by a change to the ColumnDescriptor column type, which is
+   not the same as ServerDataType and allows for a refinement of the
+   latter. e.g a server data type of long may be further refined as
+   a date/time value using the column descriptor type.
+   */
+  onChangeColumnType: (type: ColumnTypeSimple) => void;
+}
+
 export interface ColumnTypeRendererWithValidationRules
   extends ColumnTypeRendering {
   rules: EditValidationRule[];

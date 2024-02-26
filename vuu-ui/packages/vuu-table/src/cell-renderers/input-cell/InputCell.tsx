@@ -51,4 +51,6 @@ export const InputCell = ({
   );
 };
 
-registerComponent("input-cell", InputCell, "cell-renderer", {});
+registerComponent("input-cell", InputCell, "cell-renderer", {
+  userCanAssign: false,
+});
