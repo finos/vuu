@@ -20,8 +20,10 @@
   --vuu-color-pink-10-fade-20: rgba(234, 120, 128, .2); /*  #F37880 */
 
 
+  --vuu-color-gray-02: rgb(235, 235, 236);  /* #EBEBEC */
   --vuu-color-gray-03: rgb(237, 237, 237);  /* #EDEDED */
   --vuu-color-gray-05: rgb(222, 222, 222);  /* #DEDEDE */
+  --vuu-color-gray-07: rgb(226, 226, 227);  /* #E2E2E3 */
   --vuu-color-gray-10: rgb(228, 227, 231);  /* #E4E3E7 */
   --vuu-color-gray-20: rgb(245, 242, 248);  /* #F5F2F8 */
   --vuu-color-gray-25: rgb(244, 244, 244) ;  /* #F4F4F4 */
@@ -33,6 +35,7 @@
   --vuu-color-gray-45: rgb(119, 124, 148);  /* #777C94 */ 
   --vuu-color-gray-50: rgb(96, 100, 119);   /* #606477 */
   --vuu-color-gray-80: rgb(21, 23, 27);     /* #15171B */ 
+
 
 --vuu-color-green-50: rgb(102, 174, 90);  /* #66AE5A */
 --vuu-color-green-60: rgb(36, 137, 19);  /* #248913 */

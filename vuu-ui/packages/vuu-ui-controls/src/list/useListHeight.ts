@@ -1,5 +1,5 @@
 import { MeasuredSize } from "@finos/vuu-ui-controls";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { RefCallback, useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
 
 export interface ListHeightHookProps {
@@ -17,7 +17,7 @@ export interface HeightHookResult {
   contentHeight: number;
   listClientHeight?: number;
   listItemHeight: number;
-  rowHeightProxyRef: (el: HTMLDivElement | null) => void;
+  rowHeightProxyRef: RefCallback<HTMLDivElement>;
 }
 
 const getContentHeight = (
@@ -101,7 +101,7 @@ export const useListHeight = ({
     }
   }, []);
 
-  const rowHeightProxyRef = useCallback((el: HTMLDivElement | null) => {
+  const rowHeightProxyRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     proxyItemRef.current = el;
     forceUpdate({});
   }, []);
