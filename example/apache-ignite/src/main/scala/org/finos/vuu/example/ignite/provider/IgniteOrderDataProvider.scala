@@ -30,13 +30,13 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     val totalSize: Int = getTotalSize(igniteFilter).toInt
 
     val viewPortRange = viewPort.getRange
-    logger.info(s"Calculating index for view port range ${viewPortRange.from} and ${viewPortRange.to} for total rows of $totalSize")
+    logger.debug(s"Calculating index for view port range ${viewPortRange.from} and ${viewPortRange.to} for total rows of $totalSize")
     val (startIndex, endIndex, rowCount) = indexCalculator.calc(viewPortRange, totalSize)
 
     internalTable.setSize(totalSize)//todo should this be long?
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
-    logger.info(s"Loading data between $startIndex and $endIndex for $rowCount rows")
+    logger.info(s"Loading data between $startIndex and $endIndex for $rowCount rows where total size $totalSize")
 
     val index = new AtomicInteger(startIndex) // todo: get rid of working assumption here that the dataset is fairly immutable.
     def updateTableRowAtIndex = tableUpdater(internalTable)
@@ -45,16 +45,13 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
       .map(schemaMapper.toTableRowData)
       .foreach(updateTableRowAtIndex(index.getAndIncrement(), _))
 
-    logger.info(s"Updated ${index.get() - startIndex} table rows")
+    logger.debug(s"Updated ${index.get() - startIndex} table rows")
 
     viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
 
   private def getTotalSize(filter: String): Long =
-    if (filter.nonEmpty)
       igniteStore.getCount(filter)
-    else
-      igniteStore.childOrderCount()
 
   private def tableUpdater(internalTable: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = internalTable.tableDef.keyField
