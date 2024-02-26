@@ -57,6 +57,7 @@ type CellRendererOptions = {
   description?: string;
   label?: string;
   serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "json" | "private";
+  userCanAssign?: boolean;
 };
 
 export interface CellRendererDescriptor extends CellRendererOptions {
@@ -84,7 +85,8 @@ const isTypeCompatible = (
 const isCellRenderer = (
   type: ComponentType,
   component: unknown
-): component is FC<TableCellRendererProps> => type === "cell-renderer";
+): component is FC<TableCellRendererProps> =>
+  component !== undefined && type === "cell-renderer";
 
 const isColumnHeaderContentRenderer = (
   type: ComponentType,
@@ -119,6 +121,11 @@ export function registerComponent<
   options: CellRendererOptions
 ): void {
   if (isCellRenderer(type, component)) {
+    if (options?.userCanAssign !== false) {
+      console.log(`register cell renderer ${componentName}`, {
+        options,
+      });
+    }
     cellRenderersMap.set(componentName, component);
   } else if (isColumnHeaderContentRenderer(type, component)) {
     columnHeaderRenderersMap.set(componentName, component);
@@ -141,14 +148,22 @@ export const registerConfigurationEditor = (
   configEditorsMap.set(componentName, configurationEditor);
 };
 
+// This is invoked by settings panel to allow users to assign
+// non-default, cell renderers. Ignore renderers registered
+// with the attribute userCanAssign = false
 export const getRegisteredCellRenderers = (
   serverDataType?: VuuColumnDataType | "json"
 ): CellRendererDescriptor[] => {
   const rendererNames = Array.from(cellRenderersMap.keys());
-  const allRenderers = rendererNames.map<CellRendererDescriptor>((name) => ({
-    name,
-    ...(optionsMap.get(name) as CellRendererOptions),
-  }));
+  const allRenderers = rendererNames
+    .map<CellRendererDescriptor>((name) => ({
+      name,
+      ...(optionsMap.get(name) as CellRendererOptions),
+    }))
+    .filter(({ userCanAssign }) => userCanAssign !== false);
+  console.log(`registered cell renderers<${serverDataType}>`, {
+    allRenderers,
+  });
   if (serverDataType) {
     return allRenderers.filter((renderer) =>
       isTypeCompatible(renderer.serverDataType, serverDataType)

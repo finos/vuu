@@ -59,4 +59,6 @@ export const DropdownCell = memo(function DropdownCell({
 },
 dataAndColumnUnchanged);
 
-registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {});
+registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
+  userCanAssign: false,
+});

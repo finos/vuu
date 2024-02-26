@@ -18,7 +18,7 @@
   border-top: solid 2px var(--vuu-color-gray-30);
   font-size: 14px;
   font-weight: 600;
-  padding-top: 24px;
+  padding: 24px 2px 0 2px;
 }
 
 

@@ -18,6 +18,7 @@ import {
   updateColumnType,
   queryClosest,
 } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "packages/vuu-protocol-types";
 import {
   FormEventHandler,
   useCallback,
@@ -33,7 +34,6 @@ const integerCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (int, long)",
     name: "default-int",
   },
-  ...getRegisteredCellRenderers("int"),
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
@@ -41,7 +41,6 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (double)",
     name: "default-double",
   },
-  ...getRegisteredCellRenderers("double"),
 ];
 
 const stringCellRenderers: CellRendererDescriptor[] = [
@@ -50,12 +49,9 @@ const stringCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (string)",
     name: "default-string",
   },
-  ...getRegisteredCellRenderers("string"),
 ];
 
-const booleanCellRenderers: CellRendererDescriptor[] = [
-  ...getRegisteredCellRenderers("boolean"),
-];
+const booleanCellRenderers: CellRendererDescriptor[] = [];
 
 const getAvailableCellRenderers = (
   column: ColumnDescriptor
@@ -63,14 +59,14 @@ const getAvailableCellRenderers = (
   switch (column.serverDataType) {
     case "char":
     case "string":
-      return stringCellRenderers;
+      return stringCellRenderers.concat(getRegisteredCellRenderers("string"));
     case "int":
     case "long":
-      return integerCellRenderers;
+      return integerCellRenderers.concat(getRegisteredCellRenderers("int"));
     case "double":
-      return doubleCellRenderers;
+      return doubleCellRenderers.concat(getRegisteredCellRenderers("double"));
     case "boolean":
-      return booleanCellRenderers;
+      return booleanCellRenderers.concat(getRegisteredCellRenderers("boolean"));
     default:
       return stringCellRenderers;
   }
@@ -215,6 +211,14 @@ export const useColumnSettings = ({
     [column, onConfigChange, tableConfig]
   );
 
+  // Changing the server data type applies only to calculated columns
+  const handleChangeServerDataType = useCallback(
+    (serverDataType: VuuColumnDataType) => {
+      setColumn((col) => ({ ...col, serverDataType }));
+    },
+    []
+  );
+
   const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
     (renderProps) => {
       if (renderProps) {
@@ -275,6 +279,7 @@ export const useColumnSettings = ({
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRendering: handleChangeRendering,
+    onChangeServerDataType: handleChangeServerDataType,
     onChangeToggleButton: handleChangeToggleButton,
     onChangeType: handleChangeType,
     onEditCalculatedColumn: handleEditCalculatedcolumn,

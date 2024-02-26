@@ -13,8 +13,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { DateTimeColumnDescriptor } from "@finos/vuu-table-types";
-import { FormattingSettingsProps } from "./types";
+import {
+  DateTimeColumnDescriptor,
+  FormattingSettingsProps,
+} from "@finos/vuu-table-types";
 
 export const DateTimeFormattingSettings: React.FC<
   FormattingSettingsProps<DateTimeColumnDescriptor>
@@ -75,12 +77,13 @@ export const DateTimeFormattingSettings: React.FC<
 
   return (
     <>
-      <FormField labelPlacement="left">
+      <FormField labelPlacement="top">
         <FormFieldLabel>{"Display"}</FormFieldLabel>
         <ToggleButtonGroup
           className="vuuToggleButtonGroup"
           onChange={onToggleChange}
           value={toggleValue}
+          data-variant="primary"
         >
           {toggleValues.map((v) => (
             <ToggleButton key={v} value={v}>
@@ -93,7 +96,7 @@ export const DateTimeFormattingSettings: React.FC<
       {(["date", "time"] as const)
         .filter((v) => !!pattern[v])
         .map((v) => (
-          <FormField labelPlacement="left" key={v}>
+          <FormField labelPlacement="top" key={v}>
             <FormFieldLabel>{`${labelByType[v]} pattern`}</FormFieldLabel>
             <Dropdown<Required<DateTimePattern>[typeof v]>
               onSelectionChange={onDropdownChange(v)}

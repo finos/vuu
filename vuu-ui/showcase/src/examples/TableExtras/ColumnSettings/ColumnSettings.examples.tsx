@@ -56,7 +56,7 @@ export const ColumnFormattingPanelDouble = () => {
       availableRenderers={availableRenderers}
       column={column}
       onChangeFormatting={() => console.log("onChangeFormatting")}
-      onChangeType={() => console.log("onChangeType")}
+      onChangeColumnType={() => console.log("onChangeType")}
       onChangeRendering={handleChangeRendering}
       style={{
         border: "solid 1px lightgray",
@@ -107,7 +107,7 @@ export const ColumnFormattingPanelDateTime = () => {
       column={column}
       onChangeFormatting={onChangeFormatting}
       onChangeRendering={handleChangeRendering}
-      onChangeType={onChangeType}
+      onChangeColumnType={onChangeType}
       style={{
         border: "solid 1px lightgray",
         margin: 20,

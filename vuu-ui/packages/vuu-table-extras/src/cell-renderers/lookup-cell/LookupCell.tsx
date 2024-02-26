@@ -16,4 +16,6 @@ export const LookupCell = memo(function LookupCell({
 },
 dataAndColumnUnchanged);
 
-registerComponent("lookup-cell", LookupCell, "cell-renderer", {});
+registerComponent("lookup-cell", LookupCell, "cell-renderer", {
+  userCanAssign: false,
+});

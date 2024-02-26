@@ -2,6 +2,7 @@ import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
+  FormattingSettingsProps,
 } from "@finos/vuu-table-types";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
@@ -17,7 +18,6 @@ import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { LongTypeFormattingSettings } from "./LongTypeFormattingSettings";
-import { FormattingSettingsProps } from "./types";
 
 const classBase = "vuuColumnFormattingPanel";
 
@@ -36,15 +36,21 @@ export const ColumnFormattingPanel = ({
   className,
   column,
   onChangeFormatting,
-  onChangeType,
+  onChangeColumnType,
   onChangeRendering,
   ...htmlAttributes
 }: ColumnFormattingPanelProps) => {
-  const formattingSettingsForType = useMemo(
+  const formattingSettingsComponent = useMemo(
     () =>
-      formattingSettingsByColType({ column, onChangeFormatting, onChangeType }),
-    [column, onChangeFormatting, onChangeType]
+      getFormattingSettingsComponent({
+        column,
+        onChangeFormatting,
+        onChangeColumnType,
+      }),
+    [column, onChangeColumnType, onChangeFormatting]
   );
+
+  console.log({ formattingSettingsComponent });
 
   const ConfigEditor = useMemo<
     React.FC<ConfigurationEditorProps> | undefined
@@ -104,7 +110,7 @@ export const ColumnFormattingPanel = ({
       <div
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}
       >
-        {formattingSettingsForType}
+        {formattingSettingsComponent}
         {ConfigEditor ? (
           <ConfigEditor
             column={column as ColumnDescriptorCustomRenderer}
@@ -116,7 +122,7 @@ export const ColumnFormattingPanel = ({
   );
 };
 
-function formattingSettingsByColType(props: FormattingSettingsProps) {
+function getFormattingSettingsComponent(props: FormattingSettingsProps) {
   const { column } = props;
 
   switch (column.serverDataType) {
