@@ -121,11 +121,6 @@ export function registerComponent<
   options: CellRendererOptions
 ): void {
   if (isCellRenderer(type, component)) {
-    if (options?.userCanAssign !== false) {
-      console.log(`register cell renderer ${componentName}`, {
-        options,
-      });
-    }
     cellRenderersMap.set(componentName, component);
   } else if (isColumnHeaderContentRenderer(type, component)) {
     columnHeaderRenderersMap.set(componentName, component);
@@ -161,9 +156,6 @@ export const getRegisteredCellRenderers = (
       ...(optionsMap.get(name) as CellRendererOptions),
     }))
     .filter(({ userCanAssign }) => userCanAssign !== false);
-  console.log(`registered cell renderers<${serverDataType}>`, {
-    allRenderers,
-  });
   if (serverDataType) {
     return allRenderers.filter((renderer) =>
       isTypeCompatible(renderer.serverDataType, serverDataType)
