@@ -148,8 +148,9 @@ const TableCore = ({
   showColumnHeaders = true,
   headerHeight = showColumnHeaders ? 25 : 0,
   size,
-}: TableProps & {
+}: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
+  rowHeight: number;
   size: MeasuredSize;
 }) => {
   const id = useId(idProp);
