@@ -27,13 +27,29 @@ export const ShowcaseStandalone = ({
     [themeProp]
   );
 
-  const themeMode = useMemo(
-    () => themeModeProp ?? getUrlParameter("themeMode", "light"),
+  const asThemeMode = (input: String | undefined) => {
+    if (input === "light" || "dark") {
+      return input as ThemeMode
+    } else {
+      return "light" as ThemeMode
+    }
+  }
+  
+  const asDensity = ( input: String | undefined ) => {
+    if (input === "high" || "low" || "touch") {
+      return input as Density
+    } else {
+      return "medium" as Density
+    }
+  }
+
+  const themeMode = useMemo<ThemeMode>(
+    () => themeModeProp ?? asThemeMode(getUrlParameter("themeMode", "light")),
     [themeModeProp]
   );
 
-  const density = useMemo(
-    () => densityProp ?? getUrlParameter("density", "high"),
+  const density = useMemo<Density>(
+    () => densityProp ?? asDensity(getUrlParameter("density", "high")),
     [densityProp]
   );
 

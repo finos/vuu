@@ -7,6 +7,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
 import { byDisplaySequence, ExamplesModule } from "./showcase-utils";
 
+import { ThemeSwitch } from "@finos/vuu-shell";
+
+
 import "./App.css";
 
 const sourceFromImports = (
@@ -88,14 +91,22 @@ export const App = ({ stories }: AppProps) => {
     setThemeIndex(parseInt(value));
   }, []);
 
-  const handleThemeModeChange = useCallback((evt) => {
+  /*const handleThemeModeChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setThemeModeIndex(parseInt(value));
-  }, []);
+  }, []);*/
 
   const handleDensityChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setDensityIndex(parseInt(value));
+  }, []);
+
+  const handleThemeModeSwitch = useCallback((evt) => {
+    if (evt==="light") {
+      setThemeModeIndex(0)
+    } else {
+      setThemeModeIndex(1)
+    }
   }, []);
 
   return (
@@ -148,14 +159,16 @@ export const App = ({ stories }: AppProps) => {
                   <ToggleButton value={2}>VUU</ToggleButton>
                 </ToggleButtonGroup>
 
-                <ToggleButtonGroup
+                {/*<ToggleButtonGroup
                   className="vuuToggleButtonGroup"
                   onChange={handleThemeModeChange}
                   value={themeModeIndex}
                 >
                   <ToggleButton value={0}>Light</ToggleButton>
                   <ToggleButton value={1}>Dark</ToggleButton>
-                </ToggleButtonGroup>
+              </ToggleButtonGroup>*/}
+
+                <ThemeSwitch className="vuuToggleButtonGroup" onChange={handleThemeModeSwitch}></ThemeSwitch>
 
                 <ToggleButtonGroup
                   className="vuuToggleButtonGroup"
