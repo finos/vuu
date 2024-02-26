@@ -3,7 +3,6 @@ import { DefaultPopupMenu } from "../../../../../showcase/src/examples/Popups/Po
 describe("Given a PopupMenu", () => {
   it("should apply correct aria attribues", () => {
     cy.mount(<DefaultPopupMenu />);
-
     cy.findByRole("button").should("have.attr", "aria-haspopup", "menu");
     cy.findByRole("button").should("have.attr", "aria-expanded", "false");
     cy.findByRole("menu").should("not.exist");

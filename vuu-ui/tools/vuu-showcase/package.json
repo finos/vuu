@@ -15,8 +15,8 @@
     "@finos/vuu-theme": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@salt-ds/core": "1.13.2",
-    "@salt-ds/theme": "1.7.1"
+    "@salt-ds/core": "1.17.0",
+    "@salt-ds/theme": "1.11.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

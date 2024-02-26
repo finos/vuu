@@ -1,6 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   getCalculatedColumnDetails,
+  isVuuColumnDataType,
   setCalculatedColumnExpression,
   setCalculatedColumnName,
   setCalculatedColumnType,
@@ -10,7 +11,7 @@ import { ColumnExpressionPanelProps } from "./ColumnExpressionPanel";
 
 export type ColumnExpressionHookProps = Pick<
   ColumnExpressionPanelProps,
-  "column" | "onChangeName"
+  "column" | "onChangeName" | "onChangeServerDataType"
 >;
 
 const applyDefaults = (column: ColumnDescriptor) => {
@@ -28,6 +29,7 @@ const applyDefaults = (column: ColumnDescriptor) => {
 export const useColumnExpression = ({
   column: columnProp,
   onChangeName: onChangeNameProp,
+  onChangeServerDataType: onChangeServerDataTypeProp,
 }: ColumnExpressionHookProps) => {
   const [column, _setColumn] = useState<ColumnDescriptor>(
     applyDefaults(columnProp)
@@ -76,21 +78,22 @@ export const useColumnExpression = ({
     [onChangeNameProp, setColumn]
   );
 
-  const onChangeType = useCallback(
+  const onChangeServerDataType = useCallback(
     (evt, value: string | null) => {
-      if (typeof value === "string") {
+      if (isVuuColumnDataType(value)) {
         const newColumn = setCalculatedColumnType(column, value);
         setColumn(newColumn);
         onChangeNameProp?.(newColumn.name);
+        onChangeServerDataTypeProp?.(value);
       }
     },
-    [column, onChangeNameProp, setColumn]
+    [column, onChangeNameProp, onChangeServerDataTypeProp, setColumn]
   );
 
   return {
     column,
     onChangeExpression,
     onChangeName,
-    onChangeType,
+    onChangeServerDataType,
   };
 };

@@ -1,30 +1,16 @@
-.saltButton {
-    white-space: nowrap;;
+.vuu-theme {
+    /** TODO these will need density variants */
     --saltButton-borderRadius: 6px;
+    --saltButton-padding: 16px;
+
+    .saltButton-primary {
+        --saltButton-borderColor: var(--salt-actionable-primary-foreground);
+        --saltButton-borderWidth: 1px;
+        --saltButton-borderStyle: solid;
+    }
+
+    .saltButton-primary:not(:disabled):not(:active):not(.saltButton-active):hover {
+        --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
+    }    
 }
 
-.saltButton-primary {
-    --saltButton-borderColor: var(--salt-actionable-primary-foreground);
-    --saltButton-borderWidth: 1px;
-    --saltButton-borderStyle: solid;
-    --vuu-icon-color: var(--saltIcon-color);
-}
-
-.saltButton-primary:hover {
-    --saltButton-borderColor: var(--salt-actionable-primary-background-hover)
-}
-
-.saltButton-secondary {
-    --saltButton-borderStyle: none;
-}
-
-.saltButton:focus-visible {
-    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple-10));
-    outline-style: dashed;
-    outline-width: 1px;
-    outline-offset: -1px;
-}
-
-.saltButton[data-icon]{
-    min-width: 20px;
-}

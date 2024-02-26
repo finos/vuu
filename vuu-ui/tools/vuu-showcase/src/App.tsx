@@ -91,10 +91,12 @@ export const App = ({ stories }: AppProps) => {
     setThemeIndex(parseInt(value));
   }, []);
 
-  /*const handleThemeModeChange = useCallback((evt) => {
+  /*
+  const handleThemeModeChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setThemeModeIndex(parseInt(value));
-  }, []);*/
+  }, []);
+  */
 
   const handleDensityChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
@@ -159,14 +161,16 @@ export const App = ({ stories }: AppProps) => {
                   <ToggleButton value={2}>VUU</ToggleButton>
                 </ToggleButtonGroup>
 
-                {/*<ToggleButtonGroup
+                {/*
+                <ToggleButtonGroup
                   className="vuuToggleButtonGroup"
                   onChange={handleThemeModeChange}
                   value={themeModeIndex}
                 >
                   <ToggleButton value={0}>Light</ToggleButton>
                   <ToggleButton value={1}>Dark</ToggleButton>
-              </ToggleButtonGroup>*/}
+                </ToggleButtonGroup>
+                */}
 
                 <ThemeSwitch className="vuuToggleButtonGroup" onChange={handleThemeModeSwitch}></ThemeSwitch>
 

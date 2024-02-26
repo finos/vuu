@@ -8,16 +8,14 @@ import {
 import { isDateTimeColumn, isTypeDescriptor } from "@finos/vuu-utils";
 import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
-import { FormattingSettingsProps } from "./types";
+import { FormattingSettingsProps } from "@finos/vuu-table-types";
 
 import "./LongTypeFormattingSettings.css";
 
 const classBase = "vuuLongColumnFormattingSettings";
 
-export const LongTypeFormattingSettings: React.FC<FormattingSettingsProps> = (
-  props
-) => {
-  const { column, onChangeType } = props;
+export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
+  const { column, onChangeColumnType: onChangeType } = props;
   const type = isTypeDescriptor(column.type) ? column.type.name : column.type;
 
   const handleToggleChange = useCallback(

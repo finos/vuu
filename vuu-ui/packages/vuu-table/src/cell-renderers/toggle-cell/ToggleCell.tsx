@@ -65,4 +65,6 @@ export const ToggleCell = memo(function ToggleCell({
 },
 dataAndColumnUnchanged);
 
-registerComponent("toggle-cell", ToggleCell, "cell-renderer", {});
+registerComponent("toggle-cell", ToggleCell, "cell-renderer", {
+  userCanAssign: false,
+});

@@ -68,4 +68,6 @@ registerComponent("basket-progress", ProgressCell, "cell-renderer", {
   description: "Progress formatter",
   label: "Progress formatter",
   serverDataType: ["long", "int", "double"],
+  // Not until we provide settings for associaetd field
+  userCanAssign: false,
 });

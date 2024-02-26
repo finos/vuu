@@ -1,5 +1,5 @@
 import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { Icon, VuuInput } from "@finos/vuu-ui-controls";
 import {
   getCalculatedColumnName,
   getDefaultAlignment,
@@ -51,6 +51,8 @@ export const ColumnSettingsPanel = ({
     onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRendering,
+    onChangeServerDataType,
+    onChangeToggleButton,
     onChangeType,
     onEditCalculatedColumn,
     onInputCommit,
@@ -84,6 +86,7 @@ export const ColumnSettingsPanel = ({
         <ColumnExpressionPanel
           column={column}
           onChangeName={onChangeCalculatedColumnName}
+          onChangeServerDataType={onChangeServerDataType}
           tableConfig={tableConfig}
           vuuTable={vuuTable}
         />
@@ -110,50 +113,30 @@ export const ColumnSettingsPanel = ({
       </FormField>
       <FormField data-field="column-alignment">
         <FormFieldLabel>Alignment</FormFieldLabel>
-        <ToggleButtonGroup
-          className="vuuToggleButtonGroup"
-          onChange={onChange}
-          value={align}
-        >
-          <ToggleButton
-            data-icon="align-left"
-            className="vuuIconToggleButton"
-            value="left"
-          />
-          <ToggleButton
-            data-icon="align-right"
-            className="vuuIconToggleButton"
-            value="right"
-          />
+        <ToggleButtonGroup onChange={onChangeToggleButton} value={align}>
+          <ToggleButton value="left">
+            <Icon name="align-left" size={16} />
+          </ToggleButton>
+          <ToggleButton value="right">
+            <Icon name="align-right" size={16} />
+          </ToggleButton>
         </ToggleButtonGroup>
       </FormField>
       <FormField data-field="column-pin">
         <FormFieldLabel>Pin Column</FormFieldLabel>
-        <ToggleButtonGroup
-          className="vuuToggleButtonGroup"
-          onChange={onChange}
-          value={pin ?? ""}
-        >
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="cross-circle"
-            value=""
-          />
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="pin-left"
-            value="left"
-          />
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="pin-float"
-            value="floating"
-          />
-          <ToggleButton
-            className="vuuIconToggleButton"
-            data-icon="pin-right"
-            value="right"
-          />
+        <ToggleButtonGroup onChange={onChangeToggleButton} value={pin ?? ""}>
+          <ToggleButton value="">
+            <Icon name="cross-circle" size={16} />
+          </ToggleButton>
+          <ToggleButton value="left">
+            <Icon name="pin-left" size={16} />
+          </ToggleButton>
+          <ToggleButton value="floating">
+            <Icon name="pin-float" size={16} />
+          </ToggleButton>
+          <ToggleButton value="right">
+            <Icon name="pin-right" size={16} />
+          </ToggleButton>
         </ToggleButtonGroup>
       </FormField>
       <ColumnFormattingPanel
@@ -161,7 +144,7 @@ export const ColumnSettingsPanel = ({
         column={column}
         onChangeFormatting={onChangeFormatting}
         onChangeRendering={onChangeRendering}
-        onChangeType={onChangeType}
+        onChangeColumnType={onChangeType}
       />
 
       {editCalculatedColumn ? (

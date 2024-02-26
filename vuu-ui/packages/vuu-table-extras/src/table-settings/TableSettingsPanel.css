@@ -10,7 +10,7 @@
     flex-direction: column;
     gap: 24px;
     height: 100%;
-    padding-top: 24px;
+    padding: 24px 2px 0 2px;
 }
 
 
@@ -56,9 +56,6 @@
     gap: 12px;
 }
 
-.vuuGridSeparators {
-    --vuuIconToggleButton-iconSize: 16px;
-}
 
 
 

@@ -1,0 +1,30 @@
+.vuuPctProgressCell {
+    --progress-bar-width: 2px;
+    position: relative;
+}
+
+.vuuPctProgressCell-zero {
+    --progress-bar-width: 0px;
+}
+.vuuPctProgressCell-complete {
+    --progress-bar-width: 0px;
+}
+
+.vuuPctProgressCell-progressBar {
+    background-color: var(--vuu-color-green-60-fade-30);
+    border-right: solid var(--progress-bar-width) var(--vuu-color-green-60);
+    display: inline-block;
+    height: 20px;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    width: var(--progress-bar-pct, 0);
+}
+
+
+.vuuPctProgressCell-text {
+    display: inline-block;
+    text-align: left;
+    width: 80%;
+    z-index: 1;
+}

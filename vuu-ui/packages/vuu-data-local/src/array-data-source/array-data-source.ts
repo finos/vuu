@@ -31,11 +31,11 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   buildColumnMap,
   ColumnMap,
-  configChanged,
+  isConfigChanged,
   EventEmitter,
   getAddedItems,
   getMissingItems,
-  groupByChanged,
+  isGroupByChanged,
   hasFilter,
   hasGroupBy,
   hasSort,
@@ -48,6 +48,7 @@ import {
   uuid,
   vanillaConfig,
   withConfigDefaults,
+  DataSourceConfigChanges,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -332,7 +333,8 @@ export class ArrayDataSource
   }
 
   set config(config: DataSourceConfig) {
-    if (this.applyConfig(config)) {
+    const configChanges = this.applyConfig(config);
+    if (configChanges) {
       if (config) {
         const originalConfig = this.#config;
         const newConfig: DataSourceConfig =
@@ -370,7 +372,7 @@ export class ArrayDataSource
 
         if (
           this.openTreeNodes.length > 0 &&
-          groupByChanged(originalConfig, config)
+          isGroupByChanged(originalConfig, config)
         ) {
           if (this.#config.groupBy.length === 0) {
             this.openTreeNodes.length = 0;
@@ -414,12 +416,17 @@ export class ArrayDataSource
 
       this.setRange(resetRange(this.#range), true);
 
-      this.emit("config", this.#config);
+      this.emit("config", this.#config, undefined, configChanges);
     }
   }
 
-  applyConfig(config: DataSourceConfig) {
-    if (configChanged(this.#config, config)) {
+  applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
+    const { noChanges, ...otherChanges } = isConfigChanged(
+      this.#config,
+      config
+    );
+
+    if (noChanges !== true) {
       if (config) {
         const newConfig: DataSourceConfig =
           config?.filter?.filter && config?.filter.filterStruct === undefined
@@ -432,7 +439,7 @@ export class ArrayDataSource
               }
             : config;
         this.#config = withConfigDefaults(newConfig);
-        return true;
+        return otherChanges;
       }
     }
   }

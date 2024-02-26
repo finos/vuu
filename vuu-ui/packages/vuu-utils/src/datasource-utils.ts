@@ -33,6 +33,19 @@ export const vanillaConfig: WithFullConfig = {
   sort: NoSort,
 };
 
+export type DataSourceConfigChanges = {
+  aggregationsChanged: boolean;
+  columnsChanged: boolean;
+  filterChanged: boolean;
+  groupByChanged: boolean;
+  sortChanged: boolean;
+  visualLinkChanged: boolean;
+};
+
+export type MaybeDataSourceConfigChanges = DataSourceConfigChanges & {
+  noChanges: boolean;
+};
+
 type DataConfigPredicate = (
   config: DataSourceConfig,
   newConfig: DataSourceConfig
@@ -80,7 +93,7 @@ const exactlyTheSame = (a: unknown, b: unknown) => {
   }
 };
 
-const aggregationsChanged: DataConfigPredicate = (config, newConfig) => {
+const isAggregationsChanged: DataConfigPredicate = (config, newConfig) => {
   const { aggregations: agg1 } = config;
   const { aggregations: agg2 } = newConfig;
   if (exactlyTheSame(agg1, agg2) || equivalentAggregations(config, newConfig)) {
@@ -96,7 +109,7 @@ const aggregationsChanged: DataConfigPredicate = (config, newConfig) => {
   );
 };
 
-export const columnsChanged: DataConfigPredicate = (config, newConfig) => {
+const isColumnsChanged: DataConfigPredicate = (config, newConfig) => {
   const { columns: cols1 } = config;
   const { columns: cols2 } = newConfig;
 
@@ -110,7 +123,7 @@ export const columnsChanged: DataConfigPredicate = (config, newConfig) => {
   return cols1.some((column, i) => column !== cols2?.[i]);
 };
 
-export const filterChanged: DataConfigPredicate = (c1, c2) => {
+export const isFilterChanged: DataConfigPredicate = (c1, c2) => {
   if (equivalentFilter(c1, c2)) {
     return false;
   } else {
@@ -118,7 +131,7 @@ export const filterChanged: DataConfigPredicate = (c1, c2) => {
   }
 };
 
-export const groupByChanged: DataConfigPredicate = (config, newConfig) => {
+export const isGroupByChanged: DataConfigPredicate = (config, newConfig) => {
   const { groupBy: g1 } = config;
   const { groupBy: g2 } = newConfig;
   if (exactlyTheSame(g1, g2) || equivalentGroupBy(config, newConfig)) {
@@ -131,7 +144,7 @@ export const groupByChanged: DataConfigPredicate = (config, newConfig) => {
   return g1.some((column, i) => column !== g2?.[i]);
 };
 
-const sortChanged: DataConfigPredicate = (config, newConfig) => {
+const isSortChanged: DataConfigPredicate = (config, newConfig) => {
   const { sort: s1 } = config;
   const { sort: s2 } = newConfig;
   if (exactlyTheSame(s1, s2) || equivalentSort(config, newConfig)) {
@@ -147,31 +160,62 @@ const sortChanged: DataConfigPredicate = (config, newConfig) => {
   );
 };
 
-const visualLinkChanged: DataConfigPredicate = () => {
+const isVisualLinkChanged: DataConfigPredicate = () => {
   // TODO
   return false;
 };
 
-export const configChanged = (
+export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {
+  aggregationsChanged: false,
+  columnsChanged: false,
+  filterChanged: false,
+  groupByChanged: false,
+  noChanges: true,
+  sortChanged: false,
+  visualLinkChanged: false,
+};
+
+export const isConfigChanged = (
   config: DataSourceConfig | undefined,
   newConfig: DataSourceConfig | undefined
-) => {
+): MaybeDataSourceConfigChanges => {
   if (exactlyTheSame(config, newConfig)) {
-    return false;
+    return NO_CONFIG_CHANGES;
   }
 
-  if (config === undefined || newConfig === undefined) {
-    return true;
+  if (config === undefined && newConfig == undefined) {
+    return NO_CONFIG_CHANGES;
+  } else if (config === undefined) {
+    return isConfigChanged({}, newConfig);
+  } else if (newConfig === undefined) {
+    return isConfigChanged(config, {});
   }
 
-  return (
-    aggregationsChanged(config, newConfig) ||
-    columnsChanged(config, newConfig) ||
-    filterChanged(config, newConfig) ||
-    groupByChanged(config, newConfig) ||
-    sortChanged(config, newConfig) ||
-    visualLinkChanged(config, newConfig)
+  const aggregationsChanged = isAggregationsChanged(config, newConfig);
+  const columnsChanged = isColumnsChanged(config, newConfig);
+  const filterChanged = isFilterChanged(config, newConfig);
+  const groupByChanged = isGroupByChanged(config, newConfig);
+  const sortChanged = isSortChanged(config, newConfig);
+  const visualLinkChanged = isVisualLinkChanged(config, newConfig);
+
+  const noChanges = !(
+    aggregationsChanged ||
+    columnsChanged ||
+    filterChanged ||
+    groupByChanged ||
+    sortChanged ||
+    visualLinkChanged
   );
+
+  return {
+    aggregationsChanged,
+    columnsChanged,
+    filterChanged,
+    groupByChanged,
+    noChanges,
+    sortChanged,
+    visualLinkChanged,
+  };
 };
 
 export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>

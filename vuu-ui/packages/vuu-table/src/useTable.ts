@@ -160,30 +160,30 @@ export const useTable = ({
 
   const {
     columns,
-    dispatchColumnAction,
+    dispatchTableModelAction,
     headings,
     tableAttributes,
     tableConfig,
   } = useTableModel(config, dataSource);
 
   useLayoutEffectSkipFirst(() => {
-    dispatchColumnAction({
+    dispatchTableModelAction({
       type: "init",
       tableConfig: config,
       dataSource,
     });
-  }, [config, dataSource, dispatchColumnAction]);
+  }, [config, dataSource, dispatchTableModelAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
-      dispatchColumnAction({
+      dispatchTableModelAction({
         type: "init",
         tableConfig: config,
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(config));
     },
-    [dataSource, dispatchColumnAction, onConfigChange]
+    [dataSource, dispatchTableModelAction, onConfigChange]
   );
 
   const columnMap = useMemo(
@@ -194,7 +194,7 @@ export const useTable = ({
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
-        dispatchColumnAction({
+        dispatchTableModelAction({
           type: "setTableSchema",
           tableSchema,
         });
@@ -202,7 +202,7 @@ export const useTable = ({
         console.log("subscription message with no schema");
       }
     },
-    [dispatchColumnAction]
+    [dispatchTableModelAction]
   );
 
   const {
@@ -249,14 +249,14 @@ export const useTable = ({
   // TODO does this belong here ?
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
-      dispatchColumnAction({
+      dispatchTableModelAction({
         type: "init",
         tableConfig,
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(tableConfig));
     },
-    [dataSource, dispatchColumnAction, onConfigChange]
+    [dataSource, dispatchTableModelAction, onConfigChange]
   );
 
   const handleDataSourceConfigChanged = useCallback(
@@ -270,14 +270,22 @@ export const useTable = ({
   );
 
   useEffect(() => {
-    dataSource.on("config", (config, confirmed) => {
-      dispatchColumnAction({
+    dataSource.on("config", (config, confirmed, changes) => {
+      const scrollSensitiveChanges =
+        changes?.filterChanged || changes?.groupByChanged;
+      if (scrollSensitiveChanges && dataSource.range.from > 0) {
+        requestScroll({
+          type: "scroll-end",
+          direction: "home",
+        });
+      }
+      dispatchTableModelAction({
         type: "tableConfig",
         ...config,
         confirmed,
       });
     });
-  }, [dataSource, dispatchColumnAction]);
+  }, [dataSource, dispatchTableModelAction, requestScroll]);
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
@@ -343,12 +351,12 @@ export const useTable = ({
           case "pinColumn":
             return pinColumn(action);
           default:
-            dispatchColumnAction(action);
+            dispatchTableModelAction(action);
         }
       }
     },
     [
-      dispatchColumnAction,
+      dispatchTableModelAction,
       hideColumns,
       pinColumn,
       showColumnSettingsPanel,
@@ -388,7 +396,7 @@ export const useTable = ({
         } else if (phase === "end") {
           resizeCells.current = undefined;
           if (isValidNumber(width)) {
-            dispatchColumnAction({
+            dispatchTableModelAction({
               type: "resizeColumn",
               phase,
               column,
@@ -411,7 +419,7 @@ export const useTable = ({
               `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`
             ) ?? []
           );
-          dispatchColumnAction({
+          dispatchTableModelAction({
             type: "resizeColumn",
             phase,
             column,
@@ -424,7 +432,13 @@ export const useTable = ({
         );
       }
     },
-    [columns, dispatchColumnAction, onConfigChange, tableConfig, containerRef]
+    [
+      columns,
+      dispatchTableModelAction,
+      onConfigChange,
+      tableConfig,
+      containerRef,
+    ]
   );
 
   const onToggleGroup = useCallback(
@@ -438,7 +452,7 @@ export const useTable = ({
           const idx = columns.indexOf(column);
           const rows = dataSource.getRowsAtDepth?.(idx + 1);
           if (rows && !rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
-            dispatchColumnAction({
+            dispatchTableModelAction({
               type: "hideColumns",
               columns: columns.slice(idx + 2),
             });
@@ -454,7 +468,7 @@ export const useTable = ({
             columnsToShow.push(columns[idx + 1]);
           }
           if (columnsToShow.some((col) => col.hidden)) {
-            dispatchColumnAction({
+            dispatchTableModelAction({
               type: "showColumns",
               columns: columnsToShow,
             });
@@ -462,7 +476,7 @@ export const useTable = ({
         }
       }
     },
-    [columnMap, columns, dataSource, dispatchColumnAction]
+    [columnMap, columns, dataSource, dispatchTableModelAction]
   );
 
   const {
@@ -578,14 +592,14 @@ export const useTable = ({
         columns,
       };
 
-      dispatchColumnAction({
+      dispatchTableModelAction({
         type: "init",
         tableConfig: newTableConfig,
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(newTableConfig));
     },
-    [dataSource, dispatchColumnAction, onConfigChange, tableConfig]
+    [dataSource, dispatchTableModelAction, onConfigChange, tableConfig]
   );
 
   const handleDropRow = useCallback(

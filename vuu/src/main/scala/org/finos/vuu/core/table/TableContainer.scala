@@ -8,6 +8,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowSource, ViewPortTable}
 import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.TableContainer.{isSessionTable, isSessionTableBlueprint, moduleName}
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
@@ -19,7 +20,7 @@ trait TableContainerMBean {
 
   def toAsciiRange(name: String, start: Int, end: Int): String
 
-  def getTables(): Array[ViewPortTable]
+  def getTables: Array[ViewPortTable]
 
   def getSubscribedKeys(name: String): String
 }
@@ -64,29 +65,27 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
     IteratorHasAsScala(tables.keySet().iterator()).asScala.mkString("\n")
   }
 
-  //  override def sessionTableList: String = {
-  //    import scala.collection.JavaConversions._
-  //    sessionTables.keySet().iterator().mkString("\n")
-  //  }
-
-  def getTables(): Array[ViewPortTable] = {
-    val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
-    tableList
-      .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
+  /**
+   * Gets actual tables excluding any blueprints.
+   */
+  def getTables: Array[ViewPortTable] = {
+    tables.asScala.values
+      .filter(!isSessionTableBlueprint(_))
+      .map(table => ViewPortTable(table.name, moduleName(table)))
+      .toArray[ViewPortTable]
+      .sortBy(_.table)
   }
 
-  def getNonSessionTables: Array[ViewPortTable] = {
-    val tableList = IteratorHasAsScala(tables.values().iterator()).asScala
-    tableList
-      //.filter(!isSessionTable(_))
-      .map(table => ViewPortTable(table.getTableDef.name, if (table.getTableDef.getModule() != null) table.getTableDef.getModule().name else "null")).toArray[ViewPortTable].sortBy(_.table)
+  /**
+   * Gets tables with unique definitions - excludes session tables but includes its blueprint.
+   */
+  def getDefinedTables: Array[ViewPortTable] = {
+    tables.asScala.values
+      .filter(!isSessionTable(_))
+      .map(table => ViewPortTable(table.getTableDef.name, moduleName(table)))
+      .toArray[ViewPortTable]
+      .sortBy(_.table)
   }
-
-  private def isSessionTable(table: DataTable): Boolean = {
-    table.getTableDef.isInstanceOf[SessionTableDef] || table.getTableDef.isInstanceOf[JoinSessionTableDef] ||
-      table.isInstanceOf[SessionTable]
-  }
-
 
   def getTable(name: String): DataTable = {
     tables.get(name)
@@ -159,4 +158,15 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
     sessionTables.foreach(sessTable => tables.remove(sessTable.name))
   }
 
+}
+
+object TableContainer {
+  private def isSessionTable(table: DataTable): Boolean = table.isInstanceOf[SessionTable]
+
+  private def isSessionTableBlueprint(table: DataTable): Boolean = {
+    !isSessionTable(table) &&
+      (table.getTableDef.isInstanceOf[SessionTableDef] || table.getTableDef.isInstanceOf[JoinSessionTableDef])
+  }
+
+  private def moduleName(table: DataTable): String = Option(table.getTableDef.getModule()).map(_.name).getOrElse("null")
 }

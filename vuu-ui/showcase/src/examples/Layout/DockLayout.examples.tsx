@@ -8,7 +8,7 @@ import {
   Stack,
   View,
 } from "@finos/vuu-layout";
-import { List, ListItem } from "@salt-ds/lab";
+import { List, ListItem } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 
 import "./DockLayout.examples.css";

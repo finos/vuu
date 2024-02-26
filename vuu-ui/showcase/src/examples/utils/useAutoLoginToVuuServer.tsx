@@ -3,7 +3,6 @@ import {
   connectToServer,
 } from "@finos/vuu-data-remote";
 import { useEffect, useState } from "react";
-import { ContentStatus } from "@salt-ds/lab";
 
 export const useAutoLoginToVuuServer = (autoLogin = true) => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -31,11 +30,10 @@ export const useAutoLoginToVuuServer = (autoLogin = true) => {
 
   if (errorMessage) {
     return (
-      <ContentStatus
-        actionLabel="Unable to authenticate against Vuu Server"
-        message="A Vuu Server instance must be running to show this example."
-        title="No Vuu Server"
-      />
+      <p>
+        Unable to authenticate against Vuu Server A Vuu Server instance must be
+        running to show this example.
+      </p>
     );
   }
 };

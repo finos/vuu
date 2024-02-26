@@ -219,7 +219,7 @@ export const useTableModel = (
   tableConfigProp: TableConfig,
   dataSource: DataSource
 ) => {
-  const [state, dispatchColumnAction] = useReducer<
+  const [state, dispatchTableModelAction] = useReducer<
     GridModelReducer,
     InitialConfig
   >(columnReducer, { tableConfig: tableConfigProp, dataSource }, init);
@@ -228,7 +228,7 @@ export const useTableModel = (
 
   return {
     columns,
-    dispatchColumnAction,
+    dispatchTableModelAction,
     headings,
     tableAttributes,
     tableConfig,

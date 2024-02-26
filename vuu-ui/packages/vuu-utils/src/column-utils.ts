@@ -98,6 +98,19 @@ export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
 export const isValidPinLocation = (v: string): v is PinLocation =>
   isValidColumnAlignment(v) || v === "floating" || v === "";
 
+const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
+  "long",
+  "double",
+  "int",
+  "string",
+  "char",
+  "boolean",
+];
+
+export const isVuuColumnDataType = (
+  value: string | undefined | null
+): value is VuuColumnDataType => VUU_COLUMN_DATA_TYPES.includes(value);
+
 export const fromServerDataType = (
   serverDataType: VuuColumnDataType
 ): ColumnTypeSimple => {

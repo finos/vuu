@@ -11,7 +11,7 @@
   },
   "types": "src/index.ts",
   "dependencies": {
-    "@salt-ds/core": "1.13.2",
+    "@salt-ds/core": "1.17.0",
     "@finos/vuu-data-types": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-popups": "0.0.26",

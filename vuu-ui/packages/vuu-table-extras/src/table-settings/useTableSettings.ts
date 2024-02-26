@@ -7,11 +7,13 @@ import {
 } from "@finos/vuu-table-types";
 import {
   addColumnToSubscribedColumns,
+  queryClosest,
   isCalculatedColumn,
   moveItem,
   subscribedOnly,
   useLayoutEffectSkipFirst,
 } from "@finos/vuu-utils";
+import { Commithandler } from "packages/vuu-ui-controls/src";
 import {
   MouseEvent,
   SyntheticEvent,
@@ -168,31 +170,50 @@ export const useTableSettings = ({
   );
 
   const handleChangeColumnLabels = useCallback((evt: SyntheticEvent) => {
-    const { value } = evt.target as HTMLFormElement;
-    const columnFormatHeader =
-      value === "0" ? undefined : value === "1" ? "capitalize" : "uppercase";
-    setColumnState((state) => ({
-      ...state,
-      tableConfig: {
-        ...state.tableConfig,
-        columnFormatHeader,
-      },
-    }));
-  }, []);
-
-  const handleChangeTableAttribute = useCallback(
-    (evt: MouseEvent<HTMLButtonElement>) => {
-      const { ariaChecked, value } = evt.target as HTMLInputElement;
+    const button = queryClosest<HTMLButtonElement>(evt.target, "button");
+    if (button) {
+      const value = parseInt(button.value);
+      const columnFormatHeader =
+        value === 0 ? undefined : value === 1 ? "capitalize" : "uppercase";
       setColumnState((state) => ({
         ...state,
         tableConfig: {
           ...state.tableConfig,
-          [value]: ariaChecked !== "true",
+          columnFormatHeader,
+        },
+      }));
+    }
+  }, []);
+
+  const handleChangeTableAttribute = useCallback(
+    (evt: MouseEvent<HTMLButtonElement>) => {
+      const button = queryClosest<HTMLButtonElement>(evt.target, "button");
+      const { ariaPressed, value } = button;
+      console.log({ ariaPressed, value, button });
+      setColumnState((state) => ({
+        ...state,
+        tableConfig: {
+          ...state.tableConfig,
+          [value]: ariaPressed !== "true",
         },
       }));
     },
     []
   );
+
+  const handleCommitColumnWidth = useCallback<Commithandler>((_, value) => {
+    const columnDefaultWidth = parseInt(value);
+    if (!isNaN(columnDefaultWidth)) {
+      setColumnState((state) => ({
+        ...state,
+        tableConfig: {
+          ...state.tableConfig,
+          columnDefaultWidth,
+        },
+      }));
+    }
+    console.log({ value });
+  }, []);
 
   useLayoutEffectSkipFirst(() => {
     onConfigChange?.(tableConfig);
@@ -211,6 +232,7 @@ export const useTableSettings = ({
     onChangeColumnLabels: handleChangeColumnLabels,
     onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
+    onCommitColumnWidth: handleCommitColumnWidth,
     onMoveListItem: handleMoveListItem,
     tableConfig,
   };

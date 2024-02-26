@@ -16,7 +16,9 @@ import {
   updateColumnRenderProps,
   updateColumnFormatting,
   updateColumnType,
+  queryClosest,
 } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "packages/vuu-protocol-types";
 import {
   FormEventHandler,
   useCallback,
@@ -32,7 +34,6 @@ const integerCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (int, long)",
     name: "default-int",
   },
-  ...getRegisteredCellRenderers("int"),
 ];
 const doubleCellRenderers: CellRendererDescriptor[] = [
   {
@@ -40,7 +41,6 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (double)",
     name: "default-double",
   },
-  ...getRegisteredCellRenderers("double"),
 ];
 
 const stringCellRenderers: CellRendererDescriptor[] = [
@@ -49,12 +49,9 @@ const stringCellRenderers: CellRendererDescriptor[] = [
     label: "Default Renderer (string)",
     name: "default-string",
   },
-  ...getRegisteredCellRenderers("string"),
 ];
 
-const booleanCellRenderers: CellRendererDescriptor[] = [
-  ...getRegisteredCellRenderers("boolean"),
-];
+const booleanCellRenderers: CellRendererDescriptor[] = [];
 
 const getAvailableCellRenderers = (
   column: ColumnDescriptor
@@ -62,20 +59,20 @@ const getAvailableCellRenderers = (
   switch (column.serverDataType) {
     case "char":
     case "string":
-      return stringCellRenderers;
+      return stringCellRenderers.concat(getRegisteredCellRenderers("string"));
     case "int":
     case "long":
-      return integerCellRenderers;
+      return integerCellRenderers.concat(getRegisteredCellRenderers("int"));
     case "double":
-      return doubleCellRenderers;
+      return doubleCellRenderers.concat(getRegisteredCellRenderers("double"));
     case "boolean":
-      return booleanCellRenderers;
+      return booleanCellRenderers.concat(getRegisteredCellRenderers("boolean"));
     default:
       return stringCellRenderers;
   }
 };
 
-const getFieldName = (input: HTMLInputElement): string => {
+const getFieldName = (input: HTMLInputElement | HTMLButtonElement): string => {
   const saltFormField = input.closest(".saltFormField") as HTMLElement;
   if (saltFormField && saltFormField.dataset.field) {
     const {
@@ -141,46 +138,56 @@ export const useColumnSettings = ({
     onConfigChange(replaceColumn(tableConfig, column));
   }, [column, onConfigChange, tableConfig]);
 
-  const handleChange = useCallback<FormEventHandler>(
+  const handleChangeToggleButton = useCallback<FormEventHandler>(
     (evt) => {
-      const input = evt.target as HTMLInputElement;
-      const fieldName = getFieldName(input);
-      const { value } = input;
-      switch (fieldName) {
-        case "column-label":
-          setColumn((state) => ({ ...state, label: value }));
-          break;
-        case "column-name":
-          setColumn((state) => setCalculatedColumnName(state, value));
-          break;
-        case "column-width":
-          setColumn((state) => ({ ...state, width: parseInt(value) }));
-          break;
-        case "column-alignment":
-          if (isValidColumnAlignment(value)) {
-            const newColumn: ColumnDescriptor = {
-              ...column,
-              align: value || undefined,
-            };
-            setColumn(newColumn);
-            onConfigChange(replaceColumn(tableConfig, newColumn));
-          }
-          break;
-        case "column-pin":
-          if (isValidPinLocation(value)) {
-            const newColumn: ColumnDescriptor = {
-              ...column,
-              pin: value || undefined,
-            };
-            setColumn(newColumn);
-            onConfigChange(replaceColumn(tableConfig, newColumn));
-
+      const button = queryClosest<HTMLButtonElement>(evt.target, "button");
+      if (button) {
+        const fieldName = getFieldName(button);
+        const { value } = button;
+        switch (fieldName) {
+          case "column-alignment":
+            if (isValidColumnAlignment(value)) {
+              const newColumn: ColumnDescriptor = {
+                ...column,
+                align: value || undefined,
+              };
+              setColumn(newColumn);
+              onConfigChange(replaceColumn(tableConfig, newColumn));
+            }
             break;
-          }
+          case "column-pin":
+            if (isValidPinLocation(value)) {
+              const newColumn: ColumnDescriptor = {
+                ...column,
+                pin: value || undefined,
+              };
+              setColumn(newColumn);
+              onConfigChange(replaceColumn(tableConfig, newColumn));
+
+              break;
+            }
+        }
       }
     },
     [column, onConfigChange, tableConfig]
   );
+
+  const handleChange = useCallback<FormEventHandler>((evt) => {
+    const input = evt.target as HTMLInputElement;
+    const fieldName = getFieldName(input);
+    const { value } = input;
+    switch (fieldName) {
+      case "column-label":
+        setColumn((state) => ({ ...state, label: value }));
+        break;
+      case "column-name":
+        setColumn((state) => setCalculatedColumnName(state, value));
+        break;
+      case "column-width":
+        setColumn((state) => ({ ...state, width: parseInt(value) }));
+        break;
+    }
+  }, []);
 
   const handleChangeCalculatedColumnName = useCallback((name: string) => {
     setColumn((state) => ({ ...state, name }));
@@ -202,6 +209,14 @@ export const useColumnSettings = ({
       onConfigChange(replaceColumn(tableConfig, updatedColumn));
     },
     [column, onConfigChange, tableConfig]
+  );
+
+  // Changing the server data type applies only to calculated columns
+  const handleChangeServerDataType = useCallback(
+    (serverDataType: VuuColumnDataType) => {
+      setColumn((col) => ({ ...col, serverDataType }));
+    },
+    []
   );
 
   const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
@@ -264,6 +279,8 @@ export const useColumnSettings = ({
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
     onChangeRendering: handleChangeRendering,
+    onChangeServerDataType: handleChangeServerDataType,
+    onChangeToggleButton: handleChangeToggleButton,
     onChangeType: handleChangeType,
     onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,

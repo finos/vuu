@@ -166,6 +166,25 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     childOrder.map(c => c.id).toArray shouldBe Array(2, 1, 3)
   }
 
+
+  test("Ignite Store Get Count With Custom Sql Filter") {
+    var parentOrder: ParentOrder = GivenParentOrder(1)
+    parentOrder = GivenParentHasChildOrder(parentOrder, 1, ric = "VOD.L")
+    parentOrder = GivenParentHasChildOrder(parentOrder, 2, ric = "VOD.L")
+    parentOrder = GivenParentHasChildOrder(parentOrder, 3, ric = "VOD.DE")
+
+    var parentOrder2: ParentOrder = GivenParentOrder(2)
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4, ric = "BMWDG.DE")
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5, ric = "VOD.L")
+    parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "BP.L")
+
+    val filterQueries = "ric = \'VOD.L\'"
+
+    val count = orderStore.getCount(filterQueries)
+
+    assert(count == 3)
+  }
+
   test("Ignite Store Get Distinct Rics Limited By RowCount") {
     var parentOrder: ParentOrder = GivenParentOrder(1)
     parentOrder = GivenParentHasChildOrder(parentOrder, 1, "A")

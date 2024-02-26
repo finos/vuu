@@ -47,8 +47,13 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
   return -1;
 };
 
+export const queryClosest = <T extends HTMLElement = HTMLElement>(
+  el: HTMLElement | EventTarget,
+  cssQueryString: string
+) => (el as HTMLElement).closest(cssQueryString) as T;
+
 export const getClosest = (el: HTMLElement, dataProperty: string) =>
-  el.closest(`[data-${dataProperty}]`) as HTMLElement;
+  queryClosest(el, `[data-${dataProperty}]`);
 
 export const getClosestIndexItem = (el: HTMLElement) => getClosest(el, "index");
 

@@ -56,7 +56,6 @@ export const ShowcaseStandalone = ({
   useMemo(() => {
     switch (theme) {
       case "vuu":
-        console.log("load vuu theme");
         import("./themes/vuu").then(() => {
           setThemeReady(true);
         });
@@ -67,9 +66,9 @@ export const ShowcaseStandalone = ({
         });
         break;
       default:
-        console.log(`no theme needed`);
+      // do nothing
     }
-  }, []);
+  }, [theme]);
 
   useMemo(async () => {
     const url = new URL(document.location.href);

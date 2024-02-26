@@ -1,11 +1,16 @@
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { ButtonProps, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { Icon } from "@finos/vuu-ui-controls";
 import { SyntheticEvent, useState } from "react";
 
 import "./ToggleButton.examples.css";
 
 let displaySequence = 1;
 
-export const ButtonGroupWithTextOnly = () => {
+interface ToggleButtonExampleProps {
+  "data-variant": ButtonProps["variant"];
+}
+
+export const ButtonGroupWithTextOnly = (props: ToggleButtonExampleProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
   const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
@@ -14,6 +19,7 @@ export const ButtonGroupWithTextOnly = () => {
 
   return (
     <ToggleButtonGroup
+      {...props}
       data-showcase-center
       onChange={handleChange}
       value={selectedIndex}
@@ -28,69 +34,137 @@ export const ButtonGroupWithTextOnly = () => {
 
 ButtonGroupWithTextOnly.displaySequence = displaySequence++;
 
-export const ButtonGroupWithIconOnly = () => {
+export const ButtonGroupWithIconOnly = (props: ToggleButtonExampleProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
-  const [selectedIndexCta, setSelectedIndexCta] = useState<number>(1);
-  const [selectedIndexSecondary, setSelectedIndexSecondary] =
-    useState<number>(1);
 
-  const handleChange = (evt: SyntheticEvent<HTMLButtonElement>) => {
-    setSelectedIndex(parseInt((evt.target as HTMLButtonElement).value));
-  };
-
-  const handleChangeCta = (evt: SyntheticEvent<HTMLButtonElement>) => {
-    setSelectedIndexCta(parseInt((evt.target as HTMLButtonElement).value));
-  };
-
-  const handleChangeSecondary = (evt: SyntheticEvent<HTMLButtonElement>) => {
-    setSelectedIndexSecondary(
-      parseInt((evt.target as HTMLButtonElement).value)
-    );
+  const handleChange = (evt: SyntheticEvent<HTMLElement>) => {
+    const target = evt.target as HTMLElement;
+    const button = target?.closest("button");
+    if (button) {
+      setSelectedIndex(parseInt(button.value));
+    }
   };
 
   return (
-    <div
+    <ToggleButtonGroup
+      {...props}
       className="vuuToggleButtonExample"
       data-showcase-center
-      style={{
-        display: "flex",
-        height: 150,
-        flexDirection: "column",
-        justifyContent: "space-between",
-        margin: "0 auto",
-        width: "fit-content",
-      }}
+      onChange={handleChange}
+      value={selectedIndex}
     >
-      <ToggleButtonGroup
-        onChange={handleChangeSecondary}
-        value={selectedIndexSecondary}
+      <ToggleButton
+        className="vuuIconToggleButton"
+        value={0}
+        aria-label="alert"
       >
-        <ToggleButton value={0} aria-label="alert" data-icon="notifications" />
-        <ToggleButton value={1} aria-label="home" data-icon="home" />
-        <ToggleButton value={2} aria-label="search" data-icon="search" />
-        <ToggleButton value={3} aria-label="print" data-icon="print" />
-      </ToggleButtonGroup>
-
-      <ToggleButtonGroup onChange={handleChange} value={selectedIndex}>
-        <ToggleButton
-          aria-label="alert"
-          className="saltToggleButton-iconOnly"
-          data-icon="notifications"
-          value={0}
-        />
-        <ToggleButton aria-label="home" data-icon="home" value={1} />
-        <ToggleButton aria-label="search" data-icon="search" value={2} />
-        <ToggleButton aria-label="print" data-icon="print" value={3} />
-      </ToggleButtonGroup>
-
-      <ToggleButtonGroup onChange={handleChangeCta} value={selectedIndexCta}>
-        <ToggleButton value={0} aria-label="alert" data-icon="notifications" />
-        <ToggleButton aria-label="home" data-icon="home" value={1} />
-        <ToggleButton aria-label="search" data-icon="search" value={2} />
-        <ToggleButton aria-label="print" data-icon="print" value={3} />
-      </ToggleButtonGroup>
-    </div>
+        <Icon name="notifications" />
+      </ToggleButton>
+      <ToggleButton className="vuuIconToggleButton" value={1} aria-label="home">
+        <Icon name="home" />
+      </ToggleButton>
+      <ToggleButton
+        className="vuuIconToggleButton"
+        value={2}
+        aria-label="search"
+      >
+        <Icon name="search" size={16} />
+      </ToggleButton>
+      <ToggleButton
+        className="vuuIconToggleButton"
+        value={3}
+        aria-label="print"
+      >
+        <Icon name="print" />
+      </ToggleButton>
+    </ToggleButtonGroup>
   );
 };
 
 ButtonGroupWithIconOnly.displaySequence = displaySequence++;
+
+export const ButtonGroupWithTextAndIcon = (props: ToggleButtonExampleProps) => {
+  const [selectedIndex, setSelectedIndex] = useState<number>(1);
+
+  const handleChange = (evt: SyntheticEvent<HTMLElement>) => {
+    const target = evt.target as HTMLElement;
+    const button = target?.closest("button");
+    if (button) {
+      setSelectedIndex(parseInt(button.value));
+    }
+  };
+
+  return (
+    <ToggleButtonGroup
+      {...props}
+      className="vuuToggleButtonExample"
+      onChange={handleChange}
+      value={selectedIndex}
+    >
+      <ToggleButton value={0} aria-label="alert">
+        Notifications
+        <Icon name="notifications" />
+      </ToggleButton>
+      <ToggleButton value={1} aria-label="home">
+        Home
+        <Icon name="home" />
+      </ToggleButton>
+      <ToggleButton value={2} aria-label="search">
+        Search
+        <Icon name="search" />
+      </ToggleButton>
+      <ToggleButton value={3} aria-label="print">
+        Print
+        <Icon name="print" />
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+};
+
+ButtonGroupWithTextAndIcon.displaySequence = displaySequence++;
+
+export const ToggleButtonGroupVariations = () => {
+  return (
+    <div
+      className="vuuToggleButtonExample"
+      // data-showcase-center
+      style={{
+        alignItems: "center",
+        display: "grid",
+        columnGap: 20,
+        rowGap: 12,
+        gridTemplateColumns: "auto 1fr",
+        gridTemplateRows: "40px 40px 40px 40px 40px 40px 40px 40px 40px",
+        justifyItems: "start",
+      }}
+    >
+      <span>Primary</span>
+      <ButtonGroupWithTextOnly data-variant="primary" />
+
+      <span />
+      <ButtonGroupWithIconOnly data-variant="primary" />
+
+      <span />
+      <ButtonGroupWithTextAndIcon data-variant="primary" />
+
+      <span>Secondary</span>
+      <ButtonGroupWithTextOnly data-variant="secondary" />
+
+      <span />
+      <ButtonGroupWithIconOnly data-variant="secondary" />
+
+      <span />
+      <ButtonGroupWithTextAndIcon data-variant="secondary" />
+
+      <span>CTA</span>
+      <ButtonGroupWithTextOnly data-variant="cta" />
+
+      <span />
+      <ButtonGroupWithIconOnly data-variant="cta" />
+
+      <span />
+      <ButtonGroupWithTextAndIcon data-variant="cta" />
+    </div>
+  );
+};
+ToggleButtonGroupVariations.displaySequence = displaySequence++;

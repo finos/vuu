@@ -226,7 +226,7 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
   val thread = new Runner("lifeCycleJoinRunner", () => {Thread.sleep(1000)})
   thread.runInBackground()
 
-  val dependencyGraph = new DirectedAcyclicGraph[LifecycleEnabled]()
+  private val dependencyGraph = new DirectedAcyclicGraph[LifecycleEnabled]()
 
   def autoShutdownHook(): Unit = {
     val container = this
@@ -238,33 +238,14 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
     }, "lcShutdownHook"))
   }
 
-  case class LifeCycleComponentContext(comp: LifecycleEnabled, container: LifecycleContainer){
-    def dependsOn(comp2: LifecycleEnabled): Unit = {
-      if(!dependencyGraph.containsEdge(comp, comp2))
-        dependencyGraph.addEdge(comp, comp2)
-      else
-        logger.warn(s"lifecycle already contains edge $comp, $comp2")
-    }
-
-    def dependsOn(comps: LifecycleEnabled*): Unit = {
-
-      comps.foreach( c => {
-        if(!dependencyGraph.containsEdge(comp, c))
-          dependencyGraph.addEdge(comp, c)
-        else
-          logger.warn(s"lifecycle already contains edge $comp, $c")
-      })
-    }
-  }
-
   def apply(comp: LifecycleEnabled): LifeCycleComponentContext = {
 
     if(!dependencyGraph.containsNode(comp))
       dependencyGraph.addNode(comp)
     else
-    logger.warn(s"lifecycle already contains component $comp")
+      logger.warn(s"lifecycle already contains component $comp")
 
-    new LifeCycleComponentContext(comp, this)
+    LifeCycleComponentContext(comp, this, dependencyGraph)
   }
 
   def add(component: LifecycleEnabled): Unit = {}
@@ -318,5 +299,25 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
     startSequence.foreach( list => stopOneBucket(list) )
     startSequence.foreach( list => destroyOneBucket(list) )
     logger.debug("Shutdown lifecycle")
+  }
+}
+
+case class LifeCycleComponentContext(comp: LifecycleEnabled,
+                                     container: LifecycleContainer,
+                                     dependencyGraph:  DirectedAcyclicGraph[LifecycleEnabled]) extends StrictLogging {
+  def dependsOn(comp2: LifecycleEnabled): Unit = {
+    if (!dependencyGraph.containsEdge(comp, comp2))
+      dependencyGraph.addEdge(comp, comp2)
+    else
+      logger.warn(s"lifecycle already contains edge $comp, $comp2")
+  }
+
+  def dependsOn(comps: LifecycleEnabled*): Unit = {
+    comps.foreach(c => {
+      if (!dependencyGraph.containsEdge(comp, c))
+        dependencyGraph.addEdge(comp, c)
+      else
+        logger.warn(s"lifecycle already contains edge $comp, $c")
+    })
   }
 }

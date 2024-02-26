@@ -1,4 +1,4 @@
-import { CircularProgress, LinearProgress } from "@salt-ds/lab";
+import { CircularProgress, LinearProgress } from "@salt-ds/core";
 
 let displaySequence = 1;
 
