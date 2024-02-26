@@ -9,20 +9,33 @@
     white-space: nowrap;
     }
     
-    .vuuTableRow-even {
-      --row-background: var(--row-background-even);
-    }
+.vuuTableRow-proxy {
+  visibility: hidden;
+}
 
-    .vuuTableRow-highlighted {
-      background-color: var(--vuu-color-gray-10);
-    }
+.vuuTableRow-even {
+  --row-background: var(--row-background-even);
+}
+
+.vuuTableRow-highlighted {
+  background-color: var(--salt-selectable-background-hover);
+}
 
 
-    .vuuTableRow-selected,
-    .vuuTableRow-selectedEnd {
-      /* background-color: rgb(133,133,137,.16); */
-      background-color: rgb(235,235,236);
-    }
+.vuuTableRow-selected,
+.vuuTableRow-selectedEnd {
+  --row-borderColor: var(--salt-separable-secondary-borderColor);
+  background-color: var(--salt-selectable-background-selected);
+}
+
+.vuuTable-zebra {
+  .vuuTableRow-even.vuuTableRow-selected,
+  .vuuTableRow-even.vuuTableRow-selectedEnd {
+    /** thisis really where we want a darken function */
+  background-color: var(--vuu-color-gray-07);
+
+  }
+}
   
     .vuuTableRow-selectedStart {
         --vuu-selection-decorator-left-radius: 5px 0 0 0;
@@ -90,9 +103,6 @@
         --vuu-selection-decorator-bg: white;
       }
     
-      .vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
-    
-      }
     
       .vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
       .vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {

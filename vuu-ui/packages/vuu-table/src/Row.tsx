@@ -14,7 +14,13 @@ import {
   RowSelected,
 } from "@finos/vuu-utils";
 import cx from "clsx";
-import { CSSProperties, memo, MouseEvent, useCallback } from "react";
+import {
+  CSSProperties,
+  forwardRef,
+  memo,
+  MouseEvent,
+  useCallback,
+} from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import "./Row.css";
@@ -36,6 +42,23 @@ export interface RowProps {
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
+
+// A dummy Table Row rendered once and not visible. We measure this to
+// determine height of Row(s) and monitor it for size changes (in
+// case of runtime density switch). This allows ListItem height to
+// be controlled purely through CSS.
+export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
+  function RowProxy({ height }, forwardedRef) {
+    return (
+      <div
+        aria-hidden
+        className={cx(classBase, `${classBase}-proxy`)}
+        ref={forwardedRef}
+        style={{ height }}
+      />
+    );
+  }
+);
 
 // export const Row = memo(
 export const Row = memo(
