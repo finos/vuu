@@ -28,7 +28,7 @@ export const ShowcaseStandalone = ({
   );
 
   const asThemeMode = (input: String | undefined) => {
-    if (input === "light" || "dark") {
+    if (input === 'light' || input === 'dark') {
       return input as ThemeMode
     } else {
       return "light" as ThemeMode
@@ -36,7 +36,7 @@ export const ShowcaseStandalone = ({
   }
   
   const asDensity = ( input: String | undefined ) => {
-    if (input === "high" || "low" || "touch") {
+    if (input === 'high' || input === 'low' || input === 'touch') {
       return input as Density
     } else {
       return "medium" as Density
