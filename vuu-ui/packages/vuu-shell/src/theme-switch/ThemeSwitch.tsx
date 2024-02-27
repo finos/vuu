@@ -43,8 +43,8 @@ export const ThemeSwitch = ({
       onChange={handleChangeSecondary}
       value={mode}
     >
-      <ToggleButton aria-label="alert" data-icon="light" value="dark" />
-      <ToggleButton aria-label="home" data-icon="dark" value="light" />
+      <ToggleButton aria-label="alert" data-icon="light" value="light" />
+      <ToggleButton aria-label="home" data-icon="dark" value="dark" />
     </ToggleButtonGroup>
   );
 };

@@ -11,9 +11,9 @@ import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
 import "./Showcase.css";
 
 export const ShowcaseStandalone = ({
-  density = "high",
+  density: densityProp,
   theme: themeProp,
-  themeMode = "light",
+  themeMode: themeModeProp,
 }: {
   density?: Density;
   theme?: string;
@@ -25,6 +25,32 @@ export const ShowcaseStandalone = ({
   const theme = useMemo(
     () => themeProp ?? getUrlParameter("theme", "vuu"),
     [themeProp]
+  );
+
+  const asThemeMode = (input: string | undefined) => {
+    if (input === 'light' || input === 'dark') {
+      return input as ThemeMode
+    } else {
+      return "light" as ThemeMode
+    }
+  }
+  
+  const asDensity = ( input: string | undefined ) => {
+    if (input === 'high' || input === 'low' || input === 'touch') {
+      return input as Density
+    } else {
+      return "medium" as Density
+    }
+  }
+
+  const themeMode = useMemo<ThemeMode>(
+    () => themeModeProp ?? asThemeMode(getUrlParameter("themeMode", "light")),
+    [themeModeProp]
+  );
+
+  const density = useMemo<Density>(
+    () => densityProp ?? asDensity(getUrlParameter("density", "high")),
+    [densityProp]
   );
 
   useMemo(() => {
