@@ -9,7 +9,6 @@ import { byDisplaySequence, ExamplesModule } from "./showcase-utils";
 
 import { ThemeSwitch } from "@finos/vuu-shell";
 
-
 import "./App.css";
 
 const sourceFromImports = (
@@ -66,20 +65,20 @@ const availableDensity: DensityDescriptor[] = [
 ];
 
 export const App = ({ stories }: AppProps) => {
-  console.log({ stories });
   const navigate = useNavigate();
   // // TODO cache source in localStorage
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
   const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
   const [themeIndex, setThemeIndex] = useState(2);
-  //const [themeMode] = useState<ThemeMode>("light");
-  //const [density] = useState<Density>("high");
   const [themeModeIndex, setThemeModeIndex] = useState(0);
   const [densityIndex, setDensityIndex] = useState(0);
 
   const theme = useMemo(() => availableThemes[themeIndex], [themeIndex]);
-  const themeMode = useMemo(() => availableThemeModes[themeModeIndex], [themeModeIndex]);
+  const themeMode = useMemo(
+    () => availableThemeModes[themeModeIndex],
+    [themeModeIndex]
+  );
   const density = useMemo(() => availableDensity[densityIndex], [densityIndex]);
 
   const launchStandaloneWindow = useCallback(() => {
@@ -91,23 +90,16 @@ export const App = ({ stories }: AppProps) => {
     setThemeIndex(parseInt(value));
   }, []);
 
-  /*
-  const handleThemeModeChange = useCallback((evt) => {
-    const { value } = evt.target as HTMLInputElement;
-    setThemeModeIndex(parseInt(value));
-  }, []);
-  */
-
   const handleDensityChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setDensityIndex(parseInt(value));
   }, []);
 
   const handleThemeModeSwitch = useCallback((evt) => {
-    if (evt==="light") {
-      setThemeModeIndex(0)
+    if (evt === "light") {
+      setThemeModeIndex(0);
     } else {
-      setThemeModeIndex(1)
+      setThemeModeIndex(1);
     }
   }, []);
 
@@ -153,6 +145,7 @@ export const App = ({ stories }: AppProps) => {
               >
                 <ToggleButtonGroup
                   className="vuuToggleButtonGroup"
+                  data-variant="primary"
                   onChange={handleThemeChange}
                   value={themeIndex}
                 >
@@ -161,21 +154,15 @@ export const App = ({ stories }: AppProps) => {
                   <ToggleButton value={2}>VUU</ToggleButton>
                 </ToggleButtonGroup>
 
-                {/*
-                <ToggleButtonGroup
+                <ThemeSwitch
                   className="vuuToggleButtonGroup"
-                  onChange={handleThemeModeChange}
-                  value={themeModeIndex}
-                >
-                  <ToggleButton value={0}>Light</ToggleButton>
-                  <ToggleButton value={1}>Dark</ToggleButton>
-                </ToggleButtonGroup>
-                */}
-
-                <ThemeSwitch className="vuuToggleButtonGroup" onChange={handleThemeModeSwitch}></ThemeSwitch>
+                  data-variant="primary"
+                  onChange={handleThemeModeSwitch}
+                ></ThemeSwitch>
 
                 <ToggleButtonGroup
                   className="vuuToggleButtonGroup"
+                  data-variant="primary"
                   onChange={handleDensityChange}
                   value={densityIndex}
                 >
@@ -199,7 +186,11 @@ export const App = ({ stories }: AppProps) => {
                   position: "relative",
                 }}
               >
-                <IFrame theme={theme.id} themeMode={themeMode.id} density={density.id} />
+                <IFrame
+                  theme={theme.id}
+                  themeMode={themeMode.id}
+                  density={density.id}
+                />
               </div>
             </Flexbox>
           </ThemeProvider>
