@@ -82,8 +82,11 @@ export const App = ({ stories }: AppProps) => {
   const density = useMemo(() => availableDensity[densityIndex], [densityIndex]);
 
   const launchStandaloneWindow = useCallback(() => {
-    window.open(`${location.href}?standalone&theme=${theme.id}`, "_blank");
-  }, [theme.id]);
+    window.open(
+      `${location.href}?standalone&theme=${theme.id}#themeMode=${themeMode.id},density=${density.id}`,
+      "_blank"
+    );
+  }, [density.id, theme.id, themeMode.id]);
 
   const handleThemeChange = useCallback((evt) => {
     const { value } = evt.target as HTMLInputElement;
