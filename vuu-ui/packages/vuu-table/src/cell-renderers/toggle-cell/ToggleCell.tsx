@@ -4,7 +4,7 @@ import {
 } from "@finos/vuu-table-types";
 import { CycleStateButtonProps, WarnCommit } from "@finos/vuu-ui-controls";
 import {
-  dataAndColumnUnchanged,
+  dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   isTypeDescriptor,
   isValueListRenderer,
@@ -63,7 +63,7 @@ export const ToggleCell = memo(function ToggleCell({
     </CycleStateButton>
   );
 },
-dataAndColumnUnchanged);
+dataColumnAndKeyUnchanged);
 
 registerComponent("toggle-cell", ToggleCell, "cell-renderer", {
   userCanAssign: false,
