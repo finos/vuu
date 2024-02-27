@@ -237,6 +237,8 @@ export function projectUpdates(updates: number[]): number[] {
   return results;
 }
 
+const KEY = 6;
+
 export const metadataKeys = {
   IDX: 0,
   RENDER_IDX: 1,
@@ -244,7 +246,7 @@ export const metadataKeys = {
   IS_EXPANDED: 3,
   DEPTH: 4,
   COUNT: 5,
-  KEY: 6,
+  KEY,
   SELECTED: 7,
   count: 8,
   // TODO following only used in datamodel
@@ -1202,11 +1204,30 @@ export function applyWidthToColumns(
  * A memo compare function for cell renderers. Can be used to suppress
  * render where column and data are both unchanged. Avoids render
  * when row changes, where changes in row are unrelated to this cell.
+ * Suitabnle only for readonly cell renderers. See below for editable
+ * cell renderers.
  */
 export const dataAndColumnUnchanged = (
   p: TableCellRendererProps,
   p1: TableCellRendererProps
 ) =>
   p.column === p1.column &&
+  p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
+    p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);
+
+/**
+ * A memo compare function for cell renderers. Can be used to suppress
+ * render where column, row key  and data are all unchanged. Avoids render
+ * when row changes, where changes in row are unrelated to this cell.
+ * Suitable for editable cells. Including key in compare is not strictly
+ * necessary for rendering, but it is important in the event that user
+ * edits data - ensures we never have a stale key.
+ */
+export const dataColumnAndKeyUnchanged = (
+  p: TableCellRendererProps,
+  p1: TableCellRendererProps
+) =>
+  p.column === p1.column &&
+  p.row[KEY] === p1.row[KEY] &&
   p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
     p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);

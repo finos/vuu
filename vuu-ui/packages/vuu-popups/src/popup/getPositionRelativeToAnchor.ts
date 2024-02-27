@@ -26,7 +26,6 @@ export const getPositionRelativeToAnchor = (
 } => {
   const { bottom, height, left, right, top, width } =
     anchorElement.getBoundingClientRect();
-  console.log({ top });
   switch (placement) {
     case "below":
       return { left: left + offsetLeft, top: bottom + offsetTop };
