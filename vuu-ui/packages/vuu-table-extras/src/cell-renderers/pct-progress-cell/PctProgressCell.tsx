@@ -20,9 +20,6 @@ const getPercentageValue = (value: number) => {
 };
 
 export const PctProgressCell = ({ column, columnMap, row }: TableCellProps) => {
-  if (row[0] === 0) {
-    console.log({ row });
-  }
   const value = row[columnMap[column.name]];
 
   const percentageValue = getPercentageValue(value);

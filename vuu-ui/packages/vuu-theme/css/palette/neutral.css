@@ -15,7 +15,7 @@
   --salt-palette-neutral-secondary-foreground: var(--salt-color-gray-200);
   --salt-palette-neutral-secondary-foreground-disabled: var(--salt-color-gray-200-fade-foreground);
   --salt-palette-neutral-backdrop: var(--salt-color-white-fade-backdrop);
-  --salt-palette-neutral-secondary-separator: var(--salt-color-black-fade-separatorOpacity-secondary);
+  --salt-palette-neutral-secondary-separator: var(--vuu-color-gray-05);
   --salt-palette-neutral-tertiary-separator: var(--vuu-color-gray-03);
 }
 

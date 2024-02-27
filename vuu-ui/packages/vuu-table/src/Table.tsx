@@ -27,11 +27,13 @@ import {
   FC,
   ForwardedRef,
   forwardRef,
+  RefCallback,
   RefObject,
+  useCallback,
   useRef,
   useState,
 } from "react";
-import { Row as DefaultRow, RowProps } from "./Row";
+import { Row as DefaultRow, RowProps, RowProxy } from "./Row";
 import { TableHeader } from "./table-header/TableHeader";
 import { useTable } from "./useTable";
 
@@ -140,14 +142,15 @@ const TableCore = ({
   onSelect,
   onSelectionChange,
   renderBufferSize = 5,
-  rowHeight = 20,
+  rowHeight,
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
   headerHeight = showColumnHeaders ? 25 : 0,
   size,
-}: TableProps & {
+}: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
+  rowHeight: number;
   size: MeasuredSize;
 }) => {
   const id = useId(idProp);
@@ -304,7 +307,7 @@ export const Table = forwardRef(function TableNext(
     onSelect,
     onSelectionChange,
     renderBufferSize,
-    rowHeight,
+    rowHeight = 20,
     scrollingApiRef,
     selectionModel,
     showColumnHeaders,
@@ -317,6 +320,12 @@ export const Table = forwardRef(function TableNext(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();
+
+  const rowHeightProxyRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
+    console.log(`row proxy `, {
+      el,
+    });
+  }, []);
 
   if (config === undefined) {
     throw Error(
@@ -335,6 +344,8 @@ export const Table = forwardRef(function TableNext(
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}
     >
+      <RowProxy ref={rowHeightProxyRef} height={rowHeight} />
+
       {size ? (
         <TableCore
           Row={Row}

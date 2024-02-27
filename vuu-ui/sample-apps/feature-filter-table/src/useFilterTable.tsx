@@ -31,6 +31,7 @@ import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 const NO_CONFIG: FilterTableConfig = {};
 
 const defaultTableConfig: Partial<TableConfig> = {
+  columnDefaultWidth: 130,
   rowSeparators: true,
   zebraStripes: true,
 };

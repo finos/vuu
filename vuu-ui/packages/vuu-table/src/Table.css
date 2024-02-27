@@ -21,19 +21,14 @@
 }
 
 .vuuTable-colLines {
-  --cell-borderColor: var(--salt-separable-tertiary-borderColor);
+    --cell-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-rowLines {
-  --row-borderColor: var(--salt-separable-tertiary-borderColor);
-}
-
-.vuuTable-highlight .vuuTableRow:hover {
-  background-color: var(--vuu-color-pink-10-fade-20);
+    --row-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-scrollbarContainer {
-  --scroll-content-width: 1100px;
   border-bottom: none !important;
   border-top: none !important;
   border-left: solid 1px var(--salt-container-primary-borderColor);
@@ -98,7 +93,6 @@
   width: var(--content-width);
   margin: 0;
   border: none;
-  background-color: #fff;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -136,14 +130,13 @@
 
 
   .sizer-cell {
-    background-color: green !important;
     border: none !important;
     height: 0px;
   }
   
   .vuuDraggable-vuuTable {
     --header-height: 25px;
-    --vuuTableHeaderCell-background: var(--vuu-color-gray-25);
+    --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
   }
 .vuuDraggable-vuuTable {
   --row-height: 25px;
