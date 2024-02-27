@@ -12,6 +12,7 @@ vuu-ui/packages/vuu-popups/src/menu/useContextMenu.tsx
 vuu-ui/packages/vuu-table-extras/src/cell-edit-validators/PatternValidator.ts
 vuu-ui/packages/vuu-ui-controls/src/list/Highlighter.tsx
 vuu-ui/packages/vuu-ui-controls/src/list/common-hooks/utils/filter-utils.ts
+vuu-ui/packages/vuu-utils/src/url-utils.ts
 vuu-ui/showcase/scripts/build-file-list.mjs
 vuu-ui/showcase/src/index.tsx
 vuu-ui/showcase/src/examples/Layout/Menu.examples.tsx
