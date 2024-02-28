@@ -18,9 +18,6 @@ object FilterAndSortFixture {
     resultRows
   }
 
-  def expectRows(result: List[(String,RowWithData)])(expectedFn: => List[RowWithData]): Unit =
-    assertRows(result.map(_._2).toSet, expectedFn.toSet)
-
   def assertRows(result: Set[RowWithData], expected:  Set[RowWithData]): Unit ={
     val diff = MapDiffUtils.diff(
       Map("rows" -> result.map(_.data)),

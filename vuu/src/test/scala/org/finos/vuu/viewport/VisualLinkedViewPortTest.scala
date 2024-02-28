@@ -137,7 +137,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 0
 
       Then("Change the viewport to sort by quantity")
-      viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'A'))))
+      viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'D'))))
       viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
 
       viewPortContainer.runOnce()

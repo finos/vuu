@@ -42,8 +42,8 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
       ClientSessionId("A", "B"),
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List(
-        SortDef("trader", 'A'),
-        SortDef("ric", 'A')
+        SortDef("trader", 'D'),
+        SortDef("ric", 'D')
       )),
       FilterSpec(""),
       GroupBy(orderPrices, vpColumns.getColumnForName("trader").get, vpColumns.getColumnForName("ric").get)
