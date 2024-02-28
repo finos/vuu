@@ -129,9 +129,11 @@ Work In Progress!
 
 ## Roadmap
 
-List the roadmap steps; alternatively link the Confluence Wiki page where the project roadmap is published.
+[Roadmap](https://vuu.finos.org/docs/roadmap)
 
-1. In Progress
+## Contact
+
+[Contact](https://vuu.finos.org/docs/contact)
 
 ## Contributing
 
