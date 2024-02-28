@@ -72,7 +72,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         }
 
       And("when we apply a sort")
-      val viewPortChanged = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, viewPort.getRange, vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
+      val viewPortChanged = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, viewPort.getRange, vpcolumns, sort = SortSpec(List(SortDef("quantity", 'D'))))
 
       viewPortContainer.runOnce()
 
