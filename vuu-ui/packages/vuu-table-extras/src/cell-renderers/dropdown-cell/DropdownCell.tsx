@@ -1,4 +1,5 @@
-import { useLookupValues } from "@finos/vuu-data-react";
+import { getSelectedOption, useLookupValues } from "@finos/vuu-data-react";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { ListOption, TableCellRendererProps } from "@finos/vuu-table-types";
 import {
   Dropdown,
@@ -7,12 +8,11 @@ import {
   WarnCommit,
 } from "@finos/vuu-ui-controls";
 import {
-  dataAndColumnUnchanged,
+  dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 
 import "./DropdownCell.css";
 
@@ -27,15 +27,21 @@ export const DropdownCell = memo(function DropdownCell({
   row,
 }: TableCellRendererProps) {
   const dataIdx = columnMap[column.name];
+  const dataValue = row[dataIdx];
+  const { values } = useLookupValues(column, row[dataIdx]);
+  const valueRef = useRef<ListOption | null>(null);
 
-  const { initialValue, values } = useLookupValues(column, row[dataIdx]);
-
-  const [value, setValue] = useState<ListOption | null>(null);
+  useMemo(() => {
+    valueRef.current = getSelectedOption(values, dataValue);
+  }, [dataValue, values]);
 
   const handleSelectionChange = useCallback<SingleSelectionHandler<ListOption>>(
     (evt, selectedOption) => {
       if (selectedOption) {
-        setValue(selectedOption);
+        // Note, we do not setState locally when a selection is made, we just send the update
+        // to the server. We rely on the update coming back in from a server response which
+        // we handle in the useMemo above. If we worry that server repsonses might be too slow
+        // we can extend this logic with some kind of pending update state.
         onCommit(selectedOption.value as VuuColumnDataType).then((response) => {
           if (response === true && evt) {
             dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
@@ -51,13 +57,13 @@ export const DropdownCell = memo(function DropdownCell({
       className={classBase}
       onSelectionChange={handleSelectionChange}
       openKeys={openKeys}
-      selected={value ?? initialValue}
+      selected={valueRef.current}
       source={values}
       width={column.width - 17} // temp hack
     />
   );
 },
-dataAndColumnUnchanged);
+dataColumnAndKeyUnchanged);
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
   userCanAssign: false,

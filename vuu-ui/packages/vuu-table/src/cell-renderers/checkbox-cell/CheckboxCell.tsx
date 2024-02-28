@@ -3,7 +3,7 @@ import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { CheckboxIcon, WarnCommit } from "@finos/vuu-ui-controls";
 import { Checkbox } from "@salt-ds/core";
 import {
-  dataAndColumnUnchanged,
+  dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
@@ -30,7 +30,7 @@ export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
       <CheckboxIcon checked={isChecked} disabled={true} />
     );
   },
-  dataAndColumnUnchanged
+  dataColumnAndKeyUnchanged
 );
 CheckboxCell.displayName = "CheckboxCell";
 

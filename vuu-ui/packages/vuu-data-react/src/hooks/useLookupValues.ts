@@ -63,7 +63,7 @@ type LookupState = {
   values: ListOption[];
 };
 
-const getSelectedOption = (
+export const getSelectedOption = (
   values: ListOption[],
   selectedValue: string | number | undefined
 ) => {

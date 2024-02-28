@@ -3,8 +3,6 @@ import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { dataAndColumnUnchanged, registerComponent } from "@finos/vuu-utils";
 import { memo } from "react";
 
-// const classBase = "vuuTableLookupCell";
-
 export const LookupCell = memo(function LookupCell({
   column,
   columnMap,
