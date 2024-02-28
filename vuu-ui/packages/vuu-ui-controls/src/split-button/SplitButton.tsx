@@ -7,10 +7,11 @@ import cx from "clsx";
 import "./SplitButton.css";
 
 export interface SplitButtonProps extends HTMLAttributes<HTMLDivElement> {
-  ButtonProps?: Partial<ButtonProps>;
+  ButtonProps?: Partial<Omit<ButtonProps, "variant">>;
   PopupMenuProps?: Partial<PopupMenuProps>;
   buttonText: string;
   segmented?: boolean;
+  variant?: ButtonProps["variant"];
 }
 
 const classBase = "vuuSplitButton";
@@ -21,6 +22,7 @@ export const SplitButton = ({
   buttonText,
   onClick,
   segmented = false,
+  variant = "primary",
   ...htmlAttributes
 }: SplitButtonProps) => {
   const { ButtonProps, buttonRef, rootRef, PopupMenuProps, ...rootProps } =
@@ -32,32 +34,31 @@ export const SplitButton = ({
       segmented,
     });
 
-  console.log({ ButtonProps });
-
   return (
     <div
       {...htmlAttributes}
       {...rootProps}
-      className={cx(classBase, {
+      className={cx(classBase, `${classBase}-${variant}`, {
         [`${classBase}-segmented`]: segmented,
       })}
       ref={rootRef}
       data-showcase-center
-      tabIndex={segmented ? undefined : 0}
+      // tabIndex={segmented ? undefined : 0}
     >
       <Button
         {...ButtonProps}
-        className={`${classBase}-primary`}
+        className={`${classBase}-main`}
         ref={buttonRef}
-        variant="secondary"
+        variant={variant}
       >
         {buttonText}
       </Button>
       <PopupMenu
         {...PopupMenuProps}
-        className={`${classBase}-secondary`}
+        className={`${classBase}-trigger`}
         icon={PopupMenuProps?.icon ?? "chevron-down"}
         tabIndex={segmented ? 0 : -1}
+        variant={variant}
       />
     </div>
   );

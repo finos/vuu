@@ -51,8 +51,7 @@ export const ButtonVariations = () => {
         display: "grid",
         gap: 20,
         gridTemplateColumns: "1fr 1fr 1fr 1fr",
-        gridTemplateRows: "1fr 1fr 1fr",
-        justifyItems: "center",
+        justifyItems: "left",
       }}
     >
       <span />

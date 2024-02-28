@@ -28,7 +28,10 @@ export const useSplitButton = ({
 
   const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
     if (reason?.type !== "tab-away") {
-      rootRef.current?.focus();
+      const buttonMain = rootRef.current?.querySelector(
+        ".vuuSplitButton-main"
+      ) as HTMLElement;
+      buttonMain?.focus();
     }
   }, []);
 
@@ -40,15 +43,22 @@ export const useSplitButton = ({
     popupPlacement: "below-full-width",
   };
 
-  const handleRootFocus = useCallback<FocusEventHandler>(
-    (evt) => {
-      const { classList } = evt.target as HTMLElement;
-      if (!segmented && classList.contains(classBase)) {
-        buttonRef.current?.focus();
+  const handleRootFocus = useCallback<FocusEventHandler>(() => {
+    const { current: splitButton } = rootRef;
+    if (!splitButton?.classList.contains("vuuFocusVisible")) {
+      splitButton?.classList.add("vuuFocusVisible");
+    }
+  }, []);
+
+  const handleRootBlur = useCallback<FocusEventHandler>((evt) => {
+    const { current: splitButton } = rootRef;
+    const target = evt.relatedTarget as HTMLElement;
+    if (!splitButton?.contains(target)) {
+      if (splitButton?.classList.contains("vuuFocusVisible")) {
+        splitButton.classList.remove("vuuFocusVisible");
       }
-    },
-    [classBase, segmented]
-  );
+    }
+  }, []);
 
   const handleButtonKeyDown = useCallback<
     KeyboardEventHandler<HTMLButtonElement>
@@ -56,7 +66,7 @@ export const useSplitButton = ({
     (evt) => {
       if (evt.key === "ArrowDown") {
         const popupTrigger = rootRef.current?.querySelector(
-          `.${classBase}-secondary`
+          `.${classBase}-trigger`
         ) as HTMLElement;
         if (popupTrigger) {
           dispatchMouseEvent(popupTrigger, "click");
@@ -85,6 +95,7 @@ export const useSplitButton = ({
     buttonRef,
     rootRef,
     onClick: segmented ? undefined : handleClick,
+    onBlur: handleRootBlur,
     onFocus: handleRootFocus,
   };
 };

@@ -1,7 +1,10 @@
 .vuuSplitButton {
+    --saltButton-background: var(--split-background);
+    --saltButton-background-hover: var(--split-background);
+    --vuuPopupMenu-background: var(--split-background);
     --vuuPopupMenu-iconSize: 20px;
+
     --border-radius: 6px;
-    --border-color: var(--vuu-color-gray-50);
     --primary-border-radius: var(--border-radius) 0 0 var(--border-radius);
     --secondary-border-radius: 0 var(--border-radius) var(--border-radius) 0;
     --secondary-border-style: solid solid solid none;
@@ -10,10 +13,65 @@
     border: none;
     border-radius: var(--border-radius);
     display: flex;
-    height: 26px;
+
 }
 
-.vuuSplitButton-segmented {
+.vuuSplitButton.vuuFocusVisible {
+    .saltButton {
+        outline-style: none;
+    }
+
+    &.vuuSplitButton-primary {
+        --split-background:  var(--salt-actionable-primary-background-hover);
+    }
+    &.vuuSplitButton-secondary {
+        --split-background:  var(--salt-actionable-secondary-background-hover);
+    }
+    &.vuuSplitButton-cta {
+        --split-background:  var(--salt-actionable-cta-background-hover);
+    }
+    
+}
+
+/** TODO move into theme */
+.vuuFocusVisible {
+    outline-style: var(--salt-focused-outlineStyle);
+    outline-width: var(--salt-focused-outlineWidth);
+    outline-color: var(--salt-focused-outlineColor);
+    outline-offset: var(--salt-focused-outlineOffset);
+}
+
+  
+.vuuSplitButton-primary {
+    --split-background:  var(--salt-actionable-primary-background);
+}
+
+.vuuSplitButton-primary:hover {
+    --vuuButton-borderColor: var(--split-background);
+    --saltButton-borderColor: var(--split-background);
+    --split-background:  var(--salt-actionable-primary-background-hover);
+}
+
+.vuuSplitButton-secondary {
+    --saltButton-borderColor: var(--split-background);
+    --split-background:  var(--salt-actionable-secondary-background);
+}
+
+.vuuSplitButton-secondary:hover {
+    --vuuButton-borderColor: var(--split-background);
+    --split-background:  var(--salt-actionable-secondary-background-hover);
+}
+
+.vuuSplitButton-cta {
+    --split-background:  var(--salt-actionable-cta-background);
+}
+.vuuSplitButton-cta:hover {
+    --vuuButton-borderColor: var(--split-background);
+    --split-background:  var(--salt-actionable-cta-background-hover);
+}
+
+
+/* .vuuSplitButton-segmented {
     --secondary-border-style: solid;
 }
 
@@ -27,41 +85,40 @@
     --primary-border-radius: var(--border-radius) 0 0 0;
     --secondary-border-radius: 0 var(--border-radius) 0 0;
 }
-
-.vuuSplitButton-primary {
-    --saltButton-height: 26px;
-    border-width: 1px;
-    --saltButton-borderColor: var(--border-color);
+*/
+.vuuSplitButton-main {
+    /* border-width: 1px;
+    --saltButton-borderColor: var(--border-color); */
     border-style: solid none solid solid;
     border-radius: var(--primary-border-radius);
     padding: 0 4px 0 16px;
 }
 
-.vuuSplitButton .vuuSplitButton-primary {
+/*
+.vuuSplitButton .vuuSplitButton-main {
     padding: 0 16px 0 16px;
 }
-
-.vuuSplitButton-secondary {
-    --saltButton-height: 26px;
-    border-width: 1px;
-    --saltButton-borderColor: var(--border-color);
+*/
+.vuuSplitButton-trigger {
+    /* border-width: 1px;
+    --saltButton-borderColor: var(--border-color); */
     border-style: var(--secondary-border-style);
     border-radius: var(--secondary-border-radius);
 }
 
-
-.vuuSplitButton:not(.vuuSplitButton-segmented) .vuuSplitButton-secondary{
+/*
+.vuuSplitButton:not(.vuuSplitButton-segmented) .vuuSplitButton-trigger{
     --saltButton-width: 32px;
     --saltButton-padding: 0 8px 0 0;
-}
+} */
 
-.vuuSplitButton:not(.vuuSplitButton-segmented):hover{
+/* .vuuSplitButton:not(.vuuSplitButton-segmented):hover{
     background-color: var(--vuu-color-pink-10);
     --border-color: var(--vuu-color-pink-10);
     --saltButton-background-hover: none;
-}
+} */
 
-.vuuSplitButton:not(.vuuSplitButton-segmented):has(.saltButton:focus-visible){
+/* .vuuSplitButton:not(.vuuSplitButton-segmented):has(.saltButton:focus-visible){
     --border-color: var(--vuu-color-pink-10);
     background-color: var(--vuu-color-pink-10);
     outline: dashed 1px blue;
@@ -73,4 +130,4 @@
 .vuuSplitButton:not(.vuuSplitButton-segmented) .saltButton:focus-visible {
     background-color: inherit;;
     outline-style: none;
-}
+} */

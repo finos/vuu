@@ -1,7 +1,7 @@
 import { SplitButton, SplitButtonProps } from "@finos/vuu-ui-controls";
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
-import { PopupMenuProps } from "packages/vuu-popups/src";
+import { PopupMenuProps } from "@finos/vuu-popups";
 
 let displaySequence = 1;
 
@@ -91,3 +91,41 @@ export const SegmentedSplitButton = ({
   );
 };
 SegmentedSplitButton.displaySequence = displaySequence++;
+
+export const SplitButtonVariations = () => {
+  const menuProps: PopupMenuProps = {
+    menuBuilder,
+    menuActionHandler: defaultMenuHandler,
+  };
+
+  return (
+    <div
+      data-showcase-center
+      style={{
+        alignItems: "center",
+        display: "grid",
+        gap: 20,
+        gridTemplateColumns: "1fr 1fr 1fr 1fr",
+        justifyItems: "left",
+      }}
+    >
+      <span />
+      <span>Primary</span>
+      <span>Secondary</span>
+      <span>CTA</span>
+
+      <span />
+      <SplitButton
+        buttonText="Save"
+        PopupMenuProps={menuProps}
+        variant="primary"
+      />
+      <SplitButton
+        buttonText="Save"
+        PopupMenuProps={menuProps}
+        variant="secondary"
+      />
+      <SplitButton buttonText="Save" PopupMenuProps={menuProps} variant="cta" />
+    </div>
+  );
+};

@@ -1,7 +1,7 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { Icon, IconButton } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
+import { Button, ButtonProps } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, RefObject } from "react";
 import { PopupPlacement } from "../popup/Popup";
@@ -26,6 +26,7 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   onMenuClose?: MenuCloseHandler;
   onMenuOpen?: () => void;
   popupPlacement?: PopupPlacement;
+  variant?: ButtonProps["variant"];
 }
 
 export const PopupMenu = ({
@@ -43,6 +44,7 @@ export const PopupMenu = ({
   onMenuOpen,
   popupPlacement = "below-right",
   tabIndex = 0,
+  variant = "secondary",
   ...htmlAttributes
 }: PopupMenuProps) => {
   const id = useId(idProp);
@@ -88,7 +90,7 @@ export const PopupMenu = ({
         })}
         icon={icon}
         ref={rootRef}
-        variant="secondary"
+        variant={variant}
       />
     );
   } else {
