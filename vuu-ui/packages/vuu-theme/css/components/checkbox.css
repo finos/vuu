@@ -1,52 +1,54 @@
-.saltCheckbox {
-    --checkbox-background: white; 
-    --checkbox-borderColor: var(--vuu-color-gray-45);
-    --vuu-icon-color: white;
-    --vuu-icon-size: 12px;
-    --vuu-icon-left: -1px;
-    --vuu-icon-top: -1px;
-}
-
-.saltCheckbox:has(.saltCheckboxIcon-checked) {
-    --checkbox-background: var(--vuu-color-purple-10);
-    --checkbox-borderColor: var(--vuu-color-purple-10);
-}
-
-.saltCheckbox:hover {
-    --vuu-icon-color:var(--vuu-color-pink-10);
-    --checkbox-background: var(--vuu-color-pink-10-fade-20);
-    --checkbox-borderColor: var(--vuu-color-pink-10);
-}
-
-.saltCheckboxIcon {
-    background:var(--checkbox-background);
-    border-color: var(--checkbox-borderColor) !important;
-    border-radius: 3px;
-    border-style: solid;
-    border-width: 1px;
-    height: 12px;
-    width: 12px;
-}
-
-
-
-.saltCheckboxIcon-checked.saltCheckboxIcon-disabled, 
-.saltCheckbox:hover .saltCheckboxIcon-checked.saltCheckboxIcon-disabled {
-    background-color: var(--salt-selectable-background-disabled);
-    border-color: transparent;;
-}
-
-
-.saltCheckboxIcon-checked:after {
-    content: "";
-    background-color: var(--vuu-icon-color);
-    left: var(--vuu-icon-left, auto);
-    height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
-    mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
-    -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
-    mask-repeat: no-repeat;
-    -webkit-mask-repeat: no-repeat;
-    position: absolute;
-    top: var(--vuu-icon-top, auto);
-    width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+.vuu-theme {
+    .saltCheckbox {
+        --checkbox-background: white;
+        --checkbox-borderColor: var(--salt-selectable-borderColor); /* --vuu-color-gray-45 */
+        --vuu-icon-color: white;
+        /* --vuu-icon-size: 12px; */
+        --vuu-icon-left: -1px;
+        --vuu-icon-top: -1px;
+    }
+    
+    .saltCheckbox:has(.saltCheckboxIcon-checked) {
+        --checkbox-background: var(--salt-actionable-cta-background); /* --vuu-color-purple-10 */
+        --checkbox-borderColor: var( --salt-container-primary-borderColor); /* --vuu-color-purple-10 */
+    }
+    
+    .saltCheckbox:hover {
+        --vuu-icon-color:var(--salt-actionable-primary-background-hover); /* --vuu-color-pink-10 */
+        --checkbox-background: var(--vuu-color-pink-10-fade-20);
+        --checkbox-borderColor: var(--salt-selectable-borderColor-hover); /* --vuu-color-pink-10 */
+    }
+    
+    .saltCheckboxIcon {
+        background:var(--checkbox-background);
+        border-color: var(--checkbox-borderColor) !important;
+        border-radius: 3px;
+        border-style: solid;
+        border-width: 1px;
+        height: 12px;
+        width: 12px;
+    }
+    
+    
+    
+    .saltCheckboxIcon-checked.saltCheckboxIcon-disabled, 
+    .saltCheckbox:hover .saltCheckboxIcon-checked.saltCheckboxIcon-disabled {
+        background-color: var(--salt-selectable-background-disabled);
+        border-color: transparent;;
+    }
+    
+    
+    .saltCheckboxIcon-checked:after {
+        content: "";
+        background-color: var(--vuu-icon-color);
+        left: var(--vuu-icon-left, auto);
+        height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
+        mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+        -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
+        mask-repeat: no-repeat;
+        -webkit-mask-repeat: no-repeat;
+        position: absolute;
+        top: var(--vuu-icon-top, auto);
+        width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+    }
 }
