@@ -11,19 +11,10 @@
     padding-bottom:20px;
 }
 
-.vuuContact-subtitle {
+.vuuContact-description {
     font-size: 18px;
     line-height: 1;
     padding-bottom: 20px;
-}
-
-.vuuContact-subscription {
-    text-align: right;
-}
-
-.vuuContact-text {
-    font-size: 18px;
-    line-height: 1;
 }
 
 .vuuContact-email {
@@ -33,10 +24,4 @@
     position: relative;
 
     text-align: right;
-}
-
-.vuuRoadmap-line-divider {
-    color:#6D18BD;
-    border-top: 1px solid;
-    margin: 0 auto;
 }
