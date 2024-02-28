@@ -1,3 +1,5 @@
-.saltIcon {
-    display: none;
-} 
+.vuu-theme {
+    .saltIcon {
+        display: none;
+    }
+}

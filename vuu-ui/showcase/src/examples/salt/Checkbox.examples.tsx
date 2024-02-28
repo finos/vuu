@@ -36,3 +36,45 @@ export const ControlledCheckbox = () => {
   return <DefaultCheckbox checked={checked} onChange={handleChange} />;
 };
 ControlledCheckbox.displaySequence = displaySequence++;
+
+export const CheckboxVariations = () => {
+  return (
+    <div
+      data-showcase-center
+      style={{
+        alignItems: "center",
+        display: "grid",
+        gap: 20,
+        gridTemplateColumns: "1fr 1fr 1fr 1fr",
+        gridTemplateRows: "1fr 1fr 1fr",
+        justifyItems: "center",
+      }}
+    >
+      <span />
+      <span>Success</span>
+      <span>Warning</span>
+      <span>Error</span>
+
+      <span>Default</span>
+      <Checkbox data-showcase-center validationStatus="success" />
+      <Checkbox data-showcase-center validationStatus="warning" />
+      <Checkbox data-showcase-center validationStatus="error" />
+
+      <span>Checked</span>
+      <Checkbox checked label="Checked Checkbox" validationStatus="success" />
+      <Checkbox checked label="Checked Checkbox" validationStatus="warning" />
+      <Checkbox checked label="Checked Checkbox" validationStatus="error" />
+
+      <span>Disabled</span>
+      <Checkbox label="Disabled Checkbox" disabled validationStatus="success" />
+      <Checkbox label="Disabled Checkbox" disabled validationStatus="warning" />
+      <Checkbox label="Disabled Checkbox" disabled validationStatus="error" />
+
+      <span>Disabled Checked</span>
+      <Checkbox checked label="Disabled + Checked" disabled validationStatus="success" />
+      <Checkbox checked label="Disabled + Checked" disabled validationStatus="warning" />
+      <Checkbox checked label="Disabled + Checked" disabled validationStatus="error" />
+    </div>
+  );
+};
+CheckboxVariations.displaySequence = displaySequence++;
