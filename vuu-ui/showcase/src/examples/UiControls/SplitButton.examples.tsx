@@ -149,3 +149,4 @@ export const SplitButtonVariations = () => {
     </div>
   );
 };
+SplitButtonVariations.displaySequence = displaySequence++;
