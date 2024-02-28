@@ -41,11 +41,20 @@ module.exports = {
           label: "DOCUMENTATION",
           position: "right",
         },
-        { to: "docs/roadmap", label: "ROADMAP", position: "right" },
+        {
+          to: "docs/roadmap",
+          label: "ROADMAP",
+          position: "right"
+        },
         {
           to: "https://github.com/finos/vuu",
           label: "GITHUB",
           position: "right",
+        },
+        {
+          to: "docs/contact",
+          label: "CONTACT",
+          position: "right"
         },
       ],
     },
