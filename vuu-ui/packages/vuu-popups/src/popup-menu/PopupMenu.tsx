@@ -16,6 +16,7 @@ export type MenuCloseHandler = (reason?: PopupCloseReason) => void;
 
 export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   anchorElement?: RefObject<HTMLElement>;
+  disabled?: boolean;
   icon?: string;
   label?: string;
   menuActionHandler?: MenuActionHandler;
@@ -32,6 +33,7 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
 export const PopupMenu = ({
   anchorElement,
   className,
+  disabled = false,
   label,
   icon = label ? "chevron-down" : "more-vert",
   id: idProp,
@@ -72,6 +74,7 @@ export const PopupMenu = ({
         className={cx(classBase, className, `${classBase}-withCaption`, {
           "saltButton-active": menuOpen,
         })}
+        disabled={disabled}
         ref={rootRef}
         variant="secondary"
       >
@@ -88,6 +91,7 @@ export const PopupMenu = ({
         className={cx(classBase, className, {
           "saltButton-active": menuOpen,
         })}
+        disabled={disabled}
         icon={icon}
         ref={rootRef}
         variant={variant}

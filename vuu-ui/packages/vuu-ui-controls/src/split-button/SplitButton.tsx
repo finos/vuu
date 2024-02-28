@@ -10,6 +10,7 @@ export interface SplitButtonProps extends HTMLAttributes<HTMLDivElement> {
   ButtonProps?: Partial<Omit<ButtonProps, "variant">>;
   PopupMenuProps?: Partial<PopupMenuProps>;
   buttonText: string;
+  disabled?: boolean;
   segmented?: boolean;
   variant?: ButtonProps["variant"];
 }
@@ -20,6 +21,7 @@ export const SplitButton = ({
   ButtonProps: ButtonPropsProp,
   PopupMenuProps: PopupMenuPropsProp,
   buttonText,
+  disabled = false,
   onClick,
   segmented = false,
   variant = "primary",
@@ -39,6 +41,7 @@ export const SplitButton = ({
       {...htmlAttributes}
       {...rootProps}
       className={cx(classBase, `${classBase}-${variant}`, {
+        [`${classBase}-disabled`]: disabled,
         [`${classBase}-segmented`]: segmented,
       })}
       ref={rootRef}
@@ -48,6 +51,7 @@ export const SplitButton = ({
       <Button
         {...ButtonProps}
         className={`${classBase}-main`}
+        disabled={disabled}
         ref={buttonRef}
         variant={variant}
       >
@@ -56,6 +60,7 @@ export const SplitButton = ({
       <PopupMenu
         {...PopupMenuProps}
         className={`${classBase}-trigger`}
+        disabled={disabled}
         icon={PopupMenuProps?.icon ?? "chevron-down"}
         tabIndex={segmented ? 0 : -1}
         variant={variant}

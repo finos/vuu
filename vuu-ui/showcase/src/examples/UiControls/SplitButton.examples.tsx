@@ -126,6 +126,26 @@ export const SplitButtonVariations = () => {
         variant="secondary"
       />
       <SplitButton buttonText="Save" PopupMenuProps={menuProps} variant="cta" />
+
+      <span>disabled</span>
+      <SplitButton
+        PopupMenuProps={menuProps}
+        buttonText="Save"
+        disabled
+        variant="primary"
+      />
+      <SplitButton
+        PopupMenuProps={menuProps}
+        buttonText="Save"
+        disabled
+        variant="secondary"
+      />
+      <SplitButton
+        PopupMenuProps={menuProps}
+        buttonText="Save"
+        disabled
+        variant="cta"
+      />
     </div>
   );
 };
