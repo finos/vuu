@@ -134,5 +134,6 @@ module.exports = {
     },
     "team",
     "roadmap",
+    "contact",
   ],
 };

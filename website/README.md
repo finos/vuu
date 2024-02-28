@@ -3,7 +3,8 @@ This website was created with [Docusaurus v2](https://v2.docusaurus.io/).
 In order to start working with Docusaurus, please read the [Getting Started guide](https://docusaurus.io/docs/configuration) and browse through the following folders and files:
 
 - `website` - contains the Node/React code to build the website
-- `website/docusaurus.config.js` - contains the Docusaurus configuration; you'll need to edit this file.
+- `website/docusaurus.config.desktop.js` - contains the Docusaurus desktop site configuration; you'll need to edit this file.
+- `website/docusaurus.config.mobile.js` - contains the Docusaurus mobile site configuration; you'll need to edit this file.
 - `website/static` - contains images, PDF and other static assets used in the website; if you add a `file.pdf` in this folder, it will be served as `https://<your_host>/file.pdf`.
 - `docs` - contains the `.md` and `.mdx` files that are served as `https://<your_host>/<file_id>` ; the `file_id` is defined at the top of the file.
 

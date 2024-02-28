@@ -6,7 +6,7 @@
 
 Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
 
-<https://vuu.finos.org/docs/introduction/intro>
+<https://vuu.finos.org/desktop/docs/introduction/intro>
 
 ## Installation - Server
 
@@ -14,7 +14,7 @@ Welcome. We maintain a docusaurus site containing all the details of the project
 
 #### Prerequisites
 
-See the [Docs](https://vuu.finos.org/docs/getting_started/developing) for Java versions and install dependencies you need to have.
+See the [Docs](https://vuu.finos.org/desktop/docs/getting_started/developing) for Java versions and install dependencies you need to have.
 
 #### OS X & Linux
 
@@ -129,9 +129,11 @@ Work In Progress!
 
 ## Roadmap
 
-List the roadmap steps; alternatively link the Confluence Wiki page where the project roadmap is published.
+[Roadmap](https://vuu.finos.org/desktop/docs/roadmap)
 
-1. In Progress
+## Contact
+
+[Contact](https://vuu.finos.org/desktop/docs/contact)
 
 ## Contributing
 
