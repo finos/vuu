@@ -95,6 +95,27 @@ class CalculatedColumnStringTest extends AnyFeatureSpec with Matchers with Stric
     }
   }
 
+  Scenario("Check string literal concat") {
+
+    withCalculatedColumns(sampleRowsLotsOfNulls(), tableColumns,
+      CalcColumn("concat", "String", "=concatenate(\"Foo bar ding    dong \", ric)")
+    ) {
+      Table(
+        ("orderId" ,"quantity","ric"     ,"tradeTime","bid"     ,"ask"     ,"onMkt"   ,"trader"  ,"ccyCross","vwapPerf","concat"  ),
+        ("NYC-0004",null      ,"AAPL.L"  ,5L        ,99.0      ,101.5     ,false     ,null      ,"GBPUSD"  ,-0.1234   ,"Foo bar ding    dong AAPL.L"),
+        ("LDN-0001",100L      ,"VOD.L"   ,2L        ,99.0      ,101.5     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD.L"),
+        ("LDN-0002",100L      ,"BT.L"    ,1L        ,99.0      ,101.01    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong BT.L"),
+        ("LDN-0003",null      ,"VOD.L"   ,3L        ,99.0      ,101.3     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD.L"),
+        ("LDN-0008",100L      ,"BT.L"    ,5L        ,99.0      ,106.0     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong BT.L"),
+        ("NYC-0002",100L      ,"VOD.L"   ,6L        ,99.0      ,102.0     ,false     ,null      ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD.L"),
+        ("NYC-0010",null      ,"VOD.L"   ,6L        ,99.0      ,110.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD.L"),
+        ("NYC-0011",null      ,"VOD/L"   ,6L        ,99.0      ,109.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD/L"),
+        ("NYC-0012",null      ,"VOD\\L"   ,6L        ,99.0      ,105.11    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,"Foo bar ding    dong VOD\\L"),
+        ("NYC-0013",null      ,"VOD\\L"   ,6L        ,99.0      ,122.0     ,true      ,"rahúl"   ,"$GBPUSD" ,1.1234    ,"Foo bar ding    dong VOD\\L")
+      )
+    }
+  }
+
   Scenario("Check upper") {
 
     withCalculatedColumns(sampleRowsLotsOfNulls(), tableColumns,
