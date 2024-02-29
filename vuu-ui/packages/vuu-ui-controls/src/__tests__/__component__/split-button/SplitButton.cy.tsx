@@ -3,7 +3,7 @@ import { DefaultSplitButton } from "../../../../../../showcase/src/examples/UiCo
 describe("Given a (non segmented) SplitButton", () => {
   it("should have correct tabindex", () => {
     cy.mount(<DefaultSplitButton data-testid="split-button" />);
-    cy.findByTestId("split-button").should("have.attr", "tabindex", "0");
+    cy.findByTestId("split-button").should("not.have.attr", "tabindex");
     // prettier-ignore
     cy.findAllByRole("button").eq(1).should("have.attr", "aria-haspopup", "menu");
     // prettier-ignore
