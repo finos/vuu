@@ -1,7 +1,7 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { Icon, IconButton } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
+import { Button, ButtonProps } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, RefObject } from "react";
 import { PopupPlacement } from "../popup/Popup";
@@ -16,6 +16,7 @@ export type MenuCloseHandler = (reason?: PopupCloseReason) => void;
 
 export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   anchorElement?: RefObject<HTMLElement>;
+  disabled?: boolean;
   icon?: string;
   label?: string;
   menuActionHandler?: MenuActionHandler;
@@ -26,11 +27,13 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   onMenuClose?: MenuCloseHandler;
   onMenuOpen?: () => void;
   popupPlacement?: PopupPlacement;
+  variant?: ButtonProps["variant"];
 }
 
 export const PopupMenu = ({
   anchorElement,
   className,
+  disabled = false,
   label,
   icon = label ? "chevron-down" : "more-vert",
   id: idProp,
@@ -43,6 +46,7 @@ export const PopupMenu = ({
   onMenuOpen,
   popupPlacement = "below-right",
   tabIndex = 0,
+  variant = "secondary",
   ...htmlAttributes
 }: PopupMenuProps) => {
   const id = useId(idProp);
@@ -70,6 +74,7 @@ export const PopupMenu = ({
         className={cx(classBase, className, `${classBase}-withCaption`, {
           "saltButton-active": menuOpen,
         })}
+        disabled={disabled}
         ref={rootRef}
         variant="secondary"
       >
@@ -86,9 +91,10 @@ export const PopupMenu = ({
         className={cx(classBase, className, {
           "saltButton-active": menuOpen,
         })}
+        disabled={disabled}
         icon={icon}
         ref={rootRef}
-        variant="secondary"
+        variant={variant}
       />
     );
   } else {
