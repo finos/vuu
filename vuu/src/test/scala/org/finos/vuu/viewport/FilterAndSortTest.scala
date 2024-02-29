@@ -12,11 +12,12 @@ import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
 import org.joda.time.{DateTime, DateTimeZone}
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
-class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup with GivenWhenThen{
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
@@ -412,7 +413,8 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         )
       }
 
-      val orderIdTraderColumn = columns.getColumnForName("orderIdTrader").get
+      When("we sort on a calc'd column definition, make sure it actually sorts in the name of the column")
+      val orderIdTraderColumn = columns.getColumnForName("orderIdTrader:String:=concatenate(orderId, trader)").get
 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
