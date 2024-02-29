@@ -78,7 +78,7 @@ atom : ID | INT | FLOAT | STRING | TRUE | FALSE | function;
 
 arguments : atom (',' atom)*;
 
-STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-')* '"';
+STRING : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'.'|'-'|' '|'>'|'<')* '"';
 ID : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9')*;
 INT : '0'..'9'+;
 FLOAT : ('0'..'9')+ '.' ('0'..'9')*;

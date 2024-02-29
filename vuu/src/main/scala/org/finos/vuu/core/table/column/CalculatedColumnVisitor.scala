@@ -189,7 +189,6 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   private def processBracketedOperatorTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
 
-
     val operator = ctx.operator.get(0)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
