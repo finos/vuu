@@ -3,7 +3,6 @@
         --checkbox-background: white;
         --checkbox-borderColor: var(--salt-selectable-borderColor); /* --vuu-color-gray-45 */
         --vuu-icon-color: white;
-        /* --vuu-icon-size: 12px; */
         --vuu-icon-left: -1px;
         --vuu-icon-top: -1px;
     }
@@ -25,8 +24,6 @@
         border-radius: 3px;
         border-style: solid;
         border-width: 1px;
-        height: 12px;
-        width: 12px;
     }
     
     
