@@ -44,3 +44,5 @@
 @import url(characteristics/text.css);
 @import url(characteristics/content.css);
 @import url(characteristics/track.css);
+
+@import url(deprecated/foundations.css);
