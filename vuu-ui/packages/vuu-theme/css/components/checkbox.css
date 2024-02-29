@@ -39,6 +39,7 @@
         content: "";
         background-color: var(--vuu-icon-color);
         left: var(--vuu-icon-left, auto);
+        --vuu-icon-size: calc(var(--salt-size-icon) + 2px);
         height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
         mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
         -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
