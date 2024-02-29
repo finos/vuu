@@ -1,6 +1,6 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.core.table.{CalculatedColumn, Column, RowData, RowWithData}
+import org.finos.vuu.core.table.{CalculatedColumn, Column, RowData, RowWithData, ViewPortColumnCreator}
 
 class ViewPortColumns(sourceColumns: List[Column]) {
 
@@ -32,7 +32,13 @@ class ViewPortColumns(sourceColumns: List[Column]) {
   def getColumns(): List[Column] = columns
 
   def getColumnForName(name: String): Option[Column] = {
-    columns.find(_.name == name)
+    val evaluatedName = if(ViewPortColumnCreator.isCalculatedColumn(name)){
+      val (calcName, _, _) = ViewPortColumnCreator.parseCalcColumn(name)
+      calcName
+    }else{
+      name
+    }
+    columns.find(_.name == evaluatedName)
   }
 
   def count(): Int = columns.size
