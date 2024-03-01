@@ -42,7 +42,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     def updateTableRowAtIndex = tableUpdater(internalTable)
     dataQuery
       .fetch(viewPort.filterSpec, viewPort.sortSpecInternal, startIndex = startIndex, rowCount = rowCount)
-      .map(schemaMapper.toTableRowData)
+      .map(schemaMapper.toInternalRowMap)
       .foreach(updateTableRowAtIndex(index.getAndIncrement(), _))
 
     logger.debug(s"Updated ${index.get() - startIndex} table rows")
