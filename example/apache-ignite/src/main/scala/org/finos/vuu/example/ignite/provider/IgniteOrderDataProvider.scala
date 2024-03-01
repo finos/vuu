@@ -53,13 +53,20 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
   private def getTotalSize(filter: String): Long =
       igniteStore.getCount(filter)
 
-  private def tableUpdater(internalTable: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
-    val keyField = internalTable.tableDef.keyField
+  private def tableUpdater(table: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
+    val keyField = table.tableDef.keyField
+    def hasRowChangedAtIndex = getHasRowChanged(table)
+
     (index, rowMap) => {
-      val key = rowMap(keyField).toString
-      val (existingRow, newRow) = (internalTable.pullRow(key), RowWithData(key, rowMap))
-      if (!existingRow.equals(newRow)) internalTable.processUpdateForIndex(index, key, newRow, clock.now())
+      val newRow = RowWithData(rowMap(keyField).toString, rowMap)
+      if (hasRowChangedAtIndex(index, newRow)) table.processUpdateForIndex(index, newRow.key, newRow, clock.now())
     }
+  }
+
+  private def getHasRowChanged(table: VirtualizedSessionTable) = (index: Int, newRow: RowWithData) => {
+    val existingKeyAtIndex = table.primaryKeys.get(index)
+    val existingRow = table.pullRow(existingKeyAtIndex)
+    !existingRow.equals(newRow)
   }
 
   override def subscribe(key: String): Unit = {}
