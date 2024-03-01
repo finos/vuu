@@ -55,9 +55,10 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
 
   private def tableUpdater(internalTable: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = internalTable.tableDef.keyField
-    (index, rowData) => {
-      val key = rowData(keyField).toString
-      internalTable.processUpdateForIndex(index, key, RowWithData(key, rowData), clock.now())
+    (index, rowMap) => {
+      val key = rowMap(keyField).toString
+      val (existingRow, newRow) = (internalTable.pullRow(key), RowWithData(key, rowMap))
+      if (!existingRow.equals(newRow)) internalTable.processUpdateForIndex(index, key, newRow, clock.now())
     }
   }
 

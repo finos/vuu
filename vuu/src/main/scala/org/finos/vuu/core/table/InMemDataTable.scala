@@ -158,8 +158,6 @@ object EmptyRowData extends RowData {
   override def getFullyQualified(column: Column): Any = null
 
   override def set(field: String, value: Any): RowData = EmptyRowData
-
-
 }
 
 
