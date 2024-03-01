@@ -23,7 +23,7 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
     client.getInstruments(limit = INSTRUMENTS_COUNT) match {
       case Failure(ex) => logger.error("An unexpected error occurred when querying instrument service:", ex)
       case Success(instruments) => instruments.iterator
-        .map(schemaMapper.toTableRowData)
+        .map(schemaMapper.toInternalRowMap)
         .foreach(rowData => {
           val key = rowData(keyField).toString
           table.processUpdate(key, RowWithData(key, rowData), clock.now())

@@ -5,8 +5,8 @@ import org.finos.vuu.core.table.Column
 trait SchemaMapper {
   def tableColumn(extFieldName: String): Option[Column]
   def externalSchemaField(columnName: String): Option[SchemaField]
-  def toTableRowData(values: List[_]): Map[String, Any]
-  def toTableRowData(dto: Product): Map[String, Any]
+  def toInternalRowMap(values: List[_]): Map[String, Any]
+  def toInternalRowMap(dto: Product): Map[String, Any]
 }
 
 object SchemaMapper {
@@ -59,14 +59,14 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
 
   override def tableColumn(extFieldName: String): Option[Column] = tableColumnByExternalField.get(extFieldName)
   override def externalSchemaField(columnName: String): Option[SchemaField] = externalSchemaFieldsByColumnName.get(columnName)
-  override def toTableRowData(values: List[_]): Map[String, Any] = {
+  override def toInternalRowMap(values: List[_]): Map[String, Any] = {
     tableColumns.map(column => {
       val f = externalSchemaField(column.name).get
       val columnValue = values(f.index) // @todo add type conversion conforming to the passed schema
       (column.name, columnValue)
     }).toMap
   }
-  override def toTableRowData(dto: Product): Map[String, Any] = toTableRowData(dto.productIterator.toList)
+  override def toInternalRowMap(dto: Product): Map[String, Any] = toInternalRowMap(dto.productIterator.toList)
 
   private def getExternalSchemaFieldsByColumnName =
     externalSchema.schemaFields.flatMap(f =>

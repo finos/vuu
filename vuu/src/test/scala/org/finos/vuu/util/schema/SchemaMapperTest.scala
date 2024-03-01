@@ -12,13 +12,23 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
   private val testExternalSchema = new TestEntitySchema
   private val schemaMapper = SchemaMapper(testExternalSchema, tableColumns, fieldsMap)
 
-  Feature("toTableRowData") {
+  Feature("toInternalRowMap") {
     Scenario("can convert an ordered list of external values to a map conforming to internal schema") {
-      val rowData = schemaMapper.toTableRowData(List(3, "ric", "type", 10.5))
+      val rowData = schemaMapper.toInternalRowMap(List(3, "ric", "assetClass", 10.5))
       rowData shouldEqual Map(
         "id" -> 3,
         "ric" -> "ric",
-        "type" -> "type",
+        "assetClass" -> "assetClass",
+        "price" -> 10.5
+      )
+    }
+
+    Scenario("can convert a case class object containing external values to a map conforming to internal schema") {
+      val rowData = schemaMapper.toInternalRowMap(TestDto(3, "ric", "assetClass", 10.5))
+      rowData shouldEqual Map(
+        "id" -> 3,
+        "ric" -> "ric",
+        "assetClass" -> "assetClass",
         "price" -> 10.5
       )
     }
@@ -72,24 +82,26 @@ private class TestEntitySchema extends ExternalEntitySchema {
   override val schemaFields: List[SchemaField] = List(
     SchemaField("externalId", classOf[Int], 0),
     SchemaField("externalRic", classOf[String], 1),
-    SchemaField("type", classOf[String], 2),
+    SchemaField("assetClass", classOf[String], 2),
     SchemaField("price", classOf[Double], 3),
   )
 }
+
+private case class TestDto(externalId: Int, externalRic: String, assetClass: String, price: Double)
 
 private object SchemaMapperTest {
 
   val tableColumns: Array[Column] = Columns.fromNames(
       "id".int(),
       "ric".string(),
-      "type".string(),
+      "assetClass".string(),
       "price".double(),
   )
 
   val fieldsMap: Map[String, String] = Map(
     "externalId" -> "id",
     "externalRic" -> "ric",
-    "type" -> "type",
+    "assetClass" -> "assetClass",
     "price" -> "price"
   )
 
