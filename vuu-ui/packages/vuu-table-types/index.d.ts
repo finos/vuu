@@ -9,6 +9,7 @@ import type {
 import type { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { DateTimePattern } from "@finos/vuu-utils";
+import { DataSourceRow } from "packages/vuu-data-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { HTMLAttributes } from "react";
 
@@ -74,6 +75,7 @@ export interface TableAttributes {
  */
 export interface TableConfig extends TableAttributes {
   columns: ColumnDescriptor[];
+  rowClassNameGenerators?: string[];
 }
 export interface GridConfig extends TableConfig {
   headings: TableHeadings;

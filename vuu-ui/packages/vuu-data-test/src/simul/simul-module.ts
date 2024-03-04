@@ -1,6 +1,7 @@
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";
 import instrumentsTable from "./reference-data/instruments";
+import ordersTable from "./reference-data/orders";
 import instrumentsExtendedTable from "./reference-data/instruments-extended";
 import pricesTable from "./reference-data/prices";
 import { schemas, SimulTableName } from "./simul-schemas";
@@ -23,7 +24,7 @@ const tables: Record<SimulTableName, Table> = {
     pricesTable,
     "ric"
   ),
-  orders: new Table(schemas.orders, [], buildDataColumnMap(schemas.orders)),
+  orders: ordersTable,
   parentOrders: new Table(
     schemas.parentOrders,
     [],

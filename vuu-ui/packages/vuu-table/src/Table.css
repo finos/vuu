@@ -1,3 +1,17 @@
+.vuu-density-high {
+  --vuu-table-row-height: 20px;
+}
+.vuu-density-medium {
+  --vuu-table-row-height: 26px;
+}
+.vuu-density-low {
+  --vuu-table-row-height: 36px;
+}
+.vuu-density-touch {
+  --vuu-table-row-height: 48px;
+}
+
+
 .vuuTable {
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
@@ -5,6 +19,7 @@
   --vuu-table-next-selection-bookend-width: 4px;
   --columnResizer-color: transparent;
   --row-background: white;
+  --row-height: var(--row-height-prop, var(--vuu-table-row-height, 20px));
   --cell-borderColor: transparent;
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
@@ -141,3 +156,5 @@
 .vuuDraggable-vuuTable {
   --row-height: 25px;
 } 
+
+

@@ -1,0 +1,8 @@
+.vuuTable {
+    .vuuTableRow.sideBuy {
+      color: blue;
+    }
+    .sideSell {
+      color: red;
+    }
+}

@@ -12,6 +12,7 @@ import {
   metadataKeys,
   isNotHidden,
   RowSelected,
+  RowClassNameGenerator,
 } from "@finos/vuu-utils";
 import cx from "clsx";
 import {
@@ -27,6 +28,7 @@ import "./Row.css";
 
 export interface RowProps {
   className?: string;
+  classNameGenerator?: RowClassNameGenerator;
   columnMap: ColumnMap;
   columns: RuntimeColumnDescriptor[];
   highlighted?: boolean;
@@ -64,6 +66,7 @@ export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
 export const Row = memo(
   ({
     className: classNameProp,
+    classNameGenerator,
     columnMap,
     columns,
     highlighted,
@@ -93,14 +96,19 @@ export const Row = memo(
 
     const { True, First, Last } = RowSelected;
 
-    const className = cx(classBase, classNameProp, {
-      [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
-      [`${classBase}-expanded`]: isExpanded,
-      [`${classBase}-highlighted`]: highlighted,
-      [`${classBase}-selected`]: selectionStatus & True,
-      [`${classBase}-selectedStart`]: selectionStatus & First,
-      [`${classBase}-selectedEnd`]: selectionStatus & Last,
-    });
+    const className = cx(
+      classBase,
+      classNameProp,
+      classNameGenerator?.(row, columnMap),
+      {
+        [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
+        [`${classBase}-expanded`]: isExpanded,
+        [`${classBase}-highlighted`]: highlighted,
+        [`${classBase}-selected`]: selectionStatus & True,
+        [`${classBase}-selectedStart`]: selectionStatus & First,
+        [`${classBase}-selectedEnd`]: selectionStatus & Last,
+      }
+    );
 
     const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 

@@ -27,9 +27,7 @@ import {
   FC,
   ForwardedRef,
   forwardRef,
-  RefCallback,
   RefObject,
-  useCallback,
   useRef,
   useState,
 } from "react";
@@ -40,6 +38,7 @@ import { useTable } from "./useTable";
 import type { DragDropState } from "@finos/vuu-ui-controls";
 import "./Table.css";
 import { ScrollingAPI } from "./useTableScroll";
+import { useRowHeight } from "./useRowHeight";
 
 const classBase = "vuuTable";
 
@@ -163,6 +162,7 @@ const TableCore = ({
     handleContextMenuAction,
     headings,
     highlightedIndex,
+    menuBuilder,
     onDataEdited,
     onMoveColumn,
     onMoveGroupColumn,
@@ -171,7 +171,7 @@ const TableCore = ({
     onRowClick,
     onSortColumn,
     onToggleGroup,
-    menuBuilder,
+    rowClassNameGenerator,
     scrollProps,
     tableAttributes,
     tableConfig,
@@ -217,7 +217,7 @@ const TableCore = ({
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--header-height": `${headerHeight}px`,
-    "--row-height": `${rowHeight}px`,
+    "--row-height-prop": `${rowHeight}px`,
     "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
@@ -264,6 +264,7 @@ const TableCore = ({
             {data.map((data) => (
               <Row
                 aria-rowindex={data[0] + 1}
+                classNameGenerator={rowClassNameGenerator}
                 columnMap={columnMap}
                 columns={scrollProps.columnsWithinViewport}
                 highlighted={highlightedIndex === data[IDX]}
@@ -307,7 +308,7 @@ export const Table = forwardRef(function TableNext(
     onSelect,
     onSelectionChange,
     renderBufferSize,
-    rowHeight = 20,
+    rowHeight: rowHeightProp,
     scrollingApiRef,
     selectionModel,
     showColumnHeaders,
@@ -321,11 +322,7 @@ export const Table = forwardRef(function TableNext(
 
   const [size, setSize] = useState<MeasuredSize>();
 
-  const rowHeightProxyRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
-    console.log(`row proxy `, {
-      el,
-    });
-  }, []);
+  const { rowHeight, rowRef } = useRowHeight({ rowHeight: rowHeightProp });
 
   if (config === undefined) {
     throw Error(
@@ -344,9 +341,9 @@ export const Table = forwardRef(function TableNext(
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}
     >
-      <RowProxy ref={rowHeightProxyRef} height={rowHeight} />
+      <RowProxy ref={rowRef} height={rowHeightProp} />
 
-      {size ? (
+      {size && rowHeight ? (
         <TableCore
           Row={Row}
           allowDragDrop={allowDragDrop}

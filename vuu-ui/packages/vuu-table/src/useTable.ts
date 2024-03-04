@@ -64,6 +64,7 @@ import {
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
+import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -146,6 +147,8 @@ export const useTable = ({
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
+
+  const rowClassNameGenerator = useRowClassNameGenerators(config);
 
   const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
 
@@ -646,6 +649,7 @@ export const useTable = ({
   return {
     ...containerProps,
     "aria-rowcount": dataSource.size,
+    rowClassNameGenerator,
     draggableRow,
     onBlur: editingBlur,
     onDoubleClick: editingDoubleClick,
