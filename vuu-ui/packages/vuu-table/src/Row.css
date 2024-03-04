@@ -28,6 +28,10 @@
   background-color: var(--salt-selectable-background-selected);
 }
 
+.vuuTableRow-selectedEnd {
+  z-index: 1;
+}
+
 .vuuTable-zebra {
   .vuuTableRow-even.vuuTableRow-selected,
   .vuuTableRow-even.vuuTableRow-selectedEnd {
