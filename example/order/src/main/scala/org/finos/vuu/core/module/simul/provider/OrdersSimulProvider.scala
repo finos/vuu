@@ -37,10 +37,10 @@ class SeededRandomNumbers(seed: Long) extends RandomNumbers {
 
   val random = new Random(seed)
 
-  override def nextInt(): Int = random.nextInt();
+  override def nextInt(): Int = random.nextInt()
 
   def seededRand(low: Int, high: Int): Int = {
-    random.nextInt(high - low) + low;
+    random.nextInt(high - low) + low
   }
 
 }
@@ -115,28 +115,19 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
     objToMap(od)
   }
 
-  def fillOrder(od: OrderDetail): Unit = {
-
-    val shapes: Int = seededRandom.seededRand(1, 10)
-
+  private def fillOrder(od: OrderDetail): Unit = {
+    val numOfFills = seededRandom.seededRand(1, 10)
+    val quantityPerFill = od.quantity / numOfFills
     val secsPerFill = seededRandom.seededRand(1, 2)
-
-    val fillPerQty = od.quantity / shapes
-
     val asMap = toMap(od)
 
-    var filledQty: Double = 0
-
-    while (filledQty < od.quantity) {
-
-      filledQty += fillPerQty
-
-      val upMap = asMap ++ Map("filledQuantity" -> filledQty)
-
-      table.processUpdate(od.orderId, RowWithData(od.orderId, upMap), time.now())
-
-      time.sleep(secsPerFill * 50)
-    }
+    Range.inclusive(1, numOfFills)
+      .map(_ * quantityPerFill)
+      .map(v => asMap + ("filledQuantity" -> v))
+      .foreach(m => {
+        table.processUpdate(od.orderId, RowWithData(od.orderId, m), time.now())
+        time.sleep(secsPerFill * 50)
+      })
   }
 
   def fillOrders() = {
