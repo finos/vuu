@@ -2,27 +2,23 @@ package org.finos.vuu.core.table.column
 
 import org.finos.vuu.core.table.RowData
 
+import java.util.function.BinaryOperator
+
 object Calculations {
 
-  def coerceToDouble(clause: CalculatedColumnClause, data: RowData): Double = {
-
-    val anyRef = clause.calculate(data)
-
-    anyRef match {
-      case null =>
-        Double.NaN
-      case _ =>
+  private def coerceToDouble(clause: CalculatedColumnClause, data: RowData): Double = {
+    clause.calculate(data) match {
+      case null => Double.NaN
+      case v =>
         clause.dataType match {
-          case ClauseDataType.DOUBLE => clause.calculate(data).asInstanceOf[Double]
-          case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int].toDouble
-          case ClauseDataType.BOOLEAN => clause.calculate(data).asInstanceOf[Int]
-          case ClauseDataType.LONG => clause.calculate(data).asInstanceOf[java.lang.Long].toDouble
+          case ClauseDataType.DOUBLE  => v.asInstanceOf[Double]
+          case ClauseDataType.INTEGER => v.asInstanceOf[Int].toDouble
+          case ClauseDataType.BOOLEAN => v.asInstanceOf[Int]
+          case ClauseDataType.LONG    => v.asInstanceOf[Long].toDouble
         }
     }
-
-
   }
-  def coerceToLong(clause: CalculatedColumnClause, data: RowData): Long = {
+  private def coerceToLong(clause: CalculatedColumnClause, data: RowData): Long = {
     clause.dataType match {
       case ClauseDataType.DOUBLE => clause.calculate(data).asInstanceOf[Double].toLong
       case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int].toLong
@@ -31,7 +27,7 @@ object Calculations {
     }
   }
 
-  def coerceToInt(clause: CalculatedColumnClause, data: RowData): Int = {
+  private def coerceToInt(clause: CalculatedColumnClause, data: RowData): Int = {
     clause.dataType match {
       case ClauseDataType.NULL => 0
       case ClauseDataType.INTEGER => clause.calculate(data).asInstanceOf[Int]
@@ -45,35 +41,21 @@ object Calculations {
     }
   }
 
+  def mathDouble(clauses: List[CalculatedColumnClause], data: RowData, op:(Double, Double) => Double, default: Double): Double =
+    mathCalc(clauses, op, v => coerceToDouble(v, data), default)
 
-  def mathDouble(clauses: List[CalculatedColumnClause], data: RowData, op:(Double, Double) => Double, default: Double): Double = {
-    clauses.foldLeft(0D)((x, y) => {
-      if (x == 0D) {
-        coerceToDouble(y, data)
-      } else {
-        op(x, coerceToDouble(y, data))
-      }
-    })
-  }
+  def mathLong(clauses: List[CalculatedColumnClause], data: RowData, op: (Long, Long) => Long, default: Long): Long =
+    mathCalc(clauses, op, v => coerceToLong(v, data), default)
 
-  def mathLong(clauses: List[CalculatedColumnClause], data: RowData, op: (Long, Long) => Long, default: Long): Long = {
-    clauses.foldLeft(0L)((x, y) => {
-      if (x == 0L) {
-        coerceToLong(y, data)
-      } else {
-        op(x, coerceToLong(y, data))
-      }
-    })
-  }
+  def mathInt(clauses: List[CalculatedColumnClause], data: RowData, op: (Int, Int) => Int, default: Int): Int =
+    mathCalc(clauses, op, v => coerceToInt(v, data), default)
 
-  def mathInt(clauses: List[CalculatedColumnClause], data: RowData, op: (Int, Int) => Int, default: Int): Int = {
-    clauses.foldLeft(0)((x, y) => {
-      if (x == 0) {
-        coerceToInt(y, data)
-      } else {
-        op(x, coerceToInt(y, data))
-      }
-    })
+  private type Coercer[T] = CalculatedColumnClause => T
+  private def mathCalc[T](clauses: List[CalculatedColumnClause], op: (T, T) => T, coercer: Coercer[T], default: T): T = {
+    clauses match {
+      case head :: rest => rest.foldLeft(coercer(head))((x, y) => op(x, coercer(y)))
+      case _ => default
+    }
   }
 
   def mathBool(clauses: List[CalculatedColumnClause], data: RowData, op: (Boolean, Boolean) => Boolean, default: Boolean): Boolean = {
