@@ -458,7 +458,6 @@ export class ArrayDataSource
   }
 
   set range(range: VuuRange) {
-    console.log(`set range ${JSON.stringify(range)}`);
     this.setRange(range);
   }
 
