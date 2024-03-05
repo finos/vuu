@@ -1,6 +1,6 @@
 package org.finos.vuu
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -46,35 +46,16 @@ object SimulMain extends App with StrictLogging {
 
   val store = new MemoryBackedVuiStateStore()
 
-  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
-
   lifecycle.autoShutdownHook()
 
   val authenticator: Authenticator = new AlwaysHappyAuthenticator
   val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
 
-  val defaultConfig = ConfigFactory.load()
-
-  //look in application.conf for default values
-  val webRoot = defaultConfig.getString("vuu.webroot")
-  val certPath = defaultConfig.getString("vuu.certPath")
-  val keyPath = defaultConfig.getString("vuu.keyPath")
+  private val defaultConfig = ConfigFactory.load()
 
   val config = VuuServerConfig(
-    VuuHttp2ServerOptions()
-      //only specify webroot if we want to load the source locally, we'll load it from the jar
-      //otherwise
-      .withWebRoot(webRoot)
-      .withSsl(certPath, keyPath)
-      //don't leave me on in prod pls....
-      .withDirectoryListings(true)
-      .withBindAddress("0.0.0.0")
-      .withPort(8443),
-    VuuWebSocketOptions()
-      .withUri("websocket")
-      .withWsPort(8090)
-      .withWss(certPath, keyPath)
-      .withBindAddress("0.0.0.0"),
+    httpServerOptions(defaultConfig),
+    webSocketOptions(defaultConfig),
     VuuSecurityOptions()
       .withAuthenticator(authenticator)
       .withLoginValidator(new AlwaysHappyLoginValidator),
@@ -90,9 +71,8 @@ object SimulMain extends App with StrictLogging {
     .withModule(EditableModule())
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
-    .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig("vuu.restModule")))
+    .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig(ConfigKeys.restModuleConfig)))
     .withModule(VirtualTableModule())
-    //.withModule(IgniteOrderDataModule(IgniteOrderStore()))
     .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
@@ -104,4 +84,40 @@ object SimulMain extends App with StrictLogging {
   logger.info("[VUU] Ready.")
 
   vuuServer.join()
+}
+
+object ConfigKeys {
+  final val webroot = "vuu.webroot"
+  final val sslEnabled = "vuu.ssl"
+  final val certPath = "vuu.certPath"
+  final val keyPath = "vuu.keyPath"
+  final val restModuleConfig = "vuu.restModule"
+}
+
+object httpServerOptions {
+  def apply(c: Config): VuuHttp2ServerOptions = {
+    val options = VuuHttp2ServerOptions()
+      //only specify webroot if we want to load the source locally, we'll load it from the jar
+      //otherwise
+      .withWebRoot(c.getString(ConfigKeys.webroot))
+      //don't leave me on in prod pls....
+      .withDirectoryListings(true)
+      .withBindAddress("0.0.0.0")
+      .withPort(8443)
+
+    val sslEnabled = c.getBoolean(ConfigKeys.sslEnabled)
+    if (sslEnabled) options.withSsl(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)) else options
+  }
+}
+
+object webSocketOptions {
+  def apply(c: Config): VuuWebSocketOptions = {
+    val options = VuuWebSocketOptions()
+      .withUri("websocket")
+      .withWsPort(8090)
+      .withBindAddress("0.0.0.0")
+
+    val sslEnabled = c.getBoolean(ConfigKeys.sslEnabled)
+    if (sslEnabled) options.withWss(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)) else options
+  }
 }

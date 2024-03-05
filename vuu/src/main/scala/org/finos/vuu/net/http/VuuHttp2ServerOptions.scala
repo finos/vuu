@@ -11,23 +11,16 @@ trait VuuSecurityOptions {
 
 trait VuuHttp2ServerOptions {
   def allowDirectoryListings: Boolean
-
+  def sslEnabled: Boolean
   def certPath: String
-
   def keyPath: String
-
   def webRoot: String
-
   def port: Int
   def bindAddress: String
   def withSsl(certPath: String, keyPath: String): VuuHttp2ServerOptions
-
   def withWebRoot(webRoot: String): VuuHttp2ServerOptions
-
   def withDirectoryListings(allow: Boolean): VuuHttp2ServerOptions
-
   def withPort(port: Int): VuuHttp2ServerOptions
-
   def withBindAddress(bindAddress: String): VuuHttp2ServerOptions
 }
 
@@ -37,19 +30,18 @@ object VuuHttp2ServerOptions {
   }
 }
 
-case class VuuHttp2ServerOptionsImpl(useSsl: Boolean = false,
+case class VuuHttp2ServerOptionsImpl(sslEnabled: Boolean = false,
                                      certPath: String = "",
                                      keyPath: String = "", webRoot: String = "",
                                      port: Int,
                                      allowDirectoryListings: Boolean, bindAddress: String = "") extends VuuHttp2ServerOptions {
-
 
   def withPort(port: Int): VuuHttp2ServerOptions = {
     this.copy(port = port)
   }
 
   def withSsl(certPath: String, keyPath: String): VuuHttp2ServerOptions = {
-    this.copy(certPath = certPath, keyPath = keyPath, useSsl = true)
+    this.copy(certPath = certPath, keyPath = keyPath, sslEnabled = true)
   }
 
   def withWebRoot(webRoot: String): VuuHttp2ServerOptions = {
