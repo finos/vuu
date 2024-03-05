@@ -9,7 +9,8 @@ export const LookupCell = memo(function LookupCell({
   row,
 }: TableCellRendererProps) {
   const dataIdx = columnMap[column.name];
-  const { initialValue: value } = useLookupValues(column, row[dataIdx]);
+  const dataValue = row[dataIdx] as string | number;
+  const { initialValue: value } = useLookupValues(column, dataValue);
   return <span>{value?.label}</span>;
 },
 dataAndColumnUnchanged);

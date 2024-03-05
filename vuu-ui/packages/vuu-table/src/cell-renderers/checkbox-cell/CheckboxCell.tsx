@@ -11,7 +11,7 @@ import {
 export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
   ({ column, columnMap, onCommit = WarnCommit, row }) => {
     const dataIdx = columnMap[column.name];
-    const isChecked = row[dataIdx];
+    const isChecked = !!row[dataIdx];
 
     const handleCommit = useCallback(
       (value) => async (evt: React.MouseEvent) => {

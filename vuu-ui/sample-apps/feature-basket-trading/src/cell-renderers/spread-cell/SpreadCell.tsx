@@ -9,11 +9,9 @@ const classBase = "vuuBasketSpreadCell";
 export const SpreadCell = ({ columnMap, row }: TableCellProps) => {
   //TODO what about click handling
 
-  const {
-    [columnMap.ask]: askValue,
-    [columnMap.bid]: bidValue,
-    [columnMap.limitPrice]: limitPriceValue,
-  } = row;
+  const askValue = row[columnMap.ask] as number;
+  const bidValue = row[columnMap.bid] as number;
+  const limitPriceValue = row[columnMap.limitPrice] as number;
 
   const calculateSpreadOffset = () => {
     const spread = askValue - bidValue;
