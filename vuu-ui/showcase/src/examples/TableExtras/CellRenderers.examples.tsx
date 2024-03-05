@@ -79,7 +79,7 @@ export const DefaultBackgroundCell = ({
       <TableCell
         column={priceColumn as RuntimeColumnDescriptor}
         columnMap={columnMap}
-        row={row}
+        row={row as any}
       />
     </div>
   );

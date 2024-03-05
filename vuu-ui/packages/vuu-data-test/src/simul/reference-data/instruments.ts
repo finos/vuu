@@ -80,6 +80,11 @@ for (const char of chars) {
 // const end = performance.now();
 // console.log(`generating 10,000 instruments took ${end - start} ms`);
 
+export const getRic = (defaultRic: string) => {
+  const row = instrumentsData.at(random(0, instrumentsData.length));
+  return row?.[InstrumentColumnMap.ric] ?? defaultRic;
+};
+
 const instrumentsTable = new Table(
   schemas.instruments,
   instrumentsData,

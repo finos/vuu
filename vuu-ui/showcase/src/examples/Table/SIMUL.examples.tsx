@@ -2,13 +2,14 @@ import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
-import {
+import type {
   ColumnDescriptor,
   DefaultColumnConfiguration,
 } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
+import "./BuySellRowClassNameGenerator";
 
 let displaySequence = 1;
 
@@ -60,10 +61,12 @@ export const SimulTable = ({
   getDefaultColumnConfig,
   height = 625,
   renderBufferSize = 0,
+  rowClassNameGenerators,
   tableName = "instruments",
   ...props
 }: Partial<TableProps> & {
   getDefaultColumnConfig?: DefaultColumnConfiguration;
+  rowClassNameGenerators?: string[];
   tableName: SimulTableName;
 }) => {
   const schema = getSchema(tableName);
@@ -72,13 +75,14 @@ export const SimulTable = ({
     () => ({
       config: {
         columns: applyDefaultColumnConfig(schema, getDefaultColumnConfig),
+        rowClassNameGenerators,
         rowSeparators: true,
         zebraStripes: true,
       },
       dataSource:
         vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
     }),
-    [getDefaultColumnConfig, schema, tableName]
+    [getDefaultColumnConfig, rowClassNameGenerators, schema, tableName]
   );
 
   const handleConfigChange = useCallback(() => {
@@ -126,7 +130,16 @@ export const Prices = () => {
 };
 Prices.displaySequence = displaySequence++;
 
-export const Orders = () => <SimulTable tableName="orders" />;
+const rowClassGenerators = ["buy-sell-rows"];
+
+export const Orders = () => {
+  return (
+    <SimulTable
+      tableName="orders"
+      rowClassNameGenerators={rowClassGenerators}
+    />
+  );
+};
 Orders.displaySequence = displaySequence++;
 
 export const InstrumentPrices = () => (

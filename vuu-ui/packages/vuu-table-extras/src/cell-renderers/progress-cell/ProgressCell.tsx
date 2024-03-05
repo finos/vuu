@@ -24,7 +24,7 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
     const { associatedField } = type.renderer;
     if (associatedField) {
       const associatedValue = row[columnMap[associatedField]];
-      if (typeof isValidNumber(value) && isValidNumber(associatedValue)) {
+      if (isValidNumber(value) && isValidNumber(associatedValue)) {
         percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
         percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
         showProgress = isFinite(percentage);

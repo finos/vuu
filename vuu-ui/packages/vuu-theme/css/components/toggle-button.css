@@ -18,6 +18,8 @@
         /** TODO vary by density */
         gap: 8px;
 
+        --vuu-icon-color: var(--salt-actionable-secondary-foreground);
+
         &[aria-checked="true"] {
             --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
         }

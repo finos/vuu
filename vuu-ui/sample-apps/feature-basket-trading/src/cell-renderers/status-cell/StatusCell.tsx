@@ -20,7 +20,7 @@ export const StatusCell = ({
   row,
 }: TableCellRendererProps) => {
   const dataIdx = columnMap[column.name];
-  const status = row[dataIdx];
+  const status = row[dataIdx] as string;
   const statusClass = statusValues[status] ?? "unknown";
 
   return (

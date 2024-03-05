@@ -27,8 +27,8 @@ export const DropdownCell = memo(function DropdownCell({
   row,
 }: TableCellRendererProps) {
   const dataIdx = columnMap[column.name];
-  const dataValue = row[dataIdx];
-  const { values } = useLookupValues(column, row[dataIdx]);
+  const dataValue = row[dataIdx] as string | number;
+  const { values } = useLookupValues(column, dataValue);
   const valueRef = useRef<ListOption | null>(null);
 
   useMemo(() => {

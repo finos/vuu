@@ -1,4 +1,8 @@
-import { FunctionComponent as FC, HTMLAttributes } from "react";
+import { DataSourceRow } from "@finos/vuu-data-types";
+import {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
@@ -7,11 +11,12 @@ import {
   HeaderCellProps,
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
+import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
-  VuuColumnDataType,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
-import { isTypeDescriptor, isColumnTypeRenderer } from "./column-utils";
+  ColumnMap,
+  isColumnTypeRenderer,
+  isTypeDescriptor,
+} from "./column-utils";
 
 export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
   onConfigChange: () => void;
@@ -25,10 +30,21 @@ export type PropertyChangeHandler = (
 export type ColumnRenderPropsChangeHandler = (
   renderProps: ColumnTypeRendering
 ) => void;
+
 export interface ConfigurationEditorProps {
   column: ColumnDescriptorCustomRenderer;
   onChangeRendering: ColumnRenderPropsChangeHandler;
 }
+
+export type RowClassNameGenerator = (
+  row: DataSourceRow,
+  columnMap: ColumnMap
+) => string | undefined;
+
+export type RowClassGenerator = {
+  id: string;
+  fn: RowClassNameGenerator;
+};
 
 export type ConfigEditorComponent = FC<CellConfigPanelProps>;
 
@@ -38,6 +54,7 @@ const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
 const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
 const optionsMap = new Map<string, CellRendererOptions>();
+const rowClassGeneratorsMap = new Map<string, RowClassGenerator>();
 
 export type EditRuleValidator = (
   editRule: EditValidationRule,
@@ -46,10 +63,11 @@ export type EditRuleValidator = (
 
 export type ComponentType =
   | "cell-renderer"
+  | "cell-config-panel"
   | "column-header-content-renderer"
   | "column-header-label-renderer"
-  | "cell-config-panel"
-  | "data-edit-validator";
+  | "data-edit-validator"
+  | "row-class-generator";
 
 type CellRendererOptions = {
   // [key: string]: unknown;
@@ -59,7 +77,6 @@ type CellRendererOptions = {
   serverDataType?: VuuColumnDataType | VuuColumnDataType[] | "json" | "private";
   userCanAssign?: boolean;
 };
-
 export interface CellRendererDescriptor extends CellRendererOptions {
   name: string;
 }
@@ -108,15 +125,21 @@ const isEditRuleValidator = (
   component: unknown
 ): component is EditRuleValidator => type === "data-edit-validator";
 
+const isRowClassGenerator = (
+  type: ComponentType,
+  component: unknown
+): component is RowClassGenerator => type === "row-class-generator";
+
 export function registerComponent<
   T extends
-    | TableCellRendererProps
     | CellConfigPanelProps
     | EditRuleValidator
-    | HeaderCellProps = TableCellRendererProps
+    | HeaderCellProps
+    | RowClassGenerator
+    | TableCellRendererProps = TableCellRendererProps
 >(
   componentName: string,
-  component: T extends EditRuleValidator ? T : FC<T>,
+  component: T extends EditRuleValidator | RowClassGenerator ? T : FC<T>,
   type: ComponentType = "cell-renderer",
   options: CellRendererOptions
 ): void {
@@ -130,6 +153,9 @@ export function registerComponent<
     cellConfigPanelsMap.set(componentName, component);
   } else if (isEditRuleValidator(type, component)) {
     editRuleValidatorsMap.set(componentName, component);
+  } else if (isRowClassGenerator(type, component)) {
+    console.log(`register ${componentName}`);
+    rowClassGeneratorsMap.set(componentName, component);
   }
   if (options) {
     optionsMap.set(componentName, options);
@@ -181,6 +207,8 @@ export function getColumnHeaderLabelRenderer(column: ColumnDescriptor) {
     return columnHeaderRenderersMap.get(column.colHeaderLabelRenderer);
   }
 }
+export const getRowClassNameGenerator = (generatorId: string) =>
+  rowClassGeneratorsMap.get(generatorId);
 
 function dataCellRenderer(column: ColumnDescriptor) {
   if (isTypeDescriptor(column.type)) {

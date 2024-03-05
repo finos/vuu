@@ -21,10 +21,11 @@ export const InputCell = ({
   row,
 }: TableCellRendererProps) => {
   const dataIdx = columnMap[column.name];
+  const dataValue = row[dataIdx] as number | string;
   const { align = "left", clientSideEditValidationCheck } = column;
 
   const { warningMessage, ...editProps } = useEditableText({
-    initialValue: row[dataIdx],
+    initialValue: dataValue,
     onCommit,
     clientSideEditValidationCheck,
   });

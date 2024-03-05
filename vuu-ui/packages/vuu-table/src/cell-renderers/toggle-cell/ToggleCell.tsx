@@ -37,7 +37,7 @@ export const ToggleCell = memo(function ToggleCell({
 }: TableCellRendererProps) {
   const values = getValueList(column);
   const dataIdx = columnMap[column.name];
-  const value = row[dataIdx];
+  const value = row[dataIdx] as string;
 
   const handleCommit = useCallback<CycleStateButtonProps["onCommit"]>(
     (evt, value) => {
