@@ -395,6 +395,7 @@ export class VuuDataSource
   }
 
   set range(range: VuuRange) {
+    console.log(`set range ${range}`);
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       this.#range = range;
       this.rangeRequest(range);

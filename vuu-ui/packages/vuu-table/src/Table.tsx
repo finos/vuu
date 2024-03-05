@@ -64,6 +64,11 @@ export interface TableProps
   config: TableConfig;
   dataSource: DataSource;
   disableFocus?: boolean;
+  /**
+   * Pixel height of headers. If specified here, this will take precedence over CSS
+   * values and Table will not respond to density changes. Default value is 125% of
+   * rowHeight, whether set vis rowHeight prop or CSS.
+   */
   headerHeight?: number;
   /**
    * Defined how focus navigation within data cells will be handled by table.
@@ -100,6 +105,10 @@ export interface TableProps
   onSelect?: TableRowSelectHandler;
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
+  /**
+   * Pixel height of rows. If specified here, this will take precedence over CSS
+   * values and Table will not respond to density changes.
+   */
   rowHeight?: number;
   /**
    * imperative API for scrolling table
@@ -145,7 +154,7 @@ const TableCore = ({
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
-  headerHeight = showColumnHeaders ? 25 : 0,
+  headerHeight = showColumnHeaders ? rowHeight * 1.25 : 0,
   size,
 }: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;

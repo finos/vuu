@@ -174,11 +174,13 @@ export const useTableScroll = ({
   onHorizontalScroll,
   onVerticalScroll,
   onVerticalScrollInSitu,
+  rowHeight,
   scrollingApiRef,
   setRange,
   viewportMeasurements,
 }: TableScrollHookProps) => {
   const firstRowRef = useRef<number>(0);
+  const rowHeightRef = useRef(rowHeight);
   const contentContainerScrolledRef = useRef(false);
   const contentContainerPosRef = useRef<ScrollPos>({
     scrollTop: 0,
@@ -499,10 +501,19 @@ export const useTableScroll = ({
   );
 
   useEffect(() => {
-    const { current: from } = firstRowRef;
-    const rowRange = { from, to: from + viewportRowCount };
-    setRange(rowRange);
-  }, [setRange, viewportRowCount]);
+    if (rowHeight !== rowHeightRef.current) {
+      rowHeightRef.current = rowHeight;
+      if (contentContainerPosRef.current.scrollTop > 0) {
+        if (contentContainerRef.current) {
+          contentContainerRef.current.scrollTop = 0;
+        }
+      }
+    } else {
+      const { current: from } = firstRowRef;
+      const rowRange = { from, to: from + viewportRowCount };
+      setRange(rowRange);
+    }
+  }, [rowHeight, setRange, viewportRowCount]);
 
   return {
     columnsWithinViewport: columnsWithinViewportRef.current,
