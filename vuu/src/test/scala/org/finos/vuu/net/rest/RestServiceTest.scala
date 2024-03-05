@@ -56,9 +56,9 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       lifecycle.start()
 
-      val vxoptions = new VertxOptions();
+      val vxoptions = new VertxOptions()
 
-      val vertx = Vertx.vertx(vxoptions);
+      val vertx = Vertx.vertx(vxoptions)
 
       import io.vertx.ext.web.client.WebClient
 

@@ -1,5 +1,5 @@
-
 package org.finos.vuu.core
+
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
@@ -30,6 +30,7 @@ trait VuuWebSocketOptions {
   def wsPort: Int
   def uri: String
   def bindAddress: String
+  def wssEnabled: Boolean
   def certPath: String
   def keyPath: String
   def passPhrase: Option[String]
@@ -51,13 +52,13 @@ case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValida
   override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(authenticator = authenticator)
 }
 
-case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String, bindAddress: String, certPath: String = "", keyPath: String = "", passPhrase: Option[String] = None) extends VuuWebSocketOptions {
+case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String, bindAddress: String, wssEnabled: Boolean = false, certPath: String = "", keyPath: String = "", passPhrase: Option[String] = None) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
 
-  override def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions = this.copy(certPath = certPath, keyPath = keyPath, passPhrase = passphrase)
-
+  override def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions =
+    this.copy(wssEnabled = true, certPath = certPath, keyPath = keyPath, passPhrase = passphrase)
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {

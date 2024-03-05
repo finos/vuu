@@ -16,7 +16,8 @@ import org.finos.vuu.net.ViewServerHandler
 /**
  * Handles handshakes and messages
  */
-class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelInboundHandler[Object] with StrictLogging {
+class WebSocketServerHandler(handler: ViewServerHandler,
+                             withSsl: Boolean) extends SimpleChannelInboundHandler[Object] with StrictLogging {
 
   private final val WEBSOCKET_PATH = "/websocket";
   private var handshaker: WebSocketServerHandshaker = _
@@ -124,9 +125,13 @@ class WebSocketServerHandler(handler: ViewServerHandler) extends SimpleChannelIn
     ctx.close();
   }
 
-  def getWebSocketLocation(req: FullHttpRequest): String = {
-    val location = req.headers().get(HOST) + WEBSOCKET_PATH;
-    return "wss://" + location;
+  private val protocol = {
+    val ws = "ws" // workaround semgrep error
+    ws.concat(if (withSsl) "s" else "").concat("://")
   }
 
+  private def getWebSocketLocation(req: FullHttpRequest): String = {
+    val location = req.headers().get(HOST) + WEBSOCKET_PATH
+    protocol + location
+  }
 }

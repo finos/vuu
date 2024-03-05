@@ -75,7 +75,7 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
   }
 
   override def doInitialize(): Unit = {
-    val sslContext = createSslContext()
+    val sslContext = Option.when(options.wssEnabled)(createSslContext())
 
     b.group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])

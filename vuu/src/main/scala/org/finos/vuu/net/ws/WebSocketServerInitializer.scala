@@ -9,15 +9,15 @@ import org.finos.vuu.net.ViewServerHandlerFactory;
 
 /**
  */
-class WebSocketServerInitializer(val factory: ViewServerHandlerFactory, val sslCtx: SslContext) extends ChannelInitializer[SocketChannel] {
+class WebSocketServerInitializer(val factory: ViewServerHandlerFactory, val sslCtx: Option[SslContext]) extends ChannelInitializer[SocketChannel] {
 
   @Override
   override def initChannel(ch: SocketChannel) = {
 
-    val pipeline = ch.pipeline();
+    val pipeline = ch.pipeline()
 
-    if (sslCtx != null) {
-      pipeline.addLast(sslCtx.newHandler(ch.alloc()));
+    if (sslCtx.nonEmpty) {
+      pipeline.addLast(sslCtx.get.newHandler(ch.alloc()))
     }
 
     pipeline.addLast(new HttpServerCodec());
@@ -25,6 +25,6 @@ class WebSocketServerInitializer(val factory: ViewServerHandlerFactory, val sslC
     //pipeline.addLast(new WebSocketServerCompressionHandler());
     //each tpc session will have a local view server handler,
     //this allows us to call (handler.close() when disconnected
-    pipeline.addLast(new WebSocketServerHandler(factory.create()));
+    pipeline.addLast(new WebSocketServerHandler(factory.create(), sslCtx.nonEmpty))
   }
 }

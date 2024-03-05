@@ -4,9 +4,10 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.util.PathChecker
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
+import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.{AuthenticationHandler, BodyHandler, StaticHandler}
+import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 import java.io.File
@@ -46,27 +47,18 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
   override def start(): Unit = {
     try {
-
       val router = Router.router(vertx);
-
-      import io.vertx.core.net.PemKeyCertOptions
 
       val httpOpts = new HttpServerOptions()
 
-      PathChecker.throwOnFileNotExists(options.certPath, "vuu.certPath, doesn't appear to exist")
-      PathChecker.throwOnFileNotExists(options.keyPath, "vuu.keyPath, doesn't appear to exist")
-
-      logger.info("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
-      logger.info("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
-
-
-      httpOpts
-        .setPemKeyCertOptions(new PemKeyCertOptions()
-          .setCertPath(options.certPath)
-          .setKeyPath(options.keyPath)
-        )
-        .setSsl(true)
-        .setUseAlpn(true)
+      if (options.sslEnabled) {
+        httpOpts
+          .setPemKeyCertOptions(pemKeyCertOptions(options))
+          .setSsl(true)
+          .setUseAlpn(true)
+      } else {
+        httpOpts.setSsl(false)
+      }
 
       import io.vertx.ext.web.handler.CorsHandler
       val allowedHeaders = new util.HashSet[String]()
@@ -127,6 +119,18 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       case e: Exception =>
         logger.error("[HTTP2] Error occurred starting server", e)
     }
+  }
+
+  private def pemKeyCertOptions(options: VuuHttp2ServerOptions): PemKeyCertOptions = {
+    PathChecker.throwOnFileNotExists(options.certPath, "options.certPath, doesn't appear to exist")
+    PathChecker.throwOnFileNotExists(options.keyPath, "options.keyPath, doesn't appear to exist")
+
+    logger.info("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
+    logger.info("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
+
+    new PemKeyCertOptions()
+      .setCertPath(options.certPath)
+      .setKeyPath(options.keyPath)
   }
 }
 
