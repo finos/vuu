@@ -3,8 +3,6 @@ package org.finos.vuu.core.table.column
 import org.finos.vuu.core.table.column.ClauseDataType.ClauseDataType
 import org.finos.vuu.core.table.{Column, RowData, column}
 
-import java.lang.Number
-
 object ClauseDataType extends Enumeration
 {
   // creating with type alias
@@ -242,13 +240,14 @@ case class SubtractClause(clauses: List[CalculatedColumnClause]) extends Calcula
 }
 
 case class DivideClause(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
-  override def dataType: ClauseDataType = Clauses.findWidest(clauses)
+  override def dataType: ClauseDataType = Clauses.findWidest(clauses) match {
+    case ClauseDataType.LONG | ClauseDataType.INTEGER => ClauseDataType.DOUBLE
+    case dataType => dataType
+  }
 
   def calculate(data: RowData): Any = {
     this.dataType match {
       case ClauseDataType.NULL => Double.NaN
-      case ClauseDataType.LONG => Calculations.mathLong(clauses, data, (a, b) => a / b, 0L)
-      case ClauseDataType.INTEGER => Calculations.mathInt(clauses, data, (a, b) => a / b, 0)
       case ClauseDataType.DOUBLE => Calculations.mathDouble(clauses, data, (a, b) => a / b, 0)
     }
   }
