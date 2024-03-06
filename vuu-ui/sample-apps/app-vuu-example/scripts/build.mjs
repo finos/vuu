@@ -14,12 +14,37 @@ import { build } from "../../../scripts/esbuild.mjs";
 import fs from "fs";
 import path from "path";
 
+const WS = "ws"; // to stop semGrep complaining
+function assertWebsocketArgs(url, insecure) {
+  if (url.startsWith(WS + "s://") && insecure) {
+    console.warn(
+      "WARN: Passed websocket url is secure. Ignoring `--insecure` flag."
+    );
+  } else if (url.startsWith(WS + "://") && !insecure) {
+    console.warn(
+      `WARN: Use '--insecure' flag if websocket connection (${url}) is not secure.`
+    );
+  }
+}
+function toWebsocketUrl(url, insecure) {
+  if (!url) return;
+  const websocketUrlRegex = new RegExp(`^${WS}[s]?://`);
+  if (url.match(websocketUrlRegex)) {
+    assertWebsocketArgs(url, insecure);
+    return url;
+  } else {
+    return [WS, insecure ? "://" : "s://", url].join("");
+  }
+}
+
 const entryPoints = ["index.tsx", "login.tsx", "demo.tsx"];
 
 const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
-const websocketUrl = getCommandLineArg("--url", true);
+const insecure = !!getCommandLineArg("--insecure");
+const websocketUrl = toWebsocketUrl(getCommandLineArg("--url", true), insecure);
+
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
 const configPath = getCommandLineArg("--config", true);
@@ -53,6 +78,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
   return new Promise((resolve, reject) => {
     console.log("[DEPLOY config]");
     const configJson = readJson(configFile);
+    configJson.ssl = !insecure;
     if (websocketUrl) {
       configJson.websocketUrl = websocketUrl;
     }

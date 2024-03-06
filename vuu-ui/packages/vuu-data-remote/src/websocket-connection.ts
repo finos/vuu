@@ -21,10 +21,6 @@ const { debug, debugEnabled, error, info, infoEnabled, warn } = logger(
   "websocket-connection"
 );
 
-const WS = "ws"; // to stop semGrep complaining
-const isWebsocketUrl = (url: string) =>
-  url.startsWith(WS + "://") || url.startsWith(WS + "s://");
-
 type ConnectionTracking = {
   [key: string]: {
     connect: {
@@ -150,15 +146,11 @@ const makeConnectionIn = (
   });
 
 const createWebsocket = (
-  connectionString: string,
+  websocketUrl: string,
   protocol: WebSocketProtocol
 ): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
-    const websocketUrl = isWebsocketUrl(connectionString)
-      ? connectionString
-      : `wss://${connectionString}`;
-
     if (infoEnabled && protocol !== undefined) {
       info(`WebSocket Protocol ${protocol?.toString()}`);
     }
