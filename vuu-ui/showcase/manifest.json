@@ -1,0 +1,17 @@
+{
+  "lang": "en-us",
+  "name": "Vuu Showcase",
+  "short_name": "Vuu showcase",
+  "description": "A showcase for Vuu components, patterns and documentation",
+  "start_url": "/",
+  "background_color": "red",
+  "theme_color": "green",
+  "orientation": "any",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/icon512.png",
+      "sizes": "512x512"
+    }
+  ]
+}

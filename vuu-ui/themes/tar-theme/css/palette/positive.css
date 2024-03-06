@@ -1,0 +1,7 @@
+.tar-theme[data-mode="light"] {
+  --salt-palette-positive-foreground: var(--salt-color-green-700);
+}
+
+.tar-theme[data-mode="dark"] {
+  --salt-palette-positive-foreground: var(--salt-color-green-300);
+}

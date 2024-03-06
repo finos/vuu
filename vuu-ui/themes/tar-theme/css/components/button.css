@@ -1,0 +1,38 @@
+
+.tar-theme {
+    /** TODO these will need density variants */
+    --saltButton-borderRadius: 2px;
+    --saltButton-padding: 16px;
+
+    .saltButton-secondary {
+        --saltButton-borderColor: var(--tar-color-gray-40);
+        --saltButton-borderWidth: 1px;
+        --saltButton-borderStyle: solid;
+    }
+
+    .saltButton-secondary:not(:disabled):hover {
+        --saltButton-borderColor: var(--vuuButton-borderColor, var(--salt-actionable-secondary-background-hover));
+    }    
+}
+
+
+.tar-theme[theme-mode="light"]{
+    .saltButton-secondary {
+        --saltButton-borderColor: var(--tar-color-gray-40);
+    }
+    .saltButton-secondary:disabled {
+        --saltButton-borderColor: var(--tar-color-gray-20);
+    }    
+    
+}
+
+.tar-theme[theme-mode="dark"]{
+    .saltButton-secondary {
+        --saltButton-borderColor: var(--tar-color-gray-35);
+    }
+    .saltButton-secondary:disabled {
+        --saltButton-borderColor: var(--tar-color-gray-30);
+    }    
+
+}
+

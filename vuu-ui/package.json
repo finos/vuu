@@ -12,7 +12,8 @@
     "packages/**",
     "sample-apps/**",
     "showcase",
-    "tools/vuu-showcase"
+    "tools/vuu-showcase",
+    "themes/**"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -24,7 +25,7 @@
     "build:table": "cd sample-apps/standalone-table && node scripts/build.mjs",
     "build:packages": "npm run build -- --cjs --license && npm run type-defs",
     "build:packages:debug": "npm run build -- --cjs --debug && npm run type-defs -- --debug",
-    "build:salt": "node ./scripts/build-salt.mjs",
+    "build:themes": "node ./scripts/build-themes.mjs",
     "launch:demo": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",

@@ -18,6 +18,10 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
   }
 };
 
+const themeIsInstalled = (theme = "no-theme") => {
+  return ["salt", "vuu", "tar"].includes(theme);
+};
+
 const asDensity = (input: string | undefined): Density => {
   if (input === "high" || input === "low" || input === "touch") {
     return input;
@@ -58,19 +62,10 @@ export const ShowcaseStandalone = () => {
   }, []);
 
   useMemo(() => {
-    switch (theme) {
-      case "vuu":
-        import("./themes/vuu").then(() => {
-          setThemeReady(true);
-        });
-        break;
-      case "salt":
-        import("./themes/salt").then(() => {
-          setThemeReady(true);
-        });
-        break;
-      default:
-      // do nothing
+    if (themeIsInstalled(theme)) {
+      import(`./themes/${theme}.ts`).then(() => {
+        setThemeReady(true);
+      });
     }
   }, [theme]);
 

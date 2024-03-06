@@ -1,0 +1,5 @@
+.tar-theme {
+  --salt-accent-background: var(--salt-palette-accent-background);
+  --salt-accent-borderColor: var(--salt-palette-accent-border);
+  --salt-accent-foreground: var(--salt-palette-accent-foreground);
+}

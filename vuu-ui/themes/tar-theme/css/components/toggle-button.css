@@ -1,0 +1,56 @@
+.tar-theme {
+    .saltToggleButtonGroup {
+        --togglebutton-borderRadius: 4px 4px 4px 4px;
+        /** TODO vary by density */
+        --salt-spacing-100: 16px;
+        border-radius: 6px;
+        gap: 0;
+        height: var(--salt-size-base);
+        padding: 0;
+    }
+
+    .saltToggleButtonGroup-horizontal .saltToggleButton {
+        height: 100%;
+    }
+
+    .saltToggleButton {
+        border-radius: var(--togglebutton-borderRadius);
+        /** TODO vary by density */
+        gap: 8px;
+
+        --vuu-icon-color: var(--salt-actionable-secondary-foreground);
+
+        &[aria-checked="true"] {
+            --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+        }
+        &[aria-pressed="true"] {
+            --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+        }
+
+   }
+
+    [data-variant="primary"]{
+        --salt-actionable-secondary-background-active: var(--salt-actionable-primary-background-active);
+        border-color: var(--salt-container-secondary-borderColor);
+    }
+
+    [data-variant="secondary"]{
+        --salt-actionable-secondary-background-active: var(--salt-actionable-primary-background-active);
+        --salt-container-primary-borderColor: transparent
+    }
+
+    .vuuStateButtonGroup {
+
+        .saltToggleButton {
+            --togglebutton-borderRadius: 0;
+        }
+        
+        .saltToggleButton:first-child {
+            --togglebutton-borderRadius: 4px 0 0 4px;
+        }
+        .saltToggleButton:last-child {
+            --togglebutton-borderRadius: 0 4px 4px 0;
+        }
+    }
+
+}
