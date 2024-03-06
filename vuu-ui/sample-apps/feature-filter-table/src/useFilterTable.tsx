@@ -1,8 +1,4 @@
-import {
-  MenuActionConfig,
-  SuggestionFetcher,
-  useVuuMenuActions,
-} from "@finos/vuu-data-react";
+import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import {
   ContextMenuItemDescriptor,
   DataSourceFilter,
@@ -10,6 +6,7 @@ import {
   MenuActionHandler,
   MenuBuilder,
   SchemaColumn,
+  SuggestionFetcher,
   TypeaheadSuggestionProvider,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";

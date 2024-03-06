@@ -7,7 +7,7 @@ import pricesTable from "./reference-data/prices";
 import { schemas, SimulTableName } from "./simul-schemas";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { SuggestionFetcher } from "@finos/vuu-data-react";
+import { SuggestionFetcher } from "@finos/vuu-data-types";
 import { makeSuggestions } from "../makeSuggestions";
 
 const tables: Record<SimulTableName, Table> = {

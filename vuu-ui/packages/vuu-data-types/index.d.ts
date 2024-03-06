@@ -370,6 +370,8 @@ export type DataSourceStatus =
   | "suspended"
   | "unsubscribed";
 
+export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
+
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
     columnName: string,

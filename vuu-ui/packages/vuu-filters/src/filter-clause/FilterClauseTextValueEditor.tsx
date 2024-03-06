@@ -11,10 +11,7 @@ import {
   useState,
 } from "react";
 import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import {
-  SuggestionFetcher,
-  useTypeaheadSuggestions,
-} from "@finos/vuu-data-react";
+import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import {
   ExpandoInput,
   MultiSelectionHandler,
@@ -22,7 +19,7 @@ import {
 } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
-import { TableSchemaTable } from "@finos/vuu-data-types";
+import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 
 const selectionKeys = ["Enter", " "];
 

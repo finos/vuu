@@ -9,7 +9,7 @@ import type {
 import type { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { DateTimePattern } from "@finos/vuu-utils";
-import { DataSourceRow } from "packages/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { HTMLAttributes } from "react";
 

@@ -7,8 +7,6 @@ import {
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
 
-export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
-
 // const SPECIAL_SPACE = "_";
 const TYPEAHEAD_MESSAGE_CONSTANTS = {
   type: "RPC_CALL",

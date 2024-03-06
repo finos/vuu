@@ -1,5 +1,4 @@
-import { SuggestionFetcher } from "@finos/vuu-data-react";
-import { TableSchema } from "@finos/vuu-data-types";
+import { SuggestionFetcher, TableSchema } from "@finos/vuu-data-types";
 import { ColumnDescriptorsByName, FilterClause } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";

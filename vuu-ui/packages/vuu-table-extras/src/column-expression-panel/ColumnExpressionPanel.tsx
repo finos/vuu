@@ -6,7 +6,7 @@ import {
   getCalculatedColumnType,
 } from "@finos/vuu-utils";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
-import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import {
   ColumnExpressionInput,

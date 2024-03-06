@@ -1,6 +1,5 @@
 import {
   MenuActionConfig,
-  SuggestionFetcher,
   useTypeaheadSuggestions,
   useVuuMenuActions,
   VuuMenuActionHandler,
@@ -8,7 +7,11 @@ import {
 } from "@finos/vuu-data-react";
 import { VuuDataSource } from "@finos/vuu-data-remote";
 
-import { RpcResponseHandler, VuuFeatureMessage } from "@finos/vuu-data-types";
+import {
+  RpcResponseHandler,
+  SuggestionFetcher,
+  VuuFeatureMessage,
+} from "@finos/vuu-data-types";
 import { VuuGroupBy, VuuMenu, VuuTable } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {

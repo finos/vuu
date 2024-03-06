@@ -13,7 +13,7 @@ import {
   subscribedOnly,
   useLayoutEffectSkipFirst,
 } from "@finos/vuu-utils";
-import { Commithandler } from "packages/vuu-ui-controls/src";
+import { Commithandler } from "@finos/vuu-ui-controls/src";
 import {
   MouseEvent,
   SyntheticEvent,
