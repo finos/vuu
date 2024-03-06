@@ -27,6 +27,7 @@ export interface VuuConfig {
   features: Features;
   authUrl?: string;
   websocketUrl: string;
+  ssl: boolean;
 }
 
 export const isWildcardSchema = (schema?: "*" | VuuTable): schema is "*" =>

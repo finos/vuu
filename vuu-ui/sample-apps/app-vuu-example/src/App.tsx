@@ -32,9 +32,12 @@ const layoutProps: ShellProps["LayoutProps"] = {
   pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
 };
 
-const defaultWebsocketUrl = `wss://${location.hostname}:8090/websocket`;
+const defaultWebsocketUrl = (ssl: boolean) =>
+  `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
+
 const {
-  websocketUrl: serverUrl = defaultWebsocketUrl,
+  ssl,
+  websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
   features: configuredFeatures,
 } =
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

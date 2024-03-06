@@ -21,6 +21,7 @@
     "format": "prettier --write './**/*.{js,,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all.mjs",
     "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
+    "build:app:insecure": "npm run build:app -- --insecure",
     "build:table": "cd sample-apps/standalone-table && node scripts/build.mjs",
     "build:packages": "npm run build -- --cjs --license && npm run type-defs",
     "build:packages:debug": "npm run build -- --cjs --debug && npm run type-defs -- --debug",
