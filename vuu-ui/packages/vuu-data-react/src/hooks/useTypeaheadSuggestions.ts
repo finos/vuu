@@ -1,5 +1,5 @@
 import { makeRpcCall } from "@finos/vuu-data-remote";
-import { TableSchemaTable } from "@finos/vuu-data-types";
+import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 import {
   ClientToServerGetUniqueValues,
   ClientToServerGetUniqueValuesStartingWith,

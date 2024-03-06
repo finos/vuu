@@ -1,10 +1,6 @@
 import { Flexbox, View } from "@finos/vuu-layout";
 import { Table } from "@finos/vuu-table";
-import {
-  simulSchemas,
-  SimulTableName,
-  simulModule,
-} from "@finos/vuu-data-test";
+import { simulSchemas, simulModule } from "@finos/vuu-data-test";
 import { ThemeProvider } from "@finos/vuu-utils";
 import { ContextPanel } from "@finos/vuu-shell";
 
@@ -18,10 +14,8 @@ console.log({ ContextPanel });
 
 export const App = () => {
   const schema = simulSchemas.instruments;
-  const dataSource1 =
-    vuuModule<SimulTableName>("SIMUL").createDataSource("instruments");
-  const dataSource2 =
-    vuuModule<SimulTableName>("SIMUL").createDataSource("instruments");
+  const dataSource1 = simulModule.createDataSource("instruments");
+  const dataSource2 = simulModule.createDataSource("instruments");
 
   const tableConfig = {
     columns: schema.columns,
