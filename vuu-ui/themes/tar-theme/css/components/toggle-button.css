@@ -1,12 +1,12 @@
 .tar-theme {
     .saltToggleButtonGroup {
-        --togglebutton-borderRadius: 4px 4px 4px 4px;
+        --togglebutton-borderRadius: 2px;
         /** TODO vary by density */
         --salt-spacing-100: 16px;
-        border-radius: 6px;
+        border-radius: 2px;
         gap: 0;
         height: var(--salt-size-base);
-        padding: 0;
+        padding: 2px 3px;
     }
 
     .saltToggleButtonGroup-horizontal .saltToggleButton {
@@ -29,15 +29,11 @@
 
    }
 
-    [data-variant="primary"]{
-        --salt-actionable-secondary-background-active: var(--salt-actionable-primary-background-active);
-        border-color: var(--salt-container-secondary-borderColor);
-    }
+   .saltToggleButton:hover:not([aria-pressed="true"], [aria-checked="true"]) {
+        background: var(--salt-actionable-secondary-background);
+        color: var(--salt-actionable-secondary-foreground);
+   }
 
-    [data-variant="secondary"]{
-        --salt-actionable-secondary-background-active: var(--salt-actionable-primary-background-active);
-        --salt-container-primary-borderColor: transparent
-    }
 
     .vuuStateButtonGroup {
 
@@ -46,10 +42,10 @@
         }
         
         .saltToggleButton:first-child {
-            --togglebutton-borderRadius: 4px 0 0 4px;
+            --togglebutton-borderRadius: 2px 0 0 2px;
         }
         .saltToggleButton:last-child {
-            --togglebutton-borderRadius: 0 4px 4px 0;
+            --togglebutton-borderRadius: 0 2px 2px 0;
         }
     }
 
