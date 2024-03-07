@@ -50,7 +50,7 @@ export const useSelection = ({
   );
 
   const handleRowClick = useCallback<RowClickHandler>(
-    (row, rangeSelect, keepExistingSelection) => {
+    (evt, row, rangeSelect, keepExistingSelection) => {
       const { [IDX]: idx } = row;
       const { current: active } = lastActiveRef;
       const { current: selected } = selectedRef;

@@ -89,7 +89,7 @@ export const Row = memo(
       (evt: MouseEvent<HTMLDivElement>) => {
         const rangeSelect = evt.shiftKey;
         const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
-        onClick?.(row, rangeSelect, keepExistingSelection);
+        onClick?.(evt, row, rangeSelect, keepExistingSelection);
       },
       [onClick, row]
     );

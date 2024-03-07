@@ -2,14 +2,14 @@ import {
   Table as DataTable,
   TickingArrayDataSource,
 } from "@finos/vuu-data-test";
-import { TableSchema } from "@finos/vuu-data-types";
+import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
 import {
   FlexboxLayout,
   LayoutProvider,
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { Table } from "@finos/vuu-table";
+import { Table, TableRowSelectHandler } from "@finos/vuu-table";
 import { TableConfig, TableRowClickHandler } from "@finos/vuu-table-types";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
@@ -82,7 +82,10 @@ const parentTable = new DataTable(
 const childTable = new DataTable(
     ChildTableSchema,
     [
-        ["child-001", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "parent-001"],
+        ["child-001.1", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "parent-001"],
+        ["child-001.2", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "parent-001"],
+        ["child-001.3", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "parent-001"],
+        ["child-001.4", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "parent-001"],
         ["child-002", "row 2","1 val 2","1 val 3","1 val 4","1 val 5", "parent-002"],
         ["child-003", "row 3","1 val 2","1 val 3","1 val 4","1 val 5", "parent-003"],
         ["child-004", "row 4","1 val 2","1 val 3","1 val 4","1 val 5", "parent-004"],
@@ -98,7 +101,7 @@ const childTable = new DataTable(
 const grandchildTable = new DataTable(
     ChildTableSchema,
     [
-        ["grandchild-001", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "child-001"],
+        ["grandchild-001", "row 1","1 val 2","1 val 3","1 val 4","1 val 5", "child-001.1"],
         ["grandchild-002", "row 2","1 val 2","1 val 3","1 val 4","1 val 5", "child-002"],
         ["grandchild-003", "row 3","1 val 2","1 val 3","1 val 4","1 val 5", "child-003"],
         ["grandchild-004", "row 4","1 val 2","1 val 3","1 val 4","1 val 5", "child-004"],
@@ -129,6 +132,12 @@ export const SimpleCrossTableFiltering = () => {
     []
   );
 
+  const dataSourceAll = useMemo(() => {
+    return new TickingArrayDataSource({
+      columnDescriptors: ParentTableSchema.columns,
+      table: parentTable,
+    });
+  }, []);
   const dataSource1 = useMemo(() => {
     return new TickingArrayDataSource({
       columnDescriptors: ParentTableSchema.columns,
@@ -180,21 +189,30 @@ export const SimpleCrossTableFiltering = () => {
   }, []);
 
   const handleParentRowClick = useCallback<TableRowClickHandler>(
-    (row) => {
-      const map = buildColumnMap(dataSource1.columns);
-      const parentId = row[map.id];
+    (_evt, row) => {
+      console.log({ rowClick: row });
+      const parentId = row.data.id;
       dataSource4.filter = { filter: `parentId = "${parentId}"` };
     },
-    [dataSource1.columns, dataSource4]
+    [dataSource4]
+  );
+
+  const handleParentRowSelect = useCallback<TableRowSelectHandler>((row) => {
+    console.log({ rowSelect: row });
+  }, []);
+  const handleParentRowSelectionChange = useCallback<SelectionChangeHandler>(
+    (selection) => {
+      console.log({ selection });
+    },
+    []
   );
 
   const handleChildRowClick = useCallback<TableRowClickHandler>(
-    (row) => {
-      const map = buildColumnMap(dataSource4.columns);
-      const parentId = row[map.id];
+    (_evt, row) => {
+      const parentId = row.data.id;
       dataSource5.filter = { filter: `parentId = "${parentId}"` };
     },
-    [dataSource4.columns, dataSource5]
+    [dataSource5]
   );
 
   return (
@@ -208,11 +226,22 @@ export const SimpleCrossTableFiltering = () => {
         }}
       >
         <StackLayout style={{ flex: 1 }}>
+          <View title="All parent rows">
+            <Table
+              config={configParent}
+              dataSource={dataSourceAll}
+              onRowClick={handleParentRowClick}
+              onSelect={handleParentRowSelect}
+              onSelectionChange={handleParentRowSelectionChange}
+            />
+          </View>
           <View title="One or Two">
             <Table
               config={configParent}
               dataSource={dataSource1}
               onRowClick={handleParentRowClick}
+              onSelect={handleParentRowSelect}
+              onSelectionChange={handleParentRowSelectionChange}
             />
           </View>
           <View title="Three to Six">

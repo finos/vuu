@@ -1,9 +1,9 @@
 //TODO this all probably belongs in vuu-table
-import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { DataSourceRow, DataSourceRowObject } from "@finos/vuu-data-types";
 import type { MutableRefObject } from "react";
-import { metadataKeys } from "./column-utils";
+import { ColumnMap, metadataKeys } from "./column-utils";
 
-const { IDX } = metadataKeys;
+const { IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
 
 export type RowOffsetFunc = (
   row: DataSourceRow,
@@ -89,4 +89,31 @@ export const getIndexFromRowElement = (rowElement: HTMLElement) => {
       "getIndexFromRowElement row element does not have aria rowindex"
     );
   }
+};
+
+export const asDataSourceRowObject = (
+  row: DataSourceRow,
+  columnMap: ColumnMap
+): DataSourceRowObject => {
+  console.log({ columnMap });
+  const {
+    [IS_LEAF]: isLeaf,
+    [KEY]: key,
+    [IDX]: index,
+    [SELECTED]: selected,
+  } = row;
+
+  const rowObject: DataSourceRowObject = {
+    key,
+    index,
+    isGroupRow: !isLeaf,
+    isSelected: selected > 0,
+    data: {},
+  };
+
+  for (const [colName, colIdx] of Object.entries(columnMap)) {
+    rowObject.data[colName] = row[colIdx];
+  }
+
+  return rowObject;
 };

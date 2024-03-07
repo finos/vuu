@@ -22,6 +22,7 @@ import {
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
+  asDataSourceRowObject,
   buildColumnMap,
   getIndexFromRowElement,
   isGroupColumn,
@@ -581,11 +582,11 @@ export const useTable = ({
   );
 
   const handleRowClick = useCallback<RowClickHandler>(
-    (row, rangeSelect, keepExistingSelection) => {
-      selectionHookOnRowClick(row, rangeSelect, keepExistingSelection);
-      onRowClickProp?.(row);
+    (evt, row, rangeSelect, keepExistingSelection) => {
+      selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
+      onRowClickProp?.(evt, asDataSourceRowObject(row, columnMap));
     },
-    [onRowClickProp, selectionHookOnRowClick]
+    [columnMap, onRowClickProp, selectionHookOnRowClick]
   );
 
   const onMoveColumn = useCallback(
