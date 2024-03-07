@@ -66,7 +66,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
         fileName.endsWith(matchPattern)
       );
       if (file) {
-        return `./feature-${featureName}/${file.fileName}`;
+        return `/feature-${featureName}/${file.fileName}`;
       }
     };
 
