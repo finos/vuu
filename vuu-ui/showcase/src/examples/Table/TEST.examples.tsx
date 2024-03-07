@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { TestTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { ContextMenuProvider } from "@finos/vuu-popups";
-import { SchemaColumn } from "packages/vuu-data-types";
-import { ColumnDescriptor } from "packages/vuu-table-types";
+import { SchemaColumn } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 
 let displaySequence = 1;

@@ -9,12 +9,12 @@ import {
 } from "@finos/vuu-codemirror";
 import {
   getTypeaheadParams,
-  SuggestionFetcher,
   useTypeaheadSuggestions,
 } from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { SuggestionFetcher } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { VuuTable } from "@finos/vuu-protocol-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 // import { isMappedValueTypeRenderer, isTypeDescriptor } from "@finos/vuu-utils";
 import { useCallback, useRef } from "react";
 import { filterInfo } from "./filterInfo";

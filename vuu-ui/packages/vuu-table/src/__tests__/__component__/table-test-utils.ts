@@ -1,4 +1,4 @@
-import { VuuRange } from "packages/vuu-protocol-types";
+import { VuuRange } from "@finos/vuu-protocol-types";
 
 export const withAriaRowIndex = (index: number) => ({
   name: (_: string, el: Element) => el.ariaRowIndex === `${index}`,

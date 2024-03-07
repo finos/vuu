@@ -18,7 +18,7 @@ import {
   updateColumnType,
   queryClosest,
 } from "@finos/vuu-utils";
-import { VuuColumnDataType } from "packages/vuu-protocol-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import {
   FormEventHandler,
   useCallback,

@@ -1,5 +1,4 @@
-import { DataSource } from "@finos/vuu-data-types";
-import { SuggestionFetcher } from "@finos/vuu-data-react";
+import { DataSource, SuggestionFetcher } from "@finos/vuu-data-types";
 import basketModule from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import simulModule from "./simul/simul-module";
@@ -25,6 +24,8 @@ const vuuModules: Record<
   TEST: testModule,
 };
 
+// Note, this is useful but be aware that all modules will be bundled if this is imported.
+// If only a single module is required, better to import it directly.
 export const vuuModule = <T extends string = string>(
   moduleName: VuuModuleName
 ) => vuuModules[moduleName] as VuuModule<T>;

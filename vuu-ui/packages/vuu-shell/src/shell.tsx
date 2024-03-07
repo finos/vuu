@@ -6,6 +6,7 @@ import {
   StackLayout,
 } from "@finos/vuu-layout";
 import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
+import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import {
   logger,
   ThemeMode,
@@ -22,15 +23,14 @@ import {
 } from "react";
 import { AppHeader } from "./app-header";
 import { useLayoutManager } from "./layout-management";
-import { SidePanelProps, useShellLayout } from "./shell-layouts";
-import { SaveLocation } from "./shellTypes";
-
-import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
-import "./shell.css";
 import {
   loadingApplicationJson,
   useLayoutContextMenuItems,
 } from "./persistence-management";
+import { SidePanelProps, useShellLayout } from "./shell-layouts";
+import { SaveLocation } from "./shellTypes";
+
+import "./shell.css";
 
 if (typeof StackLayout !== "function") {
   console.warn(

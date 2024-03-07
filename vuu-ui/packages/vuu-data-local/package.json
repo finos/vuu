@@ -17,5 +17,6 @@
   },
   "dependencies": {
     "@finos/vuu-utils": "0.0.26"
-  }
+  },
+  "sideEffects": false
 }
