@@ -1,4 +1,9 @@
-import { ExitEditModeHandler, Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import {
+  ExitEditModeHandler,
+  Tab,
+  Tabstrip,
+  TabstripProps,
+} from "@finos/vuu-ui-controls";
 import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
@@ -9,7 +14,7 @@ const SPLITTER_WIDTH = 3;
 
 let displaySequence = 1;
 
-export const DefaultTabstripNext = ({
+export const DefaultTabstrip = ({
   activeTabIndex: activeTabIndexProp = 4,
   width = 700,
 }) => {
@@ -45,9 +50,9 @@ export const DefaultTabstripNext = ({
   );
 };
 
-DefaultTabstripNext.displaySequence = displaySequence++;
+DefaultTabstrip.displaySequence = displaySequence++;
 
-export const TabstripNextAddTab = ({ width = 700 }) => {
+export const TabstripAddTab = ({ width = 700 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [tabs, setTabs] = useState([{ label: "Home" }]);
 
@@ -89,9 +94,9 @@ export const TabstripNextAddTab = ({ width = 700 }) => {
   );
 };
 
-TabstripNextAddTab.displaySequence = displaySequence++;
+TabstripAddTab.displaySequence = displaySequence++;
 
-export const TabstripNextRemoveTab = ({ width = 700 }) => {
+export const TabstripRemoveTab = ({ width = 700 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [tabs, setTabs] = useState([{ label: "Home" }]);
 
@@ -142,9 +147,9 @@ export const TabstripNextRemoveTab = ({ width = 700 }) => {
   );
 };
 
-TabstripNextRemoveTab.displaySequence = displaySequence++;
+TabstripRemoveTab.displaySequence = displaySequence++;
 
-export const TabstripNextEditableLabels = ({
+export const TabstripEditableLabels = ({
   activeTabIndex: activeTabIndexProp = 0,
   width = 700,
 }) => {
@@ -190,17 +195,11 @@ export const TabstripNextEditableLabels = ({
   );
 };
 
-TabstripNextEditableLabels.displaySequence = displaySequence++;
+TabstripEditableLabels.displaySequence = displaySequence++;
 
-export const TabstripNextDragDrop = ({ width = 700 }) => {
+export const TabstripDragDrop = ({ width = 700 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState([
-    "Home",
-    "Transactions",
-    "Loans",
-    "Checks",
-    "Liquidity",
-  ]);
+  const [tabs, setTabs] = useState(["Home", "Transactions", "Loans", "Checks"]);
 
   const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
     setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
@@ -238,7 +237,79 @@ export const TabstripNextDragDrop = ({ width = 700 }) => {
   );
 };
 
-TabstripNextDragDrop.displaySequence = displaySequence++;
+TabstripDragDrop.displaySequence = displaySequence++;
+
+const TabstripBase = (props: Partial<TabstripProps>) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [tabs, setTabs] = useState([
+    "Home",
+    "Transactions",
+    "Loans",
+    "Checks",
+    "Liquidity",
+  ]);
+
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
+    setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
+  }, []);
+  return (
+    <Tabstrip
+      {...props}
+      activeTabIndex={activeTabIndex}
+      animateSelectionThumb
+      allowDragDrop
+      onActiveChange={setActiveTabIndex}
+      onMoveTab={handleDrop}
+    >
+      {tabs.map((label, i) => (
+        <Tab
+          index={i}
+          key={label}
+          label={label}
+          ariaControls={i === activeTabIndex ? `ts-panel-${i}` : undefined}
+        />
+      ))}
+    </Tabstrip>
+  );
+};
+
+export const TabstripVariations = () => {
+  return (
+    <div
+      className="vuuToggleButtonExample"
+      data-showcase-center
+      style={{
+        alignItems: "center",
+        display: "grid",
+        columnGap: 20,
+        rowGap: 12,
+        gridTemplateColumns: "auto 1fr",
+        gridTemplateRows: "40px 40px 40px 40px 40px 40px 40px 40px 40px",
+        justifyItems: "start",
+      }}
+    >
+      <span>Primary</span>
+      <TabstripBase variant="primary" />
+
+      <span />
+      <TabstripBase variant="primary" allowRenameTab allowCloseTab />
+
+      <span />
+      <TabstripBase variant="primary" allowAddTab />
+
+      <span>Secondary</span>
+      <TabstripBase variant="secondary" />
+
+      <span />
+      <TabstripBase variant="secondary" allowRenameTab allowCloseTab />
+
+      <span />
+      <TabstripBase variant="secondary" allowAddTab />
+    </div>
+  );
+};
+
+TabstripVariations.displaySequence = displaySequence++;
 
 /*
 const CloseTabWarningDialog = ({

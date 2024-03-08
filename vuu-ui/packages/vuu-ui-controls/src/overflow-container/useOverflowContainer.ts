@@ -24,10 +24,8 @@ import {
 import { OverflowContainerProps } from "./OverflowContainer";
 
 export interface OverflowContainerHookProps
-  extends Pick<
-    OverflowContainerProps,
-    "allowDragDrop" | "onMoveItem" | "orientation"
-  > {
+  extends Pick<OverflowContainerProps, "allowDragDrop" | "onMoveItem">,
+    Required<Pick<OverflowContainerProps, "orientation">> {
   itemCount: number;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
 }
@@ -37,7 +35,7 @@ export const useOverflowContainer = ({
   itemCount,
   onMoveItem,
   onSwitchWrappedItemIntoView,
-  orientation = "horizontal",
+  orientation,
 }: OverflowContainerHookProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const wrappedItemsRef = useRef<OverflowItem[]>(NO_WRAPPED_ITEMS);
@@ -64,7 +62,11 @@ export const useOverflowContainer = ({
         "vuuOverflowContainer-wrapContainer"
       );
       if (overflowIndicatorHasWrappedButShouldNotHave(wrapped)) {
-        wrapped = await correctForWrappedOverflowIndicator(container, wrapped);
+        wrapped = await correctForWrappedOverflowIndicator(
+          container,
+          wrapped,
+          orientation
+        );
       }
       while (
         highPriorityItemsHaveWrappedButShouldNotHave(nonWrapped, wrapped)
@@ -72,11 +74,12 @@ export const useOverflowContainer = ({
         [nonWrapped, wrapped] = await correctForWrappedHighPriorityItems(
           container,
           nonWrapped,
-          wrapped
+          wrapped,
+          orientation
         );
       }
       if (wrapped.length === 1) {
-        if (removeOverflowIndicatorIfNoLongerNeeded(container)) {
+        if (removeOverflowIndicatorIfNoLongerNeeded(container, orientation)) {
           wrapped = NO_WRAPPED_ITEMS;
         }
       }
@@ -119,7 +122,8 @@ export const useOverflowContainer = ({
           // TODO do we always want to switch it into view - leave that to caller
           const [, wrappedItems] = switchWrappedItemIntoView(
             container,
-            options.overflowItem
+            options.overflowItem,
+            orientation
           );
           wrappedItemsRef.current = wrappedItems;
           onSwitchWrappedItemIntoView?.(options.overflowItem);
@@ -127,7 +131,7 @@ export const useOverflowContainer = ({
         return true;
       },
     ];
-  }, [container, onSwitchWrappedItemIntoView]);
+  }, [container, onSwitchWrappedItemIntoView, orientation]);
 
   const resizeObserver = useMemo(() => {
     const { sizeProp } = MEASURES[orientation];

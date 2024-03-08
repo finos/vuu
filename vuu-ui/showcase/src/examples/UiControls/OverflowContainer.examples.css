@@ -1,7 +1,7 @@
 .Item {
     background-color: var(--item-bg, blue);
     color: white;
-    height: 32px;
+    height: var(--salt-size-base);
 }
 
 .vuuOverflowContainer-vertical .Item {

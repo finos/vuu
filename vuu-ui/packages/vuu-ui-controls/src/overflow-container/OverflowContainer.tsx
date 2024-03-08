@@ -2,12 +2,7 @@ import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
 import { asReactElements, orientationType, useId } from "@finos/vuu-utils";
 
 import cx from "clsx";
-import React, {
-  CSSProperties,
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-} from "react";
+import React, { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 import { OverflowItem } from "./overflow-utils";
 import { useOverflowContainer } from "./useOverflowContainer";
 
@@ -19,7 +14,6 @@ export interface OverflowContainerProps extends HTMLAttributes<HTMLDivElement> {
   PopupMenuProps?: Partial<PopupMenuProps>;
   allowDragDrop?: boolean;
   debugId?: string;
-  height: number;
   onMoveItem?: (fromIndex: number, toIndex: number) => void;
   onSwitchWrappedItemIntoView?: (overflowItem: OverflowItem) => void;
   orientation?: orientationType;
@@ -32,14 +26,13 @@ const WrapContainer = React.memo(
     PopupMenuProps,
     allowDragDrop,
     children,
-    className: classNameProp,
-    height: heightProp,
     id,
     onMoveItem,
     onSwitchWrappedItemIntoView,
-    orientation = "horizontal",
+    orientation,
     overflowIcon,
-  }: OverflowContainerProps) => {
+  }: Omit<OverflowContainerProps, "orientation"> &
+    Required<Pick<OverflowContainerProps, "orientation">>) => {
     const childElements = asReactElements(children);
     const {
       draggable,
@@ -54,17 +47,6 @@ const WrapContainer = React.memo(
       onMoveItem,
       onSwitchWrappedItemIntoView,
       orientation,
-    });
-
-    const height = orientation === "vertical" ? "100%" : `${heightProp}px`;
-    // TODO measure the height, if not provided
-    const style = {
-      "--overflow-container-height": `${height}`,
-    } as CSSProperties;
-
-    const className = cx(`${classBase}-wrapContainer`, classNameProp, {
-      [`${classBase}-horizontal`]: orientation === "horizontal",
-      [`${classBase}-vertical`]: orientation === "vertical",
     });
 
     const content = childElements.map((childEl, i) => {
@@ -111,7 +93,7 @@ const WrapContainer = React.memo(
     content.push(overflowIndicator);
 
     return (
-      <div className={className} ref={rootRef} style={style}>
+      <div className={cx(`${classBase}-wrapContainer`)} ref={rootRef}>
         {content}
         {draggable}
       </div>
@@ -127,11 +109,10 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
     allowDragDrop = false,
     children,
     className,
-    height = 44,
     id: idProp,
     onMoveItem,
     onSwitchWrappedItemIntoView,
-    orientation,
+    orientation = "horizontal",
     overflowIcon,
     overflowPosition,
     ...htmlAttributes
@@ -143,14 +124,18 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
   return (
     <div
       {...htmlAttributes}
-      className={cx(cx(className, classBase))}
+      className={cx(
+        cx(className, classBase, {
+          [`${classBase}-horizontal`]: orientation === "horizontal",
+          [`${classBase}-vertical`]: orientation === "vertical",
+        })
+      )}
       id={id}
       ref={forwardedRef}
     >
       <WrapContainer
         PopupMenuProps={PopupMenuProps}
         allowDragDrop={allowDragDrop}
-        height={height}
         id={id}
         orientation={orientation}
         overflowIcon={overflowIcon}

@@ -30,6 +30,7 @@ export const Tabstrip = ({
   showTabMenuButton,
   style: styleProp,
   tabClassName,
+  variant = "secondary",
   ...htmlAttributes
 }: TabstripProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -135,8 +136,8 @@ export const Tabstrip = ({
       <OverflowContainer
         {...htmlAttributes}
         {...tabstripHook.containerProps}
-        className={className}
-        height={29}
+        className={cx(className, `${classBase}-${variant}`)}
+        height={28}
         id={id}
         orientation={orientation}
         overflowIcon="more-horiz"
