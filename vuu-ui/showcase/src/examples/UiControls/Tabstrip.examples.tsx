@@ -256,7 +256,6 @@ const TabstripBase = (props: Partial<TabstripProps>) => {
     <Tabstrip
       {...props}
       activeTabIndex={activeTabIndex}
-      animateSelectionThumb
       allowDragDrop
       onActiveChange={setActiveTabIndex}
       onMoveTab={handleDrop}
@@ -298,13 +297,18 @@ export const TabstripVariations = () => {
       <TabstripBase variant="primary" allowAddTab />
 
       <span>Secondary</span>
-      <TabstripBase variant="secondary" />
+      <TabstripBase animateSelectionThumb variant="secondary" />
 
       <span />
-      <TabstripBase variant="secondary" allowRenameTab allowCloseTab />
+      <TabstripBase
+        animateSelectionThumb
+        variant="secondary"
+        allowRenameTab
+        allowCloseTab
+      />
 
       <span />
-      <TabstripBase variant="secondary" allowAddTab />
+      <TabstripBase animateSelectionThumb variant="secondary" allowAddTab />
     </div>
   );
 };

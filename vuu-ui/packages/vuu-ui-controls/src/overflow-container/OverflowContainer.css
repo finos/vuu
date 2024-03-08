@@ -22,19 +22,20 @@
     border-right-width: var(--overflow-border-rightWidth);
     border-bottom-width:  var(--overflow-border-bottomWidth);
     border-left-width: var(--overflow-border-leftWidth);
-    height: var(--overflow-container-height);
+    height: var(--vuuOverflowContainer-height,var(--overflow-container-height));
     width: var(--overflow-container-width);
 }
 
-.vuuOverflowContainer-horizontal {
+.vuuOverflowContainer.vuuOrientation-horizontal {
     --item-align: center;
     --item-margin: 0 var(--overflow-item-gap) 0 var(--overflow-item-gap);
     --overflow-container-height: calc(var(--salt-size-base) + var(--salt-spacing-100));
     --overflow-container-width: auto;
     --overflow-wrapper-height: var(--overflow-item-height);
-    --overflow-item-height: calc(var(--overflow-container-height) - var(--overflow-borderWidth));
+    --overflow-item-height: var(--vuuOverflowContainer-contentHeight, calc(var(--overflow-container-height) - var(--total-border-size)));
     --overflow-item-width: auto;
     --overflow-width: 0px;
+    --total-border-size: calc(var(--overflow-border-topWidth) + var(--overflow-border-bottomWidth));
 
     min-width: var(--vuuOverflowContainer-minWidth, var(--overflow-container-height));
 
@@ -45,15 +46,15 @@
     }
     
 }
-.vuuOverflowContainer-vertical {
+.vuuOverflowContainer.vuuOrientation-vertical {
     --item-align: stretch;
     --overflow-container-height: 100%;;
     --overflow-container-width: calc(var(--salt-size-base) + var(--salt-spacing-100));
     --overflow-item-height: auto;
-    --overflow-item-width: calc(var(--overflow-container-width) - var(--overflow-borderWidth));
+    --overflow-item-width: calc(var(--overflow-container-width) - var(--total-border-size));
     --overflow-wrapper-height: 100%;
+    --total-border-size: calc(var(--overflow-border-leftWidth) + var(--overflow-border-rightWidth));
 
-    --overflow-item-height: auto;
     --item-margin: var(--overflow-item-gap) 0 var(--overflow-item-gap) 0;
     --overflow-direction: column; 
     --overflow-height: 0px;
@@ -89,7 +90,7 @@
     --overflow-width: auto;
 }
 
-.vuuOverflowContainer-vertical.vuuOverflowContainer-wrapContainer-overflowed {
+.vuuOverflowContainer.vuuOrientation-vertical.vuuOverflowContainer-wrapContainer-overflowed {
     --overflow-height: auto;
 }
 

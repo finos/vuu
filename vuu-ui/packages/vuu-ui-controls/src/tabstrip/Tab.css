@@ -1,21 +1,21 @@
 /* Class applied to root Tab element */
 .vuuTab {
-  
   --saltEditableLabel-padding: 0;
   --saltEditableLabel-height: calc(var(--tabstrip-height) - 2px);
   --saltInputLegacy-minWidth: 4em;
   --saltEditableLabel-top: 2px;
 
-  --tab-background: var(--vuuTab-background, var(--salt-navigable-primary-background));
+  --tab-background: var(--vuuTab-background, transparent);
   --tab-cursor: pointer;
   --tab-position: relative;
-}
 
-.vuuTab {
+
   align-items: center;
   align-self: stretch;
   background: var(--tab-background);
-  border: none;
+  border-color: var(--vuuTab-borderColor, transparent);
+  border-style: var(--vuuTab-borderStyle, none);
+  border-width: var(--vuuTab-borderWidth, 0px);
   border-radius: var(--vuuTab-borderRadius, 0);
   color: var(--salt-text-primary-foreground);
   cursor: var(--vuuTab-cursor, var(--tab-cursor));
@@ -23,21 +23,13 @@
   gap: 8px;
   height: var(--vuuTabHeight, var(--tab-height));
   letter-spacing: var(--vuuTab-letterSpacing, var(--tab-letterSpacing, 0));
+  margin: 0 var(--tab-spacing) 0 0;
   min-width: var(--vuuTab-minWidth, 40px);
   outline: none;
   padding: var(--vuuTab-padding, 0 24px);
   position: var(--vuuTab-position, var(--tab-position));
   user-select: none;
   width: var(--tab-width)
-}
-
-/* Overrides characteristic used in saltFocusVisible */
-/* .vuuTab.saltFocusVisible:after {
-  inset: 2px 2px 4px 2px;
-} */
-
-.vuuTab {
-  margin: 0 var(--tab-spacing) 0 0;
 }
 
 .vuuTab-selected {

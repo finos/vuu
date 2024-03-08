@@ -1,7 +1,7 @@
 /* Component class applied to the root element */
 .vuuTabstrip {
   --vuuOverflowContainer-background: transparent;
-  /* --tabstrip-height: var(--vuuTabstrip-height, var(--salt-size-stackable)); */
+  --vuuOverflowContainer-borderColor: var(--salt-container-primary-borderColor);
   --tabstrip-dragging-display: none;
   --tabstrip-display: inline-flex;
   --tabstrip-background: transparent;
@@ -17,12 +17,11 @@
 }
 
 /* Tabstrip orientation is horizontal */
-.vuuTabstrip-horizontal {
-  --vuuOverflowContainer-borderColor: var(--salt-container-primary-borderColor);
+.vuuTabstrip.vuuOrientation-horizontal {
   --vuuOverflowContainer-borderStyle: none none solid none;
   --vuuOverflowContainer-borderBottomWidth: 1px;
 
-  --tabstrip-height: var(--vuuTabstrip-height, 28px);
+  --tabstrip-height: var(--vuuTabstrip-height, var(--overflow-wrapper-height,28px));
   --tabstrip-width: var(--vuuTabstrip-width, 100%);
   --tab-height: var(--tabstrip-height);
   --tab-width: auto;
@@ -35,7 +34,7 @@
 }
 
 /* Tabstrip orientation is vertical */
-.vuuTabstrip-vertical {
+.vuuTabstrip.vuuOrientation-vertical {
   --tabstrip-height: var(--vuuTabstrip-height, 100%);
   --tabstrip-width: var(--vuuTabstrip-width, 100px);
   --tab-height: 50px;
@@ -79,7 +78,7 @@
   line-height: var(--tabstrip-height);
 }
 
-.vuuTabstrip-vertical .vuuTabstrip-inner {
+.vuuTabstrip.vuuOrientation-vertical .vuuTabstrip-inner {
   flex-direction: column;
   height: auto;
 }

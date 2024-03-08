@@ -126,8 +126,8 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
       {...htmlAttributes}
       className={cx(
         cx(className, classBase, {
-          [`${classBase}-horizontal`]: orientation === "horizontal",
-          [`${classBase}-vertical`]: orientation === "vertical",
+          "vuuOrientation-horizontal": orientation === "horizontal",
+          "vuuOrientation-vertical": orientation === "vertical",
         })
       )}
       id={id}

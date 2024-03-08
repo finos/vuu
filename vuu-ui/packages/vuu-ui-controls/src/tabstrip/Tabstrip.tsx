@@ -56,7 +56,7 @@ export const Tabstrip = ({
     orientation,
   });
   const id = useId(idProp);
-  const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
+  const className = cx(classBase, classNameProp);
   const style =
     styleProp || containerStyle
       ? {
@@ -137,7 +137,6 @@ export const Tabstrip = ({
         {...htmlAttributes}
         {...tabstripHook.containerProps}
         className={cx(className, `${classBase}-${variant}`)}
-        height={28}
         id={id}
         orientation={orientation}
         overflowIcon="more-horiz"
