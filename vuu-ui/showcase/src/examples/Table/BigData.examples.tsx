@@ -107,7 +107,7 @@ export const TableScrollingAPI = () => {
         scrollingApiRef={scrollingAPI}
         width={1000}
       />
-      <Toolbar height={36} style={{ marginTop: 50 }}>
+      <Toolbar style={{ marginTop: 50 }}>
         <Input value={rowInputValue} onChange={handleChangeRowInput} />
         <Button onClick={handleScrollToIndex}>Scroll To Row at Index</Button>
         <Input value={scrollPosition} onChange={handleChangeScrollPosition} />

@@ -25,7 +25,6 @@ export const DefaulToolbar = () => {
       }
     >
       <Toolbar
-        height={44}
         onNavigateOutOfBounds={handleNavigateOutOfBounds}
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -64,7 +63,6 @@ export const ToolbarWrapPriority = () => {
       }
     >
       <Toolbar
-        height={44}
         onNavigateOutOfBounds={handleNavigateOutOfBounds}
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -99,7 +97,6 @@ export const ToolbarControlledSelection = () => {
     >
       <Toolbar
         activeItemIndex={activeItem}
-        height={44}
         onActiveChange={setActiveItem}
         selectionStrategy="deselectable"
         style={{
@@ -134,7 +131,6 @@ export const DefaulToolbarActivateSingle = () => {
     >
       <Toolbar
         defaultActiveItemIndex={[0]}
-        height={44}
         selectionStrategy="default"
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -169,7 +165,6 @@ export const DefaulToolbarActivateSingleDeselectable = () => {
     >
       <Toolbar
         defaultActiveItemIndex={[0]}
-        height={44}
         selectionStrategy="deselectable"
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -203,7 +198,6 @@ export const ToolbarActivateMultipleItems = () => {
       }
     >
       <Toolbar
-        height={44}
         selectionStrategy="multiple"
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -238,7 +232,6 @@ export const ToolbarShiftActivateMultipleItems = () => {
       }
     >
       <Toolbar
-        height={44}
         selectionStrategy="multiple-special-key"
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -273,7 +266,6 @@ export const ToolbarActivateMultipleItemsNonSelectableItem = () => {
       }
     >
       <Toolbar
-        height={44}
         selectionStrategy="multiple"
         style={{
           background: "var(--vuu-color-gray-30)",
@@ -318,7 +310,6 @@ export const ToolbarItemsEventHandlers = () => {
       }
     >
       <Toolbar
-        height={44}
         style={{
           background: "var(--vuu-color-gray-30)",
           width: "100%",

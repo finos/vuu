@@ -44,7 +44,6 @@ export const AppHeader = ({
     <Toolbar
       alignItems="end"
       className={className}
-      height={36}
       showSeparators
       {...htmlAttributes}
     >

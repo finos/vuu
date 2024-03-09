@@ -95,7 +95,6 @@ export const GroupHeaderCellNext = ({
       <OverflowContainer
         allowDragDrop
         className={`${classBase}-inner`}
-        height={24}
         onMoveItem={handleMoveItem}
         overflowPosition="start"
       >
