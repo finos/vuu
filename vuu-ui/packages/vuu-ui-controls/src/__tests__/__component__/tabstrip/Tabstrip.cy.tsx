@@ -32,12 +32,12 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 
   describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
     it("THEN first 4 tabs will be displayed, with overflow indicator", () => {
-      cy.mount(<DefaultTabstrip width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
+      cy.mount(<DefaultTabstrip width={350} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "350px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
-        .should("have.length", 4);
+        .should("have.length", 5);
       cy.get(".vuuTabstrip").debug();
       cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
       cy.get(`.wrapped`).should("have.length", 1);
@@ -48,16 +48,18 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 
   describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
     it("THEN  as last tab is selected, last but one will be overflowed", () => {
-      cy.mount(<DefaultTabstrip activeTabIndex={4} width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
+      cy.mount(<DefaultTabstrip activeTabIndex={4} width={350} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "350px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
         .should("have.length", 4);
-      cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-      cy.get(`${OVERFLOW_ITEMS}:nth-child(4).wrapped`).should("have.length", 1);
+      cy.get(OVERFLOWED_ITEMS).should("have.length", 2);
+      // Because a longer (selected) item has been restored , two shorter items have been wrapped
+      cy.get(`${OVERFLOW_ITEMS}:nth-child(2).wrapped`).should("have.length", 1);
+      cy.get(`${OVERFLOW_ITEMS}:nth-child(3).wrapped`).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("be.visible", 1);
+      cy.get(OVERFLOW_IND).should("be.visible");
     });
   });
 });

@@ -185,11 +185,11 @@ export const OverflowContainerHighPriorityItem = () => {
 
 OverflowContainerHighPriorityItem.displaySequence = displaySequence++;
 
-export const TestFixtureSimpleOverflowContainer = () => {
+export const TestFixtureSimpleOverflowContainer = ({ width = 600 }) => {
   return (
     <>
       <input data-testid="input-1" />
-      <OverflowContainer data-testid="overflow-container">
+      <OverflowContainer data-testid="overflow-container" style={{ width }}>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>
         <div className="Item" style={{ width: 100 }}></div>

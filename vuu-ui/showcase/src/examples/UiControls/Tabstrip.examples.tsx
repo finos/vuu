@@ -15,8 +15,8 @@ const SPLITTER_WIDTH = 3;
 let displaySequence = 1;
 
 export const DefaultTabstrip = ({
-  activeTabIndex: activeTabIndexProp = 4,
-  width = 700,
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 500,
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
@@ -51,6 +51,82 @@ export const DefaultTabstrip = ({
 };
 
 DefaultTabstrip.displaySequence = displaySequence++;
+
+export const OveflowingTabstrip = ({
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 350,
+}) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
+  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <Tabstrip
+            activeTabIndex={activeTabIndex}
+            animateSelectionThumb
+            onActiveChange={setActiveTabIndex}
+          >
+            {tabs.map((label, i) => (
+              <Tab
+                index={i}
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </Tabstrip>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+OveflowingTabstrip.displaySequence = displaySequence++;
+
+export const OveflowingSelectedTab = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 350,
+}) => {
+  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
+  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        path=""
+      >
+        <div data-resizeable style={{ flex: 1 }}>
+          <Tabstrip
+            activeTabIndex={activeTabIndex}
+            animateSelectionThumb
+            onActiveChange={setActiveTabIndex}
+          >
+            {tabs.map((label, i) => (
+              <Tab
+                index={i}
+                key={label}
+                label={label}
+                ariaControls={
+                  i === activeTabIndex ? `ts-panel-${i}` : undefined
+                }
+              />
+            ))}
+          </Tabstrip>
+        </div>
+        <div data-resizeable />
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+OveflowingSelectedTab.displaySequence = displaySequence++;
 
 export const TabstripAddTab = ({ width = 700 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
