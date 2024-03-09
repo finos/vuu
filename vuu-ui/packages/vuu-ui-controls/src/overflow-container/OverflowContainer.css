@@ -1,3 +1,4 @@
+
 .vuuOverflowContainer {
     --overflow-borderColor: var(--vuuOverflowContainer-borderColor, none);
     --overflow-borderStyle: var(--vuuOverflowContainer-borderStyle, none);
@@ -8,11 +9,11 @@
     --overflow-border-bottomWidth: var(--vuuOverflowContainer-borderBottomWidth, var(--overflow-borderWidth));
     --overflow-border-leftWidth: var(--vuuOverflowContainer-borderLeftWidth, var(--overflow-borderWidth));
     
+    --border: calc(var(--overflow-border-topWidth) + var(--overflow-border-bottomWidth));
+
     --overflow-item-gap : var(--vuuOverflowContainer-gap,2px);
     --overflow-direction: row; 
     --overflow-height: var(--overflow-item-height);
-    --overflow-top:top:0;
-    --overflow-width: 0px;
 
     background-color: var(--vuuOverflowContainer-background);
     border-color: var(--overflow-borderColor);
@@ -21,35 +22,61 @@
     border-right-width: var(--overflow-border-rightWidth);
     border-bottom-width:  var(--overflow-border-bottomWidth);
     border-left-width: var(--overflow-border-leftWidth);
-    height: var(--overflow-container-heightWidth);
+    height: var(--vuuOverflowContainer-height,var(--overflow-container-height));
+    width: var(--overflow-container-width);
 }
 
-.vuuOverflowContainer-horizontal {
+.vuuOverflowContainer.vuuOrientation-horizontal {
     --item-align: center;
     --item-margin: 0 var(--overflow-item-gap) 0 var(--overflow-item-gap);
+    --overflow-container-height: calc(var(--salt-size-base) + var(--salt-spacing-100));
+    --overflow-container-width: var(--vuuOverflowContainer-width, auto);
+    --overflow-wrapper-height: var(--overflow-item-height);
+    --overflow-item-height: var(--vuuOverflowContainer-contentHeight, calc(var(--overflow-container-height) - var(--total-border-size)));
+    --overflow-item-width: auto;
+    --overflow-width: 0px;
+    --total-border-size: calc(var(--overflow-border-topWidth) + var(--overflow-border-bottomWidth));
+
+    min-width: var(--vuuOverflowContainer-minWidth, var(--overflow-container-height));
+
+    .vuuOverflowContainer-wrapContainer-overflowed {
+        --overflow-left: auto;
+        --overflow-position: relative;
+        --overflow-width: auto;
+    }
+    
 }
-.vuuOverflowContainer-vertical {
+.vuuOverflowContainer.vuuOrientation-vertical {
     --item-align: stretch;
+    --overflow-container-height: 100%;
+    --overflow-container-width: var(--vuuOverflowContainer-width,calc(var(--salt-size-base) + var(--salt-spacing-100)));
     --overflow-item-height: auto;
+    --overflow-item-width: calc(var(--overflow-container-width) - var(--total-border-size));
+    --overflow-wrapper-height: 100%;
+    --total-border-size: calc(var(--overflow-border-leftWidth) + var(--overflow-border-rightWidth));
+
     --item-margin: var(--overflow-item-gap) 0 var(--overflow-item-gap) 0;
     --overflow-direction: column; 
-    --overflow-height: 0;
+    --overflow-height: 0px;
     --overflow-left: 0;
     --overflow-top: 100%;
     --overflow-width: auto;
- 
+
+    .vuuOverflowContainer-wrapContainer-overflowed {
+        --overflow-top: auto;
+        --overflow-position: relative;
+        --overflow-height: auto;
+    }
+
 }
 
 .vuuOverflowContainer-wrapContainer {
-    --border: calc(var(--overflow-border-topWidth) + var(--overflow-border-bottomWidth));
-    --overflow-item-height: calc(var(--overflow-container-height) - var(--border));
     align-items: var(--item-align);
     display: flex;
     flex-direction: var(--overflow-direction);
     flex-wrap: wrap;
-    height: var(--overflow-item-height);
+    height: var(--overflow-wrapper-height); 
     justify-content: var(--vuuOverflowContainer-justifyContent, flex-start);
-    min-width: var(--vuuOverflowContainer-minWidth, 44px);
     overflow: hidden;
     position: relative;
     width: 100%;
@@ -63,7 +90,7 @@
     --overflow-width: auto;
 }
 
-.vuuOverflowContainer-vertical.vuuOverflowContainer-wrapContainer-overflowed {
+.vuuOverflowContainer.vuuOrientation-vertical.vuuOverflowContainer-wrapContainer-overflowed {
     --overflow-height: auto;
 }
 
@@ -74,16 +101,17 @@
     position: relative;
     height: var(--overflow-item-height);
     margin: var(--item-margin);
+    width: var(--overflow-item-width);
 }
 
 .vuuOverflowContainer-item[data-align="right"] {
     margin-left: auto;
 }
 
-
 .vuuOverflowContainer-item.wrapped {
     --overflow-item-bg: #ccc;
     order: 3;
+    visibility: hidden;
 }
 
 .vuuOverflowContainer-item.vuuDraggable-dragAway,
@@ -102,14 +130,8 @@
     height: var(--overflow-height);
     order: var(--overflow-order, 99);
     overflow: hidden;
-    left: var(--overflow-left, 100%);
-    top: var(--overflow-top, 100%);
-    position: var(--overflow-position, absolute);
     width: var(--overflow-width);
-
-  
 }
-
 
 .vuuDraggable-vuuOverflowContainer {
     align-items: center;

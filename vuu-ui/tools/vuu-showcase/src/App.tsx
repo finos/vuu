@@ -37,7 +37,7 @@ const sourceFromImports = (
         childNodes: sourceFromImports(stories, `${id}/`, "box"),
       };
     });
-
+// LIF00219931962
 export interface AppProps {
   stories: ExamplesModule;
 }
@@ -50,6 +50,7 @@ const availableThemes: ThemeDescriptor[] = [
   { id: "no-theme", label: "No Theme" },
   { id: "salt", label: "Salt" },
   { id: "vuu", label: "Vuu" },
+  { id: "tar", label: "Tar" },
 ];
 
 const availableThemeModes: ThemeModeDescriptor[] = [
@@ -155,6 +156,7 @@ export const App = ({ stories }: AppProps) => {
                   <ToggleButton value={0}>No Theme</ToggleButton>
                   <ToggleButton value={1}>SALT</ToggleButton>
                   <ToggleButton value={2}>VUU</ToggleButton>
+                  <ToggleButton value={3}>TAR</ToggleButton>
                 </ToggleButtonGroup>
 
                 <ThemeSwitch

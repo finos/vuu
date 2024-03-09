@@ -52,7 +52,7 @@ export const NO_WRAPPED_ITEMS: OverflowItem[] = [];
  */
 export const getNonWrappedAndWrappedItems = (
   container: HTMLElement,
-  orientation: orientationType = "horizontal"
+  orientation: orientationType
 ): [OverflowItem[], OverflowItem[]] => {
   const nonWrappedItems: OverflowItem[] = [];
   const wrappedItems: OverflowItem[] = [];
@@ -165,11 +165,12 @@ export const highPriorityItemsHaveWrappedButShouldNotHave = (
 */
 export const correctForWrappedOverflowIndicator = (
   container: HTMLElement,
-  overflowedItems: OverflowItem[]
+  overflowedItems: OverflowItem[],
+  orientation: orientationType
 ): Promise<OverflowItem[]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
-      const [, o2] = getNonWrappedAndWrappedItems(container);
+      const [, o2] = getNonWrappedAndWrappedItems(container, orientation);
       const newlyOverflowed = getNewItems(overflowedItems, o2);
       newlyOverflowed.forEach((item) => markElementAsWrapped(container, item));
       resolve(o2);
@@ -185,16 +186,18 @@ export const correctForWrappedOverflowIndicator = (
 export const correctForWrappedHighPriorityItems = (
   container: HTMLElement,
   nonWrapped: OverflowItem[],
-  wrapped: OverflowItem[]
+  wrapped: OverflowItem[],
+  orientation: orientationType
 ): Promise<[OverflowItem[], OverflowItem[]]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
-      const [, o2] = getNonWrappedAndWrappedItems(container);
+      const [, o2] = getNonWrappedAndWrappedItems(container, orientation);
       const highPriorityWrappedItem = getHighestPriorityItem(o2);
       if (highPriorityWrappedItem) {
         const [nonWrappedItems, wrappedItems] = switchWrappedItemIntoView(
           container,
-          highPriorityWrappedItem
+          highPriorityWrappedItem,
+          orientation
         );
         resolve([nonWrappedItems, wrappedItems]);
       } else {
@@ -249,19 +252,39 @@ const getOverflowIndicator = (container: HTMLElement) =>
   container.querySelector('[data-index="overflow"]') as HTMLElement;
 const getOverflowedItem = (container: HTMLElement) =>
   container.querySelector(".wrapped") as HTMLElement;
-const getElementWidth = (el: HTMLElement) =>
-  parseInt(getComputedStyle(el).getPropertyValue("width"));
+const getElementSize = (el: HTMLElement, sizeProperty: "width" | "height") => {
+  const size = parseInt(getComputedStyle(el).getPropertyValue(sizeProperty));
+  const margin =
+    sizeProperty === "width"
+      ? parseInt(getComputedStyle(el).getPropertyValue("margin-left")) +
+        parseInt(getComputedStyle(el).getPropertyValue("margin-right"))
+      : parseInt(getComputedStyle(el).getPropertyValue("margin-top")) +
+        parseInt(getComputedStyle(el).getPropertyValue("margin-bottom"));
+
+  return size + margin;
+};
 
 const getAvailableSpace = (
   container: HTMLElement,
-  overflowIndicator: HTMLElement
+  overflowIndicator: HTMLElement,
+  orientation: orientationType
 ) => {
-  const { right: containerRight } = container.getBoundingClientRect();
-  const paddingRight = parseInt(
-    getComputedStyle(container).getPropertyValue("padding-right")
-  );
-  const { right: indicatorRight } = overflowIndicator.getBoundingClientRect();
-  return containerRight - paddingRight - indicatorRight;
+  if (orientation === "horizontal") {
+    const { right: containerRight } = container.getBoundingClientRect();
+    const paddingRight = parseInt(
+      getComputedStyle(container).getPropertyValue("padding-right")
+    );
+    const { right: indicatorRight } = overflowIndicator.getBoundingClientRect();
+    return containerRight - paddingRight - indicatorRight;
+  } else {
+    const { bottom: containerBottom } = container.getBoundingClientRect();
+    const paddingBottom = parseInt(
+      getComputedStyle(container).getPropertyValue("padding-bottom")
+    );
+    const { bottom: indicatorBottom } =
+      overflowIndicator.getBoundingClientRect();
+    return containerBottom - paddingBottom - indicatorBottom;
+  }
 };
 
 /**
@@ -270,16 +293,22 @@ const getAvailableSpace = (
     indicaor were removed ?
  */
 export const removeOverflowIndicatorIfNoLongerNeeded = (
-  container: HTMLElement
+  container: HTMLElement,
+  orientation: orientationType
 ): boolean => {
+  const sizeProperty = orientation === "horizontal" ? "width" : "height";
   const overflowIndicator = getOverflowIndicator(container);
-  const availableSpace = getAvailableSpace(container, overflowIndicator);
-  const indicatorWidth = getElementWidth(overflowIndicator);
+  const availableSpace = getAvailableSpace(
+    container,
+    overflowIndicator,
+    orientation
+  );
+  const indicatorWidth = getElementSize(overflowIndicator, sizeProperty);
   const overflowedItem = getOverflowedItem(container);
-  const overflowWidth = getElementWidth(overflowedItem);
+  const overflowWidth = getElementSize(overflowedItem, sizeProperty);
 
   if (overflowWidth <= availableSpace + indicatorWidth) {
-    container.classList.remove("overflowed");
+    container.classList.remove("vuuOverflowContainer-wrapContainer-overflowed");
     overflowedItem.classList.remove("wrapped");
     return true;
   }
@@ -315,7 +344,8 @@ const getNonwrappedItemsByPriority = (container: HTMLElement) =>
  */
 export const switchWrappedItemIntoView = (
   container: HTMLElement,
-  overflowItem: OverflowItem
+  overflowItem: OverflowItem,
+  orientation: orientationType
 ): [OverflowItem[], OverflowItem[]] => {
   const unwrappedItems = getNonwrappedItemsByPriority(container);
   const targetElement = getElementByDataIndex(
@@ -325,11 +355,12 @@ export const switchWrappedItemIntoView = (
   );
   let pos = -1;
   let unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
-  const itemWidth = getElementWidth(unwrappedItem);
-  const targetWidth = getElementWidth(targetElement);
+  const sizeProperty = orientation === "horizontal" ? "width" : "height";
+  const itemWidth = getElementSize(unwrappedItem, sizeProperty);
+  const targetWidth = getElementSize(targetElement, sizeProperty);
   const overflowIndicator = getOverflowIndicator(container);
   let availableSpace =
-    getAvailableSpace(container, overflowIndicator) + itemWidth;
+    getAvailableSpace(container, overflowIndicator, orientation) + itemWidth;
   if (availableSpace >= targetWidth) {
     switchWrapOnElements(targetElement, unwrappedItem);
   } else {
@@ -351,8 +382,10 @@ export const switchWrappedItemIntoView = (
       item.classList.add("wrapped");
     });
   }
-  const [nonWrappedItems, wrappedItems] =
-    getNonWrappedAndWrappedItems(container);
+  const [nonWrappedItems, wrappedItems] = getNonWrappedAndWrappedItems(
+    container,
+    orientation
+  );
   unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
   return [nonWrappedItems, wrappedItems];
 };

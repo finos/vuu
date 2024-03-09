@@ -68,14 +68,15 @@ export const TabMenu = ({
 
   return (
     <PopupMenu
+      aria-label="context menu"
       className={classBase}
+      data-embedded
       menuBuilder={menuBuilder}
       menuActionHandler={onMenuAction}
       menuLocation={cx("tab", location)}
       menuOptions={menuOptions}
       onMenuClose={onMenuClose}
       tabIndex={-1}
-      aria-label="context menu"
     />
   );
 };

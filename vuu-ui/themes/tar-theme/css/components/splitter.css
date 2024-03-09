@@ -1,0 +1,11 @@
+.tar-theme .vuuSplitter {
+    --splitter-background: var(--vuu-color-gray-05);
+    --splitter-size: 9px;
+    --splitter-borderColor: white;
+    --splitter-borderStyle: none solid none solid;
+    --splitter-borderWidth: 4px;
+}
+
+.tar-theme .vuuSplitter-column {
+    --splitter-borderStyle: solid none solid none;
+}

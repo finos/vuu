@@ -29,14 +29,6 @@
   flex: 1 1 auto;
 }
 
-.vuuTabHeader {
-  --saltTabs-activationIndicator-background: transparent;
-  --saltToolbarField-marginTop: calc(var(--salt-size-unit) - 1px);
-  border-color: var(--salt-container-primary-borderColor);
-  border-style: var(--vuu-tabs-border-style, none none solid none);
-  border-width: 1px;
-}
-
 .vuuTabHeader + .vuuView > .vuuHeader {
   height: 0;
   overflow: hidden;

@@ -1,7 +1,11 @@
 .vuu-theme {
     /** TODO these will need density variants */
     --saltButton-borderRadius: 6px;
-    --saltButton-padding: 16px;
+    --saltButton-padding: var(--salt-spacing-400);
+
+    .saltButton {
+        gap: var(--salt-spacing-200);
+    }
 
     .saltButton-primary {
         --saltButton-borderColor: var(--vuuButton-borderColor,var(--salt-actionable-primary-foreground));

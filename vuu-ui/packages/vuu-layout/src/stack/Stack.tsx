@@ -59,6 +59,7 @@ export const Stack = forwardRef(function Stack(
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
+  console.log({ TabstripProps });
   const id = useId(idProp);
   const tabLabels = useRef<string[]>([]);
   const {
@@ -146,7 +147,6 @@ export const Stack = forwardRef(function Stack(
           onExitEditMode={handleExitEditMode}
           onMoveTab={onMoveTab}
           orientation={tabstripOrientation}
-          // onMouseDown={handleMouseDown}
         >
           {renderTabs()}
         </Tabstrip>

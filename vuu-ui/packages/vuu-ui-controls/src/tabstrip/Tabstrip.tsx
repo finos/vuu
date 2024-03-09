@@ -30,6 +30,7 @@ export const Tabstrip = ({
   showTabMenuButton,
   style: styleProp,
   tabClassName,
+  variant = "secondary",
   ...htmlAttributes
 }: TabstripProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -55,7 +56,7 @@ export const Tabstrip = ({
     orientation,
   });
   const id = useId(idProp);
-  const className = cx(classBase, `${classBase}-${orientation}`, classNameProp);
+  const className = cx(classBase, classNameProp);
   const style =
     styleProp || containerStyle
       ? {
@@ -101,6 +102,7 @@ export const Tabstrip = ({
               {...tabstripHook.navigationProps}
               aria-label="Create Tab"
               className={`${classBase}-addTabButton`}
+              data-embedded
               icon="add"
               data-overflow-priority="1"
               key="addButton"
@@ -135,8 +137,7 @@ export const Tabstrip = ({
       <OverflowContainer
         {...htmlAttributes}
         {...tabstripHook.containerProps}
-        className={className}
-        height={29}
+        className={cx(className, `${classBase}-${variant}`)}
         id={id}
         orientation={orientation}
         overflowIcon="more-horiz"

@@ -35,7 +35,7 @@ export const defaultApplicationJson: ApplicationJSON = {
         allowRenameTab: true,
         animateSelectionThumb: false,
         location: "main-tab",
-        tabClassName: "MainTab",
+        variant: "primary",
       },
       preserve: true,
       active: 0,

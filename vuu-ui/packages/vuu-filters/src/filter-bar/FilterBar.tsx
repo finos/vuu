@@ -154,7 +154,6 @@ export const FilterBar = ({
       <FilterBarMenu />
       <Toolbar
         activeItemIndex={activeFilterIndex}
-        height={28}
         onActiveChange={onChangeActiveFilterIndex}
         onNavigateOutOfBounds={onNavigateOutOfBounds}
         selectionStrategy="multiple-special-key"

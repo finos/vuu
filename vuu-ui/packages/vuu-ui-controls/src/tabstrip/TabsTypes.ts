@@ -115,6 +115,12 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    * An optional classname that will be added to each tab
    */
   tabClassName?: string;
+
+  /**
+   * An optional classifier, used to create a classname, intended
+   * for promary vs secondary bavigation.
+   */
+  variant?: "primary" | "secondary";
 }
 
 export type exitEditHandler = (

@@ -153,7 +153,7 @@ export const ControlledNavigation = () => {
 
   return (
     <>
-      <Toolbar height={32}>
+      <Toolbar>
         <Button variant="secondary" onClick={handlePrevClick}>
           Previous
         </Button>

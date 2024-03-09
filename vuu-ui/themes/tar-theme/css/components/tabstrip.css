@@ -1,0 +1,13 @@
+.tar-theme {
+
+    .vuuTabstrip {
+        --vuuOverflowContainer-borderColor: var(--salt-separable-primary-borderColor);
+        --tab-thumb-height: 3px;
+    }
+
+    .vuuTabstrip-secondary {
+
+        --vuuOverflowContainer-height: calc(var(--salt-size-base) + var(--salt-spacing-50));
+        --vuuOverflowContainer-contentHeight: calc(var(--vuuOverflowContainer-height) - 1px);
+    }
+}

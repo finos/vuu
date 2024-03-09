@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { DefaultTabstripNext } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
+import { DefaultTabstrip } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
 const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";
@@ -10,7 +10,7 @@ const OVERFLOW_IND =
 describe("WHEN initial size is sufficient to display all contents", () => {
   describe("WHEN it initially renders", () => {
     it("THEN all the content items will be visible", () => {
-      cy.mount(<DefaultTabstripNext width={500} />);
+      cy.mount(<DefaultTabstrip width={500} />);
       const tabstrip = cy.findByRole("tablist");
       tabstrip.should("have.class", "vuuTabstrip");
       // The overflow Inidcator will be present, but have zero width
@@ -20,11 +20,11 @@ describe("WHEN initial size is sufficient to display all contents", () => {
         .should("have.length", 5);
     });
     it("THEN no items will be overflowed", () => {
-      cy.mount(<DefaultTabstripNext width={500} />);
+      cy.mount(<DefaultTabstrip width={500} />);
       cy.get(OVERFLOWED_ITEMS).should("have.length", 0);
     });
     it("THEN no overflow indicator will be visible", () => {
-      cy.mount(<DefaultTabstripNext width={500} />);
+      cy.mount(<DefaultTabstrip width={500} />);
       cy.get(OVERFLOW_IND).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("not.be.visible");
     });
@@ -32,12 +32,12 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 
   describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
     it("THEN first 4 tabs will be displayed, with overflow indicator", () => {
-      cy.mount(<DefaultTabstripNext width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
+      cy.mount(<DefaultTabstrip width={350} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "350px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
-        .should("have.length", 4);
+        .should("have.length", 5);
       cy.get(".vuuTabstrip").debug();
       cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
       cy.get(`.wrapped`).should("have.length", 1);
@@ -48,16 +48,18 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 
   describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
     it("THEN  as last tab is selected, last but one will be overflowed", () => {
-      cy.mount(<DefaultTabstripNext activeTabIndex={4} width={500} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "450px");
+      cy.mount(<DefaultTabstrip activeTabIndex={4} width={350} />);
+      cy.get(".vuuTabstrip").invoke("css", "width", "350px");
       cy.get(OVERFLOW_ITEMS)
         .should("have.length", 6)
         .filter(":visible")
         .should("have.length", 4);
-      cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-      cy.get(`${OVERFLOW_ITEMS}:nth-child(4).wrapped`).should("have.length", 1);
+      cy.get(OVERFLOWED_ITEMS).should("have.length", 2);
+      // Because a longer (selected) item has been restored , two shorter items have been wrapped
+      cy.get(`${OVERFLOW_ITEMS}:nth-child(2).wrapped`).should("have.length", 1);
+      cy.get(`${OVERFLOW_ITEMS}:nth-child(3).wrapped`).should("have.length", 1);
       cy.get(OVERFLOW_IND).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("be.visible", 1);
+      cy.get(OVERFLOW_IND).should("be.visible");
     });
   });
 });
@@ -81,7 +83,7 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 //     describe("WHEN it initially renders", () => {
 //       describe("WHEN the selected Tab has not been specified", () => {
 //         it("THEN the first tab will be selected", () => {
-//           cy.mount(<DefaultTabstripNext />);
+//           cy.mount(<DefaultTabstrip />);
 //           cy.get(".saltTabstrip-inner > *:first-child").should(
 //             "have.ariaSelected"
 //           );

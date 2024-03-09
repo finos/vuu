@@ -1,0 +1,52 @@
+.tar-theme {
+    .saltToggleButtonGroup {
+        --togglebutton-borderRadius: 2px;
+        /** TODO vary by density */
+        --salt-spacing-100: 16px;
+        border-radius: 2px;
+        gap: 0;
+        height: var(--salt-size-base);
+        padding: 2px 3px;
+    }
+
+    .saltToggleButtonGroup-horizontal .saltToggleButton {
+        height: 100%;
+    }
+
+    .saltToggleButton {
+        border-radius: var(--togglebutton-borderRadius);
+        /** TODO vary by density */
+        gap: 8px;
+
+        --vuu-icon-color: var(--salt-actionable-secondary-foreground);
+
+        &[aria-checked="true"] {
+            --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+        }
+        &[aria-pressed="true"] {
+            --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+        }
+
+   }
+
+   .saltToggleButton:hover:not([aria-pressed="true"], [aria-checked="true"]) {
+        background: var(--salt-actionable-secondary-background);
+        color: var(--salt-actionable-secondary-foreground);
+   }
+
+
+    .vuuStateButtonGroup {
+
+        .saltToggleButton {
+            --togglebutton-borderRadius: 0;
+        }
+        
+        .saltToggleButton:first-child {
+            --togglebutton-borderRadius: 2px 0 0 2px;
+        }
+        .saltToggleButton:last-child {
+            --togglebutton-borderRadius: 0 2px 2px 0;
+        }
+    }
+
+}

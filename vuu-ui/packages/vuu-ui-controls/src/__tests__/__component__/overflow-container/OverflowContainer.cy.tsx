@@ -1,6 +1,6 @@
 import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
-import { TestFixtureSimpleOverflowContainer } from "../../../../../../showcase/src/examples/Layout/OverflowContainer.examples";
+import { TestFixtureSimpleOverflowContainer } from "../../../../../../showcase/src/examples/UiControls/OverflowContainer.examples";
 
 describe("WHEN it initially renders, with enough space for all items", () => {
   it("THEN all child items will be visible, and none will be marked as wrapped", () => {
