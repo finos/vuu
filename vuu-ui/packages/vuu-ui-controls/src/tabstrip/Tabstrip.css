@@ -2,6 +2,7 @@
 .vuuTabstrip {
   --vuuOverflowContainer-background: transparent;
   --vuuOverflowContainer-borderColor: var(--salt-container-primary-borderColor);
+  --vuuOverflowContainer-width: var(--tabstrip-width);
   --tabstrip-dragging-display: none;
   --tabstrip-display: inline-flex;
   --tabstrip-background: transparent;
@@ -13,7 +14,6 @@
   min-width: 28px;
   position: relative;
   overflow: visible;
-  width: var(--tabstrip-width);
 }
 
 /* Tabstrip orientation is horizontal */

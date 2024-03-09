@@ -50,21 +50,27 @@ export const ButtonVariations = () => {
         alignItems: "center",
         display: "grid",
         gap: 20,
-        gridTemplateColumns: "1fr 1fr 1fr 1fr",
+        gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
         justifyItems: "left",
       }}
     >
       <span />
+      <span>CTA</span>
       <span>Primary</span>
       <span>Secondary</span>
-      <span>CTA</span>
+      <span>Embedded</span>
 
       <span />
+      <IconButton icon="filter" variant="cta" />
       <IconButton icon="filter" variant="primary" />
       <IconButton icon="filter" variant="secondary" />
-      <IconButton icon="filter" variant="cta" />
+      <IconButton icon="filter" data-embedded variant="secondary" />
 
       <span />
+      <Button variant="cta">
+        <Icon name="filter" />
+        Filter
+      </Button>
       <Button variant="primary">
         <Icon name="filter" />
         Filter
@@ -73,12 +79,13 @@ export const ButtonVariations = () => {
         <Icon name="filter" />
         Filter
       </Button>
-      <Button variant="cta">
+      <Button data-embedded variant="secondary">
         <Icon name="filter" />
         Filter
       </Button>
 
       <span>active</span>
+      <IconButton className="saltButton-active" icon="filter" variant="cta" />
       <IconButton
         className="saltButton-active"
         icon="filter"
@@ -89,9 +96,18 @@ export const ButtonVariations = () => {
         icon="filter"
         variant="secondary"
       />
-      <IconButton className="saltButton-active" icon="filter" variant="cta" />
+      <IconButton
+        className="saltButton-active"
+        data-embedded
+        icon="filter"
+        variant="secondary"
+      />
 
       <span>active</span>
+      <Button className="saltButton-active" variant="cta">
+        <Icon name="filter" />
+        Filter
+      </Button>
       <Button className="saltButton-active" variant="primary">
         <Icon name="filter" />
         Filter
@@ -100,17 +116,22 @@ export const ButtonVariations = () => {
         <Icon name="filter" />
         Filter
       </Button>
-      <Button className="saltButton-active" variant="cta">
+      <Button className="saltButton-active" data-embedded variant="secondary">
         <Icon name="filter" />
         Filter
       </Button>
 
       <span>disabled</span>
+      <IconButton disabled icon="filter" variant="cta" />
       <IconButton disabled icon="filter" variant="primary" />
       <IconButton disabled icon="filter" variant="secondary" />
-      <IconButton disabled icon="filter" variant="cta" />
+      <IconButton disabled data-embedded icon="filter" variant="secondary" />
 
       <span>disabled</span>
+      <Button disabled variant="cta">
+        <Icon name="filter" />
+        Filter
+      </Button>
       <Button disabled variant="primary">
         <Icon name="filter" />
         Filter
@@ -119,7 +140,7 @@ export const ButtonVariations = () => {
         <Icon name="filter" />
         Filter
       </Button>
-      <Button disabled variant="cta">
+      <Button disabled data-embedded variant="secondary">
         <Icon name="filter" />
         Filter
       </Button>

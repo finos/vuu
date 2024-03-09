@@ -102,6 +102,7 @@ export const Tabstrip = ({
               {...tabstripHook.navigationProps}
               aria-label="Create Tab"
               className={`${classBase}-addTabButton`}
+              data-embedded
               icon="add"
               data-overflow-priority="1"
               key="addButton"

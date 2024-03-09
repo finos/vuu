@@ -26,7 +26,7 @@
   margin: 0 var(--tab-spacing) 0 0;
   min-width: var(--vuuTab-minWidth, 40px);
   outline: none;
-  padding: var(--vuuTab-padding, 0 24px);
+  padding: var(--vuuTab-padding, 0 var(--salt-spacing-200));
   position: var(--vuuTab-position, var(--tab-position));
   user-select: none;
   width: var(--tab-width)

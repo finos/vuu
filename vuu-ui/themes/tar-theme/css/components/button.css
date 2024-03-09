@@ -2,7 +2,23 @@
 .tar-theme {
     /** TODO these will need density variants */
     --saltButton-borderRadius: 2px;
-    --saltButton-padding: 16px;
+    --saltButton-padding: var(--salt-spacing-200);
+
+    .saltButton {
+        gap: var(--salt-spacing-100);
+    }
+
+    .saltButton[data-embedded="true"]{
+        --saltButton-height: calc(var(--salt-size-base) - var(--salt-spacing-100));
+        --saltButton-borderStyle: none; 
+    }
+
+    .vuuIconButton[data-embedded="true"]{
+        --saltButton-width: calc(var(--salt-size-base) - var(--salt-spacing-100));
+        --saltButton-minWidth: var(--saltButton-width);        
+
+        --vuu-icon-width: 12px;
+    }
 
     .saltButton-secondary {
         --saltButton-borderColor: var(--tar-color-gray-40);

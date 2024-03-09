@@ -82,6 +82,7 @@ const WrapContainer = React.memo(
       >
         <PopupMenu
           {...PopupMenuProps}
+          data-embedded
           icon={overflowIcon}
           menuBuilder={menuBuilder}
           menuActionHandler={menuActionHandler}
@@ -89,7 +90,6 @@ const WrapContainer = React.memo(
         />
       </div>
     );
-
     content.push(overflowIndicator);
 
     return (

@@ -30,7 +30,7 @@
     --item-align: center;
     --item-margin: 0 var(--overflow-item-gap) 0 var(--overflow-item-gap);
     --overflow-container-height: calc(var(--salt-size-base) + var(--salt-spacing-100));
-    --overflow-container-width: auto;
+    --overflow-container-width: var(--vuuOverflowContainer-width, auto);
     --overflow-wrapper-height: var(--overflow-item-height);
     --overflow-item-height: var(--vuuOverflowContainer-contentHeight, calc(var(--overflow-container-height) - var(--total-border-size)));
     --overflow-item-width: auto;
@@ -48,8 +48,8 @@
 }
 .vuuOverflowContainer.vuuOrientation-vertical {
     --item-align: stretch;
-    --overflow-container-height: 100%;;
-    --overflow-container-width: calc(var(--salt-size-base) + var(--salt-spacing-100));
+    --overflow-container-height: 100%;
+    --overflow-container-width: var(--vuuOverflowContainer-width,calc(var(--salt-size-base) + var(--salt-spacing-100)));
     --overflow-item-height: auto;
     --overflow-item-width: calc(var(--overflow-container-width) - var(--total-border-size));
     --overflow-wrapper-height: 100%;
