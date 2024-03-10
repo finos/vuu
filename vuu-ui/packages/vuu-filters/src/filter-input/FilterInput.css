@@ -11,10 +11,10 @@
 
 .vuuFilterInput {
     --vuuFilterEditor-background: var(--salt-container-primary-background);
-    --vuuFilterEditor-color: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-color: var(--salt-content-primary-foreground);
     --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
     --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
-    --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
+    --vuuFilterEditor-cursorColor: var(--salt-content-secondary-foreground);
     --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
     --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
     --vuuFilterEditor-tooltipBorder: var(--tooltip-status-borderColor) var(--salt-container-borderWidth) var(--salt-container-borderStyle); 

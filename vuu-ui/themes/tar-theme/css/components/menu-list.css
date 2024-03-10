@@ -1,0 +1,7 @@
+.tar-theme {
+    .vuuMenuItem {
+    &.vuuHighlighted, &:hover {
+        background-color: var(--tar-color-gray-05);
+    }
+    }
+}

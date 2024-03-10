@@ -20,7 +20,7 @@
 .vuuFilterPill[aria-selected="true"]{
     --vuuPopupMenu-iconColor: white;
     --salt-text-background-selected: var(--vuu-color-blue-40);
-    --salt-text-color-selected: var(--salt-text-primary-foreground);
+    --salt-text-color-selected: var(--salt-content-primary-foreground);
     --saltInput-background-hover: var(--salt-taggable-background-active);
     --saltInput-color: var(--salt-taggable-foreground-active);
     background: var(--salt-taggable-background-active);

@@ -8,6 +8,7 @@
 
   /** text-selection */
   --vuu-color-blue-40: rgb(164, 213, 244); /*  #A4D5F4 */
+  --tar-color-blue-60: #0097CC; /*  #0097CC */
 
 --tar-color-red-10: rgb(230,0,0); /* #E60000*/ 
 --tar-color-red-20: rgb(189, 0, 12); /* /* #BD000C */ 
@@ -26,6 +27,7 @@
 
   --tar-color-gray-05: rgb(215, 215, 215); /*  #D7D7D7 */
   --tar-color-gray-10: rgb(170, 170, 170); /*  #aaa */
+  --tar-color-gray-15: rgb(190, 190, 190); /* #BEBEBE */
   --tar-color-gray-20: rgb(204, 204, 204); /*  #ccc */
   --tar-color-gray-25: rgb(145, 145, 145); /*  #919191*/
   --tar-color-gray-30: rgb(68, 68, 68); /*  #444 */
@@ -34,21 +36,6 @@
   --tar-color-gray-70: rgb(28, 28, 28); /* #1C1C1C */
 
 
-  --vuu-color-gray-02: rgb(235, 235, 236);  /* #EBEBEC */
-  --vuu-color-gray-03: rgb(237, 237, 237);  /* #EDEDED */
-  --vuu-color-gray-05: rgb(222, 222, 222);  /* #DEDEDE */
-  --vuu-color-gray-07: rgb(226, 226, 227);  /* #E2E2E3 */
-  --vuu-color-gray-10: rgb(228, 227, 231);  /* #E4E3E7 */
-  --vuu-color-gray-20: rgb(245, 242, 248);  /* #F5F2F8 */
-  --vuu-color-gray-25: rgb(244, 244, 244) ;  /* #F4F4F4 */
-  --vuu-color-gray-28: rgb(249, 249, 251);  /* #F9F9FB */
-  --vuu-color-gray-30: rgb(214, 215, 218);  /* #D6D7Da */
-  --vuu-color-gray-35: rgb(155, 158, 168);  /* #9B9EA8; */
-  --vuu-color-gray-40: rgb(169, 170, 173);   /* #A9AAAD */ 
-  --vuu-color-gray-42: rgb(135, 139, 158);   /* #878b9e */ 
-  --vuu-color-gray-45: rgb(119, 124, 148);  /* #777C94 */ 
-  --vuu-color-gray-50: rgb(96, 100, 119);   /* #606477 */
-  --vuu-color-gray-80: rgb(21, 23, 27);     /* #15171B */ 
 
 
 --vuu-color-green-50: rgb(102, 174, 90);  /* #66AE5A */

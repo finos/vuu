@@ -17,7 +17,7 @@
   border-style: var(--vuuTab-borderStyle, none);
   border-width: var(--vuuTab-borderWidth, 0px);
   border-radius: var(--vuuTab-borderRadius, 0);
-  color: var(--salt-text-primary-foreground);
+  color: var(--salt-content-primary-foreground);
   cursor: var(--vuuTab-cursor, var(--tab-cursor));
   display: var(--tabstrip-display);
   gap: 8px;
@@ -34,7 +34,7 @@
 
 .vuuTab-selected {
   background: var(--vuuTab-background-selected, var(--tab-background));
-  color: var(--salt-text-primary-foreground);
+  color: var(--salt-content-primary-foreground);
   font-weight: var(--salt-navigable-fontWeight-active);
 }
 
