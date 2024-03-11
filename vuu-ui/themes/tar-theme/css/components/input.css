@@ -9,7 +9,7 @@
 .saltInput-primary {
     --saltInput-height: 24px;
     border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
-    border-radius: 6px;
+    border-radius: 2px;
 }
 
 .saltInput-focused:hover, 

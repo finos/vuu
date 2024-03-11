@@ -1,0 +1,10 @@
+.tar-theme {
+    .vuuDropdownButton {
+        --saltButton-borderColor: var(--salt-editable-borderColor);
+        &:hover:not(:disabled) {
+            --saltButton-borderColor: var(--salt-editable-borderColor-hover);
+            --vuu-icon-color: var(--salt-actionable-secondary-foreground);
+            color: var(--salt-actionable-secondary-foreground);
+        }
+    }
+}

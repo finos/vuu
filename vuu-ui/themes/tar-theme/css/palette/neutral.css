@@ -12,7 +12,7 @@
   --salt-palette-neutral-secondary-background-readonly: var(--salt-color-gray-20-fade-background-readonly);
   --salt-palette-neutral-secondary-border: var(--vuu-color-gray-50);
   --salt-palette-neutral-secondary-border-disabled: var(--salt-color-gray-50-fade-border);
-  --salt-palette-neutral-secondary-foreground: var(--salt-color-gray-200);
+  --salt-palette-neutral-secondary-foreground: var(--tar-color-gray-40);
   --salt-palette-neutral-secondary-foreground-disabled: var(--salt-color-gray-200-fade-foreground);
   --salt-palette-neutral-backdrop: var(--salt-color-white-fade-backdrop);
   --salt-palette-neutral-secondary-separator: var(--vuu-color-gray-05);
@@ -33,7 +33,7 @@
   --salt-palette-neutral-secondary-background-readonly: var(--salt-color-gray-600-fade-background-readonly);
   --salt-palette-neutral-secondary-border: var(--salt-color-gray-300);
   --salt-palette-neutral-secondary-border-disabled: var(--salt-color-gray-300-fade-border);
-  --salt-palette-neutral-secondary-foreground: var(--salt-color-gray-70);
+  --salt-palette-neutral-secondary-foreground: var(--tar-color-gray-10);
   --salt-palette-neutral-secondary-foreground-disabled: var(--salt-color-gray-70-fade-foreground);
   --salt-palette-neutral-backdrop: var(--salt-color-black-fade-backdrop);
   --salt-palette-neutral-secondary-separator: var(--salt-color-white-fade-separatorOpacity-secondary);

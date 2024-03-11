@@ -1,7 +1,13 @@
-.tar-theme {
-    .vuuMenuItem {
-    &.vuuHighlighted, &:hover {
+.tar-theme[data-mode="light"] {
+    .vuuMenuItem.vuuHighlighted {
         background-color: var(--tar-color-gray-05);
     }
+}
+
+.tar-theme[data-mode="dark"]{
+    .vuuMenuItem.vuuHighlighted {
+        background-color: var(--tar-color-gray-05);
+        color: black;
     }
 }
+

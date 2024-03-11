@@ -1,27 +1,17 @@
 .tar-theme {
     .saltCheckbox {
-        --checkbox-background: white;
-        --checkbox-borderColor: var(--salt-selectable-borderColor); /* --vuu-color-gray-45 */
-        --vuu-icon-color: white;
+        --vuu-icon-color: var(--salt-selectable-foreground-selected);
         --vuu-icon-left: -1px;
         --vuu-icon-top: -1px;
     }
     
     .saltCheckbox:has(.saltCheckboxIcon-checked) {
-        --checkbox-background: var(--salt-actionable-cta-background); /* --vuu-color-purple-10 */
-        --checkbox-borderColor: var( --salt-container-primary-borderColor); /* --vuu-color-purple-10 */
-    }
-    
-    .saltCheckbox:hover {
-        --vuu-icon-color:var(--salt-actionable-primary-background-hover); /* --vuu-color-pink-10 */
-        --checkbox-background: var(--vuu-color-pink-10-fade-20);
-        --checkbox-borderColor: var(--salt-selectable-borderColor-hover); /* --vuu-color-pink-10 */
+        --checkbox-background: var(--salt-selectable-background-selected); 
     }
     
     .saltCheckboxIcon {
         background:var(--checkbox-background);
-        border-color: var(--checkbox-borderColor) !important;
-        border-radius: 3px;
+        border-radius: 2px;
         border-style: solid;
         border-width: 1px;
     }
@@ -29,7 +19,6 @@
     .saltCheckboxIcon-checked.saltCheckboxIcon-disabled, 
     .saltCheckbox:hover .saltCheckboxIcon-checked.saltCheckboxIcon-disabled {
         background-color: var(--salt-selectable-background-disabled);
-        border-color: transparent;;
     }
     
     

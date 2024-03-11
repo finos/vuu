@@ -19,6 +19,7 @@ export const DefaultDropdown = () => {
   );
   return (
     <Dropdown
+      data-showcase-center
       defaultSelected={usa_states[0]}
       onSelectionChange={handleSelectionChange}
       source={usa_states.slice(0, 10)}

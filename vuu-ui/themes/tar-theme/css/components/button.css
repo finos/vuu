@@ -24,6 +24,11 @@
         --saltButton-borderColor: var(--tar-color-gray-40);
         --saltButton-borderWidth: 1px;
         --saltButton-borderStyle: solid;
+ 
+        &:focus-visible {
+            --vuu-icon-color: var(--salt-palette-interact-foreground-active);
+        }
+
     }
 
     .saltButton-secondary:not(:disabled):hover {
