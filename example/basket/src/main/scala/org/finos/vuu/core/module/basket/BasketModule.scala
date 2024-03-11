@@ -60,7 +60,12 @@ object BasketModule extends DefaultModule {
                                       BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
                                       BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
           ), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(),
+          VisualLinks(
+            Link(BT.InstanceId, BasketTradingTable, BT.InstanceId)
+          ),
+          indices = Indices(
+            Index(BT.InstanceId)
+          ),
           joinFields = BT.BasketId
         ),
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
@@ -87,7 +92,10 @@ object BasketModule extends DefaultModule {
                                       BTC.OrderStatus.string()
           ),// we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(
-            Link(BTC.InstanceId, BasketTradingTable, BT.InstanceId),
+            Link(BTC.BasketId, BasketTradingTable, BT.BasketId),
+          ),
+          indices = Indices(
+            Index(BTC.BasketId)
           ),
           joinFields = BTC.InstanceIdRic, BTC.Ric
         ),
@@ -124,6 +132,9 @@ object BasketModule extends DefaultModule {
           name = BasketTradingConstituentJoin,
           baseTable = tableDefs.get(NAME, BasketTradingConstituentTable),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          VisualLinks(
+            Link(BTC.BasketId, BasketTradingTable, BT.BasketId)
+          ),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, PriceModule.PriceTable),

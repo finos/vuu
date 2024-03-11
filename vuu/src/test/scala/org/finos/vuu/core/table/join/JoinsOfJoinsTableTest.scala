@@ -63,6 +63,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
           table = pricesDef,
           joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
       ),
+      links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId")
     )
 
@@ -70,6 +71,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name          = "orderPricesFx",
       baseTable     = ordersDef,
       joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
+      links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId"),
         JoinTo(
           table = pricesDef,

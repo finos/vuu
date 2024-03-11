@@ -33,6 +33,7 @@ object OrdersAndPricesScenarioFixture {
           table = pricesDef,
           joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
         ),
+      links = VisualLinks(),
       joinFields = Seq()
     )
 

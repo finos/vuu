@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
@@ -231,6 +231,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
             table = pricesDef,
             joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
+        links = VisualLinks(),
         joinFields = Seq()
       )
 

@@ -244,6 +244,7 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
+          links = VisualLinks(),
           joinFields = Seq()
         ))
       .addJoinTable(tableDefs =>
@@ -256,6 +257,7 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
+          links = VisualLinks(),
           joinFields = Seq()
         ))
       .addJoinTable(tableDefs =>
@@ -268,6 +270,7 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
+          links = VisualLinks(),
           joinFields = Seq()
         ))
       .asModule()

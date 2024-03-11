@@ -104,7 +104,7 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, joinFields) with VuuInMemPluginLocator
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -178,7 +178,7 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices()) with VuuInMemPluginLocator{
+case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val links: VisualLinks, override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false) with VuuInMemPluginLocator{
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
