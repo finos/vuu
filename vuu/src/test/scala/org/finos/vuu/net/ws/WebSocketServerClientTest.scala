@@ -1,7 +1,7 @@
 package org.finos.vuu.net.ws
 
 import org.finos.vuu.client.ClientHelperFns.awaitMsgBody
-import org.finos.vuu.core.{CoreServerApiHandler, VuuWebSocketOptions, VuuWebSocketOptionsImpl}
+import org.finos.vuu.core.{CoreServerApiHandler, VuuWebSocketOptions}
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net._
