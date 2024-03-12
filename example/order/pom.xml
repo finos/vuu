@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.61-SNAPSHOT</version>
+        <version>0.9.61</version>
         <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
@@ -15,13 +15,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -30,13 +30,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.61-SNAPSHOT</version>
+        <version>0.9.61</version>
     </parent>
 
     <artifactId>apache-ignite</artifactId>
@@ -21,25 +19,25 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>ignite-plugin</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.61</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>
