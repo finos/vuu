@@ -71,7 +71,7 @@
         <jackson.version>2.15.4</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
-        <netty.version>4.1.90.Final</netty.version>
+        <netty.version>4.1.100.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
         <vertx.version>4.4.6</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
