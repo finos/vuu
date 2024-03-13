@@ -6,7 +6,7 @@ import scala.collection.mutable
 class InMemMapRowBuilder extends RowBuilder {
 
   private val mutableMap = new mutable.HashMap[String, Any]()
-  private var key: String = ""
+  private var key: String = null
   override def setLong(column: Column, v: Long): RowBuilder = {
     mutableMap.put(column.name, v)
     this
@@ -36,10 +36,13 @@ class InMemMapRowBuilder extends RowBuilder {
     this
   }
   override def asRow: RowData = {
+    if(key == null){
+      throw new RuntimeException("Key has not been set, this is likely a coding error.")
+    }
     val immMap = mutableMap.toMap
     val rowData = RowWithData(key, immMap)
     mutableMap.clear()
-    key = ""
+    key = null
     rowData
   }
 }

@@ -26,7 +26,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def updateCounter: Long
 
   def newRow(key: String): RowBuilder
-
+  def rowBuilder: RowBuilder
   def incrementUpdateCounter(): Unit
 
   def indexForColumn(column: Column): Option[IndexedField[_]]
@@ -237,6 +237,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   override def newRow(key: String): RowBuilder = {
     new InMemMapRowBuilder().setKey(key)
   }
+  override def rowBuilder: RowBuilder = new InMemMapRowBuilder
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
