@@ -5,6 +5,7 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.provider.JoinTableProvider
 import io.vertx.core.impl.ConcurrentHashSet
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.vuu.core.row.RowBuilder
 
 class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider) extends InMemDataTable(tableDef, joinProvider) with StrictLogging {
 

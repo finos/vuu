@@ -7,7 +7,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.vuu.core.row.RowBuilder
+import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -660,4 +660,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def getColumnValueProvider: ColumnValueProvider = InMemColumnValueProvider(this)
   override def newRow(key: String): RowBuilder = ???
+
+  override def rowBuilder: RowBuilder = NoRowBuilder
 }
