@@ -9,10 +9,16 @@ import {
   buildColumnMap,
   isLookupRenderer,
   isTypeDescriptor,
+  isValueListRenderer,
 } from "@finos/vuu-utils";
 import { useMemo, useState } from "react";
 
 const NO_VALUES: ListOption[] = [];
+
+const toListOption = (value: string): ListOption => ({
+  label: value,
+  value,
+});
 
 const lookupValueMap = new Map<string, Promise<ListOption[]>>();
 
@@ -87,22 +93,36 @@ export const useLookupValues = (
   column: ColumnDescriptor,
   initialValueProp: number | string
 ) => {
-  const lookupDetails = getLookupDetails(column);
+  const { type: columnType } = column;
   const { getLookupValues } = useShellContext();
 
   const initialState = useMemo<LookupState>(() => {
-    const values = getLookupValues?.(lookupDetails.table) ?? NO_VALUES;
-    return {
-      initialValue: getSelectedOption(values, initialValueProp),
-      values,
-    };
-  }, [getLookupValues, initialValueProp, lookupDetails.table]);
+    if (
+      isTypeDescriptor(columnType) &&
+      isValueListRenderer(columnType?.renderer)
+    ) {
+      const values = columnType.renderer.values.map(toListOption);
+      return {
+        initialValue: getSelectedOption(values, initialValueProp),
+        values,
+      };
+    } else {
+      const lookupDetails = getLookupDetails(column);
+      const values = getLookupValues?.(lookupDetails.table) ?? NO_VALUES;
+
+      return {
+        initialValue: getSelectedOption(values, initialValueProp),
+        values,
+      };
+    }
+  }, [column, columnType, getLookupValues, initialValueProp]);
 
   const [{ initialValue, values }, setLookupState] =
     useState<LookupState>(initialState);
 
   useMemo(() => {
     if (values === NO_VALUES) {
+      const lookupDetails = getLookupDetails(column);
       loadLookupValues(lookupDetails).then((values) =>
         setLookupState({
           initialValue: getSelectedOption(values, initialValueProp),
@@ -110,7 +130,7 @@ export const useLookupValues = (
         })
       );
     }
-  }, [values, lookupDetails, initialValueProp]);
+  }, [values, column, initialValueProp]);
 
   return {
     initialValue,

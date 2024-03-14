@@ -1,12 +1,12 @@
 .vuuColumnHeaderPill {
     --vuu-icon-size: 14px;
     --menu-item-icon-color: black;
-    --vuu-icon-color: white;
+    --vuu-icon-color: var(--salt-actionable-primary-foreground);
     --vuu-icon-height: 12px;
     --vuu-icon-width: 12px;
     align-items: center;
-    background: var(--salt-taggable-background-active);
-    color: white;
+    background: var(--salt-actionable-primary-background);
+    color: var(--salt-actionable-primary-foreground);
     border-radius: 4px;
     flex: var(--vuuColumnHeaderPill-flex, none);
     font-size: 11px;
@@ -19,9 +19,9 @@
 }
 
 .vuuColumnHeaderPill:hover {
-    --vuu-icon-color: var(--vuu-color-gray-80);
-    background-color: var(--salt-taggable-background-hover);
-    color: var(--vuu-color-gray-80);
+    --vuu-icon-color: var(--salt-actionable-primary-foreground-hover);
+    background-color: var(--salt-actionable-primary-background-hover);
+    color: var(--salt-actionable-primary-foreground-hover);
   
 }
 

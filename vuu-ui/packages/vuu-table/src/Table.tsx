@@ -206,7 +206,7 @@ const TableCore = ({
     onRowClick: onRowClickProp,
     onSelect,
     onSelectionChange,
-    renderBufferSize,
+    renderBufferSize: Math.max(5, renderBufferSize),
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -341,6 +341,8 @@ export const Table = forwardRef(function TableNext(
   if (dataSource === undefined) {
     throw Error("vuu Table requires dataSource prop");
   }
+
+  console.log({ rowHeight });
 
   return (
     <MeasuredContainer

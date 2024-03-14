@@ -8,6 +8,8 @@ import {
   registerComponent,
 } from "@finos/vuu-utils";
 
+import "./CheckboxCell.css";
+
 export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
   ({ column, columnMap, onCommit = WarnCommit, row }) => {
     const dataIdx = columnMap[column.name];

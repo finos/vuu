@@ -8,7 +8,7 @@
 }
 
 .vuuPaletteItem {
-  --vuu-icon-color: var(--salt-text-primary-foreground);
+  --vuu-icon-color: var(--salt-content-primary-foreground);
   --vuu-icon-left: 0;
   --vuu-icon-size: 16px;
   --vuu-icon-top: 11px;

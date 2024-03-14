@@ -99,6 +99,40 @@ export const DefaultContextMenu = () => {
 
 DefaultContextMenu.displaySequence = displaySequence++;
 
+export const FlatContextMenu = () => {
+  const { ref } = usePosition();
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        background: "ivory",
+        height: 300,
+        width: 300,
+        margin: 100,
+      }}
+    >
+      <ContextMenu>
+        <MenuItem action="ACT 1.1">Item 1.1</MenuItem>
+        <MenuItem>Item 1.2</MenuItem>
+        <MenuItem>Item 1.3</MenuItem>
+        <Separator />
+        <MenuItem>Item 1.4</MenuItem>
+        <MenuItem>Item 1.5</MenuItem>
+        <MenuItem>Item 3.1.1</MenuItem>
+        <MenuItem>Item 3.1.2</MenuItem>
+        <MenuItem>Item 3.1.3</MenuItem>
+        <MenuItem action="ACT 3.1.4">Item 3.1.4</MenuItem>
+        <MenuItem>Item 3.2</MenuItem>
+        <MenuItem>Item 3.3</MenuItem>
+        <MenuItem>Item 3.3</MenuItem>
+      </ContextMenu>
+    </div>
+  );
+};
+
+FlatContextMenu.displaySequence = displaySequence++;
+
 export const ContextMenuControlledHighlighting = () => {
   const handleClose: ContextMenuProps["onClose"] = () => {
     console.log(`clicked menu action`);

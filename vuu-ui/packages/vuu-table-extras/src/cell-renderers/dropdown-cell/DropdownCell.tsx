@@ -1,5 +1,5 @@
 import { getSelectedOption, useLookupValues } from "@finos/vuu-data-react";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import type { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { ListOption, TableCellRendererProps } from "@finos/vuu-table-types";
 import {
   Dropdown,

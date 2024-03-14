@@ -7,7 +7,6 @@
   --context-menu-shadow: var(--hw-dialog-shadow, 0 6px 12px rgba(0, 0, 0, 0.175));
   --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
   --context-menu-highlight-bg: var(--salt-selectable-background-hover);
-  --context-menu-blur-focus-bg: #e0e4e9;
   --menu-item-icon-color: black;
   --menu-item-twisty-color: black;
   --menu-item-twisty-content: '';
@@ -33,11 +32,15 @@
 }
 
 .vuuMenuItem {
+  --menu-item-background: var(--salt-selectable-background);
+  --menu-item-text-color: var(--salt-content-primary-foreground);
+
   align-items: center;
+  background: var(--vuuMenuItem-background, var(--menu-item-background));
   border-width: 1px;
   border-color: var(--vuuMenuItem-borderColor, transparent);
   border-style: var(--vuuMenuItem-borderStyle, none);
-  color: var(--context-menu-color);
+  color: var(--vuuMenuItem-color, var(--menu-item-text-color));
   display: flex;
   gap: 6px;
   height: var(--vuuMenuItem-height, var(--hw-list-item-height, 24px));
@@ -56,7 +59,9 @@
 }
 
 .vuuMenuItem[aria-expanded='true'] {
-  background-color: var(--context-menu-blur-focus-bg);
+  --menu-item-twisty-color: var(--salt-selectable-foreground-selected);
+  color: var(--salt-selectable-foreground-selected);
+  background-color: var(--salt-selectable-background-selected);
 }
 
 .vuuMenuItem-separator {
@@ -78,17 +83,13 @@
   width: 16px;
 }
 
-.vuuMenuItem[data-highlighted] {
-  background-color: var(--context-menu-highlight-bg);
+.vuuMenuItem.vuuHighlighted {
+  --menu-item-background: var(--tar-color-gray-15);
 }
 
 .vuuMenuItem:hover {
-  background-color: var(--context-menu-highlight-bg);
+  --menu-item-background: var(--salt-selectable-background-hover);
   cursor: default;
-}
-
-.vuuMenuList-childMenuShowing .vuuMenuItem[data-highlighted] {
-  background-color: var(--context-menu-blur-focus-bg);
 }
 
 .vuuMenuItem.focusVisible:before {

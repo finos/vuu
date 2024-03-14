@@ -14,7 +14,7 @@ import {
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
-import { GroupHeaderCellNext, Table, TableProps } from "@finos/vuu-table";
+import { GroupHeaderCell, Table, TableProps } from "@finos/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -175,7 +175,7 @@ export const ControlledNavigation = () => {
 };
 ControlledNavigation.displaySequence = displaySequence++;
 
-export const EditableTableNextArrayData = () => {
+export const EditableTableArrayData = () => {
   const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(
     () => (_, columnName) => {
       switch (columnName) {
@@ -197,7 +197,7 @@ export const EditableTableNextArrayData = () => {
               },
             },
           };
-        case "ccy":
+        case "currency":
           return {
             editable: true,
             type: {
@@ -238,6 +238,10 @@ export const EditableTableNextArrayData = () => {
               },
             },
           };
+        case "wishlist":
+          return {
+            editable: true,
+          };
       }
     },
     []
@@ -263,7 +267,7 @@ export const EditableTableNextArrayData = () => {
     <Table {...tableProps} height={645} renderBufferSize={10} width={9200} />
   );
 };
-EditableTableNextArrayData.displaySequence = displaySequence++;
+EditableTableArrayData.displaySequence = displaySequence++;
 
 export const VuuInstruments = () => {
   const schemas = getAllSchemas();
@@ -337,7 +341,7 @@ export const FlexLayoutTables = () => {
 };
 FlexLayoutTables.displaySequence = displaySequence++;
 
-export const TableNextInLayoutWithContextPanel = () => {
+export const TableInLayoutWithContextPanel = () => {
   useMemo(() => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
     registerComponent("TableSettings", TableSettingsPanel, "view");
@@ -367,9 +371,9 @@ export const TableNextInLayoutWithContextPanel = () => {
     </LayoutProvider>
   );
 };
-TableNextInLayoutWithContextPanel.displaySequence = displaySequence++;
+TableInLayoutWithContextPanel.displaySequence = displaySequence++;
 
-export const AutoTableNext = () => {
+export const AutoTable = () => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       columns: getSchema("instruments").columns,
@@ -385,9 +389,9 @@ export const AutoTableNext = () => {
     <Table config={tableConfig} dataSource={dataSource} renderBufferSize={0} />
   );
 };
-AutoTableNext.displaySequence = displaySequence++;
+AutoTable.displaySequence = displaySequence++;
 
-export const AutoTableNextAsFlexChild = () => {
+export const AutoTableAsFlexChild = () => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       columns: getSchema("instruments").columns,
@@ -420,7 +424,7 @@ export const AutoTableNextAsFlexChild = () => {
     </div>
   );
 };
-AutoTableNextAsFlexChild.displaySequence = displaySequence++;
+AutoTableAsFlexChild.displaySequence = displaySequence++;
 
 export const VuuTableCalculatedColumns = () => {
   const calculatedColumns: ColumnDescriptor[] = useMemo(
@@ -507,7 +511,7 @@ export const VuuTableCalculatedColumns = () => {
 };
 VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
-export const GroupHeaderCellNextOneColumn = () => {
+export const GroupHeaderCellOneColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {
     const valueFormatter = defaultValueFormatter;
     return {
@@ -540,16 +544,13 @@ export const GroupHeaderCellNextOneColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCellNext
-        column={column}
-        onRemoveColumn={handleRemoveColumn}
-      />
+      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
     </div>
   );
 };
-GroupHeaderCellNextOneColumn.displaySequence = displaySequence++;
+GroupHeaderCellOneColumn.displaySequence = displaySequence++;
 
-export const GroupHeaderCellNextTwoColumn = () => {
+export const GroupHeaderCellTwoColumn = () => {
   const column: GroupColumnDescriptor = useMemo(() => {
     const valueFormatter = defaultValueFormatter;
     return {
@@ -588,16 +589,13 @@ export const GroupHeaderCellNextTwoColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCellNext
-        column={column}
-        onRemoveColumn={handleRemoveColumn}
-      />
+      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
     </div>
   );
 };
-GroupHeaderCellNextTwoColumn.displaySequence = displaySequence++;
+GroupHeaderCellTwoColumn.displaySequence = displaySequence++;
 
-export const GroupHeaderCellNextThreeColumn = () => {
+export const GroupHeaderCellThreeColumn = () => {
   const valueFormatter = defaultValueFormatter;
 
   const [column] = useState<GroupColumnDescriptor>({
@@ -644,7 +642,7 @@ export const GroupHeaderCellNextThreeColumn = () => {
       }
     >
       <div data-resizeable style={{ flex: "1 1 auto", overflow: "hidden" }}>
-        <GroupHeaderCellNext
+        <GroupHeaderCell
           className="vuuFullWidthExample"
           column={column}
           onRemoveColumn={handleRemoveColumn}
@@ -654,9 +652,9 @@ export const GroupHeaderCellNextThreeColumn = () => {
     </Flexbox>
   );
 };
-GroupHeaderCellNextThreeColumn.displaySequence = displaySequence++;
+GroupHeaderCellThreeColumn.displaySequence = displaySequence++;
 
-export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
+export const GroupHeaderCellThreeColumnFixedWidth = () => {
   const valueFormatter = defaultValueFormatter;
 
   const [column] = useState<GroupColumnDescriptor>({
@@ -693,7 +691,7 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
 
   return (
     <div data-resizeable style={{ width: 300, overflow: "hidden" }}>
-      <GroupHeaderCellNext
+      <GroupHeaderCell
         className="vuuFullWidthExample"
         column={column}
         onRemoveColumn={handleRemoveColumn}
@@ -701,7 +699,7 @@ export const GroupHeaderCellNextThreeColumnFixedWidth = () => {
     </div>
   );
 };
-GroupHeaderCellNextThreeColumnFixedWidth.displaySequence = displaySequence++;
+GroupHeaderCellThreeColumnFixedWidth.displaySequence = displaySequence++;
 
 const SymbolHeader = (_: HeaderCellProps) => {
   const handleClick = useCallback<MouseEventHandler>((e) => {

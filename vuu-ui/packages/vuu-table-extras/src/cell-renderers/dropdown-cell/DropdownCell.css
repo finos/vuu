@@ -5,10 +5,14 @@
 
     --saltButton-borderRadius: 4px;
     font-weight: 500;
+
+    .vuuDropdownButton {
+        --saltButton-height: var(--vuu-table-embedded-control-height);
+    }
 }
 
 .vuuTableDropdownCell button:focus-visible {
-    --saltButton-borderColor: var(--vuu-color-purple-10);
+    --saltButton-borderColor: var(--salt-focused-outlineColor);
     --saltButton-borderWidth: 2px;
-    padding-left: 3px;
+    padding-left: 7px;
 }

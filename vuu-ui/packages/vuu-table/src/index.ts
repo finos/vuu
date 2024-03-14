@@ -1,4 +1,4 @@
-export { GroupHeaderCellNext } from "./header-cell";
+export { GroupHeaderCell as GroupHeaderCellNext } from "./header-cell";
 export * from "./header-cell";
 export * from "./Table";
 export * from "./table-cell";

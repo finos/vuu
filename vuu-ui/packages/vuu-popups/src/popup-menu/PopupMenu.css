@@ -3,6 +3,5 @@
     --vuu-icon-left: 2px;
     --vuu-icon-size: var(--vuuPopupMenu-iconSize, 16px);
     --vuu-icon-width: 16px;
-    background: var(--vuuPopupMenu-background, transparent);
 }
 
