@@ -1,0 +1,46 @@
+.tar-theme[data-mode="light"] {
+    --vuuTableRow-selectionBlock-borderColor: var(--tar-color-gray-30);
+    .vuuTableRow-selected {
+        background: var(--tar-color-gray-04);
+    }
+}
+.tar-theme[data-mode="dark"] {
+    --vuuTableRow-selectionBlock-borderColor: var(--tar-color-gray-15);
+    .vuuTableRow-selected {
+        background: var(--tar-color-gray-67);
+    }
+}
+
+.tar-theme {
+
+    &.tar-density-high {
+        --vuu-table-header-fontSize: 11px;
+    }
+    &.tar-density-medium {
+        --vuu-table-header-fontSize: 11px;
+    }
+    &.tar-density-low {
+        --vuu-table-header-fontSize: 11px;
+    }
+    &.tar-density-touch {
+        --vuu-table-header-fontSize: 11px;
+    }
+
+    .vuuTableHeaderCell-label {
+        font-size: var(--vuu-table-header-fontSize);
+        font-weight: 700;
+    }
+
+    .vuuTableRow-selected:not(.vuuTableRow-selectedStart, .vuuTableRow-selectedEnd) {
+        .vuuTableRow-selectionDecorator {
+            background: var(--vuuTableRow-selectionBlock-borderColor);
+        }      
+    }
+
+    .vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
+    .vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {
+      background: var(--vuuTableRow-selectionBlock-borderColor);
+    }
+
+}
+

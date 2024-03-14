@@ -1,2 +1,2 @@
-export * from "./GroupHeaderCellNext";
+export * from "./GroupHeaderCell";
 export * from "./HeaderCell";

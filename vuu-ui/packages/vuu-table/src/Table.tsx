@@ -342,6 +342,8 @@ export const Table = forwardRef(function TableNext(
     throw Error("vuu Table requires dataSource prop");
   }
 
+  console.log({ rowHeight });
+
   return (
     <MeasuredContainer
       {...htmlAttributes}

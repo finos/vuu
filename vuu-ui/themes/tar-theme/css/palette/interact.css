@@ -1,7 +1,7 @@
 .tar-theme[data-mode="light"] {
   --salt-palette-interact-background: var(--tar-color-white);
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-30);
-  --salt-palette-interact-background-hover: var(--tar-color-white);
+  --salt-palette-interact-background-hover: var(--tar-color-gray-04);
   --salt-palette-interact-background-active: var(--tar-color-gray-30);
   --salt-palette-interact-background-disabled: var(--vuu-color-gray-35);
   --salt-palette-interact-background-activeDisabled: var(--salt-color-blue-30-fade-background);
@@ -50,7 +50,7 @@
   --salt-palette-interact-background: var(--tar-color-gray-70);
   --salt-palette-interact-background-active: var(--tar-color-gray-15);
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-600);
-  --salt-palette-interact-background-hover: var(--tar-color-gray-70);
+  --salt-palette-interact-background-hover: var(--tar-color-gray-30);
   --salt-palette-interact-background-disabled: transparent;
   --salt-palette-interact-background-activeDisabled: var(--salt-color-blue-700-fade-background);
   --salt-palette-interact-border: var(--tar-color-gray-28);

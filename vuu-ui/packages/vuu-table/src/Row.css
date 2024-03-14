@@ -1,13 +1,14 @@
 .vuuTableRow {
-  background: var(--row-background,#fff);
-    border-bottom: 1px solid var(--row-borderColor);
+    background: var(--row-background,var(--table-background));
+    color: var(--salt-content-secondary-foreground);
+    border-bottom: 1px solid var(--row-borderColor, var(--table-background));
     box-sizing: border-box;
     height: var(--row-height);
     line-height: calc(var(--row-height) - 1px);
     position: absolute;
     top:0;
     white-space: nowrap;
-    }
+}
     
 .vuuTableRow-proxy {
   visibility: hidden;
@@ -18,13 +19,13 @@
 }
 
 .vuuTableRow-highlighted {
-  background-color: var(--salt-selectable-background-hover);
+  background: var(--salt-selectable-background-hover);
 }
 
 
 .vuuTableRow-selected,
 .vuuTableRow-selectedEnd {
-  --row-borderColor: var(--salt-separable-secondary-borderColor);
+  /* --row-borderColor: var(--salt-separable-secondary-borderColor); */
   background-color: var(--salt-selectable-background-selected);
 }
 
@@ -32,20 +33,12 @@
   z-index: 1;
 }
 
-.vuuTable-zebra {
-  .vuuTableRow-even.vuuTableRow-selected,
-  .vuuTableRow-even.vuuTableRow-selectedEnd {
-    /** thisis really where we want a darken function */
-  background-color: var(--vuu-color-gray-07);
+.vuuTableRow-selectedStart {
+  --vuu-selection-decorator-left-radius: 5px 0 0 0;
+  --vuu-selection-decorator-right-radius: 0 5px 0 0;
 
-  }
+  border-radius: 5px 5px 0 0;
 }
-  
-    .vuuTableRow-selectedStart {
-        --vuu-selection-decorator-left-radius: 5px 0 0 0;
-        --vuu-selection-decorator-right-radius: 0 5px 0 0;
-        border-radius: 5px 5px 0 0;
-      }
     
       .vuuTableRow-selectedEnd {
         --vuu-selection-decorator-left-radius: 0 0 0 5px;
@@ -63,20 +56,20 @@
     .vuuTableRow-selectedStart:after {
         content: '';
         position: absolute;
-        top:0;
+        top: -1px;
         left: 4px;
         height: 1px;
-        background-color: var(--vuu-color-purple-10);
+        background: var(--vuuTableRow-selectionBlock-borderColor);
         width: calc(var(--content-width) - 8px);
         z-index: 1;
       }
     
     .vuuTableRow-selectedEnd {
-        border-bottom-color: var(--vuu-color-purple-10);
+        border-bottom-color: var(--vuuTableRow-selectionBlock-borderColor, var(--row-borderColor));
       }
     
       .vuuTableRow-selectionDecorator {
-        background-color: var(--vuu-selection-decorator-bg, white);
+        background: var(--table-background);
         display: inline-block;
         position: relative;
         height: var(--row-height);
@@ -92,30 +85,15 @@
       .vuuTableRow-selectionDecorator.vuuStickyRight {
         right:0;
         position: sticky;
-      }
-    
-      .vuuTableRow-selected {
-        --vuu-selection-decorator-bg: var(--vuu-color-purple-10);
-    
-      }
-      
-      .vuuTableRow-selectedStart {
-        --vuu-selection-decorator-bg: white;
-      }
-      
-      .vuuTableRow-selectedEnd {
-        --vuu-selection-decorator-bg: white;
-      }
-    
+      }              
     
       .vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
       .vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {
         content: '';
-        inset: 0;
+        inset: -1px 0 0 0;
         position: absolute;
-        background-color: var(--vuu-color-purple-10);
+        background: var(--table-background);
       }
-    
     
       .vuuTableRow-selectionDecorator.vuuStickyLeft:before {
         border-radius: var(--vuu-selection-decorator-left-radius, 0);
@@ -129,9 +107,9 @@
         --toggle-icon-transform: rotate(90deg);
       }
     
-      .vuuDraggable .vuuTableRow {
-        --cell-borderColor: transparent;
-        --vuu-selection-decorator-bg: transparent;
-        transform: none!important;
-        z-index: 1;
-      }
+.vuuDraggable .vuuTableRow {
+  --cell-borderColor: transparent;
+  --vuu-selection-decorator-bg: transparent;
+  transform: none!important;
+  z-index: 1;
+}

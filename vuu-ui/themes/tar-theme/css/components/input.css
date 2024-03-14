@@ -1,18 +1,20 @@
-.saltInput-activationIndicator {
-    display: none;
-}
+.tar-theme {
 
-.saltInput:hover {
-    background: inherit;;
-}
-
-.saltInput-primary {
-    --saltInput-height: 24px;
-    border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
-    border-radius: 2px;
-}
-
-.saltInput-focused:hover, 
-.saltInput-focused {
-    --input-borderColor: var(--vuu-color-purple-10);
+    .saltInput-activationIndicator {
+        display: none;
+    }
+    
+    .saltInput:hover {
+        background: inherit;;
+    }
+    
+    .saltInput-primary {
+        border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
+        border-radius: 2px;
+    }
+    
+    .saltInput-focused:hover, 
+    .saltInput-focused {
+        --input-borderColor: var(--vuu-color-purple-10);
+    }
 }

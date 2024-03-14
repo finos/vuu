@@ -4,9 +4,12 @@
   --saltButton-width : var(--vuuDropdown-width);
 
   line-height: 0;
+
 }
 
 .vuuDropdownButton.saltButton-secondary {
+  --saltButton-background: var(--salt-editable-background);
+  --saltButton-color: var(--salt-editable-foreground);
   --saltButton-borderStyle: solid;
   --saltButton-borderColor: var(--salt-editable-borderColor);
   --saltButton-borderWidth: 1px;

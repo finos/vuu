@@ -1,25 +1,13 @@
-.vuu-density-high {
-  --vuu-table-row-height: 20px;
-}
-.vuu-density-medium {
-  --vuu-table-row-height: 28px;
-}
-.vuu-density-low {
-  --vuu-table-row-height: 36px;
-}
-.vuu-density-touch {
-  --vuu-table-row-height: 48px;
-}
-
 
 .vuuTable {
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
   --vuu-table-next-selection-bookend-width: 4px;
+  --vuu-table-embedded-control-height: calc(var(--row-height) - 3px);
   --columnResizer-color: transparent;
-  --row-background: white;
-  --row-height: var(--row-height-prop, var(--vuu-table-row-height, 20px));
+  --row-height: var(--row-height-prop, var(--vuu-table-row-height, var(--salt-size-base)));
+
   --cell-borderColor: transparent;
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
@@ -32,11 +20,13 @@
 }
 
 .vuuTable-zebra {
-  --row-background-even: var(--salt-container-secondary-background);
+  --row-background-even: var(--table-background);
 }
 
 .vuuTable-colLines {
-    --cell-borderColor: var(--salt-separable-tertiary-borderColor);
+    --cell-borderColor: var(
+      
+    );
 }
 
 .vuuTable-rowLines {
@@ -87,7 +77,7 @@
 }
 
 .vuuTable-contentContainer {
-  background-color: var(--salt-container-primary-background);
+  background: var(--table-background);
   height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
   position: relative;
   overflow: auto;
@@ -124,7 +114,7 @@
 }
 
 .vuuTable-col-headings {
-  background-color: white;
+  background-color: var(--table-background);
   padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
 
     position: sticky;
@@ -140,6 +130,7 @@
 
   .vuuTable-col-headers {
     background-color: var(--table-background);
+    color: var(--salt-content-secondary-foreground);
     white-space: nowrap;
   }
 

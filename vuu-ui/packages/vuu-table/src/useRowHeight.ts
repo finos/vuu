@@ -14,8 +14,8 @@ export const useRowHeight = ({
   const resizeObserver = useMemo(() => {
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
-        const { height: measuredHeight } = entry.contentRect;
-        const newHeight = Math.round(measuredHeight);
+        const [{ blockSize: measuredSize }] = entry.borderBoxSize;
+        const newHeight = Math.round(measuredSize);
         if (isValidNumber(newHeight) && heightRef.current !== newHeight) {
           heightRef.current = newHeight;
           setRowHeight(newHeight);
@@ -29,7 +29,8 @@ export const useRowHeight = ({
       if (el) {
         if (rowHeightProp === 0) {
           const { height } = el.getBoundingClientRect();
-          console.log(`measured rowHeight = ${height}`);
+          console.log({ boundingClientHeight: height });
+          console.log(`measured rowHeight = ${height} (${rowHeightProp})`);
           resizeObserver.observe(el);
           setRowHeight(height);
         }

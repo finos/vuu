@@ -6,5 +6,10 @@
             --vuu-icon-color: var(--salt-actionable-secondary-foreground);
             color: var(--salt-actionable-secondary-foreground);
         }
+        &:focus-visible {
+            --vuu-icon-color: var(--salt-content-primary-foreground);
+            color: var(--salt-content-primary-foreground);
+          }
+        
     }
 }

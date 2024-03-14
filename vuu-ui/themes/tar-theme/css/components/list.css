@@ -1,0 +1,8 @@
+.tar-theme {
+    .vuuListItem.vuuHighlighted:not(.vuuFocusVisible) {
+        border-width: 2px;
+        border-color: var(--salt-selectable-borderColor-hover);
+        border-style: none solid;
+        padding: var(--salt-spacing-50);
+    }
+}

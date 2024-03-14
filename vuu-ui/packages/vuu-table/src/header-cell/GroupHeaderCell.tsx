@@ -27,21 +27,21 @@ const switchIfChanged = (
   }
 };
 
-export interface GroupHeaderCellNextProps
+export interface GroupHeaderCellProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
   column: GroupColumnDescriptor;
   onMoveColumn?: (columns: ColumnDescriptor[]) => void;
   onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }
 
-export const GroupHeaderCellNext = ({
+export const GroupHeaderCell = ({
   column: groupColumn,
   className: classNameProp,
   onMoveColumn,
   onRemoveColumn,
   onResize,
   ...htmlAttributes
-}: GroupHeaderCellNextProps) => {
+}: GroupHeaderCellProps) => {
   const rootRef = useRef<HTMLTableCellElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
     column: groupColumn,
