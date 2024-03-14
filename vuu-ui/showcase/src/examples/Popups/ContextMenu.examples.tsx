@@ -100,11 +100,7 @@ export const DefaultContextMenu = () => {
 DefaultContextMenu.displaySequence = displaySequence++;
 
 export const FlatContextMenu = () => {
-  const handleClose: ContextMenuProps["onClose"] = () => {
-    console.log(`clicked menu action`);
-  };
-
-  const { ref, position } = usePosition();
+  const { ref } = usePosition();
 
   return (
     <div
