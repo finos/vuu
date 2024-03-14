@@ -206,7 +206,7 @@ const TableCore = ({
     onRowClick: onRowClickProp,
     onSelect,
     onSelectionChange,
-    renderBufferSize,
+    renderBufferSize: Math.max(5, renderBufferSize),
     rowHeight,
     scrollingApiRef,
     selectionModel,
