@@ -3,32 +3,32 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   ColumnDescriptorsByName,
   Filter,
-  FilterClause,
   FilterWithPartialClause,
 } from "@finos/vuu-filter-types";
 import { PromptProps } from "@finos/vuu-popups";
 import {
   EditableLabelProps,
-  NavigationOutOfBoundsHandler,
+  EditAPI,
+  NullEditAPI,
 } from "@finos/vuu-ui-controls";
-import { dispatchMouseEvent, isMultiClauseFilter } from "@finos/vuu-utils";
+import { getElementDataIndex, queryClosest } from "@finos/vuu-utils";
 import {
-  FocusEventHandler,
-  KeyboardEvent,
   KeyboardEventHandler,
+  MouseEventHandler,
   RefObject,
   useCallback,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { FilterClauseCancelHandler } from "../filter-clause/useFilterClauseEditor";
 import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
-import { addClause, removeLastClause, replaceClause } from "../filter-utils";
 import { FilterBarProps } from "./FilterBar";
 import { useFilterState } from "./useFilterState";
 import { useApplyFilterOnChange } from "./useApplyFilterOnChange";
+import { FilterModel } from "../FilterModel";
+import { FilterEditSaveHandler } from "../filter-editor";
+import { navigateToNextItem } from "./filterBarFocusManagement";
 
 export interface FilterBarHookProps
   extends Pick<
@@ -40,12 +40,9 @@ export interface FilterBarHookProps
     | "onFilterDeleted"
     | "onFilterRenamed"
     | "onFilterStateChanged"
-    | "showMenu"
   > {
   containerRef: RefObject<HTMLDivElement>;
 }
-
-const EMPTY_FILTER_CLAUSE: Partial<Filter> = {};
 
 export const useFilterBar = ({
   columnDescriptors,
@@ -56,15 +53,17 @@ export const useFilterBar = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  showMenu: showMenuProp,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const editingFilter = useRef<Filter | undefined>();
-  const [showMenu, setShowMenu] = useState(showMenuProp);
+  const [filterModel, setFilterModel] = useState<FilterModel | undefined>();
+  const [indexOfFilterPillBeingRenamed, setIndexOfFilterPillBeingRenamed] =
+    useState(-1);
   const [editFilter, setEditFilter] = useState<
     Partial<Filter> | FilterWithPartialClause | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
+  const editPillLabelAPI = useRef<EditAPI>(NullEditAPI);
 
   const columnsByName = useMemo(
     () => columnDescriptorsByName(columnDescriptors),
@@ -78,7 +77,7 @@ export const useFilterBar = ({
     onChangeFilter,
     onDeleteFilter,
     onRenameFilter,
-    onChangeActiveFilterIndex,
+    onToggleFilterActive,
   } = useFilterState({
     defaultFilterState,
     filterState,
@@ -87,6 +86,7 @@ export const useFilterBar = ({
     onFilterStateChanged,
   });
 
+  //TODO do we need it ?
   useApplyFilterOnChange({
     activeFilterIndex,
     columnsByName,
@@ -94,50 +94,18 @@ export const useFilterBar = ({
     onApplyFilter,
   });
 
-  const editPillLabel = useCallback(
-    (index: number) => {
-      requestAnimationFrame(() => {
-        const pills = containerRef.current?.querySelectorAll(
-          ".vuuFilterPill"
-        ) as undefined | HTMLElement[];
-        if (pills?.[index]) {
-          const editableLabel = pills[index].querySelector(
-            ".vuuEditableLabel"
-          ) as HTMLElement;
-          if (editableLabel) {
-            dispatchMouseEvent(editableLabel, "dblclick");
-          }
-        }
-      });
-    },
-    [containerRef]
-  );
-
-  const focusFilterClause = useCallback(
-    (_ = 0) => {
-      requestAnimationFrame(() => {
-        const input = containerRef.current?.querySelector(
-          ".vuuFilterClause .saltInput-input"
-        ) as undefined | HTMLInputElement;
-        if (input) {
-          input.focus();
-        }
-      });
-    },
-    [containerRef]
-  );
+  const editPillLabel = useCallback((index: number) => {
+    setTimeout(() => {
+      setIndexOfFilterPillBeingRenamed(index);
+    }, 100);
+  }, []);
 
   const focusFilterPill = useCallback(
-    (index?: number) => {
+    (index = 0) => {
       requestAnimationFrame(() => {
-        const target =
-          typeof index === "number"
-            ? (containerRef.current?.querySelector(
-                `.vuuOverflowContainer-item[data-index="${index}"] .vuuFilterPill`
-              ) as undefined | HTMLInputElement)
-            : (containerRef.current?.querySelector(
-                ".vuuFilterPill[tabindex]"
-              ) as undefined | HTMLInputElement);
+        const target = containerRef.current?.querySelector(
+          `.vuuFilterPill[data-index="${index}"] button`
+        ) as undefined | HTMLInputElement;
         if (target) {
           target.focus();
         }
@@ -208,8 +176,10 @@ export const useFilterBar = ({
             editedValue
           );
           editingFilter.current = undefined;
+
           focusFilterPill(indexOfEditedFilter);
         }
+        setIndexOfFilterPillBeingRenamed(-1);
       },
       [focusFilterPill, onRenameFilter]
     );
@@ -231,180 +201,92 @@ export const useFilterBar = ({
         case "edit-filter": {
           const { filter } = options as FilterMenuOptions;
           editingFilter.current = filter;
-          setEditFilter(filter);
-          focusFilterClause();
+          setFilterModel(new FilterModel(filter));
+          // focusFilterClause();
           return true;
         }
         default:
           return false;
       }
     },
-    [deleteFilter, editPillLabel, filters, focusFilterClause]
+    [deleteFilter, editPillLabel, filters]
   );
+
+  const handlePillKeyDown = useCallback<KeyboardEventHandler>((e) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      navigateToNextItem(e.target, e.key === "ArrowLeft" ? "bwd" : "fwd");
+    }
+  }, []);
 
   const addIfNewElseUpdate = useCallback(
     (edited: Filter, existing: Filter | undefined) => {
       if (existing === undefined) {
         const idx = onAddFilter(edited);
+        focusFilterPill(idx);
         editPillLabel(idx);
       } else {
-        onChangeFilter(existing, edited);
+        const idx = onChangeFilter(existing, edited);
+        focusFilterPill(idx);
       }
     },
-    [editPillLabel, onAddFilter, onChangeFilter]
+    [editPillLabel, focusFilterPill, onAddFilter, onChangeFilter]
   );
 
-  const handleMenuAction = useCallback<MenuActionHandler>(
-    ({ menuId }) => {
-      switch (menuId) {
-        case "apply-save": {
-          const editedFilter = editFilter as Filter;
-          addIfNewElseUpdate(editedFilter, editingFilter.current);
-          setEditFilter(undefined);
-          editingFilter.current = undefined;
-          setShowMenu(false);
-          return true;
+  const filterSaveHandler = useCallback<FilterEditSaveHandler>(
+    (filter) => {
+      setFilterModel(undefined);
+      addIfNewElseUpdate(filter, editingFilter.current);
+    },
+    [addIfNewElseUpdate]
+  );
+
+  const handlePillClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    (e) => {
+      console.log("Pill Click", {
+        e,
+      });
+      const isEditing = (e.target as HTMLElement).querySelector(
+        ".vuuEditableLabel-editing"
+      );
+      if (!isEditing) {
+        const pill = queryClosest(e.target, ".vuuFilterPill");
+        if (pill) {
+          const index = getElementDataIndex(pill);
+          onToggleFilterActive(index, e.shiftKey);
         }
-        case "and-clause": {
-          const newFilter = addClause(
-            editFilter as Filter,
-            EMPTY_FILTER_CLAUSE
-          );
-          setEditFilter(newFilter);
-          setShowMenu(false);
-          return true;
-        }
-        case "or-clause":
-          setEditFilter((filter) =>
-            addClause(filter as Filter, EMPTY_FILTER_CLAUSE, {
-              combineWith: "or",
-            })
-          );
-          setShowMenu(false);
-          return true;
-        default:
-          return false;
       }
     },
-    [editFilter, addIfNewElseUpdate]
+    [onToggleFilterActive]
   );
 
-  const handleClickAddFilter = useCallback(() => {
-    setEditFilter({});
-  }, [setEditFilter]);
-
-  const handleClickRemoveFilter = useCallback(() => {
-    setEditFilter(undefined);
-  }, []);
-
-  const pillProps: Partial<FilterPillProps> = {
+  const pillProps: Omit<FilterPillProps, "filter" | "selected"> = {
+    editLabelApiRef: editPillLabelAPI,
     onBeginEdit: handleBeginEditFilterName,
+    onClick: handlePillClick,
+    onKeyDown: handlePillKeyDown,
     onMenuAction: handlePillMenuAction,
     onExitEditMode: handleExitEditFilterName,
   };
 
-  const handleChangeFilterClause = useCallback(
-    (idx: number) => (filterClause: Partial<FilterClause>) => {
-      if (filterClause !== undefined) {
-        setEditFilter((ef) => replaceClause(ef, filterClause, idx));
-        setShowMenu(true);
-      }
-    },
-    []
-  );
-
-  const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
-    (reason) => {
-      if (reason === "Backspace" && isMultiClauseFilter(editFilter)) {
-        setEditFilter(removeLastClause(editFilter));
-      }
-    },
-    [editFilter]
-  );
-
-  const handleBlurFilterClause = useCallback<FocusEventHandler>((e) => {
-    const target = e.target as HTMLElement;
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    const filterClause = target.closest(".vuuFilterClause");
-    if (filterClause?.contains(relatedTarget)) {
-      // do nothing
-    } else {
-      const dropdownId = target.getAttribute("aria-owns");
-      const dropDown = dropdownId ? document.getElementById(dropdownId) : null;
-      if (dropDown?.contains(relatedTarget)) {
-        // do nothing
-      } else {
-        // if clause is complete
-        setShowMenu(true);
-      }
-    }
+  const handleClickAddButton = useCallback(() => {
+    setFilterModel(new FilterModel());
   }, []);
 
-  const handleFocusFilterClause = useCallback(() => {
-    setShowMenu(false);
-  }, []);
-
-  const handleKeyDownFilterbar = useCallback(
-    (evt: KeyboardEvent) => {
-      if (evt.key === "Escape" && editFilter !== undefined) {
-        // TODO confirm if edits applied ?
-        setEditFilter(undefined);
-        requestAnimationFrame(() => {
-          // focus edited pill
-        });
-      }
-    },
-    [editFilter]
-  );
-
-  const handleKeyDownMenu = useCallback<KeyboardEventHandler>(
-    (evt) => {
-      const { current: container } = containerRef;
-      if (evt.key === "Backspace" && container) {
-        evt.preventDefault();
-        const fields = Array.from(
-          container.querySelectorAll(".vuuFilterClauseField")
-        );
-        if (fields.length > 0) {
-          const field = fields.at(-1) as HTMLElement;
-          field?.querySelector("input")?.focus();
-        }
-        setShowMenu(false);
-      } else if (evt.key === "Tab") {
-        if (evt.shiftKey && container) {
-          const clearButtons = Array.from(
-            container.querySelectorAll(".vuuFilterClause-clearButton")
-          ) as HTMLButtonElement[];
-          if (clearButtons.length > 0) {
-            const clearButton = clearButtons.at(-1) as HTMLButtonElement;
-            setTimeout(() => {
-              clearButton.focus();
-            }, 100);
-          }
-        } else {
-          console.log("apply current selection");
-        }
-      }
-    },
-    [containerRef]
-  );
-
-  const handleAddButtonKeyDown = useCallback<KeyboardEventHandler>((evt) => {
+  const handleKeyDownAddButton = useCallback<KeyboardEventHandler>((evt) => {
     if (evt.key === "ArrowLeft") {
-      console.log("navgiate to the Toolbar");
+      navigateToNextItem(evt.target, "bwd");
     }
   }, []);
 
-  const handlePillNavigationOutOfBounds =
-    useCallback<NavigationOutOfBoundsHandler>((direction) => {
-      if (direction === "end") {
-        addButtonRef.current?.focus();
-      }
-    }, []);
+  const handleCancelEdit = useCallback(() => {
+    setFilterModel(undefined);
+    //TODO handle focus
+  }, []);
 
   const addButtonProps = {
     ref: addButtonRef,
-    onKeyDown: handleAddButtonKeyDown,
+    onClick: handleClickAddButton,
+    onKeyDown: handleKeyDownAddButton,
   };
 
   return {
@@ -412,21 +294,13 @@ export const useFilterBar = ({
     addButtonProps,
     columnsByName,
     editFilter,
+    filterModel,
     filters,
-    onBlurFilterClause: handleBlurFilterClause,
-    onCancelFilterClause: handleCancelFilterClause,
-    onChangeActiveFilterIndex,
-    onClickAddFilter: handleClickAddFilter,
-    onClickRemoveFilter: handleClickRemoveFilter,
-    onChangeFilterClause: handleChangeFilterClause,
-    onFocusFilterClause: handleFocusFilterClause,
-    onKeyDownFilterbar: handleKeyDownFilterbar,
-    onKeyDownMenu: handleKeyDownMenu,
-    onMenuAction: handleMenuAction,
-    onNavigateOutOfBounds: handlePillNavigationOutOfBounds,
+    indexOfFilterPillBeingRenamed,
+    onCancelEdit: handleCancelEdit,
+    onSave: filterSaveHandler,
     pillProps,
     promptProps,
-    showMenu,
   };
 };
 

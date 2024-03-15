@@ -1,18 +1,17 @@
 import React, { useCallback, useState } from "react";
 import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { DatePicker } from "@finos/vuu-ui-controls";
+import { DateInput } from "@finos/vuu-ui-controls";
 import { toCalendarDate } from "@finos/vuu-utils";
 import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
 import { FilterClauseValueEditor } from "./filterClauseTypes";
 
-interface Props
-  extends Pick<FilterClauseValueEditor<number>, "onInputComplete"> {
+interface Props extends Pick<FilterClauseValueEditor, "onChangeValue"> {
   value: number | undefined;
   operator: NumericFilterClauseOp;
 }
 
-export const DateInput: React.FC<Props> = (props) => {
-  const { value, onInputComplete, operator } = props;
+export const FilterClauseValueEditorDate: React.FC<Props> = (props) => {
+  const { value, onChangeValue, operator } = props;
   const toEpochMilliS = getEpochMillisConverter(operator);
 
   const [date, setDate] = useState<DateValue | undefined>(() =>
@@ -24,17 +23,17 @@ export const DateInput: React.FC<Props> = (props) => {
   }, []);
 
   const onBlur = useCallback(() => {
-    date && onInputComplete(toEpochMilliS(date));
-  }, [date, onInputComplete, toEpochMilliS]);
+    date && onChangeValue(toEpochMilliS(date));
+  }, [date, onChangeValue, toEpochMilliS]);
 
   return (
-    <DatePicker
+    <DateInput
       className={"vuuFilterClause-DatePicker"}
       selectedDate={date}
       onBlur={onBlur}
-      onSelectedDateChange={onSelectedDateChange}
-      closeOnSelection
-      hideOutOfRangeDates
+      onChange={onSelectedDateChange}
+      // closeOnSelection
+      // hideOutOfRangeDates
     />
   );
 };

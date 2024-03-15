@@ -1,9 +1,4 @@
-import {
-  ExitEditModeHandler,
-  Tab,
-  Tabstrip,
-  TabstripProps,
-} from "@finos/vuu-ui-controls";
+import { ExitTabEditModeHandler, Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
@@ -232,7 +227,7 @@ export const TabstripEditableLabels = ({
   const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 
-  const handleTabLabelChanged = useCallback<ExitEditModeHandler>(
+  const handleTabLabelChanged = useCallback<ExitTabEditModeHandler>(
     (originalValue, newValue) => {
       console.log(`tab label changed from '${originalValue}' to '${newValue}'`);
     },

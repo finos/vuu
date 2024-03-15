@@ -17,6 +17,7 @@ export type PopupPlacement =
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
   anchorElement: RefObject<HTMLElement>;
+  // TODO this is repeated in Position
   minWidth?: number | string;
   offsetLeft?: number;
   offsetTop?: number;
@@ -29,12 +30,16 @@ export const PopupComponent = ({
   className,
   anchorElement,
   minWidth,
+  offsetLeft,
+  offsetTop,
   placement,
   position: positionProp,
 }: PopupComponentProps) => {
   const { popupRef, position } = useAnchoredPosition({
     anchorElement,
     minWidth,
+    offsetLeft,
+    offsetTop,
     placement,
     position: positionProp,
   });

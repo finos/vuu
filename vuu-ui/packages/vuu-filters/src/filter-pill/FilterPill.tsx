@@ -1,40 +1,72 @@
-import { MenuActionHandler } from "@finos/vuu-data-types";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+} from "@finos/vuu-data-types";
 import { ColumnDescriptorsByName, Filter } from "@finos/vuu-filter-types";
-import { PopupCloseCallback, Tooltip, useTooltip } from "@finos/vuu-popups";
-import { EditableLabel, EditableLabelProps } from "@finos/vuu-ui-controls";
+import {
+  PopupCloseCallback,
+  PopupMenuProps,
+  Tooltip,
+  useTooltip,
+} from "@finos/vuu-popups";
+import {
+  EditableLabel,
+  EditableLabelProps,
+  ExitEditModeHandler,
+  SplitStateButton,
+  SplitStateButtonProps,
+} from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, useCallback, useMemo, useRef } from "react";
-import { FilterPillMenu } from "../filter-pill-menu";
+import { useCallback, useMemo, useRef } from "react";
 import { filterAsReactNode } from "./filterAsReactNode";
+import { getFilterLabel } from "./getFilterLabel";
 
 import "./FilterPill.css";
-import { getFilterLabel } from "./getFilterLabel";
+import {
+  closeCommand,
+  deleteCommand,
+  editCommand,
+  MenuOptions,
+  renameCommand,
+} from "./FilterPillMenuOptions";
 
 const classBase = "vuuFilterPill";
 
 export interface FilterPillProps
-  extends Pick<Partial<EditableLabelProps>, "onExitEditMode">,
-    HTMLAttributes<HTMLDivElement> {
+  extends SplitStateButtonProps,
+    Pick<
+      Partial<EditableLabelProps>,
+      "editing" | "editLabelApiRef" | "onExitEditMode"
+    > {
+  allowClose?: boolean;
+  allowDelete?: boolean;
+  allowEdit?: boolean;
+  allowRename?: boolean;
+
   columnsByName?: ColumnDescriptorsByName;
   editable?: boolean;
   filter: Filter;
   index?: number;
   onBeginEdit?: (filter: Filter) => void;
   onMenuAction?: MenuActionHandler;
-  showMenu?: boolean;
 }
 
 export const FilterPill = ({
+  allowClose = true,
+  allowDelete = true,
+  allowEdit = true,
+  allowRename = true,
   className: classNameProp,
   columnsByName,
   editable = true,
+  editing = false,
+  editLabelApiRef,
   filter,
   id: idProp,
   onBeginEdit,
   onExitEditMode,
   onMenuAction,
-  showMenu = true,
   ...htmlAttributes
 }: FilterPillProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -61,26 +93,78 @@ export const FilterPill = ({
     }
   }, []);
 
-  // Experiment, to be revisited
-  // const tooltipBackground = useRef<string | undefined>();
-  // useLayoutEffect(() => {
-  //   if (rootRef.current) {
-  //     tooltipBackground.current = getComputedStyle(
-  //       rootRef.current
-  //     ).getPropertyValue("--vuuTooltip-background");
-  //   }
-  // }, []);
+  const popupMenuProps = useMemo<
+    Pick<
+      PopupMenuProps,
+      "menuBuilder" | "menuActionHandler" | "menuOptions" | "onMenuClose"
+    >
+  >(
+    () => ({
+      icon: "more-vert",
+      menuBuilder: (_location, options) => {
+        const menuItems: ContextMenuItemDescriptor[] = [];
+        if (allowRename) {
+          menuItems.push(renameCommand(options as MenuOptions));
+        }
+        if (allowEdit) {
+          menuItems.push(editCommand(options as MenuOptions));
+        }
+        if (allowClose) {
+          menuItems.push(closeCommand(options as MenuOptions));
+        }
+        if (allowDelete) {
+          menuItems.push(deleteCommand(options as MenuOptions));
+        }
+        return menuItems;
+      },
 
-  const { anchorProps, tooltipProps } = useTooltip({
+      menuActionHandler: onMenuAction,
+
+      menuOptions: {
+        filter,
+      },
+
+      onMenuClose: handleMenuClose,
+    }),
+    [
+      allowClose,
+      allowDelete,
+      allowEdit,
+      allowRename,
+      filter,
+      handleMenuClose,
+      onMenuAction,
+    ]
+  );
+
+  const handleExitEditMode = useCallback<ExitEditModeHandler>(
+    (originalValue, newValue) => {
+      onExitEditMode?.(originalValue, newValue);
+      requestAnimationFrame(() => {
+        rootRef.current?.querySelector("button")?.focus();
+      });
+    },
+    [onExitEditMode]
+  );
+
+  const { anchorProps, hideTooltip, showTooltip, tooltipProps } = useTooltip({
+    anchorQuery: ".vuuFilterPill",
     id,
-    placement: "below",
+    placement: ["above", "below"],
     tooltipContent: filterAsReactNode(filter, getLabel),
   });
 
+  const buttonProps = {
+    onBlur: hideTooltip,
+    onFocus: showTooltip,
+  };
+
   return (
-    <div
+    <SplitStateButton
       {...anchorProps}
       {...htmlAttributes}
+      ButtonProps={buttonProps}
+      PopupMenuProps={popupMenuProps}
       className={cx(classBase, classNameProp)}
       data-text={label}
       ref={rootRef}
@@ -88,21 +172,18 @@ export const FilterPill = ({
       {editable && onExitEditMode ? (
         <EditableLabel
           defaultValue={label}
+          editing={editing}
+          editLabelApiRef={editLabelApiRef}
           key={label}
           onEnterEditMode={handleEnterEditMode}
-          onExitEditMode={onExitEditMode}
+          onExitEditMode={handleExitEditMode}
         />
       ) : (
-        <span className={`${classBase}-label`}>{label}</span>
+        label
       )}
-      {showMenu && onMenuAction ? (
-        <FilterPillMenu
-          filter={filter}
-          onMenuAction={onMenuAction}
-          onMenuClose={handleMenuClose}
-        />
-      ) : null}
-      {tooltipProps && <Tooltip {...tooltipProps} />}
-    </div>
+      {tooltipProps && (
+        <Tooltip className={`${classBase}-tooltip`} {...tooltipProps} />
+      )}
+    </SplitStateButton>
   );
 };

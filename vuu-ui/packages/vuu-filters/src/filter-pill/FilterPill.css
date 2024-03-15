@@ -1,36 +1,11 @@
 .vuuFilterPill {
-    /* --vuuTooltip-background: var(--vuu-color-pink-10); */
-    align-items: center;
-    background: var(--salt-taggable-background);
-    border: solid 1px var(--salt-taggable-foreground);
-    border-radius: 24px;
-    color: var(--vuu-color-gray-50);
-    display: inline-flex;
+    --saltButton-textTransform: none;
     max-width: var(--vuuFilterPill-maxWidth, 200px);
-    padding: 0 8px;
-    position: relative;
-    user-select: none;
-    outline: none;
 }
 
-.vuuFilterPill.vuuToolbarItem {
-    height: 24px;
-}
-
-.vuuFilterPill[aria-selected="true"]{
-    --vuuPopupMenu-iconColor: white;
-    --salt-text-background-selected: var(--vuu-color-blue-40);
-    --salt-text-color-selected: var(--salt-content-primary-foreground);
-    --saltInput-background-hover: var(--salt-taggable-background-active);
-    --saltInput-color: var(--salt-taggable-foreground-active);
-    background: var(--salt-taggable-background-active);
-    color: white;
-}
-
-.vuuFilterPill:not([aria-selected="true"]):hover {
-    --vuuPopupMenu-iconColor: var(--vuu-color-gray-80);
-    background-color: var(--salt-taggable-background-hover);
-    border-color: var(--salt-taggable-background-hover);
-    color: var(--vuu-color-gray-80);
+.vuuFilterPill-tooltip {
+    ul {
+        padding-left: var(--salt-spacing-400);
+    }    
 }
 

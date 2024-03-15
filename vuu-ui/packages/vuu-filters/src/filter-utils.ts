@@ -110,15 +110,7 @@ export const addClause = (
   }
 };
 
-export const replaceClause = (
-  existingFilter: FilterWithPartialClause | Partial<Filter> | undefined,
-  clause: Partial<FilterClause>,
-  idx: number
-): Filter | Partial<Filter> => {
-  if (existingFilter === undefined) return clause;
-  return findAndReplaceClauseAtGivenIndex(existingFilter, clause, idx).filter;
-};
-
+// TODO no longer used but might need to incorporate into FilterModel
 /**
  * Given an existing filter and a filter clause, this function replaces the filter
  * clause at the given index `idx`.

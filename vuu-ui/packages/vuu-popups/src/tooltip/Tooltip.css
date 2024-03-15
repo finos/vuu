@@ -1,8 +1,8 @@
 .vuuTooltip {
     --tooltip-align: flex-start;
-    --tooltip-background: white;
-    --tooltip-border: var(--vuu-color-gray-30);
-    --tooltip-color: var(--vuu-color-gray-80);
+    --tooltip-background: var(--salt-actionable-primary-background-hover);
+    --tooltip-border: var(--salt-actionable-primary-background-hover);
+    --tooltip-color: var(--salt-actionable-primary-foreground-hover);
     --tooltip-justify: flex-start;
     --tooltip-top: auto;
     --tooltip-right: auto;
@@ -12,29 +12,13 @@
     justify-content: var(--tooltip-justify);
     display: flex;
     position: absolute;
+    transition: opacity .15s ease-in;
     z-index: 100;
-  }
-  
-  .vuuTooltip[data-align='right'] {
-    --tooltip-align: center;
-    --tooltip-left: 9px;
-  }
-  
-  .vuuTooltip[data-align='left'] {
-    --tooltip-align: center;
-    --tooltip-left: auto;
-    --tooltip-right: 10px;
-  }
-  
-  .vuuTooltip[data-align='above'] {
-    --tooltip-justify: center;
-    --tooltip-bottom: 9px;
-    --tooltip-left: auto;
-  }
-  .vuuTooltip[data-align='below'] {
-    --tooltip-justify: center;
-    --tooltip-top: 9px;
-    --tooltip-left: auto;
+
+
+    &.vuuHidden {
+      opacity: 0;
+    }
   }
   
   .vuuTooltip-content {
@@ -42,17 +26,12 @@
     border-color: var(--tooltip-border);
     border-width: 1px;
     border-style: solid;
-    border-radius: 6px;
+    border-radius: var(--vuuTooltip-borderRadius, 6px);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     color: var(--tooltip-color);
     line-height: 24px;
     padding: 2px 8px;
-    position: absolute;
     white-space: nowrap;
-    top: var(--tooltip-top);
-    right: var(--tooltip-right);
-    bottom: var(--tooltip-bottom);
-    left: var(--tooltip-left);
   }
     
   .vuuTooltip::before {
@@ -60,24 +39,26 @@
     content: ' ';
     display: block;
     position: absolute;
+    transform: rotate(45deg);
     width: 12px;
     height: 12px;
+    z-index: -1;
 }
 
 .vuuTooltip[data-align='above']::before {
-    transform:  translate(0, -18px) rotate(45deg);
+  bottom: -6px;
+  left: calc(50% - 6px);
 }
 
 .vuuTooltip[data-align='below']::before {
-    transform: translate(0, 6px) rotate(45deg);
+  top: -6px;
+  left: calc(50% - 6px);
 }
 
 .vuuTooltip[data-align='right']::before {
-    transform:  translate(7px, 0px) rotate(45deg);
 }
 
 .vuuTooltip[data-align='left']::before {
-    transform: translate(-19px, 0) rotate(45deg);
 }
 
 .vuuTooltip-error {

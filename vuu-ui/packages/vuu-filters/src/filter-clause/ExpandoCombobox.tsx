@@ -158,7 +158,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       <ComboBox<Item, S>
         {...props}
         PopupProps={popupProps}
-        allowEnterCommitsText
+        // allowEnterCommitsText
+        className="vuuEmbedded"
         defaultSelected={getDefaultSelected()}
         defaultValue={
           Array.isArray(initialValue.current)

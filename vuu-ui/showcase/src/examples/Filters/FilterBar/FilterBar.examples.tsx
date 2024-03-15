@@ -24,7 +24,7 @@ const DefaultFilterBarCore = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  style,
+  style = { left: 0, position: "absolute", top: 0 },
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);

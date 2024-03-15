@@ -3,7 +3,7 @@ import { defaultPatternsByType, formatDate } from "@finos/vuu-utils";
 import {
   DefaultFilterBar,
   FilterBarMultipleFilters,
-} from "../../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
+} from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors
 const OVERFLOW_CONTAINER = ".vuuOverflowContainer-wrapContainer";

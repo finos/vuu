@@ -16,9 +16,9 @@
     --vuuOverflowContainer-justifyContent: flex-end;
 }
 
-.vuuToolbarItem {
+/* .vuuToolbarItem {
     height: var(--toolbar-item-height);
-}
+} */
 
 .vuuToolbar-withSeparators .vuuOverflowContainer-item:not(:first-child):before {
     content: '';

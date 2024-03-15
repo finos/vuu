@@ -178,6 +178,9 @@ export const MenuList = ({
       const subMenuShowing = hasSubMenu && childMenuShowing === itemId;
       const ariaControls = subMenuShowing ? `${id}-${itemId}` : undefined;
 
+      const ariaLabel =
+        label ?? typeof children === "string" ? children : undefined;
+
       list.push(
         <MenuItem
           {...props}
@@ -194,6 +197,7 @@ export const MenuList = ({
           aria-controls={ariaControls}
           aria-haspopup={hasSubMenu || undefined}
           aria-expanded={subMenuShowing || undefined}
+          aria-label={ariaLabel}
         >
           {hasSubMenu
             ? maybeIcon(label ?? children, withIcon, iconName)

@@ -4,16 +4,20 @@
   --vuuExpandoCombobox-height: 16px;
   --saltButton-height: 16px;
   --saltButton-width: 16px;
+  --salt-focused-outlineStyle: dotted;
 
-  display: flex;
-  flex-direction: row;
-  width: fit-content;
+  background: var(--salt-container-primary-background);
   border-color: var(--vuu-color-gray-45);
-  border-radius: 6px;
+  border-radius: var(--saltButton-borderRadius);
   border-width: 1px;
   border-style: solid;
-  background: #ffffff;
-  --salt-focused-outlineStyle: dotted;
+  display: flex;
+  flex-direction: row;
+  gap: var(--salt-spacing-50);
+  height: var(--salt-size-base);
+  min-width: calc(var(--salt-size-base) * 4);
+  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+  width: fit-content;
 }
 
 .vuuFilterClause:focus-within {
@@ -51,10 +55,6 @@
 .vuuFilterClause .saltTokenizedInput-focused {
   outline: none;
   color: var(--salt-content-primary-foreground);
-}
-
-.vuuFilterClause .saltInput-input::selection {
-  color: #ffffff;
 }
 
 .vuu-theme .saltList {

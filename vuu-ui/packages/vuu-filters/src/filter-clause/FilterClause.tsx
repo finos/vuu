@@ -1,82 +1,90 @@
 import { SuggestionFetcher, TableSchema } from "@finos/vuu-data-types";
-import { ColumnDescriptorsByName, FilterClause } from "@finos/vuu-filter-types";
+import {
+  ColumnDescriptorsByName,
+  MultiValueFilterClause,
+  SingleValueFilterClause,
+} from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
-import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
+import { FilterClauseModel } from "../FilterModel";
 import { ExpandoCombobox } from "./ExpandoCombobox";
-import { getOperators } from "./operator-utils";
 import { FilterClauseValueEditor } from "./FilterClauseValueEditor";
-import {
-  FilterClauseCancelHandler,
-  useFilterClauseEditor,
-} from "./useFilterClauseEditor";
+import { getOperators } from "./operator-utils";
+import { useFilterClauseModelEditor } from "./useFilterClauseModelEditor";
 
-import "./FilterClauseEditor.css";
+import "./FilterClause.css";
 
-export interface FilterClauseEditorProps
+export type FilterClauseCancelType = "Backspace" | "Escape";
+export type FilterClauseCancelHandler = (
+  filterClause: FilterClauseModel,
+  reason: FilterClauseCancelType
+) => void;
+
+export interface FilterClauseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   columnsByName: ColumnDescriptorsByName;
-  filterClause: Partial<FilterClause>;
+  filterClauseModel: FilterClauseModel;
   onCancel?: FilterClauseCancelHandler;
-  onChange: (filterClause: Partial<FilterClause>) => void;
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
   suggestionProvider?: () => SuggestionFetcher;
-  tableSchema?: TableSchema;
+  tableSchema: TableSchema;
 }
 
 const classBase = "vuuFilterClause";
 
-export const FilterClauseEditor = ({
+export const FilterClause = ({
   className,
   columnsByName,
   onCancel,
-  onChange,
   onDropdownClose,
   onDropdownOpen,
-  filterClause,
+  filterClauseModel,
   suggestionProvider,
   tableSchema,
   ...htmlAttributes
-}: FilterClauseEditorProps) => {
+}: FilterClauseProps) => {
   const {
     InputProps,
     columnRef,
+    filterClause,
     onChangeValue,
-    onClear,
-    onClearKeyDown,
-    onDeselectValue,
     onColumnSelect,
+    onFocus,
+    onDeselectValue,
     onOperatorSelect,
-    operator,
     operatorRef,
     selectedColumn,
-    value,
-  } = useFilterClauseEditor({
-    filterClause,
+  } = useFilterClauseModelEditor({
+    filterClauseModel,
     onCancel,
-    onChange,
     columnsByName,
   });
 
   const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
 
   return (
-    <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
+    <div
+      className={cx(classBase, className)}
+      {...htmlAttributes}
+      onFocus={onFocus}
+      tabIndex={0}
+    >
       <ExpandoCombobox<ColumnDescriptor>
         InputProps={InputProps}
         allowBackspaceClearsSelection
         className={cx(`${classBase}Field`, `${classBase}Column`)}
         data-field="column"
+        key="column-field"
         initialHighlightedIndex={0}
         itemToString={(column) => (column as ColumnDescriptor).name}
         onListItemSelect={onColumnSelect}
         ref={columnRef}
         source={columns}
         title="column"
-        value={selectedColumn?.name ?? ""}
+        value={filterClause.column}
       />
       {selectedColumn?.name ? (
         <ExpandoCombobox<string>
@@ -86,32 +94,29 @@ export const FilterClauseEditor = ({
             [`${classBase}Operator-hidden`]: selectedColumn === null,
           })}
           data-field="operator"
+          key="operator-field"
           initialHighlightedIndex={0}
           onListItemSelect={onOperatorSelect}
           ref={operatorRef}
           source={getOperators(selectedColumn)}
           title="operator"
-          value={operator ?? ""}
+          value={filterClause.op ?? ""}
         />
       ) : null}
       <FilterClauseValueEditor
         InputProps={InputProps}
+        key="value-field"
         onChangeValue={onChangeValue}
         onDeselectValue={onDeselectValue}
-        operator={operator}
+        operator={filterClause.op}
         selectedColumn={selectedColumn}
         suggestionProvider={suggestionProvider}
-        table={tableSchema?.table}
-        value={value}
+        table={tableSchema.table}
+        value={
+          (filterClause as MultiValueFilterClause)?.values ??
+          (filterClause as SingleValueFilterClause)?.value
+        }
       />
-      {value !== undefined ? (
-        <Button
-          className={`${classBase}-clearButton`}
-          onClick={onClear}
-          onKeyDown={onClearKeyDown}
-          data-icon="close"
-        />
-      ) : null}
     </div>
   );
 };

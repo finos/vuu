@@ -342,6 +342,7 @@ export const useCombobox = <Item, S extends SelectionStrategy>({
         e.key === "Enter" &&
         value !== undefined &&
         value !== "" &&
+        // TODO this whole allowEnterCommitsText isquestionable
         allowEnterCommitsText
       ) {
         setIsOpen(false);

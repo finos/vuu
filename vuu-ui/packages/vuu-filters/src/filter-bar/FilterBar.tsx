@@ -1,22 +1,21 @@
 import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
-import { Prompt } from "@finos/vuu-popups";
-import { Toolbar } from "@finos/vuu-ui-controls";
+import { PopupComponent as Popup, Portal, Prompt } from "@finos/vuu-popups";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { Icon, IconButton } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
-import { FilterBuilderMenu } from "../filter-builder-menu";
-import { FilterClauseEditor, FilterClauseEditorProps } from "../filter-clause";
+import { FilterClauseProps } from "../filter-clause";
+import { FilterEditor } from "../filter-editor";
 import { FilterPill } from "../filter-pill";
-import { filterClauses as getFilterClauses } from "../filter-utils";
 import { FilterBarMenu } from "./FilterBarMenu";
 import { useFilterBar } from "./useFilterBar";
 
 import "./FilterBar.css";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
-  FilterClauseEditorProps?: Partial<FilterClauseEditorProps>;
+  FilterClauseEditorProps?: Partial<FilterClauseProps>;
   /**
    * This is used to apply tailored filters based on column types and other attributes.
    * NOTE: Always make sure that these are passed with proper re-render optimization, otherwise,
@@ -29,7 +28,6 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
-  showMenu?: boolean;
   tableSchema?: TableSchema;
 }
 
@@ -45,7 +43,6 @@ export const FilterBar = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  showMenu: showMenuProp = false,
   tableSchema,
   ...htmlAttributes
 }: FilterBarProps) => {
@@ -55,21 +52,13 @@ export const FilterBar = ({
     addButtonProps,
     columnsByName,
     editFilter,
+    filterModel,
     filters,
-    onBlurFilterClause,
-    onCancelFilterClause,
-    onClickAddFilter,
-    onClickRemoveFilter,
-    onChangeFilterClause,
-    onChangeActiveFilterIndex,
-    onFocusFilterClause,
-    onNavigateOutOfBounds,
-    onKeyDownFilterbar,
-    onKeyDownMenu,
-    onMenuAction,
+    indexOfFilterPillBeingRenamed,
+    onCancelEdit,
+    onSave,
     pillProps,
     promptProps,
-    showMenu,
   } = useFilterBar({
     containerRef: rootRef,
     columnDescriptors,
@@ -79,7 +68,6 @@ export const FilterBar = ({
     onFilterStateChanged,
     onFilterDeleted,
     onFilterRenamed,
-    showMenu: showMenuProp,
   });
 
   const className = cx(classBase, classNameProp, {
@@ -94,84 +82,55 @@ export const FilterBar = ({
         items.push(
           <FilterPill
             {...pillProps}
+            editing={indexOfFilterPillBeingRenamed === i}
             columnsByName={columnsByName}
+            data-index={i}
             filter={filter}
             key={`filter-${i}`}
+            selected={activeFilterIndex.includes(i)}
           />
         );
       });
-      return items;
-    } else if (editFilter) {
-      const filterClauses = getFilterClauses(editFilter);
-      items.push(
-        <div className={`${classBase}-Editor`} key={`editor`}>
-          {filterClauses.map((f, i) => (
-            <FilterClauseEditor
-              {...FilterClauseEditorProps}
-              columnsByName={columnsByName}
-              filterClause={f}
-              key={`editor-${i}`}
-              onCancel={onCancelFilterClause}
-              onChange={onChangeFilterClause(i)}
-              onBlur={onBlurFilterClause}
-              onFocus={onFocusFilterClause}
-              tableSchema={tableSchema}
-            />
-          ))}
-        </div>
-      );
-      if (showMenu) {
-        items.push(
-          <FilterBuilderMenu
-            key="menu"
-            onMenuAction={onMenuAction}
-            ListProps={{ onKeyDownCapture: onKeyDownMenu }}
-          />
-        );
-      }
-      items.push(
-        <Button
-          className={`${classBase}-remove`}
-          data-align="right"
-          data-icon="cross"
-          key="filter-remove"
-          onClick={onClickRemoveFilter}
-          variant="primary"
-        />
-      );
-
       return items;
     }
   };
 
   return (
-    <div
-      {...htmlAttributes}
-      className={className}
-      onKeyDown={onKeyDownFilterbar}
-      ref={rootRef}
-    >
+    <div {...htmlAttributes} className={className} ref={rootRef}>
       <FilterBarMenu />
-      <Toolbar
-        activeItemIndex={activeFilterIndex}
-        onActiveChange={onChangeActiveFilterIndex}
-        onNavigateOutOfBounds={onNavigateOutOfBounds}
-        selectionStrategy="multiple-special-key"
-      >
-        {getChildren()}
-      </Toolbar>
-      {editFilter === undefined ? (
-        <Button
+      <>
+        <div className={`${classBase}-filters`}>{getChildren()}</div>
+        <IconButton
           {...addButtonProps}
-          className={`${classBase}-add`}
-          data-icon="plus"
+          className={cx("vuuIconButton", `${classBase}-add`)}
           data-selectable={false}
+          icon="plus"
           key="filter-add"
-          onClick={onClickAddFilter}
           tabIndex={0}
           variant="primary"
         />
-      ) : null}
+      </>
+
+      {filterModel && tableSchema && (
+        <Portal>
+          <Popup
+            anchorElement={rootRef}
+            offsetTop={-10}
+            offsetLeft={20}
+            placement="below"
+          >
+            <FilterEditor
+              FilterClauseEditorProps={FilterClauseEditorProps}
+              columnDescriptors={columnDescriptors}
+              key="filter-editor"
+              onCancel={onCancelEdit}
+              onSave={onSave}
+              filterModel={filterModel}
+              tableSchema={tableSchema}
+            />
+          </Popup>
+        </Portal>
+      )}
 
       {promptProps ? (
         <Prompt

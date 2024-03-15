@@ -10,6 +10,27 @@ export interface FiltersHookProps {
   onFilterStateChanged?: (s: FilterState) => void;
 }
 
+const getActiveIndices = (
+  indices: number[],
+  toggledIndex: number,
+  preserveExisting: boolean
+) => {
+  const isActive = indices.includes(toggledIndex);
+  if (isActive) {
+    if (preserveExisting) {
+      return indices.filter((i) => i !== toggledIndex);
+    } else {
+      return [];
+    }
+  } else {
+    if (preserveExisting) {
+      return indices.concat(toggledIndex);
+    } else {
+      return [toggledIndex];
+    }
+  }
+};
+
 export const useFilterState = ({
   defaultFilterState,
   onFilterDeleted,
@@ -115,16 +136,24 @@ export const useFilterState = ({
     [filterState, handleFilterStateChange]
   );
 
-  const handleActiveIndicesChange = useCallback(
-    (indices: number[]) =>
-      handleFilterStateChange({ ...filterState, activeIndices: indices }),
+  const handleToggleFilterActive = useCallback(
+    (filterIndex: number, preserveRemainingFilters = false) => {
+      handleFilterStateChange({
+        ...filterState,
+        activeIndices: getActiveIndices(
+          filterState.activeIndices,
+          filterIndex,
+          preserveRemainingFilters
+        ),
+      });
+    },
     [filterState, handleFilterStateChange]
   );
 
   return {
     activeFilterIndex: filterState.activeIndices,
     filters: filterState.filters,
-    onChangeActiveFilterIndex: handleActiveIndicesChange,
+    onToggleFilterActive: handleToggleFilterActive,
     onAddFilter: handleAddFilter,
     onChangeFilter: handleChangeFilter,
     onDeleteFilter: handleDeleteFilter,
