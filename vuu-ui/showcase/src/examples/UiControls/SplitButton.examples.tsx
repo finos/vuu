@@ -1,6 +1,10 @@
-import { SplitButton, SplitButtonProps } from "@finos/vuu-ui-controls";
+import {
+  SplitButton,
+  SplitButtonProps,
+  SplitStateButton,
+} from "@finos/vuu-ui-controls";
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { PopupMenuProps } from "@finos/vuu-popups";
 
 let displaySequence = 1;
@@ -45,12 +49,9 @@ export const DefaultSplitButton = ({
       style={{ gap: 24, display: "flex", alignItems: "center" }}
     >
       <input data-testid="input" defaultValue="test" />
-      <SplitButton
-        {...props}
-        buttonText="Save"
-        onClick={handleClick}
-        PopupMenuProps={menuProps}
-      />
+      <SplitButton {...props} onClick={handleClick} PopupMenuProps={menuProps}>
+        Save
+      </SplitButton>
     </div>
   );
 };
@@ -81,12 +82,9 @@ export const SegmentedSplitButton = ({
     >
       <input data-testid="input" defaultValue="test" />
 
-      <SplitButton
-        buttonText="Save"
-        PopupMenuProps={menuProps}
-        onClick={handleClick}
-        segmented
-      />
+      <SplitButton PopupMenuProps={menuProps} onClick={handleClick} segmented>
+        Save
+      </SplitButton>
     </div>
   );
 };
@@ -115,38 +113,69 @@ export const SplitButtonVariations = () => {
       <span>CTA</span>
 
       <span />
-      <SplitButton
-        buttonText="Save"
-        PopupMenuProps={menuProps}
-        variant="primary"
-      />
-      <SplitButton
-        buttonText="Save"
-        PopupMenuProps={menuProps}
-        variant="secondary"
-      />
-      <SplitButton buttonText="Save" PopupMenuProps={menuProps} variant="cta" />
+      <SplitButton PopupMenuProps={menuProps} variant="primary">
+        Save
+      </SplitButton>
+      <SplitButton PopupMenuProps={menuProps} variant="secondary">
+        Save
+      </SplitButton>
+      <SplitButton PopupMenuProps={menuProps} variant="cta">
+        Save
+      </SplitButton>
 
       <span>disabled</span>
-      <SplitButton
-        PopupMenuProps={menuProps}
-        buttonText="Save"
-        disabled
-        variant="primary"
-      />
-      <SplitButton
-        PopupMenuProps={menuProps}
-        buttonText="Save"
-        disabled
-        variant="secondary"
-      />
-      <SplitButton
-        PopupMenuProps={menuProps}
-        buttonText="Save"
-        disabled
-        variant="cta"
-      />
+      <SplitButton PopupMenuProps={menuProps} disabled variant="primary">
+        Save
+      </SplitButton>
+      <SplitButton PopupMenuProps={menuProps} disabled variant="secondary">
+        Save
+      </SplitButton>
+      <SplitButton PopupMenuProps={menuProps} disabled variant="cta">
+        Save
+      </SplitButton>
     </div>
   );
 };
 SplitButtonVariations.displaySequence = displaySequence++;
+
+export const DefaultSplitStateButton = ({
+  PopupMenuProps,
+  onClick,
+  ...props
+}: Partial<SplitButtonProps>) => {
+  const menuActionHandler = useMemo<MenuActionHandler>(
+    () => PopupMenuProps?.menuActionHandler ?? defaultMenuHandler,
+    [PopupMenuProps?.menuActionHandler]
+  );
+
+  const [selected, setSelected] = useState(false);
+
+  const menuProps: PopupMenuProps = {
+    icon: "more-vert",
+    menuBuilder,
+    menuActionHandler,
+  };
+
+  const handleClick = useMemo(
+    () => onClick ?? (() => setSelected((value) => !value)),
+    [onClick]
+  );
+
+  return (
+    <div
+      data-showcase-center
+      style={{ gap: 24, display: "flex", alignItems: "center" }}
+    >
+      <input data-testid="input" defaultValue="test" />
+      <SplitStateButton
+        {...props}
+        onClick={handleClick}
+        PopupMenuProps={menuProps}
+        selected={selected}
+      >
+        Save
+      </SplitStateButton>
+    </div>
+  );
+};
+DefaultSplitStateButton.displaySequence = displaySequence++;

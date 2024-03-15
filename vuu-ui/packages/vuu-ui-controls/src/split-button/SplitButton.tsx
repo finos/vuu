@@ -1,15 +1,16 @@
 import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
-import { Button, ButtonProps } from "@salt-ds/core";
-import { HTMLAttributes } from "react";
+import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
+import { forwardRef, HTMLAttributes } from "react";
 import { useSplitButton } from "./useSplitButton";
 import cx from "clsx";
 
 import "./SplitButton.css";
 
-export interface SplitButtonProps extends HTMLAttributes<HTMLDivElement> {
-  ButtonProps?: Partial<Omit<ButtonProps, "variant">>;
+export interface SplitButtonProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onClick">,
+    Pick<ButtonProps, "onClick"> {
+  ButtonProps?: Partial<Omit<ButtonProps, "onClick" | "variant">>;
   PopupMenuProps?: Partial<PopupMenuProps>;
-  buttonText: string;
   disabled?: boolean;
   segmented?: boolean;
   variant?: ButtonProps["variant"];
@@ -17,54 +18,60 @@ export interface SplitButtonProps extends HTMLAttributes<HTMLDivElement> {
 
 const classBase = "vuuSplitButton";
 
-export const SplitButton = ({
-  ButtonProps: ButtonPropsProp,
-  PopupMenuProps: PopupMenuPropsProp,
-  buttonText,
-  disabled = false,
-  onClick,
-  segmented = false,
-  variant = "primary",
-  ...htmlAttributes
-}: SplitButtonProps) => {
-  const { ButtonProps, buttonRef, rootRef, PopupMenuProps, ...rootProps } =
-    useSplitButton({
+export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
+  function SplitButton(
+    {
       ButtonProps: ButtonPropsProp,
       PopupMenuProps: PopupMenuPropsProp,
-      classBase,
+      children,
+      className,
+      disabled = false,
       onClick,
-      segmented,
-    });
+      segmented = false,
+      variant = "primary",
+      ...htmlAttributes
+    },
+    forwardedRef
+  ) {
+    const { ButtonProps, buttonRef, rootRef, PopupMenuProps, ...rootProps } =
+      useSplitButton({
+        ButtonProps: ButtonPropsProp,
+        PopupMenuProps: PopupMenuPropsProp,
+        classBase,
+        onClick,
+        segmented,
+      });
 
-  return (
-    <div
-      {...htmlAttributes}
-      {...rootProps}
-      className={cx(classBase, `${classBase}-${variant}`, {
-        [`${classBase}-disabled`]: disabled,
-        [`${classBase}-segmented`]: segmented,
-      })}
-      ref={rootRef}
-      data-showcase-center
-      // tabIndex={segmented ? undefined : 0}
-    >
-      <Button
-        {...ButtonProps}
-        className={`${classBase}-main`}
-        disabled={disabled}
-        ref={buttonRef}
-        variant={variant}
+    return (
+      <div
+        {...htmlAttributes}
+        {...rootProps}
+        className={cx(classBase, `${classBase}-${variant}`, className, {
+          [`${classBase}-disabled`]: disabled,
+          [`${classBase}-segmented`]: segmented,
+        })}
+        ref={useForkRef(forwardedRef, rootRef)}
+        data-showcase-center
+        tabIndex={-1}
       >
-        {buttonText}
-      </Button>
-      <PopupMenu
-        {...PopupMenuProps}
-        className={`${classBase}-trigger`}
-        disabled={disabled}
-        icon={PopupMenuProps?.icon ?? "chevron-down"}
-        tabIndex={segmented ? 0 : -1}
-        variant={variant}
-      />
-    </div>
-  );
-};
+        <Button
+          {...ButtonProps}
+          className={`${classBase}-main`}
+          disabled={disabled}
+          ref={buttonRef}
+          variant={variant}
+        >
+          {children}
+        </Button>
+        <PopupMenu
+          {...PopupMenuProps}
+          className={`${classBase}-trigger`}
+          disabled={disabled}
+          icon={PopupMenuProps?.icon ?? "chevron-down"}
+          tabIndex={segmented ? 0 : -1}
+          variant={variant}
+        />
+      </div>
+    );
+  }
+);

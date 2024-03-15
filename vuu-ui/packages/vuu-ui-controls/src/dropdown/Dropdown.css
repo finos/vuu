@@ -4,6 +4,7 @@
   --saltButton-width : var(--vuuDropdown-width);
 
   line-height: 0;
+  position: relative;
 
 }
 

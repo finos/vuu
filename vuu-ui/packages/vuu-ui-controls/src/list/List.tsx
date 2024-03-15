@@ -376,7 +376,11 @@ export const List = forwardRef(function List<
       style={{ ...styleProp, ...sizeStyles }}
       tabIndex={listDisabled || disableFocus ? undefined : tabIndex}
     >
-      <ListItemProxy ref={rowHeightProxyRef} height={itemHeightProp} />
+      <ListItemProxy
+        ref={rowHeightProxyRef}
+        height={itemHeightProp}
+        key="canary"
+      />
       {collectionHook.data.length === 0 && ListPlaceholder !== undefined ? (
         <>
           <ListPlaceholder />

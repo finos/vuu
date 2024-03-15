@@ -1,3 +1,4 @@
+import { queryClosest } from "@finos/vuu-utils";
 import { RefObject, useEffect, useRef } from "react";
 import { CloseReason } from "./dropdownTypes";
 
@@ -12,6 +13,30 @@ type MouseEventHandler = (e: MouseEvent) => void;
 type KeyboardEventHandler = (e: KeyboardEvent) => void;
 
 const NO_HANDLERS: [MouseEventHandler?, KeyboardEventHandler?] = [];
+
+export const targetWithinSubPopup = (
+  source: HTMLElement | null,
+  target: HTMLElement
+) => {
+  if (source === null) {
+    return false;
+  }
+
+  const sourcePortal = queryClosest(source, ".vuuPortal");
+  const targetPortal = queryClosest(target, ".vuuPortal");
+
+  if (sourcePortal && targetPortal) {
+    // If we have two portals, this can only be a popup launched from a popup.
+    // There will be a relationship, described by aria attributes.
+    const targetWithId = targetPortal.querySelector("[id]");
+    const targetOwner = sourcePortal.querySelector(
+      `[aria-owns="${targetWithId?.id}"]`
+    );
+    return targetOwner !== null;
+  }
+
+  return false;
+};
 
 export const useClickAway: ClickawayHook = ({
   popperRef,
@@ -29,12 +54,15 @@ export const useClickAway: ClickawayHook = ({
     const [clickHandler, escapeKeyHandler] = isOpen
       ? [
           (evt: MouseEvent) => {
+            console.log("click away");
             const targetElement = evt.target as HTMLElement;
             if (
               !popperRef.current?.contains(targetElement) &&
               !rootRef.current?.contains(targetElement)
             ) {
-              onClose("click-away");
+              if (!targetWithinSubPopup(popperRef.current, targetElement)) {
+                onClose("click-away");
+              }
             }
           },
           (e: KeyboardEvent) => {
