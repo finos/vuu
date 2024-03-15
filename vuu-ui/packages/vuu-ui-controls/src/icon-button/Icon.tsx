@@ -26,6 +26,7 @@ export const Icon = ({
       {...htmlAttributes}
       className={cx(classBase, className)}
       data-icon={name}
+      role="img"
       style={style}
     />
   );

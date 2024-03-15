@@ -16,6 +16,7 @@ const classBase = "vuuDatePopup";
 export interface DatePopupProps
   extends Pick<CalendarProps, "selectionVariant">,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "onKeyDown"> {
+  "data-embedded"?: boolean;
   selectedDate?: DateValue;
   onPopupClose?: DropdownCloseHandler;
   onPopupOpen?: () => void;
@@ -33,6 +34,7 @@ export const DatePopup = forwardRef<HTMLButtonElement, DatePopupProps>(
       onPopupClose,
       onPopupOpen,
       selectionVariant,
+      "data-embedded": dataEmbedded,
       ...htmlAttributes
     },
     forwardedRef
@@ -63,6 +65,7 @@ export const DatePopup = forwardRef<HTMLButtonElement, DatePopupProps>(
         onOpenChange={handleOpenChange}
       >
         <IconButton
+          data-embedded={dataEmbedded}
           icon="date"
           ref={useForkRef(forwardedRef, triggererRef)}
           variant="secondary"

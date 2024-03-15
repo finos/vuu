@@ -29,8 +29,6 @@ export const DefaultCalendar = () => {
       setDate(d);
     };
 
-  console.log({ date });
-
   useEffect(() => {
     const el = ref.current?.querySelector(
       ".saltCalendarDay-selected:not(.saltCalendarDay-outOfRange)"

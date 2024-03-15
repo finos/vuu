@@ -55,7 +55,7 @@ export const DateInput = ({
   return (
     <div
       {...htmlAttributes}
-      className={clsx("saltInput saltInput-primary", classBase, className)}
+      className={clsx(classBase, className)}
       onBlur={handleOnBlur}
     >
       <input
@@ -69,6 +69,7 @@ export const DateInput = ({
       />
 
       <DatePopup
+        data-embedded
         onBlur={onBlur}
         onChange={onChange}
         ref={popupRef}

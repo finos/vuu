@@ -40,3 +40,28 @@ export const DefaultDatePopup = () => {
   );
 };
 DefaultDatePopup.displaySequence = displaySequence++;
+
+export const EmbeddedDatePopup = () => {
+  const [date, setDate] = useState<DateValue>(new CalendarDate(2024, 2, 8));
+
+  const onChange: DatePopupProps["onChange"] = (dt) => {
+    console.log(`handleSelectedDateChange date = ${date.toString()}`);
+    setDate(dt);
+  };
+
+  const handlePopupClose = useCallback<DropdownCloseHandler>((reason) => {
+    console.log(`handlePopupClose ${reason}`);
+  }, []);
+
+  return (
+    <DatePopup
+      data-embedded
+      data-showcase-center
+      selectedDate={date}
+      onChange={onChange}
+      onPopupClose={handlePopupClose}
+      selectionVariant="default"
+    />
+  );
+};
+EmbeddedDatePopup.displaySequence = displaySequence++;
