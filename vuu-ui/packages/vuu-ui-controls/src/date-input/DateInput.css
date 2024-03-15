@@ -1,9 +1,10 @@
 .vuuDateInput {
+  border: solid 1px var(--salt-editable-borderColor);
   display: inline-flex;
   flex-wrap: nowrap;
   justify-content: space-between;
   gap: 1px;
-  padding: 0 2px;
+  padding: 0 0 0 2px;
 
 
   .saltInput-input {

@@ -17,6 +17,7 @@
         border-radius: var(--togglebutton-borderRadius);
         /** TODO vary by density */
         gap: 8px;
+        white-space: nowrap;
 
         --vuu-icon-color: var(--salt-actionable-secondary-foreground);
 

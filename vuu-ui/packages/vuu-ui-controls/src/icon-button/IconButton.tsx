@@ -12,10 +12,13 @@ export interface IconButtonProps extends Omit<ButtonProps, "children"> {
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton({ className, icon, ...buttonProps }, ref) {
+  function IconButton(
+    { "aria-label": ariaLabel, className, icon, ...buttonProps },
+    ref
+  ) {
     return (
       <Button {...buttonProps} className={cx(classBase, className)} ref={ref}>
-        <Icon name={icon} />
+        <Icon aria-label={ariaLabel} name={icon} />
       </Button>
     );
   }
