@@ -4,7 +4,13 @@
     --vuuPopupMenu-background: var(--split-background);
     --vuuPopupMenu-iconSize: 20px;
 
-    --border-radius: 6px;
+    /** less verbose local refs */
+    --background: var(--vuuSplitButton-background);
+    --foreground: var(--vuuSplitButton-foreground);
+    --background-hover: var(--vuuSplitButton-background-hover);
+    --foreground-hover: var(--vuuSplitButton-foreground-hover);
+
+    --border-radius: var(--vuuSplitButton-borderRadius, 0px);
     --main-border-radius: var(--border-radius) 0 0 var(--border-radius);
     --trigger-border-radius: 0 var(--border-radius) var(--border-radius) 0;
     --trigger-border-style: solid solid solid none;
@@ -20,13 +26,13 @@
         outline-style: none;
     }
     &.vuuSplitButton-primary {
-        --split-background:  var(--salt-actionable-primary-background-hover);
+        --split-background:  var(--background-hover,var(--salt-actionable-primary-background-hover));
     }
     &.vuuSplitButton-secondary {
-        --split-background:  var(--salt-actionable-secondary-background-hover);
+        --split-background:  var(--background-hover,var(--salt-actionable-secondary-background-hover));
     }
     &.vuuSplitButton-cta {
-        --split-background:  var(--salt-actionable-cta-background-hover);
+        --split-background:  var(--background-hover,var(--salt-actionable-cta-background-hover));
         .vuuSplitButton-trigger {
             --vuu-icon-color:  var(--salt-actionable-cta-foreground-hover);
         }
@@ -43,7 +49,7 @@
 
   
 .vuuSplitButton-primary {
-    --split-background:  var(--salt-actionable-primary-background);
+    --split-background:  var(--background, var(--salt-actionable-primary-background));
     --split-background-active:  var(--salt-actionable-primary-background-active);
     --split-color-active:  var(--salt-actionable-primary-foreground-active);
 }
@@ -51,7 +57,7 @@
 .vuuSplitButton-primary:hover:not(.vuuSplitButton-disabled) {
     --vuuButton-borderColor: var(--split-background);
     --saltButton-borderColor: var(--split-background);
-    --split-background:  var(--salt-actionable-primary-background-hover);
+    --split-background:  var(--background-hover, var(--salt-actionable-primary-background-hover));
     .saltButton {
         --saltButton-text-color: var(--salt-actionable-primary-foreground-hover);
     }
@@ -59,7 +65,7 @@
 
 .vuuSplitButton-secondary {
     --saltButton-borderColor: var(--split-background);
-    --split-background:  var(--salt-actionable-secondary-background);
+    --split-background:  var(--background,var(--salt-actionable-secondary-background));
     --split-background-active:  var(--salt-actionable-secondary-background-active);
     --split-color-active:  var(--salt-actionable-secondary-foreground-active);
 }
@@ -73,7 +79,7 @@
 }
 
 .vuuSplitButton-cta {
-    --split-background:  var(--salt-actionable-cta-background);
+    --split-background:  var(--background,var(--salt-actionable-cta-background));
     --split-background-active:  var(--salt-actionable-cta-background-active);
     --split-color-active:  var(--salt-actionable-cta-foreground-active);
 

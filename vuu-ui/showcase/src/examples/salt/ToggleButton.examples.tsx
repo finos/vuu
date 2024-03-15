@@ -168,3 +168,12 @@ export const ToggleButtonGroupVariations = () => {
   );
 };
 ToggleButtonGroupVariations.displaySequence = displaySequence++;
+
+export const SingleToggleButton = () => {
+  return (
+    <ToggleButton data-showcase-center data-variant="primary" value="test-1">
+      Test
+    </ToggleButton>
+  );
+};
+SingleToggleButton.displaySequence = displaySequence++;
