@@ -2,14 +2,30 @@ package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 
+
+/**
+ * This class provides utility methods related to mapping external fields to internal columns
+ * and vice versa.
+ *
+ * @note For now converter functions i.e. `toInternalRowMap` doesn't perform any type-checks and/or
+ * type conversions. That feature is part of our roadmap and will be introduced in near
+ * future.
+ * */
 trait SchemaMapper {
   def tableColumn(extFieldName: String): Option[Column]
   def externalSchemaField(columnName: String): Option[SchemaField]
-  def toInternalRowMap(values: List[_]): Map[String, Any]
-  def toInternalRowMap(dto: Product): Map[String, Any]
+  def toInternalRowMap(externalValues: List[_]): Map[String, Any]
+  def toInternalRowMap(externalDto: Product): Map[String, Any]
 }
 
 object SchemaMapper {
+  /**
+   * Builds a schema mapper from the following:
+   *
+   * @param externalSchema schema representing external fields.
+   * @param internalColumns an array of internal Vuu columns.
+   * @param columnNameByExternalField a map from external field names to internal column names.
+   * */
   def apply(externalSchema: ExternalEntitySchema,
             internalColumns: Array[Column],
             columnNameByExternalField: Map[String, String]): SchemaMapper = {
@@ -17,6 +33,27 @@ object SchemaMapper {
     if (validationError.nonEmpty) throw InvalidSchemaMapException(validationError.get)
 
     new SchemaMapperImpl(externalSchema, internalColumns, columnNameByExternalField)
+  }
+
+  /**
+   * Builds a schema mapper from the following:
+   *
+   * @param externalSchema schema representing external fields.
+   * @param internalColumns an array of internal Vuu columns.
+   *
+   * @note Similar to `apply(ExternalEntitySchema, Array[Column], Map[String, String])`
+   * except that this method builds the `field->column` map from the passed fields
+   * and columns matching them by their indexes (`Column.index` and `SchemaField.index`).
+   *
+   * @see [[SchemaMapper.apply]]
+   * */
+  def apply(externalSchema: ExternalEntitySchema, internalColumns: Array[Column]): SchemaMapper = {
+    val columnNameByExternalField = mapFieldsToColumns(externalSchema.fields, internalColumns)
+    SchemaMapper(externalSchema, internalColumns, columnNameByExternalField)
+  }
+
+  private def mapFieldsToColumns(fields: List[SchemaField], columns: Array[Column]): Map[String, String] = {
+    fields.flatMap(f => columns.find(_.index == f.index).map(col => (f.name, col.name))).toMap
   }
 
   private type ValidationError = Option[String]
@@ -52,21 +89,23 @@ object SchemaMapper {
 }
 
 private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
-                               private val tableColumns: Array[Column],
+                               private val internalColumns: Array[Column],
                                private val columnNameByExternalField: Map[String, String]) extends SchemaMapper {
-  private val externalSchemaFieldsByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
-  private val tableColumnByExternalField: Map[String, Column] = getTableColumnByExternalField
+  private val externalFieldByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
+  private val internalColumnByExtFieldName: Map[String, Column] = getTableColumnByExternalField
 
-  override def tableColumn(extFieldName: String): Option[Column] = tableColumnByExternalField.get(extFieldName)
-  override def externalSchemaField(columnName: String): Option[SchemaField] = externalSchemaFieldsByColumnName.get(columnName)
-  override def toInternalRowMap(values: List[_]): Map[String, Any] = {
-    tableColumns.map(column => {
-      val f = externalSchemaField(column.name).get
-      val columnValue = values(f.index) // @todo add type conversion conforming to the passed schema
-      (column.name, columnValue)
+  override def tableColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
+  override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
+  override def toInternalRowMap(externalValues: List[_]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
+  override def toInternalRowMap(externalDto: Product): Map[String, Any] = toInternalRowMap(externalDto.productIterator.toArray)
+
+  private def toInternalRowMap(externalValues: Array[_]): Map[String, Any] = {
+    externalFieldByColumnName.keys.map(columnName => {
+      val field = externalSchemaField(columnName).get
+      val columnValue = externalValues(field.index) // @todo add type conversion conforming to the passed schema
+      (columnName, columnValue)
     }).toMap
   }
-  override def toInternalRowMap(dto: Product): Map[String, Any] = toInternalRowMap(dto.productIterator.toList)
 
   private def getExternalSchemaFieldsByColumnName =
     externalSchema.fields.flatMap(f =>
@@ -75,6 +114,6 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
 
   private def getTableColumnByExternalField =
     columnNameByExternalField.flatMap({
-      case (extFieldName, columnName) => tableColumns.find(_.name == columnName).map((extFieldName, _))
+      case (extFieldName, columnName) => internalColumns.find(_.name == columnName).map((extFieldName, _))
     })
 }
