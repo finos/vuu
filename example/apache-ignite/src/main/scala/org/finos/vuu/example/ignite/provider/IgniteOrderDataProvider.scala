@@ -7,7 +7,7 @@ import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider.columnNameByExternalField
 import org.finos.vuu.example.ignite.query.IndexCalculator
-import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
+import org.finos.vuu.example.ignite.schema.ChildOrderSchema
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.util.schema.SchemaMapper
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
                              (implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
-  private val schemaMapper = SchemaMapper(ChildOrderEntityObject.getSchema, IgniteOrderDataModule.columns, columnNameByExternalField)
+  private val schemaMapper = SchemaMapper(ChildOrderSchema.schema, IgniteOrderDataModule.columns, columnNameByExternalField)
   private val dataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
   private val indexCalculator = IndexCalculator(extraRowsCount = 5000)
 

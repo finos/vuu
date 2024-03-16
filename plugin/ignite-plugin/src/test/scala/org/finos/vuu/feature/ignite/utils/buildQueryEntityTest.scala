@@ -1,4 +1,4 @@
-package org.finos.vuu.example.ignite.schema
+package org.finos.vuu.feature.ignite.utils
 
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, MapHasAsScala}
 
-class BaseIgniteEntityObjectTest extends AnyFeatureSpec with Matchers {
+class buildQueryEntityTest extends AnyFeatureSpec with Matchers {
 
   Feature("buildQueryEntity") {
     val testSchema = ExternalEntitySchemaBuilder()
@@ -16,7 +16,7 @@ class BaseIgniteEntityObjectTest extends AnyFeatureSpec with Matchers {
       .build()
 
     Scenario("Can build query entity") {
-      val queryEntity = BaseIgniteEntityObject.buildQueryEntity(testSchema, classOf[Long], classOf[TestDto])
+      val queryEntity = buildQueryEntity(testSchema, classOf[Long], classOf[TestDto])
 
       queryEntity.getFields.asScala shouldEqual mutable.LinkedHashMap.empty.addAll(List(("name", "java.lang.String"), ("value", "double")))
       queryEntity.getIndexes.size shouldEqual 1
@@ -24,14 +24,5 @@ class BaseIgniteEntityObjectTest extends AnyFeatureSpec with Matchers {
     }
   }
 
-  Feature("entityConverter") {
-    Scenario("Can build Dto from list of values") {
-      val dto = BaseIgniteEntityObject.entityConverter[TestDto](TestDto)(List("TestObject", 25.5))
-
-      dto shouldEqual TestDto(name = "TestObject", value = 25.5)
-    }
-  }
+  private case class TestDto(name: String, value: Double)
 }
-
-
-private case class TestDto(name: String, value: Double)

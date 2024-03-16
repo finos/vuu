@@ -6,7 +6,7 @@ import org.apache.ignite.cache.query._
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore, ParentOrder}
-import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
+import org.finos.vuu.example.ignite.utils.getListToObjectConverter
 
 import java.util
 import scala.collection.mutable
@@ -136,7 +136,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
       .map(x => x.getValue)
   }
 
-  private def toChildOrder = ChildOrderEntityObject.getListToChildOrder
+  private def toChildOrder = getListToObjectConverter[ChildOrder](ChildOrder)
 
   private def mapToString(results: FieldsQueryCursor[util.List[_]]): (Int, ListBuffer[String]) = {
     var counter = 0
