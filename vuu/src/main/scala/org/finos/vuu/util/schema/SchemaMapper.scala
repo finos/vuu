@@ -37,7 +37,7 @@ object SchemaMapper {
   private def externalFieldsInMapConformsToExternalSchema(externalSchema: ExternalEntitySchema,
                                                           externalFields: Iterable[String]): ValidationError = {
     externalFields
-      .find(field => externalSchema.schemaFields.forall(_.name != field))
+      .find(field => externalSchema.fields.forall(_.name != field))
       .map(f => s"Field `$f` not found in external schema")
   }
 
@@ -69,7 +69,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
   override def toInternalRowMap(dto: Product): Map[String, Any] = toInternalRowMap(dto.productIterator.toList)
 
   private def getExternalSchemaFieldsByColumnName =
-    externalSchema.schemaFields.flatMap(f =>
+    externalSchema.fields.flatMap(f =>
       Option.when(columnNameByExternalField.contains(f.name))(columnNameByExternalField(f.name), f)
     ).toMap
 

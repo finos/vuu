@@ -475,7 +475,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   ).zipWithIndex.map({ case ((name, t), i) => SimpleColumn(name, i, t) })
 
   private class TestEntitySchema extends ExternalEntitySchema {
-    override val schemaFields: List[SchemaField] = List(
+    override val fields: List[SchemaField] = List(
       SchemaField("id", classOf[Int], 0),
       SchemaField("parentId", classOf[String], 1),
       SchemaField("ric", classOf[String], 2),

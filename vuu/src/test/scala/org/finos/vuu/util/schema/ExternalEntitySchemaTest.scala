@@ -8,26 +8,26 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
   Feature("ExternalEntitySchemaBuilder") {
     Scenario("Builder can correctly pass index to the schema when index applied to existent fields") {
-      val index1 = ("NAME_IDX", List("name"))
-      val index2 = ("SIZE_IDX", List("size"))
+      val index1 = SchemaIndex("NAME_IDX", List("name"))
+      val index2 = SchemaIndex("SIZE_IDX", List("size"))
 
       val schema = ExternalEntitySchemaBuilder()
-        .withColumn("name", classOf[String])
-        .withColumn("size", classOf[Int])
-        .withIndex(index1._1, index1._2)
-        .withIndex(index2._1, index2._2)
+        .withField("name", classOf[String])
+        .withField("size", classOf[Int])
+        .withIndex(index1.name, index1.fields)
+        .withIndex(index2.name, index2.fields)
         .build()
 
-      schema.index shouldEqual List(index1, index2)
+      schema.indexes shouldEqual List(index1, index2)
     }
 
     Scenario("Builder throws when user tries to build a schema with index applied to a non-existent field") {
-      val badIndex = ("BAD_IDX", List("missing-field"))
+      val badIndex = SchemaIndex("BAD_IDX", List("missing-field"))
 
       val exception = intercept[InvalidIndexException](
         ExternalEntitySchemaBuilder()
-          .withColumn("present-field", classOf[String])
-          .withIndex(badIndex._1, badIndex._2)
+          .withField("present-field", classOf[String])
+          .withIndex(badIndex.name, badIndex.fields)
           .build()
       )
 
@@ -36,15 +36,15 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Builder throws when user tries to build a schema with multiple indexes applied to multiple non-existent fields") {
-      val badIndex1 = ("BAD_IDX", List("missing-field-1", "missing-field-2"))
-      val badIndex2 = ("BAD_IDX2", List("missing-field-3"))
+      val badIndex1 = SchemaIndex("BAD_IDX", List("missing-field-1", "missing-field-2"))
+      val badIndex2 = SchemaIndex("BAD_IDX2", List("missing-field-3"))
 
       val exception = intercept[InvalidIndexException](
         ExternalEntitySchemaBuilder()
-          .withColumn("present-field-1", classOf[String])
-          .withColumn("present-field-2", classOf[String])
-          .withIndex(badIndex1._1, badIndex1._2)
-          .withIndex(badIndex2._1, badIndex2._2)
+          .withField("present-field-1", classOf[String])
+          .withField("present-field-2", classOf[String])
+          .withIndex(badIndex1.name, badIndex1.fields)
+          .withIndex(badIndex2.name, badIndex2.fields)
           .build()
       )
 
@@ -56,11 +56,11 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Can build schema by passing each field") {
       val schema = ExternalEntitySchemaBuilder()
-        .withColumn("name", classOf[String])
-        .withColumn("size", classOf[Int])
+        .withField("name", classOf[String])
+        .withField("size", classOf[Int])
         .build()
 
-      schema.schemaFields shouldEqual List(
+      schema.fields shouldEqual List(
         SchemaField("name", classOf[String], 0),
         SchemaField("size", classOf[Int], 1)
       )
@@ -69,7 +69,7 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
     Scenario("Can build schema with a case class") {
       val schema = ExternalEntitySchemaBuilder().withCaseClass[TestCaseClass].build()
 
-      schema.schemaFields shouldEqual List(
+      schema.fields shouldEqual List(
         SchemaField("name", classOf[String], 0),
         SchemaField("size", classOf[Int], 1),
         SchemaField("value", classOf[Double], 2)
@@ -85,6 +85,7 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
       ("int", ExternalDataType.Int),
       ("long", ExternalDataType.Long),
       ("double", ExternalDataType.Double),
+      ("char", ExternalDataType.Char),
     ))((str, expected) =>
       Scenario(
         s"can convert `$str` to correct ignite data type"

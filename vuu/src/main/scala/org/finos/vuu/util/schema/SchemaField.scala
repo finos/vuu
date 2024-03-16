@@ -1,3 +1,3 @@
 package org.finos.vuu.util.schema
 
-case class SchemaField(name: String, dType: Class[_], index: Int)
+case class SchemaField(name: String, dataType: Class[_], index: Int)
