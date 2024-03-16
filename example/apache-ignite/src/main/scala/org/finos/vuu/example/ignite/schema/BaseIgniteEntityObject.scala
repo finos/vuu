@@ -10,12 +10,12 @@ object BaseIgniteEntityObject {
 
   def buildQueryEntity(schema: ExternalEntitySchema, keyClass: Class[_], valueClass: Class[_]): QueryEntity = {
     val fields = new java.util.LinkedHashMap[String, String](
-      mutable.LinkedHashMap.empty.addAll(schema.schemaFields.map(f => (f.name, f.dType.getName))).asJava
+      mutable.LinkedHashMap.empty.addAll(schema.fields.map(f => (f.name, f.dataType.getName))).asJava
     )
 
-    val queryIndex = schema.index.map({ case (indexName, fields) =>
-      new QueryIndex(fields.asJavaCollection, QueryIndexType.SORTED).setName(indexName)
-    })
+    val queryIndex = schema.indexes.map(index =>
+      new QueryIndex(index.fields.asJavaCollection, QueryIndexType.SORTED).setName(index.name)
+    )
 
     new QueryEntity(keyClass, valueClass).setFields(fields).setIndexes(queryIndex.asJava)
   }

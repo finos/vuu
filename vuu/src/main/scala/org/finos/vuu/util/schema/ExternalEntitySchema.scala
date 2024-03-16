@@ -1,30 +1,23 @@
 package org.finos.vuu.util.schema
 
-import org.finos.vuu.util.schema.EntitySchema.{ColumnName, Index, IndexName}
+import org.finos.vuu.util.schema.EntitySchema.{FieldName, IndexName}
 import org.finos.vuu.util.schema.ExternalDataType.{ExternalDataType, fromString}
-import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
+import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.{InvalidIndexException, toSchemaFields}
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.reflect.runtime.universe.{MethodSymbol, TypeTag, typeOf}
 
 trait ExternalEntitySchema {
-  val schemaFields: List[SchemaField]
-  val index: List[Index] = List.empty
+  val fields: List[SchemaField]
+  val indexes: List[SchemaIndex] = List.empty
 }
 
-case class DefaultExternalEntitySchema private (private val columnDef: mutable.LinkedHashMap[ColumnName, ExternalDataType],
-                                                override val index: List[Index]) extends ExternalEntitySchema {
-
-  override val schemaFields: List[SchemaField] = columnDef.zipWithIndex.map(
-    {case ((name, dType), i) => SchemaField(name, dType, i)}
-  ).toList
-}
+private case class DefaultExternalEntitySchema private (override val fields: List[SchemaField],
+                                                        override val indexes: List[SchemaIndex]) extends ExternalEntitySchema
 
 object EntitySchema {
-  type ColumnName = String
+  type FieldName = String
   type IndexName = String
-  type Index = (IndexName, List[ColumnName])
 }
 
 object ExternalDataType extends Enumeration {
@@ -33,6 +26,7 @@ object ExternalDataType extends Enumeration {
   val String : ExternalDataType =  classOf[String]
   val Double : ExternalDataType =  classOf[Double]
   val Long : ExternalDataType =  classOf[Long]
+  val Char : ExternalDataType = classOf[Char]
 
   def fromString(s: String): ExternalDataType = {
     s.trim.toLowerCase match {
@@ -40,49 +34,55 @@ object ExternalDataType extends Enumeration {
       case "double" => ExternalDataType.Double
       case "int"    => ExternalDataType.Int
       case "long"   => ExternalDataType.Long
+      case "char"   => ExternalDataType.Char
       case _        => throw new RuntimeException(s"Unsupported type passed: $s")
     }
   }
 }
 
 object ExternalEntitySchemaBuilder {
-  def apply(fieldDef: mutable.LinkedHashMap[ColumnName, ExternalDataType] = mutable.LinkedHashMap.empty,
-            index: ListBuffer[Index] = ListBuffer.empty): ExternalEntitySchemaBuilder =
-    new ExternalEntitySchemaBuilder(fieldDef, index)
+  def apply(): ExternalEntitySchemaBuilder = ExternalEntitySchemaBuilder(ListBuffer.empty, ListBuffer.empty)
+
+  def apply(fields: ListBuffer[(FieldName, ExternalDataType)],
+            indexes: ListBuffer[SchemaIndex]): ExternalEntitySchemaBuilder =
+    new ExternalEntitySchemaBuilder(fields, indexes)
+
+  private def toSchemaFields(fields: ListBuffer[(FieldName, ExternalDataType)]) =
+    fields.zipWithIndex.map({ case ((name, dType), i) => SchemaField(name, dType, i) }).toList
 
   final class InvalidIndexException(error: String) extends RuntimeException(error)
 }
 
-case class ExternalEntitySchemaBuilder(private val fieldDef: mutable.LinkedHashMap[ColumnName, ExternalDataType],
-                                       private val index: ListBuffer[Index]) {
+case class ExternalEntitySchemaBuilder private (private val fields: ListBuffer[(FieldName, ExternalDataType)],
+                                                private val indexes: ListBuffer[SchemaIndex]) {
 
-  def withColumn(columnName: ColumnName, dataType: ExternalDataType): ExternalEntitySchemaBuilder =
-    new ExternalEntitySchemaBuilder(fieldDef.addOne(columnName -> dataType), index)
+  def withField(fieldName: FieldName, dataType: ExternalDataType): ExternalEntitySchemaBuilder =
+    this.copy(fields = fields.addOne(fieldName -> dataType))
 
-  def withIndex(indexName: IndexName, fields: List[ColumnName]): ExternalEntitySchemaBuilder =
-    new ExternalEntitySchemaBuilder(fieldDef, index :+ (indexName, fields))
+  def withIndex(indexName: IndexName, fields: List[FieldName]): ExternalEntitySchemaBuilder =
+    this.copy(indexes = indexes :+ SchemaIndex(indexName, fields))
 
   def withCaseClass[T: TypeTag]: ExternalEntitySchemaBuilder = {
     val namesToTypes = typeOf[T].members.sorted.collect {
       case m: MethodSymbol if m.isCaseAccessor =>
         m.name.toString -> fromString(m.returnType.toString)
     }
-    new ExternalEntitySchemaBuilder(fieldDef.addAll(namesToTypes), index)
+    this.copy(fields = fields.addAll(namesToTypes))
   }
 
   def build(): ExternalEntitySchema = {
     val validationError = validateSchema
     if (validationError.nonEmpty) throw new InvalidIndexException(validationError.get)
 
-    DefaultExternalEntitySchema(fieldDef, index.toList)
+    DefaultExternalEntitySchema(toSchemaFields(fields), indexes.toList)
   }
 
   private type ValidationError = Option[String]
   private def validateSchema = indexAppliedOnAbsentField()
   private def indexAppliedOnAbsentField(): ValidationError = {
-    val error = index
-      .flatMap({ case (indexName, fields) => fields.map((indexName, _)) })
-      .filter({ case (_, f) => !fieldDef.contains(f) })
+    val error = indexes
+      .flatMap(idx => idx.fields.map((idx.name, _)))
+      .filter({ case (_, f) => !fields.exists(field => field._1 == f) })
       .zipWithIndex
       .map({ case ((indexName, f), i) => s"${i + 1}) Field `$f` in index `$indexName` not found in schema." })
       .mkString(" ")

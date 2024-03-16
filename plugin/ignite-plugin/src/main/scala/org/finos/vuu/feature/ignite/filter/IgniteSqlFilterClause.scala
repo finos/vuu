@@ -30,7 +30,7 @@ case class AndIgniteSqlFilterClause(clauses:List[IgniteSqlFilterClause]) extends
 case class EqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
     schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dType match {
+      case Some(f) => f.dataType match {
         case CharDataType | StringDataType => eqSql(f.name, quotedString(value))
         case _ => eqSql(f.name, value)
       }
@@ -45,7 +45,7 @@ case class EqIgniteSqlFilterClause(columnName: String, value: String) extends Ig
 case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
     schemaMapper.externalSchemaField(columnName) match {
-      case Some(field) => field.dType match {
+      case Some(field) => field.dataType match {
         case CharDataType | StringDataType => neqSql(field.name, quotedString(value))
         case _ => neqSql(field.name, value)
       }
@@ -70,9 +70,9 @@ case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: Do
 case class StartsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
   override def toSql(schemaMapper: SchemaMapper): String = {
     schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dType match {
+      case Some(f) => f.dataType match {
         case StringDataType => s"${f.name} LIKE '$value%'"
-        case _ => logErrorAndReturnEmptySql(s"`Starts` clause unsupported for non string column: `${f.name}` (${f.dType})")
+        case _ => logErrorAndReturnEmptySql(s"`Starts` clause unsupported for non string column: `${f.name}` (${f.dataType})")
       }
       case None => logMappingErrorAndReturnEmptySql(columnName)
     }
@@ -82,9 +82,9 @@ case class StartsIgniteSqlFilterClause(columnName: String, value: String) extend
 case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
   override def toSql(schemaMapper: SchemaMapper): String =
     schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dType match {
+      case Some(f) => f.dataType match {
         case StringDataType => s"${f.name} LIKE '%$value'"
-        case _ => logErrorAndReturnEmptySql(s"`Ends` clause unsupported for non string column: `${f.name}` (${f.dType})")
+        case _ => logErrorAndReturnEmptySql(s"`Ends` clause unsupported for non string column: `${f.name}` (${f.dataType})")
       }
       case None => logMappingErrorAndReturnEmptySql(columnName)
   }
@@ -93,7 +93,7 @@ case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {
   override def toSql(schemaMapper: SchemaMapper): String =
     schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dType match {
+      case Some(f) => f.dataType match {
         case CharDataType | StringDataType => inQuery(f.name, values.map(quotedString(_)))
         case _ => inQuery(f.name, values)
       }
