@@ -4,9 +4,12 @@ import {
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
-import type { DataSourceRow } from "@finos/vuu-data-types";
-import type { TableProps, TableRowSelectHandler } from "@finos/vuu-table";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { DataSourceRowObject } from "@finos/vuu-data-types";
+import type { TableProps } from "@finos/vuu-table";
+import type {
+  ColumnDescriptor,
+  TableRowSelectHandler,
+} from "@finos/vuu-table-types";
 import { InstrumentPicker } from "@finos/vuu-ui-controls";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
@@ -36,15 +39,14 @@ export const DefaultInstrumentPicker = () => {
     ];
   }, [schema.columns]);
 
-  const itemToString = useCallback(
-    (row: DataSourceRow) => {
-      return String([row[columnMap.description]]);
-    },
-    [columnMap.description]
-  );
+  const itemToString = useCallback((row: DataSourceRowObject) => {
+    return String(row.data.description);
+  }, []);
 
-  const handleSelect = useCallback<TableRowSelectHandler>((index) => {
-    console.log(`row selected ${index}`);
+  const handleSelect = useCallback<TableRowSelectHandler>((row) => {
+    if (row) {
+      console.log(`row selected ${row.key}`);
+    }
   }, []);
 
   return (
@@ -91,7 +93,9 @@ export const InstrumentPickerVuuInstruments = () => {
   );
 
   const handleSelect = useCallback<TableRowSelectHandler>((row) => {
-    console.log(`row selected ${row.join(",")}`);
+    if (row) {
+      console.log(`row selected ${Object.values(row.data).join(",")}`);
+    }
   }, []);
 
   if (error) {

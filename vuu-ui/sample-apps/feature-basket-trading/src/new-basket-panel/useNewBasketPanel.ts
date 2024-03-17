@@ -1,11 +1,9 @@
 import { ViewportRpcResponse } from "@finos/vuu-data-types";
-import { TableRowSelectHandler } from "@finos/vuu-table";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
-import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
+import { buildColumnMap } from "@finos/vuu-utils";
+import { TableRowSelectHandler } from "packages/vuu-table-types";
 import { useCallback, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
-
-const { KEY } = metadataKeys;
 
 export type NewBasketHookProps = Pick<
   NewBasketPanelProps,
@@ -47,11 +45,12 @@ export const useNewBasketPanel = ({
   }, [basketDataSource, basketId, basketName, onBasketCreated]);
 
   const handleSelectBasket = useCallback<TableRowSelectHandler>((row) => {
-    const basketId = row[KEY] as string;
-    setBasketId(basketId);
-    setTimeout(() => {
-      saveButtonRef.current?.focus();
-    }, 60);
+    if (row) {
+      setBasketId(row.key);
+      setTimeout(() => {
+        saveButtonRef.current?.focus();
+      }, 60);
+    }
   }, []);
 
   const handleChangeBasketName = useCallback<Commithandler<string>>(

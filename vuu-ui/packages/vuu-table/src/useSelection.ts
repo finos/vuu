@@ -1,4 +1,8 @@
-import { RowClickHandler, TableSelectionModel } from "@finos/vuu-table-types";
+import {
+  TableRowClickHandlerInternal,
+  TableRowSelectHandlerInternal,
+  TableSelectionModel,
+} from "@finos/vuu-table-types";
 import {
   deselectItem,
   dispatchMouseEvent,
@@ -6,11 +10,7 @@ import {
   metadataKeys,
   selectItem,
 } from "@finos/vuu-utils";
-import {
-  DataSourceRow,
-  Selection,
-  SelectionChangeHandler,
-} from "@finos/vuu-data-types";
+import { Selection, SelectionChangeHandler } from "@finos/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
@@ -29,7 +29,7 @@ export interface SelectionHookProps {
   highlightedIndexRef: MutableRefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
-  onSelect?: (row: DataSourceRow) => void;
+  onSelect?: TableRowSelectHandlerInternal;
   onSelectionChange: SelectionChangeHandler;
 }
 
@@ -49,8 +49,8 @@ export const useSelection = ({
     [selectionKeys]
   );
 
-  const handleRowClick = useCallback<RowClickHandler>(
-    (row, rangeSelect, keepExistingSelection) => {
+  const handleRowClick = useCallback<TableRowClickHandlerInternal>(
+    (evt, row, rangeSelect, keepExistingSelection) => {
       const { [IDX]: idx } = row;
       const { current: active } = lastActiveRef;
       const { current: selected } = selectedRef;

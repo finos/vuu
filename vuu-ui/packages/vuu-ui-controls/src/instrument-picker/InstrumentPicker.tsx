@@ -1,5 +1,5 @@
-import { DataSourceRow, TableSchema } from "@finos/vuu-data-types";
-import { Table, TableProps, TableRowSelectHandler } from "@finos/vuu-table";
+import { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
+import { Table, TableProps } from "@finos/vuu-table";
 import { ColumnMap, useId } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
@@ -16,7 +16,8 @@ if (typeof SearchCell !== "function") {
 }
 
 export interface InstrumentPickerProps
-  extends Omit<HTMLAttributes<HTMLElement>, "onSelect"> {
+  extends Omit<HTMLAttributes<HTMLElement>, "onSelect">,
+    Pick<TableProps, "onSelect"> {
   TableProps: Pick<TableProps, "config" | "dataSource">;
   columnMap: ColumnMap;
   disabled?: boolean;
@@ -27,10 +28,9 @@ export interface InstrumentPickerProps
    * @param row DataSourceRow
    * @returns string
    */
-  itemToString?: (row: DataSourceRow) => string;
+  itemToString?: (row: DataSourceRowObject) => string;
   onClose?: () => void;
   onOpenChange?: OpenChangeHandler;
-  onSelect: TableRowSelectHandler;
   schema: TableSchema;
   searchColumns: string[];
   width?: number;

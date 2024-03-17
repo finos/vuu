@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceRow,
   SchemaColumn,
   SelectionChangeHandler,
   VuuFeatureInvocationMessage,
@@ -10,6 +9,7 @@ import {
   TableConfig,
   TableConfigChangeHandler,
   TableRowClickHandler,
+  TableRowSelectHandler,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
 import {
@@ -44,8 +44,6 @@ const classBase = "vuuTable";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-// TODO implement a Model object to represent a row data for better API
-export type TableRowSelectHandler = (row: DataSourceRow) => void;
 export type TableNavigationStyle = "none" | "cell" | "row";
 
 export interface TableProps

@@ -7,11 +7,12 @@ import {
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  RowClickHandler,
+  TableRowClickHandlerInternal,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
   TableSelectionModel,
+  TableRowSelectHandlerInternal,
 } from "@finos/vuu-table-types";
 import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@finos/vuu-ui-controls";
 import {
   applySort,
+  asDataSourceRowObject,
   buildColumnMap,
   getIndexFromRowElement,
   isGroupColumn,
@@ -557,15 +559,32 @@ export const useTable = ({
     [dataSource, onSelectionChange]
   );
 
+  const handleSelect = useCallback<TableRowSelectHandlerInternal>(
+    (row) => {
+      if (onSelect) {
+        onSelect(row === null ? null : asDataSourceRowObject(row, columnMap));
+      }
+    },
+    [columnMap, onSelect]
+  );
+
   const {
     onKeyDown: selectionHookKeyDown,
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
     highlightedIndexRef,
-    onSelect,
+    onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
   });
+
+  const handleRowClick = useCallback<TableRowClickHandlerInternal>(
+    (evt, row, rangeSelect, keepExistingSelection) => {
+      selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
+      onRowClickProp?.(evt, asDataSourceRowObject(row, columnMap));
+    },
+    [columnMap, onRowClickProp, selectionHookOnRowClick]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
@@ -578,14 +597,6 @@ export const useTable = ({
       }
     },
     [navigationKeyDown, editingKeyDown, selectionHookKeyDown]
-  );
-
-  const handleRowClick = useCallback<RowClickHandler>(
-    (row, rangeSelect, keepExistingSelection) => {
-      selectionHookOnRowClick(row, rangeSelect, keepExistingSelection);
-      onRowClickProp?.(row);
-    },
-    [onRowClickProp, selectionHookOnRowClick]
   );
 
   const onMoveColumn = useCallback(
