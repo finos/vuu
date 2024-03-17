@@ -1,7 +1,6 @@
 import { TableRowClickHandler } from "@finos/vuu-table-types";
 import { TableProps } from "@finos/vuu-table";
 import { OpenChangeHandler, useControlled } from "@finos/vuu-ui-controls";
-import { buildColumnMap } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";
@@ -33,11 +32,6 @@ export const useBasketSelector = ({
     name: "useDropdownList",
   });
 
-  const columnMap = useMemo(
-    () => buildColumnMap(dataSourceBasketTradingSearch.columns),
-    [dataSourceBasketTradingSearch.columns]
-  );
-
   const handleOpenChange = useCallback<OpenChangeHandler>(
     (open, closeReason) => {
       setIsOpen(open);
@@ -55,12 +49,12 @@ export const useBasketSelector = ({
   );
 
   const handleRowClick = useCallback<TableRowClickHandler>(
-    (row) => {
-      const instanceId = row[columnMap.instanceId] as string;
+    (_evt, row) => {
+      const instanceId = row.data.instanceId as string;
       handleOpenChange(false, "select");
       onSelectBasket?.(instanceId);
     },
-    [columnMap.instanceId, handleOpenChange, onSelectBasket]
+    [handleOpenChange, onSelectBasket]
   );
 
   const handleClickAddBasket = useCallback(() => {

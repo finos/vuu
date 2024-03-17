@@ -2,7 +2,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   DataCellEditHandler,
   RuntimeColumnDescriptor,
-  RowClickHandler,
+  TableRowClickHandlerInternal,
 } from "@finos/vuu-table-types";
 import {
   ColumnMap,
@@ -34,7 +34,7 @@ export interface RowProps {
   highlighted?: boolean;
   row: DataSourceRow;
   offset: number;
-  onClick?: RowClickHandler;
+  onClick?: TableRowClickHandlerInternal;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   style?: CSSProperties;

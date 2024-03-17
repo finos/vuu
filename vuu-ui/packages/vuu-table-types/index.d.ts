@@ -44,6 +44,9 @@ export type DataItemCommitHandler<
   T extends VuuRowDataItemType = VuuRowDataItemType
 > = (value: T) => CommitResponse;
 
+export type TableRowSelectHandler = (row: DataSourceRowObject | null) => void;
+export type TableRowSelectHandlerInternal = (row: DataSourceRow | null) => void;
+
 /**
  * Fired when user clicks a row, returning the row object (DataSourceRowObject)
  */
@@ -52,7 +55,7 @@ export type TableRowClickHandler = (
   row: DataSourceRowObject
 ) => void;
 
-export type RowClickHandler = (
+export type TableRowClickHandlerInternal = (
   evt: MouseEvent<HTMLDivElement>,
   row: DataSourceRow,
   rangeSelect: boolean,

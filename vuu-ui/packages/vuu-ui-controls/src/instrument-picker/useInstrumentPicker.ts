@@ -1,10 +1,9 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { DataSource, DataSourceRowObject } from "@finos/vuu-data-types";
 import {
+  ColumnDescriptor,
   TableRowSelectHandler,
-  useControlledTableNavigation,
-} from "@finos/vuu-table";
-import { ColumnMap } from "@finos/vuu-utils";
+} from "@finos/vuu-table-types";
+import { useControlledTableNavigation } from "@finos/vuu-table";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useControlled } from "../common-hooks";
 import { OpenChangeHandler } from "../dropdown";
@@ -21,19 +20,14 @@ export interface InstrumentPickerHookProps
   isOpen?: boolean;
 }
 
-const defaultItemToString =
-  (columns: ColumnDescriptor[], columnMap: ColumnMap) =>
-  (row: DataSourceRow) => {
-    return columns.map(({ name }) => row[columnMap[name]]).join(" ");
-  };
+const defaultItemToString = (row: DataSourceRowObject) =>
+  Object.values(row.data).join(" ");
 
 export const useInstrumentPicker = ({
-  columnMap,
-  columns,
   dataSource,
   defaultIsOpen,
   isOpen: isOpenProp,
-  itemToString = defaultItemToString(columns, columnMap),
+  itemToString = defaultItemToString,
   onOpenChange,
   onSelect,
   searchColumns,
@@ -85,9 +79,9 @@ export const useInstrumentPicker = ({
 
   const handleSelectRow = useCallback<TableRowSelectHandler>(
     (row) => {
-      const value = itemToString(row);
+      const value = row === null ? "" : itemToString(row);
       setValue(value);
-      onSelect(row);
+      onSelect?.(row);
       handleOpenChange?.(false, "select");
     },
     [handleOpenChange, itemToString, onSelect]

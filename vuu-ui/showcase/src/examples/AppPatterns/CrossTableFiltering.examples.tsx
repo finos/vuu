@@ -9,9 +9,12 @@ import {
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { Table, TableRowSelectHandler } from "@finos/vuu-table";
-import { TableConfig, TableRowClickHandler } from "@finos/vuu-table-types";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { Table } from "@finos/vuu-table";
+import {
+  TableConfig,
+  TableRowClickHandler,
+  TableRowSelectHandler,
+} from "@finos/vuu-table-types";
 import { useCallback, useMemo } from "react";
 
 let displaySequence = 1;
@@ -200,6 +203,7 @@ export const SimpleCrossTableFiltering = () => {
   const handleParentRowSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log({ rowSelect: row });
   }, []);
+
   const handleParentRowSelectionChange = useCallback<SelectionChangeHandler>(
     (selection) => {
       console.log({ selection });

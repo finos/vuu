@@ -1,4 +1,8 @@
-import { DataSource, DataSourceRow, TableSchema } from "@finos/vuu-data-types";
+import {
+  DataSource,
+  DataSourceRowObject,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,
@@ -17,8 +21,6 @@ import { useNewBasketPanel } from "./useNewBasketPanel";
 import "./NewBasketPanel.css";
 
 const classBase = "vuuBasketNewBasketPanel";
-
-const displayName = (key: number) => (row: DataSourceRow) => String(row[key]);
 
 export type BasketCreatedHandler = (
   basketName: string,
@@ -74,7 +76,7 @@ export const NewBasketPanel = ({
     [basketDataSource]
   );
 
-  const itemToString = displayName(columnMap.name);
+  const itemToString = (row: DataSourceRowObject) => row.data.name as string;
 
   const inputCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
     setTimeout(() => {
