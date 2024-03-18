@@ -1,11 +1,15 @@
 package org.finos.vuu.viewport
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
+import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.api.{Index, Indices, Link, TableDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
-import org.finos.vuu.core.table.ViewPortColumnCreator
-import org.finos.vuu.net.{SortDef, SortSpec}
+import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.net.{ClientSessionId, SortDef, SortSpec}
+import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
+import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -177,6 +181,138 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
           (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544800090L,102       ),
           (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544800100L,103       ),
           (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544800110L,104       )
+        )
+      }
+    }
+
+    Scenario("able to create visual link on same type of table") {
+
+      implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+
+      Given("we've created a viewport with orders in")
+      implicit val lifecycle = new LifecycleContainer
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+        links = VisualLinks(
+          Link("orderId", "orders", "orderId")
+        ),
+        indices = Indices(
+          Index("ric")
+        )
+      )
+
+
+      val joinProvider = JoinTableProviderImpl()
+
+      val tableContainer = new TableContainer(joinProvider)
+
+      val orders1 = tableContainer.createTable(ordersDef)
+      val orders2 = tableContainer.createTable(ordersDef)
+
+      val ordersProvider1 = new MockProvider(orders1)
+      val ordersProvider2 = new MockProvider(orders2)
+
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+      joinProvider.start()
+
+      joinProvider.runOnce()
+
+      val session = ClientSessionId("sess-01", "chris")
+
+      val outQueue = new OutboundRowPublishQueue()
+      val vpcolumnsOrders1 = ViewPortColumnCreator.create(orders1, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+      val vpcolumnsOrders2 = ViewPortColumnCreator.create(orders2, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+
+
+      createNOrderRows(ordersProvider1, 3)(clock)
+      createNOrderRows(ordersProvider1, 4, ric = "BT.L", idOffset = 3)(clock)
+      createNOrderRows(ordersProvider1, 5, ric = "BP.L", idOffset = 7)(clock)
+
+      createNOrderRows(ordersProvider2, 3)(clock)
+      createNOrderRows(ordersProvider2, 4, ric = "BT.L", idOffset = 3)(clock)
+      createNOrderRows(ordersProvider2, 5, ric = "BP.L", idOffset = 7)(clock)
+
+      val viewPortOrders1 = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders1, ViewPortRange(0, 10), vpcolumnsOrders1)
+      val viewPortOrders2 = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders2, ViewPortRange(0, 10), vpcolumnsOrders2)
+
+      viewPortContainer.runOnce()
+
+      val combinedUpdates = combineQs(viewPortOrders1)
+
+      val orderUpdates1 = combinedUpdates.filter(_.vp.id == viewPortOrders1.id)
+      val orderUpdates2 = combinedUpdates.filter(_.vp.id == viewPortOrders2.id)
+
+      assertVpEqWithMeta(orderUpdates1) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800000L, 100),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800020L, 102),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800030L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800040L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800050L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800060L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800070L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800080L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800090L, 102)
+        )
+      }
+
+      // TODO: emily to remove tradeTime (create test dummy object to ignore fields we dont care in the test)
+      assertVpEqWithMeta(orderUpdates2) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800120L, 100),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800140L, 102),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800150L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800160L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800170L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800180L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800190L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800200L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800210L, 102)
+        )
+      }
+
+      val results = viewPortContainer.getViewPortVisualLinks(session, viewPortOrders1.id)
+      results.size shouldEqual 2
+      results.head._2.table.name shouldEqual "orders"
+      results.last._2.table.name shouldEqual "orders"
+
+      Then("we link the viewports, with nothing selected in the parent grid yet")
+      viewPortContainer.linkViewPorts(session, outQueue, childVpId = viewPortOrders1.id, parentVpId = viewPortOrders2.id, "orderId", "orderId")
+
+      And("we run the container once through")
+      viewPortContainer.runOnce()
+
+      Then("we should have nothing available in the viewport")
+      viewPortOrders1.getKeys.length shouldEqual 0
+
+      When("we select second row in the grid")
+      viewPortContainer.changeSelection(session, outQueue, viewPortOrders2.id, ViewPortSelectedIndices(Array(1)))
+
+      Then("Check the selected rows is updated in the vp")
+      assertVpEqWithMeta(combineQs(viewPortOrders2)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (1, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101)
+        )
+      }
+
+      And("we run the container once through to pick up ")
+      viewPortContainer.runOnce()
+
+      assertVpEqWithMeta(combineQs(viewPortOrders1)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101)
         )
       }
     }
