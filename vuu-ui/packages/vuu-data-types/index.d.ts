@@ -62,6 +62,14 @@ export type DataSourceRow = [
   ...VuuRowDataItemType[]
 ];
 
+export type DataSourceRowObject = {
+  index: number;
+  key: string;
+  isGroupRow: boolean;
+  isSelected: boolean;
+  data: VuuDataRowDto;
+};
+
 export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
 export interface ContextMenuItemBase {

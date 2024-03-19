@@ -1,0 +1,5 @@
+.vuuTableCell {
+    .vuuCheckboxIcon {
+        margin-top: calc(var(--row-height) / 2 - 6px ); 
+      }
+}

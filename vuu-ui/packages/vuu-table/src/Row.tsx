@@ -2,7 +2,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import {
   DataCellEditHandler,
   RuntimeColumnDescriptor,
-  RowClickHandler,
+  TableRowClickHandlerInternal,
 } from "@finos/vuu-table-types";
 import {
   ColumnMap,
@@ -34,7 +34,7 @@ export interface RowProps {
   highlighted?: boolean;
   row: DataSourceRow;
   offset: number;
-  onClick?: RowClickHandler;
+  onClick?: TableRowClickHandlerInternal;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   style?: CSSProperties;
@@ -89,7 +89,7 @@ export const Row = memo(
       (evt: MouseEvent<HTMLDivElement>) => {
         const rangeSelect = evt.shiftKey;
         const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
-        onClick?.(row, rangeSelect, keepExistingSelection);
+        onClick?.(evt, row, rangeSelect, keepExistingSelection);
       },
       [onClick, row]
     );

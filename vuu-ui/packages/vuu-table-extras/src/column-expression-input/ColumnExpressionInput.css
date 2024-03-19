@@ -1,7 +1,7 @@
 
 .vuuColumnExpressionInput {
     --vuuFilterEditor-background: var(--salt-container-primary-background);
-    --vuuFilterEditor-color: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-color: var(--salt-content-primary-foreground);
     --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
     --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
     --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
@@ -10,7 +10,7 @@
     --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10); 
     --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
     --vuuFilterEditor-suggestion-selectedBackground: var(--vuu-color-gray-10);
-    --vuuFilterEditor-suggestion-selectedColor: var(--salt-text-primary-foreground);
+    --vuuFilterEditor-suggestion-selectedColor: var(--salt-content-primary-foreground);
     --vuuFilterEditor-suggestion-detailColor: var(--salt-text-secondary-foreground-disabled);
     --vuuFilterEditor-suggestion-height: 24px;
     --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);

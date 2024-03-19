@@ -206,7 +206,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.get(".vuuTable-scrollbarContainer").scrollTo(100, 0);
         assertRenderedColumns({
           rendered: { from: 1, to: 8 },
-          visible: { from: 1, to: 6 },
+          visible: { from: 1, to: 7 },
         });
       });
     });

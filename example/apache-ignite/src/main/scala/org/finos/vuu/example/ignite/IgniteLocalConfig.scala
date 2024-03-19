@@ -8,7 +8,7 @@ import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKuber
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.apache.ignite.spi.metric.opencensus.OpenCensusMetricExporterSpi
 import org.finos.vuu.example.ignite.IgniteLocalConfig._
-import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
+import org.finos.vuu.example.ignite.schema.ChildOrderSchema
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.TimeUnit
@@ -99,8 +99,7 @@ class IgniteLocalConfig(private val clientMode: Boolean,
   private def createChildOrderCacheConfig(): CacheConfiguration[?, ?] = {
     val cacheConfiguration = new CacheConfiguration()
 
-    val queryEntity = ChildOrderEntityObject.buildQueryEntity
-    cacheConfiguration.setQueryEntities(List(queryEntity).asJavaCollection)
+    cacheConfiguration.setQueryEntities(List(ChildOrderSchema.queryEntity).asJavaCollection)
     cacheConfiguration.setName(childOrderCacheName)
     cacheConfiguration.setBackups(backupCount)
   }

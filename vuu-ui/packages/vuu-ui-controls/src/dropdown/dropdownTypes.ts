@@ -22,6 +22,8 @@ export type OpenChangeHandler = <T extends boolean>(
   closeReason?: T extends false ? CloseReason : never
 ) => void;
 
+export type DropdownCloseHandler = (closeReason?: CloseReason) => void;
+
 export interface DropdownBaseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
   PopupProps?: Pick<PopupComponentProps, "minWidth">;

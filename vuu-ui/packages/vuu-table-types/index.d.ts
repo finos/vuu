@@ -6,10 +6,9 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import type { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type { DateTimePattern } from "@finos/vuu-utils";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow, DataSourceRowObject } from "@finos/vuu-data-types";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { HTMLAttributes } from "react";
 
@@ -45,9 +44,19 @@ export type DataItemCommitHandler<
   T extends VuuRowDataItemType = VuuRowDataItemType
 > = (value: T) => CommitResponse;
 
-export type TableRowClickHandler = (row: VuuDataRow) => void;
+export type TableRowSelectHandler = (row: DataSourceRowObject | null) => void;
+export type TableRowSelectHandlerInternal = (row: DataSourceRow | null) => void;
 
-export type RowClickHandler = (
+/**
+ * Fired when user clicks a row, returning the row object (DataSourceRowObject)
+ */
+export type TableRowClickHandler = (
+  evt: MouseEvent<HTMLDivElement>,
+  row: DataSourceRowObject
+) => void;
+
+export type TableRowClickHandlerInternal = (
+  evt: MouseEvent<HTMLDivElement>,
   row: DataSourceRow,
   rangeSelect: boolean,
   keepExistingSelection: boolean

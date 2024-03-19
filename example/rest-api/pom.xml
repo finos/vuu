@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.61-SNAPSHOT</version>
+        <version>0.9.65-SNAPSHOT</version>
         <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.61-SNAPSHOT</version>
+            <version>0.9.65-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.softwaremill.sttp.client4</groupId>
@@ -91,9 +91,7 @@
                 <executions>
                     <execution>
                         <phase>compile</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
+                        <goals><goal>jar</goal></goals>
                     </execution>
                 </executions>
             </plugin>

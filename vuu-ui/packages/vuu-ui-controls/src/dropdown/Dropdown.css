@@ -1,18 +1,19 @@
 .vuuDropdown {
   --saltIcon-margin: 2px 0 0 8px;
+  --saltButton-height: var(--vuuDropdown-height);
+  --saltButton-width : var(--vuuDropdown-width);
 
-  display: inline-block;
   line-height: 0;
   position: relative;
-  width: var(--vuuDropdown-width, auto);
+
 }
 
 .vuuDropdownButton.saltButton-secondary {
+  --saltButton-background: var(--salt-editable-background);
+  --saltButton-color: var(--salt-editable-foreground);
   --saltButton-borderStyle: solid;
   --saltButton-borderColor: var(--salt-editable-borderColor);
   --saltButton-borderWidth: 1px;
-  --saltButton-borderRadius: 6px;
-  --saltButton-height: var(--vuuDropdown-height, auto);
 }
 
 .vuuDropdown-fullWidth {
@@ -26,8 +27,4 @@
 
 .vuuDropdown-popup-component {
   --vuuList-borderStyle: none;
-}
-
-.vuuDropdownButton {
-  width: 100%;
 }

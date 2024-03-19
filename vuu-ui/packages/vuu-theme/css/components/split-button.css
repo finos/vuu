@@ -1,0 +1,5 @@
+.vuu-theme {
+    .vuuSplitButton {
+        --vuuSplitButton-borderRadius: 6px;
+    }
+}

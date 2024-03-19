@@ -3,6 +3,7 @@
   --vuu-icon-left: -1px;
   --vuu-icon-top: -1px;
   --vuu-icon-svg: var(--vuu-svg-tick);
+  background: var(--salt-editable-primary-background);
   border-style: solid;
   border-color: var(
     --vuuCheckboxIcon-borderColor,

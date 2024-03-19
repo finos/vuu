@@ -245,9 +245,9 @@ const getMenuItemProps = (
   id: `menuitem-${itemId}`,
   key: key ?? idx,
   "data-index": idx,
-  "data-highlighted": idx === highlightedIdx || undefined,
   className: cx("vuuMenuItem", className, {
     "vuuMenuItem-separator": hasSeparator,
+    vuuHighlighted: idx === highlightedIdx,
     focusVisible: focusVisible === idx,
   }),
 });

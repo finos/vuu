@@ -1,0 +1,5 @@
+.vuu-theme {
+    .vuuFilterPill {
+        --vuuSplitButton-borderRadius: var(--salt-size-base);
+    }
+}

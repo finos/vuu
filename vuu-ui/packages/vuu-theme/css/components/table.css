@@ -1,0 +1,29 @@
+.vuu-theme {
+    --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple-10);
+
+    &.vuu-density-high {
+        --vuu-table-row-height: 20px;
+    }
+    &.vuu-density-medium {
+        --vuu-table-row-height: 28px;
+    }
+    &.vuu-density-low {
+        --vuu-table-row-height: 36px;
+    }
+    &.vuu-density-touch {
+        --vuu-table-row-height: 48px;
+    }
+
+    .vuuTableRow-selected:not(.vuuTableRow-selectedStart, .vuuTableRow-selectedEnd) {
+        .vuuTableRow-selectionDecorator {
+            background: var(--vuuTableRow-selectionBlock-borderColor);
+        }      
+    }
+
+    .vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
+    .vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {
+      background: var(--vuuTableRow-selectionBlock-borderColor);
+    }
+
+}
+

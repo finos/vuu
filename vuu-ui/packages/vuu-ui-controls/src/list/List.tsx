@@ -29,9 +29,9 @@ import { ListItemProps, ListProps } from "./listTypes";
 import { useList } from "./useList";
 import { useListHeight } from "./useListHeight";
 import { useScrollPosition } from "./useScrollPosition";
+import { MeasuredContainer, MeasuredSize } from "../measured-container";
 
 import "./List.css";
-import { MeasuredContainer, MeasuredSize } from "../measured-container";
 
 const defaultEmptyMessage = "No data to display";
 
@@ -376,7 +376,11 @@ export const List = forwardRef(function List<
       style={{ ...styleProp, ...sizeStyles }}
       tabIndex={listDisabled || disableFocus ? undefined : tabIndex}
     >
-      <ListItemProxy ref={rowHeightProxyRef} height={itemHeightProp} />
+      <ListItemProxy
+        ref={rowHeightProxyRef}
+        height={itemHeightProp}
+        key="canary"
+      />
       {collectionHook.data.length === 0 && ListPlaceholder !== undefined ? (
         <>
           <ListPlaceholder />

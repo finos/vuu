@@ -1,3 +1,4 @@
+export * as AppPatterns from "./AppPatterns";
 export * as Apps from "./Apps";
 export * as TableExtras from "./TableExtras";
 export * as DataTable from "./DataTable";

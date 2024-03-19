@@ -1,0 +1,32 @@
+.vuuDateInput {
+  border: solid 1px var(--salt-editable-borderColor);
+  display: inline-flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 1px;
+  padding: 0 0 0 2px;
+
+
+  .saltInput-input {
+    border: none;
+    outline: none;
+    padding-left: 0;
+  }
+}
+
+.vuuDateInput-calendar {
+  padding: 2px;
+}
+
+.vuuDatePickerInput:focus {
+  outline: none;
+}
+
+input[type="date"]{
+  font-family: var(--salt-typography-fontFamily);
+  min-width: 80px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+}

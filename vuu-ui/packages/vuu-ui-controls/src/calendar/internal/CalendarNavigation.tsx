@@ -1,11 +1,4 @@
-import {
-  Button,
-  ButtonProps,
-  makePrefixer,
-  Tooltip,
-  useId,
-} from "@salt-ds/core";
-import { ChevronLeftIcon, ChevronRightIcon } from "@salt-ds/icons";
+import { ButtonProps, makePrefixer, Tooltip, useId } from "@salt-ds/core";
 import { clsx } from "clsx";
 import {
   ComponentPropsWithRef,
@@ -22,6 +15,7 @@ import "./CalendarNavigation.css";
 import { DateValue, isSameMonth, isSameYear } from "@internationalized/date";
 import { formatDate, monthDiff, monthsForLocale } from "./utils";
 import { SingleSelectionHandler } from "../../common-hooks";
+import { IconButton } from "../../icon-button";
 
 type DropdownItem = {
   value: DateValue;
@@ -220,19 +214,17 @@ export const CalendarNavigation = forwardRef<
         disabled={canNavigatePrevious}
         content="Past dates are out of range"
       >
-        <Button
+        <IconButton
+          aria-label={`Previous Month, ${formatDate(
+            visibleMonth.subtract({ months: 1 })
+          )}`}
           disabled={!canNavigatePrevious}
+          icon="chevron-left"
           variant="secondary"
           onClick={handleNavigatePrevious}
           className={withBaseName("previousButton")}
           focusableWhenDisabled={true}
-        >
-          <ChevronLeftIcon
-            aria-label={`Previous Month, ${formatDate(
-              visibleMonth.subtract({ months: 1 })
-            )}`}
-          />
-        </Button>
+        />
       </Tooltip>
       <Dropdown<DropdownItem>
         source={months}
@@ -265,19 +257,17 @@ export const CalendarNavigation = forwardRef<
         disabled={canNavigateNext}
         content="Future dates are out of range"
       >
-        <Button
+        <IconButton
+          aria-label={`Next Month, ${formatDate(
+            visibleMonth.add({ months: 1 })
+          )}`}
           disabled={!canNavigateNext}
+          icon="chevron-right"
           variant="secondary"
           onClick={handleNavigateNext}
           className={withBaseName("nextButton")}
           focusableWhenDisabled={true}
-        >
-          <ChevronRightIcon
-            aria-label={`Next Month, ${formatDate(
-              visibleMonth.add({ months: 1 })
-            )}`}
-          />
-        </Button>
+        />
       </Tooltip>
     </div>
   );

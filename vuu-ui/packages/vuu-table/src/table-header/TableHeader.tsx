@@ -9,7 +9,7 @@ import {
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "clsx";
 import { memo } from "react";
-import { GroupHeaderCellNext, HeaderCell } from "../header-cell";
+import { GroupHeaderCell, HeaderCell } from "../header-cell";
 import { useTableHeader } from "./useTableHeader";
 
 export type ColumnSortHandler = (
@@ -80,7 +80,7 @@ export const TableHeader = memo(
           ) : null}
           {columns.filter(isNotHidden).map((col, i) =>
             isGroupColumn(col) ? (
-              <GroupHeaderCellNext
+              <GroupHeaderCell
                 aria-colindex={col.index}
                 column={col}
                 data-index={i}

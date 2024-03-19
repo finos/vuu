@@ -38,6 +38,7 @@ trait VuuWebSocketOptions {
   def withUri(uri: String): VuuWebSocketOptions
   def withBindAddress(address: String): VuuWebSocketOptions
   def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions
+  def withWssDisabled(): VuuWebSocketOptions
 }
 
 trait VuuThreadingOptions{
@@ -52,11 +53,17 @@ case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValida
   override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(authenticator = authenticator)
 }
 
-case class VuuWebSocketOptionsImpl(wsPort: Int, uri: String, bindAddress: String, wssEnabled: Boolean = false, certPath: String = "", keyPath: String = "", passPhrase: Option[String] = None) extends VuuWebSocketOptions {
+private case class VuuWebSocketOptionsImpl(wsPort: Int,
+                                   uri: String,
+                                   bindAddress: String,
+                                   wssEnabled: Boolean = true,
+                                   certPath: String = "",
+                                   keyPath: String = "",
+                                   passPhrase: Option[String] = None) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
-
+  override def withWssDisabled(): VuuWebSocketOptions = this.copy(wssEnabled = false)
   override def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions =
     this.copy(wssEnabled = true, certPath = certPath, keyPath = keyPath, passPhrase = passphrase)
 }

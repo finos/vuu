@@ -16,13 +16,20 @@ export interface SplitButtonHookProps
   classBase: string;
 }
 
+const focusTargetIsEditableLabel = (target: EventTarget) => {
+  if ((target as HTMLElement).tagName === "INPUT") {
+    return true;
+  }
+  return false;
+};
+
 export const useSplitButton = ({
   ButtonProps: ButtonPropsProp,
   PopupMenuProps,
   classBase,
   onClick,
-  segmented,
-}: SplitButtonHookProps) => {
+}: // segmented,
+SplitButtonHookProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -43,10 +50,15 @@ export const useSplitButton = ({
     popupPlacement: "below-full-width",
   };
 
-  const handleRootFocus = useCallback<FocusEventHandler>(() => {
+  const handleRootFocus = useCallback<FocusEventHandler>((evt) => {
     const { current: splitButton } = rootRef;
     if (!splitButton?.classList.contains("vuuFocusVisible")) {
       splitButton?.classList.add("vuuFocusVisible");
+      if (!focusTargetIsEditableLabel(evt.target)) {
+        requestAnimationFrame(() => {
+          buttonRef.current?.focus();
+        });
+      }
     }
   }, []);
 
@@ -76,16 +88,9 @@ export const useSplitButton = ({
     [classBase]
   );
 
-  const handleClick = useCallback(
-    (evt) => {
-      onClick?.(evt);
-    },
-    [onClick]
-  );
-
   const ButtonProps = {
     ...ButtonPropsProp,
-    onClick: segmented ? handleClick : undefined,
+    onClick,
     onKeyDown: handleButtonKeyDown,
   };
 
@@ -94,7 +99,6 @@ export const useSplitButton = ({
     PopupMenuProps: menuProps,
     buttonRef,
     rootRef,
-    onClick: segmented ? undefined : handleClick,
     onBlur: handleRootBlur,
     onFocus: handleRootFocus,
   };
