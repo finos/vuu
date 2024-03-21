@@ -346,7 +346,7 @@ export const connectToServer = async ({
   username,
   retryLimitDisconnect,
   retryLimitStartup,
-}: ConnectOptions) => {
+}: ConnectOptions): Promise<"connected" | "rejected"> => {
   try {
     const serverAPI = await ConnectionManager.connect({
       protocol,
@@ -357,9 +357,10 @@ export const connectToServer = async ({
       retryLimitStartup,
     });
     resolveServer(serverAPI);
+    return "connected";
   } catch (err: unknown) {
-    console.error("Connection Error", err);
     rejectServer(err);
+    return "rejected";
   }
 };
 
