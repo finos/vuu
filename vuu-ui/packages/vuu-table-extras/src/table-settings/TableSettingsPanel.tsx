@@ -21,6 +21,9 @@ const classBase = "vuuTableSettingsPanel";
   every change via onChange callback
  */
 export const TableSettingsPanel = ({
+  allowColumnLabelCase = true,
+  allowColumnDefaultWidth = true,
+  allowGridRowStyling = true,
   availableColumns,
   onAddCalculatedColumn,
   onConfigChange,
@@ -46,56 +49,70 @@ export const TableSettingsPanel = ({
 
   return (
     <div className={classBase}>
-      <FormField>
-        <FormFieldLabel>Column Labels</FormFieldLabel>
-        <ToggleButtonGroup
-          className="vuuToggleButtonGroup"
-          onChange={onChangeColumnLabels}
-          value={columnLabelsValue}
-        >
-          <ToggleButton className="vuuIconToggleButton" value={0}>
-            <Icon name="text-strikethrough" size={48} />
-          </ToggleButton>
-          <ToggleButton className="vuuIconToggleButton" value={1}>
-            <Icon name="text-Tt" size={48} />
-          </ToggleButton>
-          <ToggleButton className="vuuIconToggleButton" value={2}>
-            <Icon name="text-T" size={48} />
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </FormField>
-
-      <FormField>
-        <FormFieldLabel>Grid separators</FormFieldLabel>
-        <div className="saltToggleButtonGroup vuuStateButtonGroup saltToggleButtonGroup-horizontal">
-          <ToggleButton
-            selected={tableConfig.zebraStripes ?? false}
-            onChange={onChangeTableAttribute}
-            value="zebraStripes"
-          >
-            <Icon name="row-striping" size={16} />
-          </ToggleButton>
-          <ToggleButton
-            selected={tableConfig.rowSeparators ?? false}
-            onChange={onChangeTableAttribute}
-            value="rowSeparators"
-          >
-            <Icon name="row-lines" size={16} />
-          </ToggleButton>
-          <ToggleButton
-            selected={tableConfig.columnSeparators ?? false}
-            onChange={onChangeTableAttribute}
-            value="columnSeparators"
-          >
-            <Icon name="col-lines" size={16} />
-          </ToggleButton>
+      {allowColumnLabelCase ||
+      allowColumnDefaultWidth ||
+      allowGridRowStyling ? (
+        <div className={`${classBase}-header`}>
+          <span>Column Settings</span>
         </div>
-      </FormField>
+      ) : null}
 
-      <FormField>
-        <FormFieldLabel>Default Column Width</FormFieldLabel>
-        <VuuInput className="vuuInput" onCommit={onCommitColumnWidth} />
-      </FormField>
+      {allowColumnLabelCase ? (
+        <FormField>
+          <FormFieldLabel>Column Labels</FormFieldLabel>
+          <ToggleButtonGroup
+            className="vuuToggleButtonGroup"
+            onChange={onChangeColumnLabels}
+            value={columnLabelsValue}
+          >
+            <ToggleButton className="vuuIconToggleButton" value={0}>
+              <Icon name="text-strikethrough" size={48} />
+            </ToggleButton>
+            <ToggleButton className="vuuIconToggleButton" value={1}>
+              <Icon name="text-Tt" size={48} />
+            </ToggleButton>
+            <ToggleButton className="vuuIconToggleButton" value={2}>
+              <Icon name="text-T" size={48} />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </FormField>
+      ) : null}
+
+      {allowGridRowStyling ? (
+        <FormField>
+          <FormFieldLabel>Grid separators</FormFieldLabel>
+          <div className="saltToggleButtonGroup vuuStateButtonGroup saltToggleButtonGroup-horizontal">
+            <ToggleButton
+              selected={tableConfig.zebraStripes ?? false}
+              onChange={onChangeTableAttribute}
+              value="zebraStripes"
+            >
+              <Icon name="row-striping" size={16} />
+            </ToggleButton>
+            <ToggleButton
+              selected={tableConfig.rowSeparators ?? false}
+              onChange={onChangeTableAttribute}
+              value="rowSeparators"
+            >
+              <Icon name="row-lines" size={16} />
+            </ToggleButton>
+            <ToggleButton
+              selected={tableConfig.columnSeparators ?? false}
+              onChange={onChangeTableAttribute}
+              value="columnSeparators"
+            >
+              <Icon name="col-lines" size={16} />
+            </ToggleButton>
+          </div>
+        </FormField>
+      ) : null}
+
+      {allowColumnDefaultWidth ? (
+        <FormField>
+          <FormFieldLabel>Default Column Width</FormFieldLabel>
+          <VuuInput className="vuuInput" onCommit={onCommitColumnWidth} />
+        </FormField>
+      ) : null}
 
       <ColumnList
         columnItems={columnItems}

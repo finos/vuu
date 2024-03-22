@@ -1,0 +1,4 @@
+.simple-app {
+    --vuuMeasuredContainer-flex: 1 1 1px;
+    background: var(--salt-container-secondary-background);
+}

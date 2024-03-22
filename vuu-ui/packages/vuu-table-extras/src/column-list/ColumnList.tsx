@@ -1,5 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
+  Icon,
   List,
   ListItem,
   ListItemProps,
@@ -14,7 +15,7 @@ import {
   useCallback,
 } from "react";
 import { ColumnItem } from "../table-settings";
-import { getColumnLabel } from "@finos/vuu-utils";
+import { getColumnLabel, queryClosest } from "@finos/vuu-utils";
 
 import "./ColumnList.css";
 
@@ -46,17 +47,20 @@ const ColumnListItem = ({
       className={cx(classNameProp, classBaseListItem)}
       data-name={item?.name}
     >
-      <span className={`${classBase}-icon`} data-icon="draggable" />
+      <Icon name="draggable" size={16} />
       {item?.isCalculated ? (
-        <span className={`${classBase}-icon`} data-icon="function" />
+        <Icon name="function" />
       ) : (
-        <Switch className={`${classBase}-switch`} checked={item?.subscribed} />
+        <Checkbox
+          className={`${classBase}-checkBox`}
+          checked={item?.subscribed}
+        />
       )}
       <span className={`${classBase}-text`}>
         {getColumnLabel(item as ColumnDescriptor)}
       </span>
-      <Checkbox
-        className={`${classBase}-checkBox`}
+      <Switch
+        className={`${classBase}-switch`}
         checked={item?.hidden !== true}
         disabled={item?.subscribed !== true}
       />
@@ -72,21 +76,19 @@ export const ColumnList = ({
   ...htmlAttributes
 }: ColumnListProps) => {
   const handleChange = useCallback(
-    (evt: SyntheticEvent) => {
-      const input = evt.target as HTMLInputElement;
-      const listItem = input.closest(`.${classBaseListItem}`) as HTMLElement;
+    ({ target }: SyntheticEvent) => {
+      const input = target as HTMLInputElement;
+      const listItem = queryClosest(target, `.${classBaseListItem}`);
       const {
         dataset: { name },
       } = listItem;
       if (name) {
-        const saltSwitch = input.closest(`.${classBase}-switch`) as HTMLElement;
-        const saltCheckbox = input.closest(
-          `.${classBase}-checkBox`
-        ) as HTMLElement;
+        const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
+        const saltSwitch = queryClosest(target, `.${classBase}-switch`);
 
-        if (saltSwitch) {
+        if (saltCheckbox) {
           onChange(name, "subscribed", input.checked);
-        } else if (saltCheckbox) {
+        } else if (saltSwitch) {
           onChange(name, "hidden", input.checked === false);
         }
       }

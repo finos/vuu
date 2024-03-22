@@ -53,13 +53,13 @@ export const virtualRowPositioning = (
 ];
 
 export const getRowElementAtIndex = (
-  container: HTMLDivElement,
+  container: HTMLDivElement | EventTarget,
   rowIndex: number
 ) => {
   if (rowIndex === -1) {
     return null;
   } else {
-    const activeRow = container.querySelector(
+    const activeRow = (container as HTMLElement).querySelector(
       `[aria-rowindex="${rowIndex + 1}"]`
     ) as HTMLElement;
 
