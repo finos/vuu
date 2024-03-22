@@ -363,6 +363,7 @@ export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
   classBase?: string;
   column: RuntimeColumnDescriptor;
   onResize?: TableColumnResizeHandler;
+  showMenu?: boolean;
 }
 
 export type TableConfigChangeHandler = (config: TableConfig) => void;

@@ -1,5 +1,4 @@
-.vuuColumnResizerNext {
-    background-color: var(--columnResizeThumb-color);
+.vuuColumnResizer {
     cursor: col-resize;
     height: var(--header-height);
     margin-left: var(--columnResizer-left, auto);
@@ -9,11 +8,14 @@
     z-index:1;
 }
 
-.vuuColumnResizerNext:hover {
-    --columnResizer-color: var(--vuu-color-purple-10);
+.vuuTableHeaderCell:not(.vuuTableHeaderCell-resizing){
+    .vuuColumnResizer:hover {
+        --columnResizer-color: var(--salt-selectable-background-selected);
+    }
+    
 }
 
-.vuuColumnResizerNext:after {
+.vuuColumnResizer:after {
     background-color: var(--columnResizer-color, var(--salt-separable-tertiary-borderColor));
     bottom:0;
     content: '';
@@ -22,4 +24,5 @@
     right: 3px;
     height: var(--columnResizer-height, 0);
     width: 2px;
+    z-index: 1;
 }

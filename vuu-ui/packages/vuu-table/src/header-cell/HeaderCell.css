@@ -20,15 +20,18 @@
   vertical-align: top;
 }
 
-  .vuuTableHeaderCell-right {
+.vuuTableHeaderCell-right {
     --columnResizer-left: 0;
     --vuuTable-columnMenu-margin: 0;
     --vuuColumnHeaderPill-margin: 0 3px 0 0;
     --column-menu-left: 2px;
     justify-content: flex-end;
     padding: 0 3px 0 12px;
-  }
+}
 
+.vuuTableHeaderCell-noMenu {
+  padding-left: var(--salt-spacing-300)
+}
 
 .vuuTableHeaderCell-label {
   flex: 0 1 auto;
@@ -52,7 +55,7 @@
   padding-left: 2px;
 }
 
-  .vuuTableHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizerNext:before {
+  .vuuTableHeaderCell.vuuPinLeft.vuuEndPin .vuuColumnResizer:before {
     --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
     --inset-r: calc(var(--pin-width) - 2px);
     --inset-b: calc(var(--height) - 2px);
@@ -87,7 +90,7 @@
     z-index: -5;
 }
 
-.vuuTableHeaderCell.vuuPinRight.vuuEndPin .vuuColumnResizerNext:before {
+.vuuTableHeaderCell.vuuPinRight.vuuEndPin .vuuColumnResizer:before {
   --height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
   --inset-r: calc(var(--pin-width) - 2px);
   --inset-b: calc(var(--height) - 2px);

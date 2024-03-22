@@ -23,12 +23,13 @@ export const SimpleApp = () => {
         zebraStripes: true,
       },
       dataSource: simulModule.createDataSource("instruments"),
+      showColumnHeaderMenus: false,
     }),
     [schema]
   );
 
   const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
-    console.log(`applyFIlter`, {
+    console.log(`applyFilter`, {
       filter,
     });
   }, []);
@@ -47,6 +48,7 @@ export const SimpleApp = () => {
         zebraStripes: true,
       },
       dataSource: simulModule.createDataSource("instruments"),
+      showColumnHeaderMenus: false,
     }),
     [schema]
   );

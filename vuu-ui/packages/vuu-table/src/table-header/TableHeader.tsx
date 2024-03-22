@@ -27,6 +27,7 @@ export interface TableHeaderProps {
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
+  showColumnHeaderMenus: boolean;
   tableConfig: TableConfig;
   tableId: string;
   virtualColSpan?: number;
@@ -42,6 +43,7 @@ export const TableHeader = memo(
     onRemoveGroupColumn,
     onResizeColumn,
     onSortColumn,
+    showColumnHeaderMenus,
     tableConfig,
     tableId,
     virtualColSpan = 0,
@@ -102,6 +104,7 @@ export const TableHeader = memo(
                 onClick={onClick}
                 onMouseDown={onMouseDown}
                 onResize={onResizeColumn}
+                showMenu={showColumnHeaderMenus}
               />
             )
           )}

@@ -125,6 +125,11 @@ export interface TableProps
    * composite component.
    */
   showColumnHeaders?: boolean;
+  /**
+   * if false, column headers will not display menu icon. Menu items are still available
+   * from contexct menu
+   */
+  showColumnHeaderMenus?: boolean;
 }
 
 const TableCore = ({
@@ -152,6 +157,7 @@ const TableCore = ({
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
+  showColumnHeaderMenus = true,
   headerHeight = showColumnHeaders ? rowHeight * 1.25 : 0,
   size,
 }: Omit<TableProps, "rowHeight"> & {
@@ -262,6 +268,7 @@ const TableCore = ({
               onRemoveGroupColumn={onRemoveGroupColumn}
               onResizeColumn={onResizeColumn}
               onSortColumn={onSortColumn}
+              showColumnHeaderMenus={showColumnHeaderMenus}
               tableConfig={tableConfig}
               tableId={id}
               virtualColSpan={scrollProps.virtualColSpan}
@@ -319,6 +326,7 @@ export const Table = forwardRef(function TableNext(
     scrollingApiRef,
     selectionModel,
     showColumnHeaders,
+    showColumnHeaderMenus,
     headerHeight,
     style: styleProp,
     ...htmlAttributes
@@ -379,6 +387,7 @@ export const Table = forwardRef(function TableNext(
           scrollingApiRef={scrollingApiRef}
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}
+          showColumnHeaderMenus={showColumnHeaderMenus}
           size={size}
         />
       ) : null}
