@@ -9,6 +9,8 @@ import type { DataSourceFilter } from "@finos/vuu-data-types";
 
 import "./SimpleApp.css";
 
+let displaySequence = 1;
+
 export const SimpleApp = () => {
   const schema = getSchema("instruments");
 
@@ -71,3 +73,4 @@ export const SimpleApp = () => {
     </LayoutProvider>
   );
 };
+SimpleApp.displaySequence = displaySequence++;

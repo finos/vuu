@@ -16,12 +16,20 @@
 
 .vuuColumnListItem {
     border-bottom: solid 1px var(--salt-separable-tertiary-borderColor);
-    padding: 0 6px 0 0;
+    gap: var(--salt-spacing-200);
+    padding: 0;
+
+    &.vuuListItem.vuuHighlighted:not(.vuuFocusVisible) {
+        border-style: none none solid none;
+        border-bottom: solid 1px var(--salt-separable-tertiary-borderColor);
+        padding: 0;
+    }
+
+    .vuuIcon {
+        --vuu-icon-color: var(--salt-content-secondary-foreground);
+    }
 }
 
-.vuuColumnList-switch {
-    flex: 0 0 32px;
-}
 
 .vuuColumnList-text {
     flex: 1 1 auto;
@@ -30,16 +38,6 @@
 .vuuColumnList-text:hover {
     font-weight: 600;
     text-decoration: underline;
-}
-
-.vuuColumnList-checkBox {
-    flex: 0 0 20px;
-}
-
-.vuuColumnList-icon {
-    --vuu-icon-color: var(--vuu-color-gray-45);
-    --vuu-icon-size: 16px;
-    --vuu-icon-width: 32px;
 }
 
 .vuuColumnList-header {

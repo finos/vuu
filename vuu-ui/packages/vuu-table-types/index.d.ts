@@ -335,10 +335,13 @@ export interface ColumnSettingsProps {
  * an implementation is provided in vuu-table-extras
  */
 export interface TableSettingsProps {
+  allowColumnLabelCase?: boolean;
+  allowColumnDefaultWidth?: boolean;
+  allowGridRowStyling?: boolean;
   availableColumns: SchemaColumn[];
   onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
-  onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
+  onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
   onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
 }

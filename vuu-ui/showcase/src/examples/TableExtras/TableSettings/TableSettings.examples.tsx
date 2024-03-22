@@ -1,4 +1,4 @@
-import { SchemaColumn } from "@finos/vuu-data-types";
+import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data-types";
 import {
   ColumnItem,
   ColumnList,
@@ -195,15 +195,24 @@ export const DefaultSettingsPanel = () => {
     ],
     []
   );
-  const handleConfigChange = () => {
-    console.log("handleConfigChange");
+  const handleConfigChange = (config: TableConfig) => {
+    console.log("handleConfigChange", {
+      config,
+    });
   };
+
+  const handleDataSourceConfigChange = (config: DataSourceConfig) => {
+    console.log("handleDataSourceConfigChange", {
+      config,
+    });
+  };
+
   return (
     <TableSettingsPanel
       availableColumns={availableColumns}
       onAddCalculatedColumn={() => console.log("add calculated column")}
       onConfigChange={handleConfigChange}
-      onDataSourceConfigChange={() => console.log("data source congig change")}
+      onDataSourceConfigChange={handleDataSourceConfigChange}
       tableConfig={tableConfig}
     />
   );
