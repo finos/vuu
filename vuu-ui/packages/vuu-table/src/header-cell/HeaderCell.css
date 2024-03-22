@@ -20,6 +20,11 @@
   vertical-align: top;
 }
 
+.vuuTableHeaderCell:focus {
+  outline: var(--vuuTableCell-outline, solid var(--salt-focused-outlineColor) 2px);
+  outline-offset: -3px;
+}
+
 .vuuTableHeaderCell-right {
     --columnResizer-left: 0;
     --vuuTable-columnMenu-margin: 0;

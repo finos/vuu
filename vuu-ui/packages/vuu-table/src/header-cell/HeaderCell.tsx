@@ -1,6 +1,14 @@
+import { useContextMenu } from "@finos/vuu-popups";
 import { HeaderCellProps } from "@finos/vuu-table-types";
 import cx from "clsx";
-import { MouseEventHandler, useCallback, useMemo, useRef } from "react";
+import {
+  KeyboardEventHandler,
+  MouseEvent,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { SortIndicator } from "../column-header-pill";
 import { ColumnMenu } from "../column-menu";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
@@ -25,6 +33,16 @@ export const HeaderCell = ({
     onResize,
     rootRef,
   });
+
+  const [showContextMenu] = useContextMenu();
+
+  const handleContextMenu = useMemo(() => {
+    if (showMenu) {
+      return undefined;
+    } else {
+      return (e: MouseEvent) => showContextMenu(e, "column-menu", { column });
+    }
+  }, [column, showContextMenu, showMenu]);
 
   const headerItems = useMemo(() => {
     const sortIndicator = <SortIndicator column={column} />;
@@ -64,6 +82,15 @@ export const HeaderCell = ({
     [isResizing, onClick]
   );
 
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
+    (evt) => {
+      if (evt.key === "Enter") {
+        onClick?.(evt);
+      }
+    },
+    [onClick]
+  );
+
   const { className, style } = useCell(column, classBase, true);
 
   return (
@@ -74,6 +101,8 @@ export const HeaderCell = ({
         [`${classBase}-noMenu`]: showMenu === false,
       })}
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onKeyDown={handleKeyDown}
       ref={rootRef}
       role="columnheader"
       style={style}

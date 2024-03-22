@@ -3,7 +3,11 @@ import {
   DropOptions,
   useDragDrop as useDragDrop,
 } from "@finos/vuu-ui-controls";
-import { moveColumnTo, visibleColumnAtIndex } from "@finos/vuu-utils";
+import {
+  moveColumnTo,
+  queryClosest,
+  visibleColumnAtIndex,
+} from "@finos/vuu-utils";
 import { MouseEventHandler, RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
 
@@ -68,10 +72,7 @@ export const useTableHeader = ({
     MouseEventHandler<HTMLDivElement>
   >(
     (evt) => {
-      const targetElement = evt.target as HTMLElement;
-      const headerCell = targetElement.closest(
-        ".vuuTableHeaderCell"
-      ) as HTMLElement;
+      const headerCell = queryClosest(evt.target, ".vuuTableHeaderCell");
       const colIdx = parseInt(headerCell?.dataset.index ?? "-1");
       const column = visibleColumnAtIndex(columns, colIdx);
       const isAdditive = evt.shiftKey;

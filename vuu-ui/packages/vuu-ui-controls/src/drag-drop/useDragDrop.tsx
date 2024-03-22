@@ -574,6 +574,9 @@ export const useDragDrop: DragDropHook = ({
 
   const mouseDownHandler: MouseEventHandler = useCallback(
     (evt) => {
+      if (evt.button !== 0) {
+        return;
+      }
       // TODO runtime check here for valid drop targets ?
       const { current: container } = containerRef;
       // We don't want to prevent other handlers on this element from working
