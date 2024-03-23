@@ -4,34 +4,54 @@ import {
 } from "@finos/vuu-table-types";
 import { VuuSort, VuuSortCol, VuuSortType } from "@finos/vuu-protocol-types";
 
-const toggle = (sortType: VuuSortType) => (sortType === "A" ? "D" : "A");
+const cycleSortType = (sortType: VuuSortType) =>
+  sortType === "A" ? "D" : sortType === "D" ? undefined : "A";
+
+const NO_SORT: VuuSort = { sortDefs: [] };
 
 // Given an existing sort spec and a column we wish to sort by,
 // construct and return a new sort spec.
-export const applySort = (
+export const toggleOrApplySort = (
   { sortDefs }: VuuSort,
   { name: column }: ColumnDescriptor,
   extendSort = false,
   sortType?: VuuSortType
 ): VuuSort => {
   if (extendSort) {
-    return {
-      sortDefs: sortDefs.concat({
-        column,
-        sortType: sortType ?? "A",
-      }),
-    };
+    const existingDef = sortDefs.find((sortDef) => sortDef.column === column);
+    if (existingDef) {
+      return {
+        sortDefs: sortDefs.map((sortDef) =>
+          sortDef.column === column
+            ? {
+                column,
+                sortType: sortDef.sortType === "A" ? "D" : "A",
+              }
+            : sortDef
+        ),
+      };
+    } else {
+      return {
+        sortDefs: sortDefs.concat({
+          column,
+          sortType: sortType ?? "A",
+        }),
+      };
+    }
   }
 
   const newSortType =
     typeof sortType === "string"
       ? sortType
       : sortDefs.length === 1 && sortDefs[0].column === column
-      ? toggle(sortDefs[0].sortType)
+      ? cycleSortType(sortDefs[0].sortType)
       : "A";
-  return {
-    sortDefs: [{ column, sortType: newSortType }],
-  };
+
+  return newSortType
+    ? {
+        sortDefs: [{ column, sortType: newSortType }],
+      }
+    : NO_SORT;
 };
 
 export const setSortColumn = (

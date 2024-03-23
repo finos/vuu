@@ -22,7 +22,7 @@ import {
   useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
-  applySort,
+  toggleOrApplySort,
   asDataSourceRowObject,
   buildColumnMap,
   getIndexFromRowElement,
@@ -377,7 +377,7 @@ export const useTable = ({
   const handleSort = useCallback(
     (column: ColumnDescriptor, extendSort = false, sortType?: VuuSortType) => {
       if (dataSource) {
-        dataSource.sort = applySort(
+        dataSource.sort = toggleOrApplySort(
           dataSource.sort,
           column,
           extendSort,

@@ -11,6 +11,7 @@ import {
   applyFilterToColumns,
   applyGroupByToColumns,
   applySortToColumns,
+  existingSort,
   getCellRenderer,
   getColumnHeaderContentRenderer,
   getColumnHeaderLabelRenderer,
@@ -22,6 +23,7 @@ import {
   isGroupColumn,
   isPinned,
   logger,
+  removeSort,
   replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
@@ -498,6 +500,11 @@ function updateTableConfig(
     result = {
       ...state,
       columns: applySortToColumns(result.columns, sort),
+    };
+  } else if (existingSort(result.columns)) {
+    result = {
+      ...state,
+      columns: removeSort(result.columns),
     };
   }
 

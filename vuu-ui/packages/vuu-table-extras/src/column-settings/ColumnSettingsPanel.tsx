@@ -96,6 +96,7 @@ export const ColumnSettingsPanel = ({
         <FormFieldLabel>Column Label</FormFieldLabel>
         <VuuInput
           className="vuuInput"
+          data-embedded
           onChange={onChange}
           onCommit={onInputCommit}
           value={getColumnLabel(column)}
@@ -106,6 +107,7 @@ export const ColumnSettingsPanel = ({
         <FormFieldLabel>Column Width</FormFieldLabel>
         <VuuInput
           className="vuuInput"
+          data-embedded
           onChange={onChange}
           value={width}
           onCommit={onInputCommit}
@@ -125,9 +127,6 @@ export const ColumnSettingsPanel = ({
       <FormField data-field="column-pin">
         <FormFieldLabel>Pin Column</FormFieldLabel>
         <ToggleButtonGroup onChange={onChangeToggleButton} value={pin ?? ""}>
-          <ToggleButton value="">
-            <Icon name="cross-circle" size={16} />
-          </ToggleButton>
           <ToggleButton value="left">
             <Icon name="pin-left" size={16} />
           </ToggleButton>
@@ -136,6 +135,9 @@ export const ColumnSettingsPanel = ({
           </ToggleButton>
           <ToggleButton value="right">
             <Icon name="pin-right" size={16} />
+          </ToggleButton>
+          <ToggleButton value="">
+            <Icon name="cross-circle" size={16} />
           </ToggleButton>
         </ToggleButtonGroup>
       </FormField>

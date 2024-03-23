@@ -57,6 +57,17 @@ export const TableSettingsPanel = ({
         </div>
       ) : null}
 
+      {allowColumnDefaultWidth ? (
+        <FormField>
+          <FormFieldLabel>Column Width</FormFieldLabel>
+          <VuuInput
+            className="vuuInput"
+            data-embedded
+            onCommit={onCommitColumnWidth}
+          />
+        </FormField>
+      ) : null}
+
       {allowColumnLabelCase ? (
         <FormField>
           <FormFieldLabel>Column Labels</FormFieldLabel>
@@ -104,13 +115,6 @@ export const TableSettingsPanel = ({
               <Icon name="col-lines" size={16} />
             </ToggleButton>
           </div>
-        </FormField>
-      ) : null}
-
-      {allowColumnDefaultWidth ? (
-        <FormField>
-          <FormFieldLabel>Default Column Width</FormFieldLabel>
-          <VuuInput className="vuuInput" onCommit={onCommitColumnWidth} />
         </FormField>
       ) : null}
 

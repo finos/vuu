@@ -359,10 +359,13 @@ export type TableColumnResizeHandler = (
   width?: number
 ) => void;
 
-export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
+export interface HeaderCellProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
   classBase?: string;
   column: RuntimeColumnDescriptor;
+  onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;
   onResize?: TableColumnResizeHandler;
+  showMenu?: boolean;
 }
 
 export type TableConfigChangeHandler = (config: TableConfig) => void;
