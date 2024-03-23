@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.{IVuuServer, VuuServer}
+import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
@@ -127,6 +127,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
+      links = VisualLinks(),
       joinFields = Seq()
     )
 

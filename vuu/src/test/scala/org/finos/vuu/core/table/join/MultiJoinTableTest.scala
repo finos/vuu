@@ -42,6 +42,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
                         Columns.allFromExcept(instrumentDef, "ric") ++
                         Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
                         //Columns.calculated("chris1", "bid * fxBid"),
+        links = VisualLinks(),
         joinFields = Seq(),
         joins  =
             JoinTo(
@@ -126,6 +127,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
           Columns.allFromExcept(instrumentDef, "ric") ++
           Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
         //Columns.calculated("chris1", "bid * fxBid"),
+        links = VisualLinks(),
         joinFields = Seq(),
         joins  =
           JoinTo(
