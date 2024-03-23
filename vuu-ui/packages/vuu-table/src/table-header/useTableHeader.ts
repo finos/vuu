@@ -8,7 +8,7 @@ import {
   queryClosest,
   visibleColumnAtIndex,
 } from "@finos/vuu-utils";
-import { MouseEventHandler, RefCallback, useCallback, useRef } from "react";
+import { RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
 
 export interface TableHeaderHookProps
@@ -68,10 +68,8 @@ export const useTableHeader = ({
     [columns, onMoveColumn, tableConfig.columns]
   );
 
-  const handleColumnHeaderClick = useCallback<
-    MouseEventHandler<HTMLDivElement>
-  >(
-    (evt) => {
+  const handleColumnHeaderClick = useCallback(
+    (evt: React.MouseEvent | React.KeyboardEvent) => {
       const headerCell = queryClosest(evt.target, ".vuuTableHeaderCell");
       const colIdx = parseInt(headerCell?.dataset.index ?? "-1");
       const column = visibleColumnAtIndex(columns, colIdx);

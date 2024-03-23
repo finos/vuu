@@ -77,7 +77,7 @@
       120% 0%       
     );
     background-color: transparent;
-    border-color:   var(--vuu-color-gray-40);
+    border-color:   var(--vuuTablePinnedColumn-borderColor, var(--salt-container-primary-borderColor));
     border-width: 1px;
     border-style: solid solid solid solid;
     /* border-radius: 0 6px 6px 0; */

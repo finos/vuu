@@ -8,7 +8,9 @@
 
   align-items: center;
   background-color: var(--salt-container-secondary-background);
-  border-bottom: solid 1px #d6d7da;
+  border-color: var(--salt-container-primary-borderColor);
+  border-style: var(--vuuFilterBar-borderStyle, none none solid none);
+  border-width: 1px;
   display: flex;
   flex: var(--vuuFilterBar-flex);
   gap: 4px;

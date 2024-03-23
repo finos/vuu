@@ -30,7 +30,7 @@ describe("Table drag drop", () => {
         );
 
         cy.findByRole("columnheader", { name: "exchange" })
-          .trigger("mousedown")
+          .trigger("mousedown", { button: 0 })
           .trigger("mousemove", { force, clientX: 150, clientY: 0 })
           .trigger("mousemove", { force, clientX: 100, clientY: 0 })
           .trigger("mouseup", { force });

@@ -9,16 +9,17 @@ const classBase = "vuuIconButton";
 
 export interface IconButtonProps extends Omit<ButtonProps, "children"> {
   icon: string;
+  size?: number;
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   function IconButton(
-    { "aria-label": ariaLabel, className, icon, ...buttonProps },
+    { "aria-label": ariaLabel, className, icon, size, ...buttonProps },
     ref
   ) {
     return (
       <Button {...buttonProps} className={cx(classBase, className)} ref={ref}>
-        <Icon aria-label={ariaLabel} name={icon} />
+        <Icon aria-label={ariaLabel} name={icon} size={size} />
       </Button>
     );
   }
