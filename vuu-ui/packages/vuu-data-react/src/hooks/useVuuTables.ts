@@ -16,15 +16,20 @@ export const useVuuTables = () => {
 
   useEffect(() => {
     async function fetchTableMetadata() {
-      console.log("GET TABLE LIST");
-      const server = await getServerAPI();
-      const { tables } = await server.getTableList();
-      const tableSchemas = buildTables(
-        await Promise.all(
-          tables.map((vuuTable) => server.getTableSchema(vuuTable))
-        )
-      );
-      setTables(tableSchemas);
+      try {
+        const server = await getServerAPI();
+        const { tables } = await server.getTableList();
+        const tableSchemas = buildTables(
+          await Promise.all(
+            tables.map((vuuTable) => server.getTableSchema(vuuTable))
+          )
+        );
+        setTables(tableSchemas);
+      } catch (err) {
+        console.warn(
+          `useVuuTables: unable to connect to Vuu server ${String(err)}`
+        );
+      }
     }
 
     fetchTableMetadata();

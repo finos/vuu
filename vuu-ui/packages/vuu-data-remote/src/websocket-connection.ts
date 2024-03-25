@@ -127,6 +127,12 @@ async function makeConnection(
     if (retry) {
       return makeConnectionIn(url, protocol, callback, connection, 2000);
     } else {
+      callback({
+        type: "connection-status",
+        status: "failed",
+        reason: "unable to connect",
+        retry,
+      });
       throw Error("Failed to establish connection");
     }
   }

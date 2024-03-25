@@ -72,16 +72,20 @@ const handleMessageFromClient = async ({
 >) => {
   switch (message.type) {
     case "connect":
-      await connectToServer(
-        message.url,
-        message.protocol,
-        message.token,
-        message.username,
-        postMessage,
-        message.retryLimitDisconnect,
-        message.retryLimitStartup
-      );
-      postMessage({ type: "connected" });
+      try {
+        await connectToServer(
+          message.url,
+          message.protocol,
+          message.token,
+          message.username,
+          postMessage,
+          message.retryLimitDisconnect,
+          message.retryLimitStartup
+        );
+        postMessage({ type: "connected" });
+      } catch (err: unknown) {
+        postMessage({ type: "connection-failed", reason: String(err) });
+      }
       break;
     // If any of the messages below are received BEFORE we have connected and created
     // the server - handle accordingly
