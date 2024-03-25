@@ -41,6 +41,7 @@ const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
 const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 type WorkerResolver = {
+  reject: (message: string | PromiseLike<string>) => void;
   resolve: (value: Worker | PromiseLike<Worker>) => void;
 };
 
@@ -56,6 +57,11 @@ const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
   rejectServer = reject;
 });
 
+/**
+ * returns a promise for serverApi. This will be resolved when the
+ * connectToServer call succeeds. If client never calls connectToServer
+ * serverAPI will never be resolved.
+ */
 export const getServerAPI = () => serverAPI;
 
 export type PostMessageToClientCallback = (
@@ -97,8 +103,8 @@ const getWorker = async ({
   url,
 }: WorkerOptions) => {
   if (token === "" && pendingWorker === undefined) {
-    return new Promise<Worker>((resolve) => {
-      pendingWorkerNoToken.push({ resolve });
+    return new Promise<Worker>((resolve, reject) => {
+      pendingWorkerNoToken.push({ resolve, reject });
     });
   }
   //FIXME If we have a pending request already and a new request arrives with a DIFFERENT
@@ -107,11 +113,11 @@ const getWorker = async ({
   return (
     pendingWorker ||
     // we get this far when we receive the first request with auth token
-    (pendingWorker = new Promise((resolve) => {
+    (pendingWorker = new Promise((resolve, reject) => {
       const worker = new Worker(workerBlobUrl);
 
       const timer: number | null = window.setTimeout(() => {
-        console.error("timed out waiting for worker to load");
+        reject(Error("timed out waiting for worker to load"));
       }, 1000);
 
       // This is the inial message handler only, it processes messages whilst we are
@@ -139,6 +145,12 @@ const getWorker = async ({
           pendingWorkerNoToken.length = 0;
         } else if (isConnectionStatusMessage(message)) {
           handleConnectionStatusChange({ data: message });
+        } else if (message.type === "connection-failed") {
+          reject(message.reason);
+          for (const pendingWorkerRequest of pendingWorkerNoToken) {
+            pendingWorkerRequest.reject(message.reason);
+          }
+          pendingWorkerNoToken.length = 0;
         } else {
           console.warn("ConnectionManager: Unexpected message from the worker");
         }

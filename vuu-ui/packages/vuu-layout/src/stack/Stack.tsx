@@ -59,7 +59,6 @@ export const Stack = forwardRef(function Stack(
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
-  console.log({ TabstripProps });
   const id = useId(idProp);
   const tabLabels = useRef<string[]>([]);
   const {

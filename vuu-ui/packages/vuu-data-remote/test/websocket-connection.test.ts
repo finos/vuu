@@ -27,7 +27,7 @@ describe("websocket-connection", () => {
       expect(e.message).toEqual("Failed to establish connection");
     }
 
-    expect(statusMessages.length).toEqual(10);
+    expect(statusMessages.length).toEqual(11);
     expect(statusMessages).toEqual([
       { type: "connection-status", status: "connecting" },
       {
@@ -62,6 +62,12 @@ describe("websocket-connection", () => {
         type: "connection-status",
         status: "disconnected",
         reason: "failed to connect",
+        retry: false,
+      },
+      {
+        type: "connection-status",
+        status: "failed",
+        reason: "unable to connect",
         retry: false,
       },
     ]);
