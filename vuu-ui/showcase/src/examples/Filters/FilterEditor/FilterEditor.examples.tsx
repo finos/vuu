@@ -4,9 +4,9 @@ import {
   FilterEditorProps,
   FilterEditSaveHandler,
 } from "@finos/vuu-filters";
-import { FilterModel } from "@finos/vuu-filters";
-import { CSSProperties, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { Filter } from "@finos/vuu-filter-types";
 
 let displaySequence = 1;
 
@@ -31,14 +31,6 @@ export const NewFilter = ({
     []
   );
 
-  const [isValid, setIsValid] = useState(false);
-
-  const filterModel = useMemo(() => {
-    const filterModel = new FilterModel();
-    filterModel.on("isValid", setIsValid);
-    return filterModel;
-  }, []);
-
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
     console.log(`cancel  filter edit`);
   }, []);
@@ -60,16 +52,10 @@ export const NewFilter = ({
           suggestionProvider: typeaheadHook,
         }}
         columnDescriptors={tableSchema.columns}
-        filterModel={filterModel}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
         tableSchema={tableSchema}
-      />
-
-      <span
-        data-icon={isValid ? "tick" : "cross"}
-        style={{ "--vuu-icon-size": "20px" } as CSSProperties}
       />
     </>
   );
@@ -91,16 +77,12 @@ export const EditSimplerFilter = ({
     []
   );
 
-  const [isValid, setIsValid] = useState(false);
-
-  const filterModel = useMemo(() => {
-    const filterModel = new FilterModel({
+  const filter = useMemo<Filter>(() => {
+    return {
       column: "currency",
       op: "=",
       value: "EUR",
-    });
-    filterModel.on("isValid", setIsValid);
-    return filterModel;
+    };
   }, []);
 
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
@@ -124,15 +106,11 @@ export const EditSimplerFilter = ({
           suggestionProvider: typeaheadHook,
         }}
         columnDescriptors={tableSchema.columns.concat(lastUpdatedColumn)}
-        filterModel={filterModel}
+        filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
         tableSchema={tableSchema}
-      />
-      <span
-        data-icon={isValid ? "tick" : "cross"}
-        style={{ "--vuu-icon-size": "20px" } as CSSProperties}
       />
     </>
   );
@@ -154,10 +132,8 @@ export const EditMultiClauseAndFilter = ({
     []
   );
 
-  const [isValid, setIsValid] = useState(false);
-
-  const filterModel = useMemo(() => {
-    const filterModel = new FilterModel({
+  const filter = useMemo<Filter>(() => {
+    return {
       op: "and",
       filters: [
         {
@@ -171,9 +147,7 @@ export const EditMultiClauseAndFilter = ({
           value: "XLON",
         },
       ],
-    });
-    filterModel.on("isValid", setIsValid);
-    return filterModel;
+    };
   }, []);
 
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
@@ -197,15 +171,11 @@ export const EditMultiClauseAndFilter = ({
           suggestionProvider: typeaheadHook,
         }}
         columnDescriptors={tableSchema.columns}
-        filterModel={filterModel}
+        filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
         tableSchema={tableSchema}
-      />
-      <span
-        data-icon={isValid ? "tick" : "cross"}
-        style={{ "--vuu-icon-size": "20px" } as CSSProperties}
       />
     </>
   );
@@ -227,10 +197,8 @@ export const EditMultiClauseOrFilter = ({
     []
   );
 
-  const [isValid, setIsValid] = useState(false);
-
-  const filterModel = useMemo(() => {
-    const filterModel = new FilterModel({
+  const filter = useMemo<Filter>(() => {
+    return {
       op: "or",
       filters: [
         {
@@ -244,9 +212,7 @@ export const EditMultiClauseOrFilter = ({
           value: "XLON/LSE-SETS",
         },
       ],
-    });
-    filterModel.on("isValid", setIsValid);
-    return filterModel;
+    };
   }, []);
 
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
@@ -270,15 +236,11 @@ export const EditMultiClauseOrFilter = ({
           suggestionProvider: typeaheadHook,
         }}
         columnDescriptors={tableSchema.columns}
-        filterModel={filterModel}
+        filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
         tableSchema={tableSchema}
-      />
-      <span
-        data-icon={isValid ? "tick" : "cross"}
-        style={{ "--vuu-icon-size": "20px" } as CSSProperties}
       />
     </>
   );

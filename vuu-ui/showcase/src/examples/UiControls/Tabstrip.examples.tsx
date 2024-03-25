@@ -1,4 +1,9 @@
-import { ExitTabEditModeHandler, Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import {
+  ExitTabEditModeHandler,
+  Tab,
+  Tabstrip,
+  TabstripProps,
+} from "@finos/vuu-ui-controls";
 import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";

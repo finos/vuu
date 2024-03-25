@@ -82,7 +82,10 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   }, []);
 
   const [InputProps, ListProps] = useMemo<
-    [ComboBoxProps["InputProps"], any]
+    [
+      ComboBoxProps["InputProps"],
+      Omit<ComboBoxProps["ListProps"], "defaultSelected">
+    ]
   >(() => {
     const { inputProps, ...restInputProps } = InputPropsProp;
     return [
@@ -130,8 +133,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   );
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const getDefaultSelected = (): any => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getSelected = (): any => {
     if (initialValue.current === undefined) {
       return undefined;
     } else if (Array.isArray(initialValue.current)) {
@@ -160,7 +163,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         PopupProps={popupProps}
         // allowEnterCommitsText
         className="vuuEmbedded"
-        defaultSelected={getDefaultSelected()}
+        defaultSelected={getSelected()}
         defaultValue={
           Array.isArray(initialValue.current)
             ? itemsToString<string>(initialValue.current)

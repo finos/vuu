@@ -3,7 +3,7 @@ import { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { HTMLAttributes, useCallback } from "react";
 import { FilterClause, FilterClauseProps } from "../filter-clause/FilterClause";
-import { FilterClauseModel, FilterModel } from "../FilterModel";
+import { FilterClauseModel } from "../FilterModel";
 import {
   FilterClauseCombinator,
   FilterClauseCombinatorChangeHandler,
@@ -16,12 +16,12 @@ import "./FilterEditor.css";
 const classBase = "vuuFilterEditor";
 
 export type FilterEditSaveHandler = (filter: Filter) => void;
-export type FilterEditCancelHandler = () => void;
+export type FilterEditCancelHandler = (filter?: Filter) => void;
 
 export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseProps>;
   columnDescriptors: ColumnDescriptor[];
-  filterModel: FilterModel;
+  filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;
   tableSchema: TableSchema;
@@ -30,7 +30,7 @@ export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
 export const FilterEditor = ({
   FilterClauseEditorProps,
   columnDescriptors,
-  filterModel,
+  filter,
   onCancel,
   onSave,
   tableSchema,
@@ -38,6 +38,7 @@ export const FilterEditor = ({
 }: FilterEditorProps) => {
   const {
     columnsByName,
+    filterModel,
     setContainer,
     onCancelFilterClause,
     onKeyDownCombinator,
@@ -46,7 +47,7 @@ export const FilterEditor = ({
     saveButtonRef,
   } = useFilterEditor({
     columnDescriptors,
-    filterModel,
+    filter,
     onCancel,
     onSave,
   });

@@ -6,18 +6,16 @@ import {
 } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors
-const OVERFLOW_CONTAINER = ".vuuOverflowContainer-wrapContainer";
-const OVERFLOW_INDICATOR = ".vuuOverflowContainer-OverflowIndicator";
+const FILTER_CONTAINER = ".vuuFilterBar-filters";
 const ADD_BUTTON = ".vuuFilterBar-add";
 const FILTER_CLAUSE = ".vuuFilterClause";
-const FILTER_CLAUSE_FIELD = ".vuuFilterClauseField";
 
-const findOverflowItem = (className: string) =>
-  cy.get(OVERFLOW_CONTAINER).find(className);
+const findFilter = (className: string) =>
+  cy.get(FILTER_CONTAINER).find(className);
 
-const clickListItem = (label: string) => {
-  cy.findByText(label).realHover();
-  cy.findByText(label).realClick();
+const clickListItem = (name: string) => {
+  cy.findByRole("option", { name }).realHover();
+  cy.findByRole("option", { name }).realClick();
 };
 
 const clickListItems = (...labels: string[]) => {
@@ -31,11 +29,20 @@ const clickButton = (label: string) => {
   cy.findByText(label).realClick();
 };
 
-const waitUntilEditableLabelIsFocused = (overflowItemClassName: string) =>
-  findOverflowItem(overflowItemClassName)
+const waitUntilEditableLabelIsFocused = (index = 0) =>
+  findFilter(".vuuFilterPill")
+    .eq(index)
     .find(".vuuEditableLabel")
     .find("input")
     .should("be.focused");
+
+const pressEnterEditableLabel = (index = 0) => {
+  findFilter(".vuuFilterPill")
+    .eq(index)
+    .find(".vuuEditableLabel")
+    .find("input")
+    .trigger("keydown", { key: "Enter" });
+};
 
 const assertInputValue = (className: string, value: string) =>
   cy.get(`${className} input`).should("have.attr", "value", value);
@@ -46,12 +53,10 @@ describe("WHEN it initially renders", () => {
     const container = cy.findByTestId("filterbar");
     container.should("have.class", "vuuFilterBar");
   });
-  it("THEN content container is empty, except for non-visible overflow indicator", () => {
+  it("THEN filter container is empty", () => {
     cy.mount(<DefaultFilterBar />);
     const container = cy.findByTestId("filterbar");
-    container.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 1);
-    container.get(OVERFLOW_INDICATOR).should("exist");
-    container.get(OVERFLOW_INDICATOR).should("have.css", "width", "0px");
+    container.get(FILTER_CONTAINER).find("> *").should("have.length", 0);
   });
   it("AND WHEN filterState passed THEN it calls onApplyFilter with currently active filters", () => {
     const onApplyFilter = cy.stub().as("onApplyFilter");
@@ -75,20 +80,11 @@ describe("WHEN it initially renders", () => {
 
 describe("The mouse user", () => {
   describe("WHEN user click Add button on empty Filterbar", () => {
-    it("THEN new FilterClause is initiated", () => {
+    it("THEN FilterEditor is shown and new FilterClause is initiated", () => {
       cy.mount(<DefaultFilterBar />);
       cy.get(ADD_BUTTON).realClick();
-      cy.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 3);
-      cy.get(OVERFLOW_CONTAINER)
-        .find('[data-index="0"] > *')
-        .should("have.class", "vuuFilterBar-Editor");
-
-      cy.get(OVERFLOW_CONTAINER)
-        .find('[data-index="1"] > *')
-        .should("have.class", "vuuFilterBar-remove");
-
-      cy.get(OVERFLOW_INDICATOR).should("exist");
-      cy.get(OVERFLOW_INDICATOR).should("have.css", "width", "0px");
+      cy.get(FILTER_CONTAINER).find("> *").should("have.length", 0);
+      cy.get(".vuuPortal").find(".vuuFilterEditor").should("be.visible");
     });
 
     it("THEN column combobox is focused and the dropdown shown", () => {
@@ -102,61 +98,7 @@ describe("The mouse user", () => {
     });
   });
 
-  describe("WHEN user selects a column", () => {
-    it("THEN focus moves to operator field", () => {
-      cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
-      clickListItem("currency");
-      cy.get(FILTER_CLAUSE).should("have.length", 1);
-      cy.get(FILTER_CLAUSE_FIELD).should("have.length", 2);
-
-      assertInputValue(".vuuFilterClauseColumn", "currency");
-
-      cy.get(".vuuFilterClauseOperator input").should("be.focused");
-      cy.get(".vuuFilterClauseOperator input").should(
-        "have.attr",
-        "aria-expanded",
-        "true"
-      );
-
-      // make sure operators list has renderered
-      cy.findByText("=").should("exist");
-    });
-  });
-  describe("WHEN user selects an operator", () => {
-    it("THEN focus moves to value field", () => {
-      cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
-      clickListItems("currency", "=");
-
-      cy.get(FILTER_CLAUSE).should("have.length", 1);
-      cy.get(FILTER_CLAUSE_FIELD).should("have.length", 3);
-
-      cy.get(".vuuFilterClauseValue input").should("be.focused");
-      cy.get(".vuuFilterClauseValue input").should(
-        "have.attr",
-        "aria-expanded",
-        "true"
-      );
-      cy.findByText("USD").should("exist");
-    });
-  });
-
-  describe("WHEN user selects a value", () => {
-    it("THEN Save menu is shown", () => {
-      cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
-      clickListItems("currency", "=", "USD");
-      cy.get(FILTER_CLAUSE).should("have.length", 1);
-      cy.get(`${FILTER_CLAUSE} ${FILTER_CLAUSE}-clearButton`).should(
-        "have.length",
-        1
-      );
-      cy.get(".vuuFilterBuilderMenuList").should("be.visible");
-    });
-  });
-
-  describe("WHEN user clicks APPLY AND SAVE", () => {
+  describe("WHEN user clicks SAVE", () => {
     const testFilter = {
       column: "currency",
       op: "!=",
@@ -174,7 +116,7 @@ describe("The mouse user", () => {
       );
       cy.get(ADD_BUTTON).realClick();
       clickListItems(testFilter.column, testFilter.op, testFilter.value);
-      clickButton("APPLY AND SAVE");
+      clickButton("Save");
     });
 
     it("THEN filterStateChangeHandler callback is invoked", () => {
@@ -192,12 +134,15 @@ describe("The mouse user", () => {
     });
 
     it("THEN filter pill is displayed, label is in edit state and focused", () => {
-      cy.get(OVERFLOW_CONTAINER).find("> *").should("have.length", 2);
-      findOverflowItem(".vuuFilterPill").should("have.length", 1);
-      findOverflowItem(".vuuFilterPill")
+      cy.get(FILTER_CONTAINER).find("> *").should("have.length", 1);
+      cy.get(FILTER_CONTAINER).find(".vuuFilterPill").should("have.length", 1);
+
+      cy.get(FILTER_CONTAINER)
+        .find(".vuuFilterPill")
         .find(".vuuEditableLabel")
         .should("have.class", "vuuEditableLabel-editing");
-      findOverflowItem(".vuuFilterPill")
+      cy.get(FILTER_CONTAINER)
+        .find(".vuuFilterPill")
         .find(".vuuEditableLabel")
         .find("input")
         .should("be.focused");
@@ -205,10 +150,11 @@ describe("The mouse user", () => {
 
     describe("WHEN user overtypes label and presses ENTER", () => {
       it("THEN label is applied and exits edit mode", () => {
-        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        waitUntilEditableLabelIsFocused();
         cy.realType("test");
         cy.realPress("Enter");
-        findOverflowItem(".vuuFilterPill")
+        cy.get(FILTER_CONTAINER)
+          .find(".vuuFilterPill")
           .find(".vuuEditableLabel")
           .should("not.have.class", "vuuEditableLabel-editing");
         cy.get("@filterStateChangeHandler").should("be.calledWith", {
@@ -218,10 +164,12 @@ describe("The mouse user", () => {
       });
 
       it("THEN filter pill has focus", () => {
-        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        waitUntilEditableLabelIsFocused();
         cy.realType("test");
         cy.realPress("Enter");
-        findOverflowItem(".vuuFilterPill").should("be.focused");
+        cy.get(FILTER_CONTAINER)
+          .find(".vuuFilterPill .vuuSplitButton-main")
+          .should("be.focused");
       });
     });
 
@@ -230,17 +178,18 @@ describe("The mouse user", () => {
         const filterName = "EditedFilter";
         const newFilter = { ...testFilter, value: "CAD", name: filterName };
 
-        waitUntilEditableLabelIsFocused(".vuuFilterPill");
+        waitUntilEditableLabelIsFocused();
         cy.realType(filterName);
-        cy.realPress("Enter");
+        pressEnterEditableLabel();
 
         // Edit an existing filter
-        findOverflowItem(".vuuFilterPill")
-          .find(".vuuFilterPillMenu")
+        cy.get(FILTER_CONTAINER)
+          .find(".vuuFilterPill")
+          .find(".vuuSplitButton-trigger")
           .realClick();
         clickButton("Edit");
         clickListItems(newFilter.column, newFilter.op, newFilter.value);
-        clickButton("APPLY AND SAVE");
+        clickButton("Save");
 
         cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
           filters: [newFilter],
@@ -257,15 +206,15 @@ describe("The mouse user", () => {
   describe("WHEN adds two filters", () => {
     const filter1 = {
       column: "currency",
-      op: "!=",
+      op: "=",
       value: "USD",
-      name: 'currency != "USD"',
+      name: "currency",
     };
     const filter2 = {
-      column: "currency",
-      op: "!=",
-      value: "CAD",
-      name: 'currency != "CAD"',
+      column: "exchange",
+      op: "=",
+      value: "MIL/EUR_IT",
+      name: "exchange",
     };
 
     beforeEach(() => {
@@ -279,33 +228,42 @@ describe("The mouse user", () => {
       );
       cy.get(ADD_BUTTON).realClick();
       clickListItems(filter1.column, filter1.op, filter1.value);
-      clickButton("APPLY AND SAVE");
-      waitUntilEditableLabelIsFocused(".vuuFilterPill");
-      cy.realPress("Enter");
+      clickButton("Save");
+      waitUntilEditableLabelIsFocused();
+      pressEnterEditableLabel();
 
       cy.get(ADD_BUTTON).realClick();
       clickListItems(filter2.column, filter2.op, filter2.value);
-      clickButton("APPLY AND SAVE");
-      waitUntilEditableLabelIsFocused(".vuuFilterPill");
-      cy.realPress("Enter");
+      clickButton("Save");
+      waitUntilEditableLabelIsFocused(1);
+      pressEnterEditableLabel(1);
     });
 
     it("THEN filterStateChangeHandler & applyFilterHandler callbacks are invoked with correct values", () => {
+      cy.get("@filterStateChangeHandler").its("callCount").should("eq", 4);
       cy.get("@filterStateChangeHandler").should("be.calledWith", {
         filters: [filter1, filter2],
         activeIndices: [0, 1],
       });
 
       cy.get("@applyFilterHandler").should("be.calledWith", {
-        filter: 'currency != "USD" and currency != "CAD"',
+        filter: 'currency = "USD" and exchange = "MIL/EUR_IT"',
         filterStruct: { op: "and", filters: [filter1, filter2] },
       });
     });
 
     it("AND WHEN one filter is made inactive THEN changes are correctly applied", () => {
-      findOverflowItem('[data-index="0"]').realClick({ shiftKey: true });
-      findOverflowItem('[data-index="0"]').find("[aria-selected='false']");
-      findOverflowItem('[data-index="1"]').find("[aria-selected='true']");
+      findFilter('[data-index="0"]').realClick({ shiftKey: true });
+      findFilter('[data-index="0"]').should(
+        "have.attr",
+        "aria-checked",
+        "false"
+      );
+      findFilter('[data-index="1"]').should(
+        "have.attr",
+        "aria-checked",
+        "true"
+      );
 
       cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
         filters: [filter1, filter2],
@@ -313,47 +271,47 @@ describe("The mouse user", () => {
       });
 
       cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: 'currency != "CAD"',
+        filter: 'exchange = "MIL/EUR_IT"',
         filterStruct: filter2,
       });
     });
 
     it("AND WHEN second filter is deleted THEN changes are correctly applied", () => {
-      findOverflowItem('[data-index="1"]')
-        .find(".vuuFilterPillMenu")
+      findFilter('[data-index="1"]')
+        .find(".vuuSplitButton-trigger")
         .realClick();
       clickButton("Delete");
       clickButton("Remove");
 
-      findOverflowItem(".vuuFilterPill").should("have.length", 1);
-      findOverflowItem(".vuuFilterPill").contains(filter1.name);
+      findFilter(".vuuFilterPill").should("have.length", 1);
+      findFilter(".vuuFilterPill").contains(filter1.name);
 
       cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
         filters: [filter1],
         activeIndices: [0],
       });
       cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: filter1.name,
+        filter: 'currency = "USD"',
         filterStruct: filter1,
       });
     });
 
     it("AND WHEN first filter is deleted THEN changes are correctly applied", () => {
-      findOverflowItem('[data-index="0"]')
-        .find(".vuuFilterPillMenu")
+      findFilter('[data-index="0"]')
+        .find(".vuuSplitButton-trigger")
         .realClick();
       clickButton("Delete");
       clickButton("Remove");
 
-      findOverflowItem(".vuuFilterPill").should("have.length", 1);
-      findOverflowItem(".vuuFilterPill").contains(filter2.name);
+      findFilter(".vuuFilterPill").should("have.length", 1);
+      findFilter(".vuuFilterPill").contains(filter2.name);
 
       cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
         filters: [filter2],
         activeIndices: [0],
       });
       cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: filter2.name,
+        filter: `exchange = "MIL/EUR_IT"`,
         filterStruct: filter2,
       });
     });
@@ -452,13 +410,8 @@ describe("The keyboard user", () => {
           assertInputValue(".vuuFilterClauseValue", "USD");
 
           cy.get(FILTER_CLAUSE).should("have.length", 1);
-          cy.get(`${FILTER_CLAUSE} ${FILTER_CLAUSE}-clearButton`).should(
-            "have.length",
-            1
-          );
-          cy.get(".vuuFilterBuilderMenuList")
-            .should("be.visible")
-            .should("be.focused");
+
+          cy.findByRole("button", { name: "Save" }).should("be.focused");
         });
       });
     });
@@ -547,17 +500,17 @@ describe("WHEN a user applies a date filter", () => {
         column: DATE_COLUMN,
         op,
         value: expectedValue,
-        name: `${DATE_COLUMN} ${op} "${todayDateFormatted}"`,
+        name: `lastUpdated`,
       };
 
       // Add date filter
       cy.get(ADD_BUTTON).realClick();
       clickListItems(DATE_COLUMN, op);
-      findOverflowItem(".vuuDatePicker-calendarIconButton").realClick();
+      cy.get(".vuuDatePopup .vuuIconButton").realClick();
       cy.get(".saltCalendarDay-today:not(.saltCalendarDay-hidden)").realClick();
       cy.realPress("ArrowRight");
-      clickButton("APPLY AND SAVE");
-      waitUntilEditableLabelIsFocused(".vuuFilterPill");
+      clickButton("Save");
+      waitUntilEditableLabelIsFocused();
       cy.realPress("Enter");
 
       // Check called handlers
@@ -579,7 +532,9 @@ describe("Deleting and renaming filters", () => {
       const onFilterDeleted = cy.stub().as("onFilterDeleted");
       cy.mount(<FilterBarMultipleFilters onFilterDeleted={onFilterDeleted} />);
 
-      findOverflowItem('[data-index="0"]').findByRole("button").realClick();
+      findFilter("[data-index='0']")
+        .find(".vuuSplitButton-trigger")
+        .realClick();
       clickButton("Delete");
       clickButton("Remove");
 
@@ -597,9 +552,15 @@ describe("Deleting and renaming filters", () => {
       const onFilterRenamed = cy.stub().as("onFilterRenamed");
       cy.mount(<FilterBarMultipleFilters onFilterRenamed={onFilterRenamed} />);
 
-      findOverflowItem('[data-index="0"]').findByText("Filter One").dblclick();
+      findFilter("[data-index='0']")
+        .find(".vuuSplitButton-trigger")
+        .realClick();
+
+      clickButton("Rename");
+
+      waitUntilEditableLabelIsFocused();
       cy.realType("Test");
-      cy.realPress("Enter");
+      pressEnterEditableLabel(0);
 
       cy.get("@onFilterRenamed").should(
         "be.calledWithExactly",

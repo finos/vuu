@@ -1,6 +1,6 @@
-import { MenuActionHandler } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { ColumnDescriptorsByName } from "packages/vuu-filter-types";
+import type { MenuActionHandler } from "@finos/vuu-data-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
 import {
   KeyboardEventHandler,
   RefCallback,
@@ -17,23 +17,31 @@ import {
   navigateToNextFilterClause,
 } from "../filter-clause/filterClauseFocusManagement";
 import { FilterEditorProps } from "./FilterEditor";
-import { FilterChangeHandler, FilterStatusChangeHandler } from "../FilterModel";
+import {
+  FilterChangeHandler,
+  FilterModel,
+  FilterStatusChangeHandler,
+} from "../FilterModel";
 import { FilterClauseCancelHandler } from "../filter-clause";
 
 export interface FilterEditorHookProps
   extends Pick<
     FilterEditorProps,
-    "columnDescriptors" | "filterModel" | "onCancel" | "onSave"
+    "columnDescriptors" | "filter" | "onCancel" | "onSave"
   > {
   label?: string;
 }
 
 export const useFilterEditor = ({
   columnDescriptors,
-  filterModel,
+  filter,
   onCancel,
   onSave,
 }: FilterEditorHookProps) => {
+  const filterModel = useMemo(() => {
+    return new FilterModel(filter);
+  }, [filter]);
+
   const [_, forceRefresh] = useState({});
   const [isValid, setIsValid] = useState(filterModel.isValid);
   const saveButtonRef = useRef<HTMLDivElement>(null);
@@ -96,17 +104,24 @@ export const useFilterEditor = ({
         console.log(
           `cancel because of Escape valid clause ${filterClause.isValid}`
         );
-        onCancel();
+        onCancel(filter);
       }
     },
-    [filterModel, onCancel]
+    [filter, filterModel, onCancel]
   );
 
   const handleMenuAction = useCallback<MenuActionHandler>(
     ({ menuId }) => {
       switch (menuId) {
         case "save": {
-          onSave(filterModel.asFilter());
+          const savedFilter = filterModel.asFilter();
+          const newOrUpdatedFilter = filter?.name
+            ? {
+                ...savedFilter,
+                name: filter.name,
+              }
+            : savedFilter;
+          onSave(newOrUpdatedFilter);
           return true;
         }
         case "and-clause": {
@@ -120,7 +135,7 @@ export const useFilterEditor = ({
           return false;
       }
     },
-    [filterModel, onSave]
+    [filter?.name, filterModel, onSave]
   );
 
   const handleKeyDownMenu = useCallback<KeyboardEventHandler>((evt) => {
@@ -150,6 +165,7 @@ export const useFilterEditor = ({
 
   return {
     columnsByName,
+    filterModel,
     isValid,
     onCancelFilterClause: handleCancelFilterClause,
     onKeyDownCombinator: handleKeyDownNavigationFromCombinator,

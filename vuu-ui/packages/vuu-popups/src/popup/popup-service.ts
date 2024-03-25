@@ -2,7 +2,6 @@ import cx from "clsx";
 import React, {
   createElement,
   CSSProperties,
-  FocusEvent,
   HTMLAttributes,
   KeyboardEvent as ReactKeyboardEvent,
   ReactElement,

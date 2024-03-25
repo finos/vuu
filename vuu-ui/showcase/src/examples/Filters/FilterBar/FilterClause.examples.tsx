@@ -4,7 +4,6 @@ import { TableSchema } from "@finos/vuu-data-types";
 import {
   ExpandoCombobox,
   ExpandoComboboxProps,
-  FilterClauseChangeHandler,
   FilterClauseModel,
   FilterClause,
   FilterClauseValueEditorText,
@@ -18,7 +17,7 @@ import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../../utils";
 
 import "./FilterClause.examples.css";
-import { FilterClauseValueChangeHandler } from "packages/vuu-filters/src/filter-clause/useFilterClauseModelEditor";
+import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
 
 let displaySequence = 1;
 

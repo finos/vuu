@@ -39,7 +39,7 @@ describe("FilterModel", () => {
         it("THEN both filter clause and filter are invalid", () => {
           const filterModel = new FilterModel();
           const [filterClause] = filterModel.filterClauses;
-          (filterClause as FilterClauseModel).setColumn("currency");
+          (filterClause as FilterClauseModel).column = "currency";
           expect(filterModel.isValid).toEqual(false);
           expect(filterClause.isValid).toEqual(false);
           (filterClause as FilterClauseModel).setOp("=");
@@ -51,7 +51,7 @@ describe("FilterModel", () => {
         it("THEN both filter clause and filter are valid", () => {
           const filterModel = new FilterModel();
           const [filterClause] = filterModel.filterClauses;
-          (filterClause as FilterClauseModel).setColumn("currency");
+          (filterClause as FilterClauseModel).column = "currency";
           (filterClause as FilterClauseModel).setOp("=");
           (filterClause as FilterClauseModel).setValue("EUR");
           expect(filterModel.isValid).toEqual(true);

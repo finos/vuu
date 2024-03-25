@@ -31,7 +31,7 @@ export type FilterClauseValueChangeHandler = (
   isFinal?: boolean
 ) => void;
 
-export const useFilterClauseModelEditor = ({
+export const useFilterClause = ({
   filterClauseModel,
   onCancel,
   columnsByName,
@@ -41,7 +41,7 @@ export const useFilterClauseModelEditor = ({
   );
 
   useMemo(() => {
-    filterClauseModel.on("filterClause", (filterClause, isValid) => {
+    filterClauseModel.on("filterClause", (filterClause) => {
       setFilterClause(filterClause);
     });
   }, [filterClauseModel]);
@@ -56,7 +56,7 @@ export const useFilterClauseModelEditor = ({
         const field = input.closest("[data-field]") as HTMLElement;
         switch (field?.dataset?.field) {
           case "operator": {
-            filterClauseModel.setColumn(undefined);
+            filterClauseModel.column = undefined;
             focusNextFocusableElement("bwd");
             break;
           }
@@ -67,7 +67,7 @@ export const useFilterClauseModelEditor = ({
           }
           case "column": {
             if (clauseIsNotFirst(input)) {
-              // When we backspace from an empty clause, the clause will be removed.
+              // When we backspace from an empty clause, the clause will be removed.filterClause
               // In this case, we will reposition focus on previous clause, but we
               // don't want the backspace to be effect an edit on that clause.
               evt.preventDefault();
@@ -96,7 +96,7 @@ export const useFilterClauseModelEditor = ({
           }
         }
       }
-      filterClauseModel.setColumn(column?.name ?? undefined);
+      filterClauseModel.column = column?.name ?? undefined;
       setTimeout(() => {
         focusNextElement();
       }, 100);

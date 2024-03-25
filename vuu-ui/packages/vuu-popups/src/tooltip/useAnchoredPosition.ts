@@ -47,9 +47,6 @@ export const useAnchoredPosition = ({
           [nextPlacement, placements] = getNextPlacement(placements);
           switch (nextPlacement) {
             case "above":
-              console.log(
-                `top = ${anchor.top - height} (${anchor.top} = ${height})`
-              );
               if (roomAbove(anchor, height + pointerSize)) {
                 const midDiff = (width - anchor.width) / 2;
                 el.style.cssText = `left:${anchor.left - midDiff}px;top:${
@@ -61,7 +58,6 @@ export const useAnchoredPosition = ({
               break;
             case "below":
               if (roomBelow(anchor, height + pointerSize)) {
-                console.log("room below decks");
                 const midDiff = (width - anchor.width) / 2;
                 el.style.cssText = `left:${anchor.left - midDiff}px;top:${
                   anchor.bottom + pointerSize

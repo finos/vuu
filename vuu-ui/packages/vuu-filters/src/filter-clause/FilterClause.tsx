@@ -10,9 +10,9 @@ import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
 import { ExpandoCombobox } from "./ExpandoCombobox";
-import { FilterClauseValueEditor } from "./FilterClauseValueEditor";
+import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
 import { getOperators } from "./operator-utils";
-import { useFilterClauseModelEditor } from "./useFilterClauseModelEditor";
+import { useFilterClause } from "./useFilterClause";
 
 import "./FilterClause.css";
 
@@ -57,7 +57,7 @@ export const FilterClause = ({
     onOperatorSelect,
     operatorRef,
     selectedColumn,
-  } = useFilterClauseModelEditor({
+  } = useFilterClause({
     filterClauseModel,
     onCancel,
     columnsByName,

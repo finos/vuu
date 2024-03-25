@@ -17,8 +17,8 @@ import {
   MultiSelectionHandler,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
-import { ExpandoCombobox } from "./ExpandoCombobox";
-import { FilterClauseValueEditor } from "./filterClauseTypes";
+import { ExpandoCombobox } from "../ExpandoCombobox";
+import { FilterClauseValueEditor } from "../filterClauseTypes";
 import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 
 const selectionKeys = ["Enter", " "];

@@ -10,7 +10,7 @@ import {
 } from "react";
 import { ExpandoInput } from "@finos/vuu-ui-controls";
 import { isValidNumber } from "@finos/vuu-utils";
-import { FilterClauseValueEditor } from "./filterClauseTypes";
+import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseNumericValueEditorProps
   extends FilterClauseValueEditor,

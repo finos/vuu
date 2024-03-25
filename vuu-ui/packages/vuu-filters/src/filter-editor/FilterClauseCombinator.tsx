@@ -1,4 +1,4 @@
-import { FilterCombinatorOp } from "packages/vuu-filter-types";
+import type { FilterCombinatorOp } from "@finos/vuu-filter-types";
 import { KeyboardEventHandler } from "react";
 import "./FilterClauseCombinator.css";
 

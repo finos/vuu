@@ -21,9 +21,9 @@ const clickListItem = (name: string) => {
 
 const selectMenuOption = (name: "AND" | "OR") => {
   cy.realPress("ArrowDown");
-  cy.findByRole("menuitem", { name: "AND" }).should(
-    "have.attr",
-    "data-highlighted",
+  cy.findByRole("menuitem", { name }).should(
+    "have.class",
+    "vuuHighlighted",
     "true"
   );
   // TODO WHY doesn't ENTER work ?
@@ -91,11 +91,10 @@ describe("FilterEditor", () => {
         const saveFilterSpy = cy.stub().as("saveFilterHandler");
         cy.mount(<NewFilter onSave={saveFilterSpy} />);
         assertComboboxReady();
+        EnterAndAssertListVisible();
+        EnterAndAssertListVisible();
         cy.realPress("Enter");
-        cy.findByRole("listbox").should("be.visible");
-        cy.realPress("Enter");
-        cy.findByRole("listbox").should("be.visible");
-        cy.realPress("Enter");
+        cy.findByRole("button", { name: "Save" }).should("be.focused");
         cy.realPress("Enter");
         cy.findByRole("button", { name: "Save" }).should("be.focused");
       });
@@ -106,11 +105,10 @@ describe("FilterEditor", () => {
         const saveFilterSpy = cy.stub().as("saveFilterHandler");
         cy.mount(<NewFilter onSave={saveFilterSpy} />);
         assertComboboxReady();
+        EnterAndAssertListVisible();
+        EnterAndAssertListVisible();
         cy.realPress("Enter");
-        cy.findByRole("listbox").should("be.visible");
-        cy.realPress("Enter");
-        cy.findByRole("listbox").should("be.visible");
-        cy.realPress("Enter");
+        cy.findByRole("button", { name: "Save" }).should("be.focused");
         cy.realPress("Enter");
         cy.get("@saveFilterHandler").should("have.been.called");
       });
@@ -251,6 +249,7 @@ describe("FilterEditor", () => {
           cy.realPress("ArrowRight");
           cy.realPress("ArrowRight");
           cy.findAllByRole("combobox").eq(2).should("be.focused");
+          cy.realPress("ArrowRight");
           cy.realPress("ArrowRight");
           cy.findByRole("button", { name: "OR" }).should("be.focused");
           cy.realPress("ArrowRight");

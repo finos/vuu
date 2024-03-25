@@ -18,11 +18,8 @@ import {
 } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
 import cx from "clsx";
-import { useCallback, useMemo, useRef } from "react";
+import { FocusEventHandler, useCallback, useMemo, useRef } from "react";
 import { filterAsReactNode } from "./filterAsReactNode";
-import { getFilterLabel } from "./getFilterLabel";
-
-import "./FilterPill.css";
 import {
   closeCommand,
   deleteCommand,
@@ -30,6 +27,10 @@ import {
   MenuOptions,
   renameCommand,
 } from "./FilterPillMenuOptions";
+import { getFilterLabel } from "./getFilterLabel";
+import { getFilterTooltipText } from "./getFilterTooltipText";
+
+import "./FilterPill.css";
 
 const classBase = "vuuFilterPill";
 
@@ -80,6 +81,8 @@ export const FilterPill = ({
     () => filter.name ?? getLabel(filter),
     [getLabel, filter]
   );
+
+  const getTooltipTextl = getFilterTooltipText(columnsByName);
 
   const id = useId(idProp);
 
@@ -151,12 +154,14 @@ export const FilterPill = ({
     anchorQuery: ".vuuFilterPill",
     id,
     placement: ["above", "below"],
-    tooltipContent: filterAsReactNode(filter, getLabel),
+    tooltipContent: filterAsReactNode(filter, getTooltipTextl),
   });
 
   const buttonProps = {
     onBlur: hideTooltip,
-    onFocus: showTooltip,
+    onFocus: useCallback<FocusEventHandler>(() => {
+      showTooltip(rootRef);
+    }, [showTooltip]),
   };
 
   return (

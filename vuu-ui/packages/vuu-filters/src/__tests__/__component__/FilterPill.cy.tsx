@@ -7,7 +7,7 @@ describe("FilterPill", () => {
   describe("WHEN Non editable", () => {
     it("THEN no rename menu option is offered", () => {
       cy.mount(<FilterPillNotEditable />);
-      cy.findByRole("button", { name: 'currency = "EUR"' }).realClick();
+      cy.findByRole("button", { name: "currency" }).realClick();
       cy.realPress("ArrowDown");
       cy.findByRole("menu").should("be.visible");
       cy.findByRole("menitemu", { name: "Rename" }).should("not.exist");
@@ -21,7 +21,7 @@ describe("FilterPill", () => {
     describe("WHEN initially rendered", () => {
       it("THEN  Rename menu option is offered", () => {
         cy.mount(<FilterPillEditableLabel />);
-        cy.findByRole("button", { name: 'currency = "EUR"' }).realClick();
+        cy.findByRole("button", { name: "currency" }).realClick();
         cy.realPress("ArrowDown");
         cy.findByRole("menu").should("be.visible");
         cy.findByRole("menuitem", { name: "Rename" }).should("be.visible");

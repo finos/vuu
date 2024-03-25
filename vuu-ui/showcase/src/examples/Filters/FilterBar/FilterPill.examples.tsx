@@ -65,15 +65,10 @@ export const FilterPillWithMenu = () => {
   const [active, setActive] = useState(false);
   const handleClick = useMemo(() => () => setActive((value) => !value), []);
 
-  const handleMenuAction = useCallback<MenuActionHandler>(
-    ({ menuId, options }) => {
-      console.log(`menuId ${menuId}`, {
-        options,
-      });
-      return true;
-    },
-    []
-  );
+  const handleMenuAction = useCallback<MenuActionHandler>(({ menuId }) => {
+    console.log(`menuId ${menuId}`);
+    return true;
+  }, []);
 
   const menuProps: PopupMenuProps = {
     icon: "more-vert",

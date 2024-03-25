@@ -3,7 +3,7 @@ import { getLocalTimeZone, DateValue } from "@internationalized/date";
 import { DateInput } from "@finos/vuu-ui-controls";
 import { toCalendarDate } from "@finos/vuu-utils";
 import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
-import { FilterClauseValueEditor } from "./filterClauseTypes";
+import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 interface Props extends Pick<FilterClauseValueEditor, "onChangeValue"> {
   value: number | undefined;

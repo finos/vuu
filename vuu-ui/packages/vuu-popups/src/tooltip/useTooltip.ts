@@ -60,31 +60,34 @@ export const useTooltip = ({
     }
   }, []);
 
-  const showTooltip = useCallback(() => {
-    const { current: anchorEl } = anchorElementRef;
-    if (anchorEl) {
-      setTooltipProps({
-        anchorElement: anchorElementRef,
-        children: tooltipContent,
-        id: `${id}-tooltip`,
-        onMouseEnter: handleMouseEnterTooltip,
-        onMouseLeave: handleMouseLeaveTooltip,
-        placement: placement,
-      });
-      // register ESC listener
-      document.addEventListener("keydown", escapeListener);
-    }
-    mouseEnterTimerRef.current = undefined;
-    hideTooltip(isHoveringRef.current ? 3000 : 1000);
-  }, [
-    escapeListener,
-    handleMouseEnterTooltip,
-    handleMouseLeaveTooltip,
-    hideTooltip,
-    id,
-    placement,
-    tooltipContent,
-  ]);
+  const showTooltip = useCallback(
+    (ref = anchorElementRef) => {
+      const { current: anchorEl } = ref;
+      if (anchorEl) {
+        setTooltipProps({
+          anchorElement: ref,
+          children: tooltipContent,
+          id: `${id}-tooltip`,
+          onMouseEnter: handleMouseEnterTooltip,
+          onMouseLeave: handleMouseLeaveTooltip,
+          placement: placement,
+        });
+        // register ESC listener
+        document.addEventListener("keydown", escapeListener);
+      }
+      mouseEnterTimerRef.current = undefined;
+      hideTooltip(isHoveringRef.current ? 3000 : 1000);
+    },
+    [
+      escapeListener,
+      handleMouseEnterTooltip,
+      handleMouseLeaveTooltip,
+      hideTooltip,
+      id,
+      placement,
+      tooltipContent,
+    ]
+  );
 
   const handleMouseEnter = useCallback(
     (evt: MouseEvent) => {

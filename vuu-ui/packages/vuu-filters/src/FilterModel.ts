@@ -84,7 +84,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
     return this.#isValid;
   }
 
-  private setIsValid(isValid: boolean, reason = "") {
+  private setIsValid(isValid: boolean) {
     this.#isValid = isValid;
     this.emit("isValid", isValid);
   }
@@ -93,7 +93,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
     return this.#filterClause.column;
   }
 
-  setColumn(column: undefined | string) {
+  set column(column: undefined | string) {
     // TODO set op, value to empty
     this.#filterClause = {
       column,
@@ -102,7 +102,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
     const isValid = isValidFilterClause(this.#filterClause);
     this.emit("filterClause", this.#filterClause, isValid);
     if (isValid !== this.#isValid) {
-      this.setIsValid(isValid, "column");
+      this.setIsValid(isValid);
     }
   }
 
@@ -147,7 +147,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
 
     const isValid = isValidFilterClause(this.#filterClause);
     if (isValid !== this.#isValid) {
-      this.setIsValid(isValid, "value");
+      this.setIsValid(isValid);
     }
     if (isFinal) {
       this.emit("filterClause", this.#filterClause, isValid);
@@ -239,7 +239,6 @@ export class FilterModel extends EventEmitter<FilterModelEvents> {
   }
 
   onFilterClauseChange: FilterChangeHandler = () => {
-    console.log(`FilterModel responds to filterclause change`);
     this.emit("filter", this.asFilter(false), this.#isValid);
   };
 

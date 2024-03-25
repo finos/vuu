@@ -1,10 +1,6 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
-  ColumnDescriptorsByName,
-  Filter,
-  FilterWithPartialClause,
-} from "@finos/vuu-filter-types";
+import { ColumnDescriptorsByName, Filter } from "@finos/vuu-filter-types";
 import { PromptProps } from "@finos/vuu-popups";
 import {
   EditableLabelProps,
@@ -26,9 +22,17 @@ import { FilterMenuOptions } from "../filter-pill-menu";
 import { FilterBarProps } from "./FilterBar";
 import { useFilterState } from "./useFilterState";
 import { useApplyFilterOnChange } from "./useApplyFilterOnChange";
-import { FilterModel } from "../FilterModel";
-import { FilterEditSaveHandler } from "../filter-editor";
+import {
+  FilterEditCancelHandler,
+  FilterEditSaveHandler,
+} from "../filter-editor";
 import { navigateToNextItem } from "./filterBarFocusManagement";
+
+type InteractedFilterState = {
+  filter?: Filter;
+  index: number;
+  state: "create" | "edit" | "rename";
+};
 
 export interface FilterBarHookProps
   extends Pick<
@@ -55,12 +59,8 @@ export const useFilterBar = ({
   onFilterStateChanged,
 }: FilterBarHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
-  const editingFilter = useRef<Filter | undefined>();
-  const [filterModel, setFilterModel] = useState<FilterModel | undefined>();
-  const [indexOfFilterPillBeingRenamed, setIndexOfFilterPillBeingRenamed] =
-    useState(-1);
-  const [editFilter, setEditFilter] = useState<
-    Partial<Filter> | FilterWithPartialClause | undefined
+  const [interactedFilterState, setInteractedFilterState] = useState<
+    InteractedFilterState | undefined
   >();
   const [promptProps, setPromptProps] = useState<PromptProps | null>(null);
   const editPillLabelAPI = useRef<EditAPI>(NullEditAPI);
@@ -94,9 +94,13 @@ export const useFilterBar = ({
     onApplyFilter,
   });
 
-  const editPillLabel = useCallback((index: number) => {
+  const editPillLabel = useCallback((index: number, filter: Filter) => {
     setTimeout(() => {
-      setIndexOfFilterPillBeingRenamed(index);
+      setInteractedFilterState({
+        filter,
+        index,
+        state: "rename",
+      });
     }, 100);
   }, []);
 
@@ -162,26 +166,28 @@ export const useFilterBar = ({
     [deleteConfirmed, getDeletePrompt]
   );
 
-  const handleBeginEditFilterName = useCallback((filter: Filter) => {
-    editingFilter.current = filter;
-  }, []);
+  // const handleBeginEditFilterName = useCallback((filter: Filter) => {
+  //   editingFilterRef.current = filter;
+  // }, []);
 
   // TODO handle cancel edit name
   const handleExitEditFilterName: EditableLabelProps["onExitEditMode"] =
     useCallback(
       (_, editedValue = "") => {
-        if (editingFilter.current) {
-          const indexOfEditedFilter = onRenameFilter(
-            editingFilter.current,
-            editedValue
-          );
-          editingFilter.current = undefined;
+        if (
+          interactedFilterState?.state === "rename" &&
+          interactedFilterState.filter
+        ) {
+          const { filter, index } = interactedFilterState;
+          const indexOfEditedFilter = onRenameFilter(filter, editedValue);
+          console.log({ index, indexOfEditedFilter });
 
+          setInteractedFilterState(undefined);
           focusFilterPill(indexOfEditedFilter);
         }
-        setIndexOfFilterPillBeingRenamed(-1);
+        setInteractedFilterState(undefined);
       },
-      [focusFilterPill, onRenameFilter]
+      [focusFilterPill, interactedFilterState, onRenameFilter]
     );
 
   const handlePillMenuAction = useCallback<MenuActionHandler>(
@@ -195,14 +201,16 @@ export const useFilterBar = ({
         case "rename-filter": {
           const { filter } = options as FilterMenuOptions;
           const index = filters.indexOf(filter);
-          editPillLabel(index);
+          editPillLabel(index, filter);
           return true;
         }
         case "edit-filter": {
           const { filter } = options as FilterMenuOptions;
-          editingFilter.current = filter;
-          setFilterModel(new FilterModel(filter));
-          // focusFilterClause();
+          setInteractedFilterState({
+            filter,
+            index: filters.indexOf(filter),
+            state: "edit",
+          });
           return true;
         }
         default:
@@ -219,13 +227,13 @@ export const useFilterBar = ({
   }, []);
 
   const addIfNewElseUpdate = useCallback(
-    (edited: Filter, existing: Filter | undefined) => {
+    (newOrUpdatedFilter: Filter, existing: Filter | undefined) => {
       if (existing === undefined) {
-        const idx = onAddFilter(edited);
+        const idx = onAddFilter(newOrUpdatedFilter);
         focusFilterPill(idx);
-        editPillLabel(idx);
+        editPillLabel(idx, newOrUpdatedFilter);
       } else {
-        const idx = onChangeFilter(existing, edited);
+        const idx = onChangeFilter(existing, newOrUpdatedFilter);
         focusFilterPill(idx);
       }
     },
@@ -234,10 +242,13 @@ export const useFilterBar = ({
 
   const filterSaveHandler = useCallback<FilterEditSaveHandler>(
     (filter) => {
-      setFilterModel(undefined);
-      addIfNewElseUpdate(filter, editingFilter.current);
+      if (interactedFilterState) {
+        const { filter: existingFilter } = interactedFilterState;
+        setInteractedFilterState(undefined);
+        addIfNewElseUpdate(filter, existingFilter);
+      }
     },
-    [addIfNewElseUpdate]
+    [addIfNewElseUpdate, interactedFilterState]
   );
 
   const handlePillClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
@@ -261,7 +272,7 @@ export const useFilterBar = ({
 
   const pillProps: Omit<FilterPillProps, "filter" | "selected"> = {
     editLabelApiRef: editPillLabelAPI,
-    onBeginEdit: handleBeginEditFilterName,
+    // onBeginEdit: handleBeginEditFilterName,
     onClick: handlePillClick,
     onKeyDown: handlePillKeyDown,
     onMenuAction: handlePillMenuAction,
@@ -269,7 +280,10 @@ export const useFilterBar = ({
   };
 
   const handleClickAddButton = useCallback(() => {
-    setFilterModel(new FilterModel());
+    setInteractedFilterState({
+      index: -1,
+      state: "create",
+    });
   }, []);
 
   const handleKeyDownAddButton = useCallback<KeyboardEventHandler>((evt) => {
@@ -278,10 +292,17 @@ export const useFilterBar = ({
     }
   }, []);
 
-  const handleCancelEdit = useCallback(() => {
-    setFilterModel(undefined);
-    //TODO handle focus
-  }, []);
+  const handleCancelEdit = useCallback<FilterEditCancelHandler>(() => {
+    if (interactedFilterState) {
+      const { index } = interactedFilterState;
+      if (index === -1) {
+        console.log("focus add button");
+      } else {
+        focusFilterPill(index);
+      }
+      setInteractedFilterState(undefined);
+    }
+  }, [focusFilterPill, interactedFilterState]);
 
   const addButtonProps = {
     ref: addButtonRef,
@@ -293,10 +314,8 @@ export const useFilterBar = ({
     activeFilterIndex,
     addButtonProps,
     columnsByName,
-    editFilter,
-    filterModel,
     filters,
-    indexOfFilterPillBeingRenamed,
+    interactedFilterState,
     onCancelEdit: handleCancelEdit,
     onSave: filterSaveHandler,
     pillProps,

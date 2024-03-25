@@ -2,7 +2,7 @@ import { TableSchema } from "@finos/vuu-data-types";
 import cx from "clsx";
 import { FilterClauseValueEditorNumber } from "./FilterClauseValueEditorNumber";
 import { FilterClauseValueEditorText } from "./FilterClauseValueEditorText";
-import { useFilterClauseModelEditor } from "./useFilterClauseModelEditor";
+import { useFilterClause } from "../useFilterClause";
 
 import {
   NumericFilterClauseOp,
@@ -10,12 +10,12 @@ import {
 } from "@finos/vuu-filter-types";
 import { isDateTimeColumn } from "@finos/vuu-utils";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
-import { FilterClauseProps } from "./FilterClause";
+import { FilterClauseProps } from "../FilterClause";
 
 const classBase = "vuuFilterClause";
 
 type FilterClauseValueEditorProps = Pick<
-  ReturnType<typeof useFilterClauseModelEditor>,
+  ReturnType<typeof useFilterClause>,
   "selectedColumn" | "InputProps" | "onChangeValue" | "onDeselectValue"
 > &
   Pick<FilterClauseProps, "suggestionProvider"> & {
