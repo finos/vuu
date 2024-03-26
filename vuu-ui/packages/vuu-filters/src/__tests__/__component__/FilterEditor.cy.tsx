@@ -8,7 +8,7 @@ import {
   clickFilterPillTrigger,
   clickMenuItem,
   findFilterPill,
-} from "./filter-helpers";
+} from "./filter-test-utils";
 
 const assertComboboxReady = () => {
   cy.findByRole("combobox").should("be.focused");
