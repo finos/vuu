@@ -133,6 +133,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
       | boolean[],
     isFinal = true
   ) {
+    console.log(`setValue ${value} isFinal(${isFinal})`);
     if (isSingleValueFilter(this.#filterClause)) {
       this.#filterClause = {
         ...this.#filterClause,

@@ -28,7 +28,7 @@ export const FilterClauseValueEditorNumber = forwardRef(
       InputProps,
       className,
       "data-field": dataField,
-      onChangeValue: onInputComplete,
+      onChangeValue,
       value: valueProp,
     }: FilterClauseNumericValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>
@@ -57,11 +57,11 @@ export const FilterClauseValueEditorNumber = forwardRef(
           const { value } = evt.target as HTMLInputElement;
           const numericValue = parseFloat(value);
           if (isValidNumber(numericValue)) {
-            onInputComplete(numericValue);
+            onChangeValue(numericValue);
           }
         }
       },
-      [onInputComplete]
+      [onChangeValue]
     );
 
     return (

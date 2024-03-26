@@ -1,6 +1,7 @@
 import { TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { SplitButton } from "@finos/vuu-ui-controls";
 import { HTMLAttributes, useCallback } from "react";
 import { FilterClause, FilterClauseProps } from "../filter-clause/FilterClause";
 import { FilterClauseModel } from "../FilterModel";
@@ -8,7 +9,6 @@ import {
   FilterClauseCombinator,
   FilterClauseCombinatorChangeHandler,
 } from "./FilterClauseCombinator";
-import { FilterSaveButton } from "./FilterSaveButton";
 import { useFilterEditor } from "./useFilterEditor";
 
 import "./FilterEditor.css";
@@ -42,9 +42,8 @@ export const FilterEditor = ({
     setContainer,
     onCancelFilterClause,
     onKeyDownCombinator,
-    onKeyDownMenu,
-    onMenuAction,
     saveButtonRef,
+    saveButtonProps,
   } = useFilterEditor({
     columnDescriptors,
     filter,
@@ -89,13 +88,14 @@ export const FilterEditor = ({
   return (
     <div {...htmlAttributes} className={classBase} ref={setContainer}>
       {getContents()}
-      <FilterSaveButton
+      <SplitButton
+        {...saveButtonProps}
         disabled={!filterModel.isValid}
         key="save-button"
-        onFilterAction={onMenuAction}
-        onKeyDown={onKeyDownMenu}
         ref={saveButtonRef}
-      />
+      >
+        Save
+      </SplitButton>
     </div>
   );
 };

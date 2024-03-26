@@ -1,4 +1,4 @@
-import { getElementDataIndex } from "@finos/vuu-utils";
+import { getElementDataIndex, queryClosest } from "@finos/vuu-utils";
 import { KeyboardEvent } from "react";
 
 const getFilterClauseElement = (possiblyDescendant?: HTMLElement) =>
@@ -30,8 +30,8 @@ const getFilterClauseDetails = ({ classList }: HTMLElement) => {
 
 export const getFocusedFieldDetails = (): [number, string] | [] => {
   const el = document.activeElement as HTMLElement;
-  const field = el?.closest(".vuuFilterClauseField") as HTMLElement;
-  const filterClause = field?.closest(".vuuFilterClause") as HTMLElement;
+  const field = queryClosest(el, ".vuuFilterClauseField");
+  const filterClause = queryClosest(field, ".vuuFilterClause");
   if (filterClause && field) {
     return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
   } else {
@@ -42,7 +42,6 @@ export const getFocusedFieldDetails = (): [number, string] | [] => {
 // Focus the input control within field. If clause passed, will
 // focus first field within clause
 export const focusField = (fieldOrClause: HTMLElement | null) => {
-  console.log(`focus field ${fieldOrClause?.classList}`);
   const input = fieldOrClause?.querySelector("input");
   if (input) {
     input.focus();

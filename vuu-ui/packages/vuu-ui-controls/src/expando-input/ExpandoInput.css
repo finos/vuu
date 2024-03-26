@@ -4,7 +4,8 @@
     --expandoInput-height: var(--vuuExpandoInput-height, 26px);
     --expandoInput-padding: var(--vuuExpandoInput-padding, 6px);
 
-    --saltInput-height: calc(var(--vuuExpandoInput-height) - 4px);
+    --saltInput-height: var(--expandoInput-height);
+    --saltInput-minHeight: var(--saltInput-height);
     --saltInput-minWidth: var(--vuuExpandoInput-minWidth, 8px);
   
     border: var(--vuuExpandoInput-border, none);

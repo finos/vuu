@@ -1,6 +1,9 @@
-import type { MenuActionHandler } from "@finos/vuu-data-types";
+import type { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import type { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
+import type {
+  ColumnDescriptorsByName,
+  FilterCombinatorOp,
+} from "@finos/vuu-filter-types";
 import {
   KeyboardEventHandler,
   RefCallback,
@@ -44,6 +47,7 @@ export const useFilterEditor = ({
 
   const [_, forceRefresh] = useState({});
   const [isValid, setIsValid] = useState(filterModel.isValid);
+  const clauseCombinatorRef = useRef<FilterCombinatorOp | undefined>(undefined);
   const saveButtonRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const setContainer = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -51,6 +55,20 @@ export const useFilterEditor = ({
     if (el) {
       // If there is a new empty clause it will focus itself, otw ...
       focusFirstClauseIfAllClausesValid(el);
+    }
+  }, []);
+
+  const menuBuilder: MenuBuilder = useCallback((_, options) => {
+    switch (clauseCombinatorRef.current) {
+      case "and":
+        return [{ action: "and-clause", label: "AND", options }];
+      case "or":
+        return [{ action: "or-clause", label: "OR", options }];
+      default:
+        return [
+          { action: "and-clause", label: "AND", options },
+          { action: "or-clause", label: "OR", options },
+        ];
     }
   }, []);
 
@@ -110,7 +128,7 @@ export const useFilterEditor = ({
     [filter, filterModel, onCancel]
   );
 
-  const handleMenuAction = useCallback<MenuActionHandler>(
+  const invokeMenuAction = useCallback<MenuActionHandler>(
     ({ menuId }) => {
       switch (menuId) {
         case "save": {
@@ -125,10 +143,12 @@ export const useFilterEditor = ({
           return true;
         }
         case "and-clause": {
+          clauseCombinatorRef.current = "and";
           filterModel.addNewFilterClause("and");
           return true;
         }
         case "or-clause":
+          clauseCombinatorRef.current = "or";
           filterModel.addNewFilterClause("or");
           return true;
         default:
@@ -138,14 +158,19 @@ export const useFilterEditor = ({
     [filter?.name, filterModel, onSave]
   );
 
-  const handleKeyDownMenu = useCallback<KeyboardEventHandler>((evt) => {
-    if (evt.key === "Tab" && evt.shiftKey) {
-      evt.preventDefault();
-      const target = evt.target as HTMLElement;
-      const filterEditor = target.closest(".vuuFilterEditor") as HTMLElement;
-      focusLastClauseValue(filterEditor);
-    }
-  }, []);
+  const handleKeyDownSaveButton = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      if (evt.key === "Tab" && evt.shiftKey) {
+        evt.preventDefault();
+        const target = evt.target as HTMLElement;
+        const filterEditor = target.closest(".vuuFilterEditor") as HTMLElement;
+        focusLastClauseValue(filterEditor);
+      } else if (evt.key === "Escape") {
+        onCancel(filter);
+      }
+    },
+    [filter, onCancel]
+  );
 
   const handleKeyDownNavigationFromCombinator = useCallback<
     KeyboardEventHandler<HTMLElement>
@@ -163,14 +188,33 @@ export const useFilterEditor = ({
     }
   }, []);
 
+  const handleClickSaveButton = useMemo(
+    () => () =>
+      invokeMenuAction({
+        menuId: "save",
+        options: {},
+        type: "menu-action",
+      }),
+    [invokeMenuAction]
+  );
+
+  const saveButtonProps = {
+    PopupMenuProps: {
+      icon: "more-vert",
+      menuBuilder,
+      menuActionHandler: invokeMenuAction,
+    },
+    onClick: handleClickSaveButton,
+    onKeyDown: handleKeyDownSaveButton,
+  };
+
   return {
     columnsByName,
     filterModel,
     isValid,
     onCancelFilterClause: handleCancelFilterClause,
     onKeyDownCombinator: handleKeyDownNavigationFromCombinator,
-    onKeyDownMenu: handleKeyDownMenu,
-    onMenuAction: handleMenuAction,
+    saveButtonProps,
     saveButtonRef,
     setContainer,
   };

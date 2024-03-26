@@ -21,7 +21,7 @@ export const navigateToNextItem = (
       } else if (direction === "fwd") {
         console.log("to the button");
         const filterBar = queryClosest(el, ".vuuFilterBar");
-        const addButton = filterBar.querySelector(
+        const addButton = filterBar?.querySelector(
           ".vuuFilterBar-add"
         ) as HTMLElement;
         addButton?.focus();

@@ -2,6 +2,13 @@ import {
   EditMultiClauseOrFilter,
   NewFilter,
 } from "../../../../../showcase/src/examples/Filters/FilterEditor/FilterEditor.examples";
+import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
+
+import {
+  clickFilterPillTrigger,
+  clickMenuItem,
+  findFilterPill,
+} from "./filter-helpers";
 
 const assertComboboxReady = () => {
   cy.findByRole("combobox").should("be.focused");
@@ -20,7 +27,9 @@ const clickListItem = (name: string) => {
 };
 
 const selectMenuOption = (name: "AND" | "OR") => {
+  cy.findAllByRole("button", { name: "Save" }).should("be.focused");
   cy.realPress("ArrowDown");
+  cy.findByRole("menu").should("be.visible");
   cy.findByRole("menuitem", { name }).should(
     "have.class",
     "vuuHighlighted",
@@ -123,6 +132,7 @@ describe("FilterEditor", () => {
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
         cy.realPress("Enter");
+
         selectMenuOption("AND");
         cy.findByRole("button", { name: "AND" }).should("be.visible");
         cy.findAllByRole("button", { name: "AND" }).should("have.length", 1);
@@ -148,6 +158,7 @@ describe("FilterEditor", () => {
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
         cy.realPress("Enter");
+
         selectMenuOption("AND");
         cy.findByRole("listbox").should("be.visible");
 
@@ -295,7 +306,7 @@ describe("FilterEditor", () => {
     });
   });
 
-  describe("WHEN user choosed starts operator", () => {
+  describe("WHEN user chooses starts operator", () => {
     it("THEN suggestions are illustrative only and are disabled", () => {
       cy.mount(<NewFilter />);
       assertComboboxReady();
@@ -428,5 +439,50 @@ describe("FilterEditor", () => {
     //     cy.findAllByRole("combobox").should("have.length", 6);
     //     cy.findAllByRole("button", { name: "Save" }).should("be.disabled");
     //   });
+  });
+
+  describe("Cancel Edit", () => {
+    describe("WHEN user presses Esc on first entering edit mode", () => {
+      it("THEN column dropdown is closed", () => {
+        cy.mount(<FilterBarOneSimpleFilter />);
+        clickFilterPillTrigger();
+        clickMenuItem("Edit");
+        cy.get(".vuuFilterEditor").should("be.visible");
+        cy.findByRole("listbox").should("be.visible");
+        cy.realPress("Escape");
+        cy.get(".vuuFilterEditor").should("be.visible");
+        cy.findByRole("listbox").should("not.exist");
+      });
+    });
+    describe("WHEN user presses Esc again", () => {
+      it("THEN FilterEditor is closed and FilterPill focused", () => {
+        cy.mount(<FilterBarOneSimpleFilter />);
+        clickFilterPillTrigger();
+        clickMenuItem("Edit");
+        cy.get(".vuuFilterEditor").should("be.visible");
+        cy.findByRole("listbox").should("be.visible");
+        cy.realPress("Escape");
+        cy.realPress("Escape");
+        cy.get(".vuuFilterEditor").should("not.exist");
+        cy.findByRole("button", { name: "Filter One" }).should("be.focused");
+      });
+    });
+
+    describe("WHEN user presses Esc whilst on Save button", () => {
+      it("THEN FilterEditor is closed and FilterPill focused", () => {
+        cy.mount(<FilterBarOneSimpleFilter />);
+        clickFilterPillTrigger();
+        clickMenuItem("Edit");
+        cy.get(".vuuFilterEditor").should("be.visible");
+
+        cy.findByRole("listbox").should("be.visible");
+        cy.realPress("Tab");
+        cy.findByRole("button", { name: "Save" }).should("be.focused");
+
+        cy.realPress("Escape");
+        cy.get(".vuuFilterEditor").should("not.exist");
+        cy.findByRole("button", { name: "Filter One" }).should("be.focused");
+      });
+    });
   });
 });

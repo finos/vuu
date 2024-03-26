@@ -48,9 +48,9 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
 };
 
 export const queryClosest = <T extends HTMLElement = HTMLElement>(
-  el: HTMLElement | EventTarget,
+  el: HTMLElement | EventTarget | null,
   cssQueryString: string
-) => (el as HTMLElement).closest(cssQueryString) as T;
+) => (el === null ? null : ((el as HTMLElement).closest(cssQueryString) as T));
 
 export const getClosest = (el: HTMLElement, dataProperty: string) =>
   queryClosest(el, `[data-${dataProperty}]`);
@@ -102,7 +102,7 @@ export const focusFirstFocusableElement = (
   });
 };
 
-export const isSelectableElement = (el?: HTMLElement) => {
+export const isSelectableElement = (el?: HTMLElement | null) => {
   const item = el?.closest("[data-index]") as HTMLElement;
   if (
     !item ||

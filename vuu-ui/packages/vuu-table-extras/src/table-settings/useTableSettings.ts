@@ -188,15 +188,17 @@ export const useTableSettings = ({
   const handleChangeTableAttribute = useCallback(
     (evt: MouseEvent<HTMLButtonElement>) => {
       const button = queryClosest<HTMLButtonElement>(evt.target, "button");
-      const { ariaPressed, value } = button;
-      console.log({ ariaPressed, value, button });
-      setColumnState((state) => ({
-        ...state,
-        tableConfig: {
-          ...state.tableConfig,
-          [value]: ariaPressed !== "true",
-        },
-      }));
+      if (button) {
+        const { ariaPressed, value } = button;
+        console.log({ ariaPressed, value, button });
+        setColumnState((state) => ({
+          ...state,
+          tableConfig: {
+            ...state.tableConfig,
+            [value]: ariaPressed !== "true",
+          },
+        }));
+      }
     },
     []
   );

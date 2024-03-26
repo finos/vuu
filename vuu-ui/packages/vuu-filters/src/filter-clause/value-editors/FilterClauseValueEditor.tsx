@@ -46,6 +46,8 @@ export const FilterClauseValueEditor: React.FC<
     console.log(`return DateInput`);
     return (
       <FilterClauseValueEditorDate
+        InputProps={InputProps}
+        className={cx(`${classBase}Field`, `${classBase}Value`)}
         data-field="value"
         value={value as number}
         operator={operator as NumericFilterClauseOp}

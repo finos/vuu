@@ -1,11 +1,13 @@
 .vuuFilterClause {
   --vuuExpandoInput-top: 0;
-  --vuuExpandoInput-height: 16px;
-  --vuuExpandoCombobox-height: 16px;
+  --content-height: calc(var(--salt-size-base) - var(--salt-spacing-150));
+  --vuuExpandoInput-height: var(--content-height);
+  --vuuExpandoCombobox-height: var(--content-height);
   --saltButton-height: 16px;
   --saltButton-width: 16px;
   --salt-focused-outlineStyle: dotted;
 
+  align-items: center;
   background: var(--salt-container-primary-background);
   border-color: var(--vuu-color-gray-45);
   border-radius: var(--saltButton-borderRadius);
@@ -16,7 +18,7 @@
   gap: var(--salt-spacing-50);
   height: var(--salt-size-base);
   min-width: calc(var(--salt-size-base) * 4);
-  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+  padding: 0 var(--salt-spacing-100);
   width: fit-content;
 }
 
@@ -48,8 +50,6 @@
   display: none;
 }
 
-.vuuFilterClause :not(.vuuFilterClauseNumericValue) .saltInput {
-}
 
 .vuuFilterClause .saltInput-focused,
 .vuuFilterClause .saltTokenizedInput-focused {

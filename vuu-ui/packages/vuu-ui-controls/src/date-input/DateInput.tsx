@@ -18,7 +18,8 @@ const classBase = "vuuDateInput";
 export interface DateInputProps
   extends Pick<CalendarProps, "hideOutOfRangeDates" | "hideYearDropdown">,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  onChange: (selected: DateValue) => void;
+  inputProps?: Partial<HTMLAttributes<HTMLInputElement>>;
+  onChange: (selected: DateValue, source: "input" | "calendar") => void;
   selectedDate: DateValue | undefined;
   closeOnSelection?: boolean;
   onBlur?: () => void;
@@ -26,6 +27,7 @@ export interface DateInputProps
 }
 
 export const DateInput = ({
+  inputProps,
   selectedDate,
   onChange,
   onBlur,
@@ -38,19 +40,25 @@ export const DateInput = ({
     (e) => {
       const v = e.target.value;
       if (v === "") return;
-      else onChange(toCalendarDate(new Date(v)));
+      else onChange(toCalendarDate(new Date(v)), "input");
     },
     [onChange]
   );
 
   const onKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>((e) => {
     if (e.key === "Tab" && !e.shiftKey) {
-      console.log({ button: popupRef.current });
       requestAnimationFrame(() => {
         popupRef.current?.focus();
       });
     }
   }, []);
+
+  const onChangeCalendar = useCallback(
+    (date: DateValue) => {
+      onChange(date, "calendar");
+    },
+    [onChange]
+  );
 
   return (
     <div
@@ -59,8 +67,9 @@ export const DateInput = ({
       onBlur={handleOnBlur}
     >
       <input
+        {...inputProps}
         aria-label="date-input"
-        className={clsx("saltInput-input", classBase, className)}
+        className={clsx("saltInput-input", classBase)}
         type="date"
         value={selectedDate?.toString() ?? ""}
         onChange={onInputChange}
@@ -71,7 +80,7 @@ export const DateInput = ({
       <DatePopup
         data-embedded
         onBlur={onBlur}
-        onChange={onChange}
+        onChange={onChangeCalendar}
         ref={popupRef}
         selectedDate={selectedDate}
         selectionVariant="default"

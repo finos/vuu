@@ -79,17 +79,19 @@ export const ColumnList = ({
     ({ target }: SyntheticEvent) => {
       const input = target as HTMLInputElement;
       const listItem = queryClosest(target, `.${classBaseListItem}`);
-      const {
-        dataset: { name },
-      } = listItem;
-      if (name) {
-        const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
-        const saltSwitch = queryClosest(target, `.${classBase}-switch`);
+      if (listItem) {
+        const {
+          dataset: { name },
+        } = listItem;
+        if (name) {
+          const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
+          const saltSwitch = queryClosest(target, `.${classBase}-switch`);
 
-        if (saltCheckbox) {
-          onChange(name, "subscribed", input.checked);
-        } else if (saltSwitch) {
-          onChange(name, "hidden", input.checked === false);
+          if (saltCheckbox) {
+            onChange(name, "subscribed", input.checked);
+          } else if (saltSwitch) {
+            onChange(name, "hidden", input.checked === false);
+          }
         }
       }
     },
