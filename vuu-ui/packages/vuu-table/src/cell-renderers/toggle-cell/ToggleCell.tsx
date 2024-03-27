@@ -2,7 +2,7 @@ import {
   ColumnDescriptor,
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
-import { CycleStateButtonProps, WarnCommit } from "@finos/vuu-ui-controls";
+import { CycleStateCommitHandler, WarnCommit } from "@finos/vuu-ui-controls";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
@@ -39,7 +39,7 @@ export const ToggleCell = memo(function ToggleCell({
   const dataIdx = columnMap[column.name];
   const value = row[dataIdx] as string;
 
-  const handleCommit = useCallback<CycleStateButtonProps["onCommit"]>(
+  const handleCommit = useCallback<CycleStateCommitHandler>(
     (evt, value) => {
       return onCommit(value).then((response) => {
         if (response === true) {

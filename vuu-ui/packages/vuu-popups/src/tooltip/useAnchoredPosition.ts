@@ -1,42 +1,32 @@
 // TODO merge with Popup
 
-import { RefObject, useLayoutEffect, useState } from "react";
+import { RefCallback, RefObject, useCallback, useLayoutEffect } from "react";
 
 export type TooltipPlacement = "above" | "right" | "below" | "left";
 
+const pointerSize = 12;
 export interface AnchoredPositionHookProps {
   anchorElement: RefObject<HTMLElement>;
   offsetLeft?: number;
   offsetTop?: number;
-  placement: TooltipPlacement;
+  placement: TooltipPlacement | TooltipPlacement[];
 }
 
-const getPositionRelativeToAnchor = (
-  anchorElement: HTMLElement,
-  placement: TooltipPlacement,
-  offsetLeft: number,
-  offsetTop: number
-): { left: number; top: number } => {
-  const { bottom, height, left, right, top, width } =
-    anchorElement.getBoundingClientRect();
-  const midX = left + width / 2;
-  const midY = top + height / 2;
+const roomAbove = (anchor: DOMRect, height: number) => height < anchor.top;
+const roomBelow = (anchor: DOMRect, height: number) =>
+  document.body.clientHeight - anchor.bottom > height;
 
-  switch (placement) {
-    case "above":
-      return { left: midX + offsetLeft, top: top + offsetTop };
-    case "below":
-      return { left: midX + offsetLeft, top: bottom + offsetTop };
-    case "right":
-      return { left: right + offsetLeft, top: midY + offsetLeft };
-    // case "below-center":
-    //   return { left: left + width / 2 + offsetLeft, top: bottom + offsetTop };
-    case "left":
-      return { left: left + offsetLeft, top: midY + offsetLeft };
-    default:
-      throw Error(
-        "Tooltip getPositionRelativeToAnchor only supported placement values are left, right, below and right"
-      );
+const getNextPlacement = (
+  placement: TooltipPlacement | TooltipPlacement[]
+): [TooltipPlacement | undefined, TooltipPlacement[]] => {
+  if (Array.isArray(placement)) {
+    if (placement.length === 0) {
+      return [undefined, placement];
+    } else {
+      return [placement[0], placement.slice(1)];
+    }
+  } else {
+    return [placement, []];
   }
 };
 
@@ -46,22 +36,69 @@ export const useAnchoredPosition = ({
   offsetTop = 0,
   placement,
 }: AnchoredPositionHookProps) => {
-  const [position, setPosition] = useState<
-    { left: number; top: number } | undefined
-  >();
+  const ref = useCallback<RefCallback<HTMLDivElement>>(
+    (el) => {
+      if (el && anchorElement.current) {
+        const anchor = anchorElement.current.getBoundingClientRect();
+        const { height, width } = el.getBoundingClientRect();
+        let nextPlacement: TooltipPlacement | undefined;
+        let placements: TooltipPlacement | TooltipPlacement[] = placement;
+        do {
+          [nextPlacement, placements] = getNextPlacement(placements);
+          switch (nextPlacement) {
+            case "above":
+              if (roomAbove(anchor, height + pointerSize)) {
+                const midDiff = (width - anchor.width) / 2;
+                el.style.cssText = `left:${anchor.left - midDiff}px;top:${
+                  anchor.top - height - pointerSize
+                }px;opacity: 1;`;
+                el.dataset.align = "above";
+                return;
+              }
+              break;
+            case "below":
+              if (roomBelow(anchor, height + pointerSize)) {
+                const midDiff = (width - anchor.width) / 2;
+                el.style.cssText = `left:${anchor.left - midDiff}px;top:${
+                  anchor.bottom + pointerSize
+                }px;opacity: 1;`;
+                el.dataset.align = "below";
+                return;
+              }
+              break;
+
+            case "right":
+              console.log("place the fucker right");
+              break;
+            case "left":
+              console.log("place the fucker left");
+              break;
+            default:
+              console.warn(`unklnown tooltip placement ${placement}`);
+          }
+        } while (nextPlacement);
+      }
+
+      // el?.classList.remove("vuuHidden");
+    },
+    [anchorElement, placement]
+  );
+  // const [position, setPosition] = useState<
+  //   { left: number; top: number } | undefined
+  // >();
 
   // maybe better as useMemo ?
   useLayoutEffect(() => {
-    if (anchorElement.current) {
-      const position = getPositionRelativeToAnchor(
-        anchorElement.current,
-        placement,
-        offsetLeft,
-        offsetTop
-      );
-      setPosition(position);
-    }
+    // if (anchorElement.current) {
+    //   const position = getPositionRelativeToAnchor(
+    //     anchorElement.current,
+    //     placement,
+    //     offsetLeft,
+    //     offsetTop
+    //   );
+    //   setPosition(position);
+    // }
   }, [anchorElement, offsetLeft, offsetTop, placement]);
 
-  return position;
+  return ref;
 };

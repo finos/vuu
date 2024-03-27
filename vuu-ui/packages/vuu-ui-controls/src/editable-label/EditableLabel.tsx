@@ -9,6 +9,7 @@ import {
   ReactElement,
   useRef,
   HTMLAttributes,
+  useImperativeHandle,
 } from "react";
 import { Input, useControlled } from "@salt-ds/core";
 
@@ -16,20 +17,31 @@ import "./EditableLabel.css";
 
 const classBase = "vuuEditableLabel";
 
+export type ExitEditModeHandler = (
+  originalLabel: string | undefined,
+  editedLabel: string | undefined,
+  allowDeactivation?: boolean,
+  editCancelled?: boolean
+) => void;
+
+export interface EditAPI {
+  beginEdit: () => void;
+}
+
+export const NullEditAPI: EditAPI = {
+  beginEdit: () => undefined,
+};
+
 export interface EditableLabelProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   className?: string;
   defaultEditing?: boolean;
   defaultValue?: string;
+  editLabelApiRef?: ForwardedRef<EditAPI>;
   editing?: boolean;
   onEnterEditMode: () => void;
   onChange?: (value: string) => void;
-  onExitEditMode: (
-    originalLabel: string | undefined,
-    editedLabel: string | undefined,
-    allowDeactivation?: boolean,
-    editCancelled?: boolean
-  ) => void;
+  onExitEditMode: ExitEditModeHandler;
   defaultIsEditing?: boolean;
   value?: string;
 }
@@ -39,6 +51,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     className: classNameProp,
     defaultEditing,
     defaultValue,
+    editLabelApiRef,
     editing: editingProp,
     onChange,
     onEnterEditMode,
@@ -83,11 +96,18 @@ export const EditableLabel = forwardRef(function EditableLabel(
     }
   }, [editing, inputRef]);
 
-  const enterEditMode = useCallback(() => {
+  const beginEdit = useCallback(() => {
     setEditing(true);
-    // ignoreBlur.current = false;
-    onEnterEditMode && onEnterEditMode();
+    onEnterEditMode?.();
   }, [onEnterEditMode, setEditing]);
+
+  useImperativeHandle(
+    editLabelApiRef,
+    () => ({
+      beginEdit,
+    }),
+    [beginEdit]
+  );
 
   const exitEditMode = ({
     cancelEdit = false,
@@ -110,10 +130,6 @@ export const EditableLabel = forwardRef(function EditableLabel(
     const { value } = evt.target;
     setValue(value);
     onChange && onChange(value);
-  };
-
-  const handleDoubleClick = () => {
-    enterEditMode();
   };
 
   // We need the ref here as the blur fires before setEditing has taken effect,
@@ -145,7 +161,6 @@ export const EditableLabel = forwardRef(function EditableLabel(
     <div
       {...restProps}
       className={className}
-      onDoubleClick={handleDoubleClick}
       data-text={value}
       ref={forwardedRef}
     >

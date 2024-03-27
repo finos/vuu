@@ -1,12 +1,12 @@
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { FilterClause } from "@finos/vuu-filter-types";
 import { TableSchema } from "@finos/vuu-data-types";
 import {
   ExpandoCombobox,
   ExpandoComboboxProps,
-  FilterClauseEditor,
-  FilterClauseTextValueEditor,
+  FilterClauseModel,
+  FilterClause,
+  FilterClauseValueEditorText,
 } from "@finos/vuu-filters";
 import {
   ExpandoInput,
@@ -17,10 +17,9 @@ import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../../utils";
 
 import "./FilterClause.examples.css";
+import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
 
 let displaySequence = 1;
-
-const EMPTY_FILTER_CLAUSE: Partial<FilterClause> = {};
 
 export const DefaultExpandoInput = () => {
   const [value, setValuue] = useState("Enter value");
@@ -92,14 +91,17 @@ export const DataBoundTextInputEmpty = () => {
 
   const [value, setValue] = useState("");
 
-  const handleInputComplete = useCallback((value: string | string[]) => {
-    setValue(String(value));
-  }, []);
+  const handleInputComplete = useCallback<FilterClauseValueChangeHandler>(
+    (value) => {
+      setValue(String(value));
+    },
+    []
+  );
 
   return (
-    <FilterClauseTextValueEditor
+    <FilterClauseValueEditorText
       column={column}
-      onInputComplete={handleInputComplete}
+      onChangeValue={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
       table={tableSchema.table}
@@ -120,14 +122,17 @@ export const DataBoundTextInputLoaded = () => {
 
   const [value, setValue] = useState("EUR");
 
-  const handleInputComplete = useCallback((value: string | string[]) => {
-    setValue(String(value));
-  }, []);
+  const handleInputComplete = useCallback<FilterClauseValueChangeHandler>(
+    (value) => {
+      setValue(String(value));
+    },
+    []
+  );
 
   return (
-    <FilterClauseTextValueEditor
+    <FilterClauseValueEditorText
       column={column}
-      onInputComplete={handleInputComplete}
+      onChangeValue={handleInputComplete}
       operator="="
       suggestionProvider={typeaheadHook}
       table={tableSchema.table}
@@ -160,18 +165,15 @@ MultiSelectExpandoComboBox.displaySequence = displaySequence++;
 
 export const NewFilterClause = () => {
   const tableSchema = getSchema("instruments");
-
   const { typeaheadHook } = vuuModule("SIMUL");
 
-  const onChange = (filterClause: Partial<FilterClause>) =>
-    console.log("Filter Change", filterClause);
+  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
 
   return (
     <div style={{ padding: "10px" }}>
-      <FilterClauseEditor
+      <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClause={EMPTY_FILTER_CLAUSE}
-        onChange={onChange}
+        filterClauseModel={filterClauseModel}
         suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
@@ -183,6 +185,8 @@ NewFilterClause.displaySequence = displaySequence++;
 export const NewFilterClauseNoCompletions = () => {
   const tableSchema = getSchema("instruments");
 
+  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
+
   const alwaysEmptyTypeaheadHook = useMemo(() => {
     const suggestionFetcher = async () => {
       return [];
@@ -191,15 +195,11 @@ export const NewFilterClauseNoCompletions = () => {
     return () => suggestionFetcher;
   }, []);
 
-  const onChange = (filterClause: Partial<FilterClause>) =>
-    console.log("Filter Change", filterClause);
-
   return (
     <div style={{ padding: "10px" }}>
-      <FilterClauseEditor
+      <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClause={EMPTY_FILTER_CLAUSE}
-        onChange={onChange}
+        filterClauseModel={filterClauseModel}
         suggestionProvider={alwaysEmptyTypeaheadHook}
         tableSchema={tableSchema}
       />
@@ -211,18 +211,19 @@ NewFilterClauseNoCompletions.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnOnly = () => {
   useAutoLoginToVuuServer();
   const tableSchema = getSchema("instruments");
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-  });
-  const onChange = (filterClause?: Partial<FilterClause>) =>
-    console.log("Filter Change", filterClause);
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+      }),
+    []
+  );
 
   return (
     <div style={{ padding: "10px" }}>
-      <FilterClauseEditor
+      <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClause={filterClause}
-        onChange={onChange}
+        filterClauseModel={filterClauseModel}
         tableSchema={tableSchema}
       />
     </div>
@@ -233,20 +234,20 @@ PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 export const PartialFilterClauseColumnAndOperator = () => {
   useAutoLoginToVuuServer();
   const tableSchema = getSchema("instruments");
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-  });
-
-  const onChange = (filterClause?: Partial<FilterClause>) =>
-    console.log("Filter Change", filterClause);
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+      }),
+    []
+  );
 
   return (
     <div style={{ padding: "10px" }}>
-      <FilterClauseEditor
+      <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClause={filterClause}
-        onChange={onChange}
+        filterClauseModel={filterClauseModel}
         tableSchema={tableSchema}
       />
     </div>
@@ -258,21 +259,21 @@ export const CompleteFilterClauseTextEquals = () => {
   useAutoLoginToVuuServer();
   const tableSchema = getSchema("instruments");
 
-  const [filterClause] = useState<Partial<FilterClause>>({
-    column: "currency",
-    op: "=",
-    value: "EUR",
-  });
-
-  const onChange = (filterClause?: Partial<FilterClause>) =>
-    console.log("Filter Change", filterClause);
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+        value: "EUR",
+      }),
+    []
+  );
 
   return (
     <div style={{ padding: "10px" }}>
-      <FilterClauseEditor
+      <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClause={filterClause}
-        onChange={onChange}
+        filterClauseModel={filterClauseModel}
         tableSchema={tableSchema}
       />
     </div>

@@ -1,5 +1,5 @@
 import {
-  ExitEditModeHandler,
+  ExitTabEditModeHandler,
   Tab,
   Tabstrip,
   TabstripProps,
@@ -232,7 +232,7 @@ export const TabstripEditableLabels = ({
   const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
   const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 
-  const handleTabLabelChanged = useCallback<ExitEditModeHandler>(
+  const handleTabLabelChanged = useCallback<ExitTabEditModeHandler>(
     (originalValue, newValue) => {
       console.log(`tab label changed from '${originalValue}' to '${newValue}'`);
     },

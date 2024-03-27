@@ -21,6 +21,10 @@
 
         --vuu-icon-color: var(--salt-actionable-secondary-foreground);
 
+        border-radius: var(--togglebutton-borderRadius);
+        gap: var(--salt-spacing-200);
+        white-space: nowrap;
+
         &[aria-checked="true"] {
             --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
         }

@@ -14,7 +14,7 @@ import {
   editCommand,
   MenuOptions,
   renameCommand,
-} from "./FilterPillMenuOptions";
+} from "../filter-pill/FilterPillMenuOptions";
 import { Filter } from "@finos/vuu-filter-types";
 
 const classBase = "vuuFilterPillMenu";

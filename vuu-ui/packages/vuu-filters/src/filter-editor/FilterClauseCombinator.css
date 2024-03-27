@@ -1,0 +1,9 @@
+.vuuFilterClauseCombinator {
+    --saltButton-height: calc(var(--salt-spacing-400));
+    font-size: 9px;
+    padding: 0 4px;
+}
+.vuuFilterClauseCombinator:focus {
+    background-color: var(--vuu-color-gray-50);
+    color: white;
+}

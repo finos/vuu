@@ -2,7 +2,7 @@
   --salt-palette-interact-background: transparent;
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-30);
   --salt-palette-interact-background-hover: var(--vuu-color-gray-10);
-  --salt-palette-interact-background-active: var(--vuu-color-gray-02);
+  --salt-palette-interact-background-active: var(--vuu-color-blue-40);
   --salt-palette-interact-background-disabled: var(--vuu-color-gray-35);
   --salt-palette-interact-background-activeDisabled: var(--salt-color-blue-30-fade-background);
   --salt-palette-interact-border: var(--vuu-color-gray-45);
