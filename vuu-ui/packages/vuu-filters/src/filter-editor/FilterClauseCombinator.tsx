@@ -1,5 +1,10 @@
 import type { FilterCombinatorOp } from "@finos/vuu-filter-types";
-import { KeyboardEventHandler } from "react";
+import {
+  CycleStateButton,
+  CycleStateButtonProps,
+} from "@finos/vuu-ui-controls";
+import { KeyboardEventHandler, useCallback } from "react";
+
 import "./FilterClauseCombinator.css";
 
 const classBase = "vuuFilterClauseCombinator";
@@ -15,13 +20,25 @@ export interface FilterClauseCombinatorProps {
 }
 
 export const FilterClauseCombinator = ({
-  onChange: _,
+  onChange,
   onKeyDown,
   operator,
 }: FilterClauseCombinatorProps) => {
+  const handleChange = useCallback<CycleStateButtonProps["onChange"]>(
+    (value) => {
+      onChange(value as FilterCombinatorOp);
+    },
+    [onChange]
+  );
+
   return (
-    <div className={classBase} onKeyDown={onKeyDown} role="button" tabIndex={0}>
-      {operator.toUpperCase()}
-    </div>
+    <CycleStateButton
+      className={classBase}
+      onChange={handleChange}
+      onKeyDown={onKeyDown}
+      value={operator}
+      values={["and", "or"]}
+      variant="primary"
+    />
   );
 };

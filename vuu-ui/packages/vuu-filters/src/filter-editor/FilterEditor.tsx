@@ -41,6 +41,7 @@ export const FilterEditor = ({
     filterModel,
     setContainer,
     onCancelFilterClause,
+    onChangeFilterCombinator,
     onKeyDownCombinator,
     saveButtonRef,
     saveButtonProps,
@@ -51,10 +52,6 @@ export const FilterEditor = ({
     onSave,
   });
 
-  const onChange = useCallback<FilterClauseCombinatorChangeHandler>((op) => {
-    console.log(`change op ${op}`);
-  }, []);
-
   const getContents = () => {
     const { op } = filterModel;
 
@@ -64,7 +61,7 @@ export const FilterEditor = ({
         content.push(
           <FilterClauseCombinator
             key={`filter-operator-${i}`}
-            onChange={onChange}
+            onChange={onChangeFilterCombinator}
             onKeyDown={onKeyDownCombinator}
             operator={op}
           />

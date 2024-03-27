@@ -26,6 +26,7 @@ import {
   FilterStatusChangeHandler,
 } from "../FilterModel";
 import { FilterClauseCancelHandler } from "../filter-clause";
+import { FilterClauseCombinatorChangeHandler } from "./FilterClauseCombinator";
 
 export interface FilterEditorHookProps
   extends Pick<
@@ -58,7 +59,7 @@ export const useFilterEditor = ({
     }
   }, []);
 
-  const menuBuilder: MenuBuilder = useCallback((_, options) => {
+  const saveButtonMenuBuilder: MenuBuilder = useCallback((_, options) => {
     switch (clauseCombinatorRef.current) {
       case "and":
         return [{ action: "and-clause", label: "AND", options }];
@@ -201,18 +202,30 @@ export const useFilterEditor = ({
   const saveButtonProps = {
     PopupMenuProps: {
       icon: "more-vert",
-      menuBuilder,
+      menuBuilder: saveButtonMenuBuilder,
       menuActionHandler: invokeMenuAction,
+      menuLocation: "filter-save-menu",
     },
     onClick: handleClickSaveButton,
     onKeyDown: handleKeyDownSaveButton,
   };
+
+  const onChangeFilterCombinator =
+    useCallback<FilterClauseCombinatorChangeHandler>(
+      (op) => {
+        filterModel.setOp(op);
+        clauseCombinatorRef.current = op;
+        forceRefresh({});
+      },
+      [filterModel]
+    );
 
   return {
     columnsByName,
     filterModel,
     isValid,
     onCancelFilterClause: handleCancelFilterClause,
+    onChangeFilterCombinator,
     onKeyDownCombinator: handleKeyDownNavigationFromCombinator,
     saveButtonProps,
     saveButtonRef,

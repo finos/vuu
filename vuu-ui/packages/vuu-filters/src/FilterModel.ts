@@ -259,6 +259,11 @@ export class FilterModel extends EventEmitter<FilterModelEvents> {
     return this.#op;
   }
 
+  setOp(op: FilterCombinatorOp) {
+    this.#op = op;
+    this.emit("filter", this.asFilter(false), this.#isValid);
+  }
+
   get filterClauses() {
     return this.#children;
   }

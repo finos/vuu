@@ -122,7 +122,7 @@ export const FilterPill = ({
       },
 
       menuActionHandler: onMenuAction,
-
+      menuLocation: "filter-pill-menu",
       menuOptions: {
         filter,
       },
