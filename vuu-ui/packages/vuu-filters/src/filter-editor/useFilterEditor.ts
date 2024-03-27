@@ -220,11 +220,16 @@ export const useFilterEditor = ({
       [filterModel]
     );
 
+  const handleCancelFilterEdit = useCallback(() => {
+    onCancel(filter);
+  }, [filter, onCancel]);
+
   return {
     columnsByName,
     filterModel,
     isValid,
     onCancelFilterClause: handleCancelFilterClause,
+    onCancelFilterEdit: handleCancelFilterEdit,
     onChangeFilterCombinator,
     onKeyDownCombinator: handleKeyDownNavigationFromCombinator,
     saveButtonProps,

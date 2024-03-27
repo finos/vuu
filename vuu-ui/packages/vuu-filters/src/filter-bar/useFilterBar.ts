@@ -178,9 +178,8 @@ export const useFilterBar = ({
           interactedFilterState?.state === "rename" &&
           interactedFilterState.filter
         ) {
-          const { filter, index } = interactedFilterState;
+          const { filter } = interactedFilterState;
           const indexOfEditedFilter = onRenameFilter(filter, editedValue);
-          console.log({ index, indexOfEditedFilter });
 
           setInteractedFilterState(undefined);
           focusFilterPill(indexOfEditedFilter);
@@ -253,9 +252,6 @@ export const useFilterBar = ({
 
   const handlePillClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (e) => {
-      console.log("Pill Click", {
-        e,
-      });
       const isEditing = (e.target as HTMLElement).querySelector(
         ".vuuEditableLabel-editing"
       );
@@ -296,7 +292,7 @@ export const useFilterBar = ({
     if (interactedFilterState) {
       const { index } = interactedFilterState;
       if (index === -1) {
-        console.log("focus add button");
+        addButtonRef.current?.focus();
       } else {
         focusFilterPill(index);
       }

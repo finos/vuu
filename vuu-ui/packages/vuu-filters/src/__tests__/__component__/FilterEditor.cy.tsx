@@ -134,8 +134,8 @@ describe("FilterEditor", () => {
         cy.realPress("Enter");
 
         selectMenuOption("AND");
-        cy.findByRole("button", { name: "AND" }).should("be.visible");
-        cy.findAllByRole("button", { name: "AND" }).should("have.length", 1);
+        cy.findByRole("button", { name: "and" }).should("be.visible");
+        cy.findAllByRole("button", { name: "and" }).should("have.length", 1);
       });
       it("THEN second clause is created and column focused", () => {
         cy.mount(<NewFilter />);
@@ -181,10 +181,6 @@ describe("FilterEditor", () => {
       });
     });
   });
-
-  // describe("Tab navigation", () => {
-
-  // })
 
   describe("Arrow key navigation", () => {
     describe("within a single clause filter", () => {
@@ -262,7 +258,7 @@ describe("FilterEditor", () => {
           cy.findAllByRole("combobox").eq(2).should("be.focused");
           cy.realPress("ArrowRight");
           cy.realPress("ArrowRight");
-          cy.findByRole("button", { name: "OR" }).should("be.focused");
+          cy.findByRole("button", { name: "or" }).should("be.focused");
           cy.realPress("ArrowRight");
           cy.realPress("ArrowRight");
           cy.findAllByRole("combobox").eq(3).should("be.focused");
@@ -291,7 +287,7 @@ describe("FilterEditor", () => {
           cy.realPress("ArrowLeft");
           cy.findAllByRole("combobox").eq(3).should("be.focused");
           cy.realPress("ArrowLeft");
-          cy.findByRole("button", { name: "OR" }).should("be.focused");
+          cy.findByRole("button", { name: "or" }).should("be.focused");
           cy.realPress("ArrowLeft");
           cy.findAllByRole("combobox").eq(2).should("be.focused");
           cy.realPress("ArrowLeft");

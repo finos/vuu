@@ -9,9 +9,14 @@ import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
 
 const classBase = "vuuCycleStateButton";
 
+export type CycleStateCommitHandler = (
+  evt: SyntheticEvent,
+  value: VuuRowDataItemType
+) => CommitResponse;
+
 export interface CycleStateButtonProps extends Omit<ButtonProps, "onChange"> {
-  onChange: (value: VuuRowDataItemType) => void;
-  onCommit?: (evt: SyntheticEvent, value: VuuRowDataItemType) => CommitResponse;
+  onChange?: (value: VuuRowDataItemType) => void;
+  onCommit?: CycleStateCommitHandler;
   values: string[];
   value: string;
 }
