@@ -34,7 +34,7 @@ jobs:
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Run end-to-end tests in Chrome
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@b713f3c673b6b69a21b31336a52018f08b8ca5b0
         with:
           install: false
           working-directory: ./vuu-ui
@@ -43,7 +43,7 @@ jobs:
           start: npm run showcase:preview
           wait-on: "http://localhost:4173"
       - name: Run end-to-end tests in Edge
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@b713f3c673b6b69a21b31336a52018f08b8ca5b0
         with:
           install: false
           working-directory: ./vuu-ui
@@ -60,14 +60,14 @@ jobs:
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Run component tests in Chrome
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@b713f3c673b6b69a21b31336a52018f08b8ca5b0
         with:
           component: true
           install: false
           working-directory: ./vuu-ui
           browser: chrome
       - name: Run component tests in Edge
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@b713f3c673b6b69a21b31336a52018f08b8ca5b0
         with:
           component: true
           install: false
