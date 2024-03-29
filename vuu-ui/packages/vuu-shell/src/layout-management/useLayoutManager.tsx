@@ -13,7 +13,7 @@ import {
   ApplicationSetting,
   isLayoutJSON,
 } from "@finos/vuu-layout";
-import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
+import { useNotifications } from "@finos/vuu-popups";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import {
   defaultApplicationJson,
@@ -86,7 +86,7 @@ export const LayoutManagementProvider = (
   // TODO this default should probably be a loading state rather than the placeholder
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
-  const { notify } = useNotifications();
+  const notify = useNotifications();
   const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJson);
 
   const setApplicationJSON = useCallback(
@@ -138,7 +138,7 @@ export const LayoutManagementProvider = (
       })
       .catch((error: Error) => {
         notify({
-          type: NotificationLevel.Error,
+          type: "error",
           header: "Failed to Load Layouts",
           body: "Could not load list of available layouts",
         });
@@ -152,7 +152,7 @@ export const LayoutManagementProvider = (
       })
       .catch((error: Error) => {
         notify({
-          type: NotificationLevel.Error,
+          type: "error",
           header: "Failed to Load Layout",
           body: "Could not load your latest view",
         });
@@ -187,7 +187,7 @@ export const LayoutManagementProvider = (
           .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
             notify({
-              type: NotificationLevel.Success,
+              type: "success",
               header: "Layout Saved Successfully",
               body: `${metadata.name} saved successfully`,
             });
@@ -195,7 +195,7 @@ export const LayoutManagementProvider = (
           })
           .catch((error: Error) => {
             notify({
-              type: NotificationLevel.Error,
+              type: "error",
               header: "Failed to Save Layout",
               body: `Failed to save layout ${metadata.name}`,
             });
@@ -204,7 +204,7 @@ export const LayoutManagementProvider = (
       } else {
         console.error("Tried to save invalid layout", layoutToSave);
         notify({
-          type: NotificationLevel.Error,
+          type: "error",
           header: "Failed to Save Layout",
           body: "Cannot save invalid layout",
         });
@@ -245,7 +245,7 @@ export const LayoutManagementProvider = (
       getPersistenceManager()
         .loadLayout(id)
         .then((layoutJson) => {
-         const { layout: currentLayout } = applicationJSONRef.current;
+          const { layout: currentLayout } = applicationJSONRef.current;
           setApplicationLayout({
             ...currentLayout,
             children: (currentLayout.children || []).concat(layoutJson),
@@ -257,7 +257,7 @@ export const LayoutManagementProvider = (
         })
         .catch((error: Error) => {
           notify({
-            type: NotificationLevel.Error,
+            type: "error",
             header: "Failed to Load Layout",
             body: "Failed to load the requested layout",
           });

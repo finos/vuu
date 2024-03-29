@@ -78,7 +78,7 @@ vi.mock("@finos/vuu-popups", async () => {
   const mockNotify = vi.fn();
   return {
     ...actual,
-    useNotifications: vi.fn(() => ({ notify: mockNotify })),
+    useNotifications: vi.fn(() => mockNotify),
   };
 });
 
@@ -170,7 +170,7 @@ describe("LayoutManagementProvider", () => {
 
     it("doesn't call createLayout, triggers error notification and logs error when layout path can't be resolved ", () => {
       const { result } = renderHook(() => useLayoutManager(), { wrapper });
-      const { notify } = useNotifications();
+      const notify = useNotifications();
 
       vi.mocked(persistence.createLayout).mockResolvedValueOnce(metadata);
       vi.mocked(resolveJSONPath).mockReturnValue(undefined);
@@ -192,7 +192,7 @@ describe("LayoutManagementProvider", () => {
 
     it("doesn't call createLayout, triggers error notification and logs error when layout is not valid", () => {
       const { result } = renderHook(() => useLayoutManager(), { wrapper });
-      const { notify } = useNotifications();
+      const notify = useNotifications();
 
       vi.mocked(persistence.createLayout).mockResolvedValueOnce(metadata);
       vi.mocked(isLayoutJSON).mockReturnValue(false);

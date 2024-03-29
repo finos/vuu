@@ -5,11 +5,7 @@ import {
   ViewportRpcResponse,
 } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
-import {
-  ContextMenuConfiguration,
-  NotificationLevel,
-  useNotifications,
-} from "@finos/vuu-popups";
+import { ContextMenuConfiguration, useNotifications } from "@finos/vuu-popups";
 import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -71,7 +67,7 @@ export const useBasketTrading = ({
   basketTradingConstituentJoinSchema,
 }: BasketTradingHookProps) => {
   const { load, save } = useViewContext();
-  const { notify } = useNotifications();
+  const notify = useNotifications();
 
   const editConfig = useMemo<TableConfig>(() => {
     const config = load?.("basket-edit-table-config") as TableConfig;
@@ -273,13 +269,13 @@ export const useBasketTrading = ({
           .then((response) => {
             if (response?.action.type === "VP_CREATE_SUCCESS") {
               notify?.({
-                type: NotificationLevel.Success,
+                type: "success",
                 header: "Add Constituent to Basket",
                 body: `${ric} added to basket`,
               });
             } else if (response?.action.type === "VP_RPC_FAILURE") {
               notify?.({
-                type: NotificationLevel.Error,
+                type: "error",
                 header: "Add Constituent to Basket",
                 body: response?.action.msg ?? `Failed to add ${ric} to basket`,
               });
