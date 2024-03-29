@@ -1,8 +1,8 @@
 .vuu-theme[data-mode="light"] {
-  --salt-palette-error-background: var(--salt-color-red-10);
+  --salt-palette-error-background: var(--vuu-color-red-50);
   --salt-palette-error-background-selected: var(--salt-color-red-20);
   --salt-palette-error-border: var(--salt-color-red-500);
-  --salt-palette-error-foreground: var(--salt-color-red-500);
+  --salt-palette-error-foreground: var(--vuu-color-white);
 }
 
 .vuu-theme[data-mode="dark"] {
