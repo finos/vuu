@@ -3,7 +3,9 @@ import {
   AdjacentItems,
   collectItemsByColumnPosition,
   collectItemsByRowPosition,
+  getBisectingTrackEdge,
   occupySameTrack,
+  splitTrack,
 } from "./grid-layout-utils";
 import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 
@@ -40,32 +42,46 @@ export type GridLayoutRelativePosition =
 export type GridLayoutTrack = "column" | "row";
 export type GridLayoutModelItemResizeable = "h" | "v" | "vh";
 
+export type GridLayoutModelItemType = "content" | "placeholder" | "splitter";
 export interface IGridLayoutModelItem {
   closeable?: boolean;
   column: GridLayoutModelPosition;
   id: string;
   resizeable?: GridLayoutModelItemResizeable;
   row: GridLayoutModelPosition;
+  type: GridLayoutModelItemType;
 }
+
+export interface IPlaceholder extends IGridLayoutModelItem {
+  type: "placeholder";
+}
+
+const isPlaceholder = (item: IGridLayoutModelItem): item is IPlaceholder =>
+  item.type === "placeholder";
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
   controls: string;
   orientation: GridLayoutResizeDirection;
+  type: "splitter";
 }
 
 export class GridLayoutModelItem implements IGridLayoutModelItem {
   column: GridLayoutModelPosition;
   id: string;
   row: GridLayoutModelPosition;
+  type: GridLayoutModelItemType;
+
   constructor(
     id: string,
     column: GridLayoutModelPosition,
-    row: GridLayoutModelPosition
+    row: GridLayoutModelPosition,
+    type: GridLayoutModelItemType = "content"
   ) {
     this.id = id;
     this.column = column;
     this.row = row;
+    this.type = type;
   }
 }
 
@@ -76,7 +92,7 @@ type GridItemMaps = {
   start: GridItemMap;
 };
 
-type GridItemUpdate = [string, GridLayoutModelPosition];
+export type GridItemUpdate = [string, GridLayoutModelPosition];
 
 const flipDirection = (resizeDirection: GridLayoutResizeDirection) =>
   resizeDirection === "horizontal" ? "vertical" : "horizontal";
@@ -177,7 +193,9 @@ const occupiesSameTrack =
   };
 
 export class GridLayoutModel {
+  colCount: number;
   gridItems: IGridLayoutModelItem[] = [];
+  rowCount: number;
 
   private index: GridItemIndex = new Map();
 
@@ -189,6 +207,11 @@ export class GridLayoutModel {
     start: new Map(),
     end: new Map(),
   };
+
+  constructor(colCount: number, rowCount: number) {
+    this.colCount = colCount;
+    this.rowCount = rowCount;
+  }
 
   private storeItem(
     maps: GridItemMaps,
@@ -472,9 +495,7 @@ export class GridLayoutModel {
     this.storeItem(this.rowMaps, row, gridItem);
   }
 
-  removeGridItem(gridItemId: string) {
-    console.log(`remove GridItem #${gridItemId}`);
-
+  removeGridItem(gridItemId: string, updatePlaceholders = true) {
     const gridItem = this.getGridItem(gridItemId);
     if (gridItem) {
       const { column, row } = gridItem;
@@ -483,6 +504,10 @@ export class GridLayoutModel {
       this.index.delete(gridItemId);
       this.clearItemFromStore(this.columnMaps, column, gridItem);
       this.clearItemFromStore(this.rowMaps, row, gridItem);
+
+      if (updatePlaceholders) {
+        this.createPlaceholders();
+      }
     }
 
     return [[], []];
@@ -492,13 +517,29 @@ export class GridLayoutModel {
     return this.index.get(gridItemId);
   }
 
-  fillEmptyAreas() {
-    console.log("fillEmptyAreas");
-    const { gridItems } = this;
+  clearPlaceholders() {
+    const placeHolders = this.getPlaceholders();
+    placeHolders.forEach((placeholder) =>
+      this.removeGridItem(placeholder.id, false)
+    );
+  }
+  /*
+  Placeholders are created to represent any empty areas on the grid
+  */
+  createPlaceholders() {
+    console.log("EmptyAreas");
+    const { colCount, gridItems, rowCount } = this;
 
-    const grid = getGridMatrix(gridItems);
+    this.clearPlaceholders();
+
+    const grid = getGridMatrix(gridItems, rowCount, colCount);
     const emptyExtents = getEmptyExtents(grid);
+    console.log({ emptyExtents });
     emptyExtents.forEach((gridItem) => this.addGridItem(gridItem));
+  }
+
+  getPlaceholders() {
+    return this.gridItems.filter(isPlaceholder);
   }
 
   getSplitterPositions(): ISplitter[] {
@@ -534,6 +575,7 @@ export class GridLayoutModel {
             id: `${id}-splitter-h`,
             orientation: "horizontal",
             row,
+            type: "splitter",
           });
         } else if (contraFillSameTrack) {
           // If we have only a single contra left and that contra is not resizeable, skip
@@ -553,6 +595,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row,
+              type: "splitter",
             });
           } else if (
             resizeableItemsLeft >= 1 &&
@@ -565,6 +608,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row,
+              type: "splitter",
             });
           }
         } else if (contraItemsLeft.length === 1) {
@@ -593,6 +637,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row: { start: fullSpan[0], end: fullSpan[1] },
+              type: "splitter",
             });
           }
         }
@@ -610,6 +655,7 @@ export class GridLayoutModel {
             id: `${id}-splitter-h`,
             orientation: "horizontal",
             row,
+            type: "splitter",
           });
         } else {
           // TODO why do columns shift slightly when we do this ?
@@ -634,6 +680,7 @@ export class GridLayoutModel {
                 id: `${id}-splitter-h`,
                 orientation: "horizontal",
                 row: { start: fullSpan[0], end: fullSpan[1] },
+                type: "splitter",
               });
             } else {
               console.log(`got one already`);
@@ -676,6 +723,7 @@ export class GridLayoutModel {
             id: splitterId,
             orientation,
             row,
+            type: "splitter",
           });
         } else if (contraFillSameTrack) {
           // If we have only a single contra left and that contra is not resizeable, skip
@@ -694,6 +742,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           } else if (
             resizeableItemsAbove >= 1 &&
@@ -706,6 +755,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           }
         } else if (contraItemsAbove.length === 1) {
@@ -734,6 +784,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           }
         } else {
@@ -754,6 +805,7 @@ export class GridLayoutModel {
             id: splitterId,
             orientation,
             row,
+            type: "splitter",
           });
         } else {
           // TODO why do columns shift slightly when we do this ?
@@ -777,6 +829,7 @@ export class GridLayoutModel {
                 id: splitterId,
                 orientation,
                 row,
+                type: "splitter",
               });
             }
           }
@@ -939,7 +992,7 @@ export class GridLayoutModel {
         ? [this.setRowContracted, this.setShiftRowBackward, this.setGridRow]
         : [this.setColContracted, this.setShiftColBackward, this.setGridColumn];
 
-    const updates: [string, GridLayoutModelPosition][] = [];
+    const updates: GridItemUpdate[] = [];
 
     if (anulledResizeOperation === "contract") {
       updates.push(setShiftBackward(resizeItem));
@@ -966,10 +1019,124 @@ export class GridLayoutModel {
     return updates;
   }
 
+  splitGridItem(
+    gridItemId: string,
+    resizeDirection: GridLayoutResizeDirection,
+    tracks: number[]
+  ): {
+    updates: GridItemUpdate[];
+    tracks: number[];
+  } {
+    const gridItem = this.getGridItem(gridItemId);
+    if (gridItem) {
+      let updates: GridItemUpdate[] | undefined = undefined;
+      let newTracks = tracks;
+      const isVertical = resizeDirection === "vertical";
+      const track = isVertical ? "row" : "column";
+      const {
+        [track]: { start, end },
+      } = gridItem;
+
+      const trackIndex = start - 1;
+
+      if (end - start === 1) {
+        newTracks = splitTrack(tracks, trackIndex);
+        updates = this.addTrack(trackIndex, resizeDirection);
+
+        // Update the targetted gridItem and make sure update is applied
+        gridItem[track].end -= 1;
+        const [, position] = updates.find(
+          ([id]) => id === gridItemId
+        ) as GridItemUpdate;
+        position.end -= 1;
+      } else {
+        // If there is already a trackEdge that bisects this gridItem ,
+        // we just have to realign the gridItem
+        const bisectingTrackEdge = getBisectingTrackEdge(tracks, start, end);
+        if (bisectingTrackEdge !== -1) {
+          console.log(`we have a bisection track edge ${bisectingTrackEdge}`);
+          updates = [[gridItemId, { start, end: bisectingTrackEdge }]];
+        } else {
+          console.log(`need to add a track`);
+        }
+      }
+
+      return {
+        updates: updates ?? [],
+        tracks: newTracks,
+      };
+    } else {
+      throw Error(
+        `GridLayoutModel splitGridItem: no gridItem with id ${gridItemId}`
+      );
+    }
+  }
+
   /*
- When we remove a track edge, all following track edges will be reduced by 1.
- Any gridItem bound to an edge greater than the one being removed must be
- adjusted.
+  When we add a track, all current track edges will be increased by 1.
+  Any gridItem bound to an edge equal to or greater than the one being
+  added must be adjusted.
+ */
+  addTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
+    const gridPosition = trackIndex + 1;
+    const updates: GridItemUpdate[] = [];
+
+    const [
+      { end: endMap, start: startMap },
+      setExpanded,
+      setShiftForward,
+      setTrack,
+    ] =
+      resizeDirection === "vertical"
+        ? [
+            this.rowMaps,
+            this.setRowExpanded,
+            this.setShiftRowForward,
+            this.setGridRow,
+          ]
+        : [
+            this.columnMaps,
+            this.setColExpanded,
+            this.setShiftColForward,
+            this.setGridColumn,
+          ];
+
+    for (const [position, gridItems] of startMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          updates.push(setShiftForward(item));
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (!existingUpdate) {
+            updates.push(setExpanded(item));
+          }
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    if (resizeDirection === "horizontal") {
+      this.colCount += 1;
+    } else {
+      this.rowCount += 1;
+    }
+
+    return updates;
+  }
+
+  /*
+  When we remove a track edge, all following track edges will be reduced by 1.
+  Any gridItem bound to an edge greater than the one being removed must be
+  adjusted.
  */
   removeTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
     const gridPosition = trackIndex + 1;
@@ -1106,6 +1273,22 @@ export class GridLayoutModel {
       splitterAlign
     );
 
+    adjacentItems.contra.forEach(
+      ({ id }) => (document.getElementById(id).dataset.resizeRole = "contra")
+    );
+    adjacentItems.contraOtherTrack.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "contra-other-track")
+    );
+    adjacentItems.siblingsOtherTrack.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "sibling-other-track")
+    );
+    adjacentItems.nonAdjacent.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "non-adjacent")
+    );
+
     const track: GridLayoutTrack =
       resizeDirection === "horizontal" ? "column" : "row";
 
@@ -1114,20 +1297,12 @@ export class GridLayoutModel {
         ? [resizeItem[track].start - 1, resizeItem[track].start - 2]
         : [resizeItem[track].end - 2, resizeItem[track].end - 1];
 
-    console.log(
-      `
-    indexOfPrimaryResizeTrack = ${indexOfPrimaryResizeTrack}
-    indexOfSecondaryResizeTrack = ${indexOfSecondaryResizeTrack},
-    `,
-      {
-        contraItems: adjacentItems.contra,
-      }
-    );
-
     const simpleResize =
       adjacentItems.contraOtherTrack.length === 0 ||
       (adjacentItems.contra.length === 0 &&
         adjacentItems.contraOtherTrack.length > 0);
+
+    console.log(`simple resize ${simpleResize}`);
 
     return {
       ...rest,
@@ -1144,8 +1319,6 @@ export class GridLayoutModel {
       simpleResize,
       splitterAlign,
     };
-
-    console.log({ adjacentItems, simpleResize });
   }
 
   toDebugString() {

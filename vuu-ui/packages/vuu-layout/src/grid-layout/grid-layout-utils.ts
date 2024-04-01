@@ -102,3 +102,46 @@ export const collectItemsByRowPosition = (
     items.nonAdjacent.push(gridItem);
   }
 };
+
+export const splitTrack = (tracks: number[], trackIndex: number) => {
+  const size = tracks[trackIndex];
+  const newTracks = tracks.slice();
+  newTracks.splice(trackIndex, 0, 0);
+  newTracks[trackIndex] = Math.floor(size / 2);
+  newTracks[trackIndex + 1] = Math.ceil(size / 2);
+  return newTracks;
+};
+
+/**
+ *
+ * @param tracks the track sizes
+ * @param start the start track Edge (1 based)
+ * @param end the end track edge (1 based)
+ * @returns
+ */
+export const getBisectingTrackEdge = (
+  tracks: number[],
+  start: number,
+  end: number
+) => {
+  if (end - start > 1) {
+    // Total the sizes between start and end
+    // find the half way point
+    // see if an existing edge occurs at that point (or wiuthin .5 pixesl, if decimal)
+  }
+  let size = 0;
+  for (let i = start - 1; i < end - 1; i++) {
+    size += tracks[i];
+  }
+  const halfSize = size / 2;
+  console.log(`half of ${size} = ${halfSize} tracks : [${tracks.join(", ")}]`);
+
+  size = 0;
+  for (let i = start - 1; i < end - 1; i++) {
+    size += tracks[i];
+    if (Math.abs(halfSize - size) < 1) {
+      return i + 2;
+    }
+  }
+  return -1;
+};

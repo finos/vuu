@@ -1,3 +1,4 @@
+import { uuid } from "@finos/vuu-utils";
 import { IGridLayoutModelItem } from "./GridLayoutModel";
 
 export type GridMatrix = number[][];
@@ -26,24 +27,15 @@ const fillGridMatrix = (
 };
 
 export const getGridMatrix = (
-  gridItems: IGridLayoutModelItem[]
+  gridItems: IGridLayoutModelItem[],
+  rowCount: number,
+  colCount: number
 ): GridMatrix => {
-  const maxCol = gridItems.reduce(
-    (max, { column: { end } }) => Math.max(max, end),
-    0
-  );
-  const maxRow = gridItems.reduce(
-    (max, { row: { end } }) => Math.max(max, end),
-    0
-  );
-
-  const grid = new Array(maxRow - 1);
+  const grid = new Array(rowCount);
   for (let i = 0; i < grid.length; i++) {
-    grid[i] = new Array(maxCol - 1).fill(0);
+    grid[i] = new Array(colCount).fill(0);
   }
-
   fillGridMatrix(grid, gridItems);
-
   return grid;
 };
 
@@ -56,27 +48,55 @@ export const printGrid = (grid: number[][]) => {
 
 const cloneGridMatrix = (grid: GridMatrix) => grid.map((row) => row.slice());
 
+function rowCellsAllEmpty(fromIndex: number, toIndex: number, row?: number[]) {
+  if (row) {
+    for (let i = fromIndex; i < toIndex; i++) {
+      if (row[i] !== 0) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function markCellsAsFilled(fromIndex: number, toIndex: number, row: number[]) {
+  for (let i = fromIndex; i < toIndex; i++) {
+    row[i] = 1;
+  }
+}
+
 export function getEmptyExtents(grid: GridMatrix) {
   const emptyExtents: IGridLayoutModelItem[] = [];
   const rows = cloneGridMatrix(grid);
   for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    for (let j = 0; j < row.length; j++) {
-      if (row[j] === 0) {
-        console.log(`empty cell at ${i}, ${j}`);
-        if (row[j + 1] === 0) {
-          console.log("mighjt have a big one");
-        } else if (rows[0 + 1]?.[j] === 0) {
-          console.log("might span multiple rows");
-        } else {
-          row[j] = 1;
-          emptyExtents.push({
-            column: { start: j + 1, end: j + 2 },
-            id: "placeholder",
-            resizeable: "vh",
-            row: { start: i + 1, end: i + 2 },
-          });
+    const cols = rows[i];
+    for (let j = 0; j < cols.length; j++) {
+      if (cols[j] === 0) {
+        cols[j] = 1;
+        let nextRow = i + 1;
+        let nextCol = j + 1;
+        // span as many columns as we find empty cells horizontally
+        while (cols[nextCol] === 0) {
+          cols[nextCol] = 1;
+          nextCol += 1;
         }
+        // span multiple rows as well as columns, but only
+        // if we can span the same number of columns
+        // found above.
+        while (rowCellsAllEmpty(j, nextCol, rows[nextRow])) {
+          markCellsAsFilled(j, nextCol, rows[nextRow]);
+          nextRow += 1;
+        }
+
+        emptyExtents.push({
+          column: { start: j + 1, end: nextCol + 1 },
+          id: uuid(),
+          resizeable: "vh",
+          row: { start: i + 1, end: nextRow + 1 },
+          type: "placeholder",
+        });
       }
     }
   }

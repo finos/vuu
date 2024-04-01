@@ -189,7 +189,7 @@ export function getPosition(
   return { position: position!, x, y, closeToTheEdge, tab };
 }
 
-function getPositionWithinBox(
+export function getPositionWithinBox(
   x: number,
   y: number,
   rect: DragDropRect,

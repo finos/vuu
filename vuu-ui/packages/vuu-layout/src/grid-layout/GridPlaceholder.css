@@ -1,0 +1,49 @@
+.vuuGridPlaceholder {
+    background-color: rgba(255,12,12,.1);
+    position: relative;
+}
+.vuuGridPlaceholder-EAST {
+    --grid-dropzone-top:0px;
+    --grid-dropzone-left:50%;
+    --grid-dropzone-bottom:0px;
+    --grid-dropzone-right:0px;
+}
+.vuuGridPlaceholder-WEST {
+    --grid-dropzone-top:0px;
+    --grid-dropzone-left:0px;
+    --grid-dropzone-bottom:0px;
+    --grid-dropzone-right:50%;
+}
+.vuuGridPlaceholder-NORTH {
+    --grid-dropzone-top:0px;
+    --grid-dropzone-left:0px;
+    --grid-dropzone-bottom:50%;
+    --grid-dropzone-right: 0px;
+}
+.vuuGridPlaceholder-SOUTH {
+    --grid-dropzone-top:50%;
+    --grid-dropzone-left:0px;
+    --grid-dropzone-bottom:0px;
+    --grid-dropzone-right:0px;
+}
+
+.vuuGridPlaceholder-CENTRE {
+    --grid-dropzone-top:0px;
+    --grid-dropzone-left:0px;
+    --grid-dropzone-bottom:0px;
+    --grid-dropzone-right:0px;
+}
+
+.vuuGridPlaceholder:after {
+    background-color: cornflowerblue;
+    content: '';
+    position: absolute;
+    top: var(--grid-dropzone-top);
+    right: var(--grid-dropzone-right);
+    bottom: var(--grid-dropzone-bottom);
+    left: var(--grid-dropzone-left);
+    transition-property: top,left,right, bottom;
+    transition-duration: .3s;
+    transition-timing-function: ease-in-out;
+}
+

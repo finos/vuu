@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
+import { GridPalette } from "./components/GridPalette";
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
@@ -8,7 +9,7 @@ export const GridLayoutA = () => {
   const layoutApi = useRef<LayoutAPI>(null)
 
   const splitSelectedRow = useCallback(() => {
-    const activeComponent = document.querySelector(".component-active");
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
       console.log("split active");
       layoutApi.current.splitGridRow(activeComponent.id);
@@ -16,7 +17,7 @@ export const GridLayoutA = () => {
   }, []);
 
   const splitSelectedCol = useCallback(() => {
-    const activeComponent = document.querySelector(".component-active");
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
       console.log("split active");
       layoutApi.current.splitGridCol(activeComponent.id);
@@ -35,6 +36,7 @@ export const GridLayoutA = () => {
       <div style={{ flex: "0 0 40px" }}>
         <button onClick={splitSelectedRow}>Split across the middle</button>
         <button onClick={splitSelectedCol}>Split down the middle</button>
+        <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
       </div>
       <GridLayout
         colCount={2}
@@ -778,6 +780,30 @@ export const SingleColumnFixedItemCenter = () => {
         title="Red"
       >
         <div style={{ background: "red" }} />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
+export const EmptyGridLayout = () => {
+  return <GridLayout colCount={2} id="GridLayoutE" rowCount={2}></GridLayout>;
+};
+
+export const EmptyWithPalette = () => {
+  return (
+    <GridLayout cols={["200px", "1fr"]} id="GridLayoutE" rowCount={1}>
+      <GridLayoutItem
+        id="green"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <GridPalette />
       </GridLayoutItem>
     </GridLayout>
   );

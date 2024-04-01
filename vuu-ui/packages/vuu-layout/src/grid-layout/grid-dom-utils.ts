@@ -2,8 +2,8 @@ import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   IGridLayoutModelItem,
-} from "@finos/vuu-layout";
-import { ResizeState } from "../../../../showcase/src/examples/html/components/useGridSplitterResizing";
+  ResizeState,
+} from "./GridLayoutModel";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
 
@@ -97,6 +97,7 @@ export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
     id: el.id,
     resizeable,
     row: { start: row[0], end: row[1] },
+    type: "content",
   };
 };
 
@@ -109,6 +110,7 @@ export const setGridColumn = (
   target: string | HTMLElement,
   { start, end }: GridLayoutModelPosition
 ) => {
+  console.log(`setGridColumn ${target?.id ?? target} ${start} / ${end}`);
   const el =
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
@@ -210,7 +212,7 @@ export const splitGridTracks = (
 };
 
 export const setGridTrackTemplate = (
-  { grid, resizeDirection }: ResizeState,
+  { grid, resizeDirection }: Pick<ResizeState, "grid" | "resizeDirection">,
   tracks: number[]
 ) => {
   const trackTemplate = tracks.map((r) => `${r}px`).join(" ");
