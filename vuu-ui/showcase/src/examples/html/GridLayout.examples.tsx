@@ -10,7 +10,7 @@ export const GridLayoutA = () => {
   const layoutApi = useRef<LayoutAPI>(null)
 
   const splitSelectedRow = useCallback(() => {
-    const activeComponent = document.querySelector(".component-active");
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
       console.log("split active");
       layoutApi.current.splitGridRow(activeComponent.id);
@@ -18,7 +18,7 @@ export const GridLayoutA = () => {
   }, []);
 
   const splitSelectedCol = useCallback(() => {
-    const activeComponent = document.querySelector(".component-active");
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
       console.log("split active");
       layoutApi.current.splitGridCol(activeComponent.id);

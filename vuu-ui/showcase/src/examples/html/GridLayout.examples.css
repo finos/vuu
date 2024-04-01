@@ -10,3 +10,12 @@
     grid-template-rows: repeat(var(--row-count), 1fr);
 }
 
+[data-resize-role]:after {
+    color: white;
+    content: attr(data-resize-role);
+    font-size: 16px;
+    font-weight: bold;
+    left: 9px;
+    position: absolute;
+    top: 32px;
+}

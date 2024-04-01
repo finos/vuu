@@ -7,11 +7,10 @@ import {
   useCallback,
   useImperativeHandle,
 } from "react";
-import { useGridSplitterResizing } from "./useGridSplitterResizing";
 import { useDragDrop } from "./useDragDrop";
+import { useGridSplitterResizing } from "./useGridSplitterResizing";
 
 import "./GridLayout.css";
-import "./GridPlaceholder.css";
 import "./GridSplitter.css";
 
 import {
@@ -20,8 +19,9 @@ import {
   useGridLayoutProps,
   useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
-import { ResizeOrientation } from "@finos/vuu-layout/src/grid-layout/grid-dom-utils";
+import { ResizeOrientation } from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
+import { GridPlaceholder } from "@finos/vuu-layout";
 
 const classBase = "vuuGridLayout";
 const classBaseItem = "vuuGridLayoutItem";
@@ -34,17 +34,6 @@ export interface GridSplitterProps
   "aria-controls": string;
   orientation: ResizeOrientation;
 }
-
-export interface GridPlaceholderProps extends HTMLAttributes<HTMLDivElement> {
-  debugLabel?: string;
-}
-
-export const GridPlaceholder = ({
-  debugLabel,
-  ...htmlAttributes
-}: GridPlaceholderProps) => {
-  return <div {...htmlAttributes} className="vuuGridPlaceholder" />;
-};
 
 export const GridSplitter = ({
   align,
@@ -163,6 +152,7 @@ export const GridLayout = ({
     gridTemplateColumns,
     gridTemplateRows,
     layoutMap,
+    onDrop,
     splitGridCol,
     splitGridRow,
     containerRef,
@@ -211,6 +201,7 @@ export const GridLayout = ({
           <GridPlaceholder
             id={placeholder.id}
             key={placeholder.id}
+            onDrop={onDrop}
             style={{
               gridColumn: `${placeholder.column.start}/${placeholder.column.end}`,
               gridRow: `${placeholder.row.start}/${placeholder.row.end}`,

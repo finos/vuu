@@ -3,7 +3,9 @@ import {
   AdjacentItems,
   collectItemsByColumnPosition,
   collectItemsByRowPosition,
+  getBisectingTrackEdge,
   occupySameTrack,
+  splitTrack,
 } from "./grid-layout-utils";
 import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 
@@ -90,7 +92,7 @@ type GridItemMaps = {
   start: GridItemMap;
 };
 
-type GridItemUpdate = [string, GridLayoutModelPosition];
+export type GridItemUpdate = [string, GridLayoutModelPosition];
 
 const flipDirection = (resizeDirection: GridLayoutResizeDirection) =>
   resizeDirection === "horizontal" ? "vertical" : "horizontal";
@@ -990,7 +992,7 @@ export class GridLayoutModel {
         ? [this.setRowContracted, this.setShiftRowBackward, this.setGridRow]
         : [this.setColContracted, this.setShiftColBackward, this.setGridColumn];
 
-    const updates: [string, GridLayoutModelPosition][] = [];
+    const updates: GridItemUpdate[] = [];
 
     if (anulledResizeOperation === "contract") {
       updates.push(setShiftBackward(resizeItem));
@@ -1017,10 +1019,124 @@ export class GridLayoutModel {
     return updates;
   }
 
+  splitGridItem(
+    gridItemId: string,
+    resizeDirection: GridLayoutResizeDirection,
+    tracks: number[]
+  ): {
+    updates: GridItemUpdate[];
+    tracks: number[];
+  } {
+    const gridItem = this.getGridItem(gridItemId);
+    if (gridItem) {
+      let updates: GridItemUpdate[] | undefined = undefined;
+      let newTracks = tracks;
+      const isVertical = resizeDirection === "vertical";
+      const track = isVertical ? "row" : "column";
+      const {
+        [track]: { start, end },
+      } = gridItem;
+
+      const trackIndex = start - 1;
+
+      if (end - start === 1) {
+        newTracks = splitTrack(tracks, trackIndex);
+        updates = this.addTrack(trackIndex, resizeDirection);
+
+        // Update the targetted gridItem and make sure update is applied
+        gridItem[track].end -= 1;
+        const [, position] = updates.find(
+          ([id]) => id === gridItemId
+        ) as GridItemUpdate;
+        position.end -= 1;
+      } else {
+        // If there is already a trackEdge that bisects this gridItem ,
+        // we just have to realign the gridItem
+        const bisectingTrackEdge = getBisectingTrackEdge(tracks, start, end);
+        if (bisectingTrackEdge !== -1) {
+          console.log(`we have a bisection track edge ${bisectingTrackEdge}`);
+          updates = [[gridItemId, { start, end: bisectingTrackEdge }]];
+        } else {
+          console.log(`need to add a track`);
+        }
+      }
+
+      return {
+        updates: updates ?? [],
+        tracks: newTracks,
+      };
+    } else {
+      throw Error(
+        `GridLayoutModel splitGridItem: no gridItem with id ${gridItemId}`
+      );
+    }
+  }
+
   /*
- When we remove a track edge, all following track edges will be reduced by 1.
- Any gridItem bound to an edge greater than the one being removed must be
- adjusted.
+  When we add a track, all current track edges will be increased by 1.
+  Any gridItem bound to an edge equal to or greater than the one being
+  added must be adjusted.
+ */
+  addTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
+    const gridPosition = trackIndex + 1;
+    const updates: GridItemUpdate[] = [];
+
+    const [
+      { end: endMap, start: startMap },
+      setExpanded,
+      setShiftForward,
+      setTrack,
+    ] =
+      resizeDirection === "vertical"
+        ? [
+            this.rowMaps,
+            this.setRowExpanded,
+            this.setShiftRowForward,
+            this.setGridRow,
+          ]
+        : [
+            this.columnMaps,
+            this.setColExpanded,
+            this.setShiftColForward,
+            this.setGridColumn,
+          ];
+
+    for (const [position, gridItems] of startMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          updates.push(setShiftForward(item));
+        });
+      }
+    }
+
+    for (const [position, gridItems] of endMap) {
+      if (position > gridPosition) {
+        gridItems.forEach((item) => {
+          const existingUpdate = updates.find(([id]) => id === item.id);
+          if (!existingUpdate) {
+            updates.push(setExpanded(item));
+          }
+        });
+      }
+    }
+
+    updates.forEach(([id, position]) => {
+      setTrack(id, position);
+    });
+
+    if (resizeDirection === "horizontal") {
+      this.colCount += 1;
+    } else {
+      this.rowCount += 1;
+    }
+
+    return updates;
+  }
+
+  /*
+  When we remove a track edge, all following track edges will be reduced by 1.
+  Any gridItem bound to an edge greater than the one being removed must be
+  adjusted.
  */
   removeTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
     const gridPosition = trackIndex + 1;
@@ -1157,6 +1273,22 @@ export class GridLayoutModel {
       splitterAlign
     );
 
+    adjacentItems.contra.forEach(
+      ({ id }) => (document.getElementById(id).dataset.resizeRole = "contra")
+    );
+    adjacentItems.contraOtherTrack.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "contra-other-track")
+    );
+    adjacentItems.siblingsOtherTrack.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "sibling-other-track")
+    );
+    adjacentItems.nonAdjacent.forEach(
+      ({ id }) =>
+        (document.getElementById(id).dataset.resizeRole = "non-adjacent")
+    );
+
     const track: GridLayoutTrack =
       resizeDirection === "horizontal" ? "column" : "row";
 
@@ -1165,20 +1297,12 @@ export class GridLayoutModel {
         ? [resizeItem[track].start - 1, resizeItem[track].start - 2]
         : [resizeItem[track].end - 2, resizeItem[track].end - 1];
 
-    console.log(
-      `
-    indexOfPrimaryResizeTrack = ${indexOfPrimaryResizeTrack}
-    indexOfSecondaryResizeTrack = ${indexOfSecondaryResizeTrack},
-    `,
-      {
-        contraItems: adjacentItems.contra,
-      }
-    );
-
     const simpleResize =
       adjacentItems.contraOtherTrack.length === 0 ||
       (adjacentItems.contra.length === 0 &&
         adjacentItems.contraOtherTrack.length > 0);
+
+    console.log(`simple resize ${simpleResize}`);
 
     return {
       ...rest,
@@ -1195,8 +1319,6 @@ export class GridLayoutModel {
       simpleResize,
       splitterAlign,
     };
-
-    console.log({ adjacentItems, simpleResize });
   }
 
   toDebugString() {
