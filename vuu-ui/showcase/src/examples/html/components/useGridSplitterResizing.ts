@@ -6,12 +6,14 @@ import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   GridLayoutProviderDispatch,
-  GridLayoutTrack,
   ResizeState,
+  IPlaceholder,
+  GridLayoutMap,
 } from "@finos/vuu-layout";
 import { queryClosest } from "@finos/vuu-utils";
-import {
+import React, {
   MouseEventHandler,
+  ReactElement,
   useCallback,
   useLayoutEffect,
   useMemo,
@@ -21,11 +23,9 @@ import {
 import {
   classNameLayoutItem,
   getColumn,
-  getColumns,
   getGridLayoutItem,
   getGridItemProps,
   getRow,
-  getRows,
   isHorizontalSplitter,
   isSplitter,
   setGridColumn,
@@ -34,13 +34,13 @@ import {
   splitGridTracks,
   setGridTrackTemplate,
 } from "@finos/vuu-layout";
-import { GridLayoutProps } from "./GridLayout";
+import { GridLayoutItemProps, GridLayoutProps } from "./GridLayout";
 
 const ERROR_NO_RESIZE = "Resize operationn invoked, no resize in operation";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
-  "children" | "id" | "rowCount" | "rows"
+  "children" | "colCount" | "cols" | "id" | "rowCount" | "rows"
 >;
 
 /**
@@ -78,15 +78,76 @@ const getTracks = (state: ResizeState, clone = false) => {
   return clone ? tracks.slice() : tracks;
 };
 
+type NonContentGridItems = {
+  splitters: ISplitter[];
+  placeholders: IPlaceholder[];
+};
+
+const buildLayoutMap = (
+  children:
+    | ReactElement<GridLayoutItemProps>[]
+    | ReactElement<GridLayoutItemProps>
+): GridLayoutMap => {
+  const layoutMap: GridLayoutMap = {};
+  React.Children.forEach(
+    children,
+    ({
+      props: {
+        id,
+        style: { gridColumnEnd, gridColumnStart, gridRowEnd, gridRowStart },
+      },
+    }) => {
+      layoutMap[id] = {
+        gridColumnEnd,
+        gridColumnStart,
+        gridRowEnd,
+        gridRowStart,
+      };
+    }
+  );
+  return layoutMap;
+};
+
 export const useGridSplitterResizing = ({
   children: childrenProp,
+  colCount,
+  cols = Array(colCount).fill("1fr"),
   rowCount,
   rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
   const [children, setChildren] = useState(childrenProp);
-  const [splitters, setSplitters] = useState<ISplitter[]>([]);
-  const layoutModel = useMemo(() => new GridLayoutModel(), []);
+  const [nonContentGridItems, setNonContentGridItems] =
+    useState<NonContentGridItems>({
+      splitters: [],
+      placeholders: [],
+    });
+  const layoutModel = useMemo(
+    // TODO must cater for colCount/rowCount changing
+    () => new GridLayoutModel(cols.length, rows.length),
+    [cols.length, rows.length]
+  );
+  const layoutMapRef = useRef<GridLayoutMap>({});
+  useMemo(() => {
+    layoutMapRef.current = childrenProp ? buildLayoutMap(childrenProp) : {};
+  }, [childrenProp]);
 
+  const setGridLayoutMap = useCallback(
+    (
+      id: string,
+      { start, end }: GridLayoutModelPosition,
+      resizeDirection: GridLayoutResizeDirection
+    ) => {
+      const gridItemStyle = layoutMapRef.current[id];
+      if (resizeDirection === "horizontal") {
+        gridItemStyle.gridColumnStart = start;
+        gridItemStyle.gridColumnEnd = end;
+      } else {
+        gridItemStyle.gridRowStart = start;
+        gridItemStyle.gridRowEnd = end;
+      }
+    },
+    []
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const resizingState = useRef<ResizeState | undefined>();
 
@@ -152,16 +213,15 @@ export const useGridSplitterResizing = ({
 
   const applyUpdates = useCallback(
     (
-      resizeOrientation: GridLayoutResizeDirection,
+      resizeDirection: GridLayoutResizeDirection,
       updates: [string, GridLayoutModelPosition][]
     ) => {
       const setTrack =
-        resizeOrientation === "vertical" ? setGridRow : setGridColumn;
+        resizeDirection === "vertical" ? setGridRow : setGridColumn;
 
       updates.forEach(([id, position]) => {
-        if (id !== "placeholder") {
-          setTrack(id, position);
-        }
+        setTrack(id, position);
+        setGridLayoutMap(id, position, resizeDirection);
       });
     },
     []
@@ -188,7 +248,7 @@ export const useGridSplitterResizing = ({
 
         const splitters = layoutModel.getSplitterPositions();
         console.log({ splitters });
-        setSplitters(splitters);
+        setNonContentGridItems((items) => ({ ...items, splitters }));
       }
     },
     [applyUpdates, layoutModel]
@@ -215,7 +275,7 @@ export const useGridSplitterResizing = ({
           applyUpdates(resizeOrientation, updates);
 
           const splitters = layoutModel.getSplitterPositions();
-          setSplitters(splitters);
+          setNonContentGridItems((items) => ({ ...items, splitters }));
         }
       }
     },
@@ -239,7 +299,7 @@ export const useGridSplitterResizing = ({
           applyUpdates(resizeDirection, updates);
 
           const splitters = layoutModel.getSplitterPositions();
-          setSplitters(splitters);
+          setNonContentGridItems((items) => ({ ...items, splitters }));
         }
       }
     },
@@ -379,7 +439,7 @@ export const useGridSplitterResizing = ({
             returnTracks = removeTrack(trackIndex);
 
             const splitters = layoutModel.getSplitterPositions();
-            setSplitters(splitters);
+            setNonContentGridItems((items) => ({ ...items, splitters }));
 
             resizingState.current = layoutModel.measureGridItemDetails({
               ...state,
@@ -406,7 +466,7 @@ export const useGridSplitterResizing = ({
             returnTracks = flipResizeTracks(mousePos);
 
             const splitters = layoutModel.getSplitterPositions();
-            setSplitters(splitters);
+            setNonContentGridItems((items) => ({ ...items, splitters }));
 
             if (isContracting) {
               state.indexOfPrimaryResizeTrack += 1;
@@ -750,14 +810,21 @@ export const useGridSplitterResizing = ({
       containerRef.current.childNodes.forEach((node) => {
         const gridLayoutItem = node as HTMLElement;
         if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
-          const { column, id, resizeable, row } =
+          const { column, id, resizeable, row, type } =
             getGridItemProps(gridLayoutItem);
-          layoutModel.addGridItem({ id, column, resizeable, row });
+          layoutModel.addGridItem({
+            id,
+            column,
+            resizeable,
+            row,
+            type,
+          });
         }
       });
-      layoutModel.fillEmptyAreas();
+      layoutModel.createPlaceholders();
       const splitters = layoutModel.getSplitterPositions();
-      setSplitters(splitters);
+      const placeholders = layoutModel.getPlaceholders();
+      setNonContentGridItems({ placeholders, splitters });
     }
   }, [layoutModel]);
 
@@ -772,8 +839,9 @@ export const useGridSplitterResizing = ({
         applyUpdates("horizontal", horizontalUpdates);
         applyUpdates("vertical", verticalUpdates);
 
+        const placeholders = layoutModel.getPlaceholders();
         const splitters = layoutModel.getSplitterPositions();
-        setSplitters(splitters);
+        setNonContentGridItems({ placeholders, splitters });
       }
     },
     [applyUpdates, layoutModel]
@@ -783,12 +851,14 @@ export const useGridSplitterResizing = ({
     children,
     containerRef,
     dispatchGridLayoutAction,
+    gridTemplateColumns: cols.join(" "),
     gridTemplateRows: rows.join(" "),
+    layoutMap: layoutMapRef.current,
     onClick: clickHandler,
     onMouseDown,
     onMouseUp,
     splitGridCol,
     splitGridRow,
-    splitters,
+    nonContentGridItems,
   };
 };

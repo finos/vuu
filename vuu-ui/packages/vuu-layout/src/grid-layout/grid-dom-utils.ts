@@ -97,6 +97,7 @@ export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
     id: el.id,
     resizeable,
     row: { start: row[0], end: row[1] },
+    type: "content",
   };
 };
 
@@ -109,6 +110,7 @@ export const setGridColumn = (
   target: string | HTMLElement,
   { start, end }: GridLayoutModelPosition
 ) => {
+  console.log(`setGridColumn ${target?.id ?? target} ${start} / ${end}`);
   const el =
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)

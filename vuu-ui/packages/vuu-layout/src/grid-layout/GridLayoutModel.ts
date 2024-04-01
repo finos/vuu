@@ -40,32 +40,46 @@ export type GridLayoutRelativePosition =
 export type GridLayoutTrack = "column" | "row";
 export type GridLayoutModelItemResizeable = "h" | "v" | "vh";
 
+export type GridLayoutModelItemType = "content" | "placeholder" | "splitter";
 export interface IGridLayoutModelItem {
   closeable?: boolean;
   column: GridLayoutModelPosition;
   id: string;
   resizeable?: GridLayoutModelItemResizeable;
   row: GridLayoutModelPosition;
+  type: GridLayoutModelItemType;
 }
+
+export interface IPlaceholder extends IGridLayoutModelItem {
+  type: "placeholder";
+}
+
+const isPlaceholder = (item: IGridLayoutModelItem): item is IPlaceholder =>
+  item.type === "placeholder";
 
 export interface ISplitter extends IGridLayoutModelItem {
   align: SplitterAlign;
   controls: string;
   orientation: GridLayoutResizeDirection;
+  type: "splitter";
 }
 
 export class GridLayoutModelItem implements IGridLayoutModelItem {
   column: GridLayoutModelPosition;
   id: string;
   row: GridLayoutModelPosition;
+  type: GridLayoutModelItemType;
+
   constructor(
     id: string,
     column: GridLayoutModelPosition,
-    row: GridLayoutModelPosition
+    row: GridLayoutModelPosition,
+    type: GridLayoutModelItemType = "content"
   ) {
     this.id = id;
     this.column = column;
     this.row = row;
+    this.type = type;
   }
 }
 
@@ -177,7 +191,9 @@ const occupiesSameTrack =
   };
 
 export class GridLayoutModel {
+  colCount: number;
   gridItems: IGridLayoutModelItem[] = [];
+  rowCount: number;
 
   private index: GridItemIndex = new Map();
 
@@ -189,6 +205,11 @@ export class GridLayoutModel {
     start: new Map(),
     end: new Map(),
   };
+
+  constructor(colCount: number, rowCount: number) {
+    this.colCount = colCount;
+    this.rowCount = rowCount;
+  }
 
   private storeItem(
     maps: GridItemMaps,
@@ -472,9 +493,7 @@ export class GridLayoutModel {
     this.storeItem(this.rowMaps, row, gridItem);
   }
 
-  removeGridItem(gridItemId: string) {
-    console.log(`remove GridItem #${gridItemId}`);
-
+  removeGridItem(gridItemId: string, updatePlaceholders = true) {
     const gridItem = this.getGridItem(gridItemId);
     if (gridItem) {
       const { column, row } = gridItem;
@@ -483,6 +502,10 @@ export class GridLayoutModel {
       this.index.delete(gridItemId);
       this.clearItemFromStore(this.columnMaps, column, gridItem);
       this.clearItemFromStore(this.rowMaps, row, gridItem);
+
+      if (updatePlaceholders) {
+        this.createPlaceholders();
+      }
     }
 
     return [[], []];
@@ -492,13 +515,29 @@ export class GridLayoutModel {
     return this.index.get(gridItemId);
   }
 
-  fillEmptyAreas() {
-    console.log("fillEmptyAreas");
-    const { gridItems } = this;
+  clearPlaceholders() {
+    const placeHolders = this.getPlaceholders();
+    placeHolders.forEach((placeholder) =>
+      this.removeGridItem(placeholder.id, false)
+    );
+  }
+  /*
+  Placeholders are created to represent any empty areas on the grid
+  */
+  createPlaceholders() {
+    console.log("EmptyAreas");
+    const { colCount, gridItems, rowCount } = this;
 
-    const grid = getGridMatrix(gridItems);
+    this.clearPlaceholders();
+
+    const grid = getGridMatrix(gridItems, rowCount, colCount);
     const emptyExtents = getEmptyExtents(grid);
+    console.log({ emptyExtents });
     emptyExtents.forEach((gridItem) => this.addGridItem(gridItem));
+  }
+
+  getPlaceholders() {
+    return this.gridItems.filter(isPlaceholder);
   }
 
   getSplitterPositions(): ISplitter[] {
@@ -534,6 +573,7 @@ export class GridLayoutModel {
             id: `${id}-splitter-h`,
             orientation: "horizontal",
             row,
+            type: "splitter",
           });
         } else if (contraFillSameTrack) {
           // If we have only a single contra left and that contra is not resizeable, skip
@@ -553,6 +593,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row,
+              type: "splitter",
             });
           } else if (
             resizeableItemsLeft >= 1 &&
@@ -565,6 +606,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row,
+              type: "splitter",
             });
           }
         } else if (contraItemsLeft.length === 1) {
@@ -593,6 +635,7 @@ export class GridLayoutModel {
               id: `${id}-splitter-h`,
               orientation: "horizontal",
               row: { start: fullSpan[0], end: fullSpan[1] },
+              type: "splitter",
             });
           }
         }
@@ -610,6 +653,7 @@ export class GridLayoutModel {
             id: `${id}-splitter-h`,
             orientation: "horizontal",
             row,
+            type: "splitter",
           });
         } else {
           // TODO why do columns shift slightly when we do this ?
@@ -634,6 +678,7 @@ export class GridLayoutModel {
                 id: `${id}-splitter-h`,
                 orientation: "horizontal",
                 row: { start: fullSpan[0], end: fullSpan[1] },
+                type: "splitter",
               });
             } else {
               console.log(`got one already`);
@@ -676,6 +721,7 @@ export class GridLayoutModel {
             id: splitterId,
             orientation,
             row,
+            type: "splitter",
           });
         } else if (contraFillSameTrack) {
           // If we have only a single contra left and that contra is not resizeable, skip
@@ -694,6 +740,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           } else if (
             resizeableItemsAbove >= 1 &&
@@ -706,6 +753,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           }
         } else if (contraItemsAbove.length === 1) {
@@ -734,6 +782,7 @@ export class GridLayoutModel {
               id: splitterId,
               orientation,
               row,
+              type: "splitter",
             });
           }
         } else {
@@ -754,6 +803,7 @@ export class GridLayoutModel {
             id: splitterId,
             orientation,
             row,
+            type: "splitter",
           });
         } else {
           // TODO why do columns shift slightly when we do this ?
@@ -777,6 +827,7 @@ export class GridLayoutModel {
                 id: splitterId,
                 orientation,
                 row,
+                type: "splitter",
               });
             }
           }

@@ -1,6 +1,7 @@
 let displaySequence = 1;
 import { useCallback, useRef } from "react";
 import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
+import { GridPalette } from "./components/GridPalette";
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
@@ -36,6 +37,7 @@ export const GridLayoutA = () => {
       <div style={{ flex: "0 0 40px" }}>
         <button onClick={splitSelectedRow}>Split across the middle</button>
         <button onClick={splitSelectedCol}>Split down the middle</button>
+        <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
       </div>
       <GridLayout
         colCount={2}
@@ -795,3 +797,29 @@ export const SingleColumnFixedItemCenter = () => {
   );
 };
 SingleColumnFixedItemCenter.displaySequence = displaySequence++;
+
+export const EmptyGridLayout = () => {
+  return <GridLayout colCount={2} id="GridLayoutE" rowCount={2}></GridLayout>;
+};
+EmptyGridLayout.displaySequence = displaySequence++;
+
+export const EmptyWithPalette = () => {
+  return (
+    <GridLayout cols={["200px", "1fr"]} id="GridLayoutE" rowCount={1}>
+      <GridLayoutItem
+        id="green"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 1,
+          gridColumnEnd: 2,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Green"
+      >
+        <GridPalette />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+EmptyWithPalette.displaySequence = displaySequence++;

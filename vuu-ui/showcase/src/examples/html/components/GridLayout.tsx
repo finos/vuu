@@ -8,16 +8,20 @@ import {
   useImperativeHandle,
 } from "react";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
+import { useDragDrop } from "./useDragDrop";
 
 import "./GridLayout.css";
+import "./GridPlaceholder.css";
 import "./GridSplitter.css";
 
 import {
   GridLayoutProvider,
   ISplitter,
+  useGridLayoutProps,
   useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import { ResizeOrientation } from "@finos/vuu-layout/src/grid-layout/grid-dom-utils";
+import { IconButton } from "@finos/vuu-ui-controls";
 
 const classBase = "vuuGridLayout";
 const classBaseItem = "vuuGridLayoutItem";
@@ -30,6 +34,17 @@ export interface GridSplitterProps
   "aria-controls": string;
   orientation: ResizeOrientation;
 }
+
+export interface GridPlaceholderProps extends HTMLAttributes<HTMLDivElement> {
+  debugLabel?: string;
+}
+
+export const GridPlaceholder = ({
+  debugLabel,
+  ...htmlAttributes
+}: GridPlaceholderProps) => {
+  return <div {...htmlAttributes} className="vuuGridPlaceholder" />;
+};
 
 export const GridSplitter = ({
   align,
@@ -51,18 +66,28 @@ export const GridSplitter = ({
 };
 
 export interface GridLayoutProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactElement<GridLayoutItemProps>[];
-  colCount: number;
+  children?:
+    | ReactElement<GridLayoutItemProps>
+    | ReactElement<GridLayoutItemProps>[];
+  colCount?: number;
+  cols?: (string | number)[];
   layoutAPI?: ForwardedRef<LayoutAPI>;
-  rowCount: number;
+  rowCount?: number;
   rows?: (string | number)[];
 }
 
-export interface GridLayoutItemProps extends HTMLAttributes<HTMLDivElement> {
+export interface GridLayoutItemProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "style"> {
   header?: boolean;
   id: string;
   label?: string;
   resizeable?: GridResizeable;
+  style: CSSProperties & {
+    gridColumnEnd: number;
+    gridColumnStart: number;
+    gridRowEnd: number;
+    gridRowStart: number;
+  };
 }
 
 export const GridLayoutItem = ({
@@ -76,12 +101,15 @@ export const GridLayoutItem = ({
   ...htmlAttributes
 }: GridLayoutItemProps) => {
   const dispatch = useGridLayoutProviderDispatch();
+  const layoutProps = useGridLayoutProps(id);
+  const dragProps = useDragDrop();
   const onClose = useCallback(() => {
     dispatch({
       type: "close",
       id,
     });
   }, [dispatch, id]);
+
   const className = cx(classBaseItem, {
     [`${classBaseItem}-resizeable-h`]: resizeable === "h",
     [`${classBaseItem}-resizeable-v`]: resizeable === "v",
@@ -90,18 +118,20 @@ export const GridLayoutItem = ({
 
   const style = {
     ...styleProp,
+    ...layoutProps,
     "--header-height": header ? "25px" : "0px",
   };
 
   return (
     <div {...htmlAttributes} className={className} id={id} style={style}>
       {header ? (
-        <div className={`${classBaseItem}Header`}>
+        <div className={`${classBaseItem}Header`} {...dragProps} draggable>
           <span className={`${classBaseItem}Header-title`}>{title}</span>
-          <span
+          <IconButton
             className={`${classBaseItem}Header-close`}
-            data-icon="close"
+            icon="close"
             onClick={onClose}
+            variant="secondary"
           />
         </div>
       ) : null}
@@ -119,6 +149,7 @@ export const GridLayout = ({
   id,
   children: childrenProp,
   colCount,
+  cols,
   className,
   layoutAPI,
   rowCount,
@@ -129,14 +160,18 @@ export const GridLayout = ({
   const {
     children,
     dispatchGridLayoutAction,
+    gridTemplateColumns,
     gridTemplateRows,
+    layoutMap,
     splitGridCol,
     splitGridRow,
     containerRef,
-    splitters,
+    nonContentGridItems: { placeholders, splitters },
     ...layoutProps
   } = useGridSplitterResizing({
     children: childrenProp,
+    colCount,
+    cols,
     id,
     rowCount,
     rows,
@@ -154,12 +189,16 @@ export const GridLayout = ({
   const style = {
     "--col-count": colCount,
     "--row-count": rowCount,
+    gridTemplateColumns,
     gridTemplateRows,
     ...styleProp,
   } as CSSProperties;
 
   return (
-    <GridLayoutProvider dispatchGridLayoutAction={dispatchGridLayoutAction}>
+    <GridLayoutProvider
+      dispatchGridLayoutAction={dispatchGridLayoutAction}
+      layoutMap={layoutMap}
+    >
       <div
         {...htmlAttributes}
         {...layoutProps}
@@ -168,6 +207,16 @@ export const GridLayout = ({
         className={cx(classBase, className)}
       >
         {children}
+        {placeholders.map((placeholder) => (
+          <GridPlaceholder
+            id={placeholder.id}
+            key={placeholder.id}
+            style={{
+              gridColumn: `${placeholder.column.start}/${placeholder.column.end}`,
+              gridRow: `${placeholder.row.start}/${placeholder.row.end}`,
+            }}
+          />
+        ))}
         {splitters.map((splitter) => (
           <GridSplitter
             align={splitter.align}
