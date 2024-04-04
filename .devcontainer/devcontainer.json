@@ -1,0 +1,26 @@
+{
+  "name": "VUU",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "v18.17.0" }
+  },
+
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {},
+      "extensions": [
+        "Orta.vscode-jest",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+
+  "forwardPorts": [5173, 8443, 8090]
+}
