@@ -16,7 +16,7 @@ const classBase = "vuuFilterClause";
 
 type FilterClauseValueEditorProps = Pick<
   ReturnType<typeof useFilterClause>,
-  "selectedColumn" | "InputProps" | "onChangeValue" | "onDeselectValue"
+  "selectedColumn" | "inputProps" | "onChangeValue" | "onDeselectValue"
 > &
   Pick<FilterClauseProps, "suggestionProvider"> & {
     table?: TableSchema["table"];
@@ -30,8 +30,7 @@ export const FilterClauseValueEditor: React.FC<
 > = ({
   selectedColumn,
   operator,
-
-  InputProps,
+  inputProps,
   onChangeValue,
   onDeselectValue,
   suggestionProvider,
@@ -46,7 +45,7 @@ export const FilterClauseValueEditor: React.FC<
     console.log(`return DateInput`);
     return (
       <FilterClauseValueEditorDate
-        InputProps={InputProps}
+        inputProps={inputProps}
         className={cx(`${classBase}Field`, `${classBase}Value`)}
         data-field="value"
         value={value as number}
@@ -61,16 +60,21 @@ export const FilterClauseValueEditor: React.FC<
     case "char":
       return (
         <FilterClauseValueEditorText
-          InputProps={InputProps}
+          inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
           column={selectedColumn}
-          data-field="value"
           onDeselect={onDeselectValue}
           onChangeValue={onChangeValue}
           operator={operator}
           suggestionProvider={suggestionProvider}
           table={table}
-          value={value as string | string[]}
+          value={
+            value === undefined
+              ? ""
+              : Array.isArray(value)
+              ? value.map((val) => val.toString())
+              : (value.toString() as string | string[])
+          }
         />
       );
     case "int":
@@ -78,7 +82,7 @@ export const FilterClauseValueEditor: React.FC<
     case "double":
       return (
         <FilterClauseValueEditorNumber
-          InputProps={InputProps}
+          inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
           column={selectedColumn}
           data-field="value"

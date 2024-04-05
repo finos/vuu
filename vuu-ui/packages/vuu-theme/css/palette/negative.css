@@ -1,7 +1,7 @@
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu[data-mode="light"] {
   --salt-palette-negative-foreground: var(--salt-color-red-700);
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu[data-mode="dark"] {
   --salt-palette-negative-foreground: var(--salt-color-red-300);
 }

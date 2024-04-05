@@ -1,0 +1,56 @@
+.vuuExpandoComboboxSalt {
+  --expando-combobox-height: var(--vuuExpandoCombobox-height, var(--salt-size-base));
+  --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSize, 12px);
+  --saltInput-paddingLeft: 0px;
+  --saltInput-paddingRight: 0px;
+
+  display: inline-flex;
+  flex-direction: column;
+  height: var(--expando-combobox-height);
+  min-width: 4px;
+  padding: 0;
+
+  .saltPill {
+    height: 100%;
+    padding-block: 0px;
+  }
+
+  .saltPillInput {
+    min-height: var(--expando-combobox-height);
+    min-width: 0px;
+  }
+
+
+  .saltPillInput-inputWrapper {
+    height: 100%;
+    min-width: max(var(--salt-spacing-800), 100%);
+    padding: 0;
+  }
+  .saltPillInput-input {
+    width: 0;
+  }
+
+  .saltPillInput-endAdornmentContainer {
+    display: none;
+  }
+  .saltPillInput-activationIndicator {
+    display: none;
+  }
+
+}
+
+.vuuExpandoOption {
+  min-width: calc(var(--salt-size-base) * 2);
+  padding-left: var(--salt-spacing-200);
+  padding-right: var(--salt-spacing-200);
+}
+
+
+.vuuExpandoComboboxSalt:before {
+  content: attr(data-text);
+  display: block;
+  font-size: var(--expando-combobox-fontSize);
+  height: 0px;
+  overflow: hidden;
+  white-space: pre-wrap;
+}

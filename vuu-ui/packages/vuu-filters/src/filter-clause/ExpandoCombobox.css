@@ -12,6 +12,7 @@
   height: var(--expando-combobox-height);
   min-width: 4px;
   padding: 0;
+
 }
 
 .vuuExpandoCombobox .saltInput {

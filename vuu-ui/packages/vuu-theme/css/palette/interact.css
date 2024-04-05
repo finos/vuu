@@ -1,4 +1,4 @@
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu[data-mode="light"] {
   --salt-palette-interact-background: transparent;
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-30);
   --salt-palette-interact-background-hover: var(--vuu-color-gray-10);
@@ -44,7 +44,7 @@
   --salt-palette-interact-secondary-foreground-hover: var(--salt-color-gray-900);
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu[data-mode="dark"] {
   --salt-palette-interact-background: transparent;
   --salt-palette-interact-background-active: var(--salt-color-blue-700);
   --salt-palette-interact-background-blurSelected: var(--salt-color-gray-600);

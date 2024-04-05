@@ -1,4 +1,4 @@
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu[data-mode="light"] {
   --salt-palette-navigate-primary-background-active: transparent;
   --salt-palette-navigate-foreground-hover: var(--salt-color-blue-600);
   --salt-palette-navigate-foreground-active: var(--salt-color-blue-700);
@@ -7,7 +7,7 @@
   --salt-palette-navigate-indicator-active: var(--vuu-color-purple-10);
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu[data-mode="dark"] {
   --salt-palette-navigate-primary-background-active: transparent;
   --salt-palette-navigate-foreground-hover: var(--salt-color-blue-200);
   --salt-palette-navigate-foreground-active: var(--salt-color-blue-300);

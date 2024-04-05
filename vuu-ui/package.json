@@ -49,7 +49,7 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
-    "@salt-ds/core": "1.17.0",
+    "@salt-ds/core": "1.22.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
@@ -96,7 +96,7 @@
     "serve": "^14.2.1",
     "stylelint": "^15.0.0",
     "tinycolor2": "1.4.2",
-    "typescript": "4.9.5",
+    "typescript": "5.4.3",
     "vite": "5.0.12",
     "vite-tsconfig-paths": "4.2.2",
     "vitest": "1.5.0"

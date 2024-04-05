@@ -1,10 +1,8 @@
-import { FilterClause } from "@finos/vuu-filter-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isValidFilterClauseOp } from "@finos/vuu-utils";
-import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
+import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
 import {
   FocusEventHandler,
   KeyboardEvent,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -80,14 +78,12 @@ export const useFilterClause = ({
     [filterClauseModel, onCancel]
   );
 
-  const handleColumnSelect = useCallback<
-    SingleSelectionHandler<ColumnDescriptor>
-  >(
-    (evt, column) => {
+  const onSelectColumn = (evt: SyntheticEvent, selectedColumn: string) => {
+    if (selectedColumn) {
       if (evt?.type === "keydown") {
         const { key } = evt as KeyboardEvent;
         if (key === "Tab") {
-          if (filterClauseModel.column === column.name) {
+          if (filterClauseModel.column === selectedColumn) {
             // No selection change, allow normal Tab navigation (to Save button)
             return;
           } else {
@@ -96,25 +92,18 @@ export const useFilterClause = ({
           }
         }
       }
-      filterClauseModel.column = column?.name ?? undefined;
-      setTimeout(() => {
-        focusNextElement();
-      }, 100);
-    },
-    [filterClauseModel]
-  );
+    }
+    filterClauseModel.column = selectedColumn;
+    setTimeout(() => {
+      console.log(`focus next element`);
+      focusNextElement();
+    }, 100);
+  };
 
-  const handleOperatorSelect = useCallback<SingleSelectionHandler>(
-    (_, selected) => {
-      const op = selected;
-      if (op === undefined || isValidFilterClauseOp(op)) {
-        filterClauseModel.setOp(op);
-        focusNextElement();
-      } else {
-        throw Error(
-          `FilterClauseEditor, invalid value ${op} for filter clause`
-        );
-      }
+  const onSelectOperator = useCallback(
+    (_, selectedOp: FilterClauseOp) => {
+      filterClauseModel.setOp(selectedOp);
+      focusNextElement();
     },
     [filterClauseModel]
   );
@@ -151,12 +140,10 @@ export const useFilterClause = ({
     }
   }, []);
 
-  const InputProps = useMemo(
+  const inputProps = useMemo(
     () => ({
-      inputProps: {
-        onKeyDownCapture: handleKeyDownCaptureNavigation,
-        tabIndex: -1,
-      },
+      onKeyDownCapture: handleKeyDownCaptureNavigation,
+      tabIndex: -1,
     }),
     [handleKeyDownCaptureNavigation]
   );
@@ -172,14 +159,14 @@ export const useFilterClause = ({
   }, [filterClauseModel]);
 
   return {
-    InputProps,
+    inputProps,
     columnRef,
     filterClause,
     onChangeValue: handleChangeValue,
     onDeselectValue: handleDeselectValue,
-    onColumnSelect: handleColumnSelect,
+    onSelectColumn,
     onFocus: handleFocus,
-    onOperatorSelect: handleOperatorSelect,
+    onSelectOperator,
     operatorRef,
     selectedColumn: columnsByName[filterClause.column ?? ""],
   };
