@@ -1,4 +1,17 @@
-import { SaltMatcher } from "./css-salt-matcher.mjs";
+import { SaltMatcher } from "../css-salt-matcher.ts";
+
+export const isSelectorList = (cssTreeNode) =>
+  cssTreeNode.type === "SelectorList";
+
+export const isCustomProperty = (cssTreeNode) =>
+  cssTreeNode.type === "Declaration" && cssTreeNode.property.startsWith("--");
+
+export const isRGB = (cssTreeNode) =>
+  cssTreeNode.type === "Function" &&
+  (cssTreeNode.name === "rgb" || cssTreeNode.name === "rgba");
+
+export const isVar = (cssTreeNode) =>
+  cssTreeNode.type === "Function" && cssTreeNode.name === "var";
 
 export const getVariableGroups = (variableName) => {
   if (typeof variableName !== "string") {
@@ -17,19 +30,4 @@ export const getVariableGroups = (variableName) => {
   }
 
   return [root];
-};
-
-const tagCodes = {};
-let nextTagCode = 0;
-
-const tags = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export const getTagCodes = () => tagCodes;
-
-export const getTagCode = (tag) => {
-  if (tagCodes[tag]) {
-    return tagCodes[tag];
-  } else {
-    tagCodes[tag] = tags[nextTagCode++];
-    return tagCodes[tag];
-  }
 };

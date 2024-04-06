@@ -1,6 +1,5 @@
 import fs from "fs";
-
-import { parseTheme } from "./css-parser.mjs";
+import { parseTheme } from "./parse-theme.ts";
 
 const outdir = "./generated";
 
@@ -16,31 +15,21 @@ const writeFile = async (json, path) =>
   });
 
 // There are no dupes in the data being sorted
-const byVariableName = ([v1], [v2]) => (v2 > v1 ? -1 : 1);
+// const byVariableName = ([v1], [v2]) => (v2 > v1 ? -1 : 1);
 
 function main() {
-  const path = "../../dist/vuu-theme/index.css";
+  // const path = "../../dist/vuu-theme/index.css";
+  const path = "./test-css/index.css";
   const rawdata = fs.readFileSync(path);
 
-  const { customPropertyMap, scopes, tagCodes } = parseTheme(
-    rawdata.toString()
-  );
+  const variableRegistry = parseTheme(rawdata.toString());
+  console.log(`parsed ${variableRegistry.count} custom variables`);
 
-  // console.log(tagCodes);
-  console.log(
-    `we have ${Object.keys(customPropertyMap).length} custom properties`
-  );
+  variableRegistry.storeReferences();
 
-  console.log(JSON.stringify(scopes, null, 2));
+  // scopeList.scopes.forEach((scope) => console.log(`\n${scope.toString()}`));
 
-  const variableList = {};
-  for (const [variableName, scopes] of Object.entries(customPropertyMap).sort(
-    byVariableName
-  )) {
-    variableList[variableName] = scopes;
-  }
-
-  writeFile(customPropertyMap, `${outdir}/variablelist.json`);
+  // writeFile(customPropertyMap, `${outdir}/variablelist.json`);
   // for (const [selectorList, customProperties] of scopes.entries()) {
   //   if (customProperties.length > 0) {
   //     console.log(`\n${selectorList.toString()}`);
