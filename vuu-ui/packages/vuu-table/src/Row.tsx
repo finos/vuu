@@ -9,11 +9,13 @@ import {
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
-  metadataKeys,
   isNotHidden,
-  RowSelected,
+  metadataKeys,
   RowClassNameGenerator,
+  RowSelected,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
@@ -24,7 +26,7 @@ import {
 } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
-import "./Row.css";
+import rowCss from "./Row.css";
 
 export interface RowProps {
   className?: string;
@@ -51,6 +53,13 @@ const classBase = "vuuTableRow";
 // be controlled purely through CSS.
 export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
   function RowProxy({ height }, forwardedRef) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-table-row",
+      css: rowCss,
+      window: targetWindow,
+    });
+
     return (
       <div
         aria-hidden
@@ -79,6 +88,13 @@ export const Row = memo(
     zebraStripes = false,
     ...htmlAttributes
   }: RowProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-table-row",
+      css: rowCss,
+      window: targetWindow,
+    });
+
     const {
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,

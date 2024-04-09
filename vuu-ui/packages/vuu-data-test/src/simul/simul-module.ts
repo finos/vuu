@@ -4,10 +4,10 @@ import { makeSuggestions } from "../makeSuggestions";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import type { VuuModule } from "../vuu-modules";
-import instrumentsTable from "./reference-data/instruments";
-import instrumentsExtendedTable from "./reference-data/instruments-extended";
-import ordersTable from "./reference-data/orders";
-import pricesTable from "./reference-data/prices";
+import { instrumentsTable } from "./reference-data/instruments";
+import { instrumentsExtendedTable } from "./reference-data/instruments-extended";
+import { ordersTable } from "./reference-data/orders";
+import { pricesTable } from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
 
 type RpcService = {
@@ -134,9 +134,7 @@ const suggestionFetcher: SuggestionFetcher = ([
   }
 };
 
-const simulModule: VuuModule<SimulTableName> = {
+export const simulModule: VuuModule<SimulTableName> = {
   createDataSource,
   typeaheadHook: () => suggestionFetcher,
 };
-
-export default simulModule;

@@ -1,10 +1,8 @@
 import type {
-  DataSourceFilter,
   DataSourceRow,
   SchemaColumn,
   TableSchema,
 } from "@finos/vuu-data-types";
-import type { Filter, MultiClauseFilter } from "@finos/vuu-filter-types";
 import type {
   VuuAggregation,
   VuuAggType,
@@ -37,7 +35,6 @@ import type {
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
-import { isFilterClause, isMultiClauseFilter } from "./filters/utils";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row
@@ -508,42 +505,6 @@ export const setAggregations = (
     .concat({ column: column.name, aggType });
 };
 
-export const extractFilterForColumn = (
-  filter: Filter | undefined,
-  columnName: string
-) => {
-  if (isMultiClauseFilter(filter)) {
-    return collectFiltersForColumn(filter, columnName);
-  }
-  if (isFilterClause(filter)) {
-    return filter.column === columnName ? filter : undefined;
-  }
-  return undefined;
-};
-
-const collectFiltersForColumn = (
-  filter: MultiClauseFilter,
-  columnName: string
-) => {
-  const { filters, op } = filter;
-  const results: Filter[] = [];
-  filters.forEach((filter) => {
-    const ffc = extractFilterForColumn(filter, columnName);
-    if (ffc) {
-      results.push(ffc);
-    }
-  });
-  if (results.length === 0) {
-    return undefined;
-  } else if (results.length === 1) {
-    return results[0];
-  }
-  return {
-    op,
-    filters: results,
-  };
-};
-
 export const applyGroupByToColumns = (
   columns: RuntimeColumnDescriptor[],
   groupBy: VuuGroupBy,
@@ -590,37 +551,6 @@ export const removeSort = (columns: RuntimeColumnDescriptor[]) =>
 
 export const existingSort = (columns: RuntimeColumnDescriptor[]) =>
   columns.some((col) => col.sorted);
-
-export const applyFilterToColumns = (
-  columns: RuntimeColumnDescriptor[],
-  { filterStruct }: DataSourceFilter
-) =>
-  columns.map((column) => {
-    // TODO this gives us a dependency on vuu-filters
-    const filter = extractFilterForColumn(filterStruct, column.name);
-    if (filter !== undefined) {
-      return {
-        ...column,
-        filter,
-      };
-    } else if (column.filter) {
-      return {
-        ...column,
-        filter: undefined,
-      };
-    } else {
-      return column;
-    }
-  });
-
-export const isFilteredColumn = (column: RuntimeColumnDescriptor) =>
-  column.filter !== undefined;
-
-export const stripFilterFromColumns = (columns: RuntimeColumnDescriptor[]) =>
-  columns.map((col) => {
-    const { filter, ...rest } = col;
-    return filter ? rest : col;
-  });
 
 const getSortType = (column: ColumnDescriptor, { sortDefs }: VuuSort) => {
   const sortDef = sortDefs.find((sortCol) => sortCol.column === column.name);

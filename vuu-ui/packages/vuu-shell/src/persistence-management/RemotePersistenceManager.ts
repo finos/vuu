@@ -1,10 +1,7 @@
-import { getAuthDetailsFromCookies } from "@finos/vuu-shell";
 import { PersistenceManager } from "./PersistenceManager";
-import {
-  ApplicationJSON,
-  LayoutJSON,
-} from "@finos/vuu-layout/src/layout-reducer";
+import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
+import { getAuthDetailsFromCookies } from "../login";
 
 const baseURL = process.env.LAYOUT_BASE_URL;
 const metadataSaveLocation = "layouts/metadata";

@@ -1,2 +1,2 @@
 export * from "./utils";
-export { filterAsQuery } from "./filterAsQuery";
+export * from "./filterAsQuery";

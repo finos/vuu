@@ -241,6 +241,7 @@ export const useBasketTrading = ({
     console.log("handleRpcResponse", {
       response,
     });
+    return true;
   }, []);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({

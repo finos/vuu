@@ -1,4 +1,5 @@
 import {
+  createFolder,
   byFileName,
   formatBytes,
   formatDuration,
@@ -15,10 +16,27 @@ const indexFiles = buildFileList("./src/examples", /index.ts$/);
 const examples = buildFileList("./src/examples", /examples.tsx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
 
-const entryPoints = ["src/index.tsx"]
+const entryPoints = ["src/main.tsx"]
   .concat(indexFiles)
   .concat(features)
   .concat(examples);
+
+const cssInlinePlugin = {
+  name: "CssInline",
+  setup(build) {
+    build.onLoad(
+      {
+        filter:
+          /((Calendar|CalendarDay|CalendarCarousel|CalendarMonth|CalendarNavigation|CalendarWeekHeader))\.css$/,
+      },
+      async (args) => {
+        const css = await fs.promises.readFile(args.path, "utf8");
+        // css = await esbuild.transform(css, { loader: "css", minify: true });
+        return { loader: "text", contents: css };
+      }
+    );
+  },
+};
 
 const HTML_TEMPLATE = `
 <!DOCTYPE html>
@@ -29,12 +47,12 @@ const HTML_TEMPLATE = `
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/manifest.json">    
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/index.css"/>
+    <link rel="stylesheet" href="/main.css"/>
     <title>Vite Showcase</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.js"></script>
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
 `;
@@ -47,6 +65,7 @@ const esbuildConfig = {
   entryPoints,
   env: "production",
   name: "showcase",
+  plugins: [cssInlinePlugin],
   outdir,
   splitting: true,
   target: "esnext",
@@ -65,13 +84,9 @@ function writeHtmlFile() {
 }
 
 async function main() {
-  function createDeployFolder() {
-    fs.rmSync(outdir, { recursive: true, force: true });
-    fs.mkdirSync(outdir, { recursive: true });
-  }
-
   console.log("[CLEAN]");
-  createDeployFolder();
+  // Create the deploy folder
+  createFolder(outdir);
 
   console.log("[BUILD]");
   const [

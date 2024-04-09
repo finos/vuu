@@ -1,11 +1,11 @@
 import { SaveLocation } from "@finos/vuu-shell";
-import { useCallback } from "react";
-import { v4 as uuidv4 } from "uuid";
 import {
   getAllLocalEntity,
   getLocalEntity,
   saveLocalEntity,
-} from "./local-config";
+} from "@finos/vuu-utils";
+import { useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 type EntityStoreProps = {
   baseUrl: string;

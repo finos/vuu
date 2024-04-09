@@ -1,5 +1,9 @@
-import { RpcResponseHandler, useVuuTables } from "@finos/vuu-data-react";
-import { MenuRpcResponse, TableSchema } from "@finos/vuu-data-types";
+import { useVuuTables } from "@finos/vuu-data-react";
+import {
+  MenuRpcResponse,
+  RpcResponseHandler,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import { SetDialog } from "@finos/vuu-popups";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { Feature, SessionEditingForm } from "@finos/vuu-shell";
@@ -61,8 +65,10 @@ export const useRpcResponseHandler = (setDialogState: SetDialog) => {
             });
           }
         }
+        return true;
       } else {
         console.warn(`App, handleServiceRequest ${JSON.stringify(response)}`);
+        return false;
       }
     },
     [handleClose, setDialogState, tables]

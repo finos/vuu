@@ -1,6 +1,4 @@
-//Note these are duplicated in vuu-filter, those should probably be removed.
-
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import type { DataSourceFilter } from "@finos/vuu-data-types";
 import {
   AndFilter,
   Filter,
@@ -12,7 +10,7 @@ import {
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
-import { filterAsQuery } from "./filterAsQuery";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -65,18 +63,69 @@ export function isMultiClauseFilter(
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
 
-export const removeColumnFromFilter = (
-  column: RuntimeColumnDescriptor,
-  filter: Filter
-): [Filter | undefined, string] => {
+export const applyFilterToColumns = (
+  columns: RuntimeColumnDescriptor[],
+  { filterStruct }: DataSourceFilter
+) =>
+  columns.map((column) => {
+    // TODO this gives us a dependency on vuu-filters
+    const filter = extractFilterForColumn(filterStruct, column.name);
+    if (filter !== undefined) {
+      return {
+        ...column,
+        filter,
+      };
+    } else if (column.filter) {
+      return {
+        ...column,
+        filter: undefined,
+      };
+    } else {
+      return column;
+    }
+  });
+
+export const isFilteredColumn = (column: RuntimeColumnDescriptor) =>
+  column.filter !== undefined;
+
+export const stripFilterFromColumns = (columns: RuntimeColumnDescriptor[]) =>
+  columns.map((col) => {
+    const { filter, ...rest } = col;
+    return filter ? rest : col;
+  });
+
+export const extractFilterForColumn = (
+  filter: Filter | undefined,
+  columnName: string
+) => {
   if (isMultiClauseFilter(filter)) {
-    const [clause1, clause2] = filter.filters;
-    if (clause1.column === column.name) {
-      return [clause2, filterAsQuery(clause2)];
-    }
-    if (clause2.column === column.name) {
-      return [clause1, filterAsQuery(clause1)];
-    }
+    return collectFiltersForColumn(filter, columnName);
   }
-  return [undefined, ""];
+  if (isFilterClause(filter)) {
+    return filter.column === columnName ? filter : undefined;
+  }
+  return undefined;
+};
+
+const collectFiltersForColumn = (
+  filter: MultiClauseFilter,
+  columnName: string
+) => {
+  const { filters, op } = filter;
+  const results: Filter[] = [];
+  filters.forEach((filter) => {
+    const ffc = extractFilterForColumn(filter, columnName);
+    if (ffc) {
+      results.push(ffc);
+    }
+  });
+  if (results.length === 0) {
+    return undefined;
+  } else if (results.length === 1) {
+    return results[0];
+  }
+  return {
+    op,
+    filters: results,
+  };
 };

@@ -9,7 +9,7 @@ import {
   useFilterSuggestionProvider,
 } from "@finos/vuu-filters";
 import { FilterSubmissionMode } from "@finos/vuu-filters/src/filter-input/useFilterAutoComplete";
-import { useFilterConfig } from "@finos/vuu-filters/src/use-filter-config";
+import { useFilterConfig } from "@finos/vuu-filters";
 import { filterAsQuery, JsonData } from "@finos/vuu-utils";
 import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";

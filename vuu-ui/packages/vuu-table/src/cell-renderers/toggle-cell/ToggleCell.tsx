@@ -10,12 +10,14 @@ import {
   isValueListRenderer,
   registerComponent,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 
 import { memo, useCallback } from "react";
 import { CycleStateButton } from "@finos/vuu-ui-controls";
 
-import "./ToggleCell.css";
+import toggleCellCss from "./ToggleCell.css";
 
 const classBase = "vuuTableToggleCell";
 
@@ -35,6 +37,13 @@ export const ToggleCell = memo(function ToggleCell({
   onCommit = WarnCommit,
   row,
 }: TableCellRendererProps) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toggle-cell",
+    css: toggleCellCss,
+    window: targetWindow,
+  });
+
   const values = getValueList(column);
   const dataIdx = columnMap[column.name];
   const value = row[dataIdx] as string;

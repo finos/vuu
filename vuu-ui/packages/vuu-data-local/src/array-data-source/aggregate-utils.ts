@@ -1,7 +1,7 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuAggregation, VuuGroupBy } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "@finos/vuu-utils";
-import { GroupMap, KeyList } from "./group-utils";
+import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { VuuAggregation, VuuGroupBy } from "@finos/vuu-protocol-types";
+import type { ColumnMap } from "@finos/vuu-utils";
+import type { GroupMap, KeyList } from "./group-utils";
 
 export const count = (arr: any[]) => arr.length;
 

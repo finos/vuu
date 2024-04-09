@@ -32,7 +32,7 @@ export type ThemeClasses = [string, string, ThemeMode];
 
 const DEFAULT_THEME_ATTRIBUTES: ThemeClasses = [
   "vuu",
-  "vuu-density-high",
+  "salt-density-high",
   "light" as ThemeMode,
 ];
 
@@ -55,7 +55,7 @@ export const useThemeAttributes = (
   } else if (context) {
     return [
       `${context.theme}-theme`,
-      `${context.theme}-density-${context.density}`,
+      `salt-density-${context.density}`,
       context.themeMode,
     ];
   }
@@ -74,7 +74,7 @@ const createThemedChildren = (
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
         `${theme}-theme`,
-        `${theme}-density-${density}`
+        `salt-density-${density}`
       ),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error

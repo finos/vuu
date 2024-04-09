@@ -5,4 +5,4 @@ export * from "./filter-editor";
 export * from "./filter-input";
 export * from "./filter-pill";
 export * from "./filter-utils";
-export * from "./local-config";
+export * from "./use-filter-config";

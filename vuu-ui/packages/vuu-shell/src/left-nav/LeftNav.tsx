@@ -1,6 +1,6 @@
 import { VuuLogo } from "@finos/vuu-icons";
 import { Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { LayoutResizeAction } from "@finos/vuu-layout/src/layout-reducer";
+import { LayoutResizeAction } from "@finos/vuu-layout";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { useThemeAttributes } from "@finos/vuu-utils";
 import cx from "clsx";

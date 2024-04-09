@@ -5,16 +5,16 @@ import { instrumentsData, InstrumentColumnMap } from "./instruments";
 import { random } from "../../data-utils";
 import basketConstituentData from "../../basket/reference-data/constituents";
 
-export type ask = number;
-export type askSize = number;
-export type bid = number;
-export type bidSize = number;
-export type close = number;
-export type last = number;
-export type open = number;
-export type phase = "C";
-export type ric = string;
-export type scenario = "close";
+type ask = number;
+type askSize = number;
+type bid = number;
+type bidSize = number;
+type close = number;
+type last = number;
+type open = number;
+type phase = "C";
+type ric = string;
+type scenario = "close";
 
 export type PricesDataRow = [
   ask,
@@ -91,7 +91,7 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
 // const end = performance.now();
 // console.log(`generating 100,000 prices took ${end - start} ms`);
 
-const pricesTable = new Table(
+export const pricesTable = new Table(
   schemas.prices,
   pricesData,
   buildDataColumnMap(schemas.prices),
@@ -99,4 +99,3 @@ const pricesTable = new Table(
 );
 
 export { pricesData };
-export default pricesTable;

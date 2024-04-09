@@ -3,7 +3,7 @@ import { NamedFilter } from "@finos/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
-import { ContributionLocation } from "../layout-view";
+import { ContributionLocation } from "../layout-view-actions";
 
 export interface WithProps {
   props?: { [key: string]: any };

@@ -1,9 +1,11 @@
 import { DataItemCommitHandler, TableCellProps } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 
-import "./TableCell.css";
+import tableCellCss from "./TableCell.css";
 
 const classBase = "vuuTableCell";
 
@@ -14,6 +16,13 @@ export const TableCell = ({
   onDataEdited,
   row,
 }: TableCellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table-cell",
+    css: tableCellCss,
+    window: targetWindow,
+  });
+
   const { className, style } = useCell(column, classBase);
   const { CellRenderer, index, name, valueFormatter } = column;
   const dataIdx = columnMap[name];

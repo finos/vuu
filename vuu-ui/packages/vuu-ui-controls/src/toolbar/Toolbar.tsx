@@ -1,8 +1,3 @@
-import {
-  forwardCallbackProps,
-  SelectionStrategy,
-  SpecialKeyMultipleSelection,
-} from "@finos/vuu-ui-controls";
 import { asReactElements, useId } from "@finos/vuu-utils";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";
@@ -11,8 +6,13 @@ import {
   OverflowContainerProps,
 } from "../overflow-container";
 import { useToolbar } from "./useToolbar";
+import { forwardCallbackProps } from "../utils";
 
 import "./Toolbar.css";
+import {
+  SelectionStrategy,
+  SpecialKeyMultipleSelection,
+} from "../common-hooks";
 
 const classBase = "vuuToolbar";
 

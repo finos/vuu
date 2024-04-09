@@ -277,9 +277,7 @@ const createDataSource = (tableName: BasketsTableName) => {
 
 const nullTypeaheadHook = async () => [];
 
-const basketModule: VuuModule<BasketsTableName> = {
+export const basketModule: VuuModule<BasketsTableName> = {
   createDataSource,
   typeaheadHook: () => nullTypeaheadHook,
 };
-
-export default basketModule;

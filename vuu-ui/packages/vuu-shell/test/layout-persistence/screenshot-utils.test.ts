@@ -1,6 +1,6 @@
 import { takeScreenshot } from "../../src/layout-management/screenshot-utils";
 import { describe, expect, it, vi } from "vitest";
-import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
+import { expectPromiseRejectsWithError } from "./utils";
 import htmlToImage from "html-to-image";
 
 const node = document.createElement("div");

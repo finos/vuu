@@ -3,9 +3,9 @@ import {
   Density,
   getUrlParameter,
   ThemeMode,
-  ThemeProvider,
 } from "@finos/vuu-utils";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { SaltProvider } from "@salt-ds/core";
 import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
 
 import "./Showcase.css";
@@ -19,7 +19,7 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
 };
 
 const themeIsInstalled = (theme = "no-theme") => {
-  return ["salt", "vuu", "tar"].includes(theme);
+  return ["salt-theme", "vuu-theme", "tar-theme"].includes(theme);
 };
 
 const asDensity = (input: string | undefined): Density => {
@@ -42,7 +42,7 @@ export const ShowcaseStandalone = () => {
   const [themeReady, setThemeReady] = useState(false);
 
   // We only need this once as entire page will refresh if theme changes
-  const theme = useMemo(() => getUrlParameter("theme", "vuu"), []);
+  const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
 
   useEffect(() => {
     const checkUrlParams = () => {
@@ -72,6 +72,7 @@ export const ShowcaseStandalone = () => {
   useMemo(async () => {
     const url = new URL(document.location.href);
     const [targetPaths, exampleName] = pathToExample(url.pathname.slice(1));
+    console.log({ targetPaths, exampleName });
     let targetExamples = null;
     const path = [exampleName];
     for (const importPath of targetPaths) {
@@ -110,14 +111,13 @@ export const ShowcaseStandalone = () => {
 
   if (themeReady || theme === "no-theme") {
     return (
-      <ThemeProvider
-        applyThemeClasses
+      <SaltProvider
         theme={theme}
         density={densityRef.current}
-        themeMode={themeModeRef.current}
+        mode={themeModeRef.current}
       >
         <div className="vuuShowcase-StandaloneRoot">{component}</div>
-      </ThemeProvider>
+      </SaltProvider>
     );
   } else {
     return null;

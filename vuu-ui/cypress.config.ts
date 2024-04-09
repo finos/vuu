@@ -3,9 +3,10 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
+import { cssInline } from "./tools/vite-plugin-inline-css/src";
 
 const viteConfig: UserConfig = {
-  plugins: [react(), tsconfigPaths() /*, IstanbulPlugin()*/],
+  plugins: [react(), tsconfigPaths(), /*, IstanbulPlugin()*/ cssInline()],
   server: {
     watch: {
       ignored: ["**/coverage"],

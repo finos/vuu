@@ -10,7 +10,6 @@ import React, {
 } from "react";
 //TODO do we want this dependency ?
 import { useId } from "@finos/vuu-utils";
-import { isMenuItemGroup } from "./use-items-with-ids-next";
 import {
   MenuCloseHandler,
   useKeyboardNavigation,
@@ -21,6 +20,9 @@ import "./MenuList.css";
 const classBase = "vuuMenuList";
 
 export const Separator = () => <li className="vuuMenuItem-divider" />;
+
+export const isMenuItemGroup = (child: ReactElement) =>
+  child.type === MenuItemGroup || !!child.props["data-group"];
 
 export interface MenuItemGroupProps {
   children:

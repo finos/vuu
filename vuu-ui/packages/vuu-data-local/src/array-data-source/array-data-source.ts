@@ -16,7 +16,7 @@ import {
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
-import {
+import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   LinkDescriptorWithLabel,
@@ -27,7 +27,7 @@ import {
   VuuRowDataItemType,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   buildColumnMap,
   ColumnMap,

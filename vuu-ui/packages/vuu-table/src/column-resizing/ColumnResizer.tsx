@@ -1,6 +1,8 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { useCallback, useRef } from "react";
 
-import "./ColumnResizer.css";
+import columnResizerCss from "./ColumnResizer.css";
 
 const NOOP = () => undefined;
 
@@ -16,6 +18,13 @@ export const ColumnResizer = ({
   onDragEnd = NOOP,
   onDragStart = NOOP,
 }: TableColumnResizerProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-column-resizer",
+    css: columnResizerCss,
+    window: targetWindow,
+  });
+
   const positionRef = useRef({ start: 0, now: 0 });
 
   const onMouseMove = useCallback(

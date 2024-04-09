@@ -5,10 +5,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   MenuActionHandler,
   MenuBuilder,
-  MenuRpcResponse,
-  ViewportRpcResponse,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
+  RpcResponseHandler,
 } from "@finos/vuu-data-types";
 import { getFilterPredicate } from "@finos/vuu-filter-parser";
 import type { MenuActionClosePopup } from "@finos/vuu-popups";
@@ -145,14 +142,6 @@ export interface MenuActionConfig {
   visualLink?: DataSourceVisualLinkCreatedMessage;
   visualLinks?: LinkDescriptorWithLabel[];
 }
-
-export type RpcResponseHandler = (
-  response:
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | ViewportRpcResponse
-) => void;
 
 export interface VuuMenuActionHookProps {
   /**

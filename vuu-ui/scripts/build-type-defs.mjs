@@ -23,7 +23,7 @@ const writeProjectTsConfig = async () => {
       compilerOptions: {
         outDir: `${outdir}/types`,
       },
-      include: ["src"],
+      include: ["src", "../../global.d.ts"],
     };
 
     fs.writeFile(tsConfigFile, JSON.stringify(config, null, 2), (err) => {

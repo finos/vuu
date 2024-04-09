@@ -7,11 +7,20 @@ import {
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./CheckboxCell.css";
+import checkboxCss from "./CheckboxCell.css";
 
 export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
   ({ column, columnMap, onCommit = WarnCommit, row }) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-checkbox-cell",
+      css: checkboxCss,
+      window: targetWindow,
+    });
+
     const dataIdx = columnMap[column.name];
     const isChecked = !!row[dataIdx];
 

@@ -1,3 +1,5 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import React, {
   HTMLAttributes,
@@ -7,7 +9,7 @@ import React, {
   useState,
 } from "react";
 
-import "./Splitter.css";
+import splitterCss from "./Splitter.css";
 
 const classBase = "vuuSplitter";
 
@@ -33,6 +35,13 @@ export const Splitter = React.memo(function Splitter({
   onDragStart,
   style,
 }: SplitterProps) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-splitter",
+    css: splitterCss,
+    window: targetWindow,
+  });
+
   const ignoreClick = useRef<boolean>();
   const rootRef = useRef<HTMLDivElement>(null);
   const lastPos = useRef<number>(0);

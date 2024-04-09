@@ -22,6 +22,7 @@ export * from "./itemToString";
 export * from "./json-utils";
 export * from "./keyboard-utils";
 export * from "./keyset";
+export * from "./local-storage-utils";
 export * from "./logging-utils";
 export * from "./menu-utils";
 export * from "./module-utils";

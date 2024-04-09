@@ -3,7 +3,7 @@
   "version": "0.0.26",
   "main": "",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs"
+    "build": "node ../../scripts/run-build-typelib.mjs"
   },
   "types": "index.d.ts",
   "devDependencies": {

@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, useContext } from "react";
-import { ViewAction } from "./viewTypes";
+import { ViewAction } from "../layout-view/viewTypes";
 
 export type QueryReponse = { [key: string]: unknown };
 

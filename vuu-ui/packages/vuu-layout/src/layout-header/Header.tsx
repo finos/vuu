@@ -1,5 +1,5 @@
 import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
-import { default as classnames, default as cx } from "clsx";
+import cx from "clsx";
 import {
   cloneElement,
   HTMLAttributes,
@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Contribution, useViewDispatch } from "../layout-view";
+import { Contribution, useViewDispatch } from "../layout-view-actions";
 
 import "./Header.css";
 
@@ -54,11 +54,7 @@ export const Header = ({
 
   const orientation = collapsed || orientationProp;
 
-  const className = classnames(
-    classBase,
-    classNameProp,
-    `${classBase}-${orientation}`
-  );
+  const className = cx(classBase, classNameProp, `${classBase}-${orientation}`);
 
   const handleEnterEditMode = () => {
     setEditing(true);

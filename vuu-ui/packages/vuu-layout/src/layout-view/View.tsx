@@ -1,5 +1,7 @@
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import React, {
   ForwardedRef,
@@ -14,10 +16,10 @@ import { Header as VuuHeader } from "../layout-header/Header";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
-import { ViewContext, ViewContextAPI } from "./ViewContext";
+import { ViewContext, ViewContextAPI } from "../layout-view-actions";
 import { ViewProps } from "./viewTypes";
 
-import "./View.css";
+import viewCss from "./View.css";
 
 const classBase = "vuuView";
 
@@ -62,6 +64,13 @@ const View = forwardRef(function View(
     title: titleProp,
     ...restProps
   } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-view",
+    css: viewCss,
+    window: targetWindow,
+  });
 
   const id = useId(idProp);
   const rootRef = useRef<HTMLDivElement>(null);

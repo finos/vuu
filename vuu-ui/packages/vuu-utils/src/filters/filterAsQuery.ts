@@ -3,6 +3,7 @@ import {
   Filter,
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
+import { RuntimeColumnDescriptor } from "packages/vuu-table-types";
 import { isDateTimeColumn } from "../column-utils";
 import { isMultiClauseFilter, isMultiValueFilter } from "./utils";
 
@@ -81,3 +82,19 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
 
 const defaultSingleValueFilterAsQuery = (f: SingleValueFilterClause) =>
   `${f.column} ${f.op} ${filterValue(f.value)}`;
+
+export const removeColumnFromFilter = (
+  column: RuntimeColumnDescriptor,
+  filter: Filter
+): [Filter | undefined, string] => {
+  if (isMultiClauseFilter(filter)) {
+    const [clause1, clause2] = filter.filters;
+    if (clause1.column === column.name) {
+      return [clause2, filterAsQuery(clause2)];
+    }
+    if (clause2.column === column.name) {
+      return [clause1, filterAsQuery(clause1)];
+    }
+  }
+  return [undefined, ""];
+};

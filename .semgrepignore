@@ -26,6 +26,7 @@ vuu-ui/sample-apps/app-vuu-basket-trader/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-example/scripts/build.mjs
 vuu-ui/showcase/scripts/build-docs.mjs
 vuu-ui/showcase/scripts/build.mjs
+vuu-ui/showcase/scripts/build-rollup.mjs
 vuu-ui/showcase/scripts/parse-stories.mjs
 vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/utils.mjs

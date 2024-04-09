@@ -1,10 +1,12 @@
 import { GroupColumnDescriptor, TableCellProps } from "@finos/vuu-table-types";
 import { getGroupValueAndOffset, metadataKeys } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { MouseEvent, useCallback } from "react";
 import { useCell } from "../useCell";
 import cx from "clsx";
 
-import "./TableGroupCell.css";
+import tableGroupCellCss from "./TableGroupCell.css";
 
 const { IS_LEAF } = metadataKeys;
 
@@ -16,6 +18,13 @@ export const TableGroupCell = ({
   onClick,
   row,
 }: TableCellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table-group-cell",
+    css: tableGroupCellCss,
+    window: targetWindow,
+  });
+
   const { columns } = column as GroupColumnDescriptor;
   const [value, offset] = getGroupValueAndOffset(columns, row, columnMap);
   const { className, style } = useCell(column, classBase);

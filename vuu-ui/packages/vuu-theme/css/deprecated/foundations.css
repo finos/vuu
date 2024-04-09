@@ -42,10 +42,10 @@
   --salt-shadow-5-color: rgba(0, 0, 0, 0.65); /* Use --salt-shadow-500-color */
 }
 
-.vuu-density-touch,
-.vuu-density-low,
-.vuu-density-medium,
-.vuu-density-high {
+.salt-density-touch,
+.salt-density-low,
+.salt-density-medium,
+.salt-density-high {
   /* Size */
   --salt-size-selection: var(--salt-size-selectable);
   --salt-size-brandBar: 4px; /* Use --salt-size-accent */
@@ -70,7 +70,7 @@
   --salt-zIndex-docked: 1050;
 }
 
-.vuu-density-high {
+.salt-density-high {
   --salt-size-unit: calc(var(--salt-size-basis-unit) * 1);
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 1.5);
   --salt-size-accent: calc(var(--salt-size-basis-unit) * 0.5);
@@ -78,7 +78,7 @@
   --salt-icon-size-status-adornment: 6px; /* Use --salt-size-adornment */
 }
 
-.vuu-density-medium {
+.salt-density-medium {
   --salt-size-unit: calc(var(--salt-size-basis-unit) * 2);
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 2);
   --salt-size-accent: calc(var(--salt-size-basis-unit) * 1);
@@ -86,7 +86,7 @@
   --salt-icon-size-status-adornment: 8px; /* Use --salt-size-adornment */
 }
 
-.vuu-density-low {
+.salt-density-low {
   --salt-size-unit: calc(var(--salt-size-basis-unit) * 3);
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 2.5);
   --salt-size-accent: calc(var(--salt-size-basis-unit) * 1.5);
@@ -94,7 +94,7 @@
   --salt-icon-size-status-adornment: 10px; /* Use --salt-size-adornment */
 }
 
-.vuu-density-touch {
+.salt-density-touch {
   --salt-size-unit: calc(var(--salt-size-basis-unit) * 4);
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 3);
   --salt-size-accent: calc(var(--salt-size-basis-unit) * 2);
