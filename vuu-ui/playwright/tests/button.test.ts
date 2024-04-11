@@ -8,8 +8,7 @@ test('test', async ({ page }) => {
     for (let i = 0; i < themes.length; i++) {
         for (let j = 0; j < themeModes.length; j++) {
             for (let k = 0; k < densities.length; k++) {
-                await page.goto('http://localhost:5173/salt/Button/ButtonVariations?standalone&theme='+themes[i]+'#themeMode='+themeModes[j]+',density='+densities[k]);
-                await page.waitForTimeout(300);
+                await page.goto('http://localhost:4173/salt/Button/ButtonVariations?standalone&theme='+themes[i]+'#themeMode='+themeModes[j]+',density='+densities[k]);
                 await expect(page).toHaveScreenshot();
             }
         }
