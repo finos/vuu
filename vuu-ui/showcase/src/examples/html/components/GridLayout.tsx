@@ -15,7 +15,6 @@ import "./GridSplitter.css";
 
 import {
   GridLayoutProvider,
-  ISplitter,
   useGridLayoutProps,
   useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
@@ -28,15 +27,12 @@ const classBaseItem = "vuuGridLayoutItem";
 
 export type GridResizeable = "h" | "v" | "hv";
 
-export interface GridSplitterProps
-  extends Pick<ISplitter, "align">,
-    HTMLAttributes<HTMLDivElement> {
+export interface GridSplitterProps extends HTMLAttributes<HTMLDivElement> {
   "aria-controls": string;
   orientation: ResizeOrientation;
 }
 
 export const GridSplitter = ({
-  align,
   "aria-controls": ariaControls,
   orientation,
   ...htmlAttributes
@@ -47,7 +43,6 @@ export const GridSplitter = ({
       {...htmlAttributes}
       aria-controls={ariaControls}
       className={cx("vuuGridSplitter", `vuuGridSplitter-${orientation}`)}
-      data-align={align}
       id={id}
       role="separator"
     />
@@ -130,6 +125,9 @@ export const GridLayoutItem = ({
 };
 
 export interface LayoutAPI {
+  addGridColumn: (id: string) => void;
+  addGridRow: (id: string) => void;
+  removeGridColumn: (trackIndex: number) => void;
   splitGridCol: (id: string) => void;
   splitGridRow: (id: string) => void;
 }
@@ -141,18 +139,22 @@ export const GridLayout = ({
   cols,
   className,
   layoutAPI,
+  onClick,
   rowCount,
   rows,
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
   const {
+    addGridColumn,
+    addGridRow,
     children,
     dispatchGridLayoutAction,
     gridTemplateColumns,
     gridTemplateRows,
     layoutMap,
     onDrop,
+    removeGridColumn,
     splitGridCol,
     splitGridRow,
     containerRef,
@@ -163,6 +165,7 @@ export const GridLayout = ({
     colCount,
     cols,
     id,
+    onClick,
     rowCount,
     rows,
   });
@@ -170,10 +173,13 @@ export const GridLayout = ({
   useImperativeHandle(
     layoutAPI,
     () => ({
+      addGridColumn,
+      addGridRow,
+      removeGridColumn,
       splitGridCol,
       splitGridRow,
     }),
-    [splitGridCol, splitGridRow]
+    [addGridColumn, addGridRow, splitGridCol, splitGridRow]
   );
 
   const style = {
@@ -210,7 +216,6 @@ export const GridLayout = ({
         ))}
         {splitters.map((splitter) => (
           <GridSplitter
-            align={splitter.align}
             aria-controls={splitter.controls}
             id={splitter.id}
             key={splitter.id}

@@ -12,11 +12,6 @@
     transform: translate(0, -2px);
 }
 
-.vuuGridSplitter-horizontal[data-align="end"]{
-    justify-self: end;
-    transform: translate(2px, 0px);
-}
-
 .vuuGridSplitter[aria-controls="blue"]{
     background-color: blue;
 }

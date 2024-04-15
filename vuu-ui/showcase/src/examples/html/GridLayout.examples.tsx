@@ -1,17 +1,20 @@
-import { useCallback, useRef } from "react";
+import { getTrackIndex } from "@finos/vuu-layout";
+import { queryClosest } from "@finos/vuu-utils";
+import { MouseEventHandler, useCallback, useRef } from "react";
 import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
 import { GridPalette } from "./components/GridPalette";
+
 import "./GridLayout.examples.css";
 
 export const GridLayoutA = () => {
   // prettier-ignore
 
   const layoutApi = useRef<LayoutAPI>(null)
+  const trackRef = useRef({ columnIndex: -1, rowIndex: -1 });
 
   const splitSelectedRow = useCallback(() => {
     const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
-      console.log("split active");
       layoutApi.current.splitGridRow(activeComponent.id);
     }
   }, []);
@@ -19,10 +22,40 @@ export const GridLayoutA = () => {
   const splitSelectedCol = useCallback(() => {
     const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
     if (activeComponent && layoutApi.current) {
-      console.log("split active");
       layoutApi.current.splitGridCol(activeComponent.id);
     }
   }, []);
+
+  const addColumn = useCallback(() => {
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
+    if (activeComponent && layoutApi.current) {
+      layoutApi.current.addGridColumn(activeComponent.id);
+    }
+  }, []);
+
+  const addRow = useCallback(() => {
+    const activeComponent = document.querySelector(".vuuGridLayoutItem-active");
+    if (activeComponent && layoutApi.current) {
+      layoutApi.current.addGridRow(activeComponent.id);
+    }
+  }, []);
+
+  const removeColumn = useCallback<MouseEventHandler<HTMLButtonElement>>(() => {
+    const {
+      current: { columnIndex },
+    } = trackRef;
+    layoutApi.current?.removeGridColumn(columnIndex);
+  }, []);
+
+  const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    ({ target, clientX, clientY }) => {
+      const grid = queryClosest(target, ".vuuGridLayout");
+      if (grid) {
+        trackRef.current = getTrackIndex(grid, clientX, clientY);
+      }
+    },
+    [],
+  );
 
   return (
     <div
@@ -36,11 +69,15 @@ export const GridLayoutA = () => {
       <div style={{ flex: "0 0 40px" }}>
         <button onClick={splitSelectedRow}>Split across the middle</button>
         <button onClick={splitSelectedCol}>Split down the middle</button>
+        <button onClick={addRow}>Add a Row</button>
+        <button onClick={addColumn}>Add a Column</button>
+        <button onClick={removeColumn}>Remove Column</button>
         <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
       </div>
       <GridLayout
         colCount={2}
         id="GridLayoutA"
+        onClick={onClick}
         rowCount={2}
         layoutAPI={layoutApi}
       >
@@ -372,7 +409,7 @@ export const GridLayoutE = () => {
 
 export const GridLayoutF = () => {
   return (
-    <GridLayout colCount={2} id="GridLayoutE" rowCount={2}>
+    <GridLayout colCount={3} id="GridLayoutE" rowCount={2}>
       <GridLayoutItem
         id="green"
         resizeable="hv"
@@ -431,7 +468,7 @@ export const GridLayoutF = () => {
 
 export const GridLayoutG = () => {
   return (
-    <GridLayout colCount={2} id="GridLayoutE" rowCount={3}>
+    <GridLayout colCount={3} id="GridLayoutE" rowCount={3}>
       <GridLayoutItem
         id="green-H"
         resizeable="hv"

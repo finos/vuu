@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GridLayoutModel } from "../src/grid-layout/GridLayoutModel";
+import { GridLayoutModel } from "../../src/grid-layout/GridLayoutModel";
 
 describe("GridLayoutModel", () => {
   describe("getSplitterPositions", () => {
@@ -410,52 +410,57 @@ describe("GridLayoutModel", () => {
     });
 
     it("THEN first row first cell is horizontal contra for first row second cell", () => {
-      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
+      const { contra, contraOtherTrack, siblings } =
         model.getGridItemsAdjoiningTrack("blue", "horizontal", "start");
 
       expect(contra.length).toEqual(1);
       expect(contraOtherTrack?.length).toEqual(1);
-      expect(siblingsOtherTrack?.length).toEqual(1);
-      expect(nonAdjacent?.length).toEqual(0);
+      expect(siblings?.length).toEqual(1);
 
       const [contraItem] = contra;
       expect(contraItem.id).toEqual("green");
     });
 
     it("THEN second row first cell is horizontal contra for second row second cell", () => {
-      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
-        model.getGridItemsAdjoiningTrack("red", "horizontal", "start");
+      const {
+        contra,
+        contraOtherTrack,
+        siblings: siblingsOtherTrack,
+      } = model.getGridItemsAdjoiningTrack("red", "horizontal", "start");
 
       expect(contra.length).toEqual(1);
       expect(contraOtherTrack?.length).toEqual(1);
       expect(siblingsOtherTrack?.length).toEqual(1);
-      expect(nonAdjacent?.length).toEqual(0);
 
       const [contraItem] = contra;
       expect(contraItem.id).toEqual("black");
     });
 
     it("THEN first row first cell is vertical contra for second row first cell", () => {
-      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
-        model.getGridItemsAdjoiningTrack("black", "vertical", "start");
+      const {
+        contra,
+        contraOtherTrack,
+        siblings: siblingsOtherTrack,
+      } = model.getGridItemsAdjoiningTrack("black", "vertical", "start");
 
       expect(contra.length).toEqual(1);
       expect(contraOtherTrack?.length).toEqual(1);
       expect(siblingsOtherTrack?.length).toEqual(1);
-      expect(nonAdjacent?.length).toEqual(0);
 
       const [contraItem] = contra;
       expect(contraItem.id).toEqual("green");
     });
 
     it("THEN first row second cell is vertical contra for second row second cell", () => {
-      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
-        model.getGridItemsAdjoiningTrack("red", "vertical", "start");
+      const {
+        contra,
+        contraOtherTrack,
+        siblings: siblingsOtherTrack,
+      } = model.getGridItemsAdjoiningTrack("red", "vertical", "start");
 
       expect(contra.length).toEqual(1);
       expect(contraOtherTrack?.length).toEqual(1);
       expect(siblingsOtherTrack?.length).toEqual(1);
-      expect(nonAdjacent?.length).toEqual(0);
 
       const [contraItem] = contra;
       expect(contraItem.id).toEqual("blue");
@@ -480,8 +485,11 @@ describe("GridLayoutModel", () => {
         row: { start: 2, end: 3 },
       });
 
-      const { contra, contraOtherTrack, siblingsOtherTrack, nonAdjacent } =
-        model.getGridItemsAdjoiningTrack("green", "horizontal", "end");
+      const {
+        contra,
+        contraOtherTrack,
+        siblings: siblingsOtherTrack,
+      } = model.getGridItemsAdjoiningTrack("green", "horizontal", "end");
 
       expect(contra.length).toEqual(2);
       expect(contra).toEqual([
@@ -498,7 +506,6 @@ describe("GridLayoutModel", () => {
       ]);
       expect(contraOtherTrack.length).toEqual(0);
       expect(siblingsOtherTrack.length).toEqual(0);
-      expect(nonAdjacent.length).toEqual(0);
     });
   });
 
