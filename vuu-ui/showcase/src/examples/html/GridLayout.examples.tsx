@@ -379,7 +379,7 @@ GridLayoutE.displaySequence = displaySequence++;
 
 export const GridLayoutF = () => {
   return (
-    <GridLayout colCount={2} id="GridLayoutE" rowCount={2}>
+    <GridLayout colCount={3} id="GridLayoutE" rowCount={2}>
       <GridLayoutItem
         id="green"
         resizeable="hv"
@@ -439,7 +439,7 @@ GridLayoutF.displaySequence = displaySequence++;
 
 export const GridLayoutG = () => {
   return (
-    <GridLayout colCount={2} id="GridLayoutE" rowCount={3}>
+    <GridLayout colCount={3} id="GridLayoutE" rowCount={3}>
       <GridLayoutItem
         id="green-H"
         resizeable="hv"

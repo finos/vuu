@@ -110,7 +110,6 @@ export const setGridColumn = (
   target: string | HTMLElement,
   { start, end }: GridLayoutModelPosition
 ) => {
-  console.log(`setGridColumn ${target?.id ?? target} ${start} / ${end}`);
   const el =
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
@@ -182,13 +181,11 @@ export const splitGridTracks = (
     const track = getTrack(element);
     const [colFrom, colTo] = track;
     if (equalsGridPos(gridPos, track)) {
-      console.log(`col ${track} equals gridPos ${gridPos}`);
       const newPos = [colFrom, colTo + 1] as GridPos;
       setTrack(element, newPos);
     } else if (immediatelyPrecedesGridPos(gridPos, track)) {
       console.log(`col ${track} precedes gridPos ${gridPos}`);
     } else if (immediatelyFollowsGridPos(gridPos, track)) {
-      console.log(`col ${track} follows gridPos ${gridPos}`);
       const newPos = [colFrom + 1, colTo + 1] as GridPos;
       setTrack(element, newPos);
     } else if (followsGridPos(gridPos, track)) {
