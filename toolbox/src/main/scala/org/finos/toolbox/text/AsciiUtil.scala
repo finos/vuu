@@ -70,4 +70,5 @@ object AsciiUtil {
     buffer.mkString("\n")
   }
 
+  def lineSeparator():String  = System.lineSeparator()
 }

@@ -1,6 +1,7 @@
 package org.finos.toolbox.json
 
 import org.finos.toolbox.json.JsonUtil.{fromJson, toPrettyJson, toRawJson}
+import org.finos.toolbox.text.AsciiUtil
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.{Table, forAll}
@@ -23,7 +24,8 @@ class JsonUtilTest extends AnyFeatureSpec with Matchers {
 
       val result = toPrettyJson(dto)
 
-      result shouldEqual "{\n  \"name\" : \"orange\",\n  \"value\" : 13.7,\n  \"quantity\" : 5\n}"
+      val n = AsciiUtil.lineSeparator()
+      result shouldEqual s"{$n  \"name\" : \"orange\",$n  \"value\" : 13.7,$n  \"quantity\" : 5$n}"
     }
   }
 
