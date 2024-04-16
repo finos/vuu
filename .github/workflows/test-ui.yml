@@ -28,21 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+        uses: actions/checkout@v3
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
-      - name: Install dependencies
-        run: npm ci
-      - name: Run Vuu Showcase
-        run: npm run showcase:build && npm run showcase:preview
-      - name: Install Playwright Browsers
-        run: npx playwright install --with deps chromium
-      - name: Run Playwright tests
-        run: cd ./vuu-ui/playwright && npx playwright test
-      - uses: actions/upload-artifact@v4
+      - name: Run Playwright tests in Chrome
+        run: npm run test:playwright
+        with:
+          install: false
+          working-directory: ./vuu-ui
+          browser: chrome
+          build: npm run showcase:build
+          start: npm run showcase:preview
+          wait-on: "http://localhost:4173"
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: playwright-report

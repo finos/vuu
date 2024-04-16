@@ -41,6 +41,8 @@
     "test:cypress:local": "cypress open --component --browser chrome",
     "test:cypress:e2e": "cypress run --browser chrome",
     "test:vite": "vitest run",
+    "dev": "npm run dev --port 8080",
+    "test:playwright": "cd playwright && playwright test",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "pub:debug": "node ./scripts/publish.mjs --debug",
