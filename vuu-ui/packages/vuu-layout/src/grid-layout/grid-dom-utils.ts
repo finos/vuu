@@ -219,3 +219,33 @@ export const setGridTrackTemplate = (
     grid.style.gridTemplateColumns = trackTemplate;
   }
 };
+
+export const getTrackIndex = (grid: HTMLElement, x: number, y: number) => {
+  const { left, top } = grid.getBoundingClientRect();
+  const columns = getColumns(grid);
+  const rows = getRows(grid);
+
+  let columnIndex = 0;
+  let rowIndex = 0;
+
+  let posLeft = left;
+  let posTop = top;
+
+  for (let i = 0; i < columns.length; i++) {
+    posLeft += columns[i];
+    if (posLeft > x) {
+      columnIndex = i;
+      break;
+    }
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+    posTop += rows[i];
+    if (posTop > y) {
+      rowIndex = i;
+      break;
+    }
+  }
+
+  return { columnIndex, rowIndex };
+};

@@ -3,7 +3,38 @@ import {
   type IGridLayoutModelItem,
   getMatchingColspan,
   splitTracks,
+  splitTrack,
+  insertTrack,
 } from "../../src";
+
+describe("splitTrack", () => {
+  it("splits an existing track in two", () => {
+    expect(splitTrack([100, 100], 1)).toEqual([100, 50, 50]);
+    expect(splitTrack([100, 100, 100], 1)).toEqual([100, 50, 50, 100]);
+    expect(splitTrack([100, 100, 100], 0)).toEqual([50, 50, 100, 100]);
+  });
+  it("assigns new sizes in whole values", () => {
+    const newTracks = splitTrack([100, 101], 1);
+    expect(newTracks).toEqual([100, 50, 51]);
+  });
+
+  it("works with zero size value", () => {
+    const newTracks = splitTrack([100, 0], 1);
+    expect(newTracks).toEqual([100, 0, 0]);
+  });
+});
+
+describe("insertTrack", () => {
+  it("inserts a new track, defaulting to size value zero", () => {
+    expect(insertTrack([100, 100], 1)).toEqual([100, 0, 100]);
+    expect(insertTrack([100, 100], 0)).toEqual([0, 100, 100]);
+  });
+  it("maintains overall size of divided track", () => {
+    expect(insertTrack([100, 100], 1, 20)).toEqual([100, 20, 80]);
+    expect(insertTrack([100, 100], 0, 50)).toEqual([50, 50, 100]);
+  });
+});
+
 describe("splitTracks", () => {
   it("splits a two track range at start of tracks", () => {
     const { newTracks, newTrackIndex } = splitTracks([70, 130, 100], 1, 3);
