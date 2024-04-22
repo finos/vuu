@@ -47,35 +47,6 @@ jobs:
           path: ./vuu-ui/playwright/reports/
           retention-days: 10
 
-  cypress-e2e:
-    # As a third party action, cypress-io is pinned to a full length commit SHA for security purposes.
-    # This is also a requirement for the semgrep (static code analysis) scan to pass.
-    # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Node & dependencies
-        uses: ./.github/actions/setup-vuu-ui
-      - name: Run end-to-end tests in Chrome
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
-        with:
-          install: false
-          working-directory: ./vuu-ui
-          browser: chrome
-          build: npm run showcase:build
-          start: npm run showcase:preview
-          wait-on: "http://localhost:4173"
-      - name: Run end-to-end tests in Edge
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
-        with:
-          install: false
-          working-directory: ./vuu-ui
-          browser: edge
-          build: npm run showcase:build
-          start: npm run showcase:preview
-          wait-on: "http://localhost:4173"
-
   cypress-component:
     runs-on: ubuntu-latest
     steps:

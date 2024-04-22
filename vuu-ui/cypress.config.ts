@@ -55,21 +55,4 @@ export default defineConfig({
     specPattern: "packages/**/src/**/*.cy.{js,ts,jsx,tsx}",
     indexHtmlFile: "cypress/support/component/component-index.html",
   },
-
-  e2e: {
-    baseUrl: "http://localhost:4173/",
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-      on("task", {
-        log(message: string) {
-          console.log(message);
-
-          return null;
-        },
-      });
-    },
-    chromeWebSecurity: false,
-    defaultCommandTimeout: 10000,
-  },
 });
