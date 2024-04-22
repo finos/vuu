@@ -36,9 +36,9 @@ jobs:
       - name: Launch showcase in background
         uses: JarvusInnovations/background-action@v1.0.7
         with:
-          run: npm run showcase:preview
+          run: npm run preview
           wait-on: "http://localhost:4173"
-          working-directory: vuu-ui
+          working-directory: vuu-ui/showcase
       - name: Run tests
         run: |
           cd ./vuu-ui && 
