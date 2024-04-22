@@ -10,7 +10,6 @@ target/
 .idea/vcs.xml
 .idea/workspace.xml
 src/run-config/
-src/test/java/
 target
 target/**
 target/generated-test-sources/
