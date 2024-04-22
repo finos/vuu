@@ -23,6 +23,30 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
+  playwright:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Run Playwright tests in Chrome
+        run: npm run test:playwright
+        with:
+          install: false
+          working-directory: ./vuu-ui
+          browser: chrome
+          build: npm run showcase:build
+          start: npm run showcase:preview
+          wait-on: "http://localhost:4173"
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
   cypress-e2e:
     # As a third party action, cypress-io is pinned to a full length commit SHA for security purposes.
     # This is also a requirement for the semgrep (static code analysis) scan to pass.
