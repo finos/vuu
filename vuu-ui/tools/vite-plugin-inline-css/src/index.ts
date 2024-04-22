@@ -15,7 +15,7 @@ export function cssInline(options: Options = {}): Plugin {
   const {
     exclude = ["**/**.stories.tsx"],
     include = [
-      "**/packages/**/(Calendar*|MeasuredContainer|Column*|Group*|Sort*|Table*|Header*|Row*|CheckboxCell|InputCell|ToggleCell|View|Splitter|Flexbox).{tsx,jsx}",
+      "**/packages/**/(AppHeader|FeatureList|Tab*|Calendar*|MeasuredContainer|Column*|Group*|shell|Sort*|Table*|Header*|Row*|CheckboxCell|InputCell|ToggleCell|View|Splitter|Flexbox).{tsx,jsx}",
     ],
   } = options;
   const filter = createFilter(include, exclude);

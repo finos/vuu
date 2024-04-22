@@ -1,4 +1,6 @@
 import { connectToServer } from "@finos/vuu-data-remote";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   DraggableLayout,
   LayoutProvider,
@@ -27,7 +29,7 @@ import { loadingApplicationJson } from "./persistence-management";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
 
-import "./shell.css";
+import shellCss from "./shell.css";
 
 if (typeof StackLayout !== "function") {
   console.warn(
@@ -75,6 +77,13 @@ export const Shell = ({
   user,
   ...htmlAttributes
 }: ShellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-shell",
+    css: shellCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const { dialog, setDialogState } = useDialog();
   const layoutId = useRef("latest");

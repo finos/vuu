@@ -2,6 +2,7 @@ import {
   assertModuleExportsAtLeastOneComponent,
   Density,
   getUrlParameter,
+  importCSS,
   ThemeMode,
 } from "@finos/vuu-utils";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +30,9 @@ const asDensity = (input: string | undefined): Density => {
     return "medium";
   }
 };
+
+type Environment = "development" | "production";
+const env = process.env.NODE_ENV as Environment;
 
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
@@ -63,9 +67,20 @@ export const ShowcaseStandalone = () => {
 
   useMemo(() => {
     if (themeIsInstalled(theme)) {
-      import(`./themes/${theme}.ts`).then(() => {
-        setThemeReady(true);
-      });
+      if (env === "development") {
+        import(`./themes/${theme}.ts`).then(() => {
+          setThemeReady(true);
+        });
+      } else {
+        // For deployment, we build the theme to a single css file
+        importCSS(`/themes/${theme}.css`).then((styleSheet) => {
+          document.adoptedStyleSheets = [
+            ...document.adoptedStyleSheets,
+            styleSheet,
+          ];
+          setThemeReady(true);
+        });
+      }
     }
   }, [theme]);
 

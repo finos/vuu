@@ -16,20 +16,37 @@ const indexFiles = buildFileList("./src/examples", /index.ts$/);
 const examples = buildFileList("./src/examples", /examples.tsx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
 
+// TODO use a separate build call for each theme, without bundling
+const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
+
 const entryPoints = ["src/main.tsx"]
   .concat(indexFiles)
   .concat(features)
-  .concat(examples);
+  .concat(examples)
+  .concat(themes);
+
+const importedCssFiles = [
+  "AppHeader",
+  "Calendar",
+  "FeatureList",
+  "Flexbox",
+  "shell",
+  "Splitter",
+  "Tabstrip",
+  "Tab",
+];
+
+const regexp = new RegExp(`(${importedCssFiles.join("|")}).css$`);
 
 const cssInlinePlugin = {
   name: "CssInline",
   setup(build) {
     build.onLoad(
       {
-        filter:
-          /((Calendar|CalendarDay|CalendarCarousel|CalendarMonth|CalendarNavigation|CalendarWeekHeader))\.css$/,
+        filter: regexp,
       },
       async (args) => {
+        console.log(args.path);
         const css = await fs.promises.readFile(args.path, "utf8");
         // css = await esbuild.transform(css, { loader: "css", minify: true });
         return { loader: "text", contents: css };
