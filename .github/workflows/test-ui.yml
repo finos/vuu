@@ -36,7 +36,7 @@ jobs:
       - name: Launch showcase in background
         uses: JarvusInnovations/background-action@v1.0.7
         with:
-          run: npm run showcase:launch &
+          run: npm run showcase:preview
           wait-on: "http://localhost:4173"
       - name: Run tests
         run: |
