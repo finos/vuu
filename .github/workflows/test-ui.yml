@@ -38,6 +38,7 @@ jobs:
         with:
           run: npm run showcase:preview
           wait-on: "http://localhost:4173"
+          working-directory: vuu-ui
       - name: Run tests
         run: |
           cd ./vuu-ui && 
