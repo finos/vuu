@@ -35,7 +35,7 @@
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "showcase": "cd showcase && npm run showcase",
-    "showcase:preview": "serve ./showcase/dist -p 4173",
+    "showcase:preview": "cd showcase && serve ./dist",
     "showcase:build": " cd showcase && node scripts/build.mjs",
     "test:cypress": "cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
