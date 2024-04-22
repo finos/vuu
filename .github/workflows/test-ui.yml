@@ -43,7 +43,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: ./playwright/reports/
+          path: ./vuu-ui/playwright/reports/
           retention-days: 10
 
   cypress-e2e:
