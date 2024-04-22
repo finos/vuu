@@ -25,6 +25,7 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
+  snapshotPathTemplate: "./playwright/snapshots/{testFilePath}/{arg}{ext}",
   webServer: {
     command: "npm run showcase:preview",
   },
