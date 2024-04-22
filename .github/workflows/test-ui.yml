@@ -32,7 +32,7 @@ jobs:
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Install Playwright Chromium Browser
-        run: cd ./vuu-ui && npx playwright install --with-deps chrome
+        run: cd ./vuu-ui && npx playwright install --with-deps chromium
       - name: Build Showcase
         run: cd ./vuu-ui && npm run showcase:build
       - name: Run tests
