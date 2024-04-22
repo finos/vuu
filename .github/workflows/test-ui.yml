@@ -33,12 +33,8 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - name: Build and launch Showcase
         run: cd ./vuu-ui && npm run showcase:build
-      - name: Launch showcase in background
-        uses: JarvusInnovations/background-action@v1.0.7
-        with:
-          run: npm run preview
-          wait-on: "http://localhost:4173"
-          working-directory: vuu-ui/showcase
+      - name: Launch showcase
+        run: cd ./vuu-ui && npm run showcase:preview
       - name: Run tests
         run: |
           cd ./vuu-ui && 

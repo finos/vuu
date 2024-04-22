@@ -9,7 +9,6 @@
     "dev": "vite",
     "docs": "node ./scripts/build-docs.mjs",
     "showcase": "node ./scripts/showcase.mjs",
-    "preview": "serve ./dist",
     "stories": "node ./scripts/parse-stories.mjs"
   },
   "keywords": [],
