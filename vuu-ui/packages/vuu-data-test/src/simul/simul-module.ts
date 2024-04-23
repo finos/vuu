@@ -1,18 +1,19 @@
 import { SuggestionFetcher } from "@finos/vuu-data-types";
-import {
-  ClientToServerViewportRpcCall,
-  TypeaheadParams,
-  VuuMenu,
-} from "@finos/vuu-protocol-types";
+import { TypeaheadParams, VuuMenu } from "@finos/vuu-protocol-types";
 import { makeSuggestions } from "../makeSuggestions";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
-import type { RpcService, VuuModule } from "../vuu-modules";
+import type { VuuModule } from "../vuu-modules";
 import instrumentsTable from "./reference-data/instruments";
 import instrumentsExtendedTable from "./reference-data/instruments-extended";
 import ordersTable from "./reference-data/orders";
 import pricesTable from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
+
+type RpcService = {
+  rpcName: string;
+  service: (rpcRequest: any) => Promise<unknown>;
+};
 
 const sessionTables: Record<string, Table> = {};
 
@@ -68,7 +69,7 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
   prices: undefined,
 };
 
-async function addInstrumentsToOrder(rpcRequest: unknown) {
+async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
   // create a `session table`,
   // populate with selected Instruments
   // sens subscriptionn details to user

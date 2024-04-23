@@ -6,11 +6,6 @@ import { SimulTableName } from "./simul/simul-schemas";
 import testModule from "./test/test-module";
 import { TestTableName } from "./test/test-schemas";
 
-export type RpcService = {
-  rpcName: string;
-  service: (rpcRequest: any) => Promise<unknown>;
-};
-
 export type VuuModuleName = "BASKET" | "SIMUL" | "TEST";
 
 export interface VuuModule<T extends string = string> {
