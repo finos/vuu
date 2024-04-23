@@ -6,9 +6,9 @@ import { SimulTableName } from "./simul/simul-schemas";
 import testModule from "./test/test-module";
 import { TestTableName } from "./test/test-schemas";
 
-export type RpcService<IRequestType = unknown> = {
+export type RpcService = {
   rpcName: string;
-  service: (rpcRequest: IRequestType) => Promise<unknown>;
+  service: (rpcRequest: any) => Promise<unknown>;
 };
 
 export type VuuModuleName = "BASKET" | "SIMUL" | "TEST";
