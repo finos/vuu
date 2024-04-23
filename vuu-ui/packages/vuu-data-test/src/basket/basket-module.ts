@@ -7,7 +7,7 @@ import { ColumnMap } from "@finos/vuu-utils";
 import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
-import { VuuModule } from "../vuu-modules";
+import type { RpcService, VuuModule } from "../vuu-modules";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
 
@@ -220,11 +220,6 @@ const menus: Record<BasketsTableName, VuuMenu | undefined> = {
   basketTradingConstituent: undefined,
   basketTradingConstituentJoin: undefined,
   priceStrategyType: undefined,
-};
-
-type RpcService = {
-  rpcName: string;
-  service: (rpcRequest: any) => Promise<unknown>;
 };
 
 const services: Record<BasketsTableName, RpcService[] | undefined> = {

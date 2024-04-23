@@ -33,6 +33,8 @@ export const useTableContextMenu = ({
         const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
         const row = data.find(([idx]) => idx === rowIndex);
         const columnName = columns[cellIndex];
+        // TODO does it really make sense to collect selected rows ?
+        // We only have access to rows in local cache
         showContextMenu(evt, "grid", {
           columnMap,
           columnName,
