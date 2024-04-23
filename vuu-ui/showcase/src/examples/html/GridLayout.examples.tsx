@@ -844,7 +844,7 @@ export const EmptyWithPalette = () => {
   return (
     <GridLayout cols={["200px", "1fr"]} id="GridLayoutE" rowCount={1}>
       <GridLayoutItem
-        id="green"
+        id="palette"
         resizeable="hv"
         style={{
           gridColumnStart: 1,

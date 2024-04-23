@@ -12,8 +12,9 @@ import {
   getColumns,
   splitTrack,
   removeTrack,
+  IGridLayoutModelItem,
 } from "@finos/vuu-layout";
-import { queryClosest } from "@finos/vuu-utils";
+import { asReactElements, queryClosest, uuid } from "@finos/vuu-utils";
 import React, {
   MouseEventHandler,
   ReactElement,
@@ -34,7 +35,11 @@ import {
   spansMultipleTracks,
   setGridTrackTemplate,
 } from "@finos/vuu-layout";
-import { GridLayoutItemProps, GridLayoutProps } from "./GridLayout";
+import {
+  GridLayoutItem,
+  GridLayoutItemProps,
+  GridLayoutProps,
+} from "./GridLayout";
 
 const ERROR_NO_RESIZE = "Resize operationn invoked, no resize in operation";
 
@@ -123,7 +128,10 @@ export const useGridSplitterResizing = ({
   rowCount,
   rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
-  const [children, setChildren] = useState(childrenProp);
+  // TODO memoize this call
+  const [children, setChildren] = useState<ReactElement<GridLayoutItemProps>[]>(
+    asReactElements(childrenProp)
+  );
   const [nonContentGridItems, setNonContentGridItems] =
     useState<NonContentGridItems>({
       splitters: [],
@@ -775,9 +783,49 @@ export const useGridSplitterResizing = ({
 
   const handleDrop = useCallback(
     (target, payload, position) => {
-      console.log(`handle Drop ${target} ${payload} ${position}`);
+      const targetGridItem = layoutModel.getGridItem(target);
+      if (targetGridItem) {
+        const {
+          column: { start: columnStart, end: columnEnd },
+          row: { start: rowStart, end: rowEnd },
+        } = targetGridItem;
 
-      splitGridRow(target);
+        const gridItem: IGridLayoutModelItem = {
+          id: uuid(),
+          column: { start: columnStart, end: columnEnd },
+          resizeable: "vh",
+          row: { start: rowStart, end: rowEnd },
+          type: "content",
+        };
+
+        const newChild = (
+          <GridLayoutItem
+            header
+            id={gridItem.id}
+            resizeable="hv"
+            style={{
+              gridColumnStart: columnStart,
+              gridColumnEnd: columnEnd,
+              gridRowStart: rowStart,
+              gridRowEnd: rowEnd,
+            }}
+            title="New One"
+          >
+            <div style={{ background: payload }} />
+          </GridLayoutItem>
+        );
+
+        layoutModel.addGridItem(gridItem);
+
+        // splitGridRow(target, gridItem);
+
+        setChildren((c) => c.concat(newChild));
+        console.log({ position });
+        const targetElement = document.getElementById(target);
+        if (targetElement) {
+          targetElement.classList.remove(`vuuGridPlaceholder-${position}`);
+        }
+      }
 
       // now need to ...
       // reposition split item

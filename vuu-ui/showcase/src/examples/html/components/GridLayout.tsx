@@ -179,7 +179,7 @@ export const GridLayout = ({
       splitGridCol,
       splitGridRow,
     }),
-    [addGridColumn, addGridRow, splitGridCol, splitGridRow]
+    [addGridColumn, addGridRow, removeGridColumn, splitGridCol, splitGridRow]
   );
 
   const style = {
