@@ -28,6 +28,7 @@ const entryPoints = ["src/main.tsx"]
 const importedCssFiles = [
   "AppHeader",
   "Calendar",
+  "ExpandoInput",
   "FeatureList",
   "Flexbox",
   "shell",
