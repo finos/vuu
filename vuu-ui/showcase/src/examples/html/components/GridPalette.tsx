@@ -1,6 +1,12 @@
 import cx from "clsx";
 import { queryClosest } from "@finos/vuu-utils";
-import { DragEventHandler, HTMLAttributes, useCallback } from "react";
+import {
+  DragEvent,
+  DragEventHandler,
+  HTMLAttributes,
+  useCallback,
+} from "react";
+import { useDraggable } from "@finos/vuu-layout";
 
 import "./GridPalette.css";
 
@@ -8,29 +14,47 @@ const classBase = "vuuGridPalette";
 
 const colors = ["red", "green", "pink", "brown", "orange", "purple"];
 
-export type GridPaletteProps = HTMLAttributes<HTMLDivElement>;
+export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
+  paletteItems: GridPaletteItem[];
+}
 
-export const GridPalette = ({ ...htmlAttributes }: GridPaletteProps) => {
-  const onDragStart = useCallback<DragEventHandler>((evt) => {
-    const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
-    if (draggedItem) {
-      evt.dataTransfer.setData("text/plain", draggedItem.id);
-      evt.dataTransfer.effectAllowed = "move";
-      console.log(`drag start ${draggedItem.id}`);
-    }
-  }, []);
+export type GridPaletteItem = {
+  id: string;
+  label: string;
+  props: any;
+  type: string;
+};
+
+export const GridPalette = ({
+  paletteItems,
+  ...htmlAttributes
+}: GridPaletteProps) => {
+  const getPayload = useCallback(
+    (evt: DragEvent<Element>): [string, string] => {
+      const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
+      if (draggedItem) {
+        const index = parseInt(draggedItem.dataset.index ?? "-1");
+        const item = paletteItems[index] as GridPaletteItem;
+        return ["text/json", JSON.stringify(item)];
+      }
+      throw Error("no palette item to provide payload");
+    },
+    [paletteItems]
+  );
+
+  const draggableProps = useDraggable({ getPayload });
 
   return (
-    <div {...htmlAttributes} className={classBase} onDragStart={onDragStart}>
-      {colors.map((color, index) => (
+    <div {...htmlAttributes} className={classBase} {...draggableProps}>
+      {paletteItems.map((paletteItem, index) => (
         <div
           className={cx(`${classBase}-item`)}
           draggable
-          id={color}
+          data-index={index}
           key={index}
-          style={{ background: color }}
+          style={{ background: colors[index] }}
         >
-          {color}
+          {paletteItem.label}
         </div>
       ))}
     </div>

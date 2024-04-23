@@ -6,6 +6,7 @@ import {
   ReactNode,
   useContext,
 } from "react";
+import { GridLayoutDropHandler } from "./GridPlaceholder";
 
 export type GridStyle = Pick<
   CSSProperties,
@@ -34,6 +35,7 @@ const unconfiguredGridLayoutProviderDispatch: GridLayoutProviderDispatch = (
 export interface GridLayoutProviderContextProps {
   dispatchGridLayoutAction: GridLayoutProviderDispatch;
   layoutMap: GridLayoutMap;
+  onDrop: GridLayoutDropHandler;
   version: number;
 }
 
@@ -41,6 +43,7 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
   {
     dispatchGridLayoutAction: unconfiguredGridLayoutProviderDispatch,
     layoutMap: {},
+    onDrop: () => console.log("no GridLayoutProvider"),
     version: -1,
   }
 );
@@ -48,7 +51,7 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
 export interface GridLayoutProviderProps
   extends Pick<
     GridLayoutProviderContextProps,
-    "dispatchGridLayoutAction" | "layoutMap"
+    "dispatchGridLayoutAction" | "layoutMap" | "onDrop"
   > {
   children: ReactNode;
   pathToDropTarget?: string;
@@ -57,13 +60,14 @@ export interface GridLayoutProviderProps
 export const GridLayoutProvider = (
   props: GridLayoutProviderProps
 ): ReactElement => {
-  const { children, dispatchGridLayoutAction, layoutMap } = props;
+  const { children, dispatchGridLayoutAction, layoutMap, onDrop } = props;
 
   return (
     <GridLayoutProviderContext.Provider
       value={{
         dispatchGridLayoutAction,
         layoutMap,
+        onDrop,
         version: 0,
       }}
     >
@@ -80,4 +84,9 @@ export const useGridLayoutProviderDispatch = () => {
 export const useGridLayoutProps = (id: string) => {
   const { layoutMap } = useContext(GridLayoutProviderContext);
   return layoutMap[id];
+};
+
+export const useGridLayoutDropHandler = () => {
+  const { onDrop } = useContext(GridLayoutProviderContext);
+  return onDrop;
 };
