@@ -7,11 +7,13 @@ import {
   useState,
 } from "react";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import { VuuLogo } from "./VuuLogo";
 import cx from "clsx";
 
-import "./LoginPanel.css";
+import loginPanelCss from "./LoginPanel.css";
 
 const classBase = "vuuLoginPanel";
 
@@ -29,6 +31,13 @@ export const LoginPanel = ({
   onSubmit,
   ...htmlAttributes
 }: LoginPanelProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-login-panel",
+    css: loginPanelCss,
+    window: targetWindow,
+  });
+
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);

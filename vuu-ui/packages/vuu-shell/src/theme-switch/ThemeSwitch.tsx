@@ -1,9 +1,11 @@
 import cx from "clsx";
 import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
 import { ThemeMode } from "@finos/vuu-utils";
 
-import "./ThemeSwitch.css";
+import themeSwitchCss from "./ThemeSwitch.css";
 
 const classBase = "vuuThemeSwitch";
 export interface ThemeSwitchProps
@@ -20,6 +22,13 @@ export const ThemeSwitch = ({
   onChange,
   ...htmlAttributes
 }: ThemeSwitchProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-theme-switch",
+    css: themeSwitchCss,
+    window: targetWindow,
+  });
+
   const [mode, setMode] = useControlled<ThemeMode>({
     controlled: modeProp,
     default: defaultModeProp ?? "light",

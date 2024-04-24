@@ -1,15 +1,20 @@
 import { VuuLogo } from "@finos/vuu-icons";
-import { Stack, useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { LayoutResizeAction } from "@finos/vuu-layout";
+import {
+  LayoutResizeAction,
+  Stack,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { useThemeAttributes } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList } from "../feature-list";
 import { LayoutList } from "../layout-management";
 
-import "./LeftNav.css";
+import leftNavCss from "./LeftNav.css";
 
 const classBase = "vuuLeftNav";
 
@@ -68,6 +73,13 @@ export const LeftNav = (props: LeftNavProps) => {
     tableFeatures,
     ...htmlAttributes
   } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-left-nav",
+    css: leftNavCss,
+    window: targetWindow,
+  });
 
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,

@@ -1,5 +1,7 @@
 import { Filter } from "@finos/vuu-filter-types";
 import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
 import {
   filterSubmissionHandler,
@@ -7,7 +9,7 @@ import {
   useCodeMirrorEditor,
 } from "./useCodeMirrorEditor";
 
-import "./FilterInput.css";
+import filterInputCss from "./FilterInput.css";
 
 const classBase = "vuuFilterInput";
 
@@ -28,6 +30,13 @@ export const FilterInput = ({
   suggestionProvider,
   ...props
 }: FilterInputProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-input",
+    css: filterInputCss,
+    window: targetWindow,
+  });
+
   const { editorRef, clearInput } = useCodeMirrorEditor({
     existingFilter,
     onSubmitFilter,

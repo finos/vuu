@@ -12,6 +12,7 @@ import {
   writeMetaFile,
 } from "./utils.mjs";
 import { buildExternals } from "./package-utils.mjs";
+import { buildWorker } from "./build-worker.mjs";
 
 const defaultConfig = {
   distPath: `../../dist`,

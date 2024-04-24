@@ -28,13 +28,31 @@ const entryPoints = ["src/main.tsx"]
 const importedCssFiles = [
   "AppHeader",
   "Calendar",
+  "ContextPanel",
+  "ConnectionStatusIndicator",
+  "ExpandoCombobox",
   "ExpandoInput",
   "FeatureList",
+  "FilterBar",
+  "FilterClause",
+  "FilterClauseCombinator",
+  "FilterEditor",
+  "FilterInput",
+  "FilterPill",
+  "FilterPillMenu",
   "Flexbox",
+  "LayoutList",
+  "LayoutTile",
+  "LeftNav",
+  "LoginPanel",
+  "SaveLayoutPanel",
+  "sessionEditingForm",
   "shell",
+  "SidePanel",
   "Splitter",
   "Tabstrip",
   "Tab",
+  "ThemeSwitch",
 ];
 
 const regexp = new RegExp(`(${importedCssFiles.join("|")}).css$`);
@@ -47,7 +65,6 @@ const cssInlinePlugin = {
         filter: regexp,
       },
       async (args) => {
-        console.log(args.path);
         const css = await fs.promises.readFile(args.path, "utf8");
         // css = await esbuild.transform(css, { loader: "css", minify: true });
         return { loader: "text", contents: css };

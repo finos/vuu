@@ -17,6 +17,8 @@ import {
   SplitStateButtonProps,
 } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { FocusEventHandler, useCallback, useMemo, useRef } from "react";
 import { filterAsReactNode } from "./filterAsReactNode";
@@ -30,7 +32,7 @@ import {
 import { getFilterLabel } from "./getFilterLabel";
 import { getFilterTooltipText } from "./getFilterTooltipText";
 
-import "./FilterPill.css";
+import filterPillCss from "./FilterPill.css";
 
 const classBase = "vuuFilterPill";
 
@@ -70,6 +72,13 @@ export const FilterPill = ({
   onMenuAction,
   ...htmlAttributes
 }: FilterPillProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-pill",
+    css: filterPillCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const handleEnterEditMode: EditableLabelProps["onEnterEditMode"] =
     useCallback(() => {

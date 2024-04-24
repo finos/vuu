@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import cx from "clsx";
 
-import "./ConnectionStatusIcon.css";
+import connectionStatusIndicatorCss from "./ConnectionStatusIndicator.css";
 
 type connectionStatus =
   | "connected"
@@ -16,12 +19,19 @@ interface ConnectionStatusProps {
   element?: string;
 }
 
-export const ConnectionStatusIcon = ({
+export const ConnectionStatusIndicator = ({
   connectionStatus,
   className,
   element = "span",
   ...props
 }: ConnectionStatusProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-connection-status-indicator",
+    css: connectionStatusIndicatorCss,
+    window: targetWindow,
+  });
+
   const [classBase, setClassBase] = useState<string>("vuuConnectingStatus");
   useEffect(() => {
     switch (connectionStatus) {

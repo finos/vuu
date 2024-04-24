@@ -3,6 +3,8 @@ import { Filter, FilterState } from "@finos/vuu-filter-types";
 import { PopupComponent as Popup, Portal, Prompt } from "@finos/vuu-popups";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { IconButton } from "@finos/vuu-ui-controls";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
 import { FilterClauseProps } from "../filter-clause";
@@ -10,9 +12,9 @@ import { FilterEditor } from "../filter-editor";
 import { FilterPill } from "../filter-pill";
 import { FilterBarMenu } from "./FilterBarMenu";
 import { useFilterBar } from "./useFilterBar";
-
-import "./FilterBar.css";
 import { FilterModel } from "../FilterModel";
+
+import filterBarCss from "./FilterBar.css";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseProps>;
@@ -46,6 +48,13 @@ export const FilterBar = ({
   tableSchema,
   ...htmlAttributes
 }: FilterBarProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-bar",
+    css: filterBarCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeFilterIndex,

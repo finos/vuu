@@ -75,10 +75,15 @@ async function writePackageJSON(packageJson) {
     const newPackage = {
       ...packageRest,
       files: filesToPublish.concat(["esm", "cjs"]),
+      exports: {
+        require: "./cjs/index.js",
+        import: "./esm/index.js",
+      },
       main: "cjs/index.js",
       module: "esm/index.js",
       name: scopedPackageName,
       style: styleFromPackageJson ?? defaultStyle,
+      type: "module",
     };
 
     fs.writeFile(
