@@ -3,6 +3,7 @@ package org.finos.vuu.feature.ignite.filter
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.DataType.{CharDataType, StringDataType}
 import org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClause.EMPTY_SQL
+import org.finos.vuu.feature.ignite.filter.SqlFilterColumnValueParser.ParsedResult
 import org.finos.vuu.util.schema.SchemaMapper
 
 private object IgniteSqlFilterClause {
@@ -29,12 +30,12 @@ case class AndIgniteSqlFilterClause(clauses:List[IgniteSqlFilterClause]) extends
 
 case class EqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dataType match {
-        case CharDataType | StringDataType => eqSql(f.name, quotedString(value))
-        case _ => eqSql(f.name, value)
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
+      case Right(ParsedResult(f, parsedValue)) => f.dataType match {
+        case CharDataType | StringDataType => eqSql(f.name, quotedString(parsedValue))
+        case _ => eqSql(f.name, parsedValue)
       }
-      case None => logMappingErrorAndReturnEmptySql(columnName)
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
 
   private def eqSql(field: String, processedVal: String): String = {

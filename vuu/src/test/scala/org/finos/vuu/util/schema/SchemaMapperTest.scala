@@ -4,8 +4,11 @@ import org.finos.vuu.core.module.vui.VuiStateModule.stringToFieldDef
 import org.finos.vuu.core.table.{Column, Columns, SimpleColumn}
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
 import org.finos.vuu.util.schema.SchemaMapperTest.{externalFields, externalSchema, fieldsMap, fieldsMapWithoutAssetClass, internalColumns}
+import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainerBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.math.BigDecimal
 
 class SchemaMapperTest extends AnyFeatureSpec with Matchers {
 
@@ -13,7 +16,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
     Scenario("can convert an ordered list of external values") {
       val mapper = SchemaMapper(externalSchema, internalColumns, fieldsMap)
 
-      val rowData = mapper.toInternalRowMap(List(3, "ric", "assetClass", 10.5))
+      val rowData = mapper.toInternalRowMap(List(3, "ric", "assetClass", "10.5"))
 
       rowData shouldEqual Map(
         "id" -> 3,
@@ -26,7 +29,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
     Scenario("can convert ordered list excluding any values not present in the `field->column` map") {
       val mapper = SchemaMapper(externalSchema, internalColumns, fieldsMapWithoutAssetClass)
 
-      val rowData = mapper.toInternalRowMap(List(3, "ric", "assetClass", 10.5))
+      val rowData = mapper.toInternalRowMap(List(3, "ric", "assetClass", "10.5"))
 
       rowData shouldEqual Map(
         "id" -> 3,
@@ -38,7 +41,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
     Scenario("can convert a case class object containing external values") {
       val mapper = SchemaMapper(externalSchema, internalColumns, fieldsMap)
 
-      val rowData = mapper.toInternalRowMap(TestDto(3, "ric", "assetClass", 10.5))
+      val rowData = mapper.toInternalRowMap(TestDto(3, "ric", "assetClass", "10.5"))
 
       rowData shouldEqual Map(
         "id" -> 3,
@@ -51,7 +54,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
     Scenario("can convert a case class object excluding any fields not present in `field->column` map") {
       val mapper = SchemaMapper(externalSchema, internalColumns, fieldsMapWithoutAssetClass)
 
-      val rowData = mapper.toInternalRowMap(TestDto(3, "ric", "assetClass", 10.5))
+      val rowData = mapper.toInternalRowMap(TestDto(3, "ric", "assetClass", "10.5"))
 
       rowData shouldEqual Map(
         "id" -> 3,
@@ -89,6 +92,65 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
     }
   }
 
+  Feature("toMappedExternalFieldType") {
+    val bigDecimalSchemaField = SchemaField("bigDecimalPrice", classOf[BigDecimal], 0)
+    val doubleColumn = SimpleColumn("doublePrice", 0, classOf[Double])
+    val schemaMapper = SchemaMapper(
+      TestEntitySchema(List(bigDecimalSchemaField)),
+      Array(doubleColumn),
+      Map("bigDecimalPrice" -> "doublePrice"),
+      TypeConverterContainerBuilder()
+        .withoutDefaults()
+        .withConverter(TypeConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue()))
+        .withConverter(TypeConverter[Double, BigDecimal](classOf[Double], classOf[BigDecimal], new BigDecimal(_)))
+        .build()
+    )
+
+    Scenario("should convert valid column value to external data type") {
+      val result = schemaMapper.toMappedExternalFieldType("doublePrice", 10.65)
+      result.get shouldEqual new BigDecimal(10.65)
+    }
+
+    Scenario("should return empty result if column value is not of the expected type") {
+      val result = schemaMapper.toMappedExternalFieldType("doublePrice", "10.65")
+      result.isEmpty shouldBe true
+    }
+
+    Scenario("should return empty result if column name is not a mapped field") {
+      val result = schemaMapper.toMappedExternalFieldType("doubleColumn", 10.65)
+      result.isEmpty shouldBe true
+    }
+  }
+
+  Feature("toMappedInternalColumnType") {
+    val bigDecimalSchemaField = SchemaField("bigDecimalPrice", classOf[BigDecimal], 0)
+    val doubleColumn = SimpleColumn("doublePrice", 0, classOf[Double])
+    val schemaMapper = SchemaMapper(
+      TestEntitySchema(List(bigDecimalSchemaField)),
+      Array(doubleColumn),
+      Map("bigDecimalPrice" -> "doublePrice"),
+      TypeConverterContainerBuilder()
+        .withoutDefaults()
+        .withConverter(TypeConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue()))
+        .withConverter(TypeConverter[Double, BigDecimal](classOf[Double], classOf[BigDecimal], new BigDecimal(_)))
+        .build()
+    )
+
+    Scenario("should convert valid external field value to column data type") {
+      val result = schemaMapper.toMappedInternalColumnType("bigDecimalPrice", new BigDecimal(0.3333))
+      result.get shouldEqual 0.3333
+    }
+
+    Scenario("should return empty result if external field value is not of the expected type") {
+      val result = schemaMapper.toMappedInternalColumnType("bigDecimalPrice", 10.65)
+      result.isEmpty shouldBe true
+    }
+
+    Scenario("should return empty result if external field name is not a mapped field") {
+      val result = schemaMapper.toMappedInternalColumnType("bigDecimalField", new BigDecimal(10))
+      result.isEmpty shouldBe true
+    }
+  }
 
   Feature("validation on instantiation") {
     Scenario("fails when mapped external field not found in external schema") {
@@ -115,6 +177,16 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
       ))
       exception shouldBe a[RuntimeException]
       exception.getMessage should include("duplicated column names")
+    }
+
+    Scenario("fails when types differ b/w mapped fields and type converter is not provided") {
+      val emptyTypeConverterContainer = TypeConverterContainerBuilder().withoutDefaults().build()
+      val exception = intercept[InvalidSchemaMapException](
+        SchemaMapper(externalSchema, internalColumns, fieldsMap, emptyTypeConverterContainer)
+      )
+      exception.getMessage should include regex ".*TypeConverter.* not found.*"
+      exception.message should include("[ java.lang.Double->java.lang.String ]")
+      exception.message should include("[ java.lang.String->java.lang.Double ]")
     }
   }
 
@@ -150,7 +222,7 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
 
 private case class TestEntitySchema(override val fields: List[SchemaField]) extends ExternalEntitySchema
 
-private case class TestDto(externalId: Int, externalRic: String, assetClass: String, price: Double)
+private case class TestDto(externalId: Int, externalRic: String, assetClass: String, price: String)
 
 private object SchemaMapperTest {
 
@@ -158,7 +230,7 @@ private object SchemaMapperTest {
   val externalFields: List[SchemaField] = List(
     SchemaField("externalId", classOf[Int], 0),
     SchemaField("assetClass", classOf[String], 2),
-    SchemaField("price", classOf[Double], 3),
+    SchemaField("price", classOf[String], 3),
     SchemaField("externalRic", classOf[String], 1),
   )
 

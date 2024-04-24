@@ -1,8 +1,9 @@
 package org.finos.vuu.util.schema.typeConversion
 
+import scala.util.Try
+
 trait TypeConverterContainer {
   def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To]
-  def typeConverter[From, To](name: String): Option[TypeConverter[From, To]]
   def typeConverter[From, To](fromClass: Class[From], toClass: Class[To]): Option[TypeConverter[From, To]]
 }
 
@@ -13,18 +14,18 @@ private case class TypeConverterContainerImpl(
 
   override def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To] = {
     if (TypeUtils.areTypesEqual(fromClass, toClass)) {
-      return Option(value.asInstanceOf[To])
+      return Some(value.asInstanceOf[To])
     }
-    typeConverter[From, To](fromClass, toClass).map(_.convert(value))
-  }
-
-  override def typeConverter[From, To](name: String): Option[TypeConverter[From, To]] = {
-    typeConverterByName.get(name).map(_.asInstanceOf[TypeConverter[From, To]])
+    typeConverter[From, To](fromClass, toClass).flatMap(tc => Try(tc.convert(value)).toOption)
   }
 
   override def typeConverter[From, To](fromClass: Class[From], toClass: Class[To]): Option[TypeConverter[From, To]] = {
     val name = TypeConverter.buildConverterName(fromClass, toClass)
     typeConverter[From, To](name)
+  }
+
+  private def typeConverter[From, To](name: String): Option[TypeConverter[From, To]] = {
+    typeConverterByName.get(name).flatMap(tc => Try(tc.asInstanceOf[TypeConverter[From, To]]).toOption)
   }
 }
 

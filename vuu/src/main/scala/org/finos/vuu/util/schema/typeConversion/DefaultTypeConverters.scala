@@ -6,6 +6,9 @@ object DefaultTypeConverters {
   val stringToDoubleConverter: TypeConverter[String, Double] = TypeConverter(classOf[String], classOf[Double], withNullSafety[String, Double](_, _.toDouble))
   val stringToLongConverter: TypeConverter[String, Long] = TypeConverter[String, Long](classOf[String], classOf[Long], withNullSafety[String, Long](_, _.toLong))
   val stringToIntConverter: TypeConverter[String, Integer] = TypeConverter(classOf[String], classOf[Integer], withNullSafety[String, Integer](_, _.toInt))
+  val stringToCharConverter: TypeConverter[String, Character] = TypeConverter(classOf[String], classOf[Character], withNullSafety[String, Character](_, _.toCharArray.apply(0)))
+  val stringToBooleanConverter: TypeConverter[String, Boolean] = TypeConverter(classOf[String], classOf[Boolean], withNullSafety[String, Boolean](_, _.toBoolean))
+
   val intToStringConverter: TypeConverter[Integer, String] = TypeConverter(classOf[Integer], classOf[String], withNullSafety[Integer, String](_, _.toString))
   val longToStringConverter: TypeConverter[Long, String] = TypeConverter(classOf[Long], classOf[String], withNullSafety[Long, String](_, _.toString))
   val doubleToStringConverter: TypeConverter[Double, String] = TypeConverter(classOf[Double], classOf[String], withNullSafety[Double, String](_, _.toString))
@@ -20,5 +23,7 @@ object DefaultTypeConverters {
     longToStringConverter,
     stringToIntConverter,
     intToStringConverter,
+    stringToCharConverter,
+    stringToBooleanConverter,
   )
 }

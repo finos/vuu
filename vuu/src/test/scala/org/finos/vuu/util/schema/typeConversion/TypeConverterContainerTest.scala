@@ -27,7 +27,7 @@ class TypeConverterContainerTest extends AnyFeatureSpec with Matchers {
       ).nonEmpty shouldBe true
     }
 
-    Scenario("user defined overrides any defaults converters for the same types") {
+    Scenario("user defined overrides any default converters for the same types") {
       val defaultConverter = DefaultTypeConverters.stringToIntConverter
 
       tcContainer.typeConverter(classOf[String], classOf[Int]).get should not equal defaultConverter
@@ -44,11 +44,11 @@ class TypeConverterContainerTest extends AnyFeatureSpec with Matchers {
     Scenario("contains no default converters") {
       val defaultConverters = DefaultTypeConverters.getAll
 
-      defaultConverters.exists(tc => tcContainer.typeConverter(tc.name).nonEmpty) shouldBe false
+      defaultConverters.exists(tc => tcContainer.typeConverter(tc.fromClass, tc.toClass).nonEmpty) shouldBe false
     }
 
     Scenario("contains added user defined converter") {
-      tcContainer.typeConverter(userDefinedConverter.name).nonEmpty shouldBe true
+      tcContainer.typeConverter(userDefinedConverter.fromClass, userDefinedConverter.toClass).nonEmpty shouldBe true
     }
   }
 }
