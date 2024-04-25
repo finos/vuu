@@ -4,12 +4,14 @@ import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
-import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaField, SchemaMapper}
+import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaField, SchemaMapper, SchemaMapperBuilder}
 
 class IgniteSqlFilteringTest extends IgniteTestsBase {
 
   private val filterTreeVisitor: IgniteSqlFilterTreeVisitor = new IgniteSqlFilterTreeVisitor
-  private val testSchemaMapper = SchemaMapper(new TestEntitySchema, internalColumns, fieldsMap)
+  private val testSchemaMapper = SchemaMapperBuilder(new TestEntitySchema, internalColumns)
+    .withFieldsMap(fieldsMap)
+    .build()
 
   Feature("Parse and apply GREATER THAN filter") {
     val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)

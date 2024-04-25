@@ -35,7 +35,8 @@ object DataType {
     }
   }
 
-  def parseToDataType[T](value: String, t: Class[T]): Either[String, T] = {
+  private type ErrorMessage = String
+  def parseToDataType[T](value: String, t: Class[T]): Either[ErrorMessage, T] = {
     typeConverterContainer.convert[String, T](value, classOf[String], t) match {
       case Some(parsedValue) => Right(parsedValue)
       case None              => Left(s"Failed to parse String $value to data type $t")

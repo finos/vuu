@@ -7,13 +7,15 @@ import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.schema.ChildOrderSchema
 import org.finos.vuu.example.ignite.{IgniteOrderStore, TestUtils}
 import org.finos.vuu.net.FilterSpec
-import org.finos.vuu.util.schema.SchemaMapper
+import org.finos.vuu.util.schema.SchemaMapperBuilder
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
 
 class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with BeforeAndAfterAll with Matchers {
-  private val schemaMapper = SchemaMapper(ChildOrderSchema.schema, IgniteOrderDataModule.columns, IgniteOrderDataProvider.columnNameByExternalField)
+  private val schemaMapper = SchemaMapperBuilder(ChildOrderSchema.schema, IgniteOrderDataModule.columns)
+    .withFieldsMap(IgniteOrderDataProvider.columnNameByExternalField)
+    .build()
   private var ignite: Ignite = _
   private var orderStore: IgniteOrderStore = _
   private var dataQuery: IgniteOrderDataQuery = _

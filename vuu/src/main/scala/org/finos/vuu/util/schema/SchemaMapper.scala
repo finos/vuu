@@ -1,16 +1,13 @@
 package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
+import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
 import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
 
 
 /**
  * This class provides utility methods related to mapping external fields to internal columns
  * and vice versa.
- *
- * @note For now converter functions i.e. `toInternalRowMap` doesn't perform any type-checks and/or
- * type conversions. That feature is part of our roadmap and will be introduced in near
- * future.
  * */
 trait SchemaMapper {
   def tableColumn(extFieldName: String): Option[Column]
@@ -23,58 +20,117 @@ trait SchemaMapper {
 }
 
 object SchemaMapper {
-  /**
-   * Builds a schema mapper from the following:
-   *
-   * @param externalSchema schema representing external fields.
-   * @param internalColumns an array of internal Vuu columns.
-   * @param columnNameByExternalField a map from external field names to internal column names.
-   * @param typeConverterContainer pass this if your types aren't matched exactly. Also @see [[TypeConverterContainer]]
-   * */
-  def apply(externalSchema: ExternalEntitySchema,
-            internalColumns: Array[Column],
-            columnNameByExternalField: Map[String, String],
-            typeConverterContainer: TypeConverterContainer): SchemaMapper = {
-    val validationError = validateSchema(externalSchema, internalColumns, columnNameByExternalField, typeConverterContainer)
-    if (validationError.nonEmpty) throw InvalidSchemaMapException(validationError.get)
+  final case class InvalidSchemaMapException(message: String) extends RuntimeException(message)
+}
 
-    new SchemaMapperImpl(externalSchema, internalColumns, columnNameByExternalField, typeConverterContainer)
+private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
+                               private val internalColumns: Array[Column],
+                               private val columnNameByExternalField: Map[String, String],
+                               private val typeConverterContainer: TypeConverterContainer) extends SchemaMapper {
+  private val externalFieldByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
+  private val internalColumnByExtFieldName: Map[String, Column] = getTableColumnByExternalField
+  private val extFieldsMap: Map[String, SchemaField] = externalSchema.fields.map(f => (f.name, f)).toMap
+
+  override def tableColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
+  override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
+
+  override def toInternalRowMap(externalValues: List[_]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
+  override def toInternalRowMap(externalDto: Product): Map[String, Any] = toInternalRowMap(externalDto.productIterator.toArray)
+  private def toInternalRowMap(externalValues: Array[_]): Map[String, Any] = {
+    externalFieldByColumnName.map({ case (columnName, extField) =>
+      val extFieldValue = externalValues(extField.index)
+      // remove this get and make this return Optional (need to guard against conversion error if a user sends in a value not matching the schema type)
+      val columnValue = toMappedInternalColumnType(extField.name, extFieldValue).get
+      (columnName, columnValue)
+    })
   }
 
-  /**
-   * Builds a schema mapper from the following:
-   *
-   * @param externalSchema schema representing external fields.
-   * @param internalColumns an array of internal Vuu columns.
-   * @param columnNameByExternalField a map from external field names to internal column names.
-   *
-   * @note Similar to `apply(ExternalEntitySchema, Array[Column], Map[String, String], TypeConverterContainer)`
-   * except that this uses a default `TypeConverterContainer`. For the list of default type
-   * converters used @see [[org.finos.vuu.util.schema.typeConversion.DefaultTypeConverters]]
-   * */
-  def apply(externalSchema: ExternalEntitySchema,
-            internalColumns: Array[Column],
-            columnNameByExternalField: Map[String, String]): SchemaMapper = {
-    SchemaMapper(externalSchema, internalColumns, columnNameByExternalField, TypeConverterContainerBuilder().build())
+  override def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any] = {
+    externalSchemaField(columnName).flatMap(field => {
+      val col = tableColumn(field.name).get
+      typeConverterContainer.convert(columnValue, castToAny(col.dataType), field.dataType)
+    })
   }
 
+  override def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any] = {
+    tableColumn(extFieldName).flatMap(col => {
+      val field = externalSchemaField(col.name).get
+      typeConverterContainer.convert(extFieldValue, castToAny(field.dataType), col.dataType)
+    })
+  }
+
+  override def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String] = {
+    extFieldsMap.get(extFieldName).flatMap(
+      f => typeConverterContainer.convert(extFieldValue, castToAny(f.dataType), classOf[String])
+    )
+  }
+
+  private def castToAny(cls: Class[_]): Class[Any] = cls.asInstanceOf[Class[Any]]
+
+  private def getExternalSchemaFieldsByColumnName =
+    externalSchema.fields.flatMap(f =>
+      Option.when(columnNameByExternalField.contains(f.name))(columnNameByExternalField(f.name), f)
+    ).toMap
+
+  private def getTableColumnByExternalField =
+    columnNameByExternalField.flatMap({
+      case (extFieldName, columnName) => internalColumns.find(_.name == columnName).map((extFieldName, _))
+    })
+}
+
+object SchemaMapperBuilder {
+
   /**
-   * Builds a schema mapper from the following:
+   * Returns a builder to build schema mapper using the following:
    *
    * @param externalSchema schema representing external fields.
    * @param internalColumns an array of internal Vuu columns.
-   *
-   * @note Similar to `apply(ExternalEntitySchema, Array[Column], Map[String, String])`
-   * except that this method builds the `field->column` map from the passed fields
-   * and columns matching them by their indexes (`Column.index` and `SchemaField.index`).
-   * */
-  def apply(externalSchema: ExternalEntitySchema, internalColumns: Array[Column]): SchemaMapper = {
-    val columnNameByExternalField = mapFieldsToColumns(externalSchema.fields, internalColumns)
-    SchemaMapper(externalSchema, internalColumns, columnNameByExternalField)
+   */
+  def apply(externalSchema: ExternalEntitySchema, internalColumns: Array[Column]): SchemaMapperBuilder = {
+    val defaultTypeConverterContainer = TypeConverterContainerBuilder().build()
+
+    new SchemaMapperBuilder(
+      externalSchema,
+      internalColumns,
+      mapFieldsToColumns(externalSchema.fields, internalColumns),
+      defaultTypeConverterContainer
+    )
   }
 
   private def mapFieldsToColumns(fields: List[SchemaField], columns: Array[Column]): Map[String, String] = {
     fields.flatMap(f => columns.find(_.index == f.index).map(col => (f.name, col.name))).toMap
+  }
+}
+
+case class SchemaMapperBuilder private (private val externalSchema: ExternalEntitySchema,
+                                        private val internalColumns: Array[Column],
+                                        private val fieldsMap: Map[String, String],
+                                        private val typeConverterContainer: TypeConverterContainer) {
+
+  /**
+   * This method replaces the default map `external-field -> internal-vuu-column`. Default map is basically
+   * built from the passed fields and columns matching and performs a simple mapping by their indexes e.g.
+   * `Column.index` and `SchemaField.index`.
+   * */
+  def withFieldsMap(m: Map[String, String]): SchemaMapperBuilder = {
+    this.copy(fieldsMap = m)
+  }
+
+  /**
+   * This method replaces the default `TypeConverterContainer` with the user defined container. For the list of
+   * default type converters used @see [[org.finos.vuu.util.schema.typeConversion.DefaultTypeConverters]].
+   *
+   * Replace only if you have a type mapping not supported by the default converters.
+  * */
+  def withTypeConverters(tcc: TypeConverterContainer): SchemaMapperBuilder = {
+    this.copy(typeConverterContainer = tcc)
+  }
+
+  def build(): SchemaMapper = {
+    val validationError = validateSchema(externalSchema, internalColumns, fieldsMap, typeConverterContainer)
+    if (validationError.nonEmpty) throw InvalidSchemaMapException(validationError.get)
+
+    new SchemaMapperImpl(externalSchema, internalColumns, fieldsMap, typeConverterContainer)
   }
 
   private type ValidationError = Option[String]
@@ -126,64 +182,4 @@ object SchemaMapper {
       (extField, column)
     })
   }
-
-  final case class InvalidSchemaMapException(message: String) extends RuntimeException(message)
-}
-
-private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
-                               private val internalColumns: Array[Column],
-                               private val columnNameByExternalField: Map[String, String],
-                               private val typeConverterContainer: TypeConverterContainer) extends SchemaMapper {
-  private val externalFieldByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
-  private val internalColumnByExtFieldName: Map[String, Column] = getTableColumnByExternalField
-  private val extFieldsMap: Map[String, SchemaField] = externalSchema.fields.map(f => (f.name, f)).toMap
-
-  override def tableColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
-  override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
-
-  override def toInternalRowMap(externalValues: List[_]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
-  override def toInternalRowMap(externalDto: Product): Map[String, Any] = toInternalRowMap(externalDto.productIterator.toArray)
-  private def toInternalRowMap(externalValues: Array[_]): Map[String, Any] = {
-    externalFieldByColumnName.map({ case (columnName, extField) =>
-      val extFieldValue = externalValues(extField.index)
-      // remove this get and make this return Optional (need to guard against conversion error if a user sends in a value not matching the schema type)
-      val columnValue = toMappedInternalColumnType(extField.name, extFieldValue).get
-      (columnName, columnValue)
-    })
-  }
-
-  override def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any] = {
-    externalSchemaField(columnName).flatMap(field => {
-      val col = tableColumn(field.name).get
-      castToAny(col.dataType).flatMap(typeConverterContainer.convert(columnValue, _, field.dataType))
-    })
-  }
-
-  override def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any] = {
-    tableColumn(extFieldName).flatMap(col => {
-      val field = externalSchemaField(col.name).get
-      castToAny(field.dataType).flatMap(typeConverterContainer.convert(extFieldValue, _, col.dataType))
-    })
-  }
-
-  override def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String] = {
-    extFieldsMap.get(extFieldName).flatMap(
-      f => castToAny(f.dataType).flatMap(typeConverterContainer.convert(extFieldValue, _, classOf[String]))
-    )
-  }
-
-  private def castToAny(cls: Class[_]): Option[Class[Any]] = cls match {
-    case c: Class[Any] => Some(c)
-    case _             => None
-  }
-
-  private def getExternalSchemaFieldsByColumnName =
-    externalSchema.fields.flatMap(f =>
-      Option.when(columnNameByExternalField.contains(f.name))(columnNameByExternalField(f.name), f)
-    ).toMap
-
-  private def getTableColumnByExternalField =
-    columnNameByExternalField.flatMap({
-      case (extFieldName, columnName) => internalColumns.find(_.name == columnName).map((extFieldName, _))
-    })
 }

@@ -7,7 +7,7 @@ import org.finos.vuu.example.rest.client.InstrumentServiceClient
 import org.finos.vuu.example.rest.model.Instrument
 import org.finos.vuu.example.rest.provider.InstrumentsProvider.{INSTRUMENTS_COUNT, columnNameByExternalField, externalSchema}
 import org.finos.vuu.provider.DefaultProvider
-import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper}
+import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapperBuilder}
 
 import scala.util.{Failure, Success}
 
@@ -15,7 +15,9 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
                          (implicit clock: Clock) extends DefaultProvider with StrictLogging {
 
 
-  private val schemaMapper = SchemaMapper(externalSchema, table.getTableDef.columns, columnNameByExternalField)
+  private val schemaMapper = SchemaMapperBuilder(externalSchema, table.getTableDef.columns)
+    .withFieldsMap(columnNameByExternalField)
+    .build()
   private val keyField = table.getTableDef.keyField
 
   override def doStart(): Unit = {
