@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import css from "rollup-plugin-import-css";
@@ -16,11 +17,26 @@ import { buildExternals } from "./package-utils.mjs";
 
 const outdir = "../../dist";
 const README = "README.md";
+const LICENCE_PATH = "../../../LICENSE";
 
 const inputOptions = {
   input: `src/index.ts`,
   plugins: [commonjs(), nodeResolve(), css(), json(), esbuild()],
 };
+
+async function copyLicense(outdir) {
+  return fs.copyFile(
+    path.resolve(LICENCE_PATH),
+    path.resolve(outdir, "LICENSE"),
+    (err) => {
+      if (err) {
+        console.log("error copying LICENSE", {
+          err,
+        });
+      }
+    }
+  );
+}
 
 const outputOptionsList = [
   {
@@ -97,6 +113,7 @@ async function writePackageJSON(packageJson) {
         }
       }
     );
+    copyLicense(`${outdir}/${packageName}`);
   });
 }
 
