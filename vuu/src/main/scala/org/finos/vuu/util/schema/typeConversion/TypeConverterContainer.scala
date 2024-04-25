@@ -14,7 +14,7 @@ private case class TypeConverterContainerImpl(
 
   override def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To] = {
     if (TypeUtils.areTypesEqual(fromClass, toClass)) {
-      return Some(value.asInstanceOf[To])
+      return Try(value.asInstanceOf[To]).toOption
     }
     typeConverter[From, To](fromClass, toClass).flatMap(tc => Try(tc.convert(value)).toOption)
   }

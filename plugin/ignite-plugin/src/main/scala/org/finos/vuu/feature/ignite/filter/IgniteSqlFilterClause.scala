@@ -32,7 +32,7 @@ case class EqIgniteSqlFilterClause(columnName: String, value: String) extends Ig
   override def toSql(schemaMapper: SchemaMapper): String =
     SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
       case Right(ParsedResult(f, parsedValue)) => f.dataType match {
-        case CharDataType | StringDataType => eqSql(f.name, quotedString(parsedValue))
+        case CharDataType | StringDataType => eqSql(f.name, quotedString(parsedValue)) // @todo CharDataType doesn't cover java.lang.Character
         case _ => eqSql(f.name, parsedValue)
       }
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)

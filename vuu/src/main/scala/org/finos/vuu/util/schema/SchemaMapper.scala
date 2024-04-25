@@ -14,6 +14,8 @@ trait SchemaMapper {
   def externalSchemaField(columnName: String): Option[SchemaField]
   def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any]
   def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any]
+
+  // @todo to be moved out of this class, as this is not related to mapping between external and internal fields, only optional stuff needed for SQL filters
   def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String]
   def toInternalRowMap(externalValues: List[_]): Map[String, Any]
   def toInternalRowMap(externalDto: Product): Map[String, Any]
@@ -39,7 +41,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
   private def toInternalRowMap(externalValues: Array[_]): Map[String, Any] = {
     externalFieldByColumnName.map({ case (columnName, extField) =>
       val extFieldValue = externalValues(extField.index)
-      // remove this get and make this return Optional (need to guard against conversion error if a user sends in a value not matching the schema type)
+      // @todo remove this get and make this return Optional (need to guard against conversion error if a user sends in a value not matching the schema type)
       val columnValue = toMappedInternalColumnType(extField.name, extFieldValue).get
       (columnName, columnValue)
     })
