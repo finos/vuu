@@ -12,8 +12,6 @@ import { StackProps, TabLabelFactory } from "./stackTypes";
 import { getDefaultTabLabel } from "../layout-reducer";
 import { Placeholder } from "../placeholder";
 
-import "./Stack.css";
-
 const defaultCreateNewChild = () => (
   <Placeholder
     resizeable

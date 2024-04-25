@@ -25,44 +25,45 @@ const entryPoints = ["src/main.tsx"]
   .concat(examples)
   .concat(themes);
 
-const importedCssFiles = [
-  "AppHeader",
-  "Calendar",
-  "ContextPanel",
-  "ConnectionStatusIndicator",
-  "ExpandoCombobox",
-  "ExpandoInput",
-  "FeatureList",
-  "FilterBar",
-  "FilterClause",
-  "FilterClauseCombinator",
-  "FilterEditor",
-  "FilterInput",
-  "FilterPill",
-  "FilterPillMenu",
-  "Flexbox",
-  "LayoutList",
-  "LayoutTile",
-  "LeftNav",
-  "LoginPanel",
-  "SaveLayoutPanel",
-  "sessionEditingForm",
-  "shell",
-  "SidePanel",
-  "Splitter",
-  "Tabstrip",
-  "Tab",
-  "ThemeSwitch",
-];
+// const importedCssFiles = [
+//   "AppHeader",
+//   "Calendar",
+//   "ContextPanel",
+//   "ConnectionStatusIndicator",
+//   "ExpandoCombobox",
+//   "ExpandoInput",
+//   "FeatureList",
+//   "FilterBar",
+//   "FilterClause",
+//   "FilterClauseCombinator",
+//   "FilterEditor",
+//   "FilterInput",
+//   "FilterPill",
+//   "FilterPillMenu",
+//   "Flexbox",
+//   "LayoutList",
+//   "LayoutTile",
+//   "LeftNav",
+//   "LoginPanel",
+//   "SaveLayoutPanel",
+//   "sessionEditingForm",
+//   "shell",
+//   "SidePanel",
+//   "Splitter",
+//   "Tabstrip",
+//   "Tab",
+//   "ThemeSwitch",
+// ];
 
-const regexp = new RegExp(`(${importedCssFiles.join("|")}).css$`);
+// const regexp = new RegExp(`**/packages\/.*\/**.css$`);
 
 const cssInlinePlugin = {
   name: "CssInline",
   setup(build) {
     build.onLoad(
       {
-        filter: regexp,
+        filter:
+          /packages\/vuu-(datatable|filters|layout|popups|shell|table"table-extras|ui-controls|table)\/.*.css$/,
       },
       async (args) => {
         const css = await fs.promises.readFile(args.path, "utf8");

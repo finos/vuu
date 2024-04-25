@@ -1,5 +1,7 @@
 import { asReactElements, useId } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import React, { useMemo, useRef } from "react";
 import {
   OverflowContainer,
@@ -8,7 +10,7 @@ import {
 import { useToolbar } from "./useToolbar";
 import { forwardCallbackProps } from "../utils";
 
-import "./Toolbar.css";
+import toolbarCss from "./Toolbar.css";
 import {
   SelectionStrategy,
   SpecialKeyMultipleSelection,
@@ -48,6 +50,13 @@ export const Toolbar = ({
   showSeparators = false,
   ...props
 }: ToolbarProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toolbar",
+    css: toolbarCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeItemIndex,

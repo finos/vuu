@@ -10,8 +10,6 @@ import ReactDOM from "react-dom";
 import { ContextMenuOptions } from "../menu";
 import { renderPortal } from "../portal-deprecated";
 
-import "./popup-service.css";
-
 let _dialogOpen = false;
 const _popups: string[] = [];
 

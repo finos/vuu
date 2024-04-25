@@ -8,6 +8,8 @@ import {
 } from "@finos/vuu-ui-controls";
 import { Checkbox, Switch } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   HTMLAttributes,
   MouseEventHandler,
@@ -17,7 +19,7 @@ import {
 import { ColumnItem } from "../table-settings";
 import { getColumnLabel, queryClosest } from "@finos/vuu-utils";
 
-import "./ColumnList.css";
+import columnList from "./ColumnList.css";
 
 const classBase = "vuuColumnList";
 const classBaseListItem = "vuuColumnListItem";
@@ -75,6 +77,13 @@ export const ColumnList = ({
   onNavigateToColumn,
   ...htmlAttributes
 }: ColumnListProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-column-list",
+    css: columnList,
+    window: targetWindow,
+  });
+
   const handleChange = useCallback(
     ({ target }: SyntheticEvent) => {
       const input = target as HTMLInputElement;

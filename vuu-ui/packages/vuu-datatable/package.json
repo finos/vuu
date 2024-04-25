@@ -10,6 +10,8 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1",
     "@finos/vuu-data-local": "0.0.26",
     "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filters": "0.0.26",

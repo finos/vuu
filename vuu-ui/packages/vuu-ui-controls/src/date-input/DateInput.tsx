@@ -1,5 +1,7 @@
 import { toCalendarDate } from "@finos/vuu-utils";
 import { DateValue } from "@internationalized/date";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
 import {
   HTMLAttributes,
@@ -11,7 +13,7 @@ import { CalendarProps } from "../calendar/Calendar";
 import { DatePopup } from "../date-popup";
 import { useDatePicker } from "./useDatePicker";
 
-import "./DateInput.css";
+import dateInputCss from "./DateInput.css";
 
 const classBase = "vuuDateInput";
 
@@ -34,6 +36,13 @@ export const DateInput = ({
   className,
   ...htmlAttributes
 }: DateInputProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-data-input",
+    css: dateInputCss,
+    window: targetWindow,
+  });
+
   const { handleOnBlur } = useDatePicker({ onBlur });
   const popupRef = useRef<HTMLButtonElement>(null);
   const onInputChange = useCallback<React.ChangeEventHandler<HTMLInputElement>>(

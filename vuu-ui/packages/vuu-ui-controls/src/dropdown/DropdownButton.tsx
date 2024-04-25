@@ -1,8 +1,10 @@
 import { Button, ButtonProps } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { AriaAttributes, ForwardedRef, forwardRef } from "react";
 
-import "./DropdownButton.css";
+import dropdownButtonCss from "./DropdownButton.css";
 
 export interface DropdownButtonProps extends ButtonProps {
   /**
@@ -65,6 +67,13 @@ export const DropdownButton = forwardRef(function DropdownButton(
   }: DropdownButtonProps,
   ref: ForwardedRef<HTMLButtonElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-dropdown-button",
+    css: dropdownButtonCss,
+    window: targetWindow,
+  });
+
   // FIXME: use polymorphic button
   // We don't want the 'button' tag to be shown in the DOM to trigger some accessibility testing
   // tool's false alarm on role of 'listbox'

@@ -15,10 +15,14 @@ export function cssInline(options: Options = {}): Plugin {
   const {
     exclude = ["**/**.stories.tsx"],
     include = [
-      "**/packages/**/(Tab*|Calendar*|ExpandoInput|MeasuredContainer|ThemeSwitch|Header*|Row*|CheckboxCell|InputCell|ToggleCell|View|Splitter|Flexbox).{tsx,jsx}",
+      "**/packages/vuu-datatable/**/*.{tsx,jsx}",
       "**/packages/vuu-filters/**/*.{tsx,jsx}",
+      "**/packages/vuu-layout/**/*.{tsx,jsx}",
+      "**/packages/vuu-popups/**/*.{tsx,jsx}",
       "**/packages/vuu-shell/**/*.{tsx,jsx}",
       "**/packages/vuu-table/**/*.{tsx,jsx}",
+      "**/packages/vuu-table-extras/**/*.{tsx,jsx}",
+      "**/packages/vuu-ui-controls/**/*.{tsx,jsx}",
     ],
   } = options;
   const filter = createFilter(include, exclude);

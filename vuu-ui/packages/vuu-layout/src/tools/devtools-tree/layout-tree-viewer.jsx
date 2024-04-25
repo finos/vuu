@@ -1,8 +1,10 @@
 import React from "react";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { typeOf } from "../../utils";
 
-import "./layout-tree-viewer.css";
+import layoutTreeViewer from "./layout-tree-viewer.css";
 import { Tree } from "@finos/vuu-ui-controls";
 
 const classBaseTree = "hwLayoutTreeViewer";
@@ -18,6 +20,13 @@ const toTreeJson = (component, path = "0") => {
 };
 
 export const LayoutTreeViewer = ({ layout, onSelect, style }) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-layout-tree-viewer",
+    css: layoutTreeViewer,
+    window: targetWindow,
+  });
+
   const treeJson = [toTreeJson(layout)];
 
   const handleSelection = (evt, [{ path }]) => {

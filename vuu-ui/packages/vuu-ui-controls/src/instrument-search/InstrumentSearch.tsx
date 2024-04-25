@@ -1,19 +1,20 @@
 import { DataSource } from "@finos/vuu-data-types";
 import { TableConfig } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-layout";
-
 import {
   Table,
   TableProps,
   useControlledTableNavigation,
 } from "@finos/vuu-table";
 import { Input } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, RefCallback, useCallback } from "react";
 import { SearchCell } from "./SearchCell";
-
-import "./InstrumentSearch.css";
 import { useInstrumentSearch } from "./useInstrumentSearch";
+
+import instrumentSearchCss from "./InstrumentSearch.css";
 
 const classBase = "vuuInstrumentSearch";
 
@@ -57,6 +58,13 @@ export const InstrumentSearch = ({
   searchColumns,
   ...htmlAttributes
 }: InstrumentSearchProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-instrument-search",
+    css: instrumentSearchCss,
+    window: targetWindow,
+  });
+
   const { dataSource, onChange, searchState } = useInstrumentSearch({
     dataSource: dataSourceProp,
     searchColumns,

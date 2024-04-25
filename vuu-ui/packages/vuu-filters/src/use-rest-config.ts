@@ -3,9 +3,9 @@ import {
   getAllLocalEntity,
   getLocalEntity,
   saveLocalEntity,
+  uuid,
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
-import { v4 as uuidv4 } from "uuid";
 
 type EntityStoreProps = {
   baseUrl: string;
@@ -47,7 +47,7 @@ export const useRestEntityStore = <T>({
 
   const save = useCallback(
     async (data: T): Promise<T | undefined> => {
-      if (usingLocal) return saveLocalEntity(`${baseUrl}/${uuidv4()}`, data);
+      if (usingLocal) return saveLocalEntity(`${baseUrl}/${uuid()}`, data);
       try {
         const response = await fetch(baseUrl, {
           method: "POST",

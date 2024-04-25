@@ -1,10 +1,12 @@
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { useThemeAttributes } from "@finos/vuu-utils";
 import { HTMLAttributes, useCallback, useLayoutEffect, useRef } from "react";
 import { DialogHeader } from "../dialog-header";
-
-import "./Dialog.css";
 import { PopupComponentProps, useAnchoredPosition } from "../popup";
+
+import dialogCss from "./Dialog.css";
 
 const classBase = "vuuDialog";
 
@@ -29,6 +31,13 @@ export const Dialog = ({
   hideCloseButton = false,
   ...htmlAttributes
 }: DialogProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-dialog",
+    css: dialogCss,
+    window: targetWindow,
+  });
+
   const {
     anchorElement = AnchorBody,
     offsetLeft = 0,

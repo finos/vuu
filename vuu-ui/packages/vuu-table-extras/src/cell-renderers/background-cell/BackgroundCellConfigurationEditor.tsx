@@ -4,10 +4,12 @@ import {
   ConfigurationEditorProps,
   registerConfigurationEditor,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useCallback, useState } from "react";
 
-import "./BackgroundCellConfigurationEditor.css";
+import backgroundCellConfigurationEditorCss from "./BackgroundCellConfigurationEditor.css";
 
 const classBase = "vuuBackgroundCellConfiguration";
 
@@ -33,6 +35,13 @@ export const BackgroundCellConfigurationEditor = ({
   column,
   onChangeRendering,
 }: ConfigurationEditorProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-background-cell-configuration-editor",
+    css: backgroundCellConfigurationEditorCss,
+    window: targetWindow,
+  });
+
   const [flashStyle, setFlashStyle] = useState<FlashOption | null>(
     valueFromColumn(column)
   );

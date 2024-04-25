@@ -1,5 +1,7 @@
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   ForwardedRef,
   HTMLAttributes,
@@ -20,7 +22,7 @@ import {
 import { useViewportTracking } from "./use-viewport-tracking";
 import { useTree } from "./useTree";
 
-import "./Tree.css";
+import treeCss from "./Tree.css";
 
 const classBase = "vuuTree";
 
@@ -66,6 +68,13 @@ export const Tree = forwardRef(function Tree(
   }: TreeProps,
   forwardedRef: ForwardedRef<HTMLUListElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tree",
+    css: treeCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const rootRef = useRef<HTMLUListElement>(null);
   // returns the full source data

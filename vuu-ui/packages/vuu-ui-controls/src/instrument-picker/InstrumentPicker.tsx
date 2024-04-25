@@ -2,12 +2,14 @@ import { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
 import { Table, TableProps } from "@finos/vuu-table";
 import { ColumnMap, useId } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
 import { DropdownBase, OpenChangeHandler } from "../dropdown";
 import { SearchCell } from "./SearchCell";
 import { useInstrumentPicker } from "./useInstrumentPicker";
 
-import "./InstrumentPicker.css";
+import instrumentPickerCss from "./InstrumentPicker.css";
 
 const classBase = "vuuInstrumentPicker";
 
@@ -53,6 +55,13 @@ export const InstrumentPicker = forwardRef(function InstrumentPicker(
   }: InstrumentPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-instrument-picker",
+    css: instrumentPickerCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
 
   const {

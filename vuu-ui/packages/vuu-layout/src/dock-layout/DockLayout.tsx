@@ -1,10 +1,12 @@
 import { partition } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, ReactElement } from "react";
 import { registerComponent } from "../registry/ComponentRegistry";
 import Drawer from "./Drawer";
 
-import "./DockLayout.css";
+import dockLayoutCss from "./DockLayout.css";
 
 const isDrawer = (component: ReactElement) => component.type === Drawer;
 const isVertical = ({ props: { position = "left" } }: ReactElement) =>
@@ -15,6 +17,13 @@ export interface DockLayoutProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const DockLayout = (props: DockLayoutProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-dock-layput",
+    css: dockLayoutCss,
+    window: targetWindow,
+  });
+
   const { children, className: classNameProp, id, style } = props;
   const classBase = "vuuDockLayout";
   const [drawers, content] = partition(children, isDrawer);

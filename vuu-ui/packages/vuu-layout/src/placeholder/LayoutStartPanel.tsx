@@ -1,8 +1,10 @@
 import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
 import { useViewContext, QueryReponse } from "../layout-view-actions";
 
-import "./LayoutStartPanel.css";
+import layoutStartPanelCss from "./LayoutStartPanel.css";
 
 const classBase = "vuuLayoutStartPanel";
 
@@ -11,6 +13,13 @@ export interface LayoutStartPanelProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const LayoutStartPanel = (htmlAttributes: LayoutStartPanelProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-layout-start-panel",
+    css: layoutStartPanelCss,
+    window: targetWindow,
+  });
+
   const { dispatch, path } = useViewContext();
   const [displayState, setDisplayState] = useState<
     "initial" | "nested" | undefined

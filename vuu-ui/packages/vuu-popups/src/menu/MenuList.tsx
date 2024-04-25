@@ -1,4 +1,6 @@
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import React, {
   FC,
   HTMLAttributes,
@@ -15,7 +17,7 @@ import {
   useKeyboardNavigation,
 } from "./use-keyboard-navigation";
 
-import "./MenuList.css";
+import menuListCss from "./MenuList.css";
 
 const classBase = "vuuMenuList";
 
@@ -106,6 +108,13 @@ export const MenuList = ({
   openMenu: onOpenMenu,
   ...props
 }: MenuListProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-menu-list",
+    css: menuListCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const root = useRef<HTMLDivElement>(null);
 

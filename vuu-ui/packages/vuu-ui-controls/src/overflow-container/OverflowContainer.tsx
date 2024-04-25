@@ -1,12 +1,13 @@
 import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
 import { asReactElements, orientationType, useId } from "@finos/vuu-utils";
-
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import React, { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 import { OverflowItem } from "./overflow-utils";
 import { useOverflowContainer } from "./useOverflowContainer";
 
-import "./OverflowContainer.css";
+import overflowContainerCss from "./OverflowContainer.css";
 
 const classBase = "vuuOverflowContainer";
 
@@ -119,6 +120,13 @@ export const OverflowContainer = forwardRef(function OverflowContainer(
   }: OverflowContainerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-overflow-container",
+    css: overflowContainerCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
 
   return (

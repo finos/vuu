@@ -1,5 +1,7 @@
 import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   CSSProperties,
   forwardRef,
@@ -12,7 +14,7 @@ import {
 } from "react";
 import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 
-import "./Draggable.css";
+import draggableCss from "./Draggable.css";
 
 const makeClassNames = (classNames: string) =>
   classNames.split(" ").map((className) => `vuuDraggable-${className}`);
@@ -31,6 +33,13 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
     { wrapperClassName, element, onDropped, onTransitionEnd, style, scale = 1 },
     forwardedRef
   ) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-draggable",
+      css: draggableCss,
+      window: targetWindow,
+    });
+
     const handleVuuDrop = useCallback(() => {
       onDropped?.();
     }, [onDropped]);

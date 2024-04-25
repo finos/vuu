@@ -1,8 +1,10 @@
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
 import { DropTarget } from "./DropTarget";
 
-import "./DropMenu.css";
+import dropMenuCss from "./DropMenu.css";
 
 export function computeMenuPosition(
   dropTarget: DropTarget,
@@ -39,6 +41,13 @@ export const DropMenu = ({
   onHover,
   orientation,
 }: DropMenuProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-drop-menu",
+    css: dropMenuCss,
+    window: targetWindow,
+  });
+
   const dropTargets = dropTarget.toArray();
   // TODO we have all the information here to draw a mini target map
   // but maybe thats overkill ...

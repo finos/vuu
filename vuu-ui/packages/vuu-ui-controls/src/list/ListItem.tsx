@@ -1,10 +1,12 @@
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ListItemProps, ListItemType } from "./listTypes";
 import { Highlighter } from "./Highlighter";
 import { CheckboxIcon } from "./CheckboxIcon";
 
-import "./ListItem.css";
+import listItemCss from "./ListItem.css";
 
 const classBase = "vuuListItem";
 
@@ -21,6 +23,13 @@ export const ListItemProxy = forwardRef(function ListItemProxy(
   },
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-list-item",
+    css: listItemCss,
+    window: targetWindow,
+  });
+
   return (
     <div
       {...htmlAttributes}

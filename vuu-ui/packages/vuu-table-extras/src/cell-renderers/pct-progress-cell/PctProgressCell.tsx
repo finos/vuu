@@ -1,9 +1,11 @@
 import { TableCellProps } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { CSSProperties } from "react";
 
-import "./PctProgressCell.css";
+import pctProgressCellCss from "./PctProgressCell.css";
 
 const classBase = "vuuPctProgressCell";
 
@@ -20,6 +22,13 @@ const getPercentageValue = (value: number) => {
 };
 
 export const PctProgressCell = ({ column, columnMap, row }: TableCellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-pct-progress-cell",
+    css: pctProgressCellCss,
+    window: targetWindow,
+  });
+
   const value = row[columnMap[column.name]] as number;
   const percentageValue = getPercentageValue(value);
   const className = cx(classBase, {});
