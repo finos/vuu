@@ -1,13 +1,14 @@
 package org.finos.vuu.feature.ignite.filter
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.DataType.{CharDataType, StringDataType}
-import org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClause.EMPTY_SQL
+import org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClause.{EMPTY_SQL, STRING_DATA_TYPE}
 import org.finos.vuu.feature.ignite.filter.SqlFilterColumnValueParser.ParsedResult
-import org.finos.vuu.util.schema.SchemaMapper
+import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 
 private object IgniteSqlFilterClause {
   val EMPTY_SQL = ""
+
+  val STRING_DATA_TYPE: Class[String] = classOf[String]
 }
 
 trait IgniteSqlFilterClause {
@@ -31,10 +32,7 @@ case class AndIgniteSqlFilterClause(clauses:List[IgniteSqlFilterClause]) extends
 case class EqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
     SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
-      case Right(ParsedResult(f, parsedValue)) => f.dataType match {
-        case CharDataType | StringDataType => eqSql(f.name, quotedString(parsedValue)) // @todo CharDataType doesn't cover java.lang.Character
-        case _ => eqSql(f.name, parsedValue)
-      }
+      case Right(ParsedResult(f, parsedValue)) => eqSql(f.name, addQuotesIfRequired(parsedValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
 
@@ -45,12 +43,9 @@ case class EqIgniteSqlFilterClause(columnName: String, value: String) extends Ig
 
 case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(field) => field.dataType match {
-        case CharDataType | StringDataType => neqSql(field.name, quotedString(value))
-        case _ => neqSql(field.name, value)
-      }
-      case None => logMappingErrorAndReturnEmptySql(columnName)
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
+      case Right(ParsedResult(f, parsedValue)) => neqSql(f.name, addQuotesIfRequired(parsedValue, f.dataType))
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
 
   private def neqSql(field: String, processedVal: String): String = {
@@ -58,48 +53,51 @@ case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends I
   }
 }
 
-//todo why is number cast double? need to cast back to original type?
-case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: Double) extends IgniteSqlFilterClause {
+case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: String) extends IgniteSqlFilterClause {
   override def toSql(schemaMapper: SchemaMapper): String =
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => s"${f.name} ${op.value} $value"
-      case None    => logMappingErrorAndReturnEmptySql(columnName)
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
+      case Right(ParsedResult(f, parsedValue)) => rangeSql(f.name, addQuotesIfRequired(parsedValue, f.dataType))
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
+
+  private def rangeSql(field: String, processedVal: String): String = s"$field ${op.value} $processedVal"
   override def toString = s"RangeIgniteSqlFilterClause[$op]($columnName, $value)"
 }
 
 case class StartsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
   override def toSql(schemaMapper: SchemaMapper): String = {
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dataType match {
-        case StringDataType => s"${f.name} LIKE '$value%'"
-        case _ => logErrorAndReturnEmptySql(s"`Starts` clause unsupported for non string column: `${f.name}` (${f.dataType})")
-      }
-      case None => logMappingErrorAndReturnEmptySql(columnName)
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
+      case Right(ParsedResult(f, parsedValue)) => startsSql(f, parsedValue)
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
+  }
+
+  private def startsSql(f: SchemaField, value: String): String = f.dataType match {
+    case STRING_DATA_TYPE => s"${f.name} LIKE '$value%'"
+    case _ => logErrorAndReturnEmptySql(s"`Starts` clause unsupported for non string column: `${f.name}` (${f.dataType})")
   }
 }
 
 case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper): String =
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dataType match {
-        case StringDataType => s"${f.name} LIKE '%$value'"
-        case _ => logErrorAndReturnEmptySql(s"`Ends` clause unsupported for non string column: `${f.name}` (${f.dataType})")
-      }
-      case None => logMappingErrorAndReturnEmptySql(columnName)
+  override def toSql(schemaMapper: SchemaMapper): String = {
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValue(columnName, value) match {
+      case Right(ParsedResult(f, parsedValue)) => endsSql(f, parsedValue)
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
+    }
+  }
+
+  private def endsSql(f: SchemaField, value: String): String = f.dataType match {
+    case STRING_DATA_TYPE => s"${f.name} LIKE '%$value'"
+    case _ => logErrorAndReturnEmptySql(s"`Ends` clause unsupported for non string column: `${f.name}` (${f.dataType})")
   }
 }
 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {
   override def toSql(schemaMapper: SchemaMapper): String =
-    schemaMapper.externalSchemaField(columnName) match {
-      case Some(f) => f.dataType match {
-        case CharDataType | StringDataType => inQuery(f.name, values.map(quotedString(_)))
-        case _ => inQuery(f.name, values)
-      }
-      case None => logMappingErrorAndReturnEmptySql(columnName)
-  }
+    SqlFilterColumnValueParser(schemaMapper).parseColumnValues(columnName, values) match {
+      case Right(ParsedResult(f, parsedValues)) => inQuery(f.name, addQuotesIfRequired(parsedValues, f.dataType))
+      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
+    }
 
   private def inQuery(field: String, processedValues: List[String]) = {
     s"$field IN (${processedValues.mkString(",")})"
@@ -114,13 +112,23 @@ object RangeOp {
   final case object LTE extends RangeOp(value = "<=")
 }
 
-private object quotedString {
-  def apply(s: String) = s"'$s'"
-}
+private object addQuotesIfRequired {
+  def apply(v: String, dataType: Class[_]): String = if (requireQuotes(dataType)) quotedString(v) else v
 
-private object logMappingErrorAndReturnEmptySql {
-  def apply(columnName: String): String =
-    logErrorAndReturnEmptySql(s"Failed to find mapped external field for column `$columnName`")
+  def apply(vs: List[String], dataType: Class[_]): List[String] = {
+    if (requireQuotes(dataType)) vs.map(quotedString) else vs
+  }
+
+  private def quotedString(s: String) = s"'$s'"
+
+  private def requireQuotes(dt: Class[_]): Boolean = dataTypesRequiringQuotes.contains(dt)
+
+  private val dataTypesRequiringQuotes: Set[Class[_]] = Set(
+    classOf[String],
+    classOf[Char],
+    classOf[java.lang.Character],
+    classOf[java.sql.Date],
+  )
 }
 
 private object logErrorAndReturnEmptySql extends StrictLogging {

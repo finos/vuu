@@ -16,9 +16,6 @@ trait SchemaMapper {
   def externalSchemaField(columnName: String): Option[SchemaField]
   def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any]
   def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any]
-
-  // @todo to be moved out of this class, as this is not related to mapping between external and internal fields, only optional stuff needed for SQL filters
-  def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String]
   def toInternalRowMap(externalValues: List[_]): Map[String, Any]
   def toInternalRowMap(externalDto: Product): Map[String, Any]
 }
@@ -33,7 +30,6 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
                                private val typeConverterContainer: TypeConverterContainer) extends SchemaMapper {
   private val externalFieldByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
   private val internalColumnByExtFieldName: Map[String, Column] = getTableColumnByExternalField
-  private val extFieldsMap: Map[String, SchemaField] = externalSchema.fields.map(f => (f.name, f)).toMap
 
   override def tableColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
   override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
@@ -61,10 +57,6 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
       val field = externalSchemaField(col.name).get
       safeTypeConvert(extFieldValue, castToAny(field.dataType), col.dataType)
     })
-  }
-
-  override def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String] = {
-    extFieldsMap.get(extFieldName).flatMap(f => safeTypeConvert(extFieldValue, castToAny(f.dataType), classOf[String]))
   }
 
   /**

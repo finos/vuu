@@ -3,7 +3,6 @@ package org.finos.vuu.feature.ignite.filter
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{Column, DataType}
 import org.finos.vuu.feature.ignite.filter.SqlFilterColumnValueParser.{ErrorMessage, ParsedResult}
-import org.finos.vuu.util.schema.typeConversion.TypeConverter.buildConverterName
 import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 
 protected trait SqlFilterColumnValueParser {
@@ -40,13 +39,14 @@ private class ColumnValueParser(private val mapper: SchemaMapper) extends SqlFil
     val (errors, parsedValues) = columnValues.partitionMap(parser.parse)
     val combinedError = errors.mkString("\n")
 
-    if (parsedValues.isEmpty) return Left(combinedError)
-
-    if (errors.nonEmpty) logger.error(s"Failed to parse some of the column values corresponding to " +
-      s"the column ${parser.column.name}: \n $combinedError"
-    )
-
-    Right(ParsedResult(parser.field, parsedValues))
+    if (parsedValues.isEmpty) {
+      Left(combinedError)
+    } else {
+      if (errors.nonEmpty) logger.error(
+        s"Failed to parse some of the column values corresponding to the column ${parser.column.name}: \n $combinedError"
+      )
+      Right(ParsedResult(parser.field, parsedValues))
+    }
   }
 
   private def externalFieldNotFoundError(columnName: String): String =
@@ -68,16 +68,6 @@ private class ColumnValueParser(private val mapper: SchemaMapper) extends SqlFil
       mapper.toMappedExternalFieldType(column.name, columnValue)
         .toRight(s"Failed to convert column value `$columnValue` from `${column.dataType}` to external type `${field.dataType}`")
 
-    private def convertExternalValueToString(value: Any): String =
-      mapper.convertExternalValueToString(field.name, value).getOrElse(logWarningAndUseDefaultToString(value))
-
-    private def logWarningAndUseDefaultToString(value: Any): String = {
-      logger.warn(
-        s"Could not find a converter [${buildConverterName(field.dataType, classOf[String])}] " +
-          s"required for SQL filters to be applied to ${field.name}. Falling back to using the " +
-          s"default `toString`."
-      )
-      Option(value).map(_.toString).orNull
-    }
+    private def convertExternalValueToString(value: Any): String = Option(value).map(_.toString).orNull
   }
 }
