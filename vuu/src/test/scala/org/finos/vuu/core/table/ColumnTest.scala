@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.util.schema.typeConversion.TypeUtils
+import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._

@@ -1,5 +1,6 @@
-package org.finos.vuu.util.schema.typeConversion
+package org.finos.vuu.util.types
 
+import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverter, TypeConverterContainerBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

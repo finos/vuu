@@ -1,4 +1,4 @@
-package org.finos.vuu.util.schema.typeConversion
+package org.finos.vuu.util.types
 
 trait TypeConverterContainer {
   def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To]

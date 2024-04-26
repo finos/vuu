@@ -1,4 +1,4 @@
-package org.finos.vuu.util.schema.typeConversion
+package org.finos.vuu.util.types
 
 import java.lang._
 

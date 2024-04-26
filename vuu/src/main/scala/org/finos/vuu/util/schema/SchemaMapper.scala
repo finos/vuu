@@ -2,7 +2,7 @@ package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
+import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
 
 import scala.util.Try
 
@@ -120,7 +120,7 @@ case class SchemaMapperBuilder private (private val externalSchema: ExternalEnti
 
   /**
    * This method replaces the default `TypeConverterContainer` with the user defined container. For the list of
-   * default type converters used @see [[org.finos.vuu.util.schema.typeConversion.DefaultTypeConverters]].
+   * default type converters used @see [[DefaultTypeConverters]].
    *
    * Replace only if you have a type mapping not supported by the default converters.
   * */

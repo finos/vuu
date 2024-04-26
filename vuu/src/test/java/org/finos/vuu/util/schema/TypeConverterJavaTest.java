@@ -1,6 +1,6 @@
 package org.finos.vuu.util.schema;
 
-import org.finos.vuu.util.schema.typeConversion.TypeConverter;
+import org.finos.vuu.util.types.TypeConverter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

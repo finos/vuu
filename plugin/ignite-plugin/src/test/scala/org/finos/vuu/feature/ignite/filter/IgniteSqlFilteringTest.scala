@@ -4,8 +4,8 @@ import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
-import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder}
 import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaField, SchemaMapperBuilder}
+import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder}
 
 import java.sql.Date
 import java.math.BigDecimal

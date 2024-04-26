@@ -2,7 +2,9 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
-import org.finos.vuu.util.schema.typeConversion.{DefaultTypeConverters, TypeConverterContainerBuilder}
+import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
+
+import scala.util.{Failure, Success, Try}
 
 object DataType {
 
@@ -37,9 +39,9 @@ object DataType {
 
   private type ErrorMessage = String
   def parseToDataType[T](value: String, t: Class[T]): Either[ErrorMessage, T] = {
-    typeConverterContainer.convert[String, T](value, classOf[String], t) match {
-      case Some(parsedValue) => Right(parsedValue)
-      case None              => Left(s"Failed to parse String $value to data type $t")
+    Try(typeConverterContainer.convert[String, T](value, classOf[String], t).get) match {
+      case Success(parsedValue) => Right(parsedValue)
+      case Failure(ex)          => Left(s"Failed to parse String $value to data type $t: ${ex.getMessage}")
     }
   }
 
@@ -51,7 +53,6 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToLongConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .build()
-
 }
 
 object Columns {

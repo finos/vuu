@@ -4,7 +4,7 @@ import org.finos.vuu.core.module.vui.VuiStateModule.stringToFieldDef
 import org.finos.vuu.core.table.{Column, Columns, SimpleColumn}
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
 import org.finos.vuu.util.schema.SchemaMapperTest.{externalFields, externalSchema, fieldsMap, fieldsMapWithoutAssetClass, internalColumns}
-import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainerBuilder}
+import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainerBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 

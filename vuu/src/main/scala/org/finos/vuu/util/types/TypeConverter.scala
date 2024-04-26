@@ -1,7 +1,7 @@
-package org.finos.vuu.util.schema.typeConversion
+package org.finos.vuu.util.types
 
-import org.finos.vuu.util.schema.typeConversion.TypeConverter.buildConverterName
-import org.finos.vuu.util.schema.typeConversion.TypeUtils.toWrapperType
+import TypeConverter.buildConverterName
+import TypeUtils.toWrapperType
 
 trait TypeConverter[From, To] {
   val fromClass: Class[From]

@@ -1,4 +1,4 @@
-package org.finos.vuu.util.schema.typeConversion
+package org.finos.vuu.util.types
 
 object TypeUtils {
   def toWrapperType(t: Class[_]): Class[_] = if (t.isPrimitive) primitiveToWrapperType(t) else t
