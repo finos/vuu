@@ -7,6 +7,8 @@ import org.apache.ignite.{Ignite, IgniteCache, Ignition}
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.configuration.{CacheConfiguration, IgniteConfiguration}
 
+import java.sql.Date
+import java.math.BigDecimal
 import java.util
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -62,6 +64,8 @@ object IgniteTestStore {
     fields.put("price", classOf[Double].getName)
     fields.put("quantity", classOf[Int].getName)
     fields.put("rating", classOf[Char].getName)
+    fields.put("createdAt", classOf[Date].getName)
+    fields.put("totalFill", classOf[BigDecimal].getName)
     fields
   }
 
