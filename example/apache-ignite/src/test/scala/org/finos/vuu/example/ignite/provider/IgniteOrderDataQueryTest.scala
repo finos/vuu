@@ -44,5 +44,5 @@ private object IgniteOrderDataQueryTest {
     "value" -> "value",
   )
 
-  val entitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withCaseClass[TestDto].build()
+  val entitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withEntity(classOf[TestDto]).build()
 }

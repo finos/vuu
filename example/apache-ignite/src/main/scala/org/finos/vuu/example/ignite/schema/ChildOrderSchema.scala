@@ -7,7 +7,7 @@ import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuil
 
 object ChildOrderSchema {
   val schema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-    .withCaseClass[ChildOrder]
+    .withEntity(classOf[ChildOrder])
     .withIndex("PARENTID_IDX", List("parentId"))
     .withIndex("CHILDID_IDX", List("id"))
     .build()

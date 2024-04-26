@@ -37,7 +37,7 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
 }
 
 object InstrumentsProvider {
-  val externalSchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withCaseClass[Instrument].build()
+  val externalSchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withEntity(classOf[Instrument]).build()
   val columnNameByExternalField: Map[String, String] = Map(
     "id"    -> "id",
     "ric"   -> "ric",
