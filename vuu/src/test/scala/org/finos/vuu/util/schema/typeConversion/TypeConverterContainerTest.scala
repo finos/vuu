@@ -16,15 +16,15 @@ class TypeConverterContainerTest extends AnyFeatureSpec with Matchers {
       .build()
 
     Scenario("contains default converters") {
-      tcContainer.typeConverter(classOf[String], classOf[Long]).nonEmpty should be(true)
-      tcContainer.typeConverter(classOf[String], classOf[Double]).nonEmpty should be(true)
+      tcContainer.typeConverter(classOf[String], classOf[Long]) should not be empty
+      tcContainer.typeConverter(classOf[String], classOf[Double]) should not be empty
     }
 
     Scenario("contains user defined converters") {
-      tcContainer.typeConverter(userDefinedConverter.fromClass, userDefinedConverter.toClass).nonEmpty should be(true)
+      tcContainer.typeConverter(userDefinedConverter.fromClass, userDefinedConverter.toClass) should not be empty
       tcContainer.typeConverter(
         userDefinedConverterOverridesADefault.fromClass, userDefinedConverterOverridesADefault.toClass
-      ).nonEmpty shouldBe true
+      ) should not be empty
     }
 
     Scenario("user defined overrides any default converters for the same types") {
@@ -48,7 +48,39 @@ class TypeConverterContainerTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("contains added user defined converter") {
-      tcContainer.typeConverter(userDefinedConverter.fromClass, userDefinedConverter.toClass).nonEmpty shouldBe true
+      tcContainer.typeConverter(userDefinedConverter.fromClass, userDefinedConverter.toClass) should not be empty
+    }
+  }
+
+  Feature("TypeConverterContainer.convert") {
+    val converter = TypeConverter[Double, String](classOf[Double], classOf[String], _.toString)
+    val container = TypeConverterContainerBuilder()
+      .withoutDefaults()
+      .withConverter(converter)
+      .build()
+
+    Scenario("should simply return the same value if From & To types are equal even if no converter found") {
+      container.convert[Char, java.lang.Character]('A', classOf[Char], classOf[java.lang.Character]).get should equal('A')
+    }
+
+    Scenario("should return converted value if required type converter exists") {
+      container.convert(10.55, classOf[Double], classOf[String]).get should equal("10.55")
+    }
+
+    Scenario("should return empty if type converter not found") {
+      container.convert(10.55, classOf[Double], classOf[Long]) shouldBe empty
+    }
+  }
+
+  Feature("TypeConverterContainerBuilder.with2WayConverter") {
+    val container = TypeConverterContainerBuilder()
+      .withoutDefaults()
+      .with2WayConverter[Long, String](classOf[Long], classOf[String], _.toString, _.toLong)
+      .build()
+
+    Scenario("should build both converters") {
+      container.typeConverter(classOf[Long], classOf[String]) should not be empty
+      container.typeConverter(classOf[String], classOf[Long]) should not be empty
     }
   }
 }

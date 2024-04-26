@@ -1,7 +1,5 @@
 package org.finos.vuu.util.schema.typeConversion
 
-import scala.util.Try
-
 trait TypeConverterContainer {
   def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To]
   def typeConverter[From, To](fromClass: Class[From], toClass: Class[To]): Option[TypeConverter[From, To]]
@@ -14,9 +12,9 @@ private case class TypeConverterContainerImpl(
 
   override def convert[From, To](value: From, fromClass: Class[From], toClass: Class[To]): Option[To] = {
     if (TypeUtils.areTypesEqual(fromClass, toClass)) {
-      return Try(value.asInstanceOf[To]).toOption
+      return Some(value.asInstanceOf[To])
     }
-    typeConverter[From, To](fromClass, toClass).flatMap(tc => Try(tc.convert(value)).toOption)
+    typeConverter[From, To](fromClass, toClass).map(tc => tc.convert(value))
   }
 
   override def typeConverter[From, To](fromClass: Class[From], toClass: Class[To]): Option[TypeConverter[From, To]] = {
@@ -25,7 +23,7 @@ private case class TypeConverterContainerImpl(
   }
 
   private def typeConverter[From, To](name: String): Option[TypeConverter[From, To]] = {
-    typeConverterByName.get(name).flatMap(tc => Try(tc.asInstanceOf[TypeConverter[From, To]]).toOption)
+    typeConverterByName.get(name).map(tc => tc.asInstanceOf[TypeConverter[From, To]])
   }
 }
 
@@ -37,6 +35,15 @@ case class TypeConverterContainerBuilder private (private val converters: List[T
                                                   private val withDefaults: Boolean) {
   def withConverter[From, To](t: TypeConverter[From, To]): TypeConverterContainerBuilder = {
     this.copy(converters = converters ++ List(t))
+  }
+
+  def with2WayConverter[T1, T2](cls1: Class[T1],
+                                cls2: Class[T2],
+                                converter1: T1 => T2,
+                                converter2: T2 => T1): TypeConverterContainerBuilder = {
+    val tc1 = TypeConverter(cls1, cls2, converter1)
+    val tc2 = TypeConverter(cls2, cls1, converter2)
+    this.copy(converters = converters ++ List(tc1, tc2))
   }
 
   def withoutDefaults(): TypeConverterContainerBuilder = this.copy(withDefaults = false)

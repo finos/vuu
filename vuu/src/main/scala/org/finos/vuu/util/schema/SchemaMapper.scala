@@ -4,6 +4,8 @@ import org.finos.vuu.core.table.Column
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
 import org.finos.vuu.util.schema.typeConversion.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
 
+import scala.util.Try
+
 
 /**
  * This class provides utility methods related to mapping external fields to internal columns
@@ -50,21 +52,27 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
   override def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any] = {
     externalSchemaField(columnName).flatMap(field => {
       val col = tableColumn(field.name).get
-      typeConverterContainer.convert(columnValue, castToAny(col.dataType), field.dataType)
+      safeTypeConvert(columnValue, castToAny(col.dataType), field.dataType)
     })
   }
 
   override def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any] = {
     tableColumn(extFieldName).flatMap(col => {
       val field = externalSchemaField(col.name).get
-      typeConverterContainer.convert(extFieldValue, castToAny(field.dataType), col.dataType)
+      safeTypeConvert(extFieldValue, castToAny(field.dataType), col.dataType)
     })
   }
 
   override def convertExternalValueToString(extFieldName: String, extFieldValue: Any): Option[String] = {
-    extFieldsMap.get(extFieldName).flatMap(
-      f => typeConverterContainer.convert(extFieldValue, castToAny(f.dataType), classOf[String])
-    )
+    extFieldsMap.get(extFieldName).flatMap(f => safeTypeConvert(extFieldValue, castToAny(f.dataType), classOf[String]))
+  }
+
+  /**
+   * Required since we're using `Any` type, so good to guard against any values being passed in that doesn't
+   * match the field/column type.
+   * */
+  private def safeTypeConvert[T](value: Any, fromClass: Class[Any], toClass: Class[T]): Option[T] = {
+    Try(typeConverterContainer.convert(value, fromClass, toClass).get).toOption
   }
 
   private def castToAny(cls: Class[_]): Class[Any] = cls.asInstanceOf[Class[Any]]
