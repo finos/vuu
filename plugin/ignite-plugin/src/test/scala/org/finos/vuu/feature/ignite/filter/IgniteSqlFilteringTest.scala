@@ -47,10 +47,10 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
 
-    Scenario("Support mapped field types - [ java.sql.Data -> Long]") {
+    Scenario("Support mapped field types - [ java.sql.Date -> Long ]") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("createdAt > 1704038400000")
+      val filterResult = applyFilter(s"createdAt > ${getTime("2024-01-01")}")
 
       assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
@@ -170,10 +170,10 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     }
 
 
-    Scenario("Support mapped field types - [ java.sql.Data -> Long]") {
+    Scenario("Support mapped field types - [ java.sql.Date -> Long]") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("createdAt <= 1704038400000")
+      val filterResult = applyFilter(s"createdAt <= ${getTime("2024-01-01")}")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
@@ -227,7 +227,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("Support mapped type - [java.sql.Date -> Long]") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("createdAt = 1602259200000")
+      val filterResult = applyFilter(s"createdAt = ${getTime("2020-10-10")}")
 
       assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
@@ -297,7 +297,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("Support mapped type - [java.sql.Date -> Long]") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("createdAt != 1704902400000")
+      val filterResult = applyFilter(s"createdAt != ${getTime("2024-01-11")}")
 
       assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
@@ -513,7 +513,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("supports mapped field types - [ java.sql.Date -> Long ]") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("createdAt in [1580313600000]")
+      val filterResult = applyFilter(s"createdAt in [${getTime("2020-01-30")}]")
 
       assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
@@ -578,4 +578,5 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     .with2WayConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue(), BigDecimal.valueOf)
     .build()
 
+  private def getTime(date: String): Long = Date.valueOf(date).getTime
 }

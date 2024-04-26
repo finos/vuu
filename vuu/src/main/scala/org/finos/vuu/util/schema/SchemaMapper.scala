@@ -2,7 +2,7 @@ package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
+import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
 
 import scala.util.Try
 
