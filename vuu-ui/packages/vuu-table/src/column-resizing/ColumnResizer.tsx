@@ -4,7 +4,7 @@ import "./ColumnResizer.css";
 
 const NOOP = () => undefined;
 
-const baseClass = "vuuColumnResizerNext";
+const baseClass = "vuuColumnResizer";
 export interface TableColumnResizerProps {
   onDrag: (evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => void;
   onDragEnd: (evt: MouseEvent, totalDistanceMoved: number) => void;

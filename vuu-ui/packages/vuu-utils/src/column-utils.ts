@@ -565,10 +565,10 @@ export const applyGroupByToColumns = (
 };
 
 export const applySortToColumns = (
-  colunms: RuntimeColumnDescriptor[],
+  columns: RuntimeColumnDescriptor[],
   sort: VuuSort
 ) =>
-  colunms.map((column) => {
+  columns.map((column) => {
     const sorted = getSortType(column, sort);
     if (sorted !== undefined) {
       return {
@@ -584,6 +584,12 @@ export const applySortToColumns = (
       return column;
     }
   });
+
+export const removeSort = (columns: RuntimeColumnDescriptor[]) =>
+  columns.map((col) => (col.sorted ? { ...col, sorted: undefined } : col));
+
+export const existingSort = (columns: RuntimeColumnDescriptor[]) =>
+  columns.some((col) => col.sorted);
 
 export const applyFilterToColumns = (
   columns: RuntimeColumnDescriptor[],

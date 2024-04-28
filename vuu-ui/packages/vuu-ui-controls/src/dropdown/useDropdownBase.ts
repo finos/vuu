@@ -1,6 +1,6 @@
 import { useControlled, useForkRef } from "@salt-ds/core";
 import {
-  FocusEvent,
+  FocusEventHandler,
   KeyboardEvent,
   useCallback,
   useRef,
@@ -13,7 +13,7 @@ import {
   DropdownHookResult,
   DropdownOpenKey,
 } from "./dropdownTypes";
-import { useClickAway } from "./useClickAway";
+import { useClickAway, targetWithinSubPopup } from "./useClickAway";
 
 const NO_OBSERVER: string[] = [];
 
@@ -35,9 +35,7 @@ export const useDropdownBase = ({
 }: DropdownHookProps): DropdownHookResult => {
   const justFocused = useRef<number | null>(null);
   const popperRef = useRef<HTMLElement | null>(null);
-  const popperCallbackRef = useCallback((element: HTMLElement | null) => {
-    popperRef.current = element;
-  }, []);
+
   const [isOpen, setIsOpen] = useControlled({
     controlled: isOpenProp,
     default: Boolean(defaultIsOpen),
@@ -55,10 +53,51 @@ export const useDropdownBase = ({
 
   const hideDropdown = useCallback(
     (reason: CloseReason) => {
+      console.log(`hide dropdown ${reason}`);
       setIsOpen(false);
       onOpenChange?.(false, reason);
     },
     [onOpenChange, setIsOpen]
+  );
+
+  // Focus is not usually applied to the popped up component, we
+  // manipulate active descendant whilst keeping focus in the
+  // trigger. Some component, like Calendar ARE focussed, as they
+  // have more complicated navigation. In these cases, we need to
+  // listen for focus out.
+  const handleComponentFocusOut = useCallback(
+    (evt: FocusEvent) => {
+      const target = evt.relatedTarget as HTMLElement;
+      if (target === null) {
+        // if component sets focus on a timeout (as calendar does when
+        // transitioning month) wait before testing
+        requestAnimationFrame(() => {
+          if (!popperRef.current?.contains(document.activeElement)) {
+            hideDropdown("Tab");
+          }
+        });
+      } else if (!popperRef.current?.contains(target)) {
+        if (!targetWithinSubPopup(popperRef.current, target)) {
+          hideDropdown("Tab");
+        }
+      }
+    },
+    [hideDropdown]
+  );
+
+  const popperCallbackRef = useCallback(
+    (element: HTMLElement | null) => {
+      if (element) {
+        element.addEventListener("focusout", handleComponentFocusOut);
+      } else if (popperRef.current) {
+        popperRef.current.removeEventListener(
+          "focusout",
+          handleComponentFocusOut
+        );
+      }
+      popperRef.current = element;
+    },
+    [handleComponentFocusOut]
   );
 
   useClickAway({
@@ -116,8 +155,8 @@ export const useDropdownBase = ({
     [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown]
   );
 
-  const handleBlur = useCallback(
-    (evt: FocusEvent<HTMLElement>) => {
+  const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
+    (evt) => {
       if (isOpen) {
         if (popperRef.current?.contains(evt.relatedTarget)) {
           // ignore

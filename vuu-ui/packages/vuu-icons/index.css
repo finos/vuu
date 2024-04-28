@@ -197,6 +197,9 @@ span[data-icon] {
 [data-icon='filter'] {
   --vuu-icon-svg: var(--svg-filter);
 }
+[data-icon='info-circle'] {
+  --vuu-icon-svg: var(--vuu-svg-info-circle);
+}
 [data-icon='history'] {
   --vuu-icon-svg: var(--vuu-svg-history);
 }

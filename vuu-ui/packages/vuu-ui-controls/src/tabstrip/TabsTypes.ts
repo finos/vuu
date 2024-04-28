@@ -10,7 +10,7 @@ import { orientationType } from "@finos/vuu-utils";
 import type { EditableLabelProps } from "../editable-label";
 import type { MenuActionHandler } from "@finos/vuu-data-types";
 
-export type ExitEditModeHandler = (
+export type ExitTabEditModeHandler = (
   originalValue: string,
   editedValue: string,
   allowDeactivation: boolean,
@@ -100,7 +100,7 @@ export interface TabstripProps extends HTMLAttributes<HTMLDivElement> {
    */
   orientation?: orientationType;
   onEnterEditMode?: () => void;
-  onExitEditMode?: ExitEditModeHandler;
+  onExitEditMode?: ExitTabEditModeHandler;
   /**
    * Boolean that indicates whether to enable overflow dropdown or not
    */

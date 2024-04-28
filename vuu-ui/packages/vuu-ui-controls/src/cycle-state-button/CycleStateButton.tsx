@@ -9,14 +9,22 @@ import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
 
 const classBase = "vuuCycleStateButton";
 
-export interface CycleStateButtonProps extends ButtonProps {
-  onCommit: (evt: SyntheticEvent, value: VuuRowDataItemType) => CommitResponse;
+export type CycleStateCommitHandler = (
+  evt: SyntheticEvent,
+  value: VuuRowDataItemType
+) => CommitResponse;
+
+export interface CycleStateButtonProps extends Omit<ButtonProps, "onChange"> {
+  onChange?: (value: VuuRowDataItemType) => void;
+  onCommit?: CycleStateCommitHandler;
   values: string[];
   value: string;
 }
 
 const getNextValue = (value: string, valueList: string[]) => {
-  const index = valueList.indexOf(value.toUpperCase());
+  const index = valueList
+    .map((v) => v.toUpperCase())
+    .indexOf(value.toUpperCase());
   if (index === valueList.length - 1) {
     return valueList[0];
   } else {
@@ -27,6 +35,7 @@ const getNextValue = (value: string, valueList: string[]) => {
 export const CycleStateButton = forwardRef(function CycleStateButton(
   {
     className,
+    onChange,
     onCommit,
     value = "",
     values,
@@ -37,13 +46,14 @@ export const CycleStateButton = forwardRef(function CycleStateButton(
   const handleClick = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
       const nextValue = getNextValue(value, values);
-      onCommit(evt, nextValue as VuuColumnDataType).then((response) => {
+      onChange?.(nextValue);
+      onCommit?.(evt, nextValue as VuuColumnDataType).then((response) => {
         if (response !== true) {
           console.error(response);
         }
       });
     },
-    [onCommit, value, values]
+    [onChange, onCommit, value, values]
   );
 
   return (

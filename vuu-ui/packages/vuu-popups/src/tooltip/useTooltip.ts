@@ -1,20 +1,23 @@
-import { useId } from "@finos/vuu-utils";
+import { queryClosest, useId } from "@finos/vuu-utils";
 import { MouseEvent, ReactNode, useCallback, useRef, useState } from "react";
 import { TooltipProps } from "./Tooltip";
 import { TooltipPlacement } from "./useAnchoredPosition";
 
 export interface TooltipHookProps {
+  anchorQuery?: string;
   id: string;
-  placement?: TooltipPlacement;
+  placement?: TooltipPlacement | TooltipPlacement[];
   tooltipContent: ReactNode;
 }
 
 export const useTooltip = ({
+  anchorQuery = "*",
   id: idProp,
   placement = "right",
   tooltipContent,
 }: TooltipHookProps) => {
   const hideTooltipRef = useRef<() => void>();
+  const isHoveringRef = useRef(false);
   const anchorElementRef = useRef<HTMLElement | null>(null);
   const mouseEnterTimerRef = useRef<number | undefined>();
   const mouseLeaveTimerRef = useRef<number | undefined>();
@@ -41,55 +44,68 @@ export const useTooltip = ({
     hideTooltipRef.current?.();
   }, []);
 
-  const showTooltip = useCallback(() => {
-    const { current: anchorEl } = anchorElementRef;
-    if (anchorEl) {
-      setTooltipProps({
-        anchorElement: anchorElementRef,
-        children: tooltipContent,
-        id: `${id}-tooltip`,
-        onMouseEnter: handleMouseEnterTooltip,
-        onMouseLeave: handleMouseLeaveTooltip,
-        placement: placement,
-      });
-      // register ESC listener
-      document.addEventListener("keydown", escapeListener);
+  const hideTooltip = useCallback((defer = 0) => {
+    if (mouseEnterTimerRef.current) {
+      window.clearTimeout(mouseEnterTimerRef.current);
+      mouseEnterTimerRef.current = undefined;
+    } else if (hideTooltipRef.current) {
+      if (defer === 0) {
+        hideTooltipRef.current();
+      } else {
+        mouseLeaveTimerRef.current = window.setTimeout(
+          hideTooltipRef.current,
+          defer
+        );
+      }
     }
-    mouseEnterTimerRef.current = undefined;
-  }, [
-    escapeListener,
-    handleMouseEnterTooltip,
-    handleMouseLeaveTooltip,
-    id,
-    placement,
-    tooltipContent,
-  ]);
+  }, []);
+
+  const showTooltip = useCallback(
+    (ref = anchorElementRef) => {
+      const { current: anchorEl } = ref;
+      if (anchorEl) {
+        setTooltipProps({
+          anchorElement: ref,
+          children: tooltipContent,
+          id: `${id}-tooltip`,
+          onMouseEnter: handleMouseEnterTooltip,
+          onMouseLeave: handleMouseLeaveTooltip,
+          placement: placement,
+        });
+        // register ESC listener
+        document.addEventListener("keydown", escapeListener);
+      }
+      mouseEnterTimerRef.current = undefined;
+      hideTooltip(isHoveringRef.current ? 3000 : 1000);
+    },
+    [
+      escapeListener,
+      handleMouseEnterTooltip,
+      handleMouseLeaveTooltip,
+      hideTooltip,
+      id,
+      placement,
+      tooltipContent,
+    ]
+  );
 
   const handleMouseEnter = useCallback(
     (evt: MouseEvent) => {
-      const el = evt.target as HTMLElement;
+      isHoveringRef.current = true;
+      const el = queryClosest(evt.target, anchorQuery);
       if (el) {
+        console.log(`el ${el.classList}`);
         anchorElementRef.current = el;
         mouseEnterTimerRef.current = window.setTimeout(showTooltip, 800);
       }
     },
-    [showTooltip]
+    [anchorQuery, showTooltip]
   );
 
   const handleMouseLeave = useCallback(() => {
-    if (anchorElementRef.current)
-      if (mouseEnterTimerRef.current) {
-        window.clearTimeout(mouseEnterTimerRef.current);
-        mouseEnterTimerRef.current = undefined;
-      } else {
-        if (hideTooltipRef.current) {
-          mouseLeaveTimerRef.current = window.setTimeout(
-            hideTooltipRef.current,
-            200
-          );
-        }
-      }
-  }, []);
+    isHoveringRef.current = false;
+    hideTooltip(200);
+  }, [hideTooltip]);
 
   const anchorProps = {
     "aria-describedby": `${id}-tooltip`,
@@ -99,6 +115,8 @@ export const useTooltip = ({
 
   return {
     anchorProps,
+    hideTooltip,
+    showTooltip,
     tooltipProps,
   };
 };

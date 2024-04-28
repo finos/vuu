@@ -13,6 +13,9 @@ import { DropdownBase, DropdownBaseProps } from "../dropdown";
 import { List, ListProps } from "../list";
 import { ChevronIcon } from "../list/ChevronIcon";
 import { useCombobox } from "./useCombobox";
+import cx from "clsx";
+
+const classBase = "vuuCombobox";
 
 //TODO why do we need onSelect from input ?
 export interface ComboBoxProps<
@@ -60,6 +63,7 @@ export const ComboBox = forwardRef(function Combobox<
     allowEnterCommitsText,
     allowFreeText,
     children,
+    className,
     defaultIsOpen,
     defaultSelected,
     defaultValue,
@@ -192,6 +196,7 @@ export const ComboBox = forwardRef(function Combobox<
       <DropdownBase
         {...props}
         PopupProps={PopupProps}
+        className={cx(classBase, className)}
         id={id}
         isOpen={isOpen && collectionHook.data.length > 0}
         onOpenChange={onOpenChange}

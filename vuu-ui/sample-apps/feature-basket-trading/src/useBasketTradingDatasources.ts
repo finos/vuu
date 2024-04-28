@@ -8,7 +8,7 @@ import {
 } from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
-import { NotificationLevel, useNotifications } from "@finos/vuu-popups";
+import { useNotifications } from "@finos/vuu-popups";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -28,7 +28,7 @@ export const useBasketTradingDataSources = ({
 }: BasketTradingFeatureProps & {
   basketInstanceId: string;
 }) => {
-  const { notify } = useNotifications();
+  const notify = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
 
   const [
@@ -118,7 +118,7 @@ export const useBasketTradingDataSources = ({
         .then((response) => {
           if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
-              type: NotificationLevel.Error,
+              type: "error",
               header: "Failed to Send to market",
               body: "Please contact your support team",
             });
@@ -141,7 +141,7 @@ export const useBasketTradingDataSources = ({
         .then((response) => {
           if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
-              type: NotificationLevel.Error,
+              type: "error",
               header: "Failed to take off market",
               body: "Please contact your support team",
             });

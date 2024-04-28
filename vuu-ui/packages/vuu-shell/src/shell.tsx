@@ -18,8 +18,9 @@ import {
   HTMLAttributes,
   ReactNode,
   useCallback,
-  useEffect,
+  useMemo,
   useRef,
+  useState,
 } from "react";
 import { AppHeader } from "./app-header";
 import { useLayoutManager } from "./layout-management";
@@ -85,6 +86,9 @@ export const Shell = ({
     useLayoutManager();
   const { buildMenuOptions, handleMenuAction } =
     useLayoutContextMenuItems(setDialogState);
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "rejected"
+  >("connected");
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout) => {
@@ -112,13 +116,14 @@ export const Shell = ({
     [loadLayoutById]
   );
 
-  useEffect(() => {
+  useMemo(async () => {
     if (serverUrl && user.token) {
-      connectToServer({
+      const connectionStatus = await connectToServer({
         authToken: user.token,
         url: serverUrl,
         username: user.username,
       });
+      setConnectionStatus(connectionStatus);
     }
   }, [serverUrl, user.token, user.username]);
 
@@ -140,6 +145,10 @@ export const Shell = ({
       />
     ),
   });
+
+  if (connectionStatus === "rejected") {
+    console.log("game over, no connection to server");
+  }
 
   return isLoading ? null : (
     <ThemeProvider>

@@ -6,6 +6,7 @@ import {
 import {
   deselectItem,
   dispatchMouseEvent,
+  getRowElementAtIndex,
   isRowSelected,
   metadataKeys,
   selectItem,
@@ -69,7 +70,7 @@ export const useSelection = ({
       selectedRef.current = newSelected;
       lastActiveRef.current = idx;
 
-      onSelect?.(row);
+      onSelect?.(selectOperation === selectItem ? row : null);
       onSelectionChange?.(newSelected);
     },
     [onSelect, onSelectionChange, selectionModel]
@@ -80,9 +81,10 @@ export const useSelection = ({
       if (isSelectionEvent(e)) {
         const { current: rowIndex } = highlightedIndexRef;
         if (rowIndex !== undefined && rowIndex !== -1) {
-          const rowEl = (e.target as HTMLElement).querySelector(
-            `[aria-rowindex="${rowIndex}"]`
-          ) as HTMLElement;
+          const rowEl = getRowElementAtIndex(e.target, rowIndex);
+          // const rowEl = (e.target as HTMLElement).querySelector(
+          //   `[aria-rowindex="${rowIndex + 1}"]`
+          // ) as HTMLElement;
           if (rowEl) {
             dispatchMouseEvent(rowEl, "click");
           }

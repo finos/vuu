@@ -510,6 +510,7 @@ export type ConnectionStatus =
   | "connection-open-awaiting-session"
   | "connected"
   | "disconnected"
+  | "failed"
   | "reconnected";
 
 export interface ConnectionStatusMessage {
@@ -544,6 +545,11 @@ export interface ServerProxySubscribeMessage {
 
 export type VuuUIMessageInConnected = {
   type: "connected";
+};
+
+export type VuuUIMessageInConnectionFailed = {
+  type: "connection-failed";
+  reason: string;
 };
 
 export type VuuUIMessageInWorkerReady = {
@@ -607,6 +613,7 @@ export interface VuuUIMessageInMenuRej {
 
 export type VuuUIMessageIn =
   | VuuUIMessageInConnected
+  | VuuUIMessageInConnectionFailed
   | VuuUIMessageInWorkerReady
   | VuuUIMessageInRPC
   | ViewportRpcResponse

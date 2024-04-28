@@ -104,10 +104,10 @@ export const NavigationStyle = () => {
   }, []);
 
   const onSelect = useCallback((row) => {
-    console.log({ row });
+    console.log("onSelect", { row });
   }, []);
   const onSelectionChange = useCallback((selected) => {
-    console.log({ selected });
+    console.log("onSelectionChange", { selected });
   }, []);
 
   return (

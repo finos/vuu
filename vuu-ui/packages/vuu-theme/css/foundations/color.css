@@ -7,9 +7,13 @@
   --vuu-color-white: white;
   --vuu-color-white-fade-70: rgba(255,255,255,.7);
 
+
+  --vuu-color-red-50: rgb(226, 52, 52); /* #E23434 */
   /** text-selection */
   --vuu-color-blue-40: rgb(164, 213, 244); /*  #A4D5F4 */
+  --vuu-color-blue-60: rgb(1, 124, 177); /*  #017CB1 */
 
+  --vuu-color-orange-50: rgb(244, 202, 51); /* #F4CA33 */
 
   --vuu-color-purple-10: rgb(109,24,189); /*  #6D18BD */
   --vuu-color-purple-20-fade-40 :rgba(197, 163, 229, .4); /* #C5A3E566 */

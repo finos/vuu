@@ -1,3 +1,3 @@
 export * from "./ExpandoCombobox";
-export * from "./FilterClauseEditor";
-export * from "./FilterClauseTextValueEditor";
+export * from "./FilterClause";
+export * from "./value-editors/FilterClauseValueEditorText";

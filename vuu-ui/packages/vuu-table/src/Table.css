@@ -114,7 +114,7 @@
 }
 
 .vuuTable-col-headings {
-  background-color: var(--table-background);
+  background-color: var(--vuuTableColHeadings-background, var(--table-background));
   padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
 
     position: sticky;
@@ -129,7 +129,7 @@
 }
 
   .vuuTable-col-headers {
-    background-color: var(--table-background);
+    background-color: var(--vuuTableColHeadings-background, var(--vuuTableColHeadings-background));
     color: var(--salt-content-secondary-foreground);
     white-space: nowrap;
   }

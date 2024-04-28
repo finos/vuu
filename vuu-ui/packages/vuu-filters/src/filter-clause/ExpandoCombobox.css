@@ -1,6 +1,6 @@
 .vuuExpandoCombobox {
-  --expando-combobox-height: var(--vuuExpandoCombobox-height, 24px);
-  --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSizew, 12px);
+  --expando-combobox-height: var(--vuuExpandoCombobox-height, var(--salt-size-base));
+  --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSize, 12px);
 
   --saltInput-outline: none;
   --saltInput-fontSize: var(--expando-combobox-fontSize);
@@ -44,13 +44,6 @@
   min-width: 0;
   outline: none;
   padding: 0;
-}
-
-.vuuExpandoCombobox .saltInput-input::selection {
-  background-color: var(
-    --salt-text-background-selected,
-    var(--vuu-color-blue-40)
-  );
 }
 
 .vuuExpandoCombobox:before {

@@ -154,10 +154,10 @@ export function useResizeObserver(
     if (target) {
       // TODO might we want multiple callers to attach a listener to the same element ?
       if (observedMap.has(target)) {
-        console.log(
-          "useResizeObserver attemping to observe same element twice",
-          { target }
-        );
+        // console.log(
+        //   "useResizeObserver attemping to observe same element twice",
+        //   { target }
+        // );
         // throw Error(
         //   "useResizeObserver attemping to observe same element twice"
         // );

@@ -335,10 +335,13 @@ export interface ColumnSettingsProps {
  * an implementation is provided in vuu-table-extras
  */
 export interface TableSettingsProps {
+  allowColumnLabelCase?: boolean;
+  allowColumnDefaultWidth?: boolean;
+  allowGridRowStyling?: boolean;
   availableColumns: SchemaColumn[];
   onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
-  onDataSourceConfigChange: (dataSOurceConfig: DataSourceConfig) => void;
+  onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
   onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
 }
@@ -356,10 +359,13 @@ export type TableColumnResizeHandler = (
   width?: number
 ) => void;
 
-export interface HeaderCellProps extends HTMLAttributes<HTMLDivElement> {
+export interface HeaderCellProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
   classBase?: string;
   column: RuntimeColumnDescriptor;
+  onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;
   onResize?: TableColumnResizeHandler;
+  showMenu?: boolean;
 }
 
 export type TableConfigChangeHandler = (config: TableConfig) => void;

@@ -12,6 +12,8 @@
   font-size: var(--salt-text-fontSize);
   height: var(--editableLabel-height);
   justify-content: center;
+  letter-spacing: normal;
+
   /* max-width: 170px; */
   outline: none;
   overflow: hidden;
@@ -37,7 +39,7 @@
   outline-style: none;
   position: absolute;
   right: var(--editableLabel-padding, 0);
-  top: var(--saltEditableLabel-top, 2px);
+  top: var(--saltEditableLabel-top, 1px);
   width: auto;
 }
 

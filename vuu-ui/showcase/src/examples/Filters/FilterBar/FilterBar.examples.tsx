@@ -24,7 +24,7 @@ const DefaultFilterBarCore = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  style,
+  style = { left: 0, position: "absolute", top: 0 },
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +39,7 @@ const DefaultFilterBarCore = ({
     (filter: DataSourceFilter) => {
       onApplyFilter?.(filter);
       setFilterStruct(filter.filterStruct ?? null);
-      console.log(`handleApplyFilter ${JSON.stringify(filter)}`);
+      console.log(`appply filter ${JSON.stringify(filter, null, 2)}`);
     },
     [onApplyFilter]
   );
@@ -52,6 +52,17 @@ const DefaultFilterBarCore = ({
       );
     },
     [onFilterStateChanged]
+  );
+
+  const handleFilterRenamed = useCallback(
+    (filter: Filter, name: string) => {
+      onFilterRenamed?.(filter, name);
+      console.log(
+        `filter renames ${JSON.stringify(filter, null, 2)}
+        new name ${name}`
+      );
+    },
+    [onFilterRenamed]
   );
 
   useEffect(() => {
@@ -73,7 +84,7 @@ const DefaultFilterBarCore = ({
         filterState={filterState}
         onApplyFilter={handleApplyFilter}
         onFilterDeleted={onFilterDeleted}
-        onFilterRenamed={onFilterRenamed}
+        onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}
         tableSchema={{ ...tableSchema, columns }}
         columnDescriptors={columns}

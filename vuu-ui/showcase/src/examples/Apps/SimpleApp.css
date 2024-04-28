@@ -1,0 +1,38 @@
+.vuuSimpleApp {
+    --vuuMeasuredContainer-flex: 1 1 1px;
+    background: var(--salt-container-secondary-background);
+
+    .main-tabs {
+        --vuuOverflowContainer-borderBottomWidth: 0px;
+        --vuuOverflowContainer-width: fit-content;
+
+        align-self: flex-end;
+    }
+
+}
+
+#vuuSimpleApp-main {
+    flex: 1;
+    padding: 0 var(--salt-spacing-200) var(--salt-spacing-200) var(--salt-spacing-200);
+}
+
+.vuuSimpleApp-appHeader {
+    align-items: center;
+}
+
+.vuuSimpleApp-logo {
+    font-size: 18px;
+    padding: 0 var(--salt-spacing-400);
+}
+
+.vuuSimpleApp-toolbar {
+    align-items: center;;
+    display: flex;
+
+    .vuuFilterBar {
+        flex: 1 1 auto;
+    }
+}
+
+
+

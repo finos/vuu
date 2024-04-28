@@ -10,7 +10,7 @@ export const buildAll = async () => {
     );
 
   // TODO determine the dependency graph/build order programatically
-  const packages = [];
+  const packages = ["tar-theme"];
 
   if (jsonOutput) {
     console.log(

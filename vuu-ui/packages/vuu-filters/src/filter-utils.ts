@@ -14,7 +14,6 @@ import {
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
-  isNotNullOrUndefined,
   isOrFilter,
   isSingleValueFilter,
   partition,
@@ -109,65 +108,6 @@ export const addClause = (
     };
   }
 };
-
-export const replaceClause = (
-  existingFilter: FilterWithPartialClause | Partial<Filter> | undefined,
-  clause: Partial<FilterClause>,
-  idx: number
-): Filter | Partial<Filter> => {
-  if (existingFilter === undefined) return clause;
-  return findAndReplaceClauseAtGivenIndex(existingFilter, clause, idx).filter;
-};
-
-/**
- * Given an existing filter and a filter clause, this function replaces the filter
- * clause at the given index `idx`.
- *
- * Indices are defined based on DepthFirstSearch.
- * (reason is that's what we use in `clauseFilters` when converting filter clauses into a flat list)
- *
- * Given a filter the indices are as follows [INDEX]:
- * {
- *   op: and,
- *   filters: [
- *    {
- *      op: or,
- *      filters: [{op: =, column: currency, value: CAD} [0], {op: =, column: currency, value: USD} [1]]
- *    },
- *    {op: !=, column: bbg, value: AABC} [2]
- * ]
- * }
- *
- *
- * @param existingFilter - The existing filter
- * @param clause - Filter clause to replace with
- * @param idx - Index of filter clause to replace
- * @returns an object containing resulting filter
- */
-function findAndReplaceClauseAtGivenIndex(
-  existingFilter: FilterWithPartialClause | Partial<Filter>,
-  clause: Partial<FilterClause>,
-  idx: number,
-  currIdx = 0
-): { filter: Partial<Filter>; nextIdx: number } {
-  if (isMultiClauseFilter(existingFilter)) {
-    let i = currIdx;
-    const filters = existingFilter.filters.map((f) => {
-      const res = findAndReplaceClauseAtGivenIndex(f, clause, idx, i);
-      i = res.nextIdx;
-      return res.filter;
-    }) as Filter[];
-    return { filter: { ...existingFilter, filters }, nextIdx: i };
-  } else if (idx !== currIdx) {
-    return { filter: existingFilter as Partial<Filter>, nextIdx: currIdx + 1 };
-  } else {
-    const { name } = existingFilter;
-    return {
-      filter: { ...(isNotNullOrUndefined(name) ? { name } : {}), ...clause },
-      nextIdx: currIdx + 1,
-    };
-  }
-}
 
 export const addFilter = (
   existingFilter: Filter | undefined,

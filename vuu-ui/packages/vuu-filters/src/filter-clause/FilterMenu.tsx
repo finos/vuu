@@ -6,7 +6,6 @@ import {
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
 
-import "./FilterMenu.css";
 import { andCommand, MenuOptions, orCommand } from "./FilterMenuOptions";
 
 const classBase = "vuuTabMenu";

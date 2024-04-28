@@ -1,7 +1,7 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import {
   CycleStateButton,
-  CycleStateButtonProps,
+  CycleStateCommitHandler,
   ExpandoInput,
   useEditableText,
 } from "@finos/vuu-ui-controls";
@@ -75,7 +75,7 @@ export const BasketToolbar = ({
       type: "number",
     });
 
-  const handleSideCommit = useCallback<CycleStateButtonProps["onCommit"]>(
+  const handleSideCommit = useCallback<CycleStateCommitHandler>(
     (_, value) => {
       if (onCommit) {
         return onCommit?.("side", value);

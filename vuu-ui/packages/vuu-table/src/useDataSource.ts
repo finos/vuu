@@ -116,6 +116,10 @@ export const useDataSource = ({
         const fullRange = getFullRange(range, renderBufferSize);
         dataWindow.setRange(fullRange);
         dataSource.range = rangeRef.current = fullRange;
+        // emit a range event omitting the renderBufferSize
+        // This isn't great, we're using the dataSource as a conduit to emit a
+        // message that has nothing to do with the dataSource itself. CLient
+        // is the DataSourceState component.
         dataSource.emit("range", range);
       }
     },
