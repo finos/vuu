@@ -2,6 +2,7 @@ package org.finos.vuu.feature.ignite
 
 import java.sql.Date
 import java.math.BigDecimal
+import java.time.LocalDate
 
 case class TestOrderEntity(parentId: Int,
                            id: Int,
@@ -10,6 +11,7 @@ case class TestOrderEntity(parentId: Int,
                            quantity: Int,
                            rating: Char,
                            createdAt: Date,
+                           updatedAt: LocalDate,
                            totalFill: BigDecimal) {}
 
 object TestOrderEntity{
@@ -22,26 +24,8 @@ object TestOrderEntity{
       quantity = cols.get(4).asInstanceOf[Int],
       rating = cols.get(5).asInstanceOf[Char],
       createdAt = cols.get(6).asInstanceOf[Date],
-      totalFill = cols.get(7).asInstanceOf[BigDecimal]
+      updatedAt = cols.get(7).asInstanceOf[LocalDate],
+      totalFill = cols.get(8).asInstanceOf[BigDecimal]
     )
   }
-}
-
-object ColumnMap {
-
-  private type TableToIgniteColumns = Map[String, String]
-
-  private val orderMap : TableToIgniteColumns =  Map(
-    "orderId" -> "id",
-    "ric" -> "ric",
-    "price" -> "price",
-    "quantity" -> "quantity",
-    "parentOrderId" -> "parentId",
-    "rating" -> "rating",
-    "createdAt" -> "createdAt",
-    "totalFill" -> "totalFill",
-  )
-  def toIgniteColumn(tableColumn: String): Option[String] =
-    orderMap.get(tableColumn)
-
 }

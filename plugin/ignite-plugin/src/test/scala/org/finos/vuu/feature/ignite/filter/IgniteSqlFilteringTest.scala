@@ -5,10 +5,11 @@ import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.feature.ignite.TestInput._
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
 import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaField, SchemaMapperBuilder}
-import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder}
+import org.finos.vuu.util.types.{TypeConverterContainer, TypeConverterContainerBuilder}
 
 import java.sql.Date
 import java.math.BigDecimal
+import java.time.LocalDate
 
 class IgniteSqlFilteringTest extends IgniteTestsBase {
 
@@ -73,9 +74,9 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   }
 
   Feature("Parse and apply GREATER THAN EQUAL filter") {
-    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600)
-    val testOrder2 = createTestOrderEntity(id = 2, ric = "AAPL.L", price = 50.5, quantity = 200)
-    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", price = 100.0, quantity = 1000)
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L", price = 10.0, quantity = 600, updatedAt = LocalDate.of(2024, 3, 3))
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "AAPL.L", price = 50.5, quantity = 200, updatedAt = LocalDate.of(2024, 2, 2))
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "AAPL.L", price = 100.0, quantity = 1000, updatedAt = LocalDate.of(2024, 1, 1))
 
     Scenario("Support comparison to INT") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
@@ -91,6 +92,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       val filterResult = applyFilter("price >= 10.0")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2, testOrder3))
+    }
+
+    Scenario("Support mapped field types - [ java.time.LocalDate -> Long ]") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter(s"updatedAt >= ${getTime("2024-02-02")}")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
 
     Scenario("Support mapped column names") {
@@ -531,7 +540,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     info(s"FILTER: $filter")
     val clause = FilterSpecParser.parse[IgniteSqlFilterClause](filter, filterTreeVisitor)
     info(s"CLAUSE: $clause")
-    val criteria = clause.toSql(testSchemaMapper)
+    val criteria = clause.toSql(testSchemaMapper, toSqlStringContainer)
     info(s"SQL WHERE: $criteria")
     igniteTestStore.getFilteredBy(criteria)
   }
@@ -544,6 +553,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     "parentId" -> "parentOrderId",
     "rating"   -> "rating",
     "createdAt" -> "createdAt",
+    "updatedAt" -> "updatedAt",
     "totalFill" -> "fill",
   )
 
@@ -555,6 +565,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   ("parentOrderId", classOf[Int]),
   ("rating", classOf[String]),
   ("createdAt", classOf[Long]),
+  ("updatedAt", classOf[Long]),
   ("fill", classOf[Double]),
   ).zipWithIndex.map({ case ((name, t), i) => SimpleColumn(name, i, t) })
 
@@ -568,15 +579,22 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       SchemaField("price", classOf[Double], 5),
       SchemaField("rating", classOf[Char], 6),
       SchemaField("createdAt", classOf[Date], 7),
+      SchemaField("updatedAt", classOf[LocalDate], 8),
       SchemaField("totalFill", classOf[BigDecimal], 8)
     )
   }
 
   private def typeConverterContainer: TypeConverterContainer = TypeConverterContainerBuilder()
-    .withConverter(TypeConverter[Date, Long](classOf[Date], classOf[Long], _.getTime))
-    .withConverter(TypeConverter[Long, Date](classOf[Long], classOf[Date], new Date(_)))
+    .with2WayConverter[Date, Long](classOf[Date], classOf[Long], _.getTime, new Date(_))
+    .with2WayConverter[LocalDate, Long](classOf[LocalDate], classOf[Long], Date.valueOf(_).getTime, l => new Date(l).toLocalDate)
     .with2WayConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue(), BigDecimal.valueOf)
     .build()
 
   private def getTime(date: String): Long = Date.valueOf(date).getTime
+
+  private def toSqlStringContainer: SqlStringConverterContainer = {
+    SqlStringConverterContainerBuilder()
+      .withToString[LocalDate](classOf[LocalDate], d => s"\'${d.toString}\'")
+      .build()
+  }
 }
