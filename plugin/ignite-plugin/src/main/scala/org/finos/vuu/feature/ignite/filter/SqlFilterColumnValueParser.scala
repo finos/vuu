@@ -108,13 +108,11 @@ private class ColumnValueParser(private val mapper: SchemaMapper,
    * This adds a limitation on what can be passed to the filters in order to prevent SQL injection attacks.
    */
   private def checkForSqlInjection(v: String): Either[ErrorMessage, String] = {
-    val isSingleQuotedAndNotContainsAnyOtherSingleQuotes = v.matches("^'[^']+'$")
-    val isNotQuotedAndContainsOnlyDigits = v.matches("[0-9]+([.][0-9]+)?")
+    val isSingleQuotedStringWithoutAnyOtherSingleQuotes = v.matches("^'[^']+'$")
+    val isNumber = v.matches("[0-9]+([.][0-9]+)?")
+    val isBoolean = v.matches("(?i)(true)|(false)")
 
-    if (
-      isSingleQuotedAndNotContainsAnyOtherSingleQuotes ||
-      isNotQuotedAndContainsOnlyDigits
-    ) {
+    if (isSingleQuotedStringWithoutAnyOtherSingleQuotes || isNumber || isBoolean) {
       Right(v)
     } else {
       logger.warn(s"Potential SQL injection noticed with $v")

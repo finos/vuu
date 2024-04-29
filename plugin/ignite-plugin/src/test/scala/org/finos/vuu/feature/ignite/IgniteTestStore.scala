@@ -65,6 +65,7 @@ object IgniteTestStore {
     fields.put("price", classOf[Double].getName)
     fields.put("quantity", classOf[Int].getName)
     fields.put("rating", classOf[Char].getName)
+    fields.put("isFilled", classOf[Boolean].getName)
     fields.put("createdAt", classOf[Date].getName)
     fields.put("updatedAt", classOf[LocalDate].getName)
     fields.put("totalFill", classOf[BigDecimal].getName)

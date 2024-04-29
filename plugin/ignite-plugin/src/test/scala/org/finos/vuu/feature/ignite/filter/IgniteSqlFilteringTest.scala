@@ -225,6 +225,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       assertEquavalent(filterResult.toArray, Array(testOrder1))
     }
 
+    Scenario("Support comparison to BOOLEAN") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("isFilled = false")
+
+      assertEquavalent(filterResult.toArray, Array.empty)
+    }
+
     Scenario("Support mapped column name") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
@@ -293,6 +301,14 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       val filterResult = applyFilter("price != 10.1")
 
       assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
+    }
+
+    Scenario("Support comparison to BOOLEAN") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("isFilled != false")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2, testOrder3))
     }
 
     Scenario("Support mapped column name") {
@@ -552,6 +568,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     "quantity" -> "quantity",
     "parentId" -> "parentOrderId",
     "rating"   -> "rating",
+    "isFilled" -> "isFilled",
     "createdAt" -> "createdAt",
     "updatedAt" -> "updatedAt",
     "totalFill" -> "fill",
@@ -564,6 +581,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   ("quantity", classOf[Int]),
   ("parentOrderId", classOf[Int]),
   ("rating", classOf[String]),
+  ("isFilled", classOf[Boolean]),
   ("createdAt", classOf[Long]),
   ("updatedAt", classOf[Long]),
   ("fill", classOf[Double]),
@@ -578,9 +596,10 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       SchemaField("quantity", classOf[Int], 4),
       SchemaField("price", classOf[Double], 5),
       SchemaField("rating", classOf[Char], 6),
-      SchemaField("createdAt", classOf[Date], 7),
-      SchemaField("updatedAt", classOf[LocalDate], 8),
-      SchemaField("totalFill", classOf[BigDecimal], 8)
+      SchemaField("isFilled", classOf[Boolean], 7),
+      SchemaField("createdAt", classOf[Date], 8),
+      SchemaField("updatedAt", classOf[LocalDate], 9),
+      SchemaField("totalFill", classOf[BigDecimal], 10)
     )
   }
 

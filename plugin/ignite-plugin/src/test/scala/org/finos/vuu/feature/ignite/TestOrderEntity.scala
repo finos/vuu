@@ -10,6 +10,7 @@ case class TestOrderEntity(parentId: Int,
                            price: Double,
                            quantity: Int,
                            rating: Char,
+                           isFilled: Boolean,
                            createdAt: Date,
                            updatedAt: LocalDate,
                            totalFill: BigDecimal) {}
@@ -23,9 +24,10 @@ object TestOrderEntity{
       price = cols.get(3).asInstanceOf[Double],
       quantity = cols.get(4).asInstanceOf[Int],
       rating = cols.get(5).asInstanceOf[Char],
-      createdAt = cols.get(6).asInstanceOf[Date],
-      updatedAt = cols.get(7).asInstanceOf[LocalDate],
-      totalFill = cols.get(8).asInstanceOf[BigDecimal]
+      isFilled = cols.get(6).asInstanceOf[Boolean],
+      createdAt = cols.get(7).asInstanceOf[Date],
+      updatedAt = cols.get(8).asInstanceOf[LocalDate],
+      totalFill = cols.get(9).asInstanceOf[BigDecimal],
     )
   }
 }
