@@ -64,7 +64,10 @@ private class ColumnValueParser(private val mapper: SchemaMapper) extends Filter
     }
 
     private def parseStringToColumnDataType(value: String): Either[ErrorMessage, Any] =
-      DataType.parseToDataType(value, column.dataType)
+      DataType.parseToDataType(value, column.dataType) match {
+        case Some(v) => Right(v)
+        case None    => Left(s"Failed to parse column value '$value' to data type `${column.dataType}`.")
+      }
 
     private def convertColumnValueToExternalFieldType(columnValue: Any): Either[ErrorMessage, Any] =
       mapper.toMappedExternalFieldType(column.name, columnValue)

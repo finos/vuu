@@ -20,8 +20,8 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       Scenario(s"can parse string '$stringInput' to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)
 
-        parsedValue shouldEqual Right(expectedOutput)
-        TypeUtils.areTypesEqual(dataType, parsedValue.toOption.get.getClass) shouldBe true
+        parsedValue shouldEqual Some(expectedOutput)
+        TypeUtils.areTypesEqual(dataType, parsedValue.get.getClass) shouldBe true
       }
     })
 
@@ -32,11 +32,10 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       (DataType.LongDataType, "33.5"),
       (DataType.DoubleDataType, "12x1"),
     ))((dataType, stringInput) => {
-      Scenario(s"should return error when string '$stringInput' cannot be parsed to `$dataType` type") {
+      Scenario(s"should return empty when string '$stringInput' cannot be parsed to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)
 
-        parsedValue.isLeft shouldBe true
-        parsedValue.swap.toOption.get should startWith("Failed to parse")
+        parsedValue shouldBe empty
       }
     })
 

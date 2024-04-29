@@ -4,10 +4,11 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 object DataType {
 
+  // if a new type's added, make sure that both methods `parseToDataType` & `fromString` can support it
   final val CharDataType: Class[Char] = classOf[Char]
   final val StringDataType: Class[String] = classOf[String]
   final val BooleanDataType: Class[Boolean] = classOf[Boolean]
@@ -37,12 +38,8 @@ object DataType {
     }
   }
 
-  private type ErrorMessage = String
-  def parseToDataType[T](value: String, t: Class[T]): Either[ErrorMessage, T] = {
-    Try(typeConverterContainer.convert[String, T](value, classOf[String], t).get) match {
-      case Success(parsedValue) => Right(parsedValue)
-      case Failure(ex)          => Left(s"Failed to parse String $value to data type $t: ${ex.getMessage}")
-    }
+  def parseToDataType[T](value: String, t: Class[T]): Option[T] = {
+    Try(typeConverterContainer.convert[String, T](value, classOf[String], t).get).toOption
   }
 
   private val typeConverterContainer = TypeConverterContainerBuilder()
