@@ -611,8 +611,8 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
   private def getTime(date: String): Long = Date.valueOf(date).getTime
 
-  private def toSqlStringContainer: SqlStringConverterContainer = {
-    SqlStringConverterContainerBuilder()
+  private def toSqlStringContainer: ToSqlStringContainer = {
+    ToSqlStringContainerBuilder()
       .withToString[LocalDate](classOf[LocalDate], d => s"\'${d.toString}\'")
       .build()
   }
