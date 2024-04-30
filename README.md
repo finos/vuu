@@ -14,7 +14,7 @@ Welcome. We maintain a docusaurus site containing all the details of the project
 
 #### Prerequisites
 
-See the [Docs](https://vuu.finos.org/desktop/docs/getting_started/developing) for Java versions and install dependencies you need to have.
+See the [Docs](https://vuu.finos.org/desktop/docs/getting_started/developing) for Java versions and dependencies you need.
 
 #### OS X & Linux
 

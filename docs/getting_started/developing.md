@@ -6,6 +6,8 @@ import { SvgDottySeparator } from "@site/src/components/SvgDottySeparator";
 
 ## Prerequisites
 
+Alternatively, try out <ins>[Devcontainers](https://github.com/finos/vuu/tree/main/.devcontainer)</ins> for quick development environment setup.
+
 1. Install IntelliJ Community Edition (latest version with supported scala plugin).
 2. Install SDKMan from the [website](https://sdkman.io/) or using your own mechanism
 3. type>`sdk install java 11.0.12-open` and then >`sdk d java 11.0.12-open` to make sure you're using the correct one.
