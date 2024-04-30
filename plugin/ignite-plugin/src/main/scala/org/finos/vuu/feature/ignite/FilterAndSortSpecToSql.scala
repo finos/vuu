@@ -13,9 +13,7 @@ trait FilterAndSortSpecToSql {
 }
 
 object FilterAndSortSpecToSql {
-  def apply(schemaMapper: SchemaMapper): FilterAndSortSpecToSql = {
-    new FilterAndSortSpecToSqlImpl(schemaMapper)
-  }
+  def apply(schemaMapper: SchemaMapper): FilterAndSortSpecToSql = new FilterAndSortSpecToSqlImpl(schemaMapper)
 }
 
 private class FilterAndSortSpecToSqlImpl(private val schemaMapper: SchemaMapper) extends FilterAndSortSpecToSql {

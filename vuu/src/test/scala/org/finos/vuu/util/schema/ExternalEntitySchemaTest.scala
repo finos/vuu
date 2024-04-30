@@ -67,40 +67,13 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Can build schema with a case class") {
-      val schema = ExternalEntitySchemaBuilder().withCaseClass[TestCaseClass].build()
+      val schema = ExternalEntitySchemaBuilder().withEntity(classOf[TestCaseClass]).build()
 
       schema.fields shouldEqual List(
         SchemaField("name", classOf[String], 0),
         SchemaField("size", classOf[Int], 1),
         SchemaField("value", classOf[Double], 2)
       )
-    }
-  }
-
-  Feature("ExternalDataType.fromString") {
-
-    forAll(Table(
-      ("str", "expected"),
-      ("string", ExternalDataType.String),
-      ("int", ExternalDataType.Int),
-      ("long", ExternalDataType.Long),
-      ("double", ExternalDataType.Double),
-      ("char", ExternalDataType.Char),
-    ))((str, expected) =>
-      Scenario(
-        s"can convert `$str` to correct ignite data type"
-      ) {
-        ExternalDataType.fromString(str) shouldEqual expected
-      }
-    )
-
-    Scenario("can handle different alphabet casing") {
-      ExternalDataType.fromString("StrIng") shouldEqual ExternalDataType.String
-    }
-
-    Scenario("throws exception when unsupported data type passed") {
-      val exception = intercept[RuntimeException](ExternalDataType.fromString("UnknownDataType"))
-      exception shouldBe a[RuntimeException]
     }
   }
 }

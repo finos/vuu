@@ -6,15 +6,18 @@ import org.finos.vuu.core.table.{Column, Columns}
 import org.finos.vuu.example.ignite.IgniteOrderStore
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryTest.{entitySchema, internalColumns, internalColumnsByExternalFields}
 import org.finos.vuu.net.FilterSpec
-import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper}
+import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapper, SchemaMapperBuilder}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class IgniteOrderDataQueryTest extends AnyFeatureSpec with Matchers with MockFactory {
 
+
+  private val schemaMapper = SchemaMapperBuilder(entitySchema, internalColumns)
+    .withFieldsMap(internalColumnsByExternalFields)
+    .build()
   private val igniteStore: IgniteOrderStore = mock[IgniteOrderStore]
-  private val schemaMapper = SchemaMapper(entitySchema, internalColumns, internalColumnsByExternalFields)
   private val igniteDataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
 
   Feature("fetch") {
@@ -41,5 +44,5 @@ private object IgniteOrderDataQueryTest {
     "value" -> "value",
   )
 
-  val entitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withCaseClass[TestDto].build()
+  val entitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder().withEntity(classOf[TestDto]).build()
 }
