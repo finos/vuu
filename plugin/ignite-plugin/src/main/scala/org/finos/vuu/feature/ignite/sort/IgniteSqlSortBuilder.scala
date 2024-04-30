@@ -2,6 +2,7 @@ package org.finos.vuu.feature.ignite.sort
 
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.SortDirection
+import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.finos.vuu.util.schema.SchemaMapper
 
 
@@ -11,10 +12,13 @@ import org.finos.vuu.util.schema.SchemaMapper
 class IgniteSqlSortBuilder {
   private val AscendingSql = "ASC"
   private val DescendingSql = "DESC"
-  def toSql(sortColumnsToDirections: SortSpecInternal, schemaMapper: SchemaMapper): String =
-    sortColumnsToDirections
+  def toSql(sortColumnsToDirections: SortSpecInternal, schemaMapper: SchemaMapper): IgniteSqlQuery = {
+    val sql = sortColumnsToDirections
       .flatMap{case (columnName, direction) => toSortString(columnName, direction, schemaMapper)}
       .mkString(", ")
+
+    IgniteSqlQuery(sqlTemplate = sql)
+  }
 
   private def toSortString(columnName: String,
                            sortDirection: SortDirection.TYPE,
@@ -26,7 +30,7 @@ class IgniteSqlSortBuilder {
   }
   private def toSQL(direction: SortDirection.TYPE) =
     direction match {
-      case SortDirection.Ascending => AscendingSql
+      case SortDirection.Ascending  => AscendingSql
       case SortDirection.Descending => DescendingSql
     }
 }

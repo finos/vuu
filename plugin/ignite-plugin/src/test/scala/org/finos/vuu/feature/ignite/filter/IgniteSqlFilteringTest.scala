@@ -212,7 +212,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("Support comparison to INT") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("parentOrderId = 10")
+      val filterResult = applyFilter("parentOrderId = \"10\"")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
     }
@@ -290,7 +290,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("Support comparison to INT") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("parentOrderId != 10")
+      val filterResult = applyFilter("parentOrderId != \"10\"")
 
       assertEquavalent(filterResult.toArray, Array(testOrder2))
     }
@@ -500,7 +500,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
       val filterResult = applyFilter("ric in [\"VAD.DDN\", \"NVD.LDN\"]")
 
-      assertEquavalent(filterResult.toArray, Array(testOrder3, testOrder2))
+      assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
 
     Scenario("supports Char column type") {
@@ -514,7 +514,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     Scenario("supports Int column type") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
-      val filterResult = applyFilter("parentOrderId in [2, 4]")
+      val filterResult = applyFilter("parentOrderId in [\"2\", \"4\"]")
 
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder3))
     }
@@ -579,7 +579,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   ("ric", classOf[String]),
   ("price", classOf[Double]),
   ("quantity", classOf[Int]),
-  ("parentOrderId", classOf[Int]),
+  ("parentOrderId", classOf[String]),
   ("rating", classOf[String]),
   ("isFilled", classOf[Boolean]),
   ("createdAt", classOf[Long]),
@@ -590,7 +590,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   private class TestEntitySchema extends ExternalEntitySchema {
     override val fields: List[SchemaField] = List(
       SchemaField("id", classOf[Int], 0),
-      SchemaField("parentId", classOf[String], 1),
+      SchemaField("parentId", classOf[Int], 1),
       SchemaField("ric", classOf[String], 2),
       SchemaField("strategy", classOf[String], 3),
       SchemaField("quantity", classOf[Int], 4),

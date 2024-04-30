@@ -8,6 +8,7 @@ import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider.columnNameByExternalField
 import org.finos.vuu.example.ignite.query.IndexCalculator
 import org.finos.vuu.example.ignite.schema.ChildOrderSchema
+import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.util.schema.SchemaMapperBuilder
@@ -52,8 +53,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
 
-  private def getTotalSize(filter: String): Long =
-      igniteStore.getCount(filter)
+  private def getTotalSize(filterSql: IgniteSqlQuery): Long = igniteStore.getCount(filterSql)
 
   private def tableUpdater(table: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = table.tableDef.keyField
