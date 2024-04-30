@@ -48,6 +48,10 @@ function writePackageJSON() {
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat("/types"),
+      exports: {
+        ...packageJson.exports,
+        types: "./types/index.d.ts",
+      },
       types: "types/index.d.ts",
     };
     fs.writeFile(
