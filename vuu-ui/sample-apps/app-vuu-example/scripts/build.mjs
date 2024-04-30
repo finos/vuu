@@ -87,12 +87,20 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
       features = configJson.features = {};
     }
 
+    /**
+     * The JavaScript bundle is resolved by React from code running in the shell,
+     * the relative path must reach up from within the main app bundle.
+     * The CSS file is resolved by a call to fetch (until import assert works everywhere)
+     * this is resolved relative to root.
+     */
     const featureFilePath = (featureName, files, matchPattern) => {
       const file = files.find(({ fileName }) =>
         fileName.endsWith(matchPattern)
       );
-      if (file) {
-        return `/feature-${featureName}/${file.fileName}`;
+      if (file && matchPattern === ".js") {
+        return `../feature-${featureName}/${file.fileName}`;
+      } else if (file && matchPattern === ".css") {
+        return `./feature-${featureName}/${file.fileName}`;
       }
     };
 
