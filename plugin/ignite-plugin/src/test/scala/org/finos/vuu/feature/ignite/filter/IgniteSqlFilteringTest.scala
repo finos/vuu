@@ -556,7 +556,7 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     info(s"FILTER: $filter")
     val clause = FilterSpecParser.parse[IgniteSqlFilterClause](filter, filterTreeVisitor)
     info(s"CLAUSE: $clause")
-    val criteria = clause.toSql(testSchemaMapper, toSqlStringContainer)
+    val criteria = clause.toSql(testSchemaMapper)
     info(s"SQL WHERE: $criteria")
     igniteTestStore.getFilteredBy(criteria)
   }
@@ -610,10 +610,4 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
     .build()
 
   private def getTime(date: String): Long = Date.valueOf(date).getTime
-
-  private def toSqlStringContainer: ToSqlStringContainer = {
-    ToSqlStringContainerBuilder()
-      .withToString[LocalDate](classOf[LocalDate], d => s"\'${d.toString}\'")
-      .build()
-  }
 }

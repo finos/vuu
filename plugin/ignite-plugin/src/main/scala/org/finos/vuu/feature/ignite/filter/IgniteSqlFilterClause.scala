@@ -4,36 +4,33 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClause.EMPTY_SQL
 import org.finos.vuu.feature.ignite.filter.FilterColumnValueParser.{ParsedResult, STRING_DATA_TYPE}
 import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
-import org.finos.vuu.util.types.TypeUtils
 
 private object IgniteSqlFilterClause {
   val EMPTY_SQL = ""
 }
 
 trait IgniteSqlFilterClause {
-  def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String
+  def toSql(schemaMapper: SchemaMapper): String
 }
 
 case class OrIgniteSqlFilterClause(clauses:List[IgniteSqlFilterClause]) extends IgniteSqlFilterClause {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    val sql = clauses.map(c => c.toSql(schemaMapper, toStringContainer)).filter(_ != EMPTY_SQL).mkString(" OR ")
+  override def toSql(schemaMapper: SchemaMapper): String = {
+    val sql = clauses.map(c => c.toSql(schemaMapper)).filter(_ != EMPTY_SQL).mkString(" OR ")
     if (clauses.length > 1) s"($sql)" else sql
   }
 }
 
 case class AndIgniteSqlFilterClause(clauses:List[IgniteSqlFilterClause]) extends IgniteSqlFilterClause {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    val sql = clauses.map(c => c.toSql(schemaMapper, toStringContainer)).filter(_ != EMPTY_SQL).mkString(" AND ")
+  override def toSql(schemaMapper: SchemaMapper): String = {
+    val sql = clauses.map(c => c.toSql(schemaMapper)).filter(_ != EMPTY_SQL).mkString(" AND ")
     if (clauses.length > 1) s"($sql)" else sql
   }
 }
 
 case class EqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => eqSql(f.name, toString(externalValue, f.dataType))
+      case Right(ParsedResult(f, externalValue)) => eqSql(f.name, convertToString(externalValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -44,11 +41,9 @@ case class EqIgniteSqlFilterClause(columnName: String, value: String) extends Ig
 }
 
 case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => neqSql(f.name, toString(externalValue, f.dataType))
+      case Right(ParsedResult(f, externalValue)) => neqSql(f.name, convertToString(externalValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -59,11 +54,9 @@ case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends I
 }
 
 case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: String) extends IgniteSqlFilterClause {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => rangeSql(f.name, toString(externalValue, f.dataType))
+      case Right(ParsedResult(f, externalValue)) => rangeSql(f.name, convertToString(externalValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -73,11 +66,9 @@ case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: St
 }
 
 case class StartsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => startsSql(f, toString(externalValue, f.dataType))
+      case Right(ParsedResult(f, externalValue)) => startsSql(f, convertToString(externalValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -89,11 +80,9 @@ case class StartsIgniteSqlFilterClause(columnName: String, value: String) extend
 }
 
 case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => endsSql(f, toString(externalValue, f.dataType))
+      case Right(ParsedResult(f, externalValue)) => endsSql(f, convertToString(externalValue, f.dataType))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -105,11 +94,9 @@ case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends 
 }
 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper, toStringContainer: ToSqlStringContainer): String = {
-    def toString = getStringConverter(toStringContainer)
-
+  override def toSql(schemaMapper: SchemaMapper): String = {
     FilterColumnValueParser(schemaMapper).parse(columnName, values) match {
-      case Right(ParsedResult(f, externalValues)) => inQuery(f.name, externalValues.map(toString(_, f.dataType)))
+      case Right(ParsedResult(f, externalValues)) => inQuery(f.name, externalValues.map(convertToString(_, f.dataType)))
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
   }
@@ -128,23 +115,17 @@ object RangeOp {
 }
 
 
-private object getStringConverter {
-  def apply(toStringContainer: ToSqlStringContainer): (Any, Class[_]) => String = (value, dataType) =>
-      if (TypeUtils.areTypesEqual(dataType, STRING_DATA_TYPE)) {
-        quotedString(defaultToString(value))
-      } else {
-        toStringContainer
-          .toString(value, dataType.asInstanceOf[Class[Any]])
-          .getOrElse(addQuotesIfRequired(defaultToString(value), dataType))
-      }
-
-    private def defaultToString(value: Any): String = Option(value).map(_.toString).orNull
+private object convertToString {
+  def apply(value: Any, dataType: Class[_]): String = addQuotesIfRequired(defaultToString(value), dataType)
+  private def defaultToString(value: Any): String = Option(value).map(_.toString).orNull
 }
 
 private object quotedString {
   def apply(s: String) = s"'$s'"
 }
 
+// @todo move from building SQL query as string to move away from adding quotes manually by types
+// using a parametrized query builder should help with this and with minimizing threat of SQL injection
 private object addQuotesIfRequired {
   def apply(v: String, dataType: Class[_]): String = if (requireQuotes(dataType)) quotedString(v) else v
 
@@ -155,6 +136,9 @@ private object addQuotesIfRequired {
     classOf[Char],
     classOf[java.lang.Character],
     classOf[java.sql.Date],
+    classOf[java.sql.Time],
+    classOf[java.sql.Timestamp],
+    classOf[java.time.LocalDate]
   )
 }
 
