@@ -4,8 +4,9 @@ import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.matchers.should.Matchers
 
-class IgniteSqlSortBuilderTest extends AnyFeatureSpec with MockFactory {
+class IgniteSqlSortBuilderTest extends AnyFeatureSpec with MockFactory with Matchers {
 
   private val sortBuilder = new IgniteSqlSortBuilder()
   private val schemaMapper = mock[SchemaMapper]
@@ -17,7 +18,7 @@ class IgniteSqlSortBuilderTest extends AnyFeatureSpec with MockFactory {
       val sortSpecInternal = Map("parentOrderId"-> SortDirection.Descending)
       val sortSql = sortBuilder.toSql(sortSpecInternal, schemaMapper)
 
-      assert(sortSql == "orderId DESC")
+      sortSql.sqlTemplate shouldEqual "orderId DESC"
     }
 
     Scenario("can create sql order by clause for multiple ignite columns") {
@@ -30,7 +31,7 @@ class IgniteSqlSortBuilderTest extends AnyFeatureSpec with MockFactory {
       )
       val sortSql = sortBuilder.toSql(sortSpecInternal, schemaMapper)
 
-      assert(sortSql == "column1 DESC, column2 ASC")
+      sortSql.sqlTemplate shouldEqual "column1 DESC, column2 ASC"
     }
 
     Scenario("skip sort if no mapping found to ignite columns") {
@@ -39,7 +40,7 @@ class IgniteSqlSortBuilderTest extends AnyFeatureSpec with MockFactory {
       val sortSpecInternal = Map("someTableColumnNotInMap" -> SortDirection.Descending)
       val sortSql = sortBuilder.toSql(sortSpecInternal, schemaMapper)
 
-      assert(sortSql == "")
+      sortSql.sqlTemplate shouldEqual ""
     }
   }
 

@@ -7,6 +7,8 @@ import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore, ParentOrder}
 import org.finos.vuu.example.ignite.utils.getListToObjectConverter
+import org.finos.vuu.feature.ignite.IgniteSqlQuery
+import org.finos.vuu.feature.ignite.IgniteSqlQuery.QuerySeparator
 
 import java.util
 import scala.collection.mutable
@@ -87,27 +89,32 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
   }
 
-  def getCount(sqlFilterQueries: String): Long = {
+  def getCount(filterSql: IgniteSqlQuery): Long = {
     //todo should this be COUNT_BIG?
-    val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
-    val query = new SqlFieldsQuery(s"select COUNT(1) from ChildOrder$whereClause")
-    val cursor = childOrderCache.query(query)
+    val whereClause = if (filterSql.isEmpty) filterSql else filterSql.prependSql("WHERE", QuerySeparator.SPACE)
+    val query = IgniteSqlQuery("SELECT COUNT(1) FROM ChildOrder").appendQuery(whereClause, QuerySeparator.SPACE)
 
-    val countValue = cursor.getAll().get(0).get(0)
+    val cursor = childOrderCache.query(query.buildFieldsQuery())
+    val countValue = cursor.getAll.get(0).get(0)
     val totalCount = countValue.asInstanceOf[Long]
 
-    logger.info(s"Ignite returned total count of $totalCount for ChildOrder with filter $sqlFilterQueries")
+    logger.info(s"Ignite returned total count of `$totalCount` for ChildOrder with filter `$filterSql`")
     totalCount
   }
 
-  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
-    val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
-    val orderByClause = if(sqlSortQueries == null || sqlSortQueries.isEmpty) " order by id" else s" order by $sqlSortQueries"
-    val query = new SqlFieldsQuery(s"select * from ChildOrder$whereClause$orderByClause limit ? offset ?")
-    query.setArgs(rowCount, startIndex)
+  def findChildOrder(filterSql: IgniteSqlQuery, sortSql: IgniteSqlQuery, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
+    val whereClause = if (filterSql.isEmpty) filterSql else filterSql.prependSql("WHERE", QuerySeparator.SPACE)
+    val orderByClause = if (sortSql.isEmpty) IgniteSqlQuery("ORDER BY id") else sortSql.prependSql("ORDER BY", QuerySeparator.SPACE)
+    val limitAndOffsetClause = IgniteSqlQuery("limit ? offset ?", List(rowCount, startIndex))
 
-    val results = childOrderCache.query(query).asScala.iterator.map(i => toChildOrder(i.asScala.toList))
-    logger.info(s"Loaded Ignite ChildOrder for $rowCount rows, from index : $startIndex where $whereClause order by $sqlSortQueries")
+    val query = IgniteSqlQuery("SELECT * FROM ChildOrder")
+      .appendQuery(whereClause, QuerySeparator.SPACE)
+      .appendQuery(orderByClause, QuerySeparator.SPACE)
+      .appendQuery(limitAndOffsetClause, QuerySeparator.SPACE)
+
+    val results = childOrderCache.query(query.buildFieldsQuery()).asScala.iterator.map(i => toChildOrder(i.asScala.toList))
+    logger.info(s"Loaded Ignite ChildOrder for $rowCount rows, from index : $startIndex with " +
+      s"WHERE CLAUSE: `$whereClause` | ORDER BY CLAUSE: `$orderByClause`")
 
     results
   }

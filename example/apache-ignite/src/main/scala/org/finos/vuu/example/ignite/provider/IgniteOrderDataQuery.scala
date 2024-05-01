@@ -3,7 +3,7 @@ package org.finos.vuu.example.ignite.provider
 import org.finos.vuu.core.module.simul.model.ChildOrder
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.example.ignite.IgniteOrderStore
-import org.finos.vuu.feature.ignite.FilterAndSortSpecToSql
+import org.finos.vuu.feature.ignite.{FilterAndSortSpecToSql, IgniteSqlQuery}
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.util.schema.SchemaMapper
 
@@ -12,7 +12,7 @@ class IgniteOrderDataQuery private (private val igniteOrderStore: IgniteOrderSto
 
   private val filterAndSortSpecToSql = FilterAndSortSpecToSql(schemaMapper)
 
-  def getFilterSql(filterSpec: FilterSpec): String =
+  def getFilterSql(filterSpec: FilterSpec): IgniteSqlQuery =
     filterAndSortSpecToSql.filterToSql(filterSpec)
 
   def fetch(filterSpec: FilterSpec, sortSpec: SortSpecInternal, startIndex: Long, rowCount: Int): Iterator[ChildOrder] = {
