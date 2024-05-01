@@ -1,5 +1,6 @@
 export * as AppPatterns from "./AppPatterns";
 export * as Apps from "./Apps";
+export * as AgGrid from "./AgGrid";
 export * as TableExtras from "./TableExtras";
 export * as DataTable from "./DataTable";
 export * as Filters from "./Filters";
