@@ -1,5 +1,4 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { defaultPatternsByType, formatDate } from "@finos/vuu-utils";
 import {
   DefaultFilterBar,
   FilterBarMultipleFilters,
@@ -9,6 +8,7 @@ import {
 const FILTER_CONTAINER = ".vuuFilterBar-filters";
 const ADD_BUTTON = ".vuuFilterBar-add";
 const FILTER_CLAUSE = ".vuuFilterClause";
+const VISIBLE_MONTH = ".saltCalendarCarousel-slide:not([aria-hidden])";
 
 const findFilter = (className: string) =>
   cy.get(FILTER_CONTAINER).find(className);
@@ -438,9 +438,6 @@ const getDate = (t: "start-today" | "start-tomorrow" | "end-today") => {
 
 describe("WHEN a user applies a date filter", () => {
   const DATE_COLUMN = "lastUpdated";
-  const todayDateFormatted = formatDate({ date: defaultPatternsByType.date })(
-    new Date()
-  );
   const startOfToday = getDate("start-today").getTime();
   const endOfToday = getDate("end-today").getTime();
   const startOfTomorrow = getDate("start-tomorrow").getTime();
@@ -507,7 +504,7 @@ describe("WHEN a user applies a date filter", () => {
       cy.get(ADD_BUTTON).realClick();
       clickListItems(DATE_COLUMN, op);
       cy.get(".vuuDatePopup .vuuIconButton").realClick();
-      cy.get(".saltCalendarDay-today:not(.saltCalendarDay-hidden)").realClick();
+      cy.get(`${VISIBLE_MONTH} .saltCalendarDay-today`).realClick();
       cy.realPress("ArrowRight");
       clickButton("Save");
       waitUntilEditableLabelIsFocused();
