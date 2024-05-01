@@ -149,7 +149,6 @@ export default async function main(customConfig) {
         defaultStyle = cssFile;
       }
       const style = styleFromPackageJson ?? defaultStyle;
-      console.log(`style ============= ${style}`);
 
       const exports = style
         ? {

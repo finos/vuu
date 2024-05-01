@@ -50,7 +50,10 @@ function writePackageJSON() {
       files: (packageJson.files || []).concat("/types"),
       exports: {
         ...packageJson.exports,
-        types: "./types/index.d.ts",
+        ".": {
+          ...packageJson.exports["."],
+          types: "./types/index.d.ts",
+        },
       },
       types: "types/index.d.ts",
     };
