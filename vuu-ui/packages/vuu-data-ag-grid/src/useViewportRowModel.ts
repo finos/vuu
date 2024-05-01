@@ -317,7 +317,7 @@ export const useViewportRowModel = ({
   );
 
   const handleGridColumnsChanged = useCallback((evt) => {
-    const allColumns = evt.columnApi.getAllColumns();
+    const allColumns = evt.api.getAllGridColumns();
     const colDefs = allColumns.map(
       (col: { colDef: AgGridColDef }) => col.colDef
     );
