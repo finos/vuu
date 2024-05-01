@@ -64,15 +64,13 @@ async function writePackageJSON(packageJson) {
       name: scopedPackageName,
       // eslint-disable-next-line no-unused-vars
       scripts,
-      style: styleFromPackageJson,
+      style,
       ...packageRest
     } = packageJson;
 
     const [, packageName] = scopedPackageName.split("/");
 
     const files = [README];
-
-    let defaultStyle = undefined;
 
     const filesToPublish = filesFromPackageJson.concat(files);
     filesToPublish.forEach((fileName) => {
@@ -83,22 +81,28 @@ async function writePackageJSON(packageJson) {
       });
     });
 
-    const cssFile = files.find((f) => f.endsWith(".css"));
-    if (cssFile) {
-      defaultStyle = cssFile;
+    const exports = {
+      ".": {
+        require: "./cjs/index.js",
+        import: "./esm/index.js",
+      },
+    };
+
+    if (style) {
+      exports[style] = {
+        require: style,
+        import: style,
+      };
     }
 
     const newPackage = {
       ...packageRest,
       files: filesToPublish.concat(["esm", "cjs"]),
-      exports: {
-        require: "./cjs/index.js",
-        import: "./esm/index.js",
-      },
+      exports,
       main: "cjs/index.js",
       module: "esm/index.js",
       name: scopedPackageName,
-      style: styleFromPackageJson ?? defaultStyle,
+      style,
       type: "module",
     };
 

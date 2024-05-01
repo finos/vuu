@@ -4,7 +4,7 @@
   "description": "css embedded svg icons plus icon components for Vuu",
   "main": "src/index.ts",
   "license": "Apache-2.0",
-  "style": "index.css",
+  "style": "./index.css",
   "files": [
     "index.css"
   ],
