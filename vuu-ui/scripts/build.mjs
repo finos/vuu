@@ -154,7 +154,7 @@ export default async function main(customConfig) {
         ? {
             [style]: {
               require: style,
-              imports: style,
+              import: style,
             },
           }
         : undefined;
