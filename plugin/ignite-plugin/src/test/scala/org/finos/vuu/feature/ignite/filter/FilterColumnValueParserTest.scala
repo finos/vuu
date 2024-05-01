@@ -29,7 +29,7 @@ class FilterColumnValueParserTest extends AnyFeatureSpec with Matchers {
   private val parser = FilterColumnValueParser(schemaMapper)
 
   Feature("parse(String, String)") {
-    Scenario("should correctly parse valid column value with user-passed toString applied") {
+    Scenario("should return parsed valid column value") {
       val timestamp = Date.valueOf("2024-02-10").getTime
 
       val res = parser.parse("date", s"$timestamp")
@@ -57,7 +57,7 @@ class FilterColumnValueParserTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("parse(String, List[String])") {
-    Scenario("should correctly parse valid column values with user-passed toString applied") {
+    Scenario("should return all parsed values when all are valid") {
       val timestamp1 = Date.valueOf("2024-02-10").getTime
       val timestamp2 = Date.valueOf("2024-02-12").getTime
 
@@ -80,7 +80,7 @@ class FilterColumnValueParserTest extends AnyFeatureSpec with Matchers {
       res.isLeft shouldBe true
     }
 
-    Scenario("should return error when unable to parse all values") {
+    Scenario("should return error when unable to parse any values") {
       val res = parser.parse("quantity", List("first-not-a-long", "second-not-a-long"))
 
       res.isLeft shouldBe true

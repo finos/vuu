@@ -1,9 +1,8 @@
 package org.finos.vuu.util.schema
 
-import org.finos.vuu.core.module.vui.VuiStateModule.stringToFieldDef
-import org.finos.vuu.core.table.{Column, Columns, SimpleColumn}
+import org.finos.vuu.core.table.{Column, SimpleColumn}
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.util.schema.SchemaMapperTest.{externalFields, externalSchema, fieldsMap, fieldsMapWithoutAssetClass, internalColumns}
+import org.finos.vuu.util.schema.SchemaMapperTest.{column, externalSchema, fieldsMap, fieldsMapWithoutAssetClass, givenColumns, givenExternalSchema, internalColumns, schemaField}
 import org.finos.vuu.util.types.{TypeConverter, TypeConverterContainerBuilder}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -80,36 +79,36 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
       field.get shouldEqual SchemaField("externalRic", classOf[String], 1)
     }
 
-    Scenario("returns None if column not present in the mapped fields") {
+    Scenario("returns None if column not present in mapped fields") {
       val field = mapper.externalSchemaField("assetClass")
       field shouldEqual None
     }
   }
 
-  Feature("tableColumn") {
+  Feature("internalVuuColumn") {
     val mapper = SchemaMapperBuilder(externalSchema, internalColumns)
       .withFieldsMap(fieldsMapWithoutAssetClass)
       .build()
 
     Scenario("can get internal column from external field name") {
-      val column = mapper.tableColumn("externalRic")
+      val column = mapper.internalVuuColumn("externalRic")
       column.get shouldEqual SimpleColumn("ric", 1, classOf[String])
     }
 
-    Scenario("returns None if external field not present in the mapped fields") {
-      val column = mapper.tableColumn("assetClass")
+    Scenario("returns None if external field not present in mapped fields") {
+      val column = mapper.internalVuuColumn("assetClass")
       column shouldEqual None
     }
   }
 
   Feature("toMappedExternalFieldType") {
-    val bigDecimalSchemaField = SchemaField("bigDecimalPrice", classOf[BigDecimal], 0)
-    val doubleColumn = SimpleColumn("doublePrice", 0, classOf[Double])
+    val bigDecimalSchemaField = schemaField("bigDecimalPrice", classOf[BigDecimal], 0)
+    val doubleColumn = column("doublePrice", classOf[Double], 0)
     val tcContainer = TypeConverterContainerBuilder().withoutDefaults()
       .withConverter(TypeConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue()))
       .withConverter(TypeConverter[Double, BigDecimal](classOf[Double], classOf[BigDecimal], new BigDecimal(_)))
       .build()
-    val schemaMapper = SchemaMapperBuilder(TestEntitySchema(List(bigDecimalSchemaField)), Array(doubleColumn))
+    val schemaMapper = SchemaMapperBuilder(givenExternalSchema(bigDecimalSchemaField), givenColumns(doubleColumn))
       .withFieldsMap(Map("bigDecimalPrice" -> "doublePrice"))
       .withTypeConverters(tcContainer)
       .build()
@@ -131,13 +130,13 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("toMappedInternalColumnType") {
-    val bigDecimalSchemaField = SchemaField("bigDecimalPrice", classOf[BigDecimal], 0)
-    val doubleColumn = SimpleColumn("doublePrice", 0, classOf[Double])
+    val bigDecimalSchemaField = schemaField("bigDecimalPrice", classOf[BigDecimal], 0)
+    val doubleColumn = column("doublePrice", classOf[Double], 0)
     val tcContainer = TypeConverterContainerBuilder().withoutDefaults()
       .withConverter(TypeConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue()))
       .withConverter(TypeConverter[Double, BigDecimal](classOf[Double], classOf[BigDecimal], new BigDecimal(_)))
       .build()
-    val schemaMapper = SchemaMapperBuilder(TestEntitySchema(List(bigDecimalSchemaField)), Array(doubleColumn))
+    val schemaMapper = SchemaMapperBuilder(givenExternalSchema(bigDecimalSchemaField), givenColumns(doubleColumn))
       .withFieldsMap(Map("bigDecimalPrice" -> "doublePrice"))
       .withTypeConverters(tcContainer)
       .build()
@@ -160,76 +159,98 @@ class SchemaMapperTest extends AnyFeatureSpec with Matchers {
 
   Feature("validation on instantiation") {
     Scenario("fails when mapped external field not found in external schema") {
+      val externalSchema = givenExternalSchema(schemaField("externalId"))
+      val columns = givenColumns(column("ric"))
+
       val exception = intercept[InvalidSchemaMapException](
-        SchemaMapperBuilder(externalSchema, Columns.fromNames("ric".int()))
-          .withFieldsMap(Map("non-existent" -> "ric")).build()
+        SchemaMapperBuilder(externalSchema, columns).withFieldsMap(Map("externalRic" -> "ric")).build()
       )
+
       exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex s"[Ff]ield `non-existent` not found"
+      exception.getMessage should include regex s"[Ff]ield `externalRic` not found"
     }
 
     Scenario("fails when mapped internal field not found in internal columns") {
+      val externalSchema = givenExternalSchema(schemaField("externalId"))
+      val columns = givenColumns(column("ric"))
+
       val exception = intercept[InvalidSchemaMapException](
-        SchemaMapperBuilder(externalSchema, Columns.fromNames("id".int()))
-          .withFieldsMap(Map("externalId" -> "absent-col")).build()
+        SchemaMapperBuilder(externalSchema, columns).withFieldsMap(Map("externalId" -> "id")).build()
       )
+
       exception shouldBe a[RuntimeException]
-      exception.getMessage should include regex "[Cc]olumn `absent-col` not found"
+      exception.getMessage should include regex "[Cc]olumn `id` not found"
     }
 
     Scenario("fails when external->internal map contains duplicated internal fields") {
+      val externalSchema = givenExternalSchema(schemaField("externalId"), schemaField("parentId"))
+      val columns = givenColumns(column("id"))
+
       val exception = intercept[InvalidSchemaMapException](
-        SchemaMapperBuilder(externalSchema, Columns.fromNames("id".int(), "ric".string()))
-          .withFieldsMap(Map("externalId" -> "id", "externalRic" -> "id"))
-          .build()
+        SchemaMapperBuilder(externalSchema, columns).withFieldsMap(Map("externalId" -> "id", "parentId" -> "id")).build()
       )
+
       exception shouldBe a[RuntimeException]
       exception.getMessage should include("duplicated column names")
     }
 
     Scenario("fails when types differ b/w mapped fields and type converter is not provided") {
+      val externalSchema = givenExternalSchema(schemaField("externalId", classOf[Long], index = 0))
+      val columns = givenColumns(column("id", classOf[String], index = 0))
       val emptyTypeConverterContainer = TypeConverterContainerBuilder().withoutDefaults().build()
+
       val exception = intercept[InvalidSchemaMapException](
-        SchemaMapperBuilder(externalSchema, internalColumns)
-          .withFieldsMap(fieldsMap)
+        SchemaMapperBuilder(externalSchema, columns)
+          .withFieldsMap(Map("externalId" -> "id"))
           .withTypeConverters(emptyTypeConverterContainer)
           .build()
       )
+
       exception.getMessage should include regex ".*TypeConverter.* not found.*"
-      exception.message should include("[ java.lang.Double->java.lang.String ]")
-      exception.message should include("[ java.lang.String->java.lang.Double ]")
+      exception.message should include("[ java.lang.Long->java.lang.String ]")
+      exception.message should include("[ java.lang.String->java.lang.Long ]")
     }
   }
 
   Feature("Build schema mapper without user-defined fields map") {
     Scenario("can generate mapper with exact fields matched by index") {
-      val mapper = SchemaMapperBuilder(externalSchema, internalColumns).build()
+      val externalSchema = givenExternalSchema(schemaField("externalId", index = 0), schemaField("priceExt", index = 1))
+      val columns = givenColumns(column("id", index = 0), column("price", index = 1))
 
-      mapper.tableColumn("externalId").get.name shouldEqual "id"
-      mapper.tableColumn("externalRic").get.name shouldEqual "ric"
-      mapper.tableColumn("assetClass").get.name shouldEqual "assetClass"
-      mapper.tableColumn("price").get.name shouldEqual "price"
-      mapper.tableColumn("side").get.name shouldEqual "side"
+      val mapper = SchemaMapperBuilder(externalSchema, columns).build()
+
+      mapper.internalVuuColumn("externalId").get.name shouldEqual "id"
+      mapper.internalVuuColumn("priceExt").get.name shouldEqual "price"
+    }
+
+    Scenario("can generate mapper with exact fields even when the fields are not ordered by their index") {
+      val externalSchema = givenExternalSchema(schemaField("priceExt", index = 1), schemaField("externalId", index = 0))
+      val columns = givenColumns(column("id", index = 0), column("price", index = 1))
+
+      val mapper = SchemaMapperBuilder(externalSchema, columns).build()
+
+      mapper.internalVuuColumn("externalId").get.name shouldEqual "id"
+      mapper.internalVuuColumn("priceExt").get.name shouldEqual "price"
     }
 
     Scenario("can generate mapper when an external field has no matched column") {
-      val mapper = SchemaMapperBuilder(externalSchema, internalColumns.slice(0, 3)).build()
+      val externalSchema = givenExternalSchema(schemaField("priceExt", index = 1), schemaField("externalId", index = 0))
+      val columns = givenColumns(column("id", index = 0))
 
-      mapper.tableColumn("externalId") shouldBe empty
-      mapper.tableColumn("externalRic").get.name shouldEqual "ric"
-      mapper.tableColumn("assetClass").get.name shouldEqual "assetClass"
-      mapper.tableColumn("price").get.name shouldEqual "price"
-      mapper.tableColumn("side") shouldBe empty
+      val mapper = SchemaMapperBuilder(externalSchema, columns).build()
+
+      mapper.internalVuuColumn("externalId").get.name shouldEqual "id"
+      mapper.internalVuuColumn("priceExt") shouldBe empty
     }
 
     Scenario("can generate mapper when a column has no matched external field") {
-      val mapper = SchemaMapperBuilder(TestEntitySchema(externalFields.slice(0, 3)), internalColumns).build()
+      val externalSchema = givenExternalSchema(schemaField("priceExt", index = 1))
+      val columns = givenColumns(column("id", index = 0), column("price", index = 1))
 
-      mapper.tableColumn("externalId").get.name shouldEqual "id"
-      mapper.tableColumn("externalRic") shouldBe empty
-      mapper.tableColumn("assetClass").get.name shouldBe  "assetClass"
-      mapper.tableColumn("price").get.name shouldEqual "price"
-      mapper.tableColumn("side") shouldBe empty
+      val mapper = SchemaMapperBuilder(externalSchema, columns).build()
+
+      mapper.externalSchemaField("price").get.name shouldEqual "priceExt"
+      mapper.externalSchemaField("id") shouldBe empty
     }
   }
 }
@@ -240,30 +261,35 @@ private case class TestDto(externalId: Int, externalRic: String, assetClass: Str
 
 private object SchemaMapperTest {
 
-  // no need to be sorted by their index
-  val externalFields: List[SchemaField] = List(
-    SchemaField("externalId", classOf[Int], 0),
-    SchemaField("assetClass", classOf[String], 2),
-    SchemaField("price", classOf[String], 3),
-    SchemaField("externalRic", classOf[String], 1),
-    SchemaField("side", classOf[java.lang.Character], 4),
+  private def givenExternalSchema(fields: SchemaField*): ExternalEntitySchema = TestEntitySchema(fields.toList)
+
+  private def schemaField(name: String, dataType: Class[_] = classOf[Any], index: Int = -1): SchemaField =
+    SchemaField(name, dataType, index)
+
+  private def givenColumns(columns: Column*): Array[Column] = columns.toArray
+
+  private def column(name: String, dataType: Class[_] = classOf[Any], index: Int = -1): Column =
+    SimpleColumn(name, index, dataType)
+
+  private val externalFields: List[SchemaField] = List(
+    schemaField("externalId", classOf[Int], 0),
+    schemaField("externalRic", classOf[String], 1),
+    schemaField("assetClass", classOf[String], 2),
+    schemaField("price", classOf[String], 3),
+    schemaField("side", classOf[java.lang.Character], 4),
   )
 
-  val externalSchema: TestEntitySchema = TestEntitySchema(externalFields)
+  private val externalSchema: ExternalEntitySchema = givenExternalSchema(externalFields: _*)
 
-  val internalColumns: Array[Column] = {
-    val columns = Columns.fromNames(
-      "id".int(),
-      "ric".string(),
-      "assetClass".string(),
-      "price".double(),
-      "side".char(),
-    )
-    // no need to be sorted by their index
-    columns.tail.appended(columns.head)
-  }
+  private val internalColumns: Array[Column] = givenColumns(
+    column("id", classOf[Int], 0),
+    column("ric", classOf[String], 1),
+    column("assetClass", classOf[String], 2),
+    column("price", classOf[Double], 3),
+    column("side", classOf[Char], 4),
+  )
 
-  val fieldsMap: Map[String, String] = Map(
+  private val fieldsMap: Map[String, String] = Map(
     "externalId" -> "id",
     "externalRic" -> "ric",
     "price" -> "price",
@@ -271,5 +297,5 @@ private object SchemaMapperTest {
     "side" -> "side",
   )
 
-  val fieldsMapWithoutAssetClass: Map[String, String] = fieldsMap.filter({ case (k, _) => k != "assetClass"})
+  private val fieldsMapWithoutAssetClass: Map[String, String] = fieldsMap.filter({ case (k, _) => k != "assetClass"})
 }
