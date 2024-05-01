@@ -12,7 +12,7 @@ import scala.util.Try
  * and vice versa.
  * */
 trait SchemaMapper {
-  def tableColumn(extFieldName: String): Option[Column]
+  def internalVuuColumn(extFieldName: String): Option[Column]
   def externalSchemaField(columnName: String): Option[SchemaField]
   def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any]
   def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any]
@@ -31,7 +31,7 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
   private val externalFieldByColumnName: Map[String, SchemaField] = getExternalSchemaFieldsByColumnName
   private val internalColumnByExtFieldName: Map[String, Column] = getTableColumnByExternalField
 
-  override def tableColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
+  override def internalVuuColumn(extFieldName: String): Option[Column] = internalColumnByExtFieldName.get(extFieldName)
   override def externalSchemaField(columnName: String): Option[SchemaField] = externalFieldByColumnName.get(columnName)
 
   override def toInternalRowMap(externalValues: List[_]): Map[String, Any] = toInternalRowMap(externalValues.toArray)
@@ -47,13 +47,13 @@ private class SchemaMapperImpl(private val externalSchema: ExternalEntitySchema,
 
   override def toMappedExternalFieldType(columnName: String, columnValue: Any): Option[Any] = {
     externalSchemaField(columnName).flatMap(field => {
-      val col = tableColumn(field.name).get
+      val col = internalVuuColumn(field.name).get
       safeTypeConvert(columnValue, castToAny(col.dataType), field.dataType)
     })
   }
 
   override def toMappedInternalColumnType(extFieldName: String, extFieldValue: Any): Option[Any] = {
-    tableColumn(extFieldName).flatMap(col => {
+    internalVuuColumn(extFieldName).flatMap(col => {
       val field = externalSchemaField(col.name).get
       safeTypeConvert(extFieldValue, castToAny(field.dataType), col.dataType)
     })

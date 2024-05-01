@@ -26,19 +26,19 @@ private class ColumnValueParser(private val mapper: SchemaMapper) extends Filter
 
   override def parse(columnName: String, columnValue: String): Either[ErrorMessage, ParsedResult[Any]] = {
     mapper.externalSchemaField(columnName) match {
-      case Some(f) => RawColumnValueParser(f).parse(columnValue).map(ParsedResult(f, _))
+      case Some(f) => CoreParser(f).parse(columnValue).map(ParsedResult(f, _))
       case None    => Left(externalFieldNotFoundError(columnName))
     }
   }
 
   override def parse(columnName: String, columnValues: List[String]): Either[ErrorMessage, ParsedResult[List[Any]]] = {
     mapper.externalSchemaField(columnName) match {
-      case Some(f) => parseValues(RawColumnValueParser(f), columnValues)
+      case Some(f) => parseValues(CoreParser(f), columnValues)
       case None    => Left(externalFieldNotFoundError(columnName))
     }
   }
 
-  private def parseValues(parser: RawColumnValueParser,
+  private def parseValues(parser: CoreParser,
                           columnValues: List[String]): Either[ErrorMessage, ParsedResult[List[Any]]] = {
     val (errors, parsedValues) = columnValues.partitionMap(parser.parse)
     val combinedError = errors.mkString("\n")
@@ -56,8 +56,8 @@ private class ColumnValueParser(private val mapper: SchemaMapper) extends Filter
   private def externalFieldNotFoundError(columnName: String): String =
     s"Failed to find mapped external field for column `$columnName`"
 
-  private case class RawColumnValueParser(field: SchemaField) {
-    val column: Column = mapper.tableColumn(field.name).get
+  private case class CoreParser(field: SchemaField) {
+    val column: Column = mapper.internalVuuColumn(field.name).get
 
     def parse(columnValue: String): Either[ErrorMessage, Any] = {
       parseStringToColumnDataType(columnValue).flatMap(convertColumnValueToExternalFieldType)
