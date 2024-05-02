@@ -1,7 +1,7 @@
 package org.finos.vuu.feature.ignite
 
 import com.typesafe.scalalogging.StrictLogging
-import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriterion, SqlFieldsQuery}
+import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriterion}
 import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
 import org.apache.ignite.{Ignite, IgniteCache, Ignition}
 import org.apache.ignite.cluster.ClusterState

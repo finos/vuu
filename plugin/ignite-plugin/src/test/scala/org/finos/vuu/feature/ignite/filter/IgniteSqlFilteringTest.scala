@@ -432,8 +432,9 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
 
   Feature("Parse and apply STARTS filter") {
     val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.L")
-    val testOrder2 = createTestOrderEntity(id = 2, ric = "VAD.L")
-    val testOrder3 = createTestOrderEntity(id = 3, ric = "NVD.L")
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "VA_D.L")
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "%A_VD.L")
+    val testOrder4 = createTestOrderEntity(id = 4, ric = "%AVD.L")
 
     Scenario("supports String column type") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
@@ -443,12 +444,12 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
     }
 
-    Scenario("empty filter for non-string column types") {
-      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+    Scenario("can handle special characters") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3, testOrder4)
 
-      val filterResult = applyFilter("key starts \"1\"")
+      val filterResult = applyFilter("ric starts \"%A_\"")
 
-      filterResult.size shouldEqual 3
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
     }
 
     Scenario("no filters applied when internal column not in schema") {
@@ -461,9 +462,10 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
   }
 
   Feature("Parse and apply ENDS filter") {
-    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.HK")
-    val testOrder2 = createTestOrderEntity(id = 2, ric = "VAD.DDN")
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD._DD%")
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "VAD._DDN")
     val testOrder3 = createTestOrderEntity(id = 3, ric = "NVD.LDN")
+    val testOrder4 = createTestOrderEntity(id = 4, ric = "VOD.LDD%")
 
     Scenario("supports String column type") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
@@ -473,18 +475,50 @@ class IgniteSqlFilteringTest extends IgniteTestsBase {
       assertEquavalent(filterResult.toArray, Array(testOrder2, testOrder3))
     }
 
-    Scenario("empty filter for non-string column types") {
-      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+    Scenario("can handle special characters") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3, testOrder4)
 
-      val filterResult = applyFilter("key ends \"1\"")
+      val filterResult = applyFilter("ric ends \"_DD%\"")
 
-      filterResult.size shouldEqual 3
+      assertEquavalent(filterResult.toArray, Array(testOrder1))
     }
 
     Scenario("no filters applied when internal column not in schema") {
       givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
 
       val filterResult = applyFilter("ricX ends \"DN\"")
+
+      filterResult.size shouldEqual 3
+    }
+  }
+
+  Feature("Parse and apply CONTAINS filter") {
+    val testOrder1 = createTestOrderEntity(id = 1, ric = "VOD.A.HK")
+    val testOrder2 = createTestOrderEntity(id = 2, ric = "VA[_]D.A.HK")
+    val testOrder3 = createTestOrderEntity(id = 3, ric = "NV[_]D%.B.HK")
+    val testOrder4 = createTestOrderEntity(id = 4, ric = "N[V]D%.B.HK")
+
+    Scenario("supports String column type") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ric contains \".A.\"")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder1, testOrder2))
+    }
+
+    Scenario("can handle special characters") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3, testOrder4)
+
+      // some SQL engines treat `[`, `]` as special chars in `LIKE`, adding `[_]` makes sure that our underlying engine is not treating these as special chars
+      val filterResult = applyFilter("ric contains \"[_]D%\"")
+
+      assertEquavalent(filterResult.toArray, Array(testOrder3))
+    }
+
+    Scenario("no filters applied when internal column not in schema") {
+      givenOrderExistInIgnite(testOrder1, testOrder2, testOrder3)
+
+      val filterResult = applyFilter("ricX contains \".A.\"")
 
       filterResult.size shouldEqual 3
     }

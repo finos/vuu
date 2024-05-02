@@ -57,6 +57,13 @@ case class EndsClause(columnName: String, suffix: String) extends RowFilterClaus
   }
 }
 
+case class ContainsClause(columnName: String, substring: String) extends RowFilterClause {
+  override def filter(row: RowData): Boolean = {
+    val value = row.get(columnName)
+    value != null && value.toString.contains(substring)
+  }
+}
+
 case class InClause(columnName: String, values: List[String]) extends RowFilterClause {
   override def filter(row: RowData): Boolean = {
     val datum = row.get(columnName)

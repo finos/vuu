@@ -90,7 +90,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
-    val filterQuery = IgniteSqlQuery("parentId = ?", List(2))
+    val filterQuery = IgniteSqlQuery("parentId = ?", 2)
     val childOrder = orderStore.findChildOrder(filterQuery, IgniteSqlQuery.empty, 2, 1).toList
 
     assert(childOrder != null)
@@ -111,7 +111,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5, ric = "VOD.L")
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "VOD.L")
 
-    val filterQuery = IgniteSqlQuery("ric = ?", List("VOD.L"))
+    val filterQuery = IgniteSqlQuery("ric = ?", "VOD.L")
     val childOrder = orderStore.findChildOrder(filterQuery, IgniteSqlQuery.empty, 100, 0).toList
 
     assert(childOrder != null)
@@ -176,7 +176,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5, ric = "VOD.L")
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "BP.L")
 
-    val filterQuery = IgniteSqlQuery("ric = ?", List("VOD.L"))
+    val filterQuery = IgniteSqlQuery("ric = ?", "VOD.L")
 
     val count = orderStore.getCount(filterQuery)
 

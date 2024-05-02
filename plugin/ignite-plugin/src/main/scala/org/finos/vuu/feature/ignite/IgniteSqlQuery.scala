@@ -5,8 +5,8 @@ import org.finos.vuu.feature.ignite.IgniteSqlQuery.QuerySeparator
 
 object IgniteSqlQuery {
   def apply(sqlTemplate: String): IgniteSqlQuery = new IgniteSqlQuery(sqlTemplate, List.empty)
-  def apply(): IgniteSqlQuery = IgniteSqlQuery("")
-  def empty: IgniteSqlQuery = IgniteSqlQuery()
+  def apply(sqlTemplate: String, args: Any*) = new IgniteSqlQuery(sqlTemplate, args.toList)
+  def empty: IgniteSqlQuery = IgniteSqlQuery("")
 
   sealed abstract class QuerySeparator(val value: String)
   object QuerySeparator {

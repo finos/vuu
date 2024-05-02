@@ -35,8 +35,7 @@ case class EqIgniteSqlFilterClause(columnName: String, value: String) extends Ig
 }
 
 private object EqIgniteSqlFilterClause {
-  def eqSqlQuery(field: String, value: Any): IgniteSqlQuery =
-    IgniteSqlQuery(s"$field = ?", List(value))
+  def eqSqlQuery(field: String, value: Any): IgniteSqlQuery = IgniteSqlQuery(s"$field = ?", value)
 }
 
 case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause {
@@ -47,7 +46,7 @@ case class NeqIgniteSqlFilterClause(columnName: String, value: String) extends I
     }
   }
 
-  private def neqSql(field: String, value: Any) = IgniteSqlQuery(s"$field != ?", List(value))
+  private def neqSql(field: String, value: Any) = IgniteSqlQuery(s"$field != ?", value)
 }
 
 case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: String) extends IgniteSqlFilterClause {
@@ -58,37 +57,51 @@ case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: St
     }
   }
 
-  private def rangeSql(field: String, value: Any) = IgniteSqlQuery(s"$field ${op.value} ?", List(value))
+  private def rangeSql(field: String, value: Any) = IgniteSqlQuery(s"$field ${op.value} ?", value)
 
   override def toString = s"RangeIgniteSqlFilterClause[$op]($columnName, $value)"
 }
 
-case class StartsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper): IgniteSqlQuery = {
-    FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => startsSql(f, externalValue)
-      case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
-    }
-  }
-
-  private def startsSql(f: SchemaField, value: Any): IgniteSqlQuery = f.dataType match {
-    case STRING_DATA_TYPE => IgniteSqlQuery(s"${f.name} LIKE ?", List(s"$value%"))
-    case _ => logErrorAndReturnEmptySql(s"`Starts` clause unsupported for non-string column: `${f.name}` (${f.dataType})")
-  }
+sealed abstract class RangeOp(val value: String)
+object RangeOp {
+  final case object GT extends RangeOp(value = ">")
+  final case object GTE extends RangeOp(value = ">=")
+  final case object LT extends RangeOp(value = "<")
+  final case object LTE extends RangeOp(value = "<=")
 }
 
-case class EndsIgniteSqlFilterClause(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  override def toSql(schemaMapper: SchemaMapper): IgniteSqlQuery = {
+case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
+  private final val ESCAPE_CHAR = "\\"
+
+  override def toSql(schemaMapper: SchemaMapper): IgniteSqlQuery =
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
-      case Right(ParsedResult(f, externalValue)) => endsSql(f, externalValue)
+      case Right(ParsedResult(f, externalValue)) => regexSql(f, externalValue)
       case Left(errMsg) => logErrorAndReturnEmptySql(errMsg)
     }
+
+  private def regexSql(f: SchemaField, value: Any): IgniteSqlQuery = f.dataType match {
+    case STRING_DATA_TYPE =>
+      val escapedValue = escapeSpecialChars(s"$value")
+      IgniteSqlQuery(s"${f.name} LIKE ? ESCAPE ?", op.apply(escapedValue), ESCAPE_CHAR)
+    case _ =>
+      logErrorAndReturnEmptySql(s"`$op` clause unsupported for non-string field: `${f.name}` (type: ${f.dataType})")
   }
 
-  private def endsSql(f: SchemaField, value: Any): IgniteSqlQuery = f.dataType match {
-    case STRING_DATA_TYPE => IgniteSqlQuery(s"${f.name} LIKE ?", List(s"%$value"))
-    case _ => logErrorAndReturnEmptySql(s"`Ends` clause unsupported for non-string column: `${f.name}` (${f.dataType})")
+  private def escapeSpecialChars(value: String): String = {
+    val specialCharsRegex = "([%_])|(\\\\)".r
+    specialCharsRegex.replaceAllIn(value, m =>
+      if (m.group(1) != null) s"${ESCAPE_CHAR * 2}$m" else s"${ESCAPE_CHAR * 3}$m"
+    )
   }
+
+  override def toString = s"RegexIgniteSqlFilterClause[$op]($columnName, $value)"
+}
+
+sealed abstract class RegexOp(val apply: String => String)
+object RegexOp {
+  final case object Starts extends RegexOp("%s%%".format(_))
+  final case object Ends extends RegexOp("%%%s".format(_))
+  final case object Contains extends RegexOp("%%%s%%".format(_))
 }
 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {
@@ -103,14 +116,6 @@ case class InIgniteSqlFilterClause(columnName: String, values: List[String]) ext
     val eqQueries = values.map(eqSqlQuery(field, _))
     joinNonEmptyQueries(eqQueries, QuerySeparator.OR)
   }
-}
-
-sealed abstract class RangeOp(val value: String)
-object RangeOp {
-  final case object GT extends RangeOp(value = ">")
-  final case object GTE extends RangeOp(value = ">=")
-  final case object LT extends RangeOp(value = "<")
-  final case object LTE extends RangeOp(value = "<=")
 }
 
 private object joinNonEmptyQueries {

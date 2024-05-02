@@ -36,6 +36,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       val filterExpressions = Table(
         "Foo starts \"abc\"",
         "Foo ends \"abc\"",
+        "Foo contains \"abc\""
       )
       forAll(filterExpressions)(assertParsable)
     }
@@ -79,7 +80,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         "Foo=1 or (Bar=1 and Baz=1)",
         "Foo=1 or (Bar=1 or Bar<=1 and Baz=1)",
         "Foo=1 or (Bar=1 or Bar=1) and Baz=1",
-        "(Foo=1 or Bar>=1 or Bar=1) and Baz=1",
+        "(Foo=1 or Bar>=1 or XY contains \"1\") and Baz=1",
         "(Foo=1 or Bar starts \"1\" or Bar=1) and Baz=1",
       )
       forAll(filterExpressions)(assertParsable)
@@ -124,6 +125,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         "Foo  = bar",
         "Foo starts bar",
         "Foo ends bar",
+        "Foo contains bar",
         "Foo in [ GenRepublisher-1.00.01, GenRepublisher-1.00.00, FixProxy-1.23.45 ]",
         "Foo in [ foobar ]",
       )
@@ -234,6 +236,12 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
     Scenario("Ends-with STRING") {
       assertFilteredRows("orderId ends \"08\"",
         row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+      )
+    }
+
+    Scenario("Contains STRING") {
+      assertFilteredRows("ric contains \"OD/\"",
+        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
       )
     }
 

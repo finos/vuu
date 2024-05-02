@@ -39,20 +39,29 @@ class IgniteSqlQueryTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("appendQuery") {
-    val query = IgniteSqlQuery("SELECT * FROM ?", List("TABLE_2"))
+    val query = IgniteSqlQuery("SELECT * FROM ?", "TABLE_2")
 
     Scenario("should return new joined query with the specified separator") {
-      val query2 = IgniteSqlQuery("WHERE id = ?", List(23))
+      val query2 = IgniteSqlQuery("WHERE id = ?", 23)
 
       val joinedQuery = query.appendQuery(query2, QuerySeparator.SPACE)
 
       joinedQuery.sqlTemplate shouldEqual "SELECT * FROM ? WHERE id = ?"
       joinedQuery.args shouldEqual List("TABLE_2", 23)
     }
+
+    Scenario("should be able to append query with multiple args") {
+      val query2 = IgniteSqlQuery("WHERE id = ? OR id = ?", List(23, 25))
+
+      val joinedQuery = query.appendQuery(query2, QuerySeparator.SPACE)
+
+      joinedQuery.sqlTemplate shouldEqual "SELECT * FROM ? WHERE id = ? OR id = ?"
+      joinedQuery.args shouldEqual List("TABLE_2", 23, 25)
+    }
   }
 
   Feature("appendArgs") {
-    val query = IgniteSqlQuery("SELECT * FROM ?", List("TABLE2"))
+    val query = IgniteSqlQuery("SELECT * FROM ?", "TABLE2")
 
     Scenario("should return new query with appended args") {
       val args = List(1, "string", 'A')
@@ -77,7 +86,7 @@ class IgniteSqlQueryTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("should return false when sqlTemplate is empty but args is not") {
-      val query = IgniteSqlQuery("", List("A"))
+      val query = IgniteSqlQuery("", "A")
 
       query.isEmpty shouldBe false
     }
@@ -85,7 +94,7 @@ class IgniteSqlQueryTest extends AnyFeatureSpec with Matchers {
 
   Feature("toString") {
     Scenario("should return expected string representation of the object") {
-      val query = IgniteSqlQuery("SELECT * FROM ?", List("TABLE2"))
+      val query = IgniteSqlQuery("SELECT * FROM ?", "TABLE2")
 
       query.toString shouldEqual "IgniteSqlQuery(SELECT * FROM ?,List(TABLE2))"
     }
