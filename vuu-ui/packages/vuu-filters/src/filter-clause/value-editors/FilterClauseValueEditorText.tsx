@@ -113,7 +113,11 @@ export const FilterClauseValueEditorText = forwardRef(
         console.log(`handleInputChange "${value}"`);
         setValueInputValue(value);
         // we want to set the filterclause status to valid, but not trigger focus chanmge
-        if (operator === "starts" || operator === "ends") {
+        if (
+          operator === "starts" ||
+          operator === "ends" ||
+          operator === "contains"
+        ) {
           onChangeValue(value, false);
         }
       },
