@@ -1,18 +1,16 @@
 import { connectToServer } from "@finos/vuu-data-remote";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
   StackLayout,
 } from "@finos/vuu-layout";
-import { LayoutChangeHandler } from "@finos/vuu-layout/src/layout-reducer";
+import type { LayoutChangeHandler } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
-import {
-  logger,
-  ThemeMode,
-  ThemeProvider,
-  useThemeAttributes,
-} from "@finos/vuu-utils";
+import { logger, ThemeMode } from "@finos/vuu-utils";
+import { SaltProvider } from "@salt-ds/core";
 import cx from "clsx";
 import {
   HTMLAttributes,
@@ -23,15 +21,15 @@ import {
   useState,
 } from "react";
 import { AppHeader } from "./app-header";
-import { useLayoutManager } from "./layout-management";
 import {
-  loadingApplicationJson,
   useLayoutContextMenuItems,
-} from "./persistence-management";
+  useLayoutManager,
+} from "./layout-management";
+import { loadingApplicationJson } from "./persistence-management";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
 import { SaveLocation } from "./shellTypes";
 
-import "./shell.css";
+import shellCss from "./shell.css";
 
 if (typeof StackLayout !== "function") {
   console.warn(
@@ -79,6 +77,13 @@ export const Shell = ({
   user,
   ...htmlAttributes
 }: ShellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-shell",
+    css: shellCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const { dialog, setDialogState } = useDialog();
   const layoutId = useRef("latest");
@@ -127,8 +132,7 @@ export const Shell = ({
     }
   }, [serverUrl, user.token, user.username]);
 
-  const [themeClass, densityClass, dataMode] = useThemeAttributes();
-  const className = cx("vuuShell", classNameProp, themeClass, densityClass);
+  const className = cx("vuuShell");
 
   const isLoading = applicationJson === loadingApplicationJson;
 
@@ -151,7 +155,7 @@ export const Shell = ({
   }
 
   return isLoading ? null : (
-    <ThemeProvider>
+    <SaltProvider theme="vuu-theme" density="high">
       <ContextMenuProvider
         menuActionHandler={handleMenuAction}
         menuBuilder={buildMenuOptions}
@@ -163,7 +167,6 @@ export const Shell = ({
         >
           <DraggableLayout
             className={className}
-            data-mode={dataMode}
             ref={rootRef}
             {...htmlAttributes}
           >
@@ -172,6 +175,6 @@ export const Shell = ({
         </LayoutProvider>
         {children || dialog}
       </ContextMenuProvider>
-    </ThemeProvider>
+    </SaltProvider>
   );
 };

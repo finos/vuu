@@ -1,9 +1,12 @@
 import { Palette, PaletteItem } from "@finos/vuu-layout";
 import { ListProps } from "@finos/vuu-ui-controls";
 import { HTMLAttributes } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import { Feature, FeatureProps } from "../feature/Feature";
 
-import "./FeatureList.css";
+import featureListCss from "./FeatureList.css";
 
 const classBase = "vuuFeatureList";
 
@@ -16,6 +19,13 @@ export const FeatureList = ({
   title = "VUU TABLES",
   ...htmlAttributes
 }: FeatureListProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-feature-list",
+    css: featureListCss,
+    window: targetWindow,
+  });
+
   const ViewProps = {};
 
   const listProps: Partial<ListProps> = {

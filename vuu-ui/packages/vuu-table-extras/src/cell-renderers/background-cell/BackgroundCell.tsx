@@ -10,11 +10,13 @@ import {
   UP2,
 } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { memo } from "react";
 import { useDirection } from "./useDirection";
 
-import "./BackgroundCell.css";
-import "./BackgroundKeyframes.css";
+import backgroundCellCss from "./BackgroundCell.css";
+import backgroundKeyFramesCss from "./BackgroundKeyframes.css";
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
@@ -45,6 +47,18 @@ export const BackgroundCell = memo(function BackgroundCell({
   row,
 }: TableCellProps) {
   //TODO what about click handling
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-background-cell",
+    css: backgroundCellCss,
+    window: targetWindow,
+  });
+  useComponentCssInjection({
+    testId: "vuu-background-keyframes",
+    css: backgroundKeyFramesCss,
+    window: targetWindow,
+  });
 
   const { name, type, valueFormatter } = column;
   const dataIdx = columnMap[name];

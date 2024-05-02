@@ -1,6 +1,9 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import { CheckboxIcon } from "../list/CheckboxIcon";
 
-import "./Checkbox.css";
+import checkboxCss from "./Checkbox.css";
 
 type CheckboxProps = {
   onToggle: () => void;
@@ -11,6 +14,12 @@ type CheckboxProps = {
 
 export const Checkbox = (props: CheckboxProps): JSX.Element => {
   const { onToggle, checked, label } = props;
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-checkbox",
+    css: checkboxCss,
+    window: targetWindow,
+  });
 
   return (
     <div

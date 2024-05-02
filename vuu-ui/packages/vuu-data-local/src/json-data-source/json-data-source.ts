@@ -1,5 +1,5 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type {
   LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuAggregation,
@@ -9,7 +9,7 @@ import {
   ClientToServerEditRpc,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
-import {
+import type {
   DataSourceFilter,
   DataSourceRow,
   DataSource,

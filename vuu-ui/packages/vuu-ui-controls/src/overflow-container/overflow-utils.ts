@@ -8,14 +8,6 @@ export type OverflowItem = {
   overflowPriority: string;
 };
 
-export const isOverflowElement = (element: HTMLElement | null) =>
-  element !== null &&
-  element.dataset.index === "overflow" &&
-  element.parentElement !== null &&
-  element.parentElement.classList.contains(
-    "vuuOverflowContainer-wrapContainer-overflowed"
-  );
-
 export const sortByScreenOrder = (elements: HTMLElement[]): HTMLElement[] =>
   elements.sort((e1, e2) => {
     const {

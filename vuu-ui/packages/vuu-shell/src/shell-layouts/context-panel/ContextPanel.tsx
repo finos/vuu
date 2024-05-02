@@ -1,4 +1,6 @@
 import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { useCallback, useMemo } from "react";
 import {
@@ -8,7 +10,7 @@ import {
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 
-import "./ContextPanel.css";
+import contextPanelCss from "./ContextPanel.css";
 
 const classBase = "vuuContextPanel";
 
@@ -27,6 +29,13 @@ export const ContextPanel = ({
   overlay = false,
   title,
 }: ContextPanelProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-context-panel",
+    css: contextPanelCss,
+    window: targetWindow,
+  });
+
   const dispatchLayoutAction = useLayoutProviderDispatch();
   // const [contentJson, setContentJson] = useState(contentProp);
   const handleClose = useCallback(() => {

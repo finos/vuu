@@ -1,5 +1,7 @@
 import { useContextMenu } from "@finos/vuu-popups";
 import { HeaderCellProps } from "@finos/vuu-table-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
@@ -14,7 +16,7 @@ import { ColumnMenu } from "../column-menu";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
-import "./HeaderCell.css";
+import headerCellCss from "./HeaderCell.css";
 
 const classBase = "vuuTableHeaderCell";
 
@@ -26,6 +28,13 @@ export const HeaderCell = ({
   showMenu = true,
   ...htmlAttributes
 }: HeaderCellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-header-cell",
+    css: headerCellCss,
+    window: targetWindow,
+  });
+
   const { HeaderCellContentRenderer, HeaderCellLabelRenderer } = column;
   const rootRef = useRef<HTMLDivElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({

@@ -12,8 +12,10 @@ import {
   useImperativeHandle,
 } from "react";
 import { Input, useControlled } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./EditableLabel.css";
+import editableLabelCss from "./EditableLabel.css";
 
 const classBase = "vuuEditableLabel";
 
@@ -61,6 +63,13 @@ export const EditableLabel = forwardRef(function EditableLabel(
   }: EditableLabelProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ): ReactElement<EditableLabelProps> {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-editable-label",
+    css: editableLabelCss,
+    window: targetWindow,
+  });
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const editingRef = useRef<boolean>(false);
 

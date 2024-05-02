@@ -1,7 +1,7 @@
 import { RefObject, useCallback, useMemo } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { usePersistentState } from "../use-persistent-state";
-import { useViewActionDispatcher } from "./useViewActionDispatcher";
+import { useViewActionDispatcher } from "../layout-view-actions/useViewActionDispatcher";
 
 export interface ViewHookProps {
   id: string;

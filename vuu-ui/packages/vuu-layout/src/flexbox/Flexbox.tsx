@@ -1,10 +1,12 @@
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { CSSProperties, ForwardedRef, forwardRef } from "react";
 import { FlexboxProps } from "./flexboxTypes";
 import { useSplitterResizing } from "./useSplitterResizing";
 
-import "./Flexbox.css";
+import flexboxCss from "./Flexbox.css";
 
 const classBase = "hwFlexbox";
 
@@ -30,6 +32,13 @@ const Flexbox = forwardRef(function Flexbox(
     style,
     ...rest
   } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-flexbox",
+    css: flexboxCss,
+    window: targetWindow,
+  });
 
   const { content, rootRef } = useSplitterResizing({
     children,

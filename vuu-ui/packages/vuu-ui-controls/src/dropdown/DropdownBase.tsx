@@ -2,12 +2,14 @@ import { PopupComponent as Popup, Portal } from "@finos/vuu-popups";
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { Children, cloneElement, forwardRef, useRef } from "react";
 import { forwardCallbackProps } from "../utils";
 import { DropdownBaseProps } from "./dropdownTypes";
 import { useDropdownBase } from "./useDropdownBase";
 
-import "./Dropdown.css";
+import dropdownBaseCss from "./Dropdown.css";
 
 // Any component may be passed as our trigger or popup component.
 // Define the common props that we will act on, if present,
@@ -44,6 +46,13 @@ export const DropdownBase = forwardRef<HTMLDivElement, DropdownBaseProps>(
     },
     forwardedRef
   ) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-dropdown-base",
+      css: dropdownBaseCss,
+      window: targetWindow,
+    });
+
     const rootRef = useRef<HTMLDivElement>(null);
     const className = cx(classBase, classNameProp, {
       [`${classBase}-fullWidth`]: fullWidth,

@@ -2,8 +2,10 @@ import { CSSProperties, MouseEventHandler, ReactNode, RefObject } from "react";
 import { Portal } from "../portal";
 import { TooltipPlacement, useAnchoredPosition } from "./useAnchoredPosition";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./Tooltip.css";
+import tooltipCss from "./Tooltip.css";
 
 const classBase = "vuuTooltip";
 
@@ -31,6 +33,13 @@ export const Tooltip = ({
   status,
   style: styleProp,
 }: TooltipProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tooltip",
+    css: tooltipCss,
+    window: targetWindow,
+  });
+
   const ref = useAnchoredPosition({
     anchorElement,
     placement: placementProp,

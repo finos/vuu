@@ -33,6 +33,8 @@
   },
   "devDependencies": {
     "@mdx-js/esbuild": "^3.0.1",
-    "@mdx-js/rollup": "3.0.0"
+    "@mdx-js/rollup": "3.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3"
   }
 }

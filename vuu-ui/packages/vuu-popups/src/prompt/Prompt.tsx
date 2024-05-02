@@ -1,10 +1,12 @@
 import { useThemeAttributes } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useLayoutEffect, useRef } from "react";
 import { PopupComponentProps, useAnchoredPosition } from "../popup";
 
-import "./Prompt.css";
+import propmtCss from "./Prompt.css";
 
 const classBase = "vuuPrompt";
 
@@ -42,6 +44,13 @@ export const Prompt = ({
     offsetTop = 0,
     placement = "below",
   } = PopupProps;
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-prompt",
+    css: propmtCss,
+    window: targetWindow,
+  });
+
   const [themeClass, _, dataMode] = useThemeAttributes();
   const { position } = useAnchoredPosition({
     anchorElement,

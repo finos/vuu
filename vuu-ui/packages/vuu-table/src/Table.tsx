@@ -12,6 +12,7 @@ import {
   TableRowSelectHandler,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
+import type { DragDropState } from "@finos/vuu-ui-controls";
 import {
   DragStartHandler,
   dragStrategy,
@@ -21,6 +22,8 @@ import {
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
@@ -33,12 +36,11 @@ import {
 } from "react";
 import { Row as DefaultRow, RowProps, RowProxy } from "./Row";
 import { TableHeader } from "./table-header/TableHeader";
-import { useTable } from "./useTable";
-
-import type { DragDropState } from "@finos/vuu-ui-controls";
-import "./Table.css";
-import { ScrollingAPI } from "./useTableScroll";
 import { useRowHeight } from "./useRowHeight";
+import { useTable } from "./useTable";
+import { ScrollingAPI } from "./useTableScroll";
+
+import tableCss from "./Table.css";
 
 const classBase = "vuuTable";
 
@@ -333,6 +335,13 @@ export const Table = forwardRef(function TableNext(
   }: TableProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table",
+    css: tableCss,
+    window: targetWindow,
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();

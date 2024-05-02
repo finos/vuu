@@ -1,7 +1,9 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 
-import "./SearchCell.css";
+import searchCellCss from "./SearchCell.css";
 
 const classBase = "vuuSearchCell";
 
@@ -11,6 +13,13 @@ export const SearchCell = ({
   columnMap,
   row,
 }: TableCellRendererProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-search-cell",
+    css: searchCellCss,
+    window: targetWindow,
+  });
+
   //TODO what about click handling
 
   const key = columnMap[column.name];

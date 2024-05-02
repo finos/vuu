@@ -1,13 +1,22 @@
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ColumnHeaderPill } from "./ColumnHeaderPill";
 
-import "./SortIndicator.css";
+import sortIndicatorCss from "./SortIndicator.css";
 
 export interface SortIndicatorProps {
   column: RuntimeColumnDescriptor;
 }
 
 export const SortIndicator = ({ column }: SortIndicatorProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table-sort-indicator",
+    css: sortIndicatorCss,
+    window: targetWindow,
+  });
+
   if (!column.sorted) {
     return null;
   }

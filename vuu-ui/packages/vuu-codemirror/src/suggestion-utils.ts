@@ -1,5 +1,7 @@
-import { AnnotationType, Completion, EditorView } from "@finos/vuu-codemirror";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { Completion } from "@codemirror/autocomplete";
+import { AnnotationType } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export interface VuuCompletion extends Completion {

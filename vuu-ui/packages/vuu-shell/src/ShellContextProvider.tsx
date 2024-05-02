@@ -1,7 +1,7 @@
 import { DefaultColumnConfiguration, ListOption } from "@finos/vuu-table-types";
-import { RpcResponseHandler } from "@finos/vuu-data-react";
+import type { RpcResponseHandler } from "@finos/vuu-data-types";
 import { createContext, ReactElement, ReactNode, useContext } from "react";
-import { VuuTable } from "@finos/vuu-protocol-types";
+import type { VuuTable } from "@finos/vuu-protocol-types";
 
 export type LookupTableProvider = (table: VuuTable) => ListOption[];
 

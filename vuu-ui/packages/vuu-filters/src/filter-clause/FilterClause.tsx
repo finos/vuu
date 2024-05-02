@@ -6,6 +6,8 @@ import {
 } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
@@ -14,7 +16,7 @@ import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor
 import { getOperators } from "./operator-utils";
 import { useFilterClause } from "./useFilterClause";
 
-import "./FilterClause.css";
+import filterClauseCss from "./FilterClause.css";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
@@ -61,6 +63,13 @@ export const FilterClause = ({
     filterClauseModel,
     onCancel,
     columnsByName,
+  });
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-clause",
+    css: filterClauseCss,
+    window: targetWindow,
   });
 
   const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);

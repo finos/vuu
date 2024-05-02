@@ -5,11 +5,9 @@ import {
 } from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
 import { MenuActionClosePopup, SetDialog } from "@finos/vuu-popups";
-import {
-  LayoutMetadataDto,
-  SaveLayoutPanel,
-  useLayoutManager,
-} from "../layout-management";
+import { useLayoutManager } from "./useLayoutManager";
+import { LayoutMetadataDto } from "./layoutTypes";
+import { SaveLayoutPanel } from "./SaveLayoutPanel";
 
 export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
   const { saveLayout } = useLayoutManager();

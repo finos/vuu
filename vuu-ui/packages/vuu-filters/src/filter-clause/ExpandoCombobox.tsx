@@ -6,6 +6,8 @@ import {
   SelectionStrategy,
   SingleSelectionHandler,
 } from "@finos/vuu-ui-controls";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   FormEvent,
@@ -18,7 +20,7 @@ import {
   useState,
 } from "react";
 
-import "./ExpandoCombobox.css";
+import expandoBoxCss from "./ExpandoCombobox.css";
 
 const classBase = "vuuExpandoCombobox";
 
@@ -52,6 +54,13 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   }: ExpandoComboboxProps<Item, S>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-expando-combobox",
+    css: expandoBoxCss,
+    window: targetWindow,
+  });
+
   const [text, setText] = useState(value);
   const { itemToString = defaultToString } = props;
   const initialValue = useRef(value);

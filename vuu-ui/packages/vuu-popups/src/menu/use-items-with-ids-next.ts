@@ -1,8 +1,5 @@
 import React, { ReactElement, ReactNode, useCallback, useMemo } from "react";
-import { isMenuItemLabel, MenuItemGroup, Separator } from "./MenuList";
-
-export const isMenuItemGroup = (child: ReactElement) =>
-  child.type === MenuItemGroup || !!child.props["data-group"];
+import { isMenuItemLabel, isMenuItemGroup, Separator } from "./MenuList";
 
 type Menus = { [key: string]: ReactElement[] };
 type Actions = { [key: string]: { action: string; options?: unknown } };

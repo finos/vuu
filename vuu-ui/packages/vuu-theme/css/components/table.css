@@ -1,16 +1,16 @@
 .vuu-theme {
     --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple-10);
 
-    &.vuu-density-high {
+    &.salt-density-high {
         --vuu-table-row-height: 20px;
     }
-    &.vuu-density-medium {
+    &.salt-density-medium {
         --vuu-table-row-height: 28px;
     }
-    &.vuu-density-low {
+    &.salt-density-low {
         --vuu-table-row-height: 36px;
     }
-    &.vuu-density-touch {
+    &.salt-density-touch {
         --vuu-table-row-height: 48px;
     }
 

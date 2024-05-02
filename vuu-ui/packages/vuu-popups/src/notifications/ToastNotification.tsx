@@ -1,10 +1,12 @@
 import { Icon } from "@finos/vuu-ui-controls";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { useEffect, useState } from "react";
 import { Portal } from "../portal";
 import type { Notification } from "./notificationTypes";
 
-import "./ToastNotification.css";
+import toastNotificationCss from "./ToastNotification.css";
 
 const toastWidth = 300;
 const toastContainerRightPadding = 50;
@@ -30,6 +32,12 @@ const icon = {
 
 export const ToastNotification = (props: ToastNotificationProps) => {
   const { top, notification, animated = true } = props;
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toast-notification",
+    css: toastNotificationCss,
+    window: targetWindow,
+  });
 
   const [right, setRight] = useState(-toastWidth - toastContainerRightPadding);
 

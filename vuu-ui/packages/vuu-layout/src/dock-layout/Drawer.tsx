@@ -1,8 +1,10 @@
 import { Button, useControlled } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { CSSProperties, HTMLAttributes, useCallback } from "react";
 
-import "./Drawer.css";
+import drawerCss from "./Drawer.css";
 
 const classBase = "vuuDrawer";
 
@@ -60,6 +62,13 @@ const Drawer = ({
   toggleButton,
   ...props
 }: DrawerProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-drawer",
+    css: drawerCss,
+    window: targetWindow,
+  });
+
   const [open, setOpen] = useControlled({
     controlled: openProp,
     default: defaultOpen ?? false,

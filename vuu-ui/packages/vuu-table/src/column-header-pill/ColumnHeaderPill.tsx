@@ -1,8 +1,10 @@
 import cx from "clsx";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";
 
-import "./ColumnHeaderPill.css";
+import columnHeaderPillCss from "./ColumnHeaderPill.css";
 
 export interface ColumnHeaderPillProps extends HTMLAttributes<HTMLDivElement> {
   column: RuntimeColumnDescriptor;
@@ -20,6 +22,13 @@ export const ColumnHeaderPill = ({
   removable,
   ...htmlAttributes
 }: ColumnHeaderPillProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-column-header-pill",
+    css: columnHeaderPillCss,
+    window: targetWindow,
+  });
+
   if (removable && typeof onRemove !== "function") {
     throw Error(
       "ColumnHeaderPill onRemove prop must be provided if Pill is removable"

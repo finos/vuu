@@ -1,4 +1,6 @@
 import { ButtonProps, makePrefixer, Tooltip, useId } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
 import {
   ComponentPropsWithRef,
@@ -8,14 +10,14 @@ import {
 } from "react";
 import { Dropdown, DropdownProps } from "../../dropdown";
 import { ListItem, ListItemType } from "../../list";
-
 import { useCalendarContext } from "./CalendarContext";
 
-import "./CalendarNavigation.css";
+import calendarNavigationCss from "./CalendarNavigation.css";
+
 import { DateValue, isSameMonth, isSameYear } from "@internationalized/date";
-import { formatDate, monthDiff, monthsForLocale } from "./utils";
 import { SingleSelectionHandler } from "../../common-hooks";
 import { IconButton } from "../../icon-button";
+import { formatDate, monthDiff, monthsForLocale } from "./utils";
 
 type DropdownItem = {
   value: DateValue;
@@ -132,6 +134,13 @@ export const CalendarNavigation = forwardRef<
     hideYearDropdown,
     ...rest
   } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "salt-calendar-month",
+    css: calendarNavigationCss,
+    window: targetWindow,
+  });
 
   const {
     moveToPreviousMonth,

@@ -4,15 +4,13 @@ import {
   useLayoutCreateNewChild,
   useLayoutProviderDispatch,
 } from "../layout-provider";
-import { useViewActionDispatcher } from "../layout-view";
+import { useViewActionDispatcher } from "../layout-view-actions";
 import { registerComponent } from "../registry/ComponentRegistry";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";
 import { getDefaultTabLabel } from "../layout-reducer";
 import { Placeholder } from "../placeholder";
-
-import "./Stack.css";
 
 const defaultCreateNewChild = () => (
   <Placeholder

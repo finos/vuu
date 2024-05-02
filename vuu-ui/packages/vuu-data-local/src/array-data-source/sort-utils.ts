@@ -1,5 +1,5 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuSort, VuuSortType } from "@finos/vuu-protocol-types";
+import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { VuuSort, VuuSortType } from "@finos/vuu-protocol-types";
 import { ColumnMap } from "@finos/vuu-utils";
 
 type SortDef = [number, VuuSortType];

@@ -1,13 +1,14 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import cx from "clsx";
-
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   getCalculatedColumnDetails,
   isCalculatedColumn,
 } from "@finos/vuu-utils";
-
-import "./ColumnNameLabel.css";
 import { MouseEventHandler } from "react";
+
+import columnNameLabelCss from "./ColumnNameLabel.css";
 
 const classBase = "vuuColumnNameLabel";
 
@@ -17,6 +18,13 @@ export interface ColumnNameLabelProps {
 }
 
 export const ColumnNameLabel = ({ column, onClick }: ColumnNameLabelProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-column-label",
+    css: columnNameLabelCss,
+    window: targetWindow,
+  });
+
   if (isCalculatedColumn(column.name)) {
     const [name, type, expression] = getCalculatedColumnDetails(column);
     const displayName = name || "name";

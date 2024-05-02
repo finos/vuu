@@ -1,5 +1,5 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { VuuGroupBy } from "@finos/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
 
 export type KeyList = number[];

@@ -6,14 +6,22 @@ import {
   registerComponent,
 } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { CSSProperties } from "react";
 
-import "./ProgressCell.css";
+import progressCellCss from "./ProgressCell.css";
 
 const classBase = "vuuProgressCell";
 
 const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
   //TODO what about click handling
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-progress-cell",
+    css: progressCellCss,
+    window: targetWindow,
+  });
 
   const { name, type } = column;
   const value = row[columnMap[name]];

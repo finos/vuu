@@ -4,6 +4,10 @@ import cx from "clsx";
 
 let containerId = 1;
 
+// render this inline for now as we don't have a react componnet to inject it
+const popupCss =
+  "box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);position: absolute;top: 0;left: 0;width: 0;height: 0;overflow: visible;z-index: 1000";
+
 const getPortalContainer = ({
   className,
   dataMode,
@@ -13,7 +17,7 @@ const getPortalContainer = ({
 }: HTMLContainerProps) => {
   const el = win.document.createElement("div");
   el.className = cx(`vuuPopup ${containerId++}`, className);
-  el.style.cssText = `left:${x}px; top:${y}px;`;
+  el.style.cssText = `left:${x}px; top:${y}px;${popupCss}`;
   if (dataMode) {
     el.dataset.mode = dataMode;
   }

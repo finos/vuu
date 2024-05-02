@@ -5,7 +5,7 @@ import {
   getNodeParentPath,
   getIndexOfNode,
 } from "./hierarchical-data-utils";
-import { NormalisedTreeSourceNode } from "./Tree";
+import { NormalisedTreeSourceNode } from "./treeTypes";
 
 export interface TreeKeyboardNavigationHookProps {
   highlightedIdx: number;

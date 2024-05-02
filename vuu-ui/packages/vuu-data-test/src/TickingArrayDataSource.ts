@@ -2,7 +2,7 @@ import {
   ArrayDataSource,
   ArrayDataSourceConstructorProps,
 } from "@finos/vuu-data-local";
-import {
+import type {
   DataSourceRow,
   MenuRpcResponse,
   RpcResponse,
@@ -12,7 +12,7 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data-types";
-import {
+import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,

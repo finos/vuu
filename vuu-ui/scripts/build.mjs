@@ -1,9 +1,9 @@
 import { build } from "./esbuild.mjs";
-import { buildWorker } from "./build-worker.mjs";
 import fs from "fs";
 import path from "path";
 import {
   copyFolderSync,
+  createFolder,
   formatBytes,
   formatDuration,
   getCommandLineArg,
@@ -11,7 +11,8 @@ import {
   updateVersionAndDependencies,
   writeMetaFile,
 } from "./utils.mjs";
-const NO_DEPENDENCIES = {};
+import { buildExternals } from "./package-utils.mjs";
+import { buildWorker } from "./build-worker.mjs";
 
 const defaultConfig = {
   distPath: `../../dist`,
@@ -52,21 +53,10 @@ export default async function main(customConfig) {
   const packageJson = readPackageJson();
   const { distPath: DIST_PATH, licencePath: LICENCE_PATH, target } = config;
 
-  const {
-    name: scopedPackageName,
-    dependencies = NO_DEPENDENCIES,
-    peerDependencies = NO_DEPENDENCIES,
-  } = packageJson;
+  const { name: scopedPackageName } = packageJson;
 
   const [, packageName] = scopedPackageName.split("/");
-  const external = Object.keys(peerDependencies);
-  const externalVuu = Object.keys(dependencies).filter(
-    (name) =>
-      name.match(/^@[^/]+\/vuu-/) ||
-      name.match(/^@salt-ds/) ||
-      name.match(/^@heswell/) ||
-      name.match(/^@lezer/)
-  );
+  const externals = buildExternals(packageJson);
 
   const includeLicense = getCommandLineArg("--license");
   const watch = getCommandLineArg("--watch");
@@ -105,16 +95,11 @@ export default async function main(customConfig) {
   const buildConfig = {
     entryPoints: getEntryPoints(),
     env: development ? "development" : "production",
-    external: external.concat(externalVuu).concat(FONT_FILES),
+    external: externals.concat(FONT_FILES),
     outdir: `${outdir}/esm`,
     name: scopedPackageName,
     target,
   };
-
-  function createDistFolder() {
-    fs.rmSync(outdir, { recursive: true, force: true });
-    fs.mkdirSync(outdir, { recursive: true });
-  }
 
   const GeneratedFiles = /^((worker|index)\.(js|css))|((\.map)|(esm))$/;
 
@@ -163,11 +148,22 @@ export default async function main(customConfig) {
       if (cssFile) {
         defaultStyle = cssFile;
       }
+      const style = styleFromPackageJson ?? defaultStyle;
+
+      const exports = style
+        ? {
+            [style]: {
+              require: style,
+              import: style,
+            },
+          }
+        : undefined;
 
       const newPackage = {
         ...packageRest,
+        exports,
         files,
-        style: styleFromPackageJson ?? defaultStyle,
+        style,
       };
 
       if (isTypeLib) {
@@ -241,7 +237,7 @@ export default async function main(customConfig) {
     // copy any font files
   }
 
-  createDistFolder();
+  createFolder(outdir);
 
   if (hasWorker) {
     // this has to complete first, the inline worker will be consumed ny subsequent build

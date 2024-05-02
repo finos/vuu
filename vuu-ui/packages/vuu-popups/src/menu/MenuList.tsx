@@ -1,4 +1,6 @@
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import React, {
   FC,
   HTMLAttributes,
@@ -10,17 +12,19 @@ import React, {
 } from "react";
 //TODO do we want this dependency ?
 import { useId } from "@finos/vuu-utils";
-import { isMenuItemGroup } from "./use-items-with-ids-next";
 import {
   MenuCloseHandler,
   useKeyboardNavigation,
 } from "./use-keyboard-navigation";
 
-import "./MenuList.css";
+import menuListCss from "./MenuList.css";
 
 const classBase = "vuuMenuList";
 
 export const Separator = () => <li className="vuuMenuItem-divider" />;
+
+export const isMenuItemGroup = (child: ReactElement) =>
+  child.type === MenuItemGroup || !!child.props["data-group"];
 
 export interface MenuItemGroupProps {
   children:
@@ -104,6 +108,13 @@ export const MenuList = ({
   openMenu: onOpenMenu,
   ...props
 }: MenuListProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-menu-list",
+    css: menuListCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const root = useRef<HTMLDivElement>(null);
 

@@ -5,8 +5,6 @@ import { DragState } from "./DragState";
 import { computeMenuPosition, DropMenu } from "./DropMenu";
 import { DropTarget, GuideLine } from "./DropTarget";
 
-import "./DropTargetRenderer.css";
-
 type Point = [number, number];
 type TabMode = "full-view" | "tab-only";
 
@@ -36,11 +34,13 @@ function insertSVGRoot() {
     const root = document.getElementById("root");
     const container = document.createElement("div");
     container.id = "hw-drag-canvas";
+    container.style.cssText = `visibility:hidden;z-index:10;position:absolute;top:0px;left:0;right:0;bottom:0;background-color:transparent`;
     container.innerHTML = `
-      <svg width="100%" height="100%">
-        <path id="hw-drop-guides" />
+      <svg width="100%" height="100%" style="position: absolute;">
+        <path id="hw-drop-guides" style="fill: none; stroke: rgba(0, 0, 0, 0.3);stroke-dasharray: 2 3"/>
         <path
           id="vuu-drop-outline"
+          style="fill:rgba(0,0,255,.3);stroke:none;stroke-dasharray:4 2"
           d="M300,132 L380,132 L380,100 L460,100 L460,132, L550,132 L550,350 L300,350z">
           <animate
             attributeName="d"
@@ -66,6 +66,12 @@ export default class DropTargetCanvas {
 
   prepare(dragRect: DragDropRect, tabMode: TabMode = "full-view") {
     // don't do this on body
+    const dragCanvas = document.getElementById("hw-drag-canvas");
+    if (dragCanvas) {
+      dragCanvas.style.visibility = "visible";
+    } else {
+      throw Error("DropTargetRenderer.prepare no drag canvas detected");
+    }
     document.body.classList.add("drawing");
     this.currentPath = null;
     this.tabMode = tabMode;
@@ -83,7 +89,10 @@ export default class DropTargetCanvas {
     // don't do this on body
     _hoverDropTarget = null;
     clearShiftedTab();
-    document.body.classList.remove("drawing");
+    const dragCanvas = document.getElementById("hw-drag-canvas");
+    if (dragCanvas) {
+      dragCanvas.style.visibility = "hidden";
+    }
     PopupService.hidePopup();
   }
 

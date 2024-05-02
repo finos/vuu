@@ -1,11 +1,13 @@
 import { Checkbox, ComboBox, RadioButton } from "@finos/vuu-ui-controls";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { takeScreenshot } from "./screenshot-utils";
 import { Button, FormField, FormFieldLabel, Input, Text } from "@salt-ds/core";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { LayoutMetadataDto } from "./layoutTypes";
 import { getAuthDetailsFromCookies } from "../login";
 
-import "./SaveLayoutPanel.css";
+import saveLayoutPanelCss from "./SaveLayoutPanel.css";
 
 const classBase = "saveLayoutPanel";
 const formField = `${classBase}-formField`;
@@ -27,6 +29,13 @@ type SaveLayoutPanelProps = {
 
 export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const { defaultTitle = "", onCancel, onSave, componentId } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-save-layout-panel",
+    css: saveLayoutPanelCss,
+    window: targetWindow,
+  });
 
   const [layoutName, setLayoutName] = useState<string>(defaultTitle);
   const [group, setGroup] = useState<string>("");

@@ -1,8 +1,10 @@
 import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-utils";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./Portal.css";
+import portalCss from "./Portal.css";
 
 export interface PortalProps {
   /**
@@ -72,6 +74,13 @@ export const Portal = ({
   open = true,
   themeAttributes,
 }: PortalProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-portal",
+    css: portalCss,
+    window: targetWindow,
+  });
+
   const [mounted, setMounted] = useState(false);
   const portalRef = useRef<HTMLElement | null>(null);
   const container = getContainer(containerProp) ?? document.body;

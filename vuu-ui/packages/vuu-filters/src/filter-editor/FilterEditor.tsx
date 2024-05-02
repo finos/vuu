@@ -2,14 +2,16 @@ import { TableSchema } from "@finos/vuu-data-types";
 import { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { SplitButton } from "@finos/vuu-ui-controls";
+import { Button } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
 import { FilterClause, FilterClauseProps } from "../filter-clause/FilterClause";
 import { FilterClauseModel } from "../FilterModel";
 import { FilterClauseCombinator } from "./FilterClauseCombinator";
 import { useFilterEditor } from "./useFilterEditor";
 
-import "./FilterEditor.css";
-import { Button } from "@salt-ds/core";
+import filterEditorCss from "./FilterEditor.css";
 
 const classBase = "vuuFilterEditor";
 
@@ -34,6 +36,13 @@ export const FilterEditor = ({
   tableSchema,
   ...htmlAttributes
 }: FilterEditorProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-editor",
+    css: filterEditorCss,
+    window: targetWindow,
+  });
+
   const {
     columnsByName,
     filterModel,

@@ -6,7 +6,7 @@ import {
   useRef,
 } from "react";
 import { useControlled } from "@salt-ds/core";
-import { NormalisedTreeSourceNode } from "./Tree";
+import { NormalisedTreeSourceNode } from "./treeTypes";
 
 export type TreeSelection =
   | "none"

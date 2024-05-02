@@ -1,7 +1,10 @@
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import { ColumnHeaderPill, ColumnHeaderPillProps } from "./ColumnHeaderPill";
 
-import "./GroupColumnPill.css";
+import groupColumnPillCss from "./GroupColumnPill.css";
 
 export interface GroupColumnPillProps extends ColumnHeaderPillProps {
   column: RuntimeColumnDescriptor;
@@ -11,6 +14,13 @@ export const GroupColumnPill = ({
   column,
   ...columnHeaderProps
 }: GroupColumnPillProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-group-column-pill",
+    css: groupColumnPillCss,
+    window: targetWindow,
+  });
+
   const { name, sorted } = column;
   const icon =
     typeof sorted === "number"

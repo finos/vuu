@@ -10,7 +10,7 @@ import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
 import { usePersistentState } from "../use-persistent-state";
 import { QueryReponse, ViewDispatch } from "./ViewContext";
-import { ViewAction } from "./viewTypes";
+import { ViewAction } from "../layout-view/viewTypes";
 
 export type ContributionLocation = "post-title" | "pre-title";
 

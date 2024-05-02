@@ -23,7 +23,7 @@ const componentPaths: { [key: string]: PathMap } = {
     },
     VuuBlotterMockData: {
       jsUrl: "/features/VuuBlotterMockData.feature.js",
-      cssUrl: "/features/VuuBlotterMockData.feature,css",
+      cssUrl: "/features/VuuBlotterMockData.feature.css",
     },
   },
 };

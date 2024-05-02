@@ -1,13 +1,13 @@
-import { isSelectableElement, getClosestIndexItem } from "@finos/vuu-utils";
+import { KeyboardEvent, MouseEvent, RefObject, useCallback } from "react";
 import {
+  SelectionStrategy,
+  SpecialKeyMultipleSelection,
   allowMultipleSelection,
   deselectionIsAllowed,
   selectionIsDisallowed,
-  SelectionStrategy,
-  SpecialKeyMultipleSelection,
-  useControlled,
-} from "@finos/vuu-ui-controls";
-import { KeyboardEvent, MouseEvent, RefObject, useCallback } from "react";
+} from "../common-hooks";
+import { useControlled } from "@salt-ds/core";
+import { getClosestIndexItem, isSelectableElement } from "@finos/vuu-utils";
 
 const defaultSelectionKeys = ["Enter", " "];
 

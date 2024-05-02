@@ -5,7 +5,7 @@ const jsonOutput = getCommandLineArg("json", false);
 export const buildAll = async () => {
   const buildPackage = async (packageName) =>
     execWait(
-      `npm run --silent build${withArgs(
+      `npm run --silent build:dev${withArgs(
         "dev",
         "cjs",
         "debug",
@@ -13,14 +13,12 @@ export const buildAll = async () => {
         "json"
       )}`,
       `packages/${packageName}`
-    );
+    ).catch((err) => {
+      console.error(`[${packageName}] ${err.message}`);
+    });
 
   // TODO determine the dependency graph/build order programatically
   const wave1 = [
-    "vuu-data-types",
-    "vuu-table-types",
-    "vuu-filter-types",
-    "vuu-protocol-types",
     "vuu-data-test",
     "vuu-filter-parser",
     "vuu-icons",

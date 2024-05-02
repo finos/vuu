@@ -1,39 +1,25 @@
+import { LayoutJSON } from "@finos/vuu-layout";
 import "@finos/vuu-layout/test/global-mocks";
 import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
+import { formatDate, getLocalEntity, saveLocalEntity } from "@finos/vuu-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LayoutJSON } from "@finos/vuu-layout";
-import {
-  getLocalEntity,
-  saveLocalEntity,
-} from "@finos/vuu-filters/src/local-config";
-import { formatDate } from "@finos/vuu-utils";
-import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
 import { LocalPersistenceManager } from "../../src/persistence-management/LocalPersistenceManager";
 
-vi.mock("@finos/vuu-filters", async () => {
-  return {
-    getLocalEntity: <T>(url: string): T | undefined => {
-      const data = localStorage.getItem(url);
-      return data ? JSON.parse(data) : undefined;
-    },
-    saveLocalEntity: <T>(url: string, data: T): T | undefined => {
-      try {
-        localStorage.setItem(url, JSON.stringify(data));
-        return data;
-      } catch {
-        return undefined;
-      }
-    },
-  };
-});
+const expectPromiseRejectsWithError = (
+  f: () => Promise<unknown>,
+  message: string
+) => {
+  expect(f).rejects.toStrictEqual(new Error(message));
+};
 
-const username = "vuu user";
+const username = "vuu_user";
 
-vi.mock("@finos/vuu-shell", async () => {
+vi.mock("../../src/login/login-utils", async () => {
   return {
     getAuthDetailsFromCookies: (): [string, string] => {
+      console.log(`getAuthDetailsFromCookie`);
       return [username, "token"];
-        },
+    },
   };
 });
 

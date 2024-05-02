@@ -20,6 +20,7 @@ export const buildWorker = async (packageName, filePath) => {
 
   const env = development ? "development" : "production";
   const config = getConfig(packageName, env, filePath);
+
   const { result } = await build(config);
   const [outputSource] = result.outputFiles;
   const escapedSource = outputSource.text.replaceAll(

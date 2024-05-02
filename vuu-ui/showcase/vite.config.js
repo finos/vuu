@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { cssInline } from "../tools/vite-plugin-inline-css/src";
 
 export default defineConfig({
   build: {
@@ -15,6 +16,7 @@ export default defineConfig({
     jsx: `automatic`,
     target: "esnext",
   },
+  plugins: [cssInline()],
   server: {
     proxy: {
       "/api/authn": {

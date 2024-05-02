@@ -1,6 +1,6 @@
 import {
   Component,
-  ConfigWrapper,
+  // ConfigWrapper,
   Flexbox,
   FlexboxLayout,
   Stack,
@@ -27,27 +27,27 @@ Empty.displaySequence = displaySequence++;
 
 export const SingleChild = () => {
   return (
-    <ConfigWrapper>
-      <Flexbox
+    // <ConfigWrapper>
+    <Flexbox
+      style={{
+        width: 600,
+        height: 300,
+        flexDirection: "row",
+        border: "2px solid black",
+        backgroundColor: "#ccc",
+      }}
+    >
+      <Component
+        title="R Component"
         style={{
-          width: 600,
-          height: 300,
-          flexDirection: "row",
-          border: "2px solid black",
-          backgroundColor: "#ccc",
+          flex: 1,
+          backgroundColor: "red",
+          margin: 10,
+          border: "3px solid limegreen",
         }}
-      >
-        <Component
-          title="R Component"
-          style={{
-            flex: 1,
-            backgroundColor: "red",
-            margin: 10,
-            border: "3px solid limegreen",
-          }}
-        />
-      </Flexbox>
-    </ConfigWrapper>
+      />
+    </Flexbox>
+    // </ConfigWrapper>
   );
 };
 SingleChild.displaySequence = displaySequence++;
@@ -359,88 +359,88 @@ export const QuadTerraceWithinTower = () => (
 QuadTerraceWithinTower.displaySequence = displaySequence++;
 
 export const DeeperNesting = () => (
-  <ConfigWrapper>
+  // <ConfigWrapper>
+  <FlexboxLayout
+    style={{ width: 800, height: 500, flexDirection: "row" }}
+    path=""
+  >
+    <View
+      title="Y Component"
+      style={{ flex: 1, backgroundColor: "yellow" }}
+      header
+      resizeable
+    />
     <FlexboxLayout
-      style={{ width: 800, height: 500, flexDirection: "row" }}
+      style={{ flex: 1, flexDirection: "column" }}
+      resizeable
       path=""
     >
-      <View
-        title="Y Component"
-        style={{ flex: 1, backgroundColor: "yellow" }}
-        header
-        resizeable
-      />
       <FlexboxLayout
-        style={{ flex: 1, flexDirection: "column" }}
+        style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: "row" }}
         resizeable
         path=""
       >
         <FlexboxLayout
-          style={{ flex: 2, flexGrow: 1, flexShrink: 1, flexDirection: "row" }}
+          style={{ flex: 1, flexDirection: "column" }}
           resizeable
           path=""
         >
-          <FlexboxLayout
-            style={{ flex: 1, flexDirection: "column" }}
+          <View
+            title="B Component"
+            style={{
+              border: "1px solid red",
+              flex: 1,
+              flexGrow: 1,
+              flexShrink: 1,
+              backgroundColor: "orange",
+            }}
+            header
             resizeable
-            path=""
-          >
-            <View
-              title="B Component"
-              style={{
-                border: "1px solid red",
-                flex: 1,
-                flexGrow: 1,
-                flexShrink: 1,
-                backgroundColor: "orange",
-              }}
-              header
-              resizeable
-            />
-            <View
-              title="R Component"
-              style={{
-                flex: 1,
-                flexGrow: 1,
-                flexShrink: 1,
-                backgroundColor: "brown",
-              }}
-              header
-              resizeable
-            />
-          </FlexboxLayout>
+          />
           <View
             title="R Component"
-            style={{ flex: 1, backgroundColor: "rebeccapurple" }}
+            style={{
+              flex: 1,
+              flexGrow: 1,
+              flexShrink: 1,
+              backgroundColor: "brown",
+            }}
             header
             resizeable
           />
         </FlexboxLayout>
         <View
-          title="B Component"
-          style={{
-            flex: 1,
-            flexGrow: 1,
-            flexShrink: 1,
-            backgroundColor: "blue",
-          }}
-          header
-          resizeable
-        />
-        <View
           title="R Component"
-          style={{
-            flex: 1,
-            flexGrow: 1,
-            flexShrink: 1,
-            backgroundColor: "red",
-          }}
+          style={{ flex: 1, backgroundColor: "rebeccapurple" }}
           header
           resizeable
         />
       </FlexboxLayout>
+      <View
+        title="B Component"
+        style={{
+          flex: 1,
+          flexGrow: 1,
+          flexShrink: 1,
+          backgroundColor: "blue",
+        }}
+        header
+        resizeable
+      />
+      <View
+        title="R Component"
+        style={{
+          flex: 1,
+          flexGrow: 1,
+          flexShrink: 1,
+          backgroundColor: "red",
+        }}
+        header
+        resizeable
+      />
     </FlexboxLayout>
-  </ConfigWrapper>
+  </FlexboxLayout>
+  // </ConfigWrapper>
 );
 
 DeeperNesting.displaySequence = displaySequence++;

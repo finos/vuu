@@ -1,5 +1,7 @@
 import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
-import { default as classnames, default as cx } from "clsx";
+import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   cloneElement,
   HTMLAttributes,
@@ -9,9 +11,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { Contribution, useViewDispatch } from "../layout-view";
+import { Contribution, useViewDispatch } from "../layout-view-actions";
 
-import "./Header.css";
+import headerCss from "./Header.css";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   collapsed?: boolean;
@@ -35,6 +37,13 @@ export const Header = ({
   style,
   title = "Untitled",
 }: HeaderProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-header",
+    css: headerCss,
+    window: targetWindow,
+  });
+
   const labelFieldRef = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState<string>(title);
   const [editing, setEditing] = useState<boolean>(false);
@@ -54,11 +63,7 @@ export const Header = ({
 
   const orientation = collapsed || orientationProp;
 
-  const className = classnames(
-    classBase,
-    classNameProp,
-    `${classBase}-${orientation}`
-  );
+  const className = cx(classBase, classNameProp, `${classBase}-${orientation}`);
 
   const handleEnterEditMode = () => {
     setEditing(true);

@@ -12,9 +12,11 @@ import {
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { memo, useCallback, useMemo, useRef } from "react";
 
-import "./DropdownCell.css";
+import dropdownCellCss from "./DropdownCell.css";
 
 const classBase = "vuuTableDropdownCell";
 
@@ -26,6 +28,13 @@ export const DropdownCell = memo(function DropdownCell({
   onCommit = WarnCommit,
   row,
 }: TableCellRendererProps) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-dropdown-cell",
+    css: dropdownCellCss,
+    window: targetWindow,
+  });
+
   const dataIdx = columnMap[column.name];
   const dataValue = row[dataIdx] as string | number;
   const { values } = useLookupValues(column, dataValue);

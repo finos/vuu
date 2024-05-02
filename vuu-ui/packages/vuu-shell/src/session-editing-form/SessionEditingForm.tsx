@@ -13,6 +13,8 @@ import {
   shallowEquals,
 } from "@finos/vuu-utils";
 import { Button, useIdMemo } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   ChangeEvent,
@@ -25,7 +27,7 @@ import {
   useState,
 } from "react";
 
-import "./SessionEditingForm.css";
+import sessionEditingFormCss from "./SessionEditingForm.css";
 
 export type FormFieldDescriptor = {
   isKeyField?: boolean;
@@ -158,6 +160,13 @@ export const SessionEditingForm = ({
   schema,
   ...htmlAttributes
 }: SessionEditingFormProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-session-editing-form",
+    css: sessionEditingFormCss,
+    window: targetWindow,
+  });
+
   const [values, setValues] = useState<FormValues>();
   const [errorMessage, setErrorMessage] = useState("");
   const formContentRef = useRef<HTMLDivElement>(null);

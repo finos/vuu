@@ -1,20 +1,22 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
 import {
   DateValue,
   getLocalTimeZone,
   isSameMonth,
   today,
 } from "@internationalized/date";
-import { CalendarMonth, CalendarMonthProps } from "./CalendarMonth";
 import {
   makePrefixer,
   useIsomorphicLayoutEffect,
   usePrevious,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { useCalendarContext } from "./CalendarContext";
-
-import "./CalendarCarousel.css";
+import { CalendarMonth, CalendarMonthProps } from "./CalendarMonth";
 import { formatDate, monthDiff } from "./utils";
+
+import calendarCarouselCss from "./CalendarCarousel.css";
 
 export type CalendarCarouselProps = Omit<CalendarMonthProps, "date">;
 
@@ -35,6 +37,13 @@ export const CalendarCarousel = forwardRef<
   CalendarCarouselProps
 >(function CalendarCarousel(props, ref) {
   const { ...rest } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "salt-calendar-carousel",
+    css: calendarCarouselCss,
+    window: targetWindow,
+  });
 
   const {
     state: { visibleMonth },

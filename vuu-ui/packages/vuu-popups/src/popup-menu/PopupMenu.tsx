@@ -2,13 +2,15 @@ import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { Icon, IconButton } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
 import { Button, ButtonProps } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, RefObject } from "react";
 import { PopupPlacement } from "../popup/Popup";
 import { PopupCloseReason } from "../popup/popup-service";
-
-import "./PopupMenu.css";
 import { usePopupMenu } from "./usePopupMenu";
+
+import popupMenuCss from "./PopupMenu.css";
 
 const classBase = "vuuPopupMenu";
 
@@ -49,6 +51,13 @@ export const PopupMenu = ({
   variant = "secondary",
   ...htmlAttributes
 }: PopupMenuProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-popup-menu",
+    css: popupMenuCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
 
   const { ariaAttributes, buttonProps, menuOpen, rootRef } = usePopupMenu({

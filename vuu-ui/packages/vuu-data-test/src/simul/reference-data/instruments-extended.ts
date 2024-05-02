@@ -10,10 +10,8 @@ const instrumentsExtendedData = instrumentsData.map((row) =>
     .concat([random(0, 1) === 1, random(0, 1) === 1, new Date().getTime()])
 );
 
-const instrumentsExtendedTable = new Table(
+export const instrumentsExtendedTable = new Table(
   schemas.instrumentsExtended,
   instrumentsExtendedData,
   buildDataColumnMap(schemas.instrumentsExtended)
 );
-
-export default instrumentsExtendedTable;
