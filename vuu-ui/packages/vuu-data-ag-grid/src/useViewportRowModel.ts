@@ -77,13 +77,13 @@ const NullSuggestionFetcher: SuggestionFetcher = async () => [];
 
 export type AgColumnState = { colId: string; sortIndex: number }[];
 export type AgSortChangedEvent = {
-  columnApi: {
+  api: {
     getColumnState: () => AgColumnState;
   };
 };
 
 export const agSortChangedEventToVuuSortDef = (evt: AgSortChangedEvent) => {
-  const columnState = evt.columnApi.getColumnState();
+  const columnState = evt.api.getColumnState();
   return columnState.filter(isSortedColumn).sort(bySortIndex).map(toSortDef);
 };
 
@@ -321,12 +321,12 @@ export const useViewportRowModel = ({
     const colDefs = allColumns.map(
       (col: { colDef: AgGridColDef }) => col.colDef
     );
-    const colState = evt.columnApi.getColumnState();
+    const colState = evt.api.getColumnState();
     // An issue we see when switching dataSource is that AgGrid changes the
     // position of columns which appear in both original and new table.
     // Resetting the state when we detect this scenario fixes.
     if (columnsDisordered(colState, colDefs)) {
-      evt.columnApi.resetColumnState();
+      evt.api.resetColumnState();
     }
   }, []);
 
