@@ -33,7 +33,7 @@ FilterName { identifier }
 
 Column { identifier }
 
-Operator { Eq | NotEq | Gt | Lt | Starts | Ends }
+Operator { Eq | NotEq | Gt | Lt | Starts | Ends | Contains }
 
 Values { value (Comma value)* }
 
@@ -45,6 +45,7 @@ value { Number | String | True | False }
 @tokens {
   Starts { "starts" }
   Ends { "ends" }
+  Contains { "contains" }
   True { "true" }
   False { "false" }
   And { "and" }

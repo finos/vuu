@@ -19,6 +19,7 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   ">=",
   "<",
   "<=",
+  "contains",
   "starts",
   "ends",
 ]);

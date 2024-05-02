@@ -72,6 +72,7 @@ export const equalityOperators: Completion[] = [
 export const stringOperators: Completion[] = [
   ...equalityOperators,
   { label: "in", boost: 6, type: "operator" },
+  { label: "contains", boost: 5, type: "operator" },
   { label: "starts", boost: 5, type: "operator" },
   { label: "ends", boost: 4, type: "operator" },
 ];

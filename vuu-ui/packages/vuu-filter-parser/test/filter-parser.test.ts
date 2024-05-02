@@ -38,6 +38,12 @@ describe("FilterParser", () => {
     expect(evaluateFilter("lotSize in [1,2,30]")).toEqual(Ok);
   });
 
+  it("parses clauses with string operators starts, ends, contains", () => {
+    expect(evaluateFilter('name starts "vod"')).toEqual(Ok);
+    expect(evaluateFilter('name ends "vod"')).toEqual(Ok);
+    expect(evaluateFilter('name contains "vod"')).toEqual(Ok);
+  });
+
   it("parses anded clauses", () => {
     expect(
       evaluateFilter('currency in ["EUR","USD"] and exchange = "XLON/LSE-SETS"')

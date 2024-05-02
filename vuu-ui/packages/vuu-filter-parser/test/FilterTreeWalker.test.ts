@@ -14,6 +14,39 @@ describe("Filter treeWalker", () => {
     });
   });
 
+  it("parses a starts clause", () => {
+    const str = 'name starts "Ste"';
+    const result = parser.parse(str);
+    const filter = walkTree(result, str);
+    expect(filter).toEqual({
+      column: "name",
+      op: "starts",
+      value: "Ste",
+    });
+  });
+
+  it("parses an ends clause", () => {
+    const str = 'name ends "ron"';
+    const result = parser.parse(str);
+    const filter = walkTree(result, str);
+    expect(filter).toEqual({
+      column: "name",
+      op: "ends",
+      value: "ron",
+    });
+  });
+
+  it("parses a contains clause", () => {
+    const str = 'name contains "on"';
+    const result = parser.parse(str);
+    const filter = walkTree(result, str);
+    expect(filter).toEqual({
+      column: "name",
+      op: "contains",
+      value: "on",
+    });
+  });
+
   it("parses an in clause", () => {
     const str = 'currency in ["EUR","USD"]';
     const result = parser.parse(str);

@@ -15,6 +15,7 @@ export declare type SingleValueFilterClauseOp =
   | ">="
   | "<="
   | "<"
+  | "contains"
   | "starts"
   | "ends";
 

@@ -1,7 +1,7 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
 
-export const textOperators = ["=", "in", "!=", "starts", "ends"];
+export const textOperators = ["=", "in", "!=", "starts", "ends", "contains"];
 export const numericperators = ["=", "!=", ">", ">=", "<", "<="];
 
 export const getOperators = (column: ColumnDescriptor): string[] => {
