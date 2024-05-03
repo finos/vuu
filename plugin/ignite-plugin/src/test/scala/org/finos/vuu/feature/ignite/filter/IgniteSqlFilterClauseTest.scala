@@ -17,7 +17,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("To%", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("To%"))
     }
 
     Scenario("should return correct query with escaped special chars when value with special chars passed") {
@@ -25,7 +25,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("100\\%\\_off\\\\%", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("100\\%\\_off\\\\%"))
     }
 
     Scenario("should return empty query when non-string column") {
@@ -57,7 +57,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("%To", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("%To"))
     }
 
     Scenario("should return correct query with escaped special chars when value with special chars passed") {
@@ -65,7 +65,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("%100\\%\\_off\\\\", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("%100\\%\\_off\\\\"))
     }
 
     Scenario("should return empty query when non-string column") {
@@ -97,7 +97,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("%gold%", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("%gold%"))
     }
 
     Scenario("should return correct query with escaped special chars when value with special chars passed") {
@@ -105,7 +105,7 @@ class IgniteSqlFilterClauseTest extends AnyFeatureSpec with Matchers {
 
       val result = clause.toSql(schemaMapper)
 
-      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE ?", List("%\\\\100\\%\\_off\\\\%", "\\"))
+      result shouldEqual IgniteSqlQuery("tag LIKE ? ESCAPE '\\'", List("%\\\\100\\%\\_off\\\\%"))
     }
 
     Scenario("should return empty query when non-string column") {

@@ -71,7 +71,6 @@ object RangeOp {
 }
 
 case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
-  private final val ESCAPE_CHAR = "\\"
 
   override def toSql(schemaMapper: SchemaMapper): IgniteSqlQuery =
     FilterColumnValueParser(schemaMapper).parse(columnName, value) match {
@@ -82,15 +81,17 @@ case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: St
   private def regexSql(f: SchemaField, value: Any): IgniteSqlQuery = f.dataType match {
     case STRING_DATA_TYPE =>
       val escapedValue = escapeSpecialChars(s"$value")
-      IgniteSqlQuery(s"${f.name} LIKE ? ESCAPE ?", op.apply(escapedValue), ESCAPE_CHAR)
+      IgniteSqlQuery(s"${f.name} LIKE ? ESCAPE '\\'", op.apply(escapedValue))
     case _ =>
       logErrorAndReturnEmptySql(s"`$op` clause unsupported for non-string field: `${f.name}` (type: ${f.dataType})")
   }
 
-  private def escapeSpecialChars(value: String): String = {
-    val specialCharsRegex = "([%_])|(\\\\)".r
+  private def escapeSpecialChars(value: String, escapeChar: String = "\\\\"): String = {
+    val specialCharsRegex = s"(?<specialChars>[%_])|(?<escapeChar>$escapeChar)".r
     specialCharsRegex.replaceAllIn(value, m =>
-      if (m.group(1) != null) s"${ESCAPE_CHAR * 2}$m" else s"${ESCAPE_CHAR * 3}$m"
+      if (m.group("specialChars") != null) s"$escapeChar$m"
+      else if (m.group("escapeChar") != null) escapeChar * 2
+      else throw new Exception(s"An unexpected error occurred: escaping $m is not supported.")
     )
   }
 
@@ -99,9 +100,9 @@ case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: St
 
 sealed abstract class RegexOp(val apply: String => String)
 object RegexOp {
-  final case object Starts extends RegexOp("%s%%".format(_))
-  final case object Ends extends RegexOp("%%%s".format(_))
-  final case object Contains extends RegexOp("%%%s%%".format(_))
+  final case object Starts extends RegexOp(s => s"$s%")
+  final case object Ends extends RegexOp(s => s"%$s")
+  final case object Contains extends RegexOp(s => s"%$s%")
 }
 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {
