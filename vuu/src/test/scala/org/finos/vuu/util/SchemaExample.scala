@@ -7,11 +7,15 @@ import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuil
 
 class SchemaExample {
 
-  //todo - try in java
-  //try more scenarios
-  // -  virtual table - filter, type ahead
-  // -  error scenarios fetching data or converting types
-  //error handling - review api for returning error
+  //todo - do we want to turn this in to functional test so it fails if we break it while changing any part of the schema mapper
+  //todo try more scenarios
+  // -  virtual table - include filter, type ahead
+  // -  error scenarios fetching data or converting types - review api for returning error
+  // - when table def has fewer columns than fields on entity
+  // - when table def has different named column from field on entity
+  // - when table def has different typed column from field on entity
+  // - when table def columns are in different order from fields on entity
+  // - example of generating table Def from an class rather than using column builder? maybe more of a unit teest/example for table def?
 
   //create table def (use column builder)
   val tableDef = TableDef(
@@ -23,7 +27,7 @@ class SchemaExample {
       .build
   )
 
-  //todo to respect the QueryEntity order of fields, should be generated  using that?
+  //todo to respect the QueryEntity order of fields, if it is different from order of fields on the entity class, should be generated using that?
   //create entity schema
   val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
     .withEntity(classOf[SchemaTestData])
@@ -49,11 +53,13 @@ class SchemaExample {
     .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
 
   // map to entity object - as order of values are relevant to how the query schema was defined
+  //todo two options, is direct to row map better if query result returns values?
   val tableRowMap1 = result
     .map(rowData => mapToEntity(rowData))
     .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity))
 
-  private val tableRowMap2: Seq[Map[String, Any]] = result.map(rowData => schemaMapper.toInternalRowMap(rowData))
+  private val tableRowMap2: Seq[Map[String, Any]] =
+    result.map(rowData => schemaMapper.toInternalRowMap(rowData))
 
   //map to tablerow
   val keyFieldName = tableDef.keyField
