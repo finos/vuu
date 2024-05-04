@@ -94,7 +94,7 @@ export const getRic = (defaultRic: string) => {
 export const instrumentsTable = new Table(
   schemas.instruments,
   instrumentsData,
-  buildDataColumnMap(schemas.instruments)
+  buildDataColumnMap(schemas, "instruments")
 );
 
 export { instrumentsData };

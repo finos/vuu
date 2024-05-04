@@ -89,11 +89,31 @@ export class Table extends EventEmitter<TableEvents> {
   }
 }
 
-export const buildDataColumnMap = (schema: TableSchema) =>
-  Object.values(schema.columns).reduce<ColumnMap>((map, col, index) => {
-    map[col.name] = index;
-    return map;
-  }, {});
+function _buildDataColumnMap(schema: Readonly<TableSchema>) {
+  return Object.values(schema.columns).reduce<ColumnMap>(
+    (map, col, index) => ({
+      ...map,
+      [col.name]: index,
+    }),
+    {}
+  );
+}
+
+/**
+ * Build a data ColumnMap for a table in the provided schema.
+ * A data ColumnMap is a mapping from a raw data array to a map, keyed
+ * by column name with no additional metadata.
+ *
+ * @param schemas
+ * @param tableName
+ * @returns
+ */
+export function buildDataColumnMap<TableName extends string = string>(
+  schemas: Readonly<Record<TableName, Readonly<TableSchema>>>,
+  tableName: TableName
+) {
+  return _buildDataColumnMap(schemas[tableName]);
+}
 
 const getServerDataType = (
   columnName: string,
@@ -146,7 +166,7 @@ export const joinTables = (
   };
 
   const data: VuuRowDataItemType[][] = [];
-  const combinedColumnMap = buildDataColumnMap(combinedSchema);
+  const combinedColumnMap = _buildDataColumnMap(combinedSchema);
   // const start = performance.now();
   for (const row of table1.data) {
     const row2 = table2.findByKey(String(row[k1]));

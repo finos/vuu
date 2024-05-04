@@ -76,7 +76,7 @@ for (let i = 0; i < 100; i++) {
 export const ordersTable = new Table(
   schemas.orders,
   ordersData,
-  buildDataColumnMap(schemas.instruments)
+  buildDataColumnMap(schemas, "instruments")
 );
 
 export { ordersData };

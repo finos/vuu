@@ -4,6 +4,7 @@ export * from "./TickingArrayDataSource";
 export * from "./vuu-row-generator";
 export * from "./vuu-modules";
 export * from "./basket";
+export * from "./makeSuggestions";
 export * from "./simul";
 export * from "./test";
 export * from "./Table";

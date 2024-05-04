@@ -21,7 +21,7 @@ const tables: Record<SimulTableName, Table> = {
   childOrders: new Table(
     schemas.childOrders,
     [],
-    buildDataColumnMap(schemas.childOrders)
+    buildDataColumnMap<SimulTableName>(schemas, "childOrders")
   ),
   instruments: instrumentsTable,
   instrumentsExtended: instrumentsExtendedTable,
@@ -35,7 +35,7 @@ const tables: Record<SimulTableName, Table> = {
   parentOrders: new Table(
     schemas.parentOrders,
     [],
-    buildDataColumnMap(schemas.parentOrders)
+    buildDataColumnMap<SimulTableName>(schemas, "parentOrders")
   ),
   prices: pricesTable,
 };
@@ -78,7 +78,7 @@ async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
   sessionTables[sessionTableId] = new Table(
     schemas.instruments,
     [],
-    buildDataColumnMap(schemas.instruments)
+    buildDataColumnMap<SimulTableName>(schemas, "instruments")
   );
 
   return {
