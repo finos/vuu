@@ -29,7 +29,7 @@ export type PricesDataRow = [
   scenario
 ];
 
-const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas.prices);
+const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas, "prices");
 const pricesUpdateGenerator = new BaseUpdateGenerator({
   bid,
   bidSize,
@@ -94,7 +94,7 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
 export const pricesTable = new Table(
   schemas.prices,
   pricesData,
-  buildDataColumnMap(schemas.prices),
+  buildDataColumnMap(schemas, "prices"),
   pricesUpdateGenerator
 );
 

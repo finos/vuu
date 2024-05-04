@@ -6,6 +6,7 @@ export * as FluidGrid from "./FluidGrid.examples";
 export * as Header from "./Header.examples";
 export * as MeasuredContainer from "./MeasuredContainer.examples";
 export * as Palette from "./Palette.examples";
+export * as LayoutPatterns from "./LayoutPatterns.examples";
 export * as Stack from "./Stack.examples";
 export * as Toolbar from "./Toolbar.examples";
 export * as View from "./View.examples";

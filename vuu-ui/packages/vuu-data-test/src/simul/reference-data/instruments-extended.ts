@@ -13,5 +13,5 @@ const instrumentsExtendedData = instrumentsData.map((row) =>
 export const instrumentsExtendedTable = new Table(
   schemas.instrumentsExtended,
   instrumentsExtendedData,
-  buildDataColumnMap(schemas.instrumentsExtended)
+  buildDataColumnMap(schemas, "instrumentsExtended")
 );

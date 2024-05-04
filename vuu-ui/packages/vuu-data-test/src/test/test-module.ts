@@ -17,7 +17,7 @@ const tables: Record<TestTableName, Table> = {
   TwoHundredColumns: new Table(
     schemas.TwoHundredColumns,
     new Array(100).fill(1).map((_, i) => manyColumnGenerator(i)),
-    buildDataColumnMap(schemas.TwoHundredColumns)
+    buildDataColumnMap(schemas, "TwoHundredColumns")
   ),
 };
 
