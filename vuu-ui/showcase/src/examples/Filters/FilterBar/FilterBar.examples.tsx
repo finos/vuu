@@ -76,19 +76,21 @@ const DefaultFilterBarCore = ({
         ref={inputRef}
         data-testid="pre-filterbar"
       />
-      <FilterBar
-        FilterClauseEditorProps={{
-          suggestionProvider: typeaheadHook,
-        }}
-        data-testid="filterbar"
-        filterState={filterState}
-        onApplyFilter={handleApplyFilter}
-        onFilterDeleted={onFilterDeleted}
-        onFilterRenamed={handleFilterRenamed}
-        onFilterStateChanged={handleFilterStateChange}
-        tableSchema={{ ...tableSchema, columns }}
-        columnDescriptors={columns}
-      />
+      <div>
+        <FilterBar
+          FilterClauseEditorProps={{
+            suggestionProvider: typeaheadHook,
+          }}
+          data-testid="filterbar"
+          filterState={filterState}
+          onApplyFilter={handleApplyFilter}
+          onFilterDeleted={onFilterDeleted}
+          onFilterRenamed={handleFilterRenamed}
+          onFilterStateChanged={handleFilterStateChange}
+          tableSchema={{ ...tableSchema, columns }}
+          columnDescriptors={columns}
+        />
+      </div>
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
       <Input style={{ margin: 20, width: 100 }} />
     </div>

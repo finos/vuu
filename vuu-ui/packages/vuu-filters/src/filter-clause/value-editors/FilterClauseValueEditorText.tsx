@@ -19,6 +19,7 @@ import type {
   SuggestionFetcher,
   TableSchemaTable,
 } from "@finos/vuu-data-types";
+import { Option } from "@salt-ds/core";
 
 const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
   if (schemaTable.session) {
@@ -164,8 +165,17 @@ export const FilterClauseValueEditorText = forwardRef(
               multiselect
               truncate
               value={value}
-              values={typeaheadValues}
-            />
+            >
+              {typeaheadValues
+                // .filter((typeaheadValue) =>
+                //   typeaheadValue
+                //     .toLowerCase()
+                //     .includes(value.trim().toLowerCase())
+                // )
+                .map((state) => (
+                  <Option value={state} key={state} />
+                ))}
+            </ExpandoComboboxSalt>
           );
         case "starts": {
           return (
@@ -181,7 +191,6 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-              values={typeaheadValues}
             />
           );
         }
@@ -209,8 +218,11 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-              values={typeaheadValues}
-            />
+            >
+              {typeaheadValues.map((state) => (
+                <Option value={state} key={state} />
+              ))}
+            </ExpandoComboboxSalt>
           ) : null;
         }
       }

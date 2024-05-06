@@ -4,6 +4,8 @@ import {
   queryClosest,
 } from "@finos/vuu-utils";
 
+const QUERY_ADD_BUTTON = '.saltButton:has([aria-label="Add filter"])';
+
 export const navigateToNextItem = (
   el: HTMLElement | EventTarget,
   direction: "bwd" | "fwd" = "fwd"
@@ -19,16 +21,15 @@ export const navigateToNextItem = (
       if (target) {
         target.focus();
       } else if (direction === "fwd") {
-        console.log("to the button");
         const filterBar = queryClosest(el, ".vuuFilterBar");
         const addButton = filterBar?.querySelector(
-          ".vuuFilterBar-add"
+          QUERY_ADD_BUTTON
         ) as HTMLElement;
         addButton?.focus();
       }
     }
   } else {
-    const button = queryClosest(el, ".vuuFilterBar-add");
+    const button = queryClosest(el, QUERY_ADD_BUTTON);
     if (button) {
       const filterBar = queryClosest(el, ".vuuFilterBar");
       const target = filterBar?.querySelector(

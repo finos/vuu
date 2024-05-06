@@ -1,4 +1,4 @@
-.salt-theme.vuu {
+.salt-theme.vuu-theme {
     .saltCheckbox {
         --checkbox-background: white;
         --checkbox-borderColor: var(--salt-selectable-borderColor); /* --vuu-color-gray-45 */

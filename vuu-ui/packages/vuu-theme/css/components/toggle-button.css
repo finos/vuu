@@ -1,8 +1,6 @@
-.salt-theme.vuu {
+.salt-theme.vuu-theme {
     .saltToggleButtonGroup {
         --togglebutton-borderRadius: 4px 4px 4px 4px;
-        /** TODO vary by density */
-        --salt-spacing-100: 16px;
         border-radius: 6px;
         gap: 0;
         height: var(--salt-size-base);

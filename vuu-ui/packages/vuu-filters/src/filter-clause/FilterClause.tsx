@@ -74,8 +74,6 @@ export const FilterClause = ({
 
   const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
 
-  console.log({ columns });
-
   return (
     <div
       className={cx(classBase, className)}

@@ -1,12 +1,10 @@
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
-  ExpandoComboboxSalt,
-  ExpandoComboboxSaltProps,
-} from "./ExpandoComboboxSalt";
+import { ExpandoComboboxSalt } from "./ExpandoComboboxSalt";
+import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 
 export type ColumnPickerProps = Pick<
-  ExpandoComboboxSaltProps,
+  ComboBoxProps,
   "className" | "inputProps" | "value"
 > & {
   columns: ColumnDescriptor[];
@@ -33,7 +31,10 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       ref={forwardedRef}
       title="column"
       value={value}
-      values={columns.map((c) => c.name)}
-    />
+    >
+      {columns.map(({ name }) => (
+        <Option value={name} key={name} />
+      ))}
+    </ExpandoComboboxSalt>
   );
 });

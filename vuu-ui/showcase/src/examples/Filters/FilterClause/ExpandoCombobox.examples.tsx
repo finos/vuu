@@ -2,6 +2,8 @@ import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ExpandoCombobox, ExpandoComboboxSalt } from "@finos/vuu-filters";
 import { ChangeEvent, SyntheticEvent, useState } from "react";
 
+let displaySequence = 1;
+
 const longUsStates = [
   "Alabama",
   "Alaska",
@@ -62,6 +64,7 @@ export const DefaultExpandoCombobox = () => (
     style={{ border: "solid 1px black", minWidth: 16 }}
   />
 );
+DefaultExpandoCombobox.displaySequence = displaySequence++;
 
 function getTemplateDefaultValue({
   defaultValue,
@@ -125,3 +128,4 @@ export const DefaultExpandoComboboxSalt = (props: ComboBoxProps) => {
     </ExpandoComboboxSalt>
   );
 };
+DefaultExpandoComboboxSalt.displaySequence = displaySequence++;

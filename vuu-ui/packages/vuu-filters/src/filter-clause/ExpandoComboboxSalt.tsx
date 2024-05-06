@@ -1,43 +1,42 @@
 import cx from "clsx";
-import { ComboBox, ComboBoxProps, Option } from "@salt-ds/core";
+import { ComboBox, ComboBoxProps } from "@salt-ds/core";
 import {
   ChangeEvent,
   ForwardedRef,
   SyntheticEvent,
   forwardRef,
-  useCallback,
   useMemo,
-  useRef,
   useState,
 } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./ExpandoComboboxSalt.css";
+import expandoComboboxCss from "./ExpandoComboboxSalt.css";
 
 const classBase = "vuuExpandoComboboxSalt";
-
-export type ExpandoComboboxSaltProps = Omit<
-  ComboBoxProps,
-  "children" | "defaultValue" | "value"
-> &
-  Required<Pick<ComboBoxProps, "onSelectionChange" | "value">> & {
-    values: string[];
-  };
 
 export const ExpandoComboboxSalt = forwardRef(function ExpandoComboboxSalt<
   Item = string
 >(
   {
+    children,
     className,
     inputProps: inputPropsProp,
     multiselect,
     onChange,
     onSelectionChange,
     value: valueProp,
-    values,
     ...props
-  }: ExpandoComboboxSaltProps,
+  }: ComboBoxProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-expando-combobox",
+    css: expandoComboboxCss,
+    window: targetWindow,
+  });
+
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(valueProp.toString());
 
@@ -73,9 +72,9 @@ export const ExpandoComboboxSalt = forwardRef(function ExpandoComboboxSalt<
     };
   }, [inputPropsProp]);
 
-  const matchingValues = values.filter((val) =>
-    val.toLowerCase().startsWith(value.trim().toLowerCase())
-  );
+  // const matchingValues = values.filter((val) =>
+  //   val.toLowerCase().startsWith(value.trim().toLowerCase())
+  // );
 
   return (
     <div
@@ -93,9 +92,7 @@ export const ExpandoComboboxSalt = forwardRef(function ExpandoComboboxSalt<
         open={open}
         value={value}
       >
-        {matchingValues.map((value) => (
-          <Option className="vuuExpandoOption" key={value} value={value} />
-        ))}
+        {children}
       </ComboBox>
     </div>
   );

@@ -58,7 +58,7 @@ export const vuuTheme = EditorView.theme(
     ".cm-completionIcon-filter": {
       position: "relative",
       "&:after": {
-        background: "var(--salt-text-secondary-foreground)",
+        background: "var(--salt-content-secondary-foreground)",
         content: "''",
         "-webkit-mask": "var(--svg-filter) center center/13px 13px",
         "-webkit-mask-repeat": "no-repeat",

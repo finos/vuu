@@ -7,6 +7,7 @@ import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { FilterClauseOp } from "packages/vuu-filter-types";
 import { getOperators } from "./operator-utils";
 import { isValidFilterClauseOp } from "@finos/vuu-utils";
+import { Option } from "@salt-ds/core";
 
 export type OperatorPickerProps = Pick<
   ExpandoComboboxSaltProps,
@@ -39,7 +40,10 @@ export const OperatorPicker = forwardRef(function ColumnPicker(
       ref={forwardedRef}
       title="operator"
       value={value}
-      values={getOperators(column)}
-    />
+    >
+      {getOperators(column).map((op) => (
+        <Option value={op} key={op} />
+      ))}
+    </ExpandoComboboxSalt>
   );
 });

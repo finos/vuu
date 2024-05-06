@@ -1,0 +1,21 @@
+.vuuQuickFilters {
+    --saltFormField-width: 150px;
+    --saltInput-background: transparent;
+    --saltInput-height: 18px;
+    --saltInput-minHeight: 18px;
+    border: solid 1px var(--salt-editable-borderColor);
+    border-radius: 2px;
+    display: flex;
+    height: 43px;
+    width: fit-content;
+
+    .saltFormField {
+        padding: 2px var(--salt-spacing-200);
+    }
+
+    .saltFormField:not(:last-child) {
+        border-right: solid 1px var(--salt-editable-borderColor);
+    }
+
+
+}

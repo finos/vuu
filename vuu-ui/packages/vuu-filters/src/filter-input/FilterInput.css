@@ -47,7 +47,7 @@
 .vuuIllustration {
     --vuuFilterEditor-suggestion-selectedBackground:var(--salt-container-secondary-background);
     background: var(--salt-container-secondary-background);
-    color: var(--salt-text-secondary-foreground);
+    color: var(--salt-content-secondary-foreground);
 }
 
 
