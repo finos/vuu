@@ -41,7 +41,7 @@ const tables: Record<SimulTableName, Table> = {
 };
 
 const getColumnDescriptors = (tableName: SimulTableName) => {
-  const schema = schemas[tableName];
+  const schema = schemas[tableName] || sessionTables['session-table-1'].schema;
   if (schema) {
     return schema.columns;
   } else {
@@ -59,6 +59,12 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
         filter: "",
         name: "Add Instruments To Order",
         rpcName: "ADD_INSTRUMENTS_TO_ORDER",
+      },
+      {
+        context: "selected-rows",
+        filter: "",
+        name: "Edit Row",
+        rpcName: "EDIT_ROW",
       },
     ],
   },
@@ -93,12 +99,99 @@ async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
   };
 }
 
+const keyIndex = 6;
+async function editRow(/*rpcRequest: unknown*/rpcRequest: any) {
+  //console.log(rpcRequest);
+  const sessionTableId = "session-table-1";
+  let sessionData: any[] = [];
+  const selectedRowIds = rpcRequest.selectedRowIds;
+  for (let i=0; i<selectedRowIds.length; i++){
+    for (let j=0; j<instrumentsTable.data.length; j++){
+      if (instrumentsTable.data[j][keyIndex] === selectedRowIds[i]){
+        sessionData.push(instrumentsTable.data[j]);
+      }
+    }
+  }
+  sessionTables[sessionTableId] = new Table(
+    schemas.instruments,
+    sessionData,
+    buildDataColumnMap(schemas.instruments)
+  );
+
+  return {
+    action: {
+      renderComponent: "grid",
+      table: {
+        module: "SIMUL",
+        table: "session-table-1",
+      },
+      type: "OPEN_DIALOG_ACTION",
+    },
+    requestId: "request_id",
+    rpcName: "EDIT_ROW"
+  };
+}
+
+async function applyBulkEdits(/*rpcRequest: unknown*/rpcRequest: any) {
+  for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
+    const newTable = sessionTables['session-table-1'];
+    const newRow = sessionTables['session-table-1'].data[i];
+    instrumentsTable.updateRow(newRow);
+  }
+  
+  return {
+    action: {
+      renderComponent: "grid",
+      table: {
+        module: "SIMUL",
+        table: "instruments",
+      },
+      type: "OPEN_DIALOG_ACTION",
+    },
+    requestId: "request_id",
+    rpcName: "APPLY_BULK_EDITS"
+  };
+}
+
+async function applyEditMultiple(/*rpcRequest: unknown*/rpcRequest: any) {
+  for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
+    const newTable = sessionTables['session-table-1'];
+    const newRow = sessionTables['session-table-1'].data[i];
+    instrumentsTable.update(String(newRow[keyIndex]), rpcRequest.multiEditCol, rpcRequest.multiEditVal);
+  }
+  
+  return {
+    action: {
+      renderComponent: "grid",
+      table: {
+        module: "SIMUL",
+        table: "instruments",
+      },
+      type: "OPEN_DIALOG_ACTION",
+    },
+    requestId: "request_id",
+    rpcName: "APPLY_EDIT_MULTIPLE"
+  };
+}
+
 const services: Record<SimulTableName, RpcService[] | undefined> = {
   childOrders: undefined,
   instruments: [
     {
       rpcName: "ADD_INSTRUMENTS_TO_ORDER",
       service: addInstrumentsToOrder,
+    },
+    {
+      rpcName: "EDIT_ROW",
+      service: editRow,
+    },
+    {
+      rpcName: "APPLY_BULK_EDITS",
+      service: applyBulkEdits,
+    },
+    {
+      rpcName: "APPLY_EDIT_MULTIPLE",
+      service: applyEditMultiple,
     },
   ],
   instrumentsExtended: undefined,
@@ -110,10 +203,11 @@ const services: Record<SimulTableName, RpcService[] | undefined> = {
 
 const createDataSource = (tableName: SimulTableName) => {
   const columnDescriptors = getColumnDescriptors(tableName);
+  //console.log(sessionTables['session-table-1'].schema);
   return new TickingArrayDataSource({
     columnDescriptors,
-    keyColumn: schemas[tableName].key,
-    table: tables[tableName],
+    keyColumn: schemas[tableName]=== undefined ? sessionTables[tableName].schema.key : schemas[tableName].key,
+    table: tables[tableName] || sessionTables[tableName],
     menu: menus[tableName],
     rpcServices: services[tableName],
   });

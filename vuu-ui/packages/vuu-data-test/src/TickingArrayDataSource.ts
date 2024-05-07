@@ -89,12 +89,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.selectedRows.reduce<DataSourceRow[]>(
       (rows: DataSourceRow[], selected: SelectionItem) => {
         if (Array.isArray(selected)) {
-          selected.forEach((sel) => {
-            const row = this.data[sel];
+          for (let i=selected[0]; i<=selected[1]; i++){
+            const row = this.data[i];
             if (row) {
               rows.push(row);
             }
-          });
+          }
         } else {
           const row = this.data[selected];
           if (row) {
@@ -105,6 +105,40 @@ export class TickingArrayDataSource extends ArrayDataSource {
       },
       []
     );
+  }
+
+  private getSelectedRowIds() {
+    const keyIndex = 6;
+    let rowIds: any[] = [];
+    return this.selectedRows.reduce<DataSourceRow[]>(
+      (rows: DataSourceRow[], selected: SelectionItem) => {
+        if (Array.isArray(selected)) {
+          for (let i=selected[0]; i<=selected[1]; i++){
+            const row = this.data[i];
+            if (row) {
+              rowIds.push(row[keyIndex]);
+            }
+          }
+        } else {
+          const row = this.data[selected];
+          if (row) {
+            rowIds.push(row[keyIndex]);
+          }
+        }
+        return rowIds;
+      },
+      []
+    );
+  }
+
+  private getMultiEditCol() {
+    // placeholder: need to get value from dialog
+    return 'currency';
+  }
+
+  private getMultiEditVal() {
+    // placeholder: need to get value from dialog
+    return 'EUR'
   }
 
   applyEdit(
@@ -126,8 +160,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
         (rpcRequest as ClientToServerViewportRpcCall).rpcName
     );
     if (rpcService) {
+      const selectedRows = this.getSelectedRows();
+      const multiEditCol = this.getMultiEditCol();
+      const multiEditVal = this.getMultiEditVal();
       return rpcService.service({
         ...rpcRequest,
+        selectedRows,
+        multiEditCol,
+        multiEditVal,
       });
     } else {
       console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);
@@ -151,9 +191,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
       switch (rpcRequest.type) {
         case "VIEW_PORT_MENUS_SELECT_RPC": {
           const selectedRows = this.getSelectedRows();
+          const selectedRowIds = this.getSelectedRowIds();
           return rpcService.service({
             ...rpcRequest,
             selectedRows,
+            selectedRowIds,
           });
         }
 
