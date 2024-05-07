@@ -2,6 +2,7 @@ import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
   VuuColumnDataType,
+  VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
@@ -74,6 +75,18 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
+}
+
+export type TableMenuLocation = "grid" | "header" | "filter";
+
+export interface VuuCellMenuItem extends VuuMenuItem {
+  rowKey: string;
+  field: string;
+  value: VuuRowDataItemType;
+}
+export interface VuuRowMenuItem extends VuuMenuItem {
+  rowKey: string;
+  row: { [key: string]: VuuRowDataItemType };
 }
 
 /**

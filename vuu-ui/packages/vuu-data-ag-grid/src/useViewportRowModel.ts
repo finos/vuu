@@ -3,7 +3,6 @@ import {
   useTypeaheadSuggestions,
   useVuuMenuActions,
   VuuMenuActionHandler,
-  VuuServerMenuOptions,
 } from "@finos/vuu-data-react";
 import { VuuDataSource } from "@finos/vuu-data-remote";
 
@@ -19,6 +18,7 @@ import {
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
+  VuuServerMenuOptions,
 } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgData } from "./AgDataWindow";
