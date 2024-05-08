@@ -1,7 +1,8 @@
 import { NamedDataSourceFilter } from "@finos/vuu-data-types";
-import { SaveLocation, VuuUser } from "@finos/vuu-shell";
+import { SaveLocation } from "@finos/vuu-shell";
 import { useRestEntityStore } from "./use-rest-config";
 import { useCallback, useEffect, useState } from "react";
+import type { VuuUser } from "@finos/vuu-utils";
 
 export interface FilterConfigHookProps {
   user: VuuUser;

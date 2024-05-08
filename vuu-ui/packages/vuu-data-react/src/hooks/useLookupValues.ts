@@ -7,6 +7,7 @@ import { VuuDataSource } from "@finos/vuu-data-remote";
 import { useShellContext } from "@finos/vuu-shell";
 import {
   buildColumnMap,
+  getSelectedOption,
   isLookupRenderer,
   isTypeDescriptor,
   isValueListRenderer,
@@ -69,16 +70,6 @@ type LookupState = {
   values: ListOption[];
 };
 
-export const getSelectedOption = (
-  values: ListOption[],
-  selectedValue: string | number | undefined
-) => {
-  if (selectedValue === undefined) {
-    return null;
-  }
-  return values.find((option) => option.value === selectedValue) ?? null;
-};
-
 const getLookupDetails = ({ name, type }: ColumnDescriptor) => {
   if (isTypeDescriptor(type) && isLookupRenderer(type.renderer)) {
     return type.renderer.lookup;
@@ -103,7 +94,7 @@ export const useLookupValues = (
     ) {
       const values = columnType.renderer.values.map(toListOption);
       return {
-        initialValue: getSelectedOption(values, initialValueProp),
+        initialValue: getSelectedOption(values, initialValueProp) ?? null,
         values,
       };
     } else {
@@ -111,7 +102,7 @@ export const useLookupValues = (
       const values = getLookupValues?.(lookupDetails.table) ?? NO_VALUES;
 
       return {
-        initialValue: getSelectedOption(values, initialValueProp),
+        initialValue: getSelectedOption(values, initialValueProp) ?? null,
         values,
       };
     }
@@ -125,7 +116,7 @@ export const useLookupValues = (
       const lookupDetails = getLookupDetails(column);
       loadLookupValues(lookupDetails).then((values) =>
         setLookupState({
-          initialValue: getSelectedOption(values, initialValueProp),
+          initialValue: getSelectedOption(values, initialValueProp) ?? null,
           values,
         })
       );

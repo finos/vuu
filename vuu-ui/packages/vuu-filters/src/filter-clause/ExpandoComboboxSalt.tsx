@@ -38,7 +38,9 @@ export const ExpandoComboboxSalt = forwardRef(function ExpandoComboboxSalt<
   });
 
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(valueProp.toString());
+  const [value, setValue] = useState(
+    valueProp === undefined ? "" : valueProp.toString()
+  );
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const value = evt.target.value;
@@ -51,10 +53,10 @@ export const ExpandoComboboxSalt = forwardRef(function ExpandoComboboxSalt<
     newSelected: string[]
   ) => {
     if (multiselect) {
-      onSelectionChange(evt, newSelected);
+      onSelectionChange?.(evt, newSelected);
     } else {
       const [selectedValue] = newSelected;
-      onSelectionChange(evt, newSelected);
+      onSelectionChange?.(evt, newSelected);
       setValue(selectedValue ?? "");
     }
   };

@@ -16,6 +16,7 @@ export const supportedDateTimePatterns = {
   date: supportedDatePatterns,
   time: supportedTimePatterns,
 };
+export const dateTimeLabelByType = { date: "Date", time: "Time" } as const;
 
 export type DatePattern = (typeof supportedDatePatterns)[number];
 export type TimePattern = (typeof supportedTimePatterns)[number];
@@ -24,10 +25,10 @@ export type DateTimePattern =
   | { date?: DatePattern; time: TimePattern }
   | { date: DatePattern; time?: TimePattern };
 
-const isDatePattern = (pattern?: string): pattern is DatePattern =>
+export const isDatePattern = (pattern?: string): pattern is DatePattern =>
   supportedDatePatterns.includes(pattern as DatePattern);
 
-const isTimePattern = (pattern?: string): pattern is TimePattern =>
+export const isTimePattern = (pattern?: string): pattern is TimePattern =>
   supportedTimePatterns.includes(pattern as TimePattern);
 
 export const isDateTimePattern = (

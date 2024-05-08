@@ -9,7 +9,7 @@ import { forwardCallbackProps } from "../utils";
 import { DropdownBaseProps } from "./dropdownTypes";
 import { useDropdownBase } from "./useDropdownBase";
 
-import dropdownBaseCss from "./Dropdown.css";
+import dropdownBaseCss from "./DropdownBase.css";
 
 // Any component may be passed as our trigger or popup component.
 // Define the common props that we will act on, if present,

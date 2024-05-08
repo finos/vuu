@@ -1,12 +1,17 @@
 import { ChangeEvent, useState } from "react";
-import { Dropdown } from "@finos/vuu-ui-controls";
 import {
   NotificationsProvider,
   NotificationLevel,
   ToastNotification,
   useNotifications,
 } from "@finos/vuu-popups";
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import {
+  Dropdown,
+  FormField,
+  FormFieldLabel,
+  Input,
+  Option,
+} from "@salt-ds/core";
 
 let displaySequence = 1;
 
@@ -29,19 +34,22 @@ const Notifications = () => {
   console.log("Render Notifications");
 
   return (
-    <div style={{ maxWidth: 300 }}>
+    <div style={{ maxWidth: 300, margin: 20 }}>
       <FormField>
         <FormFieldLabel>Notification Type</FormFieldLabel>
         <Dropdown<NotificationLevel>
-          defaultSelected={"info"}
-          selected={type}
-          onSelectionChange={(_, selectedItem) => {
+          selected={[type]}
+          onSelectionChange={(_, [selectedItem]) => {
             if (selectedItem) {
               setType(selectedItem);
             }
           }}
-          source={["error", "info", "success", "warning"]}
-        />
+        >
+          <Option value="error">Error</Option>
+          <Option value="info">Info</Option>
+          <Option value="success">Success</Option>
+          <Option value="warning">Warning</Option>
+        </Dropdown>
       </FormField>
       <FormField>
         <FormFieldLabel>Notification Header</FormFieldLabel>

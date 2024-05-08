@@ -158,19 +158,6 @@ export interface ValueListRenderer {
   values: string[];
 }
 
-export declare type DateTimeColumnTypeSimple = "date/time";
-
-type DateTimeColumnType =
-  | DateTimeColumnTypeSimple
-  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
-
-export declare type DateTimeColumnDescriptor = Omit<
-  ColumnDescriptor,
-  "type"
-> & {
-  type: DateTimeColumnType;
-};
-
 export declare type ColumnTypeSimple =
   | "string"
   | "number"
@@ -187,6 +174,19 @@ export declare type ColumnTypeDescriptor = {
     | LookupRenderer
     | MappedValueTypeRenderer
     | ValueListRenderer;
+};
+
+export declare type DateTimeColumnTypeSimple = "date/time";
+
+type DateTimeColumnType =
+  | DateTimeColumnTypeSimple
+  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
+
+export declare type DateTimeColumnDescriptor = Omit<
+  ColumnDescriptor,
+  "type"
+> & {
+  type: DateTimeColumnType;
 };
 
 export declare type ColumnTypeDescriptorCustomRenderer = {

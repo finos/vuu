@@ -118,7 +118,7 @@ export const DisabledOption = () => (
 );
 DisabledOption.displaySequence = displaySequence++;
 
-export const Variants = () => {
+export const Variants = () => (
   <StackLayout>
     <Dropdown>
       {usStates.map((state) => (
@@ -130,8 +130,8 @@ export const Variants = () => {
         <Option value={state} key={state} />
       ))}
     </Dropdown>
-  </StackLayout>;
-};
+  </StackLayout>
+);
 Variants.displaySequence = displaySequence++;
 
 export const MultiSelect = () => <BaseDropdown multiselect />;

@@ -25,7 +25,7 @@ export interface FilterClauseNumericValueEditorProps
 export const FilterClauseValueEditorNumber = forwardRef(
   function FilterClauseNumericValueEditor(
     {
-      InputProps,
+      inputProps,
       className,
       "data-field": dataField,
       onChangeValue,
@@ -66,7 +66,7 @@ export const FilterClauseValueEditorNumber = forwardRef(
 
     return (
       <ExpandoInput
-        {...InputProps}
+        inputProps={inputProps}
         className={className}
         data-field={dataField}
         onChange={handleChange}

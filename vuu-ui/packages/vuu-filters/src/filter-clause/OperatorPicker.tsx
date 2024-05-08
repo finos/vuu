@@ -1,16 +1,13 @@
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
-  ExpandoComboboxSalt,
-  ExpandoComboboxSaltProps,
-} from "./ExpandoComboboxSalt";
+import { ExpandoComboboxSalt } from "./ExpandoComboboxSalt";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { FilterClauseOp } from "packages/vuu-filter-types";
 import { getOperators } from "./operator-utils";
 import { isValidFilterClauseOp } from "@finos/vuu-utils";
-import { Option } from "@salt-ds/core";
+import { ComboBoxProps, Option } from "@salt-ds/core";
 
 export type OperatorPickerProps = Pick<
-  ExpandoComboboxSaltProps,
+  ComboBoxProps,
   "className" | "inputProps" | "value"
 > & {
   column: ColumnDescriptor;

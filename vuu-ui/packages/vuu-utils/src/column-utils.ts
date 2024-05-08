@@ -95,6 +95,12 @@ export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
 export const isValidPinLocation = (v: string): v is PinLocation =>
   isValidColumnAlignment(v) || v === "floating" || v === "";
 
+export type CalculatedColumn = {
+  name: string;
+  expression: string;
+  serverDataType: VuuColumnDataType;
+};
+
 const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
   "long",
   "double",
@@ -575,7 +581,9 @@ export const getColumnLabel = (column: ColumnDescriptor) => {
   if (column.label) {
     return column.label;
   } else if (isCalculatedColumn(column.name)) {
-    return getCalculatedColumnName(column);
+    const { name } = getCalculatedColumnDetails(column);
+    // calculated column name follows pattern: `name:serverDataType:expression`
+    return name ?? column.name;
   } else {
     return column.name;
   }
@@ -862,22 +870,27 @@ const CalculatedColumnPattern = /.*:.*:.*/;
 export const isCalculatedColumn = (columnName?: string) =>
   columnName !== undefined && CalculatedColumnPattern.test(columnName);
 
-export const getCalculatedColumnDetails = (column: ColumnDescriptor) => {
+export const getCalculatedColumnDetails = (
+  column: ColumnDescriptor
+): Partial<CalculatedColumn> => {
   if (isCalculatedColumn(column.name)) {
-    return column.name.split(/:=?/);
+    const [name, serverDataType, expression] = column.name.split(/:=?/);
+    if (serverDataType && !isVuuColumnDataType(serverDataType)) {
+      throw Error(
+        `column-utils, getCalculatedColumnDetails ${serverDataType} is not valid type for column ${column.name}`
+      );
+    }
+    return {
+      name: name ?? "",
+      expression: expression ?? "",
+      serverDataType: isVuuColumnDataType(serverDataType)
+        ? serverDataType
+        : undefined,
+    };
   } else {
-    throw Error(
-      `column-utils, getCalculatedColumnDetails column name ${column.name} is not valid calculated column`
-    );
+    throw Error(`column.name is nor a calculated column`);
   }
 };
-
-export const getCalculatedColumnName = (column: ColumnDescriptor) =>
-  getCalculatedColumnDetails(column)[0];
-export const getCalculatedColumnType = (column: ColumnDescriptor) =>
-  getCalculatedColumnDetails(column)[1] as VuuColumnDataType;
-export const getCalculatedColumnExpression = (column: ColumnDescriptor) =>
-  getCalculatedColumnDetails(column)[2];
 
 export const setCalculatedColumnName = (
   column: ColumnDescriptor,

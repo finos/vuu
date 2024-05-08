@@ -6,7 +6,13 @@ import {
   setCalculatedColumnName,
   setCalculatedColumnType,
 } from "@finos/vuu-utils";
-import { FormEventHandler, useCallback, useRef, useState } from "react";
+import {
+  FormEventHandler,
+  SyntheticEvent,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { ColumnExpressionPanelProps } from "./ColumnExpressionPanel";
 
 export type ColumnExpressionHookProps = Pick<
@@ -15,8 +21,9 @@ export type ColumnExpressionHookProps = Pick<
 >;
 
 const applyDefaults = (column: ColumnDescriptor) => {
-  const [name, expression, type] = getCalculatedColumnDetails(column);
-  if (type === "") {
+  const { name, expression, serverDataType } =
+    getCalculatedColumnDetails(column);
+  if (serverDataType === undefined) {
     return {
       ...column,
       name: `${name}:string:${expression}`,
@@ -79,12 +86,12 @@ export const useColumnExpression = ({
   );
 
   const onChangeServerDataType = useCallback(
-    (evt, value: string | null) => {
-      if (isVuuColumnDataType(value)) {
-        const newColumn = setCalculatedColumnType(column, value);
+    (_e: SyntheticEvent, [serverDataType]: string[]) => {
+      if (isVuuColumnDataType(serverDataType)) {
+        const newColumn = setCalculatedColumnType(column, serverDataType);
         setColumn(newColumn);
         onChangeNameProp?.(newColumn.name);
-        onChangeServerDataTypeProp?.(value);
+        onChangeServerDataTypeProp?.(serverDataType);
       }
     },
     [column, onChangeNameProp, onChangeServerDataTypeProp, setColumn]
