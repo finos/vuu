@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -60,6 +61,7 @@ export const LayoutManagementContext = React.createContext<{
 
 type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
+  persistenceManager?: PersistenceManager;
 };
 
 const ensureLayoutHasTitle = (
@@ -79,15 +81,21 @@ const ensureLayoutHasTitle = (
   }
 };
 
-export const LayoutManagementProvider = (
-  props: LayoutManagementProviderProps
-) => {
+export const LayoutManagementProvider = ({
+  persistenceManager: persistenceManagerProp,
+  ...props
+}: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
   // TODO this default should probably be a loading state rather than the placeholder
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
   const notify = useNotifications();
   const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJson);
+
+  const persistenceManager = useMemo<PersistenceManager>(
+    () => persistenceManagerProp ?? getPersistenceManager(),
+    [persistenceManagerProp]
+  );
 
   const setApplicationJSON = useCallback(
     (applicationJSON: ApplicationJSON, rerender = true) => {
@@ -129,8 +137,6 @@ export const LayoutManagementProvider = (
   );
 
   useEffect(() => {
-    const persistenceManager = getPersistenceManager();
-
     persistenceManager
       .loadMetadata()
       .then((metadata) => {
@@ -161,18 +167,18 @@ export const LayoutManagementProvider = (
           error
         );
       });
-  }, [notify, setApplicationJSON]);
+  }, [notify, persistenceManager, setApplicationJSON]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
       if (isLayoutJSON(layout)) {
         setApplicationLayout(layout, false);
-        getPersistenceManager().saveApplicationJSON(applicationJSONRef.current);
+        persistenceManager.saveApplicationJSON(applicationJSONRef.current);
       } else {
         console.error("Tried to save invalid application layout", layout);
       }
     },
-    [setApplicationLayout]
+    [persistenceManager, setApplicationLayout]
   );
 
   const saveLayout = useCallback(
@@ -183,7 +189,7 @@ export const LayoutManagementProvider = (
       );
 
       if (layoutToSave && isLayoutJSON(layoutToSave)) {
-        getPersistenceManager()
+        persistenceManager
           .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
             notify({
@@ -210,7 +216,7 @@ export const LayoutManagementProvider = (
         });
       }
     },
-    [notify]
+    [notify, persistenceManager]
   );
 
   const saveApplicationSettings = useCallback(
@@ -227,9 +233,9 @@ export const LayoutManagementProvider = (
       } else {
         setApplicationSettings(settings as ApplicationSettings);
       }
-      getPersistenceManager().saveApplicationJSON(applicationJSONRef.current);
+      persistenceManager.saveApplicationJSON(applicationJSONRef.current);
     },
-    [setApplicationSettings]
+    [persistenceManager, setApplicationSettings]
   );
 
   const getApplicationSettings = useCallback(
@@ -242,7 +248,7 @@ export const LayoutManagementProvider = (
 
   const loadLayoutById = useCallback(
     (id: string) => {
-      getPersistenceManager()
+      persistenceManager
         .loadLayout(id)
         .then((layoutJson) => {
           const { layout: currentLayout } = applicationJSONRef.current;
@@ -264,7 +270,7 @@ export const LayoutManagementProvider = (
           console.error("Error occurred while loading layout", error);
         });
     },
-    [notify, setApplicationLayout]
+    [notify, persistenceManager, setApplicationLayout]
   );
 
   return (
