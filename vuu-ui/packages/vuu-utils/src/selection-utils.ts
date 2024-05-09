@@ -20,6 +20,7 @@ export const RowSelected = {
 
 export const isRowSelected = (row: DataSourceRow): boolean =>
   (row[SELECTED] & RowSelected.True) === RowSelected.True;
+
 export const isRowSelectedLast = (row?: DataSourceRow): boolean =>
   row !== undefined && (row[SELECTED] & RowSelected.Last) === RowSelected.Last;
 

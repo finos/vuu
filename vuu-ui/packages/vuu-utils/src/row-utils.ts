@@ -2,8 +2,9 @@
 import type { DataSourceRow, DataSourceRowObject } from "@finos/vuu-data-types";
 import type { MutableRefObject } from "react";
 import { ColumnMap, metadataKeys } from "./column-utils";
+import { isRowSelected } from "./selection-utils";
 
-const { IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
+const { IS_LEAF, KEY, IDX } = metadataKeys;
 
 export type RowOffsetFunc = (
   row: DataSourceRow,
@@ -95,19 +96,13 @@ export const asDataSourceRowObject = (
   row: DataSourceRow,
   columnMap: ColumnMap
 ): DataSourceRowObject => {
-  console.log({ columnMap });
-  const {
-    [IS_LEAF]: isLeaf,
-    [KEY]: key,
-    [IDX]: index,
-    [SELECTED]: selected,
-  } = row;
+  const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index } = row;
 
   const rowObject: DataSourceRowObject = {
     key,
     index,
     isGroupRow: !isLeaf,
-    isSelected: selected > 0,
+    isSelected: isRowSelected(row),
     data: {},
   };
 

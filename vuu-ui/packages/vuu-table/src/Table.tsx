@@ -121,6 +121,13 @@ export interface TableProps
    * TODO this should just live in CSS
    */
   selectionBookendWidth?: number;
+  /**
+   * Selection behaviour for Table:
+   * `none` selection disabled
+   * `single` no more than one row may be selected
+   * `extended` (default) multiple rows can be selected
+   * `checkbox` same behaviour as extended, with checkbox column for selection
+   */
   selectionModel?: TableSelectionModel;
   /**
    * if false, table rendered without headers. Useful when table is being included in a
