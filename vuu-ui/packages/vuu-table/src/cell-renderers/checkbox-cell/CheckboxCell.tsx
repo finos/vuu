@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
 import { CheckboxIcon, WarnCommit } from "@finos/vuu-ui-controls";
 import { Checkbox } from "@salt-ds/core";

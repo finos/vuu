@@ -6,6 +6,7 @@ import {
   TableAttributes,
   TableConfig,
   TableHeadings,
+  TableSelectionModel,
 } from "@finos/vuu-table-types";
 import {
   applyFilterToColumns,
@@ -58,6 +59,20 @@ const getDataType = (
   } else {
     return column.serverDataType;
   }
+};
+
+const checkboxColumnDescriptor: ColumnDescriptor = {
+  label: "",
+  name: "",
+  width: 25,
+  sortable: false,
+  isSystemColumn: true,
+  type: {
+    name: "checkbox",
+    renderer: {
+      name: "checkbox-row-selector-cell",
+    },
+  },
 };
 
 /**
@@ -219,12 +234,17 @@ const columnReducer: GridModelReducer = (state, action) => {
 
 export const useTableModel = (
   tableConfigProp: TableConfig,
-  dataSource: DataSource
+  dataSource: DataSource,
+  selectionModel: TableSelectionModel
 ) => {
   const [state, dispatchTableModelAction] = useReducer<
     GridModelReducer,
     InitialConfig
-  >(columnReducer, { tableConfig: tableConfigProp, dataSource }, init);
+  >(
+    columnReducer,
+    { tableConfig: tableConfigProp, dataSource, selectionModel },
+    init
+  );
 
   const { columns, headings, tableConfig, ...tableAttributes } = state;
 
@@ -239,24 +259,41 @@ export const useTableModel = (
 
 type InitialConfig = {
   dataSource: DataSource;
+  // TODO are we at risk of losing selectionModel on updates ?
+  selectionModel?: TableSelectionModel;
   tableConfig: TableConfig;
 };
 
-function init({ dataSource, tableConfig }: InitialConfig): InternalTableModel {
+function init({
+  dataSource,
+  selectionModel,
+  tableConfig,
+}: InitialConfig): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
+  const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(
+    tableAttributes,
+    tableSchema
+  );
   const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
-    .map(
-      columnDescriptorToRuntimeColumDescriptor(tableAttributes, tableSchema)
-    );
+    .map(toRuntimeColumnDescriptor);
 
-  const maybePinnedColumns = runtimeColumns.some(isPinned)
+  const columnsInRenderOrder = runtimeColumns.some(isPinned)
     ? sortPinnedColumns(runtimeColumns)
     : runtimeColumns;
+
+  if (selectionModel === "checkbox") {
+    columnsInRenderOrder.splice(
+      0,
+      0,
+      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1)
+    );
+  }
+
   let state: InternalTableModel = {
-    columns: maybePinnedColumns,
-    headings: getTableHeadings(maybePinnedColumns),
+    columns: columnsInRenderOrder,
+    headings: getTableHeadings(columnsInRenderOrder),
     tableConfig,
     ...tableAttributes,
   };

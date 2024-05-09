@@ -169,7 +169,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel(config, dataSource);
+  } = useTableModel(config, dataSource, selectionModel);
 
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
