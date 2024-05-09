@@ -259,7 +259,8 @@ export const useTableModel = (
 
 type InitialConfig = {
   dataSource: DataSource;
-  selectionModel: TableSelectionModel;
+  // TODO are we at risk of losing selectionModel on updates ?
+  selectionModel?: TableSelectionModel;
   tableConfig: TableConfig;
 };
 
