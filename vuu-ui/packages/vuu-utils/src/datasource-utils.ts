@@ -264,7 +264,7 @@ export const hasAction = (
 ): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
   response != undefined && "action" in response;
 
-export const isViewporttMessage = (
+export const isViewportMessage = (
   msg: object
 ): msg is VuuUIMessageOutViewport => "viewport" in msg;
 
