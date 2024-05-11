@@ -7,49 +7,39 @@ import {
 } from "@finos/vuu-data-types";
 import {
   ContextMenuProvider,
-  Dialog,
   MenuActionClosePopup,
   useContextMenu,
+  useDialog,
 } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { SessionEditingForm } from "@finos/vuu-shell";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { HTMLAttributes, MouseEventHandler, useMemo, useState } from "react";
+import { HTMLAttributes, MouseEventHandler, useMemo } from "react";
 
 let displaySequence = 0;
 
-const ComponentWithMenu = ({
-  location,
-  ...props
-}: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const [showContextMenu] = useContextMenu();
-  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
-    console.log(`ComponentWithMenu<${location}> handleContextMenu`);
-    showContextMenu(e, location, { type: "outer" });
-  };
-  return <div {...props} onContextMenu={handleContextMenu} />;
+const openFile: ActionWithParams = {
+  id: "openFile",
+  description: "open a file",
+  confirmation: true,
+  params: [
+    {
+      name: "file",
+      type: "string",
+      description: "Raw file name",
+      required: true,
+    },
+  ],
 };
 
-interface ActionParam {
-  name: string;
-  type: VuuColumnDataType;
-  description: string;
-  required?: boolean;
-}
-
-interface ActionDescriptor {
-  confirmation?: boolean;
-  description: string;
-  id: string;
-  params?: ActionParam[];
-}
-
-interface ActionWithParams extends ActionDescriptor {
-  params: ActionParam[];
-}
-
-const hasParams = (action: ActionDescriptor): action is ActionWithParams =>
-  Array.isArray(action?.params);
+const setLogLevel: ActionWithParams = {
+  id: "setLogLevel",
+  description: "set a log level",
+  params: [
+    { name: "level", type: "int", description: "log level" },
+    { name: "topic", type: "string", description: "log topic" },
+  ],
+};
 
 const actionDescriptors: { [key: string]: ActionDescriptor } = {
   action1: {
@@ -58,14 +48,7 @@ const actionDescriptors: { [key: string]: ActionDescriptor } = {
     confirmation: true,
   },
   action2: { id: "action2", description: "menu action two" },
-  setLogLevel: {
-    id: "setLogLevel",
-    description: "set a log level",
-    params: [
-      { name: "level", type: "int", description: "log level" },
-      { name: "topic", type: "string", description: "log topic" },
-    ],
-  },
+  setLogLevel,
   fixStatus: { id: "fixStatus", description: "fix status" },
   fixHbInterval: {
     id: "fixHbInterval",
@@ -103,20 +86,71 @@ const actionDescriptors: { [key: string]: ActionDescriptor } = {
       },
     ],
   },
-  loadFile: {
-    id: "loadFile",
-    description: "load from a raw file",
-    confirmation: true,
-    params: [
-      {
-        name: "file",
-        type: "string",
-        description: "raw file name",
-        required: true,
-      },
-    ],
-  },
+  openFile,
 };
+
+export const SingleFieldForm = () => {
+  return (
+    <SessionEditingForm
+      config={{
+        key: "key",
+        title: openFile.description,
+        fields: openFile.params,
+      }}
+      dataSource={getDataSource(openFile)}
+      style={{ border: "solid 1px black", margin: 30, width: 300 }}
+    />
+  );
+};
+SingleFieldForm.displaySequence = displaySequence++;
+
+export const TwinFieldForm = () => {
+  return (
+    <SessionEditingForm
+      config={{
+        key: "key",
+        title: setLogLevel.description,
+        fields: setLogLevel.params,
+      }}
+      dataSource={getDataSource(setLogLevel)}
+      style={{ border: "solid 1px black", margin: 30, width: 300 }}
+    />
+  );
+};
+TwinFieldForm.displaySequence = displaySequence++;
+
+const ComponentWithMenu = ({
+  location,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
+  const [showContextMenu] = useContextMenu();
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
+    console.log(`ComponentWithMenu<${location}> handleContextMenu`);
+    showContextMenu(e, location, { type: "outer" });
+  };
+  return <div {...props} onContextMenu={handleContextMenu} />;
+};
+
+interface ActionParam {
+  name: string;
+  type: VuuColumnDataType;
+  description: string;
+  required?: boolean;
+}
+
+interface ActionDescriptor {
+  confirmation?: boolean;
+  description: string;
+  id: string;
+  params?: ActionParam[];
+}
+
+interface ActionWithParams extends ActionDescriptor {
+  params: ActionParam[];
+}
+
+const hasParams = (action: ActionDescriptor): action is ActionWithParams =>
+  Array.isArray(action?.params);
 
 const initialValue = (colType?: VuuColumnDataType) => {
   switch (colType) {
@@ -151,6 +185,11 @@ const getDataSource = (action: ActionWithParams): DataSource => {
 };
 
 export const ContextMenuActions = () => {
+  const { dialog, setDialogState } = useDialog();
+  const closeDialog = () => {
+    setDialogState(undefined);
+  };
+
   const menuDescriptors: ContextMenuItemDescriptor[] = useMemo(
     () => [
       { label: "Menu Action 1, no Parameters", action: "action1" },
@@ -165,14 +204,26 @@ export const ContextMenuActions = () => {
     ],
     []
   );
-  const [action, setAction] = useState<ActionWithParams | undefined>();
 
   const handleMenuAction: MenuActionHandler = (
     action: MenuActionClosePopup
   ) => {
     const actionDescriptor = actionDescriptors[action.menuId];
     if (hasParams(actionDescriptor)) {
-      setAction(actionDescriptor);
+      setDialogState({
+        content: (
+          <SessionEditingForm
+            config={{
+              key: "",
+              title: actionDescriptor.description,
+              fields: actionDescriptor.params,
+            }}
+            dataSource={getDataSource(actionDescriptor)}
+            onClose={closeDialog}
+          />
+        ),
+        title: "Edit Parameters",
+      });
     }
     return true;
   };
@@ -183,10 +234,6 @@ export const ContextMenuActions = () => {
         descriptor.location === undefined || descriptor.location === location
     );
 
-  const closeDialog = () => {
-    setAction(undefined);
-  };
-
   return (
     <ContextMenuProvider
       menuBuilder={menuBuilder}
@@ -196,23 +243,7 @@ export const ContextMenuActions = () => {
         style={{ height: 200, width: 200, backgroundColor: "red" }}
         location="left"
       />
-      <Dialog
-        isOpen={action !== undefined}
-        onClose={closeDialog}
-        title={action?.description}
-      >
-        {action ? (
-          <SessionEditingForm
-            config={{
-              key: "",
-              title: action.description,
-              fields: action.params,
-            }}
-            dataSource={getDataSource(action)}
-            onClose={closeDialog}
-          />
-        ) : null}
-      </Dialog>
+      {dialog}
     </ContextMenuProvider>
   );
 };
