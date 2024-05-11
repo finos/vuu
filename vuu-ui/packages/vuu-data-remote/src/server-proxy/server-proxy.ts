@@ -37,13 +37,17 @@ import {
   VuuRpcRequest,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { isViewporttMessage, logger, partition } from "@finos/vuu-utils";
+import {
+  isVuuMenuRpcRequest,
+  isViewportMessage,
+  logger,
+  partition,
+} from "@finos/vuu-utils";
 import { Connection } from "../connectionTypes";
 import { isSessionTable, isSessionTableActionMessage } from "../data-source";
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
-  isVuuMenuRpcRequest,
   isVuuRpcRequest,
   stripRequestId,
 } from "../message-utils";
@@ -603,7 +607,7 @@ export class ServerProxy {
       | WithRequestId<VuuRpcRequest>
       | WithRequestId<ClientToServerMenuRPC>
   ) {
-    if (isViewporttMessage(message)) {
+    if (isViewportMessage(message)) {
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);

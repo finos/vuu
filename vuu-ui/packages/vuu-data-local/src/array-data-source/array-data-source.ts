@@ -74,6 +74,9 @@ const toDataSourceRow =
     return [index, index, true, false, 1, 0, String(data[key]), 0, ...data];
   };
 
+// const isError = (err: unknown): err is { message: string } =>
+//   typeof err === "object" && err !== null && err.hasOwnProperty("message");
+
 const buildTableSchema = (
   columns: ColumnDescriptor[],
   keyColumn?: string
@@ -476,21 +479,60 @@ export class ArrayDataSource
     }
   };
 
-  protected update = (row: VuuRowDataItemType[], columnName: string) => {
+  private validateDataValue(columnName: string, value: VuuRowDataItemType) {
+    console.log(`validate data value ${columnName} ${value}`);
+    const columnDescriptor = this.columnDescriptors.find(
+      (col) => col.name === columnName
+    );
+    if (columnDescriptor) {
+      switch (columnDescriptor.serverDataType) {
+        case "int":
+          {
+            if (typeof value === "number") {
+              if (Math.floor(value) !== value) {
+                throw Error(`${columnName} is int but value = ${value}`);
+              }
+            } else if (typeof value === "string") {
+              const numericValue = parseFloat(value);
+              if (Math.floor(numericValue) !== numericValue) {
+                throw Error(`${columnName} is ${value} is not a valid integer`);
+              }
+            }
+          }
+          break;
+        default:
+      }
+    } else {
+      throw Error(`Unknown column ${columnName}`);
+    }
+  }
+
+  protected updateDataItem = (
+    keyValue: string,
+    columnName: string,
+    value: VuuRowDataItemType
+  ) => {
+    this.validateDataValue(columnName, value);
     // TODO take sorting, filtering. grouping into account
-    const keyValue = row[this.key];
     const colIndex = this.#columnMap[columnName];
     const dataColIndex = this.dataMap?.[columnName];
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
     if (dataIndex !== -1 && dataColIndex !== undefined) {
       const dataSourceRow = this.#data[dataIndex];
-      dataSourceRow[colIndex] = row[dataColIndex];
+      dataSourceRow[colIndex] = value;
       const { from, to } = this.#range;
       const [rowIdx] = dataSourceRow;
       if (rowIdx >= from && rowIdx < to) {
         this.sendRowsToClient(false, dataSourceRow);
       }
     }
+  };
+
+  protected update = (row: VuuRowDataItemType[], columnName: string) => {
+    // TODO take sorting, filtering. grouping into account
+    const keyValue = row[this.key] as string;
+    const dataColIndex = this.dataMap?.[columnName] as number;
+    return this.updateDataItem(keyValue, columnName, row[dataColIndex]);
   };
 
   protected updateRow = (row: VuuRowDataItemType[]) => {
@@ -704,13 +746,13 @@ export class ArrayDataSource
         case "VP_EDIT_CELL_RPC":
           {
             // TODO
-            // const { rowKey, field, value } = rpcRequest;
-            // try {
-            //   this.update(rowKey, field, value);
-            //   resolve(undefined);
-            // } catch (error) {
-            //   resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
-            // }
+            const { rowKey, field, value } = rpcRequest;
+            try {
+              this.updateDataItem(rowKey, field, value);
+              resolve(undefined);
+            } catch (error) {
+              resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
+            }
           }
 
           break;

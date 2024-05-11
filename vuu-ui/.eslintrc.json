@@ -33,8 +33,7 @@
         "additionalHooks": "(useLayoutEffectSkipFirst)"
       }
     ],
-
-    "no-unused-vars": 0,
+    "no-prototype-builtins": 0,
     "prefer-const": ["error", { "destructuring": "all" }],
     "@typescript-eslint/no-unused-vars": [
       "error",

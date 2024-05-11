@@ -485,8 +485,10 @@ export interface DataSource
   visualLink?: LinkDescriptorWithLabel;
 }
 
-export interface MenuRpcResponse {
-  action: MenuRpcAction;
+export interface MenuRpcResponse<
+  TAction extends MenuRpcAction = MenuRpcAction
+> {
+  action: TAction;
   error?: string;
   requestId: string;
   rpcName?: string;
