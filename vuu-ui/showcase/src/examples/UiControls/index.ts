@@ -1,5 +1,4 @@
 export * as Calendar from "./Calendar.examples";
-export * as ComboBox from "./Combobox.examples";
 export * as DateInput from "./DateInput.examples";
 export * as DatePopup from "./DatePopup.examples";
 export * as DragDrop from "./DragDrop.examples";

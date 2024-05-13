@@ -66,7 +66,8 @@ export const Dialog = ({
   useLayoutEffect(() => {
     if (rootRef.current) {
       if (isOpen) {
-        rootRef.current.showModal();
+        // rootRef.current.showModal();
+        rootRef.current.show();
 
         const { left, top } = rootRef.current.getBoundingClientRect();
         if (portalRef.current) {

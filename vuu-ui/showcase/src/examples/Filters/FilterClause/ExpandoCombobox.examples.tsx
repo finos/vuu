@@ -1,5 +1,5 @@
 import { ComboBoxProps, Option } from "@salt-ds/core";
-import { ExpandoCombobox, ExpandoComboboxSalt } from "@finos/vuu-filters";
+import { ExpandoCombobox } from "@finos/vuu-filters";
 import { ChangeEvent, SyntheticEvent, useState } from "react";
 
 let displaySequence = 1;
@@ -57,15 +57,6 @@ const longUsStates = [
   "Wyoming",
 ];
 
-export const DefaultExpandoCombobox = () => (
-  <ExpandoCombobox
-    data-showcase-center
-    source={longUsStates}
-    style={{ border: "solid 1px black", minWidth: 16 }}
-  />
-);
-DefaultExpandoCombobox.displaySequence = displaySequence++;
-
 function getTemplateDefaultValue({
   defaultValue,
   defaultSelected,
@@ -111,7 +102,7 @@ export const DefaultExpandoComboboxSalt = (props: ComboBoxProps) => {
   };
 
   return (
-    <ExpandoComboboxSalt
+    <ExpandoCombobox
       data-showcase-center
       onChange={handleChange}
       onSelectionChange={handleSelectionChange}
@@ -125,7 +116,7 @@ export const DefaultExpandoComboboxSalt = (props: ComboBoxProps) => {
         .map((state) => (
           <Option value={state} key={state} />
         ))}
-    </ExpandoComboboxSalt>
+    </ExpandoCombobox>
   );
 };
 DefaultExpandoComboboxSalt.displaySequence = displaySequence++;

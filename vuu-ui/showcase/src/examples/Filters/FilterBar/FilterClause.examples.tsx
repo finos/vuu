@@ -3,21 +3,23 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { TableSchema } from "@finos/vuu-data-types";
 import {
   ExpandoCombobox,
-  ExpandoComboboxProps,
   FilterClauseModel,
   FilterClause,
   FilterClauseValueEditorText,
 } from "@finos/vuu-filters";
+import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import {
-  ExpandoInput,
-  MultiSelectionHandler,
-  SingleSelectionHandler,
-} from "@finos/vuu-ui-controls";
-import { ChangeEvent, useCallback, useMemo, useState } from "react";
+  ChangeEvent,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { useAutoLoginToVuuServer } from "../../utils";
 
 import "./FilterClause.examples.css";
 import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
+import { ComboBoxProps, Option } from "@salt-ds/core";
 
 let displaySequence = 1;
 
@@ -34,7 +36,7 @@ export const DefaultExpandoInput = () => {
 DefaultExpandoInput.displaySequence = displaySequence++;
 
 export const DefaultExpandoComboBox = (
-  props: Partial<ExpandoComboboxProps<ColumnDescriptor>>
+  props: Partial<ComboBoxProps<ColumnDescriptor>>
 ) => {
   const columns: ColumnDescriptor[] = useMemo(
     () => [
@@ -53,30 +55,31 @@ export const DefaultExpandoComboBox = (
     []
   );
 
-  const getColumnName = useCallback(
-    (column) => (column as ColumnDescriptor).name,
+  const handleSelectionChange = useCallback(
+    (_e: SyntheticEvent, [column]: ColumnDescriptor[]) => {
+      console.log(`select column ${column.name}`);
+    },
     []
   );
 
-  const handleSelectionChange: SingleSelectionHandler<ColumnDescriptor> =
-    useCallback((evt, column) => {
-      console.log(`select column ${column.name}`);
-    }, []);
-
   return (
-    <ExpandoCombobox<ColumnDescriptor>
+    <ExpandoCombobox
       {...props}
-      itemToString={getColumnName}
       onSelectionChange={handleSelectionChange}
-      source={columns}
       style={{ border: "solid 1px black", margin: 10, minWidth: 20 }}
-    />
+    >
+      {columns.map((column, i) => (
+        <Option key={i} value={column.name}>
+          {column.label ?? column.name}
+        </Option>
+      ))}
+    </ExpandoCombobox>
   );
 };
 DefaultExpandoComboBox.displaySequence = displaySequence++;
 
 export const DefaultExpandoComboBoxHighlightFirstRow = () => {
-  return <DefaultExpandoComboBox initialHighlightedIndex={0} />;
+  return <DefaultExpandoComboBox />;
 };
 DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
 
@@ -154,11 +157,14 @@ export const MultiSelectExpandoComboBox = () => {
 
   return (
     <ExpandoCombobox
+      multiselect
       onSelectionChange={handleSelectionChange}
-      selectionStrategy="multiple"
-      source={currencies}
       style={{ border: "solid 2px black", minWidth: 20 }}
-    />
+    >
+      {currencies.map((value, i) => (
+        <Option key={i} value={value} />
+      ))}
+    </ExpandoCombobox>
   );
 };
 MultiSelectExpandoComboBox.displaySequence = displaySequence++;

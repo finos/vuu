@@ -1,5 +1,5 @@
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { ExpandoComboboxSalt } from "./ExpandoComboboxSalt";
+import { ExpandoCombobox } from "./ExpandoCombobox";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { FilterClauseOp } from "packages/vuu-filter-types";
 import { getOperators } from "./operator-utils";
@@ -29,7 +29,7 @@ export const OperatorPicker = forwardRef(function ColumnPicker(
   };
 
   return (
-    <ExpandoComboboxSalt
+    <ExpandoCombobox
       inputProps={inputProps}
       className={className}
       data-field="operator"
@@ -41,6 +41,6 @@ export const OperatorPicker = forwardRef(function ColumnPicker(
       {getOperators(column).map((op) => (
         <Option value={op} key={op} />
       ))}
-    </ExpandoComboboxSalt>
+    </ExpandoCombobox>
   );
 });

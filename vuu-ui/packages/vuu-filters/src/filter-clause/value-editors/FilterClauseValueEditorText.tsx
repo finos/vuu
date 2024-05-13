@@ -13,7 +13,7 @@ import {
 import type { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
-import { ExpandoComboboxSalt } from "../ExpandoComboboxSalt";
+import { ExpandoCombobox } from "../ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 import type {
   SuggestionFetcher,
@@ -155,7 +155,7 @@ export const FilterClauseValueEditorText = forwardRef(
       switch (operator) {
         case "in":
           return (
-            <ExpandoComboboxSalt
+            <ExpandoCombobox
               inputProps={inputProps}
               className={className}
               data-field="value"
@@ -175,11 +175,11 @@ export const FilterClauseValueEditorText = forwardRef(
                 .map((state) => (
                   <Option value={state} key={state} />
                 ))}
-            </ExpandoComboboxSalt>
+            </ExpandoCombobox>
           );
         case "starts": {
           return (
-            <ExpandoComboboxSalt
+            <ExpandoCombobox
               inputProps={inputProps}
               // ListProps={{
               //   className: "vuuIllustrationsOnly",
@@ -209,7 +209,7 @@ export const FilterClauseValueEditorText = forwardRef(
 
         default: {
           return typeaheadValues.length > 0 ? (
-            <ExpandoComboboxSalt
+            <ExpandoCombobox
               inputProps={inputProps}
               className={className}
               data-field="value"
@@ -222,7 +222,7 @@ export const FilterClauseValueEditorText = forwardRef(
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} />
               ))}
-            </ExpandoComboboxSalt>
+            </ExpandoCombobox>
           ) : null;
         }
       }
