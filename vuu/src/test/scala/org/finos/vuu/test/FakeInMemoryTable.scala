@@ -5,11 +5,11 @@ import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, KeyObserver, RowData, RowKeyUpdate, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
-class FakeInMemoryTable(name:String, tableDef: TableDef) extends DataTable {
+class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extends DataTable {
 
   private val rowMap = scala.collection.mutable.HashMap.empty[String, RowWithData]
 
-  override def name: String = name
+  override def name: String = instanceName
   override def getTableDef: TableDef = tableDef
 
   override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long = 0): Unit =

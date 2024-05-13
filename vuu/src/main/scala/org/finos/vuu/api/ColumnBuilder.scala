@@ -9,24 +9,24 @@ class ColumnBuilder {
   val columns = new ArrayBuilder.ofRef[String]()
 
   def addString(columnName: String): ColumnBuilder = {
-    columns +: (columnName + ":String")
+    columns += (columnName + ":String")
     this
   }
 
   def addDouble(columnName: String): ColumnBuilder = {
-    columns +: (columnName + ":Double")
+    columns += (columnName + ":Double")
     this
   }
 
   def addInt(columnName: String): ColumnBuilder = {
-    columns +: (columnName + ":Int")
+    columns += (columnName + ":Int")
     this
   }
 
   def addLong(columnName: String): ColumnBuilder = {
-    columns +: (columnName + ":Long")
+    columns += (columnName + ":Long")
     this
   }
 
-  def build: Array[Column] = Columns.fromNames(columns.result())
+  def build(): Array[Column] = Columns.fromNames(columns.result())
 }
