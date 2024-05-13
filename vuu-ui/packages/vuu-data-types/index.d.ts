@@ -339,6 +339,7 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
+  "subscription-open": (subscription: DataSourceSubscribedMessage) => void;
 };
 
 /**

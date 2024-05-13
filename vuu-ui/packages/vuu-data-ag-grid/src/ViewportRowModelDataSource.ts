@@ -85,6 +85,7 @@ export class ViewportRowModelDataSource {
       if (itemsOrOrderChanged(this.columns, columns)) {
         this.columns = columns;
         this.columnMap = buildColumnMap(columns);
+        this.reverseColumnMap = reverseColumnMap(this.columnMap);
       }
     }
   };
