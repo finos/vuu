@@ -1,5 +1,5 @@
 import { SuggestionFetcher } from "@finos/vuu-data-types";
-import { TypeaheadParams, VuuMenu } from "@finos/vuu-protocol-types";
+import { ClientToServerEditRpc, ClientToServerMenuRPC, TypeaheadParams, VuuMenu, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { makeSuggestions } from "../makeSuggestions";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
@@ -66,6 +66,13 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
         name: "Edit Row",
         rpcName: "EDIT_ROW",
       },
+      {
+        context: "selected-rows",
+        filter: "",
+        name: "Edit Rows",
+        rpcName: "BULK_EDIT",
+      },
+      
     ],
   },
   instrumentsExtended: undefined,
@@ -100,11 +107,10 @@ async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
 }
 
 const keyIndex = 6;
-async function editRow(/*rpcRequest: unknown*/rpcRequest: any) {
-  //console.log(rpcRequest);
+async function editRow(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc | {selectedRowIds: string[]}) {
   const sessionTableId = "session-table-1";
-  let sessionData: any[] = [];
-  const selectedRowIds = rpcRequest.selectedRowIds;
+  const sessionData: VuuRowDataItemType[][] = [];
+  const selectedRowIds = (rpcRequest as {selectedRowIds: string[]}).selectedRowIds;
   for (let i=0; i<selectedRowIds.length; i++){
     for (let j=0; j<instrumentsTable.data.length; j++){
       if (instrumentsTable.data[j][keyIndex] === selectedRowIds[i]){
@@ -128,13 +134,12 @@ async function editRow(/*rpcRequest: unknown*/rpcRequest: any) {
       type: "OPEN_DIALOG_ACTION",
     },
     requestId: "request_id",
-    rpcName: "EDIT_ROW"
+    rpcName: "BULK_EDIT"
   };
 }
 
-async function applyBulkEdits(/*rpcRequest: unknown*/rpcRequest: any) {
+async function applyBulkEdits() {
   for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
-    const newTable = sessionTables['session-table-1'];
     const newRow = sessionTables['session-table-1'].data[i];
     instrumentsTable.updateRow(newRow);
   }
@@ -153,11 +158,10 @@ async function applyBulkEdits(/*rpcRequest: unknown*/rpcRequest: any) {
   };
 }
 
-async function applyEditMultiple(/*rpcRequest: unknown*/rpcRequest: any) {
+async function applyEditMultiple(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc  | {multiEditCol: string}  | {multiEditVal: string}) {
   for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
-    const newTable = sessionTables['session-table-1'];
     const newRow = sessionTables['session-table-1'].data[i];
-    instrumentsTable.update(String(newRow[keyIndex]), rpcRequest.multiEditCol, rpcRequest.multiEditVal);
+    instrumentsTable.update(String(newRow[keyIndex]), (rpcRequest as {multiEditCol: string}).multiEditCol, (rpcRequest as {multiEditVal: string}).multiEditVal);
   }
   
   return {
@@ -182,7 +186,7 @@ const services: Record<SimulTableName, RpcService[] | undefined> = {
       service: addInstrumentsToOrder,
     },
     {
-      rpcName: "EDIT_ROW",
+      rpcName: "BULK_EDIT",
       service: editRow,
     },
     {

@@ -9,3 +9,4 @@ export * from "./useControlledTableNavigation";
 export * from "./useTableModel";
 export * from "./useTableScroll";
 export * from "./useTableViewport";
+export * from "./bulk-edit"

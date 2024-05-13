@@ -109,7 +109,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   private getSelectedRowIds() {
     const keyIndex = 6;
-    let rowIds: any[] = [];
+    const rowIds: any[] = [];
     return this.selectedRows.reduce<DataSourceRow[]>(
       (rows: DataSourceRow[], selected: SelectionItem) => {
         if (Array.isArray(selected)) {
