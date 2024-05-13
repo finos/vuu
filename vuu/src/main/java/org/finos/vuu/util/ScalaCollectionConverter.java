@@ -27,3 +27,4 @@ public class ScalaCollectionConverter {
         return CollectionConverters.SeqHasAsJava(l).asJava();
     }
 }
+
