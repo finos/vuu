@@ -2,11 +2,11 @@ package org.finos.vuu.api
 
 import org.finos.vuu.core.table.{Column, Columns}
 
-import scala.collection.mutable.ArrayBuilder
+import scala.collection.mutable
 
 class ColumnBuilder {
 
-  val columns = new ArrayBuilder.ofRef[String]()
+  val columns = new mutable.ArrayBuilder.ofRef[String]()
 
   def addString(columnName: String): ColumnBuilder = {
     columns += (columnName + ":String")

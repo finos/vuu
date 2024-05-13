@@ -1,11 +1,14 @@
 package org.finos.vuu.util
 
-import org.finos.vuu.api.{ColumnBuilder, TableDef}
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.test.{FakeIgniteStore, FakeInMemoryTable, SchemaTestData}
-import org.finos.vuu.util.schema.{ExternalEntitySchema, ExternalEntitySchemaBuilder, SchemaMapperBuilder}
+import org.finos.vuu.util.schema.SchemaMapper
 
-class SchemaExample {
+class SchemaExample(val tableDef: TableDef, schemaMapper: SchemaMapper) {
+
+  val igniteStore: FakeIgniteStore = new FakeIgniteStore
+  var table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 
   //todo - do we want to turn this in to functional test so it fails if we break it while changing any part of the schema mapper
   //todo try more scenarios
@@ -17,63 +20,43 @@ class SchemaExample {
   // - when table def columns are in different order from fields on entity
   // - example of generating table Def from an class rather than using column builder? maybe more of a unit teest/example for table def?
 
-  //create table def (use column builder)
-  val tableDef = TableDef(
-    name = "MyExampleTable",
-    keyField = "Id",
-    columns = new ColumnBuilder()
-      .addString("Id")
-      .addDouble("NotionalValue")
-      .build()
-  )
 
-  //todo to respect the QueryEntity order of fields, if it is different from order of fields on the entity class, should be generated using that?
-  //create entity schema
-  val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-    .withEntity(classOf[SchemaTestData])
-    .withIndex("ID_INDEX", List("Id"))
-    .build()
+  //todo make it not specific to ignite? type the results more?
+  def givenIgniteSqlFieldQueryReturns(queryName: String, results: List[List[Any]]): Unit = {
+    igniteStore.setUpSqlFieldsQuery(queryName, results)
+  }
 
-  //create schema mapper
-  private val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
-    //.withFieldsMap(columnNameByExternalField)
-    .build()
+  def getIgniteQueryResult(queryName: String): List[List[Any]] = {
+    igniteStore.getSqlFieldsQuery(queryName)
+      .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
+  }
 
-  //get data from ignite as list of values
-  private val queryName = "myQuery"
-  val igniteStore: FakeIgniteStore = new FakeIgniteStore
-  igniteStore.setUpSqlFieldsQuery(
-    queryName,
-    List(
-      List("id1", 10.5)
-    )
-  )
+  def mapToRow(resultData: List[List[Any]]): Seq[RowWithData] = {
 
-  val result = igniteStore.getSqlFieldsQuery(queryName)
-    .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
+    // map to entity object - as order of values are relevant to how the query schema was defined
+    //todo two options, is direct to row map better if query result returns values?
+    val tableRowMap1 = resultData
+      .map(rowData => mapToEntity(rowData))
+      .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity))
 
-  // map to entity object - as order of values are relevant to how the query schema was defined
-  //todo two options, is direct to row map better if query result returns values?
-  val tableRowMap1 = result
-    .map(rowData => mapToEntity(rowData))
-    .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity))
+    val tableRowMap2: Seq[Map[String, Any]] =
+      resultData.map(rowData => schemaMapper.toInternalRowMap(rowData))
 
-  private val tableRowMap2: Seq[Map[String, Any]] =
-    result.map(rowData => schemaMapper.toInternalRowMap(rowData))
+    //map to tablerow
+    val keyFieldName = tableDef.keyField
+    tableRowMap2.map(rowMap => {
+      val keyValue = rowMap(keyFieldName).toString
+      RowWithData(keyValue, rowMap)
+    })
+  }
 
-  //map to tablerow
-  val keyFieldName = tableDef.keyField
-  val tableRows = tableRowMap2.map(rowMap => {
-    val keyValue = rowMap(keyFieldName).toString
-    RowWithData(keyValue, rowMap)
-  })
+  def updateTable(rows: Seq[RowWithData]): Unit = {
+    rows.foreach(row => table.processUpdate(row.key, row))
+  }
 
-  //update table with table row?
-  var table = new FakeInMemoryTable("SchemaMapTest", tableDef)
-  tableRows.foreach(row => table.processUpdate(row.key, row))
-
-  //assert on reading the table row - is that possible or need to use mock table with table interface
-  var existingRows = table.pullAllRows()
+  def getExitingRows() = {
+    table.pullAllRows()
+  }
 
   //todo different for java
   private def mapToEntity(rowData: List[Any]): SchemaTestData =
@@ -81,6 +64,7 @@ class SchemaExample {
 
 
 }
+
 //copy of one in org.finos.vuu.example.ignite.utils
 //todo if not going to use or move to common place
 object getListToObjectConverter {

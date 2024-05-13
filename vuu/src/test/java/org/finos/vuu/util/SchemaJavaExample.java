@@ -55,7 +55,7 @@ public class SchemaJavaExample {
         //todo should use fake java store?
         List<List<Object>> result =
                 OptionConverters.toJava(igniteStore.getSqlFieldsQuery(queryName))
-                        .map(listOfLists -> toJava(listOfLists.map(list -> toJava(list)).toList()))
+                        .map(listOfLists -> toJava(listOfLists.map(ScalaCollectionConverter::toJava).toList()))
                         .orElseThrow(()-> new Exception("query does not exist in store. make sure it is setup"));
 
         // map to entity object  and then to row

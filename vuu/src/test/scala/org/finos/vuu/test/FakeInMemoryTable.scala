@@ -16,8 +16,7 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
     rowMap += (rowKey -> rowUpdate)
 
   override def pullRow(key: String): RowData =
-    rowMap.get(key)
-      .getOrElse(throw new Exception(s"Could not find row data for key $key in table $name"))
+    rowMap.getOrElse(key, throw new Exception(s"Could not find row data for key $key in table $name"))
 
   def pullAllRows() : List[RowWithData] =  rowMap.values.toList
 
