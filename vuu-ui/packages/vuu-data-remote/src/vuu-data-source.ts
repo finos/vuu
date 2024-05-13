@@ -191,6 +191,7 @@ export class VuuDataSource
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
       this.clientCallback?.(message);
+      this.emit("subscription-open", message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
     } else if (message.type === "enabled") {

@@ -6,6 +6,7 @@ import {
   DataSourceFilter,
   DataSourceRow,
   DataSourceStatus,
+  DataSourceSubscribedMessage,
   MenuRpcResponse,
   Selection,
   SubscribeCallback,
@@ -216,13 +217,15 @@ export class ArrayDataSource
       };
     }
 
-    this.clientCallback?.({
+    const subscribedMessage: DataSourceSubscribedMessage = {
       ...config,
       type: "subscribed",
       clientViewportId: this.viewport,
       range: this.#range,
       tableSchema: this.tableSchema,
-    });
+    };
+    this.clientCallback?.(subscribedMessage);
+    this.emit("subscription-open", subscribedMessage);
 
     if (hasConfigProps) {
       // invoke setter to action config
