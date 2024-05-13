@@ -24,14 +24,14 @@ class SchemaExample {
     columns = new ColumnBuilder()
       .addString("Id")
       .addDouble("NotionalValue")
-      .build
+      .build()
   )
 
   //todo to respect the QueryEntity order of fields, if it is different from order of fields on the entity class, should be generated using that?
   //create entity schema
   val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
     .withEntity(classOf[SchemaTestData])
-    .withIndex("ID_INDEX", List("id"))
+    .withIndex("ID_INDEX", List("Id"))
     .build()
 
   //create schema mapper
@@ -44,8 +44,8 @@ class SchemaExample {
   val igniteStore: FakeIgniteStore = new FakeIgniteStore
   igniteStore.setUpSqlFieldsQuery(
     queryName,
-    List[List[Any]](
-      "id1", 10.5
+    List(
+      List("id1", 10.5)
     )
   )
 

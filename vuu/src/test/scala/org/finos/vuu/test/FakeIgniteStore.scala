@@ -21,5 +21,5 @@ class FakeIgniteStore(){
   }
 }
 
-case class SchemaTestData(id :String, notionalValue: Double) {
+case class SchemaTestData(Id :String, NotionalValue: Double) {
 }
