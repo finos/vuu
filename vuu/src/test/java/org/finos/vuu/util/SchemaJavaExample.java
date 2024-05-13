@@ -2,20 +2,24 @@ package org.finos.vuu.util;
 
 import org.finos.vuu.api.ColumnBuilder;
 import org.finos.vuu.api.TableDef;
+import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.test.FakeIgniteStore;
-import org.finos.vuu.test.SchemaTestData;
+import org.finos.vuu.test.FakeInMemoryTable;
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder;
 import org.finos.vuu.util.schema.SchemaMapperBuilder;
-import org.finos.vuu.util.schema.SchemaMapperBuilder$;
-import scala.collection.immutable.Seq;
+import scala.jdk.javaapi.OptionConverters;
 
 import java.util.List;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
-import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
+import static org.finos.vuu.util.ScalaCollectionConverter.*;
 
 public class SchemaJavaExample {
-    public void doSomething(){
+
+    public static void main(String[] args) throws Exception {
+
+        doSomething();
+    }
+    public static void doSomething() throws Exception {
 
         //create table def
         var tableDef = TableDef.apply(
@@ -32,7 +36,7 @@ public class SchemaJavaExample {
         //create entity schema
         var externalEntitySchema = ExternalEntitySchemaBuilder.apply()
                 .withEntity(SchemaJavaTestData.class)
-                .withIndex("ID_INDEX", toScala( List.of("id")))
+                .withIndex("ID_INDEX", toScala( List.of("Id")))
                 .build();
 
         //create schema mapper
@@ -40,43 +44,42 @@ public class SchemaJavaExample {
                 //.withFieldsMap(columnNameByExternalField)
                 .build();
 
-        //get data from ignite as list of varues
+        //get data from ignite as list of values
         var queryName = "myQuery";
         var igniteStore = new FakeIgniteStore();
         igniteStore.setUpSqlFieldsQuery(
                 queryName,
-                toScala(List.of(
-                        toScala(List.of("id1", 10.5))
-                ))
-//                ScalaList.of(
-//                        ScalaList.of("id1", 10.5)
-//               )
+                ScalaList.of(ScalaList.of("id1", 10.5))
             );
 
-//        List<List<Object>> result = igniteStore.getSqlFieldsQuery(queryName)
-//                .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"));
+        //todo should use fake java store?
+        List<List<Object>> result =
+                OptionConverters.toJava(igniteStore.getSqlFieldsQuery(queryName))
+                        .map(listOfLists -> toJava(listOfLists.map(list -> toJava(list)).toList()))
+                        .orElseThrow(()-> new Exception("query does not exist in store. make sure it is setup"));
 
-        // map to entity object - as order of values are relevant to how the query schema was defined
-//        var tableRowMap1 = result
-//                .map(rowData => mapToEntity(rowData))
-//            .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity));
+        // map to entity object  and then to row
 
-//        var tableRowMap2 =
-//        result.map(rowData => schemaMapper.toInternalRowMap(rowData));
-//
-//        //map to tablerow
-//        var keyFieldName = tableDef.keyField;
-//        var tableRows = tableRowMap2.map(rowMap => {
-//                var keyvarue = rowMap(keyFieldName).toString
-//                RowWithData(keyvarue, rowMap)
-//        });
-//
-//        //update table with table row?
-//        var table = new FakeInMemoryTable("SchemaMapTest", tableDef);
-//        tableRows.foreach(row => table.processUpdate(row.key, row));
-//
-//        //assert on reading the table row - is that possible or need to use mock table with table interface
-//        var existingRows = table.pullAllRows();
+        //map to row directly
+        var tableRowMap = result.stream()
+                .map(rowData ->
+                        schemaMapper.toInternalRowMap(toScala(rowData)
+                        ));
+                //.map(rowMap -> toJava(rowMap));
+
+        //map to tablerow
+        var keyFieldName = tableDef.keyField();
+        var tableRows = tableRowMap.map(rowMap -> {
+                var keyValue = rowMap.get(keyFieldName).toString();
+                return new RowWithData(keyValue, rowMap);
+        });
+
+        //update table with table row?
+        var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
+        tableRows.forEach(row -> table.processUpdate(row.key(), row, 0)); //todo use clock now
+
+        //assert on reading the table row - is that possible or need to use mock table with table interface
+        var existingRows = table.pullAllRows();
     }
 
 
