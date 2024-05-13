@@ -13,6 +13,7 @@ NEQ : '!=';
 IN : 'in';
 STARTS : 'starts';
 ENDS : 'ends';
+CONTAINS : 'contains';
 //PATHSEP : '/';
 LBRACK : '[';
 RBRACK : ']';
@@ -29,7 +30,7 @@ term : atom ( operator atom)? | LPAREN or_expression RPAREN | atom operator LBRA
 
 atom : ID | INT | FLOAT | STRING | TRUE | FALSE;
 
-operator : LT | LTE | GT | GTE | EQ | NEQ | IN | STARTS | ENDS;
+operator : LT | LTE | GT | GTE | EQ | NEQ | IN | STARTS | ENDS | CONTAINS;
 
 INT : '0'..'9'+;
 FLOAT : ('0'..'9')+ '.' ('0'..'9')*;

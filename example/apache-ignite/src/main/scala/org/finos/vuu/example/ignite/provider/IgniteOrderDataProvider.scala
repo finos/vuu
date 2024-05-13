@@ -57,18 +57,11 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
 
   private def tableUpdater(table: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = table.tableDef.keyField
-    def hasRowChangedAtIndex = getHasRowChanged(table)
 
-    (index, rowMap) => {
+    (idx, rowMap) => {
       val newRow = RowWithData(rowMap(keyField).toString, rowMap)
-      if (hasRowChangedAtIndex(index, newRow)) table.processUpdateForIndex(index, newRow.key, newRow, clock.now())
+      if (table.hasRowChangedAtIndex(idx, newRow)) table.processUpdateForIndex(idx, newRow.key, newRow, clock.now())
     }
-  }
-
-  private def getHasRowChanged(table: VirtualizedSessionTable) = (index: Int, newRow: RowWithData) => {
-    val existingKeyAtIndex = table.primaryKeys.get(index)
-    val existingRow = table.pullRow(existingKeyAtIndex)
-    !existingRow.equals(newRow)
   }
 
   override def subscribe(key: String): Unit = {}

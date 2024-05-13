@@ -7,19 +7,19 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class FilterClauseTest extends AnyFeatureSpec with Matchers {
 
-  private val testRow = RowWithData("Key", Map(
-    "null-col" -> null,
-    "ric" -> "TEST.L",
-    "size" -> 4,
-    "timestamp" -> 5L,
-    "priceInFloat" -> 100f,
-    "priceInDouble" -> 100.0d,
-    "true-col" -> true,
-    "false-col" -> false,
-    "empty-string-col" -> "",
-  ))
-
   Feature("EqualsClause.filter") {
+
+    val testRow = RowWithData("Key", Map(
+      "null-col" -> null,
+      "ric" -> "TEST.L",
+      "size" -> 4,
+      "timestamp" -> 5L,
+      "priceInFloat" -> 100f,
+      "priceInDouble" -> 100.0d,
+      "true-col" -> true,
+      "false-col" -> false,
+      "empty-string-col" -> "",
+    ))
 
     forAll(Table(
       ("columnType", "columnName", "value", "expected"),
@@ -77,5 +77,33 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
         EqualsClause(columnName, value).filter(testRow) should equal(true)
       }
     })
+  }
+
+  Feature("ContainsClause.filter") {
+    def givenARow(assetClass: String) = RowWithData("key", Map("assetClass" -> assetClass))
+
+    Scenario("should return true when row at a given column contains the substring") {
+      val row = givenARow(assetClass = "Fixed income products")
+
+      val result = ContainsClause("assetClass", "income").filter(row)
+
+      result shouldBe true
+    }
+
+    Scenario("should return false when row at a given column does not contain the substring") {
+      val row = givenARow(assetClass = "Fixed income products")
+
+      val result = ContainsClause("assetClass", "incomes").filter(row)
+
+      result shouldBe false
+    }
+
+    Scenario("should return false when row at a given column is null") {
+      val row = givenARow(assetClass = null)
+
+      val result = ContainsClause("assetClass", "substring").filter(row)
+
+      result shouldBe false
+    }
   }
 }

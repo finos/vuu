@@ -36,6 +36,12 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     super.processUpdate(rowKey, rowData, timeStamp)
   }
 
+  def hasRowChangedAtIndex(index: Int, row: RowWithData): Boolean = {
+    val existingKeyAtIndex = this.primaryKeys.get(index)
+    val existingRow = this.pullRow(existingKeyAtIndex)
+    !existingRow.equals(row)
+  }
+
   /**
    * Set the total data set size after gathering the results.
    *

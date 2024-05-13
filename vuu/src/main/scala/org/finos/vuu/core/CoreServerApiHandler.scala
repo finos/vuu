@@ -224,7 +224,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       errorMsg(s"Table ${msg.table} not found in container")(ctx)
     else {
       val table = tableContainer.getTable(msg.table.table)
-      val columnNames = table.getTableDef.columns.map(_.name).sorted
+      val columnNames = table.getTableDef.columns.sortBy(_.index).map(_.name)
       val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
       vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
     }

@@ -39,10 +39,13 @@ class IgniteSqlFilterTreeVisitor extends FilterBaseVisitor[IgniteSqlFilterClause
     RangeIgniteSqlFilterClause(RangeOp.LTE)(ctx.ID().getText, ctx.NUMBER().getText)
 
   override def visitOperationStarts(ctx: OperationStartsContext): IgniteSqlFilterClause =
-    StartsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+    RegexIgniteSqlFilterClause(RegexOp.Starts)(ctx.ID().getText, ctx.STRING().getText)
 
   override def visitOperationEnds(ctx: OperationEndsContext): IgniteSqlFilterClause =
-    EndsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+    RegexIgniteSqlFilterClause(RegexOp.Ends)(ctx.ID().getText, ctx.STRING().getText)
+
+  override def visitOperationContains(ctx: OperationContainsContext): IgniteSqlFilterClause =
+    RegexIgniteSqlFilterClause(RegexOp.Contains)(ctx.ID().getText, ctx.STRING().getText)
 
   override def visitOperationIn(ctx: OperationInContext): IgniteSqlFilterClause = {
     InIgniteSqlFilterClause(ctx.ID().getText, FilterTreeVisitor.operationInValues(ctx))
