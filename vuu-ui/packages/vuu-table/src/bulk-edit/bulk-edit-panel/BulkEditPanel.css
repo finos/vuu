@@ -1,0 +1,16 @@
+.vuuBulkEditPanel{
+    display: flex;
+    flex-direction: column;
+}
+.vuuBulkEditPanel-table {
+    align-items: center;
+    flex: 1 1 auto;
+    padding: 10px;
+}
+.vuuBulkEditPanel-buttonBar {
+    align-items: center;
+    display: flex;
+    flex: 0 0 36px;
+    justify-content: flex-end;
+    gap: var(--salt-spacing-100);
+}
