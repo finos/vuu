@@ -165,7 +165,7 @@ describe("FilterEditor", () => {
         cy.realPress("ArrowDown");
         cy.findAllByRole("option", { name: "currency" }).should(
           "have.class",
-          "vuuHighlighted"
+          "saltOption-active"
         );
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
