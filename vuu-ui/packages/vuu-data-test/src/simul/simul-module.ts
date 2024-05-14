@@ -1,5 +1,11 @@
 import { SuggestionFetcher } from "@finos/vuu-data-types";
-import { ClientToServerEditRpc, ClientToServerMenuRPC, TypeaheadParams, VuuMenu, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  ClientToServerEditRpc,
+  ClientToServerMenuRPC,
+  TypeaheadParams,
+  VuuMenu,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 import { makeSuggestions } from "../makeSuggestions";
 import { buildDataColumnMap, joinTables, Table } from "../Table";
 import { TickingArrayDataSource } from "../TickingArrayDataSource";
@@ -41,7 +47,7 @@ const tables: Record<SimulTableName, Table> = {
 };
 
 const getColumnDescriptors = (tableName: SimulTableName) => {
-  const schema = schemas[tableName] || sessionTables['session-table-1'].schema;
+  const schema = schemas[tableName] || sessionTables["session-table-1"].schema;
   if (schema) {
     return schema.columns;
   } else {
@@ -72,7 +78,6 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
         name: "Edit Rows",
         rpcName: "BULK_EDIT",
       },
-      
     ],
   },
   instrumentsExtended: undefined,
@@ -107,13 +112,19 @@ async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
 }
 
 const keyIndex = 6;
-async function editRow(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc | {selectedRowIds: string[]}) {
+async function editRow(
+  rpcRequest:
+    | Omit<ClientToServerMenuRPC, "vpId">
+    | ClientToServerEditRpc
+    | { selectedRowIds: string[] }
+) {
   const sessionTableId = "session-table-1";
   const sessionData: VuuRowDataItemType[][] = [];
-  const selectedRowIds = (rpcRequest as {selectedRowIds: string[]}).selectedRowIds;
-  for (let i=0; i<selectedRowIds.length; i++){
-    for (let j=0; j<instrumentsTable.data.length; j++){
-      if (instrumentsTable.data[j][keyIndex] === selectedRowIds[i]){
+  const selectedRowIds = (rpcRequest as { selectedRowIds: string[] })
+    .selectedRowIds;
+  for (let i = 0; i < selectedRowIds.length; i++) {
+    for (let j = 0; j < instrumentsTable.data.length; j++) {
+      if (instrumentsTable.data[j][keyIndex] === selectedRowIds[i]) {
         sessionData.push(instrumentsTable.data[j]);
       }
     }
@@ -121,7 +132,7 @@ async function editRow(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientT
   sessionTables[sessionTableId] = new Table(
     schemas.instruments,
     sessionData,
-    buildDataColumnMap(schemas.instruments)
+    buildDataColumnMap(schemas, "instruments")
   );
 
   return {
@@ -134,16 +145,16 @@ async function editRow(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientT
       type: "OPEN_DIALOG_ACTION",
     },
     requestId: "request_id",
-    rpcName: "BULK_EDIT"
+    rpcName: "BULK_EDIT",
   };
 }
 
 async function applyBulkEdits() {
-  for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
-    const newRow = sessionTables['session-table-1'].data[i];
+  for (let i = 0; i < sessionTables["session-table-1"].data.length; i++) {
+    const newRow = sessionTables["session-table-1"].data[i];
     instrumentsTable.updateRow(newRow);
   }
-  
+
   return {
     action: {
       renderComponent: "grid",
@@ -154,16 +165,26 @@ async function applyBulkEdits() {
       type: "OPEN_DIALOG_ACTION",
     },
     requestId: "request_id",
-    rpcName: "APPLY_BULK_EDITS"
+    rpcName: "APPLY_BULK_EDITS",
   };
 }
 
-async function applyEditMultiple(rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc  | {multiEditCol: string}  | {multiEditVal: string}) {
-  for (let i=0; i<sessionTables['session-table-1'].data.length; i++){
-    const newRow = sessionTables['session-table-1'].data[i];
-    instrumentsTable.update(String(newRow[keyIndex]), (rpcRequest as {multiEditCol: string}).multiEditCol, (rpcRequest as {multiEditVal: string}).multiEditVal);
+async function applyEditMultiple(
+  rpcRequest:
+    | Omit<ClientToServerMenuRPC, "vpId">
+    | ClientToServerEditRpc
+    | { multiEditCol: string }
+    | { multiEditVal: string }
+) {
+  for (let i = 0; i < sessionTables["session-table-1"].data.length; i++) {
+    const newRow = sessionTables["session-table-1"].data[i];
+    instrumentsTable.update(
+      String(newRow[keyIndex]),
+      (rpcRequest as { multiEditCol: string }).multiEditCol,
+      (rpcRequest as { multiEditVal: string }).multiEditVal
+    );
   }
-  
+
   return {
     action: {
       renderComponent: "grid",
@@ -174,7 +195,7 @@ async function applyEditMultiple(rpcRequest: Omit<ClientToServerMenuRPC, "vpId">
       type: "OPEN_DIALOG_ACTION",
     },
     requestId: "request_id",
-    rpcName: "APPLY_EDIT_MULTIPLE"
+    rpcName: "APPLY_EDIT_MULTIPLE",
   };
 }
 
@@ -210,7 +231,10 @@ const createDataSource = (tableName: SimulTableName) => {
   //console.log(sessionTables['session-table-1'].schema);
   return new TickingArrayDataSource({
     columnDescriptors,
-    keyColumn: schemas[tableName]=== undefined ? sessionTables[tableName].schema.key : schemas[tableName].key,
+    keyColumn:
+      schemas[tableName] === undefined
+        ? sessionTables[tableName].schema.key
+        : schemas[tableName].key,
     table: tables[tableName] || sessionTables[tableName],
     menu: menus[tableName],
     rpcServices: services[tableName],

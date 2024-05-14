@@ -21,7 +21,6 @@ export const useDialog = () => {
       className="vuDialog"
       isOpen={true}
       onClose={handleClose}
-      style={{ maxHeight: 500 }}
       title={dialogState.title}
       hideCloseButton={dialogState.hideCloseButton}
     >

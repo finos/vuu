@@ -2,7 +2,6 @@ import { Button, Text } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
-import cx from "clsx";
 
 import dialogHeaderCss from "./DialogHeader.css";
 
@@ -27,7 +26,7 @@ export const DialogHeader = ({
   });
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, "vuuToolbarProxy")}>
+    <div {...htmlAttributes} className={classBase}>
       <Text className="dialogHeader">{title}</Text>
       {!hideCloseButton && (
         <Button

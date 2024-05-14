@@ -2,6 +2,8 @@
   background: var(--salt-container-primary-background);
   border: var(--vuuDialog-border, solid 1px #ccc);
   border-radius: 5px;
+  display: var(--vuuDialog-display, flex);
+  flex-direction: column;;
   padding: var(--vuuDialog-padding, 16px);
   position: relative;
   box-shadow: var(--salt-overlayable-shadow, none);
@@ -11,6 +13,6 @@
 }
 
 .vuuDialog-body {
-  padding-top: 16px;
+  flex: 1 1 auto;
 }
 
