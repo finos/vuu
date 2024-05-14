@@ -67,6 +67,7 @@ export const FilterBar = ({
           className="vuuIconToggleButton"
           value="custom-filter"
           aria-label="Custom filters"
+          tabIndex={-1}
         >
           <Icon name="grid" size={24} />
         </ToggleButton>
@@ -74,6 +75,7 @@ export const FilterBar = ({
           className="vuuIconToggleButton"
           value="quick-filter"
           aria-label="Quick filters"
+          tabIndex={-1}
         >
           <Icon name="tune" size={24} />
         </ToggleButton>

@@ -116,6 +116,12 @@ export const isSelectableElement = (el?: HTMLElement | null) => {
   }
 };
 
+export const hasOpenOptionList = (el: HTMLElement | EventTarget | null) => {
+  if (el !== null) {
+    return (el as HTMLElement).ariaExpanded === "true";
+  }
+};
+
 let size: number;
 
 export function getScrollbarSize() {

@@ -1,4 +1,5 @@
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
+import { hasOpenOptionList } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEvent,
@@ -9,19 +10,19 @@ import {
   useRef,
   useState,
 } from "react";
+import { FilterClauseProps } from "./FilterClause";
 import {
   clauseIsNotFirst,
+  elementIsFilterClause,
+  focusField,
   focusNextElement,
   focusNextFocusableElement,
-  elementIsFilterClause,
   navigateToNextItemIfAtBoundary,
-  focusField,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
-import { FilterClauseProps } from "./FilterClause";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
-  "columnsByName" | "filterClauseModel" | "onCancel"
+  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
 >;
 
 export type FilterClauseValueChangeHandler = (
@@ -33,6 +34,7 @@ export const useFilterClause = ({
   filterClauseModel,
   onCancel,
   columnsByName,
+  onFocusSave,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {}
@@ -125,13 +127,29 @@ export const useFilterClause = ({
       } else if (evt.key === "Backspace") {
         removeAndNavigateToNextInputIfAtBoundary(evt);
       } else if (evt.key === "Escape") {
-        onCancel?.(filterClauseModel, "Escape");
+        // ignore when optionlist is open, the optionList will be collapsed
+        if (!hasOpenOptionList(evt.target)) {
+          onCancel?.(filterClauseModel, "Escape");
+        }
       } else if (evt.key === "Tab" && evt.shiftKey) {
         evt.preventDefault();
         tabToPreviousFilterCombinator(evt.target as HTMLElement);
+      } else if (evt.key === "Tab") {
+        // if the clause is valid, skip to save
+        if (filterClauseModel.isValid) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          // TODO focus cancel if not changed
+          onFocusSave?.();
+        }
       }
     },
-    [filterClauseModel, onCancel, removeAndNavigateToNextInputIfAtBoundary]
+    [
+      filterClauseModel,
+      onCancel,
+      onFocusSave,
+      removeAndNavigateToNextInputIfAtBoundary,
+    ]
   );
 
   const handleFocus = useCallback<FocusEventHandler>((evt) => {

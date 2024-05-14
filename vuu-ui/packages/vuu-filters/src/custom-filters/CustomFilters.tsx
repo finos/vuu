@@ -1,7 +1,6 @@
 import { Prompt } from "@finos/vuu-popups";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { IconButton } from "@finos/vuu-ui-controls";
-import cx from "clsx";
 import { HTMLAttributes, ReactElement, useRef } from "react";
 import { type FilterBarProps } from "../filter-bar";
 import { FilterEditor } from "../filter-editor";
@@ -90,12 +89,11 @@ export const CustomFilters = ({
 
   return (
     <>
-      <div className="vuuCustomFilters">
+      <div className="vuuCustomFilters" ref={rootRef}>
         <div className={`${classBase}-filters`}>{getFilterPills()}</div>
         <IconButton
           {...addButtonProps}
           aria-label="Add filter"
-          className={cx("vuuIconButton")}
           data-selectable={false}
           icon="plus"
           key="filter-add"

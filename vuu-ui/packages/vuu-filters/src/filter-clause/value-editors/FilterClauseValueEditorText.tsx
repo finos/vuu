@@ -72,7 +72,7 @@ export const FilterClauseValueEditorText = forwardRef(
     const getSuggestions = suggestionProvider();
 
     const handleSingleValueSelectionChange = useCallback(
-      (_, values: string[]) => onChangeValue(values[0]),
+      (_, [value]: string[]) => onChangeValue(value),
       [onChangeValue]
     );
 
@@ -181,17 +181,17 @@ export const FilterClauseValueEditorText = forwardRef(
           return (
             <ExpandoCombobox
               inputProps={inputProps}
-              // ListProps={{
-              //   className: "vuuIllustrationsOnly",
-              //   disabled: true,
-              // }}
               className={className}
               data-field="value"
               onChange={handleInputChange}
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-            />
+            >
+              {typeaheadValues.map((state) => (
+                <Option value={state} key={state} disabled />
+              ))}
+            </ExpandoCombobox>
           );
         }
 

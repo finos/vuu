@@ -30,6 +30,7 @@ export interface FilterClauseProps
   onCancel?: FilterClauseCancelHandler;
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
+  onFocusSave?: () => void;
   suggestionProvider?: () => SuggestionFetcher;
   tableSchema: TableSchema;
 }
@@ -42,6 +43,7 @@ export const FilterClause = ({
   onCancel,
   onDropdownClose,
   onDropdownOpen,
+  onFocusSave,
   filterClauseModel,
   suggestionProvider,
   tableSchema,
@@ -62,6 +64,7 @@ export const FilterClause = ({
   } = useFilterClause({
     filterClauseModel,
     onCancel,
+    onFocusSave,
     columnsByName,
   });
 

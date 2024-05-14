@@ -54,6 +54,14 @@ const DefaultFilterBarCore = ({
     [onFilterStateChanged]
   );
 
+  const handleFilterDeleted = useCallback(
+    (filter: Filter) => {
+      console.log(`deleted filter ${JSON.stringify(filter)}`);
+      onFilterDeleted?.(filter);
+    },
+    [onFilterDeleted]
+  );
+
   const handleFilterRenamed = useCallback(
     (filter: Filter, name: string) => {
       onFilterRenamed?.(filter, name);
@@ -84,7 +92,7 @@ const DefaultFilterBarCore = ({
           data-testid="filterbar"
           filterState={filterState}
           onApplyFilter={handleApplyFilter}
-          onFilterDeleted={onFilterDeleted}
+          onFilterDeleted={handleFilterDeleted}
           onFilterRenamed={handleFilterRenamed}
           onFilterStateChanged={handleFilterStateChange}
           tableSchema={{ ...tableSchema, columns }}
