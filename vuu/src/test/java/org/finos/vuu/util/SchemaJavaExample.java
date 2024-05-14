@@ -46,7 +46,7 @@ public class SchemaJavaExample {
 
         //get data from ignite as list of values
         var queryName = "myQuery";
-        var igniteStore = new FakeIgniteStore();
+        var igniteStore = new FakeIgniteStore<SchemaJavaTestData>();
         igniteStore.setUpSqlFieldsQuery(
                 queryName,
                 ScalaList.of(ScalaList.of("id1", 10.5))
@@ -70,8 +70,9 @@ public class SchemaJavaExample {
         //map to tablerow
         var keyFieldName = tableDef.keyField();
         var tableRows = tableRowMap.map(rowMap -> {
-                var keyValue = rowMap.get(keyFieldName).toString();
-                return new RowWithData(keyValue, rowMap);
+                var keyOptional = OptionConverters.toJava(rowMap.get(keyFieldName));
+                var key = keyOptional.orElseThrow();
+                return new RowWithData(key.toString(), rowMap);
         });
 
         //update table with table row?
@@ -81,12 +82,6 @@ public class SchemaJavaExample {
         //assert on reading the table row - is that possible or need to use mock table with table interface
         var existingRows = table.pullAllRows();
     }
-
-
-    //todo different for java
-//    private def mapToEntity(rowData: List[Any]): SchemaTestData =
-//    getListToObjectConverter[SchemaTestData](SchemaTestData)(rowData)
-
 
 }
 
