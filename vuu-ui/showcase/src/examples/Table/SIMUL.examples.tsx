@@ -1,5 +1,10 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { getSchema, simulModule, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import {
+  getSchema,
+  simulModule,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
 import { ContextMenuProvider, Dialog } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
 import type {
@@ -60,7 +65,6 @@ const getDefaultColumnConfig = (
   }
 };
 
-
 const getDefaultColumnConfigSession = (
   tableName: string,
   columnName: string
@@ -69,13 +73,13 @@ const getDefaultColumnConfigSession = (
     case "currency":
       return {
         editable: true,
-                type: {
-                name: "string",
-                renderer: {
-                    name: "dropdown-cell",
-                    values: ["CAD", "EUR", "GBP", "GBX", "USD"],
-                },
-                },
+        type: {
+          name: "string",
+          renderer: {
+            name: "dropdown-cell",
+            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
+          },
+        },
       };
     case "description":
       return {
@@ -160,66 +164,61 @@ export const SimulTable = ({
   }, []);
 
   const [dialogState, setDialogState] = useState<DialogState>();
-  
+
   const closeDialog = () => {
     setDialogState(undefined);
-  }
+  };
 
-  const handleSubmit = useCallback(
-    () => {
-      tableProps.dataSource
-        .rpcCall?.({
-          namedParams: {},
-          params: ['1'],
-          rpcName: "APPLY_BULK_EDITS",
-          type: "VIEW_PORT_RPC_CALL",
-        })
-      setDialogState(undefined);
-    },
-    []
-  );
+  const handleSubmit = useCallback(() => {
+    tableProps.dataSource.rpcCall?.({
+      namedParams: {},
+      params: ["1"],
+      rpcName: "APPLY_BULK_EDITS",
+      type: "VIEW_PORT_RPC_CALL",
+    });
+    setDialogState(undefined);
+  }, []);
 
-  const handleEditMultiple = useCallback(
-    () => {
-      tableProps.dataSource
-        .rpcCall?.({
-          namedParams: {},
-          params: ['1'],
-          rpcName: "APPLY_EDIT_MULTIPLE",
-          type: "VIEW_PORT_RPC_CALL",
-        })
-      setDialogState(undefined);
-    },
-    []
-  );
-  
-  const rpcResponseHandler = (response: any)=>{
+  const handleEditMultiple = useCallback(() => {
+    tableProps.dataSource.rpcCall?.({
+      namedParams: {},
+      params: ["1"],
+      rpcName: "APPLY_EDIT_MULTIPLE",
+      type: "VIEW_PORT_RPC_CALL",
+    });
+    setDialogState(undefined);
+  }, []);
+
+  const rpcResponseHandler = (response: any) => {
     //console.log(response);
     const ds = simulModule.createDataSource(response.action.table.table);
     const tableConfig = {
-      columns: applyDefaultColumnConfig(
-        schema,
-        getDefaultColumnConfigSession,
-      ),
+      columns: applyDefaultColumnConfig(schema, getDefaultColumnConfigSession),
       rowSeparators: true,
       zebraStripes: true,
     };
-    
-    if (response.rpcName === "EDIT_ROW"){
+
+    if (response.rpcName === "EDIT_ROW") {
       const content = {
-        content: 
-        <>
-        <Table config={tableConfig} dataSource={ds} height={500} width={800}/>
-        <Button onClick={closeDialog}>Cancel</Button>
-        <Button onClick={handleSubmit}>Submit</Button>
-        <Button onClick={handleEditMultiple}>Edit Multiple</Button>
-        </>
-        ,
-        title: 'Edit',
-      }
+        content: (
+          <>
+            <Table
+              config={tableConfig}
+              dataSource={ds}
+              height={500}
+              width={800}
+            />
+            <Button onClick={closeDialog}>Cancel</Button>
+            <Button onClick={handleSubmit}>Submit</Button>
+            <Button onClick={handleEditMultiple}>Edit Multiple</Button>
+          </>
+        ),
+        title: "Edit",
+      };
       setDialogState(content);
     }
-  }
+    return true;
+  };
 
   const dialog = dialogState ? (
     <Dialog
@@ -240,21 +239,21 @@ export const SimulTable = ({
 
   return (
     <>
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
-    >
-      <DemoTableContainer>
-        <Table
-          {...tableProps}
-          height={height}
-          onConfigChange={handleConfigChange}
-          renderBufferSize={renderBufferSize}
-          {...props}
-        />
-      </DemoTableContainer>
-    </ContextMenuProvider>
-    {dialog}
+      <ContextMenuProvider
+        menuActionHandler={handleMenuAction}
+        menuBuilder={buildViewserverMenuOptions}
+      >
+        <DemoTableContainer>
+          <Table
+            {...tableProps}
+            height={height}
+            onConfigChange={handleConfigChange}
+            renderBufferSize={renderBufferSize}
+            {...props}
+          />
+        </DemoTableContainer>
+      </ContextMenuProvider>
+      {dialog}
     </>
   );
 };

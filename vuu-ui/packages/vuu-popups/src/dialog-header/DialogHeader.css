@@ -6,12 +6,14 @@
     --vuuToolbarProxy-height: 22px;
     --salt-text-fontFamily: Nunito Sans A-Variant, sans-serif;
 
+    align-items: center;
     display: flex;
-    align-items: flex-start;
     color: var(--light-text-primary, #15171B);
+    flex: 0 0 var(--vuuDialogHeader-height, var()--salt-size-base);
     font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
     font-size: 16px;
     font-weight: 600;
+    justify-content: space-between;
 }
   
 .vuuDialogHeader > .Responsive-inner {
