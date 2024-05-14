@@ -1,14 +1,14 @@
 package org.finos.vuu.test
-class FakeIgniteStore(){
+class FakeIgniteStore[T](){
 
-  private val queryToEntityResultMap = scala.collection.mutable.HashMap.empty[String, List[SchemaTestData]]
+  private val queryToEntityResultMap = scala.collection.mutable.HashMap.empty[String, List[T]]
   private val queryToValuesResultMap = scala.collection.mutable.HashMap.empty[String, List[List[Any]]]
 
-  def setUpIndexQuery(queryName:String, queryResult:List[SchemaTestData]): Unit = {
+  def setUpIndexQuery(queryName:String, queryResult:List[T]): Unit = {
     queryToEntityResultMap += (queryName -> queryResult)
   }
 
-  def getIndexQuery(queryName: String): Option[List[SchemaTestData]] = {
+  def getIndexQuery(queryName: String): Option[List[T]] = {
     queryToEntityResultMap.get(queryName)
   }
 
@@ -19,7 +19,4 @@ class FakeIgniteStore(){
   def getSqlFieldsQuery(queryName: String): Option[List[List[Any]]] = {
     queryToValuesResultMap.get(queryName)
   }
-}
-
-case class SchemaTestData(Id :String, NotionalValue: Double) {
 }

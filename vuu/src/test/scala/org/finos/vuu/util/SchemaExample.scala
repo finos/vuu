@@ -2,23 +2,21 @@ package org.finos.vuu.util
 
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.RowWithData
-import org.finos.vuu.test.{FakeIgniteStore, FakeInMemoryTable, SchemaTestData}
+import org.finos.vuu.test.{FakeIgniteStore, FakeInMemoryTable}
 import org.finos.vuu.util.schema.SchemaMapper
 
 class SchemaExample(val tableDef: TableDef, schemaMapper: SchemaMapper) {
 
-  val igniteStore: FakeIgniteStore = new FakeIgniteStore
+  val igniteStore: FakeIgniteStore[SchemaTestData] = new FakeIgniteStore[SchemaTestData]
   var table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 
-  //todo - do we want to turn this in to functional test so it fails if we break it while changing any part of the schema mapper
   //todo try more scenarios
   // -  virtual table - include filter, type ahead
   // -  error scenarios fetching data or converting types - review api for returning error
-  // - when table def has fewer columns than fields on entity
-  // - when table def has different named column from field on entity
-  // - when table def has different typed column from field on entity
-  // - when table def columns are in different order from fields on entity
   // - example of generating table Def from an class rather than using column builder? maybe more of a unit teest/example for table def?
+
+  //todo when query result has less number of fields than table column
+  //todo when fields and column diff order but no mapping specified - assert on error message being useful
 
 
   //todo make it not specific to ignite? type the results more?
@@ -35,9 +33,9 @@ class SchemaExample(val tableDef: TableDef, schemaMapper: SchemaMapper) {
 
     // map to entity object - as order of values are relevant to how the query schema was defined
     //todo two options, is direct to row map better if query result returns values?
-    val tableRowMap1 = resultData
-      .map(rowData => mapToEntity(rowData))
-      .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity))
+//    val tableRowMap1 = resultData
+//      .map(rowData => mapToEntity(rowData))
+//      .map(externalEntity => schemaMapper.toInternalRowMap(externalEntity))
 
     val tableRowMap2: Seq[Map[String, Any]] =
       resultData.map(rowData => schemaMapper.toInternalRowMap(rowData))
@@ -58,10 +56,9 @@ class SchemaExample(val tableDef: TableDef, schemaMapper: SchemaMapper) {
     table.pullAllRows()
   }
 
-  //todo different for java
-  private def mapToEntity(rowData: List[Any]): SchemaTestData =
-    getListToObjectConverter[SchemaTestData](SchemaTestData)(rowData)
-
+//  //todo different for java
+//  private def mapToEntity(rowData: List[Any]): SchemaTestData =
+//    getListToObjectConverter[SchemaTestData](SchemaTestData)(rowData)
 
 }
 
@@ -73,5 +70,7 @@ object getListToObjectConverter {
     values => converter.invoke(obj, values.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[ReturnType]
   }
 }
+
+case class SchemaTestData(id :String, clientId:Int, notionalValue: Double) {}
 
 
