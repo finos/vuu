@@ -259,7 +259,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     onFilterDeleted: handleFilterDeleted,
     onFilterRenamed: handleFilterRenamed,
     onFilterStateChanged: handleFilterStateChanged,
-    tableSchema: dataSource.tableSchema,
+    tableSchema,
   };
 
   const tableProps = {
