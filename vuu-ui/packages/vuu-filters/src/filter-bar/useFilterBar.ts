@@ -1,22 +1,38 @@
 import { queryClosest } from "@finos/vuu-utils";
-import { SyntheticEvent, useCallback, useState } from "react";
+import { useControlled } from "@salt-ds/core";
+import { SyntheticEvent, useCallback } from "react";
+import { FilterBarProps } from "./FilterBar";
 
-type FilterMode = "custom-filter" | "quick-filter";
+export type FilterMode = "custom-filter" | "quick-filter";
 
-const isFilterMode = (value?: string): value is FilterMode =>
+const isFilterMode = (value?: string | null): value is FilterMode =>
   value === "custom-filter" || value === "quick-filter";
 
-export const useFilterBar = () => {
-  const [filterMode, setFilterMode] = useState<FilterMode>("custom-filter");
+export const useFilterBar = ({
+  defaultFilterMode,
+  filterMode: filterModeProp,
+  onChangeFilterMode,
+}: Pick<
+  FilterBarProps,
+  "defaultFilterMode" | "filterMode" | "onChangeFilterMode"
+>) => {
+  const [filterMode, setFilterMode] = useControlled<FilterMode>({
+    controlled: filterModeProp,
+    default: defaultFilterMode ?? "custom-filter",
+    name: "useFilterBar",
+    state: "filterMode",
+  });
 
   const handleChangeFilterMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
       const button = queryClosest<HTMLButtonElement>(e.target, "button");
-      if (button && isFilterMode(button?.value)) {
-        setFilterMode(button.value);
+      const newFilterMode = button?.ariaValueMin;
+      if (isFilterMode(newFilterMode)) {
+        setFilterMode(newFilterMode);
+        onChangeFilterMode?.(newFilterMode);
       }
     },
-    []
+    [onChangeFilterMode, setFilterMode]
   );
 
   return {

@@ -24,6 +24,8 @@ const DefaultFilterBarCore = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
+  quickFilterColumns,
+  variant,
   style = { left: 0, position: "absolute", top: 0 },
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
@@ -89,14 +91,16 @@ const DefaultFilterBarCore = ({
           FilterClauseEditorProps={{
             suggestionProvider: typeaheadHook,
           }}
+          columnDescriptors={columns}
           data-testid="filterbar"
           filterState={filterState}
           onApplyFilter={handleApplyFilter}
           onFilterDeleted={handleFilterDeleted}
           onFilterRenamed={handleFilterRenamed}
           onFilterStateChanged={handleFilterStateChange}
+          quickFilterColumns={quickFilterColumns}
           tableSchema={{ ...tableSchema, columns }}
-          columnDescriptors={columns}
+          variant={variant}
         />
       </div>
       <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
@@ -296,3 +300,20 @@ const initialFilterSets: FilterState[] = [
   },
 ];
 FilterBarMultipleFilterSets.displaySequence = displaySequence++;
+
+export const QuickFilters = () => {
+  return <DefaultFilterBar variant="quick-filters" />;
+};
+QuickFilters.displaySequence = displaySequence++;
+
+export const QuickFiltersThreeColumns = () => {
+  return (
+    <DefaultFilterBar variant="quick-filters" quickFilterColumns={["bbg"]} />
+  );
+};
+QuickFilters.displaySequence = displaySequence++;
+
+export const FullFilters = () => {
+  return <DefaultFilterBar variant="full-filters" />;
+};
+FullFilters.displaySequence = displaySequence++;

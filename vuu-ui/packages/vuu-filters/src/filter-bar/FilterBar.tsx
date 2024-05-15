@@ -6,13 +6,18 @@ import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, ReactElement, useMemo } from "react";
 import { CustomFilters } from "../custom-filters";
 import { FilterClauseProps } from "../filter-clause";
 import { QuickFilters } from "../quick-filters";
-import { useFilterBar } from "./useFilterBar";
+import { FilterMode, useFilterBar } from "./useFilterBar";
 
 import filterBarCss from "./FilterBar.css";
+
+export type FilterBarVariant =
+  | "custom-filters"
+  | "quick-filters"
+  | "full-filters";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseProps>;
@@ -22,13 +27,18 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
    *       might end up with infinite state updates.
    */
   columnDescriptors: ColumnDescriptor[];
+  defaultFilterMode?: FilterMode;
   defaultFilterState?: FilterState;
+  filterMode?: FilterMode;
   filterState?: FilterState;
   onApplyFilter: (filter: DataSourceFilter) => void;
+  onChangeFilterMode?: (filterMode: FilterMode) => void;
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
+  quickFilterColumns?: string[];
   tableSchema?: TableSchema;
+  variant?: FilterBarVariant;
 }
 
 const classBase = "vuuFilterBar";
@@ -37,13 +47,18 @@ export const FilterBar = ({
   FilterClauseEditorProps,
   className: classNameProp,
   columnDescriptors,
+  defaultFilterMode,
   defaultFilterState,
+  filterMode: filterModeProp,
   filterState,
   onApplyFilter,
+  onChangeFilterMode,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
+  quickFilterColumns,
   tableSchema,
+  variant = "custom-filters",
   ...htmlAttributes
 }: FilterBarProps) => {
   const targetWindow = useWindow();
@@ -53,32 +68,77 @@ export const FilterBar = ({
     window: targetWindow,
   });
 
-  const { filterMode, onChangeFilterMode } = useFilterBar();
+  const allowCustomFilters = variant !== "quick-filters";
+  const allowQuickFilters = variant !== "custom-filters";
+
+  const controlledFilterMode: FilterMode | undefined = !allowCustomFilters
+    ? "quick-filter"
+    : !allowQuickFilters
+    ? "custom-filter"
+    : filterModeProp;
+
+  const { filterMode } = useFilterBar({
+    defaultFilterMode,
+    filterMode: controlledFilterMode,
+    onChangeFilterMode,
+  });
 
   const className = cx(classBase, classNameProp);
 
-  return (
-    <div
-      {...htmlAttributes}
-      className={cx(className, `${classBase}-${filterMode}`)}
-    >
-      <ToggleButtonGroup onChange={onChangeFilterMode} value={filterMode}>
+  const quickFilterColumnDescriptors = useMemo(
+    () =>
+      allowQuickFilters
+        ? columnDescriptors.filter((col) =>
+            quickFilterColumns?.includes(col.name)
+          )
+        : [],
+    [allowQuickFilters, columnDescriptors, quickFilterColumns]
+  );
+
+  const getToggleButtons = () => {
+    const toggleButtons: ReactElement[] = [];
+    if (allowCustomFilters) {
+      toggleButtons.push(
         <ToggleButton
           className="vuuIconToggleButton"
+          key="custom-filter"
           value="custom-filter"
           aria-label="Custom filters"
           tabIndex={-1}
         >
           <Icon name="grid" size={24} />
         </ToggleButton>
+      );
+    }
+
+    if (allowQuickFilters) {
+      toggleButtons.push(
         <ToggleButton
           className="vuuIconToggleButton"
+          key="quick-filter"
           value="quick-filter"
           aria-label="Quick filters"
           tabIndex={-1}
         >
           <Icon name="tune" size={24} />
         </ToggleButton>
+      );
+    }
+
+    return toggleButtons;
+  };
+
+  return (
+    <div
+      {...htmlAttributes}
+      className={cx(className, `${classBase}-${filterMode}`)}
+    >
+      <ToggleButtonGroup
+        data-variant="primary"
+        onChange={onChangeFilterMode}
+        value={filterMode}
+      >
+        {getToggleButtons()}
       </ToggleButtonGroup>
 
       {filterMode === "custom-filter" ? (
@@ -94,7 +154,7 @@ export const FilterBar = ({
           tableSchema={tableSchema}
         />
       ) : (
-        <QuickFilters columns={[]} />
+        <QuickFilters columns={quickFilterColumnDescriptors} />
       )}
     </div>
   );
