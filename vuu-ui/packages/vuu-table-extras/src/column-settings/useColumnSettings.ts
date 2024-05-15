@@ -9,6 +9,7 @@ import {
 import {
   CellRendererDescriptor,
   ColumnRenderPropsChangeHandler,
+  getFieldName,
   getRegisteredCellRenderers,
   isValidColumnAlignment,
   isValidPinLocation,
@@ -69,18 +70,6 @@ const getAvailableCellRenderers = (
       return booleanCellRenderers.concat(getRegisteredCellRenderers("boolean"));
     default:
       return stringCellRenderers;
-  }
-};
-
-const getFieldName = (input: HTMLInputElement | HTMLButtonElement): string => {
-  const saltFormField = input.closest(".saltFormField") as HTMLElement;
-  if (saltFormField && saltFormField.dataset.field) {
-    const {
-      dataset: { field },
-    } = saltFormField;
-    return field;
-  } else {
-    throw Error("named form field not found");
   }
 };
 

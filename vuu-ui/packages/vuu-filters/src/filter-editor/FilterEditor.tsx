@@ -46,6 +46,7 @@ export const FilterEditor = ({
   const {
     columnsByName,
     filterModel,
+    focusSaveButton,
     setContainer,
     onCancelFilterClause,
     onCancelFilterEdit,
@@ -83,6 +84,7 @@ export const FilterEditor = ({
           filterClauseModel={filterClauseModel as FilterClauseModel}
           key={`editor-${i}`}
           onCancel={onCancelFilterClause}
+          onFocusSave={focusSaveButton}
           tableSchema={tableSchema}
         />
       );

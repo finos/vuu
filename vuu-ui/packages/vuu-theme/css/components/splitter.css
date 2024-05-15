@@ -1,4 +1,4 @@
-.vuu-theme .vuuSplitter {
+.salt-theme.vuu-theme .vuuSplitter {
     --splitter-background: var(--vuu-color-gray-05);
     --splitter-size: 9px;
     --splitter-borderColor: white;
@@ -6,6 +6,6 @@
     --splitter-borderWidth: 4px;
 }
 
-.vuu-theme .vuuSplitter-column {
+.salt-theme.vuu-theme .vuuSplitter-column {
     --splitter-borderStyle: solid none solid none;
 }

@@ -247,7 +247,9 @@ export const EditableTableArrayData = () => {
     []
   );
 
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+  const tableProps = useMemo<
+    Pick<TableProps, "config" | "dataSource" | "selectionModel">
+  >(() => {
     const tableName: SimulTableName = "instrumentsExtended";
     return {
       config: {
@@ -260,6 +262,7 @@ export const EditableTableArrayData = () => {
       },
       dataSource:
         vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      selectionModel: "checkbox",
     };
   }, [getDefaultColumnConfig]);
 

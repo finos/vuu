@@ -1,4 +1,4 @@
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu-theme[data-mode="light"] {
   --salt-palette-neutral-primary-background: var(--salt-color-white);
   --salt-palette-neutral-primary-background-disabled: var(--vuu-color-gray-30);
   --salt-palette-neutral-primary-background-readonly: var(--salt-color-white-fade-background-readonly);
@@ -19,7 +19,7 @@
   --salt-palette-neutral-tertiary-separator: var(--vuu-color-gray-03);
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu-theme[data-mode="dark"] {
   --salt-palette-neutral-primary-background: var(--salt-color-gray-800);
   --salt-palette-neutral-primary-background-disabled: var(--salt-color-gray-800-fade-background);
   --salt-palette-neutral-primary-background-readonly: var(--salt-color-gray-800-fade-background-readonly);

@@ -7,7 +7,7 @@ import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
 import { forwardRef, HTMLAttributes } from "react";
 import { Calendar, CalendarProps } from "../calendar";
-import { DropdownBase, DropdownCloseHandler } from "../dropdown";
+import { DropdownBase, DropdownCloseHandler } from "../dropdown-base";
 import { IconButton } from "../icon-button";
 import { useDatePopup } from "./useDatePopup";
 

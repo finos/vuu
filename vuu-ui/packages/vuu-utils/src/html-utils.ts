@@ -116,6 +116,12 @@ export const isSelectableElement = (el?: HTMLElement | null) => {
   }
 };
 
+export const hasOpenOptionList = (el: HTMLElement | EventTarget | null) => {
+  if (el !== null) {
+    return (el as HTMLElement).ariaExpanded === "true";
+  }
+};
+
 let size: number;
 
 export function getScrollbarSize() {
@@ -144,9 +150,23 @@ export function getScrollbarSize() {
 }
 
 export type MouseEventTypes = "dblclick" | "click";
+export type KeyboardEventTypes = "keydown" | "keypress" | "keyup";
 
 export const dispatchMouseEvent = (el: HTMLElement, type: MouseEventTypes) => {
   const evt = new MouseEvent(type, {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+  });
+  el.dispatchEvent(evt);
+};
+export const dispatchKeyboardEvent = (
+  el: HTMLElement,
+  type: KeyboardEventTypes,
+  key: string
+) => {
+  const evt = new KeyboardEvent(type, {
+    key,
     view: window,
     bubbles: true,
     cancelable: true,

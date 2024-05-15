@@ -4,11 +4,7 @@ import {
 } from "../../../../../showcase/src/examples/Filters/FilterEditor/FilterEditor.examples";
 import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
-import {
-  clickFilterPillTrigger,
-  clickMenuItem,
-  findFilterPill,
-} from "./filter-test-utils";
+import { clickFilterPillTrigger, clickMenuItem } from "./filter-test-utils";
 
 const assertComboboxReady = () => {
   cy.findByRole("combobox").should("be.focused");
@@ -160,12 +156,12 @@ describe("FilterEditor", () => {
         cy.realPress("Enter");
 
         selectMenuOption("AND");
-        cy.findByRole("listbox").should("be.visible");
+        cy.findByText("currency").should("be.visible");
 
         cy.realPress("ArrowDown");
-        cy.findAllByRole("option", { name: "currency" }).should(
+        cy.findByRole("option", { name: "currency" }).should(
           "have.class",
-          "vuuHighlighted"
+          "saltOption-active"
         );
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();

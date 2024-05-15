@@ -1,4 +1,4 @@
-.vuu-theme {
+.salt-theme.vuu-theme {
     /** TODO these will need density variants */
     --saltButton-borderRadius: 6px;
     --saltButton-padding: var(--salt-spacing-400);

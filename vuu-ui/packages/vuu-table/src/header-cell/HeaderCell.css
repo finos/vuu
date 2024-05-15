@@ -139,7 +139,7 @@
   border-color: var(--salt-separable-tertiary-borderColor);
   border-style: solid solid solid none;
   border-width: 1px;
-  color: var(--salt-text-secondary-foreground);
+  color: var(--salt-content-secondary-foreground);
   display: inline-block;
   height: var(--header-height);
   padding: 0 !important;

@@ -5,10 +5,12 @@ import {
 } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 // Common selectors
-const FILTER_CONTAINER = ".vuuFilterBar-filters";
-const ADD_BUTTON = ".vuuFilterBar-add";
+const FILTER_CONTAINER = ".vuuCustomFilters-filters";
 const FILTER_CLAUSE = ".vuuFilterClause";
 const VISIBLE_MONTH = ".saltCalendarCarousel-slide:not([aria-hidden])";
+
+const findAddButton = () =>
+  cy.get(".vuuCustomFilters").findByRole("button", { name: "Add filter" });
 
 const findFilter = (className: string) =>
   cy.get(FILTER_CONTAINER).find(className);
@@ -24,10 +26,18 @@ const clickListItems = (...labels: string[]) => {
   }
 };
 
-const clickButton = (label: string) => {
-  cy.findByText(label).should("be.visible");
+const clickButton = (label: string, skipVisibilityCheck = false) => {
+  // We occasionally need to skip visibility check. e.g. cypress fails
+  // to take into account the fact that an element in a dialog might be
+  // visible even although technically outside the limits of containing
+  // box - the dialog renders over and completely outside the contaning box.
+  if (!skipVisibilityCheck) {
+    cy.findByText(label).should("be.visible");
+  }
   cy.findByText(label).realClick();
 };
+
+const clickDialogButton = (label: string) => clickButton(label, true);
 
 const waitUntilEditableLabelIsFocused = (index = 0) =>
   findFilter(".vuuFilterPill")
@@ -82,14 +92,14 @@ describe("The mouse user", () => {
   describe("WHEN user click Add button on empty Filterbar", () => {
     it("THEN FilterEditor is shown and new FilterClause is initiated", () => {
       cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       cy.get(FILTER_CONTAINER).find("> *").should("have.length", 0);
-      cy.get(".vuuPortal").find(".vuuFilterEditor").should("be.visible");
+      cy.get(".vuuFilterEditor").should("be.visible");
     });
 
     it("THEN column combobox is focused and the dropdown shown", () => {
       cy.mount(<DefaultFilterBar />);
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       cy.findByRole("combobox").should("be.focused");
       cy.findByRole("combobox").should("have.attr", "aria-expanded", "true");
 
@@ -114,7 +124,7 @@ describe("The mouse user", () => {
           onFilterStateChanged={onFilterStateChanged}
         />
       );
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       clickListItems(testFilter.column, testFilter.op, testFilter.value);
       clickButton("Save");
     });
@@ -226,13 +236,13 @@ describe("The mouse user", () => {
           onFilterStateChanged={onFilterStateChanged}
         />
       );
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       clickListItems(filter1.column, filter1.op, filter1.value);
       clickButton("Save");
       waitUntilEditableLabelIsFocused();
       pressEnterEditableLabel();
 
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       clickListItems(filter2.column, filter2.op, filter2.value);
       clickButton("Save");
       waitUntilEditableLabelIsFocused(1);
@@ -281,7 +291,7 @@ describe("The mouse user", () => {
         .find(".vuuSplitButton-trigger")
         .realClick();
       clickButton("Delete");
-      clickButton("Remove");
+      clickDialogButton("Remove");
 
       findFilter(".vuuFilterPill").should("have.length", 1);
       findFilter(".vuuFilterPill").contains(filter1.name);
@@ -301,7 +311,7 @@ describe("The mouse user", () => {
         .find(".vuuSplitButton-trigger")
         .realClick();
       clickButton("Delete");
-      clickButton("Remove");
+      clickDialogButton("Remove");
 
       findFilter(".vuuFilterPill").should("have.length", 1);
       findFilter(".vuuFilterPill").contains(filter2.name);
@@ -324,7 +334,7 @@ describe("The keyboard user", () => {
       cy.mount(<DefaultFilterBar />);
       cy.findByTestId("pre-filterbar").find("input").focus();
       cy.realPress("Tab");
-      cy.get(ADD_BUTTON).should("be.focused");
+      findAddButton().should("be.focused");
     });
 
     describe("WHEN user presses ADD then uses keyboard to select currency", () => {
@@ -333,14 +343,14 @@ describe("The keyboard user", () => {
 
         cy.findByTestId("pre-filterbar").find("input").focus();
         cy.realPress("Tab");
-        cy.get(ADD_BUTTON).should("be.focused");
+        findAddButton().should("be.focused");
         cy.realPress("Enter");
         cy.findByRole("combobox").should("be.focused");
 
         // make sure columns list has renderered
-        cy.findByText("currency").should("exist");
+        cy.findByText("currency").should("be.visible");
         cy.realPress("ArrowDown");
-        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "currency");
+        cy.get(".saltOption-active").should("have.text", "currency");
         cy.realPress("Enter");
 
         assertInputValue(".vuuFilterClauseColumn", "currency");
@@ -359,18 +369,18 @@ describe("The keyboard user", () => {
 
         cy.findByTestId("pre-filterbar").find("input").focus();
         cy.realPress("Tab");
-        cy.get(ADD_BUTTON).should("be.focused");
+        findAddButton().should("be.focused");
         cy.realPress("Enter");
         cy.findByRole("combobox").should("be.focused");
 
         // make sure columns list has renderered
-        cy.findByText("currency").should("exist");
+        cy.findByText("currency").should("be.visible");
         cy.realPress("ArrowDown");
-        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "currency");
+        cy.get(".saltOption-active").should("have.text", "currency");
         cy.realPress("Enter");
 
-        cy.findByText("=").should("exist");
-        cy.get(".vuuListItem.vuuHighlighted").should("have.text", "=");
+        cy.findByText("=").should("be.visible");
+        cy.get(".saltOption-active").should("have.text", "=");
         cy.realPress("Enter");
 
         assertInputValue(".vuuFilterClauseOperator", "=");
@@ -388,19 +398,20 @@ describe("The keyboard user", () => {
 
           cy.findByTestId("pre-filterbar").find("input").focus();
           cy.realPress("Tab");
-          cy.get(ADD_BUTTON).should("be.focused");
+          findAddButton().should("be.focused");
           cy.realPress("Enter");
           cy.findByRole("combobox").should("be.focused");
 
           // make sure columns list has renderered
-          cy.findByText("currency").should("exist");
+          cy.findByText("currency").should("be.visible");
           cy.realPress("ArrowDown");
+          cy.get(".saltOption-active").should("have.text", "currency");
           cy.realPress("Enter");
 
-          cy.findByText("=").should("exist");
+          cy.findByText("=").should("be.visible");
           cy.realPress("Enter");
 
-          cy.findByText("USD").should("exist");
+          cy.findByText("USD").should("be.visible");
           cy.realPress("ArrowDown");
           cy.realPress("ArrowDown");
           cy.realPress("ArrowDown");
@@ -410,7 +421,6 @@ describe("The keyboard user", () => {
           assertInputValue(".vuuFilterClauseValue", "USD");
 
           cy.get(FILTER_CLAUSE).should("have.length", 1);
-
           cy.findByRole("button", { name: "Save" }).should("be.focused");
         });
       });
@@ -501,7 +511,7 @@ describe("WHEN a user applies a date filter", () => {
       };
 
       // Add date filter
-      cy.get(ADD_BUTTON).realClick();
+      findAddButton().realClick();
       clickListItems(DATE_COLUMN, op);
       cy.get(".vuuDatePopup .vuuIconButton").realClick();
       cy.get(`${VISIBLE_MONTH} .saltCalendarDay-today`).realClick();
@@ -533,7 +543,7 @@ describe("Deleting and renaming filters", () => {
         .find(".vuuSplitButton-trigger")
         .realClick();
       clickButton("Delete");
-      clickButton("Remove");
+      clickDialogButton("Remove");
 
       cy.get("@onFilterDeleted").should("be.calledWithExactly", {
         column: "currency",

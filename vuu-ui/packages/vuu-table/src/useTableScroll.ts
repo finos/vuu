@@ -397,7 +397,6 @@ export const useTableScroll = ({
               activeRow,
               totalHeaderHeight
             );
-            console.log(`outside viewport ? ${direction} ${distance}`);
             if (direction && distance) {
               if (isVirtualScroll) {
                 const offset = direction === "down" ? 1 : -1;

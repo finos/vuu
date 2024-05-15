@@ -1,5 +1,5 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getIndexFromRowElement } from "@finos/vuu-utils";
+import { getIndexFromRowElement, queryClosest } from "@finos/vuu-utils";
 import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
@@ -12,6 +12,7 @@ import {
 import { TableNavigationStyle } from "./Table";
 import {
   CellPos,
+  cellDropdownShowing,
   closestRowIndex,
   dataCellQuery,
   getTableCell,
@@ -336,6 +337,10 @@ NavigationHookProps) => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      const cell = queryClosest<HTMLDivElement>(e.target, ".vuuTableCell");
+      if (cellDropdownShowing(cell)) {
+        return;
+      }
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
         e.preventDefault();
         e.stopPropagation();

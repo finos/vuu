@@ -1,4 +1,4 @@
-import { VuuUser } from "./shell";
+import type { VuuUser } from "@finos/vuu-utils";
 
 export interface LayoutHistoryItem {
   user: string;

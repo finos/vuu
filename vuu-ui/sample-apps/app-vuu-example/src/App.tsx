@@ -1,5 +1,5 @@
 import { registerComponent } from "@finos/vuu-layout";
-import { useDialog } from "@finos/vuu-popups";
+import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   LayoutManagementProvider,
   LeftNav,
@@ -7,21 +7,20 @@ import {
   ShellContextProvider,
   ShellProps,
   SidePanelProps,
-  VuuUser,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
+import { DragDropProvider } from "@finos/vuu-ui-controls";
+import type { VuuUser } from "@finos/vuu-utils";
+import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
 import { useFeatures } from "./useFeatures";
-import { NotificationsProvider } from "@finos/vuu-popups";
-
-import { DragDropProvider } from "@finos/vuu-ui-controls";
-import "./App.css";
 import { useRpcResponseHandler } from "./useRpcResponseHandler";
-import { useMemo } from "react";
+
+import "./App.css";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");

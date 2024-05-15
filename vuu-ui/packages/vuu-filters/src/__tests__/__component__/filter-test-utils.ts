@@ -1,4 +1,4 @@
-const FILTER_CONTAINER = ".vuuFilterBar-filters";
+const FILTER_CONTAINER = ".vuuCustomFilters-filters";
 
 export const findFilterPill = (index = 0) =>
   cy.get(FILTER_CONTAINER).find(`.vuuFilterPill[data-index="${index}"]`);

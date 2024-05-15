@@ -4,19 +4,18 @@ import {
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CloseReason } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
-import { ExpandoCombobox } from "./ExpandoCombobox";
-import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
-import { getOperators } from "./operator-utils";
 import { useFilterClause } from "./useFilterClause";
+import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
+import { ColumnPicker } from "./ColumnPicker";
 
 import filterClauseCss from "./FilterClause.css";
+import { OperatorPicker } from "./OperatorPicker";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
@@ -31,6 +30,7 @@ export interface FilterClauseProps
   onCancel?: FilterClauseCancelHandler;
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
+  onFocusSave?: () => void;
   suggestionProvider?: () => SuggestionFetcher;
   tableSchema: TableSchema;
 }
@@ -43,25 +43,28 @@ export const FilterClause = ({
   onCancel,
   onDropdownClose,
   onDropdownOpen,
+  onFocusSave,
   filterClauseModel,
   suggestionProvider,
   tableSchema,
   ...htmlAttributes
 }: FilterClauseProps) => {
   const {
-    InputProps,
+    inputProps,
     columnRef,
     filterClause,
     onChangeValue,
-    onColumnSelect,
+    // onChangeColumn,
+    onSelectColumn,
+    onSelectOperator,
     onFocus,
     onDeselectValue,
-    onOperatorSelect,
     operatorRef,
     selectedColumn,
   } = useFilterClause({
     filterClauseModel,
     onCancel,
+    onFocusSave,
     columnsByName,
   });
 
@@ -81,39 +84,30 @@ export const FilterClause = ({
       onFocus={onFocus}
       tabIndex={0}
     >
-      <ExpandoCombobox<ColumnDescriptor>
-        InputProps={InputProps}
-        allowBackspaceClearsSelection
+      <ColumnPicker
+        inputProps={inputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}
-        data-field="column"
+        columns={columns}
         key="column-field"
-        initialHighlightedIndex={0}
-        itemToString={(column) => (column as ColumnDescriptor).name}
-        onListItemSelect={onColumnSelect}
+        onSelect={onSelectColumn}
         ref={columnRef}
-        source={columns}
-        title="column"
-        value={filterClause.column}
+        value={filterClause.column ?? ""}
       />
       {selectedColumn?.name ? (
-        <ExpandoCombobox<string>
-          InputProps={InputProps}
-          allowBackspaceClearsSelection
+        <OperatorPicker
+          column={selectedColumn}
+          inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Operator`, {
             [`${classBase}Operator-hidden`]: selectedColumn === null,
           })}
-          data-field="operator"
           key="operator-field"
-          initialHighlightedIndex={0}
-          onListItemSelect={onOperatorSelect}
+          onSelect={onSelectOperator}
           ref={operatorRef}
-          source={getOperators(selectedColumn)}
-          title="operator"
           value={filterClause.op ?? ""}
         />
       ) : null}
       <FilterClauseValueEditor
-        InputProps={InputProps}
+        inputProps={inputProps}
         key="value-field"
         onChangeValue={onChangeValue}
         onDeselectValue={onDeselectValue}

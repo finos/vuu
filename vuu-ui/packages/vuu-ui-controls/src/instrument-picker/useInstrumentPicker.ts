@@ -6,7 +6,7 @@ import {
 import { useControlledTableNavigation } from "@finos/vuu-table";
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { useControlled } from "../common-hooks";
-import { OpenChangeHandler } from "../dropdown";
+import { OpenChangeHandler } from "../dropdown-base";
 import { InstrumentPickerProps } from "./InstrumentPicker";
 
 export interface InstrumentPickerHookProps

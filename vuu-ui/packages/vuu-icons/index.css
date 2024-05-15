@@ -81,7 +81,7 @@ span[data-icon] {
 
 [data-icon]:after {
   content: "";
-  background-color: var(--vuu-icon-color, var(--saltIcon-color, var(--salt-text-secondary-foreground)));
+  background-color: var(--vuu-icon-color, var(--saltIcon-color, var(--salt-content-secondary-foreground)));
   left: var(--vuu-icon-left, auto);
   height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
   mask: var(--vuu-icon-svg) center center/var(--vuu-icon-size) var(--vuu-icon-size);

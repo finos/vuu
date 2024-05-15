@@ -1,16 +1,16 @@
 import { connectToServer } from "@finos/vuu-data-remote";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
+import type { LayoutChangeHandler } from "@finos/vuu-layout";
 import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
   StackLayout,
+  registerComponent,
 } from "@finos/vuu-layout";
-import type { LayoutChangeHandler } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
-import { logger, ThemeMode } from "@finos/vuu-utils";
-import { SaltProvider } from "@salt-ds/core";
+import { VuuUser, logger } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   HTMLAttributes,
@@ -21,6 +21,8 @@ import {
   useState,
 } from "react";
 import { AppHeader } from "./app-header";
+import { ApplicationProvider } from "./application-provider";
+import { ApplicationSettingsPanel } from "./application-settings";
 import {
   useLayoutContextMenuItems,
   useLayoutManager,
@@ -31,16 +33,13 @@ import { SaveLocation } from "./shellTypes";
 
 import shellCss from "./shell.css";
 
+registerComponent("ApplicationSettings", ApplicationSettingsPanel, "view");
+
 if (typeof StackLayout !== "function") {
   console.warn(
     "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
   );
 }
-
-export type VuuUser = {
-  username: string;
-  token: string;
-};
 
 const { error } = logger("Shell");
 
@@ -86,9 +85,7 @@ export const Shell = ({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const { dialog, setDialogState } = useDialog();
-  const layoutId = useRef("latest");
-  const { applicationJson, saveApplicationLayout, loadLayoutById } =
-    useLayoutManager();
+  const { applicationJson, saveApplicationLayout } = useLayoutManager();
   const { buildMenuOptions, handleMenuAction } =
     useLayoutContextMenuItems(setDialogState);
   const [connectionStatus, setConnectionStatus] = useState<
@@ -106,21 +103,6 @@ export const Shell = ({
     [saveApplicationLayout]
   );
 
-  const handleSwitchTheme = useCallback((mode: ThemeMode) => {
-    if (rootRef.current) {
-      rootRef.current.dataset.mode = mode;
-    }
-  }, []);
-
-  // TODO this is out of date
-  const handleNavigate = useCallback(
-    (id) => {
-      layoutId.current = id;
-      loadLayoutById(id);
-    },
-    [loadLayoutById]
-  );
-
   useMemo(async () => {
     if (serverUrl && user.token) {
       const connectionStatus = await connectToServer({
@@ -134,28 +116,20 @@ export const Shell = ({
 
   const className = cx("vuuShell");
 
-  const isLoading = applicationJson === loadingApplicationJson;
+  const isLayoutLoading = applicationJson === loadingApplicationJson;
 
   const shellLayout = useShellLayout({
     LeftSidePanelProps,
     leftSidePanelLayout,
-    appHeader: (
-      <AppHeader
-        layoutId={layoutId.current}
-        loginUrl={loginUrl}
-        user={user}
-        onNavigate={handleNavigate}
-        onSwitchTheme={handleSwitchTheme}
-      />
-    ),
+    appHeader: <AppHeader loginUrl={loginUrl} />,
   });
 
   if (connectionStatus === "rejected") {
     console.log("game over, no connection to server");
   }
 
-  return isLoading ? null : (
-    <SaltProvider theme="vuu-theme" density="high">
+  return isLayoutLoading ? null : (
+    <ApplicationProvider user={user}>
       <ContextMenuProvider
         menuActionHandler={handleMenuAction}
         menuBuilder={buildMenuOptions}
@@ -175,6 +149,6 @@ export const Shell = ({
         </LayoutProvider>
         {children || dialog}
       </ContextMenuProvider>
-    </SaltProvider>
+    </ApplicationProvider>
   );
 };

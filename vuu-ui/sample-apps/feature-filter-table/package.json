@@ -30,7 +30,7 @@
     "@finos/vuu-table-extras": "0.0.26",
     "@finos/vuu-theme": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@salt-ds/core": "1.17.0"
+    "@salt-ds/core": "1.22.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

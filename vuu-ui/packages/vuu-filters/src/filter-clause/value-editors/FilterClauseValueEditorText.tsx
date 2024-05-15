@@ -10,18 +10,16 @@ import {
   useMemo,
   useState,
 } from "react";
-import { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
+import type { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
 import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
-import {
-  ExpandoInput,
-  MultiSelectionHandler,
-  SingleSelectionHandler,
-} from "@finos/vuu-ui-controls";
+import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "../ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
-import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
-
-const selectionKeys = ["Enter", " "];
+import type {
+  SuggestionFetcher,
+  TableSchemaTable,
+} from "@finos/vuu-data-types";
+import { Option } from "@salt-ds/core";
 
 const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
   if (schemaTable.session) {
@@ -47,11 +45,9 @@ const NO_DATA_MATCH = ["No matching data"];
 export const FilterClauseValueEditorText = forwardRef(
   function FilterClauseTextValueEditor(
     {
-      InputProps: InputPropsProp = {},
+      inputProps: inputPropsProp,
       className,
       column,
-      "data-field": dataField,
-      onDeselect,
       onChangeValue,
       operator,
       suggestionProvider = useTypeaheadSuggestions,
@@ -75,14 +71,14 @@ export const FilterClauseValueEditorText = forwardRef(
 
     const getSuggestions = suggestionProvider();
 
-    const handleSingleValueSelectionChange =
-      useCallback<SingleSelectionHandler>(
-        (_, value) => onChangeValue(value),
-        [onChangeValue]
-      );
+    const handleSingleValueSelectionChange = useCallback(
+      (_, [value]: string[]) => onChangeValue(value),
+      [onChangeValue]
+    );
 
     const handleMultiValueSelectionChange = useCallback<MultiSelectionHandler>(
-      (_, values) => onChangeValue(values),
+      // TODO when will this ever be final ?
+      (_, values) => onChangeValue(values, false),
       [onChangeValue]
     );
 
@@ -138,114 +134,108 @@ export const FilterClauseValueEditorText = forwardRef(
           console.log(`call onInputComplete ${valueInputValue}`);
           onChangeValue(valueInputValue);
         } else {
-          InputPropsProp?.inputProps?.onKeyDown?.(evt);
+          inputPropsProp?.onKeyDown?.(evt);
         }
       },
-      [InputPropsProp, onChangeValue, valueInputValue]
+      [inputPropsProp, onChangeValue, valueInputValue]
     );
 
-    const InputProps = useMemo(() => {
+    const inputProps = useMemo(() => {
       if (operator === "starts" || operator === "ends") {
-        const { inputProps, ...restInputProps } = InputPropsProp;
         return {
-          ...restInputProps,
-          inputProps: {
-            ...inputProps,
-            onKeyDown: handleKeyDownFreeTextInput,
-          },
+          ...inputPropsProp,
+          onKeyDown: handleKeyDownFreeTextInput,
         };
       } else {
-        return InputPropsProp;
+        return inputPropsProp;
       }
-    }, [InputPropsProp, handleKeyDownFreeTextInput, operator]);
+    }, [inputPropsProp, handleKeyDownFreeTextInput, operator]);
 
     const getValueInputField = useCallback(() => {
       switch (operator) {
         case "in":
           return (
             <ExpandoCombobox
-              InputProps={InputProps}
+              inputProps={inputProps}
               className={className}
-              data-field={dataField}
-              initialHighlightedIndex={0}
-              source={typeaheadValues}
-              onInputChange={handleInputChange}
+              data-field="value"
+              onChange={handleInputChange}
               onSelectionChange={handleMultiValueSelectionChange}
               ref={forwardedRef}
-              selectionStrategy="multiple"
-              selectionKeys={selectionKeys}
+              multiselect
+              truncate
               value={value}
-            />
+            >
+              {typeaheadValues
+                // .filter((typeaheadValue) =>
+                //   typeaheadValue
+                //     .toLowerCase()
+                //     .includes(value.trim().toLowerCase())
+                // )
+                .map((state) => (
+                  <Option value={state} key={state} />
+                ))}
+            </ExpandoCombobox>
           );
         case "starts": {
           return (
-            <ExpandoCombobox<string>
-              InputProps={InputProps}
-              ListProps={{
-                className: "vuuIllustrationsOnly",
-                disabled: true,
-              }}
-              allowEnterCommitsText
-              allowFreeText
+            <ExpandoCombobox
+              inputProps={inputProps}
               className={className}
-              data-field={dataField}
-              initialHighlightedIndex={0}
-              disableFilter={
-                typeaheadValues === NO_DATA_MATCH && valueInputValue?.length > 0
-              }
-              source={typeaheadValues}
-              onInputChange={handleInputChange}
+              data-field="value"
+              onChange={handleInputChange}
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-            />
+            >
+              {typeaheadValues.map((state) => (
+                <Option value={state} key={state} disabled />
+              ))}
+            </ExpandoCombobox>
           );
         }
 
         case "ends":
           return (
             <ExpandoInput
-              {...InputProps}
+              inputProps={inputProps}
               className={className}
-              data-field={dataField}
+              data-field="value"
               value={valueInputValue}
               ref={forwardedRef}
               onChange={handleInputChange}
             />
           );
 
-        default:
-          //TODO get a ref to input and listen to changes - connect these to typeahead
+        default: {
           return typeaheadValues.length > 0 ? (
-            <ExpandoCombobox<string>
-              InputProps={InputProps}
-              allowBackspaceClearsSelection
-              allowFreeText
+            <ExpandoCombobox
+              inputProps={inputProps}
               className={className}
-              data-field={dataField}
-              initialHighlightedIndex={0}
-              source={typeaheadValues}
+              data-field="value"
               title="value"
-              onInputChange={handleInputChange}
-              onDeselect={onDeselect}
+              onChange={handleInputChange}
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-            />
+            >
+              {typeaheadValues.map((state) => (
+                <Option value={state} key={state} />
+              ))}
+            </ExpandoCombobox>
           ) : null;
+        }
       }
     }, [
-      InputProps,
+      inputProps,
       operator,
       className,
-      dataField,
       typeaheadValues,
       handleInputChange,
       handleMultiValueSelectionChange,
       forwardedRef,
       value,
       valueInputValue,
-      onDeselect,
       handleSingleValueSelectionChange,
     ]);
 

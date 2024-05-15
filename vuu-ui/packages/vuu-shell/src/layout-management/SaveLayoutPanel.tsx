@@ -1,9 +1,23 @@
-import { Checkbox, ComboBox, RadioButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { takeScreenshot } from "./screenshot-utils";
-import { Button, FormField, FormFieldLabel, Input, Text } from "@salt-ds/core";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  ComboBox,
+  FormField,
+  FormFieldLabel,
+  Input,
+  Option,
+  Text,
+} from "@salt-ds/core";
+import {
+  ChangeEvent,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { LayoutMetadataDto } from "./layoutTypes";
 import { getAuthDetailsFromCookies } from "../login";
 
@@ -13,12 +27,6 @@ const classBase = "saveLayoutPanel";
 const formField = `${classBase}-formField`;
 
 const groups = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
-
-const checkboxValues = ["Value 1", "Value 2", "Value 3"];
-
-const radioValues = ["Value 1", "Value 2", "Value 3"] as const;
-
-type RadioValue = (typeof radioValues)[number];
 
 type SaveLayoutPanelProps = {
   componentId?: string;
@@ -39,8 +47,6 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
 
   const [layoutName, setLayoutName] = useState<string>(defaultTitle);
   const [group, setGroup] = useState<string>("");
-  const [checkValues, setCheckValues] = useState<string[]>([]);
-  const [radioValue, setRadioValue] = useState<RadioValue>(radioValues[0]);
   const [screenshot, setScreenshot] = useState<string | undefined>();
   const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
     string | undefined
@@ -84,6 +90,25 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
     return <div className="spinner" />;
   }, [screenshot, screenshotErrorMessage]);
 
+  const handleSelectionChange = useCallback(
+    (e: SyntheticEvent | KeyboardEvent, [selectedValue]: string[]) => {
+      if (
+        (e as KeyboardEvent).key === "Tab" &&
+        !selectedValue.toLowerCase().startsWith(group.toLowerCase())
+      ) {
+        // ignore. The ComboBox forces selection of a value from the list on Tab
+      } else {
+        setGroup(selectedValue || "");
+      }
+    },
+    [group]
+  );
+
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    console.log(`set Group ${e.target.value}`);
+    setGroup(e.target.value);
+  }, []);
+
   return (
     <div className={`${classBase}-panelContainer`}>
       <div className={`${classBase}-panelContent`}>
@@ -91,19 +116,21 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           <FormField className={formField}>
             <FormFieldLabel>Group</FormFieldLabel>
             <ComboBox
-              source={groups}
-              allowFreeText
-              InputProps={{
-                inputProps: {
-                  className: `${classBase}-inputText`,
-                  placeholder: "Select Group or Enter New Name",
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setGroup(event.target.value),
-                },
+              inputProps={{
+                autoComplete: "off",
+                className: `${classBase}-inputText`,
+                placeholder: "Select Group or Enter New Name",
+                // onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                //   setGroup(event.target.value),
               }}
-              width="100%"
-              onSelectionChange={(_, value) => setGroup(value || "")}
-            />
+              onChange={handleChange}
+              onSelectionChange={handleSelectionChange}
+              value={group}
+            >
+              {groups.map((group, i) => (
+                <Option key={i} value={group} />
+              ))}
+            </ComboBox>
           </FormField>
           <FormField className={formField}>
             <FormFieldLabel>Layout Name</FormFieldLabel>
@@ -117,39 +144,6 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
               }
               value={layoutName}
             />
-          </FormField>
-          <FormField className={formField}>
-            <FormFieldLabel>Some Layout Setting</FormFieldLabel>
-            <div className={`${classBase}-settingsGroup`}>
-              {checkboxValues.map((value, i) => (
-                <Checkbox
-                  key={i}
-                  onToggle={() =>
-                    setCheckValues((prev) =>
-                      prev.includes(value)
-                        ? prev.filter((entry) => entry !== value)
-                        : [...prev, value]
-                    )
-                  }
-                  checked={checkValues.includes(value)}
-                  label={value}
-                />
-              ))}
-            </div>
-          </FormField>
-          <FormField className={formField}>
-            <FormFieldLabel>Some Layout Setting</FormFieldLabel>
-            <div className={`${classBase}-settingsGroup`}>
-              {radioValues.map((value, i) => (
-                <RadioButton
-                  key={i}
-                  onClick={() => setRadioValue(value)}
-                  checked={radioValue === value}
-                  label={value}
-                  groupName="radioGroup"
-                />
-              ))}
-            </div>
           </FormField>
         </div>
         <div className={`${classBase}-screenshotContainer`}>

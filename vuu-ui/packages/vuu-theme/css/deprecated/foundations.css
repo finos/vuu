@@ -1,7 +1,7 @@
 /*
 * **Deprecated:** Use duration instead
 */
-.vuu-theme {
+.salt-theme.vuu-theme {
   /* Delay */
   --salt-delay-instant: 100ms;
   --salt-delay-perceptible: 300ms;
@@ -26,7 +26,7 @@
   --salt-shadow-5: 0 12px 40px 0 var(--salt-shadow-5-color); /* Use --salt-shadow-500 */
 }
 
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu-theme[data-mode="light"] {
   --salt-shadow-1-color: rgba(0, 0, 0, 0.1); /* Use --salt-shadow-100-color */
   --salt-shadow-2-color: rgba(0, 0, 0, 0.1); /* Use --salt-shadow-200-color */
   --salt-shadow-3-color: rgba(0, 0, 0, 0.15); /* Use --salt-shadow-300-color */
@@ -34,7 +34,7 @@
   --salt-shadow-5-color: rgba(0, 0, 0, 0.3); /* Use --salt-shadow-500-color */
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu-theme[data-mode="dark"] {
   --salt-shadow-1-color: rgba(0, 0, 0, 0.5); /* Use --salt-shadow-100-color */
   --salt-shadow-2-color: rgba(0, 0, 0, 0.5); /* Use --salt-shadow-200-color */
   --salt-shadow-3-color: rgba(0, 0, 0, 0.55); /* Use --salt-shadow-300-color */

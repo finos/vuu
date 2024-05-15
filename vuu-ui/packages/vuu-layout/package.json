@@ -16,9 +16,11 @@
     "@finos/vuu-filter-types": "0.0.26"
   },
   "dependencies": {
-    "@salt-ds/core": "1.17.0",
+    "@salt-ds/core": "1.22.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",

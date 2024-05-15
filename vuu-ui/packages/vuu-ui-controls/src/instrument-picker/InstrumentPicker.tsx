@@ -5,7 +5,7 @@ import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ForwardedRef, forwardRef, HTMLAttributes, useMemo } from "react";
-import { DropdownBase, OpenChangeHandler } from "../dropdown";
+import { DropdownBase, OpenChangeHandler } from "../dropdown-base";
 import { SearchCell } from "./SearchCell";
 import { useInstrumentPicker } from "./useInstrumentPicker";
 

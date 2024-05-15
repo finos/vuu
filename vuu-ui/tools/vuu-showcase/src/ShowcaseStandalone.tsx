@@ -5,8 +5,8 @@ import {
   importCSS,
   ThemeMode,
 } from "@finos/vuu-utils";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { SaltProvider } from "@salt-ds/core";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
 
 import "./Showcase.css";

@@ -1,7 +1,7 @@
 import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
 import { Icon, VuuInput } from "@finos/vuu-ui-controls";
 import {
-  getCalculatedColumnName,
+  getCalculatedColumnDetails,
   getDefaultAlignment,
   isCalculatedColumn,
 } from "@finos/vuu-utils";
@@ -27,7 +27,7 @@ const classBase = "vuuColumnSettingsPanel";
 const getColumnLabel = (column: ColumnDescriptor) => {
   const { name, label } = column;
   if (isCalculatedColumn(name)) {
-    return label ?? getCalculatedColumnName(column);
+    return label ?? getCalculatedColumnDetails(column).name;
   } else {
     return label ?? name;
   }
