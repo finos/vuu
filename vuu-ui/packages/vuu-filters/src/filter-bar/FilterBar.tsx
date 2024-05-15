@@ -52,7 +52,7 @@ export const FilterBar = ({
   filterMode: filterModeProp,
   filterState,
   onApplyFilter,
-  onChangeFilterMode,
+  onChangeFilterMode: onChangeFilterModeProp,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
@@ -77,10 +77,10 @@ export const FilterBar = ({
     ? "custom-filter"
     : filterModeProp;
 
-  const { filterMode } = useFilterBar({
+  const { filterMode, onChangeFilterMode } = useFilterBar({
     defaultFilterMode,
     filterMode: controlledFilterMode,
-    onChangeFilterMode,
+    onChangeFilterMode: onChangeFilterModeProp,
   });
 
   const className = cx(classBase, classNameProp);

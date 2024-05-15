@@ -311,7 +311,7 @@ export const QuickFiltersThreeColumns = () => {
     <DefaultFilterBar variant="quick-filters" quickFilterColumns={["bbg"]} />
   );
 };
-QuickFilters.displaySequence = displaySequence++;
+QuickFiltersThreeColumns.displaySequence = displaySequence++;
 
 export const FullFilters = () => {
   return <DefaultFilterBar variant="full-filters" />;

@@ -1,5 +1,5 @@
 import { LoginPanel } from "@finos/vuu-shell";
-import { ThemeProvider, uuid } from "@finos/vuu-utils";
+import { uuid } from "@finos/vuu-utils";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -7,6 +7,7 @@ import "@finos/vuu-icons/index.css";
 import "@finos/vuu-theme/index.css";
 
 import "./login.css";
+import { SaltProvider } from "@salt-ds/core";
 
 async function login(username: string) {
   try {
@@ -25,8 +26,8 @@ async function login(username: string) {
 }
 
 ReactDOM.render(
-  <ThemeProvider applyThemeClasses>
+  <SaltProvider theme="vuu-theme" density="high">
     <LoginPanel requirePassword={false} onSubmit={login} />
-  </ThemeProvider>,
+  </SaltProvider>,
   document.getElementById("root")
 );
