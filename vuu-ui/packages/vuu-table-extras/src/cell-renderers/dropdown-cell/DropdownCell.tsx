@@ -13,6 +13,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
   KeyboardEventHandler,
+  MouseEventHandler,
   memo,
   useCallback,
   useMemo,
@@ -71,9 +72,14 @@ export const DropdownCell = memo(function DropdownCell({
     [onCommit]
   );
 
+  const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(() => {
+    if (!open) {
+      setOpen(true);
+    }
+  }, [open]);
+
   const handleKeyDown = useCallback<KeyboardEventHandler>(
     (e) => {
-      console.log(`keydown ${e.key}`);
       if (e.key === "Enter" && !open) {
         e.preventDefault();
         e.stopPropagation();
@@ -88,6 +94,7 @@ export const DropdownCell = memo(function DropdownCell({
     <Dropdown<ListOption>
       className={classBase}
       data-icon="triangle-down"
+      onClick={handleClick}
       onKeyDownCapture={handleKeyDown}
       onOpenChange={handleOpenChange}
       onSelectionChange={handleSelectionChange}
