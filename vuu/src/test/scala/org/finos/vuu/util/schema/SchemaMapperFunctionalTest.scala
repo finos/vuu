@@ -9,8 +9,8 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
   Feature("Update in memory table using schema mapper") {
     Scenario("When table columns and entity fields match exactly") {
 
-     val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
-     val tableDef = TableDef(
+      val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
+      val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
         columns = Columns.fromExternalSchema(externalEntitySchema)
