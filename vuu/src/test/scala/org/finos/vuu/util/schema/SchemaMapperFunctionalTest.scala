@@ -8,7 +8,8 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
   Feature("Update in memory table using schema mapper") {
     Scenario("When table columns and entity fields match exactly") {
 
-      val tableDef = TableDef(
+     val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
+     val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
         columns = new ColumnBuilder()
@@ -17,18 +18,10 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .addDouble("notionalValue")
           .build()
       )
-
-    val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-        .withEntity(classOf[SchemaTestData])
-        .withIndex("ID_INDEX", List("id"))
-        .build()
-
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .build()
-
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
-
-      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
       getDataAndUpdateTable(table, schemaMapper, queryName)
 
@@ -49,12 +42,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .addDouble("notionalValue")
           .build()
       )
-
-      val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-        .withEntity(classOf[SchemaTestData])
-        .withIndex("ID_INDEX", List("id"))
-        .build()
-
+      val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .withFieldsMap(
           Map(
@@ -63,10 +51,8 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           )
         )
         .build()
-
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
-
-      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
       getDataAndUpdateTable(table, schemaMapper, queryName)
 
@@ -87,17 +73,11 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .addDouble("thirdColumn")
           .build()
       )
-
-      val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-        .withEntity(classOf[SchemaTestData])
-        .withIndex("ID_INDEX", List("id"))
-        .build()
-
+      val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .build()
-
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
-      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
       getDataAndUpdateTable(table, schemaMapper, queryName)
 
@@ -119,12 +99,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .addInt("clientId")
           .build()
       )
-
-      val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
-        .withEntity(classOf[SchemaTestData])
-        .withIndex("ID_INDEX", List("id"))
-        .build()
-
+      val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .withFieldsMap(
           Map(
@@ -134,9 +109,8 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           )
         )
         .build()
-
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
-      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
       getDataAndUpdateTable(table, schemaMapper, queryName)
 
@@ -147,5 +121,4 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       assert(existingTableRows.head.get("notionalValue") == 10.5)
     }
   }
-
 }
