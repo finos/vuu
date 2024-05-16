@@ -8,7 +8,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 
 class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterEach {
 
-  private val fakeDataSource: FakeDataSource[SchemaTestData] = new FakeDataSource[SchemaTestData]
+  protected val fakeDataSource: FakeDataSource[SchemaTestData] = new FakeDataSource[SchemaTestData]
   protected var queryName: String = "myQuery"
 
   override def beforeEach(): Unit = {
