@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rectTuple, uuid } from "@finos/vuu-utils";
+import { getLayoutComponent, rectTuple, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { DropTarget } from "../drag-drop/DropTarget";
-import { ComponentRegistry } from "../registry/ComponentRegistry";
 import { getProp, getProps, nextStep, resetPath, typeOf } from "../utils";
 import {
   createFlexbox,
@@ -152,7 +151,7 @@ function wrapFlexComponent(
 
   const id = uuid();
   const wrapper = React.createElement(
-    ComponentRegistry[type],
+    getLayoutComponent(type),
     {
       active,
       id,

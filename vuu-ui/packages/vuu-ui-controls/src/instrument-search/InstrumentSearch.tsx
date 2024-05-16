@@ -1,11 +1,11 @@
 import { DataSource } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-layout";
 import {
   Table,
   TableProps,
   useControlledTableNavigation,
 } from "@finos/vuu-table";
+import { TableConfig } from "@finos/vuu-table-types";
+import { registerComponent } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

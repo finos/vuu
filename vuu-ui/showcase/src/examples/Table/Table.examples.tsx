@@ -10,7 +10,6 @@ import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
-  registerComponent,
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
@@ -30,7 +29,7 @@ import { Toolbar } from "@finos/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
-  registerComponent as registerCellRenderer,
+  registerComponent,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
@@ -724,7 +723,7 @@ const SymbolHeader = (_: HeaderCellProps) => {
   );
 };
 
-registerCellRenderer("symbol-header", SymbolHeader, "cell-renderer", {});
+registerComponent("symbol-header", SymbolHeader, "cell-renderer", {});
 
 export const CustomColumnRenderer = () => {
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {

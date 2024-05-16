@@ -1,16 +1,15 @@
-import { useId } from "@finos/vuu-utils";
+import { registerComponent, useId } from "@finos/vuu-utils";
 import React, { useCallback, useRef } from "react";
 import {
   useLayoutCreateNewChild,
   useLayoutProviderDispatch,
 } from "../layout-provider";
+import { getDefaultTabLabel } from "../layout-reducer";
 import { useViewActionDispatcher } from "../layout-view-actions";
-import { registerComponent } from "../registry/ComponentRegistry";
+import { Placeholder } from "../placeholder";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";
-import { getDefaultTabLabel } from "../layout-reducer";
-import { Placeholder } from "../placeholder";
 
 const defaultCreateNewChild = () => (
   <Placeholder

@@ -1,4 +1,4 @@
-import { useId } from "@finos/vuu-utils";
+import { registerComponent, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -13,7 +13,6 @@ import React, {
   useState,
 } from "react";
 import { Header as VuuHeader } from "../layout-header/Header";
-import { registerComponent } from "../registry/ComponentRegistry";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
 import { ViewContext, ViewContextAPI } from "../layout-view-actions";

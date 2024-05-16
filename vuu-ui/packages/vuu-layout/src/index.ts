@@ -11,7 +11,6 @@ export * from "./layout-view";
 export * from "./layout-view-actions";
 export * from "./palette";
 export * from "./placeholder";
-export * from "./registry";
 export * from "./responsive";
 export * from "./stack";
 export * from "./use-persistent-state";

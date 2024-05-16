@@ -1,16 +1,11 @@
 import { getSchema } from "@finos/vuu-data-test";
-import {
-  FlexboxLayout,
-  LayoutProvider,
-  registerComponent,
-  View,
-} from "@finos/vuu-layout";
+import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
 import { useCallback, useState } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { JsonTable } from "@finos/vuu-datatable";
-import type { JsonData } from "@finos/vuu-utils";
+import { type JsonData, registerComponent } from "@finos/vuu-utils";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 

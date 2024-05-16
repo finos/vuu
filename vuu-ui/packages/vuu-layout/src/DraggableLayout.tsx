@@ -1,8 +1,8 @@
-import classnames from "clsx";
+import { registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import classnames from "clsx";
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
-import { registerComponent } from "./registry/ComponentRegistry";
 
 import draggableLayoutCss from "./DraggableLayout.css";
 

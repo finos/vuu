@@ -5,10 +5,9 @@ import {
   LayoutProvider,
   LayoutProviderProps,
   StackLayout,
-  registerComponent,
 } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
-import { VuuUser, logger } from "@finos/vuu-utils";
+import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

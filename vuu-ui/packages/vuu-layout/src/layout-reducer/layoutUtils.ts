@@ -1,11 +1,11 @@
-import { dimension, uuid } from "@finos/vuu-utils";
-import React, { cloneElement, CSSProperties, ReactElement } from "react";
 import {
-  ComponentWithId,
-  ComponentRegistry,
+  dimension,
+  getLayoutComponent,
   isContainer,
   isLayoutComponent,
-} from "../registry/ComponentRegistry";
+  uuid,
+} from "@finos/vuu-utils";
+import React, { cloneElement, CSSProperties, ReactElement } from "react";
 import { TabLabelFactory } from "../stack";
 import {
   getPersistentState,
@@ -14,6 +14,11 @@ import {
 } from "../use-persistent-state";
 import { expandFlex, followPathToParent, getProps, typeOf } from "../utils";
 import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
+
+interface ComponentWithId {
+  id: string;
+  [key: string]: unknown;
+}
 
 export const getManagedDimension = (
   style: CSSProperties
@@ -35,10 +40,10 @@ export interface LayoutProps extends ComponentWithId {
   active?: number;
   "data-path"?: string;
   children?: ReactElement[];
-  column?: any;
-  dropTarget?: any;
+  column?: boolean;
+  dropTarget?: boolean;
   key: string;
-  layout?: any;
+  layout?: LayoutJSON;
   path?: string;
   resizeable?: boolean;
   style: CSSProperties;
@@ -215,7 +220,7 @@ export function layoutFromJson(
   { id = uuid(), type, children, props, state }: LayoutJSON,
   path: string
 ): ReactElement {
-  const componentType = type.match(/^[a-z]/) ? type : ComponentRegistry[type];
+  const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
   if (componentType === undefined) {
     throw Error(
