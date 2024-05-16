@@ -44,6 +44,8 @@ public class SchemaJavaExample {
                 //.withFieldsMap(columnNameByExternalField)
                 .build();
 
+
+
         //get data from ignite as list of values
         var queryName = "myQuery";
         var igniteStore = new FakeIgniteStore<SchemaJavaTestData>();
