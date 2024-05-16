@@ -276,5 +276,11 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
         row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
       )
     }
+
+    Scenario("filter on a non-existent column skips filtering and returns result unchanged") {
+      val table = setupTable2()
+      val clause = filterClause("ccyCross = \"$GBPUSD\" and nonExistent = 10")
+      getFilteredRows(table, clause).map(_.key).toSet shouldEqual table.primaryKeys.toSet
+    }
   }
 }

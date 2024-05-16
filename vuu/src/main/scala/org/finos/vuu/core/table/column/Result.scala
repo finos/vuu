@@ -10,7 +10,7 @@ sealed trait Result[+T] {
   def isSuccess: Boolean = toEither.isRight
   def isError: Boolean = toEither.isLeft
   def map[B1](fn: T => B1): Result[B1] = toResult(toEither.map(fn))
-  def flatMap[B1](fn: T => Result[B1]): Result[B1] = toResult(toEither.flatMap(t => fn(t).toEither))
+  def flatMap[B1](fn: T => Result[B1]): Result[B1] = toResult(toEither.flatMap(fn(_).toEither))
   def toEither: Either[String, T] = this match {
     case Success(value) => Right(value)
     case Error(msg)     => Left(msg)
