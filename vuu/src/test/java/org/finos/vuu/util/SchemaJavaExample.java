@@ -3,7 +3,7 @@ package org.finos.vuu.util;
 import org.finos.vuu.api.ColumnBuilder;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.table.RowWithData;
-import org.finos.vuu.test.FakeIgniteStore;
+import org.finos.vuu.test.FakeDataSource;
 import org.finos.vuu.test.FakeInMemoryTable;
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder;
 import org.finos.vuu.util.schema.SchemaMapperBuilder;
@@ -48,15 +48,15 @@ public class SchemaJavaExample {
 
         //get data from ignite as list of values
         var queryName = "myQuery";
-        var igniteStore = new FakeIgniteStore<SchemaJavaTestData>();
-        igniteStore.setUpSqlFieldsQuery(
+        var igniteStore = new FakeDataSource<SchemaJavaTestData>();
+        igniteStore.setUpResultAsListOfValues(
                 queryName,
                 ScalaList.of(ScalaList.of("id1", 10.5))
             );
 
         //todo should use fake java store?
         List<List<Object>> result =
-                OptionConverters.toJava(igniteStore.getSqlFieldsQuery(queryName))
+                OptionConverters.toJava(igniteStore.getAsListOfValues(queryName))
                         .map(listOfLists -> toJava(listOfLists.map(ScalaCollectionConverter::toJava).toList()))
                         .orElseThrow(()-> new Exception("query does not exist in store. make sure it is setup"));
 
