@@ -3,6 +3,7 @@ package org.finos.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
+import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
 import scala.util.Try
@@ -86,13 +87,20 @@ object Columns {
     table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
-  //def calculated(name: String, definition: String): Array[Column] = ???
-
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
 
     val excluded = excludeColumns.map(s => s -> 1).toMap
 
     table.columns.filterNot(c => excluded.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
+  }
+
+  /**
+   * Create columns that use same name, type, order as the external entity fields
+   * */
+
+  def fromExternalSchema(externalSchema: ExternalEntitySchema): Array[Column] = {
+    externalSchema.fields.map(field => SimpleColumn(field.name, field.index, field.dataType))
+      .toArray
   }
 
 }

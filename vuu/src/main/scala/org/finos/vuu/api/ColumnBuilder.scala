@@ -26,9 +26,8 @@ class ColumnBuilder {
   def addLong(columnName: String): ColumnBuilder = {
     columns += (columnName + ":Long")
     this
-
-
   }
+  
   def build(): Array[Column] = Columns.fromNames(columns.result())
 }
 
