@@ -1,9 +1,9 @@
 package org.finos.vuu.util.schema
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
-import org.finos.vuu.util.{SchemaExample, SchemaTestData}
-import org.scalatest.featurespec.AnyFeatureSpec
-class SchemaFunctionalTest extends AnyFeatureSpec {
+import org.finos.vuu.test.FakeInMemoryTable
+
+class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
 
   Feature("Update in memory table using schema mapper") {
     Scenario("When table columns and entity fields match exactly") {
@@ -18,28 +18,21 @@ class SchemaFunctionalTest extends AnyFeatureSpec {
           .build()
       )
 
-      //todo to respect the QueryEntity order of fields, if it is different from order of fields on the entity class, should be generated using that?
-      val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
+    val externalEntitySchema: ExternalEntitySchema = ExternalEntitySchemaBuilder()
         .withEntity(classOf[SchemaTestData])
         .withIndex("ID_INDEX", List("id"))
         .build()
 
-      //create schema mapper
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
-        //.withFieldsMap(columnNameByExternalField)
         .build()
 
-      val example = new SchemaExample(tableDef, schemaMapper)
+      val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 
-      val queryName = "myQuery"
-      example.givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
-      val result = example.getIgniteQueryResult(queryName)
-      val rows = example.mapToRow(result)
-      rows.foreach(row => example.table.processUpdate(row.key, row))
+      getDataAndUpdateTable(table, schemaMapper, queryName)
 
-      val existingTableRows = example.table.pullAllRows()
-
+      val existingTableRows = table.pullAllRows()
       assert(existingTableRows.size == 1)
       assert(existingTableRows.head.get("id") == "testId1")
       assert(existingTableRows.head.get("clientId") == 5)
@@ -71,18 +64,13 @@ class SchemaFunctionalTest extends AnyFeatureSpec {
         )
         .build()
 
-      val example = new SchemaExample(tableDef, schemaMapper)
+      val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 
-      val queryName = "myQuery"
-      example.givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
-      val result = example.getIgniteQueryResult(queryName)
-      val rows = example.mapToRow(result)
-      rows.foreach(row => example.table.processUpdate(row.key, row))
+      getDataAndUpdateTable(table, schemaMapper, queryName)
 
-      val existingTableRows = example.table.pullAllRows()
-
-
+      val existingTableRows = table.pullAllRows()
       assert(existingTableRows.size == 1)
       assert(existingTableRows.head.get("id") == "testId1")
       assert(existingTableRows.head.get("notionalValue") == 10.5)
@@ -108,17 +96,12 @@ class SchemaFunctionalTest extends AnyFeatureSpec {
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .build()
 
-      val example = new SchemaExample(tableDef, schemaMapper)
+      val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
+      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
-      val queryName = "myQuery"
-      example.givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      getDataAndUpdateTable(table, schemaMapper, queryName)
 
-      val result = example.getIgniteQueryResult(queryName)
-      val rows = example.mapToRow(result)
-      rows.foreach(row => example.table.processUpdate(row.key, row))
-
-      val existingTableRows = example.table.pullAllRows()
-
+      val existingTableRows = table.pullAllRows()
       assert(existingTableRows.size == 1)
       assert(existingTableRows.head.get("firstColumn") == "testId1")
       assert(existingTableRows.head.get("secondColumn") == 5)
@@ -152,21 +135,17 @@ class SchemaFunctionalTest extends AnyFeatureSpec {
         )
         .build()
 
-      val example = new SchemaExample(tableDef, schemaMapper)
+      val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
+      givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
 
-      val queryName = "myQuery"
-      example.givenIgniteSqlFieldQueryReturns(queryName, List(List("testId1", 5, 10.5)))
+      getDataAndUpdateTable(table, schemaMapper, queryName)
 
-      val result = example.getIgniteQueryResult(queryName)
-      val rows = example.mapToRow(result)
-      rows.foreach(row => example.table.processUpdate(row.key, row))
-
-      val existingTableRows = example.table.pullAllRows()
-
+      val existingTableRows = table.pullAllRows()
       assert(existingTableRows.size == 1)
       assert(existingTableRows.head.get("id") == "testId1")
       assert(existingTableRows.head.get("clientId") == 5)
       assert(existingTableRows.head.get("notionalValue") == 10.5)
     }
   }
+
 }
