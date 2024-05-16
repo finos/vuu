@@ -59,8 +59,6 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
   //todo try more scenarios
   // -  virtual table - include filter, type ahead
 
-  // - example of generating table Def from an class rather than using column builder? maybe more of a unit teest/example for table def?
-
   //todo to respect the QueryEntity order of fields, if it is different from order of fields on the entity class, should be generated using that?
   //error scenarios fetching data or converting types - review api for returning error
   //todo when query result has less number of fields than table column

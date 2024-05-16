@@ -1,6 +1,7 @@
 package org.finos.vuu.util.schema
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
+import org.finos.vuu.core.table.Columns
 import org.finos.vuu.test.FakeInMemoryTable
 
 class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
@@ -12,11 +13,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
      val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
-        columns = new ColumnBuilder()
-          .addString("id")
-          .addInt("clientId")
-          .addDouble("notionalValue")
-          .build()
+        columns = Columns.fromExternalSchema(externalEntitySchema)
       )
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
         .build()
