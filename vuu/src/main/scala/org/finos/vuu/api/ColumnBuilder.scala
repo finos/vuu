@@ -27,6 +27,16 @@ class ColumnBuilder {
     columns += (columnName + ":Long")
     this
   }
+
+  def addBoolean(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":Boolean")
+    this
+  }
+
+  def addChar(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":Char")
+    this
+  }
   
   def build(): Array[Column] = Columns.fromNames(columns.result())
 }
