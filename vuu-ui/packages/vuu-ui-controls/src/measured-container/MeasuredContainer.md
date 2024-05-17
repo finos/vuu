@@ -1,0 +1,8 @@
+MeasuredContainer
+
+Some components need to know the amount of space available to them in order to render correctly. Table is a good example. There is no requirement to specify an explicit height or width on Table components. If omitted the Table will fill the available content area of its containing element. In order to decide how to size column headers, the available width of the containing element is taken into account. Likewise, to make sure scrollbars are rendered correctly on a virtualized table row container, the available height of the containing html element is required. The available space therefore needs to be measured in these circumstances.
+MeasuredContainer can be used as a top-level wrapper container for any component that must know the dimensions of the hosting html container element.
+
+The correct pattern to use MeasuredContainer is to split the implementation of your component into two. The outer component renders a MeasuredContainer, the inner component is rendered conditionally - only after the measuredSize is available. This pattern allows for additional conditions being added to the outer size check. For example the Table adds an additional check on the measured size of a table row.
+
+MeasuredContainer offers an onResize callback prop giving your component access to the measured dimensions. It also writes a number of CSS Custom Properties into the style property of the outer container. Some of these are used to style the MeasuredContainer itsef. Others, representing the pixel measurements taken, can be used by the nested component in its own style calculations.

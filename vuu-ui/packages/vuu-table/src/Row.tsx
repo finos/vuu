@@ -1,48 +1,19 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { RowProps, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  DataCellEditHandler,
-  RuntimeColumnDescriptor,
-  TableRowClickHandlerInternal,
-} from "@finos/vuu-table-types";
-import {
-  ColumnMap,
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
   isNotHidden,
   metadataKeys,
-  RowClassNameGenerator,
   RowSelected,
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import {
-  CSSProperties,
-  forwardRef,
-  memo,
-  MouseEvent,
-  useCallback,
-} from "react";
+import { forwardRef, memo, MouseEvent, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import rowCss from "./Row.css";
-
-export interface RowProps {
-  className?: string;
-  classNameGenerator?: RowClassNameGenerator;
-  columnMap: ColumnMap;
-  columns: RuntimeColumnDescriptor[];
-  highlighted?: boolean;
-  row: DataSourceRow;
-  offset: number;
-  onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: DataCellEditHandler;
-  onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
-  style?: CSSProperties;
-  virtualColSpan?: number;
-  zebraStripes?: boolean;
-}
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";

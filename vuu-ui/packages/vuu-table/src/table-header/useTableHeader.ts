@@ -10,6 +10,8 @@ import {
 } from "@finos/vuu-utils";
 import { RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
+import { useMeasuredHeight } from "../useMeasuredHeight";
+import { useForkRef } from "@salt-ds/core";
 
 export interface TableHeaderHookProps
   extends Pick<
@@ -17,18 +19,24 @@ export interface TableHeaderHookProps
     "columns" | "onMoveColumn" | "onSortColumn" | "tableConfig"
   > {
   label?: string;
+  onHeightMeasured: (height: number) => void;
   onMoveColumn: (columns: ColumnDescriptor[]) => void;
   onSortColumn: (column: ColumnDescriptor, addToExistingSort: boolean) => void;
 }
 
 export const useTableHeader = ({
   columns,
+  onHeightMeasured,
   onMoveColumn,
   onSortColumn,
   tableConfig,
 }: TableHeaderHookProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
+  const { rowRef } = useMeasuredHeight({
+    onHeightMeasured,
+  });
+
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     containerRef.current = el;
     if (el) {
@@ -99,6 +107,6 @@ export const useTableHeader = ({
     draggedColumnIndex: dragDropHook.draggedItemIndex,
     onClick: handleColumnHeaderClick,
     onMouseDown: columnHeaderDragMouseDown,
-    setContainerRef,
+    setContainerRef: useForkRef(setContainerRef, rowRef),
   };
 };
