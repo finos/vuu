@@ -1,20 +1,27 @@
-
 .vuuTable {
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
   --vuu-table-next-selection-bookend-width: 4px;
   --vuu-table-embedded-control-height: calc(var(--row-height) - 3px);
+  --vuu-table-col-header-height: var(--vuuTableHeaderCell-height, 25px);
+  --vuu-table-col-heading-height: 25px;
   --columnResizer-color: transparent;
-  --row-height: var(--row-height-prop, var(--vuu-table-row-height, var(--salt-size-base)));
+  --row-height: var(
+    --row-height-prop,
+    var(--vuu-table-row-height, var(--salt-size-base))
+  );
 
   --cell-borderColor: transparent;
   --row-borderColor: var(--row-background);
   --table-background: var(--salt-container-primary-background);
 
   background: var(--table-background);
-  font-family: var(--vuuTable-fontFamily,var(--salt-typography-fontFamily, sans-serif));
-  font-size: var(--vuuTable-fontSize,var(--salt-text-fontSize, 12px));
+  font-family: var(
+    --vuuTable-fontFamily,
+    var(--salt-typography-fontFamily, sans-serif)
+  );
+  font-size: var(--vuuTable-fontSize, var(--salt-text-fontSize, 12px));
   position: relative;
   user-select: none;
 }
@@ -24,13 +31,11 @@
 }
 
 .vuuTable-colLines {
-    --cell-borderColor: var(
-      
-    );
+  --cell-borderColor: var();
 }
 
 .vuuTable-rowLines {
-    --row-borderColor: var(--salt-separable-tertiary-borderColor);
+  --row-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-scrollbarContainer {
@@ -46,8 +51,6 @@
   position: absolute;
   top: var(--total-header-height);
   width: var(--table-width);
-
-
 }
 
 .vuuTable-scrollbarContainer::-webkit-scrollbar {
@@ -58,7 +61,6 @@
 .vuuTable-scrollbarContainer::-webkit-scrollbar:horizontal {
   height: 10px;
 }
-
 
 .vuuTable-scrollbarContainer::-webkit-scrollbar-track {
   background-color: white;
@@ -89,7 +91,6 @@
   display: none;
 }
 
- 
 .vuuTable-table {
   position: absolute;
   top: 0;
@@ -107,45 +108,53 @@
   position: relative;
 }
 
-.vuuPinLeft, .vuuPinRight {
+.vuuPinLeft,
+.vuuPinRight {
   background-color: inherit;
   position: sticky;
   z-index: 1;
 }
 
 .vuuTable-col-headings {
-  background-color: var(--vuuTableColHeadings-background, var(--table-background));
+  background-color: var(
+    --vuuTableColHeadings-background,
+    var(--table-background)
+  );
   padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
-
-    position: sticky;
-    top: 0;
-    /* ensure header row sits atop everything else when scrolling down */
-    z-index: 1;
+  position: sticky;
+  top: 0;
+  /* ensure header row sits atop everything else when scrolling down */
+  z-index: 1;
 }
 
 .vuuTable-col-headings:hover {
-  --columnResizer-height: var(--header-height);
+  --columnResizer-height: var(--vuu-table-col-header-height);
   --columnResizer-color: var(--salt-separable-tertiary-borderColor);
 }
 
-  .vuuTable-col-headers {
-    background-color: var(--vuuTableColHeadings-background, var(--vuuTableColHeadings-background));
-    color: var(--salt-content-secondary-foreground);
-    white-space: nowrap;
-  }
+.vuuTable-heading {
+  height: var(--vuu-table-col-heading-height);
+}
 
+.vuuTable-col-headers {
+  background-color: var(
+    --vuuTableColHeadings-background,
+    var(--vuuTableColHeadings-background)
+  );
+  color: var(--salt-content-secondary-foreground);
+  height: var(--vuu-table-col-header-height);
+  white-space: nowrap;
+}
 
-  .sizer-cell {
-    border: none !important;
-    height: 0px;
-  }
-  
-  .vuuDraggable-vuuTable {
-    --header-height: 25px;
-    --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
-  }
+.sizer-cell {
+  border: none !important;
+  height: 0px;
+}
+
+.vuuDraggable-vuuTable {
+  --header-height: 25px;
+  --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
+}
 .vuuDraggable-vuuTable {
   --row-height: 25px;
-} 
-
-
+}

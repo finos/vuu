@@ -1,28 +1,30 @@
 .vuuColumnResizer {
-    cursor: col-resize;
-    height: var(--header-height);
-    margin-left: var(--columnResizer-left, auto);
-    position: absolute;
-    right: -5px;
-    width: 8px;
-    z-index:1;
+  cursor: col-resize;
+  height: var(--vuu-table-col-header-height);
+  margin-left: var(--columnResizer-left, auto);
+  position: absolute;
+  right: -5px;
+  width: 8px;
+  z-index: 1;
 }
 
-.vuuTableHeaderCell:not(.vuuTableHeaderCell-resizing){
-    .vuuColumnResizer:hover {
-        --columnResizer-color: var(--salt-selectable-background-selected);
-    }
-    
+.vuuTableHeaderCell:not(.vuuTableHeaderCell-resizing) {
+  .vuuColumnResizer:hover {
+    --columnResizer-color: var(--salt-selectable-background-selected);
+  }
 }
 
 .vuuColumnResizer:after {
-    background-color: var(--columnResizer-color, var(--salt-separable-tertiary-borderColor));
-    bottom:0;
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 3px;
-    height: var(--columnResizer-height, 0);
-    width: 2px;
-    z-index: 1;
+  background-color: var(
+    --columnResizer-color,
+    var(--salt-separable-tertiary-borderColor)
+  );
+  bottom: 0;
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 3px;
+  height: var(--columnResizer-height, 0);
+  width: 2px;
+  z-index: 1;
 }

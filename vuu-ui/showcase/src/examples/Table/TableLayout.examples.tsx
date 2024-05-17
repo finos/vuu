@@ -1,10 +1,16 @@
-import { Selection, SelectionChangeHandler } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
-import { Table, TableProps } from "@finos/vuu-table";
+import { ArrayDataSource } from "@finos/vuu-data-local";
+import { SimulTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
+import {
+  DataSource,
+  Selection,
+  SelectionChangeHandler,
+} from "@finos/vuu-data-types";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Table, TableProps, useHeaderProps } from "@finos/vuu-table";
+import { TableConfig } from "@finos/vuu-table-types";
 import { List, ListItem } from "@finos/vuu-ui-controls";
-import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 let displaySequence = 1;
 
@@ -101,13 +107,6 @@ export const SingleHeadingRow = () => {
       // prettier-ignore
       config: {
         columns: [
-          // { name: "bbg",  serverDataType: "string" }, 
-          // { name: "isin",  serverDataType: "string" }, 
-          // { name: "ric",  serverDataType: "string" }, 
-          // { name: "description",  serverDataType: "string" }, 
-          // { name: "currency",   serverDataType: "string" }, 
-          // { name: "exchange",   serverDataType: "string" }, 
-          // { name: "lotSize",   serverDataType: "int" }, 
           { name: "bbg", heading: ["Instrument"], serverDataType: "string" },
           { name: "isin", heading: ["Instrument"], serverDataType: "string" },
           { name: "ric", heading: ["Instrument"], serverDataType: "string" },
@@ -125,7 +124,149 @@ export const SingleHeadingRow = () => {
   }, []);
 
   return (
-    <Table {...tableProps} height={645} renderBufferSize={10} width={720} />
+    <Table {...tableProps} height={645} renderBufferSize={10} width={800} />
   );
 };
 SingleHeadingRow.displaySequence = displaySequence++;
+
+const SimpleCustomHeader = () => {
+  return (
+    <div
+      className="SimpleCustomHeader"
+      style={{ height: 15, backgroundColor: "black", color: "white" }}
+    >
+      This is the simplest possible custom header
+    </div>
+  );
+};
+
+export const CustomHeaderComponent = () => {
+  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+    const tableName: SimulTableName = "instruments";
+    return {
+      // prettier-ignore
+      config: {
+        columns: [
+          { name: "bbg", heading: ["Instrument"], serverDataType: "string" },
+          { name: "isin", heading: ["Instrument"], serverDataType: "string" },
+          { name: "ric", heading: ["Instrument"], serverDataType: "string" },
+          { name: "description", heading: ["Instrument"], serverDataType: "string" },
+          { name: "currency", heading: ["Exchange Details"], serverDataType: "string" },
+          { name: "exchange", heading: ["Exchange Details"], serverDataType: "string" },
+          { name: "lotSize", heading: ["Exchange Details"], serverDataType: "int" },
+        ],
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      dataSource:
+        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+    };
+  }, []);
+
+  return (
+    <Table
+      {...tableProps}
+      customHeader={SimpleCustomHeader}
+      height={645}
+      renderBufferSize={10}
+      width={800}
+    />
+  );
+};
+CustomHeaderComponent.displaySequence = displaySequence++;
+
+const CustomColumnHeader = () => {
+  const { columns, virtualColSpan } = useHeaderProps();
+  return (
+    <div
+      className="SimpleCustomHeader"
+      style={{ height: 25, backgroundColor: "black", color: "white" }}
+    >
+      <div style={{ display: "inline-block", width: virtualColSpan }} />
+      {columns.map((col, i) => (
+        <div
+          key={i}
+          style={{
+            display: "inline-block",
+            width: col.width,
+            height: "100%",
+            padding: 1,
+          }}
+        >
+          <div style={{ height: "100%", backgroundColor: "white" }} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export const CustomHeaderElementVirtualizedColumns = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: columnGenerator(10),
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    []
+  );
+
+  const dataSource = useMemo<DataSource>(() => {
+    const generateRow = rowGenerator(config.columns.map((col) => col.name));
+    const data = new Array(200).fill(0).map((_, index) => generateRow(index));
+    return new ArrayDataSource({
+      columnDescriptors: config.columns,
+      data,
+    });
+  }, [config.columns]);
+
+  const customHeader = useMemo(() => <CustomColumnHeader />, []);
+
+  return (
+    <Table
+      config={config}
+      customHeader={customHeader}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={10}
+      width={800}
+    />
+  );
+};
+CustomHeaderElementVirtualizedColumns.displaySequence = displaySequence++;
+
+export const MultipleCustomHeaders = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: columnGenerator(10),
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    []
+  );
+
+  const dataSource = useMemo<DataSource>(() => {
+    const generateRow = rowGenerator(config.columns.map((col) => col.name));
+    const data = new Array(200).fill(0).map((_, index) => generateRow(index));
+    return new ArrayDataSource({
+      columnDescriptors: config.columns,
+      data,
+    });
+  }, [config.columns]);
+
+  const customHeader = useMemo(
+    () => <CustomColumnHeader key="custom-header" />,
+    []
+  );
+
+  return (
+    <Table
+      config={config}
+      customHeader={[SimpleCustomHeader, customHeader]}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={10}
+      width={800}
+    />
+  );
+};
+MultipleCustomHeaders.displaySequence = displaySequence++;

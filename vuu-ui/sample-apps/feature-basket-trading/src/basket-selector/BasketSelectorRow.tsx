@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { RowProps } from "@finos/vuu-table";
+import type { RowProps } from "@finos/vuu-table-types";
 import { MouseEvent, useCallback } from "react";
 
 import "./BasketSelectorRow.css";

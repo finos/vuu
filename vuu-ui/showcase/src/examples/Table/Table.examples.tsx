@@ -47,7 +47,6 @@ import "./Table.examples.css";
 let displaySequence = 1;
 
 export const TestTable = ({
-  headerHeight = 25,
   height = 625,
   renderBufferSize = 5,
   rowCount = 1000,
@@ -78,7 +77,6 @@ export const TestTable = ({
     <Table
       config={config}
       dataSource={dataSource}
-      headerHeight={headerHeight}
       height={height}
       renderBufferSize={renderBufferSize}
       rowHeight={rowHeight}
