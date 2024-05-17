@@ -9,16 +9,16 @@ import {
 } from "react";
 import {
   LayoutActionType,
-  LayoutChangeHandler,
-  LayoutChangeReason,
   layoutFromJson,
-  LayoutJSON,
   layoutQuery,
   layoutReducer,
-  LayoutReducerAction,
   layoutToJSON,
   processLayoutElement,
-  SaveAction,
+  type LayoutChangeHandler,
+  type LayoutChangeReason,
+  type LayoutJSON,
+  type LayoutReducerAction,
+  type SaveAction,
 } from "../layout-reducer";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {

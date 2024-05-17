@@ -1,6 +1,5 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
 import { TableSchema } from "@finos/vuu-data-types";
-import { registerComponent } from "@finos/vuu-layout";
 import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
@@ -15,6 +14,7 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
+import { registerComponent } from "@finos/vuu-utils";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { CSSProperties, useMemo } from "react";
 

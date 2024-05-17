@@ -1,5 +1,5 @@
-import { registerComponent, ViewProps } from "@finos/vuu-layout";
-import { importCSS } from "@finos/vuu-utils";
+import { ViewProps } from "@finos/vuu-layout";
+import { importCSS, registerComponent } from "@finos/vuu-utils";
 import React, { Suspense, useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";

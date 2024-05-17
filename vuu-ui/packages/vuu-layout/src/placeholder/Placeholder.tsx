@@ -1,7 +1,7 @@
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { registerComponent } from "../registry/ComponentRegistry";
+import { registerComponent } from "@finos/vuu-utils";
 import { LayoutStartPanel } from "./LayoutStartPanel";
 import { View, ViewProps } from "../layout-view";
 
@@ -47,4 +47,4 @@ export const Placeholder = ({
 };
 
 Placeholder.displayName = "Placeholder";
-registerComponent("Placeholder", Placeholder);
+registerComponent("Placeholder", Placeholder, "component");

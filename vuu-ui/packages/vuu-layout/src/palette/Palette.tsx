@@ -1,23 +1,22 @@
-import { uuid } from "@finos/vuu-utils";
 import {
   List,
   ListItem,
   ListItemProps,
   ListProps,
 } from "@finos/vuu-ui-controls";
-import cx from "clsx";
+import { registerComponent, uuid } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
-  cloneElement,
   HTMLAttributes,
-  memo,
   MouseEvent,
   ReactElement,
+  cloneElement,
+  memo,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View, ViewProps } from "../layout-view";
-import { registerComponent } from "../registry/ComponentRegistry";
 
 import paletteCss from "./Palette.css";
 

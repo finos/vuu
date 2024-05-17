@@ -18,7 +18,6 @@
     "@types/uuid": "^9.0.2"
   },
   "dependencies": {
-    "@finos/vuu-codemirror": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",
     "@finos/vuu-filter-parser": "0.0.26",
     "@finos/vuu-popups": "0.0.26",

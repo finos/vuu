@@ -1,9 +1,9 @@
-import { registerComponent } from '../registry/ComponentRegistry';
-import { FluidGrid, FluidGridProps } from './FluidGrid';
+import { registerComponent } from "@finos/vuu-utils";
+import { FluidGrid, FluidGridProps } from "./FluidGrid";
 
 export const FluidGridLayout = function FluidGridLayout(props: FluidGridProps) {
   return <FluidGrid {...props} />;
 };
-FluidGridLayout.displayName = 'FluidGrid';
+FluidGridLayout.displayName = "FluidGrid";
 
-registerComponent('FluidGrid', FluidGridLayout, 'container');
+registerComponent("FluidGrid", FluidGridLayout, "container");

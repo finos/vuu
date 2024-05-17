@@ -1,4 +1,4 @@
-import { registerComponent } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-utils";
 import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   LayoutManagementProvider,
