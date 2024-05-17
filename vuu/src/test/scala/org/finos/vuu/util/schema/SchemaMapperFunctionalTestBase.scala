@@ -1,5 +1,6 @@
 package org.finos.vuu.util.schema
 
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.test.FakeDataSource
@@ -10,6 +11,7 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
 
   protected val fakeDataSource: FakeDataSource[SchemaTestData] = new FakeDataSource[SchemaTestData]
   protected var queryName: String = "myQuery"
+  private val clock = new TestFriendlyClock(10001L)
 
   override def beforeEach(): Unit = {
     queryName += java.util.UUID.randomUUID.toString // unique query name for each test run
@@ -17,8 +19,8 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
 
   protected def getDataAndUpdateTable(table: DataTable, schemaMapper: SchemaMapper, queryName: String): Unit = {
     val result = getQueryResult(queryName)
-    val rows = mapToRow(result, schemaMapper, table.getTableDef)
-    rows.foreach(row => table.processUpdate(row.key, row, 0))
+    val rows = mapToRows(result, schemaMapper, table.getTableDef)
+    rows.foreach(row => table.processUpdate(row.key, row, clock.now()))
   }
 
   protected def givenQueryReturns(queryName: String, results: List[List[Any]]): Unit = {
@@ -30,7 +32,7 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
       .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
   }
 
-  private def mapToRow(resultData: List[List[Any]], schemaMapper: SchemaMapper, tableDef: TableDef): Seq[RowWithData] = {
+  private def mapToRows(resultData: List[List[Any]], schemaMapper: SchemaMapper, tableDef: TableDef): Seq[RowWithData] = {
 
     // map to entity object - as order of values are relevant to how the query schema was defined
     //todo two options, is direct to row map better if query result returns values?
