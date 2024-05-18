@@ -60,11 +60,7 @@ export const FilterTableVuuInstruments = () => {
   }
 
   return (
-    <FilterTable
-      FilterBarProps={filterBarProps}
-      TableProps={tableProps}
-      style={{ width: 900, height: 800 }}
-    />
+    <FilterTable FilterBarProps={filterBarProps} TableProps={tableProps} />
   );
 };
 FilterTableVuuInstruments.displaySequence = displaySequence++;
@@ -116,18 +112,14 @@ export const FilterTableArrayDataInstruments = () => {
     ...restTableProps,
     config,
     dataSource,
-    height: 645,
     renderBufferSize: 20,
-    width: 715,
   };
-
-  console.log({ tableProps });
 
   return (
     <FilterTable
       FilterBarProps={filterBarProps}
+      style={{ height: "100%" }}
       TableProps={tableProps}
-      style={{ width: 900, height: 800 }}
     />
   );
 };
