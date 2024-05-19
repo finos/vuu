@@ -1,3 +1,10 @@
 .vuuInlineFilter {
-  background-color: red;
+  .vuuInlineFilter-filter {
+    display: inline-block;
+    padding: 1px;
+  }
+
+  .vuuInlineFilter-virtualColSpan {
+    display: inline-block;
+  }
 }
