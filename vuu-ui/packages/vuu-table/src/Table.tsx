@@ -244,7 +244,7 @@ const TableCore = ({
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--row-height-prop": `${rowHeight}px`,
-    "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
+    "--total-header-height": `${headerHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;

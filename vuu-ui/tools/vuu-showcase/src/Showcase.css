@@ -17,7 +17,7 @@ body {
   height: var(--vuuToolbarProxy-height, 36px);
 }
 
-.vuuToolbarProxy > [data-align="end"]{
+.vuuToolbarProxy > [data-align="end"] {
   margin-left: auto;
 }
 
@@ -31,16 +31,15 @@ body {
 .vuuShowcase-StandaloneRoot {
   height: 100vh;
   /** this prevents root being displaced by component margin */
-  position:absolute;
-  left:0;
-  top:0;
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 100vw;
   background-color: var(--salt-container-primary-background);
 }
 
-.vuuShowcase-StandaloneRoot:has([data-showcase-center]){
+.vuuShowcase-StandaloneRoot:has(> [data-showcase-center]) {
   align-items: center;
   display: flex;
   justify-content: center;
-
 }
