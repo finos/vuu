@@ -1,10 +1,15 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { getSchema, simulModule, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import {
+  getSchema,
+  simulModule,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
 import { BulkEditPanel, Table, TableProps } from "@finos/vuu-table";
 import type {
   ColumnDescriptor,
-  DefaultColumnConfiguration
+  DefaultColumnConfiguration,
 } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
@@ -21,13 +26,13 @@ const getDefaultColumnConfigSession = (
     case "currency":
       return {
         editable: true,
-                type: {
-                name: "string",
-                renderer: {
-                    name: "dropdown-cell",
-                    values: ["CAD", "EUR", "GBP", "GBX", "USD"],
-                },
-                },
+        type: {
+          name: "string",
+          renderer: {
+            name: "dropdown-cell",
+            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
+          },
+        },
       };
     case "description":
       return {
@@ -106,46 +111,35 @@ export const BulkEditTable = ({
   }, []);
 
   const { dialog, setDialogState } = useDialog();
-  
+
   const handleCancel = () => {
     setDialogState(undefined);
-  }
+  };
 
-  const handleSubmit = useCallback(
-    () => {
-      tableProps.dataSource
-        .rpcCall?.({
-          namedParams: {},
-          params: ['1'],
-          rpcName: "APPLY_BULK_EDITS",
-          type: "VIEW_PORT_RPC_CALL",
-        })
-      setDialogState(undefined);
-    },
-    [tableProps]
-  );
+  const handleSubmit = useCallback(() => {
+    tableProps.dataSource.rpcCall?.({
+      namedParams: {},
+      params: ["1"],
+      rpcName: "APPLY_BULK_EDITS",
+      type: "VIEW_PORT_RPC_CALL",
+    });
+    setDialogState(undefined);
+  }, [setDialogState, tableProps.dataSource]);
 
-  const handleEditMultiple = useCallback(
-    () => {
-      tableProps.dataSource
-        .rpcCall?.({
-          namedParams: {},
-          params: ['1'],
-          rpcName: "APPLY_EDIT_MULTIPLE",
-          type: "VIEW_PORT_RPC_CALL",
-        })
-      setDialogState(undefined);
-    },
-    []
-  );
-  
-  const rpcResponseHandler = (response: any)=>{
+  const handleEditMultiple = useCallback(() => {
+    tableProps.dataSource.rpcCall?.({
+      namedParams: {},
+      params: ["1"],
+      rpcName: "APPLY_EDIT_MULTIPLE",
+      type: "VIEW_PORT_RPC_CALL",
+    });
+    setDialogState(undefined);
+  }, [setDialogState, tableProps.dataSource]);
+
+  const rpcResponseHandler = (response: any) => {
     const ds = simulModule.createDataSource(response.action.table.table);
     const tableConfig = {
-      columns: applyDefaultColumnConfig(
-        schema,
-        getDefaultColumnConfigSession,
-      ),
+      columns: applyDefaultColumnConfig(schema, getDefaultColumnConfigSession),
       rowSeparators: true,
       zebraStripes: true,
     };
@@ -168,17 +162,23 @@ export const BulkEditTable = ({
     //   width: 200,
     //   valueFormatter: getValueFormatter(buildColDescriptor(schemas.instruments), 'string'),
     // }
-    if (response.rpcName === "BULK_EDIT"){
+    if (response.rpcName === "BULK_EDIT") {
       const content = {
-        content: 
-          <BulkEditPanel tableConfig={tableConfig} dataSource={ds} onCancel={handleCancel} onEditMultiple={handleEditMultiple} onSubmit={handleSubmit} />
-        ,
-        title: 'Edit Instruments',
-      }
+        content: (
+          <BulkEditPanel
+            tableConfig={tableConfig}
+            dataSource={ds}
+            onCancel={handleCancel}
+            onEditMultiple={handleEditMultiple}
+            onSubmit={handleSubmit}
+          />
+        ),
+        title: "Edit Instruments",
+      };
       setDialogState(content);
     }
     return true;
-  }
+  };
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
@@ -187,21 +187,21 @@ export const BulkEditTable = ({
 
   return (
     <>
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
-    >
-      <DemoTableContainer>
-        <Table
-          {...tableProps}
-          height={height}
-          onConfigChange={handleConfigChange}
-          renderBufferSize={renderBufferSize}
-          {...props}
-        />
-      </DemoTableContainer>
-    </ContextMenuProvider>
-    {dialog}
+      <ContextMenuProvider
+        menuActionHandler={handleMenuAction}
+        menuBuilder={buildViewserverMenuOptions}
+      >
+        <DemoTableContainer>
+          <Table
+            {...tableProps}
+            height={height}
+            onConfigChange={handleConfigChange}
+            renderBufferSize={renderBufferSize}
+            {...props}
+          />
+        </DemoTableContainer>
+      </ContextMenuProvider>
+      {dialog}
     </>
   );
 };
