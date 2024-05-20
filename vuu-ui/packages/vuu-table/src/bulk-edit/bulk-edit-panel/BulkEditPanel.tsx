@@ -1,9 +1,9 @@
 import { DataSource } from "@finos/vuu-data-types";
-import { Table } from "@finos/vuu-table";
 import { TableConfig } from "@finos/vuu-table-types";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { Table } from "../../Table";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 

@@ -5,4 +5,3 @@ export * from "./filter-editor";
 export * from "./filter-pill";
 export * from "./filter-utils";
 export * from "./quick-filters";
-export * from "./use-filter-config";
