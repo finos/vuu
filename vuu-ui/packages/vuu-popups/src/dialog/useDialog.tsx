@@ -1,10 +1,5 @@
-import {
-  Dialog,
-  DialogCloseButton,
-  DialogContent,
-  DialogHeader,
-} from "@salt-ds/core";
 import { ReactElement, useCallback, useState } from "react";
+import { Dialog } from "./Dialog";
 
 export type DialogState = {
   content: ReactElement;
@@ -17,26 +12,19 @@ export type SetDialog = (dialogState?: DialogState) => void;
 export const useDialog = () => {
   const [dialogState, setDialogState] = useState<DialogState>();
 
-  const closeDialog = useCallback(() => {
+  const handleClose = useCallback(() => {
     setDialogState(undefined);
   }, []);
 
-  const handleOpenChange = useCallback(
-    (open?: boolean) => {
-      if (open !== true) {
-        closeDialog();
-      }
-    },
-    [closeDialog]
-  );
-
   const dialog = dialogState ? (
-    <Dialog className="vuDialog" open={true} onOpenChange={handleOpenChange}>
-      <DialogHeader header={dialogState.title} />
-      <DialogContent>{dialogState.content}</DialogContent>
-      {dialogState.hideCloseButton !== true ? (
-        <DialogCloseButton onClick={closeDialog} />
-      ) : null}
+    <Dialog
+      className="vuDialog"
+      isOpen={true}
+      onClose={handleClose}
+      title={dialogState.title}
+      hideCloseButton={dialogState.hideCloseButton}
+    >
+      {dialogState.content}
     </Dialog>
   ) : null;
 
