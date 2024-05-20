@@ -22,6 +22,7 @@
     "@finos/vuu-filter-parser": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
+    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.27.1",
     "@salt-ds/styles": "0.2.1",
