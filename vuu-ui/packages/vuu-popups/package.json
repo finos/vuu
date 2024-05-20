@@ -11,7 +11,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.27.1",
+    "@salt-ds/core": "1.22.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "@finos/vuu-data-types": "0.0.26",

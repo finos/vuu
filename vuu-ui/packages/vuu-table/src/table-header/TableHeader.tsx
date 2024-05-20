@@ -148,9 +148,9 @@ export const TableHeader = memo(
               />
             )
           )}
+          {customHeaders}
           {draggableColumn}
         </div>
-        {customHeaders}
       </div>
     );
   }

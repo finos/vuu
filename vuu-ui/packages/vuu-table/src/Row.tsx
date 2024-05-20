@@ -14,7 +14,6 @@ import { forwardRef, memo, MouseEvent, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import rowCss from "./Row.css";
-import { VirtualColSpan } from "./VirtualColSpan";
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
@@ -119,7 +118,9 @@ export const Row = memo(
         style={style}
       >
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
-        <VirtualColSpan width={virtualColSpan} />
+        {virtualColSpan > 0 ? (
+          <div className="vuuTableCell" style={{ width: virtualColSpan }} />
+        ) : null}
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);

@@ -1,6 +1,5 @@
-export * from "./bulk-edit";
-export * from "./cell-renderers";
 export * from "./header-cell";
+export * from "./cell-renderers";
 export * from "./header-cell";
 export * from "./Table";
 export * from "./table-cell";
@@ -10,4 +9,4 @@ export * from "./useControlledTableNavigation";
 export * from "./useTableModel";
 export * from "./useTableScroll";
 export * from "./useTableViewport";
-export * from "./VirtualColSpan";
+export * from "./bulk-edit";

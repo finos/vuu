@@ -1,11 +1,5 @@
 .vuuFilterTable {
-  --vuuFilterBar-flex: 0 0 33px;
-  --vuuMeasuredContainer-flex: 1 1 auto;
-  --vuuMeasuredContainer-height: auto;
-  display: flex;
-  flex-direction: column;
-
-  .vuuFilterBar {
-    flex: 0 0 auto;
-  }
+    --vuuFilterBar-flex: 0 0 33px;
+    display: flex;
+    flex-direction: column;
 }
