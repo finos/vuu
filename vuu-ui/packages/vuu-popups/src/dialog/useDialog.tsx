@@ -4,7 +4,14 @@ import {
   DialogContent,
   DialogHeader,
 } from "@salt-ds/core";
-import { ReactElement, useCallback, useState } from "react";
+import {
+  createContext,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 
 export type DialogState = {
   content: ReactElement;
@@ -13,6 +20,10 @@ export type DialogState = {
 };
 
 export type SetDialog = (dialogState?: DialogState) => void;
+
+export interface DialogContextProps {
+  showDialog: (dialogContent: ReactElement, title: string) => void;
+}
 
 export const useDialog = () => {
   const [dialogState, setDialogState] = useState<DialogState>();
@@ -31,7 +42,7 @@ export const useDialog = () => {
   );
 
   const dialog = dialogState ? (
-    <Dialog className="vuDialog" open={true} onOpenChange={handleOpenChange}>
+    <Dialog className="vuuDialog" open={true} onOpenChange={handleOpenChange}>
       <DialogHeader header={dialogState.title} />
       <DialogContent>{dialogState.content}</DialogContent>
       {dialogState.hideCloseButton !== true ? (
@@ -44,4 +55,33 @@ export const useDialog = () => {
     dialog,
     setDialogState,
   };
+};
+
+const defaultShowDialog = () => {
+  console.warn("No DialogProvider in place");
+};
+
+const DialogContext = createContext<DialogContextProps>({
+  showDialog: defaultShowDialog,
+});
+
+export const DialogProvider = ({ children }: { children: ReactNode }) => {
+  const { dialog, setDialogState } = useDialog();
+  const showDialog = (dialogContent: ReactElement, title: string) => {
+    setDialogState({
+      content: dialogContent,
+      title,
+    });
+  };
+  return (
+    <DialogContext.Provider value={{ showDialog }}>
+      {children}
+      {dialog}
+    </DialogContext.Provider>
+  );
+};
+
+export const useShowDialog = () => {
+  const { showDialog } = useContext(DialogContext);
+  return showDialog;
 };
