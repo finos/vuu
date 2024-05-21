@@ -4,12 +4,9 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.InMemColumnValueProviderTest.randomRic
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-
-import java.security.SecureRandom
 
 class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
@@ -53,38 +50,8 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
       uniqueValues.toSet shouldBe Set("VOA.L", "VOV.L")
     }
 
-    ignore("Performance test with 1 million rows") {
-      val table = givenTable(pricesDef)
-      val provider = new MockProvider(table)
-      val columnValueProvider = new InMemColumnValueProvider(table)
-
-      Range.inclusive(1, 1_000_000).foreach(id => {
-        provider.tick(id.toString, Map("id" -> id, "ric" -> randomRic, "bid" -> 220, "ask" -> 223))
-      })
-
-      val startTime = System.currentTimeMillis()
-      val values = columnValueProvider.getUniqueValuesStartingWith("ric", "A")
-      val endTime = System.currentTimeMillis()
-      val timeTakenMs = endTime - startTime
-
-      println(s"time-taken: $timeTakenMs | values: ${values.mkString("Array(", ", ", ")")}")
-
-      timeTakenMs should be < 20L
-    }
-
     //todo match for start with string should not be case sensitive
   }
 
   private def givenTable(tableDef: TableDef): InMemDataTable = new InMemDataTable(tableDef, JoinTableProviderImpl())
-}
-
-private object InMemColumnValueProviderTest {
-  private val alphabets = List("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
-  private val secureRandom = SecureRandom.getInstanceStrong
-  private def randomAlphabet: String = alphabets(secureRandom.nextInt(alphabets.length))
-  private def randomRic: String = {
-    val ricPrefix = Range.inclusive(1, 3).map(_ => randomAlphabet).mkString("")
-    val ricPostfix = Range.inclusive(1, 2).map(_ => randomAlphabet).mkString("")
-    s"$ricPrefix.$ricPostfix"
-  }
 }
