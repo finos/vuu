@@ -1,7 +1,7 @@
 package org.finos.vuu.core.table.column
 import org.finos.vuu.core.table.RowData
 import org.finos.vuu.core.table.column.CalculatedColumnClause.OptionResult
-import org.finos.vuu.core.table.column.ClauseDataType.{ClauseDataType, isNumeric}
+import org.finos.vuu.core.table.column.ClauseDataType.{ClauseDataType, findWidest, isNumeric}
 
 case class LenFunction(clause: CalculatedColumnClause) extends CalculatedColumnClause {
   private val baseFn = BaseFunction(List(TextFunction(clause)), errorTemplate)
@@ -130,7 +130,7 @@ case class BaseFunction(clauses: List[CalculatedColumnClause], errorTemplate: St
 }
 
 case class IfFunction(conditionClause: CalculatedColumnClause, thenClause: CalculatedColumnClause, elseClause: CalculatedColumnClause) extends CalculatedColumnClause {
-  override def dataType: ClauseDataType = thenClause.dataType //this may be a hack, should we take the most conservative of the datatypes..?
+  override def dataType: ClauseDataType = findWidest(List(thenClause, elseClause))
   override def calculate(data: RowData): OptionResult[Any] = {
     conditionClause.calculate(data) match {
       case Success(Some(true))  => thenClause.calculate(data)

@@ -44,6 +44,30 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
         assertResult(result, expected)
       }
     })
+
+    Scenario("can calculate with a numeric `if function` sub-clause") {
+      val ifClause = IfFunction(givenClause(true), givenClause(5.5), givenClause(2))
+
+      val result = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+
+      assertResult(result, 2.75)
+    }
+
+    Scenario("returns error when `if function`'s then sub-clause is non-numeric") {
+      val ifClause = IfFunction(givenClause(false), givenClause(true), givenClause(2))
+
+      val res = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+
+      assertResult(res, "unable to apply math operation `division`")
+    }
+
+    Scenario("returns error when `if function`'s else sub-clause is non-numeric") {
+      val ifClause = IfFunction(givenClause(false), givenClause(5), givenClause("abc"))
+
+      val res = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+
+      assertResult(res, "unable to apply math operation `division`")
+    }
   }
 
   Feature("AddClause") {
