@@ -1,7 +1,5 @@
 package org.finos.vuu.core.table.column
 
-import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder
-import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -49,6 +47,54 @@ class ResultTest extends AnyFeatureSpec with Matchers {
 
     Scenario("skips flat map applied on an unsuccessful result") {
       erroredResult.flatMap(d => Success(d + " + String")) shouldEqual Error("Some error msg")
+    }
+  }
+
+  Feature("fold") {
+    Scenario("can fold success result") {
+      successfulResult.fold(_ => Double.NaN, v => v) shouldEqual 57.5
+    }
+
+    Scenario("can fold error result") {
+      erroredResult.fold(msg => s"Error -> $msg", _ => "Success") shouldEqual s"Error -> ${erroredResult.getError}"
+    }
+  }
+
+  Feature("join") {
+    Scenario("can join two success results") {
+      successfulResult.join(Result(2.0))((v1, v2) => v1 * v2) shouldEqual Success(115D)
+    }
+
+    Scenario("returns passed result unchanged if it is an error but self is a success") {
+      successfulResult.join(erroredResult)((v1, v2) => v1 * v2) shouldEqual erroredResult
+    }
+
+    Scenario("returns self unchanged if self is an error but passed result is a success") {
+      erroredResult.join(successfulResult)((v1, v2) => v1 * v2) shouldEqual erroredResult
+    }
+
+    Scenario("returns self unchanged if both passed and self results are errors") {
+      val newError: Result[Double] = Error("new error")
+      erroredResult.join(newError)((v1, v2) => v1 * v2) shouldEqual erroredResult
+    }
+  }
+
+  Feature("joinWithErrors") {
+    Scenario("can join two success results") {
+      successfulResult.joinWithErrors(Result(2.0))((v1, v2) => v1 * v2, errorSep = "\n") shouldEqual Success(115D)
+    }
+
+    Scenario("returns passed result unchanged if it is an error but self is a success") {
+      successfulResult.joinWithErrors(erroredResult)((v1, v2) => v1 * v2, "\n") shouldEqual erroredResult
+    }
+
+    Scenario("returns self unchanged if self is an error but passed result is a success") {
+      erroredResult.joinWithErrors(successfulResult)((v1, v2) => v1 * v2, "\n") shouldEqual erroredResult
+    }
+
+    Scenario("returns concatenated error if both passed and self results are errors") {
+      val newError: Result[Double] = Error("new error")
+      erroredResult.joinWithErrors(newError)((v1, v2) => v1 * v2, "\n") shouldEqual Error("Some error msg\nnew error")
     }
   }
 

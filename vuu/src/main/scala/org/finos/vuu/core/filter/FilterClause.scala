@@ -3,27 +3,22 @@ package org.finos.vuu.core.filter
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.column.{Error, Result, Success}
+import org.finos.vuu.core.table.column.{Error, Result}
 import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 sealed trait FilterClause {
   def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Result[TablePrimaryKeys] =
-    this.validate(vpColumns) match {
-      case Success(_) => Result(this.filterAll(rows, rowKeys, vpColumns))
-      case err: Error => err
-    }
+    this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns)))
 
   def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys
   def validate(vpColumns: ViewPortColumns): Result[true]
 }
 
 private object FilterClause {
-  def joinResults(results: List[Result[true]]): Result[true] = {
-    val errors = results.filter(_.isError).map(_.getError)
-    if (errors.isEmpty) Result(true) else Error(errors.mkString("\n"))
-  }
+  def joinResults(results: List[Result[true]]): Result[true] =
+    results.foldLeft[Result[true]](Result(true))(_.joinWithErrors(_)((a, _) => a, errorSep = "\n"))
 }
 
 sealed trait RowFilterClause extends FilterClause {
