@@ -1,7 +1,9 @@
 package org.finos.vuu.core.table
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.column.CalculatedColumnClause
+import org.finos.vuu.core.table.column.CalculatedColumnClause.OptionResult
+import org.finos.vuu.core.table.column.{CalculatedColumnClause, Error, Success}
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
 import scala.util.Try
@@ -157,12 +159,17 @@ class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: 
   }
 }
 
-case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column{
+case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
 
-  override def getData(data: RowData): Any = clause.calculate(data)
+  override def getData(data: RowData): Any = toFlatOption(clause.calculate(data)).orNull
 
   override def getDataFullyQualified(data: RowData): Any = getData(data)
 
+  private def toFlatOption(res: OptionResult[Any]): Option[Any] = res match {
+    case Success(Some(any)) => Some(any)
+    case Success(None)      => Some(null)
+    case Error(msg)         => logger.error(msg + " Hence, returning empty result."); None;
+  }
 }
 
 

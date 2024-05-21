@@ -183,7 +183,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
       case "/" => DivideClause(leftClause, rightClause)
       case "=" => EqualsClause(leftClause, rightClause)
       case ">" => GreaterThanClause(leftClause, rightClause)
-      case "<" => LessThanClause(leftClause, rightClause)
+      case "<" => LesserThanClause(leftClause, rightClause)
     }
   }
 
@@ -264,7 +264,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
           case DataType.StringDataType => StringColumnClause(column)
           case DataType.BooleanDataType => BooleanColumnClause(column)
         }
-      case None => ErrorClause("Column not found:" + term.getText)
+      case None => ErrorClause("Column not found: " + term.getText)
     }
 
   }

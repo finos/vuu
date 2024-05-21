@@ -18,16 +18,16 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
       ) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "qtyDivbid"),
-          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, Double.NaN),
+          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, null),
           ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, 1.0101010101010102),
           ("LDN-0002", 100L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, 1.0101010101010102),
-          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, Double.NaN),
+          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null),
           ("LDN-0008", 100L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, 1.0101010101010102),
           ("NYC-0002", 100L, "VOD.L", 6L, 99.0, 102.0, false, null, "GBPUSD", 1.1234, 1.0101010101010102),
-          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, Double.NaN)
+          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, null)
         )
       }
     }
@@ -39,16 +39,16 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
       ) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "qtyDivbid"),
-          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, Double.NaN),
+          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, null),
           ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, 1.0101010101010102),
           ("LDN-0002", 100L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, 1.0101010101010102),
-          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, Double.NaN),
+          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null),
           ("LDN-0008", 100L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, 1.0101010101010102),
           ("NYC-0002", 100L, "VOD.L", 6L, 99.0, 102.0, false, null, "GBPUSD", 1.1234, 1.0101010101010102),
-          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, Double.NaN)
+          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, null)
         )
       }
     }
@@ -82,15 +82,15 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
       ) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "refCol", "minTest"),
-          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, Double.NaN, Double.NaN),
+          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, null, null),
           ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, 1.0101010101010102, 1.0101010101010102),
           ("LDN-0002", 500L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, 5.05050505050505, 5.05050505050505),
-          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, Double.NaN, Double.NaN),
+          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null, null),
           ("LDN-0008", 5000L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, 50.505050505050505, 50.0),
           ("NYC-0002", 50000L, "VOD.L", 6L, 99.0, 102.0, false, null, "GBPUSD", 1.1234, 505.050505050505, 50.0),
-          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, Double.NaN, Double.NaN),
-          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, Double.NaN, Double.NaN),
-          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, Double.NaN, Double.NaN),
+          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null, null),
+          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null, null),
+          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null, null),
           ("NYC-0013", 100000L, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, 1010.10101010101, 50.0)
         )
       }
@@ -104,16 +104,16 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
       ) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "nullCheck"),
-          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, "chris", "GBPUSD", -0.1234, Double.NaN),
+          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, "chris", "GBPUSD", -0.1234, null),
           ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, 9900.0),
           ("LDN-0002", 100L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, 9900.0),
-          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, Double.NaN),
+          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null),
           ("LDN-0008", 100L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, 9900.0),
           ("NYC-0002", 100L, "VOD.L", 6L, 99.0, 102.0, false, "steve", "GBPUSD", 1.1234, 9900.0),
-          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, Double.NaN)
+          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, null)
         )
       }
 
@@ -145,16 +145,16 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
         CalcColumn("quantityExecutedPerTimeUnit", "Double", "=quantity / tradeTime")) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "quantity", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "quantityExecutedPerTimeUnit"),
-          ("NYC-0004", null, "AAPL.L", 5L, null, 99.0, 101.5, false, "chris", "GBPUSD", -0.1234, Double.NaN),
+          ("NYC-0004", null, "AAPL.L", 5L, null, 99.0, 101.5, false, "chris", "GBPUSD", -0.1234, null),
           ("LDN-0001", 100L, "VOD.L", 2L, 100L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, 50D),
           ("LDN-0002", 100L, "BT.L", 1L, 100L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, 100D),
-          ("LDN-0003", null, "VOD.L", 3L, null, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, Double.NaN),
+          ("LDN-0003", null, "VOD.L", 3L, null, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null),
           ("LDN-0008", 100L, "BT.L", 5L, 100L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, 20D),
           ("NYC-0002", 100L, "VOD.L", 6L, 100L, 99.0, 102.0, false, "steve", "GBPUSD", 1.1234, 16.666666666666668),
-          ("NYC-0010", null, "VOD.L", 6L, null, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0011", null, "VOD/L", 6L, null, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0012", null, "VOD\\L", 6L, null, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, Double.NaN),
-          ("NYC-0013", null, "VOD\\L", 6L, null, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, Double.NaN)
+          ("NYC-0010", null, "VOD.L", 6L, null, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0011", null, "VOD/L", 6L, null, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0012", null, "VOD\\L", 6L, null, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0013", null, "VOD\\L", 6L, null, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, null)
         )
       }
     }
@@ -228,16 +228,16 @@ class CalculatedColumnMathTest extends AnyFeatureSpec with Matchers with StrictL
       ) {
         Table(
           ("orderId", "quantity", "ric", "tradeTime", "bid", "ask", "onMkt", "trader", "ccyCross", "vwapPerf", "dodgyNumColumn"),
-          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("LDN-0002", 100L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("LDN-0008", 100L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("NYC-0002", 100L, "VOD.L", 6L, 99.0, 102.0, false, null, "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  "),
-          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, "Error:Can't multiply string by numeric:100,Error:Column not found:foo  ")
+          ("NYC-0004", null, "AAPL.L", 5L, 99.0, 101.5, false, null, "GBPUSD", -0.1234, null),
+          ("LDN-0001", 100L, "VOD.L", 2L, 99.0, 101.5, true, "chris", "GBPUSD", 1.1234, null),
+          ("LDN-0002", 100L, "BT.L", 1L, 99.0, 101.01, true, "steve", "GBPUSD", 1.1234, null),
+          ("LDN-0003", null, "VOD.L", 3L, 99.0, 101.3, true, "chris", "GBPUSD", 1.1234, null),
+          ("LDN-0008", 100L, "BT.L", 5L, 99.0, 106.0, true, "chris", "GBPUSD", 1.1234, null),
+          ("NYC-0002", 100L, "VOD.L", 6L, 99.0, 102.0, false, null, "GBPUSD", 1.1234, null),
+          ("NYC-0010", null, "VOD.L", 6L, 99.0, 110.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0011", null, "VOD/L", 6L, 99.0, 109.0, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0012", null, "VOD\\L", 6L, 99.0, 105.11, true, "steve", "GBPUSD", 1.1234, null),
+          ("NYC-0013", null, "VOD\\L", 6L, 99.0, 122.0, true, "rahúl", "$GBPUSD", 1.1234, null)
         )
       }
     }

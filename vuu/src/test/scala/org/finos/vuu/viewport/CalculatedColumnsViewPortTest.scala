@@ -42,16 +42,16 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       assertVpEq(combinedUpdates) {
         Table(
           ("orderId", "trader", "ric", "tradeTime", "quantity", "logicTest"),
-          ("NYC-0000", "chris", "VOD.L", 1311544800000L, 100, "Boo"),
-          ("NYC-0001", "chris", "VOD.L", 1311544800000L, 101, "Boo"),
-          ("NYC-0002", "chris", "VOD.L", 1311544800000L, 102, "Boo"),
-          ("NYC-0003", "chris", "VOD.L", 1311544800000L, 103, "Boo"),
-          ("NYC-0004", "chris", "VOD.L", 1311544800000L, 104, "Boo"),
-          ("NYC-0005", "chris", "VOD.L", 1311544800000L, 105, "Boo"),
-          ("NYC-0006", "chris", "VOD.L", 1311544800000L, 106, "Boo"),
-          ("NYC-0007", "chris", "VOD.L", 1311544800000L, 107, "Boo"),
-          ("NYC-0008", "chris", "VOD.L", 1311544800000L, 108, "Boo"),
-          ("NYC-0009", "chris", "VOD.L", 1311544800000L, 109, "Boo")
+          ("NYC-0000", "chris", "VOD.L", 1311544800000L, 100, null),
+          ("NYC-0001", "chris", "VOD.L", 1311544800000L, 101, null),
+          ("NYC-0002", "chris", "VOD.L", 1311544800000L, 102, null),
+          ("NYC-0003", "chris", "VOD.L", 1311544800000L, 103, null),
+          ("NYC-0004", "chris", "VOD.L", 1311544800000L, 104, null),
+          ("NYC-0005", "chris", "VOD.L", 1311544800000L, 105, null),
+          ("NYC-0006", "chris", "VOD.L", 1311544800000L, 106, null),
+          ("NYC-0007", "chris", "VOD.L", 1311544800000L, 107, null),
+          ("NYC-0008", "chris", "VOD.L", 1311544800000L, 108, null),
+          ("NYC-0009", "chris", "VOD.L", 1311544800000L, 109, null)
         )
       }
     }

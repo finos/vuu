@@ -147,7 +147,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: LongIndexedField)     => InMemTablePrimaryKeys(ix.find(value.toLong))
       case Some(ix: DoubleIndexedField)   => InMemTablePrimaryKeys(ix.find(value.toDouble))
       case Some(ix: BooleanIndexedField)  => InMemTablePrimaryKeys(ix.find(value.toBoolean))
-      case None => super.filterAll(rows, rowKeys, viewPortColumns)
+      case None                           => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
