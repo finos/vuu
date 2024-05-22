@@ -4,9 +4,12 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.InMemColumnValueProviderTest.randomRic
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.security.SecureRandom
 
 class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
@@ -16,45 +19,72 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
   private val pricesDef: TableDef = TableDef(
     "prices",
-    "ric",
-    Columns.fromNames("ric:String", "bid:Double", "ask:Double"),
+    "id",
+    Columns.fromNames("id:Long", "ric:String", "bid:Double", "ask:Double"),
   )
 
   Feature("InMemColumnValueProvider") {
 
     Scenario("Get all unique value of a given column") {
-
-      val joinProvider = JoinTableProviderImpl()
-      val table = new InMemDataTable(pricesDef, joinProvider)
+      val table = givenTable(pricesDef)
       val provider = new MockProvider(table)
       val columnValueProvider = new InMemColumnValueProvider(table)
 
-      provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
-      provider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
-      provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOD.L", "bid" -> 240, "ask" -> 244))
 
       val uniqueValues = columnValueProvider.getUniqueValues("ric")
 
-      uniqueValues shouldBe Array("BT.L", "VOD.L")
+      uniqueValues.toSet shouldBe Set("BT.L", "VOD.L")
     }
 
-
     Scenario("Get all unique value of a given column that starts with specified string") {
-
-      val joinProvider = JoinTableProviderImpl()
-      val table = new InMemDataTable(pricesDef, joinProvider)
+      val table = givenTable(pricesDef)
       val provider = new MockProvider(table)
       val columnValueProvider = new InMemColumnValueProvider(table)
 
-      provider.tick("VOA.L", Map("ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
-      provider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
-      provider.tick("VOV.L", Map("ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
 
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWith("ric", "VO")
 
-      uniqueValues shouldBe Array("VOA.L", "VOV.L")
+      uniqueValues.toSet shouldBe Set("VOA.L", "VOV.L")
+    }
+
+    ignore("Performance test with 1 million rows") {
+      val table = givenTable(pricesDef)
+      val provider = new MockProvider(table)
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      Range.inclusive(1, 1_000_000).foreach(id => {
+        provider.tick(id.toString, Map("id" -> id, "ric" -> randomRic, "bid" -> 220, "ask" -> 223))
+      })
+
+      val startTime = System.currentTimeMillis()
+      val values = columnValueProvider.getUniqueValuesStartingWith("ric", "A")
+      val endTime = System.currentTimeMillis()
+      val timeTakenMs = endTime - startTime
+
+      println(s"time-taken: $timeTakenMs | values: ${values.mkString("Array(", ", ", ")")}")
+
+      timeTakenMs should be < 20L
     }
 
     //todo match for start with string should not be case sensitive
+  }
+
+  private def givenTable(tableDef: TableDef): InMemDataTable = new InMemDataTable(tableDef, JoinTableProviderImpl())
+}
+
+private object InMemColumnValueProviderTest {
+  private val alphabets = List("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
+  private val secureRandom = SecureRandom.getInstanceStrong
+  private def randomAlphabet: String = alphabets(secureRandom.nextInt(alphabets.length))
+  private def randomRic: String = {
+    val ricPrefix = Range.inclusive(1, 3).map(_ => randomAlphabet).mkString("")
+    val ricPostfix = Range.inclusive(1, 2).map(_ => randomAlphabet).mkString("")
+    s"$ricPrefix.$ricPostfix"
   }
 }

@@ -3,15 +3,8 @@ package org.finos.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 
 trait ColumnValueProvider {
-
-  //todo currently only returns first 10 results.. so can't scrolling through values
-  //could return everything let ui decide how many results to display but there is cost to the json serialisig for large dataset
-  //todo how to handle nulls - for different data types
-  //todo should this be returning null or rely on json deserialiser rules?
-
   def getUniqueValues(columnName:String):Array[String]
   def getUniqueValuesStartingWith(columnName:String, starts: String):Array[String]
-
 }
 
 class EmptyColumnValueProvider extends ColumnValueProvider {
@@ -28,41 +21,38 @@ object InMemColumnValueProvider {
     }
   }
 }
+
 class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging {
+  private val get10DistinctValues = DistinctValuesGetter(10)
 
   override def getUniqueValues(columnName: String): Array[String] =
     dataTable.columnForName(columnName) match {
-    case c: Column =>
-      dataTable.primaryKeys.foldLeft(Set[String]())(addUnique(dataTable, c, _, _)).toArray.sorted.take(10)
-    case null =>
-      logger.error(s"Column $columnName not found in table ${dataTable.name}")
-      Array()
+    case c: Column => get10DistinctValues(c)
+    case null      => logger.error(s"Column $columnName not found in table ${dataTable.name}"); Array.empty;
   }
 
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] =
     dataTable.columnForName(columnName) match {
-      case c: Column =>
-        dataTable.primaryKeys.foldLeft(Set[String]())(addUnique(dataTable, c, _, _)).filter(_.startsWith(starts)).toArray.sorted.take(10)
-      case null =>
-        logger.error(s"Column $columnName not found in table ${dataTable.name}")
-        Array()
+      case c: Column => get10DistinctValues(c, _.startsWith(starts))
+      case null      => logger.error(s"Column $columnName not found in table ${dataTable.name}"); Array.empty;
     }
 
-  private def addUnique(dt: DataTable, c: Column, set: Set[String], key: String): Set[String] = {
-    val row = dt.pullRow(key)
-    row.get(c) match {
-      case null =>
-        Set()
-      case x: String =>
-        set.+(x)
-      case x: Long =>
-        set.+(x.toString)
-      case x: Double =>
-        set.+(x.toString)
-      case x: Int =>
-        set.+(x.toString)
-      case x =>
-        set.+(x.toString)
+
+  private case class DistinctValuesGetter(n: Int) {
+    private type Filter = String => Boolean
+
+    def apply(c: Column, filter: Filter = _ => true): Array[String] = getDistinctValues(c, filter).take(n).toArray
+
+    private def getDistinctValues(c: Column, filter: Filter): Iterator[String] = {
+      dataTable.primaryKeys
+        .iterator
+        .map(dataTable.pullRow(_).get(c))
+        .distinct
+        .flatMap(valueToString)
+        .filter(filter)
     }
+
+    private def valueToString(value: Any): Option[String] = Option(value).map(_.toString)
   }
+
 }
