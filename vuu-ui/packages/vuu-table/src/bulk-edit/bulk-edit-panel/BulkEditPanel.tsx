@@ -1,25 +1,30 @@
-import { DataSource } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
+import { DataSource, RpcResponse } from "@finos/vuu-data-types";
+import { Table } from "@finos/vuu-table";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { Table } from "../../Table";
+import { VuuTableName } from "@finos/vuu-data-test";
+import { useBulkEditPanel } from "./useBulkEditPanel";
+import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
+import { useMemo } from "react";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 
 const classBase = "vuuBulkEditPanel";
 
-type BulkEditPanelProps = {
+export interface BulkEditPanelProps {
   className?: string;
-  tableConfig: TableConfig;
   dataSource: DataSource;
-  onCancel: () => void;
-  onEditMultiple: () => void;
-  onSubmit: () => void;
-};
+  response: RpcResponse;
+  mainTableName?: VuuTableName;
+  setDialogClose?: any;
+  setDialogState?: any;
+}
 
 export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
-  const { tableConfig, dataSource, onCancel, onEditMultiple, onSubmit } = props;
+  const { dsSession, tableConfig, closeDialog, handleSave } =
+    useBulkEditPanel(props);
+
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-checkbox-cell",
@@ -27,16 +32,29 @@ export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
     window: targetWindow,
   });
 
+  const bulkEditRow = useMemo(() => {
+    const onChange: FilterValueChangeHandler = (column, value) => {
+      // console.log(`apply filter to column ${column.name} using value ${value}`);
+      props.dataSource.rpcCall?.({
+        namedParams: {},
+        params: [column.name, value],
+        rpcName: "APPLY_BULK_EDITS",
+        type: "VIEW_PORT_RPC_CALL",
+      });
+    };
+    return <InlineFilter onChange={onChange} />;
+  }, [props.dataSource]);
+
   return (
     <div
       className={classBase}
       style={{ display: "flex", flexDirection: "column" }}
     >
-      {/* <BulkEditRow columnMap={inputColMap} columns={inputColDescriptor} row={dataSource.data[0]} offset={1}></BulkEditRow> */}
       <div className={`${classBase}-table`}>
         <Table
           config={tableConfig}
-          dataSource={dataSource}
+          customHeader={bulkEditRow}
+          dataSource={dsSession}
           height={400}
           width={600}
           showColumnHeaderMenus={false}
@@ -45,9 +63,8 @@ export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
       </div>
 
       <div className={`${classBase}-buttonBar`}>
-        <Button onClick={onCancel}>Cancel</Button>
-        <Button onClick={onSubmit}>Save</Button>
-        <Button onClick={onEditMultiple}>Edit Multiple</Button>
+        <Button onClick={closeDialog}>Cancel</Button>
+        <Button onClick={handleSave}>Save</Button>
       </div>
     </div>
   );

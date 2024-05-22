@@ -1,82 +1,19 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
+import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 import {
-  getSchema,
-  simulModule,
-  SimulTableName,
-  vuuModule,
-} from "@finos/vuu-data-test";
-import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
+  ContextMenuProvider,
+  DialogProvider,
+  useDialog,
+} from "@finos/vuu-popups";
 import { BulkEditPanel, Table, TableProps } from "@finos/vuu-table";
-import type {
-  ColumnDescriptor,
-  DefaultColumnConfiguration,
-} from "@finos/vuu-table-types";
+import type { DefaultColumnConfiguration } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import "./BuySellRowClassNameGenerator";
 import { DemoTableContainer } from "./DemoTableContainer";
+import { BulkEditTableComponent } from "./BulkEditTableComponent";
 
 let displaySequence = 1;
-
-const getDefaultColumnConfigSession = (
-  tableName: string,
-  columnName: string
-): Partial<ColumnDescriptor> | undefined => {
-  switch (columnName) {
-    case "currency":
-      return {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "dropdown-cell",
-            values: ["CAD", "EUR", "GBP", "GBX", "USD"],
-          },
-        },
-      };
-    case "description":
-      return {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      };
-    case "exchange":
-      return {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      };
-
-    case "isin":
-      return {
-        editable: true,
-        type: {
-          name: "string",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      };
-    case "lotSize":
-      return {
-        editable: true,
-        type: {
-          name: "number",
-          renderer: {
-            name: "input-cell",
-          },
-        },
-      };
-  }
-};
 
 export const BulkEditTable = ({
   getDefaultColumnConfig,
@@ -112,65 +49,14 @@ export const BulkEditTable = ({
 
   const { dialog, setDialogState } = useDialog();
 
-  const handleCancel = () => {
-    setDialogState(undefined);
-  };
-
-  const handleSubmit = useCallback(() => {
-    tableProps.dataSource.rpcCall?.({
-      namedParams: {},
-      params: ["1"],
-      rpcName: "APPLY_BULK_EDITS",
-      type: "VIEW_PORT_RPC_CALL",
-    });
-    setDialogState(undefined);
-  }, [setDialogState, tableProps.dataSource]);
-
-  const handleEditMultiple = useCallback(() => {
-    tableProps.dataSource.rpcCall?.({
-      namedParams: {},
-      params: ["1"],
-      rpcName: "APPLY_EDIT_MULTIPLE",
-      type: "VIEW_PORT_RPC_CALL",
-    });
-    setDialogState(undefined);
-  }, [setDialogState, tableProps.dataSource]);
-
   const rpcResponseHandler = (response: any) => {
-    const ds = simulModule.createDataSource(response.action.table.table);
-    const tableConfig = {
-      columns: applyDefaultColumnConfig(schema, getDefaultColumnConfigSession),
-      rowSeparators: true,
-      zebraStripes: true,
-    };
-
-    // console.log(ds);
-    // const buildColDescriptor = (schema: Readonly<TableSchema>)=> {
-    //   return Object.values(schema.columns).reduce<ColumnDescriptor>(
-    //     (map, col, index) => ({
-    //       ...map,
-    //       [index]: col
-    //     }),
-    //     {name:'ColumnDescriptor'}
-    //   );
-    // }
-    // console.log(buildColDescriptor(schemas.instruments));
-    //  const inputColMap = buildDataColumnMap(schemas, 'instruments');
-    //  console.log(inputColMap);
-    // const inputColDescriptor: RuntimeColumnDescriptor[] = {
-    //   label: 'Input Row',
-    //   width: 200,
-    //   valueFormatter: getValueFormatter(buildColDescriptor(schemas.instruments), 'string'),
-    // }
-    if (response.rpcName === "BULK_EDIT") {
+    if (response.rpcName === "OPEN_BULK_EDITS") {
       const content = {
         content: (
           <BulkEditPanel
-            tableConfig={tableConfig}
-            dataSource={ds}
-            onCancel={handleCancel}
-            onEditMultiple={handleEditMultiple}
-            onSubmit={handleSubmit}
+            dataSource={tableProps.dataSource}
+            setDialogState={setDialogState}
+            response={response}
           />
         ),
         title: "Edit Instruments",
@@ -206,3 +92,18 @@ export const BulkEditTable = ({
   );
 };
 BulkEditTable.displaySequence = displaySequence++;
+
+export const BulkEditTableWithDialogProvider = () => {
+  return (
+    <>
+      <DialogProvider>
+        <BulkEditTableComponent
+          height={625}
+          renderBufferSize={0}
+          tableName="instruments"
+        />
+      </DialogProvider>
+    </>
+  );
+};
+BulkEditTableWithDialogProvider.displaySequence = displaySequence++;

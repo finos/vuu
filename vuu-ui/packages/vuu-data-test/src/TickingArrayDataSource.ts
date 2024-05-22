@@ -89,7 +89,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.selectedRows.reduce<DataSourceRow[]>(
       (rows: DataSourceRow[], selected: SelectionItem) => {
         if (Array.isArray(selected)) {
-          for (let i=selected[0]; i<=selected[1]; i++){
+          for (let i = selected[0]; i <= selected[1]; i++) {
             const row = this.data[i];
             if (row) {
               rows.push(row);
@@ -113,7 +113,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.selectedRows.reduce<DataSourceRow[]>(
       (rows: DataSourceRow[], selected: SelectionItem) => {
         if (Array.isArray(selected)) {
-          for (let i=selected[0]; i<=selected[1]; i++){
+          for (let i = selected[0]; i <= selected[1]; i++) {
             const row = this.data[i];
             if (row) {
               rowIds.push(row[keyIndex]);
@@ -129,16 +129,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
       },
       []
     );
-  }
-
-  private getMultiEditCol() {
-    // placeholder: need to get value from dialog
-    return 'currency';
-  }
-
-  private getMultiEditVal() {
-    // placeholder: need to get value from dialog
-    return 'EUR'
   }
 
   applyEdit(
@@ -159,15 +149,23 @@ export class TickingArrayDataSource extends ArrayDataSource {
         service.rpcName ===
         (rpcRequest as ClientToServerViewportRpcCall).rpcName
     );
+
     if (rpcService) {
+      switch (rpcRequest.rpcName) {
+        case "APPLY_BULK_EDITS": {
+          const targetCol = rpcRequest.params[0];
+          const targetVal = rpcRequest.params[1];
+          return rpcService.service({
+            ...rpcRequest,
+            targetCol,
+            targetVal,
+          });
+        }
+      }
       const selectedRows = this.getSelectedRows();
-      const multiEditCol = this.getMultiEditCol();
-      const multiEditVal = this.getMultiEditVal();
       return rpcService.service({
         ...rpcRequest,
         selectedRows,
-        multiEditCol,
-        multiEditVal,
       });
     } else {
       console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);
@@ -198,7 +196,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
             selectedRowIds,
           });
         }
-
         default:
       }
     }

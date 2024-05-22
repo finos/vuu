@@ -4,6 +4,8 @@ import {
   DataSourceVisualLinkCreatedMessage,
   MenuActionHandler,
   MenuBuilder,
+  MenuRpcResponse,
+  RpcResponse,
   RpcResponseHandler,
 } from "@finos/vuu-data-types";
 import type { MenuActionClosePopup } from "@finos/vuu-popups";
@@ -21,6 +23,8 @@ import {
   isTableLocation,
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
+import { useCloseDialog, useShowDialog } from "@finos/vuu-popups";
+import { BulkEditPanel } from "@finos/vuu-table/src";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 
@@ -97,15 +101,30 @@ export const useVuuMenuActions = ({
     [dataSource, menuActionConfig]
   );
 
+  const showDialog = useShowDialog();
+  const closeDialog = useCloseDialog();
   const handleMenuAction = useCallback(
     ({ menuId, options }: MenuActionClosePopup) => {
       if (clientSideMenuActionHandler?.(menuId, options)) {
         return true;
       } else if (menuId === "MENU_RPC_CALL") {
         const rpcRequest = getMenuRpcRequest(options as unknown as VuuMenuItem);
+
         dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
           if (onRpcResponse && rpcResponse) {
             onRpcResponse && onRpcResponse(rpcResponse);
+          }
+
+          if ((rpcResponse as MenuRpcResponse).rpcName === "OPEN_BULK_EDITS") {
+            showDialog(
+              <BulkEditPanel
+                response={rpcResponse as RpcResponse}
+                setDialogClose={closeDialog}
+                dataSource={dataSource}
+              />,
+              "Edit Instruments"
+            );
+            return true;
           }
         });
         return true;
@@ -122,7 +141,13 @@ export const useVuuMenuActions = ({
 
       return false;
     },
-    [clientSideMenuActionHandler, dataSource, onRpcResponse]
+    [
+      clientSideMenuActionHandler,
+      closeDialog,
+      dataSource,
+      onRpcResponse,
+      showDialog,
+    ]
   );
 
   return {
