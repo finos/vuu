@@ -26,13 +26,13 @@ object TypeAheadModule extends DefaultModule {
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
     ModuleFactory.withNamespace(NAME)
-      .addRpcHandler(server => new TypeAheadRpcHandlerImpl(server.tableContainer))
+      .addRpcHandler(server => new GenericTypeAheadRpcHandler(server.tableContainer))
       .asModule()
   }
 }
 ```
 
-You can see we've defined an RpcHandler called TypeAheadRpcHandlerImpl, which implements the interface:
+You can see we've defined an RpcHandler called GenericTypeAheadRpcHandler, which implements the interface:
 
 ```scala
 trait TypeAheadRpcHandler{

@@ -20,7 +20,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
   def callGetUniqueFieldValues(tables: TableContainer, column: String): Array[String] = {
 
-    val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
+    val typeAheadRpc = new GenericTypeAheadRpcHandler(tables)
 
     val ctx = RequestContext("", ClientSessionId("", ""), null, "")
 
@@ -33,7 +33,7 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
   def callGetUniqueFieldValuesStarting(tables: TableContainer, column: String, starts: String): Array[String] = {
 
-    val typeAheadRpc = new TypeAheadRpcHandlerImpl(tables)
+    val typeAheadRpc = new GenericTypeAheadRpcHandler(tables)
 
     val ctx = new RequestContext("", ClientSessionId("", ""), null, "")
 
