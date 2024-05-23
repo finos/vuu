@@ -56,6 +56,8 @@ export function filterPredicate(
       return testEW(columnMap, filter);
     case "starts":
       return testSW(columnMap, filter);
+    case "contains":
+      return testContains(columnMap, filter);
     case "and":
       return testAND(columnMap, filter as AndFilter);
     case "or":
@@ -140,6 +142,23 @@ const testSW = (
       throw Error("string filter applied to value of wrong type");
     }
     return rowValue.toLowerCase().startsWith(filterValue.toLowerCase());
+  };
+};
+
+const testContains = (
+  columnMap: ColumnMap,
+  filter: SingleValueFilterClause
+): FilterPredicate => {
+  const filterValue = filter.value as string;
+  if (typeof filterValue !== "string") {
+    throw Error("string filter applied to value of wrong type");
+  }
+  return (row) => {
+    const rowValue = row[columnMap[filter.column]];
+    if (typeof rowValue !== "string") {
+      throw Error("string filter applied to value of wrong type");
+    }
+    return rowValue.toLowerCase().includes(filterValue.toLowerCase());
   };
 };
 

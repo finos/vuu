@@ -1,5 +1,8 @@
 .salt-theme.vuu-theme {
-    .saltOptionList {
-        border-radius: 4px;
-    }
+  .saltOptionList {
+    border-radius: 4px;
+  }
+  .saltOptionList:has(.saltOptionList-container:empty) {
+    display: none;
+  }
 }

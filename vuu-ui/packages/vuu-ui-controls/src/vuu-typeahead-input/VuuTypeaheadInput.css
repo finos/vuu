@@ -1,0 +1,34 @@
+.vuuTypeaheadInput {
+  .saltPillInput-activationIndicator {
+    display: none;
+  }
+
+  .saltButton {
+    height: 18px;
+    width: 24px;
+  }
+
+  .saltButton:before {
+    content: "";
+    background-color: var(--salt-separable-secondary-borderColor);
+    height: 100%;
+    left: calc(-1 * var(--salt-spacing-100));
+    position: absolute;
+    width: 1px;
+  }
+
+  .saltButton:after {
+    --vuu-icon-size: 19px;
+    --vuu-icon-transform: rotate(90deg);
+
+    content: "";
+    background-color: var(--vuu-icon-color);
+    height: var(--vuu-icon-size);
+    mask: var(--vuu-svg-triangle-right) center center/var(--vuu-icon-size)
+      var(--vuu-icon-size);
+    mask-repeat: no-repeat;
+    position: absolute;
+    transform: var(--vuu-icon-transform, none);
+    width: var(--vuu-icon-size);
+  }
+}

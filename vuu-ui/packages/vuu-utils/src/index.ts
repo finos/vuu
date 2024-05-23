@@ -39,6 +39,7 @@ export * from "./range-utils";
 export * from "./row-utils";
 export * from "./selection-utils";
 export * from "./sort-utils";
+export * from "./table-schema-utils";
 export * from "./text-utils";
 export * from "./ThemeProvider";
 export * from "./ts-utils";

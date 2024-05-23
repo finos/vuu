@@ -12,6 +12,7 @@ import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
 import { useTestDataSource } from "../utils";
+import { FilterBarProps } from "packages/vuu-filters/src";
 
 let displaySequence = 1;
 const schemas = getAllSchemas();
@@ -66,7 +67,10 @@ export const FilterTableVuuInstruments = () => {
 };
 FilterTableVuuInstruments.displaySequence = displaySequence++;
 
-export const FilterTableArrayDataInstruments = () => {
+export const FilterTableArrayDataInstruments = ({
+  quickFilterColumns,
+  variant = "custom-filters",
+}: Pick<FilterBarProps, "quickFilterColumns" | "variant">) => {
   const schema = schemas.instruments;
   const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">
@@ -111,7 +115,9 @@ export const FilterTableArrayDataInstruments = () => {
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
+    quickFilterColumns,
     tableSchema: getSchema("instruments"),
+    variant,
   };
 
   const tableProps = {
@@ -130,3 +136,16 @@ export const FilterTableArrayDataInstruments = () => {
   );
 };
 FilterTableArrayDataInstruments.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsQuickFilters = () => (
+  <FilterTableArrayDataInstruments
+    variant="quick-filters"
+    quickFilterColumns={["isin", "currency", "exchange"]}
+  />
+);
+FilterTableArrayDataInstrumentsQuickFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFullFilters = () => (
+  <FilterTableArrayDataInstruments variant="full-filters" />
+);
+FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;

@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data-types";
+import { TableSchema, TableSchemaTable } from "@finos/vuu-data-types";
 import cx from "clsx";
 import { FilterClauseValueEditorNumber } from "./FilterClauseValueEditorNumber";
 import { FilterClauseValueEditorText } from "./FilterClauseValueEditorText";
@@ -19,7 +19,7 @@ type FilterClauseValueEditorProps = Pick<
   "selectedColumn" | "inputProps" | "onChangeValue" | "onDeselectValue"
 > &
   Pick<FilterClauseProps, "suggestionProvider"> & {
-    table?: TableSchema["table"];
+    table?: TableSchemaTable;
   } & {
     operator?: SingleValueFilterClauseOp | "in";
     value?: string | string[] | number | number[] | boolean | boolean[];

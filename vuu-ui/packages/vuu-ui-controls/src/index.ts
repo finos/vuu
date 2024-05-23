@@ -23,3 +23,4 @@ export * from "./toolbar";
 export * from "./tree";
 export * from "./utils";
 export * from "./vuu-input";
+export * from "./vuu-typeahead-input";

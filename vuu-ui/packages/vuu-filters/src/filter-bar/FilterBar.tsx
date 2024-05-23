@@ -1,4 +1,8 @@
-import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
+import {
+  DataSourceFilter,
+  SuggestionProvider,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Icon } from "@finos/vuu-ui-controls";
@@ -6,9 +10,8 @@ import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, ReactElement, useMemo } from "react";
+import { HTMLAttributes, useMemo } from "react";
 import { CustomFilters } from "../custom-filters";
-import { FilterClauseProps } from "../filter-clause";
 import { QuickFilters } from "../quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
 
@@ -20,7 +23,6 @@ export type FilterBarVariant =
   | "full-filters";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
-  FilterClauseEditorProps?: Partial<FilterClauseProps>;
   /**
    * This is used to apply tailored filters based on column types and other attributes.
    * NOTE: Always make sure that these are passed with proper re-render optimization, otherwise,
@@ -37,6 +39,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
   quickFilterColumns?: string[];
+  suggestionProvider?: SuggestionProvider;
   tableSchema?: TableSchema;
   variant?: FilterBarVariant;
 }
@@ -44,7 +47,6 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
-  FilterClauseEditorProps,
   className: classNameProp,
   columnDescriptors,
   defaultFilterMode,
@@ -57,6 +59,7 @@ export const FilterBar = ({
   onFilterRenamed,
   onFilterStateChanged,
   quickFilterColumns,
+  suggestionProvider,
   tableSchema,
   variant = "custom-filters",
   ...htmlAttributes
@@ -85,65 +88,49 @@ export const FilterBar = ({
 
   const className = cx(classBase, classNameProp);
 
-  const quickFilterColumnDescriptors = useMemo(
-    () =>
-      allowQuickFilters
-        ? columnDescriptors.filter((col) =>
-            quickFilterColumns?.includes(col.name)
-          )
-        : [],
-    [allowQuickFilters, columnDescriptors, quickFilterColumns]
-  );
-
-  const getToggleButtons = () => {
-    const toggleButtons: ReactElement[] = [];
-    if (allowCustomFilters) {
-      toggleButtons.push(
-        <ToggleButton
-          className="vuuIconToggleButton"
-          key="custom-filter"
-          value="custom-filter"
-          aria-label="Custom filters"
-          tabIndex={-1}
+  const startAdornment = useMemo(() => {
+    if (!allowQuickFilters) {
+      return <Icon name="tune" />;
+    } else if (!allowCustomFilters) {
+      return <Icon name="grid" />;
+    } else {
+      return (
+        <ToggleButtonGroup
+          data-variant="secondary"
+          onChange={onChangeFilterMode}
+          value={filterMode}
         >
-          <Icon name="grid" size={24} />
-        </ToggleButton>
+          <ToggleButton
+            className="vuuIconToggleButton"
+            key="custom-filter"
+            value="custom-filter"
+            aria-label="Custom filters"
+            tabIndex={-1}
+          >
+            <Icon name="grid" size={16} />
+          </ToggleButton>
+          <ToggleButton
+            className="vuuIconToggleButton"
+            key="quick-filter"
+            value="quick-filter"
+            aria-label="Quick filters"
+            tabIndex={-1}
+          >
+            <Icon name="tune" size={16} />
+          </ToggleButton>
+        </ToggleButtonGroup>
       );
     }
-
-    if (allowQuickFilters) {
-      toggleButtons.push(
-        <ToggleButton
-          className="vuuIconToggleButton"
-          key="quick-filter"
-          value="quick-filter"
-          aria-label="Quick filters"
-          tabIndex={-1}
-        >
-          <Icon name="tune" size={24} />
-        </ToggleButton>
-      );
-    }
-
-    return toggleButtons;
-  };
+  }, [allowCustomFilters, allowQuickFilters, filterMode, onChangeFilterMode]);
 
   return (
     <div
       {...htmlAttributes}
       className={cx(className, `${classBase}-${filterMode}`)}
     >
-      <ToggleButtonGroup
-        data-variant="primary"
-        onChange={onChangeFilterMode}
-        value={filterMode}
-      >
-        {getToggleButtons()}
-      </ToggleButtonGroup>
-
+      {startAdornment}
       {filterMode === "custom-filter" ? (
         <CustomFilters
-          FilterClauseEditorProps={FilterClauseEditorProps}
           columnDescriptors={columnDescriptors}
           defaultFilterState={defaultFilterState}
           filterState={filterState}
@@ -151,10 +138,17 @@ export const FilterBar = ({
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
+          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       ) : (
-        <QuickFilters columns={quickFilterColumnDescriptors} />
+        <QuickFilters
+          availableColumns={columnDescriptors}
+          onApplyFilter={onApplyFilter}
+          quickFilterColumns={quickFilterColumns}
+          suggestionProvider={suggestionProvider}
+          tableSchema={tableSchema}
+        />
       )}
     </div>
   );
