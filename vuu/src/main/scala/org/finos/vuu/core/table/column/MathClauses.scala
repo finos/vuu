@@ -4,12 +4,28 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.RowData
 import org.finos.vuu.core.table.column.CalculatedColumnClause.OptionResult
 import org.finos.vuu.core.table.column.ClauseDataType.{ClauseDataType, findWidest, isNumeric}
-import org.finos.vuu.core.table.column.MathOpClause.{UnreachableCodeException, calculateAndApply}
+import org.finos.vuu.core.table.column.MathClauses.{UnreachableCodeException, calculateAndApply}
 import org.finos.vuu.core.table.column.OptionResult.toOptionResult
 
 import scala.annotation.tailrec
 
-abstract class MathOpClause(clauses: List[CalculatedColumnClause], op: MathOp) extends CalculatedColumnClause with StrictLogging {
+case class AbsFunction(clause: CalculatedColumnClause) extends CalculatedColumnClause {
+  override def dataType: ClauseDataType = clause.dataType
+  override def calculate(data: RowData): OptionResult[AnyVal] = {
+    if (isNumeric(clause.dataType)) {
+      val result = calculateAndApply[AnyVal](clause, data)({
+        case v: Long   => Math.abs(v)
+        case v: Int    => Math.abs(v)
+        case v: Double => Math.abs(v)
+        case v         => throw UnreachableCodeException(s"cannot apply `abs` to non-numeric `$v`.")
+      })
+      toOptionResult(result)
+    }
+    else errorTemplate(s"unsupported type `${clause.dataType}` for Math.abs.")
+  }
+}
+
+abstract class BinaryMathFunction(clauses: List[CalculatedColumnClause], op: BinaryMathOp) extends CalculatedColumnClause with StrictLogging {
   override def dataType: ClauseDataType = findWidest(clauses)
 
   override def calculate(data: RowData): OptionResult[AnyVal] = {
@@ -69,73 +85,56 @@ abstract class MathOpClause(clauses: List[CalculatedColumnClause], op: MathOp) e
   }
 }
 
-private sealed abstract class MathOp(val name: String, val apply: (Double, Double) => Double)
-private object MathOp {
-  final case object Add extends MathOp("addition", (a, b) => a + b)
-  final case object Subtract extends MathOp("subtraction", (a, b) => a - b)
-  final case object Multiply extends MathOp("multiplication", (a, b) => a * b)
-  final case object Divide extends MathOp("division", (a, b) => a / b)
-  final case object Max extends MathOp("max", (a, b) => Math.max(a , b))
-  final case object Min extends MathOp("min", (a, b) => Math.min(a , b))
+private sealed abstract class BinaryMathOp(val name: String, val apply: (Double, Double) => Double)
+private object BinaryMathOp {
+  final case object Add extends BinaryMathOp("addition", (a, b) => a + b)
+  final case object Subtract extends BinaryMathOp("subtraction", (a, b) => a - b)
+  final case object Multiply extends BinaryMathOp("multiplication", (a, b) => a * b)
+  final case object Divide extends BinaryMathOp("division", (a, b) => a / b)
+  final case object Max extends BinaryMathOp("max", (a, b) => Math.max(a , b))
+  final case object Min extends BinaryMathOp("min", (a, b) => Math.min(a , b))
 }
 
-private object MathOpClause {
-  def calculateAndApply[T](clause: CalculatedColumnClause, data: RowData)(apply: Any => T): Result[T] = {
-    clause.calculate(data).flatMap(_.map(apply).map(Result(_)).getOrElse(Error(s"Unable to perform math operations on `null`.")))
-  }
-
-  case class UnreachableCodeException(msg: String) extends RuntimeException(s"[Unexpected: this should be unreachable] $msg")
-}
-
-case class MultiplyClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Multiply)
-object MultiplyClause{
+case class MultiplicationClause(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Multiply)
+object MultiplicationClause {
   def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
-    MultiplyClause(List(leftClause, rightClause))
+    MultiplicationClause(List(leftClause, rightClause))
   }
 }
 
-case class SubtractClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Subtract)
-object SubtractClause{
+case class SubtractionClause(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Subtract)
+object SubtractionClause {
   def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
-    SubtractClause(List(leftClause, rightClause))
+    SubtractionClause(List(leftClause, rightClause))
   }
 }
 
-case class DivideClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Divide) {
+case class DivisionClause(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Divide) {
   override def dataType: ClauseDataType = super.dataType match {
     case ClauseDataType.LONG | ClauseDataType.INTEGER => ClauseDataType.DOUBLE
     case dataType => dataType
   }
 }
-object DivideClause{
+object DivisionClause {
   def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
-    DivideClause(List(leftClause, rightClause))
+    DivisionClause(List(leftClause, rightClause))
   }
 }
 
-case class AddClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Add)
-object AddClause{
+case class AdditionClause(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Add)
+object AdditionClause {
   def apply(leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
-    AddClause(List(leftClause, rightClause))
+    AdditionClause(List(leftClause, rightClause))
   }
 }
 
-case class MinClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Min)
-case class MaxClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Max)
-case class SumClause(clauses: List[CalculatedColumnClause]) extends MathOpClause(clauses, MathOp.Add)
+case class MinFunction(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Min)
+case class MaxFunction(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Max)
 
-case class AbsClause(clause: CalculatedColumnClause) extends CalculatedColumnClause {
-  override def dataType: ClauseDataType = clause.dataType
-  override def calculate(data: RowData): OptionResult[AnyVal] = {
-    if (isNumeric(clause.dataType)) {
-      val result = calculateAndApply[AnyVal](clause, data)({
-        case v: Long   => Math.abs(v)
-        case v: Int    => Math.abs(v)
-        case v: Double => Math.abs(v)
-        case v         => throw UnreachableCodeException(s"cannot apply `abs` to non-numeric `$v`.")
-      })
-      toOptionResult(result)
-    }
-    else errorTemplate(s"unsupported type `${clause.dataType}` for Math.abs.")
+private object MathClauses {
+  def calculateAndApply[T](clause: CalculatedColumnClause, data: RowData)(apply: Any => T): Result[T] = {
+    clause.calculate(data).flatMap(_.map(apply).map(Result(_)).getOrElse(Error(s"Unable to perform math operations on `null`.")))
   }
+
+  case class UnreachableCodeException(msg: String) extends RuntimeException(s"[Unexpected: this should be unreachable] $msg")
 }

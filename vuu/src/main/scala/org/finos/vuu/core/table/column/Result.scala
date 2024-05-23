@@ -31,7 +31,7 @@ object Result {
 
   def toResult[T](x: Try[T]): Result[T] = x match {
     case scala.util.Success(v) => Success(v)
-    case scala.util.Failure(e) => Error(e.getMessage)
+    case scala.util.Failure(e) => Error(e.toString)
   }
 
   def apply[T](v: T): Result[T] = Success(v)

@@ -177,10 +177,10 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   private def processOperatorClause(operator: OperatorContext, leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
     operator.getText match {
-      case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftClause, rightClause)
-      case "-" => SubtractClause(leftClause, rightClause)
-      case "/" => DivideClause(leftClause, rightClause)
+      case "*" => MultiplicationClause(leftClause, rightClause)
+      case "+" => AdditionClause(leftClause, rightClause)
+      case "-" => SubtractionClause(leftClause, rightClause)
+      case "/" => DivisionClause(leftClause, rightClause)
       case "=" => EqualsClause(leftClause, rightClause)
       case ">" => GreaterThanClause(leftClause, rightClause)
       case "<" => LesserThanClause(leftClause, rightClause)

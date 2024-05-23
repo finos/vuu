@@ -7,9 +7,9 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 
-class MathOpClauseTest extends AnyFeatureSpec with Matchers {
+class MathClausesTest extends AnyFeatureSpec with Matchers {
 
-  Feature("MultiplyClause") {
+  Feature("MultiplicationClause") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for literal int clauses", List(givenClause(10), givenClause(20)), 200),
@@ -23,23 +23,24 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for any null clause", List(givenClause(10.5), givenClause(null)), "Unable to perform math operations on `null`")
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = MultiplyClause(clauses).calculate(givenRow())
+        val result = MultiplicationClause(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
     })
   }
 
-  Feature("DivideClause") {
+  Feature("DivisionClause") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for mixed numeric clauses", List(givenClause(25.5), givenClause(10), givenClause(2L)), 1.275),
-      ("can calculate for numeric non-double clauses", List(givenClause(11L), givenClause(2)), 5.5),
+      ("can calculate for int clauses", List(givenClause(15), givenClause(2)), 7.5),
+      ("can calculate for long clauses", List(givenClause(11L), givenClause(2L)), 5.5),
       ("returns value unchanged if only one clause", List(givenClause(10L)), 10),
       ("returns error for any null clause", List(givenClause(10.5), givenClause(null)), "Unable to perform math operations on `null`")
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = DivideClause(clauses).calculate(givenRow())
+        val result = DivisionClause(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
@@ -48,7 +49,7 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("can calculate with a numeric `if function` sub-clause") {
       val ifClause = IfFunction(givenClause(true), givenClause(5.5), givenClause(2))
 
-      val result = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+      val result = DivisionClause(List(ifClause, givenClause(2))).calculate(givenRow())
 
       assertResult(result, 2.75)
     }
@@ -56,7 +57,7 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("returns error when `if function`'s then sub-clause is non-numeric") {
       val ifClause = IfFunction(givenClause(false), givenClause(true), givenClause(2))
 
-      val res = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+      val res = DivisionClause(List(ifClause, givenClause(2))).calculate(givenRow())
 
       assertResult(res, "unable to apply math operation `division`")
     }
@@ -64,13 +65,13 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("returns error when `if function`'s else sub-clause is non-numeric") {
       val ifClause = IfFunction(givenClause(false), givenClause(5), givenClause("abc"))
 
-      val res = DivideClause(List(ifClause, givenClause(2))).calculate(givenRow())
+      val res = DivisionClause(List(ifClause, givenClause(2))).calculate(givenRow())
 
       assertResult(res, "unable to apply math operation `division`")
     }
   }
 
-  Feature("AddClause") {
+  Feature("AdditionClause") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for mixed numeric clauses", List(givenClause(25.5), givenClause(10), givenClause(2L)), 37.5),
@@ -78,16 +79,14 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for any null clause", List(givenClause(10.5), givenClause(null)), "Unable to perform math operations on `null`")
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = AddClause(clauses).calculate(givenRow())
+        val result = AdditionClause(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
     })
-
-
   }
 
-  Feature("SubtractClause") {
+  Feature("SubtractionClause") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for mixed numeric clauses", List(givenClause(25.5), givenClause(10), givenClause(2L)), 13.5),
@@ -95,14 +94,14 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for any null clause", List(givenClause(10.5), givenClause(null)), "Unable to perform math operations on `null`")
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = SubtractClause(clauses).calculate(givenRow())
+        val result = SubtractionClause(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
     })
   }
 
-  Feature("MaxClause") {
+  Feature("MaxFunction") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for literal int clauses", List(givenClause(10), givenClause(20)), 20),
@@ -116,14 +115,14 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for empty clauses", List.empty, "unable to apply.* to data-type `ERROR`"),
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = MaxClause(clauses).calculate(givenRow())
+        val result = MaxFunction(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
     })
   }
 
-  Feature("MinClause") {
+  Feature("MinFunction") {
     forAll(Table(
       ("case", "clauses", "expected"),
       ("can calculate for literal int clauses", List(givenClause(10), givenClause(20)), 10),
@@ -137,14 +136,14 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for empty clauses", List.empty, "unable to apply.* to data-type `ERROR`"),
     ))((testCase, clauses, expected) => {
       Scenario(testCase) {
-        val result = MinClause(clauses).calculate(givenRow())
+        val result = MinFunction(clauses).calculate(givenRow())
 
         assertResult(result, expected)
       }
     })
   }
 
-  Feature("AbsClause") {
+  Feature("AbsFunction") {
     forAll(Table(
       ("case", "clause", "expected"),
       ("can get abs for literal int clause", givenClause(-10), 10),
@@ -155,7 +154,7 @@ class MathOpClauseTest extends AnyFeatureSpec with Matchers {
       ("returns error for any non-numeric clause", givenClause("10"), "unsupported type `STRING`"),
     ))((testCase, clause, expected) => {
       Scenario(testCase) {
-        val result = AbsClause(clause).calculate(givenRow())
+        val result = AbsFunction(clause).calculate(givenRow())
 
         assertResult(result, expected)
       }
