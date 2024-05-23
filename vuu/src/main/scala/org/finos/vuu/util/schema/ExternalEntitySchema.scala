@@ -6,22 +6,8 @@ import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.{InvalidIndexExcept
 import scala.collection.mutable.ListBuffer
 
 trait ExternalEntitySchema {
-  /**
-   * @return schema fields sorted by their index (SchemaField.index).
-   * */
-  def fields: List[SchemaField]
-
-  def indexes: List[SchemaIndex] = List.empty
-
-  /**
-   * @param values represents a list of values corresponding to the fields in the schema.
-   * @return a map from field names to the passed values matched by field.index that is
-   *         value at position 0 gets matched with the field x where x.index == 0.
-   *
-   * The method doesn't check for the types of passed values and would skip any fields
-   * that do not have a corresponding value e.g. when `values.length` < `fields.length`.
-   * */
-  def toMap(values: List[_]): Map[FieldName, Any] = fields.map(_.name).zip(values).toMap
+  val fields: List[SchemaField]
+  val indexes: List[SchemaIndex] = List.empty
 }
 
 private case class DefaultExternalEntitySchema private (override val fields: List[SchemaField],

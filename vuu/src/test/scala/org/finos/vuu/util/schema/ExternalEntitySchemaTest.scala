@@ -3,6 +3,7 @@ package org.finos.vuu.util.schema
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
   Feature("ExternalEntitySchemaBuilder") {
@@ -73,28 +74,6 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
         SchemaField("size", classOf[Int], 1),
         SchemaField("value", classOf[Double], 2)
       )
-    }
-  }
-
-  Feature("ExternalEntitySchema.toMap") {
-    val schema = ExternalEntitySchemaBuilder().withEntity(classOf[TestCaseClass]).build()
-
-    Scenario("Can convert list of values ordered according to the schema field index to a map of filedName->value") {
-      val m = schema.toMap(List("t-shirt", 3, 10.99))
-
-      m shouldEqual Map("name" -> "t-shirt", "size" -> 3, "value" -> 10.99)
-    }
-
-    Scenario("Can convert a list of correctly ordered values with some last missing to a map without the missing fields") {
-      val m = schema.toMap(List("t-shirt", 3))
-
-      m shouldEqual Map("name" -> "t-shirt", "size" -> 3)
-    }
-
-    Scenario("Can convert a list of correctly ordered values with extra values appended at the end to a map skipping any extra values") {
-      val m = schema.toMap(List("t-shirt", 3, 10.99, "extra-value-passed"))
-
-      m shouldEqual Map("name" -> "t-shirt", "size" -> 3, "value" -> 10.99)
     }
   }
 }
