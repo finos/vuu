@@ -5,7 +5,7 @@ import {
   getSchema,
   simulModule,
 } from "@finos/vuu-data-test";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils/src";
+import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { BulkEditPanelProps } from "./BulkEditPanel";

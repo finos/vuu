@@ -24,7 +24,7 @@ import {
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
 import { useCloseDialog, useShowDialog } from "@finos/vuu-popups";
-import { BulkEditPanel } from "@finos/vuu-table/src";
+import { BulkEditPanel } from "@finos/vuu-table";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
 

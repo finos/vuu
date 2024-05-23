@@ -1,9 +1,9 @@
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
-import { Table } from "@finos/vuu-table";
+import { Table } from "../../Table";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { VuuTableName } from "@finos/vuu-data-test";
+// import { VuuTableName } from "@finos/vuu-data-test";
 import { useBulkEditPanel } from "./useBulkEditPanel";
 import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
 import { useMemo } from "react";
@@ -16,7 +16,7 @@ export interface BulkEditPanelProps {
   className?: string;
   dataSource: DataSource;
   response: RpcResponse;
-  mainTableName?: VuuTableName;
+  mainTableName?: string;
   setDialogClose?: any;
   setDialogState?: any;
 }
