@@ -6,9 +6,8 @@ import {
   simulModule,
 } from "@finos/vuu-data-test";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
-import { useCallback } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { BulkEditPanelProps } from "./BulkEditPanel";
+import { BulkEditPanelHookProps } from "./BulkEditPanel";
 
 export interface RPCSimulResponse {
   action: {
@@ -38,35 +37,15 @@ const createSessionTableconfig = (tableName?: VuuTableName) => {
   return tableConfig;
 };
 
-export const useBulkEditPanel = (props: BulkEditPanelProps) => {
+export const useBulkEditPanel = (props: BulkEditPanelHookProps) => {
   const dsSession = createSessionDatasource(
     props.response as unknown as RPCSimulResponse
   );
   const tableConfig = createSessionTableconfig(props.mainTableName);
-  const dataSource = props.dataSource;
-  const setDialogClose = props.setDialogClose;
-
-  const closeDialog = () => {
-    // setDialogState(undefined);
-    setDialogClose();
-  };
-
-  const handleSave = useCallback(() => {
-    dataSource.rpcCall?.({
-      namedParams: {},
-      params: ["1"],
-      rpcName: "SAVE_BULK_EDITS",
-      type: "VIEW_PORT_RPC_CALL",
-    });
-    // setDialogState(undefined);
-    setDialogClose();
-  }, [dataSource, setDialogClose]);
 
   return {
     dsSession,
     tableConfig,
-    closeDialog,
-    handleSave,
   };
 };
 

@@ -89,12 +89,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useShowDialog = () => {
+export const useDialogContext = () => {
   const { showDialog } = useContext(DialogContext);
-  return showDialog;
-};
-
-export const useCloseDialog = () => {
   const { closeDialog } = useContext(DialogContext);
-  return closeDialog;
+  return { showDialog, closeDialog };
 };

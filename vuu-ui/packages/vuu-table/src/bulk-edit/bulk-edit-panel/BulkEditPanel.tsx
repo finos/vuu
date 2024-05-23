@@ -3,7 +3,7 @@ import { Table } from "../../Table";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-// import { VuuTableName } from "@finos/vuu-data-test";
+import { VuuTableName } from "@finos/vuu-data-test";
 import { useBulkEditPanel } from "./useBulkEditPanel";
 import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
 import { useMemo } from "react";
@@ -15,15 +15,22 @@ const classBase = "vuuBulkEditPanel";
 export interface BulkEditPanelProps {
   className?: string;
   dataSource: DataSource;
-  response: RpcResponse;
-  mainTableName?: string;
+  onClose?: any;
+  onSubmit?: any;
+  sessionDataSource?: DataSource;
+  response?: RpcResponse;
+  mainTableName?: VuuTableName;
   setDialogClose?: any;
   setDialogState?: any;
 }
 
+export type BulkEditPanelHookProps = Pick<
+  BulkEditPanelProps,
+  "response" | "mainTableName"
+>;
+
 export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
-  const { dsSession, tableConfig, closeDialog, handleSave } =
-    useBulkEditPanel(props);
+  const { dsSession, tableConfig } = useBulkEditPanel(props);
 
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -63,8 +70,8 @@ export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
       </div>
 
       <div className={`${classBase}-buttonBar`}>
-        <Button onClick={closeDialog}>Cancel</Button>
-        <Button onClick={handleSave}>Save</Button>
+        <Button onClick={props.onClose}>Cancel</Button>
+        <Button onClick={props.onSubmit}>Save</Button>
       </div>
     </div>
   );

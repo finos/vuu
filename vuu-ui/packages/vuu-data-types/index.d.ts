@@ -429,6 +429,7 @@ export interface DataSource
 
   deleteRow?: DataSourceDeleteHandler;
 
+  createSessionDataSource?: (sessionTableName: string) => DataSource;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally

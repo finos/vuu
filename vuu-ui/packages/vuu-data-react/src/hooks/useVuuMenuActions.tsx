@@ -8,7 +8,7 @@ import {
   RpcResponse,
   RpcResponseHandler,
 } from "@finos/vuu-data-types";
-import type { MenuActionClosePopup } from "@finos/vuu-popups";
+import { useDialogContext, type MenuActionClosePopup } from "@finos/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
   VuuMenu,
@@ -23,7 +23,6 @@ import {
   isTableLocation,
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
-import { useCloseDialog, useShowDialog } from "@finos/vuu-popups";
 import { BulkEditPanel } from "@finos/vuu-table";
 
 export const addRowsFromInstruments = "addRowsFromInstruments";
@@ -101,8 +100,16 @@ export const useVuuMenuActions = ({
     [dataSource, menuActionConfig]
   );
 
-  const showDialog = useShowDialog();
-  const closeDialog = useCloseDialog();
+  const { showDialog, closeDialog } = useDialogContext();
+  const handleSubmit = useCallback(() => {
+    dataSource.rpcCall?.({
+      namedParams: {},
+      params: ["1"],
+      rpcName: "SAVE_BULK_EDITS",
+      type: "VIEW_PORT_RPC_CALL",
+    });
+    closeDialog();
+  }, [closeDialog, dataSource]);
   const handleMenuAction = useCallback(
     ({ menuId, options }: MenuActionClosePopup) => {
       if (clientSideMenuActionHandler?.(menuId, options)) {
@@ -119,11 +126,27 @@ export const useVuuMenuActions = ({
             showDialog(
               <BulkEditPanel
                 response={rpcResponse as RpcResponse}
-                setDialogClose={closeDialog}
+                onClose={closeDialog}
+                onSubmit={handleSubmit}
                 dataSource={dataSource}
               />,
               "Edit Instruments"
             );
+
+            // TODO: Create and pass sessionDs from here
+            // const sessionDs =
+            //   dataSource.createSessionDataSource?.("sessionTable1");
+            // if (sessionDs) {
+            //   showDialog(
+            //     <BulkEditPanel
+            //       // response={rpcResponse as RpcResponse}
+            //       setDialogClose={closeDialog}
+            //       dataSource={dataSource}
+            //       sessionDataSource={sessionDs}
+            //     />,
+            //     "Edit Instruments"
+            //   );
+
             return true;
           }
         });
@@ -145,6 +168,7 @@ export const useVuuMenuActions = ({
       clientSideMenuActionHandler,
       closeDialog,
       dataSource,
+      handleSubmit,
       onRpcResponse,
       showDialog,
     ]
