@@ -133,7 +133,12 @@ case class MaxFunction(clauses: List[CalculatedColumnClause]) extends BinaryMath
 
 private object MathClauses {
   def calculateAndApply[T](clause: CalculatedColumnClause, data: RowData)(apply: Any => T): Result[T] = {
-    clause.calculate(data).flatMap(_.map(apply).map(Result(_)).getOrElse(Error(s"Unable to perform math operations on `null`.")))
+    clause.calculate(data).flatMap(option =>
+      option
+        .map(apply)
+        .map(Result(_))
+        .getOrElse(Error(s"Unable to perform math operations on `null`."))
+    )
   }
 
   case class UnreachableCodeException(msg: String) extends RuntimeException(s"[Unexpected: this should be unreachable] $msg")
