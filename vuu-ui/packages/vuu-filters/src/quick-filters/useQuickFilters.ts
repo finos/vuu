@@ -1,16 +1,18 @@
 import type { Filter } from "@finos/vuu-filter-types";
-import { Commithandler } from "@finos/vuu-ui-controls";
+import { Commithandler, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { filterAsQuery, queryClosest } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "packages/vuu-protocol-types";
-import { ChangeEventHandler, RefCallback, useCallback, useRef } from "react";
+import {
+  ChangeEventHandler,
+  RefCallback,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DataSourceFilter } from "packages/vuu-data-types";
 import { QuickFilterProps } from "./QuickFilters";
 import { ColumnDescriptor } from "packages/vuu-table-types";
-
-export type QuickFilterHookProps = Pick<
-  QuickFilterProps,
-  "availableColumns" | "onApplyFilter"
->;
 
 type QuickFilterValues = Record<string, VuuRowDataItemType>;
 
@@ -76,10 +78,17 @@ const buildFilter = (
   };
 };
 
+export type QuickFilterHookProps = Pick<
+  QuickFilterProps,
+  "availableColumns" | "onApplyFilter" | "quickFilterColumns"
+>;
+
 export const useQuickFilters = ({
   availableColumns,
   onApplyFilter,
+  quickFilterColumns = [],
 }: QuickFilterProps) => {
+  const [quickFilters, setQuickFilters] = useState(quickFilterColumns);
   const filters = useRef<QuickFilterValues>({});
   const rootRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     if (el) {
@@ -109,9 +118,24 @@ export const useQuickFilters = ({
     [availableColumns, onApplyFilter]
   );
 
+  const handleColumnsSelectionChange = useCallback<MultiSelectionHandler>(
+    (evt, newSelected) => {
+      setQuickFilters(newSelected);
+    },
+    []
+  );
+
+  const availableColumnNames = useMemo(
+    () => availableColumns.map((col) => col.name),
+    [availableColumns]
+  );
+
   return {
+    availableColumnNames,
     onChange: handleChange,
+    onColumnsSelectionChange: handleColumnsSelectionChange,
     onCommit: handleCommit,
+    quickFilters,
     rootRef,
   };
 };

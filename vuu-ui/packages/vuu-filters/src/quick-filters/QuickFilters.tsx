@@ -1,6 +1,6 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Icon, VuuInput } from "@finos/vuu-ui-controls";
+import { ColumnPicker, Icon, VuuInput } from "@finos/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -38,13 +38,21 @@ export const QuickFilters = ({
 
   const searchIcon = <Icon name="search" size={18} />;
 
-  const { onChange, onCommit, rootRef } = useQuickFilters({
+  const {
+    availableColumnNames,
+    onChange,
+    onColumnsSelectionChange,
+    onCommit,
+    rootRef,
+    quickFilters,
+  } = useQuickFilters({
     availableColumns,
     onApplyFilter,
+    quickFilterColumns,
   });
 
   const filterColumns = availableColumns.filter(({ name }) =>
-    quickFilterColumns?.includes(name)
+    quickFilters?.includes(name)
   );
 
   return (
@@ -71,6 +79,11 @@ export const QuickFilters = ({
           })}
         </FormField>
       ))}
+      <ColumnPicker
+        columns={availableColumnNames}
+        onSelectionChange={onColumnsSelectionChange}
+        selected={quickFilters}
+      />
     </div>
   );
 };

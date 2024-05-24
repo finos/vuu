@@ -71,6 +71,7 @@ const ColumnListItem = ({
 };
 
 export const ColumnList = ({
+  className,
   columnItems,
   onChange,
   onMoveListItem,
@@ -107,18 +108,27 @@ export const ColumnList = ({
     [onChange]
   );
 
-  const handleClick = useCallback<MouseEventHandler>((evt) => {
-    const targetEl = evt.target as HTMLElement;
-    if (targetEl.classList.contains("vuuColumnList-text")) {
-      const listItemEl = targetEl.closest(".vuuListItem") as HTMLElement;
-      if (listItemEl?.dataset.name) {
-        onNavigateToColumn?.(listItemEl.dataset.name);
+  const handleClick = useCallback<MouseEventHandler>(
+    (evt) => {
+      const targetEl = evt.target as HTMLElement;
+      if (targetEl.classList.contains("vuuColumnList-text")) {
+        const listItemEl = targetEl.closest(".vuuListItem") as HTMLElement;
+        if (listItemEl?.dataset.name) {
+          onNavigateToColumn?.(listItemEl.dataset.name);
+        }
       }
-    }
-  }, []);
+    },
+    [onNavigateToColumn]
+  );
 
   return (
-    <div {...htmlAttributes} className={classBase}>
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, className, {
+        [`${classBase}-withColumnNavigation`]:
+          typeof onNavigateToColumn === "function",
+      })}
+    >
       <div className={`${classBase}-header`}>
         <span>Column Selection</span>
       </div>
