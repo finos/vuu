@@ -14,6 +14,7 @@ export * from "./debug-utils";
 export * from "./filters";
 export * from "./html-utils";
 export * from "./event-emitter";
+export * from "./feature-utils";
 export * from "./form-utils";
 export * from "./formatting-utils";
 export * from "./getUniqueId";

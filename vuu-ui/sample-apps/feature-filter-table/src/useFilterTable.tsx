@@ -18,12 +18,12 @@ import { useLayoutManager, useShellContext } from "@finos/vuu-shell";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import {
   applyDefaultColumnConfig,
+  FilterTableFeatureProps,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
-import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 
 const NO_CONFIG: FilterTableConfig = {};
 
