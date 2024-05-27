@@ -1,8 +1,10 @@
 import { rect, queryClosest, boxContainsPoint } from "@finos/vuu-utils";
 import { MousePosition } from "@finos/vuu-ui-controls";
 import { DragEventHandler, HTMLAttributes, useCallback, useRef } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./GridPlaceholder.css";
+import gridPlaceholderCss from "./GridPlaceholder.css";
 
 function getCenteredBox({ right, left, top, bottom }: rect, pctSize: number) {
   const pctOffset = (1 - pctSize) / 2;
@@ -81,6 +83,13 @@ export const GridPlaceholder = ({
   onDrop,
   ...htmlAttributes
 }: GridPlaceholderProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-grid-layout-placeholder",
+    css: gridPlaceholderCss,
+    window: targetWindow,
+  });
+
   const placeholderRef = useRef<HTMLElement>();
   const positionRef = useRef<string>("");
   const mousePosRef = useRef<MousePosition>({ clientX: -1, clientY: -1 });
@@ -152,7 +161,7 @@ export const GridPlaceholder = ({
       console.log("onDrop");
       onDrop(
         placeholderRef.current.id,
-        evt.dataTransfer.getData("text/plain"),
+        JSON.parse(evt.dataTransfer.getData("text/json")),
         positionRef.current
       );
     },

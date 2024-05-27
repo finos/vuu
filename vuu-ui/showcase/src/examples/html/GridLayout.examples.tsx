@@ -1,13 +1,16 @@
 let displaySequence = 1;
 import { getTrackIndex } from "@finos/vuu-layout";
-import { queryClosest } from "@finos/vuu-utils";
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { queryClosest, registerComponent } from "@finos/vuu-utils";
+import { MouseEventHandler, useCallback, useMemo, useRef } from "react";
 import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
-import { GridPalette } from "./components/GridPalette";
+import { DebugGridItem } from "./components/DebugGridItem";
+import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
 import "./GridLayout.examples.css";
 
-export const GridLayoutA = () => {
+registerComponent("DebugGridItem", DebugGridItem, "view");
+
+export const TwoByTwoGrid = () => {
   // prettier-ignore
 
   const layoutApi = useRef<LayoutAPI>(null)
@@ -48,7 +51,7 @@ export const GridLayoutA = () => {
     layoutApi.current?.removeGridColumn(columnIndex);
   }, []);
 
-  const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
+  const onClick = useCallback<MouseEventHandler<HTMLDivElement>>(
     ({ target, clientX, clientY }) => {
       const grid = queryClosest(target, ".vuuGridLayout");
       if (grid) {
@@ -94,7 +97,8 @@ export const GridLayoutA = () => {
           }}
           title="Green"
         >
-          <div
+          <DebugGridItem
+            debugLabel="Green"
             style={{
               background: "green",
             }}
@@ -112,7 +116,7 @@ export const GridLayoutA = () => {
           }}
           title="Blue"
         >
-          <div style={{ background: "blue" }} />
+          <DebugGridItem debugLabel="Blue" style={{ background: "blue" }} />
         </GridLayoutItem>
         <GridLayoutItem
           header
@@ -126,7 +130,7 @@ export const GridLayoutA = () => {
           }}
           title="Black"
         >
-          <div style={{ background: "black" }} />
+          <DebugGridItem debugLabel="Yellow" style={{ background: "yellow" }} />
         </GridLayoutItem>
         <GridLayoutItem
           header
@@ -140,15 +144,15 @@ export const GridLayoutA = () => {
           }}
           title="Red"
         >
-          <div style={{ background: "red" }} />
+          <DebugGridItem debugLabel="Red" style={{ background: "red" }} />
         </GridLayoutItem>
       </GridLayout>
     </div>
   );
 };
-GridLayoutA.displaySequence = displaySequence++;
+TwoByTwoGrid.displaySequence = displaySequence++;
 
-export const GridLayoutBlankSpace = () => {
+export const TwoByTwoEmptyCell = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
       <GridLayoutItem
@@ -163,7 +167,7 @@ export const GridLayoutBlankSpace = () => {
         }}
         title="Blue"
       >
-        <div style={{ background: "blue" }} />
+        <DebugGridItem style={{ background: "blue" }} />
       </GridLayoutItem>
       <GridLayoutItem
         header
@@ -196,9 +200,9 @@ export const GridLayoutBlankSpace = () => {
     </GridLayout>
   );
 };
-GridLayoutBlankSpace.displaySequence = displaySequence++;
+TwoByTwoEmptyCell.displaySequence = displaySequence++;
 
-export const GridLayoutC = () => {
+export const TwoByTwoColumnTwoDoubleRowspan = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
       <GridLayoutItem
@@ -244,9 +248,9 @@ export const GridLayoutC = () => {
     </GridLayout>
   );
 };
-GridLayoutC.displaySequence = displaySequence++;
+TwoByTwoColumnTwoDoubleRowspan.displaySequence = displaySequence++;
 
-export const GridLayoutB = () => {
+export const TwoByTwoColumnOneDoubleRowspan = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
       <GridLayoutItem
@@ -292,9 +296,9 @@ export const GridLayoutB = () => {
     </GridLayout>
   );
 };
-GridLayoutB.displaySequence = displaySequence++;
+TwoByTwoColumnOneDoubleRowspan.displaySequence = displaySequence++;
 
-export const GridLayoutD = () => {
+export const SkewedTowerDeepTopRight = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutD" rowCount={3}>
       <GridLayoutItem
@@ -352,9 +356,9 @@ export const GridLayoutD = () => {
     </GridLayout>
   );
 };
-GridLayoutD.displaySequence = displaySequence++;
+SkewedTowerDeepTopRight.displaySequence = displaySequence++;
 
-export const GridLayoutE = () => {
+export const SkewedTowerDeepTopLeft = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutE" rowCount={3}>
       <GridLayoutItem
@@ -412,9 +416,9 @@ export const GridLayoutE = () => {
     </GridLayout>
   );
 };
-GridLayoutE.displaySequence = displaySequence++;
+SkewedTowerDeepTopLeft.displaySequence = displaySequence++;
 
-export const GridLayoutF = () => {
+export const SkewedTerracesWideTopLeft = () => {
   return (
     <GridLayout colCount={3} id="GridLayoutE" rowCount={2}>
       <GridLayoutItem
@@ -427,7 +431,8 @@ export const GridLayoutF = () => {
           gridRowEnd: 2,
         }}
       >
-        <div
+        <DebugGridItem
+          debugLabel="Green"
           style={{
             background: "green",
           }}
@@ -443,7 +448,12 @@ export const GridLayoutF = () => {
           gridRowEnd: 2,
         }}
       >
-        <div style={{ background: "blue" }} />
+        <DebugGridItem
+          debugLabel="Blue"
+          style={{
+            background: "blue",
+          }}
+        />
       </GridLayoutItem>
       <GridLayoutItem
         id="black"
@@ -455,7 +465,12 @@ export const GridLayoutF = () => {
           gridRowEnd: 3,
         }}
       >
-        <div style={{ background: "black" }} />
+        <DebugGridItem
+          debugLabel="Yellow"
+          style={{
+            background: "yellow",
+          }}
+        />
       </GridLayoutItem>
       <GridLayoutItem
         id="red"
@@ -467,12 +482,17 @@ export const GridLayoutF = () => {
           gridRowEnd: 3,
         }}
       >
-        <div style={{ background: "red" }} />
+        <DebugGridItem
+          debugLabel="Red"
+          style={{
+            background: "red",
+          }}
+        />
       </GridLayoutItem>
     </GridLayout>
   );
 };
-GridLayoutF.displaySequence = displaySequence++;
+SkewedTerracesWideTopLeft.displaySequence = displaySequence++;
 
 export const GridLayoutG = () => {
   return (
@@ -624,12 +644,13 @@ export const GridLayoutH = () => {
 };
 GridLayoutH.displaySequence = displaySequence++;
 
-export const SingleRowFixedItemLeft = () => {
+export const FourCellTerrace = () => {
   return (
     <GridLayout colCount={4} id="GridLayoutE" rowCount={1}>
       <GridLayoutItem
         header
         id="green"
+        resizeable="hv"
         style={{
           gridColumnStart: 1,
           gridColumnEnd: 2,
@@ -638,7 +659,8 @@ export const SingleRowFixedItemLeft = () => {
         }}
         title="Green"
       >
-        <div
+        <DebugGridItem
+          debugLabel="Green"
           style={{
             background: "green",
           }}
@@ -656,12 +678,17 @@ export const SingleRowFixedItemLeft = () => {
         }}
         title="Blue"
       >
-        <div style={{ background: "blue" }} />
+        <DebugGridItem
+          debugLabel="Blue"
+          style={{
+            background: "blue",
+          }}
+        />
       </GridLayoutItem>
 
       <GridLayoutItem
         header
-        id="black"
+        id="yellow"
         resizeable="hv"
         style={{
           gridColumnStart: 3,
@@ -669,9 +696,14 @@ export const SingleRowFixedItemLeft = () => {
           gridRowStart: 1,
           gridRowEnd: 2,
         }}
-        title="Black"
+        title="Yellow"
       >
-        <div style={{ background: "black" }} />
+        <DebugGridItem
+          debugLabel="Yellow"
+          style={{
+            background: "yellow",
+          }}
+        />
       </GridLayoutItem>
       <GridLayoutItem
         header
@@ -685,12 +717,17 @@ export const SingleRowFixedItemLeft = () => {
         }}
         title="Red"
       >
-        <div style={{ background: "red" }} />
+        <DebugGridItem
+          debugLabel="Red"
+          style={{
+            background: "red",
+          }}
+        />
       </GridLayoutItem>
     </GridLayout>
   );
 };
-SingleRowFixedItemLeft.displaySequence = displaySequence++;
+FourCellTerrace.displaySequence = displaySequence++;
 
 export const SingleRowFixedItemCenter = () => {
   return (
@@ -841,22 +878,47 @@ export const EmptyGridLayout = () => {
 EmptyGridLayout.displaySequence = displaySequence++;
 
 export const EmptyWithPalette = () => {
+  const paletteItems = useMemo<GridPaletteItem[]>(
+    () => [
+      {
+        id: "red",
+        label: "Red",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Red",
+          style: {
+            background: "red",
+          },
+        },
+      },
+    ],
+    []
+  );
   return (
-    <GridLayout cols={["200px", "1fr"]} id="GridLayoutE" rowCount={1}>
-      <GridLayoutItem
-        id="palette"
-        resizeable="hv"
-        style={{
-          gridColumnStart: 1,
-          gridColumnEnd: 2,
-          gridRowStart: 1,
-          gridRowEnd: 2,
-        }}
-        title="Green"
+    <>
+      <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
+
+      <GridLayout
+        cols={["200px", "1fr"]}
+        colCount={2}
+        id="GridLayoutE"
+        rowCount={1}
+        style={{ height: "calc(100vh - 30px)", marginTop: 30 }}
       >
-        <GridPalette />
-      </GridLayoutItem>
-    </GridLayout>
+        <GridLayoutItem
+          id="palette"
+          resizeable="hv"
+          style={{
+            gridColumnStart: 1,
+            gridColumnEnd: 2,
+            gridRowStart: 1,
+            gridRowEnd: 2,
+          }}
+        >
+          <GridPalette paletteItems={paletteItems} />
+        </GridLayoutItem>
+      </GridLayout>
+    </>
   );
 };
 EmptyWithPalette.displaySequence = displaySequence++;

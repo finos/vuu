@@ -1,4 +1,5 @@
 import {
+  GridLayoutModelItem,
   GridLayoutModelPosition,
   IGridLayoutModelItem,
   ISplitter,
@@ -34,12 +35,16 @@ export const splitTrack = (tracks: number[], trackIndex: number) => {
   return insertTrack(tracks, trackIndex, sizeOfNewTrack);
 };
 
-export const removeTrack = (tracks: number[], trackIndex: number) => {
+export const removeTrackFromTracks = (
+  tracks: number[],
+  trackIndex: number,
+  assignDirection: "bwd" | "fwd" = "fwd"
+) => {
   if (trackIndex === tracks.length - 1) {
     const lastValue = tracks.at(-1) as number;
     const penultimateValue = tracks.at(-2) as number;
     const newTracks = tracks.slice(0, -1);
-    newTracks[tracks.length - 1] = penultimateValue + lastValue;
+    newTracks[newTracks.length - 1] = penultimateValue + lastValue;
     return newTracks;
   } else if (trackIndex === 0) {
     const [firstValue, secondValue] = tracks;
@@ -48,9 +53,14 @@ export const removeTrack = (tracks: number[], trackIndex: number) => {
     return newTracks;
   } else {
     const value1 = tracks.at(trackIndex) as number;
-    const value2 = tracks.at(trackIndex + 1) as number;
     const newTracks = tracks.filter((_track, index) => index !== trackIndex);
-    newTracks[trackIndex] = value1 + value2;
+    if (assignDirection === "fwd") {
+      const value2 = tracks.at(trackIndex + 1) as number;
+      newTracks[trackIndex] = value1 + value2;
+    } else {
+      const value2 = tracks.at(trackIndex - 1) as number;
+      newTracks[trackIndex - 1] = value1 + value2;
+    }
     return newTracks;
   }
 };
@@ -99,28 +109,28 @@ export const splitTracks = (tracks: number[], start: number, end: number) => {
 /**
  *
  * @param tracks the track sizes
- * @param start the start track Edge (1 based)
- * @param end the end track edge (1 based)
+ * @param startLine the start grid Line (column line or row Line)
+ * @param endLine the end grid Line (column line or row Line)
  * @returns
  */
-export const getBisectingTrackEdge = (
+export const getBisectingGridLine = (
   tracks: number[],
-  start: number,
-  end: number
+  startLine: number,
+  endLine: number
 ) => {
-  if (end - start > 1) {
+  if (endLine - startLine > 1) {
     // Total the sizes between start and end
     // find the half way point
     // see if an existing edge occurs at that point (or wiuthin .5 pixesl, if decimal)
   }
   let size = 0;
-  for (let i = start - 1; i < end - 1; i++) {
+  for (let i = startLine - 1; i < endLine - 1; i++) {
     size += tracks[i];
   }
   const halfSize = size / 2;
 
   size = 0;
-  for (let i = start - 1; i < end - 1; i++) {
+  for (let i = startLine - 1; i < endLine - 1; i++) {
     size += tracks[i];
     if (Math.abs(halfSize - size) < 1) {
       return i + 2;
@@ -247,10 +257,6 @@ export const getMatchingRowspan = (
  * Resize requires new track if the splitter being used for resize is on the same
  * trackEdge as another splitter
  *
- * TODO shoudn;t be actually check wiether its on the same trackEdge as another gridLayoutItem
- * we may have non resizeable items  which willb einadventently resized otherwise
- *
- *
  * @param splitters
  * @param splitter
  * @returns
@@ -265,18 +271,41 @@ export const doesResizeRequireNewTrack = (
   );
 
   if (potentialCandidates.length > 0) {
-    const track = splitter.orientation === "horizontal" ? "row" : "column";
-    console.log("we might have one", {
-      potentialCandidates,
-      track,
-    });
+    const track = splitter.orientation === "horizontal" ? "column" : "row";
     const {
-      [track]: { start: splitterStart, end: splitterEnd },
+      [track]: { start: splitterStart },
     } = splitter;
     return potentialCandidates.some(
-      ({ [track]: { start, end } }) =>
-        start === splitterEnd || end === splitterStart
+      ({ [track]: { start } }) => start === splitterStart
     );
   }
   return false;
+};
+
+/**
+ *
+ * @param moveBy positive or negative number
+ * @param adjustmentAmount positive number, never greater than abs(moveBy)
+ * @returns
+ */
+export const adjustDistance = (moveBy: number, adjustmentAmount: number) => {
+  if (moveBy < 0) {
+    return moveBy + adjustmentAmount;
+  } else {
+    return moveBy - adjustmentAmount;
+  }
+};
+
+export const byColumnStart = (
+  item1: GridLayoutModelItem,
+  item2: GridLayoutModelItem
+) => {
+  return item1.column.start - item2.column.start;
+};
+
+export const byRowStart = (
+  item1: GridLayoutModelItem,
+  item2: GridLayoutModelItem
+) => {
+  return item1.row.start - item2.row.start;
 };

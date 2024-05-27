@@ -107,7 +107,13 @@ export const GridLayoutItem = ({
   };
 
   return (
-    <div {...htmlAttributes} className={className} id={id} style={style}>
+    <div
+      {...htmlAttributes}
+      className={className}
+      {...dragProps}
+      id={id}
+      style={style}
+    >
       {header ? (
         <div className={`${classBaseItem}Header`} {...dragProps} draggable>
           <span className={`${classBaseItem}Header-title`}>{title}</span>

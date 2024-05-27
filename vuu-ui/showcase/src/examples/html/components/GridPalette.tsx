@@ -8,29 +8,46 @@ const classBase = "vuuGridPalette";
 
 const colors = ["red", "green", "pink", "brown", "orange", "purple"];
 
-export type GridPaletteProps = HTMLAttributes<HTMLDivElement>;
+export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
+  paletteItems: GridPaletteItem[];
+}
 
-export const GridPalette = ({ ...htmlAttributes }: GridPaletteProps) => {
-  const onDragStart = useCallback<DragEventHandler>((evt) => {
-    const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
-    if (draggedItem) {
-      evt.dataTransfer.setData("text/plain", draggedItem.id);
-      evt.dataTransfer.effectAllowed = "move";
-      console.log(`drag start ${draggedItem.id}`);
-    }
-  }, []);
+export type GridPaletteItem = {
+  id: string;
+  label: string;
+  props: any;
+  type: string;
+};
+
+export const GridPalette = ({
+  paletteItems,
+  ...htmlAttributes
+}: GridPaletteProps) => {
+  const onDragStart = useCallback<DragEventHandler>(
+    (evt) => {
+      const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
+      if (draggedItem) {
+        const index = parseInt(draggedItem.dataset.index ?? "-1");
+        const item = paletteItems[index] as GridPaletteItem;
+        evt.dataTransfer.setData("text/json", JSON.stringify(item));
+        evt.dataTransfer.effectAllowed = "move";
+        console.log(`drag start ${draggedItem.id}`);
+      }
+    },
+    [paletteItems]
+  );
 
   return (
     <div {...htmlAttributes} className={classBase} onDragStart={onDragStart}>
-      {colors.map((color, index) => (
+      {paletteItems.map((paletteItem, index) => (
         <div
           className={cx(`${classBase}-item`)}
           draggable
-          id={color}
+          data-index={index}
           key={index}
-          style={{ background: color }}
+          style={{ background: colors[index] }}
         >
-          {color}
+          {paletteItem.label}
         </div>
       ))}
     </div>

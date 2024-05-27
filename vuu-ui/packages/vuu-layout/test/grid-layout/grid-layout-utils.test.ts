@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type IGridLayoutModelItem,
   getMatchingColspan,
+  removeTrackFromTracks,
   splitTracks,
   splitTrack,
   insertTrack,
@@ -261,5 +262,42 @@ describe("getMatchingColspan", () => {
       },
       siblings,
     });
+  });
+});
+
+describe("removeTracksFromTrack", () => {
+  it("removes first track", () => {
+    const newTracks = removeTrackFromTracks([1, 499, 500], 0);
+    expect(newTracks).toEqual([500, 500]);
+  });
+  it("removes last track", () => {
+    const newTracks = removeTrackFromTracks([500, 499, 1], 2);
+    expect(newTracks).toEqual([500, 500]);
+  });
+  it("removes track anywhere in middle of tracks, defaulting to fwd reassignment", () => {
+    expect(removeTrackFromTracks([500, 1, 499], 1)).toEqual([500, 500]);
+    expect(removeTrackFromTracks([500, 1, 499, 500], 1)).toEqual([
+      500, 500, 500,
+    ]);
+    expect(removeTrackFromTracks([500, 500, 1, 499], 2)).toEqual([
+      500, 500, 500,
+    ]);
+  });
+
+  it("removes track anywhere in middle of tracks, with explicit fwd reassignment", () => {
+    expect(removeTrackFromTracks([500, 1, 499], 1, "fwd")).toEqual([500, 500]);
+    expect(removeTrackFromTracks([500, 1, 499, 500], 1, "fwd")).toEqual([
+      500, 500, 500,
+    ]);
+    expect(removeTrackFromTracks([500, 500, 1, 499], 2, "fwd")).toEqual([
+      500, 500, 500,
+    ]);
+  });
+
+  it("removes track anywhere in middle of tracks, respecting bwd reassignment", () => {
+    expect(removeTrackFromTracks([499, 1, 500], 1, "bwd")).toEqual([500, 500]);
+    expect(removeTrackFromTracks([500, 499, 1, 500], 2, "bwd")).toEqual([
+      500, 500, 500,
+    ]);
   });
 });

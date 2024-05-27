@@ -1,11 +1,13 @@
 import { getColumns, getRows } from "./grid-dom-utils";
 import {
-  doesResizeRequireNewTrack,
-  getBisectingTrackEdge,
+  doesResizeRequireNewTrack as isResizeTrackShared,
+  getBisectingGridLine,
   getMatchingColspan,
   getMatchingRowspan,
   splitTrack,
   splitTracks,
+  byRowStart,
+  byColumnStart,
 } from "./grid-layout-utils";
 import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 
@@ -18,11 +20,9 @@ export type ResizeState = {
   cols: number[];
   contras: IGridLayoutModelItem[];
   contraTrackIndex: number;
-  resizeRequiresNewTrack: boolean;
+  resizeTrackIsShared: boolean;
   grid: HTMLElement;
-  mouseCurrentPos: number;
-  mouseStartPos: number;
-  resizeOperation: GridLayoutResizeOperation | null;
+  mousePos: number;
   resizeElement: HTMLElement;
   resizeDirection: GridLayoutResizeDirection;
   resizeItem: IGridLayoutModelItem;
@@ -194,7 +194,7 @@ export class GridLayoutModel {
         (item) => item.column.start === column.start
       );
       if (indexOfAlignedContra !== -1) {
-        return allContrasAbove.slice(indexOfAlignedContra);
+        return allContrasAbove.sort(byColumnStart).slice(indexOfAlignedContra);
       }
     }
     return [];
@@ -207,7 +207,9 @@ export class GridLayoutModel {
         (item) => item.row.start === row.start
       );
       if (indexOfAlignedContra !== -1) {
-        return allContrasLeft.slice(indexOfAlignedContra);
+        // placeholders may not be in correct sort position
+        // sorting the original array here is ok
+        return allContrasLeft.sort(byRowStart).slice(indexOfAlignedContra);
       }
     }
     return [];
@@ -299,51 +301,6 @@ export class GridLayoutModel {
     id,
     { start: start + 1, end: end + 1 },
   ];
-
-  private setShiftColBackward = ({
-    id,
-    column: { start, end },
-  }: IGridLayoutModelItem): GridItemUpdate => [
-    id,
-    { start: start - 1, end: end - 1 },
-  ];
-
-  private setShiftRowBackward = ({
-    id,
-    row: { start, end },
-  }: IGridLayoutModelItem): GridItemUpdate => [
-    id,
-    { start: start - 1, end: end - 1 },
-  ];
-  private setShiftColStartBackward = ({
-    id,
-    column: { start, end },
-  }: IGridLayoutModelItem): GridItemUpdate => [id, { start: start - 1, end }];
-
-  // private findContrasAndSiblings(
-  //   gridItem: IGridLayoutModelItem,
-  //   resizeDirection: GridLayoutResizeDirection = "horizontal"
-  // ) {
-  //   let contras: IGridLayoutModelItem[] | undefined;
-  //   let siblings: IGridLayoutModelItem[] | undefined;
-
-  //   if (resizeDirection === "vertical") {
-  //     contras = this.getContrasAbove(gridItem);
-  //     if (contras.length > 0) {
-  //       siblings = this.getSiblingsRight(gridItem);
-  //     }
-  //   } else {
-  //     contras = this.getContrasLeft(gridItem);
-  //     if (contras.length > 0) {
-  //       siblings = this.getSiblingsBelow(gridItem);
-  //     }
-  //   }
-
-  //   return {
-  //     contras: contras ?? [],
-  //     siblings: siblings ?? [],
-  //   };
-  // }
 
   private findContrasAndSiblings(
     gridItem: IGridLayoutModelItem,
@@ -481,21 +438,28 @@ export class GridLayoutModel {
     tracks: number[],
     newTrackIndex: number,
     newTrackSize: number,
+    resizeOperation: GridLayoutResizeOperation,
     state: ResizeState
   ) {
-    const { contras, contraTrackIndex, resizeDirection, resizeItem, siblings } =
-      state;
+    const { contras, resizeDirection, resizeItem, siblings } = state;
 
-    const expandingResizeItem = newTrackIndex === contraTrackIndex;
+    const expandingResizeItem = resizeOperation === "expand";
 
     const setTrack =
       resizeDirection === "vertical" ? this.setGridRow : this.setGridColumn;
 
-    const newTracks = this.splitSharedTrack(tracks, newTrackSize, state);
+    const track = resizeDirection === "horizontal" ? "column" : "row";
+
+    const newTracks = this.splitSharedTrack(
+      tracks,
+      newTrackSize,
+      resizeOperation,
+      state
+    );
     const updates = this.addTrack(newTrackIndex, resizeDirection);
     const indexAdjustment = expandingResizeItem ? -1 : +1;
 
-    contras.forEach(({ id, column: { start, end } }) => {
+    contras.forEach(({ id, [track]: { start, end } }) => {
       const existingUpdate = updates.find(([itemId]) => id === itemId);
       if (existingUpdate) {
         const [, position] = existingUpdate;
@@ -505,7 +469,7 @@ export class GridLayoutModel {
       }
     });
 
-    siblings.concat(resizeItem).forEach(({ id, column: { start, end } }) => {
+    siblings.concat(resizeItem).forEach(({ id, [track]: { start, end } }) => {
       const existingUpdate = updates.find(([itemId]) => id === itemId);
       if (existingUpdate) {
         const [, position] = existingUpdate;
@@ -515,25 +479,6 @@ export class GridLayoutModel {
       }
     });
 
-    updates.forEach(([id, position]) => {
-      setTrack(id, position);
-    });
-
-    return { newTracks, updates };
-  }
-
-  restoreGridItemPositions(
-    tracks: number[],
-    newTrackIndex: number,
-    state: ResizeState
-  ) {
-    const { resizeDirection } = state;
-    const newTracks = tracks.filter((_t, i) => i !== newTrackIndex);
-
-    const setTrack =
-      resizeDirection === "vertical" ? this.setGridRow : this.setGridColumn;
-
-    const updates = this.removeTrack(newTrackIndex, resizeDirection);
     updates.forEach(([id, position]) => {
       setTrack(id, position);
     });
@@ -572,9 +517,9 @@ export class GridLayoutModel {
       } else {
         // If there is already a trackEdge that bisects this gridItem ,
         // we just have to realign the gridItem
-        const bisectingTrackEdge = getBisectingTrackEdge(tracks, start, end);
-        if (bisectingTrackEdge !== -1) {
-          updates = [[gridItemId, { start, end: bisectingTrackEdge }]];
+        const bisectingGridLine = getBisectingGridLine(tracks, start, end);
+        if (bisectingGridLine !== -1) {
+          updates = [[gridItemId, { start, end: bisectingGridLine }]];
         } else {
           // this will calculate sizes of the new tracks
           ({ newTracks, newTrackIndex } = splitTracks(tracks, start, end));
@@ -722,16 +667,18 @@ export class GridLayoutModel {
   splitSharedTrack(
     tracks: number[],
     newTrackSize: number,
-    {
-      resizeTrackIndex: indexOfPrimaryResizeTrack,
-      contraTrackIndex: indexOfSecondaryResizeTrack,
-      resizeDirection,
-    }: ResizeState
+    resizeOperation: GridLayoutResizeOperation,
+    { resizeTrackIndex, resizeDirection }: ResizeState
   ) {
     const newTracks = tracks.slice();
-    newTracks.splice(indexOfPrimaryResizeTrack, 0, 0);
-    newTracks[indexOfPrimaryResizeTrack] = Math.abs(newTrackSize);
-    newTracks[indexOfSecondaryResizeTrack] -= newTrackSize;
+    newTracks.splice(resizeTrackIndex, 0, 0);
+    newTracks[resizeTrackIndex] = Math.abs(newTrackSize);
+
+    if (resizeOperation === "expand") {
+      newTracks[resizeTrackIndex - 1] -= newTrackSize;
+    } else {
+      newTracks[resizeTrackIndex + 1] -= newTrackSize;
+    }
 
     if (resizeDirection === "horizontal") {
       this.colCount += 1;
@@ -795,7 +742,7 @@ export class GridLayoutModel {
   measureResizeDetails({
     grid,
     cols = getColumns(grid),
-    mouseStartPos,
+    mousePos,
     rows = getRows(grid),
     resizeElement,
     resizeDirection,
@@ -804,16 +751,16 @@ export class GridLayoutModel {
   }: Omit<
     ResizeState,
     | "contras"
+    | "contraTrackIndex"
     | "cols"
     | "mouseCurrentPos"
     | "resizeTrackIndex"
-    | "contraTrackIndex"
-    | "resizeOperation"
+    | "resizeTrackIsShared"
     | "rows"
     | "siblings"
-    | "resizeRequiresNewTrack"
   > & {
     cols?: number[];
+    mousePos: number;
     rows?: number[];
   }): ResizeState | undefined {
     const contrasAndSiblings = this.findContrasAndSiblings(
@@ -846,13 +793,10 @@ export class GridLayoutModel {
       const contraTrackIndex = resizeItem[track].start - 2;
 
       const splitter = this.getSplitter(resizeItem, resizeDirection);
-      const resizeRequiresNewTrack = doesResizeRequireNewTrack(
-        this.splitters,
-        splitter
-      );
+      const resizeTrackIsShared = isResizeTrackShared(this.splitters, splitter);
 
       console.log({
-        resizeRequiresNewTrack,
+        resizeTrackIsShared,
         contrasAndSiblings,
         contraTrackIndex,
         resizeTrackIndex,
@@ -864,16 +808,14 @@ export class GridLayoutModel {
         contras,
         contraTrackIndex,
         grid,
-        mouseCurrentPos: mouseStartPos,
-        mouseStartPos,
+        mousePos,
         resizeElement,
         resizeItem,
         resizeDirection,
-        resizeOperation: null,
         rows,
         siblings,
         resizeTrackIndex,
-        resizeRequiresNewTrack,
+        resizeTrackIsShared,
       };
     }
   }
