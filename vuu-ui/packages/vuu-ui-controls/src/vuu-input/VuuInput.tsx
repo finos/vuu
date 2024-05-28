@@ -3,6 +3,8 @@ import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { isValidNumber, useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   FocusEventHandler,
   ForwardedRef,
@@ -13,7 +15,7 @@ import {
   useCallback,
 } from "react";
 
-import "./VuuInput.css";
+import vuuInputCss from "./VuuInput.css";
 
 const classBase = "vuuInput";
 
@@ -50,6 +52,13 @@ export const VuuInput = forwardRef(function VuuInput<
   }: VuuInputProps<T>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-input",
+    css: vuuInputCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const { anchorProps, tooltipProps } = useTooltip({
     id,

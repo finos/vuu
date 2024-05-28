@@ -44,6 +44,11 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit
 
+  def hasRowChanged(row: RowWithData): Boolean = {
+    val existingRow = this.pullRow(row.key)
+    !existingRow.equals(row)
+  }
+
   def processDelete(rowKey: String): Unit
 
   def isSelectedVal(key: String, selected: Map[String, Any]): Int = {

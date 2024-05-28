@@ -1,14 +1,17 @@
 package org.finos.vuu.feature.ignite
 
 import com.typesafe.scalalogging.StrictLogging
-import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriterion, SqlFieldsQuery}
+import org.apache.ignite.cache.query.{IndexQuery, IndexQueryCriterion}
 import org.apache.ignite.cache.{QueryEntity, QueryIndex, QueryIndexType}
 import org.apache.ignite.{Ignite, IgniteCache, Ignition}
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.configuration.{CacheConfiguration, IgniteConfiguration}
+import IgniteSqlQuery.QuerySeparator
 
+import java.sql.Date
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.util
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
@@ -62,6 +65,10 @@ object IgniteTestStore {
     fields.put("price", classOf[Double].getName)
     fields.put("quantity", classOf[Int].getName)
     fields.put("rating", classOf[Char].getName)
+    fields.put("isFilled", classOf[Boolean].getName)
+    fields.put("createdAt", classOf[Date].getName)
+    fields.put("updatedAt", classOf[LocalDate].getName)
+    fields.put("totalFill", classOf[BigDecimal].getName)
     fields
   }
 
@@ -96,31 +103,27 @@ class IgniteTestStore (private val orderCache: IgniteCache[Int, TestOrderEntity]
       .map(x => x.getValue)
   }
 
-  def getFilteredBy(sqlFilterQuery: String): Iterable[TestOrderEntity] = {
-    val whereClause = if (sqlFilterQuery == null || sqlFilterQuery.isEmpty) "" else s" where $sqlFilterQuery"
-    val value = s"select * from TestOrderEntity$whereClause"
-    getSQLAndMapResult(value)
+  def getFilteredBy(sqlFilterQuery: IgniteSqlQuery): Iterable[TestOrderEntity] = {
+    val whereClause = if (sqlFilterQuery.isEmpty) sqlFilterQuery else sqlFilterQuery.prependSql("WHERE", QuerySeparator.SPACE)
+
+    val finalQuery = IgniteSqlQuery("SELECT * FROM TestOrderEntity")
+      .appendQuery(whereClause, QuerySeparator.SPACE)
+      .appendQuery(IgniteSqlQuery("ORDER BY id"), QuerySeparator.SPACE)
+
+    getSQLAndMapResult(finalQuery)
   }
 
-  def getSortBy(sqlSortQuery: String): Iterable[TestOrderEntity] = {
-    val orderByClause = if (sqlSortQuery == null || sqlSortQuery.isEmpty) "" else s" order by $sqlSortQuery"
-    val value = s"select * from TestOrderEntity$orderByClause"
-    getSQLAndMapResult(value)
+  def getSortBy(sortSql: IgniteSqlQuery): Iterable[TestOrderEntity] = {
+    val orderByClause = if (sortSql.isEmpty) IgniteSqlQuery.empty else sortSql.prependSql("ORDER BY", QuerySeparator.SPACE)
+    val finalQuery = IgniteSqlQuery("SELECT * FROM TestOrderEntity").appendQuery(orderByClause, QuerySeparator.SPACE)
+    getSQLAndMapResult(finalQuery)
   }
 
-  private def getSQLAndMapResult(sqlQuery: String): Iterable[TestOrderEntity] = {
+  private def getSQLAndMapResult(sqlQuery: IgniteSqlQuery): Iterable[TestOrderEntity] = {
     logger.info("Querying ignite for " + sqlQuery)
-    val query = new SqlFieldsQuery(sqlQuery)
 
-    val results = orderCache.query(query)
+    val results = orderCache.query(sqlQuery.buildFieldsQuery())
 
-    var counter = 0
-    val buffer = mutable.ListBuffer[TestOrderEntity]()
-    results.forEach(item => {
-      buffer.addOne(TestOrderEntity.createFrom(item))
-      counter += 1
-    })
-
-    buffer
+    results.getAll.asScala.map(l => TestOrderEntity.createFrom(l))
   }
 }

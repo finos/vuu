@@ -9,7 +9,7 @@ import {
 import { useHierarchicalData } from "./use-hierarchical-data";
 import { useCollapsibleGroups } from "./use-collapsible-groups";
 import { useTreeKeyboardNavigation } from "./use-tree-keyboard-navigation";
-import { NormalisedTreeSourceNode } from "./Tree";
+import type { NormalisedTreeSourceNode } from "./treeTypes";
 
 const EMPTY_ARRAY: string[] = [];
 

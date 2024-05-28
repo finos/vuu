@@ -1,5 +1,7 @@
 import { useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   cloneElement,
@@ -31,7 +33,7 @@ import { useListHeight } from "./useListHeight";
 import { useScrollPosition } from "./useScrollPosition";
 import { MeasuredContainer, MeasuredSize } from "../measured-container";
 
-import "./List.css";
+import listCss from "./List.css";
 
 const defaultEmptyMessage = "No data to display";
 
@@ -94,6 +96,13 @@ export const List = forwardRef(function List<
   }: ListProps<Item, S>,
   forwardedRef?: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-list",
+    css: listCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<MeasuredSize | undefined>();

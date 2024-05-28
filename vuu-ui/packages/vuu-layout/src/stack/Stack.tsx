@@ -1,6 +1,8 @@
 import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import React, {
   ForwardedRef,
   forwardRef,
@@ -12,7 +14,7 @@ import React, {
 import { getDefaultTabLabel } from "../layout-reducer";
 import { StackProps } from "./stackTypes";
 
-import "./Stack.css";
+import stackCss from "./Stack.css";
 
 const classBase = "vuuTabs";
 
@@ -59,6 +61,13 @@ export const Stack = forwardRef(function Stack(
   }: StackProps,
   ref: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-stack",
+    css: stackCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const tabLabels = useRef<string[]>([]);
   const {

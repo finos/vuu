@@ -1,17 +1,19 @@
+import { DateValue } from "@internationalized/date";
+import { makePrefixer } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { clsx } from "clsx";
 import {
   ComponentPropsWithRef,
   forwardRef,
   MouseEvent,
   SyntheticEvent,
 } from "react";
-import { clsx } from "clsx";
-import { makePrefixer } from "@salt-ds/core";
-import { DateValue } from "@internationalized/date";
+import { useCalendarContext } from "./CalendarContext";
 import { CalendarDay, CalendarDayProps } from "./CalendarDay";
 import { formatDate, generateVisibleDays } from "./utils";
-import { useCalendarContext } from "./CalendarContext";
 
-import "./CalendarMonth.css";
+import calendarMonthCss from "./CalendarMonth.css";
 
 export interface CalendarMonthProps extends ComponentPropsWithRef<"div"> {
   date: DateValue;
@@ -35,6 +37,13 @@ export const CalendarMonth = forwardRef<HTMLDivElement, CalendarMonthProps>(
       TooltipProps,
       ...rest
     } = props;
+
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "salt-calendar-month",
+      css: calendarMonthCss,
+      window: targetWindow,
+    });
 
     const days = generateVisibleDays(date);
     const {

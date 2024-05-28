@@ -1,9 +1,11 @@
 import { DataSource } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useEffect, useState } from "react";
 
-import "./DatasourceStats.css";
+import dataSourceStats from "./DatasourceStats.css";
 
 interface DataSourceStatsProps extends HTMLAttributes<HTMLSpanElement> {
   dataSource: DataSource;
@@ -17,6 +19,13 @@ export const DataSourceStats = ({
   className: classNameProp,
   dataSource,
 }: DataSourceStatsProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-datasource-stats",
+    css: dataSourceStats,
+    window: targetWindow,
+  });
+
   const [range, setRange] = useState<VuuRange>(dataSource.range);
   const [size, setSize] = useState(dataSource.size);
   useEffect(() => {

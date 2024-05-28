@@ -2,9 +2,13 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
+import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
+
+import scala.util.Try
 
 object DataType {
 
+  // if a new type's added, make sure that both methods `parseToDataType` & `fromString` can support it
   final val CharDataType: Class[Char] = classOf[Char]
   final val StringDataType: Class[String] = classOf[String]
   final val BooleanDataType: Class[Boolean] = classOf[Boolean]
@@ -34,6 +38,18 @@ object DataType {
     }
   }
 
+  def parseToDataType[T](value: String, t: Class[T]): Option[T] = {
+    Try(typeConverterContainer.convert[String, T](value, classOf[String], t).get).toOption
+  }
+
+  private val typeConverterContainer = TypeConverterContainerBuilder()
+    .withoutDefaults()
+    .withConverter(DefaultTypeConverters.stringToCharConverter)
+    .withConverter(DefaultTypeConverters.stringToBooleanConverter)
+    .withConverter(DefaultTypeConverters.stringToIntConverter)
+    .withConverter(DefaultTypeConverters.stringToLongConverter)
+    .withConverter(DefaultTypeConverters.stringToDoubleConverter)
+    .build()
 }
 
 object Columns {

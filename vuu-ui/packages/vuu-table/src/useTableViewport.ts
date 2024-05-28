@@ -3,7 +3,7 @@
  * and virtualisation of the table. This includes measurements required
  * to support pinned columns.
  */
-import { RuntimeColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
+import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { MeasuredSize } from "@finos/vuu-ui-controls";
 import {
   actualRowPositioning,
@@ -18,7 +18,6 @@ import { useCallback, useMemo, useRef } from "react";
 export interface TableViewportHookProps {
   columns: RuntimeColumnDescriptor[];
   headerHeight: number;
-  headings: TableHeadings;
   rowCount: number;
   rowHeight: number;
   /**
@@ -75,7 +74,6 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
 export const useTableViewport = ({
   columns,
   headerHeight,
-  headings,
   rowCount,
   rowHeight,
   selectionEndSize = 4,
@@ -92,11 +90,6 @@ export const useTableViewport = ({
     () => measurePinnedColumns(columns, selectionEndSize),
     [columns, selectionEndSize]
   );
-
-  const totalHeaderHeightRef = useRef(headerHeight);
-  useMemo(() => {
-    totalHeaderHeightRef.current = headerHeight * (1 + headings.length);
-  }, [headerHeight, headings.length]);
 
   const [getRowOffset, getRowAtPosition, isVirtualScroll] =
     useMemo<RowPositioning>(() => {
@@ -135,7 +128,6 @@ export const useTableViewport = ({
 
   return useMemo(() => {
     if (size) {
-      const { current: totalHeaderHeight } = totalHeaderHeightRef;
       // TODO determine this at runtime
       const scrollbarSize = 15;
       const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
@@ -145,7 +137,7 @@ export const useTableViewport = ({
       const count = Number.isInteger(visibleRows)
         ? visibleRows
         : Math.ceil(visibleRows);
-      const viewportBodyHeight = size.height - totalHeaderHeight;
+      const viewportBodyHeight = size.height - headerHeight;
       const verticalScrollbarWidth =
         pixelContentHeight > viewportBodyHeight ? scrollbarSize : 0;
 
@@ -167,7 +159,7 @@ export const useTableViewport = ({
         rowCount: count,
         setInSituRowOffset,
         setScrollTop,
-        totalHeaderHeight,
+        totalHeaderHeight: headerHeight,
         verticalScrollbarWidth,
         viewportBodyHeight,
         viewportWidth,

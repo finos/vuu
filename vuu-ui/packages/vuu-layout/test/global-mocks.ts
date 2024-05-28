@@ -15,9 +15,17 @@ vi.mock("@finos/vuu-utils", async () => {
     // @ts-ignore
     ...actual,
     uuid: () => "uuid-1",
+    getLocalEntity: <T>(url: string): T | undefined => {
+      const data = localStorage.getItem(url);
+      return data ? JSON.parse(data) : undefined;
+    },
+    saveLocalEntity: <T>(url: string, data: T): T | undefined => {
+      try {
+        localStorage.setItem(url, JSON.stringify(data));
+        return data;
+      } catch {
+        return undefined;
+      }
+    },
   };
 });
-
-vi.mock("./inlined-worker", async () => ({
-  workerSourceCode: "",
-}));

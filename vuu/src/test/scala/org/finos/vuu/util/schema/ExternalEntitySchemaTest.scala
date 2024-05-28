@@ -3,7 +3,6 @@ package org.finos.vuu.util.schema
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.InvalidIndexException
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
   Feature("ExternalEntitySchemaBuilder") {
@@ -67,7 +66,7 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Can build schema with a case class") {
-      val schema = ExternalEntitySchemaBuilder().withCaseClass[TestCaseClass].build()
+      val schema = ExternalEntitySchemaBuilder().withEntity(classOf[TestCaseClass]).build()
 
       schema.fields shouldEqual List(
         SchemaField("name", classOf[String], 0),
@@ -77,30 +76,25 @@ class ExternalEntitySchemaTest extends AnyFeatureSpec with Matchers {
     }
   }
 
-  Feature("ExternalDataType.fromString") {
+  Feature("ExternalEntitySchema.toMap") {
+    val schema = ExternalEntitySchemaBuilder().withEntity(classOf[TestCaseClass]).build()
 
-    forAll(Table(
-      ("str", "expected"),
-      ("string", ExternalDataType.String),
-      ("int", ExternalDataType.Int),
-      ("long", ExternalDataType.Long),
-      ("double", ExternalDataType.Double),
-      ("char", ExternalDataType.Char),
-    ))((str, expected) =>
-      Scenario(
-        s"can convert `$str` to correct ignite data type"
-      ) {
-        ExternalDataType.fromString(str) shouldEqual expected
-      }
-    )
+    Scenario("Can convert list of values ordered according to the schema field index to a map of filedName->value") {
+      val m = schema.toMap(List("t-shirt", 3, 10.99))
 
-    Scenario("can handle different alphabet casing") {
-      ExternalDataType.fromString("StrIng") shouldEqual ExternalDataType.String
+      m shouldEqual Map("name" -> "t-shirt", "size" -> 3, "value" -> 10.99)
     }
 
-    Scenario("throws exception when unsupported data type passed") {
-      val exception = intercept[RuntimeException](ExternalDataType.fromString("UnknownDataType"))
-      exception shouldBe a[RuntimeException]
+    Scenario("Can convert a list of correctly ordered values with some last missing to a map without the missing fields") {
+      val m = schema.toMap(List("t-shirt", 3))
+
+      m shouldEqual Map("name" -> "t-shirt", "size" -> 3)
+    }
+
+    Scenario("Can convert a list of correctly ordered values with extra values appended at the end to a map skipping any extra values") {
+      val m = schema.toMap(List("t-shirt", 3, 10.99, "extra-value-passed"))
+
+      m shouldEqual Map("name" -> "t-shirt", "size" -> 3, "value" -> 10.99)
     }
   }
 }

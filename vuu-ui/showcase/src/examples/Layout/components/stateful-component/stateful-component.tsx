@@ -1,5 +1,5 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { registerComponent } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-utils";
 import React, {
   HTMLAttributes,
   useCallback,

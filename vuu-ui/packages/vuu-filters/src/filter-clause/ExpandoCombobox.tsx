@@ -1,187 +1,114 @@
-import { itemToString as defaultToString } from "@finos/vuu-utils";
-import {
-  ComboBox,
-  ComboBoxProps,
-  MultiSelectionHandler,
-  SelectionStrategy,
-  SingleSelectionHandler,
-} from "@finos/vuu-ui-controls";
 import cx from "clsx";
+import { ComboBox, ComboBoxProps } from "@salt-ds/core";
 import {
-  FormEvent,
+  ChangeEvent,
   ForwardedRef,
+  Ref,
+  SyntheticEvent,
   forwardRef,
-  ReactElement,
-  useCallback,
   useMemo,
-  useRef,
   useState,
 } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./ExpandoCombobox.css";
+import expandoComboboxCss from "./ExpandoCombobox.css";
 
 const classBase = "vuuExpandoCombobox";
 
-const NO_INPUT_PROPS = {};
-
-export interface ExpandoComboboxProps<
-  Item = string,
-  S extends SelectionStrategy = "default"
-> extends Omit<ComboBoxProps<Item, S>, "itemToString" | "value"> {
-  itemToString?: (item: unknown) => string;
-  onInputChange?: (evt: FormEvent<HTMLInputElement>) => void;
-  value?: string | string[];
+export interface ExpandoComboboxProps<Item = string>
+  extends ComboBoxProps<Item> {
+  itemToString?: (item: Item) => string;
 }
 
+const defaultItemToString = (item: unknown) => {
+  if (typeof item === "string") {
+    return item;
+  } else {
+    return item?.toString() ?? "";
+  }
+};
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
-  Item = string,
-  S extends SelectionStrategy = "default"
+  Item = string
 >(
   {
-    className: classNameProp,
-    InputProps: InputPropsProp = NO_INPUT_PROPS,
-    ListProps: ListPropsProp,
-    onInputChange,
+    children,
+    className,
+    inputProps: inputPropsProp,
+    itemToString = defaultItemToString,
+    multiselect,
+    onChange,
     onSelectionChange,
-    selectionStrategy,
-    source,
-    style,
-    title,
-    value = "",
+    value: valueProp,
     ...props
-  }: ExpandoComboboxProps<Item, S>,
+  }: ExpandoComboboxProps<Item>,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
-  const [text, setText] = useState(value);
-  const { itemToString = defaultToString } = props;
-  const initialValue = useRef(value);
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-expando-combobox",
+    css: expandoComboboxCss,
+    window: targetWindow,
+  });
 
-  const itemsToString = useCallback<<I = Item>(items: I[]) => string>(
-    (items) => {
-      const [first, ...rest] = items;
-      if (rest.length) {
-        return `${itemToString(first)} + ${rest.length}`;
-      } else {
-        return itemToString(first);
-      }
-    },
-    [itemToString]
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(
+    valueProp === undefined ? "" : valueProp.toString()
   );
 
-  const handleInputChange = useCallback(
-    (evt: FormEvent<HTMLInputElement>) => {
-      const { value } = evt.target as HTMLInputElement;
-      setText(value);
-      onInputChange?.(evt);
-    },
-    [onInputChange]
-  );
+  const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    const value = evt.target.value;
+    onChange?.(evt);
+    setValue(value);
+  };
 
-  const handleSetSelectedText = useCallback((text: string) => {
-    setText(text);
-  }, []);
-
-  const [InputProps, ListProps] = useMemo<
-    [
-      ComboBoxProps["InputProps"],
-      Omit<ComboBoxProps["ListProps"], "defaultSelected">
-    ]
-  >(() => {
-    const { inputProps, ...restInputProps } = InputPropsProp;
-    return [
-      {
-        ...restInputProps,
-        className: `${classBase}-Input`,
-        endAdornment: null,
-        inputProps: {
-          ...inputProps,
-          autoComplete: "off",
-          onInput: handleInputChange,
-        },
-      },
-      {
-        ...ListPropsProp,
-        className: cx("vuuMenuList", ListPropsProp?.className),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        "data-mode": "light",
-        displayedItemCount: 10,
-        itemHeight: 22,
-        maxWidth: 300,
-        minWidth: 80,
-        width: "content-width",
-      },
-    ];
-  }, [InputPropsProp, handleInputChange, ListPropsProp]);
-
-  const handleSelectionChange = useCallback(
-    (_, selected) => {
-      if (Array.isArray(selected)) {
-        (onSelectionChange as MultiSelectionHandler<Item>)?.(
-          null,
-          selected as Item[]
-        );
-      } else if (selected) {
-        setText(itemToString(selected));
-        (onSelectionChange as SingleSelectionHandler<Item>)?.(
-          null,
-          selected as Item
-        );
-      }
-    },
-    [itemToString, onSelectionChange]
-  );
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getSelected = (): any => {
-    if (initialValue.current === undefined) {
-      return undefined;
-    } else if (Array.isArray(initialValue.current)) {
-      return source?.filter((item) =>
-        initialValue.current.includes(itemToString(item))
-      );
+  const handleSelectionChange = (evt: SyntheticEvent, newSelected: Item[]) => {
+    if (multiselect) {
+      onSelectionChange?.(evt, newSelected);
     } else {
-      return source?.find(
-        (item) => itemToString(item) === initialValue.current
-      );
+      const [selectedValue] = newSelected;
+      onSelectionChange?.(evt, newSelected);
+      setValue(itemToString(selectedValue));
     }
   };
 
-  const popupProps = {
-    minWidth: "fit-content",
-  };
+  const inputProps = useMemo<ComboBoxProps<Item>["inputProps"]>(() => {
+    return {
+      autoComplete: "off",
+      ...inputPropsProp,
+      onFocus: (evt) => {
+        inputPropsProp?.onFocus?.(evt);
+        setTimeout(() => {
+          setOpen(true);
+        }, 100);
+      },
+    };
+  }, [inputPropsProp]);
+
+  // const matchingValues = values.filter((val) =>
+  //   val.toLowerCase().startsWith(value.trim().toLowerCase())
+  // );
+
   return (
     <div
-      className={cx(classBase, classNameProp)}
-      data-text={text}
+      className={cx(classBase, className)}
+      data-text={value}
       ref={forwardedRef}
-      style={style}
     >
-      <ComboBox<Item, S>
+      <ComboBox<Item>
         {...props}
-        PopupProps={popupProps}
-        // allowEnterCommitsText
-        className="vuuEmbedded"
-        defaultSelected={getSelected()}
-        defaultValue={
-          Array.isArray(initialValue.current)
-            ? itemsToString<string>(initialValue.current)
-            : initialValue.current
-        }
-        fullWidth
-        ListProps={ListProps}
-        InputProps={InputProps}
-        itemsToString={itemsToString}
+        inputProps={inputProps}
+        multiselect={multiselect}
+        onChange={handleChange}
+        onOpenChange={setOpen}
         onSelectionChange={handleSelectionChange}
-        onSetSelectedText={handleSetSelectedText}
-        selectionStrategy={selectionStrategy}
-        source={source}
-      />
+        open={open}
+        value={value}
+      >
+        {children}
+      </ComboBox>
     </div>
   );
-}) as <Item, S extends SelectionStrategy = "default">(
-  props: ExpandoComboboxProps<Item, S> & {
-    ref?: ForwardedRef<HTMLDivElement>;
-  }
-) => ReactElement<ExpandoComboboxProps<Item, S>>;
+}) as <Item = string>(
+  props: ExpandoComboboxProps<Item> & { ref?: Ref<HTMLDivElement> }
+) => JSX.Element;

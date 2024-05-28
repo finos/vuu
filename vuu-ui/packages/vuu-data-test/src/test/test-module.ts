@@ -1,11 +1,11 @@
-import { TickingArrayDataSource } from "../TickingArrayDataSource";
-import { schemas, TestTableName } from "./test-schemas";
-import { buildDataColumnMap, Table } from "../Table";
 import type { SuggestionFetcher } from "@finos/vuu-data-types";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { makeSuggestions } from "../makeSuggestions";
+import { buildDataColumnMap, Table } from "../Table";
+import { TickingArrayDataSource } from "../TickingArrayDataSource";
 import { VuuModule } from "../vuu-modules";
 import { defaultGenerators } from "../vuu-row-generator";
+import { schemas, TestTableName } from "./test-schemas";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -17,7 +17,7 @@ const tables: Record<TestTableName, Table> = {
   TwoHundredColumns: new Table(
     schemas.TwoHundredColumns,
     new Array(100).fill(1).map((_, i) => manyColumnGenerator(i)),
-    buildDataColumnMap(schemas.TwoHundredColumns)
+    buildDataColumnMap(schemas, "TwoHundredColumns")
   ),
 };
 

@@ -4,15 +4,16 @@ start          : orExpression EOF; // entrypoint
 orExpression   : andExpression ('or' andExpression)*;
 andExpression  : term ('and' term)*;
 term           : '(' orExpression ')' # subexpression
-               | ID '='      scalar   # operationEq
-               | ID '!='     scalar   # operationNeq
-               | ID '>'      NUMBER   # operationGt
-               | ID '>='     NUMBER   # operationGte
-               | ID '<'      NUMBER   # operationLt
-               | ID '<='     NUMBER   # operationLte
-               | ID 'starts' STRING   # operationStarts
-               | ID 'ends'   STRING   # operationEnds
-               | ID 'in'     set      # operationIn
+               | ID '='        scalar   # operationEq
+               | ID '!='       scalar   # operationNeq
+               | ID '>'        NUMBER   # operationGt
+               | ID '>='       NUMBER   # operationGte
+               | ID '<'        NUMBER   # operationLt
+               | ID '<='       NUMBER   # operationLte
+               | ID 'starts'   STRING   # operationStarts
+               | ID 'ends'     STRING   # operationEnds
+               | ID 'contains' STRING   # operationContains
+               | ID 'in'       set      # operationIn
                ;
 set            : '[' NUMBER (',' NUMBER)* ']'
                | '[' STRING (',' STRING)* ']'

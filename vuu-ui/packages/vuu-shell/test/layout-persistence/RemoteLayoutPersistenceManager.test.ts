@@ -7,7 +7,7 @@ import {
 import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import { LayoutJSON } from "@finos/vuu-layout";
 import { v4 as uuidv4 } from "uuid";
-import { expectPromiseRejectsWithError } from "@finos/vuu-utils/test/utils";
+import { expectPromiseRejectsWithError } from "./utils";
 
 const mockFetch = vi.fn();
 
@@ -19,7 +19,7 @@ vi.mock("@finos/vuu-shell", async () => {
   return {
     getAuthDetailsFromCookies: (): [string, string] => {
       return [username, "token"];
-        },
+    },
   };
 });
 

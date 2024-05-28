@@ -5,13 +5,15 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { TableSettingsProps } from "@finos/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 import { Icon } from "@finos/vuu-ui-controls";
 import { VuuInput } from "@finos/vuu-ui-controls";
 
-import "./TableSettingsPanel.css";
+import tableSettingsPanelCss from "./TableSettingsPanel.css";
 
 const classBase = "vuuTableSettingsPanel";
 
@@ -31,6 +33,13 @@ export const TableSettingsPanel = ({
   onNavigateToColumn,
   tableConfig: tableConfigProp,
 }: TableSettingsProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table-settings-panel",
+    css: tableSettingsPanelCss,
+    window: targetWindow,
+  });
+
   const {
     columnItems,
     columnLabelsValue,

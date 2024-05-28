@@ -6,7 +6,7 @@ import {
   TableConfig,
   TableSettingsProps,
 } from "@finos/vuu-table-types";
-import { getCalculatedColumnType } from "@finos/vuu-utils";
+import { getCalculatedColumnDetails } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { ColumnActionColumnSettings } from "./useTableModel";
 
@@ -63,16 +63,23 @@ export const useTableAndColumnSettings = ({
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
-      const newAvailableColumns = availableColumns.concat({
-        name: column.name,
-        serverDataType: getCalculatedColumnType(column),
-      });
-      setAvailableColumns(newAvailableColumns);
-      onAvailableColumnsChange?.(newAvailableColumns);
-      requestAnimationFrame(() => {
-        showTableSettingsRef.current?.();
-      });
-      onCreateCalculatedColumn(column);
+      const { serverDataType } = getCalculatedColumnDetails(column);
+      if (serverDataType) {
+        const newAvailableColumns = availableColumns.concat({
+          name: column.name,
+          serverDataType,
+        });
+        setAvailableColumns(newAvailableColumns);
+        onAvailableColumnsChange?.(newAvailableColumns);
+        requestAnimationFrame(() => {
+          showTableSettingsRef.current?.();
+        });
+        onCreateCalculatedColumn(column);
+      } else {
+        throw Error(
+          "Cannot create calculatec columns without valis serverDataType"
+        );
+      }
     },
     [availableColumns, onAvailableColumnsChange, onCreateCalculatedColumn]
   );

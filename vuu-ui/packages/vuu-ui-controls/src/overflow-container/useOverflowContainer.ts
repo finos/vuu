@@ -1,9 +1,5 @@
 import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import {
-  DropOptions,
-  useDragDrop as useDragDrop,
-} from "@finos/vuu-ui-controls";
-import {
   isValidNumber,
   MEASURES,
   useLayoutEffectSkipFirst,
@@ -22,6 +18,7 @@ import {
   correctForWrappedOverflowIndicator,
 } from "./overflow-utils";
 import { OverflowContainerProps } from "./OverflowContainer";
+import { DropOptions, useDragDrop } from "../drag-drop";
 
 export interface OverflowContainerHookProps
   extends Pick<OverflowContainerProps, "allowDragDrop" | "onMoveItem">,

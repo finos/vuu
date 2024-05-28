@@ -45,6 +45,9 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] {
   override def visitOperationEnds(ctx: OperationEndsContext): FilterClause =
     EndsClause(ctx.ID().getText, ctx.STRING().getText)
 
+  override def visitOperationContains(ctx: OperationContainsContext): FilterClause =
+    ContainsClause(ctx.ID().getText, ctx.STRING().getText)
+
   override def visitOperationIn(ctx: OperationInContext): FilterClause = {
     InClause(ctx.ID().getText, FilterTreeVisitor.operationInValues(ctx))
   }

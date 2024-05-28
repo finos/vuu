@@ -1,5 +1,5 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
-import { LayoutProvider, registerComponent, View } from "@finos/vuu-layout";
+import { LayoutProvider, View } from "@finos/vuu-layout";
 import {
   Feature,
   FeatureProps,
@@ -7,6 +7,7 @@ import {
   ShellContextProvider,
   useLayoutManager,
 } from "@finos/vuu-shell";
+import { registerComponent } from "@finos/vuu-utils";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeatureProps } from "sample-apps/feature-basket-trading";
 import { BasketTradingFeature } from "../../features/BasketTrading.feature";

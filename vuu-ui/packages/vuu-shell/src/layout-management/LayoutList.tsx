@@ -1,10 +1,12 @@
 import { HTMLAttributes } from "react";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { List } from "@finos/vuu-ui-controls";
 import { LayoutMetadata } from "./layoutTypes";
 import { useLayoutManager } from "./useLayoutManager";
 import { LayoutTile } from "./LayoutTile";
 
-import "./LayoutList.css";
+import layoutListCss from "./LayoutList.css";
 
 type LayoutGroups = {
   [groupName: string]: LayoutMetadata[];
@@ -13,6 +15,13 @@ type LayoutGroups = {
 const classBase = "vuuLayoutList";
 
 export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-layout-list",
+    css: layoutListCss,
+    window: targetWindow,
+  });
+
   const { layoutMetadata, loadLayoutById } = useLayoutManager();
 
   const handleLoadLayout = (layoutId?: string) => {

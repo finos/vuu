@@ -1,5 +1,5 @@
 
-.vuu-theme {
+.salt-theme.vuu-theme {
   color: var(--salt-content-primary-foreground);
   font-family: var(--salt-typography-fontFamily);
   font-size: var(--salt-text-fontSize);
@@ -7,16 +7,16 @@
   line-height: var(--salt-text-lineHeight);
 }
 
-.vuu-theme ::selection {
+.salt-theme.vuu-theme ::selection {
   background: var(--salt-content-foreground-highlight);
   color: black;
 }
 
-.vuu-theme[data-mode="light"] {
+.salt-theme.vuu-theme[data-mode="light"] {
   color-scheme: light;
 }
 
-.vuu-theme[data-mode="dark"] {
+.salt-theme.vuu-theme[data-mode="dark"] {
   color-scheme: dark;
 }
 

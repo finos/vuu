@@ -6,23 +6,30 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "dependencies": {
-    "@salt-ds/core": "1.17.0",
-    "@salt-ds/icons": "1.9.1",
+  "devDependencies": {
     "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-table-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26"
+  },
+  "dependencies": {
     "@finos/vuu-layout": "0.0.26",
-    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
-    "@finos/vuu-utils": "0.0.26"
+    "@finos/vuu-table": "0.0.26",
+    "@finos/vuu-utils": "0.0.26",
+    "@salt-ds/core": "1.27.1",
+    "@salt-ds/icons": "1.9.1",
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1"
   },
   "peerDependencies": {
+    "@internationalized/date": "^3.0.0",
     "clsx": "^2.0.0",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "type": "module"
 }

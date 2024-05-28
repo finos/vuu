@@ -11,7 +11,7 @@ class buildQueryEntityTest extends AnyFeatureSpec with Matchers {
 
   Feature("buildQueryEntity") {
     val testSchema = ExternalEntitySchemaBuilder()
-      .withCaseClass[TestDto]
+      .withEntity(classOf[TestDto])
       .withIndex("TEST_INDEX", List("name"))
       .build()
 

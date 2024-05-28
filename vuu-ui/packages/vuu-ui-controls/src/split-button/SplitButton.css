@@ -101,14 +101,4 @@
     }
 }
 
-.vuuSplitButton-main {
-    border-style: solid none solid solid;
-    border-radius: var(--main-border-radius);
-    padding: 0 4px 0 16px;
-}
-
-.vuuSplitButton-trigger {
-    border-style: var(--trigger-border-style);
-    border-radius: var(--trigger-border-radius);
-}
 

@@ -1,11 +1,14 @@
-import { IconButton, OverflowContainer } from "@finos/vuu-ui-controls";
 import { asReactElements, useId } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";
 import { TabProps, TabstripProps } from "./TabsTypes";
 import { useTabstrip } from "./useTabstrip";
+import { IconButton } from "../icon-button";
+import { OverflowContainer } from "../overflow-container";
 
-import "./Tabstrip.css";
+import tabstripCss from "./Tabstrip.css";
 
 const classBase = "vuuTabstrip";
 
@@ -33,6 +36,13 @@ export const Tabstrip = ({
   variant = "secondary",
   ...htmlAttributes
 }: TabstripProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tabstrip",
+    css: tabstripCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeTabIndex,

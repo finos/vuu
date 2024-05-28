@@ -1,1 +1,1 @@
-export * from "./ConnectionStatusIcon";
+export * from "./ConnectionStatusIndicator";

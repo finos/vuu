@@ -1,11 +1,14 @@
 import { asReactElements } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { ForwardedRef, forwardRef, useMemo } from "react";
 import { useBreakpoints } from "../responsive";
 import { FlexboxProps } from "./flexboxTypes";
-import "./FluidGrid.css";
 import { useResponsiveSizing } from "./useResponsiveSizing";
+
+import fluidGridCss from "./FluidGrid.css";
 
 const classBase = "hwFluidGrid";
 
@@ -36,6 +39,13 @@ export const FluidGrid = forwardRef(function FluidGrid(
     style: styleProp,
     ...rest
   } = props;
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-fluid-grid",
+    css: fluidGridCss,
+    window: targetWindow,
+  });
 
   //TODO does thie useMemo serve any actual purpose or will childrenProp
   // always be new anyway ?

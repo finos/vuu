@@ -51,6 +51,15 @@ export const execWait = (cmd, cwd = ".") =>
     // });
   });
 
+export function removeFolder(folderPath) {
+  fs.rmSync(folderPath, { recursive: true, force: true });
+}
+
+export function createFolder(folderPath) {
+  removeFolder(folderPath);
+  fs.mkdirSync(folderPath, { recursive: true });
+}
+
 export function copyFolderSync(from, to) {
   if (fs.lstatSync(from).isFile()) {
     fs.copyFileSync(from, to);

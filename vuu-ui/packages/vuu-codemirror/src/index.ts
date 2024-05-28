@@ -29,6 +29,9 @@ import { Tree } from "@lezer/common";
 import { styleTags, tags } from "@lezer/highlight";
 
 // Autocomplete
+export * from "./codemirror-basic-setup";
+export * from "./parser-utils";
+export * from "./suggestion-utils";
 export { autocompletion, closeBrackets, startCompletion };
 export type { Completion, CompletionContext, CompletionSource };
 // Commands
@@ -52,7 +55,3 @@ export { drawSelection, EditorView, highlightSpecialChars, KeyBinding, keymap };
 export { styleTags, tags };
 // Lezer commons
 export { SyntaxNode, Tree };
-
-export * from "./codemirror-basic-setup";
-export * from "./parser-utils";
-export * from "./suggestion-utils";

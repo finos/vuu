@@ -1,6 +1,8 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { LayoutMetadata } from "./layoutTypes";
 
-import "./LayoutTile.css";
+import layoutTileCss from "./LayoutTile.css";
 
 const classBase = "vuuLayoutTile";
 
@@ -11,6 +13,12 @@ type LayoutTileProps = {
 
 export const LayoutTile = (props: LayoutTileProps) => {
   const { metadata, handleLoadLayout } = props;
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-layout-tile",
+    css: layoutTileCss,
+    window: targetWindow,
+  });
 
   return (
     <div role="listitem">

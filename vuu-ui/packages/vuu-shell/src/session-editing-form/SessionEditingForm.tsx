@@ -10,13 +10,25 @@ import {
   hasAction,
   isErrorResponse,
   isValidNumber,
+  queryClosest,
   shallowEquals,
 } from "@finos/vuu-utils";
-import { Button, useIdMemo } from "@salt-ds/core";
+import {
+  Button,
+  FormField,
+  FormFieldHelperText,
+  FormFieldLabel,
+  Input,
+  useIdMemo,
+} from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   ChangeEvent,
+  ChangeEventHandler,
   FocusEvent,
+  FocusEventHandler,
   HTMLAttributes,
   useCallback,
   useEffect,
@@ -25,7 +37,7 @@ import {
   useState,
 } from "react";
 
-import "./SessionEditingForm.css";
+import sessionEditingFormCss from "./SessionEditingForm.css";
 
 export type FormFieldDescriptor = {
   isKeyField?: boolean;
@@ -46,7 +58,7 @@ export type FormConfig = {
 export interface SessionEditingFormProps
   extends HTMLAttributes<HTMLDivElement> {
   config: FormConfig;
-  onClose: () => void;
+  onClose?: () => void;
   dataSource?: DataSource;
   schema?: TableSchema;
 }
@@ -65,17 +77,24 @@ const getField = (
   }
 };
 
-const getFieldNameAndValue = (
-  evt: ChangeEvent | FocusEvent
-): [string, string] => {
-  const {
-    dataset: { field },
-    value,
-  } = evt.target as HTMLInputElement;
-  if (field === undefined) {
-    throw Error("SessionEditingForm, form field has no field name");
+const getFieldNameAndValue = ({
+  target,
+}: ChangeEvent<HTMLInputElement> | FocusEvent<HTMLInputElement>): [
+  string,
+  string
+] => {
+  const formField = queryClosest(target, ".saltFormField");
+  if (formField) {
+    const {
+      dataset: { field },
+    } = formField;
+    if (field === undefined) {
+      throw Error("SessionEditingForm, form field has no field data attribute");
+    }
+    return [field, target.value];
+  } else {
+    throw Error("Form control is not enclosed in FormField");
   }
-  return [field, value];
 };
 
 const Status = {
@@ -158,17 +177,31 @@ export const SessionEditingForm = ({
   schema,
   ...htmlAttributes
 }: SessionEditingFormProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-session-editing-form",
+    css: sessionEditingFormCss,
+    window: targetWindow,
+  });
+
+  const [fieldStatusValues, setFieldStatusValues] = useState<
+    Record<string, string | undefined>
+  >({});
   const [values, setValues] = useState<FormValues>();
   const [errorMessage, setErrorMessage] = useState("");
   const formContentRef = useRef<HTMLDivElement>(null);
   const initialDataRef = useRef<FormValues>();
   const dataStatusRef = useRef(Status.uninitialised);
 
+  const ds = getDataSource(dataSourceProp, schema);
+  const { columns } = ds;
+  const columnMap = buildColumnMap(ds.columns);
+
   const dataSource = useMemo(() => {
     const applyServerData = (data: VuuDataRow) => {
       if (columnMap) {
         const values: { [key: string]: VuuRowDataItemType } = {};
-        for (const column of dataSource.columns) {
+        for (const column of columns) {
           values[column] = data[columnMap[column]];
         }
         if (dataStatusRef.current === Status.uninitialised) {
@@ -179,8 +212,6 @@ export const SessionEditingForm = ({
       }
     };
 
-    const ds = getDataSource(dataSourceProp, schema);
-    const columnMap = buildColumnMap(ds.columns);
     ds.subscribe({ range: { from: 0, to: 5 } }, (message) => {
       if (message.type === "viewport-update" && message.rows) {
         if (dataStatusRef.current === Status.uninitialised) {
@@ -191,15 +222,16 @@ export const SessionEditingForm = ({
       }
     });
     return ds;
-  }, [dataSourceProp, schema]);
+  }, [columnMap, columns, ds]);
 
   const id = useIdMemo(idProp);
 
-  const handleChange = useCallback(
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => {
       const [field, value] = getFieldNameAndValue(evt);
-      const { type } = getField(fields, field);
-      const typedValue = getTypedValue(value, type);
+      // const { type } = getField(fields, field);
+      // const typedValue = getTypedValue(value, type);
+      const typedValue = value;
       setValues((values = {}) => {
         const newValues = {
           ...values,
@@ -214,22 +246,40 @@ export const SessionEditingForm = ({
         return newValues;
       });
     },
-    [fields]
+    []
   );
 
-  const handleBlur = useCallback(
-    (evt: FocusEvent) => {
+  const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
+    (evt) => {
       const [field, value] = getFieldNameAndValue(evt);
-      const { type } = getField(fields, field);
       const rowKey = values?.[keyField];
-      const typedValue = getTypedValue(value, type, true);
+      // TODO link this with client side validation if we're going to use it
+      const { type } = getField(fields, field);
+      const clientTypedValue = getTypedValue(value, type, true);
+      console.log(`client typed value ${clientTypedValue}`);
+      const typedValue = value;
       if (typeof rowKey === "string") {
-        dataSource.menuRpcCall({
-          rowKey,
-          field: field,
-          value: typedValue,
-          type: "VP_EDIT_CELL_RPC",
-        });
+        dataSource
+          .menuRpcCall({
+            rowKey,
+            field: field,
+            value: typedValue,
+            type: "VP_EDIT_CELL_RPC",
+          })
+          .then((response) => {
+            if (response?.type === "VP_EDIT_RPC_REJECT") {
+              console.log(`edit rejected ${response.error}`);
+              setFieldStatusValues((map) => ({
+                ...map,
+                [field]: response.error,
+              }));
+            } else {
+              setFieldStatusValues((map) => ({
+                ...map,
+                [field]: undefined,
+              }));
+            }
+          });
       }
     },
     [dataSource, fields, keyField, values]
@@ -239,7 +289,7 @@ export const SessionEditingForm = ({
     (action: unknown) => {
       if (typeof action === "object" && action !== null) {
         if ("type" in action && action.type === "CLOSE_DIALOG_ACTION") {
-          onClose();
+          onClose?.();
         }
       }
     },
@@ -267,7 +317,7 @@ export const SessionEditingForm = ({
   );
 
   const handleCancel = useCallback(() => {
-    onClose();
+    onClose?.();
   }, [onClose]);
 
   const getFormControl = (field: FormFieldDescriptor) => {
@@ -278,12 +328,10 @@ export const SessionEditingForm = ({
       );
     } else {
       return (
-        <input
+        <Input
           className={`${classBase}-fieldValue`}
-          data-field={field.name}
           onBlur={handleBlur}
           onChange={handleChange}
-          type="text"
           value={value}
           id={`${id}-input-${field.name}`}
         />
@@ -331,17 +379,22 @@ export const SessionEditingForm = ({
         onKeyDown={handleKeyDown}
       >
         {fields.map((field) => (
-          <div className={`${classBase}-field`} key={field.name}>
-            <label
-              className={cx(`${classBase}-fieldLabel`, {
-                [`${classBase}-required`]: field.required,
-              })}
-              htmlFor={`${id}-input-${field.name}`}
-            >
-              {field?.label ?? field.description}
-            </label>
+          <FormField
+            className={`${classBase}-field`}
+            data-field={field.name}
+            key={field.name}
+            necessity={field.required ? "required" : "optional"}
+            readOnly={field.readonly}
+            validationStatus={
+              fieldStatusValues[field.name] ? "error" : undefined
+            }
+          >
+            <FormFieldLabel>{field?.label ?? field.description}</FormFieldLabel>
             {getFormControl(field)}
-          </div>
+            <FormFieldHelperText>
+              {fieldStatusValues[field.name] ?? ""}
+            </FormFieldHelperText>
+          </FormField>
         ))}
       </div>
       <div className={`${classBase}-buttonbar salt-theme salt-density-high`}>

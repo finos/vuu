@@ -1,15 +1,27 @@
 package org.finos.vuu.util.schema
 
-import org.finos.vuu.util.schema.EntitySchema.{FieldName, IndexName}
-import org.finos.vuu.util.schema.ExternalDataType.{ExternalDataType, fromString}
+import org.finos.vuu.util.schema.EntitySchema.{ExternalDataType, FieldName, IndexName}
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder.{InvalidIndexException, toSchemaFields}
 
 import scala.collection.mutable.ListBuffer
-import scala.reflect.runtime.universe.{MethodSymbol, TypeTag, typeOf}
 
 trait ExternalEntitySchema {
-  val fields: List[SchemaField]
-  val indexes: List[SchemaIndex] = List.empty
+  /**
+   * @return schema fields sorted by their index (SchemaField.index).
+   * */
+  def fields: List[SchemaField]
+
+  def indexes: List[SchemaIndex] = List.empty
+
+  /**
+   * @param values represents a list of values corresponding to the fields in the schema.
+   * @return a map from field names to the passed values matched by field.index that is
+   *         value at position 0 gets matched with the field x where x.index == 0.
+   *
+   * The method doesn't check for the types of passed values and would skip any fields
+   * that do not have a corresponding value e.g. when `values.length` < `fields.length`.
+   * */
+  def toMap(values: List[_]): Map[FieldName, Any] = fields.map(_.name).zip(values).toMap
 }
 
 private case class DefaultExternalEntitySchema private (override val fields: List[SchemaField],
@@ -18,26 +30,7 @@ private case class DefaultExternalEntitySchema private (override val fields: Lis
 object EntitySchema {
   type FieldName = String
   type IndexName = String
-}
-
-object ExternalDataType extends Enumeration {
   type ExternalDataType = Class[_]
-  val Int : ExternalDataType =  classOf[Int]
-  val String : ExternalDataType =  classOf[String]
-  val Double : ExternalDataType =  classOf[Double]
-  val Long : ExternalDataType =  classOf[Long]
-  val Char : ExternalDataType = classOf[Char]
-
-  def fromString(s: String): ExternalDataType = {
-    s.trim.toLowerCase match {
-      case "string" => ExternalDataType.String
-      case "double" => ExternalDataType.Double
-      case "int"    => ExternalDataType.Int
-      case "long"   => ExternalDataType.Long
-      case "char"   => ExternalDataType.Char
-      case _        => throw new RuntimeException(s"Unsupported type passed: $s")
-    }
-  }
 }
 
 object ExternalEntitySchemaBuilder {
@@ -62,11 +55,8 @@ case class ExternalEntitySchemaBuilder private (private val fields: ListBuffer[(
   def withIndex(indexName: IndexName, fields: List[FieldName]): ExternalEntitySchemaBuilder =
     this.copy(indexes = indexes :+ SchemaIndex(indexName, fields))
 
-  def withCaseClass[T: TypeTag]: ExternalEntitySchemaBuilder = {
-    val namesToTypes = typeOf[T].members.sorted.collect {
-      case m: MethodSymbol if m.isCaseAccessor =>
-        m.name.toString -> fromString(m.returnType.toString)
-    }
+  def withEntity(cls: Class[_]): ExternalEntitySchemaBuilder = {
+    val namesToTypes = cls.getDeclaredFields.filter(!_.isSynthetic).map(f => (f.getName, f.getType))
     this.copy(fields = fields.addAll(namesToTypes))
   }
 

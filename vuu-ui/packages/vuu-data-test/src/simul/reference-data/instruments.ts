@@ -91,11 +91,10 @@ export const getRic = (defaultRic: string) => {
   return row?.[InstrumentColumnMap.ric] ?? defaultRic;
 };
 
-const instrumentsTable = new Table(
+export const instrumentsTable = new Table(
   schemas.instruments,
   instrumentsData,
-  buildDataColumnMap(schemas.instruments)
+  buildDataColumnMap(schemas, "instruments")
 );
 
 export { instrumentsData };
-export default instrumentsTable;

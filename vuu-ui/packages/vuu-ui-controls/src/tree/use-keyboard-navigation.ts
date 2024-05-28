@@ -2,7 +2,7 @@ import { KeyboardEvent, useCallback, useMemo, useRef } from "react";
 import { getIndexOfNode, getNodeById } from "./hierarchical-data-utils";
 import { useControlled } from "@salt-ds/core";
 import { ArrowDown, ArrowLeft, ArrowUp, isNavigationKey } from "./key-code";
-import { NormalisedTreeSourceNode } from "./Tree";
+import { NormalisedTreeSourceNode } from "./treeTypes";
 
 function nextItemIdx(count: number, key: string, idx: number) {
   if (key === ArrowUp || key === ArrowLeft) {

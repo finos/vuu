@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { isOverflowElement } from "../overflow-container";
 import { useDragDropProvider } from "./DragDropProvider";
 import { DragDropState } from "./DragDropState";
 import {
@@ -32,6 +31,7 @@ import { useDragDropCopy, NULL_DROP_OPTIONS } from "./useDragDropCopy";
 import { useDragDropIndicator } from "./useDragDropIndicator";
 import { useDragDropNaturalMovement } from "./useDragDropNaturalMovement";
 import { ResumeDragHandler } from "./useGlobalDragDrop";
+import { isOverflowElement } from "../utils";
 
 const NULL_DRAG_DROP_RESULT = {
   beginDrag: () => undefined,

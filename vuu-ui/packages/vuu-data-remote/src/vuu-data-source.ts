@@ -79,11 +79,11 @@ export class VuuDataSource
   #selectedRowsCount = 0;
   #size = 0;
   #status: DataSourceStatus = "initialising";
+  #tableSchema: TableSchema | undefined;
 
   #title: string | undefined;
 
   public table: VuuTable;
-  public tableSchema: TableSchema | undefined;
   public viewport: string | undefined;
 
   constructor({
@@ -189,10 +189,9 @@ export class VuuDataSource
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.#status = "subscribed";
-      if (message.tableSchema) {
-        this.tableSchema = message.tableSchema;
-      }
+      this.tableSchema = message.tableSchema;
       this.clientCallback?.(message);
+      this.emit("subscription-open", message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
     } else if (message.type === "enabled") {
@@ -342,6 +341,15 @@ export class VuuDataSource
         key,
       });
     }
+  }
+
+  get tableSchema() {
+    return this.#tableSchema;
+  }
+
+  set tableSchema(tableSchema: TableSchema | undefined) {
+    this.#tableSchema = tableSchema;
+    // TOSO emit an event
   }
 
   get links() {

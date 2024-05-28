@@ -4,11 +4,14 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import { useMemo } from "react";
 import cx from "clsx";
 import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
 
-import "./TabMenu.css";
+import tabMenuCss from "./TabMenu.css";
 
 const classBase = "vuuTabMenu";
 
@@ -39,6 +42,13 @@ export const TabMenu = ({
   onMenuClose,
   index,
 }: TabMenuProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tab-menu",
+    css: tabMenuCss,
+    window: targetWindow,
+  });
+
   const [menuBuilder, menuOptions] = useMemo(
     (): [MenuBuilder, MenuOptions] => [
       (_location, options) => {

@@ -1,7 +1,7 @@
 import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
 import { Icon, VuuInput } from "@finos/vuu-ui-controls";
 import {
-  getCalculatedColumnName,
+  getCalculatedColumnDetails,
   getDefaultAlignment,
   isCalculatedColumn,
 } from "@finos/vuu-utils";
@@ -12,20 +12,22 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { ColumnExpressionPanel } from "../column-expression-panel";
 import { ColumnFormattingPanel } from "../column-formatting-settings";
 import { ColumnNameLabel } from "./ColumnNameLabel";
 import { useColumnSettings } from "./useColumnSettings";
 
-import "./ColumnSettingsPanel.css";
+import colunSettingsPanelCss from "./ColumnSettingsPanel.css";
 
 const classBase = "vuuColumnSettingsPanel";
 
 const getColumnLabel = (column: ColumnDescriptor) => {
   const { name, label } = column;
   if (isCalculatedColumn(name)) {
-    return label ?? getCalculatedColumnName(column);
+    return label ?? getCalculatedColumnDetails(column).name;
   } else {
     return label ?? name;
   }
@@ -39,6 +41,13 @@ export const ColumnSettingsPanel = ({
   tableConfig,
   vuuTable,
 }: ColumnSettingsProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-column-settings-panel",
+    css: colunSettingsPanelCss,
+    window: targetWindow,
+  });
+
   const isNewCalculatedColumn = columnProp.name === "::";
   const {
     availableRenderers,

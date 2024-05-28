@@ -84,6 +84,12 @@ export const useFilterEditor = ({
     [filterModel]
   );
 
+  const focusSaveButton = useCallback(() => {
+    requestAnimationFrame(() => {
+      saveButtonRef.current?.focus();
+    });
+  }, []);
+
   useMemo(() => {
     const setValid: FilterStatusChangeHandler = (isValid) => {
       // bind the model state change to React state to ensure render
@@ -94,15 +100,13 @@ export const useFilterEditor = ({
       if (isValid) {
         const [filterClauseIndex, fieldName] = getFocusedFieldDetails();
         if (fieldName === "value" && isLastFilterClause(filterClauseIndex)) {
-          requestAnimationFrame(() => {
-            saveButtonRef.current?.focus();
-          });
+          focusSaveButton();
         }
       }
     };
     filterModel.on("isValid", setValid);
     filterModel.on("filter", valueChanged);
-  }, [filterModel, isLastFilterClause]);
+  }, [filterModel, focusSaveButton, isLastFilterClause]);
 
   const handleCancelFilterClause = useCallback<FilterClauseCancelHandler>(
     (filterClause, reason) => {
@@ -191,6 +195,7 @@ export const useFilterEditor = ({
 
   const handleClickSaveButton = useMemo(
     () => () =>
+      // onSave() ?
       invokeMenuAction({
         menuId: "save",
         options: {},
@@ -227,6 +232,7 @@ export const useFilterEditor = ({
   return {
     columnsByName,
     filterModel,
+    focusSaveButton,
     isValid,
     onCancelFilterClause: handleCancelFilterClause,
     onCancelFilterEdit: handleCancelFilterEdit,

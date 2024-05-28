@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { NormalisedTreeSourceNode, TreeSourceNode } from "./Tree";
+import { NormalisedTreeSourceNode, TreeSourceNode } from "./treeTypes";
 
 const PathSeparators = new Set(["/", "-", "."]);
 // TODO where do we define or identify separators

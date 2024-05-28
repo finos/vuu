@@ -1,16 +1,27 @@
+import type { DataSourceRowObject } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
   VuuColumnDataType,
+  VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
-import type { DateTimePattern } from "@finos/vuu-utils";
-import { DataSourceRow, DataSourceRowObject } from "@finos/vuu-data-types";
-import type { FunctionComponent, MouseEvent } from "react";
-import type { HTMLAttributes } from "react";
+import type {
+  ColumnMap,
+  DateTimePattern,
+  RowClassNameGenerator,
+} from "@finos/vuu-utils";
+import type {
+  CSSProperties,
+  FunctionComponent,
+  HTMLAttributes,
+  MouseEvent,
+  ReactElement,
+} from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
 
@@ -74,6 +85,18 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
+}
+
+export type TableMenuLocation = "grid" | "header" | "filter";
+
+export interface VuuCellMenuItem extends VuuMenuItem {
+  rowKey: string;
+  field: string;
+  value: VuuRowDataItemType;
+}
+export interface VuuRowMenuItem extends VuuMenuItem {
+  rowKey: string;
+  row: { [key: string]: VuuRowDataItemType };
 }
 
 /**
@@ -145,19 +168,6 @@ export interface ValueListRenderer {
   values: string[];
 }
 
-export declare type DateTimeColumnTypeSimple = "date/time";
-
-type DateTimeColumnType =
-  | DateTimeColumnTypeSimple
-  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
-
-export declare type DateTimeColumnDescriptor = Omit<
-  ColumnDescriptor,
-  "type"
-> & {
-  type: DateTimeColumnType;
-};
-
 export declare type ColumnTypeSimple =
   | "string"
   | "number"
@@ -174,6 +184,19 @@ export declare type ColumnTypeDescriptor = {
     | LookupRenderer
     | MappedValueTypeRenderer
     | ValueListRenderer;
+};
+
+export declare type DateTimeColumnTypeSimple = "date/time";
+
+type DateTimeColumnType =
+  | DateTimeColumnTypeSimple
+  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
+
+export declare type DateTimeColumnDescriptor = Omit<
+  ColumnDescriptor,
+  "type"
+> & {
+  type: DateTimeColumnType;
 };
 
 export declare type ColumnTypeDescriptorCustomRenderer = {
@@ -359,6 +382,29 @@ export type TableColumnResizeHandler = (
   width?: number
 ) => void;
 
+export interface BaseRowProps {
+  className?: string;
+  columns: RuntimeColumnDescriptor[];
+  style?: CSSProperties;
+  /**
+   * In a virtualized row, the total width of leading columns not rendered (as
+   * virtualization optimisation)
+   */
+  virtualColSpan?: number;
+}
+
+export interface RowProps extends BaseRowProps {
+  classNameGenerator?: RowClassNameGenerator;
+  columnMap: ColumnMap;
+  highlighted?: boolean;
+  row: DataSourceRow;
+  offset: number;
+  onClick?: TableRowClickHandlerInternal;
+  onDataEdited?: DataCellEditHandler;
+  onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
+  zebraStripes?: boolean;
+}
+
 export interface HeaderCellProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
   classBase?: string;
@@ -369,3 +415,7 @@ export interface HeaderCellProps
 }
 
 export type TableConfigChangeHandler = (config: TableConfig) => void;
+
+export type CustomHeaderComponent = FC<BaseRowProps>;
+export type CustomHeaderElement = ReactElement;
+export type CustomHeader = CustomHeaderComponent | CustomHeaderElement;

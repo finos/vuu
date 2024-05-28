@@ -48,6 +48,11 @@ export type RowClassGenerator = {
 
 export type ConfigEditorComponent = FC<CellConfigPanelProps>;
 
+const containersSet = new Set<string>();
+const viewsSet = new Set<string>();
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const layoutComponentsMap = new Map<string, FC<any>>();
 const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
 const columnHeaderRenderersMap = new Map<string, FC<HeaderCellProps>>();
 const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
@@ -61,16 +66,19 @@ export type EditRuleValidator = (
   value?: VuuRowDataItemType
 ) => boolean | string;
 
+export type layoutComponentType = "container" | "view";
+
 export type ComponentType =
+  | layoutComponentType
   | "cell-renderer"
   | "cell-config-panel"
   | "column-header-content-renderer"
   | "column-header-label-renderer"
+  | "component"
   | "data-edit-validator"
   | "row-class-generator";
 
 type CellRendererOptions = {
-  // [key: string]: unknown;
   configEditor?: string;
   description?: string;
   label?: string;
@@ -98,6 +106,14 @@ const isTypeCompatible = (
     return rendererType === serverDataType;
   }
 };
+
+export const isContainer = (componentType: string) =>
+  containersSet.has(componentType);
+export const isView = (componentType: string) => viewsSet.has(componentType);
+export const isLayoutComponent = (
+  componentType: string
+): componentType is layoutComponentType =>
+  isContainer(componentType) || isView(componentType);
 
 const isCellRenderer = (
   type: ComponentType,
@@ -130,31 +146,61 @@ const isRowClassGenerator = (
   component: unknown
 ): component is RowClassGenerator => type === "row-class-generator";
 
-export function registerComponent<
-  T extends
-    | CellConfigPanelProps
-    | EditRuleValidator
-    | HeaderCellProps
-    | RowClassGenerator
-    | TableCellRendererProps = TableCellRendererProps
->(
+export function registerComponent(
   componentName: string,
-  component: T extends EditRuleValidator | RowClassGenerator ? T : FC<T>,
-  type: ComponentType = "cell-renderer",
-  options: CellRendererOptions
+  component: RowClassGenerator,
+  componentType: "row-class-generator",
+  options?: CellRendererOptions
+): void;
+export function registerComponent(
+  componentName: string,
+  component: EditRuleValidator,
+  componentType: "data-edit-validator",
+  options?: CellRendererOptions
+): void;
+export function registerComponent(
+  componentName: string,
+  // unknown won't work for us here, we'll get the default children
+  // definition for FC which conflicts with some components props.
+  // VoidFunctionComponent doesn't help either
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: FC<any>,
+  componentType: Omit<
+    ComponentType,
+    "data-edit-validator" | "row-class-generator"
+  >,
+  options?: CellRendererOptions
+): void;
+export function registerComponent(
+  componentName: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  componentType: any,
+  options?: CellRendererOptions
 ): void {
-  if (isCellRenderer(type, component)) {
+  if (
+    componentType === "container" ||
+    componentType === "view" ||
+    componentType === "component"
+  ) {
+    layoutComponentsMap.set(componentName, component);
+    if (componentType === "container") {
+      containersSet.add(componentName);
+    } else if (componentType === "view") {
+      viewsSet.add(componentName);
+    }
+  } else if (isCellRenderer(componentType, component)) {
     cellRenderersMap.set(componentName, component);
-  } else if (isColumnHeaderContentRenderer(type, component)) {
+  } else if (isColumnHeaderContentRenderer(componentType, component)) {
     columnHeaderRenderersMap.set(componentName, component);
-  } else if (isColumnHeaderLabelRenderer(type, component)) {
+  } else if (isColumnHeaderLabelRenderer(componentType, component)) {
     columnHeaderRenderersMap.set(componentName, component);
-  } else if (isCellConfigPanel(type, component)) {
+  } else if (isCellConfigPanel(componentType, component)) {
     cellConfigPanelsMap.set(componentName, component);
-  } else if (isEditRuleValidator(type, component)) {
+  } else if (isEditRuleValidator(componentType, component)) {
     editRuleValidatorsMap.set(componentName, component);
-  } else if (isRowClassGenerator(type, component)) {
-    console.log(`register ${componentName}`);
+  } else if (isRowClassGenerator(componentType, component)) {
     rowClassGeneratorsMap.set(componentName, component);
   }
   if (options) {
@@ -191,6 +237,17 @@ export const getRegisteredCellRenderers = (
   }
 };
 
+export const getLayoutComponent = (componentName: string) => {
+  const layoutComponent = layoutComponentsMap.get(componentName);
+  if (layoutComponent) {
+    return layoutComponent;
+  } else {
+    throw Error(
+      `layout component ${componentName} not found in ComponentRegistry`
+    );
+  }
+};
+
 export const getCellRendererOptions = (renderName: string) =>
   optionsMap.get(renderName);
 
@@ -210,6 +267,18 @@ export function getColumnHeaderLabelRenderer(column: ColumnDescriptor) {
 export const getRowClassNameGenerator = (generatorId: string) =>
   rowClassGeneratorsMap.get(generatorId);
 
+export function getConfigurationEditor(configEditor = "") {
+  return configEditorsMap.get(configEditor);
+}
+
+export function getCellConfigPanelRenderer(name: string) {
+  return cellConfigPanelsMap.get(name);
+}
+
+export function getEditRuleValidator(name: string) {
+  return editRuleValidatorsMap.get(name);
+}
+
 function dataCellRenderer(column: ColumnDescriptor) {
   if (isTypeDescriptor(column.type)) {
     const { renderer } = column.type;
@@ -224,16 +293,4 @@ function dataCellRenderer(column: ColumnDescriptor) {
     // it in column config.
     return cellRenderersMap.get("input-cell");
   }
-}
-
-export function getConfigurationEditor(configEditor = "") {
-  return configEditorsMap.get(configEditor);
-}
-
-export function getCellConfigPanelRenderer(name: string) {
-  return cellConfigPanelsMap.get(name);
-}
-
-export function getEditRuleValidator(name: string) {
-  return editRuleValidatorsMap.get(name);
 }

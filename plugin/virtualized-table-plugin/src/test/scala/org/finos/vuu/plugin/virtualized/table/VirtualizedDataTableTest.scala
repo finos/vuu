@@ -11,7 +11,15 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 
-class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
+class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
+
+  private implicit val metrics: MetricsProvider = new MetricsProviderImpl
+  private implicit val clock: Clock = new TestFriendlyClock(DefaultTestStartTime.TestStartTime)
+
+  private val sessionId = ClientSessionId("AAAA", "user")
+  private val joinProvider = new TestFriendlyJoinTableProvider
+
+  private val ordersTableDef = VirtualizedSessionTableDef("bigOrders", "orderId", Columns.fromNames("orderId:String", "ric:String", "quantity:Int", "trader: String"))
 
   def sampleRows: List[RowWithData] = {
     List(
@@ -47,16 +55,8 @@ class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWh
 
     Scenario("test adding data") {
 
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
-      implicit val clock: Clock = new TestFriendlyClock(DefaultTestStartTime.TestStartTime)
-
-      val sessionId = ClientSessionId("AAAA", "user")
-      val joinProvider = new TestFriendlyJoinTableProvider
-
-      val tableDef = VirtualizedSessionTableDef("bigOrders", "orderId", Columns.fromNames("orderId:String", "ric:String", "quantity:Int", "trader: String"))
-
       When("we create a virtualized table")
-      val virtualizedTable = new VirtualizedSessionTable(sessionId, tableDef, joinProvider, cacheSize = 10)
+      val virtualizedTable = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider, cacheSize = 10)
 
       And("we set the range (i.e. the cached amount) to between 0 and 10")
       virtualizedTable.setRange(VirtualizedRange(0, 10))
@@ -100,6 +100,33 @@ class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWh
         Array("0006", "0007", "0008", "0009", "0010", "0011", "0012", "0013", "0014", "0015")
       )
 
+    }
+  }
+
+  Feature("hasRowChangedAtIndex") {
+    val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+    table.setRange(VirtualizedRange(0, 2))
+
+    val row1 = RowWithData("0001", Map("orderId" -> "0001", "ric" -> "VOD.L", "quantity" -> 100, "trader" -> "trader1"))
+    val row2 = RowWithData("0002", Map("orderId" -> "0002", "ric" -> "VOD.L", "quantity" -> 200, "trader" -> "trader2"))
+    List(row1, row2).zipWithIndex.foreach({ case (row, i) => table.processUpdateForIndex(i, row.key, row, clock.now())})
+
+    Scenario("WHEN only row data changes THEN should return true") {
+      val newRowAtZeroIndex = row1.copy(data = row1.data ++ Map("quantity" -> 105))
+      table.hasRowChangedAtIndex(0, newRowAtZeroIndex) should equal(true)
+    }
+
+    Scenario("WHEN row is the same but the index changes THEN should return true") {
+      table.hasRowChangedAtIndex(1, row1) should equal(true)
+    }
+
+    Scenario("WHEN row data is the same but key changes THEN should return true") {
+      val sameRowWithDifferentKey = row1.copy(key = "000X")
+      table.hasRowChangedAtIndex(0, sameRowWithDifferentKey) should equal(true)
+    }
+
+    Scenario("WHEN row as well as the row index are the same THEN should return false") {
+      table.hasRowChangedAtIndex(0, row1.copy()) should equal(false)
     }
   }
 }

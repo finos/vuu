@@ -1,8 +1,10 @@
+import { registerComponent } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import classnames from "clsx";
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
-import { registerComponent } from "./registry/ComponentRegistry";
 
-import "./DraggableLayout.css";
+import draggableLayoutCss from "./DraggableLayout.css";
 
 export interface DraggableLayoutProps extends HTMLAttributes<HTMLDivElement> {
   dropTarget?: boolean;
@@ -19,6 +21,13 @@ export const DraggableLayout = forwardRef(function DraggableLayout(
   }: DraggableLayoutProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-draggable-layout",
+    css: draggableLayoutCss,
+    window: targetWindow,
+  });
+
   const className = classnames("DraggableLayout", classNameProp);
   return (
     <div className={className} ref={forwardedRef} {...htmlAttributes}>

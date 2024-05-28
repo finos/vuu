@@ -1,29 +1,28 @@
-import { FilterClause } from "@finos/vuu-filter-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isValidFilterClauseOp } from "@finos/vuu-utils";
-import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
+import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
+import { hasOpenOptionList } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEvent,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { FilterClauseProps } from "./FilterClause";
 import {
   clauseIsNotFirst,
+  elementIsFilterClause,
+  focusField,
   focusNextElement,
   focusNextFocusableElement,
-  elementIsFilterClause,
   navigateToNextItemIfAtBoundary,
-  focusField,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
-import { FilterClauseProps } from "./FilterClause";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
-  "columnsByName" | "filterClauseModel" | "onCancel"
+  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
 >;
 
 export type FilterClauseValueChangeHandler = (
@@ -35,6 +34,7 @@ export const useFilterClause = ({
   filterClauseModel,
   onCancel,
   columnsByName,
+  onFocusSave,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {}
@@ -80,14 +80,12 @@ export const useFilterClause = ({
     [filterClauseModel, onCancel]
   );
 
-  const handleColumnSelect = useCallback<
-    SingleSelectionHandler<ColumnDescriptor>
-  >(
-    (evt, column) => {
+  const onSelectColumn = (evt: SyntheticEvent, selectedColumn: string) => {
+    if (selectedColumn) {
       if (evt?.type === "keydown") {
         const { key } = evt as KeyboardEvent;
         if (key === "Tab") {
-          if (filterClauseModel.column === column.name) {
+          if (filterClauseModel.column === selectedColumn) {
             // No selection change, allow normal Tab navigation (to Save button)
             return;
           } else {
@@ -96,25 +94,18 @@ export const useFilterClause = ({
           }
         }
       }
-      filterClauseModel.column = column?.name ?? undefined;
-      setTimeout(() => {
-        focusNextElement();
-      }, 100);
-    },
-    [filterClauseModel]
-  );
+    }
+    filterClauseModel.column = selectedColumn;
+    setTimeout(() => {
+      console.log(`focus next element`);
+      focusNextElement();
+    }, 100);
+  };
 
-  const handleOperatorSelect = useCallback<SingleSelectionHandler>(
-    (_, selected) => {
-      const op = selected;
-      if (op === undefined || isValidFilterClauseOp(op)) {
-        filterClauseModel.setOp(op);
-        focusNextElement();
-      } else {
-        throw Error(
-          `FilterClauseEditor, invalid value ${op} for filter clause`
-        );
-      }
+  const onSelectOperator = useCallback(
+    (_, selectedOp: FilterClauseOp) => {
+      filterClauseModel.setOp(selectedOp);
+      focusNextElement();
     },
     [filterClauseModel]
   );
@@ -136,13 +127,29 @@ export const useFilterClause = ({
       } else if (evt.key === "Backspace") {
         removeAndNavigateToNextInputIfAtBoundary(evt);
       } else if (evt.key === "Escape") {
-        onCancel?.(filterClauseModel, "Escape");
+        // ignore when optionlist is open, the optionList will be collapsed
+        if (!hasOpenOptionList(evt.target)) {
+          onCancel?.(filterClauseModel, "Escape");
+        }
       } else if (evt.key === "Tab" && evt.shiftKey) {
         evt.preventDefault();
         tabToPreviousFilterCombinator(evt.target as HTMLElement);
+      } else if (evt.key === "Tab") {
+        // if the clause is valid, skip to save
+        if (filterClauseModel.isValid) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          // TODO focus cancel if not changed
+          onFocusSave?.();
+        }
       }
     },
-    [filterClauseModel, onCancel, removeAndNavigateToNextInputIfAtBoundary]
+    [
+      filterClauseModel,
+      onCancel,
+      onFocusSave,
+      removeAndNavigateToNextInputIfAtBoundary,
+    ]
   );
 
   const handleFocus = useCallback<FocusEventHandler>((evt) => {
@@ -151,12 +158,10 @@ export const useFilterClause = ({
     }
   }, []);
 
-  const InputProps = useMemo(
+  const inputProps = useMemo(
     () => ({
-      inputProps: {
-        onKeyDownCapture: handleKeyDownCaptureNavigation,
-        tabIndex: -1,
-      },
+      onKeyDownCapture: handleKeyDownCaptureNavigation,
+      tabIndex: -1,
     }),
     [handleKeyDownCaptureNavigation]
   );
@@ -172,14 +177,14 @@ export const useFilterClause = ({
   }, [filterClauseModel]);
 
   return {
-    InputProps,
+    inputProps,
     columnRef,
     filterClause,
     onChangeValue: handleChangeValue,
     onDeselectValue: handleDeselectValue,
-    onColumnSelect: handleColumnSelect,
+    onSelectColumn,
     onFocus: handleFocus,
-    onOperatorSelect: handleOperatorSelect,
+    onSelectOperator,
     operatorRef,
     selectedColumn: columnsByName[filterClause.column ?? ""],
   };

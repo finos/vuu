@@ -8,14 +8,12 @@ import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.util.schema.SchemaMapper
 
 trait FilterAndSortSpecToSql {
-  def filterToSql(filterSpec: FilterSpec): String
-  def sortToSql(sortSpec: SortSpecInternal): String
+  def filterToSql(filterSpec: FilterSpec): IgniteSqlQuery
+  def sortToSql(sortSpec: SortSpecInternal): IgniteSqlQuery
 }
 
 object FilterAndSortSpecToSql {
-  def apply(schemaMapper: SchemaMapper): FilterAndSortSpecToSql = {
-    new FilterAndSortSpecToSqlImpl(schemaMapper)
-  }
+  def apply(schemaMapper: SchemaMapper): FilterAndSortSpecToSql = new FilterAndSortSpecToSqlImpl(schemaMapper)
 }
 
 private class FilterAndSortSpecToSqlImpl(private val schemaMapper: SchemaMapper) extends FilterAndSortSpecToSql {
@@ -23,14 +21,16 @@ private class FilterAndSortSpecToSqlImpl(private val schemaMapper: SchemaMapper)
   private val filterTreeVisitor = new IgniteSqlFilterTreeVisitor
   private val igniteSqlSortBuilder = new IgniteSqlSortBuilder
 
-  override def filterToSql(filterSpec: FilterSpec): String = {
+  override def filterToSql(filterSpec: FilterSpec): IgniteSqlQuery = {
     if (filterSpec.filter == null || filterSpec.filter.isEmpty) {
-      ""
+      IgniteSqlQuery.empty
     } else {
       val clause = FilterSpecParser.parse[IgniteSqlFilterClause](filterSpec.filter, filterTreeVisitor)
       clause.toSql(schemaMapper)
     }
   }
 
-  override def sortToSql(sortSpec: SortSpecInternal): String = igniteSqlSortBuilder.toSql(sortSpec, schemaMapper)
+  override def sortToSql(sortSpec: SortSpecInternal): IgniteSqlQuery = {
+    if (sortSpec == null) IgniteSqlQuery.empty else igniteSqlSortBuilder.toSql(sortSpec, schemaMapper)
+  }
 }

@@ -1,9 +1,11 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { CSSProperties, forwardRef, ForwardedRef, HTMLAttributes } from "react";
 import { MeasuredSize, useMeasuredContainer } from "./useMeasuredContainer";
 import { useForkRef } from "@salt-ds/core";
 import cx from "clsx";
 
-import "./MeasuredContainer.css";
+import measuredContainerCss from "./MeasuredContainer.css";
 
 export interface MeasuredContainerProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -31,6 +33,13 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
   }: MeasuredContainerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-measured-container",
+    css: measuredContainerCss,
+    window: targetWindow,
+  });
+
   const { containerRef, ...containerMeasurements } = useMeasuredContainer({
     height,
     onResize,

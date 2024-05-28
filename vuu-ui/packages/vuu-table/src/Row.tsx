@@ -1,46 +1,20 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { RowProps, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  DataCellEditHandler,
-  RuntimeColumnDescriptor,
-  TableRowClickHandlerInternal,
-} from "@finos/vuu-table-types";
-import {
-  ColumnMap,
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
-  metadataKeys,
   isNotHidden,
+  metadataKeys,
   RowSelected,
-  RowClassNameGenerator,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import {
-  CSSProperties,
-  forwardRef,
-  memo,
-  MouseEvent,
-  useCallback,
-} from "react";
+import { forwardRef, memo, MouseEvent, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
-import "./Row.css";
-
-export interface RowProps {
-  className?: string;
-  classNameGenerator?: RowClassNameGenerator;
-  columnMap: ColumnMap;
-  columns: RuntimeColumnDescriptor[];
-  highlighted?: boolean;
-  row: DataSourceRow;
-  offset: number;
-  onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: DataCellEditHandler;
-  onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
-  style?: CSSProperties;
-  virtualColSpan?: number;
-  zebraStripes?: boolean;
-}
+import rowCss from "./Row.css";
+import { VirtualColSpan } from "./VirtualColSpan";
 
 const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
@@ -51,6 +25,13 @@ const classBase = "vuuTableRow";
 // be controlled purely through CSS.
 export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
   function RowProxy({ height }, forwardedRef) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-table-row",
+      css: rowCss,
+      window: targetWindow,
+    });
+
     return (
       <div
         aria-hidden
@@ -79,6 +60,13 @@ export const Row = memo(
     zebraStripes = false,
     ...htmlAttributes
   }: RowProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-table-row",
+      css: rowCss,
+      window: targetWindow,
+    });
+
     const {
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
@@ -131,9 +119,7 @@ export const Row = memo(
         style={style}
       >
         <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
-        {virtualColSpan > 0 ? (
-          <div className="vuuTableCell" style={{ width: virtualColSpan }} />
-        ) : null}
+        <VirtualColSpan width={virtualColSpan} />
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);

@@ -9,6 +9,7 @@ import {
   getRowElementAtIndex,
   isRowSelected,
   metadataKeys,
+  queryClosest,
   selectItem,
 } from "@finos/vuu-utils";
 import { Selection, SelectionChangeHandler } from "@finos/vuu-data-types";
@@ -51,12 +52,19 @@ export const useSelection = ({
   );
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
-    (evt, row, rangeSelect, keepExistingSelection) => {
+    (e, row, rangeSelect, keepExistingSelection) => {
       const { [IDX]: idx } = row;
       const { current: active } = lastActiveRef;
       const { current: selected } = selectedRef;
 
       const selectOperation = isRowSelected(row) ? deselectItem : selectItem;
+
+      if (selectionModel === "checkbox") {
+        const cell = queryClosest(e.target, ".vuuTableCell");
+        if (!cell?.querySelector(".vuuCheckboxRowSelector")) {
+          return;
+        }
+      }
 
       const newSelected = selectOperation(
         selectionModel,

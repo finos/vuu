@@ -1,7 +1,12 @@
-import { dimension, rect, rectTuple, uuid } from "@finos/vuu-utils";
+import {
+  dimension,
+  getLayoutComponent,
+  rect,
+  rectTuple,
+  uuid,
+} from "@finos/vuu-utils";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
-import { ComponentRegistry } from "../registry/ComponentRegistry";
 import { getProps, resetPath } from "../utils";
 const placeHolderProps = { "data-placeholder": true, "data-resizeable": true };
 
@@ -233,9 +238,10 @@ export function createFlexbox(
   const { flexFill, style, resizeable = true } = props;
   const { flexBasis = flexFill ? undefined : "auto" } = style;
   const flex = getFlexValue(flexBasis, flexFill);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return React.createElement<any>(
-    ComponentRegistry.Flexbox,
+  // A direct import triggers a circular ref chain
+  const FlexboxLayout = getLayoutComponent("Flexbox");
+  return React.createElement(
+    FlexboxLayout,
     {
       id,
       key: id,

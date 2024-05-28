@@ -3,8 +3,10 @@ import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
 import { forwardRef, HTMLAttributes } from "react";
 import { useSplitButton } from "./useSplitButton";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./SplitButton.css";
+import splitButtonCss from "./SplitButton.css";
 
 export interface SplitButtonProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick">,
@@ -33,6 +35,13 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
     },
     forwardedRef
   ) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-split-button",
+      css: splitButtonCss,
+      window: targetWindow,
+    });
+
     const { ButtonProps, buttonRef, rootRef, PopupMenuProps, ...rootProps } =
       useSplitButton({
         ButtonProps: ButtonPropsProp,

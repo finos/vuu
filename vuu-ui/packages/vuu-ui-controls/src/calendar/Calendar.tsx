@@ -1,19 +1,21 @@
-import { forwardRef, useCallback } from "react";
-import { clsx } from "clsx";
 import { makePrefixer } from "@salt-ds/core";
-import {
-  CalendarNavigation,
-  CalendarNavigationProps,
-} from "./internal/CalendarNavigation";
-import { CalendarWeekHeader } from "./internal/CalendarWeekHeader";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { clsx } from "clsx";
+import { forwardRef, useCallback } from "react";
 import {
   CalendarCarousel,
   CalendarCarouselProps,
 } from "./internal/CalendarCarousel";
 import { CalendarContext } from "./internal/CalendarContext";
+import {
+  CalendarNavigation,
+  CalendarNavigationProps,
+} from "./internal/CalendarNavigation";
+import { CalendarWeekHeader } from "./internal/CalendarWeekHeader";
 import { useCalendar, useCalendarProps } from "./useCalendar";
 
-import "./Calendar.css";
+import calendarCss from "./Calendar.css";
 
 export type CalendarProps = useCalendarProps & {
   className?: string;
@@ -27,6 +29,13 @@ const withBaseName = makePrefixer("saltCalendar");
 
 export const Calendar = forwardRef<HTMLDivElement, CalendarProps>(
   function Calendar(props, ref) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "salt-calendar",
+      css: calendarCss,
+      window: targetWindow,
+    });
+
     const {
       className,
       renderDayContents,

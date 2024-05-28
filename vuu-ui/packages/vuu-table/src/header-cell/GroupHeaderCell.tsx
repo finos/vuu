@@ -6,13 +6,15 @@ import {
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { useCallback, useRef, useState } from "react";
 import { ColumnHeaderPill, GroupColumnPill } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
-import "./GroupHeaderCell.css";
+import headerCellCss from "./GroupHeaderCell.css";
 
 const classBase = "vuuTableGroupHeaderCell";
 
@@ -42,6 +44,13 @@ export const GroupHeaderCell = ({
   onResize,
   ...htmlAttributes
 }: GroupHeaderCellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-group-header-cell",
+    css: headerCellCss,
+    window: targetWindow,
+  });
+
   const rootRef = useRef<HTMLTableCellElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
     column: groupColumn,

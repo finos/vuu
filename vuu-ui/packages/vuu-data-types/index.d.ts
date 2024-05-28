@@ -339,6 +339,7 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
+  "subscription-open": (subscription: DataSourceSubscribedMessage) => void;
 };
 
 /**
@@ -485,8 +486,10 @@ export interface DataSource
   visualLink?: LinkDescriptorWithLabel;
 }
 
-export interface MenuRpcResponse {
-  action: MenuRpcAction;
+export interface MenuRpcResponse<
+  TAction extends MenuRpcAction = MenuRpcAction
+> {
+  action: TAction;
   error?: string;
   requestId: string;
   rpcName?: string;

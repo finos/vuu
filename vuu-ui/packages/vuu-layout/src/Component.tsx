@@ -1,7 +1,5 @@
-import React, { forwardRef, HTMLAttributes } from 'react';
-import { registerComponent } from './registry/ComponentRegistry';
-
-import './Component.css';
+import React, { forwardRef, HTMLAttributes } from "react";
+import { registerComponent } from "@finos/vuu-utils";
 
 export interface ComponentProps extends HTMLAttributes<HTMLDivElement> {
   resizeable?: boolean;
@@ -13,8 +11,8 @@ const Component = forwardRef(function Component(
 ) {
   return <div {...props} className="Component" ref={ref} />;
 }) as React.FunctionComponent<ComponentProps>;
-Component.displayName = 'Component';
+Component.displayName = "Component";
 
 export default Component;
 
-registerComponent('Component', Component);
+registerComponent("Component", Component, "component");

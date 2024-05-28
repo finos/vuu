@@ -1,15 +1,20 @@
 import React, { SyntheticEvent, useCallback, useMemo, useState } from "react";
-import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   DateTimePattern,
+  TimePattern,
+  dateTimeLabelByType,
   defaultPatternsByType,
   fallbackDateTimePattern,
   getTypeFormattingFromColumn,
+  isDatePattern,
+  isTimePattern,
   supportedDateTimePatterns,
 } from "@finos/vuu-utils";
 import {
+  Dropdown,
   FormField,
   FormFieldLabel,
+  Option,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
@@ -17,6 +22,28 @@ import {
   DateTimeColumnDescriptor,
   FormattingSettingsProps,
 } from "@finos/vuu-table-types";
+import { DatePattern } from "@finos/vuu-utils";
+
+const toggleValues = ["date", "time", "both"] as const;
+type ToggleValue = (typeof toggleValues)[number];
+
+function getToggleValue(pattern: DateTimePattern): ToggleValue {
+  return !pattern.time ? "date" : !pattern.date ? "time" : "both";
+}
+
+type DateTime = keyof DateTimePattern;
+
+const getSelectedPattern = (
+  pattern?: DatePattern | TimePattern
+): DatePattern[] | TimePattern[] | undefined => {
+  if (isDatePattern(pattern)) {
+    return [pattern] as DatePattern[];
+  } else if (isTimePattern(pattern)) {
+    return [pattern] as TimePattern[];
+  } else {
+    return undefined;
+  }
+};
 
 export const DateTimeFormattingSettings: React.FC<
   FormattingSettingsProps<DateTimeColumnDescriptor>
@@ -38,18 +65,25 @@ export const DateTimeFormattingSettings: React.FC<
   );
 
   const onDropdownChange = useCallback<
-    <T extends keyof DateTimePattern>(
-      key: T
-    ) => SingleSelectionHandler<Required<DateTimePattern>[T]>
+    <T extends DateTime>(
+      dateTime: T
+    ) => (
+      e: SyntheticEvent,
+      newSelected: Array<Required<DateTimePattern>[T]>
+    ) => void
   >(
-    (key) => (_, p) => {
-      const updatedPattern = { ...(pattern ?? {}), [key]: p };
-      setFallbackState((s) => ({
-        time: updatedPattern.time ?? s.time,
-        date: updatedPattern.date ?? s.date,
-      }));
-      onPatternChange(updatedPattern);
-    },
+    (dateTime) =>
+      (_, [selectedPattern]) => {
+        const updatedPattern = {
+          ...(pattern ?? {}),
+          [dateTime]: selectedPattern,
+        };
+        setFallbackState((s) => ({
+          time: updatedPattern.time ?? s.time,
+          date: updatedPattern.date ?? s.date,
+        }));
+        onPatternChange(updatedPattern);
+      },
     [onPatternChange, pattern]
   );
 
@@ -97,25 +131,19 @@ export const DateTimeFormattingSettings: React.FC<
         .filter((v) => !!pattern[v])
         .map((v) => (
           <FormField labelPlacement="top" key={v}>
-            <FormFieldLabel>{`${labelByType[v]} pattern`}</FormFieldLabel>
+            <FormFieldLabel>{`${dateTimeLabelByType[v]} pattern`}</FormFieldLabel>
             <Dropdown<Required<DateTimePattern>[typeof v]>
               onSelectionChange={onDropdownChange(v)}
-              selected={pattern[v]}
-              source={supportedDateTimePatterns[v]}
-              width="100%"
-            />
+              selected={getSelectedPattern(pattern[v])}
+            >
+              {supportedDateTimePatterns[v].map((pattern, i) => (
+                <Option key={i} value={pattern}>
+                  {pattern}
+                </Option>
+              ))}
+            </Dropdown>
           </FormField>
         ))}
     </>
   );
 };
-
-const labelByType = { date: "Date", time: "Time" } as const;
-
-const toggleValues = ["date", "time", "both"] as const;
-
-type ToggleValue = (typeof toggleValues)[number];
-
-function getToggleValue(pattern: DateTimePattern): ToggleValue {
-  return !pattern.time ? "date" : !pattern.date ? "time" : "both";
-}

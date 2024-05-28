@@ -1,8 +1,8 @@
+import { ViewProps } from "@finos/vuu-layout";
+import { importCSS, registerComponent } from "@finos/vuu-utils";
 import React, { Suspense, useEffect } from "react";
-import { registerComponent, ViewProps } from "@finos/vuu-layout";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
-import { importCSS } from "./css-module-loader";
 
 /**
  * Ensure we never lazy load the same component more than once

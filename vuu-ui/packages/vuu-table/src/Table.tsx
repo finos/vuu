@@ -6,39 +6,43 @@ import {
 } from "@finos/vuu-data-types";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
+  CustomHeader,
+  RowProps,
   TableConfig,
   TableConfigChangeHandler,
   TableRowClickHandler,
   TableRowSelectHandler,
   TableSelectionModel,
 } from "@finos/vuu-table-types";
+import type { DragDropState } from "@finos/vuu-ui-controls";
 import {
   DragStartHandler,
-  dragStrategy,
   MeasuredContainer,
   MeasuredContainerProps,
   MeasuredSize,
+  dragStrategy,
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
   FC,
   ForwardedRef,
-  forwardRef,
   RefObject,
+  forwardRef,
   useRef,
   useState,
 } from "react";
-import { Row as DefaultRow, RowProps, RowProxy } from "./Row";
-import { TableHeader } from "./table-header/TableHeader";
+import { Row as DefaultRow, RowProxy } from "./Row";
+import { TableHeader } from "./table-header";
+import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
-
-import type { DragDropState } from "@finos/vuu-ui-controls";
-import "./Table.css";
 import { ScrollingAPI } from "./useTableScroll";
-import { useRowHeight } from "./useRowHeight";
+
+import tableCss from "./Table.css";
 
 const classBase = "vuuTable";
 
@@ -63,11 +67,10 @@ export interface TableProps
   dataSource: DataSource;
   disableFocus?: boolean;
   /**
-   * Pixel height of headers. If specified here, this will take precedence over CSS
-   * values and Table will not respond to density changes. Default value is 125% of
-   * rowHeight, whether set vis rowHeight prop or CSS.
+   * Allows additional custom element(s) to be embedded immediately below column headers.
+   * Could be used to present inline filters for example.
    */
-  headerHeight?: number;
+  customHeader?: CustomHeader | CustomHeader[];
   /**
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
@@ -119,6 +122,13 @@ export interface TableProps
    * TODO this should just live in CSS
    */
   selectionBookendWidth?: number;
+  /**
+   * Selection behaviour for Table:
+   * `none` selection disabled
+   * `single` no more than one row may be selected
+   * `extended` (default) multiple rows can be selected
+   * `checkbox` same behaviour as extended, with checkbox column for selection
+   */
   selectionModel?: TableSelectionModel;
   /**
    * if false, table rendered without headers. Useful when table is being included in a
@@ -138,6 +148,7 @@ const TableCore = ({
   availableColumns,
   config,
   containerRef,
+  customHeader,
   dataSource,
   disableFocus = false,
   highlightedIndex: highlightedIndexProp,
@@ -158,7 +169,6 @@ const TableCore = ({
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
-  headerHeight = showColumnHeaders ? rowHeight * 1.25 : 0,
   size,
 }: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
@@ -173,10 +183,12 @@ const TableCore = ({
     draggableRow,
     getRowOffset,
     handleContextMenuAction,
+    headerHeight,
     headings,
     highlightedIndex,
     menuBuilder,
     onDataEdited,
+    onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
@@ -197,7 +209,6 @@ const TableCore = ({
     containerRef,
     dataSource,
     disableFocus,
-    headerHeight,
     highlightedIndex: highlightedIndexProp,
     id,
     navigationStyle,
@@ -223,15 +234,17 @@ const TableCore = ({
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
   });
 
+  //TODO move TableBody into separate component
+  // we only render TableBody when we have measured TableHeader
+
   const cssVariables = {
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
     "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
-    "--header-height": `${headerHeight}px`,
     "--row-height-prop": `${rowHeight}px`,
-    "--total-header-height": `${viewportMeasurements.totalHeaderHeight}px`,
+    "--total-header-height": `${headerHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
@@ -262,7 +275,9 @@ const TableCore = ({
           {showColumnHeaders ? (
             <TableHeader
               columns={scrollProps.columnsWithinViewport}
+              customHeader={customHeader}
               headings={headings}
+              onHeightMeasured={onHeaderHeightMeasured}
               onMoveColumn={onMoveColumn}
               onMoveGroupColumn={onMoveGroupColumn}
               onRemoveGroupColumn={onRemoveGroupColumn}
@@ -274,25 +289,27 @@ const TableCore = ({
               virtualColSpan={scrollProps.virtualColSpan}
             />
           ) : null}
-          <div className={`${classBase}-body`}>
-            {data.map((data) => (
-              <Row
-                aria-rowindex={data[0] + 1}
-                classNameGenerator={rowClassNameGenerator}
-                columnMap={columnMap}
-                columns={scrollProps.columnsWithinViewport}
-                highlighted={highlightedIndex === data[IDX]}
-                key={data[RENDER_IDX]}
-                onClick={onRowClick}
-                onDataEdited={onDataEdited}
-                row={data}
-                offset={getRowOffset(data)}
-                onToggleGroup={onToggleGroup}
-                virtualColSpan={scrollProps.virtualColSpan}
-                zebraStripes={tableAttributes.zebraStripes}
-              />
-            ))}
-          </div>
+          {showColumnHeaders === false || headerHeight > 0 ? (
+            <div className={`${classBase}-body`}>
+              {data.map((data) => (
+                <Row
+                  aria-rowindex={data[0] + 1}
+                  classNameGenerator={rowClassNameGenerator}
+                  columnMap={columnMap}
+                  columns={scrollProps.columnsWithinViewport}
+                  highlighted={highlightedIndex === data[IDX]}
+                  key={data[RENDER_IDX]}
+                  onClick={onRowClick}
+                  onDataEdited={onDataEdited}
+                  row={data}
+                  offset={getRowOffset(data)}
+                  onToggleGroup={onToggleGroup}
+                  virtualColSpan={scrollProps.virtualColSpan}
+                  zebraStripes={tableAttributes.zebraStripes}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
       {draggableRow}
@@ -300,13 +317,14 @@ const TableCore = ({
   );
 };
 
-export const Table = forwardRef(function TableNext(
+export const Table = forwardRef(function Table(
   {
     Row,
     allowDragDrop,
     availableColumns,
     className: classNameProp,
     config,
+    customHeader,
     dataSource,
     disableFocus,
     highlightedIndex,
@@ -327,17 +345,23 @@ export const Table = forwardRef(function TableNext(
     selectionModel,
     showColumnHeaders,
     showColumnHeaderMenus,
-    headerHeight,
     style: styleProp,
     ...htmlAttributes
   }: TableProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table",
+    css: tableCss,
+    window: targetWindow,
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();
 
-  const { rowHeight, rowRef } = useRowHeight({ rowHeight: rowHeightProp });
+  const { rowHeight, rowRef } = useMeasuredHeight({ height: rowHeightProp });
 
   if (config === undefined) {
     throw Error(
@@ -348,6 +372,8 @@ export const Table = forwardRef(function TableNext(
     throw Error("vuu Table requires dataSource prop");
   }
 
+  // TODO render TableHeader here and measure before row construction begins
+  // TODO we could have MeasuredContainer render a Provider and make size available via a context hook ?
   return (
     <MeasuredContainer
       {...htmlAttributes}
@@ -365,9 +391,9 @@ export const Table = forwardRef(function TableNext(
           availableColumns={availableColumns}
           config={config}
           containerRef={containerRef}
+          customHeader={customHeader}
           dataSource={dataSource}
           disableFocus={disableFocus}
-          headerHeight={headerHeight}
           highlightedIndex={highlightedIndex}
           id={id}
           navigationStyle={navigationStyle}

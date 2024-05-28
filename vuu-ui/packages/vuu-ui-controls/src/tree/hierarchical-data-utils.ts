@@ -1,4 +1,4 @@
-import { NonLeafNode, NormalisedTreeSourceNode } from "./Tree";
+import { NonLeafNode, NormalisedTreeSourceNode } from "./treeTypes";
 
 export const getNodeParentPath = ({ id }: NormalisedTreeSourceNode) => {
   let pos = id.lastIndexOf("-");

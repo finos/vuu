@@ -1,4 +1,4 @@
-import { DataSourceRow, Selection } from "@finos/vuu-data-types";
+import type { DataSourceRow, Selection } from "@finos/vuu-data-types";
 import {
   ColumnMap,
   getSelectionStatus,

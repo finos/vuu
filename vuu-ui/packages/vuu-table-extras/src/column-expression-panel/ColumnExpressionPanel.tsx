@@ -1,12 +1,13 @@
-import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
-import { Dropdown } from "@finos/vuu-ui-controls";
-import {
-  getCalculatedColumnExpression,
-  getCalculatedColumnName,
-  getCalculatedColumnType,
-} from "@finos/vuu-utils";
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
+import { getCalculatedColumnDetails } from "@finos/vuu-utils";
+import {
+  Dropdown,
+  FormField,
+  FormFieldLabel,
+  Input,
+  Option,
+} from "@salt-ds/core";
 import { HTMLAttributes, useCallback, useRef } from "react";
 import {
   ColumnExpressionInput,
@@ -36,7 +37,7 @@ export const ColumnExpressionPanel = ({
   tableConfig,
   vuuTable,
 }: ColumnExpressionPanelProps) => {
-  const typeRef = useRef<HTMLDivElement>(null);
+  const typeRef = useRef<HTMLButtonElement>(null);
   const { column, onChangeExpression, onChangeName, onChangeServerDataType } =
     useColumnExpression({
       column: columnProp,
@@ -46,7 +47,7 @@ export const ColumnExpressionPanel = ({
   // The initial value to pass into the Expression Input. That is a
   // CodeMirror editor and will manage its own state once initialised.
   const initialExpressionRef = useRef<string>(
-    getCalculatedColumnExpression(column)
+    getCalculatedColumnDetails(column).expression ?? ""
   );
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
@@ -63,6 +64,8 @@ export const ColumnExpressionPanel = ({
       }
     }, []);
 
+  const { name, serverDataType } = getCalculatedColumnDetails(column);
+
   return (
     <div className={classBase}>
       <div className="vuuColumnSettingsPanel-header">
@@ -71,11 +74,7 @@ export const ColumnExpressionPanel = ({
 
       <FormField data-field="column-name">
         <FormFieldLabel>Column Name</FormFieldLabel>
-        <Input
-          className="vuuInput"
-          onChange={onChangeName}
-          value={getCalculatedColumnName(column)}
-        />
+        <Input className="vuuInput" onChange={onChangeName} value={name} />
       </FormField>
 
       <FormField data-field="column-expression">
@@ -93,10 +92,14 @@ export const ColumnExpressionPanel = ({
           className={`${classBase}-type`}
           onSelectionChange={onChangeServerDataType}
           ref={typeRef}
-          selected={getCalculatedColumnType(column) || null}
-          source={["double", "long", "string", "boolean"]}
-          width="100%"
-        />
+          selected={serverDataType ? [serverDataType] : []}
+          value={serverDataType}
+        >
+          <Option value="boolean">Boolean</Option>
+          <Option value="double">Double</Option>
+          <Option value="long">Long</Option>
+          <Option value="string">String</Option>
+        </Dropdown>
       </FormField>
     </div>
   );

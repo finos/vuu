@@ -5,7 +5,8 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
@@ -21,6 +22,7 @@
     "@finos/vuu-filter-parser": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-shell": "0.0.26",
+    "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26"
   },
   "peerDependencies": {

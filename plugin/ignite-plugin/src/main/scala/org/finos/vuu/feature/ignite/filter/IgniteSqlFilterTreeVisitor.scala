@@ -27,22 +27,25 @@ class IgniteSqlFilterTreeVisitor extends FilterBaseVisitor[IgniteSqlFilterClause
     NeqIgniteSqlFilterClause(ctx.ID().getText, ctx.scalar().getText)
 
   override def visitOperationGt(ctx: OperationGtContext): IgniteSqlFilterClause =
-    RangeIgniteSqlFilterClause(RangeOp.GT)(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+    RangeIgniteSqlFilterClause(RangeOp.GT)(ctx.ID().getText, ctx.NUMBER().getText)
 
   override def visitOperationGte(ctx: OperationGteContext): IgniteSqlFilterClause =
-    RangeIgniteSqlFilterClause(RangeOp.GTE)(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+    RangeIgniteSqlFilterClause(RangeOp.GTE)(ctx.ID().getText, ctx.NUMBER().getText)
 
   override def visitOperationLt(ctx: OperationLtContext): IgniteSqlFilterClause =
-    RangeIgniteSqlFilterClause(RangeOp.LT)(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+    RangeIgniteSqlFilterClause(RangeOp.LT)(ctx.ID().getText, ctx.NUMBER().getText)
 
   override def visitOperationLte(ctx: OperationLteContext): IgniteSqlFilterClause =
-    RangeIgniteSqlFilterClause(RangeOp.LTE)(ctx.ID().getText, ctx.NUMBER().getText.toDouble)
+    RangeIgniteSqlFilterClause(RangeOp.LTE)(ctx.ID().getText, ctx.NUMBER().getText)
 
   override def visitOperationStarts(ctx: OperationStartsContext): IgniteSqlFilterClause =
-    StartsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+    RegexIgniteSqlFilterClause(RegexOp.Starts)(ctx.ID().getText, ctx.STRING().getText)
 
   override def visitOperationEnds(ctx: OperationEndsContext): IgniteSqlFilterClause =
-    EndsIgniteSqlFilterClause(ctx.ID().getText, ctx.STRING().getText)
+    RegexIgniteSqlFilterClause(RegexOp.Ends)(ctx.ID().getText, ctx.STRING().getText)
+
+  override def visitOperationContains(ctx: OperationContainsContext): IgniteSqlFilterClause =
+    RegexIgniteSqlFilterClause(RegexOp.Contains)(ctx.ID().getText, ctx.STRING().getText)
 
   override def visitOperationIn(ctx: OperationInContext): IgniteSqlFilterClause = {
     InIgniteSqlFilterClause(ctx.ID().getText, FilterTreeVisitor.operationInValues(ctx))

@@ -1,0 +1,13 @@
+{
+  "name": "esbuild-plugin-inline-css",
+  "version": "1.0.0",
+  "private": true,
+  "module": "src/index.js",
+  "files": [
+    "README.md"
+  ],
+  "peerDependencies": {
+    "esbuild": "0.20.1"
+  },
+  "type": "module"
+}

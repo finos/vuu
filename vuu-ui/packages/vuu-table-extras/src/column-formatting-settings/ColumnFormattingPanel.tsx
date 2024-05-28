@@ -4,7 +4,6 @@ import {
   ColumnTypeRendering,
   FormattingSettingsProps,
 } from "@finos/vuu-table-types";
-import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   CellRendererDescriptor,
   ConfigurationEditorProps,
@@ -13,9 +12,9 @@ import {
   isColumnTypeRenderer,
   isTypeDescriptor,
 } from "@finos/vuu-utils";
-import { FormField, FormFieldLabel } from "@salt-ds/core";
+import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
 import cx from "clsx";
-import { HTMLAttributes, useCallback, useMemo } from "react";
+import { HTMLAttributes, SyntheticEvent, useCallback, useMemo } from "react";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { LongTypeFormattingSettings } from "./LongTypeFormattingSettings";
 
@@ -28,8 +27,6 @@ export interface ColumnFormattingPanelProps
   column: ColumnDescriptor;
   onChangeRendering: (renderProps: ColumnTypeRendering) => void;
 }
-
-const itemToString = (item: CellRendererDescriptor) => item.label ?? item.name;
 
 export const ColumnFormattingPanel = ({
   availableRenderers,
@@ -76,10 +73,11 @@ export const ColumnFormattingPanel = ({
     return configuredRenderer ?? defaultRenderer;
   }, [availableRenderers, column]);
 
-  const handleChangeRenderer = useCallback<
-    SingleSelectionHandler<CellRendererDescriptor>
-  >(
-    (_, cellRendererDescriptor) => {
+  const handleChangeRenderer = useCallback(
+    (
+      _e: SyntheticEvent,
+      [cellRendererDescriptor]: CellRendererDescriptor[]
+    ) => {
       const renderProps: ColumnTypeRendering = {
         name: cellRendererDescriptor.name,
       };
@@ -100,12 +98,16 @@ export const ColumnFormattingPanel = ({
         </FormFieldLabel>
         <Dropdown<CellRendererDescriptor>
           className={cx(`${classBase}-renderer`)}
-          itemToString={itemToString}
           onSelectionChange={handleChangeRenderer}
-          selected={selectedCellRenderer}
-          source={availableRenderers}
-          width="100%"
-        />
+          selected={selectedCellRenderer ? [selectedCellRenderer] : []}
+          value={selectedCellRenderer?.label ?? selectedCellRenderer?.name}
+        >
+          {availableRenderers.map((cellRenderer, i) => (
+            <Option key={i} value={cellRenderer}>
+              {cellRenderer.label ?? cellRenderer.name}
+            </Option>
+          ))}
+        </Dropdown>
       </FormField>
       <div
         className={cx(classBase, className, `${classBase}-${serverDataType}`)}

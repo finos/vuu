@@ -6,7 +6,8 @@
   "license": "Apache-2.0",
   "types": "src/index.ts",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
@@ -17,6 +18,9 @@
     "@finos/vuu-protocol-types": "0.0.26"
   },
   "peerDependencies": {
+    "@internationalized/date": "^3.0.0",
+    "@finos/vuu-filter-parser": "0.0.26",
+    "clsx": "^2.0.0",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   },

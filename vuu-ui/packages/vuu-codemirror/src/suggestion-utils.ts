@@ -1,5 +1,7 @@
-import { AnnotationType, Completion, EditorView } from "@finos/vuu-codemirror";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { Completion } from "@codemirror/autocomplete";
+import { AnnotationType } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { isNumericColumn } from "@finos/vuu-utils";
 
 export interface VuuCompletion extends Completion {
@@ -70,6 +72,7 @@ export const equalityOperators: Completion[] = [
 export const stringOperators: Completion[] = [
   ...equalityOperators,
   { label: "in", boost: 6, type: "operator" },
+  { label: "contains", boost: 5, type: "operator" },
   { label: "starts", boost: 5, type: "operator" },
   { label: "ends", boost: 4, type: "operator" },
 ];

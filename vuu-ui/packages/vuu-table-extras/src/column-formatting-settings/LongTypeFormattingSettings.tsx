@@ -5,16 +5,25 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { isDateTimeColumn, isTypeDescriptor } from "@finos/vuu-utils";
 import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { FormattingSettingsProps } from "@finos/vuu-table-types";
 
-import "./LongTypeFormattingSettings.css";
+import longTypeFormattingSettingsCss from "./LongTypeFormattingSettings.css";
 
 const classBase = "vuuLongColumnFormattingSettings";
 
 export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-long-formatting-settings",
+    css: longTypeFormattingSettingsCss,
+    window: targetWindow,
+  });
+
   const { column, onChangeColumnType: onChangeType } = props;
   const type = isTypeDescriptor(column.type) ? column.type.name : column.type;
 

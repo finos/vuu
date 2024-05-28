@@ -1,8 +1,10 @@
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ForwardedRef, forwardRef } from "react";
 import { VuuInput, VuuInputProps } from "../vuu-input";
 
-import "./ExpandoInput.css";
+import expandoInputCss from "./ExpandoInput.css";
 
 const classBase = "vuuExpandoInput";
 
@@ -23,6 +25,13 @@ export const ExpandoInput = forwardRef(function ExpandoInput(
   }: ExpandoInputProps,
   forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-expando-input",
+    css: expandoInputCss,
+    window: targetWindow,
+  });
+
   return (
     <div
       className={cx(classBase, classNameProp, {

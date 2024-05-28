@@ -1,22 +1,22 @@
 import { instrumentsData } from "./instruments";
 import { pricesData } from "./prices";
 
-export type ask = number;
-export type askSize = number;
-export type bbg = string;
-export type bid = number;
-export type bidSize = number;
-export type close = number;
-export type currency = string;
-export type description = string;
-export type exchange = string;
-export type isin = string;
-export type last = number;
-export type lotSize = number;
-export type open = number;
-export type phase = string;
-export type ric = string;
-export type scenario = string;
+type ask = number;
+type askSize = number;
+type bbg = string;
+type bid = number;
+type bidSize = number;
+type close = number;
+type currency = string;
+type description = string;
+type exchange = string;
+type isin = string;
+type last = number;
+type lotSize = number;
+type open = number;
+type phase = string;
+type ric = string;
+type scenario = string;
 
 export type InstrumentPricesDataRow = [
   ask,
@@ -87,7 +87,7 @@ for (let i = 0; i < instrumentsData.length; i++) {
   ]);
 }
 
+export { instrumentPrices };
+
 // const end = performance.now();
 // console.log(`generating 100,000 instrumentPrices took ${end - start} ms`);
-
-export default instrumentPrices;

@@ -97,7 +97,6 @@ export interface TableHookProps
       | "scrollingApiRef"
     > {
   containerRef: RefObject<HTMLDivElement>;
-  headerHeight: number;
   rowHeight: number;
   selectionModel: TableSelectionModel;
   size: MeasuredSize;
@@ -126,7 +125,6 @@ export const useTable = ({
   containerRef,
   dataSource,
   disableFocus,
-  headerHeight = 25,
   highlightedIndex: highlightedIndexProp,
   id,
   navigationStyle = "cell",
@@ -145,6 +143,7 @@ export const useTable = ({
   selectionModel,
   size,
 }: TableHookProps) => {
+  const [headerHeight, setHeaderHeight] = useState(0);
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -169,7 +168,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel(config, dataSource);
+  } = useTableModel(config, dataSource, selectionModel);
 
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
@@ -219,7 +218,6 @@ export const useTable = ({
   } = useTableViewport({
     columns,
     headerHeight,
-    headings,
     rowCount,
     rowHeight,
     size: size,
@@ -644,6 +642,10 @@ export const useTable = ({
     [dataRef, onDragStart]
   );
 
+  const onHeaderHeightMeasured = useCallback((height: number) => {
+    setHeaderHeight(height);
+  }, []);
+
   // Drag Drop rows
   const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
     useRowDragDrop({
@@ -672,11 +674,13 @@ export const useTable = ({
     data,
     getRowOffset,
     handleContextMenuAction,
+    headerHeight,
     headings,
     highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
     onContextMenu,
     onDataEdited: handleDataEdited,
+    onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,

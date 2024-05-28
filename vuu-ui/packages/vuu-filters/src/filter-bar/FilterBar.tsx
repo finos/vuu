@@ -1,18 +1,23 @@
 import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
 import { Filter, FilterState } from "@finos/vuu-filter-types";
-import { PopupComponent as Popup, Portal, Prompt } from "@finos/vuu-popups";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { Icon } from "@finos/vuu-ui-controls";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, ReactElement, useRef } from "react";
+import { HTMLAttributes, ReactElement, useMemo } from "react";
+import { CustomFilters } from "../custom-filters";
 import { FilterClauseProps } from "../filter-clause";
-import { FilterEditor } from "../filter-editor";
-import { FilterPill } from "../filter-pill";
-import { FilterBarMenu } from "./FilterBarMenu";
-import { useFilterBar } from "./useFilterBar";
+import { QuickFilters } from "../quick-filters";
+import { FilterMode, useFilterBar } from "./useFilterBar";
 
-import "./FilterBar.css";
-import { FilterModel } from "../FilterModel";
+import filterBarCss from "./FilterBar.css";
+
+export type FilterBarVariant =
+  | "custom-filters"
+  | "quick-filters"
+  | "full-filters";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   FilterClauseEditorProps?: Partial<FilterClauseProps>;
@@ -22,13 +27,18 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
    *       might end up with infinite state updates.
    */
   columnDescriptors: ColumnDescriptor[];
+  defaultFilterMode?: FilterMode;
   defaultFilterState?: FilterState;
+  filterMode?: FilterMode;
   filterState?: FilterState;
   onApplyFilter: (filter: DataSourceFilter) => void;
+  onChangeFilterMode?: (filterMode: FilterMode) => void;
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
+  quickFilterColumns?: string[];
   tableSchema?: TableSchema;
+  variant?: FilterBarVariant;
 }
 
 const classBase = "vuuFilterBar";
@@ -37,115 +47,115 @@ export const FilterBar = ({
   FilterClauseEditorProps,
   className: classNameProp,
   columnDescriptors,
+  defaultFilterMode,
   defaultFilterState,
+  filterMode: filterModeProp,
   filterState,
   onApplyFilter,
+  onChangeFilterMode: onChangeFilterModeProp,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
+  quickFilterColumns,
   tableSchema,
+  variant = "custom-filters",
   ...htmlAttributes
 }: FilterBarProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const {
-    activeFilterIndex,
-    addButtonProps,
-    columnsByName,
-    filters,
-    interactedFilterState,
-    onCancelEdit,
-    onSave,
-    pillProps,
-    promptProps,
-  } = useFilterBar({
-    containerRef: rootRef,
-    columnDescriptors,
-    defaultFilterState,
-    filterState,
-    onApplyFilter,
-    onFilterStateChanged,
-    onFilterDeleted,
-    onFilterRenamed,
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-bar",
+    css: filterBarCss,
+    window: targetWindow,
+  });
+
+  const allowCustomFilters = variant !== "quick-filters";
+  const allowQuickFilters = variant !== "custom-filters";
+
+  const controlledFilterMode: FilterMode | undefined = !allowCustomFilters
+    ? "quick-filter"
+    : !allowQuickFilters
+    ? "custom-filter"
+    : filterModeProp;
+
+  const { filterMode, onChangeFilterMode } = useFilterBar({
+    defaultFilterMode,
+    filterMode: controlledFilterMode,
+    onChangeFilterMode: onChangeFilterModeProp,
   });
 
   const className = cx(classBase, classNameProp);
 
-  const indexOfFilterBeingRenamed =
-    interactedFilterState?.state === "rename"
-      ? interactedFilterState.index
-      : -1;
+  const quickFilterColumnDescriptors = useMemo(
+    () =>
+      allowQuickFilters
+        ? columnDescriptors.filter((col) =>
+            quickFilterColumns?.includes(col.name)
+          )
+        : [],
+    [allowQuickFilters, columnDescriptors, quickFilterColumns]
+  );
 
-  const filterModel =
-    interactedFilterState?.state === "edit" ||
-    interactedFilterState?.state === "create"
-      ? new FilterModel(interactedFilterState.filter)
-      : undefined;
-
-  const getChildren = () => {
-    const items: ReactElement[] = [];
-    filters.forEach((filter, i) => {
-      items.push(
-        <FilterPill
-          {...pillProps}
-          editing={indexOfFilterBeingRenamed === i}
-          columnsByName={columnsByName}
-          data-index={i}
-          filter={filter}
-          key={`filter-${i}`}
-          selected={activeFilterIndex.includes(i)}
-        />
+  const getToggleButtons = () => {
+    const toggleButtons: ReactElement[] = [];
+    if (allowCustomFilters) {
+      toggleButtons.push(
+        <ToggleButton
+          className="vuuIconToggleButton"
+          key="custom-filter"
+          value="custom-filter"
+          aria-label="Custom filters"
+          tabIndex={-1}
+        >
+          <Icon name="grid" size={24} />
+        </ToggleButton>
       );
-    });
-    return items;
+    }
+
+    if (allowQuickFilters) {
+      toggleButtons.push(
+        <ToggleButton
+          className="vuuIconToggleButton"
+          key="quick-filter"
+          value="quick-filter"
+          aria-label="Quick filters"
+          tabIndex={-1}
+        >
+          <Icon name="tune" size={24} />
+        </ToggleButton>
+      );
+    }
+
+    return toggleButtons;
   };
 
   return (
-    <div {...htmlAttributes} className={className} ref={rootRef}>
-      <FilterBarMenu />
-      <>
-        <div className={`${classBase}-filters`}>{getChildren()}</div>
-        <IconButton
-          {...addButtonProps}
-          className={cx("vuuIconButton", `${classBase}-add`)}
-          data-selectable={false}
-          icon="plus"
-          key="filter-add"
-          tabIndex={0}
-          variant="primary"
-        />
-      </>
+    <div
+      {...htmlAttributes}
+      className={cx(className, `${classBase}-${filterMode}`)}
+    >
+      <ToggleButtonGroup
+        data-variant="primary"
+        onChange={onChangeFilterMode}
+        value={filterMode}
+      >
+        {getToggleButtons()}
+      </ToggleButtonGroup>
 
-      {filterModel && tableSchema && (
-        <Portal>
-          <Popup
-            anchorElement={rootRef}
-            offsetTop={-10}
-            offsetLeft={20}
-            placement="below"
-          >
-            <FilterEditor
-              FilterClauseEditorProps={FilterClauseEditorProps}
-              columnDescriptors={columnDescriptors}
-              key="filter-editor"
-              onCancel={onCancelEdit}
-              onSave={onSave}
-              filter={interactedFilterState?.filter}
-              tableSchema={tableSchema}
-            />
-          </Popup>
-        </Portal>
+      {filterMode === "custom-filter" ? (
+        <CustomFilters
+          FilterClauseEditorProps={FilterClauseEditorProps}
+          columnDescriptors={columnDescriptors}
+          defaultFilterState={defaultFilterState}
+          filterState={filterState}
+          onApplyFilter={onApplyFilter}
+          onFilterDeleted={onFilterDeleted}
+          onFilterRenamed={onFilterRenamed}
+          onFilterStateChanged={onFilterStateChanged}
+          tableSchema={tableSchema}
+        />
+      ) : (
+        <QuickFilters columns={quickFilterColumnDescriptors} />
       )}
-
-      {promptProps ? (
-        <Prompt
-          {...promptProps}
-          PopupProps={{
-            anchorElement: rootRef,
-            offsetTop: 16,
-            placement: "below-center",
-          }}
-        />
-      ) : null}
     </div>
   );
 };

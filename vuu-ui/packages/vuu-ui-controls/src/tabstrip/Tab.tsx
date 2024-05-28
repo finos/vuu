@@ -1,7 +1,9 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
-import { useForkRef } from "@salt-ds/core";
-import cx from "clsx";
 import { MenuActionHandler } from "@finos/vuu-data-types";
+import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
   FocusEvent,
   ForwardedRef,
@@ -16,7 +18,7 @@ import { EditableLabel, EditableLabelProps } from "../editable-label";
 import { TabMenu } from "./TabMenu";
 import { TabProps } from "./TabsTypes";
 
-import "./Tab.css";
+import tabCss from "./Tab.css";
 
 const classBase = "vuuTab";
 
@@ -54,6 +56,13 @@ export const Tab = forwardRef(function Tab(
   if (showMenuButton && typeof onMenuAction !== "function") {
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
   }
+
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tabstrip-tab",
+    css: tabCss,
+    window: targetWindow,
+  });
 
   const rootRef = useRef<HTMLDivElement>(null);
   const editableRef = useRef<HTMLDivElement>(null);

@@ -6,10 +6,12 @@ import {
 } from "@finos/vuu-utils";
 import { HTMLAttributes, memo, useMemo, useRef } from "react";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
 const classBase = "vuuPriceTicker";
 
-import "./PriceTicker.css";
+import priceTickerCss from "./PriceTicker.css";
 
 const getValueFormatter = (decimals: number) =>
   numericFormatter({
@@ -39,6 +41,13 @@ export const PriceTicker = memo(
     showArrow,
     ...htmlAttributes
   }: PriceTickerProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-price-ticker",
+      css: priceTickerCss,
+      window: targetWindow,
+    });
+
     const ref = useRef<State>(INITIAL_VALUE);
     const [prevValue, prevDirection] = ref.current;
     const formatNumber = useMemo(() => getValueFormatter(decimals), [decimals]);

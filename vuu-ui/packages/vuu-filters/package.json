@@ -6,25 +6,32 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
     "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26",
     "@finos/vuu-table-types": "0.0.26",
     "@finos/vuu-filter-types": "0.0.26",
     "@types/uuid": "^9.0.2"
   },
   "dependencies": {
-    "@finos/vuu-codemirror": "0.0.26",
     "@finos/vuu-data-react": "0.0.26",
+    "@finos/vuu-filter-parser": "0.0.26",
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
+    "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@salt-ds/core": "1.17.0",
+    "@salt-ds/core": "1.27.1",
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1",
     "uuid": "9.0.0"
   },
   "peerDependencies": {
+    "@internationalized/date": "^3.0.0",
+    "clsx": "^2.0.0",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   }

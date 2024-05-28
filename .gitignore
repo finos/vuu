@@ -38,4 +38,4 @@ website-desktop/package-lock.json
 
 # Generated docs
 docs/contributing.md
-vuu-ui/packages/vuu-data/src/inlined-worker.js
+vuu-ui/packages/vuu-data-remote/src/inlined-worker.js

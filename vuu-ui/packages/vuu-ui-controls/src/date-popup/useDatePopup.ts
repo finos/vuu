@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { OpenChangeHandler } from "../dropdown";
+import { OpenChangeHandler } from "../dropdown-base";
 import { DateValue } from "@internationalized/date";
 import { DatePopupProps } from "./DatePopup";
 

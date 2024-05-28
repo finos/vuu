@@ -72,6 +72,8 @@ const agToSingleValueVuuFilterType = (
   type: string
 ): SingleValueFilterClauseOp => {
   switch (type) {
+    case "contains":
+      return "contains";
     case "startsWith":
       return "starts";
     case "greaterThan":

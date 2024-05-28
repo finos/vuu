@@ -1,53 +1,34 @@
 import { useForkRef, useIdMemo as useId } from "@salt-ds/core";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   ForwardedRef,
-  forwardRef,
   HTMLAttributes,
   MouseEvent,
+  forwardRef,
   useRef,
 } from "react";
 import { closestListItemIndex } from "./list-dom-utils";
+import { isExpanded } from "./treeTypeUtils";
+import type { NormalisedTreeSourceNode, TreeSourceNode } from "./treeTypes";
 import { useItemsWithIds } from "./use-items-with-ids";
 import {
   GroupSelection,
-  groupSelectionEnabled,
   TreeNodeSelectionHandler,
   TreeSelection,
+  groupSelectionEnabled,
 } from "./use-selection";
 import { useViewportTracking } from "./use-viewport-tracking";
 import { useTree } from "./useTree";
 
-import "./Tree.css";
+import treeCss from "./Tree.css";
 
 const classBase = "vuuTree";
 
 type Indexer = {
   value: number;
 };
-
-export interface TreeSourceNode {
-  id: string;
-  icon?: string;
-  header?: boolean;
-  label: string;
-  childNodes?: TreeSourceNode[];
-}
-export interface NormalisedTreeSourceNode extends TreeSourceNode {
-  childNodes?: NormalisedTreeSourceNode[];
-  count: number;
-  expanded?: boolean;
-  index: number;
-  level: number;
-}
-
-export interface NonLeafNode extends NormalisedTreeSourceNode {
-  childNodes: NormalisedTreeSourceNode[];
-}
-
-export const isExpanded = (
-  node: NormalisedTreeSourceNode
-): node is NonLeafNode => node.expanded === true;
 
 export interface TreeNodeProps extends HTMLAttributes<HTMLLIElement> {
   idx?: number;
@@ -70,7 +51,7 @@ export interface TreeProps extends HTMLAttributes<HTMLUListElement> {
   source: TreeSourceNode[];
 }
 
-const Tree = forwardRef(function Tree(
+export const Tree = forwardRef(function Tree(
   {
     allowDragDrop,
     className,
@@ -87,6 +68,13 @@ const Tree = forwardRef(function Tree(
   }: TreeProps,
   forwardedRef: ForwardedRef<HTMLUListElement>
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-tree",
+    css: treeCss,
+    window: targetWindow,
+  });
+
   const id = useId(idProp);
   const rootRef = useRef<HTMLUListElement>(null);
   // returns the full source data
@@ -266,4 +254,3 @@ const getListItemProps = (
 });
 
 Tree.displayName = "Tree";
-export default Tree;

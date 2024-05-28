@@ -1,6 +1,5 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
 import { TableSchema } from "@finos/vuu-data-types";
-import { registerComponent } from "@finos/vuu-layout";
 import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   FeatureConfig,
@@ -15,6 +14,7 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
+import { registerComponent } from "@finos/vuu-utils";
 import { FilterTableFeatureProps } from "feature-vuu-filter-table";
 import { CSSProperties, useMemo } from "react";
 
@@ -23,7 +23,7 @@ import "./NewTheme.examples.css";
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
-const user = { username: "test-user", token: "test-token" };
+const user = { username: "why-the-lucky-stiff", token: "test-token" };
 const schemas = getAllSchemas();
 
 let displaySequence = 1;
@@ -157,7 +157,7 @@ const ShellWithNewTheme = () => {
 
 export const ShellWithNewThemeAndLayoutManagement = () => {
   document.cookie = `vuu-username=${user.username}`;
-  
+
   return (
     <NotificationsProvider>
       <LayoutManagementProvider>

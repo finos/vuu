@@ -17,16 +17,17 @@ import org.scalatest.matchers.should.Matchers
 
 class DataTableTest extends AnyFeatureSpec with Matchers {
 
-  implicit val timeProvider: Clock = new DefaultClock
+  private implicit val timeProvider: Clock = new DefaultClock
+  private implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  private implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
+
+  private val joinProvider = JoinTableProviderImpl()
+  private val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
   Feature("Test data table functionality"){
 
     Scenario("When we tick a value through our mock provider, check it arrives in our listener"){
 
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics = new MetricsProviderImpl
-
-      val joinProvider   = JoinTableProviderImpl()
       val tableContainer = new TableContainer(joinProvider)
       val outQueue          = new OutboundRowPublishQueue()
       val providerContainer = new ProviderContainer(joinProvider)
@@ -34,8 +35,6 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       pluginRegistry.registerPlugin(new VuuInMemPlugin)
 
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
-
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
       val table = new InMemDataTable(pricesDef, joinProvider)
 
@@ -56,6 +55,28 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       val viewPortUpdate = combineQs(viewPort)
 
       viewPortUpdate(1).key.key should equal( "VOD.L")
+    }
+  }
+
+
+  Feature("hasRowChanged") {
+    val key = "VOD.L"
+    val row = RowWithData(key, Map("ric" -> "VOD.L", "bid" -> 210))
+    val table = new InMemDataTable(pricesDef, joinProvider)
+    table.processUpdate(key, row, timeProvider.now())
+
+    Scenario("WHEN row has changed at a given key THEN should return true") {
+      val newRowAtSameKey = row.copy(data = row.data ++ Map("bid" -> 300))
+      table.hasRowChanged(newRowAtSameKey) should equal(true)
+    }
+
+    Scenario("WHEN row stays the same but key changes THEN should return true") {
+      val sameRowAtDifferentKey = row.copy(key = key + "DIFF")
+      table.hasRowChanged(sameRowAtDifferentKey) should equal(true)
+    }
+
+    Scenario("WHEN row hasn't changed at a given key THEN should return true") {
+      table.hasRowChanged(row.copy()) should equal(false)
     }
   }
 

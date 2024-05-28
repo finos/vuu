@@ -1,7 +1,13 @@
 import { Flexbox } from "@finos/vuu-layout";
 import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
-import { Density, ThemeMode, ThemeProvider } from "@finos/vuu-utils";
-import { Button, Text, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { Density, ThemeMode } from "@finos/vuu-utils";
+import {
+  Button,
+  SaltProvider,
+  Text,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
@@ -48,9 +54,9 @@ type DensityDescriptor = { label?: string; id: Density };
 
 const availableThemes: ThemeDescriptor[] = [
   { id: "no-theme", label: "No Theme" },
-  { id: "salt", label: "Salt" },
-  { id: "vuu", label: "Vuu" },
-  { id: "tar", label: "Tar" },
+  { id: "salt-theme", label: "Salt" },
+  { id: "vuu-theme", label: "Vuu" },
+  { id: "tar-theme", label: "Tar" },
 ];
 
 const availableThemeModes: ThemeModeDescriptor[] = [
@@ -108,12 +114,7 @@ export const App = ({ stories }: AppProps) => {
   }, []);
 
   return (
-    <ThemeProvider
-      applyThemeClasses
-      density="high"
-      theme="vuu"
-      themeMode="light"
-    >
+    <SaltProvider density="high" theme="vuu-theme" mode="light">
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
       >
@@ -130,77 +131,71 @@ export const App = ({ stories }: AppProps) => {
             revealSelected
             source={source}
           />
-          <ThemeProvider
-            density={density.id}
-            theme={theme.id}
-            themeMode={themeMode.id}
+          <Flexbox
+            className="ShowcaseContentContainer"
+            resizeable
+            style={{ flexDirection: "column", flex: "1 1 auto" }}
           >
-            <Flexbox
-              className="ShowcaseContentContainer"
-              resizeable
-              style={{ flexDirection: "column", flex: "1 1 auto" }}
+            <div
+              className="vuuToolbarProxy ShowcaseContentToolbar"
+              style={{
+                height: 30,
+              }}
+              data-mode="light"
             >
-              <div
-                className="vuuToolbarProxy ShowcaseContentToolbar"
-                style={{
-                  height: 30,
-                }}
-                data-mode="light"
+              <ToggleButtonGroup
+                className="vuuToggleButtonGroup"
+                data-variant="primary"
+                onChange={handleThemeChange}
+                value={themeIndex}
               >
-                <ToggleButtonGroup
-                  className="vuuToggleButtonGroup"
-                  data-variant="primary"
-                  onChange={handleThemeChange}
-                  value={themeIndex}
-                >
-                  <ToggleButton value={0}>No Theme</ToggleButton>
-                  <ToggleButton value={1}>SALT</ToggleButton>
-                  <ToggleButton value={2}>VUU</ToggleButton>
-                  <ToggleButton value={3}>TAR</ToggleButton>
-                </ToggleButtonGroup>
+                <ToggleButton value={0}>No Theme</ToggleButton>
+                <ToggleButton value={1}>SALT</ToggleButton>
+                <ToggleButton value={2}>VUU</ToggleButton>
+                <ToggleButton value={3}>TAR</ToggleButton>
+              </ToggleButtonGroup>
 
-                <ThemeSwitch
-                  className="vuuToggleButtonGroup"
-                  data-variant="primary"
-                  onChange={handleThemeModeSwitch}
-                ></ThemeSwitch>
+              <ThemeSwitch
+                className="vuuToggleButtonGroup"
+                data-variant="primary"
+                onChange={handleThemeModeSwitch}
+              ></ThemeSwitch>
 
-                <ToggleButtonGroup
-                  className="vuuToggleButtonGroup"
-                  data-variant="primary"
-                  onChange={handleDensityChange}
-                  value={densityIndex}
-                >
-                  <ToggleButton value={0}>High</ToggleButton>
-                  <ToggleButton value={1}>Medium</ToggleButton>
-                  <ToggleButton value={2}>Low</ToggleButton>
-                  <ToggleButton value={3}>Touch</ToggleButton>
-                </ToggleButtonGroup>
-
-                <Button
-                  data-align="end"
-                  data-icon="open-in"
-                  onClick={launchStandaloneWindow}
-                  variant="secondary"
-                />
-              </div>
-              <div
-                className={`ShowcaseContent`}
-                style={{
-                  flex: "1 1 auto",
-                  position: "relative",
-                }}
+              <ToggleButtonGroup
+                className="vuuToggleButtonGroup"
+                data-variant="primary"
+                onChange={handleDensityChange}
+                value={densityIndex}
               >
-                <IFrame
-                  theme={theme.id}
-                  themeMode={themeMode.id}
-                  density={density.id}
-                />
-              </div>
-            </Flexbox>
-          </ThemeProvider>
+                <ToggleButton value={0}>High</ToggleButton>
+                <ToggleButton value={1}>Medium</ToggleButton>
+                <ToggleButton value={2}>Low</ToggleButton>
+                <ToggleButton value={3}>Touch</ToggleButton>
+              </ToggleButtonGroup>
+
+              <Button
+                data-align="end"
+                data-icon="open-in"
+                onClick={launchStandaloneWindow}
+                variant="secondary"
+              />
+            </div>
+            <div
+              className={`ShowcaseContent`}
+              style={{
+                flex: "1 1 auto",
+                position: "relative",
+              }}
+            >
+              <IFrame
+                theme={theme.id}
+                themeMode={themeMode.id}
+                density={density.id}
+              />
+            </div>
+          </Flexbox>
         </Flexbox>
       </Flexbox>
-    </ThemeProvider>
+    </SaltProvider>
   );
 };

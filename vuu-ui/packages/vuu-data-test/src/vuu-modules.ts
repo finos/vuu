@@ -1,7 +1,7 @@
-import { DataSource, SuggestionFetcher } from "@finos/vuu-data-types";
-import basketModule from "./basket/basket-module";
+import type { DataSource, SuggestionFetcher } from "@finos/vuu-data-types";
+import { basketModule } from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
-import simulModule from "./simul/simul-module";
+import { simulModule } from "./simul/simul-module";
 import { SimulTableName } from "./simul/simul-schemas";
 import testModule from "./test/test-module";
 import { TestTableName } from "./test/test-schemas";

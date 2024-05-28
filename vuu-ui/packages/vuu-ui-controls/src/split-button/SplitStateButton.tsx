@@ -1,8 +1,10 @@
 import { SplitButton, SplitButtonProps } from "./SplitButton";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { forwardRef } from "react";
 
-import "./SplitStateButton.css";
+import splitStateButtonCss from "./SplitStateButton.css";
 
 const classBase = "vuuSplitStateButton";
 
@@ -17,6 +19,13 @@ export const SplitStateButton = forwardRef<
   { className, selected, ...splitButtonProps },
   forwardedRef
 ) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-split-state-button",
+    css: splitStateButtonCss,
+    window: targetWindow,
+  });
+
   return (
     <SplitButton
       {...splitButtonProps}

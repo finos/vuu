@@ -1,23 +1,24 @@
-import { uuid } from "@finos/vuu-utils";
 import {
   List,
   ListItem,
   ListItemProps,
   ListProps,
 } from "@finos/vuu-ui-controls";
+import { registerComponent, uuid } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
-  cloneElement,
   HTMLAttributes,
-  memo,
   MouseEvent,
   ReactElement,
+  cloneElement,
+  memo,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View, ViewProps } from "../layout-view";
-import { registerComponent } from "../registry/ComponentRegistry";
 
-import "./Palette.css";
+import paletteCss from "./Palette.css";
 
 const clonePaletteItem = (paletteItem: HTMLElement) => {
   const dolly = paletteItem.cloneNode(true) as HTMLElement;
@@ -45,6 +46,13 @@ export const PaletteItem = memo(
     closeable,
     ...props
   }: PaletteItemProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-palette",
+      css: paletteCss,
+      window: targetWindow,
+    });
+
     return (
       <ListItem
         className={cx("vuuPaletteItem", className)}

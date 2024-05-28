@@ -6,17 +6,24 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
+  "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-protocol-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26"
+  },
   "dependencies": {
-    "@salt-ds/core": "1.17.0",
+    "@salt-ds/core": "1.27.1",
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1",
     "@finos/vuu-data-remote": "0.0.26",
     "@finos/vuu-icons": "0.0.26",
-    "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
+    "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-table": "0.0.26",
-    "@finos/vuu-table-extras": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "html-to-image": "^1.11.11"

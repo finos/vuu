@@ -5,7 +5,7 @@ import "cypress-axe";
 import { Options } from "cypress-axe";
 // import { PerformanceResult, PerformanceTester } from "./PerformanceTester";
 import { ReactNode } from "react";
-import { ThemeProvider } from "@finos/vuu-utils";
+import { SaltProvider } from "@salt-ds/core";
 
 const SupportedThemeModeValues = ["light", "dark"] as const;
 type SupportedThemeMode = (typeof SupportedThemeModeValues)[number];
@@ -99,9 +99,9 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("mount", function (children, options) {
   return cypressMount(
-    <ThemeProvider density="high" theme="vuu">
+    <SaltProvider density="high" theme="vuu-theme">
       {children},
-    </ThemeProvider>,
+    </SaltProvider>,
     options
   );
 });

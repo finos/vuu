@@ -3,9 +3,10 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
+import { cssInline } from "./tools/vite-plugin-inline-css/src";
 
 const viteConfig: UserConfig = {
-  plugins: [react(), tsconfigPaths() /*, IstanbulPlugin()*/],
+  plugins: [react(), tsconfigPaths(), /*, IstanbulPlugin()*/ cssInline()],
   server: {
     watch: {
       ignored: ["**/coverage"],
@@ -53,22 +54,5 @@ export default defineConfig({
     },
     specPattern: "packages/**/src/**/*.cy.{js,ts,jsx,tsx}",
     indexHtmlFile: "cypress/support/component/component-index.html",
-  },
-
-  e2e: {
-    baseUrl: "http://localhost:4173/",
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-      on("task", {
-        log(message: string) {
-          console.log(message);
-
-          return null;
-        },
-      });
-    },
-    chromeWebSecurity: false,
-    defaultCommandTimeout: 10000,
   },
 });

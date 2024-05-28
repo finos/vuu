@@ -6,8 +6,10 @@ import {
 } from "@finos/vuu-data-types";
 import { useMemo } from "react";
 import cx from "clsx";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-import "./FilterPillMenu.css";
+import filterPillMenuCss from "./FilterPillMenu.css";
 import {
   closeCommand,
   deleteCommand,
@@ -44,6 +46,13 @@ export const FilterPillMenu = ({
   onMenuAction,
   onMenuClose,
 }: FilterPillMenuProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-pill-menu",
+    css: filterPillMenuCss,
+    window: targetWindow,
+  });
+
   const [menuBuilder, menuOptions] = useMemo(
     (): [MenuBuilder, FilterMenuOptions] => [
       (_location, options) => {

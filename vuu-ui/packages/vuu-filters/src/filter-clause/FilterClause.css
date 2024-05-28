@@ -20,6 +20,11 @@
   min-width: calc(var(--salt-size-base) * 4);
   padding: 0 var(--salt-spacing-100);
   width: fit-content;
+
+
+  .saltComboBox-focused {
+    outline: none;
+  }
 }
 
 .vuuFilterClause:focus-within {

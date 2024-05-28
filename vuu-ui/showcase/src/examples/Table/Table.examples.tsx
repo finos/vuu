@@ -10,7 +10,6 @@ import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
-  registerComponent,
   View,
 } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
@@ -30,7 +29,7 @@ import { Toolbar } from "@finos/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
-  registerComponent as registerCellRenderer,
+  registerComponent,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
@@ -48,7 +47,6 @@ import "./Table.examples.css";
 let displaySequence = 1;
 
 export const TestTable = ({
-  headerHeight = 25,
   height = 625,
   renderBufferSize = 5,
   rowCount = 1000,
@@ -79,7 +77,6 @@ export const TestTable = ({
     <Table
       config={config}
       dataSource={dataSource}
-      headerHeight={headerHeight}
       height={height}
       renderBufferSize={renderBufferSize}
       rowHeight={rowHeight}
@@ -247,7 +244,9 @@ export const EditableTableArrayData = () => {
     []
   );
 
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
+  const tableProps = useMemo<
+    Pick<TableProps, "config" | "dataSource" | "selectionModel">
+  >(() => {
     const tableName: SimulTableName = "instrumentsExtended";
     return {
       config: {
@@ -260,6 +259,7 @@ export const EditableTableArrayData = () => {
       },
       dataSource:
         vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      selectionModel: "checkbox",
     };
   }, [getDefaultColumnConfig]);
 
@@ -721,7 +721,7 @@ const SymbolHeader = (_: HeaderCellProps) => {
   );
 };
 
-registerCellRenderer("symbol-header", SymbolHeader, "cell-renderer", {});
+registerComponent("symbol-header", SymbolHeader, "cell-renderer", {});
 
 export const CustomColumnRenderer = () => {
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {

@@ -2,7 +2,7 @@ import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
 import { closestListItem } from "./list-dom-utils";
 import { ArrowLeft, ArrowRight, Enter } from "./key-code";
 import { getNodeById, replaceNode } from "./hierarchical-data-utils";
-import { NormalisedTreeSourceNode } from "./Tree";
+import { NormalisedTreeSourceNode } from "./treeTypes";
 
 const NO_HANDLERS: CollapsibleHookResult["listHandlers"] = {};
 const isToggleElement = (element: HTMLElement) =>

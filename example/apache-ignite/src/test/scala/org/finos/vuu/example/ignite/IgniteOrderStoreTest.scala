@@ -3,6 +3,7 @@ package org.finos.vuu.example.ignite
 import org.apache.ignite.cache.query.IndexQueryCriteriaBuilder
 import org.apache.ignite.{Ignite, IgniteCache}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
+import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
@@ -12,9 +13,6 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
   private var parentOrderCache: IgniteCache[Int, ParentOrder] = _
   private var childOrderCache: IgniteCache[Int, ChildOrder] = _
   private var orderStore: IgniteOrderStore = _
-
-  private val emptySortQueries: String = ""
-  private val emptyFilterQueries: String = ""
 
   override def beforeAll(): Unit = {
     ignite = TestUtils.setupIgnite(testName = this.toString)
@@ -92,8 +90,8 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
-    val filterQueries = "parentId = 2"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1).toList
+    val filterQuery = IgniteSqlQuery("parentId = ?", 2)
+    val childOrder = orderStore.findChildOrder(filterQuery, IgniteSqlQuery.empty, 2, 1).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
@@ -113,8 +111,8 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5, ric = "VOD.L")
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "VOD.L")
 
-    val filterQueries = "ric = \'VOD.L\'"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 100, 0).toList
+    val filterQuery = IgniteSqlQuery("ric = ?", "VOD.L")
+    val childOrder = orderStore.findChildOrder(filterQuery, IgniteSqlQuery.empty, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 6)
@@ -128,7 +126,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
 
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, emptySortQueries, 100, 0).toList
+    val childOrder = orderStore.findChildOrder(IgniteSqlQuery.empty, IgniteSqlQuery.empty, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -142,8 +140,8 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     var parentOrder2: ParentOrder = GivenParentOrder(2)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
-    val sortByValues = "id ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
+    val sortByValues = IgniteSqlQuery("id ASC")
+    val childOrder = orderStore.findChildOrder(IgniteSqlQuery.empty, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -158,8 +156,8 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     var parentOrder2: ParentOrder = GivenParentOrder(2)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
-    val sortByValues = "parentId DESC, id ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
+    val sortByValues = IgniteSqlQuery("parentId DESC, id ASC")
+    val childOrder = orderStore.findChildOrder(IgniteSqlQuery.empty, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -178,9 +176,9 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5, ric = "VOD.L")
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "BP.L")
 
-    val filterQueries = "ric = \'VOD.L\'"
+    val filterQuery = IgniteSqlQuery("ric = ?", "VOD.L")
 
-    val count = orderStore.getCount(filterQueries)
+    val count = orderStore.getCount(filterQuery)
 
     assert(count == 3)
   }

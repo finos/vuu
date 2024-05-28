@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { isGroupNode, isHeader } from "./hierarchical-data-utils";
-import { isExpanded, NormalisedTreeSourceNode } from "./Tree";
+import { isExpanded } from "./treeTypeUtils";
+import { NormalisedTreeSourceNode } from "./treeTypes";
 
 const populateIndices = (
   nodes: NormalisedTreeSourceNode[],

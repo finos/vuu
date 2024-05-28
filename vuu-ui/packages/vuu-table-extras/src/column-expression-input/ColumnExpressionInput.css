@@ -4,14 +4,14 @@
     --vuuFilterEditor-color: var(--salt-content-primary-foreground);
     --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
     --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
-    --vuuFilterEditor-cursorColor: var(--salt-text-secondary-foreground);
+    --vuuFilterEditor-cursorColor: var(--salt-content-secondary-foreground);
     --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
     --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
     --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10); 
     --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
     --vuuFilterEditor-suggestion-selectedBackground: var(--vuu-color-gray-10);
     --vuuFilterEditor-suggestion-selectedColor: var(--salt-content-primary-foreground);
-    --vuuFilterEditor-suggestion-detailColor: var(--salt-text-secondary-foreground-disabled);
+    --vuuFilterEditor-suggestion-detailColor: var(--salt-content-secondary-foreground-disabled);
     --vuuFilterEditor-suggestion-height: 24px;
     --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);
 
@@ -28,7 +28,7 @@
 
 .expression-type-container {
     margin: 0 3px 0 auto;
-    color: var(--salt-text-secondary-foreground)
+    color: var(--salt-content-secondary-foreground)
 }
 
 .expression-kind {

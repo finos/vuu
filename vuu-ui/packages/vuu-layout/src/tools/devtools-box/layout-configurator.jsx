@@ -1,5 +1,8 @@
-import "./layout-configurator.css";
 import { FormField, Input } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
+import layoutConfiguratorCss from "./layout-configurator.css";
 
 const NO_STYLE = {};
 
@@ -105,6 +108,13 @@ export const LayoutConfigurator = ({
   style,
   width,
 }) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-layout-configurator",
+    css: layoutConfiguratorCss,
+    window: targetWindow,
+  });
+
   const state = normalizeStyle(managedStyle);
 
   const handleChange = (feature, dimension, strValue) => {

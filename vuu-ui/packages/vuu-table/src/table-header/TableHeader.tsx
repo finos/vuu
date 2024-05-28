@@ -1,6 +1,7 @@
 import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
+  CustomHeader,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
@@ -8,9 +9,10 @@ import {
 } from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "clsx";
-import { memo } from "react";
+import { isValidElement, memo, useMemo } from "react";
 import { GroupHeaderCell, HeaderCell } from "../header-cell";
 import { useTableHeader } from "./useTableHeader";
+import { HeaderProvider } from "./HeaderProvider";
 
 export type ColumnSortHandler = (
   column: ColumnDescriptor,
@@ -21,7 +23,9 @@ export type ColumnSortHandler = (
 export interface TableHeaderProps {
   classBase?: string;
   columns: RuntimeColumnDescriptor[];
+  customHeader?: CustomHeader | CustomHeader[];
   headings: TableHeadings;
+  onHeightMeasured: (height: number) => void;
   onResizeColumn: TableColumnResizeHandler;
   onMoveColumn: (columns: ColumnDescriptor[]) => void;
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
@@ -37,7 +41,9 @@ export const TableHeader = memo(
   ({
     classBase = "vuuTable",
     columns,
+    customHeader,
     headings,
+    onHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
     onRemoveGroupColumn,
@@ -56,10 +62,44 @@ export const TableHeader = memo(
       setContainerRef,
     } = useTableHeader({
       columns,
+      onHeightMeasured,
       onMoveColumn,
       onSortColumn,
       tableConfig,
     });
+
+    const customHeaders = useMemo(() => {
+      const createElement = (Component: CustomHeader, key?: number) => (
+        <Component
+          columns={columns}
+          key={key}
+          virtualColSpan={virtualColSpan}
+        />
+      );
+      if (customHeader === undefined) {
+        return null;
+      } else if (Array.isArray(customHeader)) {
+        if (customHeader.some(isValidElement)) {
+          return (
+            <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
+              {customHeader.map((header, i) =>
+                isValidElement(header) ? header : createElement(header, i)
+              )}
+            </HeaderProvider>
+          );
+        } else {
+          return customHeader.map(createElement);
+        }
+      } else if (isValidElement(customHeader)) {
+        return (
+          <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
+            {customHeader}
+          </HeaderProvider>
+        );
+      } else {
+        return createElement(customHeader);
+      }
+    }, [columns, customHeader, virtualColSpan]);
 
     return (
       <div className={`${classBase}-col-headings`} ref={setContainerRef}>
@@ -110,6 +150,7 @@ export const TableHeader = memo(
           )}
           {draggableColumn}
         </div>
+        {customHeaders}
       </div>
     );
   }

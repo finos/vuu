@@ -7,7 +7,7 @@ import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 interface FilterClauseValueEditorDateProps
-  extends Pick<FilterClauseValueEditor, "onChangeValue" | "InputProps"> {
+  extends Pick<FilterClauseValueEditor, "onChangeValue" | "inputProps"> {
   className?: string;
   value: number | undefined;
   operator: NumericFilterClauseOp;
@@ -16,7 +16,7 @@ interface FilterClauseValueEditorDateProps
 export const FilterClauseValueEditorDate = (
   props: FilterClauseValueEditorDateProps
 ) => {
-  const { InputProps, className, onChangeValue, operator, value } = props;
+  const { inputProps, className, onChangeValue, operator, value } = props;
   const toEpochMilliS = getEpochMillisConverter(operator);
 
   const [date, setDate] = useState<DateValue | undefined>(() =>
@@ -55,7 +55,7 @@ export const FilterClauseValueEditorDate = (
 
   return (
     <DateInput
-      inputProps={InputProps?.inputProps}
+      inputProps={inputProps}
       className={cx("vuuFilterClause-DatePicker", className)}
       selectedDate={date}
       onBlur={onBlur}

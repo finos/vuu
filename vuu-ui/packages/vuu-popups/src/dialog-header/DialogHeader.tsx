@@ -1,8 +1,9 @@
 import { Button, Text } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
-import cx from "clsx";
 
-import "./DialogHeader.css";
+import dialogHeaderCss from "./DialogHeader.css";
 
 const classBase = "vuuDialogHeader";
 
@@ -17,8 +18,15 @@ export const DialogHeader = ({
   onClose,
   ...htmlAttributes
 }: DialogHeaderProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-dialoh-header",
+    css: dialogHeaderCss,
+    window: targetWindow,
+  });
+
   return (
-    <div {...htmlAttributes} className={cx(classBase, "vuuToolbarProxy")}>
+    <div {...htmlAttributes} className={classBase}>
       <Text className="dialogHeader">{title}</Text>
       {!hideCloseButton && (
         <Button

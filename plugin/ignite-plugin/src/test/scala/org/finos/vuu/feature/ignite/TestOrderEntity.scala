@@ -1,14 +1,19 @@
 package org.finos.vuu.feature.ignite
 
-case class TestOrderEntity(
-                      parentId: Int,
-                      id: Int,
-                      ric: String,
-                      price: Double,
-                      quantity: Int,
-                      rating: Char){
+import java.sql.Date
+import java.math.BigDecimal
+import java.time.LocalDate
 
-}
+case class TestOrderEntity(parentId: Int,
+                           id: Int,
+                           ric: String,
+                           price: Double,
+                           quantity: Int,
+                           rating: Char,
+                           isFilled: Boolean,
+                           createdAt: Date,
+                           updatedAt: LocalDate,
+                           totalFill: BigDecimal) {}
 
 object TestOrderEntity{
   def createFrom(cols: java.util.List[_]): TestOrderEntity = {
@@ -18,24 +23,11 @@ object TestOrderEntity{
       ric = cols.get(2).asInstanceOf[String],
       price = cols.get(3).asInstanceOf[Double],
       quantity = cols.get(4).asInstanceOf[Int],
-      rating = cols.get(5).asInstanceOf[Char]
+      rating = cols.get(5).asInstanceOf[Char],
+      isFilled = cols.get(6).asInstanceOf[Boolean],
+      createdAt = cols.get(7).asInstanceOf[Date],
+      updatedAt = cols.get(8).asInstanceOf[LocalDate],
+      totalFill = cols.get(9).asInstanceOf[BigDecimal],
     )
   }
-}
-
-object ColumnMap {
-
-  private type TableToIgniteColumns = Map[String, String]
-
-  private val orderMap : TableToIgniteColumns =  Map(
-    "orderId" -> "id",
-    "ric" -> "ric",
-    "price" -> "price",
-    "quantity" -> "quantity",
-    "parentOrderId" -> "parentId",
-    "rating" -> "rating",
-  )
-  def toIgniteColumn(tableColumn: String): Option[String] =
-    orderMap.get(tableColumn)
-
 }

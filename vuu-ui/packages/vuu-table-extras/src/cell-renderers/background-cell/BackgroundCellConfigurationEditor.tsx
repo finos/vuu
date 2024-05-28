@@ -1,13 +1,14 @@
 import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
-import { Dropdown, SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   ConfigurationEditorProps,
   registerConfigurationEditor,
 } from "@finos/vuu-utils";
-import { FormField, FormFieldLabel } from "@salt-ds/core";
+import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { useCallback, useState } from "react";
 
-import "./BackgroundCellConfigurationEditor.css";
+import backgroundCellConfigurationEditorCss from "./BackgroundCellConfigurationEditor.css";
 
 const classBase = "vuuBackgroundCellConfiguration";
 
@@ -33,13 +34,20 @@ export const BackgroundCellConfigurationEditor = ({
   column,
   onChangeRendering,
 }: ConfigurationEditorProps) => {
-  const [flashStyle, setFlashStyle] = useState<FlashOption | null>(
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-background-cell-configuration-editor",
+    css: backgroundCellConfigurationEditorCss,
+    window: targetWindow,
+  });
+
+  console.log({ type: column.type });
+
+  const [flashStyle, setFlashStyle] = useState<FlashOption | undefined>(
     valueFromColumn(column)
   );
-  const handleSelectionChange = useCallback<
-    SingleSelectionHandler<FlashOption>
-  >(
-    (_, flashOption) => {
+  const handleSelectionChange = useCallback(
+    (_, [flashOption]) => {
       setFlashStyle(flashOption);
       const renderProps = column.type.renderer;
       onChangeRendering({
@@ -56,10 +64,15 @@ export const BackgroundCellConfigurationEditor = ({
       <Dropdown<FlashOption>
         className={`${classBase}-flashStyle`}
         onSelectionChange={handleSelectionChange}
-        selected={flashStyle}
-        source={flashOptions}
-        width="100%"
-      />
+        selected={flashStyle ? [flashStyle] : []}
+        value={flashStyle?.label}
+      >
+        {flashOptions.map((flashOption, i) => (
+          <Option key={i} value={flashOption}>
+            {flashOption.label}
+          </Option>
+        ))}
+      </Dropdown>
     </FormField>
   );
 };

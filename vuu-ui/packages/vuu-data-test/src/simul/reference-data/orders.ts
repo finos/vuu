@@ -73,11 +73,10 @@ for (let i = 0; i < 100; i++) {
 // const end = performance.now();
 // console.log(`generating 10,000 instruments took ${end - start} ms`);
 
-const ordersTable = new Table(
+export const ordersTable = new Table(
   schemas.orders,
   ordersData,
-  buildDataColumnMap(schemas.instruments)
+  buildDataColumnMap(schemas, "instruments")
 );
 
 export { ordersData };
-export default ordersTable;

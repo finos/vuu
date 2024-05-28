@@ -1,9 +1,11 @@
 import cx from "clsx";
-import { registerComponent } from "../registry/ComponentRegistry";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { registerComponent } from "@finos/vuu-utils";
 import { LayoutStartPanel } from "./LayoutStartPanel";
 import { View, ViewProps } from "../layout-view";
 
-import "./Placeholder.css";
+import placeholderCss from "./Placeholder.css";
 
 const classBase = "vuuPlaceholder";
 
@@ -28,6 +30,13 @@ export const Placeholder = ({
   showStartMenu,
   ...viewProps
 }: PlaceholderProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-placeholder",
+    css: placeholderCss,
+    window: targetWindow,
+  });
+
   const className = cx(classBase, classNameProp);
 
   return (
@@ -38,4 +47,4 @@ export const Placeholder = ({
 };
 
 Placeholder.displayName = "Placeholder";
-registerComponent("Placeholder", Placeholder);
+registerComponent("Placeholder", Placeholder, "component");

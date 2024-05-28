@@ -11,6 +11,8 @@ import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 import "./BuySellRowClassNameGenerator";
 
+//import { BulkEditRow } from "@finos/vuu-table";
+
 let displaySequence = 1;
 
 const getDefaultColumnConfig = (
@@ -94,20 +96,22 @@ export const SimulTable = ({
   });
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
-    >
-      <DemoTableContainer>
-        <Table
-          {...tableProps}
-          height={height}
-          onConfigChange={handleConfigChange}
-          renderBufferSize={renderBufferSize}
-          {...props}
-        />
-      </DemoTableContainer>
-    </ContextMenuProvider>
+    <>
+      <ContextMenuProvider
+        menuActionHandler={handleMenuAction}
+        menuBuilder={buildViewserverMenuOptions}
+      >
+        <DemoTableContainer>
+          <Table
+            {...tableProps}
+            height={height}
+            onConfigChange={handleConfigChange}
+            renderBufferSize={renderBufferSize}
+            {...props}
+          />
+        </DemoTableContainer>
+      </ContextMenuProvider>
+    </>
   );
 };
 SimulTable.displaySequence = displaySequence++;

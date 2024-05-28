@@ -8,9 +8,10 @@ import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider.columnNameByExternalField
 import org.finos.vuu.example.ignite.query.IndexCalculator
 import org.finos.vuu.example.ignite.schema.ChildOrderSchema
+import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
-import org.finos.vuu.util.schema.SchemaMapper
+import org.finos.vuu.util.schema.SchemaMapperBuilder
 import org.finos.vuu.viewport.ViewPort
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -18,7 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger
 class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
                              (implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
-  private val schemaMapper = SchemaMapper(ChildOrderSchema.schema, IgniteOrderDataModule.columns, columnNameByExternalField)
+  private val schemaMapper = SchemaMapperBuilder(ChildOrderSchema.schema, IgniteOrderDataModule.columns)
+    .withFieldsMap(columnNameByExternalField)
+    .build()
   private val dataQuery = IgniteOrderDataQuery(igniteStore, schemaMapper)
   private val indexCalculator = IndexCalculator(extraRowsCount = 5000)
 
@@ -50,23 +53,15 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     viewPort.setKeys(new VirtualizedViewPortKeys(internalTable.primaryKeys))
   }
 
-  private def getTotalSize(filter: String): Long =
-      igniteStore.getCount(filter)
+  private def getTotalSize(filterSql: IgniteSqlQuery): Long = igniteStore.getCount(filterSql)
 
   private def tableUpdater(table: VirtualizedSessionTable): (Int, Map[String, Any]) => Unit = {
     val keyField = table.tableDef.keyField
-    def hasRowChangedAtIndex = getHasRowChanged(table)
 
-    (index, rowMap) => {
+    (idx, rowMap) => {
       val newRow = RowWithData(rowMap(keyField).toString, rowMap)
-      if (hasRowChangedAtIndex(index, newRow)) table.processUpdateForIndex(index, newRow.key, newRow, clock.now())
+      if (table.hasRowChangedAtIndex(idx, newRow)) table.processUpdateForIndex(idx, newRow.key, newRow, clock.now())
     }
-  }
-
-  private def getHasRowChanged(table: VirtualizedSessionTable) = (index: Int, newRow: RowWithData) => {
-    val existingKeyAtIndex = table.primaryKeys.get(index)
-    val existingRow = table.pullRow(existingKeyAtIndex)
-    !existingRow.equals(newRow)
   }
 
   override def subscribe(key: String): Unit = {}
