@@ -7,6 +7,7 @@ import org.finos.vuu.core.table.{Column, DataType, TablePrimaryKeys, ViewPortCol
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter {
@@ -93,13 +94,15 @@ case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter w
 case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogging {
 
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-
-    val pks = primaryKeys.toArray
-
-    logger.debug(s"starting filter with ${pks.length}")
-    val filtered = clause.filterAll(source: RowSource, primaryKeys, vpColumns)
-    logger.debug(s"complete filter with ${filtered.length}")
-    filtered
+    logger.debug(s"starting filter with ${primaryKeys.length}")
+    clause.filterAllSafe(source, primaryKeys, vpColumns) match {
+      case Success(filteredKeys) =>
+        logger.debug(s"complete filter with ${filteredKeys.length}")
+        filteredKeys
+      case Error(msg) =>
+        logger.error(s"Unexpected error occurred while filtering (skipping filters): \n$msg")
+        primaryKeys
+    }
   }
 }
 

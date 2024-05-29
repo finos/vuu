@@ -11,7 +11,7 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters
+import scala.jdk.CollectionConverters._
 
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
@@ -108,11 +108,8 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData, time: L
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   def this(key: String, data: java.util.Map[String, Any]) {
-
-    this(key, JavaConverters.asScala(data).toMap)
+    this(key, data.asScala.toMap)
   }
-
-  //override def hashCode(): Int = 37 * (key.hashCode + data.hashCode())
 
   override def size(): Int = data.size
 
@@ -133,19 +130,14 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
   def get(column: String): Any = {
     if (data == null) {
       null
-    }
-    else {
-      data.get(column) match {
-        case Some(x) => x
-        case None => null //throw new Exception(s"column $column doesn't exist in data $data")
-      }
+    } else {
+      data.get(column).orNull
     }
   }
 
   def set(field: String, value: Any): RowWithData = {
     RowWithData(key, data ++ Map[String, Any](field -> value))
   }
-
 }
 
 object EmptyRowData extends RowData {
@@ -316,7 +308,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
       case null =>
         Array[Any]()
       case row: RowWithData =>
-        columns.getColumns().map(c => row.get(c)).toArray
+        row.toArray(columns.getColumns())
     }
   }
 

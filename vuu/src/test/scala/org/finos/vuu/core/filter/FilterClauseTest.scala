@@ -1,6 +1,7 @@
 package org.finos.vuu.core.filter
 
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.{RowWithData, SimpleColumn}
+import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -9,7 +10,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
 
   Feature("EqualsClause.filter") {
 
-    val testRow = RowWithData("Key", Map(
+    val rowData = Map(
       "null-col" -> null,
       "ric" -> "TEST.L",
       "size" -> 4,
@@ -19,7 +20,8 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
       "true-col" -> true,
       "false-col" -> false,
       "empty-string-col" -> "",
-    ))
+    )
+    val testRow = RowWithData("Key", rowData)
 
     forAll(Table(
       ("columnType", "columnName", "value", "expected"),
@@ -56,13 +58,8 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
       }
     })
 
-    Scenario("should return false when field not found in row") {
-      EqualsClause("absent-field", "some-value").filter(testRow) should equal(false)
-    }
-
-    // @todo should we handle missing data better? So that user can select something like `missing` and rows with missing data/null are matched?
-    Scenario("should return false when row data is null regardless of the value passed") {
-      EqualsClause("null-col", "any-value").filter(testRow) should equal(false)
+    Scenario("should return false if row data is null at the given field") {
+      EqualsClause("null-col", "some-value").filter(testRow) should be (false)
     }
 
     forAll(Table(
@@ -80,8 +77,6 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("ContainsClause.filter") {
-    def givenARow(assetClass: String) = RowWithData("key", Map("assetClass" -> assetClass))
-
     Scenario("should return true when row at a given column contains the substring") {
       val row = givenARow(assetClass = "Fixed income products")
 
@@ -106,4 +101,115 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
       result shouldBe false
     }
   }
+
+  Feature("InClause.filter") {
+    Scenario("should return true when row at a given column matches the only value in the list") {
+      val row = givenARow(assetClass = "Fixed-income")
+
+      val result = InClause("assetClass", List("Fixed-income")).filter(row)
+
+      result shouldBe true
+    }
+
+    Scenario("should return true when row at a given column matches one of the values in the list") {
+      val row = givenARow(assetClass = "Fixed-income")
+
+      val result = InClause("assetClass", List("Equity", "Options", "Fixed-income", "ETFs")).filter(row)
+
+      result shouldBe true
+    }
+
+    Scenario("should return false when row at a given column doesn't match any of the values in the list") {
+      val row = givenARow(assetClass = "Equity")
+
+      val result = InClause("assetClass", List("Fixed-income", "Equity-2")).filter(row)
+
+      result shouldBe false
+    }
+
+    Scenario("should return false when row value at a given column is null") {
+      val row = givenARow(assetClass = null)
+
+      val result = InClause("assetClass", List("Fixed-income", "null")).filter(row)
+
+      result shouldBe false
+    }
+  }
+
+  Feature("RowFilterClause.validate") {
+    val clause: RowFilterClause = EqualsClause("col-1", "abc")
+
+    Scenario("returns success if column found in passed vp columns") {
+      val vpColumns = givenVpColumns(List("col-0", "col-1"))
+
+      clause.validate(vpColumns).isSuccess should be (true)
+    }
+
+    Scenario("returns error if column not found in passed vp columns") {
+      val vpColumns = givenVpColumns(List("col-0", "col-1.0"))
+
+      val res = clause.validate(vpColumns)
+
+      res.isError should be (true)
+      res.getError should include (s"`col-1` not found")
+    }
+  }
+
+  Feature("NotClause.validate") {
+    val clause: NotClause = NotClause(EqualsClause("col-1", "abc"))
+
+    Scenario("returns success if inner clause is valid") {
+      val vpColumns = givenVpColumns(List("col-0", "col-1"))
+
+      clause.validate(vpColumns).isSuccess should be (true)
+    }
+
+    Scenario("returns error if inner clause is invalid") {
+      val vpColumns = givenVpColumns(List("col-0", "col-1.0"))
+
+      val res = clause.validate(vpColumns)
+
+      res.isError should be (true)
+      res.getError should include (s"`col-1` not found")
+    }
+  }
+
+  Feature("(And|Or)Clause.validate") {
+    val subclauses = List(EqualsClause("col-1", "abc"), InClause("col-3", List.empty))
+    val andClause = AndClause(subclauses)
+    val orClause = OrClause(subclauses)
+
+    Scenario("returns success if all sub-clauses are valid") {
+      forAll(Table("clause", andClause, orClause))(clause => {
+        val vpColumns = givenVpColumns(List("col-0", "col-1", "col-3"))
+
+        clause.validate(vpColumns).isSuccess should be (true)
+      })
+    }
+
+    Scenario("returns error if a sub-clause is invalid") {
+      forAll(Table("clause", andClause, orClause))(clause => {
+        val vpColumns = givenVpColumns(List("col-0", "col-1"))
+
+        val res = clause.validate(vpColumns)
+
+        res.isError should be (true)
+        res.getError should include (s"`col-3` not found")
+      })
+    }
+
+    Scenario("returns error with concatenated error msg if more than one sub-clause is invalid") {
+      forAll(Table("clause", andClause, orClause))(clause => {
+        val vpColumns = givenVpColumns(List("col-0", "col-2"))
+
+        val res = clause.validate(vpColumns)
+
+        res.isError should be (true)
+        res.getError should include regex s"`col-1` not found(.|\n)*`col-3` not found"
+      })
+    }
+  }
+
+  private def givenARow(assetClass: String) = RowWithData("key", Map("assetClass" -> assetClass))
+  private def givenVpColumns(names: List[String]) = new ViewPortColumns(names.map(SimpleColumn(_, -1, classOf[Any])))
 }

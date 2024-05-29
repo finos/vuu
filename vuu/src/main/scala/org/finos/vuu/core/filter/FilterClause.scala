@@ -1,23 +1,40 @@
 package org.finos.vuu.core.filter
 
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index._
+import org.finos.vuu.core.table.column.{Error, Result}
 import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
-trait FilterClause {
+sealed trait FilterClause {
+  def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Result[TablePrimaryKeys] =
+    this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns)))
+
   def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys
+  def validate(vpColumns: ViewPortColumns): Result[true]
 }
 
-trait RowFilterClause extends FilterClause {
-  def filter(row: RowData): Boolean
-  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys =
-    InMemTablePrimaryKeys( ImmutableArray.from(
-    rowKeys
-      .filter(key => filter(rows.pullRow(key, vpColumns)))
-      .toArray
-  ))
+private object FilterClause {
+  def joinResults(results: List[Result[true]]): Result[true] =
+    results.foldLeft[Result[true]](Result(true))(_.joinWithErrors(_)((a, _) => a, errorSep = "\n"))
+}
+
+sealed trait RowFilterClause extends FilterClause {
+  protected def columnName: String
+  protected def applyFilter(value: Any): Boolean
+  def filter(row: RowData): Boolean = this.applyFilter(row.get(columnName))
+
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys =
+    InMemTablePrimaryKeys(ImmutableArray.from(
+      rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
+    ))
+
+  override def validate(vpColumns: ViewPortColumns): Result[true] = columnExistsInVpColumns(vpColumns)
+  private def columnExistsInVpColumns(vpColumns: ViewPortColumns): Result[true] =
+    if (vpColumns.columnExists(this.columnName)) Result(true)
+    else Error(s"Column `$columnName` not found.")
 }
 
 case class NotClause(decorated: FilterClause) extends FilterClause {
@@ -26,12 +43,16 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
     val notMatching = rowKeys.filter(!matching.contains(_))
     InMemTablePrimaryKeys(ImmutableArray.from(notMatching.toArray))
   }
+
+  override def validate(vpColumns: ViewPortColumns): Result[true] = decorated.validate(vpColumns)
 }
 
 case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
   override def filterAll(rows: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = InMemTablePrimaryKeys( ImmutableArray.from(
     subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns)).distinct.toArray
   ))
+
+  override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
 
 case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
@@ -39,37 +60,33 @@ case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
     subclauses.foldLeft(primaryKeys) {
       (remainingKeys, subclause) => subclause.filterAll(source, remainingKeys, viewPortColumns)
     }
+
+  override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
 
 case class StartsClause(columnName: String, prefix: String) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
+  override def applyFilter(datum: Any): Boolean = {
     if (datum == null) return false
     datum.toString.startsWith(prefix)
   }
 }
 
 case class EndsClause(columnName: String, suffix: String) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
+  override def applyFilter(datum: Any): Boolean = {
     if (datum == null) return false
     datum.toString.endsWith(suffix)
   }
 }
 
 case class ContainsClause(columnName: String, substring: String) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val value = row.get(columnName)
-    value != null && value.toString.contains(substring)
+  override def applyFilter(data: Any): Boolean = {
+    data != null && data.toString.contains(substring)
   }
 }
 
 case class InClause(columnName: String, values: List[String]) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
-    if (datum == null) return false
-
-    values.contains(datum.toString)
+  override def applyFilter(data: Any): Boolean = {
+    data != null && values.contains(data.toString)
   }
 
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
@@ -86,8 +103,7 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
 }
 
 case class GreaterThanClause(columnName: String, value: Double) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
+  override def applyFilter(datum: Any): Boolean = {
     if (datum == null) return false
 
     // the calling code in TreeBuilderImpl.applyFilter() returns all rows on exception
@@ -106,8 +122,7 @@ case class GreaterThanClause(columnName: String, value: Double) extends RowFilte
 }
 
 case class LessThanClause(columnName: String, value: Double) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    val datum = row.get(columnName)
+  override def applyFilter(datum: Any): Boolean = {
     if (datum == null) return false
 
     // the calling code in TreeBuilderImpl.applyFilter() returns all rows on exception
@@ -125,10 +140,9 @@ case class LessThanClause(columnName: String, value: Double) extends RowFilterCl
   }
 }
 
-
 case class EqualsClause(columnName: String, value: String) extends RowFilterClause {
-  override def filter(row: RowData): Boolean = {
-    row.get(columnName) match {
+  override def applyFilter(data: Any): Boolean = {
+    data match {
       case null => false
       case s: String => s == value
       case i: Int => i == value.toInt
@@ -147,7 +161,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: LongIndexedField)     => InMemTablePrimaryKeys(ix.find(value.toLong))
       case Some(ix: DoubleIndexedField)   => InMemTablePrimaryKeys(ix.find(value.toDouble))
       case Some(ix: BooleanIndexedField)  => InMemTablePrimaryKeys(ix.find(value.toBoolean))
-      case None => super.filterAll(rows, rowKeys, viewPortColumns)
+      case None                           => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }

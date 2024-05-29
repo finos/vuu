@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize
 import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
 import org.finos.vuu.net.rpc.VsJsonTypeResolver
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortEditAction, ViewPortMenu, ViewPortRange, ViewPortTable}
+import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
 
 trait FailureMessage {
   def error: String
