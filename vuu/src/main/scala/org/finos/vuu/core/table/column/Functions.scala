@@ -9,9 +9,10 @@ case class OrFunction(clauses: List[CalculatedColumnClause]) extends CalculatedC
   override def calculate(data: RowData): OptionResult[Boolean] = {
     clauses.iterator
       .map(_.calculate(data))
-      .find(r => r.isError || r.getValue.contains(true))
-      .getOrElse(OptionResult(false))
-      .asInstanceOf[OptionResult[Boolean]]
+      .collectFirst({
+        case Success(Some(true)) => OptionResult(true)
+        case Error(msg) => Error(msg)
+      }).getOrElse(OptionResult(false))
   }
 }
 
