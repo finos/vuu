@@ -39,6 +39,10 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
       .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
   }
 
+  protected def givenColumnQueryReturns(queryName: String, columnName:String, results: Array[String]): Unit = {
+    fakeDataSource.setUpResultGivenColumn(queryName, columnName, results)
+  }
+
   protected def createExternalEntitySchema: ExternalEntitySchema =
     ExternalEntitySchemaBuilder()
       .withEntity(classOf[SchemaTestData])
