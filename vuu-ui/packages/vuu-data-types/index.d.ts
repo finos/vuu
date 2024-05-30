@@ -428,8 +428,13 @@ export interface DataSource
   resume?: () => void;
 
   deleteRow?: DataSourceDeleteHandler;
-
-  createSessionDataSource?: (sessionTableName: string) => DataSource;
+  /**
+   * create a DataSource on a session table. The concrete DataSource implementation that
+   * implements this method will always return a session table datasource of the same concrete type.
+   * @param table the sessionTable  (module and table name)
+   * @returns
+   */
+  createSessionDataSource?: (table: VuuTable) => DataSource;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally

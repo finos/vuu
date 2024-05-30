@@ -185,7 +185,7 @@ export class ArrayDataSource
 
   async subscribe(
     {
-      viewport = this.viewport ?? uuid(),
+      viewport = this.viewport ?? (this.viewport = uuid()),
       columns,
       aggregations,
       range,

@@ -19,10 +19,14 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
+import { SessionTableMap } from "./simul";
+
+const { KEY } = metadataKeys;
 
 export type RpcService = {
   rpcName: string;
@@ -35,18 +39,22 @@ export interface TickingArrayDataSourceConstructorProps
   menu?: VuuMenu;
   menuRpcServices?: RpcService[];
   rpcServices?: RpcService[];
+  sessionTables?: SessionTableMap;
   table?: Table;
 }
 
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
   #rpcServices: RpcService[] | undefined;
+  // A reference to session tables hosted within client side module
+  #sessionTables: SessionTableMap | undefined;
   #table?: Table;
 
   constructor({
     data,
     menuRpcServices,
     rpcServices,
+    sessionTables,
     table,
     menu,
     ...arrayDataSourceProps
@@ -60,10 +68,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     this._menu = menu;
     this.#menuRpcServices = menuRpcServices;
+    this.#sessionTables = sessionTables;
     this.#rpcServices = rpcServices;
     this.#table = table;
 
     if (table) {
+      this.tableSchema = table.schema;
       table.on("insert", this.insert);
       table.on("update", this.updateRow);
     }
@@ -108,21 +118,19 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   private getSelectedRowIds() {
-    const keyIndex = 6;
-    const rowIds: any[] = [];
-    return this.selectedRows.reduce<DataSourceRow[]>(
-      (rows: DataSourceRow[], selected: SelectionItem) => {
-        if (Array.isArray(selected)) {
-          for (let i = selected[0]; i <= selected[1]; i++) {
+    return this.selectedRows.reduce<string[]>(
+      (rowIds: string[], selection: SelectionItem) => {
+        if (Array.isArray(selection)) {
+          for (let i = selection[0]; i <= selection[1]; i++) {
             const row = this.data[i];
             if (row) {
-              rowIds.push(row[keyIndex]);
+              rowIds.push(row[KEY]);
             }
           }
         } else {
-          const row = this.data[selected];
+          const row = this.data[selection];
           if (row) {
-            rowIds.push(row[keyIndex]);
+            rowIds.push(row[KEY]);
           }
         }
         return rowIds;
@@ -136,7 +144,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     columnName: string,
     value: VuuRowDataItemType
   ): Promise<true> {
-    const key = row[metadataKeys.KEY];
+    const key = row[KEY];
     this.#table?.update(key, columnName, value);
     return Promise.resolve(true);
   }
@@ -152,19 +160,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
     if (rpcService) {
       switch (rpcRequest.rpcName) {
-        case "APPLY_BULK_EDITS": {
-          const targetCol = rpcRequest.params[0];
-          const targetVal = rpcRequest.params[1];
-          return rpcService.service({
-            ...rpcRequest,
-            targetCol,
-            targetVal,
-          });
+        case "VP_BULK_EDIT_COLUMN_CELLS_RPC": {
+          return rpcService.service(rpcRequest);
         }
       }
       const selectedRows = this.getSelectedRows();
       return rpcService.service({
         ...rpcRequest,
+        vpId: this.viewport,
         selectedRows,
       });
     } else {
@@ -188,12 +191,18 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (rpcService) {
       switch (rpcRequest.type) {
         case "VIEW_PORT_MENUS_SELECT_RPC": {
-          const selectedRows = this.getSelectedRows();
-          const selectedRowIds = this.getSelectedRowIds();
+          // selectedRowIds is specific to the client implementation. Because the dataSource
+          //  itself stores the selected rows (rather than server) we need to inject these
+          // here so rpc service has access to them. In Vuu scenario, Vuu server module would
+          // already know selected rows.
           return rpcService.service({
             ...rpcRequest,
-            selectedRows,
-            selectedRowIds,
+            vpId: this.viewport,
+            selectedRowIds: this.getSelectedRowIds(),
+            // include table for now in the rpcRequest. In future we will support
+            //a viewportId, same as server, but for that we have to map viewports
+            // to tables in module.
+            table: this.tableSchema.table,
           });
         }
         default:
@@ -207,7 +216,23 @@ export class TickingArrayDataSource extends ArrayDataSource {
       return makeSuggestions(this.#table, column, pattern);
     } else {
       throw Error(
-        "cannot call getTypeaheadSuggestions on TickingDataSOurce if table has not been provided"
+        "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided"
+      );
+    }
+  }
+
+  createSessionDataSource(vuuTable: VuuTable) {
+    const table = this.#sessionTables?.[vuuTable.table];
+    if (table) {
+      return new TickingArrayDataSource({
+        columnDescriptors: table.schema.columns,
+        keyColumn: table.schema.key,
+        table,
+        rpcServices: this.#rpcServices,
+      });
+    } else {
+      throw Error(
+        "TickingDataSource cannot create session datasource, no session table ${table.table}"
       );
     }
   }

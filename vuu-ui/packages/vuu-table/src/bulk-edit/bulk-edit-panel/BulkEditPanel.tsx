@@ -1,37 +1,32 @@
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
-import { Table } from "../../Table";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { VuuTableName } from "@finos/vuu-data-test";
-import { useBulkEditPanel } from "./useBulkEditPanel";
-import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
-import { useMemo } from "react";
+import cx from "clsx";
+import { TableConfig } from "packages/vuu-table-types";
+import { HTMLAttributes, useMemo } from "react";
+import { Table } from "../../Table";
+import { BulkEditRow, EditValueChangeHandler } from "./bulk-edit-row";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 
 const classBase = "vuuBulkEditPanel";
 
-export interface BulkEditPanelProps {
-  className?: string;
+export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   dataSource: DataSource;
-  onClose?: any;
-  onSubmit?: any;
-  sessionDataSource?: DataSource;
+  onClose?: () => void;
+  onSubmit?: () => void;
   response?: RpcResponse;
-  mainTableName?: VuuTableName;
-  setDialogClose?: any;
-  setDialogState?: any;
+  mainTableName?: string;
 }
 
-export type BulkEditPanelHookProps = Pick<
-  BulkEditPanelProps,
-  "response" | "mainTableName"
->;
-
-export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
-  const { dsSession, tableConfig } = useBulkEditPanel(props);
-
+export const BulkEditPanel = ({
+  className,
+  dataSource,
+  onClose,
+  onSubmit,
+  ...htmlAttributes
+}: BulkEditPanelProps): JSX.Element => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-checkbox-cell",
@@ -40,28 +35,38 @@ export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
   });
 
   const bulkEditRow = useMemo(() => {
-    const onChange: FilterValueChangeHandler = (column, value) => {
-      // console.log(`apply filter to column ${column.name} using value ${value}`);
-      props.dataSource.rpcCall?.({
-        namedParams: {},
-        params: [column.name, value],
-        rpcName: "APPLY_BULK_EDITS",
+    const onChange: EditValueChangeHandler = (column, value) => {
+      dataSource.rpcCall?.({
+        namedParams: { column: column.name, value },
+        params: [],
+        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
         type: "VIEW_PORT_RPC_CALL",
       });
     };
-    return <InlineFilter onChange={onChange} />;
-  }, [props.dataSource]);
+    return <BulkEditRow onChange={onChange} />;
+  }, [dataSource]);
+
+  const config: TableConfig = useMemo(() => {
+    return {
+      columns: dataSource.columns.map((name) => ({
+        editable: true,
+        name,
+        serverDataType: "string",
+      })),
+    };
+  }, [dataSource]);
 
   return (
     <div
-      className={classBase}
+      {...htmlAttributes}
+      className={cx(classBase, className)}
       style={{ display: "flex", flexDirection: "column" }}
     >
       <div className={`${classBase}-table`}>
         <Table
-          config={tableConfig}
+          config={config}
           customHeader={bulkEditRow}
-          dataSource={dsSession}
+          dataSource={dataSource}
           height={400}
           width={600}
           showColumnHeaderMenus={false}
@@ -70,8 +75,8 @@ export const BulkEditPanel = (props: BulkEditPanelProps): JSX.Element => {
       </div>
 
       <div className={`${classBase}-buttonBar`}>
-        <Button onClick={props.onClose}>Cancel</Button>
-        <Button onClick={props.onSubmit}>Save</Button>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onSubmit}>Save</Button>
       </div>
     </div>
   );
