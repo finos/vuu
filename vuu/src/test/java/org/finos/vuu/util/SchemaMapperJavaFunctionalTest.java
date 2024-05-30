@@ -114,11 +114,11 @@ public class SchemaMapperJavaFunctionalTest {
         //todo should use fake java store which is more likely usecase and avoid all the type conversions?
         var keyFieldName = table.getTableDef().keyField();
         getQueryResult(queryName).stream()
-                .map(valueList -> mapToRows(schemaMapper, valueList, keyFieldName))
+                .map(rowValues -> mapToRow(schemaMapper, rowValues, keyFieldName))
                 .forEach(row -> table.processUpdate(row.key(), row, clock.now()));
     }
 
-    private static RowWithData mapToRows(SchemaMapper schemaMapper, List<Object> valueList, String keyFieldName) {
+    private static RowWithData mapToRow(SchemaMapper schemaMapper, List<Object> valueList, String keyFieldName) {
         var rowMap = schemaMapper.toInternalRowMap(toScala(valueList));
         var keyOptional = OptionConverters.toJava(rowMap.get(keyFieldName));
         var key = keyOptional.orElseThrow();
