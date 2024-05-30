@@ -117,13 +117,11 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       assert(existingTableRows.head.get("clientId") == 5)
       assert(existingTableRows.head.get("notionalValue") == 10.5)
     }
+
+    Scenario("When table has columns with different type from fields on external entity") {}
+    Scenario("When query result has less number of fields than table columns return useful error") {}
+    Scenario("When column and field order does not match but no fields map defined on schema return useful error") {}
+    Scenario("When getting data from source fails return useful error") {}
+    Scenario("When getting casting data from source to table column type fails return useful error") {}
   }
-
-  Scenario("When table has columns are different type from fields on external entity") {}
-  Scenario("When query result has less number of fields than table columns return useful error") {}
-  Scenario("When column and field order does not match but no fields map defined on schema return useful error") {}
-  Scenario("When getting data from source fails return useful error") {}
-  Scenario("When getting casting data from source to table column type fails return useful error") {}
-
-
 }
