@@ -97,7 +97,6 @@ object Columns {
   /**
    * Create columns that use same name, type, order as the external entity fields
    * */
-
   def fromExternalSchema(externalSchema: ExternalEntitySchema): Array[Column] = {
     externalSchema.fields.map(field => SimpleColumn(field.name, field.index, field.dataType))
       .toArray
