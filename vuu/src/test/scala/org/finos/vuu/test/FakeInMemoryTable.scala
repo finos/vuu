@@ -32,17 +32,8 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
 
   override def processDelete(rowKey: String): Unit = ???
 
-  /**
-   * notify listeners explicit when a rowKey changes
-   */
   override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = ???
 
-  /**
-   * Link table name is the name of the underlying table that we can link to.
-   * In a session table this would be the underlying table.
-   *
-   * @return
-   */
   override def linkableName: String = ???
 
   override def readRow(key: String, columns: List[String], processor: RowProcessor): Unit = ???
@@ -51,10 +42,6 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = ???
 
-  /**
-   * Note the below call should only be used for testing. It filters the contents of maps by the expected viewPortColumns.
-   * In practice we never need to do this at runtime.
-   */
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = ???
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = ???
