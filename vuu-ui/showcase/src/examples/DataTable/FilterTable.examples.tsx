@@ -5,8 +5,9 @@ import {
   vuuModule,
 } from "@finos/vuu-data-test";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { FilterTable, FilterTableProps } from "@finos/vuu-datatable";
+import { FilterTable } from "@finos/vuu-datatable";
 import type { FilterState } from "@finos/vuu-filter-types";
+import { FilterBarProps } from "@finos/vuu-filters";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
@@ -39,7 +40,7 @@ export const FilterTableVuuInstruments = () => {
     setFilterState(fs);
   }, []);
 
-  const filterBarProps: FilterTableProps["FilterBarProps"] = {
+  const filterBarProps: Partial<FilterBarProps> = {
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
@@ -82,6 +83,8 @@ export const FilterTableArrayDataInstruments = () => {
     [schema]
   );
 
+  const { typeaheadHook } = vuuModule("SIMUL");
+
   const [filterState, setFilterState] = useState<FilterState>({
     filters: [],
     activeIndices: [],
@@ -100,7 +103,10 @@ export const FilterTableArrayDataInstruments = () => {
     setFilterState(fs);
   }, []);
 
-  const filterBarProps: FilterTableProps["FilterBarProps"] = {
+  const FilterBarProps: FilterBarProps = {
+    FilterClauseEditorProps: {
+      suggestionProvider: typeaheadHook,
+    },
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
@@ -117,7 +123,7 @@ export const FilterTableArrayDataInstruments = () => {
 
   return (
     <FilterTable
-      FilterBarProps={filterBarProps}
+      FilterBarProps={FilterBarProps}
       style={{ height: "100%" }}
       TableProps={tableProps}
     />
