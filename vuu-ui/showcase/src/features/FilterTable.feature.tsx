@@ -1,8 +1,7 @@
-import VuuFilterTableFeature, {
-  FilterTableFeatureProps,
-} from "feature-vuu-filter-table";
 import { vuuModule, VuuModuleName } from "@finos/vuu-data-test";
 import { useViewContext } from "@finos/vuu-layout";
+import { FilterTableFeatureProps } from "@finos/vuu-utils";
+import VuuFilterTableFeature from "feature-vuu-filter-table";
 import { useMemo } from "react";
 
 export const FilterTableFeature = ({

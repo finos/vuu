@@ -1,1 +1,2 @@
-export * from "./CrossTableFiltering.examples";
+export * as CrossTableFiltering from "./CrossTableFiltering";
+export * as LayoutComponentsPanel from "./LayoutComponentsPanel";

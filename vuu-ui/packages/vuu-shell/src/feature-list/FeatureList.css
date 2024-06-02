@@ -1,21 +1,23 @@
 .vuuFeatureList {
-    background: var(--vuuFeatureList-background, var(--salt-container-primary-background));
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 195px 32px 16px 24px;
+  background: var(
+    --vuuFeatureList-background,
+    var(--salt-container-primary-background)
+  );
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--vuuFeatureList-padding);
 }
 
 .vuuFeatureList-header {
-    flex: 0 0 40px;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 2;
+  flex: 0 0 40px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 2;
 }
 
 .vuuFeatureList-content {
-    flex: 1 1 auto;
-    font-size: 12px;
-    font-weight: 700;
+  flex: 1 1 auto;
+  font-size: 12px;
+  font-weight: 700;
 }
-

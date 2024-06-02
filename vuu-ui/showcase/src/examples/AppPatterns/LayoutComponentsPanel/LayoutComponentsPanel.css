@@ -1,0 +1,11 @@
+.vuuLayoutComponentsPanel {
+  height: 100%;
+
+  .vuuLayoutList-header {
+    display: none;
+  }
+
+  .vuuFeatureList-header {
+    display: none;
+  }
+}
