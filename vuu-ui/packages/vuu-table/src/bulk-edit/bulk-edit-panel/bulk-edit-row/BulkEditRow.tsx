@@ -7,27 +7,24 @@ import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 
-import inlineFilteCss from "./InlineFilter.css";
+import bulkEditRowCss from "./BulkEditRow.css";
 
-const classBase = "vuuInlineFilter";
+const classBase = "vuuBulkEditRow";
 
-export type FilterValueChangeHandler = (
+export type EditValueChangeHandler = (
   column: ColumnDescriptor,
   value: string
 ) => void;
-export interface InlineFilterProps
+export interface BulkEditProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  onChange: FilterValueChangeHandler;
+  onChange: EditValueChangeHandler;
 }
 
-export const InlineFilter = ({
-  onChange,
-  ...htmlAttributes
-}: InlineFilterProps) => {
+export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-inline-filter",
-    css: inlineFilteCss,
+    testId: "vuu-bulk-edit-row",
+    css: bulkEditRowCss,
     window: targetWindow,
   });
 
@@ -35,12 +32,14 @@ export const InlineFilter = ({
 
   const onCommit = useCallback<Commithandler>(
     (evt, value) => {
-      const field = queryClosest(evt.target, "[data-field]");
-      if (field) {
-        const columnName = field.dataset.field;
-        const column = columns.find((c) => c.name === columnName);
-        if (column) {
-          onChange(column, value);
+      if (String(value).trim() !== "") {
+        const field = queryClosest(evt.target, "[data-field]");
+        if (field) {
+          const columnName = field.dataset.field;
+          const column = columns.find((c) => c.name === columnName);
+          if (column) {
+            onChange(column, value);
+          }
         }
       }
     },

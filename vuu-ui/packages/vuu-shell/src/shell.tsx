@@ -4,6 +4,7 @@ import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   StackLayout,
 } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
@@ -34,11 +35,11 @@ import shellCss from "./shell.css";
 
 registerComponent("ApplicationSettings", ApplicationSettingsPanel, "view");
 
-if (typeof StackLayout !== "function") {
-  console.warn(
-    "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
-  );
-}
+// if (typeof StackLayout !== "function") {
+//   console.warn(
+//     "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
+//   );
+// }
 
 const { error } = logger("Shell");
 

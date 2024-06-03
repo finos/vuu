@@ -23,6 +23,7 @@ export type SetDialog = (dialogState?: DialogState) => void;
 
 export interface DialogContextProps {
   showDialog: (dialogContent: ReactElement, title: string) => void;
+  closeDialog: () => void;
 }
 
 export const useDialog = () => {
@@ -60,9 +61,13 @@ export const useDialog = () => {
 const defaultShowDialog = () => {
   console.warn("No DialogProvider in place");
 };
+const defaultCloseDialog = () => {
+  console.warn("No DialogProvider in place");
+};
 
 const DialogContext = createContext<DialogContextProps>({
   showDialog: defaultShowDialog,
+  closeDialog: defaultCloseDialog,
 });
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
@@ -73,15 +78,19 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       title,
     });
   };
+  const closeDialog = () => {
+    setDialogState(undefined);
+  };
   return (
-    <DialogContext.Provider value={{ showDialog }}>
+    <DialogContext.Provider value={{ showDialog, closeDialog }}>
       {children}
       {dialog}
     </DialogContext.Provider>
   );
 };
 
-export const useShowDialog = () => {
+export const useDialogContext = () => {
   const { showDialog } = useContext(DialogContext);
-  return showDialog;
+  const { closeDialog } = useContext(DialogContext);
+  return { showDialog, closeDialog };
 };
