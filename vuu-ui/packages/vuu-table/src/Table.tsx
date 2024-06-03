@@ -243,7 +243,6 @@ const TableCore = ({
     "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
-    "--row-height-prop": `${rowHeight}px`,
     "--total-header-height": `${headerHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
@@ -381,6 +380,11 @@ export const Table = forwardRef(function Table(
       id={id}
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}
+      style={
+        {
+          "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
+        } as CSSProperties
+      }
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
 

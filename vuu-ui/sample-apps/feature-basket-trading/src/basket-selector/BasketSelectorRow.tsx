@@ -1,12 +1,18 @@
-import cx from "clsx";
 import type { RowProps } from "@finos/vuu-table-types";
+import { metadataKeys } from "@finos/vuu-utils";
+import cx from "clsx";
 import { MouseEvent, useCallback } from "react";
 
 import "./BasketSelectorRow.css";
 
 const classBase = "vuuBasketSelectorRow";
 
+const { SELECTED } = metadataKeys;
+
 export const BasketSelectorRow = ({
+  classNameGenerator: _ignore1,
+  virtualColSpan: _ignore2,
+  zebraStripes: _ignore3,
   className: classNameProp,
   columnMap,
   columns,
@@ -16,13 +22,13 @@ export const BasketSelectorRow = ({
   onClick,
   onDataEdited,
   onToggleGroup,
-  zebraStripes: _,
   ...htmlAttributes
 }: RowProps) => {
   const {
     [columnMap.basketId]: basketId,
     [columnMap.basketName]: basketName,
     [columnMap.status]: status,
+    [SELECTED]: selectionStatus,
   } = row;
   const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 
@@ -40,6 +46,7 @@ export const BasketSelectorRow = ({
       {...htmlAttributes}
       className={cx(classBase, "vuuTableRow", {
         [`${classBase}-highlighted`]: highlighted,
+        [`${classBase}-selected`]: selectionStatus !== 0,
       })}
       onClick={handleRowClick}
       role="row"

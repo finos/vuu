@@ -72,6 +72,8 @@ export const useDataSource = ({
         }
         if (message.rows) {
           setData(message.rows);
+        } else if (message.size === 0) {
+          setData([]);
         } else if (typeof message.size === "number") {
           data.current = dataWindow.data;
           hasUpdated.current = true;

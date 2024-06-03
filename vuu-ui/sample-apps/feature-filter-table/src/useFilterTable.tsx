@@ -124,11 +124,9 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   const filterBarProps: Omit<FilterBarProps, "onApplyFilter"> = {
-    FilterClauseEditorProps: suggestionProvider
-      ? {
-          suggestionProvider,
-        }
-      : undefined,
+    FilterClauseEditorProps: {
+      suggestionProvider,
+    },
     columnDescriptors: tableConfig.columns,
     filterState,
     onFilterDeleted,

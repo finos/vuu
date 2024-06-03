@@ -1,5 +1,5 @@
-import { DataSourceFilter } from "packages/vuu-data-types";
-import { FilterBarProps } from "packages/vuu-filters/src";
+import { DataSourceFilter } from "@finos/vuu-data-types";
+import { FilterBarProps } from "@finos/vuu-filters";
 import { useCallback } from "react";
 import { FilterTableProps } from "./FilterTable";
 

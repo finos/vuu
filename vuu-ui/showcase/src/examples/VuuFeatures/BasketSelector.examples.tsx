@@ -1,5 +1,6 @@
 import { ArrayDataSource } from "@finos/vuu-data-local";
 import { createBasketTradingRow, vuuModule } from "@finos/vuu-data-test";
+import { buildColumnMap } from "@finos/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo } from "react";
 
@@ -18,21 +19,7 @@ const testBaskets = [
 ];
 
 export const DefaultBasketSelector = () => {
-  const testBasket: Basket = {
-    dataSourceRow: [] as any,
-    basketId: ".FTSE",
-    basketName: "Test Basket",
-    pctFilled: 0,
-    fxRateToUsd: 1.25,
-    instanceId: "steve-001",
-    side: "BUY",
-    status: "off-market",
-    totalNotional: 1000,
-    totalNotionalUsd: 1000,
-    units: 120,
-  };
-
-  const dataSource = useMemo(() => {
+  const [columnMap, dataSource] = useMemo(() => {
     const dataSource = vuuModule("BASKET").createDataSource(
       "basketTrading"
     ) as ArrayDataSource;
@@ -41,8 +28,11 @@ export const DefaultBasketSelector = () => {
         createBasketTradingRow(basketId, basketName, status, side)
       );
     }
-    return dataSource;
+    dataSource.select([1]);
+    return [buildColumnMap(dataSource.columns), dataSource];
   }, []);
+
+  const testBasket = new Basket(dataSource.data[1], columnMap);
 
   const handleClickAddBasket = useCallback(() => {
     console.log("Add Basket");
@@ -63,21 +53,7 @@ export const DefaultBasketSelector = () => {
 DefaultBasketSelector.displaySequence = displaySequence++;
 
 export const OpenBasketSelector = () => {
-  const testBasket: Basket = {
-    dataSourceRow: [] as any,
-    basketId: ".FTSE",
-    basketName: "Test Basket",
-    pctFilled: 0,
-    fxRateToUsd: 1.25,
-    instanceId: "steve-001",
-    side: "BUY",
-    status: "ioff-market",
-    totalNotional: 1000,
-    totalNotionalUsd: 1000,
-    units: 120,
-  };
-
-  const dataSource = useMemo(() => {
+  const [columnMap, dataSource] = useMemo(() => {
     const dataSource = vuuModule("BASKET").createDataSource(
       "basketTrading"
     ) as ArrayDataSource;
@@ -86,8 +62,11 @@ export const OpenBasketSelector = () => {
         createBasketTradingRow(basketId, basketName, status, side)
       );
     }
-    return dataSource;
+    dataSource.select([3]);
+    return [buildColumnMap(dataSource.columns), dataSource];
   }, []);
+
+  const testBasket = new Basket(dataSource.data[3], columnMap);
 
   const handleClickAddBasket = useCallback(() => {
     console.log("Add Basket");

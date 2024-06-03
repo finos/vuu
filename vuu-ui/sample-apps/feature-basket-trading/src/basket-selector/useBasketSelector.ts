@@ -17,7 +17,6 @@ export type BasketSelectorHookProps = Pick<
 >;
 
 export const useBasketSelector = ({
-  basketInstanceId,
   dataSourceBasketTradingSearch,
   defaultIsOpen,
   isOpen: isOpenProp,
@@ -95,9 +94,8 @@ export const useBasketSelector = ({
       },
       onRowClick: handleRowClick,
       rowHeight: 47,
-      selectedKeys: basketInstanceId ? [basketInstanceId] : undefined,
     }),
-    [basketInstanceId, handleRowClick]
+    [handleRowClick]
   );
 
   return {
