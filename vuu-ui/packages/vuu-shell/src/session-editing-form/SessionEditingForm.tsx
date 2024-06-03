@@ -193,11 +193,11 @@ export const SessionEditingForm = ({
   const initialDataRef = useRef<FormValues>();
   const dataStatusRef = useRef(Status.uninitialised);
 
-  const ds = getDataSource(dataSourceProp, schema);
-  const { columns } = ds;
-  const columnMap = buildColumnMap(ds.columns);
-
   const dataSource = useMemo(() => {
+    const ds = getDataSource(dataSourceProp, schema);
+    const { columns } = ds;
+    const columnMap = buildColumnMap(ds.columns);
+
     const applyServerData = (data: VuuDataRow) => {
       if (columnMap) {
         const values: { [key: string]: VuuRowDataItemType } = {};
@@ -222,16 +222,15 @@ export const SessionEditingForm = ({
       }
     });
     return ds;
-  }, [columnMap, columns, ds]);
+  }, [dataSourceProp, schema]);
 
   const id = useIdMemo(idProp);
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => {
       const [field, value] = getFieldNameAndValue(evt);
-      // const { type } = getField(fields, field);
-      // const typedValue = getTypedValue(value, type);
-      const typedValue = value;
+      const { type } = getField(fields, field);
+      const typedValue = getTypedValue(value, type);
       setValues((values = {}) => {
         const newValues = {
           ...values,
@@ -246,7 +245,7 @@ export const SessionEditingForm = ({
         return newValues;
       });
     },
-    []
+    [fields]
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
@@ -255,9 +254,7 @@ export const SessionEditingForm = ({
       const rowKey = values?.[keyField];
       // TODO link this with client side validation if we're going to use it
       const { type } = getField(fields, field);
-      const clientTypedValue = getTypedValue(value, type, true);
-      console.log(`client typed value ${clientTypedValue}`);
-      const typedValue = value;
+      const typedValue = getTypedValue(value, type, true);
       if (typeof rowKey === "string") {
         dataSource
           .menuRpcCall({
