@@ -66,7 +66,7 @@ const tables: Record<SimulTableName, Table> = {
 };
 
 const getColumnDescriptors = (tableName: SimulTableName) => {
-  const schema = schemas[tableName] || sessionTableMap["sessionTable1"].schema;
+  const schema = schemas[tableName] || getSessionTable()?.schema;
   if (schema) {
     return schema.columns;
   } else {
