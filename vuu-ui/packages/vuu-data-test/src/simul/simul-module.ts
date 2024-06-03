@@ -1,9 +1,6 @@
 import { OpenDialogAction, SuggestionFetcher } from "@finos/vuu-data-types";
 import {
-  ClientToServerEditRpc,
-  ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
-  ServerToClientViewportRpcResponse,
   TypeaheadParams,
   VuuMenu,
   VuuTable,
@@ -109,19 +106,6 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
   prices: undefined,
 };
 
-async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
-  return {
-    action: {
-      renderComponent: "grid",
-      table: {
-        module: "SIMUL",
-        table: "sessionTable1",
-      },
-      type: "OPEN_DIALOG_ACTION",
-    },
-  };
-}
-
 const keyIndex = 6;
 
 async function openBulkEdits(
@@ -219,10 +203,6 @@ const services: Record<SimulTableName, RpcService[] | undefined> = {
   childOrders: undefined,
   instruments: [
     {
-      rpcName: "ADD_INSTRUMENTS_TO_ORDER",
-      service: addInstrumentsToOrder,
-    },
-    {
       rpcName: "VP_BULK_EDIT_BEGIN_RPC",
       service: openBulkEdits,
     },
@@ -244,7 +224,6 @@ const services: Record<SimulTableName, RpcService[] | undefined> = {
 
 const createDataSource = (tableName: SimulTableName) => {
   const columnDescriptors = getColumnDescriptors(tableName);
-  //console.log(sessionTables['sessionTable1'].schema);
   return new TickingArrayDataSource({
     columnDescriptors,
     keyColumn:
