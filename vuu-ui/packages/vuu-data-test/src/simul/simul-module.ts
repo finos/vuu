@@ -3,6 +3,7 @@ import {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  ServerToClientViewportRpcResponse,
   TypeaheadParams,
   VuuMenu,
   VuuTable,
@@ -22,7 +23,11 @@ import { schemas, type SimulTableName } from "./simul-schemas";
 type RpcService = {
   rpcName: string;
   service: (
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
+    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
+      namedParams: { [key: string]: unknown };
+      selectedRowIds: string[];
+      table: VuuTable;
+    }
   ) => Promise<unknown>;
 };
 
@@ -105,8 +110,6 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
 };
 
 async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
-  console.log("addInstrumentsToOrder");
-
   return {
     action: {
       renderComponent: "grid",
@@ -122,15 +125,12 @@ async function addInstrumentsToOrder(/*rpcRequest: unknown*/) {
 const keyIndex = 6;
 
 async function openBulkEdits(
-  rpcRequest:
-    | ClientToServerMenuRPC
-    | ClientToServerEditRpc
-    | { selectedRowIds: string[] }
-) {
-  const { selectedRowIds, table } = rpcRequest as {
+  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
     selectedRowIds: string[];
     table: VuuTable;
-  };
+  }
+) {
+  const { selectedRowIds, table } = rpcRequest;
 
   const dataTable = tables[table.table as SimulTableName];
   if (dataTable) {
@@ -164,14 +164,18 @@ async function openBulkEdits(
 
 // Bulk-edit with input in session table
 async function applyBulkEdits(
-  rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
+    namedParams: { [key: string]: unknown };
+    selectedRowIds: string[];
+    table: VuuTable;
+  }
 ) {
   const sessionTable = getSessionTable();
 
   for (let i = 0; i < sessionTable.data.length; i++) {
     const newRow = sessionTable.data[i];
     const { column, value } = rpcRequest.namedParams;
-    sessionTable.update(String(newRow[keyIndex]), column, value);
+    sessionTable.update(String(newRow[keyIndex]), column as string, value);
   }
 
   return {
