@@ -42,7 +42,7 @@ export const useDialog = () => {
   );
 
   const dialog = dialogState ? (
-    <Dialog className="vuuDialog" open={true} onOpenChange={handleOpenChange}>
+    <Dialog open={true} onOpenChange={handleOpenChange}>
       <DialogHeader header={dialogState.title} />
       <DialogContent>{dialogState.content}</DialogContent>
       {dialogState.hideCloseButton !== true ? (
