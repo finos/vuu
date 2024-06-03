@@ -8,10 +8,10 @@ import {
 import { useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { HTMLAttributes, useRef } from "react";
-
 import { Basket } from "../useBasketTrading";
-import "./BasketSelector.css";
 import { useBasketSelector } from "./useBasketSelector";
+
+import "./BasketSelector.css";
 
 const classBase = "vuuBasketSelector";
 
