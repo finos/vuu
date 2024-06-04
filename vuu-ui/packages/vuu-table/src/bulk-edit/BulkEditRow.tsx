@@ -1,11 +1,12 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
-import { VirtualColSpan, useHeaderProps } from "@finos/vuu-table";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Commithandler } from "@finos/vuu-ui-controls";
 import { queryClosest } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback } from "react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { VirtualColSpan } from "../VirtualColSpan";
+import { useHeaderProps } from "../table-header";
 
 import bulkEditRowCss from "./BulkEditRow.css";
 

@@ -1,3 +1,4 @@
+import { TableSchema } from "@finos/vuu-data-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { Toolbar } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
@@ -5,7 +6,6 @@ import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 
 import "./AppHeader.css";
-import { TableSchema } from "packages/vuu-data-types";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {

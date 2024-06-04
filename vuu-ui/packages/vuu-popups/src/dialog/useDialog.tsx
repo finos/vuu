@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogActions,
   DialogCloseButton,
   DialogContent,
   DialogHeader,
@@ -14,6 +15,7 @@ import {
 } from "react";
 
 export type DialogState = {
+  actions?: ReactElement[];
   content: ReactElement;
   title: string;
   hideCloseButton?: boolean;
@@ -21,8 +23,14 @@ export type DialogState = {
 
 export type SetDialog = (dialogState?: DialogState) => void;
 
+export type ShowDialog = (
+  dialogContent: ReactElement,
+  title: string,
+  dialogActionButtons?: ReactElement[]
+) => void;
+
 export interface DialogContextProps {
-  showDialog: (dialogContent: ReactElement, title: string) => void;
+  showDialog: ShowDialog;
   closeDialog: () => void;
 }
 
@@ -49,6 +57,9 @@ export const useDialog = () => {
       {dialogState.hideCloseButton !== true ? (
         <DialogCloseButton onClick={closeDialog} />
       ) : null}
+      {dialogState.actions ? (
+        <DialogActions>{dialogState.actions}</DialogActions>
+      ) : null}
     </Dialog>
   ) : null;
 
@@ -72,8 +83,9 @@ const DialogContext = createContext<DialogContextProps>({
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const { dialog, setDialogState } = useDialog();
-  const showDialog = (dialogContent: ReactElement, title: string) => {
+  const showDialog: ShowDialog = (dialogContent, title, actionButtons) => {
     setDialogState({
+      actions: actionButtons,
       content: dialogContent,
       title,
     });

@@ -1,12 +1,11 @@
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
-import { Button } from "@salt-ds/core";
+import type { TableConfig } from "@finos/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { TableConfig } from "packages/vuu-table-types";
 import { HTMLAttributes, useMemo } from "react";
-import { Table } from "../../Table";
-import { BulkEditRow, EditValueChangeHandler } from "./bulk-edit-row";
+import { Table } from "../Table";
+import { BulkEditRow, type EditValueChangeHandler } from "./BulkEditRow";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 
@@ -14,8 +13,6 @@ const classBase = "vuuBulkEditPanel";
 
 export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   dataSource: DataSource;
-  onClose?: () => void;
-  onSubmit?: () => void;
   response?: RpcResponse;
   mainTableName?: string;
 }
@@ -23,8 +20,6 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
 export const BulkEditPanel = ({
   className,
   dataSource,
-  onClose,
-  onSubmit,
   ...htmlAttributes
 }: BulkEditPanelProps): JSX.Element => {
   const targetWindow = useWindow();
@@ -72,11 +67,6 @@ export const BulkEditPanel = ({
           showColumnHeaderMenus={false}
           selectionModel="none"
         />
-      </div>
-
-      <div className={`${classBase}-buttonBar`}>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={onSubmit}>Save</Button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { TableSchema, TableSchemaTable } from "@finos/vuu-data-types";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 import cx from "clsx";
 import { FilterClauseValueEditorNumber } from "./FilterClauseValueEditorNumber";
 import { FilterClauseValueEditorText } from "./FilterClauseValueEditorText";

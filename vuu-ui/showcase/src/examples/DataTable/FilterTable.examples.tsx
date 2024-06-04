@@ -7,12 +7,11 @@ import {
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import type { FilterState } from "@finos/vuu-filter-types";
-import { FilterBarProps } from "@finos/vuu-filters";
+import type { FilterBarProps } from "@finos/vuu-filters";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
 import { useTestDataSource } from "../utils";
-import { FilterBarProps } from "packages/vuu-filters/src";
 
 let displaySequence = 1;
 const schemas = getAllSchemas();
@@ -108,14 +107,12 @@ export const FilterTableArrayDataInstruments = ({
   }, []);
 
   const FilterBarProps: FilterBarProps = {
-    FilterClauseEditorProps: {
-      suggestionProvider: typeaheadHook,
-    },
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
     quickFilterColumns,
+    suggestionProvider: typeaheadHook,
     tableSchema: getSchema("instruments"),
     variant,
   };
@@ -149,3 +146,14 @@ export const FilterTableArrayDataInstrumentsFullFilters = () => (
   <FilterTableArrayDataInstruments variant="full-filters" />
 );
 FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
+  <div
+    data-showcase-center
+    style={{ border: "solid red 4px", height: 600, width: 900 }}
+  >
+    <FilterTableArrayDataInstruments variant="full-filters" />
+  </div>
+);
+FilterTableArrayDataInstrumentsFixedHeightContainer.displaySequence =
+  displaySequence++;

@@ -4,7 +4,6 @@ import {
   DraggableLayout,
   LayoutProvider,
   LayoutProviderProps,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   StackLayout,
 } from "@finos/vuu-layout";
 import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
@@ -35,11 +34,16 @@ import shellCss from "./shell.css";
 
 registerComponent("ApplicationSettings", ApplicationSettingsPanel, "view");
 
-// if (typeof StackLayout !== "function") {
-//   console.warn(
-//     "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
-//   );
-// }
+if (process.env.NODE_ENV === "production") {
+  // StackLayout is loaded just to force component registration, we know it will be
+  // required when default layout is instantiated. This is only required in prod
+  // to avoif tree shaking the Stack away. Causes a runtime issue in dev.
+  if (typeof StackLayout !== "function") {
+    console.warn(
+      "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
+    );
+  }
+}
 
 const { error } = logger("Shell");
 

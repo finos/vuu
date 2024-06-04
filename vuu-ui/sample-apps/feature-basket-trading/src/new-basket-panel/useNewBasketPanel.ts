@@ -1,7 +1,7 @@
 import { ViewportRpcResponse } from "@finos/vuu-data-types";
+import type { TableRowSelectHandler } from "@finos/vuu-table-types";
 import { Commithandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { TableRowSelectHandler } from "packages/vuu-table-types";
 import { useCallback, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 

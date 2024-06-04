@@ -1,7 +1,9 @@
+import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
+import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { Commithandler, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { filterAsQuery, queryClosest } from "@finos/vuu-utils";
-import { VuuRowDataItemType } from "packages/vuu-protocol-types";
 import {
   ChangeEventHandler,
   RefCallback,
@@ -10,9 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { DataSourceFilter } from "packages/vuu-data-types";
 import { QuickFilterProps } from "./QuickFilters";
-import { ColumnDescriptor } from "packages/vuu-table-types";
 
 type QuickFilterValues = Record<string, VuuRowDataItemType>;
 

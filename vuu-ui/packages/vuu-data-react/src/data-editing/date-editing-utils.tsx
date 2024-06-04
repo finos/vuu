@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  Commithandler,
+  type Commithandler,
   VuuInput,
   VuuTypeaheadInput,
 } from "@finos/vuu-ui-controls";

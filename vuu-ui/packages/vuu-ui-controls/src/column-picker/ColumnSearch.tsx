@@ -1,9 +1,9 @@
-import { List, ListProps } from "@finos/vuu-ui-controls";
 import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, RefCallback, forwardRef, useCallback } from "react";
+import { List, ListProps } from "../list";
 
 import searchableListCss from "./ColumnSearch.css";
 
