@@ -12,12 +12,15 @@ import org.finos.vuu.test.FakeInMemoryTable;
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder;
 import org.finos.vuu.util.schema.SchemaMapper;
 import org.finos.vuu.util.schema.SchemaMapperBuilder;
+import org.finos.vuu.util.types.TypeConverter;
+import org.finos.vuu.util.types.TypeConverterContainerBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import scala.jdk.javaapi.OptionConverters;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +32,8 @@ import static org.junit.Assert.assertEquals;
 public class SchemaMapperJavaFunctionalTest {
 
     private static String queryName = "myQuery";
-    private static FakeDataSource<SchemaJavaTestData> dataSource = new FakeDataSource<>();
-    private static Clock clock  = new TestFriendlyClock(10001L);
+    private static final FakeDataSource<SchemaJavaTestData> dataSource = new FakeDataSource<>();
+    private static final Clock clock  = new TestFriendlyClock(10001L);
 
     @Before
     public void setUp() {
@@ -108,6 +111,49 @@ public class SchemaMapperJavaFunctionalTest {
             assertEquals(existingRows.get(0).get("SomeOtherName"), 10.5);
 
         }
+
+        @Test
+        public void when_table_columns_and_entity_fields_has_different_types() throws Exception {
+
+            var externalEntitySchema = ExternalEntitySchemaBuilder.apply()
+                    .withField("Id", Integer.class)
+                    .withField("decimalValue", BigDecimal.class)
+                    .withIndex("ID_INDEX", toScala(List.of("Id")))
+                    .build();
+            var tableDef = TableDef.apply(
+                    "MyJavaExampleTable",
+                    "Id",
+                    new ColumnBuilder()
+                            .addString("Id")
+                            .addDouble("doubleValue")
+                            .build(),
+                    toScalaSeq(List.of())
+            );
+            var typeConverterContainer = TypeConverterContainerBuilder.apply()
+                    .withConverter(TypeConverter.apply(BigDecimal.class, Double.class, BigDecimal::doubleValue))
+                    .withConverter(TypeConverter.apply(Double.class, BigDecimal.class, v -> new BigDecimal(v.toString())))
+                    .build();
+            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.columns())
+                    .withFieldsMap(
+                            toScala(Map.of("Id", "Id",
+                                    "decimalValue","doubleValue"
+                            ))
+                    )
+                    .withTypeConverters(typeConverterContainer)
+                    .build();
+            var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
+            dataSource.setUpResultAsListOfValues(
+                    queryName,
+                    ScalaList.of(ScalaList.of(10, new BigDecimal("1.0001")))
+            );
+
+            getDataAndUpdateTable(queryName, schemaMapper, table);
+
+            var existingRows = toJava(table.pullAllRows());
+            assertEquals(existingRows.size(), 1);
+            assertEquals(existingRows.get(0).get("Id"), "10");
+            assertEquals(existingRows.get(0).get("doubleValue"), 1.0001d);
+        }
     }
 
     private static void getDataAndUpdateTable(String queryName, SchemaMapper schemaMapper, FakeInMemoryTable table) throws Exception {
@@ -126,9 +172,8 @@ public class SchemaMapperJavaFunctionalTest {
     }
 
     private static List<List<Object>> getQueryResult(String queryName) throws Exception {
-        var result = OptionConverters.toJava(dataSource.getAsListOfValues(queryName))
+        return OptionConverters.toJava(dataSource.getAsListOfValues(queryName))
                         .map(listOfLists -> toJava(listOfLists.map(ScalaCollectionConverter::toJava).toList()))
                         .orElseThrow(() -> new Exception("Query does not exist in store. make sure it is setup"));
-        return result;
     }
 }
