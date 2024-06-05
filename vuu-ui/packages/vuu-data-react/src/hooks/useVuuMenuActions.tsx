@@ -4,8 +4,6 @@ import {
   DataSourceVisualLinkCreatedMessage,
   MenuActionHandler,
   MenuBuilder,
-  MenuRpcResponse,
-  RpcResponse,
   RpcResponseHandler,
 } from "@finos/vuu-data-types";
 import { useDialogContext, type MenuActionClosePopup } from "@finos/vuu-popups";

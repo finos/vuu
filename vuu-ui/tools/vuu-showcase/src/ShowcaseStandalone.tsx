@@ -35,9 +35,6 @@ const asDensity = (input: string | undefined): Density => {
   }
 };
 
-type Environment = "development" | "production";
-const env = process.env.NODE_ENV as Environment;
-
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
