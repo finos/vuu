@@ -1,6 +1,3 @@
-// The Showcase chrome is always rendered with Vuu styling, hence we always need the Vuu theme
-import "./themes/vuu-theme";
-
 import "./Showcase.css";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";

@@ -46,6 +46,7 @@ const HTML_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <base href="/" />
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -68,6 +69,11 @@ const { name: projectName } = readPackageJson();
 const esbuildConfig = {
   entryPoints,
   env: "production",
+  external: [
+    "./themes/salt-theme.ts",
+    "./themes/vuu-theme.ts",
+    "./themes/tar-theme.ts",
+  ],
   name: "showcase",
   plugins: [cssInlinePlugin],
   outdir,
