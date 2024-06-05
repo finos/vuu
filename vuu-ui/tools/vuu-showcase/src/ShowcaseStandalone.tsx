@@ -2,12 +2,16 @@ import {
   assertModuleExportsAtLeastOneComponent,
   Density,
   getUrlParameter,
-  importCSS,
   ThemeMode,
 } from "@finos/vuu-utils";
 import { SaltProvider } from "@salt-ds/core";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { getComponent, pathToExample, VuuExample } from "./showcase-utils";
+import {
+  getComponent,
+  loadTheme,
+  pathToExample,
+  VuuExample,
+} from "./showcase-utils";
 
 import "./Showcase.css";
 
@@ -19,7 +23,7 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
   }
 };
 
-const themeIsInstalled = (theme = "no-theme") => {
+const themeIsInstalled = (theme = "no-theme"): theme is string => {
   return ["salt-theme", "vuu-theme", "tar-theme"].includes(theme);
 };
 
@@ -31,9 +35,6 @@ const asDensity = (input: string | undefined): Density => {
   }
 };
 
-type Environment = "development" | "production";
-const env = process.env.NODE_ENV as Environment;
-
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
@@ -43,7 +44,7 @@ export const ShowcaseStandalone = () => {
   const themeModeRef = useRef<ThemeMode>("light");
 
   const [component, setComponent] = useState<ReactNode>(null);
-  const [themeReady, setThemeReady] = useState(false);
+  const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
   const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
@@ -67,20 +68,9 @@ export const ShowcaseStandalone = () => {
 
   useMemo(() => {
     if (themeIsInstalled(theme)) {
-      if (env === "development") {
-        import(`./themes/${theme}.ts`).then(() => {
-          setThemeReady(true);
-        });
-      } else {
-        // For deployment, we build the theme to a single css file
-        importCSS(`/themes/${theme}.css`).then((styleSheet) => {
-          document.adoptedStyleSheets = [
-            ...document.adoptedStyleSheets,
-            styleSheet,
-          ];
-          setThemeReady(true);
-        });
-      }
+      loadTheme(theme).then(() => {
+        setThemeReady(true);
+      });
     }
   }, [theme]);
 

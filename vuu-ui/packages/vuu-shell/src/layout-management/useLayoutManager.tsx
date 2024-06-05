@@ -183,10 +183,15 @@ export const LayoutManagementProvider = ({
 
   const saveLayout = useCallback(
     (metadata: LayoutMetadataDto) => {
-      const layoutToSave = resolveJSONPath(
-        applicationJSONRef.current.layout,
-        "#main-tabs.ACTIVE_CHILD"
-      );
+      let layoutToSave: LayoutJSON | undefined;
+      try {
+        layoutToSave = resolveJSONPath(
+          applicationJSONRef.current.layout,
+          "#main-tabs.ACTIVE_CHILD"
+        );
+      } catch (e) {
+        // ignore, code below will handle
+      }
 
       if (layoutToSave && isLayoutJSON(layoutToSave)) {
         persistenceManager

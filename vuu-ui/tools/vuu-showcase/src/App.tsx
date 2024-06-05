@@ -8,10 +8,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
-import { byDisplaySequence, ExamplesModule } from "./showcase-utils";
+import { byDisplaySequence, ExamplesModule, loadTheme } from "./showcase-utils";
 
 import { ThemeSwitch } from "@finos/vuu-shell";
 
@@ -43,7 +43,6 @@ const sourceFromImports = (
         childNodes: sourceFromImports(stories, `${id}/`, "box"),
       };
     });
-// LIF00219931962
 export interface AppProps {
   stories: ExamplesModule;
 }
@@ -73,6 +72,14 @@ const availableDensity: DensityDescriptor[] = [
 
 export const App = ({ stories }: AppProps) => {
   const navigate = useNavigate();
+  const [themeReady, setThemeReady] = useState(false);
+
+  useEffect(() => {
+    loadTheme("vuu-theme").then(() => {
+      setThemeReady(true);
+    });
+  }, []);
+
   // // TODO cache source in localStorage
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
@@ -113,7 +120,7 @@ export const App = ({ stories }: AppProps) => {
     }
   }, []);
 
-  return (
+  return themeReady ? (
     <SaltProvider density="high" theme="vuu-theme" mode="light">
       <Flexbox
         style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
@@ -197,5 +204,5 @@ export const App = ({ stories }: AppProps) => {
         </Flexbox>
       </Flexbox>
     </SaltProvider>
-  );
+  ) : null;
 };

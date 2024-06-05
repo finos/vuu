@@ -1,4 +1,4 @@
-import { isModule, Module, ReactComponent } from "@finos/vuu-utils";
+import { importCSS, isModule, Module, ReactComponent } from "@finos/vuu-utils";
 
 type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
@@ -76,3 +76,21 @@ export const getComponent = <T = ReactComponent>(
     return importedEntity.default as T;
   }
 };
+
+export const loadTheme = (themeName: string): Promise<void> =>
+  new Promise((resolve) => {
+    console.log(`load theme ${themeName} ${env}`);
+    if (env === "development") {
+      import(`./themes/${themeName}.ts`).then(() => {
+        resolve();
+      });
+    } else {
+      importCSS(`/themes/${themeName}.css`).then((styleSheet) => {
+        document.adoptedStyleSheets = [
+          ...document.adoptedStyleSheets,
+          styleSheet,
+        ];
+        resolve();
+      });
+    }
+  });
