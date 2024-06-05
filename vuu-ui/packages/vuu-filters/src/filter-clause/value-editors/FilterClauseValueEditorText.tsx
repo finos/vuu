@@ -1,3 +1,9 @@
+import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
+import type { SuggestionFetcher } from "@finos/vuu-data-types";
+import type { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
+import { getVuuTable } from "@finos/vuu-utils";
+import { Option } from "@salt-ds/core";
 import {
   FormEvent,
   ForwardedRef,
@@ -10,25 +16,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import type { TypeaheadParams, VuuTable } from "@finos/vuu-protocol-types";
-import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
-import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { ExpandoCombobox } from "../ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
-import type {
-  SuggestionFetcher,
-  TableSchemaTable,
-} from "@finos/vuu-data-types";
-import { Option } from "@salt-ds/core";
-
-const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
-  if (schemaTable.session) {
-    const { module, session } = schemaTable;
-    return { module, table: session };
-  } else {
-    return schemaTable;
-  }
-};
 
 export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,

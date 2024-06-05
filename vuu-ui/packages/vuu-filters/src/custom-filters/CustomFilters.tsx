@@ -14,20 +14,19 @@ export interface CustomFilterProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<
       FilterBarProps,
-      | "FilterClauseEditorProps"
       | "defaultFilterState"
       | "filterState"
       | "onApplyFilter"
       | "onFilterDeleted"
       | "onFilterRenamed"
       | "onFilterStateChanged"
+      | "suggestionProvider"
       | "tableSchema"
     > {
   columnDescriptors: ColumnDescriptor[];
 }
 
 export const CustomFilters = ({
-  FilterClauseEditorProps,
   columnDescriptors,
   defaultFilterState,
   filterState,
@@ -35,6 +34,7 @@ export const CustomFilters = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
+  suggestionProvider,
   tableSchema,
 }: CustomFilterProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -114,12 +114,12 @@ export const CustomFilters = ({
       </div>
       {filterModel && tableSchema && (
         <FilterEditor
-          FilterClauseEditorProps={FilterClauseEditorProps}
           columnDescriptors={columnDescriptors}
           key="filter-editor"
           onCancel={onCancelEdit}
           onSave={onSave}
           filter={interactedFilterState?.filter}
+          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       )}

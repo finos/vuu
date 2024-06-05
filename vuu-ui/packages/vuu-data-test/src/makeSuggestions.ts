@@ -11,6 +11,9 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
   } else {
     const { data, map } = table;
     const key = map[column];
+    if (key === undefined) {
+      throw Error(`table ${table.schema.table.table} has no column ${column}`);
+    }
     uniqueValues = [];
     const set = new Set();
     for (const row of data) {
@@ -28,8 +31,10 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
     }
   }
   return pattern
-    ? uniqueValues.filter((value) => value.toString().startsWith(pattern))
-    : uniqueValues;
+    ? uniqueValues
+        .filter((value) => value.toString().startsWith(pattern))
+        .slice(0, 10)
+    : uniqueValues.slice(0, 10);
 };
 
 // export const makeSuggestions = (

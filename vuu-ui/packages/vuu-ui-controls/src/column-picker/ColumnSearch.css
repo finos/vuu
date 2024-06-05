@@ -1,0 +1,64 @@
+.vuuColumnSearch {
+  --vuuList-borderWidth: 0;
+  --vuuColumnListItem-border: none;
+  --vuuMeasuredContainer-flex: 1 1 1px;
+
+  background: var(--salt-container-primary-background);
+  border: solid 1px var(--salt-container-primary-borderColor);
+  border-radius: 4px;
+  height: 100%;
+  padding: 12px 4px 12px 12px;
+  display: flex;
+  flex-direction: column;
+
+  .vuuIcon {
+    display: none;
+  }
+  .saltSwitch {
+    display: none;
+  }
+  .vuuColumnList-header {
+    display: none;
+  }
+  .vuuColumnList-colHeadings {
+    display: none;
+  }
+  .vuuList-viewport {
+    padding-right: var(--salt-spacing-100);
+  }
+
+  .vuuColumnListItem {
+    padding-left: var(--salt-spacing-100);
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #d9d9d9;
+  }
+}
+
+.vuuColumnSearch-inputField {
+  --vuu-icon-size: 16px;
+  flex: 0 0 40px;
+  margin-right: 8px;
+}
+.vuuColumnSearch-list {
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  background-color: var(--salt-container-primary-background);
+  flex: 1 1 auto;
+}
+
+.vuuColumnSearch .vuuTableCell {
+  padding: 0;
+}

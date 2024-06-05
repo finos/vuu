@@ -380,6 +380,7 @@ export type DataSourceStatus =
   | "unsubscribed";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
+export type SuggestionProvider = () => SuggestionFetcher;
 
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (

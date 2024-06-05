@@ -7,7 +7,7 @@ import {
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import type { FilterState } from "@finos/vuu-filter-types";
-import { FilterBarProps } from "@finos/vuu-filters";
+import type { FilterBarProps } from "@finos/vuu-filters";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
@@ -66,7 +66,10 @@ export const FilterTableVuuInstruments = () => {
 };
 FilterTableVuuInstruments.displaySequence = displaySequence++;
 
-export const FilterTableArrayDataInstruments = () => {
+export const FilterTableArrayDataInstruments = ({
+  quickFilterColumns,
+  variant = "custom-filters",
+}: Pick<FilterBarProps, "quickFilterColumns" | "variant">) => {
   const schema = schemas.instruments;
   const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">
@@ -104,14 +107,14 @@ export const FilterTableArrayDataInstruments = () => {
   }, []);
 
   const FilterBarProps: FilterBarProps = {
-    FilterClauseEditorProps: {
-      suggestionProvider: typeaheadHook,
-    },
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
+    quickFilterColumns,
+    suggestionProvider: typeaheadHook,
     tableSchema: getSchema("instruments"),
+    variant,
   };
 
   const tableProps = {
@@ -130,3 +133,27 @@ export const FilterTableArrayDataInstruments = () => {
   );
 };
 FilterTableArrayDataInstruments.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsQuickFilters = () => (
+  <FilterTableArrayDataInstruments
+    variant="quick-filters"
+    quickFilterColumns={["isin", "currency", "exchange"]}
+  />
+);
+FilterTableArrayDataInstrumentsQuickFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFullFilters = () => (
+  <FilterTableArrayDataInstruments variant="full-filters" />
+);
+FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
+  <div
+    data-showcase-center
+    style={{ border: "solid red 4px", height: 600, width: 900 }}
+  >
+    <FilterTableArrayDataInstruments variant="full-filters" />
+  </div>
+);
+FilterTableArrayDataInstrumentsFixedHeightContainer.displaySequence =
+  displaySequence++;

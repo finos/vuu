@@ -24,6 +24,7 @@ import {
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
 import { BulkEditPanel } from "@finos/vuu-table";
+import { Button } from "@salt-ds/core";
 
 const NO_CONFIG: MenuActionConfig = {};
 
@@ -116,7 +117,15 @@ export const useVuuMenuActions = ({
       if (sessionDs) {
         showDialog(
           <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
-          "Multi Row Edit"
+          "Multi Row Edit",
+          [
+            <Button key="cancel" onClick={closeDialog}>
+              Cancel
+            </Button>,
+            <Button key="submit" onClick={handleSubmit}>
+              Save
+            </Button>,
+          ]
         );
 
         return true;

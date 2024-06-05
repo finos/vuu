@@ -1,13 +1,13 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { Filter } from "@finos/vuu-filter-types";
+import { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
+import type { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { SplitButton } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
-import { FilterClause, FilterClauseProps } from "../filter-clause/FilterClause";
 import { FilterClauseModel } from "../FilterModel";
+import { FilterClause } from "../filter-clause";
 import { FilterClauseCombinator } from "./FilterClauseCombinator";
 import { useFilterEditor } from "./useFilterEditor";
 
@@ -19,20 +19,20 @@ export type FilterEditSaveHandler = (filter: Filter) => void;
 export type FilterEditCancelHandler = (filter?: Filter) => void;
 
 export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
-  FilterClauseEditorProps?: Partial<FilterClauseProps>;
   columnDescriptors: ColumnDescriptor[];
   filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;
+  suggestionProvider?: SuggestionProvider;
   tableSchema: TableSchema;
 }
 
 export const FilterEditor = ({
-  FilterClauseEditorProps,
   columnDescriptors,
   filter,
   onCancel,
   onSave,
+  suggestionProvider,
   tableSchema,
   ...htmlAttributes
 }: FilterEditorProps) => {
@@ -78,13 +78,13 @@ export const FilterEditor = ({
       }
       content.push(
         <FilterClause
-          {...FilterClauseEditorProps}
           columnsByName={columnsByName}
           data-index={i}
           filterClauseModel={filterClauseModel as FilterClauseModel}
           key={`editor-${i}`}
           onCancel={onCancelFilterClause}
           onFocusSave={focusSaveButton}
+          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       );

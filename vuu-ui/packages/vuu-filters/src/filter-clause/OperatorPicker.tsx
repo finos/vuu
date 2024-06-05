@@ -1,10 +1,10 @@
+import type { FilterClauseOp } from "@finos/vuu-filter-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { ExpandoCombobox } from "./ExpandoCombobox";
-import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
-import { FilterClauseOp } from "packages/vuu-filter-types";
-import { getOperators } from "./operator-utils";
 import { isValidFilterClauseOp } from "@finos/vuu-utils";
 import { ComboBoxProps, Option } from "@salt-ds/core";
+import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
+import { ExpandoCombobox } from "./ExpandoCombobox";
+import { getOperators } from "./operator-utils";
 
 export type OperatorPickerProps = Pick<
   ComboBoxProps,
