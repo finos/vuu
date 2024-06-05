@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
 
 //case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int, owner: String = "", permissionMask: Int = 0)
@@ -82,7 +83,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
   private final val queue = new DelayQueue[DelayQueueAction]()
   private final var cycleNumber = 0l
   private var orderId = 0
-  private var childOrderId = 0
+  private var childOrderId = new AtomicInteger(0);
   private final val MAX_ORDERS = 7000
   private var parentOrderCount = 0;
 
@@ -308,8 +309,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
   }
 
   def createChild(parentOrder: ParentOrder): ChildOrder = {
-    val childId = childOrderId
-    childOrderId += 1
+    val childId = childOrderId.getAndIncrement()
     val quantity = parentOrder.quantity
     val side = parentOrder.side
     val account = parentOrder.account
