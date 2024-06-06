@@ -1,8 +1,10 @@
-package org.finos.vuu.person;
+package org.finos.vuu.person.manual;
 
 import org.finos.toolbox.time.Clock;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.RowWithData;
+import org.finos.vuu.person.Person;
+import org.finos.vuu.person.PersonStore;
 import org.finos.vuu.provider.Provider;
 
 import java.util.Map;

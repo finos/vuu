@@ -169,9 +169,13 @@ public class SchemaMapperJavaFunctionalTest {
 
     private static RowWithData mapToRow(SchemaMapper schemaMapper, List<Object> valueList, String keyFieldName) {
         var rowMap = schemaMapper.toInternalRowMap(toScala(valueList));
-        var keyOptional = OptionConverters.toJava(rowMap.get(keyFieldName));
-        var key = keyOptional.orElseThrow();
-        return new RowWithData(key.toString(), rowMap);
+        return new RowWithData(getKeyValue(keyFieldName, rowMap), rowMap);
+    }
+
+    private static String getKeyValue(String keyFieldName, scala.collection.immutable.Map<String, Object> rowMap) {
+        return OptionConverters.toJava(rowMap.get(keyFieldName))
+                .map(Object::toString)
+                .orElseThrow();
     }
 
     private static List<List<Object>> getQueryResult(String queryName) throws Exception {

@@ -7,8 +7,11 @@ import org.finos.vuu.core.module.DefaultModule;
 import org.finos.vuu.core.module.ModuleFactory;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
-import org.finos.vuu.person.PersonProvider;
+import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.person.PersonStore;
+import org.finos.vuu.person.auto.AutoMappedPersonProvider;
+import org.finos.vuu.person.auto.EntitySchema;
+import org.finos.vuu.person.manual.PersonProvider;
 
 import java.util.List;
 
@@ -19,10 +22,11 @@ public class JavaExampleModule extends DefaultModule {
     public static final String NAME = "JAVA_EXAMPLE";
 
     public ViewServerModule create(final TableDefContainer tableDefContainer, Clock clock) {
+
         return ModuleFactory.withNamespace(NAME, tableDefContainer)
                 .addTable(TableDef.apply(
-                                "Person",
-                                "id",
+                                "PersonManualMapped",
+                                "Id",
                                 new ColumnBuilder()
                                         .addString("Id")
                                         .addString("Name")
@@ -31,7 +35,16 @@ public class JavaExampleModule extends DefaultModule {
                                 toScalaSeq(List.of())
                         ),
                         (table, vs) -> new PersonProvider(table, new PersonStore(), clock)
-                ).asModule();
+                )
+                .addTable(TableDef.apply(
+                                "PersonAutoMapped",
+                                "Id",
+                                Columns.fromExternalSchema(EntitySchema.person),
+                                toScalaSeq(List.of())
+                        ),
+                        (table, vs) -> new AutoMappedPersonProvider(table, new PersonStore(), clock)
+                )
+                .asModule();
     }
 
 }
