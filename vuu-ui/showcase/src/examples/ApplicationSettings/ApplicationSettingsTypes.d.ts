@@ -1,4 +1,4 @@
-type SettingsProperty <T extends string | number | boolean = string> = {
+type SettingsProperty <T extends string | number | boolean | object = string> = {
     name: string;
     label: string;
     values?: T[];
