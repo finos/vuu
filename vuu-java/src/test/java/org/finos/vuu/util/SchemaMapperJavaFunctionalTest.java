@@ -7,7 +7,6 @@ import org.finos.vuu.api.ColumnBuilder;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.RowWithData;
-import org.finos.vuu.test.FakeDataSource;
 import org.finos.vuu.test.FakeInMemoryTable;
 import org.finos.vuu.util.schema.ExternalEntitySchemaBuilder;
 import org.finos.vuu.util.schema.SchemaMapper;
@@ -19,6 +18,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import scala.jdk.javaapi.OptionConverters;
+import test.helper.FakeDataSource;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 public class SchemaMapperJavaFunctionalTest {
 
     private static String queryName = "myQuery";
-    private static final FakeDataSource<SchemaJavaTestData> dataSource = new FakeDataSource<>();
+    private static final FakeDataSource dataSource = new FakeDataSource();
     private static final Clock clock  = new TestFriendlyClock(10001L);
 
     @Before
@@ -59,16 +59,17 @@ public class SchemaMapperJavaFunctionalTest {
             var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
             dataSource.setUpResultAsListOfValues(
                     queryName,
-                    ScalaList.of(ScalaList.of("testId1", 5, 10.5))
+                    List.of(List.of("testId1", 5, 10.5))
             );
 
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
-            var existingRows = toJava(table.pullAllRows());
+            var existingRows = table.pullAllRows();
             assertEquals(existingRows.size(), 1);
-            assertEquals(existingRows.get(0).get("Id"), "testId1");
-            assertEquals(existingRows.get(0).get("ClientId"), 5);
-            assertEquals(existingRows.get(0).get("NotionalValue"), 10.5);
+            var exitingFirstRow = existingRows.iterator().next();
+            assertEquals(exitingFirstRow.get("Id"), "testId1");
+            assertEquals(exitingFirstRow.get("ClientId"), 5);
+            assertEquals(exitingFirstRow.get("NotionalValue"), 10.5);
         }
 
         @Test
@@ -99,16 +100,17 @@ public class SchemaMapperJavaFunctionalTest {
             var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
             dataSource.setUpResultAsListOfValues(
                     queryName,
-                    ScalaList.of(ScalaList.of("testId1", 5, 10.5))
+                    List.of(List.of("testId1", 5, 10.5))
             );
 
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
-            var existingRows = toJava(table.pullAllRows());
+            var existingRows = table.pullAllRows();
             assertEquals(existingRows.size(), 1);
-            assertEquals(existingRows.get(0).get("Id"), "testId1");
-            assertEquals(existingRows.get(0).get("ClientId"), 5);
-            assertEquals(existingRows.get(0).get("SomeOtherName"), 10.5);
+            var exitingFirstRow = existingRows.iterator().next();
+            assertEquals(exitingFirstRow.get("Id"), "testId1");
+            assertEquals(exitingFirstRow.get("ClientId"), 5);
+            assertEquals(exitingFirstRow.get("SomeOtherName"), 10.5);
 
         }
 
@@ -144,15 +146,16 @@ public class SchemaMapperJavaFunctionalTest {
             var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
             dataSource.setUpResultAsListOfValues(
                     queryName,
-                    ScalaList.of(ScalaList.of(10, new BigDecimal("1.0001")))
+                    List.of(List.of(10, new BigDecimal("1.0001")))
             );
 
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
-            var existingRows = toJava(table.pullAllRows());
+            var existingRows = table.pullAllRows();
             assertEquals(existingRows.size(), 1);
-            assertEquals(existingRows.get(0).get("Id"), "10");
-            assertEquals(existingRows.get(0).get("doubleValue"), 1.0001d);
+            var exitingFirstRow = existingRows.iterator().next();
+            assertEquals(exitingFirstRow.get("Id"), "10");
+            assertEquals(exitingFirstRow.get("doubleValue"), 1.0001d);
         }
     }
 
@@ -172,8 +175,7 @@ public class SchemaMapperJavaFunctionalTest {
     }
 
     private static List<List<Object>> getQueryResult(String queryName) throws Exception {
-        return OptionConverters.toJava(dataSource.getAsListOfValues(queryName))
-                        .map(listOfLists -> toJava(listOfLists.map(ScalaCollectionConverter::toJava).toList()))
+        return dataSource.getAsListOfValues(queryName)
                         .orElseThrow(() -> new Exception("Query does not exist in store. make sure it is setup"));
     }
 }
