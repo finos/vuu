@@ -1,7 +1,6 @@
 import { TableSchema } from "@finos/vuu-data-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { Toolbar } from "@finos/vuu-ui-controls";
-import { Button } from "@salt-ds/core";
+import { IconButton } from "@finos/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 
@@ -33,25 +32,33 @@ export const AppHeader = ({
             tableSchemas,
           },
         },
-        title: "Layout",
+        title: "Layout & Components",
       },
     });
   }, [dispatchLayoutAction, tableSchemas]);
 
+  const handleShowSettings = useCallback(() => {
+    console.log("show settings");
+  }, []);
+
   return (
-    <Toolbar
-      alignItems="end"
-      className={className}
-      showSeparators
-      {...htmlAttributes}
-    >
-      <Button
+    <div className={className} {...htmlAttributes}>
+      <IconButton
         className={`${classBase}-menuItem`}
+        data-embedded
+        icon="layout"
         onClick={handleShowLayout}
+        size={20}
         variant="secondary"
-      >
-        Layout <span data-icon="settings" />
-      </Button>
-    </Toolbar>
+      />
+      <IconButton
+        className={`${classBase}-menuItem`}
+        data-embedded
+        icon="settings"
+        onClick={handleShowSettings}
+        size={20}
+        variant="secondary"
+      />
+    </div>
   );
 };

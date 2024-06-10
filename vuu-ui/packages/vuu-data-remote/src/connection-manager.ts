@@ -24,7 +24,7 @@ import {
   getLoggingConfigForWorker,
   isConnectionQualityMetrics,
   isConnectionStatusMessage,
-  isTableSchema,
+  isTableSchemaMessage,
   messageHasResult,
   uuid,
 } from "@finos/vuu-utils";
@@ -197,7 +197,7 @@ function handleMessageFromWorker({
         message.type === "VP_EDIT_RPC_REJECT"
       ) {
         resolve(message);
-      } else if (isTableSchema(message)) {
+      } else if (isTableSchemaMessage(message)) {
         resolve(message.tableSchema);
       } else {
         resolve(rest);

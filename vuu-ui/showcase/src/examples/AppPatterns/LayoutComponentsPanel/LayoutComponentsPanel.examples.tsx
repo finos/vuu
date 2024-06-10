@@ -6,12 +6,15 @@ import {
   Placeholder,
   View,
 } from "@finos/vuu-layout";
-import { ContextPanel, LayoutManagementProvider } from "@finos/vuu-shell";
+import {
+  ContextPanel,
+  LayoutManagementProvider,
+  StaticPersistenceManager,
+} from "@finos/vuu-shell";
 import { registerComponent } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { LayoutComponentsPanel } from "./LayoutComponentsPanel";
-import { StaticPersistenceManager } from "./StaticPersistenceManager";
-import layoutMetadata from "./layoutMetadata";
+import layoutMetadata from "../../_test-data/layoutMetadata";
 import { AppHeader } from "./app-header";
 
 registerComponent("LayoutComponentsPanel", LayoutComponentsPanel, "view");

@@ -5,13 +5,23 @@ import {
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
-import { useThemeAttributes } from "@finos/vuu-utils";
+import {
+  FilterTableFeatureProps,
+  hasFilterTableFeatureProps,
+  useThemeAttributes,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { CSSProperties, HTMLAttributes, useCallback, useState } from "react";
+import {
+  CSSProperties,
+  HTMLAttributes,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { FeatureProps } from "../feature";
-import { FeatureList } from "../feature-list";
+import { FeatureList, GroupedFeatureProps } from "../feature-list";
 import { LayoutList } from "../layout-management";
 
 import leftNavCss from "./LeftNav.css";
@@ -48,12 +58,37 @@ export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
-  tableFeatures: FeatureProps[];
+  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
 }
 
 type NavState = {
   activeTabIndex: number;
   expanded: boolean;
+};
+
+const byModule = (
+  f1: FeatureProps<FilterTableFeatureProps>,
+  f2: FeatureProps<FilterTableFeatureProps>
+) => {
+  const t1 = f1.ComponentProps?.tableSchema.table;
+  const t2 = f2.ComponentProps?.tableSchema.table;
+  if (t1 && t2) {
+    const m1 = t1.module.toLowerCase();
+    const m2 = t2.module.toLowerCase();
+    if (m1 < m2) {
+      return -1;
+    } else if (m1 > m2) {
+      return 1;
+    } else if (t1.table < t2.table) {
+      return -1;
+    } else if (t1.table > t2.table) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+    throw Error("Invalid tableFeature");
+  }
 };
 
 export const LeftNav = (props: LeftNavProps) => {
@@ -74,6 +109,10 @@ export const LeftNav = (props: LeftNavProps) => {
     ...htmlAttributes
   } = props;
 
+  console.log("LeftNav", {
+    tableFeatures,
+  });
+
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-left-nav",
@@ -85,6 +124,32 @@ export const LeftNav = (props: LeftNavProps) => {
     activeTabIndex: defaultActiveTabIndex,
     expanded: defaultExpanded,
   });
+
+  const tableFeaturesByGroup = useMemo(
+    () =>
+      tableFeatures
+        .sort(byModule)
+        .reduce<GroupedFeatureProps<FilterTableFeatureProps>>(
+          (acc, filterTableFeature) => {
+            if (hasFilterTableFeatureProps(filterTableFeature)) {
+              const { table } = filterTableFeature.ComponentProps.tableSchema;
+              const key = `${table.module} Tables`;
+              if (!acc[key]) {
+                acc[key] = [];
+              }
+              return {
+                ...acc,
+                [key]: acc[key].concat(filterTableFeature),
+              };
+            } else {
+              return acc;
+              // throw Error("LeftNaV invalid tableFeature");
+            }
+          },
+          {}
+        ),
+    [tableFeatures]
+  );
 
   const getFullWidth = useCallback(
     (tabIndex: number, expanded: boolean): number => {
@@ -192,9 +257,9 @@ export const LeftNav = (props: LeftNavProps) => {
         showTabs={false}
       >
         <FeatureList features={features} title="VUU FEATURES" />
-        <FeatureList features={tableFeatures} title="VUU TABLES" />
+        <FeatureList features={tableFeaturesByGroup} title="VUU TABLES" />
         <div className="vuuLeftNav-drawer">
-          <LayoutList />
+          <LayoutList title="My Layouts" />
         </div>
       </Stack>
     </div>

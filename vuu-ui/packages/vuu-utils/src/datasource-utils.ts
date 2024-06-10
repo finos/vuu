@@ -237,7 +237,7 @@ export const isTypeaheadSuggestionProvider = (
   typeof (source as TypeaheadSuggestionProvider)["getTypeaheadSuggestions"] ===
   "function";
 
-export const isTableSchema = (
+export const isTableSchemaMessage = (
   message: VuuUIMessageIn
 ): message is VuuUIMessageInTableMeta => message.type === "TABLE_META_RESP";
 

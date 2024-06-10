@@ -28,7 +28,6 @@ import {
 } from "./layout-management";
 import { loadingApplicationJson } from "./persistence-management";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
-import { SaveLocation } from "./shellTypes";
 
 import shellCss from "./shell.css";
 
@@ -61,7 +60,6 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
-  saveLocation?: SaveLocation;
   saveUrl?: string;
   serverUrl?: string;
   user: VuuUser;
@@ -74,7 +72,6 @@ export const Shell = ({
   className: classNameProp,
   leftSidePanelLayout,
   loginUrl,
-  saveLocation: _,
   saveUrl,
   serverUrl,
   user,
