@@ -1,3 +1,4 @@
+import { LayoutJSON, layoutFromJson } from "../layout-reducer";
 import { getColumns, getRows } from "./grid-dom-utils";
 import {
   doesResizeRequireNewTrack as isResizeTrackShared,
@@ -489,7 +490,8 @@ export class GridLayoutModel {
   splitGridItem(
     gridItemId: string,
     resizeDirection: GridLayoutResizeDirection,
-    tracks: number[]
+    tracks: number[],
+    newGridItemJSON?: LayoutJSON
   ): {
     updates: GridItemUpdate[];
     tracks: number[];
@@ -539,6 +541,21 @@ export class GridLayoutModel {
       updates.forEach(([id, position]) => {
         setTrack(id, position);
       });
+
+      if (newGridItemJSON) {
+        const component = layoutFromJson(newGridItemJSON, "");
+        console.log({ component });
+
+        //   const gridItem: IGridLayoutModelItem = {
+        //     id: uuid(),
+        //     column: { start: columnStart, end: columnEnd },
+        //     resizeable: "vh",
+        //     row: { start: rowStart, end: rowEnd },
+        //     type: "content",
+        //   };
+
+        //   layoutModel.addGridItem(gridItem);
+      }
 
       return {
         updates: updates ?? [],
