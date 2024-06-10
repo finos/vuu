@@ -9,7 +9,6 @@ export * from "./session-editing-form";
 export * from "./shell";
 export * from "./shell-layouts/context-panel";
 export * from "./shell-layouts/side-panel";
-export * from "./shellTypes";
 export * from "./ShellContextProvider";
 export * from "./feature-list";
 export * from "./theme-switch";

@@ -75,6 +75,13 @@
   flex-shrink: 0;
   flex-basis: var(--nav-menu-content-width, 240px);
   z-index: -1;
+
+  .vuuTabs-tabPanel {
+    background: var(--salt-container-primary-background);
+    height: 100%;
+    padding: var(--salt-spacing-200) var(--salt-spacing-100)
+      var(--salt-spacing-200) var(--salt-spacing-400);
+  }
 }
 
 .vuuLeftNav .vuuTabstrip {

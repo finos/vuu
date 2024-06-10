@@ -1,4 +1,5 @@
 .vuuFeatureList {
+  --vuuListItem-padding: var(--salt-spacing-200);
   background: var(
     --vuuFeatureList-background,
     var(--salt-container-primary-background)
@@ -6,18 +7,52 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--vuuFeatureList-padding);
+  padding: 0 var(--vuuFeatureList-padding, 0);
 }
 
 .vuuFeatureList-header {
-  flex: 0 0 40px;
-  font-size: 12px;
+  align-items: center;
+  display: flex;
+  flex: 0 0 48px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 2;
 }
 
 .vuuFeatureList-content {
+  display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   font-size: 12px;
+  font-weight: 700;
+  overflow: auto;
+}
+
+.vuuFeatureList-group {
+  --vuuMeasuredContainer-flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+
+  .vuuFeatureList-groupHeader {
+    flex: 0 0 32px;
+    padding: 8px 0;
+  }
+
+  .vuuPalette {
+    flex: 1 1 auto;
+    height: auto;
+  }
+}
+
+.vuuFeatureList-group:first-child {
+  margin-top: 12px;
+}
+
+.vuuFeatureList-group + .vuuFeatureList-group {
+  margin-top: 24px;
+}
+
+.vuuFeatureList-itemName {
   font-weight: 700;
 }

@@ -1,77 +1,30 @@
 import { useVuuTables } from "@finos/vuu-data-react";
-import { TableSchema } from "@finos/vuu-data-types";
+import { FeatureProps } from "@finos/vuu-shell";
 import {
-  FeatureProps,
   Features,
-  isTableSchema,
-  isWildcardSchema,
-} from "@finos/vuu-shell";
-import { wordify } from "@finos/vuu-utils";
+  FilterTableFeatureProps,
+  getCustomAndTableFeatures,
+} from "@finos/vuu-utils";
 import { useMemo } from "react";
 
 export interface FeaturesHookProps {
   features: Features;
 }
 
-export const useFeatures = ({
-  features: featuresProp,
-}: FeaturesHookProps): [FeatureProps[], FeatureProps[]] => {
-  const tables = useVuuTables();
-  const [features, tableFeatures] = useMemo<
-    [FeatureProps[], FeatureProps[]]
-  >(() => {
-    const features: FeatureProps[] = [];
-    const tableFeatures: FeatureProps[] = [];
-    for (const {
-      featureProps = {},
-      leftNavLocation = "vuu-tables",
-      ...feature
-    } of Object.values(featuresProp)) {
-      const { schema, schemas, ViewProps } = featureProps;
-      const target =
-        leftNavLocation === "vuu-tables" ? tableFeatures : features;
-      if (isWildcardSchema(schema) && tables) {
-        for (const tableSchema of tables.values()) {
-          target.push({
-            ...feature,
-            ComponentProps: {
-              tableSchema,
-            },
-            title: `${tableSchema.table.module} ${wordify(
-              tableSchema.table.table
-            )}`,
-          });
-        }
-      } else if (isTableSchema(schema) && tables) {
-        //TODO set the
-        const tableSchema = tables.get(schema.table);
-        target.push({
-          ...feature,
-          ComponentProps: {
-            tableSchema,
-          },
-          ViewProps,
-        });
-      } else if (Array.isArray(schemas)) {
-        target.push({
-          ...feature,
-          ComponentProps: schemas.reduce<Record<string, TableSchema>>(
-            (map, schema) => {
-              map[`${schema.table}Schema`] = tables?.get(
-                schema.table
-              ) as TableSchema;
-              return map;
-            },
-            {}
-          ),
-          ViewProps,
-        });
-      } else {
-        target.push(feature);
-      }
-    }
-    return [features, tableFeatures];
-  }, [featuresProp, tables]);
+const NO_FEATURES: ReturnType<typeof useFeatures> = [[], []];
 
-  return [features, tableFeatures];
+export const useFeatures = ({
+  features,
+}: FeaturesHookProps): [
+  FeatureProps[],
+  FeatureProps<FilterTableFeatureProps>[]
+] => {
+  const tables = useVuuTables();
+  const [customFeatures, tableFeatures] = useMemo<
+    [FeatureProps[], FeatureProps<FilterTableFeatureProps>[]]
+  >(
+    () => (tables ? getCustomAndTableFeatures(features, tables) : NO_FEATURES),
+    [features, tables]
+  );
+  return [customFeatures, tableFeatures];
 };

@@ -371,7 +371,7 @@ export const List = forwardRef(function List<
       {...htmlAttributes}
       {...listHandlers}
       {...listControlProps}
-      className={cx(classBase, className, {
+      className={cx(classBase, className, "vuuScrollable", {
         [`${classBase}-collapsible`]: collapsibleHeaders,
         [`${classBase}-contentSized`]: computedListHeight !== undefined,
         [`${classBase}-empty`]: isEmpty,

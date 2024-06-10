@@ -1,86 +1,87 @@
 .vuuLayoutList {
-    --vuuLayoutList-width: 90%;
-    --vuuMeasuredContainer-flex: 1 1 1px;
-    align-self: stretch;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    padding-right: 6px;
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  --vuuListItem-separator-color: transparent;
 
-    /* compatible with Chrome, Edge, and Safari */
-    ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
-    }
+  background: var(
+    --vuuLayoutList-background,
+    var(--salt-container-primary-background)
+  );
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 var(--vuuLayoutList-padding, 0);
 
-    ::-webkit-scrollbar-track {
-        background: transparent;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        border-radius: 4px;
-        background: #D9D9D9;
-    }
+  .vuuListItem {
+    border-bottom: none;
+    justify-content: space-between;
+  }
 }
 
 .vuuLayoutList-header {
-    display: flex;
-    flex: 0 0 47px;
-    width: var(--vuuLayoutList-width);
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(119, 124, 148, 0.10);
-    color: var(--light-text-primary, #15171B);
-    font-weight: 700;
-    letter-spacing: 0.48px;
-    line-height: 200%;
-    text-transform: uppercase;
+  align-items: center;
+  display: flex;
+  flex: 0 0 48px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 2;
 }
 
-.vuuLayoutList-groupName {
-    display: flex;
-    padding-top: 24px;
-    width: var(--vuuLayoutList-width);
-    color: var(--light-text-secondary, #606477);
-    font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
-    font-family: Nunito Sans;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 200%;
-    letter-spacing: 0.48px;
-    text-transform: uppercase;
+.vuuLayoutList-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: auto;
 }
 
-.vuuLayoutList-layoutContainer {
-    display: flex;
-    align-items: center;
-    width: 90%;
-    height: auto;
-    gap: 8px;
+.vuuLayoutList-group {
+  --vuuMeasuredContainer-flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+
+  .vuuLayoutList-groupHeader {
+    flex: 0 0 32px;
     padding: 8px 0;
+  }
+
+  .vuuPalette {
     flex: 1 1 auto;
-    cursor: pointer;
+    height: auto;
+  }
 }
 
-.vuuLayoutList-layoutName {
-    color: var(--light-text-primary, #15171B);
-    font-weight: 600;
-    line-height: 133.333%;
-    text-transform: capitalize;
+.vuuLayoutList-group:first-child {
+  margin-top: 12px;
 }
+
+.vuuLayoutList-group + .vuuLayoutList-group {
+  margin-top: 24px;
+}
+
+/* .vuuLayoutList-groupName {
+  display: flex;
+  padding-top: 24px;
+  width: var(--vuuLayoutList-width);
+  font-feature-settings: "ss02" on, "ss01" on, "salt" on, "liga" off;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 200%;
+  letter-spacing: 0.48px;
+  text-transform: uppercase;
+} */
 
 .vuuLayoutList-screenshot {
-    width: 60px;
-    height: 45.6px;
-    border: 1px solid #D6D7DA;
+  width: 60px;
+  height: 45.6px;
+  border: 1px solid #d6d7da;
 }
 
 .vuuLayoutList-layoutDetails {
-    color: var(--light-text-secondary, #606477);
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 150%;
+  color: var(--light-text-secondary, #606477);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 150%;
 }

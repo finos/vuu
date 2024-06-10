@@ -1,5 +1,6 @@
-import { LayoutMetadata, PersistenceManager } from "@finos/vuu-shell";
 import { LayoutJSON, ApplicationJSON } from "@finos/vuu-layout";
+import { PersistenceManager } from "./PersistenceManager";
+import { LayoutMetadata } from "../layout-management";
 
 function unsupported<T = void>() {
   return new Promise<T>((_, reject) => {

@@ -1,10 +1,10 @@
+import { TableSchema } from "@finos/vuu-data-types";
 import { Stack, StackProps } from "@finos/vuu-layout";
 import { FeatureList, LayoutList } from "@finos/vuu-shell";
-import { TableSchema } from "@finos/vuu-data-types";
+import { GetFeaturePaths, getFilterTableFeatures } from "@finos/vuu-utils";
 import { useMemo, useState } from "react";
 
 import "./LayoutComponentsPanel.css";
-import { GetFeaturePaths, getFilterTableFeatures } from "@finos/vuu-utils";
 
 const classBase = "vuuLayoutComponentsPanel";
 
@@ -48,7 +48,7 @@ export const LayoutComponentsPanel = ({
       className={classBase}
       onTabSelectionChanged={setActive}
     >
-      <LayoutList data-tab-title="Layouts" style={{ background: "red" }} />
+      <LayoutList data-tab-title="Layouts" />
       <FeatureList data-tab-title="Components" features={features} />
     </Stack>
   );

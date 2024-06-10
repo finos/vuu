@@ -11,4 +11,3 @@ export * as LayoutProvider from "./LayoutProvider.examples";
 export * as Stack from "./Stack.examples";
 export * as Toolbar from "./Toolbar.examples";
 export * as View from "./View.examples";
-export * as LayoutsBrowser from "./LayoutsBrowser.examples";

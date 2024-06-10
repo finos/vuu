@@ -30,20 +30,42 @@ export const SimplePalette = () => (
           orientation="vertical"
           style={{ width: "100%", height: "100%" }}
         >
-          <PaletteItem label="Blue Monday" resizeable header>
-            <Component
-              style={{ backgroundColor: "cornflowerblue", height: "100%" }}
-            />
-          </PaletteItem>
-          <PaletteItem label="Brown Sugar" resizeable header>
-            <Component style={{ backgroundColor: "brown", height: "100%" }} />
-          </PaletteItem>
-          <PaletteItem label="Green Day" resizeable header>
-            <Component style={{ backgroundColor: "green", height: "100%" }} />
-          </PaletteItem>
-          <PaletteItem label="Lemonheads" resizeable header>
-            <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-          </PaletteItem>
+          <PaletteItem
+            component={
+              <Component
+                style={{ backgroundColor: "cornflowerblue", height: "100%" }}
+              />
+            }
+            label="Blue Monday"
+            resizeable
+            header
+          ></PaletteItem>
+          <PaletteItem
+            component={
+              <Component style={{ backgroundColor: "brown", height: "100%" }} />
+            }
+            label="Brown Sugar"
+            resizeable
+            header
+          ></PaletteItem>
+          <PaletteItem
+            component={
+              <Component style={{ backgroundColor: "green", height: "100%" }} />
+            }
+            label="Green Day"
+            resizeable
+            header
+          ></PaletteItem>
+          <PaletteItem
+            component={
+              <Component
+                style={{ backgroundColor: "yellow", height: "100%" }}
+              />
+            }
+            label="Lemonheads"
+            resizeable
+            header
+          ></PaletteItem>
         </Palette>
       </View>
       <DraggableLayout style={{ flex: 1 }} dropTarget resizeable>
@@ -71,46 +93,106 @@ export const StructuredPalette = () => (
   >
     <Palette orientation="vertical" style={{ width: "100%", height: "100%" }}>
       <div data-header>Pages</div>
-      <PaletteItem title="Blue Monday" resizeable header>
-        <Component
-          style={{ backgroundColor: "cornflowerblue", height: "100%" }}
-        />
-      </PaletteItem>
-      <PaletteItem title="Brown Sugar" resizeable header>
-        <Component style={{ backgroundColor: "brown", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Green Day" resizeable header>
-        <Component style={{ backgroundColor: "green", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
+      <PaletteItem
+        component={
+          <Component
+            style={{ backgroundColor: "cornflowerblue", height: "100%" }}
+          />
+        }
+        title="Blue Monday"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "brown", height: "100%" }} />
+        }
+        title="Brown Sugar"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "green", height: "100%" }} />
+        }
+        title="Green Day"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
       <div data-header>Layouts</div>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
       <div data-header>Components</div>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
-      <PaletteItem title="Lemonheads" resizeable header>
-        <Component style={{ backgroundColor: "yellow", height: "100%" }} />
-      </PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
+      <PaletteItem
+        component={
+          <Component style={{ backgroundColor: "yellow", height: "100%" }} />
+        }
+        title="Lemonheads"
+        resizeable
+        header
+      ></PaletteItem>
     </Palette>
   </View>
 );

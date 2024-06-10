@@ -28,7 +28,11 @@ const clonePaletteItem = (paletteItem: HTMLElement) => {
 };
 
 export interface PaletteItemProps extends ListItemProps {
-  children: ReactElement;
+  /**
+   * This is the payload that will be created when the
+   * palette item is dropped
+   */
+  component: ReactElement;
   closeable?: boolean;
   header?: boolean;
   idx?: number;
@@ -39,7 +43,7 @@ export interface PaletteItemProps extends ListItemProps {
 export const PaletteItem = memo(
   ({
     className,
-    children: component,
+    component,
     idx,
     resizeable,
     header,
@@ -57,7 +61,6 @@ export const PaletteItem = memo(
       <ListItem
         className={cx("vuuPaletteItem", className)}
         data-draggable
-        data-icon="draggable"
         {...props}
       />
     );
@@ -96,7 +99,7 @@ export const Palette = ({
     const listItemElement = target.closest(".vuuPaletteItem") as HTMLElement;
     const idx = parseInt(listItemElement.dataset?.index ?? "-1");
     const {
-      props: { caption, children: payload, template, ...props },
+      props: { caption, component: payload, template, ...props },
     } = children[idx];
     const { ViewProps: componentViewProps } = payload.props;
     const { height, left, top, width } =
