@@ -133,6 +133,7 @@ export const Header = ({
   closeable &&
     actionButtons.push(
       <IconButton
+        data-embedded
         icon="close"
         key="close"
         onClick={handleClose}

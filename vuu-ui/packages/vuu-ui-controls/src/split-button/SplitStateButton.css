@@ -35,7 +35,9 @@
 .vuuSplitButton-main.saltButton-active + .vuuSplitButton-trigger,
 .vuuSplitButton-main:active + .vuuSplitButton-trigger {
   --saltButton-background: var(--salt-actionable-primary-background);
-  --vuu-icon-color: var(--salt-actionable-primary-foreground);
+  .vuuIcon {
+    --vuu-icon-color: var(--salt-actionable-primary-foreground);
+  }
 }
 
 /** These two entries are to prevent the 'active' styling when space is pressed whilst editing a label */
