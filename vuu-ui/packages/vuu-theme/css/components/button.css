@@ -1,42 +1,48 @@
 .salt-theme.vuu-theme {
-    /** TODO these will need density variants */
-    --saltButton-borderRadius: 6px;
-    --saltButton-padding: var(--salt-spacing-400);
+  /** TODO these will need density variants */
+  --saltButton-borderRadius: 6px;
+  --saltButton-padding: var(--salt-spacing-400);
 
-    .saltButton {
-        --vuu-icon-color: var(--vuuButtonIcon-color, var(--button-text-color));
-        gap: var(--salt-spacing-200);
-        white-space: nowrap;
-    }
+  .saltButton {
+    gap: var(--salt-spacing-200);
+    white-space: nowrap;
 
-    .saltButton:active:not(:disabled) {
-        --vuu-icon-color: var(--button-text-color-active);
+    .vuuIcon {
+      --vuu-icon-color: var(--vuuButtonIcon-color, var(--button-text-color));
     }
-        
-    .saltButton:hover:not(.saltButton-disabled,.saltButton-active, :active){
-        --vuu-icon-color: var(--button-text-color-hover);
-    }
-        
-    .saltButton-active {
-        --vuu-icon-color: var(--button-text-color-active); 
-    }
-        
-    .saltButton-disabled {
-        --vuu-icon-color: var(--button-text-color-disabled); 
-    }
-        
-    .saltButton-primary {
-        --saltButton-borderColor: var(--vuuButton-borderColor,var(--salt-actionable-primary-foreground));
-        --saltButton-borderWidth: 1px;
-        --saltButton-borderStyle: solid;
-    }
+  }
 
-    .saltButton-primary:not(:disabled):not(:active):not(.saltButton-active):hover {
-        --saltButton-borderColor: var(--vuuButton-borderColor, var(--salt-actionable-primary-background-hover));
-    }    
-     
+  .saltButton:active:not(:disabled) {
+    --vuu-icon-color: var(--button-text-color-active);
+  }
+
+  .saltButton:hover:not(.saltButton-disabled, .saltButton-active, :active) {
+    --vuu-icon-color: var(--button-text-color-hover);
+  }
+
+  .saltButton-active {
+    --vuu-icon-color: var(--button-text-color-active);
+  }
+
+  .saltButton-disabled {
+    --vuu-icon-color: var(--button-text-color-disabled);
+  }
+
+  .saltButton-primary {
+    --saltButton-borderColor: var(
+      --vuuButton-borderColor,
+      var(--salt-actionable-primary-foreground)
+    );
+    --saltButton-borderWidth: 1px;
+    --saltButton-borderStyle: solid;
+  }
+
+  .saltButton-primary:not(:disabled):not(:active):not(
+      .saltButton-active
+    ):hover {
+    --saltButton-borderColor: var(
+      --vuuButton-borderColor,
+      var(--salt-actionable-primary-background-hover)
+    );
+  }
 }
-
-
-
-

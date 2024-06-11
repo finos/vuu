@@ -68,7 +68,11 @@ export const useDataSource = ({
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
           onSizeChange?.(message.size);
+          const size = dataWindow.data.length;
           dataWindow.setRowCount(message.size);
+          if (dataWindow.data.length < size) {
+            forceUpdate({});
+          }
         }
         if (message.rows) {
           setData(message.rows);
