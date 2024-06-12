@@ -3,7 +3,7 @@ import {
   ContextMenuItemDescriptor,
   DataSourceRow,
   MenuRpcResponse,
-  OpenDialogAction,
+  OpenDialogActionWithSchema,
   RpcResponse,
 } from "@finos/vuu-data-types";
 import { getFilterPredicate } from "@finos/vuu-filter-parser";
@@ -226,5 +226,5 @@ export const getMenuRpcRequest = (
 
 export const isOpenBulkEditResponse = (
   res: RpcResponse
-): res is MenuRpcResponse<OpenDialogAction> =>
+): res is MenuRpcResponse<OpenDialogActionWithSchema> =>
   (res as MenuRpcResponse).rpcName === "VP_BULK_EDIT_BEGIN_RPC";

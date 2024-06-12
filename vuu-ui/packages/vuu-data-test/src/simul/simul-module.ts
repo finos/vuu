@@ -1,4 +1,7 @@
-import { OpenDialogAction, SuggestionFetcher } from "@finos/vuu-data-types";
+import {
+  OpenDialogActionWithSchema,
+  SuggestionFetcher,
+} from "@finos/vuu-data-types";
 import {
   ClientToServerViewportRpcCall,
   TypeaheadParams,
@@ -134,7 +137,7 @@ async function openBulkEdits(
         },
         tableSchema: dataTable.schema,
         type: "OPEN_DIALOG_ACTION",
-      } as OpenDialogAction,
+      } as OpenDialogActionWithSchema,
       requestId: "request_id",
       rpcName: "VP_BULK_EDIT_BEGIN_RPC",
     };

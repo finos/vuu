@@ -1,6 +1,6 @@
 import {
   MenuRpcResponse,
-  OpenDialogAction,
+  OpenDialogActionWithSchema,
   TableSchema,
 } from "@finos/vuu-data-types";
 import { FormConfig, FormFieldDescriptor } from "@finos/vuu-shell";
@@ -89,7 +89,7 @@ const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
 };
 
 export const getFormConfig = ({ action, rpcName }: MenuRpcResponse) => {
-  const { tableSchema: schema } = action as OpenDialogAction;
+  const { tableSchema: schema } = action as OpenDialogActionWithSchema;
   const config = configFromSchema(schema) ?? defaultFormConfig;
 
   if (rpcName !== undefined && rpcName in static_config) {
