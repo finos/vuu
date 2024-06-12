@@ -19,7 +19,7 @@ export const buildWorker = async (packageName, filePath) => {
   const development = watch || debug || getCommandLineArg("--dev");
 
   const env = development ? "development" : "production";
-  const config = getConfig(packageName, env, filePath);
+  const config = getConfig(packageName, "development", filePath);
 
   const { result } = await build(config);
   const [outputSource] = result.outputFiles;

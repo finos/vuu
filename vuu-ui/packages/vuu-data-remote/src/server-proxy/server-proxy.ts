@@ -1,9 +1,7 @@
-import {
+import type {
   DataSourceCallbackMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
-  NoAction,
-  OpenDialogAction,
   ServerProxySubscribeMessage,
   TableSchema,
   VuuUIMessageIn,
@@ -23,7 +21,7 @@ import {
   VuuUIMessageOutViewRange,
   WithRequestId,
 } from "@finos/vuu-data-types";
-import {
+import type {
   ClientToServerBody,
   ClientToServerMenuRPC,
   ClientToServerMessage,
@@ -42,8 +40,9 @@ import {
   isViewportMessage,
   logger,
   partition,
+  isOpenDialogAction,
 } from "@finos/vuu-utils";
-import { Connection } from "../connectionTypes";
+import type { Connection } from "../connectionTypes";
 import { isSessionTable, isSessionTableActionMessage } from "../data-source";
 import {
   createSchemaFromTableMetadata,
@@ -74,10 +73,6 @@ const DEFAULT_OPTIONS: MessageOptions = {};
 
 const isActiveViewport = (viewPort: Viewport) =>
   viewPort.disabled !== true && viewPort.suspended !== true;
-
-const NO_ACTION: NoAction = {
-  type: "NO_ACTION",
-};
 
 const addTitleToLinks = (
   links: LinkDescriptorWithLabel[],
@@ -131,7 +126,7 @@ export class ServerProxy {
   private authToken = "";
   private user = "user";
   private pendingLogin?: PendingLogin;
-  private pendingRequests = new Map<string, PendingRequest>();
+  private pendingRequests = new Map<string, PendingRequest<any>>();
   private sessionId?: string;
   private queuedRequests: Array<QueuedRequest> = [];
   private cachedTableMetaRequests: Map<
@@ -700,7 +695,11 @@ export class ServerProxy {
 
   private getTableMeta(table: VuuTable, requestId = nextRequestId()) {
     if (isSessionTable(table)) {
-      return Promise.resolve(undefined);
+      // Do not cache session table
+      return this.awaitResponseToMessage<ServerToClientTableMeta>(
+        { type: "GET_TABLE_META", table },
+        requestId
+      ).then(createSchemaFromTableMetadata);
     }
     const key = `${table.module}:${table.table}`;
     let tableMetaRequest = this.cachedTableMetaRequests.get(key);
@@ -714,11 +713,11 @@ export class ServerProxy {
     return tableMetaRequest?.then((response) => this.cacheTableMeta(response));
   }
 
-  private awaitResponseToMessage(
+  private awaitResponseToMessage<T = unknown>(
     message: ClientToServerBody,
     requestId = nextRequestId()
-  ): Promise<unknown> {
-    return new Promise((resolve, reject) => {
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
       this.sendMessageToServer(message, requestId);
       this.pendingRequests.set(requestId, { reject, resolve });
     });
@@ -1060,12 +1059,9 @@ export class ServerProxy {
               const tableSchema = createSchemaFromTableMetadata(
                 response as ServerToClientTableMeta
               );
-              // Client is going to edit a session table. Ideally, the action
-              // would contain all metadata to allow an appropriate form to
-              // be presented. That is currently not the case, so client may
-              // augment metaData with static data. To do that, client needs
-              // to receive the  rpcName with the response.
+
               this.postMessageToClient({
+                /* MenuRpcResponse */
                 rpcName,
                 type: "VIEW_PORT_MENU_RESP",
                 action: {
@@ -1077,13 +1073,15 @@ export class ServerProxy {
               });
             });
           } else {
-            const { action } = body;
+            const { action, rpcName } = body;
             this.postMessageToClient({
-              type: "VIEW_PORT_MENU_RESP",
-              action: (action as OpenDialogAction) || NO_ACTION,
-              tableAlreadyOpen:
-                action !== null && this.isTableOpen(action.table),
+              /* MenuRpcResponse */
+              action,
+              rpcName,
               requestId,
+              tableAlreadyOpen:
+                isOpenDialogAction(action) && this.isTableOpen(action.table),
+              type: "VIEW_PORT_MENU_RESP",
             });
           }
         }

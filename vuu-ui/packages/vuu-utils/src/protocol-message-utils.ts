@@ -1,12 +1,13 @@
 import {
   MenuRpcAction,
   MenuRpcResponse,
-  OpenDialogAction,
+  OpenDialogActionWithSchema,
   RpcResponse,
   VuuUIMessageOut,
 } from "@finos/vuu-data-types";
 import {
   ClientToServerMenuRPC,
+  OpenDialogAction,
   VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 
@@ -29,10 +30,10 @@ export const isVuuMenuRpcRequest = (
 
 export const isOpenSessionTableDialogMessage = (
   rpcResponse: RpcResponse
-): rpcResponse is MenuRpcResponse<OpenDialogAction> =>
+): rpcResponse is MenuRpcResponse<OpenDialogActionWithSchema> =>
   rpcResponse.type === "VIEW_PORT_MENU_RESP" &&
   isOpenDialogAction(rpcResponse.action) &&
-  rpcResponse.action.tableSchema !== undefined;
+  "tableSchema" in rpcResponse.action;
 
 export const isOpenDialogAction = (
   action?: MenuRpcAction

@@ -133,14 +133,18 @@ export interface ServerToClientMenus {
   vpId: string;
 }
 
-//TODO not all menu messages are "ADD_ROWS_TO_ORDERS"
+export interface OpenDialogAction {
+  type: "OPEN_DIALOG_ACTION";
+  table: VuuTable;
+}
+export interface NoAction {
+  type: "NO_ACTION";
+}
+
 export interface ServerToClientMenu {
-  rpcName: "ADD_ROWS_TO_ORDERS";
+  rpcName: string;
   type: "VIEW_PORT_MENU_RESP";
-  action: null | {
-    table?: VuuTable;
-    type: "OPEN_DIALOG_ACTION";
-  };
+  action: OpenDialogAction | NoAction;
   vpId: string;
 }
 
@@ -153,10 +157,7 @@ export interface ServerToClientMenuReject {
 
 export interface ServerToClientMenuSessionTableAction
   extends ServerToClientMenu {
-  action: {
-    table: VuuTable;
-    type: "OPEN_DIALOG_ACTION";
-  };
+  action: OpenDialogAction;
 }
 
 export interface ServerToClientViewPortVisualLinks {

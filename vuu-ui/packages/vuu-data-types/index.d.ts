@@ -4,6 +4,7 @@ import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  OpenDialogAction,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -205,6 +206,9 @@ export type DataSourceConfigMessage =
   | DataSourceSortMessage
   | DataSourceSetConfigMessage;
 
+/**
+ * Messages which are routed back to the DataSource
+ */
 export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
@@ -499,21 +503,16 @@ export interface MenuRpcResponse<
   action: TAction;
   error?: string;
   requestId: string;
-  rpcName?: string;
+  rpcName: string;
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
 
-export interface OpenDialogAction {
-  type: "OPEN_DIALOG_ACTION";
+export interface OpenDialogActionWithSchema extends OpenDialogAction {
   tableSchema?: TableSchema;
-  table?: VuuTable;
-}
-export interface NoAction {
-  type: "NO_ACTION";
 }
 
-export declare type MenuRpcAction = OpenDialogAction | NoAction;
+export declare type MenuRpcAction = OpenDialogActionWithSchema | NoAction;
 
 export type ConnectionStatus =
   | "connecting"
