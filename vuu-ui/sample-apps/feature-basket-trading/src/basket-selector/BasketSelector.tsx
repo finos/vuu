@@ -40,7 +40,7 @@ export const BasketSelector = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const id = useId(idProp);
 
-  const { isOpen, onClickAddBasket, onOpenChange, tableProps, triggerRef } =
+  const { isOpen, onClickAddBasket, onOpenChange, TableProps, triggerRef } =
     useBasketSelector({
       basketInstanceId,
       dataSourceBasketTradingSearch,
@@ -98,7 +98,7 @@ export const BasketSelector = ({
       </div>
       <div className={`${classBase}-searchContainer`}>
         <InstrumentSearch
-          TableProps={tableProps}
+          TableProps={TableProps}
           autoFocus
           className={`${classBase}-instrumentSearch`}
           dataSource={dataSourceBasketTradingSearch}

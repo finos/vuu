@@ -54,7 +54,6 @@ export const useClickAway: ClickawayHook = ({
     const [clickHandler, escapeKeyHandler] = isOpen
       ? [
           (evt: MouseEvent) => {
-            console.log("click away");
             const targetElement = evt.target as HTMLElement;
             if (
               !popperRef.current?.contains(targetElement) &&
