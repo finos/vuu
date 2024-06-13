@@ -1,8 +1,8 @@
-import { Button } from "@salt-ds/core";
+import { IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
-import { useViewContext, QueryReponse } from "../layout-view-actions";
+import { QueryReponse, useViewContext } from "../layout-view-actions";
 
 import layoutStartPanelCss from "./LayoutStartPanel.css";
 
@@ -58,9 +58,9 @@ export const LayoutStartPanel = (htmlAttributes: LayoutStartPanelProps) => {
           </div>
         </>
       ) : null}
-      <Button
+      <IconButton
         className={`${classBase}-addButton`}
-        data-icon="add"
+        icon="add"
         variant="cta"
       />
     </div>
