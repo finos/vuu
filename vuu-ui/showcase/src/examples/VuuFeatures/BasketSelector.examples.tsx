@@ -2,7 +2,7 @@ import { ArrayDataSource } from "@finos/vuu-data-local";
 import { createBasketTradingRow, vuuModule } from "@finos/vuu-data-test";
 import { buildColumnMap } from "@finos/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
@@ -32,17 +32,30 @@ export const DefaultBasketSelector = () => {
     return [buildColumnMap(dataSource.columns), dataSource];
   }, []);
 
-  const testBasket = new Basket(dataSource.data[1], columnMap);
+  const [selectedBasket, setSelectedBasket] = useState(
+    new Basket(dataSource.data[1], columnMap)
+  );
 
   const handleClickAddBasket = useCallback(() => {
     console.log("Add Basket");
   }, []);
 
-  const handleSelectBasket = useCallback(() => null, []);
+  const handleSelectBasket = useCallback(
+    (instanceId: string) => {
+      const basket = dataSource.data.find(
+        (d) => d[columnMap.instanceId] === instanceId
+      );
+      if (basket) {
+        setSelectedBasket(new Basket(basket, columnMap));
+      }
+    },
+
+    [columnMap, dataSource.data]
+  );
 
   return (
     <BasketSelector
-      basket={testBasket}
+      basket={selectedBasket}
       basketInstanceId="steve-3"
       dataSourceBasketTradingSearch={dataSource}
       onClickAddBasket={handleClickAddBasket}

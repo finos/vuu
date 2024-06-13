@@ -61,7 +61,7 @@ export const useBasketSelector = ({
     onClickAddBasket();
   }, [handleOpenChange, onClickAddBasket]);
 
-  const tableProps: Partial<TableProps> = useMemo(
+  const TableProps: Partial<TableProps> = useMemo(
     () => ({
       height: "auto",
       Row: BasketSelectorRow,
@@ -94,6 +94,7 @@ export const useBasketSelector = ({
       },
       onRowClick: handleRowClick,
       rowHeight: 47,
+      tabIndex: -1,
     }),
     [handleRowClick]
   );
@@ -102,7 +103,7 @@ export const useBasketSelector = ({
     isOpen,
     onClickAddBasket: handleClickAddBasket,
     onOpenChange: handleOpenChange,
-    tableProps,
+    TableProps,
     triggerRef,
   };
 };
