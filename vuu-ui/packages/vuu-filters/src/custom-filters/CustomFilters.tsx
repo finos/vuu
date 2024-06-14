@@ -47,7 +47,7 @@ export const CustomFilters = ({
     interactedFilterState,
     onCancelEdit,
     onSave,
-    pillProps,
+    FilterPillProps,
     promptProps,
   } = useCustomFilters({
     containerRef: rootRef,
@@ -74,7 +74,7 @@ export const CustomFilters = ({
     filters.forEach((filter, i) => {
       items.push(
         <FilterPill
-          {...pillProps}
+          {...FilterPillProps}
           editing={indexOfFilterBeingRenamed === i}
           columnsByName={columnsByName}
           data-index={i}

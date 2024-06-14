@@ -1,12 +1,13 @@
 import type { MenuActionHandler } from "@finos/vuu-data-types";
 import type { OverflowItem } from "@finos/vuu-ui-controls";
-import { dispatchMouseEvent, orientationType } from "@finos/vuu-utils";
+import { orientationType } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
   RefObject,
   useCallback,
   useRef,
+  useState,
 } from "react";
 import { DropOptions, useDragDrop as useDragDrop } from "../drag-drop";
 import { isTabMenuOptions } from "./TabMenuOptions";
@@ -39,12 +40,9 @@ export interface TabstripHookProps {
 const editKeys = new Set(["Enter", " "]);
 const isEditKey = (key: string) => editKeys.has(key);
 
-const getElementWithIndex = (container: HTMLElement | null, index: number) => {
-  if (container) {
-    return container.querySelector(`[data-index="${index}"]`) as HTMLElement;
-  } else {
-    return null;
-  }
+type InteractedTabState = {
+  index: number;
+  state: "rename";
 };
 
 export const useTabstrip = ({
@@ -61,6 +59,9 @@ export const useTabstrip = ({
   keyBoardActivation,
 }: TabstripHookProps) => {
   const lastSelection = useRef(activeTabIndexProp);
+  const [interactedTabState, setInteractedTabState] = useState<
+    InteractedTabState | undefined
+  >();
 
   const {
     focusTab: keyboardHookFocusTab,
@@ -146,9 +147,7 @@ export const useTabstrip = ({
 
   const handleExitEditMode = useCallback<ExitEditModeHandler>(
     (originalValue, editedValue, allowDeactivation, tabIndex) => {
-      console.log(
-        `handleExitEditMode ${originalValue} ${editedValue} ${allowDeactivation} ${tabIndex}`
-      );
+      setInteractedTabState(undefined);
       onExitEditMode?.(originalValue, editedValue, allowDeactivation, tabIndex);
       if (!allowDeactivation) {
         // this indicates that Enter or Esc key has been pressed, hence we
@@ -172,35 +171,12 @@ export const useTabstrip = ({
     [keyboardHookHandleClick, selectionHookHandleClick]
   );
 
-  const getEditableLabel = useCallback(
-    (tabIndex = highlightedIdx) => {
-      const targetEl = getElementWithIndex(containerRef.current, tabIndex);
-      if (targetEl) {
-        return targetEl.querySelector(".vuuEditableLabel") as HTMLElement;
-      }
-    },
-    [containerRef, highlightedIdx]
-  );
-
-  const tabInEditMode = useCallback(
-    (tabIndex = highlightedIdx) => {
-      const editableLabel = getEditableLabel(tabIndex);
-      if (editableLabel) {
-        return editableLabel.classList.contains("vuuEditableLabel-editing");
-      }
-      return false;
-    },
-    [getEditableLabel, highlightedIdx]
-  );
-
   const editTab = useCallback(
     (tabIndex = highlightedIdx) => {
-      const editableLabelEl = getEditableLabel(tabIndex);
-      if (editableLabelEl) {
-        dispatchMouseEvent(editableLabelEl, "dblclick");
-      }
+      console.log(`set interacted tab state ${tabIndex}`);
+      setInteractedTabState({ index: tabIndex, state: "rename" });
     },
-    [getEditableLabel, highlightedIdx]
+    [highlightedIdx]
   );
 
   const handleKeyDown = useCallback(
@@ -264,16 +240,16 @@ export const useTabstrip = ({
 
   //TODO( why do we sometimes see this fired twice  eg following rename)
   const handleTabMenuClose = useCallback(() => {
-    if (!tabInEditMode()) {
-      keyboardHookFocusTab(highlightedIdx);
-    } else {
+    if (interactedTabState?.index === highlightedIdx) {
       keyboardHookSetHighlightedIndex(highlightedIdx);
+    } else {
+      keyboardHookFocusTab(highlightedIdx);
     }
   }, [
     highlightedIdx,
+    interactedTabState?.index,
     keyboardHookFocusTab,
     keyboardHookSetHighlightedIndex,
-    tabInEditMode,
   ]);
 
   const onSwitchWrappedItemIntoView = useCallback(
@@ -312,12 +288,13 @@ export const useTabstrip = ({
 
   return {
     activeTabIndex: selectionHookSelected,
-    containerStyle,
-    focusVisible: keyboardHook.focusVisible,
     containerProps: {
       ...keyboardHook.containerProps,
       onSwitchWrappedItemIntoView,
     },
+    containerStyle,
+    focusVisible: keyboardHook.focusVisible,
+    interactedTabState,
     navigationProps,
     onClickAddTab: handleAddTabClick,
     tabProps,

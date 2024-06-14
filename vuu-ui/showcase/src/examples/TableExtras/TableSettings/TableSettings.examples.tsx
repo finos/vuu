@@ -1,3 +1,4 @@
+import { getSchema } from "@finos/vuu-data-test";
 import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data-types";
 import {
   ColumnItem,
@@ -5,13 +6,14 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { TableConfig } from "@finos/vuu-table-types";
-import { getSchema } from "@finos/vuu-data-test";
+import { MoveItemHandler } from "@finos/vuu-ui-controls";
+import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
 
 export const DefaultColumnList = () => {
-  const columns = useMemo<ColumnItem[]>(
+  const initialColumns = useMemo<ColumnItem[]>(
     () => [
       {
         subscribed: true,
@@ -119,11 +121,13 @@ export const DefaultColumnList = () => {
     []
   );
 
+  const [columns, setColumns] = useState(initialColumns);
+
   const handleChange = () => {
     console.log("handleChange");
   };
-  const handleMoveListItem = () => {
-    console.log("handleMoveListItem");
+  const handleMoveListItem: MoveItemHandler = (fromIndex, toIndex) => {
+    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
   };
 
   return (
@@ -150,17 +154,7 @@ export const ManyColumnList = () => {
   const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
 
   const handleMoveListItem = useCallback((fromIndex, toIndex) => {
-    console.log(`drop ${fromIndex} ${toIndex}`);
-    setColumns((data) => {
-      const newData = data.slice();
-      const [tab] = newData.splice(fromIndex, 1);
-      if (toIndex === -1) {
-        return newData.concat(tab);
-      } else {
-        newData.splice(toIndex, 0, tab);
-        return newData;
-      }
-    });
+    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
   }, []);
 
   const handleChange = () => {
