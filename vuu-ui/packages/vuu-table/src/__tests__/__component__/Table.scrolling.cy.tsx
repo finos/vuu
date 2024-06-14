@@ -192,7 +192,7 @@ describe("Table scrolling and keyboard navigation", () => {
       it("THEN only those columns within the viewport are rendered", () => {
         // this width allows for exactly 6 visible columns, we allow a buffer of 200px
         // so 2 out-of-viewport colums are rendered
-        cy.mount(<TwoHundredColumns width={915} />);
+        cy.mount(<TwoHundredColumns width={914} />);
         assertRenderedColumns({
           rendered: { from: 1, to: 8 },
           visible: { from: 1, to: 6 },
@@ -202,7 +202,7 @@ describe("Table scrolling and keyboard navigation", () => {
 
     describe("WHEN table is scrolled horizontally no more than 100px", () => {
       it("THEN rendering is unchanged", () => {
-        cy.mount(<TwoHundredColumns width={915} />);
+        cy.mount(<TwoHundredColumns width={914} />);
         cy.get(".vuuTable-scrollbarContainer").scrollTo(100, 0);
         assertRenderedColumns({
           rendered: { from: 1, to: 8 },

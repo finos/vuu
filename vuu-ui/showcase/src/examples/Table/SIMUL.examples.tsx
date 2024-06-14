@@ -4,6 +4,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
 import type {
   ColumnDescriptor,
+  ColumnLayout,
   DefaultColumnConfiguration,
 } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
@@ -60,6 +61,7 @@ const getDefaultColumnConfig = (
 };
 
 export const SimulTable = ({
+  columnLayout,
   getDefaultColumnConfig,
   height = 625,
   renderBufferSize = 0,
@@ -67,15 +69,17 @@ export const SimulTable = ({
   tableName = "instruments",
   ...props
 }: Partial<TableProps> & {
+  columnLayout?: ColumnLayout;
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   rowClassNameGenerators?: string[];
-  tableName: SimulTableName;
+  tableName?: SimulTableName;
 }) => {
   const schema = getSchema(tableName);
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
       config: {
+        columnLayout,
         columns: applyDefaultColumnConfig(schema, getDefaultColumnConfig),
         rowClassNameGenerators,
         rowSeparators: true,
@@ -84,7 +88,13 @@ export const SimulTable = ({
       dataSource:
         vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
     }),
-    [getDefaultColumnConfig, rowClassNameGenerators, schema, tableName]
+    [
+      columnLayout,
+      getDefaultColumnConfig,
+      rowClassNameGenerators,
+      schema,
+      tableName,
+    ]
   );
 
   const handleConfigChange = useCallback(() => {

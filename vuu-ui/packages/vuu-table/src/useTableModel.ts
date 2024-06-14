@@ -1,5 +1,6 @@
 import {
   ColumnDescriptor,
+  ColumnLayout,
   PinLocation,
   ResizePhase,
   RuntimeColumnDescriptor,
@@ -11,7 +12,9 @@ import {
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
+  applyRuntimeColumnWidthsToConfig,
   applySortToColumns,
+  applyWidthToColumns,
   existingSort,
   getCellRenderer,
   getColumnHeaderContentRenderer,
@@ -91,6 +94,7 @@ export interface TableModel extends TableAttributes {
  * readonly copy of the original TableConfig.
  */
 interface InternalTableModel extends TableModel {
+  availableWidth: number;
   tableConfig: Readonly<TableConfig>;
 }
 
@@ -103,6 +107,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
     : "left";
 
 export interface ColumnActionInit {
+  availableWidth: number;
   type: "init";
   tableConfig: TableConfig;
   dataSource: DataSource;
@@ -208,8 +213,26 @@ export type ColumnActionDispatch = (action: GridModelAction) => void;
 const columnReducer: GridModelReducer = (state, action) => {
   info?.(`TableModelReducer ${action.type}`);
   switch (action.type) {
-    case "init":
-      return init(action);
+    case "init": {
+      if (
+        state.tableConfig.columnLayout === "manual" &&
+        action.tableConfig.columnLayout === "fit"
+      ) {
+        //TODO we're jumping through hoops here when we should just make config a controlled prop
+
+        // Manual columnLayout has been assigned because user has resized one or more columns.
+        // It happened during current session so tableConfig still reflects original value.
+        return init({
+          ...action,
+          tableConfig: applyRuntimeColumnWidthsToConfig(
+            action.tableConfig,
+            state.columns
+          ),
+        });
+      } else {
+        return init(action);
+      }
+    }
     case "moveColumn":
       return moveColumn(state, action);
     case "resizeColumn":
@@ -235,14 +258,20 @@ const columnReducer: GridModelReducer = (state, action) => {
 export const useTableModel = (
   tableConfigProp: TableConfig,
   dataSource: DataSource,
-  selectionModel: TableSelectionModel
+  selectionModel: TableSelectionModel,
+  availableWidth: number
 ) => {
   const [state, dispatchTableModelAction] = useReducer<
     GridModelReducer,
     InitialConfig
   >(
     columnReducer,
-    { tableConfig: tableConfigProp, dataSource, selectionModel },
+    {
+      availableWidth,
+      tableConfig: tableConfigProp,
+      dataSource,
+      selectionModel,
+    },
     init
   );
 
@@ -258,17 +287,22 @@ export const useTableModel = (
 };
 
 type InitialConfig = {
+  availableWidth: number;
+  columnLayout?: ColumnLayout;
   dataSource: DataSource;
-  // TODO are we at risk of losing selectionModel on updates ?
   selectionModel?: TableSelectionModel;
   tableConfig: TableConfig;
 };
 
 function init({
+  availableWidth,
   dataSource,
   selectionModel,
   tableConfig,
 }: InitialConfig): InternalTableModel {
+  console.log(
+    `init model ${tableConfig?.columnLayout} columns, availableWidth=${availableWidth}`
+  );
   const { columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(
@@ -279,9 +313,15 @@ function init({
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(toRuntimeColumnDescriptor);
 
-  const columnsInRenderOrder = runtimeColumns.some(isPinned)
-    ? sortPinnedColumns(runtimeColumns)
-    : runtimeColumns;
+  const { columnLayout = "static" } = tableConfig;
+  const runtimeColumnsWithLayout = applyWidthToColumns(runtimeColumns, {
+    availableWidth,
+    columnLayout,
+  });
+
+  const columnsInRenderOrder = runtimeColumnsWithLayout.some(isPinned)
+    ? sortPinnedColumns(runtimeColumnsWithLayout)
+    : runtimeColumnsWithLayout;
 
   if (selectionModel === "checkbox") {
     columnsInRenderOrder.splice(
@@ -292,6 +332,7 @@ function init({
   }
 
   let state: InternalTableModel = {
+    availableWidth,
     columns: columnsInRenderOrder,
     headings: getTableHeadings(columnsInRenderOrder),
     tableConfig,
@@ -348,7 +389,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       originalIdx: index,
       serverDataType,
       valueFormatter: getValueFormatter(column, serverDataType),
-      width: width,
+      width,
     };
 
     if (isGroupColumn(runtimeColumnWithDefaults)) {
@@ -424,8 +465,20 @@ function resizeColumn(
   switch (phase) {
     case "begin":
       return updateColumnProp(state, { type, column, resizing });
-    case "end":
-      return updateColumnProp(state, { type, column, resizing, width });
+    case "end": {
+      const { tableConfig } = state;
+      const isFit = tableConfig.columnLayout === "fit";
+      const newState: InternalTableModel = isFit
+        ? {
+            ...state,
+            tableConfig: applyRuntimeColumnWidthsToConfig(
+              tableConfig,
+              state.columns
+            ),
+          }
+        : state;
+      return updateColumnProp(newState, { type, column, resizing, width });
+    }
     case "resize":
       return updateColumnProp(state, { type, column, width });
     default:

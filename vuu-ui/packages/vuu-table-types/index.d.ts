@@ -78,9 +78,19 @@ export interface TableCellRendererProps
   onCommit?: DataItemCommitHandler;
 }
 
+/**
+ * static layout simply respects widths specified on column descriptors.
+ * fit layout attempts to fit columns to available space, either stretching
+ * or squeezing. manual indicates that user has resized one or more columns,
+ * on what was originally a fit layout. Once this happens, no further auto
+ * fitting will take place. Fit layout always respects max and min widths,
+ */
+export type ColumnLayout = "static" | "fit" | "manual";
+
 export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
+  columnLayout?: ColumnLayout;
   columnSeparators?: boolean;
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;

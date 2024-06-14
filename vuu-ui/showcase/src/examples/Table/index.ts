@@ -5,5 +5,6 @@ export * as BASKET from "./BASKET.examples";
 export * as SIMUL from "./SIMUL.examples";
 export * as TEST from "./TEST.examples";
 export * as BigData from "./BigData.examples";
+export * as ColumnLayout from "./ColumnLayout.examples";
 export * as TableLayout from "./TableLayout.examples";
 export * as BulkEdit from "./BulkEdit.examples";

@@ -32,6 +32,8 @@ import type {
   ValueListRenderer,
   DateTimeColumnDescriptor,
   TableCellRendererProps,
+  ColumnLayout,
+  TableConfig,
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -88,6 +90,35 @@ export const getDefaultAlignment = (
     : numericTypes.includes(serverDataType)
     ? "right"
     : "left";
+
+export const getRuntimeColumnWidth = (
+  col: ColumnDescriptor,
+  runtimeColumns: RuntimeColumnDescriptor[]
+) => {
+  const runtimeColumn = runtimeColumns.find(({ name }) => name === col.name);
+  if (runtimeColumn) {
+    return runtimeColumn.width;
+  } else {
+    return DEFAULT_COL_WIDTH;
+  }
+};
+
+// Save the current runtime column widths into the table column config. We do this
+// when user has manually resized a column under a fit layout. From this point,
+// layout becomes manual - there will be no further automatic column sizing.
+export const applyRuntimeColumnWidthsToConfig = (
+  tableConfig: TableConfig,
+  columns: RuntimeColumnDescriptor[]
+): TableConfig => {
+  return {
+    ...tableConfig,
+    columns: columns.map((column) => ({
+      ...column,
+      width: column.width ?? getRuntimeColumnWidth(column, columns),
+    })),
+    columnLayout: "manual",
+  };
+};
 
 export const isValidColumnAlignment = (v: string): v is ColumnAlignment =>
   v === "left" || v === "right";
@@ -980,10 +1011,6 @@ export const getColumnByName = (
   }
 };
 
-//New added column functionality issue #639
-
-export type ColumnLayout = "Static" | "Fit";
-
 export type columnOptions = {
   availableWidth?: number;
   columnLayout?: ColumnLayout;
@@ -993,161 +1020,200 @@ export type columnOptions = {
   defaultFlex?: number;
 };
 
+type ColumnLayoutOptions = Pick<
+  columnOptions,
+  "defaultMinWidth" | "defaultMaxWidth" | "defaultWidth"
+>;
+
+interface StaticColumnLayoutOptions extends ColumnLayoutOptions {
+  columnLayout: "manual" | "static";
+}
+interface FitColumnLayoutOptions extends ColumnLayoutOptions {
+  availableWidth?: number;
+  columnLayout: "fit";
+}
+
+type ColumnStats = {
+  flexCount: number;
+  totalMinWidth: number;
+  totalMaxWidth: number;
+  totalWidth: number;
+};
+
+const measureColumns = (
+  columns: RuntimeColumnDescriptor[],
+  defaultMaxWidth: number,
+  defaultMinWidth: number
+) =>
+  columns.reduce<ColumnStats>(
+    (aggregated, column) => {
+      aggregated.totalMinWidth += column.minWidth ?? defaultMinWidth;
+      aggregated.totalMaxWidth += column.maxWidth ?? defaultMaxWidth;
+      aggregated.totalWidth += column.width;
+      aggregated.flexCount += column.flex ?? 0;
+      return aggregated;
+    },
+    { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 }
+  );
+
 export function applyWidthToColumns(
   columns: RuntimeColumnDescriptor[],
-  options:
-    | {
-        columnLayout: "Static";
-        defaultMinWidth?: number;
-        defaultMaxWidth?: number;
-        defaultWidth?: number;
-      }
-    | {
-        columnLayout: "Fit";
-        availableWidth?: number;
-        defaultMinWidth?: number;
-        defaultMaxWidth?: number;
-        defaultWidth?: number;
-      }
+  options: StaticColumnLayoutOptions | FitColumnLayoutOptions
 ): RuntimeColumnDescriptor[];
 
 export function applyWidthToColumns(
   columns: RuntimeColumnDescriptor[],
-  options: columnOptions & { defaultMinWidth?: number }
-): RuntimeColumnDescriptor[] {
-  const {
+  {
     availableWidth = 0,
-    columnLayout = "Static",
+    columnLayout = "static",
     defaultWidth = DEFAULT_COL_WIDTH,
     defaultMinWidth = DEFAULT_MIN_WIDTH,
     defaultMaxWidth = DEFAULT_MAX_WIDTH,
-    // defaultFlex = DEFAULT_FLEX,
-  } = options;
-
-  if (columnLayout === "Static") {
-    return columns.map((column) => {
-      if (typeof column.width === "number") {
-        return column;
-      } else {
-        return {
-          ...column,
-          width: defaultWidth,
-        };
-      }
-    });
-  } else if (columnLayout === "Fit") {
+  }: // defaultFlex = DEFAULT_FLEX,
+  columnOptions
+): RuntimeColumnDescriptor[] {
+  if (columnLayout === "fit") {
     const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
-      columns.reduce(
-        (aggregated, column) => {
-          const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
-            aggregated;
-          const {
-            minWidth = defaultMinWidth,
-            maxWidth = defaultMaxWidth,
-            width = defaultWidth,
-            flex = 0,
-          } = column;
-          return {
-            totalMinWidth: totalMinWidth + minWidth,
-            totalMaxWidth: totalMaxWidth + maxWidth,
-            totalWidth: totalWidth + width,
-            flexCount: flexCount + flex,
-          };
-        },
-        { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 }
-      );
+      measureColumns(columns, defaultMaxWidth, defaultMinWidth);
 
-    if (totalMinWidth > availableWidth || totalMaxWidth < availableWidth) {
+    if (totalMaxWidth < availableWidth) {
+      return assignMaxWidthToAll(columns, defaultMaxWidth);
+    } else if (totalMinWidth > availableWidth) {
       return columns;
     } else if (totalWidth > availableWidth) {
-      const excessWidth = totalWidth - availableWidth;
-      const inFlexMode = flexCount > 0;
-      let excessWidthPerColumn = excessWidth / (flexCount || columns.length);
-      let columnsNotYetAtMinWidth = columns.length;
-      let unassignedExcess = 0;
-      let newColumns = columns.map<RuntimeColumnDescriptor>((column) => {
-        const {
-          minWidth = defaultMinWidth,
-          width = defaultWidth,
-          flex = 0,
-        } = column;
-        if (inFlexMode && flex === 0) {
-          return column;
-        }
-        const adjustedWidth = width - excessWidthPerColumn;
-        if (adjustedWidth < minWidth) {
-          columnsNotYetAtMinWidth -= 1;
-          unassignedExcess += minWidth - adjustedWidth;
-          return { ...column, width: minWidth };
-        } else {
-          return { ...column, width: adjustedWidth };
-        }
-      });
-      if (unassignedExcess === 0) {
-        return newColumns;
-      } else {
-        excessWidthPerColumn = unassignedExcess / columnsNotYetAtMinWidth;
-        newColumns = newColumns.map((column) => {
-          const adjustedWidth = column.width - excessWidthPerColumn;
-          if (column.width !== column.minWidth) {
-            return { ...column, width: adjustedWidth };
-          } else {
-            return column;
-          }
-        });
-        return newColumns;
-      }
+      return shrinkColumnsToFitAvailableSpace(
+        columns,
+        availableWidth,
+        totalWidth,
+        defaultMinWidth,
+        defaultWidth,
+        flexCount
+      );
     } else if (totalWidth < availableWidth) {
-      {
-        const additionalWidth = availableWidth - totalWidth;
-        const inFlexMode = flexCount > 0;
-        let additionalWidthPerColumn =
-          additionalWidth / (flexCount || columns.length);
-        // let columnsNotYetReachedMaxWidth = columns.length;
-        // let unassignedAdditionalWidth = 0;
-        let newColumns = columns.map((column) => {
-          const {
-            maxWidth = defaultMaxWidth,
-            width = defaultWidth,
-            flex = 0,
-          } = column;
-          if (inFlexMode && flex === 0) {
-            return column;
-          }
-          const adjustedWidth = width + additionalWidthPerColumn;
-          if (adjustedWidth > maxWidth) {
-            // columnsNotYetReachedMaxWidth -= 1;
-            // unassignedAdditionalWidth += adjustedWidth - maxWidth;
-            return { ...column, width: maxWidth };
-          } else {
-            return { ...column, width: adjustedWidth, canStretch: true };
-          }
-        });
-        const unassignedAdditionalColumnWidth =
-          additionalWidth - newColumns.reduce((sum, col) => sum + col.width, 0);
-        const columnsNotYetAtMaxWidth = newColumns.filter(
-          (col) => col.canStretch
-        ).length;
-        if (unassignedAdditionalColumnWidth > columnsNotYetAtMaxWidth) {
-          additionalWidthPerColumn =
-            unassignedAdditionalColumnWidth / columnsNotYetAtMaxWidth;
-          newColumns = newColumns.map<RuntimeColumnDescriptor>((column) => {
-            if (column.canStretch) {
-              const adjustedWidth = Math.min(
-                column.width + additionalWidthPerColumn
-              );
-              return { ...column, width: adjustedWidth };
-            } else {
-              return column;
-            }
-          });
-        }
-        return newColumns.map(({ canStretch, ...column }) => column);
-      }
+      return stretchColumnsToFillAvailableSpace(
+        columns,
+        availableWidth,
+        totalWidth,
+        defaultMaxWidth,
+        defaultWidth,
+        flexCount
+      );
     }
   }
   return columns;
 }
+
+const assignMaxWidthToAll = (
+  columns: RuntimeColumnDescriptor[],
+  defaultMaxWidth: number
+) => {
+  return columns.map((column) => {
+    const { maxWidth = defaultMaxWidth } = column;
+    if (column.width === maxWidth) {
+      return column;
+    } else {
+      return {
+        ...column,
+        width: maxWidth,
+      };
+    }
+  });
+};
+
+const shrinkColumnsToFitAvailableSpace = (
+  columns: RuntimeColumnDescriptor[],
+  availableWidth: number,
+  totalWidth: number,
+  defaultMinWidth: number,
+  defaultWidth: number,
+  flexCount: number
+) => {
+  const excessWidth = totalWidth - availableWidth;
+  const inFlexMode = flexCount > 0;
+  let excessWidthPerColumn = excessWidth / (flexCount || columns.length);
+  let columnsNotYetAtMinWidth = columns.length;
+  let unassignedExcess = 0;
+  let newColumns = columns.map<RuntimeColumnDescriptor>((column) => {
+    const {
+      minWidth = defaultMinWidth,
+      width = defaultWidth,
+      flex = 0,
+    } = column;
+    if (inFlexMode && flex === 0) {
+      return column;
+    }
+    const adjustedWidth = width - excessWidthPerColumn;
+    if (adjustedWidth < minWidth) {
+      columnsNotYetAtMinWidth -= 1;
+      unassignedExcess += minWidth - adjustedWidth;
+      return { ...column, width: minWidth };
+    } else {
+      return { ...column, width: adjustedWidth };
+    }
+  });
+  if (unassignedExcess === 0) {
+    return newColumns;
+  } else {
+    excessWidthPerColumn = unassignedExcess / columnsNotYetAtMinWidth;
+    newColumns = newColumns.map((column) => {
+      const adjustedWidth = column.width - excessWidthPerColumn;
+      if (column.width !== column.minWidth) {
+        return { ...column, width: adjustedWidth };
+      } else {
+        return column;
+      }
+    });
+    return newColumns;
+  }
+};
+
+const stretchColumnsToFillAvailableSpace = (
+  columns: RuntimeColumnDescriptor[],
+  availableWidth: number,
+  totalWidth: number,
+  defaultMaxWidth: number,
+  defaultWidth: number,
+  flexCount: number
+) => {
+  let freeSpaceToBeFilled = availableWidth - totalWidth;
+  const additionalWidthPerColumn = Math.floor(
+    freeSpaceToBeFilled / (flexCount || columns.length)
+  );
+  const newColumns = columns.map((column) => {
+    const {
+      maxWidth = defaultMaxWidth,
+      width = defaultWidth,
+      flex = 0,
+    } = column;
+    if (flexCount > 0 && flex === 0) {
+      return column;
+    }
+    const adjustedWidth = width + additionalWidthPerColumn;
+    if (adjustedWidth > maxWidth) {
+      return { ...column, width: maxWidth };
+    } else {
+      freeSpaceToBeFilled -= additionalWidthPerColumn;
+      return { ...column, width: adjustedWidth, canStretch: true };
+    }
+  });
+  const columnsNotYetAtMaxWidth = newColumns.filter(
+    (col) => col.canStretch
+  ).length;
+  const finalAdjustmentPerColumn = Math.min(
+    1,
+    Math.ceil(freeSpaceToBeFilled / columnsNotYetAtMaxWidth)
+  );
+  return newColumns.map<RuntimeColumnDescriptor>(
+    ({ canStretch, ...column }) => {
+      if (canStretch && freeSpaceToBeFilled) {
+        freeSpaceToBeFilled -= finalAdjustmentPerColumn;
+        return { ...column, width: column.width + finalAdjustmentPerColumn };
+      } else {
+        return column;
+      }
+    }
+  );
+};
 
 /**
  * A memo compare function for cell renderers. Can be used to suppress
