@@ -118,22 +118,22 @@ export const EditableLabel = forwardRef(function EditableLabel(
     [beginEdit]
   );
 
-  const exitEditMode = ({
-    cancelEdit = false,
-    allowDeactivation = false,
-  } = {}) => {
-    setEditing(false);
-    const originalValue = initialValue.current;
-    if (originalValue !== value) {
-      if (cancelEdit) {
-        setValue(originalValue);
-      } else {
-        initialValue.current = value;
+  const exitEditMode = useCallback(
+    ({ cancelEdit = false, allowDeactivation = false } = {}) => {
+      setEditing(false);
+      const originalValue = initialValue.current;
+      if (originalValue !== value) {
+        if (cancelEdit) {
+          setValue(originalValue);
+        } else {
+          initialValue.current = value;
+        }
       }
-    }
-    onExitEditMode &&
-      onExitEditMode(originalValue, value, allowDeactivation, cancelEdit);
-  };
+      onExitEditMode &&
+        onExitEditMode(originalValue, value, allowDeactivation, cancelEdit);
+    },
+    [onExitEditMode, setEditing, setValue, value]
+  );
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { value } = evt.target;
@@ -143,11 +143,11 @@ export const EditableLabel = forwardRef(function EditableLabel(
 
   // We need the ref here as the blur fires before setEditing has taken effect,
   // so we get a double call to exitEditMode if edit is cancelled.
-  const handleBlur = () => {
-    if (editingRef.current) {
+  const handleBlur = useCallback(() => {
+    if (editing || editingRef.current) {
       exitEditMode({ allowDeactivation: true });
     }
-  };
+  }, [editing, exitEditMode]);
 
   const handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (editing && evt.key === "Enter") {

@@ -185,10 +185,6 @@ export const useCustomFilters = ({
     [deleteConfirmed, getDeletePrompt]
   );
 
-  // const handleBeginEditFilterName = useCallback((filter: Filter) => {
-  //   editingFilterRef.current = filter;
-  // }, []);
-
   // TODO handle cancel edit name
   const handleExitEditFilterName: EditableLabelProps["onExitEditMode"] =
     useCallback(
@@ -285,7 +281,7 @@ export const useCustomFilters = ({
     [onToggleFilterActive]
   );
 
-  const pillProps: Omit<FilterPillProps, "filter" | "selected"> = {
+  const FilterPillProps: Omit<FilterPillProps, "filter" | "selected"> = {
     editLabelApiRef: editPillLabelAPI,
     // onBeginEdit: handleBeginEditFilterName,
     onClick: handlePillClick,
@@ -326,6 +322,7 @@ export const useCustomFilters = ({
   };
 
   return {
+    FilterPillProps,
     activeFilterIndex,
     addButtonProps,
     columnsByName,
@@ -333,7 +330,6 @@ export const useCustomFilters = ({
     interactedFilterState,
     onCancelEdit: handleCancelEdit,
     onSave: filterSaveHandler,
-    pillProps,
     promptProps,
   };
 };
