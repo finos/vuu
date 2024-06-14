@@ -33,7 +33,7 @@ class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValuePro
 
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] =
     dataTable.columnForName(columnName) match {
-      case c: Column => get10DistinctValues(c, _.startsWith(starts))
+      case c: Column => get10DistinctValues(c, _.toLowerCase.startsWith(starts.toLowerCase))
       case null      => logger.error(s"Column $columnName not found in table ${dataTable.name}"); Array.empty;
     }
 
