@@ -1,3 +1,5 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
@@ -7,20 +9,21 @@ import {
   useCallback,
   useImperativeHandle,
 } from "react";
-import { useDragDrop } from "./useDragDrop";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 
-import "./GridLayout.css";
-import "./GridSplitter.css";
+import gridLayoutCss from "./GridLayout.css";
+import gridSplitterCss from "./GridSplitter.css";
 
 import {
   GridLayoutProvider,
+  GridPlaceholder,
+  ResizeOrientation,
   useGridLayoutProps,
   useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
-import { ResizeOrientation } from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
-import { GridPlaceholder } from "@finos/vuu-layout";
+import { useAsDropTarget } from "./useAsDropTarget";
+import { useNotDropTarget } from "./useNotDropTarget";
 
 const classBase = "vuuGridLayout";
 const classBaseItem = "vuuGridLayoutItem";
@@ -61,9 +64,10 @@ export interface GridLayoutProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export interface GridLayoutItemProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "style"> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onDrop" | "style"> {
   header?: boolean;
   id: string;
+  isDropTarget?: boolean;
   label?: string;
   resizeable?: GridResizeable;
   style: CSSProperties & {
@@ -79,20 +83,36 @@ export const GridLayoutItem = ({
   className: classNameProp,
   header,
   id,
+  isDropTarget = true,
   resizeable,
   style: styleProp,
   title,
   ...htmlAttributes
 }: GridLayoutItemProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-grid-layout",
+    css: gridLayoutCss,
+    window: targetWindow,
+  });
+  useComponentCssInjection({
+    testId: "vuu-grid-splitter",
+    css: gridSplitterCss,
+    window: targetWindow,
+  });
+
   const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
-  const dragProps = useDragDrop();
   const onClose = useCallback(() => {
     dispatch({
       type: "close",
       id,
     });
   }, [dispatch, id]);
+
+  const useDrop = isDropTarget ? useAsDropTarget : useNotDropTarget;
+
+  const { dropTargetClassName, ...dropHandlers } = useDrop();
 
   const className = cx(classBaseItem, {
     [`${classBaseItem}-resizeable-h`]: resizeable === "h",
@@ -109,13 +129,13 @@ export const GridLayoutItem = ({
   return (
     <div
       {...htmlAttributes}
-      className={className}
-      {...dragProps}
+      {...dropHandlers}
+      className={cx(className, dropTargetClassName)}
       id={id}
       style={style}
     >
       {header ? (
-        <div className={`${classBaseItem}Header`} {...dragProps} draggable>
+        <div className={cx(`${classBaseItem}Header`)} draggable>
           <span className={`${classBaseItem}Header-title`}>{title}</span>
           <IconButton
             className={`${classBaseItem}Header-close`}
@@ -200,6 +220,7 @@ export const GridLayout = ({
     <GridLayoutProvider
       dispatchGridLayoutAction={dispatchGridLayoutAction}
       layoutMap={layoutMap}
+      onDrop={onDrop}
     >
       <div
         {...htmlAttributes}
@@ -213,7 +234,6 @@ export const GridLayout = ({
           <GridPlaceholder
             id={placeholder.id}
             key={placeholder.id}
-            onDrop={onDrop}
             style={{
               gridColumn: `${placeholder.column.start}/${placeholder.column.end}`,
               gridRow: `${placeholder.row.start}/${placeholder.row.end}`,

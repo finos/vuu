@@ -114,7 +114,7 @@ export const setGridColumn = (
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
       : target;
-  el.style.setProperty("grid-column", `${start}/${end}`);
+  el?.style.setProperty("grid-column", `${start}/${end}`);
 };
 
 export const setGridRow = (
@@ -125,7 +125,7 @@ export const setGridRow = (
     typeof target === "string"
       ? (document.getElementById(target) as HTMLElement)
       : target;
-  el.style.setProperty("grid-row", `${start}/${end}`);
+  el?.style.setProperty("grid-row", `${start}/${end}`);
 };
 
 export const spansMultipleTracks = (

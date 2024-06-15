@@ -1,8 +1,12 @@
 let displaySequence = 1;
-import { getTrackIndex } from "@finos/vuu-layout";
+import {
+  getTrackIndex,
+  GridLayout,
+  GridLayoutItem,
+  LayoutAPI,
+} from "@finos/vuu-layout";
 import { queryClosest, registerComponent } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback, useMemo, useRef } from "react";
-import { GridLayout, GridLayoutItem, LayoutAPI } from "./components/GridLayout";
 import { DebugGridItem } from "./components/DebugGridItem";
 import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
@@ -891,6 +895,17 @@ export const EmptyWithPalette = () => {
           },
         },
       },
+      {
+        id: "green",
+        label: "Green",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Green",
+          style: {
+            background: "green",
+          },
+        },
+      },
     ],
     []
   );
@@ -907,6 +922,7 @@ export const EmptyWithPalette = () => {
       >
         <GridLayoutItem
           id="palette"
+          isDropTarget={false}
           resizeable="hv"
           style={{
             gridColumnStart: 1,

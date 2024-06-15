@@ -1,6 +1,12 @@
 import cx from "clsx";
 import { queryClosest } from "@finos/vuu-utils";
-import { DragEventHandler, HTMLAttributes, useCallback } from "react";
+import {
+  DragEvent,
+  DragEventHandler,
+  HTMLAttributes,
+  useCallback,
+} from "react";
+import { useDraggable } from "@finos/vuu-layout";
 
 import "./GridPalette.css";
 
@@ -23,22 +29,23 @@ export const GridPalette = ({
   paletteItems,
   ...htmlAttributes
 }: GridPaletteProps) => {
-  const onDragStart = useCallback<DragEventHandler>(
-    (evt) => {
+  const getPayload = useCallback(
+    (evt: DragEvent<Element>): [string, string] => {
       const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
       if (draggedItem) {
         const index = parseInt(draggedItem.dataset.index ?? "-1");
         const item = paletteItems[index] as GridPaletteItem;
-        evt.dataTransfer.setData("text/json", JSON.stringify(item));
-        evt.dataTransfer.effectAllowed = "move";
-        console.log(`drag start ${draggedItem.id}`);
+        return ["text/json", JSON.stringify(item)];
       }
+      throw Error("no palette item to provide payload");
     },
     [paletteItems]
   );
 
+  const draggableProps = useDraggable({ getPayload });
+
   return (
-    <div {...htmlAttributes} className={classBase} onDragStart={onDragStart}>
+    <div {...htmlAttributes} className={classBase} {...draggableProps}>
       {paletteItems.map((paletteItem, index) => (
         <div
           className={cx(`${classBase}-item`)}

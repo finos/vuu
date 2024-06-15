@@ -1,14 +1,15 @@
-import { LayoutJSON, layoutFromJson } from "../layout-reducer";
+import { GridLayoutSplitDirection, uuid } from "@finos/vuu-utils";
 import { getColumns, getRows } from "./grid-dom-utils";
 import {
-  doesResizeRequireNewTrack as isResizeTrackShared,
+  byColumnStart,
+  byRowStart,
   getBisectingGridLine,
   getMatchingColspan,
   getMatchingRowspan,
+  gridResizeDirectionFromDropPosition,
+  doesResizeRequireNewTrack as isResizeTrackShared,
   splitTrack,
   splitTracks,
-  byRowStart,
-  byColumnStart,
 } from "./grid-layout-utils";
 import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 
@@ -45,12 +46,15 @@ export type GridLayoutTrack = "column" | "row";
 export type GridLayoutModelItemResizeable = "h" | "v" | "vh";
 
 export type GridLayoutModelItemType = "content" | "placeholder" | "splitter";
-export interface IGridLayoutModelItem {
-  closeable?: boolean;
+
+export interface GridLayoutModelCoordinates {
   column: GridLayoutModelPosition;
+  row: GridLayoutModelPosition;
+}
+export interface IGridLayoutModelItem extends GridLayoutModelCoordinates {
+  closeable?: boolean;
   id: string;
   resizeable?: GridLayoutModelItemResizeable;
-  row: GridLayoutModelPosition;
   type: GridLayoutModelItemType;
 }
 
@@ -95,6 +99,30 @@ type GridItemMaps = {
 };
 
 export type GridItemUpdate = [string, GridLayoutModelPosition];
+
+function findUpdate(
+  updates: GridItemUpdate[],
+  gridItemId: string,
+  throwIfNotFound?: false
+): GridLayoutModelPosition | undefined;
+function findUpdate(
+  updates: GridItemUpdate[],
+  gridItemId: string,
+  throwIfNotFound: true
+): GridLayoutModelPosition;
+function findUpdate(
+  updates: GridItemUpdate[],
+  gridItemId: string,
+  throwIfNotFound = false
+) {
+  const update = updates.find(([id]) => id === gridItemId);
+  if (update) {
+    return update[1];
+  }
+  if (throwIfNotFound) {
+    throw Error(`No update found for gridItemId ${gridItemId}`);
+  }
+}
 
 const storeMapValue = (
   map: GridItemMap,
@@ -349,6 +377,22 @@ export class GridLayoutModel {
     return [[], []];
   }
 
+  replaceGridItem(gridItemId: string, itemType: GridLayoutModelItemType) {
+    const gridItem = this.getGridItem(gridItemId);
+    if (gridItem) {
+      const updatePlaceholders =
+        gridItem?.type === "placeholder" || itemType === "placeholder";
+      if (gridItem.type !== itemType) {
+        gridItem.type = itemType;
+        if (updatePlaceholders) {
+          this.createPlaceholders();
+        }
+        return gridItem;
+      }
+    }
+    throw Error(`replaceGridItem: no GridItem found #${gridItemId} `);
+  }
+
   getGridItem(gridItemId: string) {
     return this.index.get(gridItemId);
   }
@@ -489,15 +533,16 @@ export class GridLayoutModel {
 
   splitGridItem(
     gridItemId: string,
-    resizeDirection: GridLayoutResizeDirection,
-    tracks: number[],
-    newGridItemJSON?: LayoutJSON
+    dropPosition: GridLayoutSplitDirection,
+    tracks: number[]
   ): {
-    updates: GridItemUpdate[];
+    newGridItem: IGridLayoutModelItem;
     tracks: number[];
+    updates: GridItemUpdate[];
   } {
     const gridItem = this.getGridItem(gridItemId);
     if (gridItem) {
+      const resizeDirection = gridResizeDirectionFromDropPosition(dropPosition);
       let updates: GridItemUpdate[] | undefined = undefined;
       let newTracks = tracks;
       const isVertical = resizeDirection === "vertical";
@@ -506,32 +551,63 @@ export class GridLayoutModel {
         [track]: { start, end },
       } = gridItem;
 
+      const newItemId = uuid();
+      const newGridItem: IGridLayoutModelItem = {
+        column: { ...gridItem.column },
+        id: newItemId,
+        resizeable: "vh",
+        row: { ...gridItem.row },
+        type: "content",
+      };
+      this.addGridItem(newGridItem);
+
       let newTrackIndex = start - 1;
 
       if (end - start === 1) {
         newTracks = splitTrack(tracks, newTrackIndex);
         updates = this.addTrack(newTrackIndex, resizeDirection);
 
-        const [, position] = updates.find(
-          ([id]) => id === gridItemId
-        ) as GridItemUpdate;
-        position.end -= 1;
+        const targetPosition = findUpdate(updates, gridItemId, true);
+        const newPosition = findUpdate(updates, newItemId, true);
+        if (dropPosition === "north" || dropPosition === "west") {
+          newPosition.end -= 1;
+          targetPosition.start += 1;
+        } else {
+          newPosition.start += 1;
+          targetPosition.end -= 1;
+        }
       } else {
         // If there is already a trackEdge that bisects this gridItem ,
         // we just have to realign the gridItem
         const bisectingGridLine = getBisectingGridLine(tracks, start, end);
         if (bisectingGridLine !== -1) {
-          updates = [[gridItemId, { start, end: bisectingGridLine }]];
+          if (dropPosition === "west" || dropPosition === "north") {
+            updates = [
+              [newItemId, { start, end: bisectingGridLine }],
+              [gridItemId, { start: bisectingGridLine, end }],
+            ];
+          } else {
+            updates = [
+              [gridItemId, { start, end: bisectingGridLine }],
+              [newItemId, { start: bisectingGridLine, end }],
+            ];
+          }
         } else {
           // this will calculate sizes of the new tracks
           ({ newTracks, newTrackIndex } = splitTracks(tracks, start, end));
+          const bisectingGridLine = newTrackIndex + 2;
           // this will apply trackEdge changes to gridLayoutItems
           updates = this.addTrack(newTrackIndex, resizeDirection);
 
-          const [, position] = updates.find(
-            ([id]) => id === gridItemId
-          ) as GridItemUpdate;
-          position.end -= 1;
+          const targetPosition = findUpdate(updates, gridItemId, true);
+          const newPosition = findUpdate(updates, newItemId, true);
+          if (dropPosition === "north" || dropPosition === "west") {
+            newPosition.end = bisectingGridLine;
+            targetPosition.start = bisectingGridLine;
+          } else {
+            newPosition.start = bisectingGridLine;
+            targetPosition.end = bisectingGridLine;
+          }
         }
       }
 
@@ -542,24 +618,10 @@ export class GridLayoutModel {
         setTrack(id, position);
       });
 
-      if (newGridItemJSON) {
-        const component = layoutFromJson(newGridItemJSON, "");
-        console.log({ component });
-
-        //   const gridItem: IGridLayoutModelItem = {
-        //     id: uuid(),
-        //     column: { start: columnStart, end: columnEnd },
-        //     resizeable: "vh",
-        //     row: { start: rowStart, end: rowEnd },
-        //     type: "content",
-        //   };
-
-        //   layoutModel.addGridItem(gridItem);
-      }
-
       return {
         updates: updates ?? [],
         tracks: newTracks,
+        newGridItem,
       };
     } else {
       throw Error(

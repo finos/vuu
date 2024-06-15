@@ -1,0 +1,100 @@
+.vuuGridLayout {
+  --vuu-grid-gap: 6px;
+  display: grid;
+  padding: var(--vuu-grid-gap);
+}
+
+.vuuGridLayoutItem {
+  --vuu-header-height: var(--header-height, 25px);
+  border: solid 1px white;
+  position: relative;
+}
+
+.vuuGridLayoutItem-active {
+  border: dashed 1px blue;
+  position: relative;
+}
+
+.vuuGridLayoutItem > * {
+  position: absolute;
+  inset: calc(var(--vuu-header-height) + var(--vuu-grid-gap))
+    var(--vuu-grid-gap) var(--vuu-grid-gap) var(--vuu-grid-gap);
+}
+
+.vuuGridLayoutItemHeader {
+  align-items: center;
+  background-color: #ccc;
+  display: flex;
+  inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap);
+  height: var(--vuu-header-height);
+  padding: 0 6px;
+}
+
+.vuuGridLayoutItemHeader-close {
+  margin-left: auto;
+}
+
+.vuuDropTarget-east {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 50%;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+.vuuDropTarget-west {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 50%;
+}
+.vuuDropTarget-north {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 50%;
+  --grid-dropzone-right: 0px;
+}
+.vuuDropTarget-south {
+  --grid-dropzone-top: 50%;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+
+.vuuDropTarget-centre {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+
+.vuuDropTarget:after {
+  background-color: cornflowerblue;
+  content: "";
+  position: absolute;
+  top: var(--grid-dropzone-top);
+  right: var(--grid-dropzone-right);
+  bottom: var(--grid-dropzone-bottom);
+  left: var(--grid-dropzone-left);
+  transition-property: top, left, right, bottom;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+}
+
+/* .vuuGridLayout {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 100px;
+  --grid-dropzone-height: 100px;
+  --grid-dropzone-width: 100px;
+}
+
+.vuuGridLayout:after {
+  background-color: black;
+  content: "";
+  height: var(--grid-dropzone-height);
+  left: var(--grid-dropzone-left);
+  position: absolute;
+  top: var(--grid-dropzone-top);
+  transition-property: top, left, right, bottom;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+  width: var(--grid-dropzone-width);
+} */

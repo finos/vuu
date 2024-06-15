@@ -1,6 +1,8 @@
 import {
   GridLayoutModelItem,
   GridLayoutModelPosition,
+  GridLayoutResizeDirection,
+  GridLayoutSplitDirection,
   IGridLayoutModelItem,
   ISplitter,
 } from "./GridLayoutModel";
@@ -309,3 +311,10 @@ export const byRowStart = (
 ) => {
   return item1.row.start - item2.row.start;
 };
+
+export const gridResizeDirectionFromDropPosition = (
+  dropPosition: GridLayoutSplitDirection
+): GridLayoutResizeDirection =>
+  dropPosition === "north" || dropPosition === "south"
+    ? "vertical"
+    : "horizontal";

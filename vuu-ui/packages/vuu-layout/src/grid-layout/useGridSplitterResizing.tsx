@@ -13,11 +13,13 @@ import {
   splitTrack,
   // TODO rename this
   removeTrackFromTracks,
-  IGridLayoutModelItem,
   adjustDistance,
+  GridLayoutDropHandler,
   layoutFromJson,
+  IGridLayoutModelItem,
+  gridResizeDirectionFromDropPosition,
 } from "@finos/vuu-layout";
-import { asReactElements, queryClosest, uuid } from "@finos/vuu-utils";
+import { asReactElements, queryClosest } from "@finos/vuu-utils";
 import React, {
   MouseEventHandler,
   ReactElement,
@@ -49,7 +51,7 @@ export type SplitterResizingHookProps = Pick<
 >;
 
 /**
- * return either cols or rows dependning on resze direction
+ * return either cols or rows dependning on resize direction
  */
 const getTracks = (state: ResizeState) => {
   const tracks =
@@ -411,7 +413,7 @@ export const useGridSplitterResizing = ({
         const columns = getColumns(grid);
         const { tracks, updates } = layoutModel.splitGridItem(
           gridItemId,
-          "horizontal",
+          "west",
           columns
         );
         if (updates.length > 0) {
@@ -441,7 +443,7 @@ export const useGridSplitterResizing = ({
         const rows = getRows(grid);
         const { tracks, updates } = layoutModel.splitGridItem(
           gridItemId,
-          "vertical",
+          "north",
           rows
         );
 
@@ -559,79 +561,67 @@ export const useGridSplitterResizing = ({
     [applyUpdates, layoutModel]
   );
 
-  const handleDrop = useCallback(
+  const addChildComponent = useCallback(
+    (component: JSX.Element, { column, id, row }: IGridLayoutModelItem) => {
+      const newChild = (
+        <GridLayoutItem
+          header
+          id={id}
+          key={id}
+          resizeable="hv"
+          style={{
+            gridColumnStart: column.start,
+            gridColumnEnd: column.end,
+            gridRowStart: row.start,
+            gridRowEnd: row.end,
+          }}
+          title="New One"
+        >
+          {component}
+        </GridLayoutItem>
+      );
+      setChildren((c) => c.concat(newChild));
+    },
+    []
+  );
+
+  const handleDrop = useCallback<GridLayoutDropHandler>(
     (target, payload, position) => {
       const { current: grid } = containerRef;
-      if (position === "NORTH" || position === "SOUTH") {
-        const gridItem = layoutModel.getGridItem(target);
-        if (grid && gridItem) {
-          const rows = getRows(grid);
-          const { tracks, updates } = layoutModel.splitGridItem(
+      const gridItem = layoutModel.getGridItem(target);
+
+      if (grid && gridItem) {
+        const component = layoutFromJson(payload, "");
+
+        if (position === "centre") {
+          const newGridItem = layoutModel.replaceGridItem(target, "content");
+          addChildComponent(component, newGridItem);
+        } else {
+          const resizeDirection = gridResizeDirectionFromDropPosition(position);
+          const currentTracks =
+            resizeDirection === "vertical" ? getRows(grid) : getColumns(grid);
+
+          const { tracks, updates, newGridItem } = layoutModel.splitGridItem(
             target,
-            "vertical",
-            rows,
-            payload
+            position,
+            currentTracks
           );
 
           if (updates.length > 0) {
-            // TODO move all into model
-            setGridTrackTemplate({ grid, resizeDirection: "vertical" }, tracks);
-            applyUpdates("vertical", updates);
-            layoutModel.createPlaceholders();
-            const placeholders = layoutModel.getPlaceholders();
-            const splitters = layoutModel.getSplitterPositions();
+            setGridTrackTemplate({ grid, resizeDirection }, tracks);
+            applyUpdates(resizeDirection, updates);
 
-            setNonContentGridItems({ placeholders, splitters });
+            addChildComponent(component, newGridItem);
           }
-        } else {
-          throw Error(`splitGridRow no gridItem with id ${gridItemId}`);
         }
-      } else if (position === "EAST" || position === "WEST") {
-        splitGridCol(target);
+        const placeholders = layoutModel.getPlaceholders();
+        const splitters = layoutModel.getSplitterPositions();
+        setNonContentGridItems({ placeholders, splitters });
       } else {
-        console.log("replace gridUtem");
+        throw Error(`splitGridRow no gridItem with id ${target}`);
       }
-
-      // const targetGridItem = layoutModel.getGridItem(target);
-      // if (targetGridItem) {
-      //   const {
-      //     column: { start: columnStart, end: columnEnd },
-      //     row: { start: rowStart, end: rowEnd },
-      //   } = targetGridItem;
-
-      //   const component = layoutFromJson(payload, "");
-
-      //   const gridItem: IGridLayoutModelItem = {
-      //     id: uuid(),
-      //     column: { start: columnStart, end: columnEnd },
-      //     resizeable: "vh",
-      //     row: { start: rowStart, end: rowEnd },
-      //     type: "content",
-      //   };
-
-      //   const newChild = (
-      //     <GridLayoutItem
-      //       header
-      //       id={gridItem.id}
-      //       resizeable="hv"
-      //       style={{
-      //         gridColumnStart: columnStart,
-      //         gridColumnEnd: columnEnd,
-      //         gridRowStart: rowStart,
-      //         gridRowEnd: rowEnd,
-      //       }}
-      //       title="New One"
-      //     >
-      //       {component}
-      //     </GridLayoutItem>
-      //   );
-
-      //   layoutModel.addGridItem(gridItem);
-
-      //   setChildren((c) => c.concat(newChild));
-      // }
     },
-    [applyUpdates, layoutModel, splitGridCol]
+    [addChildComponent, applyUpdates, layoutModel]
   );
 
   return {
