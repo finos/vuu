@@ -8,7 +8,7 @@ import java.util.Map;
 public class ScalaCollectionConverter {
 
     public static <K, V> scala.collection.immutable.Map<K, V> toScala(Map<K, V> m) {
-        return scala.collection.immutable.Map.from(scala.jdk.CollectionConverters.MapHasAsScala(m).asScala());
+        return scala.collection.immutable.Map.from(CollectionConverters.MapHasAsScala(m).asScala());
     }
 
     public static <T> scala.collection.Iterable<T> toScala(Iterable<T> l) {
