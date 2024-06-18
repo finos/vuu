@@ -7,12 +7,17 @@ import {
   EditAPI,
   NullEditAPI,
 } from "@finos/vuu-ui-controls";
-import { getElementDataIndex, queryClosest } from "@finos/vuu-utils";
+import {
+  filterAsQuery,
+  getElementDataIndex,
+  queryClosest,
+} from "@finos/vuu-utils";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
   RefObject,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -25,7 +30,6 @@ import {
 import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
 import { navigateToNextItem } from "./filterBarFocusManagement";
-import { useApplyFilterOnChange } from "./useApplyFilterOnChange";
 import { useFilterState } from "./useFilterState";
 
 export type EditFilterState = "create" | "edit";
@@ -41,7 +45,7 @@ type InteractedFilterState = {
   state: FilterState;
 };
 
-export interface FilterBarHookProps
+export interface CustomFilterHookProps
   extends Pick<
     FilterBarProps,
     | "columnDescriptors"
@@ -64,7 +68,7 @@ export const useCustomFilters = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-}: FilterBarHookProps) => {
+}: CustomFilterHookProps) => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [interactedFilterState, setInteractedFilterState] = useState<
     InteractedFilterState | undefined
@@ -93,13 +97,21 @@ export const useCustomFilters = ({
     onFilterStateChanged,
   });
 
-  //TODO do we need it ?
-  useApplyFilterOnChange({
-    activeFilterIndex,
-    columnsByName,
-    filters,
-    onApplyFilter,
-  });
+  useEffect(() => {
+    const activeFilters = activeFilterIndex.map((i) => filters[i]);
+    const applyFilter = (filter?: Filter) => {
+      const query = filter ? filterAsQuery(filter, { columnsByName }) : "";
+      onApplyFilter({ filter: query, filterStruct: filter });
+    };
+    if (activeFilters.length === 0) {
+      applyFilter();
+    } else if (activeFilters.length === 1) {
+      const [filter] = activeFilters;
+      applyFilter(filter);
+    } else {
+      applyFilter({ op: "and", filters: activeFilters });
+    }
+  }, [activeFilterIndex, columnsByName, filters, onApplyFilter]);
 
   const editPillLabel = useCallback((index: number, filter: Filter) => {
     setTimeout(() => {
@@ -172,10 +184,6 @@ export const useCustomFilters = ({
     },
     [deleteConfirmed, getDeletePrompt]
   );
-
-  // const handleBeginEditFilterName = useCallback((filter: Filter) => {
-  //   editingFilterRef.current = filter;
-  // }, []);
 
   // TODO handle cancel edit name
   const handleExitEditFilterName: EditableLabelProps["onExitEditMode"] =
@@ -273,7 +281,7 @@ export const useCustomFilters = ({
     [onToggleFilterActive]
   );
 
-  const pillProps: Omit<FilterPillProps, "filter" | "selected"> = {
+  const FilterPillProps: Omit<FilterPillProps, "filter" | "selected"> = {
     editLabelApiRef: editPillLabelAPI,
     // onBeginEdit: handleBeginEditFilterName,
     onClick: handlePillClick,
@@ -314,6 +322,7 @@ export const useCustomFilters = ({
   };
 
   return {
+    FilterPillProps,
     activeFilterIndex,
     addButtonProps,
     columnsByName,
@@ -321,7 +330,6 @@ export const useCustomFilters = ({
     interactedFilterState,
     onCancelEdit: handleCancelEdit,
     onSave: filterSaveHandler,
-    pillProps,
     promptProps,
   };
 };

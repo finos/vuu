@@ -5,8 +5,9 @@ import {
   vuuModule,
 } from "@finos/vuu-data-test";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { FilterTable, FilterTableProps } from "@finos/vuu-datatable";
+import { FilterTable } from "@finos/vuu-datatable";
 import type { FilterState } from "@finos/vuu-filter-types";
+import type { FilterBarProps } from "@finos/vuu-filters";
 import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
@@ -39,7 +40,7 @@ export const FilterTableVuuInstruments = () => {
     setFilterState(fs);
   }, []);
 
-  const filterBarProps: FilterTableProps["FilterBarProps"] = {
+  const filterBarProps: Partial<FilterBarProps> = {
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
@@ -65,7 +66,10 @@ export const FilterTableVuuInstruments = () => {
 };
 FilterTableVuuInstruments.displaySequence = displaySequence++;
 
-export const FilterTableArrayDataInstruments = () => {
+export const FilterTableArrayDataInstruments = ({
+  quickFilterColumns,
+  variant = "custom-filters",
+}: Pick<FilterBarProps, "quickFilterColumns" | "variant">) => {
   const schema = schemas.instruments;
   const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">
@@ -81,6 +85,8 @@ export const FilterTableArrayDataInstruments = () => {
     }),
     [schema]
   );
+
+  const { typeaheadHook } = vuuModule("SIMUL");
 
   const [filterState, setFilterState] = useState<FilterState>({
     filters: [],
@@ -100,12 +106,15 @@ export const FilterTableArrayDataInstruments = () => {
     setFilterState(fs);
   }, []);
 
-  const filterBarProps: FilterTableProps["FilterBarProps"] = {
+  const FilterBarProps: FilterBarProps = {
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
+    quickFilterColumns,
+    suggestionProvider: typeaheadHook,
     tableSchema: getSchema("instruments"),
+    variant,
   };
 
   const tableProps = {
@@ -117,10 +126,34 @@ export const FilterTableArrayDataInstruments = () => {
 
   return (
     <FilterTable
-      FilterBarProps={filterBarProps}
+      FilterBarProps={FilterBarProps}
       style={{ height: "100%" }}
       TableProps={tableProps}
     />
   );
 };
 FilterTableArrayDataInstruments.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsQuickFilters = () => (
+  <FilterTableArrayDataInstruments
+    variant="quick-filters"
+    quickFilterColumns={["isin", "currency", "exchange"]}
+  />
+);
+FilterTableArrayDataInstrumentsQuickFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFullFilters = () => (
+  <FilterTableArrayDataInstruments variant="full-filters" />
+);
+FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;
+
+export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
+  <div
+    data-showcase-center
+    style={{ border: "solid red 4px", height: 600, width: 900 }}
+  >
+    <FilterTableArrayDataInstruments variant="full-filters" />
+  </div>
+);
+FilterTableArrayDataInstrumentsFixedHeightContainer.displaySequence =
+  displaySequence++;

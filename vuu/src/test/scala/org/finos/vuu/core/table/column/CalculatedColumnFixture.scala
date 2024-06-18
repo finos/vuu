@@ -105,9 +105,7 @@ object CalculatedColumnFixture extends StrictLogging {
 
   def generic12Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = rows.map(row => {
-      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
-    }).toArray
+    val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 
     val heading = expectation.heading
 
@@ -120,9 +118,7 @@ object CalculatedColumnFixture extends StrictLogging {
 
   def generic11Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor11[_, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = rows.map(row => {
-      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
-    }).toArray
+    val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 
     val heading = expectation.heading
 
@@ -135,9 +131,7 @@ object CalculatedColumnFixture extends StrictLogging {
 
   def generic13Assert(rows: List[RowWithData], columns: ViewPortColumns, expectation: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = rows.map(row => {
-      columns.getColumns().map(c => c.name -> c.getData(row)).toMap
-    }).toArray
+    val arraysOfMaps = rows.map(rowToMap(_, columns)).toArray
 
     val heading = expectation.heading
 
@@ -147,6 +141,8 @@ object CalculatedColumnFixture extends StrictLogging {
 
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
+
+  private def rowToMap(row: RowData, columns: ViewPortColumns) = columns.getColumns().map(c => c.name -> c.getData(row)).toMap
 
   def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
 

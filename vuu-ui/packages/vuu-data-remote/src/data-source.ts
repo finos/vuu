@@ -1,14 +1,15 @@
-import {
+import type {
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceConfigMessage,
   DataSourceDataSizeMessage,
 } from "@finos/vuu-data-types";
-import {
+import type {
   ServerToClientBody,
   ServerToClientMenuSessionTableAction,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { isOpenDialogAction } from "@finos/vuu-utils";
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage
@@ -70,7 +71,7 @@ export const isSessionTableActionMessage = (
   messageBody: ServerToClientBody
 ): messageBody is ServerToClientMenuSessionTableAction =>
   messageBody.type === "VIEW_PORT_MENU_RESP" &&
-  messageBody.action !== null &&
+  isOpenDialogAction(messageBody.action) &&
   isSessionTable(messageBody.action.table);
 
 export const isSessionTable = (table?: unknown) => {

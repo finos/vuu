@@ -46,10 +46,11 @@ export const Tabstrip = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeTabIndex,
-    focusVisible,
     containerStyle,
+    focusVisible,
     draggedItemIndex,
     onClickAddTab,
+    interactedTabState,
     tabProps,
     ...tabstripHook
   } = useTabstrip({
@@ -96,6 +97,7 @@ export const Tabstrip = ({
             "data-overflow-priority": selected ? "1" : undefined,
             dragging: draggedItemIndex === index,
             editable,
+            editing: interactedTabState?.index === index,
             focusVisible: focusVisible === index,
             id: tabId,
             index,
@@ -137,6 +139,7 @@ export const Tabstrip = ({
       tabProps,
       tabClassName,
       draggedItemIndex,
+      interactedTabState,
       focusVisible,
       location,
     ]

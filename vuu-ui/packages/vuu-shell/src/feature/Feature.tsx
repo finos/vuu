@@ -1,5 +1,4 @@
-import { ViewProps } from "@finos/vuu-layout";
-import { importCSS, registerComponent } from "@finos/vuu-utils";
+import { ViewConfig, importCSS, registerComponent } from "@finos/vuu-utils";
 import React, { Suspense, useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
@@ -32,12 +31,12 @@ const useCachedFeature = (url: string) => {
   }
 };
 
-export interface FeatureProps<P extends object | undefined = any> {
+export interface FeatureProps<P extends object | undefined = object> {
   /**
     props that will be passed to the lazily loaded component.
    */
   ComponentProps?: P;
-  ViewProps?: Partial<Pick<ViewProps, "closeable" | "header">>;
+  ViewProps?: ViewConfig;
   css?: string;
   height?: number;
   title?: string;
@@ -55,13 +54,6 @@ function RawFeature<Params extends object | undefined>({
   ComponentProps: params,
   ...props
 }: FeatureProps<Params>) {
-  // useEffect(() => {
-  //   console.log("%cFeature mount", "color: green;");
-  //   return () => {
-  //     console.log("%cFeature unmount", "color:red;");
-  //   };
-  // }, []);
-
   if (css) {
     //   import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(
     //     (cssModule) => {

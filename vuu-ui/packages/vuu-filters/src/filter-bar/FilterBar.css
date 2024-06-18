@@ -9,7 +9,7 @@
   --vuuFilterEditor-height: var(--filterbar-height);
   --flexbar-gap: var(--salt-spacing-100);
 
-  align-items: flex-start;
+  align-items: center;
   background-color: var(--salt-container-secondary-background);
   border-color: var(--salt-container-primary-borderColor);
   border-style: var(--vuuFilterBar-borderStyle, none none solid none);
@@ -23,9 +23,14 @@
   height: calc(var(--salt-spacing-100) + var(--filterbar-height));
   overflow: hidden;
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  /* transition: height 0.3s ease-in; */
 }
 
 .vuuFilterBar-quick-filter {
+  --filterbar-height: var(
+    --vuuFilterBar-height,
+    calc(2 * var(--salt-size-base))
+  );
   align-items: flex-end;
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
 }

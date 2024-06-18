@@ -4,6 +4,7 @@ import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  OpenDialogAction,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -205,6 +206,9 @@ export type DataSourceConfigMessage =
   | DataSourceSortMessage
   | DataSourceSetConfigMessage;
 
+/**
+ * Messages which are routed back to the DataSource
+ */
 export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
@@ -380,6 +384,7 @@ export type DataSourceStatus =
   | "unsubscribed";
 
 export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
+export type SuggestionProvider = () => SuggestionFetcher;
 
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
@@ -428,7 +433,13 @@ export interface DataSource
   resume?: () => void;
 
   deleteRow?: DataSourceDeleteHandler;
-
+  /**
+   * create a DataSource on a session table. The concrete DataSource implementation that
+   * implements this method will always return a session table datasource of the same concrete type.
+   * @param table the sessionTable  (module and table name)
+   * @returns
+   */
+  createSessionDataSource?: (table: VuuTable) => DataSource;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
@@ -492,21 +503,16 @@ export interface MenuRpcResponse<
   action: TAction;
   error?: string;
   requestId: string;
-  rpcName?: string;
+  rpcName: string;
   tableAlreadyOpen?: boolean;
   type: "VIEW_PORT_MENU_RESP";
 }
 
-export interface OpenDialogAction {
-  type: "OPEN_DIALOG_ACTION";
+export interface OpenDialogActionWithSchema extends OpenDialogAction {
   tableSchema?: TableSchema;
-  table?: VuuTable;
-}
-export interface NoAction {
-  type: "NO_ACTION";
 }
 
-export declare type MenuRpcAction = OpenDialogAction | NoAction;
+export declare type MenuRpcAction = OpenDialogActionWithSchema | NoAction;
 
 export type ConnectionStatus =
   | "connecting"

@@ -17,7 +17,6 @@ export type BasketSelectorHookProps = Pick<
 >;
 
 export const useBasketSelector = ({
-  basketInstanceId,
   dataSourceBasketTradingSearch,
   defaultIsOpen,
   isOpen: isOpenProp,
@@ -62,7 +61,7 @@ export const useBasketSelector = ({
     onClickAddBasket();
   }, [handleOpenChange, onClickAddBasket]);
 
-  const tableProps: Partial<TableProps> = useMemo(
+  const TableProps: Partial<TableProps> = useMemo(
     () => ({
       height: "auto",
       Row: BasketSelectorRow,
@@ -95,16 +94,16 @@ export const useBasketSelector = ({
       },
       onRowClick: handleRowClick,
       rowHeight: 47,
-      selectedKeys: basketInstanceId ? [basketInstanceId] : undefined,
+      tabIndex: -1,
     }),
-    [basketInstanceId, handleRowClick]
+    [handleRowClick]
   );
 
   return {
     isOpen,
     onClickAddBasket: handleClickAddBasket,
     onOpenChange: handleOpenChange,
-    tableProps,
+    TableProps,
     triggerRef,
   };
 };

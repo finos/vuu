@@ -433,29 +433,53 @@ export const ComplexNestedLayout = () => {
                 style={{ width: "100%", height: "100%" }}
                 title="View Palette"
               >
-                <PaletteItem label="Blue Monday" closeable resizeable header>
-                  <Component
-                    style={{
-                      backgroundColor: "cornflowerblue",
-                      height: "100%",
-                    }}
-                  />
-                </PaletteItem>
-                <PaletteItem label="Brown Sugar" closeable resizeable header>
-                  <Component
-                    style={{ backgroundColor: "brown", height: "100%" }}
-                  />
-                </PaletteItem>
-                <PaletteItem label="Green Day" closeable resizeable header>
-                  <Component
-                    style={{ backgroundColor: "green", height: "100%" }}
-                  />
-                </PaletteItem>
-                <PaletteItem label="Lemonheads" closeable resizeable header>
-                  <Component
-                    style={{ backgroundColor: "yellow", height: "100%" }}
-                  />
-                </PaletteItem>
+                <PaletteItem
+                  component={
+                    <Component
+                      style={{
+                        backgroundColor: "cornflowerblue",
+                        height: "100%",
+                      }}
+                    />
+                  }
+                  label="Blue Monday"
+                  closeable
+                  resizeable
+                  header
+                ></PaletteItem>
+                <PaletteItem
+                  component={
+                    <Component
+                      style={{ backgroundColor: "brown", height: "100%" }}
+                    />
+                  }
+                  label="Brown Sugar"
+                  closeable
+                  resizeable
+                  header
+                ></PaletteItem>
+                <PaletteItem
+                  component={
+                    <Component
+                      style={{ backgroundColor: "green", height: "100%" }}
+                    />
+                  }
+                  label="Green Day"
+                  closeable
+                  resizeable
+                  header
+                ></PaletteItem>
+                <PaletteItem
+                  component={
+                    <Component
+                      style={{ backgroundColor: "yellow", height: "100%" }}
+                    />
+                  }
+                  label="Lemonheads"
+                  closeable
+                  resizeable
+                  header
+                ></PaletteItem>
               </Palette>
             </View>
             <DraggableLayout

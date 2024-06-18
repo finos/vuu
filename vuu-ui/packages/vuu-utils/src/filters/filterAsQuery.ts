@@ -3,7 +3,7 @@ import {
   Filter,
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
-import { RuntimeColumnDescriptor } from "packages/vuu-table-types";
+import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { isDateTimeColumn } from "../column-utils";
 import { isMultiClauseFilter, isMultiValueFilter } from "./utils";
 

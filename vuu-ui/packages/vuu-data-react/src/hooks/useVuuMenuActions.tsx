@@ -6,23 +6,25 @@ import {
   MenuBuilder,
   RpcResponseHandler,
 } from "@finos/vuu-data-types";
-import type { MenuActionClosePopup } from "@finos/vuu-popups";
+import { useDialogContext, type MenuActionClosePopup } from "@finos/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
   VuuMenu,
   VuuMenuItem,
+  VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
   VuuServerMenuOptions,
   buildMenuDescriptorFromVuuMenu,
   getMenuRpcRequest,
   isGroupMenuItemDescriptor,
+  isOpenBulkEditResponse,
   isRoot,
   isTableLocation,
 } from "@finos/vuu-utils";
 import { useCallback } from "react";
-
-export const addRowsFromInstruments = "addRowsFromInstruments";
+import { BulkEditPanel } from "@finos/vuu-table";
+import { Button } from "@salt-ds/core";
 
 const NO_CONFIG: MenuActionConfig = {};
 
@@ -97,15 +99,60 @@ export const useVuuMenuActions = ({
     [dataSource, menuActionConfig]
   );
 
+  const { showDialog, closeDialog } = useDialogContext();
+
+  const showBulkEditDialog = useCallback(
+    (table: VuuTable) => {
+      const sessionDs = dataSource.createSessionDataSource?.(table);
+      const handleSubmit = () => {
+        sessionDs?.rpcCall?.({
+          namedParams: {},
+          params: [],
+          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+          type: "VIEW_PORT_RPC_CALL",
+        });
+        closeDialog();
+      };
+
+      if (sessionDs) {
+        showDialog(
+          <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
+          "Multi Row Edit",
+          [
+            <Button key="cancel" onClick={closeDialog}>
+              Cancel
+            </Button>,
+            <Button key="submit" onClick={handleSubmit}>
+              Save
+            </Button>,
+          ]
+        );
+
+        return true;
+      }
+    },
+    [closeDialog, dataSource, showDialog]
+  );
+
   const handleMenuAction = useCallback(
     ({ menuId, options }: MenuActionClosePopup) => {
       if (clientSideMenuActionHandler?.(menuId, options)) {
         return true;
       } else if (menuId === "MENU_RPC_CALL") {
         const rpcRequest = getMenuRpcRequest(options as unknown as VuuMenuItem);
+
         dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
-          if (onRpcResponse && rpcResponse) {
-            onRpcResponse && onRpcResponse(rpcResponse);
+          if (rpcResponse) {
+            if (onRpcResponse?.(rpcResponse) === true) {
+              return true;
+            }
+
+            if (
+              isOpenBulkEditResponse(rpcResponse) &&
+              rpcResponse.action.table
+            ) {
+              showBulkEditDialog(rpcResponse.action.table);
+            }
           }
         });
         return true;
@@ -122,7 +169,7 @@ export const useVuuMenuActions = ({
 
       return false;
     },
-    [clientSideMenuActionHandler, dataSource, onRpcResponse]
+    [clientSideMenuActionHandler, dataSource, onRpcResponse, showBulkEditDialog]
   );
 
   return {

@@ -8,10 +8,10 @@ import {
 import { useId } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { HTMLAttributes, useRef } from "react";
-
 import { Basket } from "../useBasketTrading";
-import "./BasketSelector.css";
 import { useBasketSelector } from "./useBasketSelector";
+
+import "./BasketSelector.css";
 
 const classBase = "vuuBasketSelector";
 
@@ -40,7 +40,7 @@ export const BasketSelector = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const id = useId(idProp);
 
-  const { isOpen, onClickAddBasket, onOpenChange, tableProps, triggerRef } =
+  const { isOpen, onClickAddBasket, onOpenChange, TableProps, triggerRef } =
     useBasketSelector({
       basketInstanceId,
       dataSourceBasketTradingSearch,
@@ -98,7 +98,7 @@ export const BasketSelector = ({
       </div>
       <div className={`${classBase}-searchContainer`}>
         <InstrumentSearch
-          TableProps={tableProps}
+          TableProps={TableProps}
           autoFocus
           className={`${classBase}-instrumentSearch`}
           dataSource={dataSourceBasketTradingSearch}

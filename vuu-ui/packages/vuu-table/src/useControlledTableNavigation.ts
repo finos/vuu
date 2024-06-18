@@ -21,11 +21,13 @@ export const useControlledTableNavigation = (
       } else if (e.key === "Enter" || e.key === " ") {
         const { current: rowIdx } = highlightedIndexRef;
         // induce an onSelect event by 'clicking' the row
-        const rowEl = tableRef.current?.querySelector(
-          `[aria-rowindex="${rowIdx}"]`
-        ) as HTMLElement;
-        if (rowEl) {
-          dispatchMouseEvent(rowEl, "click");
+        if (typeof rowIdx === "number") {
+          const rowEl = tableRef.current?.querySelector(
+            `[aria-rowindex="${rowIdx + 1}"]`
+          ) as HTMLElement;
+          if (rowEl) {
+            dispatchMouseEvent(rowEl, "click");
+          }
         }
       }
     },

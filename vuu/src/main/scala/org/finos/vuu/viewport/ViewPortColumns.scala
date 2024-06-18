@@ -6,7 +6,7 @@ class ViewPortColumns(sourceColumns: List[Column]) {
 
   @volatile private var columns: List[Column] = sourceColumns
 
-  def canEqual(a: Any): Boolean = a.isInstanceOf[ViewPortColumns]
+  private def canEqual(a: Any): Boolean = a.isInstanceOf[ViewPortColumns]
 
   override def equals(that: Any): Boolean =
     that match {
@@ -32,13 +32,17 @@ class ViewPortColumns(sourceColumns: List[Column]) {
   def getColumns(): List[Column] = columns
 
   def getColumnForName(name: String): Option[Column] = {
-    val evaluatedName = if(ViewPortColumnCreator.isCalculatedColumn(name)){
+    val evaluatedName = getEvaluatedName(name)
+    columns.find(_.name == evaluatedName)
+  }
+
+  private def getEvaluatedName(name: String): String = {
+    if (ViewPortColumnCreator.isCalculatedColumn(name)) {
       val (calcName, _, _) = ViewPortColumnCreator.parseCalcColumn(name)
       calcName
-    }else{
+    } else {
       name
     }
-    columns.find(_.name == evaluatedName)
   }
 
   def count(): Int = columns.size
@@ -50,8 +54,7 @@ class ViewPortColumns(sourceColumns: List[Column]) {
     if (!hasCalculatedColumn) {
       row
     } else {
-      val rowData = this.getColumns().map(c => c.name -> row.get(c)).toMap
-      RowWithData(key, rowData)
+      this.pullRowAlwaysFilter(key, row)
     }
   }
 

@@ -1,4 +1,4 @@
-import { SuggestionFetcher, TableSchema } from "@finos/vuu-data-types";
+import type { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
 import {
   ColumnDescriptorsByName,
   MultiValueFilterClause,
@@ -31,7 +31,7 @@ export interface FilterClauseProps
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
-  suggestionProvider?: () => SuggestionFetcher;
+  suggestionProvider?: SuggestionProvider;
   tableSchema: TableSchema;
 }
 

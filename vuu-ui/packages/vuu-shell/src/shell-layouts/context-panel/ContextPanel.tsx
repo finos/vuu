@@ -1,14 +1,14 @@
-import { Button } from "@salt-ds/core";
+import {
+  LayoutJSON,
+  View,
+  layoutFromJson,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
+import { IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { useCallback, useMemo } from "react";
-import {
-  layoutFromJson,
-  LayoutJSON,
-  View,
-  useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
 
 import contextPanelCss from "./ContextPanel.css";
 
@@ -69,10 +69,12 @@ export const ContextPanel = ({
       <View className={`${classBase}-inner`} header={false} id="context-panel">
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
-          <Button
+          <IconButton
             className={`${classBase}-close`}
-            data-icon="close"
+            data-embedded
+            icon="close"
             onClick={handleClose}
+            size={16}
             variant="secondary"
           />
         </div>

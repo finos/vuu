@@ -26,7 +26,7 @@ export const useFilterBar = ({
   const handleChangeFilterMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
       const button = queryClosest<HTMLButtonElement>(e.target, "button");
-      const newFilterMode = button?.ariaValueMin;
+      const newFilterMode = button?.value;
       if (isFilterMode(newFilterMode)) {
         setFilterMode(newFilterMode);
         onChangeFilterMode?.(newFilterMode);

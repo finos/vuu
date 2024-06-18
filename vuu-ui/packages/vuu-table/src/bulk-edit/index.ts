@@ -1,2 +1,1 @@
-export * from "./bulk-edit-row";
-export * from "./bulk-edit-panel";
+export * from "./BulkEditPanel";

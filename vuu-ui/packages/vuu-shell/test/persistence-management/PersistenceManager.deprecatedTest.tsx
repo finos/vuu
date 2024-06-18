@@ -168,7 +168,7 @@ describe("LayoutManagementProvider", () => {
       );
     });
 
-    it("doesn't call createLayout, triggers error notification and logs error when layout path can't be resolved ", () => {
+    it.only("doesn't call createLayout, triggers error notification and logs error when layout path can't be resolved ", () => {
       const { result } = renderHook(() => useLayoutManager(), { wrapper });
       const notify = useNotifications();
 

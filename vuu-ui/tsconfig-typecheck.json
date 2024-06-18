@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitAny": true,
-    "target": "es2016",
+    "target": "es2017",
     "downlevelIteration": true,
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
@@ -20,9 +20,9 @@
     "sourceMap": true
   },
   "include": [
-    "packages/*/src", 
-    "sample-apps/*/src", 
-    "showcase/src", 
+    "packages/*/src",
+    "sample-apps/*/src",
+    "showcase/src",
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
     "global.d.ts"

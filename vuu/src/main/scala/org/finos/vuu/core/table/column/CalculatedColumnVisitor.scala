@@ -177,13 +177,13 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
 
   private def processOperatorClause(operator: OperatorContext, leftClause: CalculatedColumnClause, rightClause: CalculatedColumnClause): CalculatedColumnClause = {
     operator.getText match {
-      case "*" => MultiplyClause(leftClause, rightClause) //MultiplyClause(List(leftClause, rightClause))
-      case "+" => AddClause(leftClause, rightClause)
-      case "-" => SubtractClause(leftClause, rightClause)
-      case "/" => DivideClause(leftClause, rightClause)
+      case "*" => MultiplicationClause(leftClause, rightClause)
+      case "+" => AdditionClause(leftClause, rightClause)
+      case "-" => SubtractionClause(leftClause, rightClause)
+      case "/" => DivisionClause(leftClause, rightClause)
       case "=" => EqualsClause(leftClause, rightClause)
       case ">" => GreaterThanClause(leftClause, rightClause)
-      case "<" => LessThanClause(leftClause, rightClause)
+      case "<" => LesserThanClause(leftClause, rightClause)
     }
   }
 
@@ -264,7 +264,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
           case DataType.StringDataType => StringColumnClause(column)
           case DataType.BooleanDataType => BooleanColumnClause(column)
         }
-      case None => ErrorClause("Column not found:" + term.getText)
+      case None => ErrorClause("Column not found: " + term.getText)
     }
 
   }

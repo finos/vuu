@@ -18,15 +18,15 @@ class CalculatedColumnLogicTest extends AnyFeatureSpec with Matchers with Strict
     ) {
       Table(
         ("orderId" ,"quantity","ric"     ,"tradeTime","bid"     ,"ask"     ,"onMkt"   ,"trader"  ,"ccyCross","vwapPerf","refCol"  ,"minTest" ),
-        ("NYC-0004",null      ,"AAPL.L"  ,5L        ,99.0      ,101.5     ,false     ,null      ,"GBPUSD"  ,-0.1234   ,Double.NaN,Double.NaN),
+        ("NYC-0004",null      ,"AAPL.L"  ,5L        ,99.0      ,101.5     ,false     ,null      ,"GBPUSD"  ,-0.1234   ,null,null),
         ("LDN-0001",100L      ,"VOD.L"   ,2L        ,99.0      ,101.5     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,1.0101010101010102,1.0101010101010102),
         ("LDN-0002",500L      ,"BT.L"    ,1L        ,99.0      ,101.01    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,5.05050505050505,2407      ),
-        ("LDN-0003",null      ,"VOD.L"   ,3L        ,99.0      ,101.3     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,Double.NaN,Double.NaN),
+        ("LDN-0003",null      ,"VOD.L"   ,3L        ,99.0      ,101.3     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,null,null),
         ("LDN-0008",5000L     ,"BT.L"    ,5L        ,99.0      ,106.0     ,true      ,"chris"   ,"GBPUSD"  ,1.1234    ,50.505050505050505,50.0      ),
         ("NYC-0002",50000L    ,"VOD.L"   ,6L        ,99.0      ,102.0     ,false     ,null      ,"GBPUSD"  ,1.1234    ,505.050505050505,50.0      ),
-        ("NYC-0010",null      ,"VOD.L"   ,6L        ,99.0      ,110.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,Double.NaN,Double.NaN),
-        ("NYC-0011",null      ,"VOD/L"   ,6L        ,99.0      ,109.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,Double.NaN,Double.NaN),
-        ("NYC-0012",null      ,"VOD\\L"   ,6L        ,99.0      ,105.11    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,Double.NaN,Double.NaN),
+        ("NYC-0010",null      ,"VOD.L"   ,6L        ,99.0      ,110.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,null,null),
+        ("NYC-0011",null      ,"VOD/L"   ,6L        ,99.0      ,109.0     ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,null,null),
+        ("NYC-0012",null      ,"VOD\\L"   ,6L        ,99.0      ,105.11    ,true      ,"steve"   ,"GBPUSD"  ,1.1234    ,null,null),
         ("NYC-0013",100000L   ,"VOD\\L"   ,6L        ,99.0      ,122.0     ,true      ,"rahúl"   ,"$GBPUSD" ,1.1234    ,1010.10101010101,50.0      )
       )
     }

@@ -1,20 +1,34 @@
-import { Icon } from "@finos/vuu-ui-controls";
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import { getDataItemEditControl } from "@finos/vuu-data-react";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnPicker, Icon, VuuInput } from "@finos/vuu-ui-controls";
+import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ColumnDescriptor } from "packages/vuu-table-types";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
+import { FilterBarProps } from "../filter-bar";
 import { useQuickFilters } from "./useQuickFilters";
 
 import quickFiltersCss from "./QuickFilters.css";
 
 const classBase = "vuuQuickFilters";
 
-export interface QuickFilterProps extends HTMLAttributes<HTMLDivElement> {
-  columns: ColumnDescriptor[];
+export interface QuickFilterProps
+  extends HTMLAttributes<HTMLDivElement>,
+    Pick<
+      FilterBarProps,
+      "onApplyFilter" | "suggestionProvider" | "tableSchema"
+    > {
+  availableColumns: ColumnDescriptor[];
+  quickFilterColumns?: string[];
 }
 
-export const QuickFilters = ({ columns }: QuickFilterProps) => {
+export const QuickFilters = ({
+  availableColumns,
+  onApplyFilter,
+  quickFilterColumns,
+  suggestionProvider,
+  tableSchema,
+}: QuickFilterProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-quick-filters",
@@ -24,26 +38,52 @@ export const QuickFilters = ({ columns }: QuickFilterProps) => {
 
   const searchIcon = <Icon name="search" size={18} />;
 
-  const { onChange } = useQuickFilters();
+  const {
+    availableColumnNames,
+    onChange,
+    onColumnsSelectionChange,
+    onCommit,
+    rootRef,
+    quickFilters,
+  } = useQuickFilters({
+    availableColumns,
+    onApplyFilter,
+    quickFilterColumns,
+  });
+
+  const filterColumns = availableColumns.filter(({ name }) =>
+    quickFilters?.includes(name)
+  );
 
   return (
-    <div className={classBase}>
-      <FormField>
+    <div className={classBase} ref={rootRef}>
+      <FormField data-field="find">
         <FormFieldLabel>Find</FormFieldLabel>
-        <Input
+        <VuuInput
           inputProps={{
             onChange,
           }}
+          onCommit={onCommit}
           startAdornment={searchIcon}
           variant="secondary"
         />
       </FormField>
-      {columns.map((column) => (
-        <FormField key={column.name}>
-          <FormFieldLabel>{column.name}</FormFieldLabel>
-          <Input variant="secondary" />
+      {filterColumns?.map((column) => (
+        <FormField key={column.label ?? column.name} data-field={column.name}>
+          <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
+          {getDataItemEditControl({
+            column,
+            onCommit,
+            suggestionProvider,
+            table: tableSchema?.table,
+          })}
         </FormField>
       ))}
+      <ColumnPicker
+        columns={availableColumnNames}
+        onSelectionChange={onColumnsSelectionChange}
+        selected={quickFilters}
+      />
     </div>
   );
 };

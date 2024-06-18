@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogActions,
   DialogCloseButton,
   DialogContent,
   DialogHeader,
@@ -10,10 +11,12 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from "react";
 
 export type DialogState = {
+  actions?: ReactElement[];
   content: ReactElement;
   title: string;
   hideCloseButton?: boolean;
@@ -21,8 +24,19 @@ export type DialogState = {
 
 export type SetDialog = (dialogState?: DialogState) => void;
 
+export type ShowDialog = (
+  dialogContent: ReactElement,
+  title: string,
+  dialogActionButtons?: ReactElement[]
+) => void;
+
 export interface DialogContextProps {
-  showDialog: (dialogContent: ReactElement, title: string) => void;
+  showDialog: ShowDialog;
+  closeDialog: () => void;
+  setDialogDispatchers: (
+    showDialog: ShowDialog,
+    closeDialog: () => void
+  ) => void;
 }
 
 export const useDialog = () => {
@@ -42,11 +56,18 @@ export const useDialog = () => {
   );
 
   const dialog = dialogState ? (
-    <Dialog className="vuuDialog" open={true} onOpenChange={handleOpenChange}>
+    <Dialog open={true} onOpenChange={handleOpenChange}>
       <DialogHeader header={dialogState.title} />
       <DialogContent>{dialogState.content}</DialogContent>
       {dialogState.hideCloseButton !== true ? (
-        <DialogCloseButton onClick={closeDialog} />
+        <DialogCloseButton
+          data-embedded
+          data-icon="close"
+          onClick={closeDialog}
+        />
+      ) : null}
+      {dialogState.actions ? (
+        <DialogActions>{dialogState.actions}</DialogActions>
       ) : null}
     </Dialog>
   ) : null;
@@ -57,31 +78,60 @@ export const useDialog = () => {
   };
 };
 
-const defaultShowDialog = () => {
+const defaultShowDialog: ShowDialog = () => {
+  console.warn("No DialogProvider in place");
+};
+const defaultCloseDialog = () => {
   console.warn("No DialogProvider in place");
 };
 
-const DialogContext = createContext<DialogContextProps>({
-  showDialog: defaultShowDialog,
-});
+class DialogContextObject implements DialogContextProps {
+  showDialog = defaultShowDialog;
+  closeDialog = defaultCloseDialog;
+  setDialogDispatchers(showDialog: ShowDialog, closeDialog: () => void) {
+    this.showDialog = showDialog;
+    this.closeDialog = closeDialog;
+  }
+}
+
+const DialogContext = createContext<DialogContextProps>(
+  new DialogContextObject()
+);
+
+const DialogHost = ({ context }: { context: DialogContextProps }) => {
+  const { dialog, setDialogState } = useDialog();
+  const showDialog: ShowDialog = useCallback(
+    (dialogContent, title, actionButtons) => {
+      console.log("show dialog");
+      setDialogState({
+        actions: actionButtons,
+        content: dialogContent,
+        title,
+      });
+    },
+    [setDialogState]
+  );
+  const closeDialog = useCallback(() => {
+    setDialogState(undefined);
+  }, [setDialogState]);
+
+  useMemo(() => {
+    context.setDialogDispatchers(showDialog, closeDialog);
+  }, [closeDialog, context, showDialog]);
+  return dialog;
+};
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
-  const { dialog, setDialogState } = useDialog();
-  const showDialog = (dialogContent: ReactElement, title: string) => {
-    setDialogState({
-      content: dialogContent,
-      title,
-    });
-  };
+  const context = useContext(DialogContext);
   return (
-    <DialogContext.Provider value={{ showDialog }}>
+    <DialogContext.Provider value={context}>
+      <DialogHost context={context} />
       {children}
-      {dialog}
     </DialogContext.Provider>
   );
 };
 
-export const useShowDialog = () => {
-  const { showDialog } = useContext(DialogContext);
-  return showDialog;
+export const useDialogContext = () => {
+  const { closeDialog, showDialog } = useContext(DialogContext);
+  return { showDialog, closeDialog };
 };

@@ -1,4 +1,5 @@
 export * as Calendar from "./Calendar.examples";
+export * as ColumnPicker from "./ColumnPicker.examples";
 export * as DateInput from "./DateInput.examples";
 export * as DatePopup from "./DatePopup.examples";
 export * as DragDrop from "./DragDrop.examples";

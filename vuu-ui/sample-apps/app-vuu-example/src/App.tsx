@@ -1,4 +1,4 @@
-import { registerComponent } from "@finos/vuu-utils";
+import { StackLayout } from "@finos/vuu-layout";
 import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
 import {
   LayoutManagementProvider,
@@ -14,6 +14,7 @@ import {
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import type { VuuUser } from "@finos/vuu-utils";
+import { assertComponentRegistered, registerComponent } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
@@ -24,6 +25,8 @@ import "./App.css";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
+
+assertComponentRegistered("Stack", StackLayout);
 
 // createNewChild is used when we add a new Tab to Stack
 const layoutProps: ShellProps["LayoutProps"] = {
@@ -38,10 +41,7 @@ const {
   ssl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
   features: configuredFeatures,
-} =
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  await vuuConfig;
+} = await vuuConfig;
 
 export const App = ({ user }: { user: VuuUser }) => {
   const [features, tableFeatures] = useFeatures({

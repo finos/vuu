@@ -89,7 +89,7 @@ export class Table extends EventEmitter<TableEvents> {
   }
 }
 
-function _buildDataColumnMap(schema: Readonly<TableSchema>) {
+export function buildDataColumnMapFromSchema(schema: Readonly<TableSchema>) {
   return Object.values(schema.columns).reduce<ColumnMap>(
     (map, col, index) => ({
       ...map,
@@ -112,7 +112,7 @@ export function buildDataColumnMap<TableName extends string = string>(
   schemas: Readonly<Record<TableName, Readonly<TableSchema>>>,
   tableName: TableName
 ) {
-  return _buildDataColumnMap(schemas[tableName]);
+  return buildDataColumnMapFromSchema(schemas[tableName]);
 }
 
 const getServerDataType = (
@@ -166,7 +166,7 @@ export const joinTables = (
   };
 
   const data: VuuRowDataItemType[][] = [];
-  const combinedColumnMap = _buildDataColumnMap(combinedSchema);
+  const combinedColumnMap = buildDataColumnMapFromSchema(combinedSchema);
   // const start = performance.now();
   for (const row of table1.data) {
     const row2 = table2.findByKey(String(row[k1]));

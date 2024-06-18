@@ -1,5 +1,6 @@
 package org.finos.vuu.core.table
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
@@ -157,12 +158,12 @@ class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: 
   }
 }
 
-case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column{
+case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
 
-  override def getData(data: RowData): Any = clause.calculate(data)
+  override def getData(data: RowData): Any = clause.calculate(data).fold[Any](
+    errMsg  => { logger.error(errMsg + " Returning `null`."); null },
+    success => success.orNull
+  )
 
   override def getDataFullyQualified(data: RowData): Any = getData(data)
-
 }
-
-

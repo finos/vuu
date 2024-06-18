@@ -1,10 +1,11 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useCallback, useMemo } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { List } from "@finos/vuu-ui-controls";
+import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
 import { LayoutMetadata } from "./layoutTypes";
 import { useLayoutManager } from "./useLayoutManager";
 import { LayoutTile } from "./LayoutTile";
+import cx from "clsx";
 
 import layoutListCss from "./LayoutList.css";
 
@@ -14,7 +15,11 @@ type LayoutGroups = {
 
 const classBase = "vuuLayoutList";
 
-export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
+export const LayoutList = ({
+  className,
+  title,
+  ...htmlAttributes
+}: HTMLAttributes<HTMLDivElement>) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-layout-list",
@@ -24,11 +29,14 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
 
   const { layoutMetadata, loadLayoutById } = useLayoutManager();
 
-  const handleLoadLayout = (layoutId?: string) => {
-    if (layoutId) {
-      loadLayoutById(layoutId);
-    }
-  };
+  const handleLoadLayout = useCallback(
+    (layoutId?: string) => {
+      if (layoutId) {
+        loadLayoutById(layoutId);
+      }
+    },
+    [loadLayoutById]
+  );
 
   const layoutsByGroup = layoutMetadata.reduce((acc: LayoutGroups, cur) => {
     if (acc[cur.group]) {
@@ -43,34 +51,42 @@ export const LayoutList = (props: HTMLAttributes<HTMLDivElement>) => {
     };
   }, {});
 
-  return (
-    <div
-      className={classBase}
-      {...props}
-      role="listbox"
-      aria-label="my layouts"
-    >
-      <div className={`${classBase}-header`}>My Layouts</div>
-      <List<[string, LayoutMetadata[]]>
-        height="auto"
-        source={Object.entries(layoutsByGroup)}
-        ListItem={({ item }) => {
-          if (!item) return <></>;
-          const [groupName, layoutMetadata] = item;
-          return (
-            <div role="list" aria-label={groupName}>
-              <div className={`${classBase}-groupName`}>{groupName}</div>
-              {layoutMetadata.map((metadata) => (
+  const content = useMemo<JSX.Element[]>(() => {
+    return Object.entries(layoutsByGroup).map(
+      ([heading, layoutMetadata], index) => (
+        <div className={`${classBase}-group`} key={index}>
+          <div className={`${classBase}-groupHeader`}>{heading}</div>
+          <List<LayoutMetadata, "none">
+            height={undefined}
+            itemHeight={68}
+            selectionStrategy="none"
+            source={layoutMetadata}
+            ListItem={({ item, ...props }) => (
+              <ListItem {...props}>
                 <LayoutTile
-                  key={metadata.id}
-                  metadata={metadata}
-                  handleLoadLayout={handleLoadLayout}
+                  {...htmlAttributes}
+                  key={item?.id}
+                  metadata={item as LayoutMetadata}
+                  onLoadLayout={handleLoadLayout}
                 />
-              ))}
-            </div>
-          );
-        }}
-      />
+                <IconButton
+                  className={`${classBase}-menu`}
+                  data-embedded
+                  icon="more-vert"
+                  variant="secondary"
+                />
+              </ListItem>
+            )}
+          />
+        </div>
+      )
+    );
+  }, [handleLoadLayout, htmlAttributes, layoutsByGroup]);
+
+  return (
+    <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
+      <div className={`${classBase}-header`}>{title}</div>
+      <div className={`${classBase}-content`}>{content}</div>
     </div>
   );
 };

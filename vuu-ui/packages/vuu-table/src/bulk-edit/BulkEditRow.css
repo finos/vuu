@@ -1,0 +1,10 @@
+.vuuBulkEditRow {
+  .vuuBulkEditRow-filter {
+    display: inline-block;
+    padding: 1px;
+  }
+
+  .vuuBulkEditRow-virtualColSpan {
+    display: inline-block;
+  }
+}

@@ -1,18 +1,14 @@
-import { TableSchema } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import { FlexboxLayout } from "@finos/vuu-layout";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DataSourceStats } from "@finos/vuu-table-extras";
+import { FilterTableFeatureProps } from "@finos/vuu-utils";
 import cx from "clsx";
 import { useFilterTable } from "./useFilterTable";
 
 import "./VuuFilterTableFeature.css";
 
 const classBase = "vuuFilterTableFeature";
-
-export interface FilterTableFeatureProps {
-  tableSchema: TableSchema;
-}
 
 const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   const {

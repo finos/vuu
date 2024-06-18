@@ -1,29 +1,25 @@
 import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
 import {
-  ContextMenuItemDescriptor,
-  DataSourceFilter,
   DataSourceVisualLinkCreatedMessage,
-  MenuActionHandler,
-  MenuBuilder,
   SchemaColumn,
   SuggestionFetcher,
   TypeaheadSuggestionProvider,
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
-import { Filter, FilterState, NamedFilter } from "@finos/vuu-filter-types";
+import { usePersistFilterState } from "@finos/vuu-datatable";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { useLayoutManager, useShellContext } from "@finos/vuu-shell";
+import { useShellContext } from "@finos/vuu-shell";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import {
+  FilterTableFeatureProps,
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
-import { FilterTableFeatureProps } from "./VuuFilterTableFeature";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -35,34 +31,23 @@ const defaultTableConfig: Partial<TableConfig> = {
 
 type FilterTableConfig = {
   "available-columns"?: SchemaColumn[];
-  "filterbar-config"?: Partial<FilterBarProps>;
   "table-config"?: TableConfig;
 };
 
-type SavedFilterMap = {
-  [key: string]: Omit<NamedFilter, "name"> & { name: string }[];
-};
-
-const hasFilterWithName = (filters: NamedFilter[], name: string) =>
-  filters.findIndex((f) => f.name === name) !== -1;
-
 export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   const { dispatch, load, save } = useViewContext();
-  const { getApplicationSettings, saveApplicationSettings } =
-    useLayoutManager();
 
-  const savedFilters = useMemo(() => {
-    const {
-      table: { module, table },
-    } = tableSchema;
-    const savedFilters = getApplicationSettings("filters") as SavedFilterMap;
-    const key = `${module}:${table}`;
-    return savedFilters?.[key] ?? [];
-  }, [getApplicationSettings, tableSchema]);
+  const {
+    filterState,
+    onFilterDeleted,
+    onFilterRenamed,
+    onFilterStateChanged,
+  } = usePersistFilterState({
+    tableSchema,
+  });
 
   const {
     "available-columns": availableColumnsFromState,
-    "filterbar-config": filterbarConfigFromState,
     "table-config": tableConfigFromState,
   } = useMemo<FilterTableConfig>(() => load?.() ?? NO_CONFIG, [load]);
 
@@ -77,106 +62,11 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     [dataSource]
   );
 
-  const removeFilterFromSettings = useCallback(
-    (filter: Filter | NamedFilter) => {
-      if (!tableSchema || !filter.name) return;
-
-      const savedFilters = getApplicationSettings("filters") as SavedFilterMap;
-      if (!savedFilters) return;
-
-      const { module, table } = tableSchema.table;
-      const key = `${module}:${table}`;
-
-      if (hasFilterWithName(savedFilters[key], filter.name)) {
-        const newSavedFilters = {
-          ...savedFilters,
-          [key]: savedFilters[key].filter((f) => f.name !== filter.name),
-        };
-        saveApplicationSettings(newSavedFilters, "filters");
-      }
-    },
-    [getApplicationSettings, saveApplicationSettings, tableSchema]
-  );
-
-  const saveFilterToSettings = useCallback(
-    (filter: Filter, name?: string) => {
-      if (tableSchema && name) {
-        const savedFilters = getApplicationSettings(
-          "filters"
-        ) as SavedFilterMap;
-        let newFilters = savedFilters;
-        const { module, table } = tableSchema.table;
-        const key = `${module}:${table}`;
-        if (savedFilters) {
-          if (savedFilters[key]) {
-            if (hasFilterWithName(savedFilters[key], name)) {
-              newFilters = {
-                ...savedFilters,
-                [key]: savedFilters[key].map((f) =>
-                  f.name === name ? { ...filter, name } : f
-                ),
-              };
-            } else if (
-              filter?.name &&
-              filter?.name !== name &&
-              hasFilterWithName(savedFilters[key], filter.name)
-            ) {
-              newFilters = {
-                ...savedFilters,
-                [key]: savedFilters[key].map((f) =>
-                  f.name === filter.name ? { ...filter, name } : f
-                ),
-              };
-            } else {
-              newFilters = {
-                ...savedFilters,
-                [key]: savedFilters[key].concat({ ...filter, name }),
-              };
-            }
-          } else {
-            newFilters = {
-              ...savedFilters,
-              [key]: [{ ...filter, name }],
-            };
-          }
-        } else {
-          newFilters = {
-            [key]: [{ ...filter, name }],
-          };
-        }
-        if (newFilters !== savedFilters) {
-          saveApplicationSettings(newFilters, "filters");
-        }
-      }
-    },
-    [getApplicationSettings, saveApplicationSettings, tableSchema]
-  );
-
   const suggestionProvider = useMemo(() => {
     if (isTypeaheadSuggestionProvider(dataSource)) {
       return () => getSuggestions;
     }
   }, [dataSource, getSuggestions]);
-
-  const [filterState, setFilterState] = useState<FilterState>({
-    filters: filterbarConfigFromState?.filterState?.filters ?? [],
-    activeIndices: filterbarConfigFromState?.filterState?.activeIndices ?? [],
-  });
-
-  const handleFilterStateChanged = useCallback(
-    (filterState: FilterState) => {
-      save?.({ filterState }, "filterbar-config");
-      setFilterState(filterState);
-    },
-    [save]
-  );
-
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
-      dataSource.filter = filter;
-    },
-    [dataSource]
-  );
 
   const removeVisualLink = useCallback(() => {
     dataSource.visualLink = undefined;
@@ -233,32 +123,13 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     [getDefaultColumnConfig, tableConfigFromState, tableSchema]
   );
 
-  const handleFilterDeleted = useCallback(
-    (filter: Filter) => {
-      removeFilterFromSettings(filter);
-    },
-    [removeFilterFromSettings]
-  );
-
-  const handleFilterRenamed = useCallback(
-    (filter: Filter, name: string) => {
-      saveFilterToSettings(filter, name);
-    },
-    [saveFilterToSettings]
-  );
-
-  const filterBarProps: FilterBarProps = {
-    FilterClauseEditorProps: suggestionProvider
-      ? {
-          suggestionProvider,
-        }
-      : undefined,
+  const filterBarProps: Omit<FilterBarProps, "onApplyFilter"> = {
     columnDescriptors: tableConfig.columns,
     filterState,
-    onApplyFilter: handleApplyFilter,
-    onFilterDeleted: handleFilterDeleted,
-    onFilterRenamed: handleFilterRenamed,
-    onFilterStateChanged: handleFilterStateChanged,
+    onFilterDeleted,
+    onFilterRenamed,
+    onFilterStateChanged,
+    suggestionProvider,
     tableSchema,
   };
 
@@ -290,50 +161,10 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     onRpcResponse: handleRpcResponse,
   });
 
-  const buildFilterTableMenuOptions = useCallback<MenuBuilder>(
-    (location, options) => {
-      if (location === "filter-bar-menu") {
-        if (savedFilters.length > 0) {
-          return savedFilters.map((filter) => ({
-            action: "add-filter",
-            label: filter.name,
-            options: { filter },
-          }));
-        } else {
-          return [
-            {
-              label: `You have no saved filters for this table`,
-              action: `no-action`,
-            } as ContextMenuItemDescriptor,
-          ];
-        }
-      } else {
-        return buildViewserverMenuOptions(location, options);
-      }
-    },
-    [buildViewserverMenuOptions, savedFilters]
-  );
-
-  const handleFilterTableMenuAction = useCallback<MenuActionHandler>(
-    (menuAction) => {
-      const { menuId, options } = menuAction;
-      if (menuId === "add-filter") {
-        console.log(`add filter `, {
-          options,
-        });
-      } else {
-        return handleMenuAction(menuAction);
-      }
-      console.log(menuId, options);
-      // return false;
-    },
-    [handleMenuAction]
-  );
-
   return {
-    buildFilterTableMenuOptions,
+    buildFilterTableMenuOptions: buildViewserverMenuOptions,
     filterBarProps,
-    handleFilterTableMenuAction,
+    handleFilterTableMenuAction: handleMenuAction,
     tableProps,
   };
 };

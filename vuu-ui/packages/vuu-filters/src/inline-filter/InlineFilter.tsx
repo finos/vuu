@@ -5,9 +5,9 @@ import { queryClosest } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback } from "react";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import inlineFilteCss from "./InlineFilter.css";
-import { ColumnDescriptor } from "packages/vuu-table-types";
 
 const classBase = "vuuInlineFilter";
 

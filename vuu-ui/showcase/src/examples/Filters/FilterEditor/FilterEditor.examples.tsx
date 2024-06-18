@@ -48,13 +48,11 @@ export const NewFilter = ({
     <>
       <FilterEditor
         {...props}
-        FilterClauseEditorProps={{
-          suggestionProvider: typeaheadHook,
-        }}
         columnDescriptors={tableSchema.columns}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </>
@@ -102,14 +100,12 @@ export const EditSimplerFilter = ({
     <>
       <FilterEditor
         {...props}
-        FilterClauseEditorProps={{
-          suggestionProvider: typeaheadHook,
-        }}
         columnDescriptors={tableSchema.columns.concat(lastUpdatedColumn)}
         filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </>
@@ -167,14 +163,12 @@ export const EditMultiClauseAndFilter = ({
     <>
       <FilterEditor
         {...props}
-        FilterClauseEditorProps={{
-          suggestionProvider: typeaheadHook,
-        }}
         columnDescriptors={tableSchema.columns}
         filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </>
@@ -232,14 +226,12 @@ export const EditMultiClauseOrFilter = ({
     <>
       <FilterEditor
         {...props}
-        FilterClauseEditorProps={{
-          suggestionProvider: typeaheadHook,
-        }}
         columnDescriptors={tableSchema.columns}
         filter={filter}
         onCancel={onCancel}
         onSave={onSave}
         style={style}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </>

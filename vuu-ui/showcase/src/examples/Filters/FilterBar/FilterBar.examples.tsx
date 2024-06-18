@@ -88,9 +88,6 @@ const DefaultFilterBarCore = ({
       />
       <div>
         <FilterBar
-          FilterClauseEditorProps={{
-            suggestionProvider: typeaheadHook,
-          }}
           columnDescriptors={columns}
           data-testid="filterbar"
           filterState={filterState}
@@ -99,6 +96,7 @@ const DefaultFilterBarCore = ({
           onFilterRenamed={handleFilterRenamed}
           onFilterStateChanged={handleFilterStateChange}
           quickFilterColumns={quickFilterColumns}
+          suggestionProvider={typeaheadHook}
           tableSchema={{ ...tableSchema, columns }}
           variant={variant}
         />
