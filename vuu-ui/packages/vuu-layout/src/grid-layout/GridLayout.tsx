@@ -104,10 +104,7 @@ export const GridLayoutItem = ({
   const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
   const onClose = useCallback(() => {
-    dispatch({
-      type: "close",
-      id,
-    });
+    dispatch({ type: "close", id });
   }, [dispatch, id]);
 
   const useDrop = isDropTarget ? useAsDropTarget : useNotDropTarget;

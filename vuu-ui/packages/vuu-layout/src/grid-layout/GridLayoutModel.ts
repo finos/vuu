@@ -216,6 +216,101 @@ export class GridLayoutModel {
     clearMapValue(maps.end, end, item);
   }
 
+  private updateContrasToOccupySpace = ({
+    column,
+    id,
+    row,
+  }: IGridLayoutModelItem):
+    | [GridItemUpdate[], GridItemUpdate[]]
+    | undefined => {
+    const itemsWithSameRowStart = this.rowMaps.start.get(row.start);
+
+    if (itemsWithSameRowStart) {
+      const itemsInSameRow = itemsWithSameRowStart.filter(
+        (item) => item.row.end === row.end && item.id !== id
+      );
+      if (itemsInSameRow.length === 1) {
+        const [
+          {
+            id: contraId,
+            column: { start, end },
+          },
+        ] = itemsInSameRow;
+        if (end === column.start) {
+          const gridPosition = { start, end: column.end };
+          this.setGridColumn(contraId, gridPosition);
+          return [[[contraId, gridPosition]], []];
+        } else if (start === column.end) {
+          const gridPosition = { start: column.start, end };
+          this.setGridColumn(contraId, gridPosition);
+          return [[[contraId, gridPosition]], []];
+        } else {
+          console.log("One item in same row, but it is not adjacent");
+        }
+      } else if (itemsInSameRow.length > 1) {
+        const adjacentBefore = itemsInSameRow.filter(
+          (item) => item.column.end === column.start
+        );
+        if (adjacentBefore.length === 1) {
+          const [
+            {
+              id: contraId,
+              column: { start },
+            },
+          ] = adjacentBefore;
+          const gridPosition = { start, end: column.end };
+          this.setGridColumn(contraId, gridPosition);
+          return [[[contraId, gridPosition]], []];
+        }
+        const adjacentAfter = itemsInSameRow.filter(
+          (item) => item.column.start === column.end
+        );
+        if (adjacentAfter.length === 1) {
+          const [
+            {
+              id: contraId,
+              column: { end },
+            },
+          ] = adjacentAfter;
+          const gridPosition = { start: column.start, end };
+          this.setGridColumn(contraId, gridPosition);
+          return [[[contraId, gridPosition]], []];
+        }
+      }
+    }
+    // try for vertical before we look for multi contra
+    console.log("lets try for vertical contras");
+    const potentialVerticalContras = this.columnMaps.start.get(column.start);
+    if (potentialVerticalContras) {
+      const verticalContras = potentialVerticalContras.filter(
+        (item) => item.column.end === column.end && item.id !== id
+      );
+      if (verticalContras.length === 1) {
+        const [
+          {
+            id: contraId,
+            row: { start, end },
+          },
+        ] = verticalContras;
+        if (end === row.start) {
+          const gridPosition = { start, end: row.end };
+          this.setGridRow(contraId, gridPosition);
+          return [[], [[contraId, gridPosition]]];
+        } else if (start === row.end) {
+          const gridPosition = { start: row.start, end };
+          this.setGridRow(contraId, gridPosition);
+          return [[], [[contraId, gridPosition]]];
+        } else {
+          console.log(
+            "none of the horizontal contras abut, is this possible ?"
+          );
+        }
+      } else if (verticalContras.length > 1) {
+        console.log("take immediately prior first, them immediately after");
+      }
+    }
+  };
+
   private getContrasAbove({ column, row }: IGridLayoutModelItem) {
     const allContrasAbove = this.rowMaps.end.get(row.start);
     if (allContrasAbove) {
@@ -368,6 +463,13 @@ export class GridLayoutModel {
       this.index.delete(gridItemId);
       this.clearItemFromStore(this.columnMaps, column, gridItem);
       this.clearItemFromStore(this.rowMaps, row, gridItem);
+
+      // TODO might well need to delete a grid TrackLine
+
+      const updates = this.updateContrasToOccupySpace(gridItem);
+      if (updates) {
+        return updates;
+      }
 
       if (updatePlaceholders) {
         this.createPlaceholders();
