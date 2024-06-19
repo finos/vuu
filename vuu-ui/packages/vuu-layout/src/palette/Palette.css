@@ -1,5 +1,4 @@
 .vuuPalette {
-  --vuu-svg-draggable: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 17"><path d="M12.6666 6.5H3.33329C2.96663 6.5 2.66663 6.8 2.66663 7.16667C2.66663 7.53333 2.96663 7.83333 3.33329 7.83333H12.6666C13.0333 7.83333 13.3333 7.53333 13.3333 7.16667C13.3333 6.8 13.0333 6.5 12.6666 6.5ZM3.33329 10.5H12.6666C13.0333 10.5 13.3333 10.2 13.3333 9.83333C13.3333 9.46667 13.0333 9.16667 12.6666 9.16667H3.33329C2.96663 9.16667 2.66663 9.46667 2.66663 9.83333C2.66663 10.2 2.96663 10.5 3.33329 10.5Z" /></svg>');
   --vuuList-borderStyle: none;
 }
 
@@ -11,10 +10,10 @@
 .vuuPaletteItem {
   --vuu-icon-color: var(--salt-content-secondary-foreground);
   --list-item-text-padding: 0 0 0 calc(var(--salt-size-unit) * 3);
-  padding-left: 12px;
   font-size: 12px;
   font-weight: 600;
   gap: var(--salt-spacing-200);
+  padding-left: 12px;
 }
 
 .vuuSimpleDraggableWrapper > .vuuPaletteItem {

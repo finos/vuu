@@ -14,7 +14,6 @@
   align-items: center;
   display: flex;
   flex: 0 0 48px;
-  font-size: 16px;
   font-weight: 700;
   line-height: 2;
 }
@@ -26,6 +25,10 @@
   font-size: 12px;
   font-weight: 700;
   overflow: auto;
+}
+
+.vuuFeatureList-standalone {
+  margin-top: 24px;
 }
 
 .vuuFeatureList-group {
