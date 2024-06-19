@@ -27,7 +27,8 @@ export type SetDialog = (dialogState?: DialogState) => void;
 export type ShowDialog = (
   dialogContent: ReactElement,
   title: string,
-  dialogActionButtons?: ReactElement[]
+  dialogActionButtons?: ReactElement[],
+  hideCloseButton?: boolean
 ) => void;
 
 export interface DialogContextProps {
@@ -101,12 +102,12 @@ const DialogContext = createContext<DialogContextProps>(
 const DialogHost = ({ context }: { context: DialogContextProps }) => {
   const { dialog, setDialogState } = useDialog();
   const showDialog: ShowDialog = useCallback(
-    (dialogContent, title, actionButtons) => {
-      console.log("show dialog");
+    (dialogContent, title, actionButtons, hideCloseButton) => {
       setDialogState({
         actions: actionButtons,
         content: dialogContent,
         title,
+        hideCloseButton,
       });
     },
     [setDialogState]

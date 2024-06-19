@@ -105,7 +105,6 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   );
 
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    console.log(`set Group ${e.target.value}`);
     setGroup(e.target.value);
   }, []);
 

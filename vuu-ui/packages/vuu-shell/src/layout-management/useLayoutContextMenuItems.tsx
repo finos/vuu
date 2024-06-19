@@ -4,24 +4,26 @@ import {
   MenuBuilder,
 } from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
-import { MenuActionClosePopup, SetDialog } from "@finos/vuu-popups";
+import { MenuActionClosePopup, useDialogContext } from "@finos/vuu-popups";
 import { useLayoutManager } from "./useLayoutManager";
 import { LayoutMetadataDto } from "./layoutTypes";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
 
-export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
+export const useLayoutContextMenuItems = () => {
   const { saveLayout } = useLayoutManager();
 
+  const { showDialog, closeDialog } = useDialogContext();
+
   const handleCloseDialog = useCallback(() => {
-    setDialogState(undefined);
-  }, [setDialogState]);
+    closeDialog();
+  }, [closeDialog]);
 
   const handleSave = useCallback(
     (layoutMetadata: LayoutMetadataDto) => {
       saveLayout(layoutMetadata);
-      setDialogState(undefined);
+      closeDialog();
     },
-    [saveLayout, setDialogState]
+    [saveLayout, closeDialog]
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
@@ -48,30 +50,24 @@ export const useLayoutContextMenuItems = (setDialogState: SetDialog) => {
         return menuDescriptors;
       },
       (action: MenuActionClosePopup) => {
-        console.log("menu action", {
-          action,
-        });
         if (action.menuId === "save-layout") {
-          setDialogState({
-            content: (
-              <SaveLayoutPanel
-                onCancel={handleCloseDialog}
-                onSave={handleSave}
-                componentId={action.options?.controlledComponentId}
-                defaultTitle={
-                  action.options?.controlledComponentTitle as string
-                }
-              />
-            ),
-            title: "Save Layout",
-            hideCloseButton: true,
-          });
+          showDialog(
+            <SaveLayoutPanel
+              onCancel={handleCloseDialog}
+              onSave={handleSave}
+              componentId={action.options?.controlledComponentId}
+              defaultTitle={action.options?.controlledComponentTitle as string}
+            />,
+            "Save Layout",
+            [],
+            true
+          );
           return true;
         }
         return false;
       },
     ];
-  }, [handleCloseDialog, handleSave, setDialogState]);
+  }, [handleCloseDialog, handleSave, showDialog]);
 
   return {
     buildMenuOptions,

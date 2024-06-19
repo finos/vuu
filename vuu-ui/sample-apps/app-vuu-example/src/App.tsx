@@ -1,7 +1,6 @@
 import { StackLayout } from "@finos/vuu-layout";
-import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
+import { useDialog } from "@finos/vuu-popups";
 import {
-  LayoutManagementProvider,
   LeftNav,
   Shell,
   ShellContextProvider,
@@ -67,26 +66,22 @@ export const App = ({ user }: { user: VuuUser }) => {
   );
 
   return (
-    <NotificationsProvider>
-      <LayoutManagementProvider>
-        <DragDropProvider dragSources={dragSource}>
-          <ShellContextProvider
-            value={{ getDefaultColumnConfig, handleRpcResponse }}
-          >
-            <Shell
-              LayoutProps={layoutProps}
-              LeftSidePanelProps={leftSidePanelProps}
-              className="App"
-              leftSidePanelLayout="full-height"
-              saveUrl="https://localhost:8443/api/vui"
-              serverUrl={serverUrl}
-              user={user}
-            >
-              {dialog}
-            </Shell>
-          </ShellContextProvider>
-        </DragDropProvider>
-      </LayoutManagementProvider>
-    </NotificationsProvider>
+    <DragDropProvider dragSources={dragSource}>
+      <ShellContextProvider
+        value={{ getDefaultColumnConfig, handleRpcResponse }}
+      >
+        <Shell
+          LayoutProps={layoutProps}
+          LeftSidePanelProps={leftSidePanelProps}
+          className="App"
+          leftSidePanelLayout="full-height"
+          saveUrl="https://localhost:8443/api/vui"
+          serverUrl={serverUrl}
+          user={user}
+        >
+          {dialog}
+        </Shell>
+      </ShellContextProvider>
+    </DragDropProvider>
   );
 };
