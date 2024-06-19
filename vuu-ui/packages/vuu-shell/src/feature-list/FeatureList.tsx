@@ -45,24 +45,30 @@ export const FeatureList = ({
   const content = useMemo<JSX.Element[]>(() => {
     if (Array.isArray(features)) {
       return [
-        <Palette key="0" orientation="vertical" ListProps={listPropsFullHeight}>
-          {features.map((featureProps, i) => (
-            <PaletteItem
-              closeable
-              component={<Feature {...featureProps} />}
-              key={i}
-              label={featureProps.title}
-              resizeable
-              resize="defer"
-              header
-            >
-              <Icon name="draggable" size={18} />
-              <span className={`${classBase}-itemName`}>
-                {featureProps.title}
-              </span>
-            </PaletteItem>
-          ))}
-        </Palette>,
+        <div className={`${classBase}-standalone`} key={0}>
+          <Palette
+            key="0"
+            orientation="vertical"
+            ListProps={listPropsFullHeight}
+          >
+            {features.map((featureProps, i) => (
+              <PaletteItem
+                closeable
+                component={<Feature {...featureProps} />}
+                key={i}
+                label={featureProps.title}
+                resizeable
+                resize="defer"
+                header
+              >
+                <Icon name="draggable" size={18} />
+                <span className={`${classBase}-itemName`}>
+                  {featureProps.title}
+                </span>
+              </PaletteItem>
+            ))}
+          </Palette>
+        </div>,
       ];
     } else {
       return Object.entries(features).map(([heading, featureList], index) => (

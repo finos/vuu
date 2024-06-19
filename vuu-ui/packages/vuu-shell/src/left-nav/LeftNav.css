@@ -79,8 +79,7 @@
   .vuuTabs-tabPanel {
     background: var(--salt-container-primary-background);
     height: 100%;
-    padding: var(--salt-spacing-200) var(--salt-spacing-100)
-      var(--salt-spacing-200) var(--salt-spacing-400);
+    padding: 34px 32px 8px 24px;
   }
 }
 

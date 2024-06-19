@@ -258,9 +258,7 @@ export const LeftNav = (props: LeftNavProps) => {
       >
         <FeatureList features={features} title="VUU FEATURES" />
         <FeatureList features={tableFeaturesByGroup} title="VUU TABLES" />
-        <div className="vuuLeftNav-drawer">
-          <LayoutList title="My Layouts" />
-        </div>
+        <LayoutList title="MY LAYOUTS" />
       </Stack>
     </div>
   );
