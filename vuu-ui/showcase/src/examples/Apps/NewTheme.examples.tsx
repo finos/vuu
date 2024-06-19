@@ -1,12 +1,5 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
-import { NotificationsProvider, useDialog } from "@finos/vuu-popups";
-import {
-  FeatureProps,
-  LayoutManagementProvider,
-  LeftNav,
-  Shell,
-  SidePanelProps,
-} from "@finos/vuu-shell";
+import { FeatureProps, LeftNav, Shell, SidePanelProps } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -83,8 +76,6 @@ const filterTableFeatures = getFilterTableFeatures(
 );
 
 const ShellWithNewTheme = () => {
-  const { dialog } = useDialog();
-
   const dragSource = useMemo(
     () => ({
       "basket-instruments": {
@@ -121,9 +112,7 @@ const ShellWithNewTheme = () => {
             "--vuuShell-width": "100vw",
           } as CSSProperties
         }
-      >
-        {dialog}
-      </Shell>
+      ></Shell>
     </DragDropProvider>
   );
 };
@@ -131,13 +120,7 @@ const ShellWithNewTheme = () => {
 export const ShellWithNewThemeAndLayoutManagement = () => {
   document.cookie = `vuu-username=${user.username}`;
 
-  return (
-    <NotificationsProvider>
-      <LayoutManagementProvider>
-        <ShellWithNewTheme />
-      </LayoutManagementProvider>
-    </NotificationsProvider>
-  );
+  return <ShellWithNewTheme />;
 };
 
 ShellWithNewThemeAndLayoutManagement.displaySequence = displaySequence++;

@@ -6,7 +6,11 @@ import {
   LayoutProviderProps,
   StackLayout,
 } from "@finos/vuu-layout";
-import { ContextMenuProvider, useDialog } from "@finos/vuu-popups";
+import {
+  ContextMenuProvider,
+  DialogProvider,
+  NotificationsProvider,
+} from "@finos/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -23,6 +27,7 @@ import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import { ApplicationSettingsPanel } from "./application-settings";
 import {
+  LayoutManagementProvider,
   useLayoutContextMenuItems,
   useLayoutManager,
 } from "./layout-management";
@@ -65,7 +70,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   user: VuuUser;
 }
 
-export const Shell = ({
+const VuuApplication = ({
   LayoutProps,
   LeftSidePanelProps = defaultLeftSidePanel,
   children,
@@ -85,10 +90,8 @@ export const Shell = ({
   });
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const { dialog, setDialogState } = useDialog();
   const { applicationJson, saveApplicationLayout } = useLayoutManager();
-  const { buildMenuOptions, handleMenuAction } =
-    useLayoutContextMenuItems(setDialogState);
+  const { buildMenuOptions, handleMenuAction } = useLayoutContextMenuItems();
   const [connectionStatus, setConnectionStatus] = useState<
     "connected" | "rejected"
   >("connected");
@@ -130,26 +133,41 @@ export const Shell = ({
   }
 
   return isLayoutLoading ? null : (
-    <ApplicationProvider user={user}>
-      <ContextMenuProvider
-        menuActionHandler={handleMenuAction}
-        menuBuilder={buildMenuOptions}
+    <ContextMenuProvider
+      menuActionHandler={handleMenuAction}
+      menuBuilder={buildMenuOptions}
+    >
+      <LayoutProvider
+        {...LayoutProps}
+        layout={applicationJson.layout}
+        onLayoutChange={handleLayoutChange}
       >
-        <LayoutProvider
-          {...LayoutProps}
-          layout={applicationJson.layout}
-          onLayoutChange={handleLayoutChange}
+        <DraggableLayout
+          className={className}
+          ref={rootRef}
+          {...htmlAttributes}
         >
-          <DraggableLayout
-            className={className}
-            ref={rootRef}
-            {...htmlAttributes}
-          >
-            {shellLayout}
-          </DraggableLayout>
-        </LayoutProvider>
-        {children || dialog}
-      </ContextMenuProvider>
+          {shellLayout}
+        </DraggableLayout>
+      </LayoutProvider>
+      {children}
+    </ContextMenuProvider>
+  );
+};
+
+export const Shell = ({ user, ...props }: ShellProps) => {
+  return (
+    // ApplicationProvider must go outside Dialog and Notification providers
+    // ApplicationProvider injects the SaltProvider and this must be the root
+    // SaltProvider.
+    <ApplicationProvider user={user}>
+      <LayoutManagementProvider>
+        <DialogProvider>
+          <NotificationsProvider>
+            <VuuApplication {...props} user={user} />
+          </NotificationsProvider>
+        </DialogProvider>
+      </LayoutManagementProvider>
     </ApplicationProvider>
   );
 };
