@@ -1,1 +1,2 @@
-export * from "./ApplicationSettings.examples";
+export * from "./ApplicationSettingsForm";
+export * from "./ApplicationSettingsPanel";

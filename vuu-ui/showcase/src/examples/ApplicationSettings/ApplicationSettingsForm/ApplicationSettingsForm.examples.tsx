@@ -1,4 +1,4 @@
-import "./ApplicationSettings.examples.css";
+import "./ApplicationSettingsForm.examples.css";
 import {
   FormField,
   FormFieldLabel,
@@ -9,11 +9,11 @@ import {
   Option,
   Switch,
 } from "@salt-ds/core";
-import { SettingsProperty, SettingsSchema } from "./ApplicationSettingsTypes";
-import schema from "./ApplicationSettingsSchema.json";
+import { SettingsProperty, SettingsSchema } from "../ApplicationSettingsTypesExamples";
+import schema from "../ApplicationSettingsSchemaExample.json";
 
 // Determine the box type to be displayed
-function BoxType(property: SettingsProperty) {
+function getFormControl(property: SettingsProperty) {
   const values = property.values;
   
   if (values?.length !== undefined) {
@@ -28,7 +28,7 @@ function BoxType(property: SettingsProperty) {
     // Toggle Box for 1 or 2 values
     if (values?.length <= 2) {
         return (
-        <ToggleButtonGroup>
+        <ToggleButtonGroup defaultValue={property.defaultValue}>
           {values?.map((value) => (
             <ToggleButton key={value} value={value}>
               {value}
@@ -67,7 +67,7 @@ function SettingsForm({ properties }: SettingsSchema) {
       {properties.map((property) => (
         <FormField key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>
-          {BoxType(property)}
+          {getFormControl(property)}
         </FormField>
       ))}
     </div>
@@ -75,12 +75,12 @@ function SettingsForm({ properties }: SettingsSchema) {
 }
 
 // ApplicationSettings form using imported JSON
-export const ApplicationSettings = () => {
+export const ApplicationSettingsForm = () => {
   return (
-    <div className="applicationSettings">
+    <div className="applicationSettingsForm">
       <SettingsForm properties={schema.properties} />
     </div>
   );
 };
 
-export default ApplicationSettings;
+export default ApplicationSettingsForm;
