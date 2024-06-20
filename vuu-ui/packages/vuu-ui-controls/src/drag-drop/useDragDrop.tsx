@@ -619,6 +619,7 @@ export const useDragDrop: DragDropHook = ({
       const droppedItem = containerRef.current.querySelector(
         `${itemQuery}[data-index="${dropPos}"]`
       );
+
       if (droppedItem) {
         droppedItem.classList.add("vuuDropTarget-settling");
         requestAnimationFrame(() => {
@@ -639,8 +640,15 @@ export const useDragDrop: DragDropHook = ({
             terminateDrag();
           }
         });
+      } else {
+        // didn't find the dragged item. This is currently happening
+        // because of a quirk with last item when scrolling has taken
+        //  place. Take no chances, make sure we don't keep an orphaned draggable
+        setDraggableStatus((status) => ({
+          ...status,
+          draggable: undefined,
+        }));
       }
-      // settlingItemRef.current = null;
     }
   }, [containerRef, itemQuery, settlingItem, terminateDrag]);
 
