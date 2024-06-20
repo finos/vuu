@@ -144,6 +144,11 @@
   color: var(--salt-content-secondary-foreground);
   height: var(--vuu-table-col-header-height);
   white-space: nowrap;
+
+  .vuuDraggable-spacer {
+    border-bottom: solid 1px #ccc;
+    height: var(--vuu-table-col-header-height);
+  }
 }
 
 .sizer-cell {
@@ -152,7 +157,8 @@
 }
 
 .vuuDraggable-vuuTable {
-  --header-height: 25px;
+  --cell-borderColor: transparent;
+  --vuu-table-col-header-height: var(--vuuTableHeaderCell-height, 25px);
   --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
 }
 .vuuDraggable-vuuTable {

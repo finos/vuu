@@ -325,9 +325,10 @@ export const useDragDropNaturalMovement = ({
     dragPosition.direction = undefined;
     dragPosition.insertionPosition = -1;
 
+    const isLastItem = indexOfDraggedItem === dropTargets.length - 1;
     const toIndex = overflowMenuShowingRef.current
       ? -1
-      : fromIndex < insertionPosition
+      : fromIndex < insertionPosition && !isLastItem
       ? insertionPosition - 1
       : insertionPosition;
 
