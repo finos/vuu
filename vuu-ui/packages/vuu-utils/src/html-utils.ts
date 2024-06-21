@@ -58,21 +58,21 @@ export const getClosest = (el: HTMLElement, dataProperty: string) =>
 export const getClosestIndexItem = (el: HTMLElement) => getClosest(el, "index");
 
 export function getElementByDataIndex(
-  c: HTMLElement | null,
+  c: HTMLElement | null | undefined,
   i: number | string,
   throwIfNotFound: true
 ): HTMLElement;
 export function getElementByDataIndex(
-  c: HTMLElement | null,
+  c: HTMLElement | null | undefined,
   i: number | string,
   throwIfNotFound?: false
 ): HTMLElement | undefined;
 export function getElementByDataIndex(
-  container: HTMLElement | null,
+  container: HTMLElement | null | undefined,
   index: number | string,
   throwIfNotFound = false
 ) {
-  if (container === null && throwIfNotFound) {
+  if (container == null && throwIfNotFound) {
     throw Error("html-utils getElementByDataIndex, container is null");
   }
   const element = container?.querySelector(
