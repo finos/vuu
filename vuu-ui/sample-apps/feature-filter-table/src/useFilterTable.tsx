@@ -24,6 +24,7 @@ import { useSessionDataSource } from "./useSessionDataSource";
 const NO_CONFIG: FilterTableConfig = {};
 
 const defaultTableConfig: Partial<TableConfig> = {
+  columnLayout: "fit",
   columnDefaultWidth: 130,
   rowSeparators: true,
   zebraStripes: true,

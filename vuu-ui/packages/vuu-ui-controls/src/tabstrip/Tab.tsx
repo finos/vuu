@@ -130,6 +130,7 @@ export const Tab = forwardRef(function Tab(
     <div
       {...props}
       aria-controls={ariaControls}
+      aria-label={label}
       aria-selected={selected}
       className={cx(classBase, className, {
         [`${classBase}-closeable`]: closeable,

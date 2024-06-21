@@ -81,9 +81,9 @@ export const useTableViewport = ({
 }: TableViewportHookProps): TableViewportHookResult => {
   const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
-  // TODO we are limited by pixels not an arbitraty number of rows
-  const pixelContentHeight = Math.min(rowHeight * rowCount, MAX_PIXEL_HEIGHT);
+  // TODO we are limited by pixels not an arbitrary number of rows
   const virtualContentHeight = rowCount * rowHeight;
+  const pixelContentHeight = Math.min(virtualContentHeight, MAX_PIXEL_HEIGHT);
   const virtualisedExtent = virtualContentHeight - pixelContentHeight;
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
@@ -129,7 +129,7 @@ export const useTableViewport = ({
   return useMemo(() => {
     if (size) {
       // TODO determine this at runtime
-      const scrollbarSize = 15;
+      const scrollbarSize = 10;
       const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
       const horizontalScrollbarHeight =
         contentWidth > size.width ? scrollbarSize : 0;

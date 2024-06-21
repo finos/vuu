@@ -1,6 +1,7 @@
 import { useControlled } from "@salt-ds/core";
 import {
   dispatchMouseEvent,
+  getElementByDataIndex,
   getFocusableElement,
   orientationType,
 } from "@finos/vuu-utils";
@@ -71,13 +72,11 @@ function nextItemIdx(count: number, direction: directionType, idx: number) {
   }
 }
 
-const isNonWrappedElement = (element: HTMLElement | null) =>
-  element !== null && !element.classList.contains("wrapped");
+const isEditing = (element: HTMLElement | null | undefined) =>
+  element != null && element.classList.contains("vuuTab-editing");
 
-const getElementByPosition = (container: HTMLElement | null, index: number) =>
-  container
-    ? (container.querySelector(`[data-index="${index}"]`) as HTMLElement)
-    : null;
+const isNonWrappedElement = (element: HTMLElement | null | undefined) =>
+  element != null && !element.classList.contains("wrapped");
 
 export interface ContainerNavigationProps {
   onBlur: FocusEventHandler;
@@ -162,10 +161,14 @@ export const useKeyboardNavigation = ({
       }
 
       const setFocus = () => {
-        const element = getElementByPosition(containerRef.current, tabIndex);
-        if (element) {
-          const focussableElement = getFocusableElement(element);
-          focussableElement?.focus();
+        if (tabIndex !== -1) {
+          const element = getElementByDataIndex(containerRef.current, tabIndex);
+          if (element) {
+            const focusableElement = getFocusableElement(element);
+            if (!isEditing(focusableElement)) {
+              focusableElement?.focus();
+            }
+          }
         }
       };
       if (immediateFocus) {
@@ -222,7 +225,7 @@ export const useKeyboardNavigation = ({
         ((nextDirection === "fwd" && nextIdx < indexCount) ||
           (nextDirection === "bwd" && nextIdx > 0)) &&
         !isNonWrappedElement(
-          getElementByPosition(containerRef.current, nextIdx)
+          getElementByDataIndex(containerRef.current, nextIdx)
         )
       ) {
         const newIdx = nextItemIdx(indexCount, nextDirection, nextIdx);
@@ -265,7 +268,7 @@ export const useKeyboardNavigation = ({
   );
 
   const highlightedTabHasMenu = useCallback(() => {
-    const el = getElementByPosition(containerRef.current, highlightedIdx);
+    const el = getElementByDataIndex(containerRef.current, highlightedIdx);
     if (el) {
       return el.querySelector(".vuuPopupMenu") != null;
     }
@@ -273,7 +276,7 @@ export const useKeyboardNavigation = ({
   }, [containerRef, highlightedIdx]);
 
   const activateTabMenu = useCallback(() => {
-    const el = getElementByPosition(containerRef.current, highlightedIdx);
+    const el = getElementByDataIndex(containerRef.current, highlightedIdx);
     const menuEl = el?.querySelector(".vuuPopupMenu") as HTMLElement;
     if (menuEl) {
       dispatchMouseEvent(menuEl, "click");
