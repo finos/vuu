@@ -7,6 +7,7 @@ export * as TableSearch from "./TableSearch.examples";
 export * as List from "./List.examples";
 export * as OverflowContainer from "./OverflowContainer.examples";
 export * as SplitButton from "./SplitButton.examples";
+export * as Tree from "./Tree.examples";
 export * as Tabstrip from "./Tabstrip.examples";
 export * as TabsNext from "./TabsNext.examples";
 export * as VuuInput from "./VuuInput.examples";

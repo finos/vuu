@@ -46,7 +46,10 @@ export function pointPositionWithinRect(
 
 export type GridLayoutSplitDirection = "north" | "south" | "east" | "west";
 
-export type GridLayoutDropPosition = GridLayoutSplitDirection | "centre";
+export type GridLayoutDropPosition =
+  | GridLayoutSplitDirection
+  | "centre"
+  | "tabs";
 
 export function getPositionWithinBox(
   x: number,

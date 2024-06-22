@@ -2,6 +2,7 @@ import {
   createContext,
   CSSProperties,
   Dispatch,
+  DragEvent,
   ReactElement,
   ReactNode,
   useContext,
@@ -32,9 +33,18 @@ const unconfiguredGridLayoutProviderDispatch: GridLayoutProviderDispatch = (
     `dispatch ${action.type}, have you forgotten to provide a GridLayoutProvider ?`
   );
 
+export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
+
+export type GridLayoutDragStartHandler = (
+  evt: DragEvent<HTMLElement>,
+  id: string
+) => void;
+
 export interface GridLayoutProviderContextProps {
   dispatchGridLayoutAction: GridLayoutProviderDispatch;
   layoutMap: GridLayoutMap;
+  onDragEnd?: GridLayoutDragEndHandler;
+  onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
   version: number;
 }
@@ -43,6 +53,7 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
   {
     dispatchGridLayoutAction: unconfiguredGridLayoutProviderDispatch,
     layoutMap: {},
+    onDragStart: () => console.log("no GridLayoutProvider"),
     onDrop: () => console.log("no GridLayoutProvider"),
     version: -1,
   }
@@ -51,7 +62,11 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
 export interface GridLayoutProviderProps
   extends Pick<
     GridLayoutProviderContextProps,
-    "dispatchGridLayoutAction" | "layoutMap" | "onDrop"
+    | "dispatchGridLayoutAction"
+    | "layoutMap"
+    | "onDragEnd"
+    | "onDragStart"
+    | "onDrop"
   > {
   children: ReactNode;
   pathToDropTarget?: string;
@@ -60,13 +75,22 @@ export interface GridLayoutProviderProps
 export const GridLayoutProvider = (
   props: GridLayoutProviderProps
 ): ReactElement => {
-  const { children, dispatchGridLayoutAction, layoutMap, onDrop } = props;
+  const {
+    children,
+    dispatchGridLayoutAction,
+    layoutMap,
+    onDragEnd,
+    onDragStart,
+    onDrop,
+  } = props;
 
   return (
     <GridLayoutProviderContext.Provider
       value={{
         dispatchGridLayoutAction,
         layoutMap,
+        onDragEnd,
+        onDragStart,
         onDrop,
         version: 0,
       }}
@@ -89,4 +113,14 @@ export const useGridLayoutProps = (id: string) => {
 export const useGridLayoutDropHandler = () => {
   const { onDrop } = useContext(GridLayoutProviderContext);
   return onDrop;
+};
+
+export const useGridLayoutDragEndHandler = () => {
+  const { onDragEnd } = useContext(GridLayoutProviderContext);
+  return onDragEnd;
+};
+
+export const useGridLayoutDragStartHandler = () => {
+  const { onDragStart } = useContext(GridLayoutProviderContext);
+  return onDragStart;
 };

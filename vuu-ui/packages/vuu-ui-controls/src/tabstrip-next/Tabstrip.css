@@ -1,0 +1,137 @@
+/* Component class applied to the root element */
+.vuuTabstrip {
+  --vuuOverflowContainer-background: transparent;
+  --vuuOverflowContainer-borderColor: var(--salt-container-primary-borderColor);
+  --vuuOverflowContainer-width: var(--tabstrip-width);
+  --tabstrip-dragging-display: none;
+  --tabstrip-display: inline-flex;
+  --tabstrip-background: transparent;
+
+  align-self: var(--saltTabs-tabstrip-alignSelf, stretch);
+  border-bottom: solid 1px var(--salt-container-primary-borderColor);
+  display: flex;
+  font-size: var(--salt-text-fontSize);
+  font-weight: var(--vuuTabstrip-fontWeight, var(--salt-text-fontWeight));
+  min-width: 28px;
+  position: relative;
+  overflow: visible;
+}
+
+/* Tabstrip orientation is horizontal */
+.vuuTabstrip.vuuOrientation-horizontal {
+  --vuuOverflowContainer-borderStyle: none none solid none;
+  --vuuOverflowContainer-borderBottomWidth: 1px;
+
+  --tabstrip-height: var(
+    --vuuTabstrip-height,
+    var(--overflow-wrapper-height, 28px)
+  );
+  --tabstrip-width: var(--vuuTabstrip-width, 100%);
+  --tab-height: var(--tabstrip-height);
+  --tab-width: auto;
+  --tab-thumb-height: 2px;
+  --tab-thumb-left: var(--tab-thumb-offset, 0);
+  --tab-thumb-top: auto;
+  --tab-thumb-width: var(--tab-thumb-size, 100%);
+  align-items: flex-start;
+  /* border-bottom: var(--vuuTabstrip-borderBottom, solid 1px var(--salt-container-primary-borderColor)); */
+}
+
+/* Tabstrip orientation is vertical */
+.vuuTabstrip.vuuOrientation-vertical {
+  --tabstrip-height: var(--vuuTabstrip-height, 100%);
+  --tabstrip-width: var(--vuuTabstrip-width, 100px);
+  --tab-height: 50px;
+  --tab-width: 100%;
+  --tab-thumb-height: 0;
+  --tab-thumb-left: 0;
+  --tab-thumb-top: var(--tab-thumb-offset, 0);
+  --tab-thumb-width: 2px;
+
+  align-self: flex-start;
+  display: inline-flex;
+}
+
+.vuuTabstrip-draggingTab .vuuTab {
+  pointer-events: none;
+}
+
+.vuuTabstrip-overflowMenu.vuuDropdown {
+  --saltIcon-margin: 2px 0 0 0px;
+}
+
+.vuuTabstrip-overflowMenu-open {
+  --saltButton-background: var(--salt-actionable-secondary-background-active);
+  --saltButton-text-color: var(--salt-actionable-secondary-text-color-active);
+}
+
+.vuuTabstrip-overflowMenu-open .saltButton {
+  --saltIcon-color: var(--salt-actionable-secondary-foreground-active);
+}
+
+.vuuTabstrip-inner {
+  width: 100%;
+  align-items: center;
+  display: flex;
+  flex-basis: auto;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  line-height: var(--tabstrip-height);
+}
+
+.vuuTabstrip.vuuOrientation-vertical .vuuTabstrip-inner {
+  flex-direction: column;
+  height: auto;
+}
+
+.vuuTabstrip-centered .vuuTabstrip-inner {
+  justify-content: center;
+}
+
+/* Styling applied to Draggable wrapper when used to drag a Tab */
+.vuuDraggable[class*="vuuTabstrip"] {
+  --tabstrip-display: flex;
+  --tabstrip-height: 100%;
+  --tabstrip-dragging-display: block;
+
+  --tabs-tab-background: var(--salt-navigable-primary-background-hover);
+  --tabs-tab-before-content: "";
+  --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
+  --tabs-tab-before-height: var(--tab-activationIndicator-thumb-height);
+  --tabs-tab-before-inset: var(--tab-activationIndicator-inset);
+  --tabs-tab-before-width: var(--tab-activationIndicator-thumb-width);
+  --tabs-tab-cursor: var(--salt-draggable-grab-cursor-active);
+  --tabs-tab-position: static;
+
+  font-size: 12px;
+}
+
+.vuuDraggable-tabstrip-horizontal {
+  --overflow-item-height: var(--tabstrip-height);
+  --tab-thumb-height: 2px;
+  --tab-thumb-left: 0px;
+  --tabstrip-display: inline-flex;
+  --tabstrip-height: 28px;
+  line-height: var(--tabstrip-height);
+}
+
+.vuuDraggable[class*="tabstrip"] .vuuTab[aria-selected="true"]:before {
+  --tabs-tab-before-background: var(--salt-navigable-indicator-active);
+}
+
+/* [data-overflowed] {
+  order: 99;
+  visibility: hidden;
+} */
+
+.vuuTabstrip-overflowMenu-dropTarget:after {
+  background: var(--salt-selectable-background-selected);
+  content: "";
+  position: absolute;
+  height: 2px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

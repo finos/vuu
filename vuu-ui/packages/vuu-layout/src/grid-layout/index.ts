@@ -1,5 +1,6 @@
 export * from "./GridLayoutModel";
 export * from "./GridLayout";
+export * from "./GridLayoutItem";
 export * from "./GridLayoutProvider";
 export * from "./GridPlaceholder";
 export * from "./grid-dom-utils";

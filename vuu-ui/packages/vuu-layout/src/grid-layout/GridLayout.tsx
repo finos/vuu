@@ -1,32 +1,20 @@
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
+import {
+  GridLayoutProvider,
+  GridPlaceholder,
+  ResizeOrientation,
+} from "@finos/vuu-layout";
 import cx from "clsx";
 import {
   CSSProperties,
   ForwardedRef,
   HTMLAttributes,
   ReactElement,
-  useCallback,
   useImperativeHandle,
 } from "react";
+import { GridLayoutItemProps } from "./GridLayoutItem";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 
-import gridLayoutCss from "./GridLayout.css";
-import gridSplitterCss from "./GridSplitter.css";
-
-import {
-  GridLayoutProvider,
-  GridPlaceholder,
-  ResizeOrientation,
-  useGridLayoutProps,
-  useGridLayoutProviderDispatch,
-} from "@finos/vuu-layout";
-import { IconButton } from "@finos/vuu-ui-controls";
-import { useAsDropTarget } from "./useAsDropTarget";
-import { useNotDropTarget } from "./useNotDropTarget";
-
 const classBase = "vuuGridLayout";
-const classBaseItem = "vuuGridLayoutItem";
 
 export type GridResizeable = "h" | "v" | "hv";
 
@@ -63,90 +51,6 @@ export interface GridLayoutProps extends HTMLAttributes<HTMLDivElement> {
   rows?: (string | number)[];
 }
 
-export interface GridLayoutItemProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onDrop" | "style"> {
-  header?: boolean;
-  id: string;
-  isDropTarget?: boolean;
-  label?: string;
-  resizeable?: GridResizeable;
-  style: CSSProperties & {
-    gridColumnEnd: number;
-    gridColumnStart: number;
-    gridRowEnd: number;
-    gridRowStart: number;
-  };
-}
-
-export const GridLayoutItem = ({
-  children,
-  className: classNameProp,
-  header,
-  id,
-  isDropTarget = true,
-  resizeable,
-  style: styleProp,
-  title,
-  ...htmlAttributes
-}: GridLayoutItemProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-grid-layout",
-    css: gridLayoutCss,
-    window: targetWindow,
-  });
-  useComponentCssInjection({
-    testId: "vuu-grid-splitter",
-    css: gridSplitterCss,
-    window: targetWindow,
-  });
-
-  const dispatch = useGridLayoutProviderDispatch();
-  const layoutProps = useGridLayoutProps(id);
-  const onClose = useCallback(() => {
-    dispatch({ type: "close", id });
-  }, [dispatch, id]);
-
-  const useDrop = isDropTarget ? useAsDropTarget : useNotDropTarget;
-
-  const { dropTargetClassName, ...dropHandlers } = useDrop();
-
-  const className = cx(classBaseItem, {
-    [`${classBaseItem}-resizeable-h`]: resizeable === "h",
-    [`${classBaseItem}-resizeable-v`]: resizeable === "v",
-    [`${classBaseItem}-resizeable-vh`]: resizeable === "hv",
-  });
-
-  const style = {
-    ...styleProp,
-    ...layoutProps,
-    "--header-height": header ? "25px" : "0px",
-  };
-
-  return (
-    <div
-      {...htmlAttributes}
-      {...dropHandlers}
-      className={cx(className, dropTargetClassName)}
-      id={id}
-      style={style}
-    >
-      {header ? (
-        <div className={cx(`${classBaseItem}Header`)} draggable>
-          <span className={`${classBaseItem}Header-title`}>{title}</span>
-          <IconButton
-            className={`${classBaseItem}Header-close`}
-            icon="close"
-            onClick={onClose}
-            variant="secondary"
-          />
-        </div>
-      ) : null}
-      {children}
-    </div>
-  );
-};
-
 export interface LayoutAPI {
   addGridColumn: (id: string) => void;
   addGridRow: (id: string) => void;
@@ -176,6 +80,7 @@ export const GridLayout = ({
     gridTemplateColumns,
     gridTemplateRows,
     layoutMap,
+    onDragStart,
     onDrop,
     removeGridColumn,
     splitGridCol,
@@ -217,6 +122,7 @@ export const GridLayout = ({
     <GridLayoutProvider
       dispatchGridLayoutAction={dispatchGridLayoutAction}
       layoutMap={layoutMap}
+      onDragStart={onDragStart}
       onDrop={onDrop}
     >
       <div

@@ -1,0 +1,6 @@
+.vuuTabstrip.dragging {
+  .vuuTab-main {
+    /* suppress  drag-enter, drag-leave events on Tab nested elements */
+    pointer-events: none;
+  }
+}
