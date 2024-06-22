@@ -6,6 +6,7 @@ import {
   getBisectingGridLine,
   getMatchingColspan,
   getMatchingRowspan,
+  getUnusedGridTrackLines,
   gridResizeDirectionFromDropPosition,
   doesResizeRequireNewTrack as isResizeTrackShared,
   splitTrack,
@@ -93,12 +94,13 @@ export class GridLayoutModelItem implements IGridLayoutModelItem {
 
 type GridItemIndex = Map<string, IGridLayoutModelItem>;
 type GridItemMap = Map<number, IGridLayoutModelItem[]>;
-type GridItemMaps = {
+export type GridItemMaps = {
   end: GridItemMap;
   start: GridItemMap;
 };
 
 export type GridItemUpdate = [string, GridLayoutModelPosition];
+type ColumnAndRowUpdates = [GridItemUpdate[], GridItemUpdate[]];
 
 function findUpdate(
   updates: GridItemUpdate[],
@@ -220,9 +222,7 @@ export class GridLayoutModel {
     column,
     id,
     row,
-  }: IGridLayoutModelItem):
-    | [GridItemUpdate[], GridItemUpdate[]]
-    | undefined => {
+  }: IGridLayoutModelItem): ColumnAndRowUpdates => {
     const itemsWithSameRowStart = this.rowMaps.start.get(row.start);
 
     if (itemsWithSameRowStart) {
@@ -230,20 +230,14 @@ export class GridLayoutModel {
         (item) => item.row.end === row.end && item.id !== id
       );
       if (itemsInSameRow.length === 1) {
-        const [
-          {
-            id: contraId,
-            column: { start, end },
-          },
-        ] = itemsInSameRow;
+        const {
+          id: contraId,
+          column: { start, end },
+        } = itemsInSameRow[0];
         if (end === column.start) {
-          const gridPosition = { start, end: column.end };
-          this.setGridColumn(contraId, gridPosition);
-          return [[[contraId, gridPosition]], []];
+          return [[[contraId, { start, end: column.end }]], []];
         } else if (start === column.end) {
-          const gridPosition = { start: column.start, end };
-          this.setGridColumn(contraId, gridPosition);
-          return [[[contraId, gridPosition]], []];
+          return [[[contraId, { start: column.start, end }]], []];
         } else {
           console.log("One item in same row, but it is not adjacent");
         }
@@ -252,29 +246,21 @@ export class GridLayoutModel {
           (item) => item.column.end === column.start
         );
         if (adjacentBefore.length === 1) {
-          const [
-            {
-              id: contraId,
-              column: { start },
-            },
-          ] = adjacentBefore;
-          const gridPosition = { start, end: column.end };
-          this.setGridColumn(contraId, gridPosition);
-          return [[[contraId, gridPosition]], []];
+          const {
+            id: contraId,
+            column: { start },
+          } = adjacentBefore[0];
+          return [[[contraId, { start, end: column.end }]], []];
         }
         const adjacentAfter = itemsInSameRow.filter(
           (item) => item.column.start === column.end
         );
         if (adjacentAfter.length === 1) {
-          const [
-            {
-              id: contraId,
-              column: { end },
-            },
-          ] = adjacentAfter;
-          const gridPosition = { start: column.start, end };
-          this.setGridColumn(contraId, gridPosition);
-          return [[[contraId, gridPosition]], []];
+          const {
+            id: contraId,
+            column: { end },
+          } = adjacentAfter[0];
+          return [[[contraId, { start: column.start, end }]], []];
         }
       }
     }
@@ -286,20 +272,14 @@ export class GridLayoutModel {
         (item) => item.column.end === column.end && item.id !== id
       );
       if (verticalContras.length === 1) {
-        const [
-          {
-            id: contraId,
-            row: { start, end },
-          },
-        ] = verticalContras;
+        const {
+          id: contraId,
+          row: { start, end },
+        } = verticalContras[0];
         if (end === row.start) {
-          const gridPosition = { start, end: row.end };
-          this.setGridRow(contraId, gridPosition);
-          return [[], [[contraId, gridPosition]]];
+          return [[], [[contraId, { start, end: row.end }]]];
         } else if (start === row.end) {
-          const gridPosition = { start: row.start, end };
-          this.setGridRow(contraId, gridPosition);
-          return [[], [[contraId, gridPosition]]];
+          return [[], [[contraId, { start: row.start, end }]]];
         } else {
           console.log(
             "none of the horizontal contras abut, is this possible ?"
@@ -309,6 +289,7 @@ export class GridLayoutModel {
         console.log("take immediately prior first, them immediately after");
       }
     }
+    return [[], []];
   };
 
   private getContrasAbove({ column, row }: IGridLayoutModelItem) {
@@ -454,6 +435,13 @@ export class GridLayoutModel {
     this.storeItem(this.rowMaps, row, gridItem);
   }
 
+  private findUnusedGridLines() {
+    const { colCount, rowCount } = this;
+    const unusedColLines = getUnusedGridTrackLines(this.columnMaps, colCount);
+    const unusedRowLines = getUnusedGridTrackLines(this.rowMaps, rowCount);
+    return [unusedColLines, unusedRowLines];
+  }
+
   removeGridItem(gridItemId: string, updatePlaceholders = true) {
     const gridItem = this.getGridItem(gridItemId);
     if (gridItem) {
@@ -464,11 +452,51 @@ export class GridLayoutModel {
       this.clearItemFromStore(this.columnMaps, column, gridItem);
       this.clearItemFromStore(this.rowMaps, row, gridItem);
 
-      // TODO might well need to delete a grid TrackLine
+      const [colItemUpdates, rowItemUpdates] =
+        this.updateContrasToOccupySpace(gridItem);
+      if (rowItemUpdates.length || colItemUpdates.length) {
+        colItemUpdates.forEach(([id, position]) => {
+          this.setGridColumn(id, position);
+        });
+        rowItemUpdates.forEach(([id, position]) => {
+          this.setGridRow(id, position);
+        });
 
-      const updates = this.updateContrasToOccupySpace(gridItem);
-      if (updates) {
-        return updates;
+        const [unusedColLines, unusedRowLines] = this.findUnusedGridLines();
+        if (unusedColLines.length === 1) {
+          const trackIndex = unusedColLines[0] - 1;
+          const colUpdates = this.removeTrack(trackIndex, "horizontal");
+
+          colUpdates.forEach(([id, u]) => {
+            const existingUpdate = colItemUpdates.find(
+              ([itemId]) => id === itemId
+            );
+            if (existingUpdate) {
+              existingUpdate[1] = u;
+            } else {
+              colItemUpdates.push([id, u]);
+            }
+          });
+        }
+        if (unusedRowLines.length === 1) {
+          const trackIndex = unusedRowLines[0] - 1;
+          const rowUpdates = this.removeTrack(trackIndex, "vertical");
+          rowUpdates.forEach(([id, u]) => {
+            const existingUpdate = rowItemUpdates.find(
+              ([itemId]) => id === itemId
+            );
+            if (existingUpdate) {
+              existingUpdate[1] = u;
+            } else {
+              rowItemUpdates.push([id, u]);
+            }
+          });
+        }
+
+        return {
+          updates: [colItemUpdates, rowItemUpdates],
+          removedTrackLines: [unusedColLines, unusedRowLines],
+        };
       }
 
       if (updatePlaceholders) {
@@ -476,7 +504,7 @@ export class GridLayoutModel {
       }
     }
 
-    return [[], []];
+    return { updates: [[], []] };
   }
 
   replaceGridItem(gridItemId: string, itemType: GridLayoutModelItemType) {
@@ -597,6 +625,7 @@ export class GridLayoutModel {
 
     const track = resizeDirection === "horizontal" ? "column" : "row";
 
+    // TODO use splitTrack from grid-layout-utils
     const newTracks = this.splitSharedTrack(
       tracks,
       newTrackSize,
@@ -849,7 +878,7 @@ export class GridLayoutModel {
     tracks: number[],
     newTrackSize: number,
     resizeOperation: GridLayoutResizeOperation,
-    { resizeTrackIndex, resizeDirection }: ResizeState
+    { resizeTrackIndex }: ResizeState
   ) {
     const newTracks = tracks.slice();
     newTracks.splice(resizeTrackIndex, 0, 0);
@@ -859,12 +888,6 @@ export class GridLayoutModel {
       newTracks[resizeTrackIndex - 1] -= newTrackSize;
     } else {
       newTracks[resizeTrackIndex + 1] -= newTrackSize;
-    }
-
-    if (resizeDirection === "horizontal") {
-      this.colCount += 1;
-    } else {
-      this.rowCount += 1;
     }
 
     return newTracks;

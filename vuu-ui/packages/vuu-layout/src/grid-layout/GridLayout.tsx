@@ -103,6 +103,7 @@ export const GridLayoutItem = ({
 
   const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
+
   const onClose = useCallback(() => {
     dispatch({ type: "close", id });
   }, [dispatch, id]);
@@ -129,6 +130,7 @@ export const GridLayoutItem = ({
       {...dropHandlers}
       className={cx(className, dropTargetClassName)}
       id={id}
+      key={id}
       style={style}
     >
       {header ? (

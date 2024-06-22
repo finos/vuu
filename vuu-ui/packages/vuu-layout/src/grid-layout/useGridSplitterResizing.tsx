@@ -18,6 +18,7 @@ import {
   layoutFromJson,
   IGridLayoutModelItem,
   gridResizeDirectionFromDropPosition,
+  LayoutJSON,
 } from "@finos/vuu-layout";
 import { asReactElements, queryClosest } from "@finos/vuu-utils";
 import React, {
@@ -375,7 +376,7 @@ export const useGridSplitterResizing = ({
   );
 
   const selectedRef = useRef<string>();
-  const clickHandler = useCallback<MouseEventHandler>(
+  const clickHandler = useCallback<MouseEventHandler<HTMLDivElement>>(
     (e) => {
       const gridLayoutItem = getGridLayoutItem(e.target as HTMLElement);
       if (gridLayoutItem) {
@@ -542,23 +543,67 @@ export const useGridSplitterResizing = ({
     }
   }, [layoutModel]);
 
+  const removeTracks = useCallback(
+    (removedTrackLines: [number[], number[]]) => {
+      const { current: grid } = containerRef;
+      if (grid) {
+        const [removedColumnTrackLines, removedRowTrackLines] =
+          removedTrackLines;
+
+        if (removedColumnTrackLines.length === 1) {
+          const [indexOfRemovedColumnTrack] = removedColumnTrackLines;
+          const columnTracks = getColumns(grid);
+          const newTracks = removeTrackFromTracks(
+            columnTracks,
+            indexOfRemovedColumnTrack - 1,
+            "bwd"
+          );
+          setGridTrackTemplate(
+            { grid, resizeDirection: "horizontal" },
+            newTracks
+          );
+        }
+
+        if (removedRowTrackLines.length === 1) {
+          const [indexOfRemovedRowTrack] = removedRowTrackLines;
+          const rowTracks = getRows(grid);
+          const newTracks = removeTrackFromTracks(
+            rowTracks,
+            indexOfRemovedRowTrack - 1,
+            "bwd"
+          );
+          setGridTrackTemplate(
+            { grid, resizeDirection: "vertical" },
+            newTracks
+          );
+        }
+      }
+    },
+    []
+  );
+
   const dispatchGridLayoutAction = useCallback<GridLayoutProviderDispatch>(
     (action) => {
       if (action.type === "close") {
         setChildren((c) => c.filter((c) => c.props.id !== action.id));
-        const [horizontalUpdates, verticalUpdates] = layoutModel.removeGridItem(
-          action.id
-        );
+        const {
+          removedTrackLines,
+          updates: [horizontalUpdates, verticalUpdates],
+        } = layoutModel.removeGridItem(action.id);
 
         applyUpdates("horizontal", horizontalUpdates);
         applyUpdates("vertical", verticalUpdates);
+
+        if (removedTrackLines) {
+          removeTracks(removedTrackLines as [number[], number[]]);
+        }
 
         const placeholders = layoutModel.getPlaceholders();
         const splitters = layoutModel.getSplitterPositions();
         setNonContentGridItems({ placeholders, splitters });
       }
     },
-    [applyUpdates, layoutModel]
+    [applyUpdates, layoutModel, removeTracks]
   );
 
   const addChildComponent = useCallback(
@@ -591,7 +636,7 @@ export const useGridSplitterResizing = ({
       const gridItem = layoutModel.getGridItem(target);
 
       if (grid && gridItem) {
-        const component = layoutFromJson(payload, "");
+        const component = layoutFromJson(payload as LayoutJSON, "");
 
         if (position === "centre") {
           const newGridItem = layoutModel.replaceGridItem(target, "content");

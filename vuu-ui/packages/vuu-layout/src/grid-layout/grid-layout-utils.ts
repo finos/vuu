@@ -1,8 +1,9 @@
+import { GridLayoutSplitDirection } from "@finos/vuu-utils";
 import {
+  GridItemMaps,
   GridLayoutModelItem,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
-  GridLayoutSplitDirection,
   IGridLayoutModelItem,
   ISplitter,
 } from "./GridLayoutModel";
@@ -16,20 +17,20 @@ import {
  * @param trackIndex
  * @param size
  */
-export const insertTrack = (tracks: number[], trackIndex: number, size = 0) => {
+const insertTrack = (tracks: number[], trackIndex: number, size = 0) => {
   if (tracks[trackIndex] < size) {
     throw Error(
       `insertTrack target track ${tracks[trackIndex]} is not large enough to accommodate new track ${size}`
     );
   }
-  return tracks.reduce((list, track, i) => {
+  return tracks.reduce<number[]>((list, track, i) => {
     if (i === trackIndex) {
       list.push(size);
       track -= size;
     }
     list.push(track);
     return list;
-  }, [] as number[]);
+  }, []);
 };
 
 export const splitTrack = (tracks: number[], trackIndex: number) => {
@@ -318,3 +319,26 @@ export const gridResizeDirectionFromDropPosition = (
   dropPosition === "north" || dropPosition === "south"
     ? "vertical"
     : "horizontal";
+
+export const getUnusedGridTrackLines = (
+  gridItemMaps: GridItemMaps,
+  trackCount: number
+): number[] => {
+  const unusedStartPositions: number[] = [];
+  const unusedTrackLines: number[] = [];
+
+  for (let i = 1; i <= trackCount; i++) {
+    if (!gridItemMaps.start.has(i)) {
+      unusedStartPositions.push(i);
+    }
+  }
+
+  for (let i = 2; i <= trackCount + 1; i++) {
+    if (!gridItemMaps.end.has(i)) {
+      if (unusedStartPositions.includes(i)) {
+        unusedTrackLines.push(i);
+      }
+    }
+  }
+  return unusedTrackLines;
+};

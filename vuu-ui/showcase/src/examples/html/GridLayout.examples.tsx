@@ -124,7 +124,7 @@ export const TwoByTwoGrid = () => {
         </GridLayoutItem>
         <GridLayoutItem
           header
-          id="black"
+          id="yellow"
           resizeable="hv"
           style={{
             gridColumnStart: 1,
@@ -132,7 +132,7 @@ export const TwoByTwoGrid = () => {
             gridRowStart: 2,
             gridRowEnd: 3,
           }}
-          title="Black"
+          title="Yellow"
         >
           <DebugGridItem debugLabel="Yellow" style={{ background: "yellow" }} />
         </GridLayoutItem>
