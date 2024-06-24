@@ -62,7 +62,7 @@ export const ContextPanel = ({
 
   return (
     <div
-      className={cx(classBase, className, {
+      className={cx(classBase, className, "vuuScrollable", {
         [`${classBase}-expanded`]: expanded,
       })}
     >

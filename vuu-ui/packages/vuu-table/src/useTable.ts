@@ -143,6 +143,10 @@ export const useTable = ({
   selectionModel,
   size,
 }: TableHookProps) => {
+  const tableConfigRef = useRef<TableConfig>(config);
+  useMemo(() => {
+    tableConfigRef.current = config;
+  }, [config]);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
@@ -180,7 +184,8 @@ export const useTable = ({
     dispatchTableModelAction({
       availableWidth,
       type: "init",
-      tableConfig: config,
+      // tableConfig: config,
+      tableConfig: tableConfigRef.current,
       dataSource,
     });
   }, [
@@ -199,6 +204,7 @@ export const useTable = ({
         tableConfig: config,
         dataSource,
       });
+      tableConfigRef.current = config;
       onConfigChange?.(stripInternalProperties(config));
     },
     [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
@@ -272,6 +278,7 @@ export const useTable = ({
         tableConfig,
         type: "init",
       });
+      tableConfigRef.current = tableConfig;
       onConfigChange?.(stripInternalProperties(tableConfig));
     },
     [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
@@ -619,6 +626,8 @@ export const useTable = ({
         ...tableConfig,
         columns,
       };
+
+      tableConfigRef.current = newTableConfig;
 
       dispatchTableModelAction({
         availableWidth,
