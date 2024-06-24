@@ -31,14 +31,14 @@ export const buildContextMenuDescriptors =
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
       descriptors.push({
         action: "column-settings",
-        icon: "cog",
-        label: `Column Settings`,
+        icon: "settings",
+        label: `Column Settings ...`,
         options,
       });
       descriptors.push({
         action: "table-settings",
-        icon: "cog",
-        label: `DataGrid Settings`,
+        icon: "settings",
+        label: `DataGrid Settings ...`,
         options,
       });
     }
