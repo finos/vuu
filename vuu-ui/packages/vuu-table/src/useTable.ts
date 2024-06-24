@@ -149,6 +149,12 @@ export const useTable = ({
     throw Error("no data source provided to Vuu Table");
   }
 
+  const virtualContentHeight = rowHeight * rowCount;
+  const viewportBodyHeight = size.height - headerHeight;
+  const verticalScrollbarWidth =
+    virtualContentHeight > viewportBodyHeight ? 10 : 0;
+  const availableWidth = size.width - (verticalScrollbarWidth + 8);
+
   const rowClassNameGenerator = useRowClassNameGenerators(config);
 
   const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
@@ -168,26 +174,34 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel(config, dataSource, selectionModel);
+  } = useTableModel(config, dataSource, selectionModel, availableWidth);
 
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
+      availableWidth,
       type: "init",
       tableConfig: config,
       dataSource,
     });
-  }, [config, dataSource, dispatchTableModelAction]);
+  }, [
+    availableWidth,
+    config,
+    dataSource,
+    dispatchTableModelAction,
+    verticalScrollbarWidth,
+  ]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
       dispatchTableModelAction({
+        availableWidth,
         type: "init",
         tableConfig: config,
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(config));
     },
-    [dataSource, dispatchTableModelAction, onConfigChange]
+    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
   );
 
   const columnMap = useMemo(
@@ -253,13 +267,14 @@ export const useTable = ({
   const handleConfigEditedInSettingsPanel = useCallback(
     (tableConfig: TableConfig) => {
       dispatchTableModelAction({
-        type: "init",
-        tableConfig,
+        availableWidth,
         dataSource,
+        tableConfig,
+        type: "init",
       });
       onConfigChange?.(stripInternalProperties(tableConfig));
     },
-    [dataSource, dispatchTableModelAction, onConfigChange]
+    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
   );
 
   const handleDataSourceConfigChanged = useCallback(
@@ -410,6 +425,7 @@ export const useTable = ({
                 updateTableConfig(tableConfig, {
                   type: "col-size",
                   column,
+                  columns,
                   width,
                 })
               )
@@ -605,13 +621,20 @@ export const useTable = ({
       };
 
       dispatchTableModelAction({
+        availableWidth,
         type: "init",
         tableConfig: newTableConfig,
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(newTableConfig));
     },
-    [dataSource, dispatchTableModelAction, onConfigChange, tableConfig]
+    [
+      availableWidth,
+      dataSource,
+      dispatchTableModelAction,
+      onConfigChange,
+      tableConfig,
+    ]
   );
 
   const handleDropRow = useCallback(

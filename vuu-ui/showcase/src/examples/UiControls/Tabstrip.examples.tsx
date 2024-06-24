@@ -14,173 +14,26 @@ const SPLITTER_WIDTH = 3;
 
 let displaySequence = 1;
 
-export const DefaultTabstrip = ({
+const TabstripTemplate = ({
   activeTabIndex: activeTabIndexProp = 0,
-  width = 500,
-}) => {
+  allowAddTab = false,
+  allowCloseTab = false,
+  allowDragDrop = false,
+  allowRenameTab = false,
+  animateSelectionThumb = true,
+  tabs: tabsProp = ["Home", "Transactions", "Loans", "Checks", "Liquidity"],
+  variant = "secondary",
+  width = 700,
+}: Partial<TabstripProps> & { tabs?: string[]; width?: number }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
-  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            animateSelectionThumb
-            onActiveChange={setActiveTabIndex}
-          >
-            {tabs.map((label, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
+  const [tabs, setTabs] = useState(tabsProp);
 
-DefaultTabstrip.displaySequence = displaySequence++;
-
-export const OveflowingTabstrip = ({
-  activeTabIndex: activeTabIndexProp = 0,
-  width = 350,
-}) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
-  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            animateSelectionThumb
-            onActiveChange={setActiveTabIndex}
-          >
-            {tabs.map((label, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
-OveflowingTabstrip.displaySequence = displaySequence++;
-
-export const OveflowingSelectedTab = ({
-  activeTabIndex: activeTabIndexProp = 4,
-  width = 350,
-}) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
-  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            animateSelectionThumb
-            onActiveChange={setActiveTabIndex}
-          >
-            {tabs.map((label, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
-OveflowingSelectedTab.displaySequence = displaySequence++;
-
-export const TabstripAddTab = ({ width = 700 }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState([{ label: "Home" }]);
-
-  const handleAddTab = () => {
+  const handleAddTab = useCallback(() => {
     const count = tabs.length;
-    setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
+    setTabs((state) => state.concat(`Tab ${state.length + 1}`));
     setActiveTabIndex(count);
-  };
+  }, [tabs.length]);
 
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            animateSelectionThumb
-            allowAddTab
-            onActiveChange={setActiveTabIndex}
-            onAddTab={handleAddTab}
-          >
-            {tabs.map(({ label }, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
-TabstripAddTab.displaySequence = displaySequence++;
-
-export const TabstripRemoveTab = ({ width = 700 }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState([{ label: "Home" }]);
-
-  const handleAddTab = () => {
-    const count = tabs.length;
-    setTabs((state) => state.concat([{ label: `Tab ${state.length + 1}` }]));
-    setActiveTabIndex(count);
-  };
   const handleCloseTab = useCallback(
     (tabIndex: number, newActiveTabIndex: number) => {
       setTabs((state) => state.filter((_, i) => i !== tabIndex));
@@ -189,56 +42,20 @@ export const TabstripRemoveTab = ({ width = 700 }) => {
     []
   );
 
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            allowAddTab
-            allowCloseTab
-            animateSelectionThumb
-            onActiveChange={setActiveTabIndex}
-            onAddTab={handleAddTab}
-            onCloseTab={handleCloseTab}
-          >
-            {tabs.map(({ label }, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
-TabstripRemoveTab.displaySequence = displaySequence++;
-
-export const TabstripEditableLabels = ({
-  activeTabIndex: activeTabIndexProp = 0,
-  width = 700,
-}) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
-  const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
-
   const handleTabLabelChanged = useCallback<ExitTabEditModeHandler>(
     (originalValue, newValue) => {
       console.log(`tab label changed from '${originalValue}' to '${newValue}'`);
+      setTabs((currentTabs) =>
+        currentTabs.map((name) => (name === originalValue ? newValue : name))
+      );
     },
     []
   );
 
+  const handleMoveTab = useCallback((fromIndex: number, toIndex: number) => {
+    setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
+  }, []);
+
   return (
     <LayoutProvider>
       <FlexboxLayout
@@ -248,10 +65,17 @@ export const TabstripEditableLabels = ({
         <div data-resizeable style={{ flex: 1 }}>
           <Tabstrip
             activeTabIndex={activeTabIndex}
-            allowRenameTab
-            animateSelectionThumb
+            allowAddTab={allowAddTab}
+            allowCloseTab={allowCloseTab}
+            allowDragDrop={allowDragDrop}
+            allowRenameTab={allowRenameTab}
+            animateSelectionThumb={animateSelectionThumb}
             onActiveChange={setActiveTabIndex}
+            onAddTab={handleAddTab}
+            onCloseTab={handleCloseTab}
             onExitEditMode={handleTabLabelChanged}
+            onMoveTab={handleMoveTab}
+            variant={variant}
           >
             {tabs.map((label, i) => (
               <Tab
@@ -271,82 +95,73 @@ export const TabstripEditableLabels = ({
   );
 };
 
+export const DefaultTabstrip = ({
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 500,
+}) => <TabstripTemplate activeTabIndex={activeTabIndexProp} width={width} />;
+DefaultTabstrip.displaySequence = displaySequence++;
+
+export const OveflowingTabstrip = ({
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 350,
+}) => <TabstripTemplate activeTabIndex={activeTabIndexProp} width={width} />;
+OveflowingTabstrip.displaySequence = displaySequence++;
+
+export const OveflowingSelectedTab = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 350,
+}) => <TabstripTemplate activeTabIndex={activeTabIndexProp} width={width} />;
+OveflowingSelectedTab.displaySequence = displaySequence++;
+
+export const TabstripAddTab = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 700,
+}) => (
+  <TabstripTemplate
+    activeTabIndex={activeTabIndexProp}
+    allowAddTab
+    tabs={["Home"]}
+    width={width}
+  />
+);
+TabstripAddTab.displaySequence = displaySequence++;
+
+export const TabstripRemoveTab = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 700,
+}) => (
+  <TabstripTemplate
+    activeTabIndex={activeTabIndexProp}
+    allowAddTab
+    allowCloseTab
+    width={width}
+  />
+);
+TabstripRemoveTab.displaySequence = displaySequence++;
+
+export const TabstripEditableLabels = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 700,
+}) => (
+  <TabstripTemplate
+    activeTabIndex={activeTabIndexProp}
+    allowRenameTab
+    width={width}
+  />
+);
 TabstripEditableLabels.displaySequence = displaySequence++;
 
-export const TabstripDragDrop = ({ width = 700 }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState(["Home", "Transactions", "Loans", "Checks"]);
-
-  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
-    setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
-  }, []);
-
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <div data-resizeable style={{ flex: 1 }}>
-          <Tabstrip
-            activeTabIndex={activeTabIndex}
-            animateSelectionThumb
-            allowDragDrop
-            onActiveChange={setActiveTabIndex}
-            onMoveTab={handleDrop}
-          >
-            {tabs.map((label, i) => (
-              <Tab
-                index={i}
-                key={label}
-                label={label}
-                ariaControls={
-                  i === activeTabIndex ? `ts-panel-${i}` : undefined
-                }
-              />
-            ))}
-          </Tabstrip>
-        </div>
-        <div data-resizeable />
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
+export const TabstripDragDrop = ({
+  activeTabIndex: activeTabIndexProp = 4,
+  width = 700,
+}) => (
+  <TabstripTemplate
+    activeTabIndex={activeTabIndexProp}
+    allowDragDrop
+    width={width}
+  />
+);
 TabstripDragDrop.displaySequence = displaySequence++;
-
-const TabstripBase = (props: Partial<TabstripProps>) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [tabs, setTabs] = useState([
-    "Home",
-    "Transactions",
-    "Loans",
-    "Checks",
-    "Liquidity",
-  ]);
-
-  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
-    setTabs((tabs) => moveItem(tabs, fromIndex, toIndex));
-  }, []);
-  return (
-    <Tabstrip
-      {...props}
-      activeTabIndex={activeTabIndex}
-      allowDragDrop
-      onActiveChange={setActiveTabIndex}
-      onMoveTab={handleDrop}
-    >
-      {tabs.map((label, i) => (
-        <Tab
-          index={i}
-          key={label}
-          label={label}
-          ariaControls={i === activeTabIndex ? `ts-panel-${i}` : undefined}
-        />
-      ))}
-    </Tabstrip>
-  );
-};
 
 export const TabstripVariations = () => {
   return (
@@ -364,19 +179,19 @@ export const TabstripVariations = () => {
       }}
     >
       <span>Primary</span>
-      <TabstripBase variant="primary" />
+      <TabstripTemplate variant="primary" />
 
       <span />
-      <TabstripBase variant="primary" allowRenameTab allowCloseTab />
+      <TabstripTemplate variant="primary" allowRenameTab allowCloseTab />
 
       <span />
-      <TabstripBase variant="primary" allowAddTab />
+      <TabstripTemplate variant="primary" allowAddTab />
 
       <span>Secondary</span>
-      <TabstripBase animateSelectionThumb variant="secondary" />
+      <TabstripTemplate animateSelectionThumb variant="secondary" />
 
       <span />
-      <TabstripBase
+      <TabstripTemplate
         animateSelectionThumb
         variant="secondary"
         allowRenameTab
@@ -384,12 +199,27 @@ export const TabstripVariations = () => {
       />
 
       <span />
-      <TabstripBase animateSelectionThumb variant="secondary" allowAddTab />
+      <TabstripTemplate animateSelectionThumb variant="secondary" allowAddTab />
     </div>
   );
 };
 
 TabstripVariations.displaySequence = displaySequence++;
+
+export const TheFullMonty = ({
+  activeTabIndex: activeTabIndexProp = 0,
+  width = 700,
+}) => (
+  <TabstripTemplate
+    activeTabIndex={activeTabIndexProp}
+    allowAddTab
+    allowCloseTab
+    allowRenameTab
+    allowDragDrop
+    width={width}
+  />
+);
+TheFullMonty.displaySequence = displaySequence++;
 
 /*
 const CloseTabWarningDialog = ({

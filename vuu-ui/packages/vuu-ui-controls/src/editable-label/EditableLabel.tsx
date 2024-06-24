@@ -122,15 +122,20 @@ export const EditableLabel = forwardRef(function EditableLabel(
     ({ cancelEdit = false, allowDeactivation = false } = {}) => {
       setEditing(false);
       const originalValue = initialValue.current;
-      if (originalValue !== value) {
-        if (cancelEdit) {
+      if (cancelEdit || originalValue === value) {
+        if (originalValue !== value) {
           setValue(originalValue);
-        } else {
-          initialValue.current = value;
         }
+        onExitEditMode?.(
+          originalValue,
+          originalValue,
+          allowDeactivation,
+          cancelEdit
+        );
+      } else {
+        initialValue.current = value;
+        onExitEditMode?.(originalValue, value, allowDeactivation, cancelEdit);
       }
-      onExitEditMode &&
-        onExitEditMode(originalValue, value, allowDeactivation, cancelEdit);
     },
     [onExitEditMode, setEditing, setValue, value]
   );

@@ -66,7 +66,6 @@ export const usePopupMenu = ({
 
   const handleMenuClose = useCallback<PopupCloseCallback>(
     (reason) => {
-      console.log("onClose");
       setMenuOpen(false);
       // If user has clicked the MenuButton whilst menu is open, we want to close it.
       // The PopupService will close it for us as a 'click-away' event. We don't want

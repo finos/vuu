@@ -52,6 +52,6 @@ const TestTable = ({
 };
 
 export const TwoHundredColumns = (props: Partial<TableProps>) => (
-  <TestTable tableName="TwoHundredColumns" {...props} width={915} />
+  <TestTable tableName="TwoHundredColumns" {...props} width={914} />
 );
 TwoHundredColumns.displaySequence = displaySequence++;

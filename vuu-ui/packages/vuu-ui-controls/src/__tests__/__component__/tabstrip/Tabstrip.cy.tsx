@@ -1,5 +1,9 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { DefaultTabstrip } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
+import {
+  DefaultTabstrip,
+  TabstripEditableLabels,
+  TabstripRemoveTab,
+} from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
 const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";
@@ -13,7 +17,7 @@ describe("WHEN initial size is sufficient to display all contents", () => {
       cy.mount(<DefaultTabstrip width={500} />);
       const tabstrip = cy.findByRole("tablist");
       tabstrip.should("have.class", "vuuTabstrip");
-      // The overflow Inidcator will be present, but have zero width
+      // The overflow Indicator will be present, but have zero width
       cy.get(".vuuOverflowContainer-wrapContainer > *")
         .should("have.length", 6)
         .filter(":visible")
@@ -241,147 +245,117 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 //   });
 // });
 
-// describe("Editable Tabs", () => {
-//   describe("WHEN enableRenameTab is set", () => {
-//     it("THEN all tabs are editable", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner .saltEditableLabel").should("have.length", 5);
-//     });
-//   });
+describe("Editable Tabs", () => {
+  describe("WHEN enableRenameTab is set", () => {
+    it("THEN all tabs are editable", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.get(".vuuEditableLabel").should("have.length", 5);
+    });
+  });
 
-//   describe("WHEN ENTER is pressed on tab selected via keyboard", () => {
-//     it("THEN tab enters edit state", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").realClick();
-//       cy.wait(100); // ArrowRight need some time to move focus after click
-//       // Navigate to second tab ...
-//       cy.realPress("ArrowRight");
-//       // First press of ENTER selects ...
-//       cy.realPress("Enter");
-//       // Second press enters edit mode ...
-//       cy.realPress("Enter");
-//       cy.get(".saltTabstrip-inner  > *:nth-child(2) .saltEditableLabel").should(
-//         "have.class",
-//         "saltEditableLabel-editing"
-//       );
-//       cy.get(
-//         ".saltTabstrip-inner  > *:nth-child(2) .saltEditableLabel-input"
-//       ).should("be.focused");
-//     });
-//   });
+  describe("WHEN ENTER is pressed on tab selected via keyboard", () => {
+    it("THEN tab enters edit state", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.findByRole("tab", { name: "Home" }).realClick();
+      cy.realPress("ArrowRight");
+      // First press of ENTER selects ...
+      cy.realPress("Enter");
+      // // Second press enters edit mode ...
+      cy.realPress("Enter");
+      cy.findByRole("tab", { name: "Transactions" }).should(
+        "have.class",
+        "vuuTab-editing"
+      );
+      cy.findByRole("textbox").should("be.focused");
+    });
+  });
 
-//   describe("WHEN ENTER is pressed on tab selected via click", () => {
-//     it("THEN tab label enters edit state", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").realClick();
-//       cy.realPress("Enter");
-//       cy.get(".saltTabstrip-inner  > *:first-child .saltEditableLabel").should(
-//         "have.class",
-//         "saltEditableLabel-editing"
-//       );
-//       cy.get(
-//         ".saltTabstrip-inner  > *:first-child .saltEditableLabel-input"
-//       ).should("be.focused");
-//     });
-//   });
+  describe("WHEN ENTER is pressed on tab selected via click", () => {
+    it("THEN tab label enters edit state", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.findByRole("tab", { name: "Home" }).realClick();
+      cy.realPress("Enter");
+      cy.findByRole("tab", { name: "Home" }).should(
+        "have.class",
+        "vuuTab-editing"
+      );
+      cy.findByRole("textbox").should("be.focused");
+    });
+  });
 
-//   describe("WHEN editable tab is double clicked", () => {
-//     it("THEN tab label enters edit state", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").dblclick();
-//       cy.get(".saltTabstrip-inner  > *:first-child .saltEditableLabel").should(
-//         "have.class",
-//         "saltEditableLabel-editing"
-//       );
-//       cy.get(
-//         ".saltTabstrip-inner  > *:first-child .saltEditableLabel-input"
-//       ).should("be.focused");
-//     });
-//   });
+  describe("WHEN characters are typed during edit state", () => {
+    it("THEN editable input value is updated", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.findByRole("tab", { name: "Home" }).realClick();
+      cy.realPress("Enter");
+      cy.realType("test");
+      cy.findByRole("textbox").should("have.attr", "value", "test");
+    });
+  });
+  describe("WHEN ENTER is pressed after edit", () => {
+    it("THEN edited value is applied to tab label", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.findByRole("tab", { name: "Home" }).realClick();
+      cy.realPress("Enter");
+      cy.realType("test");
+      cy.realPress("Enter");
+      cy.findByRole("tab", { name: "test" }).should(
+        "not.have.class",
+        "vuuTab-editing"
+      );
+      cy.findByRole("tab", { name: "test" }).should("be.focused");
+    });
+  });
 
-//   describe("WHEN characters are typed during edit state", () => {
-//     it("THEN editable input value is updated", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").realClick();
-//       cy.realPress("Enter");
-//       cy.realType("test");
-//       cy.get(
-//         ".saltTabstrip-inner  > *:first-child .saltEditableLabel-input"
-//       ).should("have.attr", "value", "test");
-//     });
-//   });
-//   describe("WHEN ENTER is pressed after edit", () => {
-//     it("THEN edited value is applied to tab label", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").realClick();
-//       cy.realPress("Enter");
-//       cy.realType("test");
-//       cy.realPress("Enter");
-//       cy.get(
-//         ".saltTabstrip-inner  > *:first-child .saltEditableLabel-input"
-//       ).should("have.length", 0);
-//       cy.get(".saltTabstrip-inner  > *:first-child .saltEditableLabel").should(
-//         "have.text",
-//         "test"
-//       );
-//       cy.get(".saltTabstrip-inner  > *:first-child").should("be.focused");
-//     });
-//   });
-//   describe("WHEN ESC is pressed after edit", () => {
-//     it("THEN edited value is not applied to tab label", () => {
-//       cy.mount(<SimpleTabstrip enableRenameTab width={400} />);
-//       cy.get(".saltTabstrip-inner > *:first-child").realClick();
-//       cy.realPress("Enter");
-//       cy.realType("test");
-//       cy.realPress("Escape");
-//       cy.get(
-//         ".saltTabstrip-inner  > *:first-child .saltEditableLabel-input"
-//       ).should("have.length", 0);
-//       cy.get(".saltTabstrip-inner  > *:first-child .saltEditableLabel").should(
-//         "have.text",
-//         "Home"
-//       );
-//       cy.get(".saltTabstrip-inner  > *:first-child").should("be.focused");
-//     });
-//   });
-// });
+  describe("WHEN ESC is pressed after edit", () => {
+    it("THEN edited value is not applied to tab label", () => {
+      cy.mount(<TabstripEditableLabels />);
+      cy.findByRole("tab", { name: "Home" }).realClick();
+      cy.realPress("Enter");
+      cy.realType("test");
+      cy.realPress("Escape");
+      cy.findByRole("tab", { name: "Home" }).should(
+        "not.have.class",
+        "vuuTab-editing"
+      );
+      cy.findByRole("tab", { name: "Home" }).should("be.focused");
+    });
+  });
+});
 
-// describe("Removing Tabs.", () => {
-//   describe("GIVEN a controlled Tabstrip.", () => {
-//     describe("WHEN enableCloseTab is set", () => {
-//       it("THEN all tabs are closeable", () => {
-//         cy.mount(<SimpleTabstripAddRemoveTab enableCloseTab width={600} />);
-//         cy.get(".saltTabstrip-inner .saltTab-closeButton").should(
-//           "have.length",
-//           5
-//         );
-//       });
+describe("Removing Tabs.", () => {
+  describe("GIVEN a controlled Tabstrip.", () => {
+    describe("WHEN enableCloseTab is set", () => {
+      it("THEN all tabs will have context menu", () => {
+        cy.mount(<TabstripRemoveTab />);
+        cy.get(".vuuTabMenu").should("have.length", 5);
+      });
 
-//       describe("WHEN close button is clicked", () => {
-//         it("THEN tab is closed", () => {
-//           cy.mount(<SimpleTabstripAddRemoveTab enableCloseTab width={600} />);
-//           cy.get(
-//             ".saltTabstrip-inner > *:first-child .saltTab-closeButton"
-//           ).realClick();
-//           cy.get(".saltTabstrip-inner > .saltTab").should("have.length", 4);
-//         });
-//       });
+      describe("WHEN close menu item is clicked", () => {
+        it("THEN tab is closed", () => {
+          cy.mount(<TabstripRemoveTab />);
+          cy.findByRole("tab", { name: "Home" }).realClick();
+          cy.realPress("ArrowDown");
+          cy.realPress("Enter");
+          cy.findAllByRole("tab").should("have.length", 4);
+        });
+      });
 
-//       describe("WHEN backspace button is pressed and closeable tab has focus", () => {
-//         it("THEN tab is closed", () => {
-//           cy.mount(<SimpleTabstripAddRemoveTab enableCloseTab width={600} />);
-//           // Select the first tab ...
-//           cy.get(".saltTab").eq(0).realClick();
-//           // Close the selected tab
-//           cy.realPress("Backspace");
-//           cy.get(".saltTab").should("have.length", 4);
-//           // The (new) first tab should now be selected and focused
-//           cy.get(".saltTab").eq(0).should("have.ariaSelected");
-//           cy.get(".saltTab").eq(0).should("be.focused");
-//         });
-//       });
-//     });
-//   });
+      // describe("WHEN backspace button is pressed and closeable tab has focus", () => {
+      //   it("THEN tab is closed", () => {
+      //     cy.mount(<TabstripRemoveTab />);
+      //     // Select the first tab ...
+      //     cy.get(".saltTab").eq(0).realClick();
+      //     // Close the selected tab
+      //     cy.realPress("Backspace");
+      //     cy.get(".saltTab").should("have.length", 4);
+      //     // The (new) first tab should now be selected and focused
+      //     cy.get(".saltTab").eq(0).should("have.ariaSelected");
+      //     cy.get(".saltTab").eq(0).should("be.focused");
+      //   });
+    });
+  });
+});
 
 //   describe("GIVEN a controlled Tabs component", () => {
 //     describe("WHEN enableCloseTab is set", () => {
