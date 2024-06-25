@@ -12,3 +12,4 @@ export * from "./shell-layouts/side-panel";
 export * from "./ShellContextProvider";
 export * from "./feature-list";
 export * from "./theme-switch";
+export * from "./application-settings";

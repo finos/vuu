@@ -1,86 +1,69 @@
-import "./ApplicationSettingsForm.examples.css";
 import {
-  FormField,
-  FormFieldLabel,
-  Input,
-  Dropdown,
-  ToggleButton,
-  ToggleButtonGroup,
-  Option,
-  Switch,
-} from "@salt-ds/core";
-import { SettingsProperty, SettingsSchema } from "../ApplicationSettingsTypesExamples";
-import schema from "../ApplicationSettingsSchemaExample.json";
+  ApplicationSettingsPanel,
+  type SettingsSchema,
+} from "@finos/vuu-shell";
+import { useState } from "react";
 
-// Determine the box type to be displayed
-function getFormControl(property: SettingsProperty) {
-  const values = property.values;
-  
-  if (values?.length !== undefined) {
-    // Switch for booleans
-    if (values?.length == 2) {
-        if (property.type === "boolean") {
-            return (
-                <Switch label={property.label}></Switch>
-            )
-        }
-    }
-    // Toggle Box for 1 or 2 values
-    if (values?.length <= 2) {
-        return (
-        <ToggleButtonGroup defaultValue={property.defaultValue}>
-          {values?.map((value) => (
-            <ToggleButton key={value} value={value}>
-              {value}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      );
-    // Dropdown for more than 2 values provided
-    } else if (values?.length > 2) {
-        return (
-            <Dropdown>
-                {values?.map((value) => {
-                    if (typeof value === "object") {
-                        return(
-                        <Option value={value.label} key={value.value}></Option>
-                        )
-                    }
-                    else {
-                        return (
-                            <Option value={value} key={value}></Option>
-                        )
-                    }
-                })}
-            </Dropdown>
-        )
-   } else {
-    return <Input></Input>;
-  }
-}
-}
+let displaySequence = 1;
 
-// Generic Form Generator
-function SettingsForm({ properties }: SettingsSchema) {
+export const DefaultApplicationSettingsPanel = () => {
+  const initialSettings = {
+    themeMode: "light",
+    region: "us",
+  };
+
+  const applicationSettingsSchema: SettingsSchema = {
+    properties: [
+      {
+        name: "themeMode",
+        label: "Mode",
+        values: ["light", "dark"],
+        defaultValue: "light",
+        type: "string",
+      },
+      {
+        name: "dateFormatPattern",
+        label: "Date Formatting",
+        values: ["dd/mm/yyyy", "mm/dd/yyyy", "dd MMMM yyyy"],
+        defaultValue: "dd/mm/yyyy",
+        type: "string",
+      },
+      {
+        name: "region",
+        label: "Region",
+        values: [
+          { value: "us", label: "US" },
+          { value: "apac", label: "Asia Pacific" },
+          { value: "emea", label: "Europe, Middle East & Africa" },
+        ],
+        defaultValue: "light",
+        type: "string",
+      },
+      {
+        name: "greyscale",
+        label: "Greyscale",
+        values: ["true", "false"],
+        defaultValue: "false",
+        type: "boolean",
+      },
+    ],
+  };
+  const [applicationSettings, setApplicationSettings] =
+    useState(initialSettings);
+
+  const handlePropertyChanged = (propertyName: string | number | boolean) => {
+    setApplicationSettings((currentSettings) => ({
+      ...currentSettings,
+      [propertyName]: value,
+    }));
+  };
+
   return (
-    <div>
-      {properties.map((property) => (
-        <FormField key={property.name}>
-          <FormFieldLabel>{property.label}</FormFieldLabel>
-          {getFormControl(property)}
-        </FormField>
-      ))}
-    </div>
-  );
-}
-
-// ApplicationSettings form using imported JSON
-export const ApplicationSettingsForm = () => {
-  return (
-    <div className="applicationSettingsForm">
-      <SettingsForm properties={schema.properties} />
-    </div>
+    <ApplicationSettingsPanel
+      applicationSettings={applicationSettings}
+      applicationsSettingsSchema={applicationSettingsSchema}
+      // onApplicationSettingChanged={handlePropertyChanged}
+    />
   );
 };
-
-export default ApplicationSettingsForm;
+DefaultApplicationSettingsPanel.displaySequence = displaySequence++;
