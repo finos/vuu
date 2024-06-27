@@ -1,24 +1,29 @@
-import { getFieldName, queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@finos/vuu-utils";
 import {
   Dropdown,
+  DropdownProps,
   FormField,
   FormFieldLabel,
   Input,
   Option,
   Switch,
+  SwitchProps,
   ToggleButton,
   ToggleButtonGroup,
+  ToggleButtonGroupProps,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
-  SingleSelectionHandler,
-} from "@finos/vuu-ui-controls";
-import { FormEventHandler, HTMLAttributes, useCallback } from "react";
+  FormEventHandler,
+  HTMLAttributes,
+  SyntheticEvent,
+  useCallback,
+} from "react";
 
 import applicationSettingsPanelCss from "./ApplicationSettingsPanel.css";
 
-// Type definitions
+// Schema type definitions
 export type SettingsProperty<
   T extends string | number | boolean | object = string
 > = {
@@ -37,7 +42,7 @@ export interface SettingsSchema {
 export function getFormControl(
   property: SettingsProperty,
   changeHandler: FormEventHandler,
-  selectHandler: SingleSelectionHandler,
+  selectHandler: DropdownProps["onSelectionChange"],
   currentValue: string | boolean | number
 ) {
   const values = property.values;
@@ -49,7 +54,7 @@ export function getFormControl(
         return (
           <Switch
             label={property.label}
-            value={currentValue}
+            value={currentValue as SwitchProps["value"]}
             onChange={changeHandler}
           ></Switch>
         );
@@ -58,7 +63,10 @@ export function getFormControl(
     // Toggle Box for 1 or 2 values
     if (values?.length <= 2) {
       return (
-        <ToggleButtonGroup value={currentValue} onChange={changeHandler}>
+        <ToggleButtonGroup
+          value={currentValue as ToggleButtonGroupProps["value"]}
+          onChange={changeHandler}
+        >
           {values?.map((value) => (
             <ToggleButton key={value} value={value}>
               {value}
@@ -70,7 +78,10 @@ export function getFormControl(
       // Dropdown for more than 2 values provided
     } else if (values?.length > 2) {
       return (
-        <Dropdown value={currentValue} onSelectionChange={selectHandler}>
+        <Dropdown
+          value={currentValue as DropdownProps["value"]}
+          onSelectionChange={selectHandler}
+        >
           {values?.map((value) => {
             if (typeof value === "object") {
               return (
@@ -109,42 +120,37 @@ export interface ApplicatonSettingsPanelProps
   ) => void;
 }
 
-// Gets the field form element for a dropdown selection box for selection change handler
-export const queryFieldFormElement = <T extends HTMLElement = HTMLElement>(
-  el: HTMLElement | EventTarget | null
-) => {
-  if (el === null) {
-    return null;
-  }
-  const dataFieldValue = el.getAttribute("data-field");
-  const saltFormField = document.querySelector(".saltFormField") as HTMLElement;
-  if (saltFormField && saltFormField.dataset.field) {
-    return document.querySelector(`[data-field="${dataFieldValue}"]`);
-  }
-};
-
 // Generates application settings form component
 export const SettingsForm = ({
   applicationSettingsSchema,
   applicationSettings,
   onApplicationSettingChanged,
 }: ApplicatonSettingsPanelProps) => {
-  // Settings Handler for toggle and input buttons
-  const onSettingChanged = useCallback<FormEventHandler>((event) => {
-    const fieldElement = queryClosest(event.target, "[data-field]");
-    const fieldName = getFieldName(fieldElement);
-    onApplicationSettingChanged(fieldName, event.target.value);
-  }, []);
+  const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
+    const fieldElement = queryClosest(evt.target, "[data-field]");
+    if (fieldElement && fieldElement.dataset.field) {
+      return fieldElement.dataset.field;
+    } else {
+      throw Error("data-field attribute not defined");
+    }
+  };
 
-  // Seperate change handler for selection form controls (to be implemented)
-  const handleSelectionChange = useCallback<SingleSelectionHandler>(
-    (event, selected) => {
-      console.log(event.target);
-      const fieldElement = queryFieldFormElement(event.target);
-      const fieldName = getFieldName(fieldElement);
+  // Change Handler for toggle and input buttons
+  const onSettingChanged = useCallback<FormEventHandler>(
+    (event) => {
+      const fieldName = getFieldNameFromEventTarget(event);
+      onApplicationSettingChanged(fieldName, event.target.value);
+    },
+    [onApplicationSettingChanged]
+  );
+
+  // Change handler for selection form controls
+  const handleSelectionChange = useCallback(
+    (event: SyntheticEvent, [selected]: string[]) => {
+      const fieldName = getFieldNameFromEventTarget(event);
       onApplicationSettingChanged(fieldName, selected);
     },
-    []
+    [onApplicationSettingChanged]
   );
 
   return (
@@ -170,6 +176,7 @@ export const ApplicationSettingsPanel = ({
   applicationSettingsSchema,
   applicationSettings,
   onApplicationSettingChanged,
+  ...htmlAttributes
 }: ApplicatonSettingsPanelProps) => {
   const targetWindow = useWindow();
 
@@ -180,7 +187,7 @@ export const ApplicationSettingsPanel = ({
   });
 
   return (
-    <div className={classBase}>
+    <div {...htmlAttributes} className={classBase}>
       <SettingsForm
         applicationSettingsSchema={applicationSettingsSchema}
         applicationSettings={applicationSettings}
