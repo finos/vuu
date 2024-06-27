@@ -6,10 +6,12 @@ import { useState } from "react";
 
 let displaySequence = 1;
 
-export const DefaultApplicationSettingsPanel = () => {
+export const DefaultApplicationSettingsForm = () => {
   const initialSettings = {
     themeMode: "light",
-    region: "us",
+    dateFormatPattern: "dd/mm/yyyy",
+    region: "US",
+    greyscale: false,
   };
 
   const applicationSettingsSchema: SettingsSchema = {
@@ -36,14 +38,14 @@ export const DefaultApplicationSettingsPanel = () => {
           { value: "apac", label: "Asia Pacific" },
           { value: "emea", label: "Europe, Middle East & Africa" },
         ],
-        defaultValue: "light",
+        defaultValue: "apac",
         type: "string",
       },
       {
         name: "greyscale",
         label: "Greyscale",
-        values: ["true", "false"],
-        defaultValue: "false",
+        values: [true, false],
+        defaultValue: false,
         type: "boolean",
       },
     ],
@@ -51,7 +53,10 @@ export const DefaultApplicationSettingsPanel = () => {
   const [applicationSettings, setApplicationSettings] =
     useState(initialSettings);
 
-  const handlePropertyChanged = (propertyName: string | number | boolean) => {
+  const handlePropertyChanged = (
+    propertyName: string,
+    value: string | boolean | number
+  ) => {
     setApplicationSettings((currentSettings) => ({
       ...currentSettings,
       [propertyName]: value,
@@ -60,10 +65,10 @@ export const DefaultApplicationSettingsPanel = () => {
 
   return (
     <ApplicationSettingsPanel
+      applicationSettingsSchema={applicationSettingsSchema}
       applicationSettings={applicationSettings}
-      applicationsSettingsSchema={applicationSettingsSchema}
-      // onApplicationSettingChanged={handlePropertyChanged}
+      onApplicationSettingChanged={handlePropertyChanged}
     />
   );
 };
-DefaultApplicationSettingsPanel.displaySequence = displaySequence++;
+DefaultApplicationSettingsForm.displaySequence = displaySequence++;

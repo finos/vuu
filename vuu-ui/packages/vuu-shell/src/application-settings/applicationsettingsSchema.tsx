@@ -24,15 +24,17 @@ export const applicationSettingsSchema: SettingsSchema = {
         { value: "apac", label: "Asia Pacific" },
         { value: "emea", label: "Europe, Middle East & Africa" },
       ],
-      defaultValue: "light",
+      defaultValue: "apac",
       type: "string",
     },
     {
       name: "greyscale",
       label: "Greyscale",
-      values: ["true", "false"],
-      defaultValue: "false",
+      values: [true, false],
+      defaultValue: false,
       type: "boolean",
     },
   ],
 };
+
+export default applicationSettingsSchema;

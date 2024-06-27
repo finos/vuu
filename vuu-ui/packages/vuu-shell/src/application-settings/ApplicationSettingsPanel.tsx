@@ -13,7 +13,6 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
 import { FormEventHandler, HTMLAttributes, useCallback } from "react";
-import { useApplicationSettings } from "../application-provider";
 
 import applicationSettingsPanelCss from "./ApplicationSettingsPanel.css";
 
@@ -34,13 +33,12 @@ export interface SettingsSchema {
 
 // Determine the form control type to be displayed
 export function getFormControl(
-  property: SettingsSchema,
+  property: SettingsProperty,
   changeHandler: FormEventHandler,
   selectHandler: SingleSelectionHandler,
-  currentValue: ApplicatonSettingsPanelProps
+  currentValue: string | boolean | number
 ) {
   const values = property.values;
-  const defaultValue = property.defaultValue;
 
   if (values?.length !== undefined) {
     // Switch for booleans
@@ -58,11 +56,7 @@ export function getFormControl(
     // Toggle Box for 1 or 2 values
     if (values?.length <= 2) {
       return (
-        <ToggleButtonGroup
-          // defaultValue={defaultValue}
-          value={currentValue}
-          onChange={changeHandler}
-        >
+        <ToggleButtonGroup value={currentValue} onChange={changeHandler}>
           {values?.map((value) => (
             <ToggleButton key={value} value={value}>
               {value}
@@ -74,7 +68,7 @@ export function getFormControl(
       // Dropdown for more than 2 values provided
     } else if (values?.length > 2) {
       return (
-        <Dropdown onSelectionChange={selectHandler} value={currentValue}>
+        <Dropdown value={currentValue} onSelectionChange={selectHandler}>
           {values?.map((value) => {
             if (typeof value === "object") {
               return <Option value={value.label} key={value.value}></Option>;
@@ -84,9 +78,9 @@ export function getFormControl(
           })}
         </Dropdown>
       );
-    } else {
-      return <Input></Input>;
     }
+  } else {
+    return <Input></Input>;
   }
 }
 
@@ -105,22 +99,25 @@ export interface ApplicatonSettingsPanelProps
 export const SettingsForm = ({
   applicationSettingsSchema,
   applicationSettings,
+  onApplicationSettingChanged,
 }: ApplicatonSettingsPanelProps) => {
-  const { changeSetting } = useApplicationSettings();
-
-  const onSettingChanged = useCallback<FormEventHandler>(
-    (event) => {
-      const fieldElement = queryClosest(event.target, "[data-field]");
-      const fieldName = getFieldName(fieldElement);
-      changeSetting(fieldName, event.target.value);
-    },
-    [changeSetting]
-  );
+  // Settings Handler for toggle and input buttons
+  const onSettingChanged = useCallback<FormEventHandler>((event) => {
+    const fieldElement = queryClosest(event.target, "[data-field]");
+    const fieldName = getFieldName(fieldElement);
+    onApplicationSettingChanged(fieldName, event.target.value);
+  }, []);
 
   // Seperate change handler for selection form controls (to be implemented)
-  const handleSelectionChange = useCallback<SingleSelectionHandler>((event) => {
-    console.log(event.target);
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (event, selected) => {
+      console.log(event.target);
+      // const fieldElement = queryClosest(event.target, "[data-field]")
+      // const fieldName = getFieldName(fieldElement)
+      // onApplicationSettingChanged(fieldName, selected)
+    },
+    []
+  );
 
   // const selectHandler = useCallback((evt, [selectedValue]) => {
   //   const propertyName = getPropertyNameFromElement(evt.target);
@@ -139,14 +136,14 @@ export const SettingsForm = ({
 
   return (
     <div>
-      {applicationSettingsSchema.properties.map((property: SettingsProperty<string>) => (
+      {applicationSettingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>
           {getFormControl(
-            applicationSettingsSchema,
+            property,
             onSettingChanged,
             handleSelectionChange,
-            applicationSettings
+            applicationSettings[property.name]
           )}
         </FormField>
       ))}
@@ -159,6 +156,7 @@ const classBase = "vuuApplicationSettingsPanel";
 export const ApplicationSettingsPanel = ({
   applicationSettingsSchema,
   applicationSettings,
+  onApplicationSettingChanged,
 }: ApplicatonSettingsPanelProps) => {
   const targetWindow = useWindow();
 
@@ -171,8 +169,9 @@ export const ApplicationSettingsPanel = ({
   return (
     <div className={classBase}>
       <SettingsForm
-        properties={applicationSettingsSchema.properties}
-        currentValue={applicationSettings}
+        applicationSettingsSchema={applicationSettingsSchema}
+        applicationSettings={applicationSettings}
+        onApplicationSettingChanged={onApplicationSettingChanged}
       />
     </div>
   );
