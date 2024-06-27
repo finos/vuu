@@ -1,25 +1,23 @@
-
 .vuuTableCell {
-    .vuuTableDropdownCell {
-        --vuu-icon-height: 15px;
-        --vuu-icon-left: calc(100% - 20px);
-        --vuu-icon-size: 22px;
-        --salt-focused-outlineStyle: none;
-        --saltButton-borderRadius: 4px;
-    
-        border: solid 1px var(--salt-editable-borderColor);
-        border-radius: 6px;
-        position: relative;
-        font-weight: 500;
-        height: var(--vuu-table-embedded-control-height);
-        min-height: var(--vuu-table-embedded-control-height);
-    
-    
-        button:focus-visible {
-            --saltButton-borderColor: var(--salt-focused-outlineColor);
-            --saltButton-borderWidth: 2px;
-            padding-left: 7px;
-        }
-    }
-}
+  .vuuTableDropdownCell {
+    --vuu-icon-height: 15px;
+    --vuu-icon-left: calc(100% - 20px);
+    --vuu-icon-size: 22px;
+    --salt-focused-outlineStyle: none;
+    --saltButton-borderRadius: 4px;
 
+    border: solid 1px var(--salt-editable-borderColor);
+    border-radius: 6px;
+    position: relative;
+    font-weight: 500;
+    height: var(--vuu-table-embedded-control-height);
+    min-height: var(--vuu-table-embedded-control-height);
+    text-align: left;
+
+    button:focus-visible {
+      --saltButton-borderColor: var(--salt-focused-outlineColor);
+      --saltButton-borderWidth: 2px;
+      padding-left: 7px;
+    }
+  }
+}
