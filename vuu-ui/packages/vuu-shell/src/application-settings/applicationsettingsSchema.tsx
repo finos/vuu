@@ -21,8 +21,8 @@ export const applicationSettingsSchema: SettingsSchema = {
       label: "Region",
       values: [
         { value: "us", label: "US" },
-        { value: "apac", label: "Asia Pacific" },
-        { value: "emea", label: "Europe, Middle East & Africa" },
+        { value: "apac", label: "apac (Asia Pacific)" },
+        { value: "emea", label: "emea (Europe, Middle East & Africa)" },
       ],
       defaultValue: "apac",
       type: "string",
@@ -30,7 +30,6 @@ export const applicationSettingsSchema: SettingsSchema = {
     {
       name: "greyscale",
       label: "Greyscale",
-      values: [true, false],
       defaultValue: false,
       type: "boolean",
     },

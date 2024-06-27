@@ -44,7 +44,6 @@ export const DefaultApplicationSettingsForm = () => {
       {
         name: "greyscale",
         label: "Greyscale",
-        values: [true, false],
         defaultValue: false,
         type: "boolean",
       },

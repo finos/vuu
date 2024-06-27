@@ -7,7 +7,6 @@ import {
   Input,
   Option,
   Switch,
-  SwitchProps,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupProps,
@@ -23,89 +22,115 @@ import {
 
 import applicationSettingsPanelCss from "./ApplicationSettingsPanel.css";
 
+export type Option<T> = { label: string; value: T };
 // Schema type definitions
-export type SettingsProperty<
-  T extends string | number | boolean | object = string
-> = {
+export const isOption = (
+  value: Option<number | string> | number | string
+): value is Option<number | string> =>
+  typeof value === "object" && "label" in value && "label" in value;
+
+export interface BaseProperty {
   name: string;
   label: string;
-  values?: T[] | object;
-  defaultValue?: T;
-  type: "string" | "boolean" | "number";
-};
+}
+
+export interface StringProperty extends BaseProperty {
+  values?: string[] | Option<string>[];
+  defaultValue?: string;
+  type: "string";
+}
+export interface NumericProperty extends BaseProperty {
+  values?: number[] | Option<number>[];
+  defaultValue?: number;
+  type: "number";
+}
+export interface BooleanProperty extends BaseProperty {
+  defaultValue?: boolean;
+  type: "boolean";
+}
+
+export type SettingsProperty =
+  | StringProperty
+  | NumericProperty
+  | BooleanProperty;
+
+export const isBooleanProperty = (
+  property: SettingsProperty
+): property is BooleanProperty => property.type === "boolean";
+
+export const isStringOrNumber = (value: unknown): value is string | number =>
+  typeof value === "string" || typeof value === "number";
 
 export interface SettingsSchema {
   properties: SettingsProperty[];
 }
+
+const getValueAndLabel = (value: string | number | Option<string | number>) =>
+  isOption(value) ? [value.value, value.label] : [value, value];
 
 // Determine the form control type to be displayed
 export function getFormControl(
   property: SettingsProperty,
   changeHandler: FormEventHandler,
   selectHandler: DropdownProps["onSelectionChange"],
-  currentValue: string | boolean | number
+  currentValue?: string | boolean | number
 ) {
-  const values = property.values;
+  if (isBooleanProperty(property)) {
+    const checked =
+      typeof currentValue === "boolean"
+        ? currentValue
+        : property.defaultValue ?? false;
 
-  if (values?.length !== undefined) {
-    // Switch for booleans
-    if (values?.length == 2) {
-      if (property.type === "boolean") {
-        return (
-          <Switch
-            label={property.label}
-            value={currentValue as SwitchProps["value"]}
-            onChange={changeHandler}
-          ></Switch>
-        );
-      }
-    }
-    // Toggle Box for 1 or 2 values
-    if (values?.length <= 2) {
+    return (
+      <Switch
+        checked={checked}
+        label={property.label}
+        onChange={changeHandler}
+      ></Switch>
+    );
+  }
+  // Toggle Box for 1 or 2 values
+  if (Array.isArray(property.values)) {
+    if (property.values.length <= 2) {
       return (
         <ToggleButtonGroup
           value={currentValue as ToggleButtonGroupProps["value"]}
           onChange={changeHandler}
         >
-          {values?.map((value) => (
-            <ToggleButton key={value} value={value}>
-              {value}
-            </ToggleButton>
-          ))}
+          {property.values.map((valueOrOption) => {
+            const [value, label] = getValueAndLabel(valueOrOption);
+            return (
+              <ToggleButton key={value} value={value}>
+                {label}
+              </ToggleButton>
+            );
+          })}
         </ToggleButtonGroup>
       );
-
-      // Dropdown for more than 2 values provided
-    } else if (values?.length > 2) {
+    } else if (property.values.length > 2) {
       return (
         <Dropdown
           value={currentValue as DropdownProps["value"]}
           onSelectionChange={selectHandler}
         >
-          {values?.map((value) => {
-            if (typeof value === "object") {
-              return (
-                <Option
-                  value={value.label}
-                  key={value.value}
-                  data-field={property.name}
-                ></Option>
-              );
-            } else {
-              return (
-                <Option
-                  value={value}
-                  key={value}
-                  data-field={property.name}
-                ></Option>
-              );
-            }
+          {property.values.map((valueOrOption) => {
+            const [value, label] = getValueAndLabel(valueOrOption);
+            return (
+              <Option value={value} key={value} data-field={property.name}>
+                {label}
+              </Option>
+            );
           })}
         </Dropdown>
       );
     }
   } else {
-    return <Input></Input>;
+    const value = isStringOrNumber(currentValue)
+      ? currentValue
+      : isStringOrNumber(property.defaultValue)
+      ? property.defaultValue
+      : "";
+    return <Input value={value} />;
   }
 }
 
@@ -136,16 +161,17 @@ export const SettingsForm = ({
   };
 
   // Change Handler for toggle and input buttons
-  const onSettingChanged = useCallback<FormEventHandler>(
+  const changeHandler = useCallback<FormEventHandler>(
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
-      onApplicationSettingChanged(fieldName, event.target.value);
+      const { checked, value } = event.target as HTMLInputElement;
+      onApplicationSettingChanged(fieldName, checked ?? value);
     },
     [onApplicationSettingChanged]
   );
 
   // Change handler for selection form controls
-  const handleSelectionChange = useCallback(
+  const selectHandler = useCallback(
     (event: SyntheticEvent, [selected]: string[]) => {
       const fieldName = getFieldNameFromEventTarget(event);
       onApplicationSettingChanged(fieldName, selected);
@@ -160,8 +186,8 @@ export const SettingsForm = ({
           <FormFieldLabel>{property.label}</FormFieldLabel>
           {getFormControl(
             property,
-            onSettingChanged,
-            handleSelectionChange,
+            changeHandler,
+            selectHandler,
             applicationSettings[property.name]
           )}
         </FormField>
