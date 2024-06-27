@@ -11,7 +11,9 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { SingleSelectionHandler } from "@finos/vuu-ui-controls";
+import {
+  SingleSelectionHandler,
+} from "@finos/vuu-ui-controls";
 import { FormEventHandler, HTMLAttributes, useCallback } from "react";
 
 import applicationSettingsPanelCss from "./ApplicationSettingsPanel.css";
@@ -71,9 +73,21 @@ export function getFormControl(
         <Dropdown value={currentValue} onSelectionChange={selectHandler}>
           {values?.map((value) => {
             if (typeof value === "object") {
-              return <Option value={value.label} key={value.value}></Option>;
+              return (
+                <Option
+                  value={value.label}
+                  key={value.value}
+                  data-field={property.name}
+                ></Option>
+              );
             } else {
-              return <Option value={value} key={value}></Option>;
+              return (
+                <Option
+                  value={value}
+                  key={value}
+                  data-field={property.name}
+                ></Option>
+              );
             }
           })}
         </Dropdown>
@@ -84,7 +98,7 @@ export function getFormControl(
   }
 }
 
-//Props for Panel
+// Props for Panel
 export interface ApplicatonSettingsPanelProps
   extends HTMLAttributes<HTMLDivElement> {
   applicationSettingsSchema: SettingsSchema;
@@ -94,6 +108,20 @@ export interface ApplicatonSettingsPanelProps
     value: string | number | boolean
   ) => void;
 }
+
+// Gets the field form element for a dropdown selection box for selection change handler
+export const queryFieldFormElement = <T extends HTMLElement = HTMLElement>(
+  el: HTMLElement | EventTarget | null
+) => {
+  if (el === null) {
+    return null;
+  }
+  const dataFieldValue = el.getAttribute("data-field");
+  const saltFormField = document.querySelector(".saltFormField") as HTMLElement;
+  if (saltFormField && saltFormField.dataset.field) {
+    return document.querySelector(`[data-field="${dataFieldValue}"]`);
+  }
+};
 
 // Generates application settings form component
 export const SettingsForm = ({
@@ -112,27 +140,12 @@ export const SettingsForm = ({
   const handleSelectionChange = useCallback<SingleSelectionHandler>(
     (event, selected) => {
       console.log(event.target);
-      // const fieldElement = queryClosest(event.target, "[data-field]")
-      // const fieldName = getFieldName(fieldElement)
-      // onApplicationSettingChanged(fieldName, selected)
+      const fieldElement = queryFieldFormElement(event.target);
+      const fieldName = getFieldName(fieldElement);
+      onApplicationSettingChanged(fieldName, selected);
     },
     []
   );
-
-  // const selectHandler = useCallback((evt, [selectedValue]) => {
-  //   const propertyName = getPropertyNameFromElement(evt.target);
-  //   onSettingChanged(propertyName, selectedValue);
-  // });
-
-  // const changeHandler = useCallback((evt) => {
-  //   const propertyName = getFieldName(evt.target);
-  //   const value = getTypedValue(
-  //     evt.target,
-  //     propertyName,
-  //     applicationSettingsSchema
-  //   );
-  //   onSettingChanged(propertyName, value);
-  // },[]);
 
   return (
     <div>
