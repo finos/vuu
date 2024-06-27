@@ -27,11 +27,11 @@
 }
 
 .vuuTable-zebra {
-  --row-background-even: var(--table-background);
+  --row-background-even: var(--salt-palette-neutral-secondary-background);
 }
 
 .vuuTable-colLines {
-  --cell-borderColor: var();
+  --cell-borderColor: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-rowLines {
