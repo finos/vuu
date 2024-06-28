@@ -43,6 +43,7 @@ const View = forwardRef(function View(
 ) {
   const {
     Header = VuuHeader,
+    allowRename,
     children,
     className,
     collapsed,
@@ -160,6 +161,7 @@ const View = forwardRef(function View(
         {header ? (
           <Header
             {...headerProps}
+            allowRename={allowRename}
             collapsed={collapsed}
             contributions={contributions}
             expanded={expanded}

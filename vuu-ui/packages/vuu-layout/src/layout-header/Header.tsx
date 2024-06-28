@@ -8,6 +8,7 @@ import {
   KeyboardEvent,
   MouseEvent,
   ReactElement,
+  useCallback,
   useRef,
   useState,
 } from "react";
@@ -16,6 +17,7 @@ import { Contribution, useViewDispatch } from "../layout-view-actions";
 import headerCss from "./Header.css";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
+  allowRename?: boolean;
   collapsed?: boolean;
   contributions?: Contribution[];
   expanded?: boolean;
@@ -28,6 +30,7 @@ export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuHeader";
 
 export const Header = ({
+  allowRename = false,
   className: classNameProp,
   contributions,
   collapsed,
@@ -52,9 +55,14 @@ export const Header = ({
   const handleClose = (evt: MouseEvent) =>
     viewDispatch?.({ type: "remove" }, evt);
 
-  const handleTitleMouseDown = () => {
+  const focusTitle = useCallback(() => {
     labelFieldRef.current?.focus();
-  };
+  }, []);
+
+  const handleClickEdit = useCallback(() => {
+    focusTitle();
+    setEditing((isEditing) => !isEditing);
+  }, [focusTitle]);
 
   const handleButtonMouseDown = (evt: MouseEvent) => {
     // do not allow drag to be initiated
@@ -64,10 +72,6 @@ export const Header = ({
   const orientation = collapsed || orientationProp;
 
   const className = cx(classBase, classNameProp, `${classBase}-${orientation}`);
-
-  const handleEnterEditMode = () => {
-    setEditing(true);
-  };
 
   const handleTitleKeyDown = (evt: KeyboardEvent<HTMLDivElement>) => {
     if (evt.key === "Enter") {
@@ -121,12 +125,23 @@ export const Header = ({
         key="title"
         value={value}
         onChange={setValue}
-        onMouseDownCapture={handleTitleMouseDown}
-        onEnterEditMode={handleEnterEditMode}
+        onMouseDownCapture={focusTitle}
         onExitEditMode={handleExitEditMode}
         onKeyDown={handleTitleKeyDown}
         ref={labelFieldRef}
         tabIndex={0}
+      />
+    );
+
+  allowRename &&
+    toolbarItems.push(
+      <IconButton
+        className={`${classBase}-edit`}
+        icon="edit"
+        key="edit-button"
+        onClick={handleClickEdit}
+        onMouseDown={handleButtonMouseDown}
+        variant="secondary"
       />
     );
 
@@ -144,14 +159,14 @@ export const Header = ({
 
   postTitleContributedItems.length > 0 &&
     toolbarItems.push(
-      <div className="vuuTooltrayProxy" data-align="end" key="contributions">
+      <div data-align="end" key="contributions">
         {postTitleContributedItems}
       </div>
     );
 
   actionButtons.length > 0 &&
     toolbarItems.push(
-      <div className="vuuTooltrayProxy" data-align="end" key="actions">
+      <div data-align="end" key="actions">
         {actionButtons}
       </div>
     );

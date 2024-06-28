@@ -27,6 +27,7 @@ export type ResizeStrategy = "defer" | "responsive";
 
 export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   Header?: FunctionComponent<HeaderProps>;
+  allowRename?: boolean;
   closeable?: boolean;
   collapsed?: boolean;
   "data-path"?: string;

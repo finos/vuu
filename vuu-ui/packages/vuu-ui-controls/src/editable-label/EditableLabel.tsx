@@ -41,7 +41,7 @@ export interface EditableLabelProps
   defaultValue?: string;
   editLabelApiRef?: ForwardedRef<EditAPI>;
   editing?: boolean;
-  onEnterEditMode: () => void;
+  onEnterEditMode?: () => void;
   onChange?: (value: string) => void;
   onExitEditMode: ExitEditModeHandler;
   defaultIsEditing?: boolean;
@@ -149,10 +149,10 @@ export const EditableLabel = forwardRef(function EditableLabel(
   // We need the ref here as the blur fires before setEditing has taken effect,
   // so we get a double call to exitEditMode if edit is cancelled.
   const handleBlur = useCallback(() => {
-    if (editing || editingRef.current) {
+    if (editingRef.current) {
       exitEditMode({ allowDeactivation: true });
     }
-  }, [editing, exitEditMode]);
+  }, [exitEditMode]);
 
   const handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (editing && evt.key === "Enter") {

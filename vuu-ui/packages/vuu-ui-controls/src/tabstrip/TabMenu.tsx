@@ -1,15 +1,14 @@
-import { PopupMenu } from "@finos/vuu-popups";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
+import { PopupMenu } from "@finos/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-
-import { useMemo } from "react";
 import cx from "clsx";
-import { closeCommand, MenuOptions, renameCommand } from "./TabMenuOptions";
+import { useMemo } from "react";
+import { MenuOptions, closeCommand, renameCommand } from "./TabMenuOptions";
 
 import tabMenuCss from "./TabMenu.css";
 

@@ -17,16 +17,9 @@ body {
   height: var(--vuuToolbarProxy-height, 36px);
 }
 
-.vuuToolbarProxy > [data-align="end"] {
-  margin-left: auto;
-}
-
 .vuuToolbarProxy-vertical {
   flex-direction: column;
 }
-
-/* .vuuTooltrayProxy {
-} */
 
 .vuuShowcase-StandaloneRoot {
   height: 100vh;

@@ -15,13 +15,21 @@
   letter-spacing: normal;
 
   /* max-width: 170px; */
-  outline: none;
   overflow: hidden;
   padding: 0 var(--editableLabel-padding);
   position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
   z-index: var(--salt-zIndex-default);
+
+  &:focus,
+  &:focus-within {
+    outline: var(--salt-focused-outline);
+  }
+
+  &[data-embedded] {
+    outline: none;
+  }
 }
 
 .vuuEditableLabel:before {
@@ -56,8 +64,8 @@
   flex: 1;
   font: inherit;
   height: 20px;
-  margin:0;
-  min-width:0;
+  margin: 0;
+  min-width: 0;
   outline: none;
   padding: 0;
 }

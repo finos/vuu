@@ -691,7 +691,7 @@ export class ArrayDataSource
   }
 
   get title() {
-    return this.#title;
+    return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string | undefined) {

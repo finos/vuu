@@ -563,11 +563,13 @@ export class Viewport {
   }
 
   setLinks(links: LinkDescriptorWithLabel[]) {
-    this.links = links;
+    this.links = links.filter(
+      (link) => link.parentVpId !== this.serverViewportId
+    );
     return [
       {
         type: "vuu-links",
-        links,
+        links: this.links,
         clientViewportId: this.clientViewportId,
       },
       this.pendingLinkedParent,
