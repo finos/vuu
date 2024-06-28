@@ -137,6 +137,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
+      links = VisualLinks(),
       joinFields = Seq("orderId", "currencyPair", "ric")
     )
   }
@@ -146,6 +147,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       name = "orderPricesFx",
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
+      links = VisualLinks(),
       joinFields = Seq("orderId"),
       JoinTo(
         table = pricesDef,
@@ -168,6 +170,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
           table = orderPrices,
           joinSpec = JoinSpec(left = "orderId", right = "orderId", LeftOuterJoin)
         ),
+      links = VisualLinks(),
       joinFields = Seq()
     )
   }
@@ -179,6 +182,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       joinColumns = Columns.allFrom(orders2Def)
         ++ Columns.allFromExcept(pricesDef, "ric")
         ++ Columns.allFromExcept(fxRates, "currencyPair"),
+      links = VisualLinks(),
       joinFields = Seq(),
       joins =
         JoinTo(

@@ -42,6 +42,7 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
+      links = VisualLinks(),
       joinFields = Seq()
     )
 

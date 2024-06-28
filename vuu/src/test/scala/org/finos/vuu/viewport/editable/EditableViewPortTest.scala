@@ -4,14 +4,14 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
-import org.finos.vuu.core.{IVuuServer, VuuServer}
+import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
+import org.finos.vuu.provider._
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport._
 import org.scalatest.GivenWhenThen
@@ -111,6 +111,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       name = "consInstrumentPrice",
       baseTable = constituentDef,
       joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
+      links = VisualLinks(),
       joinFields = List("ric"),
       joins =
         JoinTo(
