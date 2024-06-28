@@ -1,3 +1,14 @@
 .vuuIcon {
-    --vuu-icon-left: 0;
+  --vuu-icon-left: 0;
+}
+
+.saltButton .vuuIcon {
+  --vuu-icon-color: var(--button-text-color);
+}
+.saltButton-active .vuuIcon {
+  --vuu-icon-color: var(--button-text-color-active);
+}
+
+.saltButton-disabled {
+  --vuu-icon-color: var(--button-text-color-disabled);
 }

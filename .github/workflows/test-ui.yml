@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run build:worker
@@ -19,39 +19,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
-  # playwright:
-  #   timeout-minutes: 10
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Install Node & dependencies
-  #       uses: ./.github/actions/setup-vuu-ui
-  #     - name: Install Playwright Chromium Browser
-  #       run: cd ./vuu-ui && npx playwright install --with-deps chromium
-  #     - name: Build Showcase
-  #       run: cd ./vuu-ui && npm run showcase:build
-  #     - name: Run tests
-  #       run: |
-  #         cd ./vuu-ui &&
-  #         npm run test:playwright
-  #     - uses: actions/upload-artifact@v4
-  #       if: ${{ !cancelled() }}
-  #       with:
-  #         name: playwright-report
-  #         path: ./vuu-ui/playwright/reports/
-  #         retention-days: 10
+  playwright:
+    timeout-minutes: 10
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Install Playwright Chromium Browser
+        run: cd ./vuu-ui && npx playwright install --with-deps chromium
+      - name: Build Showcase
+        run: cd ./vuu-ui && npm run showcase:build
+      - name: Launch Showcase
+        run: cd ./vuu-ui && npm run showcase:preview&
+      - name: Run tests
+        run: |
+          cd ./vuu-ui &&
+          npm run test:playwright
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-vr
+          path: ./vuu-ui/playwright/reports/
+          retention-days: 10
 
   cypress-component:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
@@ -76,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Vuu Libraries

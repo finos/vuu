@@ -17,9 +17,10 @@ node_modules
 yarn-debug.log*
 yarn-error.log*
 
-/vuu-ui/showcase/src/examples/**/*.js
 /vuu-ui/cypress/screenshots
-/vuu-ui/themes/tar-theme
+/vuu-ui/playwright/reports
+/vuu-ui/playwright/regression-test-results
+/vuu-ui/showcase/src/examples/**/*.js
 
 deployed_apps
 dist
