@@ -109,10 +109,6 @@ export const LeftNav = (props: LeftNavProps) => {
     ...htmlAttributes
   } = props;
 
-  console.log("LeftNav", {
-    tableFeatures,
-  });
-
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-left-nav",
@@ -258,9 +254,7 @@ export const LeftNav = (props: LeftNavProps) => {
       >
         <FeatureList features={features} title="VUU FEATURES" />
         <FeatureList features={tableFeaturesByGroup} title="VUU TABLES" />
-        <div className="vuuLeftNav-drawer">
-          <LayoutList title="My Layouts" />
-        </div>
+        <LayoutList title="MY LAYOUTS" />
       </Stack>
     </div>
   );

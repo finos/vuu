@@ -54,7 +54,7 @@ const buildColumnItems = (
     return {
       hidden: configuredColumn?.hidden,
       isCalculated: isCalculatedColumn(name),
-      label: configuredColumn?.label,
+      label: configuredColumn?.label ?? name,
       name,
       serverDataType,
       subscribed: configuredColumn !== undefined,

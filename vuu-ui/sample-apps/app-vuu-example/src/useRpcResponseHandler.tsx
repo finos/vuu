@@ -14,7 +14,7 @@ import { getFormConfig } from "./session-editing";
 const withTable = (action: unknown): action is { table: VuuTable } =>
   action !== null && typeof action === "object" && "table" in action;
 
-const vuuFilterTableFeatureUrl = "./feature-filter-table/index.js";
+const vuuFilterTableFeatureUrl = "../feature-filter-table/index.js";
 
 export const useRpcResponseHandler = (setDialogState: SetDialog) => {
   const tables = useVuuTables();

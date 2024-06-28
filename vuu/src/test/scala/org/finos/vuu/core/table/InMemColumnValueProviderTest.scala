@@ -80,6 +80,21 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers with Moc
       uniqueValues should contain theSameElementsAs Vector("VOA.L", "VOV.L")
     }
 
+    Scenario("Get all unique value of a given column that starts with specified string case insensitive") {
+      val table = givenTable(pricesDef)
+      val provider = new MockProvider(table)
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("4", Map("id" -> "4", "ric" -> null, "bid" -> 240, "ask" -> 244))
+
+      val uniqueValues = columnValueProvider.getUniqueValuesStartingWith("ric", "vo")
+
+      uniqueValues should contain theSameElementsAs Vector("VOA.L", "VOV.L")
+    }
+
   }
 
   private def givenTable(tableDef: TableDef): InMemDataTable = new InMemDataTable(tableDef, JoinTableProviderImpl())

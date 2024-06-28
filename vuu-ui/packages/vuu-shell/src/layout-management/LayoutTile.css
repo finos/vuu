@@ -8,20 +8,18 @@
 }
 
 .vuuLayoutTile-layoutName {
-  color: var(--light-text-primary, #15171B);
   font-weight: 600;
-  line-height: 133.333%;
-  text-transform: capitalize;
+  text-transform: uppercase;
 }
 
 .vuuLayoutTile-screenshot {
   width: 60px;
   height: 45.6px;
-  border: 1px solid #D6D7DA;
+  border: 1px solid #d6d7da;
 }
 
 .vuuLayoutTile-layoutDetails {
-  color: var(--light-text-secondary, #606477);
+  color: var(--salt-content-secondary-foreground);
   font-size: 10px;
   font-weight: 600;
   line-height: 150%;

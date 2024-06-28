@@ -3,6 +3,7 @@ import {
   CycleStateButton,
   CycleStateCommitHandler,
   ExpandoInput,
+  Icon,
   useEditableText,
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
@@ -189,7 +190,7 @@ export const BasketToolbar = ({
       variant="cta"
     >
       send to market
-      <span data-icon="arrow-right" />
+      <Icon name="arrow-right" />
     </Button>
   );
 

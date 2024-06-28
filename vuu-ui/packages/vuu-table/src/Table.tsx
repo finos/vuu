@@ -234,9 +234,6 @@ const TableCore = ({
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
   });
 
-  //TODO move TableBody into separate component
-  // we only render TableBody when we have measured TableHeader
-
   const cssVariables = {
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
