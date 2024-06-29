@@ -6,26 +6,6 @@
   .saltButton {
     gap: var(--salt-spacing-200);
     white-space: nowrap;
-
-    .vuuIcon {
-      --vuu-icon-color: var(--vuuButtonIcon-color, var(--button-text-color));
-    }
-  }
-
-  .saltButton:active:not(:disabled) {
-    --vuu-icon-color: var(--button-text-color-active);
-  }
-
-  .saltButton:hover:not(.saltButton-disabled, .saltButton-active, :active) {
-    --vuu-icon-color: var(--button-text-color-hover);
-  }
-
-  .saltButton-active {
-    --vuu-icon-color: var(--button-text-color-active);
-  }
-
-  .saltButton-disabled {
-    --vuu-icon-color: var(--button-text-color-disabled);
   }
 
   .saltButton-primary {

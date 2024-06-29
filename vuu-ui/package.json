@@ -41,6 +41,7 @@
     "showcase:build": "npm run build:worker && cd showcase && node scripts/build.mjs",
     "test:cypress": "npm run build:worker && cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
+    "test:playwright": "cd playwright && playwright test",
     "test:vite": "npm run build:worker && vitest run",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
@@ -64,7 +65,7 @@
   },
   "devDependencies": {
     "@lezer/generator": "^1.2.2",
-    "@playwright/test": "^1.43.0",
+    "@playwright/test": "1.45.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",

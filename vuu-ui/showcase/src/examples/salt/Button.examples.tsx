@@ -4,7 +4,7 @@ import { Icon, IconButton } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 
-export const DefaultButton = () => {
+export const ButtonTextOnly = () => {
   const handleClick = () => {
     console.log("Button click");
   };
@@ -14,7 +14,17 @@ export const DefaultButton = () => {
     </Button>
   );
 };
-DefaultButton.displaySequence = displaySequence++;
+ButtonTextOnly.displaySequence = displaySequence++;
+
+export const ButtonIconOnly = () => {
+  const handleClick = () => {
+    console.log("Button click");
+  };
+  return (
+    <IconButton data-showcase-center icon="filter" onClick={handleClick} />
+  );
+};
+ButtonIconOnly.displaySequence = displaySequence++;
 
 export const IconButtons = () => {
   return (

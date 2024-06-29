@@ -2,18 +2,18 @@ name: Setup Vuu UI
 description: "Installs NodeJS and project dependencies"
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Install NodeJS
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: "18"
+        node-version: 18
     - name: Cache dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.npm
         key: npm-${{ hashFiles('package-lock.json') }}
         restore-keys: npm-
     - name: Install dependencies
       shell: bash
-      run: cd ./vuu-ui && npm install
+      run: cd ./vuu-ui && npm ci
