@@ -1,7 +1,7 @@
 .vuuView {
-  border-color: var(--vuuView-borderColor, var(--salt-container-primary-borderColor));
+  border-color: var(--vuuView-borderColor, transparent);
   border-width: var(--vuuView-borderWidth, 1px);
-  border-style: var(--vuuView-borderStyle, none);
+  border-style: var(--vuuView-borderStyle, solid);
 
   display: flex;
   flex-direction: column;
@@ -11,10 +11,15 @@
   outline: none;
   overflow: hidden;
   position: relative;
+
+  &.vuuHighlighted {
+    --vuuView-borderStyle: dashed;
+    --vuuView-borderColor: var(--salt-container-primary-borderColor);
+  }
 }
 
 .vuuView.focus-visible:after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

@@ -68,10 +68,10 @@ export const useAnchoredPosition = ({
               break;
 
             case "right":
-              console.log("place the fucker right");
+              console.log("place right");
               break;
             case "left":
-              console.log("place the fucker left");
+              console.log("place left");
               break;
             default:
               console.warn(`unklnown tooltip placement ${placement}`);

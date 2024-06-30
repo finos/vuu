@@ -1,5 +1,6 @@
 export * from "./array-utils";
 export * from "./box-utils";
+export * from "./broadcast-channel";
 export * from "./column-utils";
 export * from "./cookie-utils";
 export * from "./component-registry";

@@ -10,15 +10,12 @@ import { useLayoutProviderDispatch } from "../layout-provider";
 import { DragStartAction } from "../layout-reducer";
 import { usePersistentState } from "../use-persistent-state";
 import { QueryReponse, ViewDispatch } from "./ViewContext";
-import type { ViewAction } from "../layout-view";
-
-export type ContributionLocation = "post-title" | "pre-title";
-
-export type Contribution = {
-  index?: number;
-  location?: ContributionLocation;
-  content: ReactElement;
-};
+import type {
+  Contribution,
+  ContributionLocation,
+  ViewAction,
+} from "../layout-view";
+import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
 
 export const useViewActionDispatcher = (
   id: string,
@@ -33,6 +30,7 @@ export const useViewActionDispatcher = (
     loadSessionState(id, "contributions") ?? []
   );
   const dispatchLayoutAction = useLayoutProviderDispatch();
+  const sendMessage = useViewBroadcastChannel(id, root);
   const updateContributions = useCallback(
     (location: ContributionLocation, content: ReactElement) => {
       const updatedContributions = contributions.concat([
@@ -111,7 +109,10 @@ export const useViewActionDispatcher = (
             path: action.path,
             query: action.query,
           });
-          return;
+        case "broadcast-message":
+          sendMessage(action.message);
+          break;
+
         default: {
           return undefined;
         }
@@ -124,6 +125,7 @@ export const useViewActionDispatcher = (
       handleMouseDown,
       updateContributions,
       clearContributions,
+      sendMessage,
     ]
   );
 

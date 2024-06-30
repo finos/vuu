@@ -12,9 +12,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { Contribution, useViewDispatch } from "../layout-view-actions";
+import { useViewDispatch } from "../layout-view-actions";
 
 import headerCss from "./Header.css";
+import { Contribution } from "../layout-view";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   allowRename?: boolean;

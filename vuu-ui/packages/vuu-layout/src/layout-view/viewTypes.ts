@@ -1,18 +1,46 @@
-import { FunctionComponent, HTMLAttributes } from "react";
+import { FunctionComponent, HTMLAttributes, ReactElement } from "react";
 import { HeaderProps } from "../layout-header";
 import {
-  AddToolbarContributionViewAction,
   MaximizeAction,
   MinimizeAction,
   MousedownViewAction,
   QueryAction,
   RemoveAction,
-  RemoveToolbarContributionViewAction,
   RestoreAction,
   TearoutAction,
 } from "../layout-reducer";
+import { ViewBroadcastMessage } from "./useViewBroadcastChannel";
+
+export type SaveAction = {
+  type: "save";
+};
+
+export type ContributionLocation = "post-title" | "pre-title";
+
+export type Contribution = {
+  index?: number;
+  location?: ContributionLocation;
+  content: ReactElement;
+};
+
+export type AddToolbarContributionViewAction = {
+  content: ReactElement;
+  location: ContributionLocation;
+  type: "add-toolbar-contribution";
+};
+
+export type RemoveToolbarContributionViewAction = {
+  location: ContributionLocation;
+  type: "remove-toolbar-contribution";
+};
+
+export type BroadcastMessageViewAction = {
+  type: "broadcast-message";
+  message: ViewBroadcastMessage;
+};
 
 export type ViewAction =
+  | BroadcastMessageViewAction
   | MaximizeAction
   | MinimizeAction
   | MousedownViewAction

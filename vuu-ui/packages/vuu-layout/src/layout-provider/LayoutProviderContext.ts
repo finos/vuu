@@ -3,8 +3,8 @@ import {
   DragStartAction,
   LayoutReducerAction,
   QueryAction,
-  SaveAction,
 } from "../layout-reducer";
+import { SaveAction } from "../layout-view";
 
 const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   console.log(

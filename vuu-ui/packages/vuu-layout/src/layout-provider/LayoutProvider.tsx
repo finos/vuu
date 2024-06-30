@@ -18,8 +18,8 @@ import {
   type LayoutChangeReason,
   type LayoutJSON,
   type LayoutReducerAction,
-  type SaveAction,
 } from "../layout-reducer";
+import type { SaveAction } from "../layout-view";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,

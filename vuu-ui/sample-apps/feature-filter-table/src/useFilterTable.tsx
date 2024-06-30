@@ -69,15 +69,43 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     }
   }, [dataSource, getSuggestions]);
 
-  const signalVisualLink = useCallback(() => {
-    console.log(`signal visual link`, {
-      link: dataSource.visualLink,
-    });
-  }, [dataSource]);
+  const highlightVisualLinkTarget = useCallback(() => {
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-on",
+        },
+      });
+    }
+  }, [dataSource, dispatch]);
+
+  const clearVisualLinkTarget = useCallback(() => {
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-off",
+        },
+      });
+    }
+  }, [dataSource, dispatch]);
 
   const removeVisualLink = useCallback(() => {
-    dataSource.visualLink = undefined;
-  }, [dataSource]);
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-off",
+        },
+      });
+
+      dataSource.visualLink = undefined;
+    }
+  }, [dataSource, dispatch]);
 
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
@@ -104,7 +132,8 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
               aria-label="remove-link"
               icon="link"
               onClick={removeVisualLink}
-              onMouseEnter={signalVisualLink}
+              onMouseEnter={highlightVisualLinkTarget}
+              onMouseLeave={clearVisualLinkTarget}
               variant="secondary"
             />
           ),
@@ -116,7 +145,12 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         });
       }
     },
-    [dispatch, removeVisualLink, signalVisualLink]
+    [
+      dispatch,
+      removeVisualLink,
+      highlightVisualLinkTarget,
+      clearVisualLinkTarget,
+    ]
   );
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
