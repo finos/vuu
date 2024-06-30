@@ -235,7 +235,6 @@ export class VuuDataSource
   };
 
   unsubscribe() {
-    console.log(`unsubscribe #${this.viewport}`);
     info?.(`unsubscribe #${this.viewport}`);
     if (this.viewport) {
       this.server?.unsubscribe(this.viewport);
@@ -249,7 +248,6 @@ export class VuuDataSource
   }
 
   suspend() {
-    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
     info?.(`suspend #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {
       this.#status = "suspended";
@@ -262,7 +260,6 @@ export class VuuDataSource
   }
 
   resume() {
-    console.log(`resume #${this.viewport}, current status ${this.#status}`);
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
@@ -597,7 +594,7 @@ export class VuuDataSource
   }
 
   get title() {
-    return this.#title;
+    return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string | undefined) {

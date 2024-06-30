@@ -3,7 +3,6 @@ import { NamedFilter } from "@finos/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
-import { ContributionLocation } from "../layout-view-actions";
 
 export interface WithProps {
   props?: { [key: string]: any };
@@ -70,7 +69,6 @@ export const LayoutActionType = {
   REMOVE: "remove",
   REPLACE: "replace",
   RESTORE: "restore",
-  SAVE: "save",
   SET_PROP: "set-prop",
   SET_PROPS: "set-props",
   SET_TITLE: "set-title",
@@ -189,21 +187,6 @@ export type LayoutReducerAction =
   | SetTitleAction
   | SplitterResizeAction
   | SwitchTabAction;
-
-export type SaveAction = {
-  type: typeof LayoutActionType.SAVE;
-};
-
-export type AddToolbarContributionViewAction = {
-  content: ReactElement;
-  location: ContributionLocation;
-  type: "add-toolbar-contribution";
-};
-
-export type RemoveToolbarContributionViewAction = {
-  location: ContributionLocation;
-  type: "remove-toolbar-contribution";
-};
 
 export type MousedownViewAction = {
   preDragActivity?: any;

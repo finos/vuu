@@ -101,6 +101,7 @@ export const Tab = forwardRef(function Tab(
     if (editable) {
       return (
         <EditableLabel
+          data-embedded
           editing={editing}
           defaultValue={label}
           // Create a fresh instance after each edit, so it can be uncontrolled ...

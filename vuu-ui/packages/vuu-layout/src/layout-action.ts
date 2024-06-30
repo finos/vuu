@@ -15,8 +15,5 @@ export const Action = {
   REPLACE: "replace",
   RESTORE: "restore",
   SAVE: "save",
-  SET_TITLE: "set-title",
   SPLITTER_RESIZE: "splitter-resize",
-  SWITCH_TAB: "switch-tab",
-  TEAR_OUT: "tear-out",
 };

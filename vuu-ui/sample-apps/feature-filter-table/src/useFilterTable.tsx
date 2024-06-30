@@ -12,13 +12,13 @@ import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useShellContext } from "@finos/vuu-shell";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
+import { IconButton } from "@finos/vuu-ui-controls";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 
 const NO_CONFIG: FilterTableConfig = {};
@@ -36,7 +36,7 @@ type FilterTableConfig = {
 };
 
 export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
-  const { dispatch, load, save } = useViewContext();
+  const { dispatch, load, save, title } = useViewContext();
 
   const {
     filterState,
@@ -69,9 +69,43 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     }
   }, [dataSource, getSuggestions]);
 
+  const highlightVisualLinkTarget = useCallback(() => {
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-on",
+        },
+      });
+    }
+  }, [dataSource, dispatch]);
+
+  const clearVisualLinkTarget = useCallback(() => {
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-off",
+        },
+      });
+    }
+  }, [dataSource, dispatch]);
+
   const removeVisualLink = useCallback(() => {
-    dataSource.visualLink = undefined;
-  }, [dataSource]);
+    if (dataSource.visualLink) {
+      dispatch?.({
+        type: "broadcast-message",
+        message: {
+          targetId: dataSource.visualLink.parentClientVpId,
+          type: "highlight-off",
+        },
+      });
+
+      dataSource.visualLink = undefined;
+    }
+  }, [dataSource, dispatch]);
 
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
@@ -94,10 +128,13 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
           type: "add-toolbar-contribution",
           location: "post-title",
           content: (
-            <Button
+            <IconButton
               aria-label="remove-link"
-              data-icon="link"
+              icon="link"
               onClick={removeVisualLink}
+              onMouseEnter={highlightVisualLinkTarget}
+              onMouseLeave={clearVisualLinkTarget}
+              variant="secondary"
             />
           ),
         });
@@ -108,7 +145,12 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         });
       }
     },
-    [dispatch, removeVisualLink]
+    [
+      dispatch,
+      removeVisualLink,
+      highlightVisualLinkTarget,
+      clearVisualLinkTarget,
+    ]
   );
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
@@ -155,6 +197,12 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     }),
     [load]
   );
+
+  useEffect(() => {
+    if (dataSource.title !== title) {
+      dataSource.title = title;
+    }
+  }, [dataSource, title]);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
     dataSource,

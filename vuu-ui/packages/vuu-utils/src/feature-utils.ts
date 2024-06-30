@@ -9,6 +9,7 @@ export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
 export interface ViewConfig {
+  allowRename?: boolean;
   closeable?: boolean;
   header?: boolean;
 }
@@ -105,6 +106,9 @@ export const getFilterTableFeatures = (
       ComponentProps: {
         tableSchema: schema,
       },
+      ViewProps: {
+        allowRename: true,
+      },
       title: `${schema.table.module} ${schema.table.table}`,
     }));
 
@@ -147,7 +151,10 @@ export const getCustomAndTableFeatures = (
           title: `${tableSchema.table.module} ${wordify(
             tableSchema.table.table
           )}`,
-          ViewProps: viewProps,
+          ViewProps: {
+            ...viewProps,
+            allowRename: true,
+          },
         });
       }
     } else if (isTableSchema(schema) && vuuTables) {

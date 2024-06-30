@@ -16,6 +16,13 @@ body {
   --saltToolbar-height: 30px;
   --saltButton-height: 28px;
   --saltButton-width: 28px;
+
+  [data-align="end"] {
+    margin-left: auto;
+  }
+  [data-align="end"] ~ [data-align="end"] {
+    margin-left: 0;
+  }
 }
 
 .ShowcaseToolbar > .Responsive-inner,
@@ -28,7 +35,6 @@ body {
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
   flex: 0 0 auto;
 }
-
 
 .ShowcaseContent {
   background-color: var(--salt-container-primary-background);
@@ -45,4 +51,3 @@ body {
   height: 100%;
   width: 100%;
 }
-

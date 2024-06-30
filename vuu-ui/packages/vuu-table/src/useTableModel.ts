@@ -300,9 +300,6 @@ function init({
   selectionModel,
   tableConfig,
 }: InitialConfig): InternalTableModel {
-  console.log(
-    `init model ${tableConfig?.columnLayout} columns, availableWidth=${availableWidth}`
-  );
   const { columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(

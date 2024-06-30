@@ -1,9 +1,27 @@
 .vuuHeader {
   --saltButton-height: 24px;
   --saltButton-width: 24px;
+
+  padding: 0 var(--salt-spacing-100);
+
+  [data-align="end"] {
+    margin-left: auto;
+  }
+  [data-align="end"] ~ [data-align="end"] {
+    margin-left: 0;
+  }
+
+  &:hover {
+    .vuuHeader-edit {
+      visibility: visible;
+    }
+  }
+}
+
+.vuuHeader-edit {
+  visibility: hidden;
 }
 
 .salt-density-high .vuuHeader {
---saltToolbarField-marginTop: 0;
+  --saltToolbarField-marginTop: 0;
 }
-
