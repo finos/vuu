@@ -28,6 +28,10 @@
   inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap);
   height: var(--vuu-header-height);
   padding: 0 6px;
+
+  [data-align="right"] {
+    margin-left: auto;
+  }
 }
 
 .vuuGridLayoutItemHeader-close {

@@ -1,18 +1,11 @@
 import cx from "clsx";
 import { queryClosest } from "@finos/vuu-utils";
-import {
-  DragEvent,
-  DragEventHandler,
-  HTMLAttributes,
-  useCallback,
-} from "react";
+import { DragEvent, HTMLAttributes, useCallback } from "react";
 import { useDraggable } from "@finos/vuu-layout";
 
 import "./GridPalette.css";
 
 const classBase = "vuuGridPalette";
-
-const colors = ["red", "green", "pink", "brown", "orange", "purple"];
 
 export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
   paletteItems: GridPaletteItem[];
@@ -21,7 +14,7 @@ export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
 export type GridPaletteItem = {
   id: string;
   label: string;
-  props: any;
+  props: unknown;
   type: string;
 };
 
@@ -49,10 +42,10 @@ export const GridPalette = ({
       {paletteItems.map((paletteItem, index) => (
         <div
           className={cx(`${classBase}-item`)}
+          data-item-id={paletteItem.id}
           draggable
           data-index={index}
           key={index}
-          style={{ background: colors[index] }}
         >
           {paletteItem.label}
         </div>

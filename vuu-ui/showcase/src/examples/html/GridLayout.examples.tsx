@@ -206,10 +206,11 @@ export const TwoByTwoEmptyCell = () => {
 };
 TwoByTwoEmptyCell.displaySequence = displaySequence++;
 
-export const TwoByTwoColumnTwoDoubleRowspan = () => {
+export const TwoByTwoDoubleRowspanInColumnTwo = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutB" rowCount={2}>
       <GridLayoutItem
+        header
         id="green-H"
         resizeable="hv"
         style={{
@@ -226,6 +227,7 @@ export const TwoByTwoColumnTwoDoubleRowspan = () => {
         />
       </GridLayoutItem>
       <GridLayoutItem
+        header
         id="blue-H"
         resizeable="hv"
         style={{
@@ -238,6 +240,7 @@ export const TwoByTwoColumnTwoDoubleRowspan = () => {
         <div style={{ background: "blue" }} />
       </GridLayoutItem>
       <GridLayoutItem
+        header
         id="red-H"
         resizeable="hv"
         style={{
@@ -252,7 +255,7 @@ export const TwoByTwoColumnTwoDoubleRowspan = () => {
     </GridLayout>
   );
 };
-TwoByTwoColumnTwoDoubleRowspan.displaySequence = displaySequence++;
+TwoByTwoDoubleRowspanInColumnTwo.displaySequence = displaySequence++;
 
 export const TwoByTwoColumnOneDoubleRowspan = () => {
   return (
@@ -906,6 +909,28 @@ export const EmptyWithPalette = () => {
           },
         },
       },
+      {
+        id: "yellow",
+        label: "Yellow",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Yellow",
+          style: {
+            background: "yellow",
+          },
+        },
+      },
+      {
+        id: "brown",
+        label: "Brown",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Brown",
+          style: {
+            background: "brown",
+          },
+        },
+      },
     ],
     []
   );
@@ -921,6 +946,7 @@ export const EmptyWithPalette = () => {
         style={{ height: "calc(100vh - 30px)", marginTop: 30 }}
       >
         <GridLayoutItem
+          data-fixed
           id="palette"
           isDropTarget={false}
           resizeable="hv"

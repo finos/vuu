@@ -9,6 +9,8 @@ import {
   getUnusedGridTrackLines,
   gridResizeDirectionFromDropPosition,
   doesResizeRequireNewTrack as isResizeTrackShared,
+  itemsFillColumn,
+  itemsFillRow,
   splitTrack,
   splitTracks,
 } from "./grid-layout-utils";
@@ -54,6 +56,7 @@ export interface GridLayoutModelCoordinates {
 }
 export interface IGridLayoutModelItem extends GridLayoutModelCoordinates {
   closeable?: boolean;
+  fixed?: boolean;
   id: string;
   resizeable?: GridLayoutModelItemResizeable;
   type: GridLayoutModelItemType;
@@ -71,25 +74,6 @@ export interface ISplitter extends IGridLayoutModelItem {
   controls: string;
   orientation: GridLayoutResizeDirection;
   type: "splitter";
-}
-
-export class GridLayoutModelItem implements IGridLayoutModelItem {
-  column: GridLayoutModelPosition;
-  id: string;
-  row: GridLayoutModelPosition;
-  type: GridLayoutModelItemType;
-
-  constructor(
-    id: string,
-    column: GridLayoutModelPosition,
-    row: GridLayoutModelPosition,
-    type: GridLayoutModelItemType = "content"
-  ) {
-    this.id = id;
-    this.column = column;
-    this.row = row;
-    this.type = type;
-  }
 }
 
 type GridItemIndex = Map<string, IGridLayoutModelItem>;
@@ -223,10 +207,23 @@ export class GridLayoutModel {
     id,
     row,
   }: IGridLayoutModelItem): ColumnAndRowUpdates => {
-    const itemsWithSameRowStart = this.rowMaps.start.get(row.start);
-
-    if (itemsWithSameRowStart) {
-      const itemsInSameRow = itemsWithSameRowStart.filter(
+    // Do we have one or more GridItems that can be extended horizontally
+    // to fill the space described by column, row
+    // 1) Identify items that start on the same row and abut our gridCell(s)
+    // of interest, either to the left or to the right.
+    const adjacentItemsWithSameRowStart = this.rowMaps.start
+      .get(row.start)
+      ?.filter(
+        ({ column: { start, end }, fixed }) =>
+          (!fixed && end === column.start) || start === column.end
+      );
+    if (adjacentItemsWithSameRowStart) {
+      // 2) do any of the items that start on the same row as our gridcell
+      // of interest also span exactly the same row(s) as that cell. If we
+      // have at least one of these, then we have a single item that can be
+      // extended to cover our cell(s) of interest.
+      // TODO sort by column, so we get the left item first
+      const itemsInSameRow = adjacentItemsWithSameRowStart.filter(
         (item) => item.row.end === row.end && item.id !== id
       );
       if (itemsInSameRow.length === 1) {
@@ -238,10 +235,10 @@ export class GridLayoutModel {
           return [[[contraId, { start, end: column.end }]], []];
         } else if (start === column.end) {
           return [[[contraId, { start: column.start, end }]], []];
-        } else {
-          console.log("One item in same row, but it is not adjacent");
         }
-      } else if (itemsInSameRow.length > 1) {
+      } else if (itemsInSameRow.length === 2) {
+        // assuming no overlapping gridcells, the most we can have here
+        // is 2 items in same row, one left and one right
         const adjacentBefore = itemsInSameRow.filter(
           (item) => item.column.end === column.start
         );
@@ -262,31 +259,125 @@ export class GridLayoutModel {
           } = adjacentAfter[0];
           return [[[contraId, { start: column.start, end }]], []];
         }
+      } else {
+        // 3) We do not have a single gridcell that can be extended to cover our
+        // gridcell of interest, but we might have multiple cells that together
+        // can serve the same end. If we have multiple cells that all abut our
+        // target cell (on the same side) and together span the same row(s) as
+        // our target, we have what we need.
+        if (row.end - row.start > 1) {
+          const itemsEndingWhereTargetStarts = this.columnMaps.end
+            .get(column.start)
+            ?.filter(
+              (item) => item.row.start >= row.start && item.row.end <= row.end
+            );
+          if (
+            itemsEndingWhereTargetStarts &&
+            itemsFillRow(itemsEndingWhereTargetStarts, row)
+          ) {
+            const columnUpdates = itemsEndingWhereTargetStarts.map(
+              ({ id: contraId, column: { start } }) =>
+                [contraId, { start, end: column.end }] as GridItemUpdate
+            );
+            return [columnUpdates, []];
+          }
+          const itemsStartingWhereTargetEnds = this.columnMaps.start
+            .get(column.end)
+            ?.filter(
+              (item) => item.row.start >= row.start && item.row.end <= row.end
+            );
+          if (
+            itemsStartingWhereTargetEnds &&
+            itemsFillRow(itemsStartingWhereTargetEnds, row)
+          ) {
+            const columnUpdates = itemsStartingWhereTargetEnds.map(
+              ({ id: contraId, column: { end } }) =>
+                [contraId, { start: column.start, end }] as GridItemUpdate
+            );
+            return [columnUpdates, []];
+          }
+        }
       }
     }
-    // try for vertical before we look for multi contra
-    console.log("lets try for vertical contras");
-    const potentialVerticalContras = this.columnMaps.start.get(column.start);
-    if (potentialVerticalContras) {
-      const verticalContras = potentialVerticalContras.filter(
+    const adjacentItemsWithSameColumnStart = this.columnMaps.start
+      .get(column.start)
+      ?.filter(
+        ({ row: { start, end }, fixed }) =>
+          (!fixed && end === row.start) || start === row.end
+      );
+    if (adjacentItemsWithSameColumnStart) {
+      const itemsInSameColumn = adjacentItemsWithSameColumnStart.filter(
         (item) => item.column.end === column.end && item.id !== id
       );
-      if (verticalContras.length === 1) {
+
+      if (itemsInSameColumn.length === 1) {
         const {
           id: contraId,
           row: { start, end },
-        } = verticalContras[0];
+        } = itemsInSameColumn[0];
         if (end === row.start) {
           return [[], [[contraId, { start, end: row.end }]]];
         } else if (start === row.end) {
           return [[], [[contraId, { start: row.start, end }]]];
-        } else {
-          console.log(
-            "none of the horizontal contras abut, is this possible ?"
-          );
         }
-      } else if (verticalContras.length > 1) {
-        console.log("take immediately prior first, them immediately after");
+      } else if (itemsInSameColumn.length === 2) {
+        const adjacentBefore = itemsInSameColumn.filter(
+          (item) => item.row.end === row.start
+        );
+        if (adjacentBefore.length === 1) {
+          const {
+            id: contraId,
+            row: { start },
+          } = adjacentBefore[0];
+          return [[[contraId, { start, end: row.end }]], []];
+        }
+        const adjacentAfter = itemsInSameColumn.filter(
+          (item) => item.row.start === row.end
+        );
+        if (adjacentAfter.length === 1) {
+          const {
+            id: contraId,
+            row: { end },
+          } = adjacentAfter[0];
+          return [[[contraId, { start: row.start, end }]], []];
+        }
+      } else {
+        if (column.end - column.start > 1) {
+          const itemsEndingWhereTargetStarts = this.rowMaps.end
+            .get(row.start)
+            ?.filter(
+              (item) =>
+                item.column.start >= column.start &&
+                item.column.end <= column.end
+            );
+          if (
+            itemsEndingWhereTargetStarts &&
+            itemsFillColumn(itemsEndingWhereTargetStarts, column)
+          ) {
+            const rowUpdates = itemsEndingWhereTargetStarts.map(
+              ({ id: contraId, row: { start } }) =>
+                [contraId, { start, end: row.end }] as GridItemUpdate
+            );
+            return [[], rowUpdates];
+          }
+          const itemsStartingWhereTargetEnds = this.rowMaps.start
+            .get(row.end)
+            ?.filter(
+              (item) =>
+                item.column.start >= column.start &&
+                item.column.end <= column.end
+            );
+          if (
+            itemsStartingWhereTargetEnds &&
+            itemsFillColumn(itemsStartingWhereTargetEnds, column)
+          ) {
+            const rowUpdates = itemsStartingWhereTargetEnds.map(
+              ({ id: contraId, row: { end } }) =>
+                [contraId, { start: row.start, end }] as GridItemUpdate
+            );
+            return [[], rowUpdates];
+          }
+        }
       }
     }
     return [[], []];

@@ -525,11 +525,12 @@ export const useGridSplitterResizing = ({
       containerRef.current.childNodes.forEach((node) => {
         const gridLayoutItem = node as HTMLElement;
         if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
-          const { column, id, resizeable, row, type } =
+          const { column, fixed, id, resizeable, row, type } =
             getGridItemProps(gridLayoutItem);
           layoutModel.addGridItem({
             id,
             column,
+            fixed,
             resizeable,
             row,
             type,

@@ -1,21 +1,38 @@
 .vuuGridLayout {
-    height: 100vh;
-    width: 100vw;
+  height: 100vh;
+  width: 100vw;
 }
 
 #GridLayoutA,
 #GridLayoutB,
 #GridLayoutC {
-    grid-template-columns: repeat(var(--col-count), 1fr);
-    grid-template-rows: repeat(var(--row-count), 1fr);
+  grid-template-columns: repeat(var(--col-count), 1fr);
+  grid-template-rows: repeat(var(--row-count), 1fr);
 }
 
 [data-resize-role]:after {
+  color: white;
+  content: attr(data-resize-role);
+  font-size: 16px;
+  font-weight: bold;
+  left: 9px;
+  position: absolute;
+  top: 32px;
+}
+
+.vuuGridPalette {
+  [data-item-id="green"] {
+    background-color: green;
     color: white;
-    content: attr(data-resize-role);
-    font-size: 16px;
-    font-weight: bold;
-    left: 9px;
-    position: absolute;
-    top: 32px;
+  }
+  [data-item-id="red"] {
+    background-color: red;
+  }
+  [data-item-id="yellow"] {
+    background-color: yellow;
+  }
+  [data-item-id="brown"] {
+    background-color: brown;
+    color: white;
+  }
 }

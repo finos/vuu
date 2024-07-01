@@ -94,6 +94,7 @@ export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
     : undefined;
   return {
     column: { start: col[0], end: col[1] },
+    fixed: el.dataset.fixed === "true",
     id: el.id,
     resizeable,
     row: { start: row[0], end: row[1] },

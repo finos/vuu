@@ -5,6 +5,7 @@ import {
   CSSProperties,
   ForwardedRef,
   HTMLAttributes,
+  MouseEventHandler,
   ReactElement,
   useCallback,
   useImperativeHandle,
@@ -104,9 +105,13 @@ export const GridLayoutItem = ({
   const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
 
-  const onClose = useCallback(() => {
-    dispatch({ type: "close", id });
-  }, [dispatch, id]);
+  const onClose = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    (evt) => {
+      evt.stopPropagation();
+      dispatch({ type: "close", id });
+    },
+    [dispatch, id]
+  );
 
   const useDrop = isDropTarget ? useAsDropTarget : useNotDropTarget;
 
@@ -138,6 +143,7 @@ export const GridLayoutItem = ({
           <span className={`${classBaseItem}Header-title`}>{title}</span>
           <IconButton
             className={`${classBaseItem}Header-close`}
+            data-align="right"
             icon="close"
             onClick={onClose}
             variant="secondary"

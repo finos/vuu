@@ -342,3 +342,83 @@ export const getUnusedGridTrackLines = (
   }
   return unusedTrackLines;
 };
+
+const gridLayoutPositionComparator = (
+  p1: GridLayoutModelPosition,
+  p2: GridLayoutModelPosition
+) => {
+  if (p1.start < p2.start) {
+    return -1;
+  } else if (p1.start > p2.start) {
+    return 1;
+  } else if (p1.end < p2.end) {
+    return -1;
+  } else if (p1.end > p2.end) {
+    return 1;
+  }
+  return 0;
+};
+export const byColumnPosition = (
+  { column: pos1 }: GridLayoutModelItem,
+  { column: pos2 }: GridLayoutModelItem
+) => gridLayoutPositionComparator(pos1, pos2);
+
+export const byRowPosition = (
+  { row: pos1 }: GridLayoutModelItem,
+  { row: pos2 }: GridLayoutModelItem
+) => gridLayoutPositionComparator(pos1, pos2);
+
+export const itemsFillColumn = (
+  items: GridLayoutModelItem[],
+  pos: GridLayoutModelPosition
+) => {
+  const sortedItems = items.sort(byColumnPosition);
+  const firstItem = sortedItems.at(0);
+  const lastItem = sortedItems.at(-1);
+  if (firstItem && lastItem) {
+    const {
+      column: { start },
+    } = firstItem;
+    const {
+      column: { end },
+    } = lastItem;
+    if (start === pos.start && end === pos.end) {
+      for (let i = 1; i < sortedItems.length; i++) {
+        const prevItem = sortedItems[i - 1];
+        const currentItem = sortedItems[i];
+        if (prevItem.column.end !== currentItem.column.start) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+};
+export const itemsFillRow = (
+  items: GridLayoutModelItem[],
+  row: GridLayoutModelPosition
+) => {
+  const sortedItems = items.sort(byRowPosition);
+  const firstItem = sortedItems.at(0);
+  const lastItem = sortedItems.at(-1);
+  if (firstItem && lastItem) {
+    const {
+      row: { start },
+    } = firstItem;
+    const {
+      row: { end },
+    } = lastItem;
+    if (start === row.start && end === row.end) {
+      for (let i = 1; i < sortedItems.length; i++) {
+        const prevItem = sortedItems[i - 1];
+        const currentItem = sortedItems[i];
+        if (prevItem.row.end !== currentItem.row.start) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+};
