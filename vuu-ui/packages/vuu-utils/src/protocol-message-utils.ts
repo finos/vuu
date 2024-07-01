@@ -1,9 +1,10 @@
-import {
+import type {
   MenuRpcAction,
   MenuRpcResponse,
   OpenDialogActionWithSchema,
   RpcResponse,
   VuuUIMessageOut,
+  VuuUiMessageInRequestResponse,
 } from "@finos/vuu-data-types";
 import {
   ClientToServerMenuRPC,
@@ -27,6 +28,10 @@ const MENU_RPC_TYPES = [
 export const isVuuMenuRpcRequest = (
   message: VuuUIMessageOut | VuuRpcRequest | ClientToServerMenuRPC
 ): message is ClientToServerMenuRPC => MENU_RPC_TYPES.includes(message["type"]);
+
+export const isRequestResponse = (
+  message: object
+): message is VuuUiMessageInRequestResponse => "requestId" in message;
 
 export const isOpenSessionTableDialogMessage = (
   rpcResponse: RpcResponse

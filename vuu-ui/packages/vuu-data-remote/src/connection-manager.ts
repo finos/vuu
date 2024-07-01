@@ -4,9 +4,6 @@ import {
   ServerProxySubscribeMessage,
   TableSchema,
   VuuUIMessageIn,
-  VuuUIMessageInRPC,
-  VuuUIMessageInTableList,
-  VuuUIMessageInTableMeta,
   VuuUIMessageOut,
   WebSocketProtocol,
 } from "@finos/vuu-data-types";
@@ -24,6 +21,7 @@ import {
   getLoggingConfigForWorker,
   isConnectionQualityMetrics,
   isConnectionStatusMessage,
+  isRequestResponse,
   isTableSchemaMessage,
   messageHasResult,
   uuid,
@@ -176,19 +174,12 @@ function handleMessageFromWorker({
     ConnectionManager.emit("connection-status", message);
   } else if (isConnectionQualityMetrics(message)) {
     ConnectionManager.emit("connection-metrics", message);
-  } else {
-    const requestId = (message as VuuUIMessageInRPC).requestId;
+  } else if (isRequestResponse(message)) {
+    const { requestId } = message;
     if (pendingRequests.has(requestId)) {
       const { resolve } = pendingRequests.get(requestId);
       pendingRequests.delete(requestId);
-      const {
-        type: _1,
-        requestId: _2,
-        ...rest
-      } = message as
-        | VuuUIMessageInRPC
-        | VuuUIMessageInTableList
-        | VuuUIMessageInTableMeta;
+      const { requestId: _, ...messageWithoutRequestId } = message;
 
       if (messageHasResult(message)) {
         resolve(message.result);
@@ -200,7 +191,7 @@ function handleMessageFromWorker({
       } else if (isTableSchemaMessage(message)) {
         resolve(message.tableSchema);
       } else {
-        resolve(rest);
+        resolve(messageWithoutRequestId);
       }
     } else {
       console.warn(
