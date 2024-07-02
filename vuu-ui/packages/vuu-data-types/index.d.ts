@@ -625,18 +625,22 @@ export interface VuuUIMessageInMenuRej {
   type: "VIEW_PORT_MENU_REJ";
 }
 
-export type VuuUIMessageIn =
-  | VuuUIMessageInConnected
-  | VuuUIMessageInConnectionFailed
-  | VuuUIMessageInWorkerReady
-  | VuuUIMessageInRPC
-  | ViewportRpcResponse
+export type VuuUiMessageInRequestResponse =
+  | VuuUIMessageInMenuRej
   | MenuRpcResponse
   | MenuRpcReject
-  | VuuUIMessageInTableList
-  | VuuUIMessageInTableMeta
+  | VuuUIMessageInRPC
   | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditResponse;
+  | VuuUIMessageInRPCEditResponse
+  | ViewportRpcResponse
+  | VuuUIMessageInTableList
+  | VuuUIMessageInTableMeta;
+
+export type VuuUIMessageIn =
+  | VuuUiMessageInRequestResponse
+  | VuuUIMessageInConnected
+  | VuuUIMessageInConnectionFailed
+  | VuuUIMessageInWorkerReady;
 
 export type WebSocketProtocol = string | string[] | undefined;
 
