@@ -1,6 +1,7 @@
-import type { ThemeMode, VuuUser } from "@finos/vuu-utils";
+import type { VuuUser } from "@finos/vuu-utils";
 import { createContext } from "react";
 import { SettingsSchema } from "../application-settings/SettingsForm";
+import { VuuRowDataItemType } from "packages/vuu-protocol-types";
 
 // export interface CoreSettings {
 //   themeMode: ThemeMode;
@@ -12,9 +13,12 @@ const Guest: VuuUser = {
 };
 
 export interface ApplicationContextProps {
-  onApplicationSettingChanged: (propertyName: string, value: unknown) => void;
-  applicationSettings: Record<string, string | number | boolean>;
-  applicationSettingsSchema: SettingsSchema;
+  onApplicationSettingChanged: (
+    propertyName: string,
+    value: VuuRowDataItemType
+  ) => void;
+  applicationSettings?: Record<string, string | number | boolean>;
+  applicationSettingsSchema?: SettingsSchema;
   user: VuuUser;
 }
 
