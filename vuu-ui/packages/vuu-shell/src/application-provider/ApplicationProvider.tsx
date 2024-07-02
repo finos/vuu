@@ -10,11 +10,22 @@ import {
   ApplicationContextProps,
 } from "./ApplicationContext";
 import { SaltProvider } from "@salt-ds/core";
+import { VuuRowDataItemType } from "packages/vuu-protocol-types";
 
 export interface ApplicationProviderProps
   extends Partial<ApplicationContextProps> {
   children: ReactNode;
 }
+
+const getThemeMode = (
+  applicationSettings?: Record<string, string | number | boolean>
+) => {
+  const themeMode = applicationSettings?.themeMode;
+  if (themeMode === "light" || themeMode === "dark") {
+    return themeMode;
+  }
+  return "light";
+};
 
 export const ApplicationProvider = ({
   children,
@@ -23,12 +34,12 @@ export const ApplicationProvider = ({
   user,
 }: ApplicationProviderProps): ReactElement => {
   const context = useContext(ApplicationContext);
-  const [applicationSettings, setSettings] = useState(
-    settingsProp ?? context.applicationSettings
-  );
+  const [applicationSettings, setSettings] = useState<
+    Record<string, string | number | boolean>
+  >(settingsProp ?? {});
 
   const onApplicationSettingChanged = useCallback(
-    (propertyName: string, value: unknown) => {
+    (propertyName: string, value: VuuRowDataItemType) => {
       setSettings((s) => ({ ...s, [propertyName]: value }));
     },
     []
@@ -47,7 +58,7 @@ export const ApplicationProvider = ({
       <SaltProvider
         theme="vuu-theme"
         density="high"
-        mode={applicationSettings.themeMode}
+        mode={getThemeMode(applicationSettings)}
       >
         {children}
       </SaltProvider>
