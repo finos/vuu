@@ -14,4 +14,3 @@ export * as UiControls from "./UiControls";
 export * as VUU from "./VUU";
 export * as VuuFeatures from "./VuuFeatures";
 export * as Performance from "./Performance";
-export * as ApplicationSettings from "./ApplicationSettings";
