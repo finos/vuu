@@ -27,15 +27,18 @@ export const ApplicationProvider = ({
     settingsProp ?? context.applicationSettings
   );
 
-  const changeSetting = useCallback((propertyName: string, value: unknown) => {
-    setSettings((s) => ({ ...s, [propertyName]: value }));
-  }, []);
+  const onApplicationSettingChanged = useCallback(
+    (propertyName: string, value: unknown) => {
+      setSettings((s) => ({ ...s, [propertyName]: value }));
+    },
+    []
+  );
 
   return (
     <ApplicationContext.Provider
       value={{
         ...context,
-        changeSetting,
+        onApplicationSettingChanged,
         applicationSettings,
         applicationSettingsSchema,
         user: user ?? context.user,
@@ -59,9 +62,16 @@ export const useApplicationUser = () => {
 
 //Setter method (only used within the shell)
 export const useApplicationSettings = () => {
-  const { changeSetting, applicationSettings, applicationSettingsSchema } =
-    useContext(ApplicationContext);
-  return { changeSetting, applicationSettings, applicationSettingsSchema };
+  const {
+    onApplicationSettingChanged,
+    applicationSettings,
+    applicationSettingsSchema,
+  } = useContext(ApplicationContext);
+  return {
+    onApplicationSettingChanged,
+    applicationSettings,
+    applicationSettingsSchema,
+  };
 };
 
 //Getter method (read only access to applicationSetting)

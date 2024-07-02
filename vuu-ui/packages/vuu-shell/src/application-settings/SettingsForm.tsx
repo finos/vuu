@@ -11,8 +11,24 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupProps,
 } from "@salt-ds/core";
-import { FormEventHandler, SyntheticEvent, useCallback } from "react";
-import { ApplicatonSettingsPanelProps } from "./ApplicationSettingsPanel";
+import {
+  FormEventHandler,
+  HTMLAttributes,
+  SyntheticEvent,
+  useCallback,
+} from "react";
+// import { ApplicatonSettingsPanelProps } from "./ApplicationSettingsPanel";
+
+//Props for Form
+export interface ApplicatonSettingsPanelProps
+  extends HTMLAttributes<HTMLDivElement> {
+  applicationSettingsSchema: SettingsSchema;
+  applicationSettings: Record<string, string | number | boolean>;
+  onApplicationSettingChanged: (
+    propertyName: string,
+    value: string | number | boolean
+  ) => void;
+}
 
 export type Option<T> = { label: string; value: T };
 // Schema type definitions
@@ -73,13 +89,7 @@ export function getFormControl(
         ? currentValue
         : property.defaultValue ?? false;
 
-    return (
-      <Switch
-        checked={checked}
-        label={property.label}
-        onChange={changeHandler}
-      ></Switch>
-    );
+    return <Switch checked={checked} onChange={changeHandler}></Switch>;
   }
   // Toggle Box for 1 or 2 values
   if (Array.isArray(property.values)) {
@@ -108,9 +118,11 @@ export function getFormControl(
           {property.values.map((valueOrOption) => {
             const [value, label] = getValueAndLabel(valueOrOption);
             return (
-              <Option value={value} key={value} data-field={property.name}>
-                {label}
-              </Option>
+              <Option
+                value={label}
+                key={value}
+                data-field={property.name}
+              ></Option>
             );
           })}
         </Dropdown>

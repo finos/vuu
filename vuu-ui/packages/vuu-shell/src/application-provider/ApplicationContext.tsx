@@ -2,9 +2,9 @@ import type { ThemeMode, VuuUser } from "@finos/vuu-utils";
 import { createContext } from "react";
 import { SettingsSchema } from "../application-settings/SettingsForm";
 
-export interface CoreSettings {
-  themeMode: ThemeMode;
-}
+// export interface CoreSettings {
+//   themeMode: ThemeMode;
+// }
 
 const Guest: VuuUser = {
   username: "unknown",
@@ -12,19 +12,22 @@ const Guest: VuuUser = {
 };
 
 export interface ApplicationContextProps {
-  changeSetting: (propertyName: string, value: unknown) => void;
-  applicationSettings: CoreSettings;
-  applicationSettingsSchema?: SettingsSchema | undefined;
+  onApplicationSettingChanged: (propertyName: string, value: unknown) => void;
+  applicationSettings: Record<string, string | number | boolean>;
+  applicationSettingsSchema: SettingsSchema;
   user: VuuUser;
 }
 
 export const ApplicationContext = createContext<ApplicationContextProps>({
-  changeSetting: (propertyName: string) =>
+  onApplicationSettingChanged: (propertyName: string) =>
     console.log(
       `Cannot change setting '${propertyName}'.\nDid you forget to declare an ApplicationProvider ?`
     ),
   applicationSettings: {
     themeMode: "light",
+    dateFormatPattern: "dd MMMM yyyy",
+    region: "apac",
+    greyscale: false,
   },
   applicationSettingsSchema: {
     properties: [
