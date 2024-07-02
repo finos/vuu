@@ -1,7 +1,9 @@
 import {
   ApplicationSettingsPanel,
-  type SettingsSchema,
+  ApplicationProvider,
 } from "@finos/vuu-shell";
+import { SettingsSchema } from "packages/vuu-shell/src/application-settings/SettingsForm";
+
 import { useState } from "react";
 
 let displaySequence = 1;
@@ -63,11 +65,17 @@ export const DefaultApplicationSettingsForm = () => {
   };
 
   return (
-    <ApplicationSettingsPanel
+    <ApplicationProvider
+      changeSetting={handlePropertyChanged}
+      applicationSettings={initialSettings}
       applicationSettingsSchema={applicationSettingsSchema}
-      applicationSettings={applicationSettings}
-      onApplicationSettingChanged={handlePropertyChanged}
-    />
+    >
+      <ApplicationSettingsPanel
+        applicationSettingsSchema={applicationSettingsSchema}
+        applicationSettings={applicationSettings}
+        onApplicationSettingChanged={handlePropertyChanged}
+      />
+    </ApplicationProvider>
   );
 };
 DefaultApplicationSettingsForm.displaySequence = displaySequence++;

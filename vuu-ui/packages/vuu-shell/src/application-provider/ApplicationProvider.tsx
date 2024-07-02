@@ -18,11 +18,14 @@ export interface ApplicationProviderProps
 
 export const ApplicationProvider = ({
   children,
-  settings: settingsProp,
+  applicationSettings: settingsProp,
+  applicationSettingsSchema,
   user,
 }: ApplicationProviderProps): ReactElement => {
   const context = useContext(ApplicationContext);
-  const [settings, setSettings] = useState(settingsProp ?? context.settings);
+  const [applicationSettings, setSettings] = useState(
+    settingsProp ?? context.applicationSettings
+  );
 
   const changeSetting = useCallback((propertyName: string, value: unknown) => {
     setSettings((s) => ({ ...s, [propertyName]: value }));
@@ -33,11 +36,16 @@ export const ApplicationProvider = ({
       value={{
         ...context,
         changeSetting,
-        settings,
+        applicationSettings,
+        applicationSettingsSchema,
         user: user ?? context.user,
       }}
     >
-      <SaltProvider theme="vuu-theme" density="high" mode={settings.themeMode}>
+      <SaltProvider
+        theme="vuu-theme"
+        density="high"
+        mode={applicationSettings.themeMode}
+      >
         {children}
       </SaltProvider>
     </ApplicationContext.Provider>
@@ -49,7 +57,15 @@ export const useApplicationUser = () => {
   return user;
 };
 
+//Setter method (only used within the shell)
 export const useApplicationSettings = () => {
-  const { changeSetting, settings } = useContext(ApplicationContext);
-  return { changeSetting, settings };
+  const { changeSetting, applicationSettings, applicationSettingsSchema } =
+    useContext(ApplicationContext);
+  return { changeSetting, applicationSettings, applicationSettingsSchema };
+};
+
+//Getter method (read only access to applicationSetting)
+export const useApplicationSetting = () => {
+  const { applicationSettings } = useContext(ApplicationContext);
+  return { applicationSettings };
 };
