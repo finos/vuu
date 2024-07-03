@@ -1,10 +1,14 @@
 import { TableSchema } from "@finos/vuu-data-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { UserSettingsPanel } from "@finos/vuu-shell";
 import { IconButton } from "@finos/vuu-ui-controls";
+import { registerComponent } from "@finos/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 
 import "./AppHeader.css";
+
+registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
@@ -38,8 +42,18 @@ export const AppHeader = ({
   }, [dispatchLayoutAction, tableSchemas]);
 
   const handleShowSettings = useCallback(() => {
-    console.log("show settings");
-  }, []);
+    dispatchLayoutAction({
+      type: "set-props",
+      path: "#context-panel",
+      props: {
+        expanded: true,
+        content: {
+          type: "ApplicationSettings",
+        },
+        title: "Settings",
+      },
+    });
+  }, [dispatchLayoutAction]);
 
   return (
     <div className={className} {...htmlAttributes}>
@@ -48,7 +62,7 @@ export const AppHeader = ({
         data-embedded
         icon="layout"
         onClick={handleShowLayout}
-        size={20}
+        size={24}
         variant="secondary"
       />
       <IconButton

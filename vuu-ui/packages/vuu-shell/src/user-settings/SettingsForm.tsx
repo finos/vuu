@@ -1,4 +1,5 @@
-import { queryClosest } from "@finos/vuu-utils";
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { queryClosest, Settings } from "@finos/vuu-utils";
 import {
   Dropdown,
   DropdownProps,
@@ -17,21 +18,22 @@ import {
   SyntheticEvent,
   useCallback,
 } from "react";
-// import { ApplicatonSettingsPanelProps } from "./ApplicationSettingsPanel";
 
-//Props for Form
-export interface ApplicatonSettingsPanelProps
-  extends HTMLAttributes<HTMLDivElement> {
-  applicationSettingsSchema: SettingsSchema;
-  applicationSettings: Record<string, string | number | boolean>;
-  onApplicationSettingChanged: (
+export interface SettingsSchema {
+  properties: SettingsProperty[];
+}
+
+export interface SettingsProps {
+  settingsSchema: SettingsSchema;
+  settings: Settings;
+  onSettingChanged: (
     propertyName: string,
     value: string | number | boolean
   ) => void;
 }
 
 export type Option<T> = { label: string; value: T };
-// Schema type definitions
+
 export const isOption = (
   value: Option<number | string> | number | string
 ): value is Option<number | string> =>
@@ -69,19 +71,25 @@ export const isBooleanProperty = (
 export const isStringOrNumber = (value: unknown): value is string | number =>
   typeof value === "string" || typeof value === "number";
 
-export interface SettingsSchema {
-  properties: SettingsProperty[];
-}
-
 const getValueAndLabel = (value: string | number | Option<string | number>) =>
   isOption(value) ? [value.value, value.label] : [value, value];
+
+const defaultPropertyValue: Record<
+  SettingsProperty["type"],
+  VuuRowDataItemType
+> = {
+  boolean: false,
+  number: 0,
+  string: "",
+};
 
 // Determine the form control type to be displayed
 export function getFormControl(
   property: SettingsProperty,
   changeHandler: FormEventHandler,
   selectHandler: DropdownProps["onSelectionChange"],
-  currentValue?: string | boolean | number
+  currentValue: VuuRowDataItemType = property.defaultValue ??
+    defaultPropertyValue[property.type]
 ) {
   if (isBooleanProperty(property)) {
     const checked =
@@ -138,12 +146,15 @@ export function getFormControl(
   }
 }
 
+export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
+
 // Generates application settings form component
 export const SettingsForm = ({
-  applicationSettingsSchema,
-  applicationSettings,
-  onApplicationSettingChanged,
-}: ApplicatonSettingsPanelProps) => {
+  settingsSchema: applicationSettingsSchema,
+  settings: applicationSettings,
+  onSettingChanged: onApplicationSettingChanged,
+  ...htmlAttributes
+}: SettingsFormProps) => {
   const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
     const fieldElement = queryClosest(evt.target, "[data-field]");
     if (fieldElement && fieldElement.dataset.field) {
@@ -173,7 +184,7 @@ export const SettingsForm = ({
   );
 
   return (
-    <div>
+    <div {...htmlAttributes}>
       {applicationSettingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>

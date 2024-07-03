@@ -1,10 +1,10 @@
 import {
-  LayoutJSON,
   View,
   layoutFromJson,
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
+import { LayoutJSON } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

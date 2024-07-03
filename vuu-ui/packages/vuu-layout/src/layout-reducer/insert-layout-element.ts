@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { rectTuple, uuid } from "@finos/vuu-utils";
+import { LayoutModel, rectTuple, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -12,11 +12,10 @@ import {
   getIntrinsicSize,
   wrapIntrinsicSizeComponentWithFlexbox,
 } from "./flexUtils";
-import { LayoutModel } from "./layoutTypes";
 import {
+  LayoutProps,
   getDefaultTabLabel,
   getManagedDimension,
-  LayoutProps,
 } from "./layoutUtils";
 
 type insertionPosition = "before" | "after";

@@ -1,6 +1,7 @@
 import {
   LayoutList,
   LayoutManagementProvider,
+  PersistenceProvider,
   StaticPersistenceManager,
 } from "@finos/vuu-shell";
 import layoutMetadata from "../_test-data/layoutMetadata";
@@ -10,14 +11,16 @@ let displaySequence = 0;
 
 export const DefaultLayoutList = (): JSX.Element => {
   const demoPersistenceManager = useMemo(
-    () => new StaticPersistenceManager(layoutMetadata),
+    () => new StaticPersistenceManager({ layoutMetadata }),
     []
   );
 
   return (
-    <LayoutManagementProvider persistenceManager={demoPersistenceManager}>
-      <LayoutList style={{ width: 300 }} />
-    </LayoutManagementProvider>
+    <PersistenceProvider persistenceManager={demoPersistenceManager}>
+      <LayoutManagementProvider>
+        <LayoutList style={{ width: 300 }} />
+      </LayoutManagementProvider>
+    </PersistenceProvider>
   );
 };
 DefaultLayoutList.displaySequence = displaySequence++;
@@ -25,9 +28,9 @@ DefaultLayoutList.displaySequence = displaySequence++;
 export const LayoutListManyLayouts = (): JSX.Element => {
   const demoPersistenceManager = useMemo(
     () =>
-      new StaticPersistenceManager(
+      new StaticPersistenceManager({
         // prettier-ignore
-        [
+        layoutMetadata: [
         {id: "layout-01", group: "Group 1", name: "Layout 1", created: "26.05.2024", screenshot: "", user: "steve" },
         {id: "layout-02", group: "Group 1", name: "Layout 2", created: "26.05.2024", screenshot: "", user: "steve" },
         {id: "layout-03", group: "Group 1", name: "Layout 3", created: "26.05.2024", screenshot: "", user: "steve" },
@@ -46,15 +49,17 @@ export const LayoutListManyLayouts = (): JSX.Element => {
         {id: "layout-16", group: "Group 4", name: "Layout 16", created: "26.05.2024", screenshot: "", user: "steve" },
         {id: "layout-17", group: "Group 4", name: "Layout 17", created: "26.05.2024", screenshot: "", user: "steve" },
         {id: "layout-18", group: "Group 4", name: "Layout 18", created: "26.05.2024", screenshot: "", user: "steve" },
-      ]
-      ),
+      ],
+      }),
     []
   );
 
   return (
-    <LayoutManagementProvider persistenceManager={demoPersistenceManager}>
-      <LayoutList style={{ width: 300 }} />
-    </LayoutManagementProvider>
+    <PersistenceProvider persistenceManager={demoPersistenceManager}>
+      <LayoutManagementProvider>
+        <LayoutList style={{ width: 300 }} />
+      </LayoutManagementProvider>
+    </PersistenceProvider>
   );
 };
 LayoutListManyLayouts.displaySequence = displaySequence++;

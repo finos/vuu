@@ -1,6 +1,6 @@
-import { LayoutJSON, ApplicationJSON } from "@finos/vuu-layout";
-import { PersistenceManager } from "./PersistenceManager";
+import { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
 import { LayoutMetadata } from "../layout-management";
+import { IPersistenceManager } from "./PersistenceManager";
 
 function unsupported<T = void>() {
   return new Promise<T>((_, reject) => {
@@ -8,10 +8,18 @@ function unsupported<T = void>() {
   });
 }
 
-export class StaticPersistenceManager implements PersistenceManager {
+export class StaticPersistenceManager implements IPersistenceManager {
+  #applicationJSON?: Partial<ApplicationJSON>;
   #layoutMetaData: LayoutMetadata[];
-  constructor(layoutMetadata: LayoutMetadata[]) {
+  constructor({
+    applicationJSON,
+    layoutMetadata = [],
+  }: {
+    applicationJSON?: Partial<ApplicationJSON>;
+    layoutMetadata?: LayoutMetadata[];
+  }) {
     this.#layoutMetaData = layoutMetadata;
+    this.#applicationJSON = applicationJSON;
   }
   createLayout() {
     return unsupported<LayoutMetadata>();
@@ -32,7 +40,19 @@ export class StaticPersistenceManager implements PersistenceManager {
   loadApplicationJSON() {
     return unsupported<ApplicationJSON>();
   }
-  saveApplicationJSON() {
-    return unsupported();
+  async saveApplicationJSON(applicationJson: ApplicationJSON) {
+    console.log(`save application json `, {
+      applicationJson,
+    });
+  }
+
+  async getUserSettings() {
+    return this.#applicationJSON?.userSettings ?? {};
+  }
+
+  saveUserSettings(userSettings: Settings) {
+    console.log("saveUserSettings not implemented", {
+      userSettings,
+    });
   }
 }

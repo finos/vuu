@@ -12,5 +12,5 @@ export * from "./shell-layouts/side-panel";
 export * from "./ShellContextProvider";
 export * from "./feature-list";
 export * from "./theme-switch";
-export * from "./application-settings";
-export * from "./application-provider"
+export * from "./user-settings";
+export * from "./application-provider";

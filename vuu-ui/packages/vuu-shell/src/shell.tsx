@@ -25,7 +25,7 @@ import {
 } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
-import { ApplicationSettingsPanel } from "./application-settings";
+import { UserSettingsPanel } from "./user-settings";
 import {
   LayoutManagementProvider,
   useLayoutContextMenuItems,
@@ -36,7 +36,7 @@ import { SidePanelProps, useShellLayout } from "./shell-layouts";
 
 import shellCss from "./shell.css";
 
-registerComponent("ApplicationSettings", ApplicationSettingsPanel, "view");
+registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
 if (process.env.NODE_ENV === "production") {
   // StackLayout is loaded just to force component registration, we know it will be

@@ -1,58 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NamedFilter } from "@finos/vuu-filter-types";
-import { CSSProperties, ReactElement } from "react";
+import { LayoutJSON } from "@finos/vuu-utils";
+import { ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
-
-export interface WithProps {
-  props?: { [key: string]: any };
-}
-
-export interface WithType {
-  props?: any;
-  title?: string;
-  type: string;
-}
-
-export interface LayoutRoot extends WithProps {
-  active?: number;
-  children?: ReactElement[];
-  type: string;
-}
-
-export type ValueOf<T> = T[keyof T];
-export interface ApplicationSettings {
-  leftNav?: {
-    activeTabIndex: number;
-    expanded: boolean;
-  };
-  /**
-   * filters are keyed by MODULE:tablename
-   */
-  filters?: { [key: string]: NamedFilter[] };
-}
-export type ApplicationSetting = ValueOf<ApplicationSettings>;
-
-export interface ApplicationJSON {
-  layout: LayoutJSON;
-  settings?: ApplicationSettings;
-}
-
-export interface LayoutJSON extends WithType {
-  active?: number;
-  children?: LayoutJSON[];
-  id?: string;
-  props?: { [key: string]: any };
-  state?: any;
-  type: string;
-  style?: CSSProperties;
-}
-
-export interface WithActive {
-  active?: number;
-}
-
-export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
 export type layoutType = "Flexbox" | "View" | "DraggableLayout" | "Stack";
 

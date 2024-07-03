@@ -1,4 +1,4 @@
-import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
+import { ApplicationJSON, LayoutJSON } from "@finos/vuu-utils";
 
 export const warningLayout: LayoutJSON = {
   type: "View",
