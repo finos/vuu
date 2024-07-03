@@ -1,7 +1,7 @@
-import { PersistenceManager } from "./PersistenceManager";
-import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
+import { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
 import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
 import { getAuthDetailsFromCookies } from "../login";
+import { IPersistenceManager } from "./PersistenceManager";
 
 const baseURL = process.env.LAYOUT_BASE_URL;
 const metadataSaveLocation = "layouts/metadata";
@@ -12,7 +12,7 @@ export type CreateLayoutResponseDto = { metadata: LayoutMetadata };
 export type GetLayoutResponseDto = { definition: LayoutJSON };
 export type GetApplicationResponseDto = { definition: ApplicationJSON };
 
-export class RemotePersistenceManager implements PersistenceManager {
+export class RemotePersistenceManager implements IPersistenceManager {
   username: string = getAuthDetailsFromCookies()[0];
 
   createLayout(
@@ -182,5 +182,15 @@ export class RemotePersistenceManager implements PersistenceManager {
           reject(error);
         })
     );
+  }
+
+  async getUserSettings() {
+    return {};
+  }
+
+  saveUserSettings(userSettings: Settings) {
+    console.log("saveUserSettings not implemented", {
+      userSettings,
+    });
   }
 }

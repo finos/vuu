@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { LayoutModel } from "../layout-reducer";
+import { LayoutModel } from "@finos/vuu-utils";
 
 const NO_PROPS = {};
 export const getProp = (

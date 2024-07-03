@@ -1,7 +1,7 @@
-import { LayoutJSON } from "@finos/vuu-layout";
+import { LayoutJSON } from "@finos/vuu-utils";
 
 export interface WithId {
-  id: string
+  id: string;
 }
 
 export interface LayoutMetadata extends WithId {
@@ -19,6 +19,6 @@ export interface Layout extends WithId {
 }
 
 export type ApplicationLayout = {
-  username: string,
-  definition: LayoutJSON
+  username: string;
+  definition: LayoutJSON;
 };

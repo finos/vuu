@@ -1,7 +1,7 @@
-import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
-import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
+import type { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
+import type { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
 
-export interface PersistenceManager {
+export interface IPersistenceManager {
   /**
    * Saves a new layout and its corresponding metadata
    *
@@ -66,4 +66,18 @@ export interface PersistenceManager {
    * @param layout - Full JSON representation of the application layout to be saved
    */
   saveApplicationJSON: (layout: ApplicationJSON) => Promise<void>;
+
+  /**
+   * Save user settings. These get saved within the Application JSON.
+   *
+   * @param userSettings
+   */
+  saveUserSettings: (userSettings: Settings) => void;
+
+  /**
+   * Get the user settings. These are stored within Application JSON.
+   *
+   * @returns userSettings
+   */
+  getUserSettings: () => Promise<Settings>;
 }

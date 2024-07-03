@@ -1,5 +1,6 @@
+import { LayoutJSON } from "@finos/vuu-utils";
 import { describe, expect, it } from "vitest";
-import { LayoutJSON, isLayoutJSON } from "../src";
+import { isLayoutJSON } from "../src";
 
 const validLayout: LayoutJSON = {
   type: "Stack",

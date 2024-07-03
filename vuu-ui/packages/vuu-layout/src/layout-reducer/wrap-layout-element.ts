@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getLayoutComponent, rectTuple, uuid } from "@finos/vuu-utils";
+import {
+  getLayoutComponent,
+  LayoutModel,
+  rectTuple,
+  uuid,
+} from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -12,7 +17,6 @@ import {
   getIntrinsicSize,
   wrapIntrinsicSizeComponentWithFlexbox,
 } from "./flexUtils";
-import { LayoutModel } from "./layoutTypes";
 import { applyLayoutProps, LayoutProps } from "./layoutUtils";
 
 export interface LayoutSpec {

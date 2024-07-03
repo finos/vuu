@@ -1,13 +1,13 @@
-import { ApplicationJSON, LayoutJSON } from "@finos/vuu-layout";
 import {
+  ApplicationJSON,
+  LayoutJSON,
+  Settings,
   formatDate,
   getLocalEntity,
   getUniqueId,
   saveLocalEntity,
 } from "@finos/vuu-utils";
 
-import { defaultApplicationJson } from "./defaultApplicationJson";
-import { PersistenceManager } from "./PersistenceManager";
 import {
   Layout,
   LayoutMetadata,
@@ -15,16 +15,18 @@ import {
   WithId,
 } from "../layout-management";
 import { getAuthDetailsFromCookies } from "../login";
-
+import { IPersistenceManager } from "./PersistenceManager";
+import { defaultApplicationJson } from "./defaultApplicationJson";
 const baseMetadataSaveLocation = "layouts/metadata";
 const baseLayoutsSaveLocation = "layouts/layouts";
 
-export class LocalPersistenceManager implements PersistenceManager {
-  username: string = getAuthDetailsFromCookies()[0];
-  metadataSaveLocation = `${baseMetadataSaveLocation}/${this.username}`;
-  layoutsSaveLocation = `${baseLayoutsSaveLocation}/${this.username}`;
+export class LocalPersistenceManager implements IPersistenceManager {
+  #username: string = getAuthDetailsFromCookies()[0];
+  metadataSaveLocation = `${baseMetadataSaveLocation}/${this.#username}`;
+  layoutsSaveLocation = `${baseLayoutsSaveLocation}/${this.#username}`;
+  #urlKey = `api/vui/${this.#username}`;
+  #applicationJSON: ApplicationJSON | undefined;
 
-  #urlKey = `api/vui/${this.username}`;
   constructor(urlKey?: string) {
     if (urlKey) {
       this.#urlKey = urlKey;
@@ -120,15 +122,19 @@ export class LocalPersistenceManager implements PersistenceManager {
     });
   }
 
-  loadApplicationJSON(): Promise<ApplicationJSON> {
-    return new Promise((resolve) => {
-      const applicationJSON = getLocalEntity<ApplicationJSON>(this.#urlKey);
-      if (applicationJSON) {
-        resolve(applicationJSON);
-      } else {
-        resolve(defaultApplicationJson);
-      }
-    });
+  async loadApplicationJSON(): Promise<ApplicationJSON> {
+    return (
+      this.#applicationJSON ||
+      new Promise((resolve) => {
+        const applicationJSON = getLocalEntity<ApplicationJSON>(this.#urlKey);
+        if (applicationJSON) {
+          this.#applicationJSON = applicationJSON;
+          resolve(applicationJSON);
+        } else {
+          resolve(defaultApplicationJson);
+        }
+      })
+    );
   }
 
   saveApplicationJSON(applicationJSON: ApplicationJSON): Promise<void> {
@@ -138,6 +144,7 @@ export class LocalPersistenceManager implements PersistenceManager {
         applicationJSON
       );
       if (savedLayout) {
+        this.#applicationJSON = applicationJSON;
         resolve();
       } else {
         reject(new Error("Application Json failed to save"));
@@ -204,4 +211,26 @@ export class LocalPersistenceManager implements PersistenceManager {
       });
     });
   };
+
+  async getUserSettings() {
+    if (this.#applicationJSON) {
+      return this.#applicationJSON.userSettings ?? {};
+    }
+
+    try {
+      const applicationJSON = await this.loadApplicationJSON();
+      return applicationJSON.userSettings ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  saveUserSettings(userSettings: Settings) {
+    if (this.#applicationJSON) {
+      this.saveApplicationJSON({
+        ...this.#applicationJSON,
+        userSettings,
+      });
+    }
+  }
 }

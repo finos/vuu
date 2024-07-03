@@ -2,6 +2,8 @@ import { StackLayout } from "@finos/vuu-layout";
 import { useDialog } from "@finos/vuu-popups";
 import {
   LeftNav,
+  LocalPersistenceManager,
+  PersistenceProvider,
   Shell,
   ShellContextProvider,
   ShellProps,
@@ -26,6 +28,8 @@ registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
 assertComponentRegistered("Stack", StackLayout);
+
+const localPersistenceManager = new LocalPersistenceManager();
 
 // createNewChild is used when we add a new Tab to Stack
 const layoutProps: ShellProps["LayoutProps"] = {
@@ -66,22 +70,23 @@ export const App = ({ user }: { user: VuuUser }) => {
   );
 
   return (
-    <DragDropProvider dragSources={dragSource}>
-      <ShellContextProvider
-        value={{ getDefaultColumnConfig, handleRpcResponse }}
-      >
-        <Shell
-          LayoutProps={layoutProps}
-          LeftSidePanelProps={leftSidePanelProps}
-          className="App"
-          leftSidePanelLayout="full-height"
-          saveUrl="https://localhost:8443/api/vui"
-          serverUrl={serverUrl}
-          user={user}
+    <PersistenceProvider persistenceManager={localPersistenceManager}>
+      <DragDropProvider dragSources={dragSource}>
+        <ShellContextProvider
+          value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
-          {dialog}
-        </Shell>
-      </ShellContextProvider>
-    </DragDropProvider>
+          <Shell
+            LayoutProps={layoutProps}
+            LeftSidePanelProps={leftSidePanelProps}
+            className="App"
+            leftSidePanelLayout="full-height"
+            serverUrl={serverUrl}
+            user={user}
+          >
+            {dialog}
+          </Shell>
+        </ShellContextProvider>
+      </DragDropProvider>
+    </PersistenceProvider>
   );
 };
