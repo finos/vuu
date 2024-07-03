@@ -47,11 +47,19 @@ export interface ColumnPickerProps
   extends Omit<IconButtonProps, "icon">,
     Pick<ColumnSearchProps, "columns" | "onSelectionChange" | "selected"> {
   icon?: string;
+  iconSize?: number;
 }
 
 export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
   function ColumnPicker(
-    { columns, icon = "add", onSelectionChange, selected, ...htmlAttributes },
+    {
+      columns,
+      icon = "add",
+      iconSize,
+      onSelectionChange,
+      selected,
+      ...htmlAttributes
+    },
     forwardedRef
   ) {
     const listId = useIdMemo();
@@ -93,6 +101,7 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
         <IconButton
           {...htmlAttributes}
           icon={icon}
+          size={iconSize}
           onClick={handleButtonClick}
           ref={forkedRef}
         />

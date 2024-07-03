@@ -57,30 +57,34 @@ export const QuickFilters = ({
 
   return (
     <div className={classBase} ref={rootRef}>
-      <FormField data-field="find">
-        <FormFieldLabel>Find</FormFieldLabel>
-        <VuuInput
-          inputProps={{
-            onChange,
-          }}
-          onCommit={onCommit}
-          startAdornment={searchIcon}
-          variant="secondary"
-        />
-      </FormField>
-      {filterColumns?.map((column) => (
-        <FormField key={column.label ?? column.name} data-field={column.name}>
-          <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
-          {getDataItemEditControl({
-            column,
-            onCommit,
-            suggestionProvider,
-            table: tableSchema?.table,
-          })}
+      <div className={`${classBase}-filter-container`}>
+        <FormField data-field="find">
+          <FormFieldLabel>Find</FormFieldLabel>
+          <VuuInput
+            inputProps={{
+              onChange,
+            }}
+            onCommit={onCommit}
+            startAdornment={searchIcon}
+            variant="secondary"
+          />
         </FormField>
-      ))}
+        {filterColumns?.map((column) => (
+          <FormField key={column.label ?? column.name} data-field={column.name}>
+            <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
+            {getDataItemEditControl({
+              column,
+              onCommit,
+              suggestionProvider,
+              table: tableSchema?.table,
+            })}
+          </FormField>
+        ))}
+      </div>
       <ColumnPicker
         columns={availableColumnNames}
+        icon="more-horiz"
+        iconSize={16}
         onSelectionChange={onColumnsSelectionChange}
         selected={quickFilters}
       />

@@ -1,21 +1,27 @@
 .vuuQuickFilters {
-    --saltFormField-width: 150px;
-    --saltInput-background: transparent;
-    --saltInput-height: 18px;
-    --saltInput-minHeight: 18px;
+  --saltFormField-width: 150px;
+  --saltInput-background: transparent;
+  --saltInput-height: 18px;
+  --saltInput-minHeight: 18px;
+
+  display: flex;
+  gap: var(--salt-spacing-100);
+  align-items: end;
+  width: fit-content;
+
+  .vuuQuickFilters-filter-container {
+    background-color: var(--salt-container-primary-background);
     border: solid 1px var(--salt-editable-borderColor);
     border-radius: 2px;
     display: flex;
     height: 43px;
-    width: fit-content;
+  }
 
-    .saltFormField {
-        padding: 2px var(--salt-spacing-200);
-    }
+  .saltFormField {
+    padding: 2px var(--salt-spacing-200);
+  }
 
-    .saltFormField:not(:last-child) {
-        border-right: solid 1px var(--salt-editable-borderColor);
-    }
-
-
+  .saltFormField:not(:last-child) {
+    border-right: solid 1px var(--salt-editable-borderColor);
+  }
 }
