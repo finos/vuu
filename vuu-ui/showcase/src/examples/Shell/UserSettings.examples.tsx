@@ -7,11 +7,12 @@ import {
 } from "@finos/vuu-shell";
 
 import { useMemo } from "react";
+import { scrollableSettingsFormSchema } from "./UserSettingsSchemaExamples/scrollableSettingsSchemaExample"
 
 let displaySequence = 1;
 
 // Showcase example showing the current default settings form
-export const DefaultUserSettingsPanel = () => {
+export const DefaultUserSettingsForm = () => {
   const userSettingsSchema: SettingsSchema = {
     properties: [
       {
@@ -44,10 +45,10 @@ export const DefaultUserSettingsPanel = () => {
     </PersistenceProvider>
   );
 };
-DefaultUserSettingsPanel.displaySequence = displaySequence++;
+DefaultUserSettingsForm.displaySequence = displaySequence++;
 
 // Showcase example showing different form controls
-export const VariedFormControlUserSettingsPanel = () => {
+export const VariedFormControlUserSettingsForm = () => {
   const userSettingsSchema: SettingsSchema = {
     properties: [
       {
@@ -107,16 +108,21 @@ export const VariedFormControlUserSettingsPanel = () => {
     </PersistenceProvider>
   );
 };
-VariedFormControlUserSettingsPanel.displaySequence = displaySequence++;
+VariedFormControlUserSettingsForm.displaySequence = displaySequence++;
 
 // Showcase example showing input validations
-export const InputValidationUserSettingsPanel = () => {
+export const InputValidationUserSettingsForm = () => {
   const userSettingsSchema: SettingsSchema = {
     properties: [
       {
         name: "userName",
         label: "User Name",
         type: "string",
+      },
+      {
+        name: "id",
+        label: "Identification Number",
+        type: "number",
       },
     ],
   };
@@ -127,6 +133,7 @@ export const InputValidationUserSettingsPanel = () => {
         applicationJSON: {
           userSettings: {
             userName: "",
+            id: "",
           },
         },
       }),
@@ -141,4 +148,33 @@ export const InputValidationUserSettingsPanel = () => {
     </PersistenceProvider>
   );
 };
-InputValidationUserSettingsPanel.displaySequence = displaySequence++;
+InputValidationUserSettingsForm.displaySequence = displaySequence++;
+
+// Showcase example showing large quantity of form controls
+export const ScrollableUserSettingsPanel = () => {
+  
+  const demoPersistenceManager = useMemo(
+    () =>
+      new StaticPersistenceManager({
+        applicationJSON: {
+          userSettings: {
+            themeMode: "light",
+            dateFormatPattern: "dd/mm/yyyy",
+            region: "US",
+            greyscale: false,
+            userName: ""
+          },
+        },
+      }),
+    []
+  );
+
+  return (
+    <PersistenceProvider persistenceManager={demoPersistenceManager}>
+      <ApplicationProvider userSettingsSchema={scrollableSettingsFormSchema}>
+        <UserSettingsPanel />
+      </ApplicationProvider>
+    </PersistenceProvider>
+  );
+};
+ScrollableUserSettingsPanel.displaySequence = displaySequence++;

@@ -3,6 +3,7 @@ import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
 import { useApplicationSettings } from "../application-provider";
 import { SettingsForm } from "./SettingsForm";
+import cx from "clsx";
 
 import userSettingsPanelCss from "./UserSettingsPanel.css";
 
@@ -31,7 +32,7 @@ export const UserSettingsPanel = ({
   // We could render a list of input boxes but lets require a schema for now.
   if (userSettingsSchema) {
     return (
-      <div {...htmlAttributes} className={classBase}>
+      <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
         <SettingsForm
           settings={userSettings}
           settingsSchema={userSettingsSchema}

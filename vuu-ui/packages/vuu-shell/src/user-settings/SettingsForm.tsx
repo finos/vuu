@@ -138,14 +138,25 @@ export function getFormControl(
       );
     }
   } else {
-    // const value = isStringOrNumber(currentValue)
-    //   ? currentValue
-    //   : isStringOrNumber(property.defaultValue)
-    //   ? property.defaultValue
-    //   : "";
-    return <Input onChange={inputHandler}/>;
+    const valid = isValidInput(currentValue, property.type);
+    return <Input onChange={inputHandler} validationStatus={valid} />;
   }
 }
+
+//Validation logic for input boxes
+const isValidInput = (value: unknown, type: unknown) => {
+  if (value === "") {
+    return undefined;
+  }
+  if (type === "string") {
+    return "success";
+  } else if (type === "number") {
+    if (Number.isNaN(Number(value))) {
+      return "error";
+    }
+    return "success";
+  }
+};
 
 export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
 
