@@ -88,6 +88,7 @@ export function getFormControl(
   property: SettingsProperty,
   changeHandler: FormEventHandler,
   selectHandler: DropdownProps["onSelectionChange"],
+  inputHandler: FormEventHandler,
   currentValue: VuuRowDataItemType = property.defaultValue ??
     defaultPropertyValue[property.type]
 ) {
@@ -137,12 +138,12 @@ export function getFormControl(
       );
     }
   } else {
-    const value = isStringOrNumber(currentValue)
-      ? currentValue
-      : isStringOrNumber(property.defaultValue)
-      ? property.defaultValue
-      : "";
-    return <Input value={value} />;
+    // const value = isStringOrNumber(currentValue)
+    //   ? currentValue
+    //   : isStringOrNumber(property.defaultValue)
+    //   ? property.defaultValue
+    //   : "";
+    return <Input onChange={inputHandler}/>;
   }
 }
 
@@ -152,7 +153,7 @@ export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
 export const SettingsForm = ({
   settingsSchema: applicationSettingsSchema,
   settings: applicationSettings,
-  onSettingChanged: onApplicationSettingChanged,
+  onSettingChanged: onSettingChanged,
   ...htmlAttributes
 }: SettingsFormProps) => {
   const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
@@ -164,23 +165,33 @@ export const SettingsForm = ({
     }
   };
 
-  // Change Handler for toggle and input buttons
+  // Change Handler for toggle and switch buttons
   const changeHandler = useCallback<FormEventHandler>(
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
       const { checked, value } = event.target as HTMLInputElement;
-      onApplicationSettingChanged(fieldName, checked ?? value);
+      onSettingChanged(fieldName, checked ?? value);
     },
-    [onApplicationSettingChanged]
+    [onSettingChanged]
   );
 
   // Change handler for selection form controls
   const selectHandler = useCallback(
     (event: SyntheticEvent, [selected]: string[]) => {
       const fieldName = getFieldNameFromEventTarget(event);
-      onApplicationSettingChanged(fieldName, selected);
+      onSettingChanged(fieldName, selected);
     },
-    [onApplicationSettingChanged]
+    [onSettingChanged]
+  );
+
+  // Change Handler for input boxes
+  const inputHandler = useCallback<FormEventHandler>(
+    (event) => {
+      const fieldName = getFieldNameFromEventTarget(event);
+      const { value } = event.target as HTMLInputElement;
+      onSettingChanged(fieldName, value);
+    },
+    [onSettingChanged]
   );
 
   return (
@@ -192,6 +203,7 @@ export const SettingsForm = ({
             property,
             changeHandler,
             selectHandler,
+            inputHandler,
             applicationSettings[property.name]
           )}
         </FormField>

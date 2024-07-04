@@ -108,3 +108,37 @@ export const VariedFormControlUserSettingsPanel = () => {
   );
 };
 VariedFormControlUserSettingsPanel.displaySequence = displaySequence++;
+
+// Showcase example showing input validations
+export const InputValidationUserSettingsPanel = () => {
+  const userSettingsSchema: SettingsSchema = {
+    properties: [
+      {
+        name: "userName",
+        label: "User Name",
+        type: "string",
+      },
+    ],
+  };
+
+  const demoPersistenceManager = useMemo(
+    () =>
+      new StaticPersistenceManager({
+        applicationJSON: {
+          userSettings: {
+            userName: "",
+          },
+        },
+      }),
+    []
+  );
+
+  return (
+    <PersistenceProvider persistenceManager={demoPersistenceManager}>
+      <ApplicationProvider userSettingsSchema={userSettingsSchema}>
+        <UserSettingsPanel />
+      </ApplicationProvider>
+    </PersistenceProvider>
+  );
+};
+InputValidationUserSettingsPanel.displaySequence = displaySequence++;
