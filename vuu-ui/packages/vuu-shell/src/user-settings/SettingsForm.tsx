@@ -139,7 +139,13 @@ export function getFormControl(
     }
   } else {
     const valid = isValidInput(currentValue, property.type);
-    return <Input onChange={inputHandler} validationStatus={valid} />;
+
+    return (
+      <Input
+        onChange={inputHandler}
+        validationStatus={valid}
+      />
+    );
   }
 }
 
@@ -162,9 +168,9 @@ export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
 
 // Generates application settings form component
 export const SettingsForm = ({
-  settingsSchema: applicationSettingsSchema,
-  settings: applicationSettings,
-  onSettingChanged: onSettingChanged,
+  settingsSchema,
+  settings,
+  onSettingChanged,
   ...htmlAttributes
 }: SettingsFormProps) => {
   const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
@@ -200,14 +206,19 @@ export const SettingsForm = ({
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
       const { value } = event.target as HTMLInputElement;
-      onSettingChanged(fieldName, value);
+      if (!Number.isNaN(Number(value))) {
+        const numValue = Number(value);
+        onSettingChanged(fieldName, numValue);
+      } else {
+        onSettingChanged(fieldName, value);
+      }
     },
     [onSettingChanged]
   );
 
   return (
     <div {...htmlAttributes}>
-      {applicationSettingsSchema.properties.map((property) => (
+      {settingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>
           {getFormControl(
@@ -215,7 +226,7 @@ export const SettingsForm = ({
             changeHandler,
             selectHandler,
             inputHandler,
-            applicationSettings[property.name]
+            settings[property.name]
           )}
         </FormField>
       ))}
