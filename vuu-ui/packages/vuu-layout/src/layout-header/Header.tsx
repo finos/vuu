@@ -138,6 +138,7 @@ export const Header = ({
     toolbarItems.push(
       <IconButton
         className={`${classBase}-edit`}
+        data-embedded
         icon="edit"
         key="edit-button"
         onClick={handleClickEdit}

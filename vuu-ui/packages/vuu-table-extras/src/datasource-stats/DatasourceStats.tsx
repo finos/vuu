@@ -44,7 +44,7 @@ export const DataSourceStats = ({
   const value = numberFormatter.format(size);
   return (
     <div className={className}>
-      <span className={`${classBase}-label`}>Row count</span>
+      <span className={`${classBase}-label`}>Rows</span>
       <span className={`${classBase}-range`}>{from}</span>
       <span>-</span>
       <span className={`${classBase}-range`}>{to}</span>

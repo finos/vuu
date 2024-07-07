@@ -1,5 +1,12 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { SaltProvider } from "@salt-ds/core";
+import {
+  Density,
+  Mode,
+  SaltProvider,
+  ThemeContextProps,
+  useDensity,
+  useTheme,
+} from "@salt-ds/core";
 import {
   ReactElement,
   ReactNode,
@@ -15,25 +22,33 @@ import {
 import { usePersistenceManager } from "../persistence-management";
 
 export interface ApplicationProviderProps
-  extends Partial<Omit<ApplicationContextProps, "userSettings">> {
+  extends Partial<Pick<ThemeContextProps, "theme" | "mode">>,
+    Partial<Omit<ApplicationContextProps, "userSettings">> {
   children: ReactNode;
+  density?: Density;
 }
 
 const getThemeMode = (
+  mode: Mode,
   userSettings?: Record<string, string | number | boolean>
 ) => {
   const themeMode = userSettings?.themeMode;
   if (themeMode === "light" || themeMode === "dark") {
     return themeMode;
   }
-  return "light";
+  return mode;
 };
 
 export const ApplicationProvider = ({
   children,
+  density: densityProp,
+  mode = "light",
+  theme,
   userSettingsSchema: userSettingsSchema,
   user,
 }: ApplicationProviderProps): ReactElement | null => {
+  const { mode: inheritedMode, theme: inheritedTheme } = useTheme();
+  const density = useDensity(densityProp);
   const persistenceManager = usePersistenceManager();
   const context = useContext(ApplicationContext);
   const [userSettings, setSettings] =
@@ -70,9 +85,9 @@ export const ApplicationProvider = ({
       }}
     >
       <SaltProvider
-        theme="vuu-theme"
-        density="high"
-        mode={getThemeMode(userSettings)}
+        theme={theme ?? inheritedTheme ?? "vuu-theme"}
+        density={density}
+        mode={getThemeMode(mode ?? inheritedMode, userSettings)}
       >
         {children}
       </SaltProvider>
