@@ -1,10 +1,12 @@
 .vuuFilterTableFeature {
-    --vuuMeasuredContainer-flex: 1 1 1px;
-    min-height: 100px;
-
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  min-height: 100px;
 }
 
 .vuuFilterTableFeature-footer {
-    --vuuToolbarProxy-height: auto;
-    flex: 0 0 18px;
+  --vuuToolbarProxy-height: auto;
+  background: var(--salt-container-secondary-background);
+  border-top: var(--salt-container-primary-borderColor) solid 1px;
+
+  flex: 0 0 18px;
 }
