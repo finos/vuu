@@ -23,7 +23,12 @@ export const useFullHeightLeftPanel = ({
         style={{ flex: 1, flexDirection: "column" }}
       >
         {appHeader}
-        <DraggableLayout dropTarget key="main-content" style={{ flex: 1 }} />
+        <DraggableLayout
+          dropTarget
+          className="vuuShell-content-main"
+          key="main-content"
+          style={{ flex: 1 }}
+        />
       </Flexbox>
       <ContextPanel id="context-panel" overlay></ContextPanel>
     </Flexbox>

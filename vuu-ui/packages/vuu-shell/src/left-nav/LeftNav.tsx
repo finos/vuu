@@ -8,7 +8,6 @@ import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import {
   FilterTableFeatureProps,
   hasFilterTableFeatureProps,
-  useThemeAttributes,
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -93,7 +92,6 @@ const byModule = (
 
 export const LeftNav = (props: LeftNavProps) => {
   const dispatch = useLayoutProviderDispatch();
-  const [themeClass] = useThemeAttributes();
   const {
     "data-path": path,
     defaultExpanded = true,
@@ -209,10 +207,7 @@ export const LeftNav = (props: LeftNavProps) => {
       className={cx(classBase, `${classBase}-${displayStatus}`)}
       style={style}
     >
-      <div
-        className={cx(`${classBase}-menu-primary`, themeClass)}
-        data-mode="dark"
-      >
+      <div className={cx(`${classBase}-menu-primary`)} data-mode="dark">
         <div className="vuuLeftNav-logo">
           <VuuLogo />
         </div>

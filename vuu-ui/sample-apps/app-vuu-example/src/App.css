@@ -20,11 +20,6 @@ body {
   background-color: green;
 }
 
-.vuuShell-content {
-  padding: 8px;
-}
-
-
 .ToolbarField > svg {
   fill: var(--spectrum-global-color-static-gray-600);
   width: 18px;
@@ -56,12 +51,10 @@ body {
   height: var(--vuuToolbarProxy-height, 36px);
 }
 
-.vuuToolbarProxy > [data-align="end"]{
+.vuuToolbarProxy > [data-align="end"] {
   margin-left: auto;
 }
 
 .vuuToolbarProxy-vertical {
   flex-direction: column;
 }
-
-
