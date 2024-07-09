@@ -1,19 +1,14 @@
 package org.finos.vuu.net.ws
 
-import org.finos.vuu.client.ClientHelperFns.awaitMsgBody
-import org.finos.vuu.core.{CoreServerApiHandler, VuuWebSocketOptions}
-import org.finos.vuu.core.module.ModuleContainer
-import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.net._
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.json.JsonVsSerializer
-import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
-import org.finos.vuu.viewport.ViewPortContainer
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.plugin.DefaultPluginRegistry
+import org.finos.vuu.client.ClientHelperFns.awaitMsgBody
+import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.net._
+import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.json.JsonVsSerializer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -21,62 +16,56 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check that we can create a websocket server and client"){
 
-    ignore("create web socket server and client and send data between"){
+    Scenario("create connection without ssl between web socket server and client and send data between"){
 
       implicit val timeProvider: Clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-      val serializer = JsonVsSerializer
-      val authenticator = new AlwaysHappyAuthenticator
-      val tokenValidator = new AlwaysHappyLoginValidator
+      lifecycle.autoShutdownHook()
 
-      val sessionContainer = new ClientSessionContainerImpl()
+      val http = 10011
+      val ws = 10013
 
-      val joinProvider = JoinTableProviderImpl()
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withWebRoot("vuu/src/main/resources/www")
+          .withSslDisabled()
+          .withDirectoryListings(true)
+          .withPort(http),
+        VuuWebSocketOptions()
+          .withBindAddress("0.0.0.0")
+          .withUri("websocket")
+          .withWsPort(ws)
+          .withWssDisabled(),
+        VuuSecurityOptions()
+          .withAuthenticator(new AlwaysHappyAuthenticator)
+          .withLoginValidator(new AlwaysHappyLoginValidator)
+      )
 
-      val tableContainer = new TableContainer(joinProvider)
+      val viewServer = new VuuServer(config)
 
-      val providerContainer = new ProviderContainer(joinProvider)
-
-      val pluginRegistry = new DefaultPluginRegistry
-      pluginRegistry.registerPlugin(new VuuInMemPlugin)
-
-      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
-
-      val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
-
-      val moduleContainer = new ModuleContainer
-      
-      val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
-
-      val options = VuuWebSocketOptions.apply()
-        .withWsPort(18090)
-        .withBindAddress("0.0.0.0")
-        //.withWss()
-
-      //order of creation here is important
-      val server = new WebSocketServer(options, factory)
-
-      val client = new WebSocketClient("ws://localhost:8090/websocket", 18090)
-      implicit val vsClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+      val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
+      implicit val vsClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
 
       //set up a dependency on ws server from ws client.
-      lifecycle(client).dependsOn(server)
+      lifecycle(client).dependsOn(viewServer)
 
       //lifecycle registration is done in constructor of service classes, so sequence of create is important
       lifecycle.start()
 
-      vsClient.send(JsonViewServerMessage("", "", "", "",AuthenticateRequest("chris", "chris")))
+      vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest("chris", "chris")))
 
       val authMsg = awaitMsgBody[AuthenticateSuccess].get
 
       authMsg.getClass should equal(classOf[AuthenticateSuccess])
-      authMsg.token should not be ("")
+      authMsg.token should not be ""
 
       vsClient.send(JsonViewServerMessage("", "", authMsg.token, "chris", LoginRequest(authMsg.token, "chris")))
 
       awaitMsgBody[LoginSuccess].get.token should equal(authMsg.token)
+
+      lifecycle.stop()
     }
 
   }

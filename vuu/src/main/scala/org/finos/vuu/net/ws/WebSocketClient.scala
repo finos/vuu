@@ -53,7 +53,7 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
         //        if (sslCtx != null) {
         //          p.addLast(sslCtx.newHandler(ch.alloc, host, port))
         //        }
-        p.addLast("ssl-handler", sslCtx.newHandler(ch.alloc, "localhost", 8443))
+       // p.addLast("ssl-handler", sslCtx.newHandler(ch.alloc, "localhost", 8443))
         p.addLast(new HttpClientCodec, new HttpObjectAggregator(8192), WebSocketClientCompressionHandler.INSTANCE, handler)
       }
     })
