@@ -12,6 +12,7 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupProps,
 } from "@salt-ds/core";
+import { VuuInput } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   HTMLAttributes,
@@ -141,8 +142,8 @@ export function getFormControl(
     const valid = isValidInput(currentValue, property.type);
 
     return (
-      <Input
-        onChange={inputHandler}
+      <VuuInput
+        onCommit={inputHandler}
         validationStatus={valid}
       />
     );

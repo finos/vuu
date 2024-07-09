@@ -64,7 +64,7 @@ export const VariedFormControlUserSettingsForm = () => {
       {
         name: "dateFormatPattern",
         label: "Date Formatting",
-        values: ["dd/mm/yyyy", "mm/dd/yyyy", "dd MMMM yyyy"],
+        values: ["dd/mm/yyyy", "mm/dd/yyyy", "dd MM yyyy"],
         defaultValue: "dd/mm/yyyy",
         type: "string",
       },
@@ -181,7 +181,7 @@ export const ScrollableUserSettingsPanel = () => {
 };
 ScrollableUserSettingsPanel.displaySequence = displaySequence++;
 
-// //Showcase example showing the panel with
+// //Showcase example showing the shell with panel
 // const user = { username: "test-user", token: "test-token" };
 
 // export const SettingsFormInShell = () => {
