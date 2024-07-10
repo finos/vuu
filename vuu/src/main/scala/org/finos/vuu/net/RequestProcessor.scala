@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.SessionId
 import org.finos.vuu.core.module.ModuleContainer
-import org.finos.vuu.net.flowcontrol.DefaultFlowController
+import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, FlowControllerFactory}
 import org.finos.vuu.net.json.Serializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
@@ -21,7 +21,8 @@ class RequestProcessor(authenticator: Authenticator,
                        clientSessionContainer: ClientSessionContainer,
                        serverApi: ServerApi,
                        serializer: Serializer[String, MessageBody],
-                       moduleContainer: ModuleContainer
+                       moduleContainer: ModuleContainer,
+                       flowControllerFactory: FlowControllerFactory,
                       )(implicit timeProvider: Clock) extends StrictLogging {
 
   @volatile private var session: ClientSessionId = null
@@ -63,7 +64,7 @@ class RequestProcessor(authenticator: Authenticator,
 
   protected def createMessageHandler(channel: Channel, sessionId: ClientSessionId): MessageHandler = {
     val queue = new OutboundRowPublishQueue()
-    val flowController = new DefaultFlowController
+    val flowController = flowControllerFactory.create()
     new DefaultMessageHandler(channel, queue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
   }
 

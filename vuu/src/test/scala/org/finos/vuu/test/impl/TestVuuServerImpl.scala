@@ -15,6 +15,7 @@ import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Ser
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net._
+import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider._
 import org.finos.vuu.test.rpc.RpcDynamicProxy
@@ -35,6 +36,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   val authenticator = new AlwaysHappyAuthenticator
   val tokenValidator = new AlwaysHappyLoginValidator
+  val flowControllerFactory = FlowControllerFactory(hasHeartbeat = false)
 
   val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
@@ -56,7 +58,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
+  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory)
 
   val queue = new OutboundRowPublishQueue()
 
