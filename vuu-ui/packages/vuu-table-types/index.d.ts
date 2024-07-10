@@ -384,6 +384,10 @@ export type DefaultColumnConfiguration = <T extends string = string>(
   columnName: string
 ) => Partial<ColumnDescriptor> | undefined;
 
+export type DefaultTableConfiguration = (
+  vuuTable?: VuuTable
+) => Partial<Omit<TableConfig, "columns">> | undefined;
+
 export type ResizePhase = "begin" | "resize" | "end";
 
 export type TableColumnResizeHandler = (
