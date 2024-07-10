@@ -58,7 +58,7 @@ export const QuickFilters = ({
   return (
     <div className={classBase} ref={rootRef}>
       <div className={`${classBase}-filter-container`}>
-        <FormField data-field="find">
+        <FormField data-embedded data-field="find">
           <FormFieldLabel>Find</FormFieldLabel>
           <VuuInput
             inputProps={{

@@ -1,4 +1,10 @@
-import { flip, size } from "@floating-ui/react";
+import {
+  flip,
+  size,
+  useClick,
+  useDismiss,
+  useInteractions,
+} from "@floating-ui/react";
 import {
   FloatingComponentProps,
   useFloatingComponent,
@@ -62,27 +68,33 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
     },
     forwardedRef
   ) {
-    const listId = useIdMemo();
-    const { x, y, strategy, elements, floating, reference } = useFloatingUI({
-      //   open: openState && columnItems != undefined,
-      open: columns != undefined,
-      //   onOpenChange: handleOpenChange,
-      placement: "bottom-start",
-      strategy: "fixed",
-      middleware: [
-        size({
-          apply({ rects, elements, availableHeight }) {
-            Object.assign(elements.floating.style, {
-              minWidth: `${rects.reference.width}px`,
-              maxHeight: `max(calc(${availableHeight}px - var(--salt-spacing-100)), calc((var(--salt-size-base) + var(--salt-spacing-100)) * 5))`,
-            });
-          },
-        }),
-        flip({ fallbackStrategy: "initialPlacement" }),
-      ],
-    });
-
     const [open, setOpen] = useState(false);
+
+    const listId = useIdMemo();
+    const { context, x, y, strategy, elements, floating, reference } =
+      useFloatingUI({
+        open,
+        onOpenChange: setOpen,
+        placement: "bottom-start",
+        strategy: "fixed",
+        middleware: [
+          size({
+            apply({ rects, elements, availableHeight }) {
+              Object.assign(elements.floating.style, {
+                minWidth: `${rects.reference.width}px`,
+                maxHeight: `max(calc(${availableHeight}px - var(--salt-spacing-100)), calc((var(--salt-size-base) + var(--salt-spacing-100)) * 5))`,
+              });
+            },
+          }),
+          flip({ fallbackStrategy: "initialPlacement" }),
+        ],
+      });
+
+    const { getReferenceProps, getFloatingProps } = useInteractions([
+      useDismiss(context),
+      useClick(context, { keyboardHandlers: false, toggle: false }),
+    ]);
+
     const handleButtonClick = () => {
       setOpen((isOpen) => !isOpen);
     };
@@ -100,12 +112,14 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
       <>
         <IconButton
           {...htmlAttributes}
+          {...getReferenceProps()}
           icon={icon}
           size={iconSize}
           onClick={handleButtonClick}
           ref={forkedRef}
         />
         <FloatingColumnSearch
+          {...getFloatingProps()}
           open={open}
           collapsed={!open}
           id={listId}

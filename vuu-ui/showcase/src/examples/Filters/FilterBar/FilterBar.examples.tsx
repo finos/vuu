@@ -36,7 +36,7 @@ const FilterContainer = ({
   }, []);
 
   return (
-    <div style={style}>
+    <div className="filter-container" style={style}>
       <Input
         style={{ margin: 20, width: 100 }}
         ref={inputRef}
@@ -328,6 +328,14 @@ export const QuickFiltersThreeColumns = () => {
 QuickFiltersThreeColumns.displaySequence = displaySequence++;
 
 export const FullFilters = () => {
-  return <FilterBarTemplate variant="full-filters" />;
+  return (
+    <>
+      <style>{`
+      .filter-container { background: var(--salt-container-secondary-background);}
+      .vuuFilterBar { width: 100%; }
+  `}</style>
+      <FilterBarTemplate variant="full-filters" />
+    </>
+  );
 };
 FullFilters.displaySequence = displaySequence++;

@@ -24,4 +24,12 @@
   .saltFormField:not(:last-child) {
     border-right: solid 1px var(--salt-editable-borderColor);
   }
+
+  .vuuTypeaheadInput {
+    .saltPillInput-endAdornmentContainer {
+      .saltButton {
+        border-style: none;
+      }
+    }
+  }
 }

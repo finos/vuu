@@ -18,6 +18,7 @@
   }
 
   .saltButton:after {
+    --vuu-icon-color: var(--salt-content-primary-foreground);
     --vuu-icon-size: 19px;
     --vuu-icon-transform: rotate(90deg);
 

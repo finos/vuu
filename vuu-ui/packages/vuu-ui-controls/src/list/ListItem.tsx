@@ -1,10 +1,10 @@
 import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 import cx from "clsx";
+import { Checkbox } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ListItemProps, ListItemType } from "./listTypes";
 import { Highlighter } from "./Highlighter";
-import { CheckboxIcon } from "./CheckboxIcon";
 
 import listItemCss from "./ListItem.css";
 
@@ -84,7 +84,7 @@ export const ListItem = forwardRef<HTMLDivElement, ListItemProps>(
         ref={forwardedRef}
         style={style}
       >
-        {showCheckbox && <CheckboxIcon aria-hidden checked={selected} />}
+        {showCheckbox && <Checkbox aria-hidden checked={selected} />}
         {children && typeof children !== "string" ? (
           children
         ) : itemTextHighlightPattern == null ? (
