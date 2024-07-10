@@ -24,8 +24,8 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
 
       lifecycle.autoShutdownHook()
 
-      val http = 10011
-      val ws = 10013
+      val http = 10021
+      val ws = 10023
 
       val config = VuuServerConfig(
         VuuHttp2ServerOptions()
@@ -46,7 +46,7 @@ class WebSocketServerClientTest extends AnyFeatureSpec with Matchers {
       val viewServer = new VuuServer(config)
 
       val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
-      implicit val vsClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+      implicit val vsClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
 
       //set up a dependency on ws server from ws client.
       lifecycle(client).dependsOn(viewServer)
