@@ -1,26 +1,15 @@
 import { memo, useCallback } from "react";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { CheckboxIcon, WarnCommit } from "@finos/vuu-ui-controls";
+import { WarnCommit } from "@finos/vuu-ui-controls";
 import { Checkbox } from "@salt-ds/core";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-
-import checkboxCss from "./CheckboxCell.css";
 
 export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
   ({ column, columnMap, onCommit = WarnCommit, row }) => {
-    const targetWindow = useWindow();
-    useComponentCssInjection({
-      testId: "vuu-checkbox-cell",
-      css: checkboxCss,
-      window: targetWindow,
-    });
-
     const dataIdx = columnMap[column.name];
     const isChecked = !!row[dataIdx];
 
@@ -38,7 +27,7 @@ export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
     return column.editable ? (
       <Checkbox checked={isChecked} onClick={handleCommit(!isChecked)} />
     ) : (
-      <CheckboxIcon checked={isChecked} disabled={true} />
+      <Checkbox checked={isChecked} disabled={true} />
     );
   },
   dataColumnAndKeyUnchanged
