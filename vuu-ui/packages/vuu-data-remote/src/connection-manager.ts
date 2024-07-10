@@ -223,7 +223,7 @@ const asyncRequest = <T = unknown>(
 export interface ServerAPI {
   destroy: (viewportId?: string) => void;
   getTableSchema: (table: VuuTable) => Promise<TableSchema>;
-  getTableList: () => Promise<VuuTableList>;
+  getTableList: (module?: string) => Promise<VuuTableList>;
   rpcCall: <T = unknown>(
     msg: VuuRpcRequest | ClientToServerMenuRPC | ClientToServerViewportRpcCall
   ) => Promise<T>;

@@ -1,13 +1,4 @@
 .salt-theme.vuu-theme {
-  /* .vuuFilterBar {
-    --vuuFilterBar-height: 32px;
-  }
-  .vuuFilterBar:has(.vuuFilterEditor) {
-    --vuuFilterBar-height: 64px;
-  } */
-  /* .vuuFilterBar-quick-filter {
-    --vuuFilterBar-height: 50px;
-  } */
   .vuuFilterPill {
     --vuuSplitButton-borderRadius: var(--salt-size-base);
   }

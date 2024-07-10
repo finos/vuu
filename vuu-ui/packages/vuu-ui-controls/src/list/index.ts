@@ -6,5 +6,4 @@ export * from "./listTypes";
 export * from "./ListItemHeader";
 export * from "./ListItemGroup";
 export * from "./useList";
-export * from "./CheckboxIcon";
 export * from "./RadioIcon";
