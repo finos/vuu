@@ -248,7 +248,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    console.log(`unsubscribe noop`);
+    this.emit("subscription-closed");
   }
 
   suspend() {
@@ -311,6 +311,10 @@ export class ArrayDataSource
 
   get links() {
     return this.#links;
+  }
+
+  set links(links: LinkDescriptorWithLabel[] | undefined) {
+    this.#links = links;
   }
 
   get menu() {

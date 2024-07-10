@@ -16,6 +16,7 @@ import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  LinkDescriptorWithLabel,
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
@@ -41,6 +42,7 @@ export interface TickingArrayDataSourceConstructorProps
   rpcServices?: RpcService[];
   sessionTables?: SessionTableMap;
   table?: Table;
+  visualLinks?: LinkDescriptorWithLabel[];
 }
 
 export class TickingArrayDataSource extends ArrayDataSource {
@@ -57,6 +59,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     sessionTables,
     table,
     menu,
+    visualLinks,
     ...arrayDataSourceProps
   }: TickingArrayDataSourceConstructorProps) {
     if (data === undefined && table === undefined) {
@@ -71,6 +74,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#sessionTables = sessionTables;
     this.#rpcServices = rpcServices;
     this.#table = table;
+    this.links = visualLinks;
 
     if (table) {
       this.tableSchema = table.schema;
