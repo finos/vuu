@@ -140,7 +140,9 @@ const FilterBarTemplate = ({
   );
 };
 
-export const DefaultFilterBar = () => <FilterBarTemplate />;
+export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
+  <FilterBarTemplate {...props} />
+);
 DefaultFilterBar.displaySequence = displaySequence++;
 
 export const FilterBarOneSimpleFilter = () => {
