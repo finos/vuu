@@ -344,6 +344,7 @@ export type DataSourceEvents = {
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
   "subscription-open": (subscription: DataSourceSubscribedMessage) => void;
+  "subscription-closed": () => void;
 };
 
 /**

@@ -160,7 +160,7 @@ export const Shell = ({ user, ...props }: ShellProps) => {
     // ApplicationProvider must go outside Dialog and Notification providers
     // ApplicationProvider injects the SaltProvider and this must be the root
     // SaltProvider.
-    <ApplicationProvider user={user}>
+    <ApplicationProvider density="high" theme="vuu-theme" user={user}>
       <LayoutManagementProvider>
         <DialogProvider>
           <NotificationsProvider>

@@ -1,17 +1,12 @@
-import type { DataSource, SuggestionFetcher } from "@finos/vuu-data-types";
+import { VuuModule } from "./VuuModule";
 import { basketModule } from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import { simulModule } from "./simul/simul-module";
 import { SimulTableName } from "./simul/simul-schemas";
-import testModule from "./test/test-module";
+import { testModule } from "./test/test-module";
 import { TestTableName } from "./test/test-schemas";
 
 export type VuuModuleName = "BASKET" | "SIMUL" | "TEST";
-
-export interface VuuModule<T extends string = string> {
-  createDataSource: (tableName: T) => DataSource;
-  typeaheadHook: () => SuggestionFetcher;
-}
 
 const vuuModules: Record<
   VuuModuleName,
