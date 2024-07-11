@@ -14,7 +14,7 @@ import org.finos.vuu.core.module.price.PriceModule;
 import org.finos.vuu.core.module.simul.SimulationModule;
 import org.finos.vuu.core.module.typeahead.TypeAheadModule;
 import org.finos.vuu.core.module.vui.VuiStateModule;
-import org.finos.vuu.module.MyExampleModule;
+import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.AlwaysHappyLoginValidator;
 import org.finos.vuu.net.Authenticator;
 import org.finos.vuu.net.LoggedInTokenValidator;
@@ -82,7 +82,7 @@ public class VuuExampleMain
          .withModule(TypeAheadModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
-         .withModule(new MyExampleModule().create(tableDefContainer))       ;
+         .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
 
         final VuuServer vuuServer = new VuuServer(config, lifecycle, clock, metrics);
 
