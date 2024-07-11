@@ -25,14 +25,9 @@ import type {
 import { metadataKeys } from "@finos/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-import { SessionTableMap } from "./simul";
+import { RpcService, SessionTableMap } from "./VuuModule";
 
 const { KEY } = metadataKeys;
-
-export type RpcService = {
-  rpcName: string;
-  service: (rpcRequest: any) => Promise<any>;
-};
 
 export interface TickingArrayDataSourceConstructorProps
   extends Omit<ArrayDataSourceConstructorProps, "data"> {
@@ -165,15 +160,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (rpcService) {
       switch (rpcRequest.rpcName) {
         case "VP_BULK_EDIT_COLUMN_CELLS_RPC": {
-          return rpcService.service(rpcRequest);
+          return rpcService.service(rpcRequest) as Promise<T>;
         }
       }
       const selectedRows = this.getSelectedRows();
       return rpcService.service({
         ...rpcRequest,
-        vpId: this.viewport,
         selectedRows,
-      });
+      }) as Promise<T>;
     } else {
       console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);
     }
@@ -201,13 +195,13 @@ export class TickingArrayDataSource extends ArrayDataSource {
           // already know selected rows.
           return rpcService.service({
             ...rpcRequest,
-            vpId: this.viewport,
+            // vpId: this.viewport,
             selectedRowIds: this.getSelectedRowIds(),
             // include table for now in the rpcRequest. In future we will support
             //a viewportId, same as server, but for that we have to map viewports
             // to tables in module.
             table: this.tableSchema.table,
-          });
+          } as any) as any;
         }
         default:
       }

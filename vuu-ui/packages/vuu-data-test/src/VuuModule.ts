@@ -1,5 +1,7 @@
 import {
   DataSource,
+  DataSourceRow,
+  DataSourceSubscribedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -37,9 +39,10 @@ export type RpcService = {
   rpcName: string;
   service: (
     rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
-      namedParams: { [key: string]: unknown };
-      selectedRowIds: string[];
-      table: VuuTable;
+      namedParams?: { [key: string]: unknown };
+      selectedRows?: DataSourceRow[];
+      selectedRowIds?: string[];
+      table?: VuuTable;
     }
   ) => Promise<unknown>;
 };
@@ -68,9 +71,22 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#tables = tables;
     this.#visualLinks = visualLinks;
   }
+
+  private registerViewport = (
+    subscriptionDetails: DataSourceSubscribedMessage
+  ) => {
+    console.log("register new viewport", {
+      subscriptionDetails,
+    });
+  };
+
+  private unregisterViewport = () => {
+    console.log("unregister viewport");
+  };
+
   createDataSource = (tableName: T) => {
     const columnDescriptors = this.getColumnDescriptors(tableName);
-    return new TickingArrayDataSource({
+    const dataSource = new TickingArrayDataSource({
       columnDescriptors,
       keyColumn:
         this.#schemas[tableName] === undefined
@@ -82,6 +98,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       sessionTables: this.#sessionTableMap,
       visualLinks: this.#visualLinks?.[tableName],
     });
+
+    dataSource.on("subscription-open", this.registerViewport);
+    dataSource.on("subscription-closed", this.unregisterViewport);
+
+    return dataSource;
   };
 
   getServices(tableName: T) {
@@ -138,39 +159,40 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
   private openBulkEdits = async (
     rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
-      selectedRowIds: string[];
-      table: VuuTable;
+      selectedRowIds?: string[];
+      table?: VuuTable;
     }
   ) => {
     const { selectedRowIds, table } = rpcRequest;
+    if (selectedRowIds && table) {
+      const dataTable = this.#tables[table.table as T];
+      if (dataTable) {
+        const sessionTable = this.createSessionTableFromSelectedRows(
+          dataTable,
+          selectedRowIds
+        );
+        const sessionTableName = `${table.table}-${uuid()}`;
+        this.#sessionTableMap[sessionTableName] = sessionTable;
 
-    const dataTable = this.#tables[table.table as T];
-    if (dataTable) {
-      const sessionTable = this.createSessionTableFromSelectedRows(
-        dataTable,
-        selectedRowIds
-      );
-      const sessionTableName = `${table.table}-${uuid()}`;
-      this.#sessionTableMap[sessionTableName] = sessionTable;
-
-      return {
-        action: {
-          renderComponent: "grid",
-          table: {
-            module: "SIMUL",
-            table: sessionTableName,
-          },
-          tableSchema: dataTable.schema,
-          type: "OPEN_DIALOG_ACTION",
-        } as OpenDialogActionWithSchema,
-        requestId: "request_id",
-        rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-      };
-    } else {
-      return {
-        requestId: "request_id",
-        rpcName: "VP_BULK_EDIT_REJECT",
-      };
+        return {
+          action: {
+            renderComponent: "grid",
+            table: {
+              module: "SIMUL",
+              table: sessionTableName,
+            },
+            tableSchema: dataTable.schema,
+            type: "OPEN_DIALOG_ACTION",
+          } as OpenDialogActionWithSchema,
+          requestId: "request_id",
+          rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+        };
+      } else {
+        return {
+          requestId: "request_id",
+          rpcName: "VP_BULK_EDIT_REJECT",
+        };
+      }
     }
   };
 
@@ -178,8 +200,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   private applyBulkEdits = async (
     rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
       namedParams: { [key: string]: unknown };
-      selectedRowIds: string[];
-      table: VuuTable;
+      table?: VuuTable;
     }
   ) => {
     const sessionTable = this.getSessionTable();

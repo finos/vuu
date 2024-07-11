@@ -24,11 +24,11 @@ import type {
 import type {
   ClientToServerBody,
   ClientToServerMenuRPC,
-  ClientToServerMessage,
+  VuuClientToServerMessage,
   ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   ServerToClientCreateViewPortSuccess,
-  ServerToClientMessage,
+  VuuServerToClientMessage,
   ServerToClientTableList,
   ServerToClientTableMeta,
   VuuLinkDescriptor,
@@ -114,7 +114,7 @@ interface PendingLogin {
 
 type QueuedRequest = {
   clientViewportId: string;
-  message: ClientToServerMessage["body"];
+  message: VuuClientToServerMessage["body"];
   requestId: string;
 };
 
@@ -724,7 +724,7 @@ export class ServerProxy {
   }
 
   public sendIfReady(
-    message: ClientToServerMessage["body"],
+    message: VuuClientToServerMessage["body"],
     requestId: string,
     isReady = true
   ) {
@@ -736,7 +736,7 @@ export class ServerProxy {
   }
 
   public sendMessageToServer(
-    body: ClientToServerMessage["body"],
+    body: VuuClientToServerMessage["body"],
     requestId = `${_requestId++}`,
     options: MessageOptions = DEFAULT_OPTIONS
   ) {
@@ -762,11 +762,11 @@ export class ServerProxy {
         user: this.user,
         module,
         body,
-      } as ClientToServerMessage);
+      } as VuuClientToServerMessage);
     }
   }
 
-  public handleMessageFromServer(message: ServerToClientMessage) {
+  public handleMessageFromServer(message: VuuServerToClientMessage) {
     const { body, requestId, sessionId } = message;
 
     // if (message.body.type !== "HB") {

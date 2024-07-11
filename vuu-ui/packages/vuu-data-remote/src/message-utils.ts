@@ -6,10 +6,9 @@ import {
 import {
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  ServerToClientTableMeta,
   VuuRow,
   VuuRpcRequest,
-  VuuTable,
-  VuuTableMeta,
 } from "@finos/vuu-protocol-types";
 
 export const isVuuRpcRequest = (
@@ -52,16 +51,12 @@ export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
   return result;
 };
 
-export interface VuuTableMetaWithTable extends VuuTableMeta {
-  table: VuuTable;
-}
-
 export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
   key,
   table,
-}: VuuTableMetaWithTable): Readonly<TableSchema> => {
+}: Omit<ServerToClientTableMeta, "type">): Readonly<TableSchema> => {
   return {
     table,
     columns: columns.map((col, idx) => ({
