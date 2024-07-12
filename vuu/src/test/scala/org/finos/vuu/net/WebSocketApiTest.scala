@@ -14,13 +14,20 @@ import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.viewport.ViewPortTable
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
+import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
+
+import scala.reflect.ClassTag
 
 
-class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterEach with GivenWhenThen with Matchers {
+class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
   implicit var viewServerClient: ViewServerClient = _
-  override def beforeEach(): Unit = {
+
+  override def beforeAll(): Unit = {
     viewServerClient = testStartUp()
+  }
+
+  override def afterAll(): Unit = {
+    //todo cleanup
   }
   def testStartUp(): ViewServerClient = {
 
@@ -67,12 +74,10 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Given
     viewServerClient
   }
 
-  Feature("Server api") {
-    Scenario("should get table metadata") {
-      Given("a table name")
-
+  Feature("Server web socket api") {
+    Scenario("client requests to get table metadata for a table") {
       val token = ClientHelperFns.auth("testUser", "testUserPassword")
-      val session = ClientHelperFns.login(token, "chris")
+      val session = ClientHelperFns.login(token, "testUser")
 
       //example user helper function
       //ClientHelperFns.tableMetaAsync("someSessionId", "someToken", "testUser", ViewPortTable("GetMeTable", "TestModule"), "requestId1")
@@ -81,11 +86,11 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Given
       val getTableMetaRequestMessage = createViewSerMessage(session, token, GetTableMetaRequest(ViewPortTable("instruments", "TEST")))
       viewServerClient.send(getTableMetaRequestMessage)
 
-
+      Then("return table data in response")
       val response = ClientHelperFns.awaitMsgBody[GetTableMetaResponse]
       response.isDefined shouldBe true
 
-      val responseMessage =  response.get
+      val responseMessage = response.get
       responseMessage.columns.length shouldEqual 5
 
     }
@@ -100,4 +105,95 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Given
       "DoesntReallyMatter")
   }
 
+  Scenario("client requests to get table metadata for a non existent") {
+
+    val client = new MyWebSocketClient(viewServerClient)
+
+    val (token, sessionId) = client.authenticateAndLogin("testUser", "testUserPassword")
+
+    client.send(sessionId, token, GetTableMetaRequest(ViewPortTable("DoesNotExist", "TEST")))
+
+    Then("return error response with helpful message")
+    val response = client.awaitForMsgWithBody[ErrorResponse]
+    response.isDefined shouldBe true
+
+    val responseMessage = response.get
+    responseMessage.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
+  }
+
+  Scenario("client requests to get table metadata for null table name") {
+
+    val client = new MyWebSocketClient(viewServerClient)
+
+    val (token, sessionId) = client.authenticateAndLogin("testUser", "testUserPassword")
+
+    client.send(sessionId, token, GetTableMetaRequest(ViewPortTable(null, "TEST")))
+
+
+    Then("return error response with helpful message")
+    val response = client.awaitForMsgWithBody[ErrorResponse]
+    response.isDefined shouldBe true
+
+    val responseMessage = response.get
+    responseMessage.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
+
+  }
+
+}
+
+class MyWebSocketClient(vsClient: ViewServerClient) {
+
+  type SessionId = String
+  type Token = String
+
+  def send(sessionId: String, token: String, body: MessageBody): Unit = {
+    vsClient.send(createViewServerMessage(sessionId, token, body))
+  }
+
+  //todo fold this in to WebSocketViewServerClient?
+  //is intention that this can be used for non ws client?
+  def awaitForMsgWithBody[T <: AnyRef](implicit t: ClassTag[T]): Option[T] = {
+    val msg = vsClient.awaitMsg
+    if (msg != null) { //null indicate error or timeout
+      if (isExpectedBodyType(t, msg))
+        Some(msg.body.asInstanceOf[T])
+      else
+        awaitForMsgWithBody
+    }
+    else
+      None
+  }
+
+  def authenticateAndLogin(user: String, password: String): (Token, SessionId) = {
+    val token = authenticate(user, password)
+    val session = login(token, user)
+    (token, session)
+  }
+
+  private def isExpectedBodyType[T <: AnyRef](t: ClassTag[T], msg: ViewServerMessage) = {
+    val expectedBodyType: Class[T] = t.runtimeClass.asInstanceOf[Class[T]]
+    expectedBodyType.isAssignableFrom(msg.body.getClass)
+  }
+
+  private def createViewServerMessage(sessionId: String, token: String, body: MessageBody): ViewServerMessage = {
+    JsonViewServerMessage(RequestId.oneNew(),
+      sessionId,
+      token,
+      "testUser",
+      body,
+      "DoesntReallyMatter")
+  }
+
+  //todo not used
+  def authenticate(user: String, password: String): String = {
+    send("not used", "not used", AuthenticateRequest(user, password))
+    awaitForMsgWithBody[AuthenticateSuccess].get.token //todo handle no response
+  }
+
+  def login(token: String, user: String): String = {
+    send("not used", "not used", LoginRequest(token, user))
+    vsClient.awaitMsg.sessionId //todo handle no response
+    //todo what to do if LoginFailure - is this expected to return token when failed?
+    //Should token be called session?
+  }
 }
