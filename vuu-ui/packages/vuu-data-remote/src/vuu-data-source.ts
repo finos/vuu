@@ -245,6 +245,7 @@ export class VuuDataSource
     this.#status = "unsubscribed";
     this.viewport = undefined;
     this.range = { from: 0, to: 0 };
+    this.emit("subscription-closed");
   }
 
   suspend() {

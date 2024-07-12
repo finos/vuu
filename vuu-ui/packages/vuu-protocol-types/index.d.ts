@@ -1,124 +1,36 @@
-// prettier-ignore
-export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
-export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
-export declare type VuuTable = {
-  table: string;
-  module: string;
-};
-export declare type VuuRange = {
-  from: number;
-  to: number;
-};
-
-export declare type VuuSortType = "A" | "D";
-
-export declare type VuuSortCol = {
-  column: string;
-  sortType: VuuSortType;
-};
-export declare type VuuSort = {
-  sortDefs: VuuSortCol[];
-};
-export declare type VuuFilter = {
-  filter: string;
-};
-export interface VuuMenuItem {
-  context: VuuMenuContext;
-  filter: string;
-  name: string;
-  rpcName: string;
-}
-
-export interface VuuMenu {
-  name: string;
-  menus: (VuuMenuItem | VuuMenu)[];
-}
-
-export type VuuRowDataItemType = string | number | boolean;
-
-export type VuuDataRow = VuuRowDataItemType[];
-
-export declare type VuuRow = {
-  data: VuuDataRow;
-  rowIndex: number;
-  rowKey: string;
-  sel: 0 | 1;
-  ts: number;
-  updateType: "U" | "D" | "SIZE";
-  viewPortId: string;
-  vpSize: number;
-  vpVersion: string;
-};
-export declare type AggTypeSum = 1;
-export declare type AggTypeAverage = 2;
-export declare type AggTypeCount = 3;
-export declare type AggTypeHigh = 4;
-export declare type AggTypeLow = 5;
-export declare type AggTypeDistinct = 6;
-export declare type VuuAggType =
-  | AggTypeSum
-  | AggTypeAverage
-  | AggTypeCount
-  | AggTypeHigh
-  | AggTypeLow
-  | AggTypeDistinct;
-export declare type VuuAggregation = {
-  column: string;
-  aggType: VuuAggType;
-};
-
-export interface VuuLink {
-  fromColumn: string;
-  toTable: string;
-  toColumn: string;
-}
-
-export declare type VuuLinkDescriptor = {
-  parentVpId: string;
-  link: VuuLink;
-};
-
 /**
- * LinkDescriptor with label is not strictly part of the Vuu Protocol
+ * Vuu Protocol Message Envelope.
  *
- * The Label is added by client code, if user has assigned a custom
- * Title to component bound to viewport.
- * The parentClientVpId is also added by client. This is needed as the
- * client vpId persists across sessions, whereas the server vpId does
- * not.
+ * All messages, in both directions (client to server and server to client) carry
+ * a set of common properties. All variation is found within the message.body.
  */
-export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
-  label?: string;
-  parentClientVpId: string;
-};
-
-export declare type VuuColumns = string[];
-export declare type VuuGroupBy = string[];
-export interface ServerToClientHeartBeat {
-  type: "HB";
-  ts: number;
-}
-export interface ServerToClientLoginSuccess {
-  type: "LOGIN_SUCCESS";
+export interface VuuClientToServerMessage<
+  TBody extends ClientToServerBody = ClientToServerBody
+> {
+  body: TBody;
+  module: string;
+  requestId: string;
+  sessionId: string;
   token: string;
-}
-export interface ServerToClientTableList {
-  type: "TABLE_LIST_RESP";
-  tables: VuuTable[];
+  user: string;
 }
 
-export type VuuTableList = Pick<ServerToClientTableList, "tables">;
+export interface VuuServerToClientMessage<
+  TBody extends ServerToClientBody = ServerToClientBody
+> {
+  body: TBody;
+  module: string;
+  requestId: string;
+  sessionId?: string;
+  token: string;
+  user: string;
+}
 
-export interface VuuTableMeta {
+export interface ServerToClientTableMeta extends VuuTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
   key: string;
-}
-export interface VuuTableMetaWithTable extends VuuTableMeta {
   table: VuuTable;
-}
-
-export interface ServerToClientTableMeta extends VuuTableMetaWithTable {
   type: "TABLE_META_RESP";
 }
 
@@ -295,16 +207,6 @@ export declare type ServerToClientBody =
   | ServerToClientEditRPC
   | ServerToClientEditRPC
   | ServerToClientEditRPCRejected;
-export interface ServerToClientMessage<
-  TBody extends ServerToClientBody = ServerToClientBody
-> {
-  body: TBody;
-  module: string;
-  requestId: string;
-  sessionId?: string;
-  token: string;
-  user: string;
-}
 export interface ClientToServerAuth {
   type: "AUTH";
   username: string;
@@ -529,15 +431,116 @@ export declare type ClientToServerBody =
   | ClientToServerMenuRPC
   | ClientToServerViewportRpcCall
   | VuuRpcRequest;
-export interface ClientToServerMessage<
-  TBody extends ClientToServerBody = ClientToServerBody
-> {
-  body: TBody;
-  module: string;
-  requestId: string;
-  sessionId: string;
-  token: string;
-  user: string;
-}
 
 /** Menu RPC services */
+
+// prettier-ignore
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
+export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
+export declare type VuuTable = {
+  table: string;
+  module: string;
+};
+export declare type VuuRange = {
+  from: number;
+  to: number;
+};
+
+export declare type VuuSortType = "A" | "D";
+
+export declare type VuuSortCol = {
+  column: string;
+  sortType: VuuSortType;
+};
+export declare type VuuSort = {
+  sortDefs: VuuSortCol[];
+};
+export declare type VuuFilter = {
+  filter: string;
+};
+export interface VuuMenuItem {
+  context: VuuMenuContext;
+  filter: string;
+  name: string;
+  rpcName: string;
+}
+
+export interface VuuMenu {
+  name: string;
+  menus: (VuuMenuItem | VuuMenu)[];
+}
+
+export type VuuRowDataItemType = string | number | boolean;
+
+export type VuuDataRow = VuuRowDataItemType[];
+
+export declare type VuuRow = {
+  data: VuuDataRow;
+  rowIndex: number;
+  rowKey: string;
+  sel: 0 | 1;
+  ts: number;
+  updateType: "U" | "D" | "SIZE";
+  viewPortId: string;
+  vpSize: number;
+  vpVersion: string;
+};
+export declare type AggTypeSum = 1;
+export declare type AggTypeAverage = 2;
+export declare type AggTypeCount = 3;
+export declare type AggTypeHigh = 4;
+export declare type AggTypeLow = 5;
+export declare type AggTypeDistinct = 6;
+export declare type VuuAggType =
+  | AggTypeSum
+  | AggTypeAverage
+  | AggTypeCount
+  | AggTypeHigh
+  | AggTypeLow
+  | AggTypeDistinct;
+export declare type VuuAggregation = {
+  column: string;
+  aggType: VuuAggType;
+};
+
+export interface VuuLink {
+  fromColumn: string;
+  toTable: string;
+  toColumn: string;
+}
+
+export declare type VuuLinkDescriptor = {
+  parentVpId: string;
+  link: VuuLink;
+};
+
+/**
+ * LinkDescriptor with label is not strictly part of the Vuu Protocol
+ *
+ * The Label is added by client code, if user has assigned a custom
+ * Title to component bound to viewport.
+ * The parentClientVpId is also added by client. This is needed as the
+ * client vpId persists across sessions, whereas the server vpId does
+ * not.
+ */
+export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
+  label?: string;
+  parentClientVpId: string;
+};
+
+export declare type VuuColumns = string[];
+export declare type VuuGroupBy = string[];
+export interface ServerToClientHeartBeat {
+  type: "HB";
+  ts: number;
+}
+export interface ServerToClientLoginSuccess {
+  type: "LOGIN_SUCCESS";
+  token: string;
+}
+export interface ServerToClientTableList {
+  type: "TABLE_LIST_RESP";
+  tables: VuuTable[];
+}
+
+export type VuuTableList = Pick<ServerToClientTableList, "tables">;

@@ -7,7 +7,7 @@ import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.TestFriendlyClock;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
-import org.finos.vuu.module.MyExampleModule;
+import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.provider.MockProvider;
 import org.finos.vuu.test.VuuServerTestCase;
 import org.finos.vuu.viewport.ViewPort;
@@ -34,15 +34,15 @@ public class JavaTestExample extends VuuServerTestCase {
         final LifecycleContainer lifecycle = new LifecycleContainer(clock);
         final TableDefContainer tableDefContainer = new TableDefContainer();
 
-        final ViewServerModule module = new MyExampleModule().create(tableDefContainer);
+        final ViewServerModule module = new JavaExampleModule().create(tableDefContainer, clock);
 
         withVuuServer(toScalaSeq(module), (vuuServer) -> {
 
             vuuServer.login("test", "test");
 
-            ViewPort viewport = vuuServer.createViewPort(MyExampleModule.NAME, "myTable");
+            ViewPort viewport = vuuServer.createViewPort(JavaExampleModule.NAME, "myTable");
 
-            MockProvider provider = vuuServer.getProvider(MyExampleModule.NAME, "myTable");
+            MockProvider provider = vuuServer.getProvider(JavaExampleModule.NAME, "myTable");
 
 //            provider.tick("123", Map.of("id", "123", "foo", "bar", "myInt", 123));
 //
