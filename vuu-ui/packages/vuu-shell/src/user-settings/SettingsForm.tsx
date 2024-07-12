@@ -5,12 +5,12 @@ import {
   DropdownProps,
   FormField,
   FormFieldLabel,
-  Input,
   Option,
   Switch,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupProps,
+  Tooltip,
 } from "@salt-ds/core";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import {
@@ -19,6 +19,7 @@ import {
   SyntheticEvent,
   useCallback,
 } from "react";
+
 
 export interface SettingsSchema {
   properties: SettingsProperty[];
@@ -140,13 +141,18 @@ export function getFormControl(
     }
   } else {
     const valid = isValidInput(currentValue, property.type);
-
-    return (
-      <VuuInput
-        onCommit={inputHandler}
-        validationStatus={valid}
-      />
-    );
+    const content = getTooltipContent(property.type);
+    if (valid === "success") {
+      return <VuuInput onCommit={inputHandler} validationStatus={valid} />;
+    } else if (valid === "error") {
+      return (
+        <Tooltip content={content}>
+          <VuuInput onCommit={inputHandler} validationStatus={valid} />
+        </Tooltip>
+      );
+    } else {
+      return <VuuInput onCommit={inputHandler} validationStatus={valid} />;
+    }
   }
 }
 
@@ -164,6 +170,17 @@ const isValidInput = (value: unknown, type: unknown) => {
     return "success";
   }
 };
+
+//Function to Generate Tooltip Content
+function getTooltipContent(type: string) {
+  if (type === "number") {
+    return <p>Field is expecting a number</p>;
+  } else if (type === "string") {
+    return <p>Field is expecting a string</p>;
+  } else {
+    return <p>Please contact Admin for more information</p>;
+  }
+}
 
 export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
 
