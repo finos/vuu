@@ -25,14 +25,20 @@ import {
 } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
-import { UserSettingsPanel } from "./user-settings";
 import {
   LayoutManagementProvider,
   useLayoutContextMenuItems,
   useLayoutManager,
 } from "./layout-management";
-import { loadingApplicationJson } from "./persistence-management";
+import {
+  IPersistenceManager,
+  LocalPersistenceManager,
+  PersistenceProvider,
+  loadingApplicationJson,
+  usePersistenceManager,
+} from "./persistence-manager";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
+import { UserSettingsPanel } from "./user-settings";
 
 import shellCss from "./shell.css";
 
@@ -156,10 +162,27 @@ const VuuApplication = ({
 };
 
 export const Shell = ({ user, ...props }: ShellProps) => {
-  return (
-    // ApplicationProvider must go outside Dialog and Notification providers
-    // ApplicationProvider injects the SaltProvider and this must be the root
-    // SaltProvider.
+  // If user has provided an implementation of IPersistenceManager
+  // by wrapping higher level PersistenceProvider, use it, otw
+  // default to LocalPersistenceManager
+  const persistenceManager = usePersistenceManager();
+  const localPersistenceManager = useMemo<
+    IPersistenceManager | undefined
+  >(() => {
+    if (persistenceManager) {
+      return undefined;
+    }
+    console.log(
+      `No Persistence Manager is configured, configuration data will be persisted to Local Storage, under the key 'vuu/${user.username}'`
+    );
+    return new LocalPersistenceManager(`vuu/${user.username}`);
+  }, [persistenceManager, user.username]);
+
+  // ApplicationProvider must go outside Dialog and Notification providers
+  // ApplicationProvider injects the SaltProvider and this must be the root
+  // SaltProvider.
+
+  const shellProviders = (
     <ApplicationProvider density="high" theme="vuu-theme" user={user}>
       <LayoutManagementProvider>
         <DialogProvider>
@@ -170,4 +193,14 @@ export const Shell = ({ user, ...props }: ShellProps) => {
       </LayoutManagementProvider>
     </ApplicationProvider>
   );
+
+  if (persistenceManager) {
+    return shellProviders;
+  } else {
+    return (
+      <PersistenceProvider persistenceManager={localPersistenceManager}>
+        {shellProviders}
+      </PersistenceProvider>
+    );
+  }
 };

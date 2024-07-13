@@ -17,7 +17,7 @@ import {
   defaultApplicationJson,
   loadingApplicationJson,
   usePersistenceManager,
-} from "../persistence-management";
+} from "../persistence-manager";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
 export const LayoutManagementContext = React.createContext<{
@@ -46,6 +46,7 @@ export const LayoutManagementContext = React.createContext<{
 
 type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
+  defaultLayout?: LayoutJSON;
 };
 
 const ensureLayoutHasTitle = (
@@ -66,6 +67,7 @@ const ensureLayoutHasTitle = (
 };
 
 export const LayoutManagementProvider = ({
+  defaultLayout,
   ...props
 }: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);

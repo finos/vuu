@@ -19,7 +19,7 @@ import {
   ApplicationContext,
   ApplicationContextProps,
 } from "./ApplicationContext";
-import { usePersistenceManager } from "../persistence-management";
+import { usePersistenceManager } from "../persistence-manager";
 
 export interface ApplicationProviderProps
   extends Partial<Pick<ThemeContextProps, "theme" | "mode">>,
