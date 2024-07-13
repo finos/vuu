@@ -1,4 +1,5 @@
 import {
+  defaultLayoutJson,
   UserSettingsPanel,
   ApplicationProvider,
   SettingsSchema,
@@ -28,6 +29,7 @@ export const DefaultUserSettingsPanel = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
+          layout: defaultLayoutJson,
           userSettings: {
             themeMode: "light",
           },
@@ -88,6 +90,7 @@ export const VariedFormControlUserSettingsPanel = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
+          layout: defaultLayoutJson,
           userSettings: {
             themeMode: "light",
             dateFormatPattern: "dd/mm/yyyy",

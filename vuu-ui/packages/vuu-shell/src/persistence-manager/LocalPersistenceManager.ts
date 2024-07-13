@@ -16,7 +16,6 @@ import {
 } from "../layout-management";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
-import { defaultApplicationJson } from "./defaultApplicationJson";
 const baseMetadataSaveLocation = "layouts/metadata";
 const baseLayoutsSaveLocation = "layouts/layouts";
 
@@ -122,7 +121,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
     });
   }
 
-  async loadApplicationJSON(): Promise<ApplicationJSON> {
+  async loadApplicationJSON(): Promise<ApplicationJSON | undefined> {
     return (
       this.#applicationJSON ||
       new Promise((resolve) => {
@@ -130,8 +129,6 @@ export class LocalPersistenceManager implements IPersistenceManager {
         if (applicationJSON) {
           this.#applicationJSON = applicationJSON;
           resolve(applicationJSON);
-        } else {
-          resolve(defaultApplicationJson);
         }
       })
     );
@@ -219,7 +216,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
 
     try {
       const applicationJSON = await this.loadApplicationJSON();
-      return applicationJSON.userSettings ?? {};
+      return applicationJSON?.userSettings ?? {};
     } catch (e) {
       return {};
     }

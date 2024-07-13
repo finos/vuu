@@ -11,7 +11,12 @@ import {
   DialogProvider,
   NotificationsProvider,
 } from "@finos/vuu-popups";
-import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  VuuUser,
+  logger,
+  registerComponent,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -34,13 +39,13 @@ import {
   IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
-  loadingApplicationJson,
   usePersistenceManager,
 } from "./persistence-manager";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
 import { UserSettingsPanel } from "./user-settings";
 
 import shellCss from "./shell.css";
+import { loadingApplicationJson } from "./layout-management/defaultApplicationJson";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
@@ -68,6 +73,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   >;
   LeftSidePanelProps?: SidePanelProps;
   children?: ReactNode;
+  defaultLayout?: LayoutJSON;
   leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
@@ -161,7 +167,7 @@ const VuuApplication = ({
   );
 };
 
-export const Shell = ({ user, ...props }: ShellProps) => {
+export const Shell = ({ defaultLayout, user, ...props }: ShellProps) => {
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
@@ -184,7 +190,7 @@ export const Shell = ({ user, ...props }: ShellProps) => {
 
   const shellProviders = (
     <ApplicationProvider density="high" theme="vuu-theme" user={user}>
-      <LayoutManagementProvider>
+      <LayoutManagementProvider defaultLayout={defaultLayout}>
         <DialogProvider>
           <NotificationsProvider>
             <VuuApplication {...props} user={user} />
