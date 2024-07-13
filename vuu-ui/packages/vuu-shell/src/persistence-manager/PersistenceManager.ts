@@ -57,7 +57,7 @@ export interface IPersistenceManager {
    *
    * @returns Full JSON representation of the application json
    */
-  loadApplicationJSON: () => Promise<ApplicationJSON>;
+  loadApplicationJSON: () => Promise<ApplicationJSON | undefined>;
 
   /**
    * Saves the application JSON.  This includes the application layout,

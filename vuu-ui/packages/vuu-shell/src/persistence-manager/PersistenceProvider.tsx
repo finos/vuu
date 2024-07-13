@@ -1,5 +1,5 @@
 import { ReactElement, ReactNode, createContext, useContext } from "react";
-import { IPersistenceManager } from "../persistence-management";
+import { IPersistenceManager } from ".";
 
 export interface PersistenceContextProps {
   persistenceManager?: IPersistenceManager;

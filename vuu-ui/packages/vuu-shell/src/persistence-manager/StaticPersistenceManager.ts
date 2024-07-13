@@ -9,17 +9,21 @@ function unsupported<T = void>() {
 }
 
 export class StaticPersistenceManager implements IPersistenceManager {
-  #applicationJSON?: Partial<ApplicationJSON>;
+  #applicationLoadDelay: number;
+  #applicationJSON?: ApplicationJSON;
   #layoutMetaData: LayoutMetadata[];
   constructor({
     applicationJSON,
+    applicationLoadDelay = 0,
     layoutMetadata = [],
   }: {
-    applicationJSON?: Partial<ApplicationJSON>;
+    applicationJSON?: ApplicationJSON;
+    applicationLoadDelay?: number;
     layoutMetadata?: LayoutMetadata[];
   }) {
-    this.#layoutMetaData = layoutMetadata;
     this.#applicationJSON = applicationJSON;
+    this.#applicationLoadDelay = applicationLoadDelay;
+    this.#layoutMetaData = layoutMetadata;
   }
   createLayout() {
     return unsupported<LayoutMetadata>();
@@ -38,7 +42,11 @@ export class StaticPersistenceManager implements IPersistenceManager {
     return Promise.resolve(this.#layoutMetaData);
   }
   loadApplicationJSON() {
-    return unsupported<ApplicationJSON>();
+    return new Promise<ApplicationJSON | undefined>((resolve) => {
+      setTimeout(() => {
+        resolve(this.#applicationJSON);
+      }, this.#applicationLoadDelay);
+    });
   }
   async saveApplicationJSON(applicationJson: ApplicationJSON) {
     console.log(`save application json `, {
