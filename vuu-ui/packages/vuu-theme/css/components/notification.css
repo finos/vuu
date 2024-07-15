@@ -1,0 +1,14 @@
+.salt-theme.vuu-theme {
+  .vuuToastNotification {
+    border-radius: 6px;
+  }
+
+  .vuuToastNotification-success {
+    --vuu-icon-color: white;
+    color: white;
+  }
+  .vuuToastNotification-info {
+    --vuu-icon-color: white;
+    color: white;
+  }
+}
