@@ -1,6 +1,7 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { queryClosest, Settings } from "@finos/vuu-utils";
 import {
+  Button,
   Dropdown,
   DropdownProps,
   FormField,
@@ -19,7 +20,6 @@ import {
   SyntheticEvent,
   useCallback,
 } from "react";
-
 
 export interface SettingsSchema {
   properties: SettingsProperty[];
@@ -142,17 +142,16 @@ export function getFormControl(
   } else {
     const valid = isValidInput(currentValue, property.type);
     const content = getTooltipContent(property.type);
-    if (valid === "success") {
-      return <VuuInput onCommit={inputHandler} validationStatus={valid} />;
-    } else if (valid === "error") {
-      return (
-        <Tooltip content={content}>
-          <VuuInput onCommit={inputHandler} validationStatus={valid} />
-        </Tooltip>
-      );
-    } else {
-      return <VuuInput onCommit={inputHandler} validationStatus={valid} />;
-    }
+    const displayTooltip = valid === "success"
+    return (
+      <Tooltip content={content} disabled={displayTooltip}>
+        <VuuInput
+          key={property.name}
+          onCommit={inputHandler}
+          validationStatus={valid}
+        />
+      </Tooltip>
+    );
   }
 }
 
@@ -178,7 +177,7 @@ function getTooltipContent(type: string) {
   } else if (type === "string") {
     return <p>Field is expecting a string</p>;
   } else {
-    return <p>Please contact Admin for more information</p>;
+    return <p>Please contact Admin for more information on expected type</p>;
   }
 }
 
@@ -248,6 +247,9 @@ export const SettingsForm = ({
           )}
         </FormField>
       ))}
+      <FormField data-field="revert" key="revert">
+        <Button>Revert</Button>
+      </FormField>
     </div>
   );
 };
