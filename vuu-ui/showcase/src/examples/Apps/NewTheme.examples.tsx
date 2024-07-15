@@ -1,12 +1,5 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
-import {
-  FeatureProps,
-  LeftNav,
-  LocalPersistenceManager,
-  PersistenceProvider,
-  Shell,
-  SidePanelProps,
-} from "@finos/vuu-shell";
+import { FeatureProps, LeftNav, Shell, SidePanelProps } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
@@ -83,10 +76,6 @@ const filterTableFeatures = getFilterTableFeatures(
 );
 
 const ShellWithNewTheme = () => {
-  const localPersistenceManager = useMemo(
-    () => new LocalPersistenceManager(`vuu/${user.username}`),
-    []
-  );
   const dragSource = useMemo(
     () => ({
       "basket-instruments": {
@@ -108,25 +97,23 @@ const ShellWithNewTheme = () => {
   );
 
   return (
-    <PersistenceProvider persistenceManager={localPersistenceManager}>
-      <DragDropProvider dragSources={dragSource}>
-        <Shell
-          LayoutProps={{
-            pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
-          }}
-          LeftSidePanelProps={leftSidePanelProps}
-          leftSidePanelLayout="full-height"
-          loginUrl={window.location.toString()}
-          user={user}
-          style={
-            {
-              "--vuuShell-height": "100vh",
-              "--vuuShell-width": "100vw",
-            } as CSSProperties
-          }
-        ></Shell>
-      </DragDropProvider>
-    </PersistenceProvider>
+    <DragDropProvider dragSources={dragSource}>
+      <Shell
+        LayoutProps={{
+          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+        }}
+        LeftSidePanelProps={leftSidePanelProps}
+        leftSidePanelLayout="full-height"
+        loginUrl={window.location.toString()}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100vh",
+            "--vuuShell-width": "100vw",
+          } as CSSProperties
+        }
+      ></Shell>
+    </DragDropProvider>
   );
 };
 

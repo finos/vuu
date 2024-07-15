@@ -7,7 +7,7 @@ import {
   saveLocalEntity,
 } from "@finos/vuu-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocalPersistenceManager } from "../../src/persistence-management";
+import { LocalPersistenceManager } from "../../src/persistence-manager";
 
 const expectPromiseRejectsWithError = (
   f: () => Promise<unknown>,

@@ -52,3 +52,46 @@ export const defaultApplicationJson: ApplicationJSON = {
     ],
   },
 };
+
+export const defaultLayoutJson: LayoutJSON = {
+  type: "Stack",
+  id: "main-tabs",
+  props: {
+    className: "vuuShell-mainTabs",
+    TabstripProps: {
+      allowAddTab: true,
+      allowCloseTab: true,
+      allowRenameTab: true,
+      animateSelectionThumb: false,
+      location: "main-tab",
+      variant: "primary",
+    },
+    preserve: true,
+    active: 0,
+  },
+};
+
+const placeholderLayout: LayoutJSON = {
+  props: {
+    id: "tab1",
+    title: "Tab 1",
+    className: "vuuShell-Placeholder",
+  },
+  type: "Placeholder",
+};
+
+export const getDefaultApplicationLayout = (
+  initialLayout: LayoutJSON | LayoutJSON[] = placeholderLayout
+): LayoutJSON => {
+  if (Array.isArray(initialLayout)) {
+    return {
+      ...defaultLayoutJson,
+      children: initialLayout,
+    };
+  } else {
+    return {
+      ...defaultLayoutJson,
+      children: [initialLayout],
+    };
+  }
+};

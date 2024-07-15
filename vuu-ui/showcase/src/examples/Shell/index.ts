@@ -4,6 +4,7 @@ export * as ConnectionMetrics from "./ConnectionMetrics.examples";
 export * as Feature from "./Feature.examples";
 export * as FeatureList from "./FeatureList.examples";
 export * as LayoutList from "./LayoutList.examples";
+export * as LayoutManagementProvider from "./LayoutManagementProvider.examples";
 export * as LeftNav from "./LeftNav.examples";
 export * as LoginPanel from "./LoginPanel.examples";
 export * as SavePanel from "./SavePanel.examples";

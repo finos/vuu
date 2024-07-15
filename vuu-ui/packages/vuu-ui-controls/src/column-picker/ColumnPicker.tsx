@@ -117,6 +117,7 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
           size={iconSize}
           onClick={handleButtonClick}
           ref={forkedRef}
+          variant="secondary"
         />
         <FloatingColumnSearch
           {...getFloatingProps()}

@@ -13,12 +13,13 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { usePersistenceManager } from "../persistence-manager";
+import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import {
   defaultApplicationJson,
+  getDefaultApplicationLayout,
   loadingApplicationJson,
-  usePersistenceManager,
-} from "../persistence-management";
-import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
+} from "./defaultApplicationJson";
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
@@ -46,6 +47,7 @@ export const LayoutManagementContext = React.createContext<{
 
 type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
+  defaultLayout?: LayoutJSON;
 };
 
 const ensureLayoutHasTitle = (
@@ -65,7 +67,21 @@ const ensureLayoutHasTitle = (
   }
 };
 
+/**
+ * LayoutManagementProvider supplies an API for loading and saving layout documents.
+ * Initial layout is automatically loaded on startup. Because this hook is responsible
+ * only for loading and saving layouts, it only triggers a render when content is loaded.
+ *
+ * Initial layout displays a loading state
+ * User may supply a default layout. This will not be displayed until call has been made to
+ * persistenceManager to retrieve stored layout state. If no stored state is returned, the
+ * default layout provided by user will be set as current state (and hence rendered). If no
+ * default layout has been provided by user, the sysem default will be used (simple PlaceHolder)
+ * If saved layout state has been returned, that will be set as current state (and rendered)
+ *
+ */
 export const LayoutManagementProvider = ({
+  defaultLayout,
   ...props
 }: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
@@ -132,8 +148,14 @@ export const LayoutManagementProvider = ({
 
     persistenceManager
       ?.loadApplicationJSON()
-      .then((applicationJSON: ApplicationJSON) => {
-        setApplicationJSON(applicationJSON);
+      .then((applicationJSON?: ApplicationJSON) => {
+        if (applicationJSON) {
+          setApplicationJSON(applicationJSON);
+        } else {
+          setApplicationJSON({
+            layout: getDefaultApplicationLayout(defaultLayout),
+          });
+        }
       })
       .catch((error: Error) => {
         notify({
@@ -146,7 +168,7 @@ export const LayoutManagementProvider = ({
           error
         );
       });
-  }, [notify, persistenceManager, setApplicationJSON]);
+  }, [defaultLayout, notify, persistenceManager, setApplicationJSON]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
