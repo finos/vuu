@@ -1,11 +1,7 @@
-import type { VuuUser } from "@finos/vuu-utils";
+import type { Settings, VuuUser } from "@finos/vuu-utils";
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { createContext } from "react";
-import { SettingsSchema } from "../application-settings/SettingsForm";
-import { VuuRowDataItemType } from "packages/vuu-protocol-types";
-
-// export interface CoreSettings {
-//   themeMode: ThemeMode;
-// }
+import { SettingsSchema } from "../user-settings";
 
 const Guest: VuuUser = {
   username: "unknown",
@@ -13,60 +9,19 @@ const Guest: VuuUser = {
 };
 
 export interface ApplicationContextProps {
-  onApplicationSettingChanged: (
+  onUserSettingChanged: (
     propertyName: string,
     value: VuuRowDataItemType
   ) => void;
-  applicationSettings?: Record<string, string | number | boolean>;
-  applicationSettingsSchema?: SettingsSchema;
+  userSettings?: Settings;
+  userSettingsSchema?: SettingsSchema;
   user: VuuUser;
 }
 
 export const ApplicationContext = createContext<ApplicationContextProps>({
-  onApplicationSettingChanged: (propertyName: string) =>
-    console.log(
+  onUserSettingChanged: (propertyName: string) =>
+    console.warn(
       `Cannot change setting '${propertyName}'.\nDid you forget to declare an ApplicationProvider ?`
     ),
-  applicationSettings: {
-    themeMode: "light",
-    dateFormatPattern: "dd MMMM yyyy",
-    region: "apac",
-    greyscale: false,
-  },
-  applicationSettingsSchema: {
-    properties: [
-      {
-        name: "themeMode",
-        label: "Mode",
-        values: ["light", "dark"],
-        defaultValue: "light",
-        type: "string",
-      },
-      {
-        name: "dateFormatPattern",
-        label: "Date Formatting",
-        values: ["dd/mm/yyyy", "mm/dd/yyyy", "dd MMMM yyyy"],
-        defaultValue: "dd/mm/yyyy",
-        type: "string",
-      },
-      {
-        name: "region",
-        label: "Region",
-        values: [
-          { value: "us", label: "US" },
-          { value: "apac", label: "Asia Pacific" },
-          { value: "emea", label: "Europe, Middle East & Africa" },
-        ],
-        defaultValue: "apac",
-        type: "string",
-      },
-      {
-        name: "greyscale",
-        label: "Greyscale",
-        defaultValue: false,
-        type: "boolean",
-      },
-    ],
-  },
   user: Guest,
 });

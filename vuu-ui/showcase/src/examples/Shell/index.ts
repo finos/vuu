@@ -1,10 +1,10 @@
 export * as AppHeader from "./AppHeader.examples";
-export * as ApplicationSettings from "./ApplicationSettings.examples";
 export * as ConnectionStatus from "./ConnectionStatus.examples";
 export * as ConnectionMetrics from "./ConnectionMetrics.examples";
 export * as Feature from "./Feature.examples";
 export * as FeatureList from "./FeatureList.examples";
 export * as LayoutList from "./LayoutList.examples";
+export * as LayoutManagementProvider from "./LayoutManagementProvider.examples";
 export * as LeftNav from "./LeftNav.examples";
 export * as LoginPanel from "./LoginPanel.examples";
 export * as SavePanel from "./SavePanel.examples";
@@ -12,3 +12,4 @@ export * as SessionTableEditing from "./SessionTableEditing.examples";
 export * as Shell from "./Shell.examples";
 export * as ThemeProvider from "./ThemeProvider.examples";
 export * as ThemeSwitch from "./ThemeSwitch.examples";
+export * as UserSettings from "./UserSettings.examples";

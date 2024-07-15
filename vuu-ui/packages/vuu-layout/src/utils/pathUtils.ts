@@ -1,6 +1,10 @@
-import { isContainer } from "@finos/vuu-utils";
+import {
+  isContainer,
+  LayoutJSON,
+  LayoutModel,
+  WithActive,
+} from "@finos/vuu-utils";
 import React, { isValidElement, ReactElement } from "react";
-import { LayoutJSON, LayoutModel, WithActive } from "../layout-reducer";
 import { getProp, getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
 

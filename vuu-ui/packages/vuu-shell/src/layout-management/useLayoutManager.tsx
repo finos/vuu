@@ -1,39 +1,25 @@
+import { isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
+import { useNotifications } from "@finos/vuu-popups";
+import {
+  ApplicationJSON,
+  ApplicationSetting,
+  ApplicationSettings,
+  LayoutJSON,
+} from "@finos/vuu-utils";
 import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
-import {
-  ApplicationJSON,
-  ApplicationSettings,
-  LayoutJSON,
-  resolveJSONPath,
-  ApplicationSetting,
-  isLayoutJSON,
-} from "@finos/vuu-layout";
-import { useNotifications } from "@finos/vuu-popups";
+import { usePersistenceManager } from "../persistence-manager";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import {
   defaultApplicationJson,
-  PersistenceManager,
+  getDefaultApplicationLayout,
   loadingApplicationJson,
-  LocalPersistenceManager,
-  RemotePersistenceManager,
-} from "../persistence-management";
-
-let _persistenceManager: PersistenceManager;
-
-const getPersistenceManager = () => {
-  if (_persistenceManager === undefined) {
-    _persistenceManager = process.env.LOCAL
-      ? new LocalPersistenceManager()
-      : new RemotePersistenceManager();
-  }
-  return _persistenceManager;
-};
+} from "./defaultApplicationJson";
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
@@ -61,7 +47,7 @@ export const LayoutManagementContext = React.createContext<{
 
 type LayoutManagementProviderProps = {
   children: JSX.Element | JSX.Element[];
-  persistenceManager?: PersistenceManager;
+  defaultLayout?: LayoutJSON;
 };
 
 const ensureLayoutHasTitle = (
@@ -81,8 +67,21 @@ const ensureLayoutHasTitle = (
   }
 };
 
+/**
+ * LayoutManagementProvider supplies an API for loading and saving layout documents.
+ * Initial layout is automatically loaded on startup. Because this hook is responsible
+ * only for loading and saving layouts, it only triggers a render when content is loaded.
+ *
+ * Initial layout displays a loading state
+ * User may supply a default layout. This will not be displayed until call has been made to
+ * persistenceManager to retrieve stored layout state. If no stored state is returned, the
+ * default layout provided by user will be set as current state (and hence rendered). If no
+ * default layout has been provided by user, the sysem default will be used (simple PlaceHolder)
+ * If saved layout state has been returned, that will be set as current state (and rendered)
+ *
+ */
 export const LayoutManagementProvider = ({
-  persistenceManager: persistenceManagerProp,
+  defaultLayout,
   ...props
 }: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
@@ -90,12 +89,8 @@ export const LayoutManagementProvider = ({
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
   const notify = useNotifications();
+  const persistenceManager = usePersistenceManager();
   const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJson);
-
-  const persistenceManager = useMemo<PersistenceManager>(
-    () => persistenceManagerProp ?? getPersistenceManager(),
-    [persistenceManagerProp]
-  );
 
   const setApplicationJSON = useCallback(
     (applicationJSON: ApplicationJSON, rerender = true) => {
@@ -138,7 +133,7 @@ export const LayoutManagementProvider = ({
 
   useEffect(() => {
     persistenceManager
-      .loadMetadata()
+      ?.loadMetadata()
       .then((metadata) => {
         setLayoutMetadata(metadata);
       })
@@ -152,9 +147,15 @@ export const LayoutManagementProvider = ({
       });
 
     persistenceManager
-      .loadApplicationJSON()
-      .then((applicationJSON: ApplicationJSON) => {
-        setApplicationJSON(applicationJSON);
+      ?.loadApplicationJSON()
+      .then((applicationJSON?: ApplicationJSON) => {
+        if (applicationJSON) {
+          setApplicationJSON(applicationJSON);
+        } else {
+          setApplicationJSON({
+            layout: getDefaultApplicationLayout(defaultLayout),
+          });
+        }
       })
       .catch((error: Error) => {
         notify({
@@ -167,13 +168,13 @@ export const LayoutManagementProvider = ({
           error
         );
       });
-  }, [notify, persistenceManager, setApplicationJSON]);
+  }, [defaultLayout, notify, persistenceManager, setApplicationJSON]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
       if (isLayoutJSON(layout)) {
         setApplicationLayout(layout, false);
-        persistenceManager.saveApplicationJSON(applicationJSONRef.current);
+        persistenceManager?.saveApplicationJSON(applicationJSONRef.current);
       } else {
         console.error("Tried to save invalid application layout", layout);
       }
@@ -195,7 +196,7 @@ export const LayoutManagementProvider = ({
 
       if (layoutToSave && isLayoutJSON(layoutToSave)) {
         persistenceManager
-          .createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
+          ?.createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
             notify({
               type: "success",
@@ -238,7 +239,7 @@ export const LayoutManagementProvider = ({
       } else {
         setApplicationSettings(settings as ApplicationSettings);
       }
-      persistenceManager.saveApplicationJSON(applicationJSONRef.current);
+      persistenceManager?.saveApplicationJSON(applicationJSONRef.current);
     },
     [persistenceManager, setApplicationSettings]
   );
@@ -254,7 +255,7 @@ export const LayoutManagementProvider = ({
   const loadLayoutById = useCallback(
     (id: string) => {
       persistenceManager
-        .loadLayout(id)
+        ?.loadLayout(id)
         .then((layoutJson) => {
           const { layout: currentLayout } = applicationJSONRef.current;
           setApplicationLayout({

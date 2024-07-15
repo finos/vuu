@@ -1,6 +1,8 @@
 import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
 import type { Filter, FilterState } from "@finos/vuu-filter-types";
 import {
+  CSSProperties,
+  ReactElement,
   SyntheticEvent,
   useCallback,
   useEffect,
@@ -18,6 +20,35 @@ const lastUpdatedColumn = {
   type: "date/time",
 } as const;
 
+const FilterContainer = ({
+  children,
+  filter,
+  style = { left: 0, position: "absolute", top: 0, width: "100%" },
+}: {
+  children: ReactElement;
+  filter: Filter | null;
+  style?: CSSProperties;
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.querySelector("input")?.focus();
+  }, []);
+
+  return (
+    <div className="filter-container" style={style}>
+      <Input
+        style={{ margin: 20, width: 100 }}
+        ref={inputRef}
+        data-testid="pre-filterbar"
+      />
+      <div>{children}</div>
+      <Input style={{ margin: 20, width: 100 }} />
+      <div style={{ whiteSpace: "pre" }}>{JSON.stringify(filter, null, 2)}</div>
+    </div>
+  );
+};
+
 const DefaultFilterBarCore = ({
   filterState,
   onApplyFilter,
@@ -26,10 +57,8 @@ const DefaultFilterBarCore = ({
   onFilterStateChanged,
   quickFilterColumns,
   variant,
-  style = { left: 0, position: "absolute", top: 0 },
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const tableSchema = useMemo(() => getSchema("instruments"), []);
   const columns = useMemo(
     () => [...tableSchema.columns, lastUpdatedColumn],
@@ -41,7 +70,6 @@ const DefaultFilterBarCore = ({
     (filter: DataSourceFilter) => {
       onApplyFilter?.(filter);
       setFilterStruct(filter.filterStruct ?? null);
-      console.log(`appply filter ${JSON.stringify(filter, null, 2)}`);
     },
     [onApplyFilter]
   );
@@ -49,16 +77,12 @@ const DefaultFilterBarCore = ({
   const handleFilterStateChange = useCallback(
     (filterState: FilterState) => {
       onFilterStateChanged?.(filterState);
-      console.log(
-        `filter state changed ${JSON.stringify(filterState, null, 2)}`
-      );
     },
     [onFilterStateChanged]
   );
 
   const handleFilterDeleted = useCallback(
     (filter: Filter) => {
-      console.log(`deleted filter ${JSON.stringify(filter)}`);
       onFilterDeleted?.(filter);
     },
     [onFilterDeleted]
@@ -67,49 +91,32 @@ const DefaultFilterBarCore = ({
   const handleFilterRenamed = useCallback(
     (filter: Filter, name: string) => {
       onFilterRenamed?.(filter, name);
-      console.log(
-        `filter renames ${JSON.stringify(filter, null, 2)}
-        new name ${name}`
-      );
     },
     [onFilterRenamed]
   );
 
-  useEffect(() => {
-    inputRef.current?.querySelector("input")?.focus();
-  }, []);
-
   return (
-    <div style={style}>
-      <Input
-        style={{ margin: 20, width: 100 }}
-        ref={inputRef}
-        data-testid="pre-filterbar"
+    <FilterContainer filter={filterStruct}>
+      <FilterBar
+        columnDescriptors={columns}
+        data-testid="filterbar"
+        filterState={filterState}
+        onApplyFilter={handleApplyFilter}
+        onFilterDeleted={handleFilterDeleted}
+        onFilterRenamed={handleFilterRenamed}
+        onFilterStateChanged={handleFilterStateChange}
+        quickFilterColumns={quickFilterColumns}
+        suggestionProvider={typeaheadHook}
+        tableSchema={{ ...tableSchema, columns }}
+        variant={variant}
       />
-      <div>
-        <FilterBar
-          columnDescriptors={columns}
-          data-testid="filterbar"
-          filterState={filterState}
-          onApplyFilter={handleApplyFilter}
-          onFilterDeleted={handleFilterDeleted}
-          onFilterRenamed={handleFilterRenamed}
-          onFilterStateChanged={handleFilterStateChange}
-          quickFilterColumns={quickFilterColumns}
-          suggestionProvider={typeaheadHook}
-          tableSchema={{ ...tableSchema, columns }}
-          variant={variant}
-        />
-      </div>
-      <div style={{ margin: 10 }}>{JSON.stringify(filterStruct, null, 2)}</div>
-      <Input style={{ margin: 20, width: 100 }} />
-    </div>
+    </FilterContainer>
   );
 };
 
 let displaySequence = 1;
 
-export const DefaultFilterBar = ({
+const FilterBarTemplate = ({
   filterState: filterStateProp = { filters: [], activeIndices: [] },
   onFilterStateChanged,
   ...rest
@@ -132,11 +139,15 @@ export const DefaultFilterBar = ({
     />
   );
 };
+
+export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
+  <FilterBarTemplate {...props} />
+);
 DefaultFilterBar.displaySequence = displaySequence++;
 
 export const FilterBarOneSimpleFilter = () => {
   return (
-    <DefaultFilterBar
+    <FilterBarTemplate
       filterState={{
         filters: [
           { column: "currency", name: "Filter One", op: "=", value: "EUR" },
@@ -150,7 +161,7 @@ FilterBarOneSimpleFilter.displaySequence = displaySequence++;
 
 export const FilterBarOneMultiValueFilter = () => {
   return (
-    <DefaultFilterBar
+    <FilterBarTemplate
       filterState={{
         filters: [
           {
@@ -172,7 +183,7 @@ export const FilterBarMultipleFilters = ({
   onFilterRenamed,
 }: Partial<FilterBarProps>) => {
   return (
-    <DefaultFilterBar
+    <FilterBarTemplate
       filterState={{
         filters: [
           { column: "currency", name: "Filter One", op: "=", value: "EUR" },
@@ -300,18 +311,33 @@ const initialFilterSets: FilterState[] = [
 FilterBarMultipleFilterSets.displaySequence = displaySequence++;
 
 export const QuickFilters = () => {
-  return <DefaultFilterBar variant="quick-filters" />;
+  return (
+    <>
+      <style>{`
+      .vuuFilterBar-quick-filter { width: 100%; }
+    `}</style>
+      <FilterBarTemplate className="quick-filters" variant="quick-filters" />
+    </>
+  );
 };
 QuickFilters.displaySequence = displaySequence++;
 
 export const QuickFiltersThreeColumns = () => {
   return (
-    <DefaultFilterBar variant="quick-filters" quickFilterColumns={["bbg"]} />
+    <FilterBarTemplate variant="quick-filters" quickFilterColumns={["bbg"]} />
   );
 };
 QuickFiltersThreeColumns.displaySequence = displaySequence++;
 
 export const FullFilters = () => {
-  return <DefaultFilterBar variant="full-filters" />;
+  return (
+    <>
+      <style>{`
+      .filter-container { background: var(--salt-container-secondary-background);}
+      .vuuFilterBar { width: 100%; }
+  `}</style>
+      <FilterBarTemplate variant="full-filters" />
+    </>
+  );
 };
 FullFilters.displaySequence = displaySequence++;

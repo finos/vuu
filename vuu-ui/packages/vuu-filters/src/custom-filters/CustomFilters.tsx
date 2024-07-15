@@ -98,7 +98,7 @@ export const CustomFilters = ({
           icon="plus"
           key="filter-add"
           tabIndex={0}
-          variant="primary"
+          variant="secondary"
         />
 
         {promptProps ? (

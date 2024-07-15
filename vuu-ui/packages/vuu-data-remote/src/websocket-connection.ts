@@ -1,6 +1,6 @@
 import {
-  ServerToClientMessage,
-  ClientToServerMessage,
+  VuuServerToClientMessage,
+  VuuClientToServerMessage,
 } from "@finos/vuu-protocol-types";
 import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
@@ -12,7 +12,7 @@ import {
 } from "@finos/vuu-data-types";
 
 export type ConnectionMessage =
-  | ServerToClientMessage
+  | VuuServerToClientMessage
   | ConnectionStatusMessage
   | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
@@ -170,23 +170,25 @@ const closeWarn = () => {
   warn?.(`Connection cannot be closed, socket not yet opened`);
 };
 
-const sendWarn = (msg: ClientToServerMessage) => {
+const sendWarn = (msg: VuuClientToServerMessage) => {
   warn?.(`Message cannot be sent, socket closed ${msg.body.type}`);
 };
 
-const parseMessage = (message: string): ServerToClientMessage => {
+const parseMessage = (message: string): VuuServerToClientMessage => {
   try {
-    return JSON.parse(message) as ServerToClientMessage;
+    return JSON.parse(message) as VuuServerToClientMessage;
   } catch (e) {
     throw Error(`Error parsing JSON response from server ${message}`);
   }
 };
 
-export class WebsocketConnection implements Connection<ClientToServerMessage> {
+export class WebsocketConnection
+  implements Connection<VuuClientToServerMessage>
+{
   [connectionCallback]: ConnectionCallback;
   close: () => void = closeWarn;
   requiresLogin = true;
-  send: (msg: ClientToServerMessage) => void = sendWarn;
+  send: (msg: VuuClientToServerMessage) => void = sendWarn;
   status:
     | "closed"
     | "ready"
@@ -277,7 +279,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       }
     };
 
-    const send = (msg: ClientToServerMessage) => {
+    const send = (msg: VuuClientToServerMessage) => {
       if (process.env.NODE_ENV === "development") {
         if (debugEnabled && msg.body.type !== "HB_RESP") {
           debug?.(`>>> ${msg.body.type}`);
@@ -286,7 +288,7 @@ export class WebsocketConnection implements Connection<ClientToServerMessage> {
       ws.send(JSON.stringify(msg));
     };
 
-    const queue = (msg: ClientToServerMessage) => {
+    const queue = (msg: VuuClientToServerMessage) => {
       info?.(`TODO queue message until websocket reconnected ${msg.body.type}`);
     };
 

@@ -11,7 +11,12 @@ import {
   DialogProvider,
   NotificationsProvider,
 } from "@finos/vuu-popups";
-import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  VuuUser,
+  logger,
+  registerComponent,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -25,18 +30,24 @@ import {
 } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
-import { ApplicationSettingsPanel } from "./application-settings";
 import {
   LayoutManagementProvider,
   useLayoutContextMenuItems,
   useLayoutManager,
 } from "./layout-management";
-import { loadingApplicationJson } from "./persistence-management";
+import {
+  IPersistenceManager,
+  LocalPersistenceManager,
+  PersistenceProvider,
+  usePersistenceManager,
+} from "./persistence-manager";
 import { SidePanelProps, useShellLayout } from "./shell-layouts";
+import { UserSettingsPanel } from "./user-settings";
 
 import shellCss from "./shell.css";
+import { loadingApplicationJson } from "./layout-management/defaultApplicationJson";
 
-registerComponent("ApplicationSettings", ApplicationSettingsPanel, "view");
+registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
 if (process.env.NODE_ENV === "production") {
   // StackLayout is loaded just to force component registration, we know it will be
@@ -62,6 +73,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   >;
   LeftSidePanelProps?: SidePanelProps;
   children?: ReactNode;
+  defaultLayout?: LayoutJSON;
   leftSidePanelLayout?: "full-height" | "inlay";
   loginUrl?: string;
   // paletteConfig: any;
@@ -155,13 +167,30 @@ const VuuApplication = ({
   );
 };
 
-export const Shell = ({ user, ...props }: ShellProps) => {
-  return (
-    // ApplicationProvider must go outside Dialog and Notification providers
-    // ApplicationProvider injects the SaltProvider and this must be the root
-    // SaltProvider.
-    <ApplicationProvider user={user}>
-      <LayoutManagementProvider>
+export const Shell = ({ defaultLayout, user, ...props }: ShellProps) => {
+  // If user has provided an implementation of IPersistenceManager
+  // by wrapping higher level PersistenceProvider, use it, otw
+  // default to LocalPersistenceManager
+  const persistenceManager = usePersistenceManager();
+  const localPersistenceManager = useMemo<
+    IPersistenceManager | undefined
+  >(() => {
+    if (persistenceManager) {
+      return undefined;
+    }
+    console.log(
+      `No Persistence Manager is configured, configuration data will be persisted to Local Storage, under the key 'vuu/${user.username}'`
+    );
+    return new LocalPersistenceManager(`vuu/${user.username}`);
+  }, [persistenceManager, user.username]);
+
+  // ApplicationProvider must go outside Dialog and Notification providers
+  // ApplicationProvider injects the SaltProvider and this must be the root
+  // SaltProvider.
+
+  const shellProviders = (
+    <ApplicationProvider density="high" theme="vuu-theme" user={user}>
+      <LayoutManagementProvider defaultLayout={defaultLayout}>
         <DialogProvider>
           <NotificationsProvider>
             <VuuApplication {...props} user={user} />
@@ -170,4 +199,14 @@ export const Shell = ({ user, ...props }: ShellProps) => {
       </LayoutManagementProvider>
     </ApplicationProvider>
   );
+
+  if (persistenceManager) {
+    return shellProviders;
+  } else {
+    return (
+      <PersistenceProvider persistenceManager={localPersistenceManager}>
+        {shellProviders}
+      </PersistenceProvider>
+    );
+  }
 };

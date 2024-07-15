@@ -1,69 +1,98 @@
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  Density,
+  Mode,
+  SaltProvider,
+  ThemeContextProps,
+  useDensity,
+  useTheme,
+} from "@salt-ds/core";
 import {
   ReactElement,
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from "react";
 import {
   ApplicationContext,
   ApplicationContextProps,
 } from "./ApplicationContext";
-import { SaltProvider } from "@salt-ds/core";
-import { VuuRowDataItemType } from "packages/vuu-protocol-types";
+import { usePersistenceManager } from "../persistence-manager";
 
 export interface ApplicationProviderProps
-  extends Partial<ApplicationContextProps> {
+  extends Partial<Pick<ThemeContextProps, "theme" | "mode">>,
+    Partial<Omit<ApplicationContextProps, "userSettings">> {
   children: ReactNode;
+  density?: Density;
 }
 
 const getThemeMode = (
-  applicationSettings?: Record<string, string | number | boolean>
+  mode: Mode,
+  userSettings?: Record<string, string | number | boolean>
 ) => {
-  const themeMode = applicationSettings?.themeMode;
+  const themeMode = userSettings?.themeMode;
   if (themeMode === "light" || themeMode === "dark") {
     return themeMode;
   }
-  return "light";
+  return mode;
 };
 
 export const ApplicationProvider = ({
   children,
-  applicationSettings: settingsProp,
-  applicationSettingsSchema,
+  density: densityProp,
+  mode = "light",
+  theme,
+  userSettingsSchema: userSettingsSchema,
   user,
-}: ApplicationProviderProps): ReactElement => {
+}: ApplicationProviderProps): ReactElement | null => {
+  const { mode: inheritedMode, theme: inheritedTheme } = useTheme();
+  const density = useDensity(densityProp);
+  const persistenceManager = usePersistenceManager();
   const context = useContext(ApplicationContext);
-  const [applicationSettings, setSettings] = useState<
-    Record<string, string | number | boolean>
-  >(settingsProp ?? {});
+  const [userSettings, setSettings] =
+    useState<Record<string, string | number | boolean>>();
 
-  const onApplicationSettingChanged = useCallback(
+  useMemo(async () => {
+    if (persistenceManager) {
+      const userSettings = await persistenceManager.getUserSettings();
+      setSettings(userSettings);
+    } else {
+      setSettings({});
+    }
+  }, [persistenceManager]);
+
+  const onUserSettingChanged = useCallback(
     (propertyName: string, value: VuuRowDataItemType) => {
-      setSettings((s) => ({ ...s, [propertyName]: value }));
+      setSettings((currentSettings) => {
+        const newSettings = { ...currentSettings, [propertyName]: value };
+        persistenceManager?.saveUserSettings(newSettings);
+        return newSettings;
+      });
     },
-    []
+    [persistenceManager]
   );
 
-  return (
+  return userSettings ? (
     <ApplicationContext.Provider
       value={{
         ...context,
-        onApplicationSettingChanged,
-        applicationSettings,
-        applicationSettingsSchema,
+        onUserSettingChanged,
+        userSettings,
+        userSettingsSchema,
         user: user ?? context.user,
       }}
     >
       <SaltProvider
-        theme="vuu-theme"
-        density="high"
-        mode={getThemeMode(applicationSettings)}
+        theme={theme ?? inheritedTheme ?? "vuu-theme"}
+        density={density}
+        mode={getThemeMode(mode ?? inheritedMode, userSettings)}
       >
         {children}
       </SaltProvider>
     </ApplicationContext.Provider>
-  );
+  ) : null;
 };
 
 export const useApplicationUser = () => {
@@ -73,20 +102,17 @@ export const useApplicationUser = () => {
 
 //Setter method (only used within the shell)
 export const useApplicationSettings = () => {
-  const {
-    onApplicationSettingChanged,
-    applicationSettings,
-    applicationSettingsSchema,
-  } = useContext(ApplicationContext);
+  const { onUserSettingChanged, userSettings, userSettingsSchema } =
+    useContext(ApplicationContext);
   return {
-    onApplicationSettingChanged,
-    applicationSettings,
-    applicationSettingsSchema,
+    onUserSettingChanged,
+    userSettings,
+    userSettingsSchema,
   };
 };
 
 //Getter method (read only access to applicationSetting)
-export const useApplicationSetting = () => {
-  const { applicationSettings } = useContext(ApplicationContext);
-  return { applicationSettings };
+export const useUserSetting = () => {
+  const { userSettings } = useContext(ApplicationContext);
+  return { userSettings };
 };

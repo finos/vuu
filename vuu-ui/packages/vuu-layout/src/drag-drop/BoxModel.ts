@@ -1,6 +1,5 @@
 import { ReactElement } from "react";
-import { boxContainsPoint, isContainer } from "@finos/vuu-utils";
-import { LayoutModel } from "../layout-reducer";
+import { boxContainsPoint, isContainer, LayoutModel } from "@finos/vuu-utils";
 import { getProps, typeOf } from "../utils";
 import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
 

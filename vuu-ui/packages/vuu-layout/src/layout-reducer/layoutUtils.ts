@@ -1,11 +1,13 @@
 import {
+  LayoutJSON,
+  LayoutModel,
   dimension,
   getLayoutComponent,
   isContainer,
   isLayoutComponent,
   uuid,
 } from "@finos/vuu-utils";
-import React, { cloneElement, CSSProperties, ReactElement } from "react";
+import React, { CSSProperties, ReactElement, cloneElement } from "react";
 import { TabLabelFactory } from "../stack";
 import {
   getPersistentState,
@@ -13,7 +15,7 @@ import {
   setPersistentState,
 } from "../use-persistent-state";
 import { expandFlex, followPathToParent, getProps, typeOf } from "../utils";
-import { LayoutJSON, LayoutModel, layoutType } from "./layoutTypes";
+import { layoutType } from "./layoutTypes";
 
 interface ComponentWithId {
   id: string;

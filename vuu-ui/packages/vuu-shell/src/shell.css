@@ -29,7 +29,7 @@
 
 .vuuShell-mainTabs {
   --vuuTab-height: 28px;
-  border: solid 1px #D6D7DA;
+  border: solid 1px #d6d7da;
   border-top: none !important;
   border-radius: 6px;
   height: 100%;
@@ -39,11 +39,14 @@
 }
 
 .vuuShell-mainTabs > .vuuTabstrip {
-  left:-1px;
+  left: -1px;
   padding-bottom: 7px;
   position: absolute !important;
   right: 1px;
   top: 0;
   width: calc(100% + 2px) !important;
-}  
+}
 
+.vuuShell-content {
+  padding: var(--vuuShell-content-padding, 8px);
+}

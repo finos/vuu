@@ -2,9 +2,9 @@ import {
   DraggableLayout,
   Flexbox,
   LayoutChangeHandler,
-  LayoutJSON,
   LayoutProvider,
 } from "@finos/vuu-layout";
+import { LayoutJSON } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useState } from "react";
 

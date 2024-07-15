@@ -1,4 +1,4 @@
-import { VuuBroadcastChannel } from "packages/vuu-utils/src";
+import { VuuBroadcastChannel } from "@finos/vuu-utils";
 import { RefObject, useCallback, useEffect, useRef } from "react";
 
 export interface ViewBroadcastMessage {

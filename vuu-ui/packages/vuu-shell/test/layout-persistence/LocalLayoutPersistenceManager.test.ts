@@ -1,9 +1,13 @@
-import { LayoutJSON } from "@finos/vuu-layout";
 import "@finos/vuu-layout/test/global-mocks";
 import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
-import { formatDate, getLocalEntity, saveLocalEntity } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  formatDate,
+  getLocalEntity,
+  saveLocalEntity,
+} from "@finos/vuu-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocalPersistenceManager } from "../../src/persistence-management/LocalPersistenceManager";
+import { LocalPersistenceManager } from "../../src/persistence-manager";
 
 const expectPromiseRejectsWithError = (
   f: () => Promise<unknown>,

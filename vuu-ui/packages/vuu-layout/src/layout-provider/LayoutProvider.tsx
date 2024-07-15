@@ -1,3 +1,4 @@
+import type { LayoutJSON } from "@finos/vuu-utils";
 import {
   MutableRefObject,
   ReactElement,
@@ -16,7 +17,6 @@ import {
   processLayoutElement,
   type LayoutChangeHandler,
   type LayoutChangeReason,
-  type LayoutJSON,
   type LayoutReducerAction,
 } from "../layout-reducer";
 import type { SaveAction } from "../layout-view";
