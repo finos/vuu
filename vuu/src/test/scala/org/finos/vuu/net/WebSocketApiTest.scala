@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.ClientHelperFns
-import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.client.messages.{RequestId, TokenId}
 import org.finos.vuu.core.module.{TableDefContainer, TestModule}
 import org.finos.vuu.core.{VuuClientConnectionOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
@@ -16,14 +16,16 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
 
+import java.util.concurrent.ConcurrentHashMap
 import scala.reflect.ClassTag
 
 
 class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
   implicit var viewServerClient: ViewServerClient = _
-
+  var vuuClient: TestVuuClient = _
   override def beforeAll(): Unit = {
     viewServerClient = testStartUp()
+    vuuClient = new TestVuuClient(viewServerClient)
   }
 
   override def afterAll(): Unit = {
@@ -107,41 +109,33 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
 
   Scenario("client requests to get table metadata for a non existent") {
 
-    val client = new MyWebSocketClient(viewServerClient)
+    val (tokenId, sessionId) = vuuClient.createTokenAndLogin("testUser")
+    assert(sessionId.isDefined)
 
-    val (token, sessionId) = client.authenticateAndLogin("testUser", "testUserPassword")
-
-    client.send(sessionId, token, GetTableMetaRequest(ViewPortTable("DoesNotExist", "TEST")))
+    vuuClient.send(sessionId.get, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", "TEST")))
 
     Then("return error response with helpful message")
-    val response = client.awaitForMsgWithBody[ErrorResponse]
-    response.isDefined shouldBe true
-
-    val responseMessage = response.get
-    responseMessage.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
+    val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
+    assert(response.isDefined)
+    response.get.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
   }
 
   Scenario("client requests to get table metadata for null table name") {
 
-    val client = new MyWebSocketClient(viewServerClient)
+    val (tokenId, sessionId) = vuuClient.createTokenAndLogin("testUser")
+    assert(sessionId.isDefined)
+   // sessionId.isDefined shouldBe  true
 
-    val (token, sessionId) = client.authenticateAndLogin("testUser", "testUserPassword")
-
-    client.send(sessionId, token, GetTableMetaRequest(ViewPortTable(null, "TEST")))
-
+    vuuClient.send(sessionId.get, tokenId, GetTableMetaRequest(ViewPortTable(null, "TEST")))
 
     Then("return error response with helpful message")
-    val response = client.awaitForMsgWithBody[ErrorResponse]
-    response.isDefined shouldBe true
-
-    val responseMessage = response.get
-    responseMessage.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
-
+    val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
+    assert(response.isDefined)
+    response.get.msg shouldEqual "No such table found with name null in module TEST. Table name and module should not be null"
   }
-
 }
 
-class MyWebSocketClient(vsClient: ViewServerClient) {
+class TestVuuClient(vsClient: ViewServerClient) {
 
   type SessionId = String
   type Token = String
@@ -164,10 +158,54 @@ class MyWebSocketClient(vsClient: ViewServerClient) {
       None
   }
 
-  def authenticateAndLogin(user: String, password: String): (Token, SessionId) = {
+  def awaitForMsg[T <: AnyRef](implicit t: ClassTag[T]): Option[ViewServerMessage] = {
+    val msg = vsClient.awaitMsg
+    if (msg != null) { //null indicate error or timeout
+      if (isExpectedBodyType(t, msg))
+        Some(msg)
+      else
+        awaitForMsg
+    }
+    else
+      None
+  }
+
+
+  val responsesMap: ConcurrentHashMap[String, ViewServerMessage] = new ConcurrentHashMap
+  def awaitForResponse(requestId:String): Option[ViewServerMessage] = {
+
+    lookupFromReceivedResponses(requestId)
+      .map(msg => return Some(msg))
+
+    val msg = vsClient.awaitMsg
+    if (msg!=null)
+      if(msg.requestId == requestId)
+        Some(msg)
+      else {
+        responsesMap.put(requestId, msg)
+        awaitForResponse(requestId)
+      }
+    else
+      None
+  }
+
+  private def lookupFromReceivedResponses(requestId:String): Option[ViewServerMessage] = {
+    Option(responsesMap.get(requestId))
+  }
+
+  private def awaitNextMessage(): Option[ViewServerMessage] = {
+    Option(vsClient.awaitMsg)
+  }
+  def authenticateAndLogin(user: String, password: String): (Token, Option[SessionId]) = {
     val token = authenticate(user, password)
     val session = login(token, user)
     (token, session)
+  }
+
+  def createTokenAndLogin(user: String): (Token, Option[SessionId]) = {
+    val tokenId = TokenId.oneNew()
+    val sessionId = login(tokenId, user)
+    (tokenId, sessionId)
   }
 
   private def isExpectedBodyType[T <: AnyRef](t: ClassTag[T], msg: ViewServerMessage) = {
@@ -190,10 +228,15 @@ class MyWebSocketClient(vsClient: ViewServerClient) {
     awaitForMsgWithBody[AuthenticateSuccess].get.token //todo handle no response
   }
 
-  def login(token: String, user: String): String = {
+  def login(token: String, user: String): Option[String] = {
     send("not used", "not used", LoginRequest(token, user))
-    vsClient.awaitMsg.sessionId //todo handle no response
-    //todo what to do if LoginFailure - is this expected to return token when failed?
-    //Should token be called session?
+
+    //capture messages rather than dismissing, - how to cap size
+    // need to match on request id to ensure correct response?
+    awaitForMsg[LoginSuccess]
+      .map( x => x.sessionId)
+    //todo handle no response
+    //todo what to do if LoginFailure
+    // why does these response return token that was passed in the request? Does UI use this or match based on message request id?
   }
 }
