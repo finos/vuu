@@ -77,7 +77,6 @@ export const ShowcaseStandalone = () => {
   useMemo(async () => {
     const url = new URL(document.location.href);
     const [targetPaths, exampleName] = pathToExample(url.pathname.slice(1));
-    console.log({ targetPaths, exampleName });
     let targetExamples = null;
     const path = [exampleName];
     for (const importPath of targetPaths) {

@@ -41,7 +41,7 @@ export const getFocusedFieldDetails = (): [number, string] | [] => {
 
 // Focus the input control within field. If clause passed, will
 // focus first field within clause
-export const focusField = (fieldOrClause: HTMLElement | null) => {
+const focusField = (fieldOrClause: HTMLElement | null) => {
   const input = fieldOrClause?.querySelector("input");
   if (input) {
     input.focus();

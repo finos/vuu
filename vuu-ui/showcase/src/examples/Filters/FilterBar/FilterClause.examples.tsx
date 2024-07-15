@@ -179,6 +179,7 @@ export const NewFilterClause = () => {
     <div style={{ padding: "10px" }}>
       <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
+        data-testid="filterclause"
         filterClauseModel={filterClauseModel}
         suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
@@ -238,7 +239,7 @@ export const PartialFilterClauseColumnOnly = () => {
 PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnAndOperator = () => {
-  useAutoLoginToVuuServer();
+  const { typeaheadHook } = vuuModule("SIMUL");
   const tableSchema = getSchema("instruments");
   const filterClauseModel = useMemo(
     () =>
@@ -253,7 +254,9 @@ export const PartialFilterClauseColumnAndOperator = () => {
     <div style={{ padding: "10px" }}>
       <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
+        data-testid="filterclause"
         filterClauseModel={filterClauseModel}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </div>
@@ -262,7 +265,7 @@ export const PartialFilterClauseColumnAndOperator = () => {
 PartialFilterClauseColumnAndOperator.displaySequence = displaySequence++;
 
 export const CompleteFilterClauseTextEquals = () => {
-  useAutoLoginToVuuServer();
+  const { typeaheadHook } = vuuModule("SIMUL");
   const tableSchema = getSchema("instruments");
 
   const filterClauseModel = useMemo(
@@ -280,6 +283,7 @@ export const CompleteFilterClauseTextEquals = () => {
       <FilterClause
         columnsByName={columnDescriptorsByName(tableSchema.columns)}
         filterClauseModel={filterClauseModel}
+        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </div>
