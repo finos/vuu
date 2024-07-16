@@ -10,6 +10,7 @@ import org.finos.vuu.viewport.ViewPortTable
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
@@ -78,7 +79,7 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
 
 }
 
-object TableMockFactory extends MockFactory {
+object TableMockFactory extends AnyFlatSpec with MockFactory {
   private def createTestTableDef(name: String, moduleName: Option[String] = None, isSessionDef: Boolean = false): TableDef = {
     val tableDef = if (isSessionDef) new SessionTableDef(name, "id", Array.empty, joinFields = Seq.empty, indices = Indices())
                    else new TableDef(name, "id", Array.empty, Seq.empty, false, VisualLinks(), Indices())
