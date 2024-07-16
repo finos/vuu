@@ -15,7 +15,10 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
 
 class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
-  implicit var viewServerClient: ViewServerClient = _
+
+  implicit val timeProvider: Clock = new DefaultClock
+  implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  var viewServerClient: ViewServerClient = _
   var vuuClient: TestVuuClient = _
   var tokenId: String = _
   var sessionId: String = _
@@ -30,13 +33,11 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
   }
 
   override def afterAll(): Unit = {
-    //todo cleanup
+    lifecycle.stop()
   }
 
   def testStartUp(): TestVuuClient = {
 
-    implicit val timeProvider: Clock = new DefaultClock
-    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
     implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
