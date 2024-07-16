@@ -1,8 +1,8 @@
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
 import { hasOpenOptionList } from "@finos/vuu-utils";
 import {
-  FocusEventHandler,
   KeyboardEvent,
+  RefCallback,
   SyntheticEvent,
   useCallback,
   useEffect,
@@ -13,8 +13,6 @@ import {
 import { FilterClauseProps } from "./FilterClause";
 import {
   clauseIsNotFirst,
-  elementIsFilterClause,
-  focusField,
   focusNextElement,
   focusNextFocusableElement,
   navigateToNextItemIfAtBoundary,
@@ -48,6 +46,17 @@ export const useFilterClause = ({
 
   const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
+  const valueRef = useRef<HTMLDivElement | null>(null);
+
+  const setValueRef = useCallback<RefCallback<HTMLDivElement>>(
+    (el) => {
+      valueRef.current = el;
+      if (!filterClauseModel.isValid) {
+        el?.querySelector("input")?.focus();
+      }
+    },
+    [filterClauseModel.isValid]
+  );
 
   const removeAndNavigateToNextInputIfAtBoundary = useCallback(
     (evt: KeyboardEvent) => {
@@ -152,12 +161,6 @@ export const useFilterClause = ({
     ]
   );
 
-  const handleFocus = useCallback<FocusEventHandler>((evt) => {
-    if (elementIsFilterClause(evt.target)) {
-      focusField(evt.target);
-    }
-  }, []);
-
   const inputProps = useMemo(
     () => ({
       onKeyDownCapture: handleKeyDownCaptureNavigation,
@@ -168,10 +171,18 @@ export const useFilterClause = ({
 
   // Do we need this or can we leave it to the filterEditor
   useEffect(() => {
-    if (filterClauseModel.column === undefined) {
+    // leave the valueInput to callbackRef handler above, may
+    // fire after the requestAnimationFrame
+    if (!filterClauseModel.isValid) {
+      const inputRef =
+        filterClauseModel.column === undefined
+          ? columnRef
+          : filterClauseModel.op === undefined
+          ? operatorRef
+          : null;
+
       requestAnimationFrame(() => {
-        const columnInput = columnRef?.current?.querySelector("input");
-        columnInput?.focus();
+        inputRef?.current?.querySelector("input")?.focus();
       });
     }
   }, [filterClauseModel]);
@@ -183,9 +194,9 @@ export const useFilterClause = ({
     onChangeValue: handleChangeValue,
     onDeselectValue: handleDeselectValue,
     onSelectColumn,
-    onFocus: handleFocus,
     onSelectOperator,
     operatorRef,
-    selectedColumn: columnsByName[filterClause.column ?? ""],
+    selectedColumn: columnsByName[filterClauseModel.column ?? ""],
+    valueRef: setValueRef,
   };
 };
