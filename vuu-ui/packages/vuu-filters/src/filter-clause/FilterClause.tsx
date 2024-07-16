@@ -57,10 +57,10 @@ export const FilterClause = ({
     // onChangeColumn,
     onSelectColumn,
     onSelectOperator,
-    onFocus,
     onDeselectValue,
     operatorRef,
     selectedColumn,
+    valueRef,
   } = useFilterClause({
     filterClauseModel,
     onCancel,
@@ -78,12 +78,7 @@ export const FilterClause = ({
   const columns = useMemo(() => Object.values(columnsByName), [columnsByName]);
 
   return (
-    <div
-      className={cx(classBase, className)}
-      {...htmlAttributes}
-      onFocus={onFocus}
-      tabIndex={0}
-    >
+    <div className={cx(classBase, className)} {...htmlAttributes} tabIndex={0}>
       <ColumnPicker
         inputProps={inputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}
@@ -91,7 +86,7 @@ export const FilterClause = ({
         key="column-field"
         onSelect={onSelectColumn}
         ref={columnRef}
-        value={filterClause.column ?? ""}
+        value={filterClauseModel.column ?? ""}
       />
       {selectedColumn?.name ? (
         <OperatorPicker
@@ -103,23 +98,26 @@ export const FilterClause = ({
           key="operator-field"
           onSelect={onSelectOperator}
           ref={operatorRef}
-          value={filterClause.op ?? ""}
+          value={filterClauseModel.op ?? ""}
         />
       ) : null}
-      <FilterClauseValueEditor
-        inputProps={inputProps}
-        key="value-field"
-        onChangeValue={onChangeValue}
-        onDeselectValue={onDeselectValue}
-        operator={filterClause.op}
-        selectedColumn={selectedColumn}
-        suggestionProvider={suggestionProvider}
-        table={tableSchema.table}
-        value={
-          (filterClause as MultiValueFilterClause)?.values ??
-          (filterClause as SingleValueFilterClause)?.value
-        }
-      />
+      {filterClauseModel.op ? (
+        <FilterClauseValueEditor
+          inputProps={inputProps}
+          key="value-field"
+          onChangeValue={onChangeValue}
+          onDeselectValue={onDeselectValue}
+          operator={filterClauseModel.op}
+          ref={valueRef}
+          selectedColumn={selectedColumn}
+          suggestionProvider={suggestionProvider}
+          table={tableSchema.table}
+          value={
+            (filterClause as MultiValueFilterClause)?.values ??
+            (filterClause as SingleValueFilterClause)?.value
+          }
+        />
+      ) : null}
     </div>
   );
 };

@@ -1,51 +1,63 @@
-.saveLayoutPanel {
+.vuuSaveLayoutPanel {
   --salt-selectable-foreground-hover: #6d18bdc3;
-  --salt-selectable-foreground-selected: #6D18BD;
-  --salt-selectable-borderColor-selected: #6D18BD;
+  --salt-selectable-foreground-selected: #6d18bd;
+  --salt-selectable-borderColor-selected: #6d18bd;
   --saltInputLegacy-fontSize: 12px;
   --salt-text-label-fontSize: 10px;
   --saltFormFieldLegacy-label-paddingLeft: 0;
   --saltFormField-label-fontWeight: 400;
   --saltText-color: var(--text-secondary-foreground, #606477);
+
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+
+  .saltFormField {
+    border: solid 1px var(--salt-editable-borderColor);
+    padding: var(--salt-spacing-50) var(--salt-spacing-200);
+  }
+
+  .saltComboBox {
+    .saltPillInput-endAdornmentContainer {
+      .saltButton {
+        border: none;
+        width: 18px;
+        transform: rotate(90deg);
+      }
+      .saltButton:after {
+        content: "";
+        background-color: var(--salt-content-secondary-foreground);
+        left: auto;
+        height: 20px;
+        mask: var(--vuu-svg-triangle-right) center center/20px 20px;
+        mask-repeat: no-repeat;
+        position: absolute;
+        top: var(--vuu-icon-top, auto);
+        transform: var(--vuu-icon-transform, none);
+        width: 20px;
+      }
+    }
+    .saltPillInput-activationIndicator {
+      display: none;
+    }
+  }
 }
 
-.spinner{
+.spinner {
   width: 100px;
-  height:100px;
+  height: 100px;
   background-image: var(--svg-spinner);
 }
 
-.saveLayoutPanel-panelContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.saveLayoutPanel-panelContent {
-  display: flex;
-  align-items: flex-start;
+.vuuSaveLayoutPanel-panelContent {
+  display: grid;
   gap: 32px;
+  margin-top: var(--salt-spacing-200);
 }
 
-.saveLayoutPanel-formContainer {
-  display: flex;
-  width: 217px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.saveLayoutPanel-formField {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.saveLayoutPanel-inputText {
+.vuuSaveLayoutPanel-inputText {
   border: none;
-  color: var(--light-text-primary, #15171B);
-  font-family: Nunito Sans A-Variant, serif;
-  font-feature-settings: 'ss02' on, 'ss01' on, 'salt' on, 'liga' off;
+  color: var(--light-text-primary, #15171b);
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -54,7 +66,7 @@
   outline: none;
 }
 
-.saveLayoutPanel-settingsGroup {
+.vuuSaveLayoutPanel-settingsGroup {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -63,24 +75,24 @@
   line-height: 16px;
 }
 
-.saveLayoutPanel-screenshotContainer {
+.vuuSaveLayoutPanel-screenshotContainer {
   display: flex;
   width: 304px;
   height: 208px;
   padding: 11px 15.5px;
   justify-content: center;
   align-items: center;
-  border: 1px solid #E8E8E8;
-  background: var(--dark-text-primary, #FFF);
+  border: 1px solid #e8e8e8;
+  background: var(--dark-text-primary, #fff);
 }
 
-.saveLayoutPanel-screenshot {
+.vuuSaveLayoutPanel-screenshot {
   background: lightgray 50% / cover no-repeat;
   width: 273px;
   height: 186px;
 }
 
-.saveLayoutPanel-buttonsContainer {
+.vuuSaveLayoutPanel-buttonsContainer {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
@@ -89,8 +101,8 @@
   gap: 8px;
 }
 
-.saveLayoutPanel-cancelButton,
-.saveLayoutPanel-saveButton {
+.vuuSaveLayoutPanel-cancelButton,
+.vuuSaveLayoutPanel-saveButton {
   display: flex;
   height: fit-content;
   padding: 4px 8px;
@@ -103,28 +115,4 @@
   line-height: 133.333%;
   letter-spacing: 0.48px;
   text-transform: uppercase;
-}
-
-.saveLayoutPanel-cancelButton {
-  color: var(--actionable-primary-foreground-default, #606477);
-  background: var(--actionable-primary-background-default, #FFF);
-}
-
-.saveLayoutPanel-saveButton {
-  background: #6D18BD;
-  border-color: #6D18BD;
-  color: white;
-}
-
-.saveLayoutPanel-saveButton.saltButton:disabled {
-  background: #6D18BD;
-  border-color: #6D18BD;
-  color: white;
-  opacity: 0.3;
-}
-
-.saveLayoutPanel-saveButton.saltButton:hover {
-  background: #F37880;
-  border-color: #F37880;
-  color: white;
 }

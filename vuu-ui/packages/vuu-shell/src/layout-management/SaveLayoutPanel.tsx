@@ -23,8 +23,7 @@ import { getAuthDetailsFromCookies } from "../login";
 
 import saveLayoutPanelCss from "./SaveLayoutPanel.css";
 
-const classBase = "saveLayoutPanel";
-const formField = `${classBase}-formField`;
+const classBase = "vuuSaveLayoutPanel";
 
 const groups = ["Group 1", "Group 2", "Group 3", "Group 4", "Group 5"];
 
@@ -109,42 +108,42 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   }, []);
 
   return (
-    <div className={`${classBase}-panelContainer`}>
+    <div className={`${classBase}`}>
       <div className={`${classBase}-panelContent`}>
-        <div className={`${classBase}-formContainer`}>
-          <FormField className={formField}>
-            <FormFieldLabel>Group</FormFieldLabel>
-            <ComboBox
-              inputProps={{
-                autoComplete: "off",
-                className: `${classBase}-inputText`,
-                placeholder: "Select Group or Enter New Name",
-                // onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                //   setGroup(event.target.value),
-              }}
-              onChange={handleChange}
-              onSelectionChange={handleSelectionChange}
-              value={group}
-            >
-              {groups.map((group, i) => (
-                <Option key={i} value={group} />
-              ))}
-            </ComboBox>
-          </FormField>
-          <FormField className={formField}>
-            <FormFieldLabel>Layout Name</FormFieldLabel>
-            <Input
-              inputProps={{
-                className: `${classBase}-inputText`,
-                placeholder: "Enter Layout Name",
-              }}
-              onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                setLayoutName(event.target.value)
-              }
-              value={layoutName}
-            />
-          </FormField>
-        </div>
+        <FormField>
+          <FormFieldLabel>Group</FormFieldLabel>
+          <ComboBox
+            data-embedded
+            inputProps={{
+              autoComplete: "off",
+              className: `${classBase}-inputText`,
+              placeholder: "Select Group or Enter New Name",
+              // onChange: (event: ChangeEvent<HTMLInputElement>) =>
+              //   setGroup(event.target.value),
+            }}
+            onChange={handleChange}
+            onSelectionChange={handleSelectionChange}
+            value={group}
+          >
+            {groups.map((group, i) => (
+              <Option key={i} value={group} />
+            ))}
+          </ComboBox>
+        </FormField>
+        <FormField>
+          <FormFieldLabel>Layout Name</FormFieldLabel>
+          <Input
+            data-embedded
+            inputProps={{
+              className: `${classBase}-inputText`,
+              placeholder: "Enter Layout Name",
+            }}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setLayoutName(event.target.value)
+            }
+            value={layoutName}
+          />
+        </FormField>
         <div className={`${classBase}-screenshotContainer`}>
           {screenshotContent}
         </div>
@@ -157,6 +156,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           className={`${classBase}-saveButton`}
           onClick={handleSubmit}
           disabled={layoutName === "" || group === ""}
+          variant="cta"
         >
           Save
         </Button>
