@@ -1,8 +1,12 @@
 package org.finos.vuu.net
 
 import org.finos.vuu.client.messages.{RequestId, TokenId}
+import org.scalatest.concurrent.TimeLimits.failAfter
+import org.scalatest.time.Span
+import org.scalatest.time.SpanSugar._
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 class TestVuuClient(vsClient: ViewServerClient) {
@@ -10,34 +14,31 @@ class TestVuuClient(vsClient: ViewServerClient) {
   type SessionId = String
   type Token = String
 
+  val timeout: Span = 30 seconds
+
   def send(sessionId: String, token: String, body: MessageBody): Unit = {
     vsClient.send(createViewServerMessage(sessionId, token, body))
   }
 
   //todo fold this in to WebSocketViewServerClient?
   //is intention that this can be used for non ws client?
-  def awaitForMsgWithBody[T <: AnyRef](implicit t: ClassTag[T]): Option[T] = {
-    val msg = vsClient.awaitMsg
-    if (msg != null) { //null indicate error or timeout
-      if (isExpectedBodyType(t, msg))
-        Some(msg.body.asInstanceOf[T])
-      else
-        awaitForMsgWithBody
-    }
-    else
-      None
-  }
+  def awaitForMsgWithBody[T <: AnyRef](implicit t: ClassTag[T]): Option[T] =
+    awaitForMsg.map(msg => msg.body.asInstanceOf[T])
+
+
 
   def awaitForMsg[T <: AnyRef](implicit t: ClassTag[T]): Option[ViewServerMessage] = {
-    val msg = vsClient.awaitMsg
-    if (msg != null) { //null indicate error or timeout
-      if (isExpectedBodyType(t, msg))
-        Some(msg)
+    failAfter(timeout){
+      val msg = vsClient.awaitMsg
+      if (msg != null) { //null indicate error or timeout
+        if (isExpectedBodyType(t, msg))
+          Some(msg)
+        else
+          awaitForMsg
+      }
       else
-        awaitForMsg
+        None
     }
-    else
-      None
   }
 
   val responsesMap: ConcurrentHashMap[String, ViewServerMessage] = new ConcurrentHashMap
