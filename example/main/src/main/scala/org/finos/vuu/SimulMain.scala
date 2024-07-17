@@ -61,7 +61,9 @@ object SimulMain extends App with StrictLogging {
       .withLoginValidator(new AlwaysHappyLoginValidator),
     VuuThreadingOptions()
       .withViewPortThreads(4)
-      .withTreeThreads(4)
+      .withTreeThreads(4),
+    VuuClientConnectionOptions()
+      .withHeartbeat()
   ).withModule(PriceModule())
     .withModule(SimulationModule())
     .withModule(MetricsModule())

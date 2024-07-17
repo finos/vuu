@@ -17,6 +17,15 @@ trait FlowController {
   def shouldSend(): FlowControlOp
 }
 
+case class FlowControllerFactory(hasHeartbeat: Boolean)(implicit timeProvider: Clock){
+  def create(): FlowController = {
+    if (hasHeartbeat)
+      new DefaultFlowController()
+    else
+      new NoHeartbeatFlowController
+
+  }
+}
 class DefaultFlowController(implicit timeProvider: Clock) extends FlowController {
 
   @volatile private var lastMsgTime: Long = -1
@@ -56,4 +65,14 @@ class DefaultFlowController(implicit timeProvider: Clock) extends FlowController
     diff > 5000 && diff < 10000
   }
 
+}
+
+class NoHeartbeatFlowController() extends FlowController {
+  override def process(msg: ViewServerMessage): Unit = {
+    //nothing to do here
+  }
+
+  override def shouldSend(): FlowControlOp = {
+    BatchSize(300)
+  }
 }

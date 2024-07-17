@@ -220,13 +220,18 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: GetTableMetaRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    if (msg.table == null)
-      errorMsg(s"Table ${msg.table} not found in container")(ctx)
+    if (msg.table.table == null || msg.table.module == null)
+      errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}. Table name and module should not be null")(ctx)
     else {
-      val table = tableContainer.getTable(msg.table.table)
-      val columnNames = table.getTableDef.columns.sortBy(_.index).map(_.name)
-      val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
-      vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
+      val table = tableContainer.getTable(msg.table.table) //todo need to check module? what if modules with same table name
+
+      if(table == null)
+        errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}")(ctx)
+      else{
+        val columnNames = table.getTableDef.columns.sortBy(_.index).map(_.name)
+        val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
+        vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
+      }
     }
   }
 

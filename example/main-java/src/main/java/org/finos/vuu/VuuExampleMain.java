@@ -73,8 +73,10 @@ public class VuuExampleMain
                 VuuThreadingOptions.apply()
                         .withTreeThreads(4)
                         .withViewPortThreads(4),
-                        new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
-                        new scala.collection.mutable.ListBuffer<Plugin>().toList()
+                VuuClientConnectionOptions.apply()
+                        .withHeartbeat(),
+                new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
+                new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))

@@ -100,7 +100,7 @@ object ClientHelperFns {
 
   def auth(user: String, password: String)(implicit vsClient: ViewServerClient): String = {
     vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest(user, password)))
-    vsClient.awaitMsg.body.asInstanceOf[AuthenticateSuccess].token
+    awaitMsgBody[AuthenticateSuccess].get.token
   }
 
   def rpcCallAsync(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): Unit = {

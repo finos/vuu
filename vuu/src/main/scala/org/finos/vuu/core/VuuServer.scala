@@ -10,6 +10,7 @@ import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, Sta
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net._
+import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, FlowControllerFactory, NoHeartbeatFlowController}
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
@@ -37,6 +38,8 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   final val authenticator: Authenticator = config.security.authenticator
   final val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
 
+  final val flowControllerFactory: FlowControllerFactory =  FlowControllerFactory(config.clientConnection.hasHeartbeat)
+
   final val sessionContainer = new ClientSessionContainerImpl()
 
   final val joinProvider: JoinTableProvider = JoinTableProviderImpl()
@@ -55,7 +58,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   final val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer)
+  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory)
 
   //order of creation here is important
   final val server = new WebSocketServer(config.wsOptions, factory)
