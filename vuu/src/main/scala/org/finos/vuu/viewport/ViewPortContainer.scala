@@ -247,7 +247,15 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPortDefinitions.put(table, vpDefFunc)
   }
 
-  private def getViewPortDefinition(table: DataTable): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+  def getViewPortDefinition(table: DataTable): ViewPortDef = {
+    val viewPortDefFunc = getViewPortDefinitionCreator(table)
+    if (viewPortDefFunc == null)
+      ViewPortDef.default
+    else
+      viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
+  }
+
+  private def getViewPortDefinitionCreator(table: DataTable): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
     table match {
       case session: SessionTable =>
         viewPortDefinitions.get(table.getTableDef.name)
@@ -560,9 +568,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         plugin => plugin.viewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
     }
 
-    val viewPortDefFunc = getViewPortDefinition(table.asTable)
-
-    val viewPortDef = if (viewPortDefFunc == null) NoViewPortDef else viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
+    val viewPortDef = getViewPortDefinition(table.asTable)
 
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, sortSpecInternal, groupBy, ClosedTreeNodeState, None)
 
