@@ -66,6 +66,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
     },
     orders: {
       columns: [
+        { name: "status", serverDataType: "string" },
         { name: "ccy", serverDataType: "string" },
         { name: "created", serverDataType: "long" },
         { name: "filledQuantity", serverDataType: "double" },

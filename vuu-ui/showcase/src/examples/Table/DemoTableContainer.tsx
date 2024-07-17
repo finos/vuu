@@ -1,8 +1,8 @@
 import { Flexbox, LayoutProvider, View } from "@finos/vuu-layout";
 import { ContextPanel } from "@finos/vuu-shell";
 import { Table } from "@finos/vuu-table";
-import { ReactElement } from "react";
 import { registerComponent } from "@finos/vuu-utils";
+import { ReactElement } from "react";
 
 import {
   ColumnSettingsPanel,

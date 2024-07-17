@@ -1,5 +1,4 @@
 import { StackLayout } from "@finos/vuu-layout";
-import { useDialog } from "@finos/vuu-popups";
 import {
   LeftNav,
   LocalPersistenceManager,
@@ -51,8 +50,7 @@ export const App = ({ user }: { user: VuuUser }) => {
     features: configuredFeatures,
   });
 
-  const { dialog, setDialogState } = useDialog();
-  const { handleRpcResponse } = useRpcResponseHandler(setDialogState);
+  const { handleRpcResponse } = useRpcResponseHandler();
 
   const dragSource = useMemo(
     () => ({
@@ -82,9 +80,7 @@ export const App = ({ user }: { user: VuuUser }) => {
             leftSidePanelLayout="full-height"
             serverUrl={serverUrl}
             user={user}
-          >
-            {dialog}
-          </Shell>
+          />
         </ShellContextProvider>
       </DragDropProvider>
     </PersistenceProvider>

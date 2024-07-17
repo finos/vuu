@@ -1,6 +1,6 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
-import { ContextMenuProvider } from "@finos/vuu-popups";
+import { ContextMenuProvider, NotificationsProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
 import type {
   ColumnDescriptor,
@@ -148,10 +148,12 @@ const rowClassGenerators = ["buy-sell-rows"];
 
 export const Orders = () => {
   return (
-    <SimulTable
-      tableName="orders"
-      rowClassNameGenerators={rowClassGenerators}
-    />
+    <NotificationsProvider>
+      <SimulTable
+        tableName="orders"
+        rowClassNameGenerators={rowClassGenerators}
+      />
+    </NotificationsProvider>
   );
 };
 Orders.displaySequence = displaySequence++;

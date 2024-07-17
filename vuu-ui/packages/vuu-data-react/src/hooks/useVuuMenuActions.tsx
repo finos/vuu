@@ -1,3 +1,4 @@
+import { isSessionTableActionMessage } from "@finos/vuu-data-remote";
 import {
   ContextMenuItemDescriptor,
   DataSource,
@@ -5,26 +6,39 @@ import {
   MenuActionHandler,
   MenuBuilder,
   RpcResponseHandler,
+  TableSchema,
 } from "@finos/vuu-data-types";
-import { useDialogContext, type MenuActionClosePopup } from "@finos/vuu-popups";
+import {
+  useDialogContext,
+  useNotifications,
+  type MenuActionClosePopup,
+} from "@finos/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
+  OpenDialogAction,
   VuuMenu,
   VuuMenuItem,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
+  FormConfig,
+  FormFieldDescriptor,
+  SessionEditingForm,
+} from "@finos/vuu-shell";
+import { BulkEditPanel } from "@finos/vuu-table";
+import {
   VuuServerMenuOptions,
   buildMenuDescriptorFromVuuMenu,
   getMenuRpcRequest,
+  hasAction,
+  hasShowNotificationAction,
   isGroupMenuItemDescriptor,
   isOpenBulkEditResponse,
   isRoot,
   isTableLocation,
 } from "@finos/vuu-utils";
-import { useCallback } from "react";
-import { BulkEditPanel } from "@finos/vuu-table";
 import { Button } from "@salt-ds/core";
+import { useCallback } from "react";
 
 const NO_CONFIG: MenuActionConfig = {};
 
@@ -56,6 +70,53 @@ export interface VuuMenuActionHookProps {
   menuActionConfig?: MenuActionConfig;
   onRpcResponse?: RpcResponseHandler;
 }
+
+const keyFirst = (c1: FormFieldDescriptor, c2: FormFieldDescriptor) =>
+  c1.isKeyField ? -1 : c2.isKeyField ? 1 : 0;
+
+const defaultFormConfig = {
+  fields: [],
+  key: "",
+  title: "",
+};
+
+const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
+  if (schema) {
+    const { columns, key } = schema;
+    return {
+      key,
+      title: `Parameters for command`,
+      fields: columns
+        .map((col) => ({
+          description: col.name,
+          label: col.name,
+          name: col.name,
+          type: col.serverDataType,
+          isKeyField: col.name === key,
+        }))
+        .sort(keyFirst),
+    };
+  }
+};
+
+const getFormConfig = (
+  action: OpenDialogAction & { tableSchema: TableSchema }
+) => {
+  const { tableSchema: schema } = action;
+  const config = configFromSchema(schema) ?? defaultFormConfig;
+
+  // if (rpcName !== undefined && rpcName in static_config) {
+  //   return {
+  //     config: getStaticConfig(rpcName, config),
+  //     schema,
+  //   };
+  // }
+
+  return {
+    config,
+    schema,
+  };
+};
 
 export const useVuuMenuActions = ({
   clientSideMenuActionHandler,
@@ -100,10 +161,53 @@ export const useVuuMenuActions = ({
   );
 
   const { showDialog, closeDialog } = useDialogContext();
+  const showNotification = useNotifications();
 
   const showBulkEditDialog = useCallback(
     (table: VuuTable) => {
       const sessionDs = dataSource.createSessionDataSource?.(table);
+      const handleSubmit = () => {
+        sessionDs?.rpcCall?.({
+          namedParams: {},
+          params: [],
+          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+          type: "VIEW_PORT_RPC_CALL",
+        });
+        closeDialog();
+      };
+
+      if (sessionDs) {
+        showDialog(
+          <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
+          "Multi Row Edit",
+          [
+            <Button key="cancel" onClick={closeDialog}>
+              Cancel
+            </Button>,
+            <Button key="submit" onClick={handleSubmit}>
+              Save
+            </Button>,
+          ]
+        );
+
+        return true;
+      }
+    },
+    [closeDialog, dataSource, showDialog]
+  );
+
+  const showSessionEditingForm = useCallback(
+    (action: OpenDialogAction & { tableSchema: TableSchema }) => {
+      const { tableSchema } = action;
+      if (tableSchema) {
+        const formConfig = getFormConfig(action);
+        showDialog(
+          <SessionEditingForm {...formConfig} onClose={closeDialog} />,
+          "Set Parameters"
+        );
+      }
+
+      const sessionDs = dataSource.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
         sessionDs?.rpcCall?.({
           namedParams: {},
@@ -146,18 +250,26 @@ export const useVuuMenuActions = ({
             if (onRpcResponse?.(rpcResponse) === true) {
               return true;
             }
-
-            if (
-              isOpenBulkEditResponse(rpcResponse) &&
-              rpcResponse.action.table
-            ) {
-              showBulkEditDialog(rpcResponse.action.table);
+            if (hasAction(rpcResponse)) {
+              if (hasShowNotificationAction(rpcResponse)) {
+                const {
+                  action: { message, title = "Success" },
+                } = rpcResponse;
+                showNotification({
+                  type: "success",
+                  body: message,
+                  header: title,
+                });
+              } else if (isOpenBulkEditResponse(rpcResponse)) {
+                showBulkEditDialog(rpcResponse.action.table);
+              } else if (isSessionTableActionMessage(rpcResponse)) {
+                showSessionEditingForm(rpcResponse.action);
+              }
             }
           }
         });
         return true;
       } else if (menuId === "link-table") {
-        // return dataSource.createLink(options as LinkDescriptorWithLabel), true;
         return (
           (dataSource.visualLink = options as LinkDescriptorWithLabel), true
         );
@@ -169,7 +281,13 @@ export const useVuuMenuActions = ({
 
       return false;
     },
-    [clientSideMenuActionHandler, dataSource, onRpcResponse, showBulkEditDialog]
+    [
+      clientSideMenuActionHandler,
+      dataSource,
+      onRpcResponse,
+      showBulkEditDialog,
+      showSessionEditingForm,
+    ]
   );
 
   return {
