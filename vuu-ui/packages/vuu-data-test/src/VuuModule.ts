@@ -75,13 +75,13 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   private registerViewport = (
     subscriptionDetails: DataSourceSubscribedMessage
   ) => {
-    console.log("register new viewport", {
+    console.log("<subscription-open> register new viewport", {
       subscriptionDetails,
     });
   };
 
-  private unregisterViewport = () => {
-    console.log("unregister viewport");
+  private unregisterViewport = (viewportId: string) => {
+    console.log(`<subscription-closed> unregister viewport ${viewportId}`);
   };
 
   createDataSource = (tableName: T) => {
@@ -99,8 +99,8 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       visualLinks: this.#visualLinks?.[tableName],
     });
 
-    dataSource.on("subscription-open", this.registerViewport);
-    dataSource.on("subscription-closed", this.unregisterViewport);
+    dataSource.on("subscribed", this.registerViewport);
+    dataSource.on("unsubscribed", this.unregisterViewport);
 
     return dataSource;
   };

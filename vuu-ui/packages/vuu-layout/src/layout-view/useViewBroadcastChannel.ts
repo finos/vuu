@@ -1,32 +1,41 @@
 import { VuuBroadcastChannel } from "@finos/vuu-utils";
-import { RefObject, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export interface ViewBroadcastMessage {
-  targetId: string;
-  type: "highlight-on" | "highlight-off";
+  path?: string;
+  targetId?: string;
+  type: "highlight-on" | "highlight-off" | "layout-closed";
 }
 
+export type BroadcastMessageHandler = (message: ViewBroadcastMessage) => void;
+
+const isMessageForSelf = (
+  message: ViewBroadcastMessage,
+  id?: string,
+  path?: string
+) => {
+  if (id && message.targetId === id) {
+    return true;
+  } else if (message.path && path?.startsWith(message.path)) {
+    return true;
+  }
+  return false;
+};
+
 export const useViewBroadcastChannel = (
-  id: string,
-  rootRef: RefObject<HTMLDivElement>
+  id?: string,
+  path?: string,
+  onMessageReceived?: BroadcastMessageHandler
 ) => {
   const broadcastChannelRef =
     useRef<VuuBroadcastChannel<ViewBroadcastMessage>>();
 
   useEffect(() => {
-    console.log(`useViewActionChannnel create Channel ${id}`);
     const broadcastChannel: VuuBroadcastChannel<ViewBroadcastMessage> =
       new BroadcastChannel("vuu");
     broadcastChannel.onmessage = (evt) => {
-      if (evt.data.targetId === id) {
-        switch (evt.data.type) {
-          case "highlight-on":
-            rootRef.current?.classList.add("vuuHighlighted");
-            break;
-          case "highlight-off":
-            rootRef.current?.classList.remove("vuuHighlighted");
-            break;
-        }
+      if (isMessageForSelf(evt.data, id, path)) {
+        onMessageReceived?.(evt.data);
       }
     };
     broadcastChannelRef.current = broadcastChannel;
@@ -34,7 +43,7 @@ export const useViewBroadcastChannel = (
       broadcastChannel.close();
       broadcastChannelRef.current = undefined;
     };
-  }, [id]);
+  }, [id, onMessageReceived, path]);
 
   const sendMessage = useCallback((message: ViewBroadcastMessage) => {
     broadcastChannelRef.current?.postMessage(message);

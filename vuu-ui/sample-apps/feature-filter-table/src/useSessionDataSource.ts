@@ -45,11 +45,6 @@ export const useSessionDataSource = ({
   const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.(dataSourceSessionKey) as VuuDataSource;
     if (ds) {
-      console.log(
-        "%cuseSessionDataSource DATA SOURCE IN SESSION STATE",
-        "color:red;font-weight:bold;"
-      );
-
       // Only required when injecting a dataSource into session
       // state in Showcase examples
       if (!ds.hasListener("config", handleDataSourceConfigChange)) {

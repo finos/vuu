@@ -334,6 +334,8 @@ export interface SubscribeProps {
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
+export type DataSourceEventHandler = (viewportId: string) => void;
+
 export type DataSourceEvents = {
   config: (
     config: DataSourceConfig | undefined,
@@ -343,8 +345,10 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
-  "subscription-open": (subscription: DataSourceSubscribedMessage) => void;
-  "subscription-closed": () => void;
+  subscribed: (subscription: DataSourceSubscribedMessage) => void;
+  unsubscribed: DataSourceEventHandler;
+  disabled: DataSourceEventHandler;
+  enabled: DataSourceEventHandler;
 };
 
 /**
@@ -446,12 +450,14 @@ export interface DataSource
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
    * accepts the same subscribe callback as subscribe. This allows a completely new instance of a component to
    * assume ownership of a subscription and receive all messages.
+   * Should emit an enabled event
    */
   enable?: (callback?: SubscribeCallback) => void;
   /**
    * Disables this subscription. A datasource will send no further messages until re-enabled. Example usage
    * might be for a component displayed within a set of Tabs. If user switches to another tab, the dataSource
    * of the component that is no longer visible can be disabled until it is made visible again.
+   * Should emit a disabled event
    */
   disable?: () => void;
   filter: DataSourceFilter;
