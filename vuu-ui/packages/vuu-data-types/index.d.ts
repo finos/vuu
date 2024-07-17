@@ -4,6 +4,7 @@ import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  NoAction,
   OpenDialogAction,
   VuuAggregation,
   VuuColumnDataType,
@@ -373,7 +374,9 @@ export type RpcResponse =
   | VuuUIMessageInRPCEditResponse
   | ViewportRpcResponse;
 
-export type RpcResponseHandler = (response: RpcResponse) => boolean;
+export type RpcResponseHandler = (
+  response: Omit<RpcResponse, "requestId">
+) => boolean;
 
 export type RowSearchPredicate = (row: DataSourceRow) => boolean;
 
@@ -482,7 +485,7 @@ export interface DataSource
   menu?: VuuMenu;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) => Promise<RpcResponse | undefined>;
+  ) => Promise<Omit<RpcResponse, "requestId"> | undefined>;
   rpcCall?: <T extends RpcResponse = RpcResponse>(
     message: Omit<ClientToServerViewportRpcCall, "vpId">
   ) => Promise<T | undefined>;
@@ -524,7 +527,10 @@ export interface OpenDialogActionWithSchema extends OpenDialogAction {
   tableSchema?: TableSchema;
 }
 
-export declare type MenuRpcAction = OpenDialogActionWithSchema | NoAction;
+export declare type MenuRpcAction =
+  | OpenDialogActionWithSchema
+  | NoAction
+  | ShowToastAction;
 
 export type ConnectionStatus =
   | "connecting"
@@ -613,7 +619,11 @@ export interface VuuUIMessageInTableMeta {
   type: "TABLE_META_RESP";
 }
 export interface ViewportRpcResponse {
-  action: ServerToClientViewportRpcResponse["action"];
+  action: ServerToClientViewportRpcResponse["action"] & {
+    // for SessionTable editing, we inject the schema after receiving server message
+    // and before forwarding to UI
+    tableSchema?: TableSchema;
+  };
   requestId: string;
   rpcName?: string;
   type: "VIEW_PORT_RPC_RESPONSE";

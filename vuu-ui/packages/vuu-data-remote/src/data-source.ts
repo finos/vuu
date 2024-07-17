@@ -5,8 +5,9 @@ import type {
   DataSourceDataSizeMessage,
 } from "@finos/vuu-data-types";
 import type {
+  OpenDialogAction,
   ServerToClientBody,
-  ServerToClientMenuSessionTableAction,
+  ServerToClientMenuResponse,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { isOpenDialogAction } from "@finos/vuu-utils";
@@ -69,10 +70,13 @@ export const isDataSourceConfigMessage = (
 
 export const isSessionTableActionMessage = (
   messageBody: ServerToClientBody
-): messageBody is ServerToClientMenuSessionTableAction =>
+): messageBody is ServerToClientMenuResponse & {
+  action: OpenDialogAction;
+} =>
   messageBody.type === "VIEW_PORT_MENU_RESP" &&
   isOpenDialogAction(messageBody.action) &&
-  isSessionTable(messageBody.action.table);
+  isSessionTable(messageBody.action.table) &&
+  messageBody.action?.renderComponent === "inline-form";
 
 export const isSessionTable = (table?: unknown) => {
   if (

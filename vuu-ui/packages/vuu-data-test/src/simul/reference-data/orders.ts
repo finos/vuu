@@ -4,6 +4,7 @@ import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
 import { schemas } from "../simul-schemas";
 
+export type status = string;
 export type ccy = string;
 export type created = number;
 export type filledQuantity = number;
@@ -16,8 +17,20 @@ export type trader = string;
 
 const SIDE = ["BUY", "SELL"];
 const traders = ["Trader A", "Trader B", "Trader C"];
+const orderStatus = [
+  "Filled",
+  "Cancelled",
+  "New",
+  "Partial Exec",
+  "Booked",
+  "All Done",
+];
+
+const isComplete = (status: string) =>
+  ["Filled", "All Done", "Booked"].includes(status);
 
 export type OrdersDataRow = [
+  status,
   ccy,
   created,
   filledQuantity,
@@ -48,17 +61,23 @@ const ordersData: OrdersDataRow[] = [];
 
 const now = +new Date();
 for (let i = 0; i < 100; i++) {
+  const status = orderStatus[random(0, orderStatus.length - 1)];
   const ccy = currencies[random(0, currencies.length - 1)];
   const created = now;
-  const filledQuantity = 100;
   const lastUpdate = now;
   const orderId = `ORD${("0000" + i).slice(-4)}`;
-  const quantity = 1000;
+  const quantity = random(1000, 10000);
+  const filledQuantity = isComplete(status)
+    ? quantity
+    : status === "New"
+    ? 0
+    : random(0, quantity);
   const ric = getRic("AAP.L");
   const side = SIDE[random(0, 1)];
   const trader = traders[random(0, traders.length - 1)];
 
   ordersData.push([
+    status,
     ccy,
     created,
     filledQuantity,
@@ -76,7 +95,7 @@ for (let i = 0; i < 100; i++) {
 export const ordersTable = new Table(
   schemas.orders,
   ordersData,
-  buildDataColumnMap(schemas, "instruments")
+  buildDataColumnMap(schemas, "orders")
 );
 
 export { ordersData };

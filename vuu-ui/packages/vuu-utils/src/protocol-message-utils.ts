@@ -9,7 +9,7 @@ import type {
 import {
   ClientToServerMenuRPC,
   OpenDialogAction,
-  VuuRpcRequest,
+  ClientToServerRpcRequest,
 } from "@finos/vuu-protocol-types";
 
 const MENU_RPC_TYPES = [
@@ -26,7 +26,7 @@ const MENU_RPC_TYPES = [
 ];
 
 export const isVuuMenuRpcRequest = (
-  message: VuuUIMessageOut | VuuRpcRequest | ClientToServerMenuRPC
+  message: VuuUIMessageOut | ClientToServerRpcRequest | ClientToServerMenuRPC
 ): message is ClientToServerMenuRPC => MENU_RPC_TYPES.includes(message["type"]);
 
 export const isRequestResponse = (

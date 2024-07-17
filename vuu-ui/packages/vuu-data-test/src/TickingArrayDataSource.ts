@@ -188,6 +188,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
     if (rpcService) {
       switch (rpcRequest.type) {
+        case "VIEW_PORT_MENU_ROW_RPC":
         case "VIEW_PORT_MENUS_SELECT_RPC": {
           // selectedRowIds is specific to the client implementation. Because the dataSource
           //  itself stores the selected rows (rather than server) we need to inject these

@@ -1,17 +1,10 @@
 import { makeRpcCall } from "@finos/vuu-data-remote";
 import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 import {
-  ClientToServerGetUniqueValues,
-  ClientToServerGetUniqueValuesStartingWith,
+  ClientToServerRpcRequest,
   TypeaheadParams,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
-
-// const SPECIAL_SPACE = "_";
-const TYPEAHEAD_MESSAGE_CONSTANTS = {
-  type: "RPC_CALL",
-  service: "TypeAheadRpcHandler",
-};
 
 export const getTypeaheadParams = (
   table: TableSchemaTable,
@@ -27,17 +20,19 @@ export const getTypeaheadParams = (
 
 export const useTypeaheadSuggestions = () =>
   useCallback<SuggestionFetcher>(async (params: TypeaheadParams) => {
-    const rpcMessage =
+    const rpcMessage: ClientToServerRpcRequest =
       params.length === 2
-        ? ({
+        ? {
+            type: "RPC_CALL",
+            service: "TypeAheadRpcHandler",
             method: "getUniqueFieldValues",
             params,
-            ...TYPEAHEAD_MESSAGE_CONSTANTS,
-          } as ClientToServerGetUniqueValues)
-        : ({
+          }
+        : {
+            type: "RPC_CALL",
+            service: "TypeAheadRpcHandler",
             method: "getUniqueFieldValuesStartingWith",
             params,
-            ...TYPEAHEAD_MESSAGE_CONSTANTS,
-          } as ClientToServerGetUniqueValuesStartingWith);
+          };
     return makeRpcCall<string[]>(rpcMessage);
   }, []);

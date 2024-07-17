@@ -6,7 +6,7 @@ import {
 } from "@finos/vuu-data-types";
 import {
   ClientToServerMenuRPC,
-  VuuRpcRequest,
+  ClientToServerRpcRequest,
 } from "@finos/vuu-protocol-types";
 import {
   isConnectionQualityMetrics,
@@ -67,7 +67,7 @@ const handleMessageFromClient = async ({
   data: message,
 }: MessageEvent<
   | VuuUIMessageOut
-  | WithRequestId<VuuRpcRequest>
+  | WithRequestId<ClientToServerRpcRequest>
   | WithRequestId<ClientToServerMenuRPC>
 >) => {
   switch (message.type) {

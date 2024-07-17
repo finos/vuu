@@ -7,6 +7,7 @@ import {
   TableSchema,
 } from "@finos/vuu-data-types";
 import {
+  ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   TypeaheadParams,
@@ -35,16 +36,27 @@ export interface VuuModuleConstructorProps<T extends string = string> {
 
 export type SessionTableMap = Record<string, Table>;
 
+export type RpcServiceRequestWithParams = Omit<
+  ClientToServerViewportRpcCall,
+  "vpId"
+> & {
+  namedParams?: { [key: string]: unknown };
+  selectedRows?: DataSourceRow[];
+  selectedRowIds?: string[];
+  table?: VuuTable;
+};
+export type RpcServiceRequest =
+  | RpcServiceRequestWithParams
+  | Omit<ClientToServerMenuRPC, "vpId">;
+
+export const withParams = (
+  rpcRequest: RpcServiceRequest
+): rpcRequest is RpcServiceRequestWithParams =>
+  "selectedRows" in rpcRequest || "selectedRowIds" in rpcRequest;
+
 export type RpcService = {
   rpcName: string;
-  service: (
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
-      namedParams?: { [key: string]: unknown };
-      selectedRows?: DataSourceRow[];
-      selectedRowIds?: string[];
-      table?: VuuTable;
-    }
-  ) => Promise<unknown>;
+  service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
 };
 
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
@@ -157,66 +169,60 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     }
   };
 
-  private openBulkEdits = async (
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
-      selectedRowIds?: string[];
-      table?: VuuTable;
-    }
-  ) => {
-    const { selectedRowIds, table } = rpcRequest;
-    if (selectedRowIds && table) {
-      const dataTable = this.#tables[table.table as T];
-      if (dataTable) {
-        const sessionTable = this.createSessionTableFromSelectedRows(
-          dataTable,
-          selectedRowIds
-        );
-        const sessionTableName = `${table.table}-${uuid()}`;
-        this.#sessionTableMap[sessionTableName] = sessionTable;
+  private openBulkEdits = async (rpcRequest: RpcServiceRequest) => {
+    if (withParams(rpcRequest)) {
+      const { selectedRowIds, table } = rpcRequest;
+      if (selectedRowIds && table) {
+        const dataTable = this.#tables[table.table as T];
+        if (dataTable) {
+          const sessionTable = this.createSessionTableFromSelectedRows(
+            dataTable,
+            selectedRowIds
+          );
+          const sessionTableName = `${table.table}-${uuid()}`;
+          this.#sessionTableMap[sessionTableName] = sessionTable;
 
-        return {
-          action: {
-            renderComponent: "grid",
-            table: {
-              module: "SIMUL",
-              table: sessionTableName,
-            },
-            tableSchema: dataTable.schema,
-            type: "OPEN_DIALOG_ACTION",
-          } as OpenDialogActionWithSchema,
-          requestId: "request_id",
-          rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-        };
-      } else {
-        return {
-          requestId: "request_id",
-          rpcName: "VP_BULK_EDIT_REJECT",
-        };
+          return {
+            action: {
+              renderComponent: "grid",
+              table: {
+                module: "SIMUL",
+                table: sessionTableName,
+              },
+              tableSchema: dataTable.schema,
+              type: "OPEN_DIALOG_ACTION",
+            } as OpenDialogActionWithSchema,
+            requestId: "request_id",
+            rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+          };
+        } else {
+          return {
+            requestId: "request_id",
+            rpcName: "VP_BULK_EDIT_REJECT",
+          };
+        }
       }
     }
   };
 
   // Bulk-edit with input in session table
-  private applyBulkEdits = async (
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId"> & {
-      namedParams: { [key: string]: unknown };
-      table?: VuuTable;
+  private applyBulkEdits = async (rpcRequest: RpcServiceRequest) => {
+    if (withParams(rpcRequest)) {
+      const sessionTable = this.getSessionTable();
+      for (let i = 0; i < sessionTable.data.length; i++) {
+        const newRow = sessionTable.data[i];
+        const { column, value } = rpcRequest.namedParams;
+        const keyIndex = sessionTable.map[sessionTable.schema.key];
+        sessionTable.update(String(newRow[keyIndex]), column as string, value);
+      }
+      return {
+        action: {
+          type: "NO_ACTION",
+        },
+        requestId: "request_id",
+        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
+      };
     }
-  ) => {
-    const sessionTable = this.getSessionTable();
-    for (let i = 0; i < sessionTable.data.length; i++) {
-      const newRow = sessionTable.data[i];
-      const { column, value } = rpcRequest.namedParams;
-      const keyIndex = sessionTable.map[sessionTable.schema.key];
-      sessionTable.update(String(newRow[keyIndex]), column as string, value);
-    }
-    return {
-      action: {
-        type: "NO_ACTION",
-      },
-      requestId: "request_id",
-      rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-    };
   };
 
   // Save session table data to main table
@@ -229,6 +235,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         const newRow = sessionTable.data[i];
         baseTable.updateRow(newRow);
       }
+
+      Object.keys(this.#sessionTableMap).forEach((key) => {
+        delete this.#sessionTableMap[key];
+      });
+
       return {
         action: {
           type: "NO_ACTION",
