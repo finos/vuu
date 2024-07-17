@@ -11,15 +11,16 @@ import { DragStartAction } from "../layout-reducer";
 import { usePersistentState } from "../use-persistent-state";
 import { QueryReponse, ViewDispatch } from "./ViewContext";
 import type {
+  BroadcastMessageHandler,
   Contribution,
   ContributionLocation,
   ViewAction,
 } from "../layout-view";
-import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
+import { useViewBroadcastChannel } from "../layout-view";
 
 export const useViewActionDispatcher = (
   id: string,
-  root: RefObject<HTMLDivElement>,
+  rootRef: RefObject<HTMLDivElement>,
   viewPath?: string,
   dropTargets?: string[]
 ): [ViewDispatch, Contribution[] | undefined] => {
@@ -30,7 +31,6 @@ export const useViewActionDispatcher = (
     loadSessionState(id, "contributions") ?? []
   );
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  const sendMessage = useViewBroadcastChannel(id, root);
   const updateContributions = useCallback(
     (location: ContributionLocation, content: ReactElement) => {
       const updatedContributions = contributions.concat([
@@ -47,27 +47,26 @@ export const useViewActionDispatcher = (
     setContributions([]);
   }, [id, purgeSessionState]);
 
-  const handleRemove = useCallback(() => {
+  // This assumes datasource has been stored in session state
+  // we should extend to accommodate multiple dataSources
+  const unsubscribeAndClearState = useCallback(() => {
     const ds = loadSessionState(id, "data-source") as DataSource;
     if (ds) {
       ds.unsubscribe();
     }
     purgeSessionState(id);
     purgeState(id);
+  }, [id, loadSessionState, purgeSessionState, purgeState]);
+
+  const handleRemove = useCallback(() => {
+    unsubscribeAndClearState();
     dispatchLayoutAction({ type: "remove", path: viewPath });
-  }, [
-    dispatchLayoutAction,
-    id,
-    loadSessionState,
-    purgeSessionState,
-    purgeState,
-    viewPath,
-  ]);
+  }, [unsubscribeAndClearState, dispatchLayoutAction, viewPath]);
 
   const handleMouseDown = useCallback(
     async (evt, index, preDragActivity): Promise<boolean> => {
       evt.stopPropagation();
-      const dragRect = root.current?.getBoundingClientRect();
+      const dragRect = rootRef.current?.getBoundingClientRect();
       return new Promise((resolve, reject) => {
         dispatchLayoutAction({
           type: "drag-start",
@@ -81,7 +80,32 @@ export const useViewActionDispatcher = (
         } as DragStartAction);
       });
     },
-    [root, dispatchLayoutAction, viewPath, dropTargets]
+    [rootRef, dispatchLayoutAction, viewPath, dropTargets]
+  );
+
+  const handleMessageReceived = useCallback<BroadcastMessageHandler>(
+    (message) => {
+      switch (message.type) {
+        case "highlight-on":
+          rootRef?.current?.classList.add("vuuHighlighted");
+          break;
+        case "highlight-off":
+          rootRef?.current?.classList.remove("vuuHighlighted");
+          break;
+        case "layout-closed":
+          unsubscribeAndClearState();
+          break;
+        default:
+          console.log(`received ${message.type} message`);
+      }
+    },
+    [rootRef, unsubscribeAndClearState]
+  );
+
+  const sendMessage = useViewBroadcastChannel(
+    id,
+    viewPath,
+    handleMessageReceived
   );
 
   const dispatchAction = useCallback(

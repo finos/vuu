@@ -191,7 +191,7 @@ export class VuuDataSource
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
       this.clientCallback?.(message);
-      this.emit("subscription-open", message);
+      this.emit("subscribed", message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
     } else if (message.type === "enabled") {
@@ -235,29 +235,32 @@ export class VuuDataSource
   };
 
   unsubscribe() {
-    info?.(`unsubscribe #${this.viewport}`);
-    if (this.viewport) {
-      this.server?.unsubscribe(this.viewport);
+    if (this.#status !== "unsubscribed") {
+      info?.(`unsubscribe #${this.viewport}`);
+      if (this.viewport) {
+        this.server?.unsubscribe(this.viewport);
+        this.emit("unsubscribed", this.viewport);
+      }
+      this.server?.destroy(this.viewport);
+      this.server = null;
+      this.removeAllListeners();
+      this.#status = "unsubscribed";
+      this.viewport = undefined;
+      this.range = { from: 0, to: 0 };
     }
-    this.server?.destroy(this.viewport);
-    this.server = null;
-    this.removeAllListeners();
-    this.#status = "unsubscribed";
-    this.viewport = undefined;
-    this.range = { from: 0, to: 0 };
-    this.emit("subscription-closed");
   }
 
   suspend() {
-    info?.(`suspend #${this.viewport}, current status ${this.#status}`);
-    if (this.viewport) {
-      this.#status = "suspended";
-      this.server?.send({
-        type: "suspend",
-        viewport: this.viewport,
-      });
+    if (this.#status !== "unsubscribed") {
+      info?.(`suspend #${this.viewport}, current status ${this.#status}`);
+      if (this.viewport) {
+        this.#status = "suspended";
+        this.server?.send({
+          type: "suspend",
+          viewport: this.viewport,
+        });
+      }
     }
-    return this;
   }
 
   resume() {
@@ -275,7 +278,6 @@ export class VuuDataSource
         this.#status = "subscribed";
       }
     }
-    return this;
   }
 
   disable() {
@@ -286,8 +288,8 @@ export class VuuDataSource
         viewport: this.viewport,
         type: "disable",
       });
+      this.emit("disabled", this.viewport);
     }
-    return this;
   }
 
   enable(callback?: SubscribeCallback) {
@@ -304,8 +306,8 @@ export class VuuDataSource
         viewport: this.viewport,
         type: "enable",
       });
+      this.emit("enabled", this.viewport);
     }
-    return this;
   }
 
   select(selected: Selection) {
