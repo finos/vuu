@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{ColumnBuilder, NoRpcHandler, TableDef, ViewPortDef}
 import org.finos.vuu.core._
-import org.finos.vuu.core.module.{TableDefContainer, TestModule}
+import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
