@@ -2,7 +2,6 @@ package org.finos.vuu.core
 
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, NoHeartbeatFlowController}
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoginTokenValidator}
 import org.finos.vuu.plugin.Plugin
