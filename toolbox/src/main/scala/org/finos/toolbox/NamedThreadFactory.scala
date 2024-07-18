@@ -1,31 +1,23 @@
 package org.finos.toolbox
 
 import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 
-object NamedThreadFactory{
+object NamedThreadFactory  {
+  val map = new java.util.HashMap[String, AtomicInteger]()
 
-  private val map = new java.util.HashMap[String, Int]()
+  def nextName(name: String): String  = {
+    if (!map.containsKey(name)) {
+      map.put(name, new AtomicInteger())
+     }
 
-  def nextName(name: String): String = {
-
-    map.synchronized {
-
-      val index = if (map.containsKey(name)) {
-        map.get(name) + 1
-      } else {
-        1
-      }
-
-      map.put(name, index)
-      name + index
-    }
-
-  }
+    name + map.get(name).incrementAndGet()
+   }
 }
 
-class NamedThreadFactory(name: String) extends ThreadFactory {
-  override def newThread(r: Runnable): Thread = {
-    val threadName = NamedThreadFactory.nextName(name)
+class NamedThreadFactory(name: String) extends ThreadFactory  {
+  override def newThread(r: Runnable): Thread  = {
+    val threadName  = NamedThreadFactory.nextName(name)
     new Thread(r, threadName)
-  }
+   }
 }
