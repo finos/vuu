@@ -5,7 +5,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{ColumnBuilder, NoRpcHandler, TableDef, ViewPortDef}
 import org.finos.vuu.core._
-import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.net.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -48,6 +49,44 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
     val http = 10011
     val ws = 10013
 
+    val module: ViewServerModule = defineModuleWithTestTables()
+
+    val config = VuuServerConfig(
+      VuuHttp2ServerOptions()
+        .withWebRoot("vuu/src/main/resources/www")
+        .withSslDisabled()
+        .withDirectoryListings(true)
+        .withPort(http),
+      VuuWebSocketOptions()
+        .withBindAddress("0.0.0.0")
+        .withUri("websocket")
+        .withWsPort(ws)
+        .withWssDisabled(),
+      VuuSecurityOptions()
+        .withAuthenticator(new AlwaysHappyAuthenticator)
+        .withLoginValidator(new AlwaysHappyLoginValidator),
+      VuuThreadingOptions(),
+      VuuClientConnectionOptions()
+        .withHeartbeatDisabled()
+    )
+      .withModule(module)
+
+    val viewServer = new VuuServer(config)
+
+    val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
+    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+    val vuuClient = new TestVuuClient(viewServerClient)
+
+    //set up a dependency on ws server from ws client.
+    lifecycle(client).dependsOn(viewServer)
+
+    //lifecycle registration is done in constructor of service classes, so sequence of create is important
+    lifecycle.start()
+
+    vuuClient
+  }
+
+  private def defineModuleWithTestTables(): ViewServerModule = {
     val tableDef = TableDef(
       name = "TableMetaTest",
       keyField = "Id",
@@ -67,40 +106,19 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       service = NoRpcHandler
     )
 
-    val module = TestModuleFactory.build("TEST", tableDef, viewPortDef)
+    val tableDef2 = TableDef(
+      name = "TableMetaDefaultVPTest",
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .build()
+    )
 
-    val config = VuuServerConfig(
-      VuuHttp2ServerOptions()
-        .withWebRoot("vuu/src/main/resources/www")
-        .withSslDisabled()
-        .withDirectoryListings(true)
-        .withPort(http),
-      VuuWebSocketOptions()
-        .withBindAddress("0.0.0.0")
-        .withUri("websocket")
-        .withWsPort(ws)
-        .withWssDisabled(),
-      VuuSecurityOptions()
-        .withAuthenticator(new AlwaysHappyAuthenticator)
-        .withLoginValidator(new AlwaysHappyLoginValidator),
-      VuuThreadingOptions(),
-      VuuClientConnectionOptions()
-        .withHeartbeatDisabled()
-    ).withModule(module)
-
-    val viewServer = new VuuServer(config)
-
-    val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
-    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-    val vuuClient = new TestVuuClient(viewServerClient)
-
-    //set up a dependency on ws server from ws client.
-    lifecycle(client).dependsOn(viewServer)
-
-    //lifecycle registration is done in constructor of service classes, so sequence of create is important
-    lifecycle.start()
-
-    vuuClient
+    ModuleFactory.withNamespace("TEST")
+      .addTableForTest(tableDef, viewPortDef)
+      .addTableForTest(tableDef2)
+      .asModule()
   }
 
   Feature("Server web socket api") {
@@ -115,6 +133,18 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       val responseMessage = response.get
       responseMessage.columns.length shouldEqual 2
       responseMessage.columns shouldEqual Array("Id", "Account")
+    }
+
+    Scenario("client requests to get table metadata for a table with no view port def defined") {
+
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", "TEST")))
+
+      Then("return view port columns in response")
+      val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
+      assert(response.isDefined)
+
+      val responseMessage = response.get
+      responseMessage.columns.length shouldEqual 0
     }
 
     Scenario("client requests to get table metadata for a non existent") {
