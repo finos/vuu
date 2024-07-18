@@ -10,7 +10,7 @@ export interface VuuBroadcastChannel<T> extends EventTarget {
     | ((this: BroadcastChannel, evt: MessageEvent<T>) => void)
     | null;
   close(): void;
-  postMessage(message: T): void;
+  postMessage<M extends T = T>(message: M): void;
   addEventListener<K extends keyof VuuBroadcastChannelEventMap<T>>(
     type: K,
     listener: (
