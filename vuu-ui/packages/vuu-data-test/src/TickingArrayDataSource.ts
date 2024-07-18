@@ -6,6 +6,7 @@ import type {
   DataSourceRow,
   MenuRpcResponse,
   RpcResponse,
+  Selection,
   SelectionItem,
   SubscribeCallback,
   SubscribeProps,
@@ -22,7 +23,7 @@ import type {
   VuuRowDataItemType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { metadataKeys } from "@finos/vuu-utils";
+import { VuuBroadcastChannel, metadataKeys } from "@finos/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
 import { RpcService, SessionTableMap } from "./VuuModule";
@@ -40,12 +41,43 @@ export interface TickingArrayDataSourceConstructorProps
   visualLinks?: LinkDescriptorWithLabel[];
 }
 
+type DataSourceBroadcastSubscribeMessage = {
+  type: "subscribe-link-filter" | "subscribe-link-select" | "unsubscribe";
+  targetId: string;
+  targetColumn: string;
+  sourceId: string;
+};
+
+type DataSourceBroadcastSelectionMessage = {
+  columnName: string;
+  linkType: "subscribe-link-filter" | "subscribe-link-select";
+  targetId: string;
+  type: "selection-changed";
+  selectedValues: string[];
+  sourceId: string;
+};
+
+type DataSourceBroadcastMessage =
+  | DataSourceBroadcastSubscribeMessage
+  | DataSourceBroadcastSelectionMessage;
+
+const isMessageForSelf = (message: DataSourceBroadcastMessage, id: string) =>
+  message.targetId === id;
+
+type LinkSubscription = {
+  columnName: string;
+  linkType: "subscribe-link-filter" | "subscribe-link-select";
+};
+
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
   #sessionTables: SessionTableMap | undefined;
   #table?: Table;
+  #broadcastChannel: VuuBroadcastChannel<DataSourceBroadcastMessage> =
+    new BroadcastChannel("vuu-datasource");
+  #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
 
   constructor({
     data,
@@ -76,6 +108,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
       table.on("insert", this.insert);
       table.on("update", this.updateRow);
     }
+
+    this.#broadcastChannel.onmessage = (evt) => {
+      if (isMessageForSelf(evt.data, this.viewport)) {
+        this.receiveBroadcastMessage(evt.data);
+      }
+    };
   }
 
   async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
@@ -92,6 +130,36 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
   get range() {
     return super.range;
+  }
+
+  private pickUniqueSelectedValues(column: string) {
+    const map = this.columnMap;
+    const set = new Set();
+    const colIndex = map[column];
+    for (const row of this.getSelectedRows()) {
+      set.add(row[colIndex]);
+    }
+    return Array.from(set) as string[];
+  }
+
+  select(selected: Selection) {
+    super.select(selected);
+    const numberOfSelectionSubscribers =
+      this.#selectionLinkSubscribers?.size ?? 0;
+    if (numberOfSelectionSubscribers > 0) {
+      this.#selectionLinkSubscribers?.forEach(
+        ({ columnName, linkType }, targetId) => {
+          this.sendBroadcastMessage({
+            columnName,
+            linkType,
+            sourceId: this.viewport,
+            targetId,
+            type: "selection-changed",
+            selectedValues: this.pickUniqueSelectedValues(columnName),
+          });
+        }
+      );
+    }
   }
 
   private getSelectedRows() {
@@ -235,4 +303,52 @@ export class TickingArrayDataSource extends ArrayDataSource {
       );
     }
   }
+
+  sendBroadcastMessage(message: DataSourceBroadcastMessage) {
+    this.#broadcastChannel.postMessage(message);
+  }
+
+  protected receiveBroadcastMessage = (message: DataSourceBroadcastMessage) => {
+    switch (message.type) {
+      case "subscribe-link-filter":
+      case "subscribe-link-select":
+        {
+          const subscribers =
+            this.#selectionLinkSubscribers ||
+            (this.#selectionLinkSubscribers = new Map<
+              string,
+              LinkSubscription
+            >());
+          subscribers.set(message.sourceId, {
+            columnName: message.targetColumn,
+            linkType: message.type,
+          });
+        }
+        break;
+
+      case "selection-changed":
+        {
+          const { columnName, linkType, selectedValues } = message;
+          const selectedIndices = [];
+          const colIndex = this.columnMap[columnName];
+          if (linkType === "subscribe-link-select") {
+            for (const value of selectedValues) {
+              const index = this.data.findIndex(
+                (row) => row[colIndex] === value
+              );
+              selectedIndices.push(index);
+            }
+            this.select(selectedIndices);
+          } else {
+            this.filter = {
+              filter: `${columnName} in ["${selectedValues.join('","')}"]`,
+            };
+          }
+        }
+
+        break;
+      default:
+        console.log(`unrecognised message ${message.type}`);
+    }
+  };
 }
