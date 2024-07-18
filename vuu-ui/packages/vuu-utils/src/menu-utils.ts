@@ -11,6 +11,7 @@ import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRPC,
   ClientToServerMenuRowRPC,
+  ShowNotificationAction,
   VuuMenu,
   VuuMenuContext,
   VuuMenuItem,
@@ -225,6 +226,11 @@ export const getMenuRpcRequest = (
 };
 
 export const isOpenBulkEditResponse = (
-  res: RpcResponse
+  res: Partial<RpcResponse>
 ): res is MenuRpcResponse<OpenDialogActionWithSchema> =>
   (res as MenuRpcResponse).rpcName === "VP_BULK_EDIT_BEGIN_RPC";
+
+export const hasShowNotificationAction = (
+  res: Partial<RpcResponse>
+): res is MenuRpcResponse<ShowNotificationAction> =>
+  (res as MenuRpcResponse).action?.type === "SHOW_NOTIFICATION_ACTION";

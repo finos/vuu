@@ -10,6 +10,7 @@ import { Placeholder } from "../placeholder";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";
+import { useViewBroadcastChannel } from "../layout-view";
 
 const defaultCreateNewChild = () => (
   <Placeholder
@@ -19,7 +20,7 @@ const defaultCreateNewChild = () => (
 );
 
 export const StackLayout = (props: StackProps) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const dispatch = useLayoutProviderDispatch();
   const { loadState } = usePersistentState();
 
@@ -35,7 +36,9 @@ export const StackLayout = (props: StackProps) => {
 
   const id = useId(idProp);
 
-  const [dispatchViewAction] = useViewActionDispatcher(id, ref, path);
+  const sendMessage = useViewBroadcastChannel();
+
+  const [dispatchViewAction] = useViewActionDispatcher(id, rootRef, path);
   const createNewChildFromContext = useLayoutCreateNewChild();
   const createNewChild =
     createNewChildProp ?? createNewChildFromContext ?? defaultCreateNewChild;
@@ -53,10 +56,13 @@ export const StackLayout = (props: StackProps) => {
         const {
           props: { "data-path": dataPath, path = dataPath },
         } = children[tabIndex];
-        dispatch({ type: "remove", path });
+        sendMessage({ type: "layout-closed", path });
+        setTimeout(() => {
+          dispatch({ type: "remove", path });
+        }, 100);
       }
     },
-    [children, dispatch]
+    [children, dispatch, sendMessage]
   );
 
   const handleTabAdd = useCallback(() => {
@@ -130,7 +136,7 @@ export const StackLayout = (props: StackProps) => {
       onTabClose={handleTabClose}
       onTabEdit={handleTabEdit}
       onTabSelectionChanged={handleTabSelection}
-      ref={ref}
+      ref={rootRef}
     />
   );
 };

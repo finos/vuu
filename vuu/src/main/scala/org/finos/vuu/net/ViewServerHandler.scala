@@ -7,6 +7,7 @@ import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.json.Serializer
 import org.finos.toolbox.json.JsonUtil
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.net.flowcontrol.{FlowController, FlowControllerFactory}
 
 trait ViewServerHandlerFactory {
   def create(): ViewServerHandler
@@ -15,9 +16,11 @@ trait ViewServerHandlerFactory {
 class ViewServerHandlerFactoryImpl(authenticator: Authenticator,
                                    tokenValidator: LoginTokenValidator, sessionContainer: ClientSessionContainer,
                                    serverApi: ServerApi, jsonVsSerializer: Serializer[String, MessageBody],
-                                   moduleContainer: ModuleContainer)(implicit val timeProvider: Clock) extends ViewServerHandlerFactory {
+                                   moduleContainer: ModuleContainer,
+                                   flowControllerFactory: FlowControllerFactory,
+                                  )(implicit val timeProvider: Clock) extends ViewServerHandlerFactory {
   override def create(): ViewServerHandler = {
-    val requestProcessor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, jsonVsSerializer, moduleContainer)
+    val requestProcessor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, jsonVsSerializer, moduleContainer, flowControllerFactory)
     new ViewServerHandler(jsonVsSerializer, requestProcessor)
   }
 }

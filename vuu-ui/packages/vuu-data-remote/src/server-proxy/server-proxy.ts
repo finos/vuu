@@ -32,7 +32,7 @@ import type {
   ServerToClientTableList,
   ServerToClientTableMeta,
   VuuLinkDescriptor,
-  VuuRpcRequest,
+  ClientToServerRpcRequest,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
@@ -585,8 +585,9 @@ export class ServerProxy {
     }
   }
 
-  private rpcCall(message: WithRequestId<VuuRpcRequest>) {
-    const [requestId, rpcRequest] = stripRequestId<VuuRpcRequest>(message);
+  private rpcCall(message: WithRequestId<ClientToServerRpcRequest>) {
+    const [requestId, rpcRequest] =
+      stripRequestId<ClientToServerRpcRequest>(message);
     const module = getRpcServiceModule(rpcRequest.service);
     this.sendMessageToServer(rpcRequest, requestId, { module });
   }
@@ -599,7 +600,7 @@ export class ServerProxy {
           | VuuUIMessageOutSubscribe
           | VuuUIMessageOutUnsubscribe
         >
-      | WithRequestId<VuuRpcRequest>
+      | WithRequestId<ClientToServerRpcRequest>
       | WithRequestId<ClientToServerMenuRPC>
   ) {
     if (isViewportMessage(message)) {

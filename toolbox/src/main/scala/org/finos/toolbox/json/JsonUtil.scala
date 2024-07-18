@@ -1,6 +1,6 @@
 package org.finos.toolbox.json
 
-import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.{JsonParser, StreamReadFeature}
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule, JavaTypeable}
 

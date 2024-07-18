@@ -12,7 +12,7 @@ import {
   ClientToServerTableList,
   ClientToServerTableMeta,
   ClientToServerViewportRpcCall,
-  VuuRpcRequest,
+  ClientToServerRpcRequest,
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
@@ -204,7 +204,7 @@ function handleMessageFromWorker({
 
 const asyncRequest = <T = unknown>(
   msg:
-    | VuuRpcRequest
+    | ClientToServerRpcRequest
     | ClientToServerMenuRPC
     | ClientToServerTableList
     | ClientToServerTableMeta
@@ -224,8 +224,12 @@ export interface ServerAPI {
   destroy: (viewportId?: string) => void;
   getTableSchema: (table: VuuTable) => Promise<TableSchema>;
   getTableList: (module?: string) => Promise<VuuTableList>;
+  // TODO its not really unknown
   rpcCall: <T = unknown>(
-    msg: VuuRpcRequest | ClientToServerMenuRPC | ClientToServerViewportRpcCall
+    msg:
+      | ClientToServerRpcRequest
+      | ClientToServerMenuRPC
+      | ClientToServerViewportRpcCall
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
@@ -267,7 +271,7 @@ const connectedServerAPI: ServerAPI = {
 
   rpcCall: async <T = unknown>(
     message:
-      | VuuRpcRequest
+      | ClientToServerRpcRequest
       | ClientToServerMenuRPC
       | ClientToServerViewportRpcCall
   ) => asyncRequest<T>(message),
@@ -367,7 +371,9 @@ export const connectToServer = async ({
   }
 };
 
-export const makeRpcCall = async <T = unknown>(rpcRequest: VuuRpcRequest) => {
+export const makeRpcCall = async <T = unknown>(
+  rpcRequest: ClientToServerRpcRequest
+) => {
   try {
     return (await serverAPI).rpcCall<T>(rpcRequest);
   } catch (err) {

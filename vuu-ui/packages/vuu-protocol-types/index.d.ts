@@ -26,18 +26,45 @@ export interface VuuServerToClientMessage<
   user: string;
 }
 
-export interface ServerToClientTableMeta extends VuuTableMeta {
+/**
+ * Metadata messages
+ *
+ * There are four metadata requests
+ * - retrieve a list of all available tables.
+ * - retrieve schema information for a given table.
+ * - retrieve any menu defined on a given table
+ * - retrieve any available Visual Links for a specific viewport
+ *
+ * Visual Links differ in one impoortant regard from the other three
+ * forms of metadata in that they are not static. The take into
+ * account existing active subscriptions within the users session
+ * and can therefore change from one call to another.
+ */
+export interface ClientToServerTableList {
+  type: "GET_TABLE_LIST";
+}
+
+export interface ServerToClientTableList {
+  type: "TABLE_LIST_RESP";
+  tables: VuuTable[];
+}
+
+export interface ClientToServerTableMeta {
+  type: "GET_TABLE_META";
+  table: VuuTable;
+}
+
+export interface ServerToClientTableMeta {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
   key: string;
   table: VuuTable;
   type: "TABLE_META_RESP";
 }
-
-export type VuuTableMeta = Pick<
-  ServerToClientTableMeta,
-  "columns" | "dataTypes" | "table"
->;
+export interface ClientToServerMenus {
+  type: "GET_VIEW_PORT_MENUS";
+  vpId: string;
+}
 
 export interface ServerToClientMenus {
   type: "VIEW_PORT_MENUS_RESP";
@@ -45,31 +72,9 @@ export interface ServerToClientMenus {
   vpId: string;
 }
 
-export interface OpenDialogAction {
-  type: "OPEN_DIALOG_ACTION";
-  table: VuuTable;
-}
-export interface NoAction {
-  type: "NO_ACTION";
-}
-
-export interface ServerToClientMenu {
-  rpcName: string;
-  type: "VIEW_PORT_MENU_RESP";
-  action: OpenDialogAction | NoAction;
+export interface ClientToServerVisualLinks {
+  type: "GET_VP_VISUAL_LINKS";
   vpId: string;
-}
-
-export interface ServerToClientMenuReject {
-  error: string;
-  rpcName: string;
-  type: "VIEW_PORT_MENU_REJ";
-  vpId: string;
-}
-
-export interface ServerToClientMenuSessionTableAction
-  extends ServerToClientMenu {
-  action: OpenDialogAction;
 }
 
 export interface ServerToClientViewPortVisualLinks {
@@ -77,6 +82,11 @@ export interface ServerToClientViewPortVisualLinks {
   links: VuuLinkDescriptor[];
   vpId: string;
 }
+
+/**
+ * Viewport manipulation messages
+ *
+ */
 export interface ServerToClientCreateViewPortSuccess {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
@@ -97,6 +107,7 @@ export interface ServerToClientChangeViewPortSuccess {
   type: "CHANGE_VP_SUCCESS";
   viewPortId: string;
 }
+
 export interface ServerToClientChangeViewPortRangeSuccess {
   type: "CHANGE_VP_RANGE_SUCCESS";
   viewPortId: string;
@@ -117,25 +128,6 @@ export interface ServerToClientRemoveViewPortSuccess {
 }
 export interface ServerToClientSelectSuccess {
   type: "SET_SELECTION_SUCCESS";
-  vpId: string;
-}
-export interface ServerToClientRPC {
-  type: "RPC_RESP";
-  method: string;
-  result: any;
-}
-
-// TODO flesh out as we know more
-export interface ServerToClientViewportRpcResponse {
-  action: {
-    key?: string;
-    msg?: string;
-    type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS" | "VP_CREATE_SUCCESS";
-  };
-  type: "VIEW_PORT_RPC_REPONSE";
-  method: string;
-  namedParams: { [key: string]: VuuRowDataItemType };
-  params: string[];
   vpId: string;
 }
 
@@ -193,7 +185,7 @@ export declare type ServerToClientBody =
   | ServerToClientTableList
   | ServerToClientTableRows
   | ServerToClientMenus
-  | ServerToClientMenu
+  | ServerToClientMenuResponse
   | ServerToClientMenuReject
   | ServerToClientMenuSessionTableAction
   | ServerToClientRPC
@@ -229,13 +221,6 @@ export interface ClientToServerEnable {
   type: "ENABLE_VP";
   viewPortId: string;
 }
-export interface ClientToServerTableList {
-  type: "GET_TABLE_LIST";
-}
-export interface ClientToServerTableMeta {
-  type: "GET_TABLE_META";
-  table: VuuTable;
-}
 export interface ClientToServerCreateViewPort {
   columns: VuuColumns;
   filterSpec: VuuFilter;
@@ -268,14 +253,6 @@ export interface ClientToServerViewPortRange {
   to: number;
   type: "CHANGE_VP_RANGE";
   viewPortId: string;
-}
-export interface ClientToServerVisualLinks {
-  type: "GET_VP_VISUAL_LINKS";
-  vpId: string;
-}
-export interface ClientToServerMenus {
-  type: "GET_VIEW_PORT_MENUS";
-  vpId: string;
 }
 export interface ClientToServerOpenTreeNode {
   type: "OPEN_TREE_NODE";
@@ -310,56 +287,6 @@ export declare type TypeAheadMethod =
 
 export declare type RpcMethod = TypeAheadMethod | "addRowsFromInstruments";
 
-export interface ClientToServerViewportRpcCall {
-  type: "VIEW_PORT_RPC_CALL";
-  rpcName: string;
-  namedParams: { [key: string]: VuuRowDataItemType };
-  params: string[];
-  vpId: string;
-}
-
-export interface ClientToServerGetUniqueValues {
-  type: "RPC_CALL";
-  method: "getUniqueFieldValues";
-  service: "TypeAheadRpcHandler";
-  params: [VuuTable, string];
-}
-export interface ClientToServerGetUniqueValuesStartingWith {
-  type: "RPC_CALL";
-  method: "getUniqueFieldValuesStartingWith";
-  service: "TypeAheadRpcHandler";
-  params: [VuuTable, string, string];
-}
-
-export declare type VuuRpcRequest =
-  | ClientToServerGetUniqueValues
-  | ClientToServerGetUniqueValuesStartingWith;
-// add remaining Rpc calls here
-
-export interface ClientToServerMenuBaseRPC {
-  rpcName: string;
-  vpId: string;
-}
-export interface ClientToServerMenuSelectRPC extends ClientToServerMenuBaseRPC {
-  type: "VIEW_PORT_MENUS_SELECT_RPC";
-}
-export interface ClientToServerMenuTableRPC extends ClientToServerMenuBaseRPC {
-  type: "VIEW_PORT_MENU_TABLE_RPC";
-}
-
-export type VuuRowRecord = { [key: string]: VuuRowDataItemType };
-export interface ClientToServerMenuRowRPC extends ClientToServerMenuBaseRPC {
-  type: "VIEW_PORT_MENU_ROW_RPC";
-  rowKey: string;
-  row: VuuRowRecord;
-}
-export interface ClientToServerMenuCellRPC extends ClientToServerMenuBaseRPC {
-  field: string;
-  rowKey: string;
-  value: VuuColumnDataType;
-  type: "VIEW_PORT_MENU_CELL_RPC";
-}
-
 export interface ClientToServerEditCellRpc {
   rowKey: string;
   type: "VP_EDIT_CELL_RPC";
@@ -393,12 +320,6 @@ export type ClientToServerEditRpc =
   | ClientToServerEditRowRpc
   | ClientToServerSubmitFormRpc;
 
-export type ClientToServerMenuRPC =
-  | ClientToServerMenuRowRPC
-  | ClientToServerMenuCellRPC
-  | ClientToServerMenuSelectRPC
-  | ClientToServerMenuTableRPC;
-
 export type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENUS_SELECT_RPC"
   | "VIEW_PORT_MENU_TABLE_RPC"
@@ -430,9 +351,131 @@ export declare type ClientToServerBody =
   | ClientToServerRemoveLink
   | ClientToServerMenuRPC
   | ClientToServerViewportRpcCall
-  | VuuRpcRequest;
+  | ClientToServerRpcRequest;
 
-/** Menu RPC services */
+/**
+ * RPC type messages
+ *
+ * Vuu supports three distinct class of RPC message
+ *
+ * 1) RPC
+ *    This is a 'standalone' RPC call unrelated to any particular viewport. The only example
+ *    right now is the typeahead service
+ *
+ * 2) Viewport RPC
+ *
+ *    There are no generic messages in this category, they will tend to be specific to a
+ *    business module. Examples found in the Vuu project include rpcNames "createBasket",
+ *    "addConstituent", "sendToMarket" etc in the BASKET module.
+ *
+ *    There is a new proposed set of generic rpc calls, related to bulk edit operations
+ *      - "VP_BULK_EDIT_SUBMIT_RPC"
+ *      - "VP_BULK_EDIT_COLUMN_CELLS_RPC"
+ *    These are not yet impelmented in the Vuu server and liable to change
+ *
+ * 3) Menu RPC
+ *
+ *    These are RPC calls submitted when user clicks a menu item from the menu structure
+ *    defined on the server (see VIEW_PORT_MENUS_RESP above). There are 4 categories of
+ *    Menu RPC calls, corresponding to the four values of the menu 'context' property
+ *      - grid
+ *      - row
+ *      - cell
+ *      - selected-rows
+ *
+ */
+
+// RPC
+export declare type ClientToServerRpcRequest = {
+  type: "RPC_CALL";
+  service: "TypeAheadRpcHandler";
+} & (
+  | {
+      method: "getUniqueFieldValues";
+      params: [VuuTable, string];
+    }
+  | {
+      method: "getUniqueFieldValuesStartingWith";
+      params: [VuuTable, string, string];
+    }
+);
+
+export interface ServerToClientRPC {
+  error: null | unknown;
+  type: "RPC_RESP";
+  method: "getUniqueFieldValues" | "getUniqueFieldValuesStartingWith";
+  result: string[];
+}
+
+// ViewportRPC
+export interface ClientToServerViewportRpcCall {
+  type: "VIEW_PORT_RPC_CALL";
+  rpcName: string;
+  namedParams: { [key: string]: VuuRowDataItemType };
+  params: string[];
+  vpId: string;
+}
+
+export interface ServerToClientViewportRpcResponse {
+  action: {
+    key?: string;
+    msg?: string;
+    type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS" | "VP_CREATE_SUCCESS";
+  };
+  type: "VIEW_PORT_RPC_REPONSE";
+  method: string;
+  namedParams: { [key: string]: VuuRowDataItemType };
+  params: string[];
+  vpId: string;
+}
+
+// MenuRPC
+export type ClientToServerMenuRPC =
+  | ClientToServerMenuRowRPC
+  | ClientToServerMenuCellRPC
+  | ClientToServerMenuSelectRPC
+  | ClientToServerMenuGridRPC;
+
+export interface ClientToServerMenuSelectRPC {
+  rpcName: string;
+  type: "VIEW_PORT_MENUS_SELECT_RPC";
+  vpId: string;
+}
+export interface ClientToServerMenuGridRPC {
+  rpcName: string;
+  type: "VIEW_PORT_MENU_TABLE_RPC";
+  vpId: string;
+}
+
+export interface ClientToServerMenuRowRPC {
+  row: VuuRowRecord;
+  rowKey: string;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_ROW_RPC";
+  vpId: string;
+}
+export interface ClientToServerMenuCellRPC {
+  field: string;
+  rpcName: string;
+  rowKey: string;
+  type: "VIEW_PORT_MENU_CELL_RPC";
+  value: VuuColumnDataType;
+  vpId: string;
+}
+
+export interface ServerToClientMenuResponse {
+  action: OpenDialogAction | NoAction | ShowNotificationAction;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_RESP";
+  vpId: string;
+}
+
+export interface ServerToClientMenuReject {
+  error: string;
+  rpcName: string;
+  type: "VIEW_PORT_MENU_REJ";
+  vpId: string;
+}
 
 // prettier-ignore
 export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
@@ -514,6 +557,9 @@ export declare type VuuLinkDescriptor = {
   link: VuuLink;
 };
 
+// used in MenuRPC row message
+export type VuuRowRecord = { [key: string]: VuuRowDataItemType };
+
 /**
  * LinkDescriptor with label is not strictly part of the Vuu Protocol
  *
@@ -538,9 +584,21 @@ export interface ServerToClientLoginSuccess {
   type: "LOGIN_SUCCESS";
   token: string;
 }
-export interface ServerToClientTableList {
-  type: "TABLE_LIST_RESP";
-  tables: VuuTable[];
-}
 
 export type VuuTableList = Pick<ServerToClientTableList, "tables">;
+
+// Menu Response Actions
+export interface ShowNotificationAction {
+  type: "SHOW_NOTIFICATION_ACTION";
+  message: string;
+  title?: string;
+}
+
+export interface OpenDialogAction {
+  renderComponent?: string;
+  type: "OPEN_DIALOG_ACTION";
+  table: VuuTable;
+}
+export interface NoAction {
+  type: "NO_ACTION";
+}

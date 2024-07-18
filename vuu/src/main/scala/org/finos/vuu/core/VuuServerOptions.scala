@@ -2,11 +2,10 @@ package org.finos.vuu.core
 
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, NoHeartbeatFlowController}
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoginTokenValidator}
 import org.finos.vuu.plugin.Plugin
-
-
 
 object VuuSecurityOptions{
   def apply(): VuuSecurityOptions = {
@@ -26,6 +25,12 @@ object VuuThreadingOptions {
   }
 }
 
+object VuuClientConnectionOptions {
+  def apply(): VuuClientConnectionOptions = {
+    VuuClientConnectionOptionsImpl(true)
+  }
+
+}
 trait VuuWebSocketOptions {
   def wsPort: Int
   def uri: String
@@ -46,6 +51,12 @@ trait VuuThreadingOptions{
   def withTreeThreads(threads:Int): VuuThreadingOptions
   def viewportThreads: Int
   def treeThreads: Int
+}
+
+trait VuuClientConnectionOptions {
+  def hasHeartbeat: Boolean
+  def withHeartbeat(): VuuClientConnectionOptions
+  def withHeartbeatDisabled(): VuuClientConnectionOptions
 }
 
 case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValidator: LoginTokenValidator) extends VuuSecurityOptions{
@@ -75,8 +86,16 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads
   override def treeThreads: Int = treeViewPortThreads
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(), wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(), security: VuuSecurityOptions = VuuSecurityOptions(),
+case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
+  override def withHeartbeat(): VuuClientConnectionOptions = this.copy(true)
+  override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
+}
+
+case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(),
+                           wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(),
+                           security: VuuSecurityOptions = VuuSecurityOptions(),
                            threading: VuuThreadingOptions = VuuThreadingOptions(),
+                           clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
                            modules: List[ViewServerModule] = List(),
                            plugins: List[Plugin] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {

@@ -264,7 +264,7 @@ export const SessionEditingForm = ({
             type: "VP_EDIT_CELL_RPC",
           })
           .then((response) => {
-            if (response?.type === "VP_EDIT_RPC_REJECT") {
+            if (isErrorResponse(response)) {
               console.log(`edit rejected ${response.error}`);
               setFieldStatusValues((map) => ({
                 ...map,

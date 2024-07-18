@@ -128,8 +128,8 @@ export class LocalPersistenceManager implements IPersistenceManager {
         const applicationJSON = getLocalEntity<ApplicationJSON>(this.#urlKey);
         if (applicationJSON) {
           this.#applicationJSON = applicationJSON;
-          resolve(applicationJSON);
         }
+        resolve(applicationJSON);
       })
     );
   }

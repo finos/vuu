@@ -4,6 +4,7 @@ import type {
   ClientToServerEditRpc,
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
+  NoAction,
   OpenDialogAction,
   VuuAggregation,
   VuuColumnDataType,
@@ -334,6 +335,8 @@ export interface SubscribeProps {
 export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
+export type DataSourceEventHandler = (viewportId: string) => void;
+
 export type DataSourceEvents = {
   config: (
     config: DataSourceConfig | undefined,
@@ -343,8 +346,10 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
-  "subscription-open": (subscription: DataSourceSubscribedMessage) => void;
-  "subscription-closed": () => void;
+  subscribed: (subscription: DataSourceSubscribedMessage) => void;
+  unsubscribed: DataSourceEventHandler;
+  disabled: DataSourceEventHandler;
+  enabled: DataSourceEventHandler;
 };
 
 /**
@@ -369,7 +374,9 @@ export type RpcResponse =
   | VuuUIMessageInRPCEditResponse
   | ViewportRpcResponse;
 
-export type RpcResponseHandler = (response: RpcResponse) => boolean;
+export type RpcResponseHandler = (
+  response: Omit<RpcResponse, "requestId">
+) => boolean;
 
 export type RowSearchPredicate = (row: DataSourceRow) => boolean;
 
@@ -446,12 +453,14 @@ export interface DataSource
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
    * accepts the same subscribe callback as subscribe. This allows a completely new instance of a component to
    * assume ownership of a subscription and receive all messages.
+   * Should emit an enabled event
    */
   enable?: (callback?: SubscribeCallback) => void;
   /**
    * Disables this subscription. A datasource will send no further messages until re-enabled. Example usage
    * might be for a component displayed within a set of Tabs. If user switches to another tab, the dataSource
    * of the component that is no longer visible can be disabled until it is made visible again.
+   * Should emit a disabled event
    */
   disable?: () => void;
   filter: DataSourceFilter;
@@ -476,7 +485,7 @@ export interface DataSource
   menu?: VuuMenu;
   menuRpcCall: (
     rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) => Promise<RpcResponse | undefined>;
+  ) => Promise<Omit<RpcResponse, "requestId"> | undefined>;
   rpcCall?: <T extends RpcResponse = RpcResponse>(
     message: Omit<ClientToServerViewportRpcCall, "vpId">
   ) => Promise<T | undefined>;
@@ -518,7 +527,10 @@ export interface OpenDialogActionWithSchema extends OpenDialogAction {
   tableSchema?: TableSchema;
 }
 
-export declare type MenuRpcAction = OpenDialogActionWithSchema | NoAction;
+export declare type MenuRpcAction =
+  | OpenDialogActionWithSchema
+  | NoAction
+  | ShowToastAction;
 
 export type ConnectionStatus =
   | "connecting"
@@ -607,7 +619,11 @@ export interface VuuUIMessageInTableMeta {
   type: "TABLE_META_RESP";
 }
 export interface ViewportRpcResponse {
-  action: ServerToClientViewportRpcResponse["action"];
+  action: ServerToClientViewportRpcResponse["action"] & {
+    // for SessionTable editing, we inject the schema after receiving server message
+    // and before forwarding to UI
+    tableSchema?: TableSchema;
+  };
   requestId: string;
   rpcName?: string;
   type: "VIEW_PORT_RPC_RESPONSE";
