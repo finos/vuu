@@ -54,6 +54,10 @@ export const withParams = (
 ): rpcRequest is RpcServiceRequestWithParams =>
   "selectedRows" in rpcRequest || "selectedRowIds" in rpcRequest;
 
+export const withNamedParams = (
+  rpcRequest: RpcServiceRequest
+): rpcRequest is RpcServiceRequestWithParams => "namedParams" in rpcRequest;
+
 export type RpcService = {
   rpcName: string;
   service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
@@ -207,7 +211,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
   // Bulk-edit with input in session table
   private applyBulkEdits = async (rpcRequest: RpcServiceRequest) => {
-    if (withParams(rpcRequest)) {
+    if (withNamedParams(rpcRequest)) {
       const sessionTable = this.getSessionTable();
       for (let i = 0; i < sessionTable.data.length; i++) {
         const newRow = sessionTable.data[i];
