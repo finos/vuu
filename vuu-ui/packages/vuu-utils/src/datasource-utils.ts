@@ -255,12 +255,12 @@ export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
 export const isErrorResponse = (
-  response?: RpcResponse
+  response?: Partial<RpcResponse>
 ): response is VuuUIMessageInRPCEditReject =>
-  response !== undefined && "error" in response;
+  response?.type === "VP_EDIT_RPC_REJECT";
 
 export const hasAction = (
-  response?: RpcResponse
+  response?: Partial<RpcResponse>
 ): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
   response != undefined && "action" in response;
 

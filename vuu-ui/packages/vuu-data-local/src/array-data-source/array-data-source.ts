@@ -225,7 +225,7 @@ export class ArrayDataSource
       tableSchema: this.tableSchema,
     };
     this.clientCallback?.(subscribedMessage);
-    this.emit("subscription-open", subscribedMessage);
+    this.emit("subscribed", subscribedMessage);
 
     if (hasConfigProps) {
       // invoke setter to action config
@@ -248,37 +248,32 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    this.emit("subscription-closed");
+    this.#status = "unsubscribed";
+    this.emit("unsubscribed", this.viewport);
   }
 
   suspend() {
-    console.log(`suspend #${this.viewport}, current status ${this.#status}`);
-    info?.(`suspend #${this.viewport}, current status ${this.#status}`);
-    this.#status = "suspended";
-
-    return this;
+    if (this.#status !== "unsubscribed") {
+      info?.(`suspend #${this.viewport}, current status ${this.#status}`);
+      this.#status = "suspended";
+    }
   }
 
   resume() {
-    console.log(`resume #${this.viewport}, current status ${this.#status}`);
     // const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
-    console.log(`resume noop`);
     if (isSuspended) {
       this.#status = "subscribed";
     }
-    return this;
   }
 
   disable() {
-    console.log(`disable noop`);
-    return this;
+    this.emit("disabled", this.viewport);
   }
 
   enable() {
-    console.log(`enable noop`);
-    return this;
+    this.emit("enabled", this.viewport);
   }
 
   select(selected: Selection) {

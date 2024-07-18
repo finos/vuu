@@ -22,7 +22,7 @@ export type NotificationsContext = {
 */
 class NotificationsContextObject implements NotificationsContext {
   notify: DispatchNotification = () =>
-    "have you forgotten to provide a NotificationsCenter?";
+    console.log("have you forgotten to provide a NotificationsCenter?");
   setNotify = (dispatcher: DispatchNotification) => {
     this.notify = dispatcher;
   };

@@ -8,13 +8,13 @@ import {
   ClientToServerViewportRpcCall,
   ServerToClientTableMeta,
   VuuRow,
-  VuuRpcRequest,
+  ClientToServerRpcRequest,
 } from "@finos/vuu-protocol-types";
 
 export const isVuuRpcRequest = (
   message:
     | VuuUIMessageOut
-    | VuuRpcRequest
+    | ClientToServerRpcRequest
     | ClientToServerMenuRPC
     | ClientToServerViewportRpcCall
 ): message is ClientToServerViewportRpcCall =>

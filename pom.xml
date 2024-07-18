@@ -68,21 +68,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <scala.version>2.13.10</scala.version>
+        <scala.version>2.13.14</scala.version>
         <metrics.version>4.2.5</metrics.version>
         <curator.version>3.1.0</curator.version>
-        <scalatest.version>3.2.9</scalatest.version>
-        <scalamock.version>5.2.0</scalamock.version>
+        <scalatest.version>3.2.19</scalatest.version>
+        <scalamock.version>6.0.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
-        <jackson.version>2.15.4</jackson.version>
+        <jackson.version>2.17.2</jackson.version>
         <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
         <netty.version>4.1.100.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
         <vertx.version>4.4.6</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
-        <logback.version>1.3.12</logback.version>
-        <slf4j.version>2.0.11</slf4j.version>
+        <logback.version>1.5.6</logback.version>
+        <slf4j.version>2.0.13</slf4j.version>
         <jmh.version>1.36</jmh.version>
         <guava.version>32.0.1-jre</guava.version>
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
@@ -193,6 +193,12 @@
             <artifactId>scalamock_2.13</artifactId>
             <version>${scalamock.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
@@ -283,6 +289,16 @@
 
             </plugins>
         </pluginManagement>
-
+<plugins>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+            <source>${maven.compiler.source}</source>
+            <release>${maven.compiler.target}</release>
+        </configuration>
+    </plugin>
+</plugins>
     </build>
 </project>

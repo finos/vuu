@@ -1,5 +1,4 @@
 import {
-  ClientToServerViewportRpcCall,
   LinkDescriptorWithLabel,
   VuuMenu,
   VuuRowDataItemType,
@@ -9,7 +8,12 @@ import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
-import { RpcService, VuuModule } from "../VuuModule";
+import {
+  RpcService,
+  RpcServiceRequest,
+  VuuModule,
+  withParams,
+} from "../VuuModule";
 
 // This is a 'local' columnMap
 const buildDataColumnMap = (tableName: BasketsTableName) =>
@@ -132,37 +136,35 @@ function createTradingBasket(basketId: string, basketName: string) {
   return basketTradingRow[instanceId] as string;
 }
 
-async function addConstituent(
-  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-) {
+async function addConstituent(rpcRequest: RpcServiceRequest) {
   console.log(`RPC call erceived ${rpcRequest.rpcName}`);
 }
-async function sendToMarket(
-  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-) {
-  const [basketInstanceId] = rpcRequest.params;
-  basketTrading.update(basketInstanceId, "status", "ON_MARKET");
+async function sendToMarket(rpcRequest: RpcServiceRequest) {
+  if (withParams(rpcRequest)) {
+    const [basketInstanceId] = rpcRequest.params;
+    basketTrading.update(basketInstanceId, "status", "ON_MARKET");
+  }
 }
-async function takeOffMarket(
-  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-) {
-  const [basketInstanceId] = rpcRequest.params;
-  basketTrading.update(basketInstanceId, "status", "OFF-MARKET");
+async function takeOffMarket(rpcRequest: RpcServiceRequest) {
+  if (withParams(rpcRequest)) {
+    const [basketInstanceId] = rpcRequest.params;
+    basketTrading.update(basketInstanceId, "status", "OFF-MARKET");
+  }
 }
 
-async function createNewBasket(
-  rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-) {
-  const {
-    params: [basketId, basketName],
-  } = rpcRequest;
-  const key = createTradingBasket(basketId, basketName);
-  return {
-    action: {
-      type: "VP_CREATE_SUCCESS",
-      key,
-    },
-  };
+async function createNewBasket(rpcRequest: RpcServiceRequest) {
+  if (withParams(rpcRequest)) {
+    const {
+      params: [basketId, basketName],
+    } = rpcRequest;
+    const key = createTradingBasket(basketId, basketName);
+    return {
+      action: {
+        type: "VP_CREATE_SUCCESS",
+        key,
+      },
+    };
+  }
 }
 
 //-------------------
