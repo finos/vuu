@@ -1,64 +1,67 @@
 .vuuTooltip {
-    --tooltip-align: flex-start;
-    --tooltip-background: var(--salt-actionable-primary-background-hover);
-    --tooltip-border: var(--salt-actionable-primary-background-hover);
-    --tooltip-color: var(--salt-actionable-primary-foreground-hover);
-    --tooltip-justify: flex-start;
-    --tooltip-top: auto;
-    --tooltip-right: auto;
-    --tooltip-bottom: auto;
-    --tooltip-left: auto;
-    align-items: var(--tooltip-align);
-    justify-content: var(--tooltip-justify);
-    display: flex;
-    position: absolute;
-    transition: opacity .15s ease-in;
-    z-index: 100;
+  --tooltip-align: flex-start;
+  --tooltip-background: var(--salt-actionable-primary-background-hover);
+  --tooltip-border: var(--salt-actionable-primary-background-hover);
+  --tooltip-color: var(--salt-actionable-primary-foreground-hover);
+  --tooltip-justify: flex-start;
+  --tooltip-top: auto;
+  --tooltip-right: auto;
+  --tooltip-bottom: auto;
+  --tooltip-left: auto;
+  align-items: var(--tooltip-align);
+  justify-content: var(--tooltip-justify);
+  display: flex;
+  position: absolute;
+  transition: opacity 0.15s ease-in;
+  z-index: 100;
 
-
-    &.vuuHidden {
-      opacity: 0;
-    }
+  &.vuuHidden {
+    opacity: 0;
   }
-  
-  .vuuTooltip-content {
-    background-color: var(--tooltip-background);
-    border-color: var(--tooltip-border);
-    border-width: 1px;
-    border-style: solid;
-    border-radius: var(--vuuTooltip-borderRadius, 6px);
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    color: var(--tooltip-color);
-    line-height: 24px;
-    padding: 2px 8px;
-    white-space: nowrap;
-  }
-    
-  .vuuTooltip::before {
-    background-color: var(--tooltip-border);
-    content: ' ';
-    display: block;
-    position: absolute;
-    transform: rotate(45deg);
-    width: 12px;
-    height: 12px;
-    z-index: -1;
 }
 
-.vuuTooltip[data-align='above']::before {
+.vuuTooltip-content {
+  background-color: var(--tooltip-background);
+  border-color: var(--tooltip-border);
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--vuuTooltip-borderRadius, 6px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  color: var(--tooltip-color);
+  line-height: 24px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.vuuTooltip::before {
+  background-color: var(--tooltip-border);
+  content: " ";
+  display: block;
+  position: absolute;
+  transform: rotate(45deg);
+  width: 12px;
+  height: 12px;
+  z-index: -1;
+}
+
+.vuuTooltip[data-align="above"]:before {
   bottom: -6px;
   left: calc(50% - 6px);
 }
 
-.vuuTooltip[data-align='below']::before {
+.vuuTooltip[data-align="below"]:before {
   top: -6px;
   left: calc(50% - 6px);
 }
 
-.vuuTooltip[data-align='right']::before {
+.vuuTooltip[data-align="right"]:before {
+  left: -6px;
+  top: calc(50% - 6px);
 }
 
-.vuuTooltip[data-align='left']::before {
+.vuuTooltip[data-align="left"]:before {
+  right: -6px;
+  top: calc(50% - 6px);
 }
 
 .vuuTooltip-error {

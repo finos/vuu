@@ -1,7 +1,7 @@
 import { queryClosest, useId } from "@finos/vuu-utils";
 import { MouseEvent, ReactNode, useCallback, useRef, useState } from "react";
 import { TooltipProps } from "./Tooltip";
-import { TooltipPlacement } from "./useAnchoredPosition";
+import { TooltipPlacement } from "./useTooltipAnchoredPosition";
 
 export interface TooltipHookProps {
   anchorQuery?: string;
@@ -13,7 +13,7 @@ export interface TooltipHookProps {
 export const useTooltip = ({
   anchorQuery = "*",
   id: idProp,
-  placement = "right",
+  placement = ["right", "above", "below"],
   tooltipContent,
 }: TooltipHookProps) => {
   const hideTooltipRef = useRef<() => void>();
