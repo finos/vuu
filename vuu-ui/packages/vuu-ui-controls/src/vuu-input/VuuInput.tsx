@@ -124,7 +124,7 @@ export const VuuInput = forwardRef(function VuuInput<
           ...props.inputProps,
         }}
         className={cx(classBase, className, {
-          [`${classBase}-errror`]: errorMessage,
+          [`${classBase}-error`]: errorMessage,
         })}
         onBlur={handleBlur}
         ref={forwardedRef}

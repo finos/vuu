@@ -1,7 +1,8 @@
 .vuuInput {
-    --vuu-icon-size: 16px;
+  --vuu-icon-size: 16px;
 }
 
 .vuuInput-errorIcon:after {
-    cursor: pointer;
+  --vuu-icon-color: var(--salt-status-error-background);
+  cursor: pointer;
 }
