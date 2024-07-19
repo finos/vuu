@@ -1,6 +1,9 @@
 import { CSSProperties, MouseEventHandler, ReactNode, RefObject } from "react";
 import { Portal } from "../portal";
-import { TooltipPlacement, useAnchoredPosition } from "./useAnchoredPosition";
+import {
+  TooltipPlacement,
+  useTooltipAnchoredPosition,
+} from "./useTooltipAnchoredPosition";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -40,7 +43,7 @@ export const Tooltip = ({
     window: targetWindow,
   });
 
-  const ref = useAnchoredPosition({
+  const ref = useTooltipAnchoredPosition({
     anchorElement,
     placement: placementProp,
   });

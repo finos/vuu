@@ -286,6 +286,7 @@ export const useVuuMenuActions = ({
       dataSource,
       onRpcResponse,
       showBulkEditDialog,
+      showNotification,
       showSessionEditingForm,
     ]
   );

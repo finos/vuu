@@ -449,6 +449,10 @@ export class ArrayDataSource
     }
   }
 
+  get columnMap() {
+    return this.#columnMap;
+  }
+
   get selectedRowsCount() {
     return this.#selectedRowsCount;
   }
