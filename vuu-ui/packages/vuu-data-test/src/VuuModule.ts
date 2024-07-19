@@ -9,16 +9,18 @@ import {
 import {
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
-  LinkDescriptorWithLabel,
   TypeaheadParams,
   VuuMenu,
   VuuRowDataItemType,
   VuuTable,
+  VuuLink,
+  LinkDescriptorWithLabel,
 } from "@finos/vuu-protocol-types";
 import { uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { makeSuggestions } from "./makeSuggestions";
+import { BasketsTableName } from "./basket";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -31,7 +33,7 @@ export interface VuuModuleConstructorProps<T extends string = string> {
   schemas: Record<T, Readonly<TableSchema>>;
   services?: Record<T, RpcService[] | undefined>;
   tables: Record<T, Table>;
-  visualLinks?: Record<T, LinkDescriptorWithLabel[] | undefined>;
+  visualLinks?: Record<T, VuuLink[] | undefined>;
 }
 
 export type SessionTableMap = Record<string, Table>;
@@ -63,6 +65,62 @@ export type RpcService = {
   service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
 };
 
+class CompLink {
+  #compLinks: Record<BasketsTableName, LinkDescriptorWithLabel[] | undefined> =
+    {
+      algoType: undefined,
+      basket: undefined,
+      basketConstituent: undefined,
+      basketTrading: undefined,
+      basketTradingConstituent: undefined,
+      basketTradingConstituentJoin: undefined,
+      priceStrategyType: undefined,
+    };
+
+  getLink = (
+    childTable: BasketsTableName,
+    subscriptionMap: Map<string, string[]>,
+    tempLinks: VuuLink[]
+  ) => {
+    for (let i = 0; i < tempLinks.length; i++) {
+      if (subscriptionMap.get(tempLinks[i].toTable)) {
+        const newLink: LinkDescriptorWithLabel = {
+          parentClientVpId: subscriptionMap.get(
+            tempLinks[i].toTable
+          )?.[0] as string,
+          parentVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0] as string,
+          link: tempLinks[i],
+        };
+        this.updateLink(childTable, newLink);
+      }
+    }
+    console.log("visualLinks: ", this.#compLinks);
+    return this.#compLinks;
+  };
+
+  updateLink = (
+    childTable: BasketsTableName,
+    newLink: LinkDescriptorWithLabel
+  ) => {
+    if (this.#compLinks[childTable]) {
+      const compLinks = this.#compLinks?.[
+        childTable
+      ] as LinkDescriptorWithLabel[];
+      for (let i = 0; i < compLinks.length; i++) {
+        if (compLinks[i].parentVpId === newLink.parentVpId) {
+          console.log("existed");
+        } else {
+          compLinks?.push(newLink);
+        }
+      }
+    } else {
+      this.#compLinks[childTable] = [newLink];
+    }
+  };
+}
+
+const vLink = new CompLink();
+
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #menus: Record<T, VuuMenu | undefined> | undefined;
   #name: string;
@@ -70,7 +128,8 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #sessionTableMap: SessionTableMap = {};
   #tables: Record<T, Table>;
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
-  #visualLinks: Record<T, LinkDescriptorWithLabel[] | undefined> | undefined;
+  #visualLinks: Record<T, VuuLink[] | undefined> | undefined;
+  #subscriptionMap: Map<string, string[]> = new Map();
 
   constructor({
     menus,
@@ -94,10 +153,24 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     console.log("<subscription-open> register new viewport", {
       subscriptionDetails,
     });
+
+    const parentTable = subscriptionDetails.tableSchema.table.table;
+    this.#subscriptionMap.set(parentTable, [
+      subscriptionDetails.clientViewportId,
+    ]);
+    console.log("subscriptionMap: ", this.#subscriptionMap);
   };
 
   private unregisterViewport = (viewportId: string) => {
     console.log(`<subscription-closed> unregister viewport ${viewportId}`);
+
+    for (const subscription of this.#subscriptionMap) {
+      if (subscription[1].toString() === viewportId) {
+        this.#subscriptionMap.delete(subscription[0]);
+      }
+    }
+    console.log("subscriptionMap: ", this.#subscriptionMap);
+    //TODO: update visual links
   };
 
   createDataSource = (tableName: T) => {
@@ -112,7 +185,14 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       menu: this.#menus?.[tableName],
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
-      visualLinks: this.#visualLinks?.[tableName],
+      visualLinks:
+        this.#visualLinks?.[tableName] === undefined
+          ? undefined
+          : vLink.getLink(
+              tableName as BasketsTableName,
+              this.#subscriptionMap,
+              this.#visualLinks[tableName] as VuuLink[]
+            )[tableName],
     });
 
     dataSource.on("subscribed", this.registerViewport);
