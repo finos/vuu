@@ -1,4 +1,4 @@
-import { Tooltip, useTooltip } from "@finos/vuu-popups";
+import { Tooltip, TooltipHookProps, useTooltip } from "@finos/vuu-popups";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { isValidNumber, useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
@@ -29,9 +29,9 @@ export type Commithandler<T extends VuuRowDataItemType = string> = (
 ) => void;
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends InputProps {
-  errorMessage?: string;
   onCommit: Commithandler<T>;
   type?: T;
+  TooltipProps?: Pick<TooltipHookProps, "placement" | "tooltipContent" >;
 }
 
 /**
@@ -43,11 +43,11 @@ export const VuuInput = forwardRef(function VuuInput<
 >(
   {
     className,
-    errorMessage,
     id: idProp,
     onCommit,
     onKeyDown,
     type,
+    TooltipProps,
     ...props
   }: VuuInputProps<T>,
   forwardedRef: ForwardedRef<HTMLDivElement>
@@ -62,7 +62,8 @@ export const VuuInput = forwardRef(function VuuInput<
   const id = useId(idProp);
   const { anchorProps, tooltipProps } = useTooltip({
     id,
-    tooltipContent: errorMessage,
+    placement: TooltipProps.placement,
+    tooltipContent: TooltipProps.tooltipContent,
   });
 
   const commitValue = useCallback<Commithandler<string>>(
@@ -105,7 +106,7 @@ export const VuuInput = forwardRef(function VuuInput<
     [commitValue]
   );
 
-  const endAdornment = errorMessage ? (
+  const endAdornment = TooltipProps.tooltipContent ? (
     <span
       {...anchorProps}
       className={`${classBase}-errorIcon`}
@@ -124,7 +125,7 @@ export const VuuInput = forwardRef(function VuuInput<
           ...props.inputProps,
         }}
         className={cx(classBase, className, {
-          [`${classBase}-error`]: errorMessage,
+          [`${classBase}-error`]: TooltipProps.tooltipContent,
         })}
         onBlur={handleBlur}
         ref={forwardedRef}

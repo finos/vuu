@@ -137,6 +137,7 @@ export const InputValidationUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
+          layout: defaultLayoutJson,
           userSettings: {
             userName: "",
             id: "",
@@ -162,6 +163,7 @@ export const ScrollableUserSettingsPanel = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
+          layout: defaultLayoutJson,
           userSettings: {
             themeMode: "light",
             dateFormatPattern: "dd/mm/yyyy",

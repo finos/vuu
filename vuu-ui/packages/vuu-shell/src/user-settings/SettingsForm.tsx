@@ -1,7 +1,6 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { queryClosest, Settings } from "@finos/vuu-utils";
 import {
-  Button,
   Dropdown,
   DropdownProps,
   FormField,
@@ -11,7 +10,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupProps,
-  Tooltip,
 } from "@salt-ds/core";
 import { VuuInput } from "@finos/vuu-ui-controls";
 import {
@@ -141,16 +139,17 @@ export function getFormControl(
     }
   } else {
     const valid = isValidInput(currentValue, property.type);
-    const content = getTooltipContent(property.type);
-    const displayTooltip = valid === "success"
+    const content = getTooltipContent(property.type, valid);
+    const TooltipProps = {
+      tooltipContent: content,
+    };
     return (
-      <Tooltip content={content} disabled={displayTooltip}>
-        <VuuInput
-          key={property.name}
-          onCommit={inputHandler}
-          validationStatus={valid}
-        />
-      </Tooltip>
+      <VuuInput
+        key={property.name}
+        onCommit={inputHandler}
+        validationStatus={valid}
+        TooltipProps={TooltipProps}
+      />
     );
   }
 }
@@ -171,13 +170,18 @@ const isValidInput = (value: unknown, type: unknown) => {
 };
 
 //Function to Generate Tooltip Content
-function getTooltipContent(type: string) {
-  if (type === "number") {
-    return <p>Field is expecting a number</p>;
-  } else if (type === "string") {
-    return <p>Field is expecting a string</p>;
-  } else {
-    return <p>Please contact Admin for more information on expected type</p>;
+function getTooltipContent(type: string, valid: string | undefined) {
+  if (valid === "error") {
+    if (type === "number") {
+      return <p>"Field is expecting a number"</p>;
+    } else if (type === "string") {
+      return <p>"Field is expecting a string"</p>;
+    } else {
+      return <p>"Please contact Admin for more information on expected type"</p>;
+    }
+  }
+  else {
+    return undefined
   }
 }
 
@@ -223,7 +227,8 @@ export const SettingsForm = ({
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
       const { value } = event.target as HTMLInputElement;
-      if (!Number.isNaN(Number(value))) {
+      console.log(value)
+      if (!Number.isNaN(Number(value)) && value != "") {
         const numValue = Number(value);
         onSettingChanged(fieldName, numValue);
       } else {
@@ -247,9 +252,6 @@ export const SettingsForm = ({
           )}
         </FormField>
       ))}
-      <FormField data-field="revert" key="revert">
-        <Button>Revert</Button>
-      </FormField>
     </div>
   );
 };

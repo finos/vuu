@@ -9,6 +9,9 @@ const VuuInputTemplate = ({
 }: Partial<VuuInputProps> & {
   position?: CSSProperties;
 }) => {
+  const TooltipProps = {
+    tooltipContent: "something bad has happened"
+  }
   return (
     <div
       style={{
@@ -22,6 +25,7 @@ const VuuInputTemplate = ({
       }}
     >
       <VuuInput
+        TooltipProps={TooltipProps}
         data-testid="vuu-input"
         onCommit={() => console.log("commit")}
         {...props}
@@ -36,14 +40,14 @@ export const DefaultVuuInput = () => {
 DefaultVuuInput.displaySequence = displaySequence++;
 
 export const VuuInputWithErrorMessageTooltipRight = () => {
-  return <VuuInputTemplate errorMessage="something bad has happened" />;
+  return <VuuInputTemplate />;
 };
 VuuInputWithErrorMessageTooltipRight.displaySequence = displaySequence++;
 
 export const VuuInputWithErrorMessageTooltipLeft = () => {
+
   return (
     <VuuInputTemplate
-      errorMessage="something bad has happened"
       position={{ left: 300, top: 0 }}
     />
   );
@@ -53,7 +57,6 @@ VuuInputWithErrorMessageTooltipLeft.displaySequence = displaySequence++;
 export const InputRightTooltipLeftErrorMessage = () => {
   return (
     <VuuInputTemplate
-      errorMessage="something bad has happened"
       position={{ right: 0, top: 0 }}
     />
   );

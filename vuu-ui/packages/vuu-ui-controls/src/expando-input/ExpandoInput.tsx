@@ -17,7 +17,7 @@ export interface ExpandoInputProps extends Omit<VuuInputProps, "onCommit"> {
 export const ExpandoInput = forwardRef(function ExpandoInput(
   {
     className: classNameProp,
-    errorMessage,
+    TooltipProps,
     value,
     inputProps,
     onCommit = noop,
@@ -35,13 +35,13 @@ export const ExpandoInput = forwardRef(function ExpandoInput(
   return (
     <div
       className={cx(classBase, classNameProp, {
-        [`${classBase}-error`]: errorMessage,
+        [`${classBase}-error`]: TooltipProps,
       })}
       data-text={value}
     >
       <VuuInput
         {...props}
-        errorMessage={errorMessage}
+        TooltipProps={TooltipProps}
         inputProps={{ ...inputProps, className: `${classBase}-input` }}
         onCommit={onCommit}
         ref={forwardedRef}
