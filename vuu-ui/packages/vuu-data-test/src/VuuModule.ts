@@ -20,7 +20,6 @@ import { uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { makeSuggestions } from "./makeSuggestions";
-import { BasketsTableName } from "./basket";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -33,7 +32,7 @@ export interface VuuModuleConstructorProps<T extends string = string> {
   schemas: Record<T, Readonly<TableSchema>>;
   services?: Record<T, RpcService[] | undefined>;
   tables: Record<T, Table>;
-  visualLinks?: Record<T, VuuLink[] | undefined>;
+  vuuLinks?: Record<T, VuuLink[] | undefined>;
 }
 
 export type SessionTableMap = Record<string, Table>;
@@ -65,62 +64,62 @@ export type RpcService = {
   service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
 };
 
-class CompLink {
-  #compLinks: Record<BasketsTableName, LinkDescriptorWithLabel[] | undefined> =
-    {
-      algoType: undefined,
-      basket: undefined,
-      basketConstituent: undefined,
-      basketTrading: undefined,
-      basketTradingConstituent: undefined,
-      basketTradingConstituentJoin: undefined,
-      priceStrategyType: undefined,
-    };
+// class CompLink<T extends string = string> {
+//   #compLinks: Record<T, LinkDescriptorWithLabel[] | undefined> = {
+//     algoType: undefined,
+//     basket: undefined,
+//     basketConstituent: undefined,
+//     basketTrading: undefined,
+//     basketTradingConstituent: undefined,
+//     basketTradingConstituentJoin: undefined,
+//     priceStrategyType: undefined,
+//   };
 
-  getLink = (
-    childTable: BasketsTableName,
-    subscriptionMap: Map<string, string[]>,
-    tempLinks: VuuLink[]
-  ) => {
-    for (let i = 0; i < tempLinks.length; i++) {
-      if (subscriptionMap.get(tempLinks[i].toTable)) {
-        const newLink: LinkDescriptorWithLabel = {
-          parentClientVpId: subscriptionMap.get(
-            tempLinks[i].toTable
-          )?.[0] as string,
-          parentVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0] as string,
-          link: tempLinks[i],
-        };
-        this.updateLink(childTable, newLink);
-      }
-    }
-    console.log("visualLinks: ", this.#compLinks);
-    return this.#compLinks;
-  };
+//   getLink = (
+//     childTable: T,
+//     subscriptionMap: Map<string, Subscription[]>,
+//     tempLinks: VuuLink[]
+//   ) => {
+//     for (let i = 0; i < tempLinks.length; i++) {
+//       if (subscriptionMap.get(tempLinks[i].toTable)) {
+//         const newLink: LinkDescriptorWithLabel = {
+//           parentClientVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0]
+//             .viewportId as string,
+//           parentVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0]
+//             .viewportId as string,
+//           link: tempLinks[i],
+//         };
+//         this.updateLink(childTable, newLink);
+//       }
+//     }
+//     console.log("visualLinks: ", this.#compLinks);
+//     return this.#compLinks;
+//   };
 
-  updateLink = (
-    childTable: BasketsTableName,
-    newLink: LinkDescriptorWithLabel
-  ) => {
-    if (this.#compLinks[childTable]) {
-      const compLinks = this.#compLinks?.[
-        childTable
-      ] as LinkDescriptorWithLabel[];
-      for (let i = 0; i < compLinks.length; i++) {
-        if (compLinks[i].parentVpId === newLink.parentVpId) {
-          console.log("existed");
-        } else {
-          compLinks?.push(newLink);
-        }
-      }
-    } else {
-      this.#compLinks[childTable] = [newLink];
-    }
-  };
-}
+//   updateLink = (childTable: T, newLink: LinkDescriptorWithLabel) => {
+//     if (this.#compLinks[childTable]) {
+//       const compLinks = this.#compLinks?.[
+//         childTable
+//       ] as LinkDescriptorWithLabel[];
+//       for (let i = 0; i < compLinks.length; i++) {
+//         if (compLinks[i].parentVpId === newLink.parentVpId) {
+//           console.log("existed");
+//         } else {
+//           compLinks?.push(newLink);
+//         }
+//       }
+//     } else {
+//       this.#compLinks[childTable] = [newLink];
+//     }
+//   };
+// }
 
-const vLink = new CompLink();
+// const vLink = new CompLink();
 
+type Subscription = {
+  viewportId: string;
+  dataSource: DataSource;
+};
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #menus: Record<T, VuuMenu | undefined> | undefined;
   #name: string;
@@ -129,7 +128,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #tables: Record<T, Table>;
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
   #visualLinks: Record<T, VuuLink[] | undefined> | undefined;
-  #subscriptionMap: Map<string, string[]> = new Map();
+  #subscriptionMap: Map<string, Subscription[]> = new Map();
 
   constructor({
     menus,
@@ -137,7 +136,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     schemas,
     services,
     tables,
-    visualLinks,
+    vuuLinks: visualLinks,
   }: VuuModuleConstructorProps<T>) {
     this.#menus = menus;
     this.#name = name;
@@ -154,11 +153,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       subscriptionDetails,
     });
 
-    const parentTable = subscriptionDetails.tableSchema.table.table;
-    this.#subscriptionMap.set(parentTable, [
-      subscriptionDetails.clientViewportId,
-    ]);
-    console.log("subscriptionMap: ", this.#subscriptionMap);
+    // const parentTable = subscriptionDetails.tableSchema.table.table;
+    // this.#subscriptionMap.set(parentTable, [
+    //   { viewportId: subscriptionDetails.clientViewportId, visualLink: [] },
+    // ]);
+    // console.log("subscriptionMap: ", this.#subscriptionMap);
   };
 
   private unregisterViewport = (viewportId: string) => {
@@ -173,7 +172,46 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     //TODO: update visual links
   };
 
+  getLink = (
+    // childTable: T,
+    subscriptionMap: Map<string, Subscription[]>,
+    vuuLinks: VuuLink[]
+  ) => {
+    const visualLinks: LinkDescriptorWithLabel[] = [];
+    for (let i = 0; i < vuuLinks.length; i++) {
+      if (subscriptionMap.get(vuuLinks[i].toTable)) {
+        const newLink: LinkDescriptorWithLabel = {
+          parentClientVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
+            .viewportId as string,
+          parentVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
+            .viewportId as string,
+          link: vuuLinks[i],
+        };
+        // this.updateLink(childTable, newLink);
+        visualLinks.push(newLink);
+      }
+    }
+    return visualLinks;
+  };
+
   createDataSource = (tableName: T) => {
+    // check if you can create visual links
+    // const visualLinks =
+    //   this.#visualLinks?.[tableName] === undefined
+    //     ? undefined
+    //     : vLink.getLink(
+    //         tableName as BasketsTableName,
+    //         this.#subscriptionMap,
+    //         this.#visualLinks[tableName] as VuuLink[]
+    //       )[tableName];
+    const visualLinks =
+      this.#visualLinks?.[tableName] === undefined
+        ? undefined
+        : this.getLink(
+            this.#subscriptionMap,
+            this.#visualLinks[tableName] as VuuLink[]
+          );
+
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const dataSource = new TickingArrayDataSource({
       columnDescriptors,
@@ -185,18 +223,29 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       menu: this.#menus?.[tableName],
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
-      visualLinks:
-        this.#visualLinks?.[tableName] === undefined
-          ? undefined
-          : vLink.getLink(
-              tableName as BasketsTableName,
-              this.#subscriptionMap,
-              this.#visualLinks[tableName] as VuuLink[]
-            )[tableName],
+      visualLinks,
     });
 
-    dataSource.on("subscribed", this.registerViewport);
+    // dataSource.on("subscribed", this.registerViewport);
     dataSource.on("unsubscribed", this.unregisterViewport);
+
+    this.#subscriptionMap.set(tableName, [
+      { viewportId: dataSource.viewport, dataSource },
+    ]);
+    console.log("subscriptionMap: ", this.#subscriptionMap);
+
+    for (const key of this.#subscriptionMap.keys()) {
+      if (this.#visualLinks?.[key as T] && key !== tableName) {
+        const vLink = this.getLink(
+          this.#subscriptionMap,
+          this.#visualLinks?.[key as T] as VuuLink[]
+        );
+        const ds = this.#subscriptionMap.get(key)?.[0].dataSource;
+        if (ds?.links) {
+          ds.links = vLink;
+        }
+      }
+    }
 
     return dataSource;
   };
