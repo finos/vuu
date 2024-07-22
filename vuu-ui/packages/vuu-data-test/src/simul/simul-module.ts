@@ -128,5 +128,5 @@ export const simulModule = new VuuModule<SimulTableName>({
   schemas,
   services,
   tables,
-  visualLinks,
+  vuuLinks: visualLinks,
 });

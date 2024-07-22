@@ -213,7 +213,7 @@ export const tables: Record<BasketsTableName, Table> = {
   ),
 };
 
-const visualLinks: Record<
+const vuuLinks: Record<
   BasketsTableName,
   // LinkDescriptorWithLabel[]
   VuuLink[] | undefined
@@ -284,5 +284,5 @@ export const basketModule = new VuuModule<BasketsTableName>({
   schemas,
   services,
   tables,
-  visualLinks,
+  vuuLinks,
 });
