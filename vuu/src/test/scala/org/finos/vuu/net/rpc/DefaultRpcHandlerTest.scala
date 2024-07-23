@@ -1,10 +1,8 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.net.{ClientSessionId, Error, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse}
-import org.finos.vuu.util.PublishQueue
-import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess, ViewPortUpdate}
+import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

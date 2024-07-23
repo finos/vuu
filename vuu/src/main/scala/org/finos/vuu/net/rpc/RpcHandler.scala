@@ -74,7 +74,7 @@ trait RpcHandler extends StrictLogging {
       } catch {
         case ex: Exception =>
           logger.error(s"Exception occurred calling rpc $method", ex)
-          ViewPortRpcFailure(s"Exception occured calling rpc $method")
+          ViewPortRpcFailure(s"Exception occurred calling rpc $method")
       }
     }
   }
