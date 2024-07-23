@@ -81,7 +81,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
 
     Scenario("The processRpcCall method should return Some(ViewServerMessage) when the rpc method is not found") {
       val rpcCall = RpcCall("myService", "myMethod", Array("param1"), Map("namedParam1" -> "value1"))
-      handler.processRpcCall(null, rpcCall)(ctx) should be (Some(JsonViewServerMessage("requestId", "sessionId", "token", "user", RpcResponse("myMethod", null, Error("Could not find rpcMethodHandler myMethod", 1)), "TEST_MODULE")))
+      handler.processRpcCall(msg, rpcCall)(ctx) should be (Some(JsonViewServerMessage("requestId", "sessionId", "token", "user", RpcResponse("myMethod", null, Error("Could not find rpcMethodHandler myMethod", 1)), "TEST_MODULE")))
     }
   }
 }

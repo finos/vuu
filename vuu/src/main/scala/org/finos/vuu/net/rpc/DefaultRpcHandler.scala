@@ -47,7 +47,8 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
   private def processRpcMethodHandler(methodName: String, params: Array[Any], namedParams: Map[String, Any], ctx: RequestContext) = {
     if (methodHandlers.containsKey(methodName)) {
       try {
-        methodHandlers.get(methodName).call(new RpcParams(params, namedParams, ctx))
+        val handler = methodHandlers.get(methodName)
+        handler.call(new RpcParams(params, namedParams, ctx))
       } catch {
         case e: Exception =>
           logger.error(s"Error processing rpc method $methodName", e)
