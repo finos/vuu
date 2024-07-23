@@ -1,5 +1,4 @@
 import {
-  // LinkDescriptorWithLabel,
   VuuLink,
   VuuMenu,
   VuuRowDataItemType,
@@ -213,11 +212,7 @@ export const tables: Record<BasketsTableName, Table> = {
   ),
 };
 
-const vuuLinks: Record<
-  BasketsTableName,
-  // LinkDescriptorWithLabel[]
-  VuuLink[] | undefined
-> = {
+const vuuLinks: Record<BasketsTableName, VuuLink[] | undefined> = {
   algoType: undefined,
   basket: undefined,
   basketConstituent: [

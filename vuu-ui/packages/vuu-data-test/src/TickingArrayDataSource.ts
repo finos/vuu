@@ -359,4 +359,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
         console.log(`unrecognised message ${message.type}`);
     }
   };
+
+  set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    if (visualLink) {
+      const {
+        parentClientVpId,
+        link: { fromColumn, toColumn },
+      } = visualLink;
+
+      if (this.viewport) {
+        console.log("tables linked");
+        this.sendBroadcastMessage({
+          sourceId: this.viewport,
+          sourceColumn: fromColumn,
+          type: "subscribe-link-filter",
+          targetId: parentClientVpId,
+          targetColumn: toColumn,
+        });
+      }
+    }
+  }
 }
