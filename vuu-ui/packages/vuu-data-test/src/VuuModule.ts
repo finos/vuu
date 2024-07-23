@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceRow,
-  // DataSourceSubscribedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -94,22 +93,14 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#visualLinks = visualLinks;
   }
 
-  // private registerViewport = (
-  //   subscriptionDetails: DataSourceSubscribedMessage
-  // ) => {
-  //   console.log("<subscription-open> register new viewport", {
-  //     subscriptionDetails,
-  //   });
-  // };
-
   private unregisterViewport = (viewportId: string) => {
     console.log(`<subscription-closed> unregister viewport ${viewportId}`);
 
-    for (const subscription of this.#subscriptionMap) {
-      if (subscription[1][0].viewportId.toString() === viewportId) {
-        this.#subscriptionMap.delete(subscription[0]);
+    for (const [tableName, subscriptions] of this.#subscriptionMap) {
+      if (subscriptions[0].viewportId.toString() === viewportId) {
+        this.#subscriptionMap.delete(tableName);
       } else {
-        const links = subscription[1][0].dataSource.links;
+        const links = subscriptions[0].dataSource.links;
         if (links) {
           for (let i = 0; i < links?.length; i++) {
             if (links[i].parentClientVpId === viewportId) {
@@ -117,7 +108,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
             }
           }
         }
-        subscription[1][0].dataSource.links = links;
+        subscriptions[0].dataSource.links = links;
       }
     }
   };
@@ -164,7 +155,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       visualLinks,
     });
 
-    // dataSource.on("subscribed", this.registerViewport);
     dataSource.on("unsubscribed", this.unregisterViewport);
 
     this.#subscriptionMap.set(tableName, [

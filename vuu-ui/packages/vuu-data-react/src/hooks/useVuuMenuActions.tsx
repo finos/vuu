@@ -38,7 +38,6 @@ import {
   isTableLocation,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { TickingArrayDataSource } from "@finos/vuu-data-test";
 import { useCallback } from "react";
 
 const NO_CONFIG: MenuActionConfig = {};
@@ -271,16 +270,6 @@ export const useVuuMenuActions = ({
         });
         return true;
       } else if (menuId === "link-table") {
-        const { links } = dataSource;
-        console.log("tables linked");
-        (dataSource as TickingArrayDataSource).sendBroadcastMessage({
-          sourceId: (dataSource as TickingArrayDataSource).viewport,
-          sourceColumn: "basketId",
-          type: "subscribe-link-filter",
-          targetId: links?.[0].parentClientVpId as string,
-          targetColumn: "id",
-        });
-
         return (
           (dataSource.visualLink = options as LinkDescriptorWithLabel), true
         );

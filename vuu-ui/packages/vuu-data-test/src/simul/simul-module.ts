@@ -46,7 +46,7 @@ const tables: Record<SimulTableName, Table> = {
   prices: pricesTable,
 };
 
-const visualLinks: Record<SimulTableName, VuuLink[] | undefined> = {
+const vuuLinks: Record<SimulTableName, VuuLink[] | undefined> = {
   ...undefinedTables,
 };
 
@@ -128,5 +128,5 @@ export const simulModule = new VuuModule<SimulTableName>({
   schemas,
   services,
   tables,
-  vuuLinks: visualLinks,
+  vuuLinks,
 });
