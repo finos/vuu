@@ -62,8 +62,8 @@ export const VuuInput = forwardRef(function VuuInput<
   const id = useId(idProp);
   const { anchorProps, tooltipProps } = useTooltip({
     id,
-    placement: TooltipProps.placement,
-    tooltipContent: TooltipProps.tooltipContent,
+    placement: TooltipProps?.placement,
+    tooltipContent: TooltipProps?.tooltipContent,
   });
 
   const commitValue = useCallback<Commithandler<string>>(
@@ -106,7 +106,7 @@ export const VuuInput = forwardRef(function VuuInput<
     [commitValue]
   );
 
-  const endAdornment = TooltipProps.tooltipContent ? (
+  const endAdornment = TooltipProps?.tooltipContent ? (
     <span
       {...anchorProps}
       className={`${classBase}-errorIcon`}
@@ -125,7 +125,7 @@ export const VuuInput = forwardRef(function VuuInput<
           ...props.inputProps,
         }}
         className={cx(classBase, className, {
-          [`${classBase}-error`]: TooltipProps.tooltipContent,
+          [`${classBase}-error`]: TooltipProps?.tooltipContent,
         })}
         onBlur={handleBlur}
         ref={forwardedRef}

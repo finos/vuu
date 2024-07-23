@@ -173,11 +173,11 @@ const isValidInput = (value: unknown, type: unknown) => {
 function getTooltipContent(type: string, valid: string | undefined) {
   if (valid === "error") {
     if (type === "number") {
-      return <p>"Field is expecting a number"</p>;
+      return <p>Field is expecting a number</p>;
     } else if (type === "string") {
-      return <p>"Field is expecting a string"</p>;
+      return <p>Field is expecting a string</p>;
     } else {
-      return <p>"Please contact Admin for more information on expected type"</p>;
+      return <p>Please contact Admin for more information on expected type</p>;
     }
   }
   else {
