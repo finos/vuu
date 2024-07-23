@@ -228,8 +228,11 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       if(table == null)
         errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}")(ctx)
       else{
-        val columnNames = table.getTableDef.columns.sortBy(_.index).map(_.name)
-        val dataTypes = columnNames.map(table.getTableDef.columnForName(_)).map(col => DataType.asString(col.dataType))
+
+        val viewPortDef = viewPortContainer.getViewPortDefinition(table)
+        val columns = viewPortDef.columns.sortBy(_.index)
+        val columnNames =  columns.map(_.name)
+        val dataTypes = columns.map(col => DataType.asString(col.dataType))
         vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
       }
     }

@@ -3,8 +3,10 @@ package org.finos.vuu.net
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api.{ColumnBuilder, NoRpcHandler, TableDef, ViewPortDef}
 import org.finos.vuu.core._
-import org.finos.vuu.core.module.{TableDefContainer, TestModule}
+import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.net.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -18,6 +20,7 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+  implicit val tableDefContainer: TableDefContainer = new TableDefContainer
   var viewServerClient: ViewServerClient = _
   var vuuClient: TestVuuClient = _
   var tokenId: String = _
@@ -46,6 +49,8 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
     val http = 10011
     val ws = 10013
 
+    val module: ViewServerModule = defineModuleWithTestTables()
+
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
         .withWebRoot("vuu/src/main/resources/www")
@@ -63,7 +68,8 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       VuuThreadingOptions(),
       VuuClientConnectionOptions()
         .withHeartbeatDisabled()
-    ).withModule(TestModule())
+    )
+      .withModule(module)
 
     val viewServer = new VuuServer(config)
 
@@ -80,17 +86,65 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
     vuuClient
   }
 
+  private def defineModuleWithTestTables(): ViewServerModule = {
+    val tableDef = TableDef(
+      name = "TableMetaTest",
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
+    )
+    val viewPortDef = ViewPortDef(
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addInt("Account")
+          .build(),
+      service = NoRpcHandler
+    )
+
+    val tableDef2 = TableDef(
+      name = "TableMetaDefaultVPTest",
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .build()
+    )
+
+    ModuleFactory.withNamespace("TEST")
+      .addTableForTest(tableDef, viewPortDef)
+      .addTableForTest(tableDef2)
+      .asModule()
+  }
+
   Feature("Server web socket api") {
     Scenario("client requests to get table metadata for a table") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("instruments", "TEST")))
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", "TEST")))
 
-      Then("return table data in response")
+      Then("return view port columns in response")
       val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
       assert(response.isDefined)
 
       val responseMessage = response.get
-      responseMessage.columns.length shouldEqual 5
+      responseMessage.columns.length shouldEqual 2
+      responseMessage.columns shouldEqual Array("Id", "Account")
+    }
+
+    Scenario("client requests to get table metadata for a table with no view port def defined") {
+
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", "TEST")))
+
+      Then("return view port columns in response")
+      val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
+      assert(response.isDefined)
+
+      val responseMessage = response.get
+      responseMessage.columns.length shouldEqual 0
     }
 
     Scenario("client requests to get table metadata for a non existent") {
