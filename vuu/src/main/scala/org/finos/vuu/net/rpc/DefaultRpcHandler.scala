@@ -39,23 +39,19 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val module = Option(msg).map(_.module).getOrElse("")
 
     processRpcMethodHandler(method, params, namedPars, ctx) match {
-      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result, error = null)))
+      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result, error = null), module))
       case error: RpcMethodFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
   }
 
   private def processRpcMethodHandler(methodName: String, params: Array[Any], namedParams: Map[String, Any], ctx: RequestContext) = {
     if (methodHandlers.containsKey(methodName)) {
-      methodHandlers.get(methodName) match {
-        case null => new RpcMethodFailure(s"Could not find rpcMethodHandler $methodName")
-        case handler: RpcMethodHandler =>
-          try {
-            handler.call(new RpcParams(params, namedParams, ctx))
-          } catch {
-            case e: Exception =>
-              logger.error(s"Error processing rpc method $methodName", e)
-              RpcMethodFailure(1, e.getMessage, e)
-          }
+      try {
+        methodHandlers.get(methodName).call(new RpcParams(params, namedParams, ctx))
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error processing rpc method $methodName", e)
+          RpcMethodFailure(1, e.getMessage, e)
       }
     } else {
       new RpcMethodFailure(s"Could not find rpcMethodHandler $methodName")
