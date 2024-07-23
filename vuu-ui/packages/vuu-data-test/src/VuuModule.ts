@@ -1,7 +1,7 @@
 import {
   DataSource,
   DataSourceRow,
-  DataSourceSubscribedMessage,
+  // DataSourceSubscribedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -64,58 +64,6 @@ export type RpcService = {
   service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
 };
 
-// class CompLink<T extends string = string> {
-//   #compLinks: Record<T, LinkDescriptorWithLabel[] | undefined> = {
-//     algoType: undefined,
-//     basket: undefined,
-//     basketConstituent: undefined,
-//     basketTrading: undefined,
-//     basketTradingConstituent: undefined,
-//     basketTradingConstituentJoin: undefined,
-//     priceStrategyType: undefined,
-//   };
-
-//   getLink = (
-//     childTable: T,
-//     subscriptionMap: Map<string, Subscription[]>,
-//     tempLinks: VuuLink[]
-//   ) => {
-//     for (let i = 0; i < tempLinks.length; i++) {
-//       if (subscriptionMap.get(tempLinks[i].toTable)) {
-//         const newLink: LinkDescriptorWithLabel = {
-//           parentClientVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0]
-//             .viewportId as string,
-//           parentVpId: subscriptionMap.get(tempLinks[i].toTable)?.[0]
-//             .viewportId as string,
-//           link: tempLinks[i],
-//         };
-//         this.updateLink(childTable, newLink);
-//       }
-//     }
-//     console.log("visualLinks: ", this.#compLinks);
-//     return this.#compLinks;
-//   };
-
-//   updateLink = (childTable: T, newLink: LinkDescriptorWithLabel) => {
-//     if (this.#compLinks[childTable]) {
-//       const compLinks = this.#compLinks?.[
-//         childTable
-//       ] as LinkDescriptorWithLabel[];
-//       for (let i = 0; i < compLinks.length; i++) {
-//         if (compLinks[i].parentVpId === newLink.parentVpId) {
-//           console.log("existed");
-//         } else {
-//           compLinks?.push(newLink);
-//         }
-//       }
-//     } else {
-//       this.#compLinks[childTable] = [newLink];
-//     }
-//   };
-// }
-
-// const vLink = new CompLink();
-
 type Subscription = {
   viewportId: string;
   dataSource: DataSource;
@@ -146,34 +94,35 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#visualLinks = visualLinks;
   }
 
-  private registerViewport = (
-    subscriptionDetails: DataSourceSubscribedMessage
-  ) => {
-    console.log("<subscription-open> register new viewport", {
-      subscriptionDetails,
-    });
-
-    // const parentTable = subscriptionDetails.tableSchema.table.table;
-    // this.#subscriptionMap.set(parentTable, [
-    //   { viewportId: subscriptionDetails.clientViewportId, visualLink: [] },
-    // ]);
-    // console.log("subscriptionMap: ", this.#subscriptionMap);
-  };
+  // private registerViewport = (
+  //   subscriptionDetails: DataSourceSubscribedMessage
+  // ) => {
+  //   console.log("<subscription-open> register new viewport", {
+  //     subscriptionDetails,
+  //   });
+  // };
 
   private unregisterViewport = (viewportId: string) => {
     console.log(`<subscription-closed> unregister viewport ${viewportId}`);
 
     for (const subscription of this.#subscriptionMap) {
-      if (subscription[1].toString() === viewportId) {
+      if (subscription[1][0].viewportId.toString() === viewportId) {
         this.#subscriptionMap.delete(subscription[0]);
+      } else {
+        const links = subscription[1][0].dataSource.links;
+        if (links) {
+          for (let i = 0; i < links?.length; i++) {
+            if (links[i].parentClientVpId === viewportId) {
+              links.splice(i);
+            }
+          }
+        }
+        subscription[1][0].dataSource.links = links;
       }
     }
-    console.log("subscriptionMap: ", this.#subscriptionMap);
-    //TODO: update visual links
   };
 
   getLink = (
-    // childTable: T,
     subscriptionMap: Map<string, Subscription[]>,
     vuuLinks: VuuLink[]
   ) => {
@@ -187,7 +136,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
             .viewportId as string,
           link: vuuLinks[i],
         };
-        // this.updateLink(childTable, newLink);
         visualLinks.push(newLink);
       }
     }
@@ -195,15 +143,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   };
 
   createDataSource = (tableName: T) => {
-    // check if you can create visual links
-    // const visualLinks =
-    //   this.#visualLinks?.[tableName] === undefined
-    //     ? undefined
-    //     : vLink.getLink(
-    //         tableName as BasketsTableName,
-    //         this.#subscriptionMap,
-    //         this.#visualLinks[tableName] as VuuLink[]
-    //       )[tableName];
     const visualLinks =
       this.#visualLinks?.[tableName] === undefined
         ? undefined
@@ -211,7 +150,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
             this.#subscriptionMap,
             this.#visualLinks[tableName] as VuuLink[]
           );
-
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const dataSource = new TickingArrayDataSource({
       columnDescriptors,
@@ -232,7 +170,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#subscriptionMap.set(tableName, [
       { viewportId: dataSource.viewport, dataSource },
     ]);
-    console.log("subscriptionMap: ", this.#subscriptionMap);
 
     for (const key of this.#subscriptionMap.keys()) {
       if (this.#visualLinks?.[key as T] && key !== tableName) {
