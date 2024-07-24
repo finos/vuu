@@ -1,4 +1,4 @@
-import { StackLayout } from "@finos/vuu-layout";
+import { FlexboxLayout, StackLayout } from "@finos/vuu-layout";
 import {
   LeftNav,
   LocalPersistenceManager,
@@ -14,7 +14,10 @@ import {
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import type { VuuUser } from "@finos/vuu-utils";
-import { assertComponentRegistered, registerComponent } from "@finos/vuu-utils";
+import {
+  assertComponentsRegistered,
+  registerComponent,
+} from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { createPlaceholder } from "./createPlaceholder";
@@ -26,7 +29,10 @@ import "./App.css";
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
-assertComponentRegistered("Stack", StackLayout);
+assertComponentsRegistered([
+  { componentName: "Flexbox", component: FlexboxLayout },
+  { componentName: "Stack", component: StackLayout },
+]);
 
 const localPersistenceManager = new LocalPersistenceManager();
 

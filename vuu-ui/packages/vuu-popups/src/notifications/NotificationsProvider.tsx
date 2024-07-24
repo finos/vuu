@@ -21,10 +21,12 @@ export type NotificationsContext = {
   dispatched.
 */
 class NotificationsContextObject implements NotificationsContext {
-  notify: DispatchNotification = () =>
+  #notify: DispatchNotification = () =>
     console.log("have you forgotten to provide a NotificationsCenter?");
+  // We want the public notify method to be stable, setNotify call should not trigger re-renders
+  notify: DispatchNotification = (notification) => this.#notify(notification);
   setNotify = (dispatcher: DispatchNotification) => {
-    this.notify = dispatcher;
+    this.#notify = dispatcher;
   };
 }
 
