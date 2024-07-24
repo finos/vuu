@@ -1,10 +1,11 @@
 import { isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
 import { useNotifications } from "@finos/vuu-popups";
 import {
-  ApplicationJSON,
-  ApplicationSetting,
-  ApplicationSettings,
-  LayoutJSON,
+  logger,
+  type ApplicationJSON,
+  type ApplicationSetting,
+  type ApplicationSettings,
+  type LayoutJSON,
 } from "@finos/vuu-utils";
 import React, {
   useCallback,
@@ -14,12 +15,14 @@ import React, {
   useState,
 } from "react";
 import { usePersistenceManager } from "../persistence-manager";
-import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 import {
   defaultApplicationJson,
   getDefaultApplicationLayout,
   loadingApplicationJson,
 } from "./defaultApplicationJson";
+import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
+
+const { info } = logger("useLayoutManager");
 
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
@@ -150,10 +153,15 @@ export const LayoutManagementProvider = ({
       ?.loadApplicationJSON()
       .then((applicationJSON?: ApplicationJSON) => {
         if (applicationJSON) {
+          info?.("applicationJSON loaded successfully");
           setApplicationJSON(applicationJSON);
         } else {
+          const layout = getDefaultApplicationLayout(defaultLayout);
+          info?.(`applicationJSON not found, getting defaultApplicationLayout,
+            ${JSON.stringify(layout, null, 2)}
+            `);
           setApplicationJSON({
-            layout: getDefaultApplicationLayout(defaultLayout),
+            layout,
           });
         }
       })

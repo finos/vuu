@@ -112,6 +112,11 @@ export const getFilterTableFeatures = (
       title: `${schema.table.module} ${schema.table.table}`,
     }));
 
+export type Component = {
+  componentName: string;
+  component: unknown;
+};
+
 export const assertComponentRegistered = (
   componentName: string,
   component: unknown
@@ -120,6 +125,12 @@ export const assertComponentRegistered = (
     console.warn(
       `${componentName} module not loaded, will be unabale to deserialize from layout JSON`
     );
+  }
+};
+
+export const assertComponentsRegistered = (componentList: Component[]) => {
+  for (const { componentName, component } of componentList) {
+    assertComponentRegistered(componentName, component);
   }
 };
 

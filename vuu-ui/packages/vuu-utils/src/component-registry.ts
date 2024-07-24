@@ -107,9 +107,36 @@ const isTypeCompatible = (
   }
 };
 
-export const isContainer = (componentType: string) =>
-  containersSet.has(componentType);
-export const isView = (componentType: string) => viewsSet.has(componentType);
+const assertComponentRegistered = (componentType: string) => {
+  if (!layoutComponentsMap.has(componentType)) {
+    console.warn(
+      `isContainer check on ${componentType}, which has not been registered`
+    );
+  }
+};
+
+/**
+ * This check is performed during construction of UI from JSON. If component
+ * is not registered, it will log a warning.
+ */
+export const isContainer = (componentType: string) => {
+  assertComponentRegistered(componentType);
+  return containersSet.has(componentType);
+};
+
+/**
+ * This check is performed during construction of UI from JSON. If component
+ * is not registered, it will log a warning.
+ */
+export const isView = (componentType: string) => {
+  assertComponentRegistered(componentType);
+  return viewsSet.has(componentType);
+};
+
+/**
+ * This check is performed during construction of UI from JSON. If component
+ * is not registered, it will log a warning.
+ */
 export const isLayoutComponent = (
   componentType: string
 ): componentType is layoutComponentType =>
