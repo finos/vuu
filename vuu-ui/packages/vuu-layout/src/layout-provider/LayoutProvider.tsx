@@ -1,4 +1,4 @@
-import type { LayoutJSON } from "@finos/vuu-utils";
+import { logger, type LayoutJSON } from "@finos/vuu-utils";
 import {
   MutableRefObject,
   ReactElement,
@@ -26,6 +26,8 @@ import {
   LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
+
+const { info } = logger("LayoutProvider");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withDropTarget = (props: any) => props.dropTarget;
@@ -150,6 +152,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   useEffect(() => {
     if (layout) {
+      info?.("layout changed. inject new layout into application");
       const targetContainer = findTarget(
         state.current as never,
         withDropTarget
