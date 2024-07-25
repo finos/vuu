@@ -6,10 +6,6 @@ trait RpcMethodHandler {
   def call(rpcParams: RpcParams): RpcMethodCallResult
 }
 
-class RpcJavaFunctionMethodHandler(handler: java.util.function.Function[RpcParams, RpcMethodCallResult]) extends RpcMethodHandler {
-  override def call(rpcParams: RpcParams): RpcMethodCallResult = handler(rpcParams)
-}
-
 class RpcFunctionMethodHandler(handler: RpcParams => RpcMethodCallResult) extends RpcMethodHandler {
   override def call(rpcParams: RpcParams): RpcMethodCallResult = handler(rpcParams)
 }

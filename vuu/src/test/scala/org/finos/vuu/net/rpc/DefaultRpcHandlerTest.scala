@@ -34,14 +34,6 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
       }
     }
 
-    Scenario("Register Rpc Method Handler for a java function") {
-      val rpcJavaFunctionMethodHandler = new RpcJavaFunctionMethodHandler(params => RpcMethodSuccess(params.namedParams("namedParam1").toString))
-
-      handler.registerRpcMethodHandler("myMethod", rpcJavaFunctionMethodHandler)
-
-      handler.processViewPortRpcCall("myMethod", Array("param1"), Map("namedParam1" -> "value1"))(null) should be (ViewPortRpcSuccess())
-    }
-
     Scenario("ProcessViewPortRpcCall method with null params should return ViewPortRpcSuccess when the rpc method is successful") {
       handler.registerRpcMethodHandler("myMethod", _ => RpcMethodSuccess("result"))
 
