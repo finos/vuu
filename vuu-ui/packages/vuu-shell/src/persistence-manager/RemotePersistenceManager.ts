@@ -3,7 +3,7 @@ import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 
-const baseURL = process.env.LAYOUT_BASE_URL;
+const baseURL = "/api";
 const metadataSaveLocation = "layouts/metadata";
 const layoutsSaveLocation = "layouts";
 const applicationLayoutsSaveLocation = "application-layouts";
