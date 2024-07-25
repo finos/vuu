@@ -39,7 +39,7 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val module = Option(msg).map(_.module).getOrElse("")
 
     processRpcMethodHandler(method, params, namedPars, ctx) match {
-      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result, error = null), module))
+      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.result, error = null), module))
       case error: RpcMethodFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
   }

@@ -44,7 +44,7 @@ public class RpcMethodHandlerTest {
 
         Assertions.assertThat(response.get().body())
                 .isExactlyInstanceOf(RpcResponse.class)
-                .isEqualTo(new RpcResponse("helloWorld", new RpcMethodSuccess("It Works"), null));
+                .isEqualTo(new RpcResponse("helloWorld", "It Works", null));
     }
 
     static class TestRpcService {
