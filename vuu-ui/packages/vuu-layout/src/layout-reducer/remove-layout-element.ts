@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { VuuShellLocation } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
-import { createPlaceHolder } from "./flexUtils";
-import { layoutFromJson } from "./layoutUtils";
-import { swapChild } from "./replace-layout-element";
-
 import {
   followPath,
   followPathToParent,
@@ -13,7 +10,10 @@ import {
   resetPath,
   typeOf,
 } from "../utils";
+import { createPlaceHolder } from "./flexUtils";
 import { RemoveAction } from "./layoutTypes";
+import { layoutFromJson } from "./layoutUtils";
+import { swapChild } from "./replace-layout-element";
 
 export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
   const target = followPath(layoutRoot, path!) as ReactElement;
@@ -90,7 +90,7 @@ function _removeChild(
         style: { flexBasis },
       } = getProps(child);
       const placeHolder =
-        containerId === "main-tabs"
+        containerId === VuuShellLocation.Workspace
           ? layoutFromJson(
               {
                 props: {

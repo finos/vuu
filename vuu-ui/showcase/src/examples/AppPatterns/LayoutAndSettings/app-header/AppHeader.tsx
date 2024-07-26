@@ -2,7 +2,7 @@ import { TableSchema } from "@finos/vuu-data-types";
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { UserSettingsPanel } from "@finos/vuu-shell";
 import { IconButton } from "@finos/vuu-ui-controls";
-import { registerComponent } from "@finos/vuu-utils";
+import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 
@@ -27,7 +27,7 @@ export const AppHeader = ({
   const handleShowLayout = useCallback(() => {
     dispatchLayoutAction({
       type: "set-props",
-      path: "#context-panel",
+      path: `#${VuuShellLocation.ContextPanel}`,
       props: {
         expanded: true,
         content: {
@@ -44,7 +44,7 @@ export const AppHeader = ({
   const handleShowSettings = useCallback(() => {
     dispatchLayoutAction({
       type: "set-props",
-      path: "#context-panel",
+      path: `#${VuuShellLocation.ContextPanel}`,
       props: {
         expanded: true,
         content: {

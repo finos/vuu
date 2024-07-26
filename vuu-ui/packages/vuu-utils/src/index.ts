@@ -40,6 +40,7 @@ export * from "./protocol-message-utils";
 export * from "./range-utils";
 export * from "./row-utils";
 export * from "./selection-utils";
+export * from "./shell-layout-types";
 export * from "./sort-utils";
 export * from "./table-schema-utils";
 export * from "./text-utils";

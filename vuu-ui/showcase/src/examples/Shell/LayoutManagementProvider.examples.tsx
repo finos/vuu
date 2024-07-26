@@ -1,5 +1,5 @@
 import {
-  defaultLayoutJson,
+  stackWorkspaceJSON,
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
@@ -63,8 +63,8 @@ export const DefaultLayoutStoredState = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: {
-            ...defaultLayoutJson,
+          workspaceJSON: {
+            ...stackWorkspaceJSON,
             children: [
               {
                 type: "div",
@@ -109,10 +109,10 @@ export const CustomLayoutStoredState = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: {
-            ...defaultLayoutJson,
+          workspaceJSON: {
+            ...stackWorkspaceJSON,
             props: {
-              ...defaultLayoutJson.props,
+              ...stackWorkspaceJSON.props,
               active: 1,
             },
             children: [

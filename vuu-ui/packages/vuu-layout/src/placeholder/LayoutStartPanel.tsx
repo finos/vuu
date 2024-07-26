@@ -1,4 +1,5 @@
 import { IconButton } from "@finos/vuu-ui-controls";
+import { VuuShellLocation } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
@@ -31,7 +32,10 @@ export const LayoutStartPanel = (htmlAttributes: LayoutStartPanelProps) => {
       path,
       query: "PARENT_CONTAINER",
     }).then((response) => {
-      if ((response as QueryReponse)?.parentContainerId === "main-tabs") {
+      if (
+        (response as QueryReponse)?.parentContainerId ===
+        VuuShellLocation.Workspace
+      ) {
         setDisplayState("initial");
       } else {
         setDisplayState("nested");

@@ -1,5 +1,5 @@
 export * as DockLayout from "./DockLayout.examples";
-export * as DraggableLayout from "./DraggableLayout.examples";
+export * as LayoutContainer from "./LayoutContainer.examples";
 export * as DropMenu from "./DropMenu.examples";
 export * as Flexbox from "./Flexbox.examples";
 export * as FluidGrid from "./FluidGrid.examples";

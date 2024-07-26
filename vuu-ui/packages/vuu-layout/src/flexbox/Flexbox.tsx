@@ -30,7 +30,7 @@ const Flexbox = forwardRef(function Flexbox(
     spacing,
     splitterSize,
     style,
-    ...rest
+    ...htmlAttributes
   } = props;
 
   const targetWindow = useWindow();
@@ -56,7 +56,7 @@ const Flexbox = forwardRef(function Flexbox(
 
   return (
     <div
-      {...rest}
+      {...htmlAttributes}
       className={className}
       // data-cols={cols}
       data-resizeable={resizeable || undefined}

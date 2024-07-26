@@ -6,18 +6,10 @@ import {
 } from "../layout-provider";
 import { getDefaultTabLabel } from "../layout-reducer";
 import { useViewActionDispatcher } from "../layout-view-actions";
-import { Placeholder } from "../placeholder";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";
 import { useViewBroadcastChannel } from "../layout-view";
-
-const defaultCreateNewChild = () => (
-  <Placeholder
-    resizeable
-    style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
-  />
-);
 
 export const StackLayout = (props: StackProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -40,8 +32,7 @@ export const StackLayout = (props: StackProps) => {
 
   const [dispatchViewAction] = useViewActionDispatcher(id, rootRef, path);
   const createNewChildFromContext = useLayoutCreateNewChild();
-  const createNewChild =
-    createNewChildProp ?? createNewChildFromContext ?? defaultCreateNewChild;
+  const createNewChild = createNewChildProp ?? createNewChildFromContext;
 
   const handleTabSelection = (nextIdx: number) => {
     if (path) {
@@ -68,11 +59,10 @@ export const StackLayout = (props: StackProps) => {
   const handleTabAdd = useCallback(() => {
     if (path) {
       const tabIndex = React.Children.count(children);
-      const component = createNewChild(tabIndex);
       dispatch({
         type: "add",
         path,
-        component,
+        component: createNewChild(tabIndex),
       });
     }
   }, [children, createNewChild, dispatch, path]);

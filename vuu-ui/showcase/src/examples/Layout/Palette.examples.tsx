@@ -1,6 +1,6 @@
 import {
   Component,
-  DraggableLayout,
+  LayoutContainer,
   Flexbox,
   LayoutProvider,
   Palette,
@@ -9,7 +9,7 @@ import {
   View,
 } from "@finos/vuu-layout";
 
-import "./DraggableLayout.examples.css";
+import "./LayoutContainer.examples.css";
 
 let displaySequence = 1;
 
@@ -68,11 +68,11 @@ export const SimplePalette = () => (
           ></PaletteItem>
         </Palette>
       </View>
-      <DraggableLayout style={{ flex: 1 }} dropTarget resizeable>
+      <LayoutContainer style={{ flex: 1 }} dropTarget resizeable>
         <View resizeable style={{ height: "calc(100% - 6px)" }}>
           <Placeholder />
         </View>
-      </DraggableLayout>
+      </LayoutContainer>
     </Flexbox>
   </LayoutProvider>
 );

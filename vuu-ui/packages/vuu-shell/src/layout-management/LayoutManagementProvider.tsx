@@ -1,6 +1,7 @@
-import { isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
+import { StackProps, isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
 import { useNotifications } from "@finos/vuu-popups";
 import {
+  VuuShellLocation,
   logger,
   type ApplicationJSON,
   type ApplicationSetting,
@@ -16,10 +17,9 @@ import React, {
 } from "react";
 import { usePersistenceManager } from "../persistence-manager";
 import {
-  defaultApplicationJson,
-  getDefaultApplicationLayout,
-  loadingApplicationJson,
-} from "./defaultApplicationJson";
+  getWorkspaceWithLayoutJSON,
+  loadingJSON,
+} from "./defaultWorkspaceJSON";
 import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
 const { info } = logger("useLayoutManager");
@@ -27,7 +27,7 @@ const { info } = logger("useLayoutManager");
 export const LayoutManagementContext = React.createContext<{
   layoutMetadata: LayoutMetadata[];
   saveLayout: (n: LayoutMetadataDto) => void;
-  applicationJson: ApplicationJSON;
+  workspaceJSON: LayoutJSON;
   saveApplicationLayout: (layout: LayoutJSON) => void;
   getApplicationSettings: (
     key?: keyof ApplicationSettings
@@ -42,15 +42,32 @@ export const LayoutManagementContext = React.createContext<{
   layoutMetadata: [],
   saveLayout: () => undefined,
   // The default Application JSON will be served if no LayoutManagementProvider
-  applicationJson: defaultApplicationJson,
+  workspaceJSON: getWorkspaceWithLayoutJSON(),
   saveApplicationLayout: () => undefined,
   saveApplicationSettings: () => undefined,
   loadLayoutById: () => undefined,
 });
 
-type LayoutManagementProviderProps = {
+export type WorkspaceProps = Pick<StackProps, "showTabs" | "TabstripProps">;
+
+export type LayoutManagementProviderProps = {
+  /**
+   * props applied to the default workspace (Stack),
+   * ignored if workspaceJSON is provided.
+   */
+  WorkspaceProps?: WorkspaceProps;
+
   children: JSX.Element | JSX.Element[];
-  defaultLayout?: LayoutJSON;
+  /**
+   * layoutJSON defines the default layout to render on first load and until such time as
+   * layout state has been persisted. After that, the persisted state will be rendered.
+   */
+  layoutJSON?: LayoutJSON;
+  /**
+   * The Vuu workspace is the container into which layouts are loaded. By default, it will be
+   * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
+   */
+  workspaceJSON?: LayoutJSON;
 };
 
 const ensureLayoutHasTitle = (
@@ -70,6 +87,10 @@ const ensureLayoutHasTitle = (
   }
 };
 
+const loadingApplicationJSON: ApplicationJSON = {
+  workspaceJSON: loadingJSON,
+};
+
 /**
  * LayoutManagementProvider supplies an API for loading and saving layout documents.
  * Initial layout is automatically loaded on startup. Because this hook is responsible
@@ -84,7 +105,9 @@ const ensureLayoutHasTitle = (
  *
  */
 export const LayoutManagementProvider = ({
-  defaultLayout,
+  WorkspaceProps,
+  layoutJSON,
+  workspaceJSON: customWorkspaceJSON,
   ...props
 }: LayoutManagementProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
@@ -93,7 +116,7 @@ export const LayoutManagementProvider = ({
   const [, forceRefresh] = useState({});
   const notify = useNotifications();
   const persistenceManager = usePersistenceManager();
-  const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJson);
+  const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJSON);
 
   const setApplicationJSON = useCallback(
     (applicationJSON: ApplicationJSON, rerender = true) => {
@@ -105,12 +128,12 @@ export const LayoutManagementProvider = ({
     []
   );
 
-  const setApplicationLayout = useCallback(
-    (layout: LayoutJSON, rerender = true) => {
+  const setWorkspaceJSON = useCallback(
+    (workspaceJSON: LayoutJSON, rerender = true) => {
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
-          layout,
+          workspaceJSON,
         },
         rerender
       );
@@ -135,6 +158,7 @@ export const LayoutManagementProvider = ({
   );
 
   useEffect(() => {
+    //TODO this does not need to be done ahead of time
     persistenceManager
       ?.loadMetadata()
       .then((metadata) => {
@@ -156,12 +180,19 @@ export const LayoutManagementProvider = ({
           info?.("applicationJSON loaded successfully");
           setApplicationJSON(applicationJSON);
         } else {
-          const layout = getDefaultApplicationLayout(defaultLayout);
-          info?.(`applicationJSON not found, getting defaultApplicationLayout,
-            ${JSON.stringify(layout, null, 2)}
+          // No applicationJSON has been saved yet. Construct our
+          // initial applicationJSON from user configuration and
+          // default values.
+          const workspaceJSON = getWorkspaceWithLayoutJSON(
+            customWorkspaceJSON,
+            layoutJSON,
+            WorkspaceProps
+          );
+          info?.(`applicationJSON not found, getting defaultWorkspaceJSON,
+            ${JSON.stringify(workspaceJSON, null, 2)}
             `);
           setApplicationJSON({
-            layout,
+            workspaceJSON,
           });
         }
       })
@@ -176,18 +207,25 @@ export const LayoutManagementProvider = ({
           error
         );
       });
-  }, [defaultLayout, notify, persistenceManager, setApplicationJSON]);
+  }, [
+    WorkspaceProps,
+    customWorkspaceJSON,
+    layoutJSON,
+    notify,
+    persistenceManager,
+    setApplicationJSON,
+  ]);
 
   const saveApplicationLayout = useCallback(
     (layout: LayoutJSON) => {
       if (isLayoutJSON(layout)) {
-        setApplicationLayout(layout, false);
+        setWorkspaceJSON(layout, false);
         persistenceManager?.saveApplicationJSON(applicationJSONRef.current);
       } else {
         console.error("Tried to save invalid application layout", layout);
       }
     },
-    [persistenceManager, setApplicationLayout]
+    [persistenceManager, setWorkspaceJSON]
   );
 
   const saveLayout = useCallback(
@@ -195,8 +233,8 @@ export const LayoutManagementProvider = ({
       let layoutToSave: LayoutJSON | undefined;
       try {
         layoutToSave = resolveJSONPath(
-          applicationJSONRef.current.layout,
-          "#main-tabs.ACTIVE_CHILD"
+          applicationJSONRef.current.workspaceJSON,
+          `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`
         );
       } catch (e) {
         // ignore, code below will handle
@@ -265,8 +303,8 @@ export const LayoutManagementProvider = ({
       persistenceManager
         ?.loadLayout(id)
         .then((layoutJson) => {
-          const { layout: currentLayout } = applicationJSONRef.current;
-          setApplicationLayout({
+          const { workspaceJSON: currentLayout } = applicationJSONRef.current;
+          setWorkspaceJSON({
             ...currentLayout,
             children: (currentLayout.children || []).concat(layoutJson),
             props: {
@@ -284,7 +322,7 @@ export const LayoutManagementProvider = ({
           console.error("Error occurred while loading layout", error);
         });
     },
-    [notify, persistenceManager, setApplicationLayout]
+    [notify, persistenceManager, setWorkspaceJSON]
   );
 
   return (
@@ -293,7 +331,7 @@ export const LayoutManagementProvider = ({
         getApplicationSettings,
         layoutMetadata,
         saveLayout,
-        applicationJson: applicationJSONRef.current,
+        workspaceJSON: applicationJSONRef.current.workspaceJSON,
         saveApplicationLayout,
         saveApplicationSettings,
         loadLayoutById,

@@ -4,7 +4,7 @@ import { ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";
 
-export type layoutType = "Flexbox" | "View" | "DraggableLayout" | "Stack";
+export type layoutType = "Flexbox" | "View" | "LayoutContainer" | "Stack";
 
 // TODO duplicated in layout-action
 export const LayoutActionType = {

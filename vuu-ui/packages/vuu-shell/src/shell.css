@@ -4,7 +4,7 @@
   width: var(--vuuShell-width, 100vw);
 }
 
-.vuuShell-mainTabs {
+.vuu-workspace-tabs {
   background: var(--salt-container-primary-background);
 }
 
@@ -23,11 +23,11 @@
   background: var(--salt-container-primary-background);
 }
 
-.vuuShell-mainTabs > .vuuTabstrip > .vuuOverflowContainer-wrapContainer {
+.vuu-workspace-tabs > .vuuTabstrip > .vuuOverflowContainer-wrapContainer {
   background: var(--vuu-color-gray-25);
 }
 
-.vuuShell-mainTabs {
+.vuu-workspace-tabs {
   --vuuTab-height: 28px;
   border: solid 1px #d6d7da;
   border-top: none !important;
@@ -38,7 +38,7 @@
   width: 100%;
 }
 
-.vuuShell-mainTabs > .vuuTabstrip {
+.vuu-workspace-tabs > .vuuTabstrip {
   left: -1px;
   padding-bottom: 7px;
   position: absolute !important;

@@ -6,7 +6,7 @@ import {
   TableConfig,
   TableSettingsProps,
 } from "@finos/vuu-table-types";
-import { getCalculatedColumnDetails } from "@finos/vuu-utils";
+import { VuuShellLocation, getCalculatedColumnDetails } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { ColumnActionColumnSettings } from "./useTableModel";
 
@@ -41,7 +41,7 @@ export const useTableAndColumnSettings = ({
     ) => {
       dispatchLayoutAction({
         type: "set-props",
-        path: "#context-panel",
+        path: `#${VuuShellLocation.ContextPanel}`,
         props: {
           expanded: true,
           content: {

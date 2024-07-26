@@ -1,6 +1,6 @@
 import { simulSchemas } from "@finos/vuu-data-test";
 import {
-  DraggableLayout,
+  LayoutContainer,
   Flexbox,
   LayoutProvider,
   Placeholder,
@@ -14,7 +14,7 @@ import {
   PersistenceProvider,
   StaticPersistenceManager,
 } from "@finos/vuu-shell";
-import { registerComponent } from "@finos/vuu-utils";
+import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import layoutMetadata from "../../_test-data/layoutMetadata";
 import { LayoutComponentsPanel } from "./LayoutComponentsPanel";
@@ -67,11 +67,11 @@ export const TabbedLayoutComponentsWithDragDrop = () => {
                 />
               </div>
             </View>
-            <DraggableLayout style={{ flex: 1 }} dropTarget resizeable>
+            <LayoutContainer style={{ flex: 1 }} dropTarget resizeable>
               <View resizeable style={{ height: "calc(100% - 6px)" }}>
                 <Placeholder />
               </View>
-            </DraggableLayout>
+            </LayoutContainer>
           </Flexbox>
         </LayoutProvider>
       </LayoutManagementProvider>
@@ -136,13 +136,16 @@ export const FlyoutLayoutAndSettingsWithDragDrop = () => {
             >
               <Flexbox style={{ flex: 1, flexDirection: "column" }}>
                 <AppHeader tableSchemas={Object.values(simulSchemas)} />
-                <DraggableLayout style={{ flex: 1 }} dropTarget resizeable>
+                <LayoutContainer style={{ flex: 1 }} dropTarget resizeable>
                   <View resizeable style={{ height: "calc(100% - 6px)" }}>
                     <Placeholder />
                   </View>
-                </DraggableLayout>
+                </LayoutContainer>
               </Flexbox>
-              <ContextPanel id="context-panel" overlay></ContextPanel>
+              <ContextPanel
+                id={VuuShellLocation.ContextPanel}
+                overlay
+              ></ContextPanel>
             </Flexbox>
           </LayoutProvider>
         </LayoutManagementProvider>

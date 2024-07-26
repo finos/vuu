@@ -4,7 +4,7 @@ import {
   useLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
-import { LayoutJSON } from "@finos/vuu-utils";
+import { LayoutJSON, VuuShellLocation } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -19,6 +19,7 @@ export interface ContextPanelProps {
   className?: string;
   content?: LayoutJSON;
   expanded?: boolean;
+  id?: string;
   overlay?: boolean;
 }
 
@@ -26,6 +27,7 @@ export const ContextPanel = ({
   className: classNameProp,
   expanded = false,
   content: contentProp,
+  id = VuuShellLocation.ContextPanel,
   overlay = false,
   title,
 }: ContextPanelProps) => {
@@ -40,7 +42,7 @@ export const ContextPanel = ({
   // const [contentJson, setContentJson] = useState(contentProp);
   const handleClose = useCallback(() => {
     dispatchLayoutAction({
-      path: "#context-panel",
+      path: `#${VuuShellLocation.ContextPanel}`,
       propName: "expanded",
       propValue: false,
       type: "set-prop",
@@ -66,7 +68,7 @@ export const ContextPanel = ({
         [`${classBase}-expanded`]: expanded,
       })}
     >
-      <View className={`${classBase}-inner`} header={false} id="context-panel">
+      <View className={`${classBase}-inner`} header={false} id={id}>
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
           <IconButton

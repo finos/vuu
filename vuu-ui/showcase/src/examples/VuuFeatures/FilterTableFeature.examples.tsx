@@ -37,7 +37,7 @@ export const DefaultFilterTableFeature = () => {
   return (
     <div style={{ display: "flex" }}>
       <LayoutProvider
-        layout={applicationLayout.layout}
+        workspaceJSON={applicationLayout.workspaceJSON}
         onLayoutChange={handleLayoutChange}
       >
         <View

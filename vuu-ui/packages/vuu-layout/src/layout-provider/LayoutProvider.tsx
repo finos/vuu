@@ -1,4 +1,4 @@
-import { logger, type LayoutJSON } from "@finos/vuu-utils";
+import { VuuShellLocation, logger, type LayoutJSON } from "@finos/vuu-utils";
 import {
   MutableRefObject,
   ReactElement,
@@ -14,10 +14,11 @@ import {
   layoutQuery,
   layoutReducer,
   layoutToJSON,
-  processLayoutElement,
+  cloneElementAddLayoutProps,
   type LayoutChangeHandler,
   type LayoutChangeReason,
   type LayoutReducerAction,
+  LayoutProps,
 } from "../layout-reducer";
 import type { SaveAction } from "../layout-view";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
@@ -26,8 +27,19 @@ import {
   LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
+import { Placeholder } from "../placeholder";
 
 const { info } = logger("LayoutProvider");
+
+const isWorkspaceContainer = (props: LayoutProps) =>
+  props.id === VuuShellLocation.WorkspaceContainer;
+
+const defaultCreateNewChild = () => (
+  <Placeholder
+    resizeable
+    style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
+  />
+);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const withDropTarget = (props: any) => props.dropTarget;
@@ -45,8 +57,7 @@ const getLayoutChangeReason = (
 ): LayoutChangeReason => {
   switch (action.type) {
     case "switch-tab":
-      // TODO how can we make this more robust, shouldn't rely on 'main-tabs'
-      if (action.id === "main-tabs") {
+      if (action.id === VuuShellLocation.Workspace) {
         return "switch-active-layout";
       } else {
         return "switch-active-tab";
@@ -69,8 +80,7 @@ const getLayoutChangeReason = (
 export interface LayoutProviderProps {
   children: ReactElement;
   createNewChild?: (index?: number) => ReactElement;
-  pathToDropTarget?: string;
-  layout?: LayoutJSON;
+  workspaceJSON?: LayoutJSON;
   onLayoutChange?: LayoutChangeHandler;
 }
 
@@ -79,9 +89,10 @@ export const LayoutProviderVersion = () => {
   return <div>{`Context: ${version} `}</div>;
 };
 
+const pathToDropTarget = `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`;
+
 export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
-  const { children, createNewChild, pathToDropTarget, layout, onLayoutChange } =
-    props;
+  const { children, createNewChild, workspaceJSON, onLayoutChange } = props;
   const state = useRef<ReactElement | undefined>(undefined);
   const childrenRef = useRef<ReactElement>(children);
 
@@ -90,12 +101,13 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const serializeState = useCallback(
     (source, layoutChangeReason: LayoutChangeReason) => {
       if (onLayoutChange) {
-        const targetContainer =
-          findTarget(source, withDropTarget) || state.current;
-        const isDraggableLayout = typeOf(targetContainer) === "DraggableLayout";
-        const target = isDraggableLayout
-          ? getProps(targetContainer).children[0]
-          : targetContainer;
+        const workspaceContainer =
+          findTarget(source, isWorkspaceContainer) || state.current;
+        const isLayoutContainer =
+          typeOf(workspaceContainer) === "LayoutContainer";
+        const target = isLayoutContainer
+          ? getProps(workspaceContainer).children[0]
+          : workspaceContainer;
         const serializedModel = layoutToJSON(target);
         onLayoutChange(serializedModel, layoutChangeReason);
       }
@@ -151,16 +163,16 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   );
 
   useEffect(() => {
-    if (layout) {
-      info?.("layout changed. inject new layout into application");
+    if (workspaceJSON) {
+      info?.("workspaceJSON changed. inject new layout into application");
       const targetContainer = findTarget(
-        state.current as never,
-        withDropTarget
+        state.current,
+        isWorkspaceContainer
       ) as ReactElement;
       if (targetContainer) {
         const target = getChildProp(targetContainer);
         const newLayout = layoutFromJson(
-          layout,
+          workspaceJSON,
           `${targetContainer.props.path}.0`
         );
         const action = target
@@ -175,8 +187,8 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
               component: newLayout,
             };
         dispatchLayoutAction(action, true);
-      } else if (layout.id === getProp(state.current, "id")) {
-        const newLayout = layoutFromJson(layout, "0");
+      } else if (workspaceJSON.id === getProp(state.current, "id")) {
+        const newLayout = layoutFromJson(workspaceJSON, "0");
         const action = {
           type: LayoutActionType.REPLACE,
           target: state.current,
@@ -185,12 +197,12 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         dispatchLayoutAction(action, true);
       }
     }
-  }, [dispatchLayoutAction, layout]);
+  }, [dispatchLayoutAction, workspaceJSON]);
 
   if (state.current === undefined) {
-    state.current = processLayoutElement(children);
+    state.current = cloneElementAddLayoutProps(children);
   } else if (children !== childrenRef.current) {
-    state.current = processLayoutElement(children, state.current);
+    state.current = cloneElementAddLayoutProps(children, state.current);
     childrenRef.current = children;
   }
 
@@ -214,7 +226,7 @@ export const useLayoutProviderDispatch = () => {
 
 export const useLayoutCreateNewChild = () => {
   const { createNewChild } = useContext(LayoutProviderContext);
-  return createNewChild;
+  return createNewChild ?? defaultCreateNewChild;
 };
 
 export const useLayoutProviderVersion = () => {

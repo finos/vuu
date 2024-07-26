@@ -1,5 +1,5 @@
 import {
-  DraggableLayout,
+  LayoutContainer,
   Flexbox,
   LayoutChangeHandler,
   LayoutProvider,
@@ -54,8 +54,11 @@ export const StaticTemplateNoChrome = () => {
         <Button onClick={showYellowContent}>Yellow content</Button>
         <Button onClick={showBlueContent}>Blue content</Button>
       </div>
-      <LayoutProvider onLayoutChange={handleLayoutChange} layout={layout}>
-        <DraggableLayout
+      <LayoutProvider
+        onLayoutChange={handleLayoutChange}
+        workspaceJSON={layout}
+      >
+        <LayoutContainer
           dropTarget
           id="layout-root"
           style={{
@@ -64,7 +67,7 @@ export const StaticTemplateNoChrome = () => {
           }}
         >
           <div style={{ backgroundColor: "green", height: "100%" }} />
-        </DraggableLayout>
+        </LayoutContainer>
       </LayoutProvider>
     </>
   );
@@ -96,8 +99,11 @@ export const LeftRightChrome = () => {
         <Button onClick={showYellowContent}>Yellow content</Button>
         <Button onClick={showBlueContent}>Blue content</Button>
       </div>
-      <LayoutProvider onLayoutChange={handleLayoutChange} layout={layout}>
-        <DraggableLayout
+      <LayoutProvider
+        onLayoutChange={handleLayoutChange}
+        workspaceJSON={layout}
+      >
+        <LayoutContainer
           id="layout-root"
           style={{
             inset: "60px 0 0 0",
@@ -113,17 +119,17 @@ export const LeftRightChrome = () => {
             }}
           >
             <div style={{ backgroundColor: "gray", width: 100 }} />
-            <DraggableLayout
+            <LayoutContainer
               className="the-goat"
               dropTarget
               key="main-content"
               style={{ flex: 1 }}
             >
               <div style={{ backgroundColor: "green", height: "100%" }} />
-            </DraggableLayout>
+            </LayoutContainer>
             <div style={{ backgroundColor: "gray", width: 100 }} />
           </Flexbox>
-        </DraggableLayout>
+        </LayoutContainer>
       </LayoutProvider>
     </>
   );

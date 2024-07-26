@@ -5,8 +5,8 @@ import {
   PersistenceProvider,
   Shell,
   ShellContextProvider,
+  ShellLayoutProps,
   ShellProps,
-  SidePanelProps,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
@@ -20,7 +20,6 @@ import {
 } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { createPlaceholder } from "./createPlaceholder";
 import { useFeatures } from "./useFeatures";
 import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
@@ -35,12 +34,6 @@ assertComponentsRegistered([
 ]);
 
 const localPersistenceManager = new LocalPersistenceManager();
-
-// createNewChild is used when we add a new Tab to Stack
-const layoutProps: ShellProps["LayoutProps"] = {
-  createNewChild: createPlaceholder,
-  pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
-};
 
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
@@ -65,10 +58,13 @@ export const App = ({ user }: { user: VuuUser }) => {
     []
   );
 
-  const leftSidePanelProps = useMemo<SidePanelProps>(
+  const ShellLayoutProps = useMemo<ShellLayoutProps>(
     () => ({
-      children: <LeftNav features={features} tableFeatures={tableFeatures} />,
-      sizeOpen: 240,
+      LeftSidePanelProps: {
+        children: <LeftNav features={features} tableFeatures={tableFeatures} />,
+        sizeOpen: 240,
+      },
+      layoutTemplateId: "full-height",
     }),
     [features, tableFeatures]
   );
@@ -80,10 +76,8 @@ export const App = ({ user }: { user: VuuUser }) => {
           value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
           <Shell
-            LayoutProps={layoutProps}
-            LeftSidePanelProps={leftSidePanelProps}
+            ShellLayoutProps={ShellLayoutProps}
             className="App"
-            leftSidePanelLayout="full-height"
             serverUrl={serverUrl}
             user={user}
           />

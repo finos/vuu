@@ -1,18 +1,20 @@
 import {
   DockLayout,
-  DraggableLayout,
+  LayoutContainer,
   Drawer,
   Flexbox,
   View,
 } from "@finos/vuu-layout";
 
+import { VuuShellLocation } from "@finos/vuu-utils";
 import { MouseEvent, ReactElement, useCallback, useRef, useState } from "react";
-import { ShellLayoutProps } from "./useShellLayout";
+import { ShellLayoutTemplateHook } from "../useShellLayout";
 
-export const useInlayLeftPanel = ({
-  appHeader,
+export const useInlayLeftPanel: ShellLayoutTemplateHook = ({
   LeftSidePanelProps,
-}: ShellLayoutProps): ReactElement => {
+  appHeader,
+  htmlAttributes,
+}) => {
   const paletteView = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
 
@@ -59,14 +61,18 @@ export const useInlayLeftPanel = ({
 
   return (
     <Flexbox
-      className="App"
-      style={{ flexDirection: "column", height: "100%", width: "100%" }}
+      {...htmlAttributes}
+      style={{
+        ...htmlAttributes?.style,
+        flexDirection: "column",
+      }}
     >
       {appHeader}
       <DockLayout style={{ flex: 1 }}>
         {getDrawers(LeftSidePanelProps?.children).concat(
-          <DraggableLayout
+          <LayoutContainer
             dropTarget
+            id={VuuShellLocation.WorkspaceContainer}
             key="main-content"
             style={{ width: "100%", height: "100%" }}
           />

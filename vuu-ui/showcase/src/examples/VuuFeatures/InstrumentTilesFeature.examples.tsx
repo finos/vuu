@@ -22,7 +22,7 @@ export const DefaultInstrumentTilesFeature = () => {
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider layout={applicationLayout.layout}>
+    <LayoutProvider workspaceJSON={applicationLayout.workspaceJSON}>
       <View
         Header={VuuBlotterHeader}
         id="instrument-tiles-feature"

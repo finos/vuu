@@ -1,6 +1,6 @@
 import { useLayoutProviderDispatch } from "@finos/vuu-layout";
 import { Toolbar } from "@finos/vuu-ui-controls";
-import { ThemeMode } from "@finos/vuu-utils";
+import { ThemeMode, VuuShellLocation } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -40,7 +40,7 @@ export const AppHeader = ({
   const handleShowSettings = useCallback(() => {
     dispatchLayoutAction({
       type: "set-props",
-      path: "#context-panel",
+      path: `#${VuuShellLocation.ContextPanel}`,
       props: {
         expanded: true,
         content: {

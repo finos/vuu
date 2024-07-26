@@ -17,7 +17,7 @@ export type ApplicationSetting = ValueOf<ApplicationSettings>;
 export type Settings = Record<string, string | number | boolean>;
 
 export interface ApplicationJSON {
-  layout: LayoutJSON;
+  workspaceJSON: LayoutJSON;
   settings?: ApplicationSettings;
   userSettings?: Settings;
 }
@@ -44,11 +44,12 @@ export interface WithType {
 
 export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
-export interface LayoutJSON extends WithType {
+export interface LayoutJSON<T extends object = { [key: string]: unknown }>
+  extends WithType {
   active?: number;
   children?: LayoutJSON[];
   id?: string;
-  props?: { [key: string]: unknown };
+  props?: T;
   state?: unknown;
   type: string;
   style?: CSSProperties;

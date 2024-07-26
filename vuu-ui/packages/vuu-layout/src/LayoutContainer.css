@@ -1,9 +1,9 @@
-.DraggableLayout {
+.vuuLayoutContainer {
   display: inline-block;
   outline: none;
 }
 
-[data-dragging='true'] {
+[data-dragging="true"] {
   position: absolute !important;
   z-index: 100;
 }

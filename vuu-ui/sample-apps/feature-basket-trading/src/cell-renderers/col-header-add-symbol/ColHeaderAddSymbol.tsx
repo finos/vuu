@@ -3,7 +3,7 @@ import {
   useLayoutProviderDispatch,
   useViewContext,
 } from "@finos/vuu-layout";
-import { registerComponent } from "@finos/vuu-utils";
+import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import type { DataSource } from "@finos/vuu-data-types";
 import type { InstrumentSearchProps } from "@finos/vuu-ui-controls/src";
@@ -33,7 +33,7 @@ export const ColHeaderAddSymbol = () => {
       e.stopPropagation();
       dispatchLayoutAction({
         type: "set-props",
-        path: "#context-panel",
+        path: `#${VuuShellLocation.ContextPanel}`,
         props: {
           expanded: true,
           content: {
