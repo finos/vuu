@@ -26,7 +26,7 @@ export const toDataSourceConfig = (
     case "columns":
       return { columns: message.columns };
     case "filter":
-      return { filter: message.filter };
+      return { filterSpec: message.filter };
     case "groupBy":
       return { groupBy: message.groupBy };
     case "sort":

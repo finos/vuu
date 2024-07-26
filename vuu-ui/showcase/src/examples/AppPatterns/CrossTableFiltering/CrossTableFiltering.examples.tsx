@@ -145,7 +145,7 @@ export const SimpleCrossTableFiltering = () => {
     return new TickingArrayDataSource({
       columnDescriptors: ParentTableSchema.columns,
       table: parentTable,
-      filter: { filter: 'col1 ends "1" or col1 ends "2" ' },
+      filterSpec: { filter: 'col1 ends "1" or col1 ends "2" ' },
     });
   }, []);
 
@@ -153,7 +153,7 @@ export const SimpleCrossTableFiltering = () => {
     return new TickingArrayDataSource({
       columnDescriptors: ParentTableSchema.columns,
       table: parentTable,
-      filter: {
+      filterSpec: {
         filter:
           'col1 ends "3" or col1 ends "4" or col1 ends "5" or col1 ends "6"',
       },
@@ -164,7 +164,7 @@ export const SimpleCrossTableFiltering = () => {
     return new TickingArrayDataSource({
       columnDescriptors: ParentTableSchema.columns,
       table: parentTable,
-      filter: {
+      filterSpec: {
         filter:
           'col1 ends "7" or col1 ends "8" or col1 ends "9"or col1 ends "10"',
       },
@@ -175,7 +175,7 @@ export const SimpleCrossTableFiltering = () => {
     return new TickingArrayDataSource({
       columnDescriptors: ChildTableSchema.columns,
       table: childTable,
-      filter: {
+      filterSpec: {
         filter: 'id = ""',
       },
     });
@@ -185,7 +185,7 @@ export const SimpleCrossTableFiltering = () => {
     return new TickingArrayDataSource({
       columnDescriptors: GrandchildTableSchema.columns,
       table: grandchildTable,
-      filter: {
+      filterSpec: {
         filter: 'id = ""',
       },
     });

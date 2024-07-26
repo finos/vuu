@@ -67,7 +67,7 @@ const VuuInstrumentTilesFeature = ({
       viewport: id,
       table: instrumentPricesSchema.table,
       columns: instrumentPricesSchema.columns.map((col) => col.name),
-      filter,
+      filterSpec: filter,
       title,
     });
     ds.on("config", handleDataSourceConfigChange);

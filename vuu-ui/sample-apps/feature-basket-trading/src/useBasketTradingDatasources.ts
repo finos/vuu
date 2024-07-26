@@ -39,7 +39,7 @@ export const useBasketTradingDataSources = ({
   ] = useMemo(() => {
     const basketFilter: DataSourceConfig = basketInstanceId
       ? {
-          filter: {
+          filterSpec: {
             filter: `instanceId = "${basketInstanceId}"`,
           },
         }

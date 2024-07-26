@@ -81,7 +81,7 @@ export class JsonDataSource
   constructor({
     aggregations,
     data,
-    filter,
+    filterSpec,
     groupBy,
     sort,
     title,
@@ -110,8 +110,8 @@ export class JsonDataSource
         columns: this.columnDescriptors.map((c) => c.name),
       };
     }
-    if (filter) {
-      this.#filter = filter;
+    if (filterSpec) {
+      this.#filter = filterSpec;
     }
     if (groupBy) {
       this.#groupBy = groupBy;
@@ -130,7 +130,7 @@ export class JsonDataSource
       range,
       sort,
       groupBy,
-      filter,
+      filterSpec,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -145,8 +145,8 @@ export class JsonDataSource
         columns,
       };
     }
-    if (filter) {
-      this.#filter = filter;
+    if (filterSpec) {
+      this.#filter = filterSpec;
     }
     if (groupBy) {
       this.#groupBy = groupBy;
@@ -172,7 +172,7 @@ export class JsonDataSource
       type: "subscribed",
       clientViewportId: this.viewport,
       columns: this.#config.columns,
-      filter: this.#filter,
+      filterSpec: this.#filter,
       groupBy: this.#groupBy,
       range: this.#range,
       sort: this.#sort,

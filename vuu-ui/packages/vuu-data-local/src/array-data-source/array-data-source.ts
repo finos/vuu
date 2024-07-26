@@ -139,7 +139,7 @@ export class ArrayDataSource
     columnDescriptors,
     data,
     dataMap,
-    filter,
+    filterSpec,
     groupBy,
     keyColumn,
     rangeChangeRowset = "delta",
@@ -175,7 +175,7 @@ export class ArrayDataSource
       ...this.#config,
       aggregations: aggregations || this.#config.aggregations,
       columns,
-      filter: filter || this.#config.filter,
+      filterSpec: filterSpec || this.#config.filterSpec,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
     };
@@ -191,7 +191,7 @@ export class ArrayDataSource
       range,
       sort,
       groupBy,
-      filter,
+      filterSpec,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -202,7 +202,8 @@ export class ArrayDataSource
 
     let config = this.#config;
 
-    const hasConfigProps = aggregations || columns || filter || groupBy || sort;
+    const hasConfigProps =
+      aggregations || columns || filterSpec || groupBy || sort;
     if (hasConfigProps) {
       if (range) {
         this.#range = range;
@@ -211,7 +212,7 @@ export class ArrayDataSource
         ...config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
-        filter: filter || this.#config.filter,
+        filterSpec: filterSpec || this.#config.filterSpec,
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
@@ -343,12 +344,13 @@ export class ArrayDataSource
       if (config) {
         const originalConfig = this.#config;
         const newConfig: DataSourceConfig =
-          config?.filter?.filter && config?.filter.filterStruct === undefined
+          config?.filterSpec?.filter &&
+          config?.filterSpec.filterStruct === undefined
             ? {
                 ...config,
-                filter: {
-                  filter: config.filter.filter,
-                  filterStruct: parseFilter(config.filter.filter),
+                filterSpec: {
+                  filter: config.filterSpec.filter,
+                  filterStruct: parseFilter(config.filterSpec.filter),
                 },
               }
             : config;
@@ -358,7 +360,8 @@ export class ArrayDataSource
         let processedData: DataSourceRow[] | undefined;
 
         if (hasFilter(config)) {
-          const { filter, filterStruct = parseFilter(filter) } = config.filter;
+          const { filter, filterStruct = parseFilter(filter) } =
+            config.filterSpec;
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);
@@ -434,12 +437,13 @@ export class ArrayDataSource
     if (noChanges !== true) {
       if (config) {
         const newConfig: DataSourceConfig =
-          config?.filter?.filter && config?.filter.filterStruct === undefined
+          config?.filterSpec?.filter &&
+          config?.filterSpec.filterStruct === undefined
             ? {
                 ...config,
-                filter: {
-                  filter: config.filter.filter,
-                  filterStruct: parseFilter(config.filter.filter),
+                filterSpec: {
+                  filter: config.filterSpec.filter,
+                  filterStruct: parseFilter(config.filterSpec.filter),
                 },
               }
             : config;
@@ -670,7 +674,7 @@ export class ArrayDataSource
   }
 
   get filter() {
-    return this.#config.filter;
+    return this.#config.filterSpec;
   }
 
   set filter(filter: DataSourceFilter) {
@@ -678,7 +682,7 @@ export class ArrayDataSource
     // TODO check that filter has changed
     this.config = {
       ...this.#config,
-      filter,
+      filterSpec: filter,
     };
   }
 

@@ -568,7 +568,7 @@ function updateColumnProp(
 
 function updateTableConfig(
   state: InternalTableModel,
-  { confirmed, filter, groupBy, sort }: ColumnActionTableConfig
+  { confirmed, filterSpec: filter, groupBy, sort }: ColumnActionTableConfig
 ) {
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";
