@@ -17,8 +17,8 @@ import {
   HTMLAttributes,
   SyntheticEvent,
   useCallback,
+  useState,
 } from "react";
-
 export interface SettingsSchema {
   properties: SettingsProperty[];
 }
@@ -84,14 +84,20 @@ const defaultPropertyValue: Record<
 };
 
 // Determine the form control type to be displayed
-export function getFormControl(
-  property: SettingsProperty,
-  changeHandler: FormEventHandler,
-  selectHandler: DropdownProps["onSelectionChange"],
-  inputHandler: FormEventHandler,
-  currentValue: VuuRowDataItemType = property.defaultValue ??
-    defaultPropertyValue[property.type]
-) {
+export function FormControl({
+  property,
+  changeHandler,
+  selectHandler,
+  inputHandler,
+  currentValue = property.defaultValue ?? defaultPropertyValue[property.type],
+}: {
+  property: SettingsProperty;
+  changeHandler: FormEventHandler;
+  selectHandler: DropdownProps["onSelectionChange"];
+  inputHandler: FormEventHandler;
+  currentValue: VuuRowDataItemType;
+}) {
+  const [value, setValue] = useState(currentValue);
   if (isBooleanProperty(property)) {
     const checked =
       typeof currentValue === "boolean"
@@ -147,11 +153,14 @@ export function getFormControl(
       <VuuInput
         key={property.name}
         onCommit={inputHandler}
+        onChange={(e) => setValue((e.target as HTMLInputElement).value)}
         validationStatus={valid}
         TooltipProps={TooltipProps}
+        value={value as string}
       />
     );
   }
+  return null;
 }
 
 //Validation logic for input boxes
@@ -179,9 +188,8 @@ function getTooltipContent(type: string, valid: string | undefined) {
     } else {
       return <p>Please contact Admin for more information on expected type</p>;
     }
-  }
-  else {
-    return undefined
+  } else {
+    return undefined;
   }
 }
 
@@ -227,7 +235,6 @@ export const SettingsForm = ({
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
       const { value } = event.target as HTMLInputElement;
-      console.log(value)
       if (!Number.isNaN(Number(value)) && value != "") {
         const numValue = Number(value);
         onSettingChanged(fieldName, numValue);
@@ -237,19 +244,18 @@ export const SettingsForm = ({
     },
     [onSettingChanged]
   );
-
   return (
     <div {...htmlAttributes}>
       {settingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>
-          {getFormControl(
+          {FormControl({
             property,
             changeHandler,
             selectHandler,
             inputHandler,
-            settings[property.name]
-          )}
+            currentValue: settings[property.name],
+          })}
         </FormField>
       ))}
     </div>

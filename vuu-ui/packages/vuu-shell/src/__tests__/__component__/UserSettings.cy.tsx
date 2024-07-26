@@ -4,6 +4,9 @@ import {
   VariedFormControlUserSettingsForm,
 } from "../../../../../showcase/src/examples/Shell/UserSettings.examples";
 
+
+
+
 // Tests for current default user settings panel with only one toggle button form control
 describe("Given a single toggle button form control", () => {
   it("should have two buttons, with one selected", () => {
@@ -119,10 +122,12 @@ describe("Given a form with multiple form controls of different types", () => {
 describe("Given a form with a large number of components", () => {
   it("should scroll", () => {
     cy.mount(<ScrollableUserSettingsPanel />);
+    cy.get('[data-field="field1"]').should("be.visible");
+    // cy.get('[data-field="field45"]').should("not.be.visible");
     cy.scrollTo("bottom");
     cy.wait(500);
+    // cy.get('[data-field="field1"]').should("not.be.visible");
+    cy.get('[data-field="field45"]').should("be.visible");
     cy.scrollTo("top");
   });
 });
-
-//Tests for input boxes (TO IMPLEMENT)
