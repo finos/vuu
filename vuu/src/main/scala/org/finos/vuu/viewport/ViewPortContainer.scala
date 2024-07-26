@@ -8,7 +8,7 @@ import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.thread.RunInThread
 import org.finos.toolbox.time.TimeIt.{timeIt, timeItThen}
 import org.finos.toolbox.time.{Clock, TimeIt}
-import org.finos.vuu.api.{Link, NoViewPortDef, ViewPortDef}
+import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
@@ -250,7 +250,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def getViewPortDefinition(table: DataTable): ViewPortDef = {
     val viewPortDefFunc = getViewPortDefinitionCreator(table)
     if (viewPortDefFunc == null)
-      ViewPortDef.default
+      ViewPortDef.default(table.getTableDef.columns)
     else
       viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
   }
