@@ -139,12 +139,13 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
 
       vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", "TEST")))
 
-      Then("return view port columns in response")
+      Then("return table columns as default view port columns in response")
       val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
       assert(response.isDefined)
 
       val responseMessage = response.get
-      responseMessage.columns.length shouldEqual 0
+      responseMessage.columns.length shouldEqual 1
+      responseMessage.columns shouldEqual Array("Id")
     }
 
     Scenario("client requests to get table metadata for a non existent") {

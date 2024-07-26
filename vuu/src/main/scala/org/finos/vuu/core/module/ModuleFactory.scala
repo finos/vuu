@@ -1,6 +1,6 @@
 package org.finos.vuu.core.module
 
-import org.finos.vuu.api.{JoinTableDef, NoViewPortDef, TableDef, ViewPortDef}
+import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.{IVuuServer, VuuServer}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rest.RestService
@@ -52,7 +52,7 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
                                       ) {
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): ModuleFactoryNode = {
-    val noViewPortDefFunc = (dt: DataTable, prov: Provider, providerContainer: ProviderContainer, tableContainer: TableContainer) => NoViewPortDef
+    val noViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) => ViewPortDef.default(table.getTableDef.columns)
     ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 

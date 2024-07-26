@@ -9,7 +9,7 @@ object ViewPortDef {
     new ViewPortDef(columns, service)
   }
 
-  def default: ViewPortDef = NoViewPortDef
+  def default(columns: Array[Column]): ViewPortDef = ViewPortDef(columns, NoRpcHandler)
 }
 
 class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}
@@ -17,5 +17,3 @@ class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}
 object NoRpcHandler extends RpcHandler {
   override def menuItems(): ViewPortMenu = EmptyViewPortMenu
 }
-
-object NoViewPortDef extends ViewPortDef(Array(), NoRpcHandler)
