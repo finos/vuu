@@ -6,7 +6,7 @@ import {
   useCallback,
   useState,
 } from "react";
-import { useLayoutProviderDispatch } from "../layout-provider";
+import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { DragStartAction } from "../layout-reducer";
 import { usePersistentState } from "../use-persistent-state";
 import { QueryReponse, ViewDispatch } from "./ViewContext";
@@ -16,7 +16,7 @@ import type {
   ContributionLocation,
   ViewAction,
 } from "../layout-view";
-import { useViewBroadcastChannel } from "../layout-view";
+import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
 
 export const useViewActionDispatcher = (
   id: string,

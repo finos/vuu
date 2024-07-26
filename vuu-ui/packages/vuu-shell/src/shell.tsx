@@ -1,5 +1,5 @@
 import { connectToServer } from "@finos/vuu-data-remote";
-import type { LayoutChangeHandler, StackProps } from "@finos/vuu-layout";
+import type { LayoutChangeHandler } from "@finos/vuu-layout";
 import { LayoutProvider, StackLayout } from "@finos/vuu-layout";
 import {
   ContextMenuProvider,
@@ -35,7 +35,6 @@ import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
 import { UserSettingsPanel } from "./user-settings";
 
 import shellCss from "./shell.css";
-import { StackLayoutProps } from "@salt-ds/core";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 

@@ -41,8 +41,6 @@ const defaultCreateNewChild = () => (
   />
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const withDropTarget = (props: any) => props.dropTarget;
 const shouldSave = (action: LayoutReducerAction) =>
   [
     "drag-drop",

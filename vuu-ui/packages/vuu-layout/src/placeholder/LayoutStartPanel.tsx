@@ -3,7 +3,10 @@ import { VuuShellLocation } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
-import { QueryReponse, useViewContext } from "../layout-view-actions";
+import {
+  QueryReponse,
+  useViewContext,
+} from "../layout-view-actions/ViewContext";
 
 import layoutStartPanelCss from "./LayoutStartPanel.css";
 

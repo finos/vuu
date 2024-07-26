@@ -6,7 +6,6 @@ import {
   Shell,
   ShellContextProvider,
   ShellLayoutProps,
-  ShellProps,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
