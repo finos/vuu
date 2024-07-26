@@ -7,10 +7,17 @@ export type TabLabelFactory = (
   existingLabels: string[]
 ) => string;
 
+export interface SerializableStackProps {
+  active?: number;
+  /** should the Stack display a Tabstrip and where ? default top */
+  showTabs?: false | TabPosition;
+}
+
 export type TabPosition = "top" | "left" | "right" | "bottom";
 export interface StackProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
-  active?: number;
+  extends SerializableStackProps,
+    Omit<HTMLAttributes<HTMLDivElement>, "onMouseDown"> {
+  TabstripProps?: Partial<TabstripProps>;
   createNewChild?: (index: number) => ReactElement;
   getTabIcon?: (component: ReactElement, index: number) => string | undefined;
   getTabLabel?: TabLabelFactory;
@@ -22,8 +29,5 @@ export interface StackProps
   onTabEdit?: (tabIndex: number, label: string) => void;
   onTabSelectionChanged?: (nextIndex: number) => void;
   path?: string;
-  /** should the Stack display a Tabstrip and where ? default top */
-  showTabs?: false | TabPosition;
   toolbarContent?: ReactNode;
-  TabstripProps?: Partial<TabstripProps>;
 }

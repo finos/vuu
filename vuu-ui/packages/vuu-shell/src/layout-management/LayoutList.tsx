@@ -3,7 +3,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
 import { LayoutMetadata } from "./layoutTypes";
-import { useLayoutManager } from "./useLayoutManager";
+import { useLayoutManager } from "./LayoutManagementProvider";
 import { LayoutTile } from "./LayoutTile";
 import cx from "clsx";
 

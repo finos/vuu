@@ -10,6 +10,7 @@ import {
 import { ContextPanel } from "@finos/vuu-shell";
 import { Table, TableProps } from "@finos/vuu-table";
 import { IconButton, Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { VuuShellLocation } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./SimpleApp.css";
@@ -83,7 +84,7 @@ export const SimpleApp = () => {
             <span className={`${classBase}-logo`}>Logo</span>
             <Tabstrip
               activeTabIndex={0}
-              className="main-tabs"
+              className={VuuShellLocation.Workspace}
               variant="primary"
             >
               <Tab>Orders</Tab>
@@ -120,7 +121,7 @@ export const SimpleApp = () => {
               </FlexboxLayout>
             </StackLayout>
 
-            <ContextPanel id="context-panel" />
+            <ContextPanel />
           </FlexboxLayout>
         </FlexboxLayout>
       </FlexboxLayout>

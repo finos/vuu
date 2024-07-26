@@ -63,7 +63,7 @@ export const DefaultBasketTradingFeature = () => {
   return (
     <ShellContextProvider value={{ getLookupValues }}>
       <LayoutProvider
-        layout={applicationLayout.layout}
+        workspaceJSON={applicationLayout.workspaceJSON}
         onLayoutChange={handleLayoutChange}
       >
         <View

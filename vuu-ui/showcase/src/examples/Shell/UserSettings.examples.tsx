@@ -1,5 +1,5 @@
 import {
-  defaultLayoutJson,
+  stackWorkspaceJSON,
   UserSettingsPanel,
   ApplicationProvider,
   SettingsSchema,
@@ -33,7 +33,7 @@ export const DefaultUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: defaultLayoutJson,
+          workspaceJSON: stackWorkspaceJSON,
           userSettings: {
             themeMode: "light",
           },
@@ -94,7 +94,7 @@ export const VariedFormControlUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: defaultLayoutJson,
+          workspaceJSON: stackWorkspaceJSON,
           userSettings: {
             themeMode: "light",
             dateFormatPattern: "dd/mm/yyyy",

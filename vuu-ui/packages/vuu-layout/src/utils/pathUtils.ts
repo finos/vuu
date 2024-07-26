@@ -84,20 +84,22 @@ export function followPathToParent(
 }
 
 export function findTarget(
-  source: LayoutModel,
+  source: LayoutModel | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   test: (props: any) => boolean
 ): LayoutModel | undefined {
-  const { children, ...props } = getProps(source);
-  if (test(props)) {
-    return source;
-  }
-  if (React.Children.count(children) > 0) {
-    const array = React.isValidElement(children) ? [children] : children;
-    for (const child of array) {
-      const target = findTarget(child, test);
-      if (target) {
-        return target;
+  if (source) {
+    const { children, ...props } = getProps(source);
+    if (test(props)) {
+      return source;
+    }
+    if (React.Children.count(children) > 0) {
+      const array = React.isValidElement(children) ? [children] : children;
+      for (const child of array) {
+        const target = findTarget(child, test);
+        if (target) {
+          return target;
+        }
       }
     }
   }

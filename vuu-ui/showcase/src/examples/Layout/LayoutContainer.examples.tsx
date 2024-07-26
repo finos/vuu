@@ -3,7 +3,7 @@ import { CSSProperties, HTMLAttributes, SyntheticEvent } from "react";
 
 import {
   Component,
-  DraggableLayout,
+  LayoutContainer,
   FlexboxLayout as Flexbox,
   LayoutProvider,
   Palette,
@@ -15,7 +15,7 @@ import {
 
 import { Brown, StatefulComponent } from "./components";
 
-import "./DraggableLayout.examples.css";
+import "./LayoutContainer.examples.css";
 
 let displaySequence = 1;
 
@@ -66,7 +66,7 @@ const DraggableBox = ({
 
 export const EmptyDraggable = () => {
   return (
-    <DraggableLayout
+    <LayoutContainer
       style={{ width: 600, height: 400, border: "solid 1px #ccc" }}
     />
   );
@@ -80,7 +80,7 @@ export const SimpleNesting = () => {
   };
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <DraggableLayout dropTarget style={{ width: 800, height: 500 }}>
+      <LayoutContainer dropTarget style={{ width: 800, height: 500 }}>
         <Flexbox
           id="top-cat"
           style={{ width: "100%", height: "100%", flexDirection: "row" }}
@@ -139,7 +139,7 @@ export const SimpleNesting = () => {
             </View>
           </Flexbox>
         </Flexbox>
-      </DraggableLayout>
+      </LayoutContainer>
     </LayoutProvider>
   );
 };
@@ -147,7 +147,7 @@ export const SimpleNesting = () => {
 SimpleNesting.displaySequence = displaySequence++;
 
 export const ImplicitSizing = () => (
-  <DraggableLayout style={{ width: "100vw", height: "100vh" }}>
+  <LayoutContainer style={{ width: "100vw", height: "100vh" }}>
     <Flexbox
       style={{ width: "100%", height: "100%", flexDirection: "column" }}
       resizeable
@@ -194,7 +194,7 @@ export const ImplicitSizing = () => (
         style={{ flexBasis: 472, flexGrow: 1, flexShrink: 1 }}
       />
     </Flexbox>
-  </DraggableLayout>
+  </LayoutContainer>
 );
 
 ImplicitSizing.displaySequence = displaySequence++;
@@ -206,7 +206,7 @@ export const SimpleNestingWithOffset = () => {
 
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <DraggableLayout
+      <LayoutContainer
         dropTarget
         style={{ marginLeft: 100, marginTop: 50, width: 800, height: 500 }}
       >
@@ -259,7 +259,7 @@ export const SimpleNestingWithOffset = () => {
             </View>
           </Flexbox>
         </Flexbox>
-      </DraggableLayout>
+      </LayoutContainer>
     </LayoutProvider>
   );
 };
@@ -268,12 +268,12 @@ SimpleNestingWithOffset.displaySequence = displaySequence++;
 
 export const MultipleDraggableContainers = () => (
   <LayoutProvider>
-    <DraggableLayout style={{ width: 800, height: 800 }}>
+    <LayoutContainer style={{ width: 800, height: 800 }}>
       <Flexbox
         style={{ width: "100%", height: "100%", flexDirection: "row" }}
         path=""
       >
-        <DraggableLayout style={{ flex: 1 }} dropTarget>
+        <LayoutContainer style={{ flex: 1 }} dropTarget>
           <Flexbox
             style={{ width: "100%", height: "100%", flexDirection: "column" }}
             resizeable
@@ -312,8 +312,8 @@ export const MultipleDraggableContainers = () => (
               />
             </View>
           </Flexbox>
-        </DraggableLayout>
-        <DraggableLayout style={{ flex: 1 }} dropTarget>
+        </LayoutContainer>
+        <LayoutContainer style={{ flex: 1 }} dropTarget>
           <Flexbox
             style={{ width: "100%", height: "100%", flexDirection: "column" }}
             resizeable
@@ -352,9 +352,9 @@ export const MultipleDraggableContainers = () => (
               />
             </View>
           </Flexbox>
-        </DraggableLayout>
+        </LayoutContainer>
       </Flexbox>
-    </DraggableLayout>
+    </LayoutContainer>
   </LayoutProvider>
 );
 
@@ -362,7 +362,7 @@ MultipleDraggableContainers.displaySequence = displaySequence++;
 
 export const CustomDrag = () => (
   <LayoutProvider>
-    <DraggableLayout
+    <LayoutContainer
       className="custom1"
       dropTarget
       style={{ border: "solid 1px grey", width: 500, height: 600 }}
@@ -401,7 +401,7 @@ export const CustomDrag = () => (
           </Flexbox>
         </Flexbox>
       </Flexbox>
-    </DraggableLayout>
+    </LayoutContainer>
   </LayoutProvider>
 );
 
@@ -413,7 +413,7 @@ export const ComplexNestedLayout = () => {
   };
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
-      <DraggableLayout style={{ height: "100vh", width: "100vw" }}>
+      <LayoutContainer style={{ height: "100vh", width: "100vw" }}>
         <Flexbox column style={{ height: "100%", width: "100%" }} path="">
           <Flexbox style={{ flex: 1 }} path="">
             <View
@@ -482,7 +482,7 @@ export const ComplexNestedLayout = () => {
                 ></PaletteItem>
               </Palette>
             </View>
-            <DraggableLayout
+            <LayoutContainer
               dropTarget
               style={{ flex: 1, "--vuuView-margin": "0px" } as CSSProperties}
             >
@@ -558,7 +558,7 @@ export const ComplexNestedLayout = () => {
                   />
                 </Flexbox>
               </Flexbox>
-            </DraggableLayout>
+            </LayoutContainer>
           </Flexbox>
           <Component
             style={{
@@ -569,7 +569,7 @@ export const ComplexNestedLayout = () => {
             }}
           />
         </Flexbox>
-      </DraggableLayout>
+      </LayoutContainer>
     </LayoutProvider>
   );
 };
@@ -577,7 +577,7 @@ export const ComplexNestedLayout = () => {
 ComplexNestedLayout.displaySequence = displaySequence++;
 
 export const ScrollingLayout = () => (
-  <DraggableLayout>
+  <LayoutContainer>
     <Flexbox
       style={{ width: "100vw", height: "100vh", flexDirection: "column" }}
       path=""
@@ -644,7 +644,7 @@ export const ScrollingLayout = () => (
         <Component style={{ height: "100%", backgroundColor: "grey" }} />
       </View>
     </Flexbox>
-  </DraggableLayout>
+  </LayoutContainer>
 );
 
 ScrollingLayout.displaySequence = displaySequence++;
@@ -652,7 +652,7 @@ ScrollingLayout.displaySequence = displaySequence++;
 export const JsonLayout = () => {
   return (
     <LayoutProvider
-      layout={{
+      workspaceJSON={{
         type: "Flexbox",
         props: {
           active: 0,
@@ -716,7 +716,7 @@ export const JsonLayout = () => {
         ],
       }}
     >
-      <DraggableLayout dropTarget style={{ width: 600, height: 400 }} />
+      <LayoutContainer dropTarget style={{ width: 600, height: 400 }} />
     </LayoutProvider>
   );
 };

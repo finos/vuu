@@ -328,7 +328,7 @@ function getTargetPosition(
   x: number,
   y: number
 ): [DropPos, DragDropRect] | undefined {
-  if (!container || container.type === "DraggableLayout") {
+  if (!container || container.type === "LayoutContainer") {
     return;
   }
 

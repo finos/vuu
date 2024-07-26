@@ -28,7 +28,7 @@ export const DemoTableContainer = ({
     <LayoutProvider>
       <Flexbox style={{ height: "100vh", width: "100vw" }}>
         <View style={{ flex: 1 }}>{children}</View>
-        <ContextPanel id="context-panel" />
+        <ContextPanel />
       </Flexbox>
     </LayoutProvider>
   );

@@ -99,11 +99,10 @@ const ShellWithNewTheme = () => {
   return (
     <DragDropProvider dragSources={dragSource}>
       <Shell
-        LayoutProps={{
-          pathToDropTarget: "#main-tabs.ACTIVE_CHILD",
+        ShellLayoutProps={{
+          LeftSidePanelProps: leftSidePanelProps,
+          layoutTemplateId: "full-height",
         }}
-        LeftSidePanelProps={leftSidePanelProps}
-        leftSidePanelLayout="full-height"
         loginUrl={window.location.toString()}
         user={user}
         style={

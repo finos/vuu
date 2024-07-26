@@ -1,7 +1,7 @@
 export * from "./dock-layout";
 export { default as Component } from "./Component";
 export * from "./drag-drop";
-export * from "./DraggableLayout";
+export * from "./LayoutContainer";
 export * from "./flexbox";
 export { Action } from "./layout-action";
 export * from "./layout-header";

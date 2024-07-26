@@ -366,7 +366,7 @@ export const TableInLayoutWithContextPanel = () => {
           renderBufferSize={30}
           width="100%"
         />
-        <ContextPanel id="context-panel" overlay></ContextPanel>
+        <ContextPanel overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
   );

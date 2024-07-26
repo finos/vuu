@@ -9,7 +9,7 @@ export * as LeftNav from "./LeftNav.examples";
 export * as LoginPanel from "./LoginPanel.examples";
 export * as SavePanel from "./SavePanel.examples";
 export * as SessionTableEditing from "./SessionTableEditing.examples";
-export * as Shell from "./Shell.examples";
+export * as ShellLayout from "./ShellLayout.examples";
 export * as ThemeProvider from "./ThemeProvider.examples";
 export * as ThemeSwitch from "./ThemeSwitch.examples";
 export * as UserSettings from "./UserSettings.examples";

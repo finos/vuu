@@ -5,7 +5,7 @@ import {
 } from "@finos/vuu-data-types";
 import { useCallback, useMemo } from "react";
 import { MenuActionClosePopup, useDialogContext } from "@finos/vuu-popups";
-import { useLayoutManager } from "./useLayoutManager";
+import { useLayoutManager } from "./LayoutManagementProvider";
 import { LayoutMetadataDto } from "./layoutTypes";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
 
@@ -33,7 +33,7 @@ export const useLayoutContextMenuItems = () => {
       (location, options) => {
         const locations = location.split(" ");
         const menuDescriptors: ContextMenuItemDescriptor[] = [];
-        if (locations.includes("main-tab")) {
+        if (locations.includes("workspace-tab")) {
           menuDescriptors.push(
             {
               label: "Save Layout",
