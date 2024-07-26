@@ -46,9 +46,11 @@ type DataSourceBroadcastSubscribeMessage = {
   targetId: string;
   targetColumn: string;
   sourceId: string;
+  sourceColumn?: string;
 };
 
 type DataSourceBroadcastSelectionMessage = {
+  sourceColumnName?: string;
   columnName: string;
   linkType: "subscribe-link-filter" | "subscribe-link-select";
   targetId: string;
@@ -65,6 +67,7 @@ const isMessageForSelf = (message: DataSourceBroadcastMessage, id: string) =>
   message.targetId === id;
 
 type LinkSubscription = {
+  sourceColumnName?: string;
   columnName: string;
   linkType: "subscribe-link-filter" | "subscribe-link-select";
 };
@@ -148,8 +151,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.#selectionLinkSubscribers?.size ?? 0;
     if (numberOfSelectionSubscribers > 0) {
       this.#selectionLinkSubscribers?.forEach(
-        ({ columnName, linkType }, targetId) => {
+        ({ sourceColumnName, columnName, linkType }, targetId) => {
           this.sendBroadcastMessage({
+            sourceColumnName,
             columnName,
             linkType,
             sourceId: this.viewport,
@@ -320,6 +324,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
               LinkSubscription
             >());
           subscribers.set(message.sourceId, {
+            sourceColumnName: message.sourceColumn,
             columnName: message.targetColumn,
             linkType: message.type,
           });
@@ -328,7 +333,8 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
       case "selection-changed":
         {
-          const { columnName, linkType, selectedValues } = message;
+          const { sourceColumnName, columnName, linkType, selectedValues } =
+            message;
           const selectedIndices = [];
           const colIndex = this.columnMap[columnName];
           if (linkType === "subscribe-link-select") {
@@ -341,7 +347,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
             this.select(selectedIndices);
           } else {
             this.filter = {
-              filter: `${columnName} in ["${selectedValues.join('","')}"]`,
+              filter: `${sourceColumnName} in ["${selectedValues.join(
+                '","'
+              )}"]`,
             };
           }
         }
@@ -351,4 +359,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
         console.log(`unrecognised message ${message.type}`);
     }
   };
+
+  set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    if (visualLink) {
+      const {
+        parentClientVpId,
+        link: { fromColumn, toColumn },
+      } = visualLink;
+
+      if (this.viewport) {
+        console.log("tables linked");
+        this.sendBroadcastMessage({
+          sourceId: this.viewport,
+          sourceColumn: fromColumn,
+          type: "subscribe-link-filter",
+          targetId: parentClientVpId,
+          targetColumn: toColumn,
+        });
+      }
+    }
+  }
 }

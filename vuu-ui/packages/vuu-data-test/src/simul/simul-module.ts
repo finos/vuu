@@ -1,7 +1,7 @@
 import {
   ClientToServerMenuRowRPC,
-  LinkDescriptorWithLabel,
   ShowNotificationAction,
+  VuuLink,
   VuuMenu,
 } from "@finos/vuu-protocol-types";
 import { Table, buildDataColumnMap, joinTables } from "../Table";
@@ -46,10 +46,7 @@ const tables: Record<SimulTableName, Table> = {
   prices: pricesTable,
 };
 
-const visualLinks: Record<
-  SimulTableName,
-  LinkDescriptorWithLabel[] | undefined
-> = {
+const vuuLinks: Record<SimulTableName, VuuLink[] | undefined> = {
   ...undefinedTables,
 };
 
@@ -131,5 +128,5 @@ export const simulModule = new VuuModule<SimulTableName>({
   schemas,
   services,
   tables,
-  visualLinks,
+  vuuLinks,
 });

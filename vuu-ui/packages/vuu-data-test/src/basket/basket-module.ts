@@ -1,5 +1,5 @@
 import {
-  LinkDescriptorWithLabel,
+  VuuLink,
   VuuMenu,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
@@ -212,13 +212,12 @@ export const tables: Record<BasketsTableName, Table> = {
   ),
 };
 
-const visualLinks: Record<
-  BasketsTableName,
-  LinkDescriptorWithLabel[] | undefined
-> = {
+const vuuLinks: Record<BasketsTableName, VuuLink[] | undefined> = {
   algoType: undefined,
   basket: undefined,
-  basketConstituent: undefined,
+  basketConstituent: [
+    { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+  ],
   basketTrading: undefined,
   basketTradingConstituent: undefined,
   basketTradingConstituentJoin: undefined,
@@ -280,5 +279,5 @@ export const basketModule = new VuuModule<BasketsTableName>({
   schemas,
   services,
   tables,
-  visualLinks,
+  vuuLinks,
 });

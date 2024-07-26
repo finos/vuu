@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceRow,
-  DataSourceSubscribedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -9,11 +8,12 @@ import {
 import {
   ClientToServerMenuRPC,
   ClientToServerViewportRpcCall,
-  LinkDescriptorWithLabel,
   TypeaheadParams,
   VuuMenu,
   VuuRowDataItemType,
   VuuTable,
+  VuuLink,
+  LinkDescriptorWithLabel,
 } from "@finos/vuu-protocol-types";
 import { uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
@@ -31,7 +31,7 @@ export interface VuuModuleConstructorProps<T extends string = string> {
   schemas: Record<T, Readonly<TableSchema>>;
   services?: Record<T, RpcService[] | undefined>;
   tables: Record<T, Table>;
-  visualLinks?: Record<T, LinkDescriptorWithLabel[] | undefined>;
+  vuuLinks?: Record<T, VuuLink[] | undefined>;
 }
 
 export type SessionTableMap = Record<string, Table>;
@@ -63,6 +63,10 @@ export type RpcService = {
   service: (rpcRequest: RpcServiceRequest) => Promise<unknown>;
 };
 
+type Subscription = {
+  viewportId: string;
+  dataSource: DataSource;
+};
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #menus: Record<T, VuuMenu | undefined> | undefined;
   #name: string;
@@ -70,7 +74,8 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #sessionTableMap: SessionTableMap = {};
   #tables: Record<T, Table>;
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
-  #visualLinks: Record<T, LinkDescriptorWithLabel[] | undefined> | undefined;
+  #visualLinks: Record<T, VuuLink[] | undefined> | undefined;
+  #subscriptionMap: Map<string, Subscription[]> = new Map();
 
   constructor({
     menus,
@@ -78,7 +83,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     schemas,
     services,
     tables,
-    visualLinks,
+    vuuLinks: visualLinks,
   }: VuuModuleConstructorProps<T>) {
     this.#menus = menus;
     this.#name = name;
@@ -88,19 +93,54 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#visualLinks = visualLinks;
   }
 
-  private registerViewport = (
-    subscriptionDetails: DataSourceSubscribedMessage
-  ) => {
-    console.log("<subscription-open> register new viewport", {
-      subscriptionDetails,
-    });
-  };
-
   private unregisterViewport = (viewportId: string) => {
     console.log(`<subscription-closed> unregister viewport ${viewportId}`);
+
+    for (const [tableName, subscriptions] of this.#subscriptionMap) {
+      if (subscriptions[0].viewportId.toString() === viewportId) {
+        this.#subscriptionMap.delete(tableName);
+      } else {
+        const links = subscriptions[0].dataSource.links;
+        if (links) {
+          for (let i = 0; i < links?.length; i++) {
+            if (links[i].parentClientVpId === viewportId) {
+              links.splice(i);
+            }
+          }
+        }
+        subscriptions[0].dataSource.links = links;
+      }
+    }
+  };
+
+  getLink = (
+    subscriptionMap: Map<string, Subscription[]>,
+    vuuLinks: VuuLink[]
+  ) => {
+    const visualLinks: LinkDescriptorWithLabel[] = [];
+    for (let i = 0; i < vuuLinks.length; i++) {
+      if (subscriptionMap.get(vuuLinks[i].toTable)) {
+        const newLink: LinkDescriptorWithLabel = {
+          parentClientVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
+            .viewportId as string,
+          parentVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
+            .viewportId as string,
+          link: vuuLinks[i],
+        };
+        visualLinks.push(newLink);
+      }
+    }
+    return visualLinks;
   };
 
   createDataSource = (tableName: T) => {
+    const visualLinks =
+      this.#visualLinks?.[tableName] === undefined
+        ? undefined
+        : this.getLink(
+            this.#subscriptionMap,
+            this.#visualLinks[tableName] as VuuLink[]
+          );
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const dataSource = new TickingArrayDataSource({
       columnDescriptors,
@@ -112,11 +152,27 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       menu: this.#menus?.[tableName],
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
-      visualLinks: this.#visualLinks?.[tableName],
+      visualLinks,
     });
 
-    dataSource.on("subscribed", this.registerViewport);
     dataSource.on("unsubscribed", this.unregisterViewport);
+
+    this.#subscriptionMap.set(tableName, [
+      { viewportId: dataSource.viewport, dataSource },
+    ]);
+
+    for (const key of this.#subscriptionMap.keys()) {
+      if (this.#visualLinks?.[key as T] && key !== tableName) {
+        const vLink = this.getLink(
+          this.#subscriptionMap,
+          this.#visualLinks?.[key as T] as VuuLink[]
+        );
+        const ds = this.#subscriptionMap.get(key)?.[0].dataSource;
+        if (ds?.links) {
+          ds.links = vLink;
+        }
+      }
+    }
 
     return dataSource;
   };
