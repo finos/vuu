@@ -164,7 +164,7 @@ export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
-  filter: DataSourceFilter;
+  filterSpec: DataSourceFilter;
   groupBy: VuuGroupBy;
   range: VuuRange;
   sort: VuuSort;
@@ -293,11 +293,10 @@ export type TableSchema = {
  */
 export interface WithFullConfig {
   readonly aggregations: VuuAggregation[];
-  readonly columns: string[];
-  readonly filter: DataSourceFilter;
+  readonly columns: VuuColumns;
+  readonly filterSpec: DataSourceFilter;
   readonly groupBy: VuuGroupBy;
   readonly sort: VuuSort;
-  readonly visualLink?: LinkDescriptorWithLabel;
 }
 
 export interface DataSourceConfig extends Partial<WithFullConfig> {
@@ -308,7 +307,7 @@ export interface WithGroupBy extends DataSourceConfig {
   groupBy: VuuGroupBy;
 }
 export interface WithFilter extends DataSourceConfig {
-  filter: DataSourceFilter;
+  filterSpec: DataSourceFilter;
 }
 export interface WithSort extends DataSourceConfig {
   sort: VuuSort;
@@ -321,14 +320,9 @@ export interface DataSourceConstructorProps extends DataSourceConfig {
   viewport?: string;
 }
 
-export interface SubscribeProps {
+export interface SubscribeProps extends Partial<WithFullConfig> {
   viewport?: string;
-  columns?: string[];
-  aggregations?: VuuAggregation[];
   range?: VuuRange;
-  sort?: VuuSort;
-  groupBy?: VuuGroupBy;
-  filter?: DataSourceFilter;
   title?: string;
 }
 
@@ -552,14 +546,9 @@ export interface ConnectionQualityMetrics {
   messagesLength: number;
 }
 
-export interface ServerProxySubscribeMessage {
-  aggregations: VuuAggregation[];
+export interface ServerProxySubscribeMessage extends WithFullConfig {
   bufferSize?: number;
-  columns: VuuColumns;
-  filter: DataSourceFilter;
-  groupBy: VuuGroupBy;
   range: VuuRange;
-  sort: VuuSort;
   table: VuuTable;
   title?: string;
   viewport: string;

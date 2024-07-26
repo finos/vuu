@@ -204,7 +204,7 @@ export class Viewport {
       aggregations,
       bufferSize = 50,
       columns,
-      filter,
+      filterSpec: filter,
       groupBy = [],
       table,
       range,
@@ -336,7 +336,7 @@ export class Viewport {
       type: "subscribed",
       clientViewportId: this.clientViewportId,
       columns,
-      filter,
+      filterSpec: filter,
       groupBy,
       range,
       sort,
@@ -377,8 +377,13 @@ export class Viewport {
         }
       }
     } else if (type === "config") {
-      const { aggregations, columns, filter, groupBy, sort } =
-        pendingOperation.data;
+      const {
+        aggregations,
+        columns,
+        filterSpec: filter,
+        groupBy,
+        sort,
+      } = pendingOperation.data;
       this.aggregations = aggregations;
       this.columns = columns;
       this.filter = filter;
@@ -695,7 +700,7 @@ export class Viewport {
   setConfig(requestId: string, config: WithFullConfig) {
     this.awaitOperation(requestId, { type: "config", data: config });
 
-    const { filter, ...remainingConfig } = config;
+    const { filterSpec: filter, ...remainingConfig } = config;
 
     if (this.useBatchMode) {
       this.batchMode = true;

@@ -70,7 +70,8 @@ export class VuuDataSource
   private configChangePending: DataSourceConfig | undefined;
   private rangeRequest: RangeRequest;
 
-  #config: WithFullConfig = vanillaConfig;
+  #config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
+    vanillaConfig;
   #groupBy: VuuGroupBy = [];
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
@@ -90,7 +91,7 @@ export class VuuDataSource
     bufferSize = 100,
     aggregations,
     columns,
-    filter,
+    filterSpec: filter,
     groupBy,
     sort,
     table,
@@ -111,7 +112,7 @@ export class VuuDataSource
       ...this.#config,
       aggregations: aggregations || this.#config.aggregations,
       columns: columns || this.#config.columns,
-      filter: filter || this.#config.filter,
+      filterSpec: filter || this.#config.filterSpec,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
       visualLink: visualLink || this.#config.visualLink,
@@ -129,7 +130,7 @@ export class VuuDataSource
       range,
       sort,
       groupBy,
-      filter,
+      filterSpec: filter,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -143,7 +144,7 @@ export class VuuDataSource
         ...this.#config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
-        filter: filter || this.#config.filter,
+        filterSpec: filter || this.#config.filterSpec,
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };
@@ -467,12 +468,13 @@ export class VuuDataSource
     if (noChanges !== true) {
       if (config) {
         const newConfig: DataSourceConfig =
-          config?.filter?.filter && config?.filter.filterStruct === undefined
+          config?.filterSpec?.filter &&
+          config?.filterSpec.filterStruct === undefined
             ? {
                 ...config,
-                filter: {
-                  filter: config.filter.filter,
-                  filterStruct: parseFilter(config.filter.filter),
+                filterSpec: {
+                  filter: config.filterSpec.filter,
+                  filterStruct: parseFilter(config.filterSpec.filter),
                 },
               }
             : config;
@@ -546,13 +548,13 @@ export class VuuDataSource
   }
 
   get filter() {
-    return this.#config.filter;
+    return this.#config.filterSpec;
   }
 
   set filter(filter: DataSourceFilter) {
     this.config = {
       ...this.#config,
-      filter,
+      filterSpec: filter,
     };
   }
 

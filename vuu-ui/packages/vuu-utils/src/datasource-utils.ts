@@ -28,7 +28,7 @@ export const NoSort: VuuSort = { sortDefs: [] };
 export const vanillaConfig: WithFullConfig = {
   aggregations: [],
   columns: [],
-  filter: NoFilter,
+  filterSpec: NoFilter,
   groupBy: [],
   sort: NoSort,
 };
@@ -66,8 +66,8 @@ const equivalentColumns: DataConfigPredicate = (
   (cols2 === undefined && cols1?.length === 0);
 
 const equivalentFilter: DataConfigPredicate = (
-  { filter: f1 },
-  { filter: f2 }
+  { filterSpec: f1 },
+  { filterSpec: f2 }
 ) =>
   (f1 === undefined && f2?.filter === "") ||
   (f2 === undefined && f1?.filter === "");
@@ -127,7 +127,7 @@ export const isFilterChanged: DataConfigPredicate = (c1, c2) => {
   if (equivalentFilter(c1, c2)) {
     return false;
   } else {
-    return c1.filter?.filter !== c2.filter?.filter;
+    return c1.filterSpec?.filter !== c2.filterSpec?.filter;
   }
 };
 
@@ -224,7 +224,7 @@ export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>
   config.groupBy.length > 0;
 
 export const hasFilter = (config?: DataSourceConfig): config is WithFilter =>
-  config?.filter !== undefined && config.filter.filter.length > 0;
+  config?.filterSpec !== undefined && config.filterSpec.filter.length > 0;
 
 export const hasSort = (config?: DataSourceConfig): config is WithSort =>
   config?.sort !== undefined &&
@@ -274,7 +274,7 @@ export const withConfigDefaults = (
   if (
     config.aggregations &&
     config.columns &&
-    config.filter &&
+    config.filterSpec &&
     config.groupBy &&
     config.sort
   ) {
@@ -283,7 +283,7 @@ export const withConfigDefaults = (
     const {
       aggregations = [],
       columns = [],
-      filter = { filter: "" },
+      filterSpec: filter = { filter: "" },
       groupBy = [],
       sort = { sortDefs: [] },
       visualLink,
@@ -292,7 +292,7 @@ export const withConfigDefaults = (
     return {
       aggregations,
       columns,
-      filter,
+      filterSpec: filter,
       groupBy,
       sort,
       visualLink,
