@@ -5,20 +5,20 @@ import {
   DropdownProps,
   FormField,
   FormFieldLabel,
-  Input,
   Option,
   Switch,
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupProps,
 } from "@salt-ds/core";
+import { VuuInput } from "@finos/vuu-ui-controls";
 import {
   FormEventHandler,
   HTMLAttributes,
   SyntheticEvent,
   useCallback,
+  useState,
 } from "react";
-
 export interface SettingsSchema {
   properties: SettingsProperty[];
 }
@@ -84,13 +84,20 @@ const defaultPropertyValue: Record<
 };
 
 // Determine the form control type to be displayed
-export function getFormControl(
-  property: SettingsProperty,
-  changeHandler: FormEventHandler,
-  selectHandler: DropdownProps["onSelectionChange"],
-  currentValue: VuuRowDataItemType = property.defaultValue ??
-    defaultPropertyValue[property.type]
-) {
+export function FormControl({
+  property,
+  changeHandler,
+  selectHandler,
+  inputHandler,
+  currentValue = property.defaultValue ?? defaultPropertyValue[property.type],
+}: {
+  property: SettingsProperty;
+  changeHandler: FormEventHandler;
+  selectHandler: DropdownProps["onSelectionChange"];
+  inputHandler: FormEventHandler;
+  currentValue: VuuRowDataItemType;
+}) {
+  const [value, setValue] = useState(currentValue);
   if (isBooleanProperty(property)) {
     const checked =
       typeof currentValue === "boolean"
@@ -137,12 +144,52 @@ export function getFormControl(
       );
     }
   } else {
-    const value = isStringOrNumber(currentValue)
-      ? currentValue
-      : isStringOrNumber(property.defaultValue)
-      ? property.defaultValue
-      : "";
-    return <Input value={value} />;
+    const valid = isValidInput(currentValue, property.type);
+    const content = getTooltipContent(property.type, valid);
+    const TooltipProps = {
+      tooltipContent: content,
+    };
+    return (
+      <VuuInput
+        key={property.name}
+        onCommit={inputHandler}
+        onChange={(e) => setValue((e.target as HTMLInputElement).value)}
+        validationStatus={valid}
+        TooltipProps={TooltipProps}
+        value={value as string}
+      />
+    );
+  }
+  return null;
+}
+
+//Validation logic for input boxes
+const isValidInput = (value: unknown, type: unknown) => {
+  if (value === "") {
+    return undefined;
+  }
+  if (type === "string") {
+    return "success";
+  } else if (type === "number") {
+    if (Number.isNaN(Number(value))) {
+      return "error";
+    }
+    return "success";
+  }
+};
+
+//Function to Generate Tooltip Content
+function getTooltipContent(type: string, valid: string | undefined) {
+  if (valid === "error") {
+    if (type === "number") {
+      return <p>Field is expecting a number</p>;
+    } else if (type === "string") {
+      return <p>Field is expecting a string</p>;
+    } else {
+      return <p>Please contact Admin for more information on expected type</p>;
+    }
+  } else {
+    return undefined;
   }
 }
 
@@ -150,9 +197,9 @@ export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
 
 // Generates application settings form component
 export const SettingsForm = ({
-  settingsSchema: applicationSettingsSchema,
-  settings: applicationSettings,
-  onSettingChanged: onApplicationSettingChanged,
+  settingsSchema,
+  settings,
+  onSettingChanged,
   ...htmlAttributes
 }: SettingsFormProps) => {
   const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
@@ -164,36 +211,51 @@ export const SettingsForm = ({
     }
   };
 
-  // Change Handler for toggle and input buttons
+  // Change Handler for toggle and switch buttons
   const changeHandler = useCallback<FormEventHandler>(
     (event) => {
       const fieldName = getFieldNameFromEventTarget(event);
       const { checked, value } = event.target as HTMLInputElement;
-      onApplicationSettingChanged(fieldName, checked ?? value);
+      onSettingChanged(fieldName, checked ?? value);
     },
-    [onApplicationSettingChanged]
+    [onSettingChanged]
   );
 
   // Change handler for selection form controls
   const selectHandler = useCallback(
     (event: SyntheticEvent, [selected]: string[]) => {
       const fieldName = getFieldNameFromEventTarget(event);
-      onApplicationSettingChanged(fieldName, selected);
+      onSettingChanged(fieldName, selected);
     },
-    [onApplicationSettingChanged]
+    [onSettingChanged]
   );
 
+  // Change Handler for input boxes
+  const inputHandler = useCallback<FormEventHandler>(
+    (event) => {
+      const fieldName = getFieldNameFromEventTarget(event);
+      const { value } = event.target as HTMLInputElement;
+      if (!Number.isNaN(Number(value)) && value != "") {
+        const numValue = Number(value);
+        onSettingChanged(fieldName, numValue);
+      } else {
+        onSettingChanged(fieldName, value);
+      }
+    },
+    [onSettingChanged]
+  );
   return (
     <div {...htmlAttributes}>
-      {applicationSettingsSchema.properties.map((property) => (
+      {settingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>
-          {getFormControl(
+          {FormControl({
             property,
             changeHandler,
             selectHandler,
-            applicationSettings[property.name]
-          )}
+            inputHandler,
+            currentValue: settings[property.name],
+          })}
         </FormField>
       ))}
     </div>

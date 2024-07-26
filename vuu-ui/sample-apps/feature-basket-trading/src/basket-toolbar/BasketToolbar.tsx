@@ -135,7 +135,7 @@ export const BasketToolbar = ({
       <FormFieldLabel>Units</FormFieldLabel>
       <ExpandoInput
         {...unitProps}
-        errorMessage={unitErrorMessage}
+        TooltipProps={{tooltipContent: unitErrorMessage}}
         className={`${classBase}-units`}
         // value={basket?.units ?? ""}
       />
