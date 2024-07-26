@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useMemo } from "react";
-import { useLayoutProviderDispatch } from "../layout-provider";
+import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { usePersistentState } from "../use-persistent-state";
 import { useViewActionDispatcher } from "../layout-view-actions/useViewActionDispatcher";
 

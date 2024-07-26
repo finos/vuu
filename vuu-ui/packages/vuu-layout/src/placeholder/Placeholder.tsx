@@ -3,7 +3,8 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { registerComponent } from "@finos/vuu-utils";
 import { LayoutStartPanel } from "./LayoutStartPanel";
-import { View, ViewProps } from "../layout-view";
+import { View } from "../layout-view/View";
+import type { ViewProps } from "../layout-view/viewTypes";
 
 import placeholderCss from "./Placeholder.css";
 

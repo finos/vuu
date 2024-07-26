@@ -1,21 +1,21 @@
 import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
-import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
-  cloneElement,
   HTMLAttributes,
   KeyboardEvent,
   MouseEvent,
   ReactElement,
+  cloneElement,
   useCallback,
   useRef,
   useState,
 } from "react";
-import { useViewDispatch } from "../layout-view-actions";
+import { Contribution } from "../layout-view";
+import { useViewDispatch } from "../layout-view-actions/ViewContext";
 
 import headerCss from "./Header.css";
-import { Contribution } from "../layout-view";
 
 export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   allowRename?: boolean;
