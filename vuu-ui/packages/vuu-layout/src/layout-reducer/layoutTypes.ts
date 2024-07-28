@@ -157,12 +157,13 @@ export type DragStartAction = {
 };
 
 export type LayoutLevelChange =
-  | "switch-active-tab"
+  | "add-component"
+  | "drag-drop-operation"
   | "edit-feature-title"
-  | "save-feature-props"
-  | "resize-component"
   | "remove-component"
-  | "drag-drop-operation";
+  | "resize-component"
+  | "switch-active-tab"
+  | "save-feature-props";
 
 export type ApplicationLevelChange =
   | "switch-active-layout"

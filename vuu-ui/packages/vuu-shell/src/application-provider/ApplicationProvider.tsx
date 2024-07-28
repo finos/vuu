@@ -42,6 +42,7 @@ const getThemeMode = (
 export const ApplicationProvider = ({
   children,
   density: densityProp,
+  loginUrl,
   mode = "light",
   theme,
   userSettingsSchema: userSettingsSchema,
@@ -78,6 +79,7 @@ export const ApplicationProvider = ({
     <ApplicationContext.Provider
       value={{
         ...context,
+        loginUrl,
         onUserSettingChanged,
         userSettings,
         userSettingsSchema,
@@ -98,6 +100,11 @@ export const ApplicationProvider = ({
 export const useApplicationUser = () => {
   const { user } = useContext(ApplicationContext);
   return user;
+};
+
+export const useLoginUrl = () => {
+  const { loginUrl } = useContext(ApplicationContext);
+  return loginUrl;
 };
 
 //Setter method (only used within the shell)

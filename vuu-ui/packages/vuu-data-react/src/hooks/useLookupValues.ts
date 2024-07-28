@@ -4,13 +4,13 @@ import {
   LookupTableDetails,
 } from "@finos/vuu-table-types";
 import { VuuDataSource } from "@finos/vuu-data-remote";
-import { useShellContext } from "@finos/vuu-shell";
 import {
   buildColumnMap,
   getSelectedOption,
   isLookupRenderer,
   isTypeDescriptor,
   isValueListRenderer,
+  useShellContext,
 } from "@finos/vuu-utils";
 import { useMemo, useState } from "react";
 

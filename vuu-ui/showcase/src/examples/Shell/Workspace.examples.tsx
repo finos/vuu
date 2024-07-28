@@ -1,8 +1,8 @@
 import {
-  stackWorkspaceJSON,
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
+  stackWorkspaceJSON,
 } from "@finos/vuu-shell";
 import { useMemo } from "react";
 
@@ -41,7 +41,7 @@ export const CustomDefaultLayoutNoStoredState = () => {
     () => new StaticPersistenceManager({}),
     []
   );
-  const defaultLayout = useMemo(
+  const layoutJSON = useMemo(
     () => ({
       type: "div",
       props: {
@@ -52,7 +52,7 @@ export const CustomDefaultLayoutNoStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell defaultLayout={defaultLayout} user={user}></Shell>
+      <Shell workspaceProps={{ layoutJSON }} user={user}></Shell>
     </PersistenceProvider>
   );
 };
@@ -70,14 +70,14 @@ export const DefaultLayoutStoredState = () => {
                 type: "div",
                 props: {
                   title: "Blue",
-                  style: { backgroundColor: "red", height: "100%" },
+                  style: { backgroundColor: "blue", height: "100%" },
                 },
               },
               {
                 type: "div",
                 props: {
                   title: "Red",
-                  style: { backgroundColor: "blue", height: "100%" },
+                  style: { backgroundColor: "red", height: "100%" },
                 },
               },
             ],
@@ -95,7 +95,7 @@ export const DefaultLayoutStoredState = () => {
 DefaultLayoutStoredState.displaySequence = displaySequence++;
 
 export const CustomLayoutStoredState = () => {
-  const defaultLayout = useMemo(
+  const layoutJSON = useMemo(
     () => ({
       type: "div",
       props: {
@@ -138,7 +138,7 @@ export const CustomLayoutStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell defaultLayout={defaultLayout} user={user}></Shell>
+      <Shell workspaceProps={{ layoutJSON }} user={user}></Shell>
     </PersistenceProvider>
   );
 };

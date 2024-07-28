@@ -10,7 +10,7 @@ import type { SettingsSchema } from "@finos/vuu-shell";
 import {
   ApplicationProvider,
   ContextPanel,
-  LayoutManagementProvider,
+  WorkspaceProvider,
   PersistenceProvider,
   StaticPersistenceManager,
 } from "@finos/vuu-shell";
@@ -32,11 +32,11 @@ export const TabbedLayoutComponents = () => {
 
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <LayoutManagementProvider>
+      <WorkspaceProvider>
         <div style={{ width: 292 }}>
           <LayoutComponentsPanel tableSchemas={Object.values(simulSchemas)} />
         </div>
-      </LayoutManagementProvider>
+      </WorkspaceProvider>
     </PersistenceProvider>
   );
 };
@@ -50,7 +50,7 @@ export const TabbedLayoutComponentsWithDragDrop = () => {
 
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <LayoutManagementProvider>
+      <WorkspaceProvider>
         <LayoutProvider>
           <Flexbox style={{ height: 800 }}>
             <View
@@ -74,7 +74,7 @@ export const TabbedLayoutComponentsWithDragDrop = () => {
             </LayoutContainer>
           </Flexbox>
         </LayoutProvider>
-      </LayoutManagementProvider>
+      </WorkspaceProvider>
     </PersistenceProvider>
   );
 };
@@ -125,7 +125,7 @@ export const FlyoutLayoutAndSettingsWithDragDrop = () => {
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
       <ApplicationProvider userSettingsSchema={applicationSettingsSchema}>
-        <LayoutManagementProvider>
+        <WorkspaceProvider>
           <LayoutProvider>
             <Flexbox
               style={{
@@ -148,7 +148,7 @@ export const FlyoutLayoutAndSettingsWithDragDrop = () => {
               ></ContextPanel>
             </Flexbox>
           </LayoutProvider>
-        </LayoutManagementProvider>
+        </WorkspaceProvider>
       </ApplicationProvider>
     </PersistenceProvider>
   );

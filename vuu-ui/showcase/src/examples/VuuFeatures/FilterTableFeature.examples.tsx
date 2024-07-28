@@ -1,6 +1,6 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
+import { Feature, FeatureProps, useWorkspace } from "@finos/vuu-shell";
 import { useCallback, useState } from "react";
 import { FilterTableFeature } from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
@@ -19,11 +19,10 @@ export const DefaultFilterTableFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationJson: applicationLayout, saveApplicationLayout } =
-    useLayoutManager();
+  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
 
   // Save layout into state so we can display in JsonTable
-  const [savedLayoutJson, setSavedLayoutJson] = useState(applicationLayout);
+  const [savedLayoutJson, setSavedLayoutJson] = useState(workspaceJSON);
 
   const handleLayoutChange = useCallback(
     (layout) => {
@@ -37,7 +36,7 @@ export const DefaultFilterTableFeature = () => {
   return (
     <div style={{ display: "flex" }}>
       <LayoutProvider
-        workspaceJSON={applicationLayout.workspaceJSON}
+        workspaceJSON={workspaceJSON}
         onLayoutChange={handleLayoutChange}
       >
         <View

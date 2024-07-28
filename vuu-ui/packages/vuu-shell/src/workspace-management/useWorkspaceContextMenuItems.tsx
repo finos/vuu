@@ -3,14 +3,14 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@finos/vuu-data-types";
-import { useCallback, useMemo } from "react";
 import { MenuActionClosePopup, useDialogContext } from "@finos/vuu-popups";
-import { useLayoutManager } from "./LayoutManagementProvider";
-import { LayoutMetadataDto } from "./layoutTypes";
+import { LayoutMetadataDto } from "@finos/vuu-utils";
+import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
+import { useWorkspace } from "./WorkspaceProvider";
 
-export const useLayoutContextMenuItems = () => {
-  const { saveLayout } = useLayoutManager();
+export const useWorkspaceContextMenuItems = () => {
+  const { saveLayout } = useWorkspace();
 
   const { showDialog, closeDialog } = useDialogContext();
 

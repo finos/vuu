@@ -13,6 +13,7 @@ export interface ApplicationContextProps {
     propertyName: string,
     value: VuuRowDataItemType
   ) => void;
+  loginUrl?: string;
   userSettings?: Settings;
   userSettingsSchema?: SettingsSchema;
   user: VuuUser;

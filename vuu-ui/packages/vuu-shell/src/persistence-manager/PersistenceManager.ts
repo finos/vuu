@@ -1,5 +1,10 @@
-import type { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
-import type { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
+import type {
+  ApplicationJSON,
+  LayoutJSON,
+  LayoutMetadata,
+  LayoutMetadataDto,
+  Settings,
+} from "@finos/vuu-utils";
 
 export interface IPersistenceManager {
   /**

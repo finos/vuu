@@ -6,14 +6,11 @@ import {
   getLocalEntity,
   getUniqueId,
   saveLocalEntity,
-} from "@finos/vuu-utils";
-
-import {
   Layout,
   LayoutMetadata,
   LayoutMetadataDto,
   WithId,
-} from "../layout-management";
+} from "@finos/vuu-utils";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 const baseMetadataSaveLocation = "layouts/metadata";

@@ -1,13 +1,29 @@
-import { Shell } from "@finos/vuu-shell";
-import { CSSProperties } from "react";
+import { Placeholder } from "@finos/vuu-layout";
+import {
+  PersistenceProvider,
+  Shell,
+  StaticPersistenceManager,
+  WorkspaceProps,
+} from "@finos/vuu-shell";
+import { registerComponent } from "@finos/vuu-utils";
+import { CSSProperties, HTMLAttributes, useMemo } from "react";
+
+registerComponent("Placeholder", Placeholder, "component");
 
 const user = { username: "test-user", token: "test-token" };
 
 let displaySequence = 1;
 
+const htmlAttributes = {
+  "data-testid": "shell",
+} as HTMLAttributes<HTMLDivElement>;
+
 export const DefaultShell = () => {
   return (
     <Shell
+      shellLayoutProps={{
+        htmlAttributes: htmlAttributes,
+      }}
       loginUrl={window.location.toString()}
       user={user}
       style={
@@ -32,8 +48,12 @@ export const SimpleShellCustomHeader = () => {
   };
   return (
     <Shell
-      ShellLayoutProps={{
-        appHeader: <div style={headerStyle}>Custom Header</div>,
+      shellLayoutProps={{
+        appHeader: (
+          <header style={headerStyle} title="Custom Header">
+            Custom Header
+          </header>
+        ),
       }}
       loginUrl={window.location.toString()}
       user={user}
@@ -52,10 +72,11 @@ SimpleShellCustomHeader.displaySequence = displaySequence++;
 export const SimpleShellNoWorkspaceTabs = () => {
   return (
     <Shell
-      ContentLayoutProps={{
-        WorkspaceProps: {
-          showTabs: false,
-        },
+      workspaceProps={{
+        showTabs: false,
+      }}
+      shellLayoutProps={{
+        htmlAttributes: htmlAttributes,
       }}
       loginUrl={window.location.toString()}
       user={user}
@@ -74,7 +95,7 @@ SimpleShellNoWorkspaceTabs.displaySequence = displaySequence++;
 export const FullHeightLeftPanel = () => {
   return (
     <Shell
-      ShellLayoutProps={{
+      shellLayoutProps={{
         LeftSidePanelProps: {
           children: <div className="My Left Side">My left Side</div>,
           sizeOpen: 200,
@@ -97,7 +118,7 @@ FullHeightLeftPanel.displaySequence = displaySequence++;
 export const FullHeightLeftPanelLeftPanelClosed = () => {
   return (
     <Shell
-      ShellLayoutProps={{
+      shellLayoutProps={{
         LeftSidePanelProps: {
           children: <div className="My Left Side">My left Side</div>,
           open: false,
@@ -121,24 +142,62 @@ export const FullHeightLeftPanelLeftPanelClosed = () => {
 FullHeightLeftPanelLeftPanelClosed.displaySequence = displaySequence++;
 
 export const InlayLeftPanel = () => {
+  const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
   return (
-    <Shell
-      ShellLayoutProps={{
-        LeftSidePanelProps: {
-          children: <div className="My Left Side">My left Side</div>,
-          sizeOpen: 200,
-        },
-        layoutTemplateId: "inlay",
-      }}
-      loginUrl={window.location.toString()}
-      user={user}
-      style={
-        {
-          "--vuuShell-height": "100%",
-          "--vuuShell-width": "100%",
-        } as CSSProperties
-      }
-    />
+    <PersistenceProvider persistenceManager={persistNothing}>
+      <Shell
+        shellLayoutProps={{
+          LeftSidePanelProps: {
+            children: <div className="My Left Side">My left Side</div>,
+            sizeOpen: 200,
+          },
+          layoutTemplateId: "inlay",
+        }}
+        loginUrl={window.location.toString()}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100%",
+            "--vuuShell-width": "100%",
+          } as CSSProperties
+        }
+      />
+    </PersistenceProvider>
   );
 };
 InlayLeftPanel.displaySequence = displaySequence++;
+
+export const SimpleShellCustomPlaceholder = () => {
+  const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
+
+  const workspaceProps = useMemo<WorkspaceProps>(() => {
+    const placeHolder = {
+      type: "Placeholder",
+      props: {
+        style: {
+          background: "yellow",
+        },
+      },
+    };
+    return {
+      layoutJSON: placeHolder,
+      layoutPlaceholderJSON: placeHolder,
+    };
+  }, []);
+  return (
+    <PersistenceProvider persistenceManager={persistNothing}>
+      <Shell
+        workspaceProps={workspaceProps}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100%",
+            "--vuuShell-width": "100%",
+          } as CSSProperties
+        }
+      ></Shell>
+    </PersistenceProvider>
+  );
+};
+
+SimpleShellCustomPlaceholder.displaySequence = displaySequence++;

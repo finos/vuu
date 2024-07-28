@@ -7,18 +7,17 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
 import { logout } from "../login";
+import { useLoginUrl } from "../application-provider";
 
 import appHeaderCss from "./AppHeader.css";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
-  loginUrl?: string;
   themeMode?: ThemeMode;
 }
 
 export const AppHeader = ({
   className: classNameProp,
-  loginUrl,
   themeMode: _,
   ...htmlAttributes
 }: AppHeaderProps) => {
@@ -30,6 +29,7 @@ export const AppHeader = ({
   });
 
   const className = cx(classBase, classNameProp);
+  const loginUrl = useLoginUrl();
 
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
@@ -55,6 +55,7 @@ export const AppHeader = ({
     <Toolbar
       alignItems="end"
       className={className}
+      role="banner"
       showSeparators
       {...htmlAttributes}
     >

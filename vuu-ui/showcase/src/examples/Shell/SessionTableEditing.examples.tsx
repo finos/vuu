@@ -12,8 +12,8 @@ import {
   useDialog,
 } from "@finos/vuu-popups";
 import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { SessionEditingForm } from "@finos/vuu-shell";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { SessionEditingForm } from "@finos/vuu-data-react";
 import { HTMLAttributes, MouseEventHandler, useMemo } from "react";
 
 let displaySequence = 0;

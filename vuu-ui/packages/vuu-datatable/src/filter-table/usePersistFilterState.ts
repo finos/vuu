@@ -6,7 +6,7 @@ import {
 import { Filter, FilterState, NamedFilter } from "@finos/vuu-filter-types";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
-import { useLayoutManager } from "@finos/vuu-shell";
+import { useWorkspace } from "@finos/vuu-shell";
 import { FilterTableFeatureProps } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
@@ -27,8 +27,7 @@ export const usePersistFilterState = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
   const { load, save } = useViewContext();
-  const { getApplicationSettings, saveApplicationSettings } =
-    useLayoutManager();
+  const { getApplicationSettings, saveApplicationSettings } = useWorkspace();
 
   const { "filterbar-config": filterbarConfigFromState } =
     useMemo<FilterBarConfig>(() => load?.() ?? NO_CONFIG, [load]);

@@ -20,11 +20,6 @@ import type {
   VuuMenuItem,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import {
-  FormConfig,
-  FormFieldDescriptor,
-  SessionEditingForm,
-} from "@finos/vuu-shell";
 import { BulkEditPanel } from "@finos/vuu-table";
 import {
   VuuServerMenuOptions,
@@ -39,6 +34,11 @@ import {
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback } from "react";
+import {
+  FormConfig,
+  FormFieldDescriptor,
+  SessionEditingForm,
+} from "../session-editing-form";
 
 const NO_CONFIG: MenuActionConfig = {};
 

@@ -1,6 +1,4 @@
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-import { takeScreenshot } from "./screenshot-utils";
+import { LayoutMetadataDto } from "@finos/vuu-utils";
 import {
   Button,
   ComboBox,
@@ -10,6 +8,8 @@ import {
   Option,
   Text,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   ChangeEvent,
   SyntheticEvent,
@@ -18,8 +18,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { LayoutMetadataDto } from "./layoutTypes";
 import { getAuthDetailsFromCookies } from "../login";
+import { takeScreenshot } from "./screenshot-utils";
 
 import saveLayoutPanelCss from "./SaveLayoutPanel.css";
 

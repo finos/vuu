@@ -1,5 +1,8 @@
-import { LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
-import { LayoutJSON } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  LayoutMetadata,
+  LayoutMetadataDto,
+} from "@finos/vuu-utils";
 import { v4 as uuidv4 } from "uuid";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {

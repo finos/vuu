@@ -1,5 +1,10 @@
-import { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
-import { LayoutMetadata, LayoutMetadataDto } from "../layout-management";
+import {
+  ApplicationJSON,
+  LayoutJSON,
+  LayoutMetadata,
+  LayoutMetadataDto,
+  Settings,
+} from "@finos/vuu-utils";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 

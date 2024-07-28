@@ -161,14 +161,18 @@ function unwrap(container: ReactElement, child: ReactElement) {
 }
 
 const isFlexible = (element: ReactElement) => {
-  return element.props.style.flexGrow > 0;
+  return element.props.style?.flexGrow > 0;
 };
 
 const canBeMadeFlexible = (element: ReactElement) => {
-  const { width, height, flexGrow } = element.props.style;
-  return (
-    flexGrow === 0 && typeof width !== "number" && typeof height !== "number"
-  );
+  if (element.props.style) {
+    const { width, height, flexGrow } = element.props.style;
+    return (
+      flexGrow === 0 && typeof width !== "number" && typeof height !== "number"
+    );
+  } else {
+    return false;
+  }
 };
 
 const makeFlexible = (children: ReactElement[]) => {

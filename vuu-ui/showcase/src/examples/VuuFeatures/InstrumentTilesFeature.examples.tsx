@@ -1,6 +1,6 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, FeatureProps, useLayoutManager } from "@finos/vuu-shell";
+import { Feature, FeatureProps, useWorkspace } from "@finos/vuu-shell";
 import { registerComponent } from "@finos/vuu-utils";
 import { InstrumentTilesFeature } from "../../features/InstrumentTiles.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
@@ -17,12 +17,12 @@ export const DefaultInstrumentTilesFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationJson: applicationLayout } = useLayoutManager();
+  const { workspaceJSON } = useWorkspace();
 
   // ----------------------------------------------------------------------------------
 
   return (
-    <LayoutProvider workspaceJSON={applicationLayout.workspaceJSON}>
+    <LayoutProvider workspaceJSON={workspaceJSON}>
       <View
         Header={VuuBlotterHeader}
         id="instrument-tiles-feature"

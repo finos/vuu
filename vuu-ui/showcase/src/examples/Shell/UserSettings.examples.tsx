@@ -1,14 +1,11 @@
 import {
-  stackWorkspaceJSON,
-  UserSettingsPanel,
   ApplicationProvider,
+  PersistenceProvider,
   SettingsSchema,
   StaticPersistenceManager,
-  PersistenceProvider,
-  // Shell,
-  // LocalPersistenceManager,
-  // SettingsForm,
+  UserSettingsPanel,
 } from "@finos/vuu-shell";
+import { stackWorkspaceJSON } from "@finos/vuu-shell";
 
 import { useMemo } from "react";
 import { scrollableSettingsFormSchema } from "./UserSettingsSchemaExamples/scrollableSettingsSchemaExample";
