@@ -1,3 +1,4 @@
+import { useWorkspace } from "@finos/vuu-shell";
 import { VuuShellLocation, logger, type LayoutJSON } from "@finos/vuu-utils";
 import {
   MutableRefObject,
@@ -5,20 +6,21 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import {
   LayoutActionType,
+  LayoutProps,
+  cloneElementAddLayoutProps,
   layoutFromJson,
   layoutQuery,
   layoutReducer,
   layoutToJSON,
-  cloneElementAddLayoutProps,
   type LayoutChangeHandler,
   type LayoutChangeReason,
   type LayoutReducerAction,
-  LayoutProps,
 } from "../layout-reducer";
 import type { SaveAction } from "../layout-view";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
@@ -27,22 +29,15 @@ import {
   LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
-import { Placeholder } from "../placeholder";
 
 const { info } = logger("LayoutProvider");
 
 const isWorkspaceContainer = (props: LayoutProps) =>
   props.id === VuuShellLocation.WorkspaceContainer;
 
-const defaultCreateNewChild = () => (
-  <Placeholder
-    resizeable
-    style={{ flexGrow: 1, flexShrink: 0, flexBasis: 0 }}
-  />
-);
-
 const shouldSave = (action: LayoutReducerAction) =>
   [
+    "add",
     "drag-drop",
     "remove",
     "set-title",
@@ -64,6 +59,8 @@ const getLayoutChangeReason = (
       return "save-feature-props";
     case "drag-drop":
       return "drag-drop-operation";
+    case "add":
+      return "add-component";
     case "remove":
       return "remove-component";
     case "splitter-resize":
@@ -223,7 +220,47 @@ export const useLayoutProviderDispatch = () => {
 };
 
 export const useLayoutCreateNewChild = () => {
+  const { layoutPlaceholderJSON } = useWorkspace();
   const { createNewChild } = useContext(LayoutProviderContext);
+
+  const defaultCreateNewChild = useMemo(
+    () =>
+      function createNewChild() {
+        if (layoutPlaceholderJSON) {
+          return layoutFromJson(
+            {
+              ...layoutPlaceholderJSON,
+              props: {
+                resizeable: true,
+                style: {
+                  ...layoutPlaceholderJSON?.props?.style,
+                  flexGrow: 1,
+                  flexShrink: 0,
+                  flexBasis: 0,
+                },
+              },
+            },
+            "0"
+          );
+        }
+        return layoutFromJson(
+          {
+            type: "Placeholder",
+            props: {
+              resizeable: true,
+              style: {
+                flexGrow: 1,
+                flexShrink: 0,
+                flexBasis: 0,
+              },
+            },
+          },
+          "0"
+        );
+      },
+    [layoutPlaceholderJSON]
+  );
+
   return createNewChild ?? defaultCreateNewChild;
 };
 

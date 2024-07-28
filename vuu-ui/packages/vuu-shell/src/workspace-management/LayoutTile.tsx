@@ -1,7 +1,7 @@
+import { LayoutMetadata } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
-import { LayoutMetadata } from "./layoutTypes";
 
 import layoutTileCss from "./LayoutTile.css";
 

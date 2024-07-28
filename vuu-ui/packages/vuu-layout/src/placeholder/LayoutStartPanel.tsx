@@ -56,9 +56,7 @@ export const LayoutStartPanel = (htmlAttributes: LayoutStartPanelProps) => {
     <div {...htmlAttributes} className={classBase}>
       {showInitialState ? (
         <>
-          <header className={`${classBase}-title`}>
-            Start by adding a table
-          </header>
+          <div className={`${classBase}-title`}>Start by adding a table</div>
           <div className={`${classBase}-text`}>
             To add a table, drag any of the Vuu Tables to this area or click the
             button below

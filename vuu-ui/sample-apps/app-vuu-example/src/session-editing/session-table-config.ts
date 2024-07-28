@@ -3,7 +3,7 @@ import {
   OpenDialogActionWithSchema,
   TableSchema,
 } from "@finos/vuu-data-types";
-import { FormConfig, FormFieldDescriptor } from "@finos/vuu-shell";
+import { FormConfig, FormFieldDescriptor } from "@finos/vuu-data-react";
 
 const static_config: { [key: string]: Partial<FormConfig> } = {
   OPEN_EDIT_RESET_FIX: {

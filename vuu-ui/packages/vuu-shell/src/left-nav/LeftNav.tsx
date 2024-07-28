@@ -21,9 +21,10 @@ import {
 } from "react";
 import { FeatureProps } from "../feature";
 import { FeatureList, GroupedFeatureProps } from "../feature-list";
-import { LayoutList } from "../layout-management";
+import { LayoutList } from "../workspace-management";
 
 import leftNavCss from "./LeftNav.css";
+import { useFeatures } from "../feature-provider";
 
 const classBase = "vuuLeftNav";
 
@@ -51,13 +52,13 @@ export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
   defaultActiveTabIndex?: number;
   defaultExpanded?: boolean;
-  features: FeatureProps[];
+  features?: FeatureProps[];
   onActiveChange?: (activeTabIndex: number) => void;
   onTogglePrimaryMenu?: (expanded: boolean) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
-  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
+  tableFeatures?: FeatureProps<FilterTableFeatureProps>[];
 }
 
 type NavState = {
@@ -96,22 +97,26 @@ export const LeftNav = (props: LeftNavProps) => {
     "data-path": path,
     defaultExpanded = true,
     defaultActiveTabIndex = 0,
-    features,
+    features: featuresProp,
     onActiveChange,
     onTogglePrimaryMenu,
     sizeCollapsed = 80,
     sizeContent = 300,
     sizeExpanded = 240,
     style: styleProp,
-    tableFeatures,
+    tableFeatures: tableFeaturesProp,
     ...htmlAttributes
   } = props;
-
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-left-nav",
     css: leftNavCss,
     window: targetWindow,
+  });
+
+  const { features, tableFeatures } = useFeatures({
+    features: featuresProp,
+    tableFeatures: tableFeaturesProp,
   });
 
   const [navState, setNavState] = useState<NavState>({

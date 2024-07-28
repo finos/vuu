@@ -1,11 +1,11 @@
-import { HTMLAttributes, useCallback, useMemo } from "react";
+import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
+import { LayoutMetadata } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
-import { LayoutMetadata } from "./layoutTypes";
-import { useLayoutManager } from "./LayoutManagementProvider";
-import { LayoutTile } from "./LayoutTile";
 import cx from "clsx";
+import { HTMLAttributes, useCallback, useMemo } from "react";
+import { LayoutTile } from "./LayoutTile";
+import { useWorkspace } from "./WorkspaceProvider";
 
 import layoutListCss from "./LayoutList.css";
 
@@ -27,7 +27,7 @@ export const LayoutList = ({
     window: targetWindow,
   });
 
-  const { layoutMetadata, loadLayoutById } = useLayoutManager();
+  const { layoutMetadata, loadLayoutById } = useWorkspace();
 
   const handleLoadLayout = useCallback(
     (layoutId?: string) => {

@@ -5,7 +5,7 @@ import {
   FeatureProps,
   LookupTableProvider,
   ShellContextProvider,
-  useLayoutManager,
+  useWorkspace,
 } from "@finos/vuu-shell";
 import { registerComponent } from "@finos/vuu-utils";
 import { useCallback, useEffect } from "react";
@@ -24,12 +24,11 @@ export const DefaultBasketTradingFeature = () => {
   // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
   // application, the Palette wraps each feature in a View.
   //-----------------------------------------------------------------------------------
-  const { applicationJson: applicationLayout, saveApplicationLayout } =
-    useLayoutManager();
+  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
 
   useEffect(() => {
     console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [applicationLayout]);
+  }, [workspaceJSON]);
 
   const handleLayoutChange = useCallback(
     (layout) => {
@@ -63,7 +62,7 @@ export const DefaultBasketTradingFeature = () => {
   return (
     <ShellContextProvider value={{ getLookupValues }}>
       <LayoutProvider
-        workspaceJSON={applicationLayout.workspaceJSON}
+        workspaceJSON={workspaceJSON}
         onLayoutChange={handleLayoutChange}
       >
         <View

@@ -1,6 +1,6 @@
 import {
   LayoutList,
-  LayoutManagementProvider,
+  WorkspaceProvider,
   PersistenceProvider,
   StaticPersistenceManager,
 } from "@finos/vuu-shell";
@@ -17,9 +17,9 @@ export const DefaultLayoutList = (): JSX.Element => {
 
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <LayoutManagementProvider>
+      <WorkspaceProvider>
         <LayoutList style={{ width: 300 }} />
-      </LayoutManagementProvider>
+      </WorkspaceProvider>
     </PersistenceProvider>
   );
 };
@@ -56,9 +56,9 @@ export const LayoutListManyLayouts = (): JSX.Element => {
 
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <LayoutManagementProvider>
+      <WorkspaceProvider>
         <LayoutList style={{ width: 300 }} />
-      </LayoutManagementProvider>
+      </WorkspaceProvider>
     </PersistenceProvider>
   );
 };

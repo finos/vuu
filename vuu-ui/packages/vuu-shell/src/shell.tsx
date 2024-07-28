@@ -19,13 +19,6 @@ import {
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import {
-  LayoutManagementProvider,
-  LayoutManagementProviderProps,
-  useLayoutContextMenuItems,
-  useLayoutManager,
-} from "./layout-management";
-import { loadingJSON } from "./layout-management/defaultWorkspaceJSON";
-import {
   IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
@@ -33,8 +26,15 @@ import {
 } from "./persistence-manager";
 import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
 import { UserSettingsPanel } from "./user-settings";
+import {
+  WorkspaceProps,
+  WorkspaceProvider,
+  useWorkspace,
+  useWorkspaceContextMenuItems,
+} from "./workspace-management";
 
 import shellCss from "./shell.css";
+import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
@@ -53,14 +53,9 @@ const { error } = logger("Shell");
 
 export type LayoutTemplateName = "full-height" | "inlay";
 
-export type ContentLayoutProps = Pick<
-  LayoutManagementProviderProps,
-  "layoutJSON" | "workspaceJSON" | "WorkspaceProps"
->;
-
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
-  ContentLayoutProps?: ContentLayoutProps;
-  ShellLayoutProps?: ShellLayoutProps;
+  shellLayoutProps?: ShellLayoutProps;
+  workspaceProps?: WorkspaceProps;
   children?: ReactNode;
   loginUrl?: string;
   saveUrl?: string;
@@ -68,15 +63,13 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   user: VuuUser;
 }
 
-const getAppHeader = (shellLayoutProps?: ShellLayoutProps, loginUrl?: string) =>
-  shellLayoutProps?.appHeader ?? <AppHeader loginUrl={loginUrl} />;
+const defaultAppHeader = <AppHeader />;
+
+const getAppHeader = (shellLayoutProps?: ShellLayoutProps) =>
+  shellLayoutProps?.appHeader ?? defaultAppHeader;
 
 const defaultHTMLAttributes: HTMLAttributes<HTMLDivElement> = {
   className: "vuuShell",
-  style: {
-    height: "100%",
-    width: "100%",
-  },
 };
 
 const getHTMLAttributes = (props?: ShellLayoutProps) => {
@@ -84,10 +77,6 @@ const getHTMLAttributes = (props?: ShellLayoutProps) => {
     return {
       ...defaultHTMLAttributes,
       ...props.htmlAttributes,
-      style: {
-        ...defaultHTMLAttributes.style,
-        ...props.htmlAttributes.style,
-      },
     };
   } else {
     return defaultHTMLAttributes;
@@ -95,12 +84,12 @@ const getHTMLAttributes = (props?: ShellLayoutProps) => {
 };
 
 const VuuApplication = ({
-  ShellLayoutProps,
+  shellLayoutProps: ShellLayoutProps,
   children,
-  loginUrl,
+  // loginUrl, // need to make this available to app header
   serverUrl,
   user,
-}: Omit<ShellProps, "ContentLayoutProps">) => {
+}: Omit<ShellProps, "ContentLayoutProps" | "loginUrl" | "workspaceProps">) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
@@ -108,15 +97,9 @@ const VuuApplication = ({
     window: targetWindow,
   });
 
-  const shellLayout = useShellLayout({
-    ...ShellLayoutProps,
-    appHeader: getAppHeader(ShellLayoutProps, loginUrl),
-    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
-  });
+  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
 
-  const { workspaceJSON, saveApplicationLayout } = useLayoutManager();
-
-  const { buildMenuOptions, handleMenuAction } = useLayoutContextMenuItems();
+  const { buildMenuOptions, handleMenuAction } = useWorkspaceContextMenuItems();
   const [connectionStatus, setConnectionStatus] = useState<
     "initialising" | "connected" | "rejected"
   >("initialising");
@@ -156,6 +139,12 @@ const VuuApplication = ({
     console.log("game over, no connection to server");
   }
 
+  const initialLayout = useShellLayout({
+    ...ShellLayoutProps,
+    appHeader: getAppHeader(ShellLayoutProps),
+    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
+  });
+
   return isLayoutLoading ? null : (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
@@ -165,14 +154,19 @@ const VuuApplication = ({
         workspaceJSON={workspaceJSON}
         onLayoutChange={handleLayoutChange}
       >
-        {shellLayout}
+        {initialLayout}
       </LayoutProvider>
       {children}
     </ContextMenuProvider>
   );
 };
 
-export const Shell = ({ ContentLayoutProps, user, ...props }: ShellProps) => {
+export const Shell = ({
+  loginUrl,
+  user,
+  workspaceProps,
+  ...props
+}: ShellProps) => {
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
@@ -194,14 +188,19 @@ export const Shell = ({ ContentLayoutProps, user, ...props }: ShellProps) => {
   // SaltProvider.
 
   const shellProviders = (
-    <ApplicationProvider density="high" theme="vuu-theme" user={user}>
-      <LayoutManagementProvider {...ContentLayoutProps}>
+    <ApplicationProvider
+      density="high"
+      loginUrl={loginUrl}
+      theme="vuu-theme"
+      user={user}
+    >
+      <WorkspaceProvider {...workspaceProps}>
         <DialogProvider>
           <NotificationsProvider>
             <VuuApplication {...props} user={user} />
           </NotificationsProvider>
         </DialogProvider>
-      </LayoutManagementProvider>
+      </WorkspaceProvider>
     </ApplicationProvider>
   );
 

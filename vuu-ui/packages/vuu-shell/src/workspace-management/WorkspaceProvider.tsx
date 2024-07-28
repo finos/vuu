@@ -1,56 +1,34 @@
 import { StackProps, isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
 import { useNotifications } from "@finos/vuu-popups";
 import {
+  LayoutMetadata,
+  LayoutMetadataDto,
   VuuShellLocation,
+  WorkspaceContext,
   logger,
   type ApplicationJSON,
   type ApplicationSetting,
   type ApplicationSettings,
   type LayoutJSON,
 } from "@finos/vuu-utils";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePersistenceManager } from "../persistence-manager";
 import {
   getWorkspaceWithLayoutJSON,
   loadingJSON,
 } from "./defaultWorkspaceJSON";
-import { LayoutMetadata, LayoutMetadataDto } from "./layoutTypes";
 
 const { info } = logger("useLayoutManager");
 
-export const LayoutManagementContext = React.createContext<{
-  layoutMetadata: LayoutMetadata[];
-  saveLayout: (n: LayoutMetadataDto) => void;
-  workspaceJSON: LayoutJSON;
-  saveApplicationLayout: (layout: LayoutJSON) => void;
-  getApplicationSettings: (
-    key?: keyof ApplicationSettings
-  ) => ApplicationSettings | ApplicationSetting | undefined;
-  saveApplicationSettings: (
-    settings: ApplicationSettings | ApplicationSetting,
-    key?: keyof ApplicationSettings
-  ) => void;
-  loadLayoutById: (id: string) => void;
-}>({
-  getApplicationSettings: () => undefined,
-  layoutMetadata: [],
-  saveLayout: () => undefined,
-  // The default Application JSON will be served if no LayoutManagementProvider
-  workspaceJSON: getWorkspaceWithLayoutJSON(),
-  saveApplicationLayout: () => undefined,
-  saveApplicationSettings: () => undefined,
-  loadLayoutById: () => undefined,
-});
+export type WorkspaceProps = Pick<
+  WorkspaceProviderProps,
+  "layoutJSON" | "workspaceJSON"
+> &
+  Pick<StackProps, "showTabs" | "TabstripProps"> & {
+    layoutPlaceholderJSON?: LayoutJSON;
+  };
 
-export type WorkspaceProps = Pick<StackProps, "showTabs" | "TabstripProps">;
-
-export type LayoutManagementProviderProps = {
+export interface WorkspaceProviderProps {
   /**
    * props applied to the default workspace (Stack),
    * ignored if workspaceJSON is provided.
@@ -63,12 +41,17 @@ export type LayoutManagementProviderProps = {
    * layout state has been persisted. After that, the persisted state will be rendered.
    */
   layoutJSON?: LayoutJSON;
+
+  /**
+   * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.
+   */
+  layoutPlaceholderJSON?: LayoutJSON;
   /**
    * The Vuu workspace is the container into which layouts are loaded. By default, it will be
    * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
    */
   workspaceJSON?: LayoutJSON;
-};
+}
 
 const ensureLayoutHasTitle = (
   layout: LayoutJSON,
@@ -104,12 +87,13 @@ const loadingApplicationJSON: ApplicationJSON = {
  * If saved layout state has been returned, that will be set as current state (and rendered)
  *
  */
-export const LayoutManagementProvider = ({
+export const WorkspaceProvider = ({
   WorkspaceProps,
   layoutJSON,
+  layoutPlaceholderJSON,
   workspaceJSON: customWorkspaceJSON,
   ...props
-}: LayoutManagementProviderProps) => {
+}: WorkspaceProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
   // TODO this default should probably be a loading state rather than the placeholder
   // It will be replaced as soon as the localStorage/remote layout is resolved
@@ -326,10 +310,11 @@ export const LayoutManagementProvider = ({
   );
 
   return (
-    <LayoutManagementContext.Provider
+    <WorkspaceContext.Provider
       value={{
         getApplicationSettings,
         layoutMetadata,
+        layoutPlaceholderJSON,
         saveLayout,
         workspaceJSON: applicationJSONRef.current.workspaceJSON,
         saveApplicationLayout,
@@ -338,8 +323,17 @@ export const LayoutManagementProvider = ({
       }}
     >
       {props.children}
-    </LayoutManagementContext.Provider>
+    </WorkspaceContext.Provider>
   );
 };
 
-export const useLayoutManager = () => useContext(LayoutManagementContext);
+export const useWorkspace = () => {
+  // The default Application JSON will be served if no LayoutManagementProvider
+  const { workspaceJSON = getWorkspaceWithLayoutJSON(), ...contextProps } =
+    useContext(WorkspaceContext);
+
+  return {
+    ...contextProps,
+    workspaceJSON,
+  };
+};

@@ -1,5 +1,9 @@
-import { ApplicationJSON, LayoutJSON, Settings } from "@finos/vuu-utils";
-import { LayoutMetadata } from "../layout-management";
+import {
+  ApplicationJSON,
+  LayoutJSON,
+  LayoutMetadata,
+  Settings,
+} from "@finos/vuu-utils";
 import { IPersistenceManager } from "./PersistenceManager";
 
 function unsupported<T = void>() {

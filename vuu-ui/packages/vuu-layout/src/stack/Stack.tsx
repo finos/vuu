@@ -140,6 +140,7 @@ export const Stack = forwardRef(function Stack(
     >
       {showTabs ? (
         <Tabstrip
+          aria-label="data tabs"
           {...TabstripProps}
           activeTabIndex={
             TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
@@ -147,7 +148,6 @@ export const Stack = forwardRef(function Stack(
           allowDragDrop={TabstripProps.allowDragDrop !== false}
           animateSelectionThumb
           className={cx("vuuTabHeader", tabstripClassName)}
-          aria-label="data tabs"
           keyBoardActivation={keyBoardActivation}
           onActiveChange={onTabSelectionChanged}
           onAddTab={onAddTab}

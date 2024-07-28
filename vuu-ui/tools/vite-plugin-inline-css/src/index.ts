@@ -16,6 +16,7 @@ export function cssInline(options: Options = {}): Plugin {
     exclude = ["**/**.stories.tsx"],
     include = [
       "**/packages/vuu-datatable/**/*.{tsx,jsx}",
+      "**/packages/vuu-data-react/**/*.{tsx,jsx}",
       "**/packages/vuu-filters/**/*.{tsx,jsx}",
       "**/packages/vuu-layout/**/*.{tsx,jsx}",
       "**/packages/vuu-popups/**/*.{tsx,jsx}",

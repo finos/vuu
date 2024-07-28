@@ -1,6 +1,6 @@
+import { StackProps } from "@finos/vuu-layout";
 import { LayoutJSON, VuuShellLocation } from "@finos/vuu-utils";
-import { WorkspaceProps } from "./LayoutManagementProvider";
-import { StackProps } from "packages/vuu-layout/src";
+import { WorkspaceProps } from "./WorkspaceProvider";
 
 export const warningLayout: LayoutJSON = {
   type: "View",
@@ -37,6 +37,7 @@ export const stackWorkspaceJSON: LayoutJSON<
       allowCloseTab: true,
       allowRenameTab: true,
       animateSelectionThumb: false,
+      "aria-label": "Workspace Tabs",
       location: "workspace-tab",
       variant: "primary",
     },

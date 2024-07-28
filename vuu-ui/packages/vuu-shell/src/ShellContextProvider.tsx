@@ -1,24 +1,9 @@
-import {
-  DefaultColumnConfiguration,
-  DefaultTableConfiguration,
-  ListOption,
-} from "@finos/vuu-table-types";
-import type { RpcResponseHandler } from "@finos/vuu-data-types";
-import { createContext, ReactElement, ReactNode, useContext } from "react";
 import type { VuuTable } from "@finos/vuu-protocol-types";
+import { ListOption } from "@finos/vuu-table-types";
+import { ShellContext, ShellContextProps } from "@finos/vuu-utils";
+import { ReactElement, ReactNode } from "react";
 
 export type LookupTableProvider = (table: VuuTable) => ListOption[];
-
-export interface ShellContextProps {
-  getDefaultColumnConfig?: DefaultColumnConfiguration;
-  getDefaultTableConfig?: DefaultTableConfiguration;
-  getLookupValues?: LookupTableProvider;
-  handleRpcResponse?: RpcResponseHandler;
-}
-
-const defaultConfig = {};
-
-const ShellContext = createContext<ShellContextProps>(defaultConfig);
 
 export interface ShellProviderProps {
   children: ReactNode;
@@ -59,8 +44,4 @@ export const ShellContextProvider = ({
       )}
     </ShellContext.Consumer>
   );
-};
-
-export const useShellContext = () => {
-  return useContext(ShellContext);
 };

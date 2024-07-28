@@ -99,7 +99,7 @@ const ShellWithNewTheme = () => {
   return (
     <DragDropProvider dragSources={dragSource}>
       <Shell
-        ShellLayoutProps={{
+        shellLayoutProps={{
           LeftSidePanelProps: leftSidePanelProps,
           layoutTemplateId: "full-height",
         }}

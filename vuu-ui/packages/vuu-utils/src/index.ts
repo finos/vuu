@@ -27,6 +27,7 @@ export * from "./json-types";
 export * from "./json-utils";
 export * from "./keyboard-utils";
 export * from "./keyset";
+export * from "./layout-types";
 export * from "./list-utils";
 export * from "./local-storage-utils";
 export * from "./logging-utils";
@@ -50,3 +51,7 @@ export * from "./url-utils";
 export * from "./useId";
 export * from "./user-types";
 export * from "./useLayoutEffectSkipFirst";
+
+/** Context declarations hosted in utils to minimize intra package dependencies */
+export * from "./ShellContext";
+export * from "./context-definitions/WorkspaceContext";

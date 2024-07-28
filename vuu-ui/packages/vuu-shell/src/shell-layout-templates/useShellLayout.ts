@@ -33,11 +33,7 @@ export interface ShellLayoutProps {
   appHeader?: ReactNode;
 
   /**
-   * HTML attributes that will be applied to root div. Default attributes
-   * will be applied, unless overidden, as follows:
-   *
-   * - height: 100%
-   * - width: 100%
+   * HTML attributes that will be applied to root div.
    */
   htmlAttributes?: HTMLAttributes<HTMLDivElement>;
   /**

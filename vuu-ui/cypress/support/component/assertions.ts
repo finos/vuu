@@ -119,6 +119,17 @@ declare global {
         * */
       (chainer: "not.be.inTheViewport"): Chainable<Subject>;
       /**
+       * Checks if the element fills the viewport.
+       * e.g might have style {height: 100vh, width: 100vw1}
+       *
+       * @example
+       ```
+       cy.findTestId('shell').should('be.sizedToFillViewport')
+       ```
+       * */
+      (chainer: "be.sizedToFillViewport"): Chainable<Subject>;
+      (chainer: "not.be.sizedToFillViewport"): Chainable<Subject>;
+      /**
         * Checks if the element is the active descendant.
         *
         * @example
@@ -264,9 +275,48 @@ const isInTheViewport: ChaiPlugin = (_chai, utils) => {
 
   _chai.Assertion.addMethod("inTheViewport", assertIsInTheViewport);
 };
-
 // registers our assertion function "isInTheViewport" with Chai
 chai.use(isInTheViewport);
+
+/**
+ * Checks if the element fills the viewport.
+ * e.g might have style {height: 100vh, width: 100vw}
+ *
+ * @example
+ ```
+  cy.findTestId('shell').should('be.sizedToFillViewport')
+  ```
+  * */
+const isViewportSize: ChaiPlugin = (_chai, utils) => {
+  function assertIsViewportSize(this: AssertionStatic) {
+    const root = this._obj.get(0);
+    // make sure it's an Element
+    new _chai.Assertion(
+      root.nodeType,
+      `Expected an Element but got '${String(root)}'`
+    ).to.equal(1);
+
+    const viewportHeight = Cypress.config(`viewportHeight`);
+    const viewportWidth = Cypress.config(`viewportWidth`);
+    const rect = root.getBoundingClientRect();
+
+    this.assert(
+      rect.height === viewportHeight && rect.width === viewportWidth,
+      `expected \n${elementToString(
+        root
+      )} to be sized to fill viewport (${viewportWidth} x ${viewportHeight}), actual height ${
+        rect.height
+      }, width: ${rect.width} .`,
+      `expected \n${elementToString(root)} to not be sized to fill viewport.`,
+      null
+    );
+  }
+
+  _chai.Assertion.addMethod("sizedToFillViewport", assertIsViewportSize);
+};
+
+// registers our assertion function "viewportSize" with Chai
+chai.use(isViewportSize);
 
 /**
  * Checks if the element is in the viewport

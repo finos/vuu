@@ -1,7 +1,9 @@
 import "@finos/vuu-layout/test/global-mocks";
-import { Layout, LayoutMetadata, LayoutMetadataDto } from "@finos/vuu-shell";
 import {
+  Layout,
   LayoutJSON,
+  LayoutMetadata,
+  LayoutMetadataDto,
   formatDate,
   getLocalEntity,
   saveLocalEntity,

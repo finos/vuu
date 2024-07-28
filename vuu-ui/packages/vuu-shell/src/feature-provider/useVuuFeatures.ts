@@ -1,19 +1,19 @@
 import { useVuuTables } from "@finos/vuu-data-react";
-import { FeatureProps } from "@finos/vuu-shell";
 import {
   Features,
   FilterTableFeatureProps,
   getCustomAndTableFeatures,
 } from "@finos/vuu-utils";
 import { useMemo } from "react";
+import { FeatureProps } from "../feature/Feature";
 
 export interface FeaturesHookProps {
   features: Features;
 }
 
-const NO_FEATURES: ReturnType<typeof useFeatures> = [[], []];
+const NO_FEATURES: ReturnType<typeof useVuuFeatures> = [[], []];
 
-export const useFeatures = ({
+export const useVuuFeatures = ({
   features,
 }: FeaturesHookProps): [
   FeatureProps[],
