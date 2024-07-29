@@ -52,8 +52,8 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
                                       ) {
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): ModuleFactoryNode = {
-    val noViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) => ViewPortDef.default(table.getTableDef.columns)
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> noViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
+    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) => ViewPortDef.default(table.getTableDef.columns)
+    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
