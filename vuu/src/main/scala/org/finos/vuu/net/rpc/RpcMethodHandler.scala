@@ -19,5 +19,3 @@ case class RpcMethodSuccess(result: Any) extends RpcMethodCallResult
 case class RpcMethodFailure(code: Int, error: String, exception: Exception) extends RpcMethodCallResult {
   def this(error: String) = this(1, error, null)
 }
-
-

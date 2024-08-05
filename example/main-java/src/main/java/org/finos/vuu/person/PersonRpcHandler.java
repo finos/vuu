@@ -1,0 +1,51 @@
+package org.finos.vuu.person;
+
+import org.finos.vuu.core.table.DataTable;
+import org.finos.vuu.core.table.TableContainer;
+import org.finos.vuu.net.rpc.*;
+import scala.Function1;
+
+import java.util.Arrays;
+
+/* Work in Progress - do not use this as example yet
+ * */
+public class PersonRpcHandler extends DefaultRpcHandler {
+    private final DataTable table;
+
+    public PersonRpcHandler(DataTable table, TableContainer tableContainer) {
+        this.table = table;
+
+        registerRpc("UpdateName", (params) -> processUpdateNameRpcRequest(params));
+        registerRpc("GetPeopleWithName", (params) -> processGetPeopleNameRpcRequest(params));
+    }
+
+    private void registerRpc(String functionName, Function1<RpcParams, RpcMethodCallResult> handlerFunc) {
+        this.registerRpcMethodHandler(functionName, new RpcFunctionMethodHandler(handlerFunc));
+    }
+
+    public RpcMethodCallResult processUpdateNameRpcRequest(RpcParams params) {
+        updateName(
+                params.namedParams().get("Id").get().toString(), //how to report error when expected param missing or fail to cast to right type
+                params.namedParams().get("Name").get().toString()
+        );
+        return new RpcMethodSuccess(""); //how to control what viewport action to trigger?
+    }
+
+    public RpcMethodCallResult processGetPeopleNameRpcRequest(RpcParams params) {
+        getPeopleWithNameThatStartWith(
+                Arrays.stream(params.params()).findFirst().toString()
+        );
+        return new RpcMethodSuccess(""); //need to return result
+    }
+
+    public String[] updateName(String id, String newName) {
+        //get person data from data source, update name, save to datasource?
+        //should update table row or allow lifecycle sync to pick up change?
+        return new String[0];
+    }
+
+    public String[] getPeopleWithNameThatStartWith(String search) {
+        return new String[0];
+    }
+}
+
