@@ -1,4 +1,6 @@
-package org.finos.vuu.person;
+package org.finos.vuu.person.datasource;
+
+import org.finos.vuu.person.Person;
 
 public class PersonStore {
 

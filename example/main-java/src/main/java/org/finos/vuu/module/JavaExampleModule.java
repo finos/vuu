@@ -3,12 +3,14 @@ package org.finos.vuu.module;
 import org.finos.toolbox.time.Clock;
 import org.finos.vuu.api.ColumnBuilder;
 import org.finos.vuu.api.TableDef;
+import org.finos.vuu.api.ViewPortDef;
 import org.finos.vuu.core.module.DefaultModule;
 import org.finos.vuu.core.module.ModuleFactory;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.table.Columns;
-import org.finos.vuu.person.PersonStore;
+import org.finos.vuu.person.PersonRpcHandler;
+import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
 import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.manual.PersonProvider;
@@ -34,7 +36,11 @@ public class JavaExampleModule extends DefaultModule {
                                         .build(),
                                 toScalaSeq(List.of())
                         ),
-                        (table, vs) -> new PersonProvider(table, new PersonStore(), clock)
+                        (table, vs) -> new PersonProvider(table, new PersonStore(), clock),
+                        (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
+                                table.getTableDef().columns(),
+                                new PersonRpcHandler(table, tableContainer)
+                        )
                 )
                 .addTable(TableDef.apply(
                                 "PersonAutoMapped",
