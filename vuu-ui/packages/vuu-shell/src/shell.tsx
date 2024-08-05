@@ -5,17 +5,12 @@ import {
   ContextMenuProvider,
   DialogProvider,
   NotificationsProvider,
+  useNotifications,
 } from "@finos/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  HTMLAttributes,
-  ReactNode,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import { HTMLAttributes, ReactNode, useCallback, useMemo } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import {
@@ -44,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
   // to avoif tree shaking the Stack away. Causes a runtime issue in dev.
   if (typeof StackLayout !== "function") {
     console.warn(
-      "StackLayout module not loaded, will be unsbale to deserialize from layout JSON"
+      "StackLayout module not loaded, will be unable to deserialize from layout JSON"
     );
   }
 }
@@ -97,12 +92,10 @@ const VuuApplication = ({
     window: targetWindow,
   });
 
+  const notify = useNotifications();
   const { workspaceJSON, saveApplicationLayout } = useWorkspace();
 
   const { buildMenuOptions, handleMenuAction } = useWorkspaceContextMenuItems();
-  const [connectionStatus, setConnectionStatus] = useState<
-    "initialising" | "connected" | "rejected"
-  >("initialising");
 
   const handleLayoutChange = useCallback<LayoutChangeHandler>(
     (layout) => {
@@ -122,7 +115,13 @@ const VuuApplication = ({
         url: serverUrl,
         username: user.username,
       });
-      setConnectionStatus(connectionStatus);
+      if (connectionStatus === "rejected") {
+        notify({
+          type: "error",
+          body: "Unable to connect to VUU Server",
+          header: "Error",
+        });
+      }
     } else {
       console.warn(
         `Shell: serverUrl: '${serverUrl}', token: '${Array(user.token.length)
@@ -131,13 +130,9 @@ const VuuApplication = ({
         `
       );
     }
-  }, [serverUrl, user.token, user.username]);
+  }, [notify, serverUrl, user.token, user.username]);
 
   const isLayoutLoading = workspaceJSON === loadingJSON;
-
-  if (connectionStatus === "rejected") {
-    console.log("game over, no connection to server");
-  }
 
   const initialLayout = useShellLayout({
     ...ShellLayoutProps,
