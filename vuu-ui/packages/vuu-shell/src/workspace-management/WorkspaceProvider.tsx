@@ -1,4 +1,4 @@
-import { StackProps, isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
+import { isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
 import { useNotifications } from "@finos/vuu-popups";
 import {
   LayoutMetadata,
@@ -16,41 +16,32 @@ import { usePersistenceManager } from "../persistence-manager";
 import {
   getWorkspaceWithLayoutJSON,
   loadingJSON,
+  type WorkspaceStackProps,
 } from "./defaultWorkspaceJSON";
 
 const { info } = logger("useLayoutManager");
 
-export type WorkspaceProps = Pick<
-  WorkspaceProviderProps,
-  "layoutJSON" | "workspaceJSON"
-> &
-  Pick<StackProps, "showTabs" | "TabstripProps"> & {
-    layoutPlaceholderJSON?: LayoutJSON;
-  };
-
-export interface WorkspaceProviderProps {
-  /**
-   * props applied to the default workspace (Stack),
-   * ignored if workspaceJSON is provided.
-   */
-  WorkspaceProps?: WorkspaceProps;
-
-  children: JSX.Element | JSX.Element[];
+export type WorkspaceProps = WorkspaceStackProps & {
+  layoutPlaceholderJSON?: LayoutJSON;
   /**
    * layoutJSON defines the default layout to render on first load and until such time as
    * layout state has been persisted. After that, the persisted state will be rendered.
    */
   layoutJSON?: LayoutJSON;
-
-  /**
-   * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.
-   */
-  layoutPlaceholderJSON?: LayoutJSON;
   /**
    * The Vuu workspace is the container into which layouts are loaded. By default, it will be
    * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
    */
   workspaceJSON?: LayoutJSON;
+};
+
+export interface WorkspaceProviderProps extends WorkspaceProps {
+  children: JSX.Element | JSX.Element[];
+
+  /**
+   * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.
+   */
+  layoutPlaceholderJSON?: LayoutJSON;
 }
 
 const ensureLayoutHasTitle = (
@@ -88,11 +79,12 @@ const loadingApplicationJSON: ApplicationJSON = {
  *
  */
 export const WorkspaceProvider = ({
-  WorkspaceProps,
+  TabstripProps,
+  children,
   layoutJSON,
   layoutPlaceholderJSON,
+  showTabs,
   workspaceJSON: customWorkspaceJSON,
-  ...props
 }: WorkspaceProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
   // TODO this default should probably be a loading state rather than the placeholder
@@ -170,7 +162,7 @@ export const WorkspaceProvider = ({
           const workspaceJSON = getWorkspaceWithLayoutJSON(
             customWorkspaceJSON,
             layoutJSON,
-            WorkspaceProps
+            { TabstripProps, showTabs }
           );
           info?.(`applicationJSON not found, getting defaultWorkspaceJSON,
             ${JSON.stringify(workspaceJSON, null, 2)}
@@ -192,12 +184,13 @@ export const WorkspaceProvider = ({
         );
       });
   }, [
-    WorkspaceProps,
+    TabstripProps,
     customWorkspaceJSON,
     layoutJSON,
     notify,
     persistenceManager,
     setApplicationJSON,
+    showTabs,
   ]);
 
   const saveApplicationLayout = useCallback(
@@ -322,7 +315,7 @@ export const WorkspaceProvider = ({
         loadLayoutById,
       }}
     >
-      {props.children}
+      {children}
     </WorkspaceContext.Provider>
   );
 };

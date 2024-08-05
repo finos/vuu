@@ -13,19 +13,19 @@ describe("datasource-utils", () => {
     it("reports no change", () => {
       expect(
         isConfigChanged(
-          { filter: { filter: 'ccy = "EUR"' } },
-          { filter: { filter: 'ccy = "EUR"' } }
+          { filterSpec: { filter: 'ccy = "EUR"' } },
+          { filterSpec: { filter: 'ccy = "EUR"' } }
         ).noChanges
       ).toEqual(true);
       expect(
         isConfigChanged(
           {
-            filter: { filter: 'ccy = "EUR"' },
+            filterSpec: { filter: 'ccy = "EUR"' },
             sort: { sortDefs: [{ column: "ric", sortType: "A" }] },
           },
           {
             sort: { sortDefs: [{ column: "ric", sortType: "A" }] },
-            filter: { filter: 'ccy = "EUR"' },
+            filterSpec: { filter: 'ccy = "EUR"' },
           }
         ).noChanges
       ).toEqual(true);
@@ -36,14 +36,14 @@ describe("datasource-utils", () => {
     it("THEN it reports filter changed", () => {
       expect(
         isConfigChanged(
-          { filter: { filter: 'ccy = "EUR"' } },
-          { filter: { filter: 'ccy = "EUR"' } }
+          { filterSpec: { filter: 'ccy = "EUR"' } },
+          { filterSpec: { filter: 'ccy = "EUR"' } }
         ).noChanges
       ).toEqual(true);
       expect(
         isConfigChanged(
-          { filter: { filter: 'ccy = "EUR"' } },
-          { filter: { filter: 'ccy = "CAD"' } }
+          { filterSpec: { filter: 'ccy = "EUR"' } },
+          { filterSpec: { filter: 'ccy = "CAD"' } }
         )
       ).toEqual({
         ...NO_CONFIG_CHANGES,

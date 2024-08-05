@@ -1,4 +1,4 @@
-import { takeScreenshot } from "../../src/layout-management/screenshot-utils";
+import { takeScreenshot } from "../../src/workspace-management/screenshot-utils";
 import { describe, expect, it, vi } from "vitest";
 import { expectPromiseRejectsWithError } from "./utils";
 import htmlToImage from "html-to-image";

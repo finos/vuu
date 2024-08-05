@@ -1,3 +1,8 @@
+import { VuuInput } from "@finos/vuu-ui-controls";
+import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
   ChangeEvent,
   HTMLAttributes,
@@ -6,12 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-import { VuuInput } from "@finos/vuu-ui-controls";
 import { VuuLogo } from "./VuuLogo";
-import cx from "clsx";
 
 import loginPanelCss from "./LoginPanel.css";
 

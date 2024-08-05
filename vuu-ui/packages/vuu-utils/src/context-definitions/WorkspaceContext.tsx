@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   ApplicationSetting,
   ApplicationSettings,
@@ -30,3 +30,8 @@ export const WorkspaceContext = React.createContext<WorkspaceContextProps>({
   saveApplicationSettings: () => undefined,
   loadLayoutById: () => undefined,
 });
+
+export const usePlaceholderJSON = () => {
+  const { layoutPlaceholderJSON } = useContext(WorkspaceContext);
+  return layoutPlaceholderJSON;
+};

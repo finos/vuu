@@ -1,14 +1,18 @@
-import { useWorkspace } from "@finos/vuu-shell";
-import { VuuShellLocation, logger, type LayoutJSON } from "@finos/vuu-utils";
 import {
-  MutableRefObject,
-  ReactElement,
+  VuuShellLocation,
+  logger,
+  usePlaceholderJSON,
+  type LayoutJSON,
+} from "@finos/vuu-utils";
+import {
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type MutableRefObject,
+  type ReactElement,
 } from "react";
 import {
   LayoutActionType,
@@ -220,20 +224,22 @@ export const useLayoutProviderDispatch = () => {
 };
 
 export const useLayoutCreateNewChild = () => {
-  const { layoutPlaceholderJSON } = useWorkspace();
+  const layoutPlaceholderJSON = usePlaceholderJSON();
   const { createNewChild } = useContext(LayoutProviderContext);
 
   const defaultCreateNewChild = useMemo(
     () =>
       function createNewChild() {
         if (layoutPlaceholderJSON) {
+          const { props } = layoutPlaceholderJSON;
           return layoutFromJson(
             {
               ...layoutPlaceholderJSON,
               props: {
+                ...props,
                 resizeable: true,
                 style: {
-                  ...layoutPlaceholderJSON?.props?.style,
+                  ...props?.style,
                   flexGrow: 1,
                   flexShrink: 0,
                   flexBasis: 0,

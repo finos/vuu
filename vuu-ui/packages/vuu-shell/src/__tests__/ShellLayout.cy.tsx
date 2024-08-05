@@ -2,6 +2,7 @@ import {
   DefaultShell,
   SimpleShellCustomHeader,
   SimpleShellNoWorkspaceTabs,
+  SimpleShellCustomPlaceholder,
 } from "../../../../showcase/src/examples/Shell/ShellLayout.examples";
 
 describe("ShellLayout", () => {
@@ -29,6 +30,23 @@ describe("ShellLayout", () => {
       cy.mount(<SimpleShellNoWorkspaceTabs />);
       cy.findByTestId("shell").should("be.sizedToFillViewport");
       cy.findByRole("tablist", { name: "Workspace Tabs" }).should("not.exist");
+    });
+  });
+
+  describe("WHEN rendered with a default layout and custom placeholder", () => {
+    it("THEN custom layout is rendered", () => {
+      cy.mount(<SimpleShellCustomPlaceholder />);
+      cy.findByTestId("shell").should("be.sizedToFillViewport");
+      cy.findByTestId("custom-placeholder").should("be.visible");
+    });
+    describe("AND WHEN workspace tab is added", () => {
+      it("THEN custom placeholder is used to create new layout", () => {
+        cy.mount(<SimpleShellCustomPlaceholder />);
+        cy.findByRole("img", { name: "Create Tab" }).realClick();
+        cy.findAllByRole("tab").should("have.length", 2);
+
+        cy.findByTestId("custom-placeholder").should("be.visible");
+      });
     });
   });
 });

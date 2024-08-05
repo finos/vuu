@@ -174,6 +174,7 @@ export const SimpleShellCustomPlaceholder = () => {
     const placeHolder = {
       type: "Placeholder",
       props: {
+        "data-testid": "custom-placeholder",
         style: {
           background: "yellow",
         },
@@ -187,6 +188,9 @@ export const SimpleShellCustomPlaceholder = () => {
   return (
     <PersistenceProvider persistenceManager={persistNothing}>
       <Shell
+        shellLayoutProps={{
+          htmlAttributes: htmlAttributes,
+        }}
         workspaceProps={workspaceProps}
         user={user}
         style={

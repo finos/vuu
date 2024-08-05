@@ -19,7 +19,10 @@ import {
   createSubscription,
 } from "./test-utils";
 import { VuuRow } from "@finos/vuu-protocol-types";
-import { DataSourceDataMessage } from "@finos/vuu-data-types";
+import {
+  DataSourceDataMessage,
+  DataSourceEnabledMessage,
+} from "@finos/vuu-data-types";
 
 const SERVER_MESSAGE_CONSTANTS = {
   module: "CORE",
@@ -103,7 +106,7 @@ describe("ServerProxy", () => {
         aggregations: [],
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: { filter: "" },
+        filterSpec: { filter: "" },
         groupBy: [],
         range: {
           from: 0,
@@ -1635,7 +1638,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: 'ccy = "EUR"' },
+          filterSpec: { filter: 'ccy = "EUR"' },
           groupBy: [],
           sort: { sortDefs: [] },
         },
@@ -1682,7 +1685,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: 'ccy = "EUR"' },
+          filterSpec: { filter: 'ccy = "EUR"' },
           groupBy: [],
           sort: { sortDefs: [] },
         },
@@ -1767,7 +1770,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: 'ccy = "EUR"' },
+          filterSpec: { filter: 'ccy = "EUR"' },
           groupBy: [],
           sort: { sortDefs: [] },
         },
@@ -1866,7 +1869,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -1933,7 +1936,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2019,7 +2022,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2107,7 +2110,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2228,7 +2231,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2287,7 +2290,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2811,7 +2814,7 @@ describe("ServerProxy", () => {
         config: {
           aggregations: [],
           columns: ["col-1", "col-2", "col-3", "col-4"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: ["col-4"],
           sort: { sortDefs: [] },
         },
@@ -2866,7 +2869,7 @@ describe("ServerProxy", () => {
         aggregations: [],
         clientViewportId: "client-vp-1",
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: { filter: "" },
+        filterSpec: { filter: "" },
         groupBy: [],
         range: {
           from: 0,
@@ -2882,7 +2885,7 @@ describe("ServerProxy", () => {
         aggregations: [],
         clientViewportId: "client-vp-2",
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: { filter: "" },
+        filterSpec: { filter: "" },
         groupBy: [],
         range: {
           from: 0,
