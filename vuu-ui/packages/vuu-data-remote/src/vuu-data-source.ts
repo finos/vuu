@@ -91,7 +91,7 @@ export class VuuDataSource
     bufferSize = 100,
     aggregations,
     columns,
-    filterSpec: filter,
+    filterSpec,
     groupBy,
     sort,
     table,
@@ -112,7 +112,7 @@ export class VuuDataSource
       ...this.#config,
       aggregations: aggregations || this.#config.aggregations,
       columns: columns || this.#config.columns,
-      filterSpec: filter || this.#config.filterSpec,
+      filterSpec: filterSpec || this.#config.filterSpec,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
       visualLink: visualLink || this.#config.visualLink,
@@ -130,7 +130,7 @@ export class VuuDataSource
       range,
       sort,
       groupBy,
-      filterSpec: filter,
+      filterSpec,
     }: SubscribeProps,
     callback: SubscribeCallback
   ) {
@@ -139,12 +139,12 @@ export class VuuDataSource
       return;
     }
     this.clientCallback = callback;
-    if (aggregations || columns || filter || groupBy || sort) {
+    if (aggregations || columns || filterSpec || groupBy || sort) {
       this.#config = {
         ...this.#config,
         aggregations: aggregations || this.#config.aggregations,
         columns: columns || this.#config.columns,
-        filterSpec: filter || this.#config.filterSpec,
+        filterSpec: filterSpec || this.#config.filterSpec,
         groupBy: groupBy || this.#config.groupBy,
         sort: sort || this.#config.sort,
       };

@@ -4,6 +4,7 @@ import {
   SettingsSchema,
   StaticPersistenceManager,
   UserSettingsPanel,
+  loadingJSON,
 } from "@finos/vuu-shell";
 import { stackWorkspaceJSON } from "@finos/vuu-shell";
 
@@ -134,11 +135,11 @@ export const InputValidationUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: defaultLayoutJson,
           userSettings: {
             userName: "",
             id: "",
           },
+          workspaceJSON: loadingJSON,
         },
       }),
     []
@@ -160,7 +161,6 @@ export const ScrollableUserSettingsPanel = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          layout: defaultLayoutJson,
           userSettings: {
             themeMode: "light",
             dateFormatPattern: "dd/mm/yyyy",
@@ -168,6 +168,7 @@ export const ScrollableUserSettingsPanel = () => {
             greyscale: false,
             userName: "",
           },
+          workspaceJSON: loadingJSON,
         },
       }),
     []

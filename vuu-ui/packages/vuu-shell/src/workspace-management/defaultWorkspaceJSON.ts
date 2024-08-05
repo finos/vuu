@@ -1,6 +1,10 @@
 import { StackProps } from "@finos/vuu-layout";
 import { LayoutJSON, VuuShellLocation } from "@finos/vuu-utils";
-import { WorkspaceProps } from "./WorkspaceProvider";
+
+export type WorkspaceStackProps = Pick<
+  StackProps,
+  "showTabs" | "TabstripProps"
+>;
 
 export const warningLayout: LayoutJSON = {
   type: "View",
@@ -58,7 +62,7 @@ const placeholderLayout: LayoutJSON = {
 export const getWorkspaceWithLayoutJSON = (
   customWorkspaceJSON?: LayoutJSON,
   layoutJSON: LayoutJSON | LayoutJSON[] = placeholderLayout,
-  stackProps?: WorkspaceProps
+  stackProps?: WorkspaceStackProps
 ): LayoutJSON => {
   if (customWorkspaceJSON) {
     return {

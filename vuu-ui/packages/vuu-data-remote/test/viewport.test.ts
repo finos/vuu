@@ -13,7 +13,7 @@ import {
 const config_options = {
   aggregations: [],
   columns: ["col1"],
-  filter: { filter: "" },
+  filterSpec: { filter: "" },
   groupBy: [],
   sort: { sortDefs: [] },
 };
@@ -50,7 +50,7 @@ describe("Viewport", () => {
       const vp = new Viewport(constructor_options, noop);
       const message = vp.subscribe();
       const {
-        filter: { filter },
+        filterSpec: { filter },
         viewport,
         range,
         ...rest
@@ -80,7 +80,7 @@ describe("Viewport", () => {
       );
       const message = vp.subscribe();
       const {
-        filter: { filter },
+        filterSpec: { filter },
         viewport,
         range,
         ...rest
@@ -105,7 +105,7 @@ describe("Viewport", () => {
       );
       const message = vp.subscribe();
       const {
-        filter: { filter },
+        filterSpec: { filter },
         viewport,
         range,
         ...rest
@@ -129,7 +129,7 @@ describe("Viewport", () => {
       );
       const message = vp.subscribe();
       const {
-        filter: { filter },
+        filterSpec: { filter },
         viewport,
         range,
         ...rest
@@ -312,7 +312,7 @@ describe("Viewport", () => {
       vp.setConfig("1", {
         aggregations: [],
         columns: ["col-1", "col-2", "col-3", "col-4"],
-        filter: { filter: "" },
+        filterSpec: { filter: "" },
         groupBy: ["col-4"],
         sort: { sortDefs: [] },
       });

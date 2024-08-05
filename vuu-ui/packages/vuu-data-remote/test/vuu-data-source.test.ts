@@ -12,7 +12,7 @@ const defaultSubscribeOptions = {
   aggregations: [],
   bufferSize: 100,
   columns: [],
-  filter: { filter: "" },
+  filterSpec: { filter: "" },
   groupBy: [],
   range: { from: 0, to: 0 },
   sort: { sortDefs: [] },
@@ -72,18 +72,18 @@ describe("RemoteDataSource", () => {
 
     it("stores constructor props as properties", () => {
       const columns = ["col1", "col2"];
-      const filter = { filter: `ccy="EUR"` };
+      const filterSpec = { filter: `ccy="EUR"` };
       const sort = {
         sortDefs: [{ column: "col1", sortType: "A" } as VuuSortCol],
       };
       const dataSource = new VuuDataSource({
         columns,
-        filter,
+        filterSpec,
         sort,
         table: { module: "SIMUL", table: "instruments" },
       });
       expect(dataSource.columns).toEqual(columns);
-      expect(dataSource.filter).toEqual(filter);
+      expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
     });
   });
@@ -176,7 +176,7 @@ describe("RemoteDataSource", () => {
       const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
       const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
-      const filter = { filter: 'ccy="EUR"' };
+      const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
       const sort = {
         sortDefs: [{ column: "test", sortType: "A" } as const],
@@ -199,7 +199,7 @@ describe("RemoteDataSource", () => {
         aggregations,
         bufferSize: 200,
         columns,
-        filter,
+        filterSpec,
         groupBy,
         sort,
         table,
@@ -213,7 +213,7 @@ describe("RemoteDataSource", () => {
           aggregations,
           bufferSize: 200,
           columns,
-          filter,
+          filterSpec,
           groupBy,
           range: { from: 0, to: 0 },
           sort,
@@ -233,7 +233,7 @@ describe("RemoteDataSource", () => {
 
       const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
-      const filter = { filter: 'ccy="EUR"' };
+      const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
       const sort = { sortDefs: [{ column: "test", sortType: "A" } as const] };
 
@@ -250,7 +250,7 @@ describe("RemoteDataSource", () => {
       const dataSource = new VuuDataSource({
         aggregations,
         columns,
-        filter,
+        filterSpec,
         groupBy,
         sort,
         table,
@@ -261,7 +261,7 @@ describe("RemoteDataSource", () => {
         {
           aggregations: aggregations2,
           columns: columns2,
-          filter: filter2,
+          filterSpec: filter2,
           groupBy: groupBy2,
           sort: sort2,
           viewport: "test-2",
@@ -274,7 +274,7 @@ describe("RemoteDataSource", () => {
           aggregations,
           bufferSize: 100,
           columns: columns2,
-          filter: filter2,
+          filterSpec: filter2,
           groupBy: groupBy2,
           range: { from: 0, to: 0 },
           sort: sort2,
@@ -394,15 +394,15 @@ describe("RemoteDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const filter = { filter: 'exchange="SETS"' };
-      dataSource.filter = filter;
+      const filterSpec = { filter: 'exchange="SETS"' };
+      dataSource.filter = filterSpec;
 
       expect(serverSend).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
           columns: [],
-          filter: {
+          filterSpec: {
             filter: 'exchange="SETS"',
             filterStruct: {
               column: "exchange",
@@ -433,7 +433,7 @@ describe("RemoteDataSource", () => {
         config: {
           aggregations: [],
           columns: [],
-          filter: {
+          filterSpec: {
             filter: "",
           },
           groupBy,
@@ -463,7 +463,7 @@ describe("RemoteDataSource", () => {
         config: {
           aggregations: [],
           columns: [],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: [],
           sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
         },
@@ -481,7 +481,7 @@ describe("RemoteDataSource", () => {
         config: {
           aggregations: [],
           columns: ["col1", "col2", "col3"],
-          filter: { filter: "" },
+          filterSpec: { filter: "" },
           groupBy: [],
           sort: { sortDefs: [] },
         },
@@ -499,7 +499,7 @@ describe("RemoteDataSource", () => {
       await dataSource.subscribe({}, callback);
 
       const config: DataSourceConfig = {
-        filter: { filter: 'ccy = "EUR"' },
+        filterSpec: { filter: 'ccy = "EUR"' },
       };
 
       dataSource.config = config;
@@ -509,7 +509,7 @@ describe("RemoteDataSource", () => {
         config: {
           aggregations: [],
           columns: [],
-          filter: {
+          filterSpec: {
             filter: 'ccy = "EUR"',
             filterStruct: {
               column: "ccy",
