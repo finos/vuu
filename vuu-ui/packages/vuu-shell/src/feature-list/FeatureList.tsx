@@ -1,10 +1,11 @@
 import { Palette, PaletteItem } from "@finos/vuu-layout";
 import { Icon, ListProps } from "@finos/vuu-ui-controls";
+import { FeatureProps } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
-import { Feature, FeatureProps } from "../feature/Feature";
+import { Feature } from "../feature/Feature";
 
 import featureListCss from "./FeatureList.css";
 

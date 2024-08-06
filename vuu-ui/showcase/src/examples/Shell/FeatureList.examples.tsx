@@ -1,8 +1,5 @@
-import {
-  FeatureList,
-  FeatureProps,
-  GroupedFeatureProps,
-} from "@finos/vuu-shell";
+import { FeatureList, GroupedFeatureProps } from "@finos/vuu-shell";
+import { FeatureProps } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 

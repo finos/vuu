@@ -1,10 +1,10 @@
-import { RpcResponseHandler } from "packages/vuu-data-types";
-import { LookupTableProvider } from "packages/vuu-shell/src";
+import { RpcResponseHandler } from "@finos/vuu-data-types";
 import {
   DefaultColumnConfiguration,
   DefaultTableConfiguration,
 } from "packages/vuu-table-types";
 import { createContext, useContext } from "react";
+import { LookupTableProvider } from "./feature-utils";
 
 export interface ShellContextProps {
   getDefaultColumnConfig?: DefaultColumnConfiguration;

@@ -1,13 +1,11 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
+import { Feature, ShellContextProvider, useWorkspace } from "@finos/vuu-shell";
 import {
-  Feature,
   FeatureProps,
   LookupTableProvider,
-  ShellContextProvider,
-  useWorkspace,
-} from "@finos/vuu-shell";
-import { registerComponent } from "@finos/vuu-utils";
+  registerComponent,
+} from "@finos/vuu-utils";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeatureProps } from "sample-apps/feature-basket-trading";
 import { BasketTradingFeature } from "../../features/BasketTrading.feature";
