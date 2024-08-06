@@ -1,11 +1,11 @@
 import { useVuuTables } from "@finos/vuu-data-react";
 import {
+  FeatureProps,
   Features,
   FilterTableFeatureProps,
   getCustomAndTableFeatures,
 } from "@finos/vuu-utils";
 import { useMemo } from "react";
-import { FeatureProps } from "../feature/Feature";
 
 export interface FeaturesHookProps {
   features: Features;

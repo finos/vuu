@@ -1,6 +1,6 @@
 import type { TableSchema } from "@finos/vuu-data-types";
 import type { VuuTable } from "@finos/vuu-protocol-types";
-import type { FeatureProps } from "@finos/vuu-shell";
+import { ListOption } from "@finos/vuu-table-types";
 import { partition } from "./array-utils";
 import { wordify } from "./text-utils";
 
@@ -8,10 +8,29 @@ export type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
 export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
+export type LookupTableProvider = (table: VuuTable) => ListOption[];
+
 export interface ViewConfig {
   allowRename?: boolean;
   closeable?: boolean;
   header?: boolean;
+}
+
+export interface FeatureProps<P extends object | undefined = object> {
+  /**
+    props that will be passed to the lazily loaded component.
+   */
+  ComponentProps?: P;
+  ViewProps?: ViewConfig;
+  css?: string;
+  height?: number;
+  title?: string;
+  /** 
+   The url of javascript bundle to lazily load. Bundle must provide a default export
+   and that export must be a React component.
+   */
+  url: string;
+  width?: number;
 }
 
 declare global {
@@ -70,7 +89,9 @@ export interface FeaturePropsWithFilterTableFeature
 export const hasFilterTableFeatureProps = (
   props: FeatureProps
 ): props is FeaturePropsWithFilterTableFeature =>
-  "tableSchema" in (props?.ComponentProps ?? {});
+  typeof props.ComponentProps === "object" &&
+  props.ComponentProps !== null &&
+  "tableSchema" in props.ComponentProps;
 
 // Sort TableScheas by module
 export const byModule = (schema1: TableSchema, schema2: TableSchema) => {

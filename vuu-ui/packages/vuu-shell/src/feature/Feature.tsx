@@ -1,4 +1,4 @@
-import { ViewConfig, importCSS, registerComponent } from "@finos/vuu-utils";
+import { FeatureProps, importCSS, registerComponent } from "@finos/vuu-utils";
 import React, { Suspense, useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
@@ -30,23 +30,6 @@ const useCachedFeature = (url: string) => {
     return lazyFeature;
   }
 };
-
-export interface FeatureProps<P extends object | undefined = object> {
-  /**
-    props that will be passed to the lazily loaded component.
-   */
-  ComponentProps?: P;
-  ViewProps?: ViewConfig;
-  css?: string;
-  height?: number;
-  title?: string;
-  /** 
-   The url of javascript bundle to lazily load. Bundle must provide a default export
-   and that export must be a React component.
-   */
-  url: string;
-  width?: number;
-}
 
 function RawFeature<Params extends object | undefined>({
   url,

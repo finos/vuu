@@ -1,9 +1,5 @@
-import type { VuuTable } from "@finos/vuu-protocol-types";
-import { ListOption } from "@finos/vuu-table-types";
 import { ShellContext, ShellContextProps } from "@finos/vuu-utils";
 import { ReactElement, ReactNode } from "react";
-
-export type LookupTableProvider = (table: VuuTable) => ListOption[];
 
 export interface ShellProviderProps {
   children: ReactNode;

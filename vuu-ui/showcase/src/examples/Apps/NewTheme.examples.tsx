@@ -1,11 +1,12 @@
 import { getAllSchemas } from "@finos/vuu-data-test";
-import { FeatureProps, LeftNav, Shell, SidePanelProps } from "@finos/vuu-shell";
+import { LeftNav, Shell, SidePanelProps } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import {
+  FeatureProps,
   GetFeaturePaths,
   env,
   getFilterTableFeatures,

@@ -1,5 +1,5 @@
+import { FeatureProps } from "@finos/vuu-utils";
 import React, { ErrorInfo, ReactNode } from "react";
-import { FeatureProps } from "./Feature";
 
 export interface FeatureErrorBoundaryProps extends FeatureProps {
   children: ReactNode;

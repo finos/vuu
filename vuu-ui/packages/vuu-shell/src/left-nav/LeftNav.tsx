@@ -6,6 +6,7 @@ import {
 } from "@finos/vuu-layout";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import {
+  FeatureProps,
   FilterTableFeatureProps,
   hasFilterTableFeatureProps,
 } from "@finos/vuu-utils";
@@ -19,7 +20,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { FeatureProps } from "../feature";
 import { FeatureList, GroupedFeatureProps } from "../feature-list";
 import { LayoutList } from "../workspace-management";
 

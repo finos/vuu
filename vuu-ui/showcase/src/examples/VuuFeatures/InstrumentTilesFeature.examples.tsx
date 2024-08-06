@@ -1,7 +1,7 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, FeatureProps, useWorkspace } from "@finos/vuu-shell";
-import { registerComponent } from "@finos/vuu-utils";
+import { Feature, useWorkspace } from "@finos/vuu-shell";
+import { FeatureProps, registerComponent } from "@finos/vuu-utils";
 import { InstrumentTilesFeature } from "../../features/InstrumentTiles.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 

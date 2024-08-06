@@ -1,6 +1,9 @@
-import { Features, FilterTableFeatureProps } from "@finos/vuu-utils";
+import {
+  FeatureProps,
+  Features,
+  FilterTableFeatureProps,
+} from "@finos/vuu-utils";
 import { ReactElement, ReactNode, createContext, useContext } from "react";
-import { FeatureProps } from "../feature/Feature";
 import { useVuuFeatures } from "./useVuuFeatures";
 
 export interface FeatureContextProps {
