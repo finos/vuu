@@ -13,7 +13,8 @@
     "sample-apps/**",
     "showcase",
     "tools/esbuild-plugin-inline-css",
-    "tools/vuu-showcase"
+    "tools/vuu-showcase",
+    "themes/**"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

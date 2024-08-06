@@ -17,7 +17,11 @@ const examples = buildFileList("./src/examples", /examples.tsx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
 
 // TODO use a separate build call for each theme, without bundling
-const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
+const themes = [
+  "./src/themes/salt-theme.ts",
+  "./src/themes/vuu-theme.ts",
+  "./src/themes/tar-theme.ts",
+];
 
 const entryPoints = ["src/main.tsx"]
   .concat(indexFiles)

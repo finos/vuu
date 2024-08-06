@@ -1,0 +1,109 @@
+.TradeManagement {
+  inset: var(--salt-spacing-400);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400);
+}
+
+.FilterDashboard {
+  border: solid 1px var(--salt-container-primary-borderColor);
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-400);
+  font-size: 18px;
+  padding: var(--salt-spacing-400);
+}
+
+.FilterDashboard-group {
+  background: var(--salt-container-secondary-background);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  padding: var(--salt-spacing-200) var(--salt-spacing-400)
+    var(--salt-spacing-400) var(--salt-spacing-400);
+}
+
+.FilterDashboard-title {
+  font-size: 12px;
+}
+
+.FilterDashboard-entry {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  display: flex;
+  gap: var(--salt-spacing-400);
+  height: 48px;
+  padding: 0 var(--salt-spacing-400);
+}
+
+.FilterDashboard-clientCount {
+  margin-left: auto;
+}
+
+.QueryPanel {
+  --saltFormField-width: 300px;
+  border: solid 1px var(--salt-container-primary-borderColor);
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+
+  .saltFormField {
+    border: solid 1px var(--salt-editable-borderColor);
+    padding: var(--salt-spacing-50) var(--salt-spacing-200);
+  }
+
+  .vuuDatePicker {
+    display: flex;
+    gap: var(--salt-spacing-100);
+  }
+
+  .vuuDateButton {
+    width: 28px;
+  }
+  .saltButton[aria-label="Open Calendar"]{
+    border:none;
+  }
+  .saltIcon[data-testid="CalendarIcon"]{
+    display: block;
+  }
+
+  .saltDateInput-activationIndicator {
+    display: none;
+  }
+
+  .saltDateInput-primary {
+    border: solid 1px var(--salt-editable-borderColor);
+  }
+}
+
+.QueryPanel-group {
+  background: var(--salt-container-secondary-background);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400);
+  padding: var(--salt-spacing-200) var(--salt-spacing-400)
+    var(--salt-spacing-400) var(--salt-spacing-400);
+  flex: 0 0 50%;
+}
+
+.QueryPanel-controls {
+  display: flex;
+  flex-direction: row;
+  gap: var(--salt-spacing-400);
+}
+
+.QueryPanel-controls-Date,
+.QueryPanel-controls-Other {
+  flex-direction: column;
+}
+
+.TradeManagement-buttons {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+}
