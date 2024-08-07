@@ -231,6 +231,36 @@ public class LayoutIntegrationTest {
     }
 
     @Test
+    void createLayout_invalidRequestBodyDefinitionIsNotValidJSON_returns400AndDoesNotCreateLayout()
+        throws Exception {
+        String layoutRequestString =
+            "{\n"
+                + "  \"definition\": invalidJson,\n"
+                + "  \"metadata\": {\n"
+                + "    \"name\": \"string\",\n"
+                + "    \"group\": \"string\",\n"
+                + "    \"screenshot\": \"string\",\n"
+                + "    \"user\": \"string\"\n"
+                + "  }\n"
+                + "}";
+
+        mockMvc.perform(
+                post("/layouts").content(layoutRequestString).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(jsonPath("$.messages", contains(
+                "JSON parse error: Unrecognized token 'invalidJson': was expecting (JSON String, "
+                    + "Number, Array, Object or token 'null', 'true' or 'false'); nested "
+                    + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
+                    + "token 'invalidJson': was expecting (JSON String, Number, Array, Object or "
+                    + "token 'null', 'true' or 'false')\n at [Source: (org.springframework.util"
+                    + ".StreamUtils$NonClosingInputStream); line: 2, column: 29]")));
+
+        assertThat(layoutRepository.findAll()).isEmpty();
+        assertThat(metadataRepository.findAll()).isEmpty();
+    }
+
+    @Test
     void createLayout_invalidRequestBodyMetadataIsNull_returns400AndDoesNotCreateLayout()
             throws Exception {
         LayoutRequestDto layoutRequest = createValidLayoutRequest();
@@ -375,6 +405,36 @@ public class LayoutIntegrationTest {
                 .andExpect(jsonPath("$.messages", contains("definition: Definition must not be null")));
 
         assertThat(layoutRepository.findById(layout.getId()).orElseThrow()).isEqualTo(layout);
+    }
+
+    @Test
+    void updateLayout_invalidRequestBodyDefinitionIsNotValidJSON_returns400AndDoesNotUpdateLayout()
+        throws Exception {
+        String layoutRequestString =
+            "{\n"
+                + "  \"definition\": invalidJson,\n"
+                + "  \"metadata\": {\n"
+                + "    \"name\": \"string\",\n"
+                + "    \"group\": \"string\",\n"
+                + "    \"screenshot\": \"string\",\n"
+                + "    \"user\": \"string\"\n"
+                + "  }\n"
+                + "}";
+
+        mockMvc.perform(put("/layouts/{id}", DEFAULT_LAYOUT_ID).content(layoutRequestString)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.messages", iterableWithSize(1)))
+            .andExpect(jsonPath("$.messages", contains(
+                "JSON parse error: Unrecognized token 'invalidJson': was expecting (JSON String, "
+                    + "Number, Array, Object or token 'null', 'true' or 'false'); nested "
+                    + "exception is com.fasterxml.jackson.core.JsonParseException: Unrecognized "
+                    + "token 'invalidJson': was expecting (JSON String, Number, Array, Object or "
+                    + "token 'null', 'true' or 'false')\n at [Source: (org.springframework.util"
+                    + ".StreamUtils$NonClosingInputStream); line: 2, column: 29]")));
+
+        assertThat(layoutRepository.findAll()).isEmpty();
+        assertThat(metadataRepository.findAll()).isEmpty();
     }
 
     @Test
