@@ -19,10 +19,6 @@ public class PersonRpcHandler extends DefaultRpcHandler {
         registerRpc("GetPeopleWithName", (params) -> processGetPeopleNameRpcRequest(params));
     }
 
-    private void registerRpc(String functionName, Function1<RpcParams, RpcMethodCallResult> handlerFunc) {
-        this.registerRpcMethodHandler(functionName, new RpcFunctionMethodHandler(handlerFunc));
-    }
-
     public RpcMethodCallResult processUpdateNameRpcRequest(RpcParams params) {
         updateName(
                 params.namedParams().get("Id").get().toString(), //how to report error when expected param missing or fail to cast to right type
