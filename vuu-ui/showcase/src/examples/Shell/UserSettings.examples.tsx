@@ -6,7 +6,7 @@ import {
   UserSettingsPanel,
   loadingJSON,
 } from "@finos/vuu-shell";
-import { stackWorkspaceJSON } from "@finos/vuu-shell";
+import { getStackWorkspaceJSON } from "@finos/vuu-shell";
 
 import { useMemo } from "react";
 import { scrollableSettingsFormSchema } from "./UserSettingsSchemaExamples/scrollableSettingsSchemaExample";
@@ -31,7 +31,7 @@ export const DefaultUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          workspaceJSON: stackWorkspaceJSON,
+          workspaceJSON: getStackWorkspaceJSON(),
           userSettings: {
             themeMode: "light",
           },
@@ -92,7 +92,7 @@ export const VariedFormControlUserSettingsForm = () => {
     () =>
       new StaticPersistenceManager({
         applicationJSON: {
-          workspaceJSON: stackWorkspaceJSON,
+          workspaceJSON: getStackWorkspaceJSON(),
           userSettings: {
             themeMode: "light",
             dateFormatPattern: "dd/mm/yyyy",

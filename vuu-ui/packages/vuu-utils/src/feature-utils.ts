@@ -4,7 +4,9 @@ import { ListOption } from "@finos/vuu-table-types";
 import { partition } from "./array-utils";
 import { wordify } from "./text-utils";
 
-export type PathMap = { [key: string]: Pick<FeatureConfig, "css" | "url"> };
+export type PathMap = {
+  [key: string]: Pick<DynamicFeatureConfig, "css" | "url">;
+};
 export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
@@ -37,7 +39,7 @@ declare global {
   const vuuConfig: Promise<VuuConfig>;
 }
 
-export interface FeatureConfig {
+export interface DynamicFeatureConfig {
   name: string;
   title: string;
   url: string;
@@ -50,28 +52,32 @@ export interface FeatureConfig {
   viewProps?: ViewConfig;
 }
 
-export interface VuuConfig {
-  features: Features;
-  authUrl?: string;
-  websocketUrl: string;
-  ssl: boolean;
+export interface StaticFeatureDescriptor {
+  group?: string;
+  label: string;
+  type: string;
 }
 
 export interface FilterTableFeatureProps {
   tableSchema: TableSchema;
 }
 
-export type Features = {
-  [key: string]: FeatureConfig;
+export type DynamicFeatures = {
+  [key: string]: DynamicFeatureConfig;
 };
+
+export type StaticFeatures = {
+  [key: string]: StaticFeatureDescriptor;
+};
+
 export interface VuuConfig {
-  features: Features;
+  features: DynamicFeatures;
   authUrl?: string;
   websocketUrl: string;
   ssl: boolean;
 }
 
-export const isCustomFeature = (feature: FeatureConfig) =>
+export const isCustomFeature = (feature: DynamicFeatureConfig) =>
   feature.leftNavLocation === "vuu-features";
 
 export const isWildcardSchema = (schema?: "*" | VuuTable): schema is "*" =>
@@ -156,16 +162,26 @@ export const assertComponentsRegistered = (componentList: Component[]) => {
 };
 
 export const getCustomAndTableFeatures = (
-  features: Features,
-  vuuTables: Map<string, TableSchema>
-): [FeatureProps[], FeatureProps<FilterTableFeatureProps>[]] => {
+  features: DynamicFeatures,
+  vuuTables: Map<string, TableSchema>,
+  staticFeatures?: StaticFeatureDescriptor[]
+): [
+  FeatureProps[],
+  FeatureProps<FilterTableFeatureProps>[],
+  StaticFeatureDescriptor[] | undefined
+] => {
   const [customFeatureConfig, tableFeaturesConfig] = partition(
     Object.values(features),
     isCustomFeature
   );
 
+  // const staticFeatureDescriptors: StaticFeatureDescriptor[] = [];
   const customFeatures: FeatureProps[] = [];
   const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = [];
+
+  // for (const descriptor of staticFeatures) {
+  //   staticFeatureDescriptors.push(descriptor);
+  // }
 
   for (const {
     featureProps = {},
@@ -236,5 +252,5 @@ export const getCustomAndTableFeatures = (
       customFeatures.push(feature);
     }
   }
-  return [customFeatures, tableFeatures];
+  return [customFeatures, tableFeatures, staticFeatures];
 };

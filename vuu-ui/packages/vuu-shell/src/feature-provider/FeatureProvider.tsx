@@ -1,7 +1,8 @@
 import {
+  DynamicFeatures,
   FeatureProps,
-  Features,
   FilterTableFeatureProps,
+  StaticFeatureDescriptor,
 } from "@finos/vuu-utils";
 import { ReactElement, ReactNode, createContext, useContext } from "react";
 import { useVuuFeatures } from "./useVuuFeatures";
@@ -9,29 +10,35 @@ import { useVuuFeatures } from "./useVuuFeatures";
 export interface FeatureContextProps {
   features: FeatureProps[];
   tableFeatures: FeatureProps<FilterTableFeatureProps>[];
+  staticFeatures: StaticFeatureDescriptor[] | undefined;
 }
 
 const NO_FEATURES: FeatureContextProps["features"] = [];
 const NO_TABLES: FeatureContextProps["tableFeatures"] = [];
+const NO_STATICFEATURES: FeatureContextProps["staticFeatures"] = [];
 
 const FeatureContext = createContext<FeatureContextProps>({
   features: NO_FEATURES,
   tableFeatures: NO_TABLES,
+  staticFeatures: NO_STATICFEATURES,
 });
 
 export interface FeatureProviderProps extends Partial<FeatureContextProps> {
   children: ReactNode;
-  configuredFeatures: Features;
+  dynamicFeatures: DynamicFeatures;
+  staticFeatures?: StaticFeatureDescriptor[];
 }
 
 export const FeatureProvider = ({
   children,
-  configuredFeatures,
+  dynamicFeatures,
   features: featuresProp,
   tableFeatures: tableFeaturesProp,
+  staticFeatures,
 }: FeatureProviderProps): ReactElement => {
-  const [vuuFeatures, vuuTableFeatures] = useVuuFeatures({
-    features: configuredFeatures,
+  const [vuuFeatures, vuuTableFeatures, staticVuuFeatures] = useVuuFeatures({
+    staticFeatures,
+    features: dynamicFeatures,
   });
 
   return (
@@ -39,6 +46,7 @@ export const FeatureProvider = ({
       value={{
         features: featuresProp ?? vuuFeatures,
         tableFeatures: tableFeaturesProp ?? vuuTableFeatures,
+        staticFeatures: staticFeatures ?? staticVuuFeatures,
       }}
     >
       {children}
@@ -54,7 +62,8 @@ export const useFeatures: FeaturesHook = (localFeatures) => {
   if (
     localFeatures === undefined ||
     (localFeatures.features === undefined &&
-      localFeatures.tableFeatures === undefined)
+      localFeatures.tableFeatures === undefined &&
+      localFeatures.staticFeatures === undefined)
   ) {
     return contextFeatures;
   } else {
@@ -62,6 +71,8 @@ export const useFeatures: FeaturesHook = (localFeatures) => {
       features: localFeatures.features ?? contextFeatures.features,
       tableFeatures:
         localFeatures.tableFeatures ?? contextFeatures.tableFeatures,
+      staticFeatures:
+        localFeatures.staticFeatures ?? contextFeatures.staticFeatures,
     };
   }
 };
