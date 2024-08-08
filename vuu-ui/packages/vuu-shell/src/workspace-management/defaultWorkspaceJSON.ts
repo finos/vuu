@@ -27,7 +27,7 @@ export const loadingJSON: Readonly<LayoutJSON> = {
   props: {},
 };
 
-export const stackWorkspaceJSON = (
+export const getStackWorkspaceJSON = (
   activeLayoutIndex?: number
 ): LayoutJSON<
   StackProps & {
@@ -76,12 +76,12 @@ export const getWorkspaceWithLayoutJSON = (
     };
   } else {
     return {
-      ...stackWorkspaceJSON(activeLayoutIndex),
+      ...getStackWorkspaceJSON(activeLayoutIndex),
       props: {
-        ...stackWorkspaceJSON(activeLayoutIndex).props,
+        ...getStackWorkspaceJSON(activeLayoutIndex).props,
         ...stackProps,
         TabstripProps: {
-          ...stackWorkspaceJSON(activeLayoutIndex).props?.TabstripProps,
+          ...getStackWorkspaceJSON(activeLayoutIndex).props?.TabstripProps,
           ...stackProps?.TabstripProps,
         },
       },
