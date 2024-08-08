@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.66</version>
+        <version>0.9.67-SNAPSHOT</version>
     </parent>
 
     <artifactId>virtualized-table</artifactId>
@@ -13,25 +13,25 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.66</version>
+            <version>0.9.67-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>0.9.66</version>
+            <version>0.9.67-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>ignite-plugin</artifactId>
-            <version>0.9.66</version>
+            <version>0.9.67-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.66</version>
+            <version>0.9.67-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
