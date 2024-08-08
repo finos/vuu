@@ -205,3 +205,64 @@ export const SimpleShellCustomPlaceholder = () => {
 };
 
 SimpleShellCustomPlaceholder.displaySequence = displaySequence++;
+
+export const SimpleShellMultiLayouts = () => {
+  const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
+
+  const workspaceProps = useMemo<WorkspaceProps>(() => {
+    const placeHolder = [
+      {
+        type: "Placeholder",
+        props: {
+          "data-testid": "custom-placeholder1",
+          style: {
+            background: "yellow",
+          },
+        },
+      },
+      {
+        type: "Placeholder",
+        props: {
+          "data-testid": "custom-placeholder2",
+          style: {
+            background: "red",
+          },
+        },
+      },
+      {
+        type: "Placeholder",
+        props: {
+          "data-testid": "custom-placeholder3",
+          style: {
+            background: "green",
+          },
+        },
+      },
+    ];
+    return {
+      layoutJSON: placeHolder,
+      layoutPlaceholderJSON: placeHolder,
+      activeLayoutIndex: 1,
+    };
+  }, []);
+
+  return (
+    <PersistenceProvider persistenceManager={persistNothing}>
+      <Shell
+        shellLayoutProps={{
+          htmlAttributes: htmlAttributes,
+        }}
+        workspaceProps={workspaceProps}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100%",
+            "--vuuShell-width": "100%",
+          } as CSSProperties
+        }
+      ></Shell>
+    </PersistenceProvider>
+  );
+};
+
+SimpleShellMultiLayouts.displaySequence = displaySequence++;

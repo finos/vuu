@@ -22,12 +22,13 @@ import {
 const { info } = logger("useLayoutManager");
 
 export type WorkspaceProps = WorkspaceStackProps & {
-  layoutPlaceholderJSON?: LayoutJSON;
+  layoutPlaceholderJSON?: LayoutJSON | LayoutJSON[];
   /**
    * layoutJSON defines the default layout to render on first load and until such time as
    * layout state has been persisted. After that, the persisted state will be rendered.
    */
-  layoutJSON?: LayoutJSON;
+  layoutJSON?: LayoutJSON | LayoutJSON[];
+  activeLayoutIndex?: number;
   /**
    * The Vuu workspace is the container into which layouts are loaded. By default, it will be
    * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
@@ -82,6 +83,7 @@ export const WorkspaceProvider = ({
   TabstripProps,
   children,
   layoutJSON,
+  activeLayoutIndex,
   layoutPlaceholderJSON,
   showTabs,
   workspaceJSON: customWorkspaceJSON,
@@ -162,6 +164,7 @@ export const WorkspaceProvider = ({
           const workspaceJSON = getWorkspaceWithLayoutJSON(
             customWorkspaceJSON,
             layoutJSON,
+            activeLayoutIndex,
             { TabstripProps, showTabs }
           );
           info?.(`applicationJSON not found, getting defaultWorkspaceJSON,
@@ -185,6 +188,7 @@ export const WorkspaceProvider = ({
       });
   }, [
     TabstripProps,
+    activeLayoutIndex,
     customWorkspaceJSON,
     layoutJSON,
     notify,
