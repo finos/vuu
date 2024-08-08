@@ -42,7 +42,7 @@ export interface WorkspaceProviderProps extends WorkspaceProps {
   /**
    * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.
    */
-  layoutPlaceholderJSON?: LayoutJSON;
+  layoutPlaceholderJSON?: LayoutJSON | LayoutJSON[];
 }
 
 const ensureLayoutHasTitle = (

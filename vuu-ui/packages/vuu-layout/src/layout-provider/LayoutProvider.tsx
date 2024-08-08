@@ -231,8 +231,9 @@ export const useLayoutCreateNewChild = () => {
     () =>
       function createNewChild() {
         if (layoutPlaceholderJSON) {
-          const placeholder = layoutPlaceholderJSON.props
-            ? layoutPlaceholderJSON
+          const placeholder = (layoutPlaceholderJSON as unknown as LayoutJSON)
+            .props
+            ? (layoutPlaceholderJSON as unknown as LayoutJSON)
             : (layoutPlaceholderJSON as unknown as LayoutJSON[])[
                 (layoutPlaceholderJSON as unknown as LayoutJSON[]).length - 1
               ];

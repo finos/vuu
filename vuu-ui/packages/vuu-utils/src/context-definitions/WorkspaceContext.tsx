@@ -8,7 +8,7 @@ import { LayoutMetadata, LayoutMetadataDto } from "../layout-types";
 
 export interface WorkspaceContextProps {
   layoutMetadata: LayoutMetadata[];
-  layoutPlaceholderJSON?: LayoutJSON;
+  layoutPlaceholderJSON?: LayoutJSON | LayoutJSON[];
   getApplicationSettings: (
     key?: keyof ApplicationSettings
   ) => ApplicationSettings | ApplicationSetting | undefined;
