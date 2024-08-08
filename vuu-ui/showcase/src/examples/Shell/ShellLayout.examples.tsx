@@ -210,7 +210,16 @@ export const SimpleShellMultiLayouts = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
 
   const workspaceProps = useMemo<WorkspaceProps>(() => {
-    const placeHolder = [
+    const placeHolder = {
+      type: "Placeholder",
+      props: {
+        "data-testid": "custom-placeholder",
+        style: {
+          background: "yellow",
+        },
+      },
+    };
+    const layouts = [
       {
         type: "Placeholder",
         props: {
@@ -240,7 +249,7 @@ export const SimpleShellMultiLayouts = () => {
       },
     ];
     return {
-      layoutJSON: placeHolder,
+      layoutJSON: layouts,
       layoutPlaceholderJSON: placeHolder,
       activeLayoutIndex: 1,
     };

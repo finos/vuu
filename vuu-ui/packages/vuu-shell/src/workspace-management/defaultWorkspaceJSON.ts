@@ -33,26 +33,24 @@ export const getStackWorkspaceJSON = (
   StackProps & {
     preserve: boolean;
   }
-> => {
-  return {
-    type: "Stack",
-    id: VuuShellLocation.Workspace,
-    props: {
-      className: `${VuuShellLocation.Workspace}-tabs`,
-      TabstripProps: {
-        allowAddTab: true,
-        allowCloseTab: true,
-        allowRenameTab: true,
-        animateSelectionThumb: false,
-        "aria-label": "Workspace Tabs",
-        location: "workspace-tab",
-        variant: "primary",
-      },
-      preserve: true,
-      active: activeLayoutIndex ?? 0,
+> => ({
+  type: "Stack",
+  id: VuuShellLocation.Workspace,
+  props: {
+    className: `${VuuShellLocation.Workspace}-tabs`,
+    TabstripProps: {
+      allowAddTab: true,
+      allowCloseTab: true,
+      allowRenameTab: true,
+      animateSelectionThumb: false,
+      "aria-label": "Workspace Tabs",
+      location: "workspace-tab",
+      variant: "primary",
     },
-  };
-};
+    preserve: true,
+    active: activeLayoutIndex ?? 0,
+  },
+});
 
 const placeholderLayout: LayoutJSON = {
   props: {

@@ -231,16 +231,10 @@ export const useLayoutCreateNewChild = () => {
     () =>
       function createNewChild() {
         if (layoutPlaceholderJSON) {
-          const placeholder = (layoutPlaceholderJSON as unknown as LayoutJSON)
-            .props
-            ? (layoutPlaceholderJSON as unknown as LayoutJSON)
-            : (layoutPlaceholderJSON as unknown as LayoutJSON[])[
-                (layoutPlaceholderJSON as unknown as LayoutJSON[]).length - 1
-              ];
-          const { props } = placeholder;
+          const { props } = layoutPlaceholderJSON;
           return layoutFromJson(
             {
-              ...placeholder,
+              ...layoutPlaceholderJSON,
               props: {
                 ...props,
                 resizeable: true,

@@ -22,7 +22,7 @@ import {
 const { info } = logger("useLayoutManager");
 
 export type WorkspaceProps = WorkspaceStackProps & {
-  layoutPlaceholderJSON?: LayoutJSON | LayoutJSON[];
+  layoutPlaceholderJSON?: LayoutJSON;
   /**
    * layoutJSON defines the default layout to render on first load and until such time as
    * layout state has been persisted. After that, the persisted state will be rendered.
@@ -42,7 +42,7 @@ export interface WorkspaceProviderProps extends WorkspaceProps {
   /**
    * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.
    */
-  layoutPlaceholderJSON?: LayoutJSON | LayoutJSON[];
+  layoutPlaceholderJSON?: LayoutJSON;
 }
 
 const ensureLayoutHasTitle = (
