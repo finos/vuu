@@ -25,8 +25,6 @@ class TestVuuClient(vsClient: ViewServerClient) {
   def awaitForMsgWithBody[T <: AnyRef](implicit t: ClassTag[T]): Option[T] =
     awaitForMsg.map(msg => msg.body.asInstanceOf[T])
 
-
-
   def awaitForMsg[T <: AnyRef](implicit t: ClassTag[T]): Option[ViewServerMessage] = {
     failAfter(timeout){
       val msg = vsClient.awaitMsg

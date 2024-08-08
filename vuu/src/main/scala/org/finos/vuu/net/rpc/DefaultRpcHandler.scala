@@ -8,20 +8,23 @@ import java.util.concurrent.ConcurrentHashMap
 
 class DefaultRpcHandler extends RpcHandler with StrictLogging {
 
-  private val methodHandlers = new ConcurrentHashMap[String, RpcMethodHandler]()
+  type RpcFunction = RpcParams => RpcMethodCallResult
+
+  private val rpcHandlerMap = new ConcurrentHashMap[String, RpcFunction]()
 
   /**
-   * Register a handler for a given rpc method
+   * Register a handler for a given rpc function
    *
-   * @param methodName name of the rpc method
-   * @param handler    RpcMethodHandler
-   * @return
+   * @param functionName name of the rpc function
+   * @param handlerFunc  handler function that takes RpcParams and return RpcMethodCallResult
    */
-  def registerRpcMethodHandler(methodName: String, handler: RpcMethodHandler): RpcMethodHandler = {
-    if (methodHandlers.containsKey(methodName)) {
-      throw new IllegalArgumentException(s"Method $methodName already registered")
+
+  def registerRpc(functionName: String, handlerFunc: RpcFunction): Unit = {
+
+    if (rpcHandlerMap.containsKey(functionName)) {
+      throw new IllegalArgumentException(s"Function $functionName already registered")
     }
-    methodHandlers.put(methodName, handler)
+    rpcHandlerMap.put(functionName, handlerFunc)
   }
 
   override def processViewPortRpcCall(methodName: String, params: Array[Any], namedParams: Map[String, Any])(ctx: RequestContext): ViewPortAction = {
@@ -45,10 +48,10 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
   }
 
   private def processRpcMethodHandler(methodName: String, params: Array[Any], namedParams: Map[String, Any], ctx: RequestContext) = {
-    if (methodHandlers.containsKey(methodName)) {
+    if (rpcHandlerMap.containsKey(methodName)) {
       try {
-        val handler = methodHandlers.get(methodName)
-        handler.call(new RpcParams(params, namedParams, ctx))
+        val handler = rpcHandlerMap.get(methodName)
+        handler(new RpcParams(params, namedParams, ctx))
       } catch {
         case e: Exception =>
           logger.error(s"Error processing rpc method $methodName", e)
