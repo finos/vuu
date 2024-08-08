@@ -2,7 +2,7 @@ import {
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
-  stackWorkspaceJSON,
+  getStackWorkspaceJSON,
 } from "@finos/vuu-shell";
 import { useMemo } from "react";
 
@@ -64,7 +64,7 @@ export const DefaultLayoutStoredState = () => {
       new StaticPersistenceManager({
         applicationJSON: {
           workspaceJSON: {
-            ...stackWorkspaceJSON,
+            ...getStackWorkspaceJSON(),
             children: [
               {
                 type: "div",
@@ -110,9 +110,9 @@ export const CustomLayoutStoredState = () => {
       new StaticPersistenceManager({
         applicationJSON: {
           workspaceJSON: {
-            ...stackWorkspaceJSON,
+            ...getStackWorkspaceJSON(),
             props: {
-              ...stackWorkspaceJSON.props,
+              ...getStackWorkspaceJSON().props,
               active: 1,
             },
             children: [

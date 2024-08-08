@@ -71,7 +71,7 @@ export const App = ({ user }: { user: VuuUser }) => {
         <ShellContextProvider
           value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
-          <FeatureProvider configuredFeatures={features}>
+          <FeatureProvider dynamicFeatures={features}>
             <Shell
               shellLayoutProps={ShellLayoutProps}
               className="App"
