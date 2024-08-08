@@ -48,7 +48,6 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
-    "@salt-ds/core": "1.27.1",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
