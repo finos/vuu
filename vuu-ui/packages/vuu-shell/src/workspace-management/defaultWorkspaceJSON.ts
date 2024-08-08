@@ -27,27 +27,31 @@ export const loadingJSON: Readonly<LayoutJSON> = {
   props: {},
 };
 
-export const stackWorkspaceJSON: LayoutJSON<
+export const stackWorkspaceJSON = (
+  activeLayoutIndex?: number
+): LayoutJSON<
   StackProps & {
     preserve: boolean;
   }
-> = {
-  type: "Stack",
-  id: VuuShellLocation.Workspace,
-  props: {
-    className: `${VuuShellLocation.Workspace}-tabs`,
-    TabstripProps: {
-      allowAddTab: true,
-      allowCloseTab: true,
-      allowRenameTab: true,
-      animateSelectionThumb: false,
-      "aria-label": "Workspace Tabs",
-      location: "workspace-tab",
-      variant: "primary",
+> => {
+  return {
+    type: "Stack",
+    id: VuuShellLocation.Workspace,
+    props: {
+      className: `${VuuShellLocation.Workspace}-tabs`,
+      TabstripProps: {
+        allowAddTab: true,
+        allowCloseTab: true,
+        allowRenameTab: true,
+        animateSelectionThumb: false,
+        "aria-label": "Workspace Tabs",
+        location: "workspace-tab",
+        variant: "primary",
+      },
+      preserve: true,
+      active: activeLayoutIndex ?? 0,
     },
-    preserve: true,
-    active: 0,
-  },
+  };
 };
 
 const placeholderLayout: LayoutJSON = {
@@ -62,6 +66,7 @@ const placeholderLayout: LayoutJSON = {
 export const getWorkspaceWithLayoutJSON = (
   customWorkspaceJSON?: LayoutJSON,
   layoutJSON: LayoutJSON | LayoutJSON[] = placeholderLayout,
+  activeLayoutIndex?: number,
   stackProps?: WorkspaceStackProps
 ): LayoutJSON => {
   if (customWorkspaceJSON) {
@@ -71,12 +76,12 @@ export const getWorkspaceWithLayoutJSON = (
     };
   } else {
     return {
-      ...stackWorkspaceJSON,
+      ...stackWorkspaceJSON(activeLayoutIndex),
       props: {
-        ...stackWorkspaceJSON.props,
+        ...stackWorkspaceJSON(activeLayoutIndex).props,
         ...stackProps,
         TabstripProps: {
-          ...stackWorkspaceJSON.props?.TabstripProps,
+          ...stackWorkspaceJSON(activeLayoutIndex).props?.TabstripProps,
           ...stackProps?.TabstripProps,
         },
       },
