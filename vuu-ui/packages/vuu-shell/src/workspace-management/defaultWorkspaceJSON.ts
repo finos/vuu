@@ -69,6 +69,7 @@ export const getWorkspaceWithLayoutJSON = (
   activeLayoutIndex?: number,
   stackProps?: WorkspaceStackProps
 ): LayoutJSON => {
+  const stackWorkspace = getStackWorkspaceJSON(activeLayoutIndex);
   if (customWorkspaceJSON) {
     return {
       ...customWorkspaceJSON,
@@ -76,12 +77,12 @@ export const getWorkspaceWithLayoutJSON = (
     };
   } else {
     return {
-      ...getStackWorkspaceJSON(activeLayoutIndex),
+      ...stackWorkspace,
       props: {
-        ...getStackWorkspaceJSON(activeLayoutIndex).props,
+        ...stackWorkspace.props,
         ...stackProps,
         TabstripProps: {
-          ...getStackWorkspaceJSON(activeLayoutIndex).props?.TabstripProps,
+          ...stackWorkspace.props?.TabstripProps,
           ...stackProps?.TabstripProps,
         },
       },
