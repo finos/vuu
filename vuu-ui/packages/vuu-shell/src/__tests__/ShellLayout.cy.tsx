@@ -55,14 +55,14 @@ describe("ShellLayout", () => {
     it("THEN custom layout with active index is rendered", () => {
       cy.mount(<SimpleShellMultiLayouts />);
       cy.findByTestId("shell").should("be.sizedToFillViewport");
+      cy.findAllByRole("tab").should("have.length", 3);
       cy.findByTestId("custom-placeholder2").should("be.visible");
     });
     describe("AND WHEN workspace tab is added", () => {
       it("THEN custom placeholder is used to create new layout", () => {
         cy.mount(<SimpleShellMultiLayouts />);
         cy.findByRole("img", { name: "Create Tab" }).realClick();
-        cy.findAllByRole("tab").should("have.length", 3);
-
+        cy.findAllByRole("tab").should("have.length", 4);
         cy.findByTestId("custom-placeholder2").should("be.visible");
       });
     });
