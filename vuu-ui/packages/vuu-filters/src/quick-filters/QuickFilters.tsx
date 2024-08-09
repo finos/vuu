@@ -19,12 +19,20 @@ export interface QuickFilterProps
       "onApplyFilter" | "suggestionProvider" | "tableSchema"
     > {
   availableColumns: ColumnDescriptor[];
+  onChangeQuickFilterColumns?: (columns: string[]) => void;
   quickFilterColumns?: string[];
+  /**
+   * Render a general 'search' control.
+   * if true, all columns of type 'string' will be included in the search. Otherwise
+   * a list of the columns to include in search can be provided.
+   */
+  showFind?: boolean | string[];
 }
 
 export const QuickFilters = ({
   availableColumns,
   onApplyFilter,
+  onChangeQuickFilterColumns,
   quickFilterColumns,
   suggestionProvider,
   tableSchema,
@@ -48,11 +56,12 @@ export const QuickFilters = ({
   } = useQuickFilters({
     availableColumns,
     onApplyFilter,
+    onChangeQuickFilterColumns,
     quickFilterColumns,
   });
 
   const filterColumns = availableColumns.filter(({ name }) =>
-    quickFilters?.includes(name)
+    quickFilters?.includes(name),
   );
 
   return (

@@ -18,18 +18,18 @@ type QuickFilterValues = Record<string, VuuRowDataItemType>;
 
 const createFilterClause = (
   [identifier, value]: [string, VuuRowDataItemType],
-  availableColumns?: ColumnDescriptor[]
+  availableColumns?: ColumnDescriptor[],
 ): Filter => {
   if (identifier === "find") {
     if (availableColumns) {
       const targetColumns = availableColumns.filter(
-        ({ serverDataType }) => serverDataType === "string"
+        ({ serverDataType }) => serverDataType === "string",
       );
       if (targetColumns.length) {
         return {
           op: "or",
           filters: targetColumns.map((column) =>
-            createFilterClause([column.name, value])
+            createFilterClause([column.name, value]),
           ),
         };
       } else {
@@ -49,7 +49,7 @@ const createFilterClause = (
 
 const buildFilterStruct = (
   quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[]
+  availableColumns: ColumnDescriptor[],
 ): Filter => {
   const entries = Object.entries(quickFilters);
   if (entries.length === 1) {
@@ -59,7 +59,7 @@ const buildFilterStruct = (
       op: "and",
       filters: entries.map(
         (entry) => createFilterClause(entry, availableColumns),
-        availableColumns
+        availableColumns,
       ),
     };
   } else {
@@ -69,7 +69,7 @@ const buildFilterStruct = (
 
 const buildFilter = (
   quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[]
+  availableColumns: ColumnDescriptor[],
 ): DataSourceFilter => {
   const filterStruct = buildFilterStruct(quickFilters, availableColumns);
   return {
@@ -80,14 +80,19 @@ const buildFilter = (
 
 export type QuickFilterHookProps = Pick<
   QuickFilterProps,
-  "availableColumns" | "onApplyFilter" | "quickFilterColumns"
+  | "availableColumns"
+  | "onApplyFilter"
+  | "onChangeQuickFilterColumns"
+  | "quickFilterColumns"
 >;
 
 export const useQuickFilters = ({
   availableColumns,
   onApplyFilter,
+  onChangeQuickFilterColumns,
   quickFilterColumns = [],
 }: QuickFilterProps) => {
+  //TODO make controlled
   const [quickFilters, setQuickFilters] = useState(quickFilterColumns);
   const filters = useRef<QuickFilterValues>({});
   const rootRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -101,7 +106,7 @@ export const useQuickFilters = ({
     (e) => {
       console.log(`onChange ${e.target.value}`);
     },
-    []
+    [],
   );
 
   const handleCommit = useCallback<Commithandler>(
@@ -115,19 +120,20 @@ export const useQuickFilters = ({
         }
       }
     },
-    [availableColumns, onApplyFilter]
+    [availableColumns, onApplyFilter],
   );
 
   const handleColumnsSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, newSelected) => {
+      onChangeQuickFilterColumns?.(newSelected);
       setQuickFilters(newSelected);
     },
-    []
+    [onChangeQuickFilterColumns],
   );
 
   const availableColumnNames = useMemo(
     () => availableColumns.map((col) => col.name),
-    [availableColumns]
+    [availableColumns],
   );
 
   return {

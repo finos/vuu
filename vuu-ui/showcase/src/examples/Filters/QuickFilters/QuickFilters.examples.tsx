@@ -1,18 +1,35 @@
 import { QuickFilterProps, QuickFilters } from "@finos/vuu-filters";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { IPersistenceManager, LocalPersistenceManager } from "@finos/vuu-shell";
+import { basketSchemas } from "@finos/vuu-data-test";
 
 let displaySequence = 1;
 
 const QuickFiltersTemplate = ({
   availableColumns = [],
   onApplyFilter,
-  quickFilterColumns,
+  persistenceKey,
+  quickFilterColumns: quickFilterColumnsProp,
   suggestionProvider,
   tableSchema,
-}: Partial<QuickFilterProps>) => {
+}: Partial<QuickFilterProps> & {
+    persistenceKey?: string
+}) => {
+
+  const initialColumns = useMemo(() => {
+    return quickFilterColumnsProp;
+  },[quickFilterColumnsProp])
+
+  const [quickFilterColumns, setQuickFilterColumns] = useState(initialColumns)
+
+  const persistenceManager = useMemo<IPersistenceManager | undefined>(() => 
+    persistenceKey ? new LocalPersistenceManager(persistenceKey) : undefined
+  ,[persistenceKey])
+
+
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
       onApplyFilter?.(filter);
@@ -23,10 +40,15 @@ const QuickFiltersTemplate = ({
     [onApplyFilter]
   );
 
+  const handleChangeQuickFilterColumns = useCallback((columns: string[]) => {
+    console.log('change columns',{columns})
+  },[])
+
   return (
     <QuickFilters
       availableColumns={availableColumns}
       onApplyFilter={handleApplyFilter}
+      onChangeQuickFilterColumns={handleChangeQuickFilterColumns}
       quickFilterColumns={quickFilterColumns}
       suggestionProvider={suggestionProvider}
       tableSchema={tableSchema}
@@ -84,3 +106,18 @@ export const ThreeColumns = () => {
   );
 };
 ThreeColumns.displaySequence = displaySequence++;
+
+export const WithPersistence = () => {
+
+  const columns = useMemo(() => 
+    basketSchemas.basketTradingConstituentJoin.columns
+  ,[])
+
+  return (
+    <QuickFiltersTemplate
+      availableColumns={columns}
+      persistenceKey="quick-filters-with-persistence"
+    />
+  );
+};
+SearchOnly.displaySequence = displaySequence++;
