@@ -231,7 +231,9 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
   }
 
   def runOnce(): Unit = {
-    SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
+    if(!sessions.isEmpty) {
+      SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
+    }
   }
 }
 
