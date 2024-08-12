@@ -64,9 +64,13 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     val parentColumn = viewPortVisualLink.parentColumn
     val childColumn = viewPortVisualLink.childColumn
 
-    val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
+    if (parentSelectionKeys.isEmpty) {
+      primaryKeys
+    } else {
+      val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
+      filtered
+    }
 
-    filtered
   }
 }
 
