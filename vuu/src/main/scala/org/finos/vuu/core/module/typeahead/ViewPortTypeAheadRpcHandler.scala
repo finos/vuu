@@ -2,13 +2,13 @@ package org.finos.vuu.core.module.typeahead
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.RequestContext
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcMethodCallResult, RpcMethodSuccess, RpcParams}
+import org.finos.vuu.net.{RequestContext, RpcNames}
 
 class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
-  this.registerRpc("getUniqueFieldValues", params => processGetUniqueFieldValuesRequest(params))
-  this.registerRpc("getUniqueFieldValuesStartingWith", params => processGetUniqueFieldValuesStartWithRequest(params))
+  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
+  this.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
 
   def processGetUniqueFieldValuesRequest(params: RpcParams): RpcMethodCallResult = {
     val values = getUniqueFieldValues(
