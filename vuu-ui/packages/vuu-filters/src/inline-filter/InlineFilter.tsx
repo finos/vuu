@@ -1,6 +1,6 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import { VirtualColSpan, useHeaderProps } from "@finos/vuu-table";
-import { Commithandler } from "@finos/vuu-ui-controls";
+import { CommitHandler } from "@finos/vuu-ui-controls";
 import { queryClosest } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -13,7 +13,7 @@ const classBase = "vuuInlineFilter";
 
 export type FilterValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string
+  value: string,
 ) => void;
 export interface InlineFilterProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -33,7 +33,7 @@ export const InlineFilter = ({
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
-  const onCommit = useCallback<Commithandler>(
+  const onCommit = useCallback<CommitHandler>(
     (evt, value) => {
       const field = queryClosest(evt.target, "[data-field]");
       if (field) {
@@ -44,7 +44,7 @@ export const InlineFilter = ({
         }
       }
     },
-    [columns, onChange]
+    [columns, onChange],
   );
 
   return (

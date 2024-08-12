@@ -1,6 +1,6 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Commithandler } from "@finos/vuu-ui-controls";
+import { CommitHandler } from "@finos/vuu-ui-controls";
 import { queryClosest } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -14,7 +14,7 @@ const classBase = "vuuBulkEditRow";
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string
+  value: string,
 ) => void;
 export interface BulkEditProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -31,7 +31,7 @@ export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
-  const onCommit = useCallback<Commithandler>(
+  const onCommit = useCallback<CommitHandler>(
     (evt, value) => {
       if (String(value).trim() !== "") {
         const field = queryClosest(evt.target, "[data-field]");
@@ -44,7 +44,7 @@ export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
         }
       }
     },
-    [columns, onChange]
+    [columns, onChange],
   );
 
   return (

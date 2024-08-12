@@ -1,6 +1,6 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  type Commithandler,
+  type CommitHandler,
   VuuInput,
   VuuTypeaheadInput,
 } from "@finos/vuu-ui-controls";
@@ -8,7 +8,7 @@ import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
 
 export interface DataItemEditControlProps {
   column: ColumnDescriptor;
-  onCommit: Commithandler;
+  onCommit: CommitHandler;
   suggestionProvider?: SuggestionProvider;
   table?: TableSchemaTable;
 }

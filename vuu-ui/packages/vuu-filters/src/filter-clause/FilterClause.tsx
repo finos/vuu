@@ -20,7 +20,7 @@ import { OperatorPicker } from "./OperatorPicker";
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
   filterClause: FilterClauseModel,
-  reason: FilterClauseCancelType
+  reason: FilterClauseCancelType,
 ) => void;
 
 export interface FilterClauseProps
@@ -54,7 +54,6 @@ export const FilterClause = ({
     columnRef,
     filterClause,
     onChangeValue,
-    // onChangeColumn,
     onSelectColumn,
     onSelectOperator,
     onDeselectValue,

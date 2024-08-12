@@ -1,9 +1,17 @@
+import {
+  CalendarDate,
+  type DateValue,
+  isSameDay,
+} from "@internationalized/date";
 import { makePrefixer, useControlled } from "@salt-ds/core";
 import { clsx } from "clsx";
-import { KeyboardEventHandler, MouseEventHandler, SyntheticEvent } from "react";
-import { isPlainObject } from "../common-hooks/isPlainObject";
+import type {
+  KeyboardEventHandler,
+  MouseEventHandler,
+  SyntheticEvent,
+} from "react";
+import { isPlainObject } from "../utils";
 import { useCalendarContext } from "./internal/CalendarContext";
-import { CalendarDate, DateValue, isSameDay } from "@internationalized/date";
 
 interface BaseUseSelectionCalendarProps<SelectionVariantType> {
   hoveredDate?: DateValue | null;
@@ -11,16 +19,16 @@ interface BaseUseSelectionCalendarProps<SelectionVariantType> {
   defaultSelectedDate?: SelectionVariantType;
   onSelectedDateChange?: (
     event: SyntheticEvent,
-    selectedDate: SelectionVariantType
+    selectedDate: SelectionVariantType,
   ) => void;
   isDaySelectable: (date?: DateValue) => boolean;
   onHoveredDateChange?: (
     event: SyntheticEvent,
-    hoveredDate: DateValue | null
+    hoveredDate: DateValue | null,
   ) => void;
 }
 
-type SingleSelectionValueType = DateValue;
+export type SingleSelectionValueType = DateValue;
 type MultiSelectionValueType = DateValue[];
 export type RangeSelectionValueType = {
   startDate?: DateValue;
@@ -70,8 +78,8 @@ export type useSelectionCalendarProps =
   | UseOffsetSelectionCalendarProps;
 
 function addOrRemoveFromArray(
-  array: AllSelectionValueType | null = [],
-  item: DateValue
+  array: AllSelectionValueType | null,
+  item: DateValue,
 ) {
   if (Array.isArray(array)) {
     if (array.find((element) => isSameDay(element, item))) {
@@ -84,10 +92,19 @@ function addOrRemoveFromArray(
 
 const defaultOffset = (date: DateValue) => date;
 
-function isRangeOrOffsetSelectionValue(
-  selectionValue?: AllSelectionValueType
+export function isRangeOrOffsetSelectionValue(
+  selectionValue?: AllSelectionValueType,
 ): selectionValue is RangeSelectionValueType | OffsetSelectionValueType {
   return selectionValue != null && isPlainObject(selectionValue);
+}
+
+export function isRangeOrOffsetSelectionWithStartDate(
+  selectionValue?: AllSelectionValueType,
+): selectionValue is RangeSelectionValueType | OffsetSelectionValueType {
+  return (
+    isRangeOrOffsetSelectionValue(selectionValue) &&
+    Object.prototype.hasOwnProperty.call(selectionValue, "startDate")
+  );
 }
 
 const withBaseName = makePrefixer("saltCalendarDay");
@@ -114,22 +131,20 @@ export function useSelectionCalendar(props: useSelectionCalendarProps) {
   const getStartDateOffset = (date: DateValue) => {
     if (props.selectionVariant === "offset" && props.startDateOffset) {
       return props.startDateOffset(date);
-    } else {
-      return defaultOffset(date);
     }
+    return defaultOffset(date);
   };
 
   const getEndDateOffset = (date: DateValue) => {
     if (props.selectionVariant === "offset" && props.endDateOffset) {
       return props.endDateOffset(date);
-    } else {
-      return defaultOffset(date);
     }
+    return defaultOffset(date);
   };
 
   const setSelectedDate = (
     event: SyntheticEvent<HTMLButtonElement>,
-    newSelectedDate: DateValue
+    newSelectedDate: DateValue,
   ) => {
     if (isDaySelectable(newSelectedDate)) {
       switch (props.selectionVariant) {
@@ -138,7 +153,10 @@ export function useSelectionCalendar(props: useSelectionCalendarProps) {
           props.onSelectedDateChange?.(event, newSelectedDate);
           break;
         case "multiselect": {
-          const newDates = addOrRemoveFromArray(selectedDate, newSelectedDate);
+          const newDates = addOrRemoveFromArray(
+            selectedDate ?? [],
+            newSelectedDate,
+          );
           setSelectedDateState(newDates);
           props.onSelectedDateChange?.(event, newDates);
           break;

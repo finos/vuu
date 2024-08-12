@@ -2,7 +2,7 @@ import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Commithandler, MultiSelectionHandler } from "@finos/vuu-ui-controls";
+import { CommitHandler, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { filterAsQuery, queryClosest } from "@finos/vuu-utils";
 import {
   ChangeEventHandler,
@@ -109,7 +109,7 @@ export const useQuickFilters = ({
     [],
   );
 
-  const handleCommit = useCallback<Commithandler>(
+  const handleCommit = useCallback<CommitHandler>(
     (e, value) => {
       if (value.trim() !== "") {
         const field = queryClosest(e.target, "[data-field]");

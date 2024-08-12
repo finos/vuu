@@ -1,30 +1,34 @@
 import {
-  ComponentPropsWithRef,
-  forwardRef,
-  MouseEventHandler,
-  SyntheticEvent,
-} from "react";
-import {
   Button,
-  ButtonProps,
-  makePrefixer,
-  Tooltip,
+  type ButtonProps,
   Dropdown,
-  DropdownProps,
+  type DropdownProps,
   Option,
-  OptionProps,
+  type OptionProps,
+  Tooltip,
+  makePrefixer,
   useListControlContext,
 } from "@salt-ds/core";
 import { ChevronLeftIcon, ChevronRightIcon } from "@salt-ds/icons";
 import { clsx } from "clsx";
+import {
+  type ComponentPropsWithRef,
+  type MouseEventHandler,
+  type SyntheticEvent,
+  forwardRef,
+} from "react";
 
 import { useCalendarContext } from "./CalendarContext";
 
-import calendarNavigationCss from "./CalendarNavigation.css";
-import { DateValue, isSameMonth, isSameYear } from "@internationalized/date";
-import { formatDate, monthDiff, monthsForLocale } from "./utils";
-import { useWindow } from "@salt-ds/window";
+import {
+  type DateValue,
+  isSameMonth,
+  isSameYear,
+} from "@internationalized/date";
 import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import calendarNavigationCss from "./CalendarNavigation.css";
+import { formatDate, monthDiff, monthsForLocale } from "./utils";
 
 type dateDropdownProps = DropdownProps<DateValue>;
 
@@ -33,6 +37,7 @@ export interface CalendarNavigationProps extends ComponentPropsWithRef<"div"> {
   YearDropdownProps?: dateDropdownProps;
   onMonthSelect?: dateDropdownProps["onChange"];
   onYearSelect?: dateDropdownProps["onChange"];
+  borderedDropdown?: dateDropdownProps["bordered"];
   onNavigateNext?: ButtonProps["onClick"];
   onNavigatePrevious?: ButtonProps["onClick"];
   hideYearDropdown?: boolean;
@@ -71,13 +76,13 @@ function useCalendarNavigation() {
       if (isOutsideAllowedMonths(newMonth)) {
         // If month is navigable we should move to the closest navigable month
         const navigableMonths = monthsForLocale(visibleMonth).filter(
-          (n) => !isOutsideAllowedMonths(n)
+          (n) => !isOutsideAllowedMonths(n),
         );
         newMonth = navigableMonths.reduce((closestMonth, currentMonth) =>
           Math.abs(monthDiff(currentMonth, newMonth)) <
           Math.abs(monthDiff(closestMonth, newMonth))
             ? currentMonth
-            : closestMonth
+            : closestMonth,
         );
       }
       setVisibleMonth(event, newMonth);
@@ -91,10 +96,10 @@ function useCalendarNavigation() {
     .filter((year) => !isOutsideAllowedYears(year));
 
   const selectedMonth: DateValue | undefined = months.find((month: DateValue) =>
-    isSameMonth(month, visibleMonth)
+    isSameMonth(month, visibleMonth),
   );
   const selectedYear: DateValue | undefined = years.find((year: DateValue) =>
-    isSameYear(year, visibleMonth)
+    isSameYear(year, visibleMonth),
   );
 
   const canNavigatePrevious = !(minDate && isDayVisible(minDate));
@@ -149,6 +154,7 @@ export const CalendarNavigation = forwardRef<
     MonthDropdownProps,
     YearDropdownProps,
     hideYearDropdown,
+    borderedDropdown,
     ...rest
   } = props;
 
@@ -174,7 +180,7 @@ export const CalendarNavigation = forwardRef<
   } = useCalendarNavigation();
 
   const handleNavigatePrevious: MouseEventHandler<HTMLButtonElement> = (
-    event
+    event,
   ) => {
     moveToPreviousMonth(event);
   };
@@ -206,7 +212,7 @@ export const CalendarNavigation = forwardRef<
       className={clsx(
         withBaseName(),
         { [withBaseName("hideYearDropdown")]: hideYearDropdown },
-        className
+        className,
       )}
       ref={ref}
       {...rest}
@@ -224,15 +230,12 @@ export const CalendarNavigation = forwardRef<
           onClick={handleNavigatePrevious}
           focusableWhenDisabled={true}
         >
-          <ChevronLeftIcon
-            aria-label={`Previous Month, ${formatDate(
-              visibleMonth.subtract({ months: 1 })
-            )}`}
-          />
+          <ChevronLeftIcon aria-label="Previous Month" />
         </Button>
       </Tooltip>
       <div className={withBaseName("dropdowns")}>
         <Dropdown
+          bordered={borderedDropdown}
           aria-label="Month Dropdown"
           selected={selectedMonth ? [selectedMonth] : []}
           value={formatMonth(selectedMonth)}
@@ -256,6 +259,7 @@ export const CalendarNavigation = forwardRef<
             selected={selectedYear ? [selectedYear] : []}
             value={formatYear(selectedYear)}
             onSelectionChange={handleYearSelect}
+            bordered={borderedDropdown}
             {...YearDropdownProps}
           >
             {years.map((year) => (
@@ -283,11 +287,7 @@ export const CalendarNavigation = forwardRef<
           onClick={handleNavigateNext}
           focusableWhenDisabled={true}
         >
-          <ChevronRightIcon
-            aria-label={`Next Month, ${formatDate(
-              visibleMonth.add({ months: 1 })
-            )}`}
-          />
+          <ChevronRightIcon aria-label="Next Month" />
         </Button>
       </Tooltip>
     </div>

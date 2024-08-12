@@ -1,6 +1,6 @@
 import { Tooltip, TooltipHookProps, useTooltip } from "@finos/vuu-popups";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { isValidNumber, useId } from "@finos/vuu-utils";
+import { CommitHandler, isValidNumber, useId } from "@finos/vuu-utils";
 import { Input, InputProps } from "@salt-ds/core";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -11,7 +11,6 @@ import {
   forwardRef,
   KeyboardEventHandler,
   ReactElement,
-  SyntheticEvent,
   useCallback,
 } from "react";
 
@@ -23,15 +22,11 @@ const constantInputProps = {
   autoComplete: "off",
 };
 
-export type Commithandler<T extends VuuRowDataItemType = string> = (
-  evt: SyntheticEvent<HTMLInputElement>,
-  value: T
-) => void;
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends InputProps {
-  onCommit: Commithandler<T>;
+  onCommit: CommitHandler<HTMLInputElement, T>;
   type?: T;
-  TooltipProps?: Pick<TooltipHookProps, "placement" | "tooltipContent" >;
+  TooltipProps?: Pick<TooltipHookProps, "placement" | "tooltipContent">;
 }
 
 /**
@@ -39,7 +34,7 @@ export interface VuuInputProps<T extends VuuRowDataItemType = string>
  * TODO along with cancel behaviour ?
  */
 export const VuuInput = forwardRef(function VuuInput<
-  T extends VuuRowDataItemType = string
+  T extends VuuRowDataItemType = string,
 >(
   {
     className,
@@ -50,7 +45,7 @@ export const VuuInput = forwardRef(function VuuInput<
     TooltipProps,
     ...props
   }: VuuInputProps<T>,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -66,7 +61,7 @@ export const VuuInput = forwardRef(function VuuInput<
     tooltipContent: TooltipProps?.tooltipContent,
   });
 
-  const commitValue = useCallback<Commithandler<string>>(
+  const commitValue = useCallback<CommitHandler<string>>(
     (evt, value) => {
       if (type === "number") {
         const numericValue = parseFloat(value);
@@ -82,7 +77,7 @@ export const VuuInput = forwardRef(function VuuInput<
         onCommit(evt, value as T);
       }
     },
-    [onCommit, type]
+    [onCommit, type],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
@@ -95,7 +90,7 @@ export const VuuInput = forwardRef(function VuuInput<
       }
       onKeyDown?.(evt);
     },
-    [commitValue, onKeyDown]
+    [commitValue, onKeyDown],
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
@@ -103,7 +98,7 @@ export const VuuInput = forwardRef(function VuuInput<
       const { value } = evt.target as HTMLInputElement;
       commitValue(evt, value);
     },
-    [commitValue]
+    [commitValue],
   );
 
   const endAdornment = TooltipProps?.tooltipContent ? (
@@ -137,5 +132,5 @@ export const VuuInput = forwardRef(function VuuInput<
 }) as <T extends VuuRowDataItemType = string>(
   props: VuuInputProps<T> & {
     ref?: ForwardedRef<HTMLDivElement>;
-  }
+  },
 ) => ReactElement<VuuInputProps<T>>;

@@ -1,14 +1,22 @@
-import { makePrefixer, Tooltip, TooltipProps, useForkRef } from "@salt-ds/core";
-import { CloseIcon } from "@salt-ds/icons";
-import { clsx } from "clsx";
-import { ComponentPropsWithRef, forwardRef, ReactElement, useRef } from "react";
-import { DateValue } from "@internationalized/date";
-import { useWindow } from "@salt-ds/window";
+import type { DateValue } from "@internationalized/date";
+import {
+  Tooltip,
+  type TooltipProps,
+  makePrefixer,
+  useForkRef,
+} from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
-import { DayStatus, useCalendarDay } from "../useCalendarDay";
-import { formatDate } from "./utils";
-
+import { useWindow } from "@salt-ds/window";
+import { clsx } from "clsx";
+import {
+  type ComponentPropsWithRef,
+  type ReactElement,
+  forwardRef,
+  useRef,
+} from "react";
+import { type DayStatus, useCalendarDay } from "../useCalendarDay";
 import calendarDayCss from "./CalendarDay.css";
+import { formatDate } from "./utils";
 
 export type DateFormatter = (day: Date) => string | undefined;
 
@@ -28,7 +36,6 @@ export const CalendarDay = forwardRef<HTMLButtonElement, CalendarDayProps>(
   function CalendarDay(props, ref) {
     const { className, day, renderDayContents, month, TooltipProps, ...rest } =
       props;
-
     const targetWindow = useWindow();
     useComponentCssInjection({
       testId: "salt-calendar-day",
@@ -37,59 +44,66 @@ export const CalendarDay = forwardRef<HTMLButtonElement, CalendarDayProps>(
     });
 
     const dayRef = useRef<HTMLButtonElement>(null);
-    const forkedRef = useForkRef(ref, dayRef);
-
-    const { status, dayProps, unselectableReason } = useCalendarDay(
-      {
-        date: day,
-        month,
-      },
-      dayRef
-    );
-    const { outOfRange, today, unselectable, hidden } = status;
+    const buttonRef = useForkRef(ref, dayRef);
+    const { status, dayProps, unselectableReason, highlightedReason } =
+      useCalendarDay(
+        {
+          date: day,
+          month,
+        },
+        dayRef,
+      );
+    const { outOfRange, today, unselectable, highlighted, hidden, disabled } =
+      status;
 
     return (
       <Tooltip
         hideIcon
-        status="error"
-        content={unselectableReason}
-        disabled={!unselectableReason}
+        status={unselectableReason ? "error" : "info"}
+        content={
+          unselectableReason || highlightedReason || "Date is out of range"
+        }
+        disabled={!unselectableReason && !highlightedReason}
         placement="top"
-        enterDelay={300}
+        enterDelay={0} // --salt-duration-instant
+        leaveDelay={0} // --salt-duration-instant
         {...TooltipProps}
       >
         <button
-          aria-label={formatDate(day)}
+          aria-label={formatDate(day, {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
+          disabled={disabled}
+          type="button"
           {...dayProps}
-          ref={forkedRef}
+          ref={buttonRef}
           {...rest}
           className={clsx(
             withBaseName(),
             {
               [withBaseName("hidden")]: hidden,
               [withBaseName("outOfRange")]: outOfRange,
-              [withBaseName("today")]: today,
+              [withBaseName("disabled")]: disabled,
               [withBaseName("unselectable")]: !!unselectable,
-              [withBaseName("unselectableLow")]: unselectable === "low",
-              [withBaseName("unselectableMedium")]: unselectable === "medium",
+              [withBaseName("highlighted")]: !!highlighted,
             },
             dayProps.className,
-            className
+            className,
           )}
         >
-          {unselectable === "medium" && (
-            <CloseIcon
-              aria-hidden
-              aria-label={undefined}
-              className={withBaseName("blockedIcon")}
-            />
-          )}
-
-          {renderDayContents
-            ? renderDayContents(day, status)
-            : formatDate(day, { day: "numeric" })}
+          <span
+            className={clsx(withBaseName("content"), {
+              [withBaseName("today")]: today,
+            })}
+          >
+            {renderDayContents
+              ? renderDayContents(day, status)
+              : formatDate(day, { day: "numeric" })}
+          </span>
         </button>
       </Tooltip>
     );
-  }
+  },
 );

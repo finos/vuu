@@ -1,10 +1,14 @@
 import {
+  type DateValue,
+  endOfWeek,
+  startOfWeek,
+} from "@internationalized/date";
+import type {
   FocusEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
 } from "react";
 import { useCalendarContext } from "./CalendarContext";
-import { DateValue, endOfWeek, startOfWeek } from "@internationalized/date";
 import { getCurrentLocale } from "./utils";
 
 export function useFocusManagement({ date }: { date: DateValue }) {
@@ -34,7 +38,6 @@ export function useFocusManagement({ date }: { date: DateValue }) {
         newDate = startOfWeek(date, getCurrentLocale());
         break;
       case "End":
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore TODO bug in @internationalized/date
         newDate = endOfWeek(date, getCurrentLocale());
         break;
@@ -54,7 +57,9 @@ export function useFocusManagement({ date }: { date: DateValue }) {
         break;
       default:
     }
-
+    if (newDate.compare(date) !== 0) {
+      event.preventDefault();
+    }
     setFocusedDate(event, newDate);
   };
 

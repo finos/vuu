@@ -1,7 +1,7 @@
 export const createEl = (
   elementType: "div" | "p" | "span",
   className?: string,
-  textContent?: string
+  textContent?: string,
 ): HTMLElement => {
   const el = document.createElement(elementType);
   if (className) {
@@ -15,7 +15,7 @@ export const createEl = (
 
 export const getFocusableElement = (
   el: HTMLElement | null,
-  tabIndex?: number
+  tabIndex?: number,
 ) => {
   if (el) {
     if (el.hasAttribute("tabindex")) {
@@ -49,7 +49,7 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
 
 export const queryClosest = <T extends HTMLElement = HTMLElement>(
   el: HTMLElement | EventTarget | null,
-  cssQueryString: string
+  cssQueryString: string,
 ) => (el === null ? null : ((el as HTMLElement).closest(cssQueryString) as T));
 
 export const getClosest = (el: HTMLElement, dataProperty: string) =>
@@ -60,29 +60,29 @@ export const getClosestIndexItem = (el: HTMLElement) => getClosest(el, "index");
 export function getElementByDataIndex(
   c: HTMLElement | null | undefined,
   i: number | string,
-  throwIfNotFound: true
+  throwIfNotFound: true,
 ): HTMLElement;
 export function getElementByDataIndex(
   c: HTMLElement | null | undefined,
   i: number | string,
-  throwIfNotFound?: false
+  throwIfNotFound?: false,
 ): HTMLElement | undefined;
 export function getElementByDataIndex(
   container: HTMLElement | null | undefined,
   index: number | string,
-  throwIfNotFound = false
+  throwIfNotFound = false,
 ) {
   if (container == null && throwIfNotFound) {
     throw Error("html-utils getElementByDataIndex, container is null");
   }
   const element = container?.querySelector(
-    `[data-index="${index}"]`
+    `[data-index="${index}"]`,
   ) as HTMLElement;
   if (element) {
     return element;
   } else if (throwIfNotFound) {
     throw Error(
-      "html-utils getElementByDataIndex, Item not found with data-index='${index}'"
+      "html-utils getElementByDataIndex, Item not found with data-index='${index}'",
     );
   } else {
     return undefined;
@@ -91,7 +91,7 @@ export function getElementByDataIndex(
 
 export const focusFirstFocusableElement = (
   el: HTMLElement | null,
-  tabIndex?: number
+  tabIndex?: number,
 ) => {
   // TODO test el for focusable
   requestAnimationFrame(() => {
@@ -113,6 +113,16 @@ export const isSelectableElement = (el?: HTMLElement | null) => {
     return false;
   } else {
     return true;
+  }
+};
+
+export const isInputElement = (
+  el: HTMLElement | EventTarget | null,
+): el is HTMLInputElement => {
+  if (el === null) {
+    return false;
+  } else {
+    return (el as HTMLElement).tagName === "INPUT";
   }
 };
 
@@ -163,7 +173,7 @@ export const dispatchMouseEvent = (el: HTMLElement, type: MouseEventTypes) => {
 export const dispatchKeyboardEvent = (
   el: HTMLElement,
   type: KeyboardEventTypes,
-  key: string
+  key: string,
 ) => {
   const evt = new KeyboardEvent(type, {
     key,

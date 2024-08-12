@@ -1,25 +1,24 @@
-import { DateValue } from "@internationalized/date";
+import type { DateValue } from "@internationalized/date";
 import { makePrefixer } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
 import {
-  ComponentPropsWithRef,
+  type ComponentPropsWithRef,
+  type MouseEvent,
+  type SyntheticEvent,
   forwardRef,
-  MouseEvent,
-  SyntheticEvent,
 } from "react";
-import { useCalendarContext } from "./CalendarContext";
-import { CalendarDay, CalendarDayProps } from "./CalendarDay";
+import { CalendarDay, type CalendarDayProps } from "./CalendarDay";
 import { formatDate, generateVisibleDays } from "./utils";
 
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { useCalendarContext } from "./CalendarContext";
 import calendarMonthCss from "./CalendarMonth.css";
 
 export interface CalendarMonthProps extends ComponentPropsWithRef<"div"> {
   date: DateValue;
   hideOutOfRangeDates?: boolean;
   renderDayContents?: CalendarDayProps["renderDayContents"];
-  isVisible?: boolean;
   TooltipProps?: CalendarDayProps["TooltipProps"];
 }
 
@@ -30,8 +29,6 @@ export const CalendarMonth = forwardRef<HTMLDivElement, CalendarMonthProps>(
     const {
       className,
       date,
-      hideOutOfRangeDates,
-      isVisible,
       renderDayContents,
       onMouseLeave,
       TooltipProps,
@@ -80,5 +77,5 @@ export const CalendarMonth = forwardRef<HTMLDivElement, CalendarMonthProps>(
         </div>
       </div>
     );
-  }
+  },
 );

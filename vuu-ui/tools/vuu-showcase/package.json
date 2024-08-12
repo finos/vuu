@@ -16,7 +16,7 @@
     "@finos/vuu-ui-controls": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.33.0",
+    "@salt-ds/core": "1.34.0",
     "@salt-ds/theme": "1.20.0"
   },
   "peerDependencies": {

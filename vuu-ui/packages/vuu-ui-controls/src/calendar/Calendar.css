@@ -1,7 +1,5 @@
 .saltCalendar {
   width: min-content;
-}
-
-.saltCalendar .saltIcon {
-  display: inline-block;
+  background: var(--salt-container-primary-background);
+  padding: var(--salt-spacing-100);
 }
