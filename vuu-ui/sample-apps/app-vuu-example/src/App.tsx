@@ -12,7 +12,7 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
-import type { VuuUser } from "@finos/vuu-utils";
+import type { StaticFeatures, VuuUser } from "@finos/vuu-utils";
 import {
   assertComponentsRegistered,
   registerComponent,
@@ -65,13 +65,18 @@ export const App = ({ user }: { user: VuuUser }) => {
     []
   );
   console.log(`render App`);
+
+  const staticFeatures: StaticFeatures = {
+    feature1: { label: "label", type: "type" },
+  };
+
   return (
     <PersistenceProvider persistenceManager={localPersistenceManager}>
       <DragDropProvider dragSources={dragSource}>
         <ShellContextProvider
           value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
-          <FeatureProvider dynamicFeatures={features}>
+          <FeatureProvider features={features} staticFeatures={staticFeatures}>
             <Shell
               shellLayoutProps={ShellLayoutProps}
               className="App"

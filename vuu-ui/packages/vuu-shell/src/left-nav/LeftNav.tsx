@@ -114,8 +114,8 @@ export const LeftNav = (props: LeftNavProps) => {
     window: targetWindow,
   });
 
-  const { features, tableFeatures } = useFeatures({
-    features: featuresProp,
+  const { dynamicFeatures: features, tableFeatures } = useFeatures({
+    dynamicFeatures: featuresProp,
     tableFeatures: tableFeaturesProp,
   });
 
