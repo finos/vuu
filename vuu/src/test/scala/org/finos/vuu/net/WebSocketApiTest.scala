@@ -114,6 +114,7 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 1235),
       "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 45321),
       "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 89564),
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 1235),
     ))
 
     val providerFactory = (table: DataTable, vuuServer: IVuuServer) => new TestProvider(table, dataSource)
@@ -179,7 +180,7 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       response.get.msg shouldEqual "No such table found with name null in module TEST. Table name and module should not be null"
     }
 
-    Scenario("Type ahead rcp request for a column") {
+    Scenario("Type ahead request for a column") {
 
       Then("create viewport")
       val createViewPortRequest = CreateViewPortRequest(ViewPortTable("TableMetaTest", "TEST"), ViewPortRange(1,100),columns = Array("Id", "Name", "Account"))
@@ -194,7 +195,7 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
 
       val getTypeAheadRequest = ViewPortRpcCall(
         viewPortId,
-        "getUniqueFieldValues",
+        RpcNames.UniqueFieldValuesRpc,
         params = Array(),
         namedParams = Map(
           "table" -> "TableMetaTest",
@@ -216,5 +217,39 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
 
     }
   }
+
+  Scenario("Type ahead request that start with a string for a column") {
+
+    Then("create viewport")
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable("TableMetaTest", "TEST"), ViewPortRange(1,100),columns = Array("Id", "Name", "Account"))
+    vuuClient.send(sessionId, tokenId, createViewPortRequest)
+    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
+    val viewPortId = viewPortCreateResponse.get.viewPortId
+
+    val getTypeAheadRequest = ViewPortRpcCall(
+      viewPortId,
+      RpcNames.UniqueFieldValuesStartWithRpc,
+      params = Array(),
+      namedParams = Map(
+        "table" -> "TableMetaTest",
+        "module" -> "TEST",
+        "column" -> "Name",
+        "starts" -> "Tom"
+      ))
+    vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+    Then("return top 10 values in that column")
+    val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+    assert(response.isDefined)
+
+    response.get.method shouldEqual "getUniqueFieldValuesStartingWith"
+
+    val action = response.get.action
+    action shouldBe a [DisplayResultAction]
+    val displayResultAction = action.asInstanceOf[DisplayResultAction]
+    displayResultAction.result shouldEqual List("Tom Sawyer", "Tom Thatcher")
+
+  }
+
 }
 

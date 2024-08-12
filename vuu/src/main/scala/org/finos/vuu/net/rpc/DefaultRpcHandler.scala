@@ -8,9 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class DefaultRpcHandler extends RpcHandler with StrictLogging {
 
-  type RpcFunction = RpcParams => RpcMethodCallResult
-
-  private val rpcHandlerMap = new ConcurrentHashMap[String, RpcFunction]()
+  private val rpcHandlerMap = new ConcurrentHashMap[Rpc.FunctionName, Rpc.Function]()
 
   /**
    * Register a handler for a given rpc function
@@ -19,7 +17,7 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
    * @param handlerFunc  handler function that takes RpcParams and return RpcMethodCallResult
    */
 
-  def registerRpc(functionName: String, handlerFunc: RpcFunction): Unit = {
+  def registerRpc(functionName: Rpc.FunctionName, handlerFunc: Rpc.Function): Unit = {
 
     if (rpcHandlerMap.containsKey(functionName)) {
       throw new IllegalArgumentException(s"Function $functionName already registered")
