@@ -12,8 +12,9 @@ trait ViewPortAction {}
 case class NoAction() extends ViewPortAction
 case class OpenDialogViewPortAction(table: ViewPortTable, renderComponent: String = "grid") extends ViewPortAction
 case class CloseDialogViewPortAction(vpId: String) extends ViewPortAction
-case class ViewPortRpcSuccess() extends ViewPortAction {}
-case class ViewPortRpcFailure(msg: String) extends ViewPortAction {}
+case class DisplayResultAction(result: Any) extends ViewPortAction
+case class ViewPortRpcSuccess() extends ViewPortAction
+case class ViewPortRpcFailure(msg: String) extends ViewPortAction
 case class ViewPortCreateSuccess(key:String) extends ViewPortAction
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -21,6 +22,7 @@ case class ViewPortCreateSuccess(key:String) extends ViewPortAction
   new Type(value = classOf[OpenDialogViewPortAction], name = "OPEN_DIALOG_ACTION"),
   new Type(value = classOf[CloseDialogViewPortAction], name = "CLOSE_DIALOG_ACTION"),
   new Type(value = classOf[NoAction], name = "NO_ACTION"),
+  new Type(value = classOf[DisplayResultAction], name = "DISPLAY_RESULT_ACTION"),
   new Type(value = classOf[ViewPortEditSuccess], name = "VP_EDIT_SUCCESS"),
   new Type(value = classOf[ViewPortEditFailure], name = "VP_EDIT_FAILURE"),
   new Type(value = classOf[ViewPortRpcSuccess], name = "VP_RPC_SUCCESS"),

@@ -47,7 +47,7 @@ public class PersonProvider implements Provider {
 
     @Override
     public String lifecycleId() {
-        return null;
+        return "PersonProvider";
     }
 
     @Override

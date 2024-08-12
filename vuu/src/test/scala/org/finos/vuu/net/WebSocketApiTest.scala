@@ -3,15 +3,18 @@ package org.finos.vuu.net
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.{ColumnBuilder, NoRpcHandler, TableDef, ViewPortDef}
+import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core._
+import org.finos.vuu.core.module.typeahead.ViewPortTypeAheadRpcHandler
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
-import org.finos.vuu.viewport.ViewPortTable
+import org.finos.vuu.provider.{Provider, ProviderContainer}
+import org.finos.vuu.viewport.{DisplayResultAction, ViewPortRange, ViewPortTable}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
@@ -42,7 +45,6 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
   def testStartUp(): TestVuuClient = {
 
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
-    implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
     lifecycle.autoShutdownHook()
 
@@ -97,15 +99,24 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
           .addInt("Account")
           .build()
     )
-    val viewPortDef = ViewPortDef(
+
+    val viewPortDefFactory = (table: DataTable, provider: Provider, providerContainer: ProviderContainer, tableContainer: TableContainer) =>
+      ViewPortDef(
       columns =
         new ColumnBuilder()
           .addString("Id")
           .addInt("Account")
           .build(),
-      service = NoRpcHandler
+      service = new ViewPortTypeAheadRpcHandler(tableContainer)
     )
 
+    val dataSource  = new FakeDataSource(Map(
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 1235),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 45321),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 89564),
+    ))
+
+    val providerFactory = (table: DataTable, vuuServer: IVuuServer) => new TestProvider(table, dataSource)
     val tableDef2 = TableDef(
       name = "TableMetaDefaultVPTest",
       keyField = "Id",
@@ -116,7 +127,7 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
     )
 
     ModuleFactory.withNamespace("TEST")
-      .addTableForTest(tableDef, viewPortDef)
+      .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
       .addTableForTest(tableDef2)
       .asModule()
   }
@@ -166,6 +177,43 @@ class WebSocketApiTest extends AnyFeatureSpec with BeforeAndAfterAll with GivenW
       val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
       assert(response.isDefined)
       response.get.msg shouldEqual "No such table found with name null in module TEST. Table name and module should not be null"
+    }
+
+    Scenario("Type ahead rcp request for a column") {
+
+      Then("create viewport")
+      val createViewPortRequest = CreateViewPortRequest(ViewPortTable("TableMetaTest", "TEST"), ViewPortRange(1,100),columns = Array("Id", "Name", "Account"))
+      vuuClient.send(sessionId, tokenId, createViewPortRequest)
+      val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
+      val viewPortId = viewPortCreateResponse.get.viewPortId
+
+      //todo how to change the table data
+      //1. get access to provider and update directly - via adding new function to get provider from TableDefs in TableDefContainer?
+      //2. update the data source but have listener function to update the provider if data source change?
+      //3. only change when loading table for first time
+
+      val getTypeAheadRequest = ViewPortRpcCall(
+        viewPortId,
+        "getUniqueFieldValues",
+        params = Array(),
+        namedParams = Map(
+          "table" -> "TableMetaTest",
+          "module" -> "TEST",
+          "column" -> "Account"
+        ))
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return top 10 values in that column")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      assert(response.isDefined)
+
+      response.get.method shouldEqual "getUniqueFieldValues"
+
+      val action = response.get.action
+      action shouldBe a [DisplayResultAction]
+      val displayResultAction = action.asInstanceOf[DisplayResultAction]
+      displayResultAction.result shouldEqual List("1235", "45321", "89564")
+
     }
   }
 }
