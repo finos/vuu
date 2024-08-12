@@ -83,8 +83,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       And("we run the container once through")
       viewPortContainer.runOnce()
 
-      Then("we should have nothing available in the viewport")
-      viewPortOrders.getKeys.length shouldEqual 0
+      Then("we should show all by default in the viewport")
+      viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
       viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
@@ -146,8 +146,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array()))
       viewPortContainer.runOnce()
 
-      Then("we should have nothing available in the viewport")
-      viewPortOrders.getKeys.length shouldEqual 0
+      Then("we should show all by default in the viewport")
+      viewPortOrders.getKeys.length shouldEqual 12
     }
   }
 }
