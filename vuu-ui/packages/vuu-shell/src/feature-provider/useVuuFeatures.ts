@@ -1,42 +1,51 @@
-import { useVuuTables } from "@finos/vuu-data-react";
-import {
-  DynamicFeatures,
-  FeatureProps,
-  FilterTableFeatureProps,
-  StaticFeatureDescriptor,
-  getCustomAndTableFeatures,
-} from "@finos/vuu-utils";
-import { useMemo } from "react";
+// import { useVuuTables } from "@finos/vuu-data-react";
+// import {
+//   DynamicFeatures,
+//   FeatureProps,
+//   FilterTableFeatureProps,
+//   getCustomAndTableFeatures,
+// } from "@finos/vuu-utils";
+// import { useMemo } from "react";
+// import { FeatureContextProps } from "./FeatureProvider";
 
-export interface FeaturesHookProps {
-  features: DynamicFeatures;
-  staticFeatures?: StaticFeatureDescriptor[];
-}
+// export interface FeaturesHookProps {
+//   dynamicFeatures: DynamicFeatures;
+// }
 
-const NO_FEATURES: ReturnType<typeof useVuuFeatures> = [[], [], []];
+// const NO_FEATURES: {
+//   vuuFeatures: FeatureProps[];
+//   vuuTableFeatures: FeatureProps<FilterTableFeatureProps>[];
+// } = { vuuFeatures: [], vuuTableFeatures: [] };
 
-export const useVuuFeatures = ({
-  features,
-  staticFeatures,
-}: FeaturesHookProps): [
-  FeatureProps[],
-  FeatureProps<FilterTableFeatureProps>[],
-  StaticFeatureDescriptor[] | undefined
-] => {
-  const tables = useVuuTables();
-  const [customFeatures, tableFeatures, staticCustomFeatures] = useMemo<
-    [
-      FeatureProps[],
-      FeatureProps<FilterTableFeatureProps>[],
-      StaticFeatureDescriptor[] | undefined
-    ]
-  >(
-    () =>
-      tables
-        ? getCustomAndTableFeatures(features, tables, staticFeatures)
-        : NO_FEATURES,
-    [features, staticFeatures, tables]
-  );
+// export const useVuuFeatures = ({
+//   dynamicFeatures: features,
+// }: FeaturesHookProps): FeatureContextProps => {
+//   const tables = useVuuTables();
+//   const { vuuFeatures, vuuTableFeatures } = useMemo<{
+//     vuuFeatures: FeatureProps[];
+//     vuuTableFeatures: FeatureProps<FilterTableFeatureProps>[];
+//   }>(
+//     () => (tables ? getCustomAndTableFeatures(features, tables) : NO_FEATURES),
+//     [features, tables]
+//   );
 
-  return [customFeatures, tableFeatures, staticCustomFeatures];
-};
+//   return {
+//     dynamicFeatures: vuuFeatures,
+//     tableFeatures: vuuTableFeatures,
+//   };
+// };
+
+// const vuuTables = useVuuTables();
+// console.log("vuutable: ", vuuTables);
+// const { vuuFeatures, vuuTableFeatures } = useMemo<{
+//   vuuFeatures: FeatureProps[];
+//   vuuTableFeatures: FeatureProps<FilterTableFeatureProps>[];
+// }>(() => {
+//   console.log("vuutable");
+//   const a = vuuTables
+//     ? getCustomAndTableFeatures(features, vuuTables)
+//     : NO_FEATURES_VUU;
+//   return a;
+// }, [features, vuuTables]);
+// console.log("vuuFeature: ", vuuFeatures);
+// console.log("table: ", vuuTableFeatures);

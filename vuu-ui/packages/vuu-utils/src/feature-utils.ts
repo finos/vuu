@@ -3,9 +3,11 @@ import type { VuuTable } from "@finos/vuu-protocol-types";
 import { ListOption } from "@finos/vuu-table-types";
 import { partition } from "./array-utils";
 import { wordify } from "./text-utils";
+import React, { ReactElement } from "react";
+import { getLayoutComponent } from "./component-registry";
 
 export type PathMap = {
-  [key: string]: Pick<DynamicFeatureConfig, "css" | "url">;
+  [key: string]: Pick<DynamicFeatureDescriptor, "css" | "url">;
 };
 export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
@@ -39,7 +41,7 @@ declare global {
   const vuuConfig: Promise<VuuConfig>;
 }
 
-export interface DynamicFeatureConfig {
+export interface DynamicFeatureDescriptor {
   name: string;
   title: string;
   url: string;
@@ -63,12 +65,25 @@ export interface FilterTableFeatureProps {
 }
 
 export type DynamicFeatures = {
-  [key: string]: DynamicFeatureConfig;
+  [key: string]: DynamicFeatureDescriptor;
 };
 
 export type StaticFeatures = {
   [key: string]: StaticFeatureDescriptor;
 };
+
+export function featureFromJson({
+  type,
+  label,
+}: StaticFeatureDescriptor): ReactElement {
+  const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
+  if (componentType === undefined) {
+    throw Error(
+      `layoutUtils unable to create component from JSON, unknown type ${type}`
+    );
+  }
+  return React.createElement(componentType, { id: label, key: label });
+}
 
 export interface VuuConfig {
   features: DynamicFeatures;
@@ -77,7 +92,7 @@ export interface VuuConfig {
   ssl: boolean;
 }
 
-export const isCustomFeature = (feature: DynamicFeatureConfig) =>
+export const isCustomFeature = (feature: DynamicFeatureDescriptor) =>
   feature.leftNavLocation === "vuu-features";
 
 export const isWildcardSchema = (schema?: "*" | VuuTable): schema is "*" =>
@@ -163,25 +178,18 @@ export const assertComponentsRegistered = (componentList: Component[]) => {
 
 export const getCustomAndTableFeatures = (
   features: DynamicFeatures,
-  vuuTables: Map<string, TableSchema>,
-  staticFeatures?: StaticFeatureDescriptor[]
-): [
-  FeatureProps[],
-  FeatureProps<FilterTableFeatureProps>[],
-  StaticFeatureDescriptor[] | undefined
-] => {
+  vuuTables: Map<string, TableSchema>
+): {
+  dynamicFeatures: FeatureProps[];
+  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
+} => {
   const [customFeatureConfig, tableFeaturesConfig] = partition(
     Object.values(features),
     isCustomFeature
   );
 
-  // const staticFeatureDescriptors: StaticFeatureDescriptor[] = [];
   const customFeatures: FeatureProps[] = [];
   const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = [];
-
-  // for (const descriptor of staticFeatures) {
-  //   staticFeatureDescriptors.push(descriptor);
-  // }
 
   for (const {
     featureProps = {},
@@ -252,5 +260,5 @@ export const getCustomAndTableFeatures = (
       customFeatures.push(feature);
     }
   }
-  return [customFeatures, tableFeatures, staticFeatures];
+  return { dynamicFeatures: customFeatures, tableFeatures: tableFeatures };
 };
