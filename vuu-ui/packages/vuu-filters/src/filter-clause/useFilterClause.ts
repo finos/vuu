@@ -1,5 +1,5 @@
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
-import { hasOpenOptionList } from "@finos/vuu-utils";
+import { hasOpenOptionList, isDateInput } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   RefCallback,
@@ -25,7 +25,7 @@ export type FilterClauseEditorHookProps = Pick<
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
-  isFinal?: boolean
+  isFinal?: boolean,
 ) => void;
 
 export const useFilterClause = ({
@@ -35,7 +35,7 @@ export const useFilterClause = ({
   onFocusSave,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
-    filterClauseModel.isValid ? filterClauseModel.asFilter() : {}
+    filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
   );
 
   useMemo(() => {
@@ -55,7 +55,7 @@ export const useFilterClause = ({
         el?.querySelector("input")?.focus();
       }
     },
-    [filterClauseModel.isValid]
+    [filterClauseModel.isValid],
   );
 
   const removeAndNavigateToNextInputIfAtBoundary = useCallback(
@@ -86,7 +86,7 @@ export const useFilterClause = ({
         }
       }
     },
-    [filterClauseModel, onCancel]
+    [filterClauseModel, onCancel],
   );
 
   const onSelectColumn = (evt: SyntheticEvent, selectedColumn: string) => {
@@ -116,17 +116,17 @@ export const useFilterClause = ({
       filterClauseModel.setOp(selectedOp);
       focusNextElement();
     },
-    [filterClauseModel]
+    [filterClauseModel],
   );
 
   const handleChangeValue = useCallback<FilterClauseValueChangeHandler>(
     (value, isFinal) => filterClauseModel.setValue(value, isFinal),
-    [filterClauseModel]
+    [filterClauseModel],
   );
 
   const handleDeselectValue = useCallback(
     () => filterClauseModel.setValue(undefined),
-    [filterClauseModel]
+    [filterClauseModel],
   );
 
   const handleKeyDownCaptureNavigation = useCallback(
@@ -158,7 +158,7 @@ export const useFilterClause = ({
       onCancel,
       onFocusSave,
       removeAndNavigateToNextInputIfAtBoundary,
-    ]
+    ],
   );
 
   const inputProps = useMemo(
@@ -166,7 +166,7 @@ export const useFilterClause = ({
       onKeyDownCapture: handleKeyDownCaptureNavigation,
       tabIndex: -1,
     }),
-    [handleKeyDownCaptureNavigation]
+    [handleKeyDownCaptureNavigation],
   );
 
   // Do we need this or can we leave it to the filterEditor
@@ -178,8 +178,8 @@ export const useFilterClause = ({
         filterClauseModel.column === undefined
           ? columnRef
           : filterClauseModel.op === undefined
-          ? operatorRef
-          : null;
+            ? operatorRef
+            : null;
 
       requestAnimationFrame(() => {
         inputRef?.current?.querySelector("input")?.focus();

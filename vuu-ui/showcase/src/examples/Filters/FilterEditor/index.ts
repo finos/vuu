@@ -1,1 +1,1 @@
-export * as FilterEditor from "./FilterEditor.examples";
+export * from "./FilterEditor.examples";

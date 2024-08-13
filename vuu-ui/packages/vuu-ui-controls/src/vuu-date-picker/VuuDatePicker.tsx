@@ -42,8 +42,13 @@ export const VuuDatePicker = ({
 }: DatePickerProps<SingleSelectionValueType> & {
   onCommit?: CommitHandler<HTMLElement, number>;
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, _setOpen] = useState(false);
   const valueRef = useRef("");
+
+  const setOpen = (o: boolean) => {
+    console.log(`setOpen ${o}`);
+    _setOpen(o);
+  };
 
   const handleSelectionChange = useCallback(
     (e: SyntheticEvent<HTMLElement>, date: DateValue) => {

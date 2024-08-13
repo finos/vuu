@@ -47,6 +47,7 @@ export const FilterClauseValueEditorDate = (
       className={cx("vuuFilterClause-DatePicker", className)}
       onBlur={onBlur}
       onCommit={onSelectedDateChange}
+      selectedDate={date}
     />
   );
 };

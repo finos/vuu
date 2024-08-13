@@ -126,6 +126,11 @@ export const isInputElement = (
   }
 };
 
+export const isDateInput = (
+  el: HTMLElement | EventTarget | null,
+): el is HTMLInputElement =>
+  isInputElement(el) && el.classList.contains("saltDateInput-input");
+
 export const hasOpenOptionList = (el: HTMLElement | EventTarget | null) => {
   if (el !== null) {
     return (el as HTMLElement).ariaExpanded === "true";
