@@ -1,4 +1,4 @@
-package org.finos.vuu.net
+package org.finos.vuu.wsapi.helpers
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
