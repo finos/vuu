@@ -55,7 +55,6 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
     }
 
-
     Scenario("Type ahead request that start with a string for a column") {
 
       Then("create viewport")
@@ -90,6 +89,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     }
 
     Scenario("Type ahead assert only top 10 return and only unique") {}
+    //create multiple view ports
+    // check type ahead work on view port columns rather than table columns
     Scenario("Type ahead request for view port that does not exist") {}
     Scenario("Type ahead request for column that does not exist") {}
     Scenario("Type ahead request for empty table") {}
