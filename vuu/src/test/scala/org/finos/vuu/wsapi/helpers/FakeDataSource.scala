@@ -1,10 +1,16 @@
 package org.finos.vuu.wsapi.helpers
 
-class FakeDataSource(rows: Map[String, Map[String, Any]]) {
+import scala.collection.immutable.ListMap
+
+
+/* Using list map to preserve the order of the row data
+*/
+
+class FakeDataSource(rows: ListMap[String, Map[String, Any]]) {
   type RowKey = String
   type ColumnName = String
 
-  def get(): Map[RowKey, Map[ColumnName, Any]] = {
+  def get(): ListMap[RowKey, Map[ColumnName, Any]] = {
     rows
   }
 }

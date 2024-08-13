@@ -11,6 +11,8 @@ import org.finos.vuu.viewport.ViewPortTable
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
+import scala.collection.immutable.ListMap
+
 class TableWSApiTest extends WebSocketApiTestBase {
 
   private val moduleName = "TEST"
@@ -85,7 +87,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
         service = new DefaultRpcHandler()
       )
 
-    val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, new FakeDataSource(Map()))
+    val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, new FakeDataSource(ListMap()))
     val tableDef2 = TableDef(
       name = "TableMetaDefaultVPTest",
       keyField = "Id",
@@ -100,5 +102,4 @@ class TableWSApiTest extends WebSocketApiTestBase {
       .addTableForTest(tableDef2)
       .asModule()
   }
-
 }
