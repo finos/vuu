@@ -40,22 +40,22 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
   override def send(msg: ViewServerMessage): Unit = {
     val json = serializer.serialize(msg)
     ws.write(json)
+    logger.info(s"[Sent] $json")
   }
 
   override def awaitMsg: ViewServerMessage = {
     val msg = ws.awaitMessage()
     if (msg == null) {
-      logger.info("no messages")
+      logger.info("No messages received")
       null
     }
     else {
+      logger.info(s"[Received] $msg")
       Try(serializer.deserialize(msg)) match {
-        case Success(vsMsg) => {
-          logger.info(s"[Received] $vsMsg")
+        case Success(vsMsg) =>
           vsMsg
-        }
         case Failure(e) =>
-          logger.error(s"could not deserialize ${msg} going to return null", e)
+          logger.error(s"Could not deserialize $msg going to return null", e)
           null
       }
     }

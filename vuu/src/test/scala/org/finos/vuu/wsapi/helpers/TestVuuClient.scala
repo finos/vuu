@@ -1,6 +1,7 @@
-package org.finos.vuu.net
+package org.finos.vuu.wsapi.helpers
 
 import org.finos.vuu.client.messages.{RequestId, TokenId}
+import org.finos.vuu.net._
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
