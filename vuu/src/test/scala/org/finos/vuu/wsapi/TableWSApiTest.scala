@@ -13,10 +13,12 @@ import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
 class TableWSApiTest extends WebSocketApiTestBase {
 
+  private val moduleName = "TEST"
+
   Feature("Server web socket api") {
     Scenario("client requests to get table metadata for a table") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", "TEST")))
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", moduleName)))
 
       Then("return view port columns in response")
       val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
@@ -29,7 +31,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
     Scenario("client requests to get table metadata for a table with no view port def defined") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", "TEST")))
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", moduleName)))
 
       Then("return table columns as default view port columns in response")
       val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
@@ -42,22 +44,22 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
     Scenario("client requests to get table metadata for a non existent") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", "TEST")))
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", moduleName)))
 
       Then("return error response with helpful message")
       val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
       assert(response.isDefined)
-      response.get.msg shouldEqual "No such table found with name DoesNotExist in module TEST"
+      response.get.msg shouldEqual "No such table found with name DoesNotExist in module " + moduleName
     }
 
     Scenario("client requests to get table metadata for null table name") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable(null, "TEST")))
+      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable(null, moduleName)))
 
       Then("return error response with helpful message")
       val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
       assert(response.isDefined)
-      response.get.msg shouldEqual "No such table found with name null in module TEST. Table name and module should not be null"
+      response.get.msg shouldEqual "No such table found with name null in module " + moduleName + ". Table name and module should not be null"
     }
   }
 
@@ -93,7 +95,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
           .build()
     )
 
-    ModuleFactory.withNamespace("TEST")
+    ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
       .addTableForTest(tableDef2)
       .asModule()
