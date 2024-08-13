@@ -11,6 +11,8 @@ import org.finos.vuu.viewport.{DisplayResultAction, ViewPortRange, ViewPortTable
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
+import scala.collection.immutable.ListMap
+
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
   private val tableName = "TypeaheadTest"
@@ -42,7 +44,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
         ))
       vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
-      Then("return top 10 values in that column")
+      Then("return top 10 unique values in that column")
       val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
       assert(response.isDefined)
 
@@ -51,8 +53,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val action = response.get.action
       action shouldBe a[DisplayResultAction]
       val displayResultAction = action.asInstanceOf[DisplayResultAction]
-      displayResultAction.result shouldEqual List("1235", "45321", "89564")
-
+      displayResultAction.result shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
     }
 
     Scenario("Type ahead request that start with a string for a column") {
@@ -88,7 +89,6 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
     }
 
-    Scenario("Type ahead assert only top 10 return and only unique") {}
     //create multiple view ports
     // check type ahead work on view port columns rather than table columns
     Scenario("Type ahead request for view port that does not exist") {}
@@ -114,16 +114,26 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
         columns =
           new ColumnBuilder()
             .addString("Id")
+            .addString("Name")
             .addInt("Account")
             .build(),
         service = new ViewPortTypeAheadRpcHandler(tableContainer)
       )
 
-    val dataSource = new FakeDataSource(Map(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 1235),
+    val dataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 12355),
       "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 45321),
       "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 89564),
-      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 1235),
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 12355),
+      "row5" -> Map("Id" -> "row5", "Name" -> "Sid Sawyer", "Account" -> 42262),
+      "row6" -> Map("Id" -> "row6", "Name" -> "Joe Harper", "Account" -> 65879),
+      "row7" -> Map("Id" -> "row7", "Name" -> "Jim Baker", "Account" -> 88875),
+      "row8" -> Map("Id" -> "row8", "Name" -> "Amy Lawrence", "Account" -> 45897),
+      "row9" -> Map("Id" -> "row9", "Name" -> "Ben Rodgers", "Account" -> 23564),
+      "row10" -> Map("Id" -> "row10", "Name" -> "John Murrell", "Account" -> 33657),
+      "row11" -> Map("Id" -> "row11", "Name" -> "Sally Phelps", "Account" -> 99854),
+      "row12" -> Map("Id" -> "row12", "Name" -> "Polly Phelps", "Account" -> 78458),
+      "row13" -> Map("Id" -> "row13", "Name" -> "Polly Phelps", "Account" -> 54874),
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
 
