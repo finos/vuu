@@ -16,7 +16,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
                                         childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
 
     if (parentSelectionKeys.isEmpty) {
-      InMemTablePrimaryKeys(ImmutableArray.empty[String])
+      primaryKeys
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: StringIndexedField) if childColumn.dataType == DataType.StringDataType =>
@@ -64,9 +64,11 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     val parentColumn = viewPortVisualLink.parentColumn
     val childColumn = viewPortVisualLink.childColumn
 
-    val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
 
+    val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
     filtered
+
+
   }
 }
 
@@ -108,18 +110,20 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, permission: Option[RowPermissionChecker]): TablePrimaryKeys
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker]): TablePrimaryKeys
+
   def filter: Filter
+
   def sort: Sort
 }
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
-        try {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
+    try {
       val realizedFilter = checkerOption match {
         case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
-        case None=> filter
+        case None => filter
       }
 
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
@@ -142,7 +146,9 @@ class NoFilterNoSort() extends FilterAndSort {
   override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
     primaryKeys
   }
+
   override def filter: Filter = NoFilter
+
   override def sort: Sort = NoSort
 }
 
