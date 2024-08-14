@@ -166,17 +166,6 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       Then("check we now have 4 keys in the viewport")
       viewPortOrders.getKeys.length shouldEqual 4
 
-//      Then("Check we still maintain the selection even with a new sort or filter")
-//      assertVpEqWithMeta(combineQs(viewPortOrders).filter(vpu => vpu.vp.id == viewPortOrders.id)) {
-//        Table(
-//          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-//          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544800030L,100       ),
-//          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544800040L,101       ),
-//          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544800050L,102       ),
-//          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544800060L,103       )
-//        )
-//      }
-
       Then("Check we can remove the visual linking")
 
       viewPortContainer.unlinkViewPorts(session, outQueue, viewPortOrders.id)
@@ -337,7 +326,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
     }
 
-    Scenario("should should all when no parent is selected") {
+    Scenario("should show all when no parent is selected") {
 
       implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl

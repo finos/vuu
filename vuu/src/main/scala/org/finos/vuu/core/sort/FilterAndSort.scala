@@ -16,7 +16,6 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
                                         childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
 
     if (parentSelectionKeys.isEmpty) {
-//      InMemTablePrimaryKeys(ImmutableArray.empty[String])
       primaryKeys
     } else {
       source.asTable.indexForColumn(childColumn) match {
