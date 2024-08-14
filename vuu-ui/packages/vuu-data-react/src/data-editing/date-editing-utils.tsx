@@ -1,14 +1,11 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
-  type CommitHandler,
-  VuuInput,
-  VuuTypeaheadInput,
-} from "@finos/vuu-ui-controls";
+import { VuuInput, VuuTypeaheadInput } from "@finos/vuu-ui-controls";
 import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
+import { CommitHandler } from "@finos/vuu-utils";
 
 export interface DataItemEditControlProps {
   column: ColumnDescriptor;
-  onCommit: CommitHandler;
+  onCommit: CommitHandler<HTMLInputElement, string | undefined>;
   suggestionProvider?: SuggestionProvider;
   table?: TableSchemaTable;
 }
@@ -23,6 +20,7 @@ export const getDataItemEditControl = ({
     return (
       <VuuTypeaheadInput
         column={column.name}
+        onCommit={onCommit}
         suggestionProvider={suggestionProvider}
         table={table}
       />

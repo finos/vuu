@@ -1,4 +1,5 @@
-import { CommitHandler, VuuInput, VuuInputProps } from "@finos/vuu-ui-controls";
+import { VuuInput, VuuInputProps } from "@finos/vuu-ui-controls";
+import { CommitHandler } from "@finos/vuu-utils";
 import { CSSProperties, useCallback, useState } from "react";
 
 let displaySequence = 1;
@@ -88,8 +89,10 @@ export const VuuInputWithValidation = () => {
   const [inputValue, setInputValue] = useState("");
   const valid = isValidInput(inputValue, "number");
   const content = getTooltipContent("number", valid);
-  const handleCommit = useCallback<CommitHandler>((event) => {
-    const fieldElement = event.target as HTMLInputElement;
+  const handleCommit = useCallback<
+    CommitHandler<HTMLInputElement, string | undefined>
+  >((evt) => {
+    const fieldElement = evt.target as HTMLInputElement;
     const fieldValue = fieldElement?.value;
     setInputValue(fieldValue);
   }, []);

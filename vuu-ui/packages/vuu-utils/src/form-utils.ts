@@ -22,5 +22,5 @@ export const getFieldName = (
 
 export type CommitHandler<
   E extends HTMLElement = HTMLInputElement,
-  T extends VuuRowDataItemType = string,
+  T extends VuuRowDataItemType | undefined = string,
 > = (evt: SyntheticEvent<E>, value: T) => void;

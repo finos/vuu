@@ -183,7 +183,7 @@ export const PartialFilterClauseDateColumnOnly = () => {
     </div>
   );
 };
-PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
+PartialFilterClauseDateColumnOnly.displaySequence = displaySequence++;
 
 const columnDescriptorsByName = (columns: TableSchema["columns"]) =>
   columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});

@@ -51,12 +51,15 @@ export const VuuDatePicker = ({
   };
 
   const handleSelectionChange = useCallback(
-    (e: SyntheticEvent<HTMLElement>, date: DateValue) => {
+    (e: SyntheticEvent<Element>, date: DateValue) => {
       if (date && !isSameDate(date, selectedDate)) {
         onSelectionChange?.(e, date);
         setOpen(false);
         console.log(`about to commit date ${date.toString()}`);
-        onCommit?.(e, toEpochMillis(date, localTimeZone));
+        onCommit?.(
+          e as SyntheticEvent<HTMLElement>,
+          toEpochMillis(date, localTimeZone),
+        );
       }
     },
     [onCommit, onSelectionChange, selectedDate],

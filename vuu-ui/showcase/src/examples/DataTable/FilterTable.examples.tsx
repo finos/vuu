@@ -33,7 +33,7 @@ export const FilterTableVuuInstruments = () => {
     (filter: DataSourceFilter) => {
       dataSource.filter = filter;
     },
-    [dataSource]
+    [dataSource],
   );
 
   const handleFilterStateChange = useCallback((fs: FilterState) => {
@@ -69,7 +69,9 @@ FilterTableVuuInstruments.displaySequence = displaySequence++;
 export const FilterTableArrayDataInstruments = ({
   quickFilterColumns,
   variant = "custom-filters",
-}: Pick<FilterBarProps, "quickFilterColumns" | "variant">) => {
+}: Pick<FilterBarProps, "variant"> & {
+  quickFilterColumns?: string[];
+}) => {
   const schema = schemas.instruments;
   const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">
@@ -83,7 +85,7 @@ export const FilterTableArrayDataInstruments = ({
       dataSource:
         vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
     }),
-    [schema]
+    [schema],
   );
 
   const { typeaheadHook } = vuuModule("SIMUL");
@@ -98,7 +100,7 @@ export const FilterTableArrayDataInstruments = ({
       console.log("apply filter", { filter });
       dataSource.filter = filter;
     },
-    [dataSource]
+    [dataSource],
   );
 
   const handleFilterStateChange = useCallback((fs: FilterState) => {
@@ -107,11 +109,15 @@ export const FilterTableArrayDataInstruments = ({
   }, []);
 
   const FilterBarProps: FilterBarProps = {
+    QuickFilterProps: quickFilterColumns
+      ? {
+          quickFilterColumns,
+        }
+      : undefined,
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
-    quickFilterColumns,
     suggestionProvider: typeaheadHook,
     tableSchema: getSchema("instruments"),
     variant,

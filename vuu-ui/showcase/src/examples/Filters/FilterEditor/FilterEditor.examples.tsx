@@ -94,7 +94,7 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   );
 };
 
-NewFilter.displaySequence = displaySequence++;
+NewFilterDateColumns.displaySequence = displaySequence++;
 
 export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {

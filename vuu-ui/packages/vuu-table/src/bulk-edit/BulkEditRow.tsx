@@ -1,7 +1,6 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { CommitHandler } from "@finos/vuu-ui-controls";
-import { queryClosest } from "@finos/vuu-utils";
+import { CommitHandler, queryClosest } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback } from "react";
@@ -31,9 +30,11 @@ export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
-  const onCommit = useCallback<CommitHandler>(
+  const onCommit = useCallback<
+    CommitHandler<HTMLInputElement, string | undefined>
+  >(
     (evt, value) => {
-      if (String(value).trim() !== "") {
+      if (value !== undefined && String(value).trim() !== "") {
         const field = queryClosest(evt.target, "[data-field]");
         if (field) {
           const columnName = field.dataset.field;

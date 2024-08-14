@@ -1,5 +1,5 @@
 import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
-import { hasOpenOptionList, isDateInput } from "@finos/vuu-utils";
+import { hasOpenOptionList } from "@finos/vuu-utils";
 import {
   KeyboardEvent,
   RefCallback,

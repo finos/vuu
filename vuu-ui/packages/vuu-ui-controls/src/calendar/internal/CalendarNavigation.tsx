@@ -173,7 +173,6 @@ export const CalendarNavigation = forwardRef<
     years,
     canNavigateNext,
     canNavigatePrevious,
-    visibleMonth,
     selectedMonth,
     selectedYear,
     isOutsideAllowedMonths,

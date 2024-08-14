@@ -16,11 +16,12 @@ const NO_DATA_MATCH = ["No matching data"];
 
 export type VuuTypeaheadInputHookProps = Pick<
   VuuTypeaheadInputProps,
-  "column" | "suggestionProvider" | "table"
+  "column" | "onCommit" | "suggestionProvider" | "table"
 >;
 
 export const useVuuTypeaheadInput = ({
   column,
+  onCommit,
   suggestionProvider,
   table,
 }: VuuTypeaheadInputHookProps) => {
@@ -79,9 +80,11 @@ export const useVuuTypeaheadInput = ({
 
   const handleSelectionChange = (
     evt: SyntheticEvent,
-    [newSelected]: string[]
+    [newSelected]: string[],
   ) => {
+    console.log(`useVuuTypeahead handleSelectionChange ${newSelected}`);
     setValue(newSelected);
+    onCommit(evt as SyntheticEvent<HTMLInputElement>, newSelected);
   };
 
   const handleOpenChange = (newOpen: boolean) => {

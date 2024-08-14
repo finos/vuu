@@ -24,7 +24,7 @@ const constantInputProps = {
 
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends InputProps {
-  onCommit: CommitHandler<HTMLInputElement, T>;
+  onCommit: CommitHandler<HTMLInputElement, T | undefined>;
   type?: T;
   TooltipProps?: Pick<TooltipHookProps, "placement" | "tooltipContent">;
 }
@@ -61,7 +61,7 @@ export const VuuInput = forwardRef(function VuuInput<
     tooltipContent: TooltipProps?.tooltipContent,
   });
 
-  const commitValue = useCallback<CommitHandler<string>>(
+  const commitValue = useCallback<CommitHandler>(
     (evt, value) => {
       if (type === "number") {
         const numericValue = parseFloat(value);

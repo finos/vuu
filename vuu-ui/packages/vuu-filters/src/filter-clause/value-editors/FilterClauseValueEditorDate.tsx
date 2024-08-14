@@ -1,7 +1,10 @@
-import React, { ChangeEvent, useCallback, useState } from "react";
+import React, {
+  useCallback,
+  useState,
+} from "react";
 import cx from "clsx";
 import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { toCalendarDate } from "@finos/vuu-utils";
+import { CommitHandler, toCalendarDate } from "@finos/vuu-utils";
 import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 import { VuuDatePicker } from "@finos/vuu-ui-controls";
@@ -23,8 +26,8 @@ export const FilterClauseValueEditorDate = (
     getInitialState(value),
   );
 
-  const onSelectedDateChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>, selectedDateInputValue?: string) => {
+  const handleCommit = useCallback<CommitHandler<HTMLElement, number>>(
+    (e, selectedDateInputValue) => {
       console.log("change date");
       if (selectedDateInputValue) {
         const dateValue = toCalendarDate(new Date(selectedDateInputValue));
@@ -46,7 +49,7 @@ export const FilterClauseValueEditorDate = (
       inputProps={inputProps}
       className={cx("vuuFilterClause-DatePicker", className)}
       onBlur={onBlur}
-      onCommit={onSelectedDateChange}
+      onCommit={handleCommit}
       selectedDate={date}
     />
   );

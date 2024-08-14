@@ -144,7 +144,7 @@ export const FilterBar = ({
           suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
-      ) : (
+      ) : QuickFilterProps ? (
         <QuickFilters
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
@@ -152,6 +152,8 @@ export const FilterBar = ({
           suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
+      ) : (
+        "Missing QuickFilterProps"
       )}
     </div>
   );

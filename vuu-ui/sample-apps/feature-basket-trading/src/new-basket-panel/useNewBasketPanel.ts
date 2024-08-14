@@ -1,7 +1,7 @@
 import { ViewportRpcResponse } from "@finos/vuu-data-types";
 import type { TableRowSelectHandler } from "@finos/vuu-table-types";
-import { CommitHandler, OpenChangeHandler } from "@finos/vuu-ui-controls";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { OpenChangeHandler } from "@finos/vuu-ui-controls";
+import { CommitHandler, buildColumnMap } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 
@@ -53,13 +53,14 @@ export const useNewBasketPanel = ({
     }
   }, []);
 
-  const handleChangeBasketName = useCallback<CommitHandler<string>>(
-    (evt, value) => {
+  const handleChangeBasketName = useCallback<
+    CommitHandler<HTMLInputElement, string | undefined>
+  >((_, value) => {
+    if (value !== undefined) {
       setBasketName(value);
-      return Promise.resolve(true);
-    },
-    [],
-  );
+    }
+    return Promise.resolve(true);
+  }, []);
 
   const handleOpenChangeInstrumentPicker = useCallback<OpenChangeHandler>(
     (open) => {

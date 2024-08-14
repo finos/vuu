@@ -18,9 +18,10 @@ export interface QuickFilterProps
       FilterBarProps,
       "onApplyFilter" | "suggestionProvider" | "tableSchema"
     > {
+  allowFind?: boolean;
   availableColumns: ColumnDescriptor[];
   onChangeQuickFilterColumns?: (columns: string[]) => void;
-  quickFilterColumns?: string[];
+  quickFilterColumns: string[];
   /**
    * Render a general 'search' control.
    * if true, all columns of type 'string' will be included in the search. Otherwise
@@ -30,6 +31,7 @@ export interface QuickFilterProps
 }
 
 export const QuickFilters = ({
+  allowFind = true,
   availableColumns,
   onApplyFilter,
   onChangeQuickFilterColumns,
@@ -52,7 +54,6 @@ export const QuickFilters = ({
     onColumnsSelectionChange,
     onCommit,
     rootRef,
-    quickFilters,
   } = useQuickFilters({
     availableColumns,
     onApplyFilter,
@@ -61,13 +62,14 @@ export const QuickFilters = ({
   });
 
   const filterColumns = availableColumns.filter(({ name }) =>
-    quickFilters?.includes(name),
+    quickFilterColumns?.includes(name),
   );
 
-  return (
-    <div className={classBase} ref={rootRef}>
-      <div className={`${classBase}-filter-container`}>
-        <FormField data-embedded data-field="find">
+  const getFilterControls = () => {
+    const controls = [];
+    if (allowFind) {
+      controls.push(
+        <FormField data-embedded data-field="find" key="find">
           <FormFieldLabel>Find</FormFieldLabel>
           <VuuInput
             inputProps={{
@@ -77,8 +79,12 @@ export const QuickFilters = ({
             startAdornment={searchIcon}
             variant="secondary"
           />
-        </FormField>
-        {filterColumns?.map((column) => (
+        </FormField>,
+      );
+    }
+    {
+      filterColumns?.forEach((column) =>
+        controls.push(
           <FormField key={column.label ?? column.name} data-field={column.name}>
             <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
             {getDataItemEditControl({
@@ -87,15 +93,25 @@ export const QuickFilters = ({
               suggestionProvider,
               table: tableSchema?.table,
             })}
-          </FormField>
-        ))}
+          </FormField>,
+        ),
+      );
+    }
+
+    return controls;
+  };
+
+  return (
+    <div className={classBase} ref={rootRef}>
+      <div className={`${classBase}-filter-container`}>
+        {getFilterControls()}
       </div>
       <ColumnPicker
         columns={availableColumnNames}
         icon="more-horiz"
         iconSize={16}
         onSelectionChange={onColumnsSelectionChange}
-        selected={quickFilters}
+        selected={quickFilterColumns}
       />
     </div>
   );

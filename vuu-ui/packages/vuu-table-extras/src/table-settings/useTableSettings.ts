@@ -12,8 +12,8 @@ import {
   moveItem,
   subscribedOnly,
   useLayoutEffectSkipFirst,
+  CommitHandler,
 } from "@finos/vuu-utils";
-import { CommitHandler } from "@finos/vuu-ui-controls/src";
 import {
   MouseEvent,
   SyntheticEvent,
@@ -203,16 +203,22 @@ export const useTableSettings = ({
     [],
   );
 
-  const handleCommitColumnWidth = useCallback<CommitHandler>((_, value) => {
-    const columnDefaultWidth = parseInt(value);
-    if (!isNaN(columnDefaultWidth)) {
-      setColumnState((state) => ({
-        ...state,
-        tableConfig: {
-          ...state.tableConfig,
-          columnDefaultWidth,
-        },
-      }));
+  const handleCommitColumnWidth = useCallback<
+    CommitHandler<HTMLInputElement, string | undefined>
+  >((_, value) => {
+    if (value === undefined) {
+      console.log(`column width is undefined`);
+    } else {
+      const columnDefaultWidth = parseInt(value);
+      if (!isNaN(columnDefaultWidth)) {
+        setColumnState((state) => ({
+          ...state,
+          tableConfig: {
+            ...state.tableConfig,
+            columnDefaultWidth,
+          },
+        }));
+      }
     }
     console.log({ value });
   }, []);

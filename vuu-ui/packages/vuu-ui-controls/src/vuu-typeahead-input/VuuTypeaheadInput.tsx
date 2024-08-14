@@ -8,17 +8,20 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
+import { CommitHandler } from "@finos/vuu-utils";
 
 const classBase = "vuuTypeaheadInput";
 
 export interface VuuTypeaheadInputProps {
   column: string;
+  onCommit: CommitHandler<HTMLInputElement>;
   suggestionProvider: SuggestionProvider;
   table: TableSchemaTable;
 }
 
 export const VuuTypeaheadInput = ({
   column,
+  onCommit,
   suggestionProvider,
   table,
 }: VuuTypeaheadInputProps) => {
@@ -39,6 +42,7 @@ export const VuuTypeaheadInput = ({
     value,
   } = useVuuTypeaheadInput({
     column,
+    onCommit,
     suggestionProvider,
     table,
   });

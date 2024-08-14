@@ -3,32 +3,23 @@ import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import { IPersistenceManager, LocalPersistenceManager } from "@finos/vuu-shell";
-import { basketSchemas } from "@finos/vuu-data-test";
+import { useViewContext, View } from "@finos/vuu-layout";
+import { setPersistentState } from "@finos/vuu-layout";
 
 let displaySequence = 1;
 
 const QuickFiltersTemplate = ({
-  availableColumns = [],
   onApplyFilter,
-  persistenceKey,
-  quickFilterColumns: quickFilterColumnsProp,
-  suggestionProvider,
-  tableSchema,
-}: Partial<QuickFilterProps> & {
-    persistenceKey?: string
-}) => {
-
+  quickFilterColumns: quickFilterColumnsProp = [],
+  suggestionProvider = vuuModule("SIMUL").typeaheadHook,
+  tableSchema = getSchema("instruments"),
+  availableColumns = tableSchema?.columns,
+}: Partial<QuickFilterProps>) => {
   const initialColumns = useMemo(() => {
     return quickFilterColumnsProp;
-  },[quickFilterColumnsProp])
+  }, [quickFilterColumnsProp]);
 
-  const [quickFilterColumns, setQuickFilterColumns] = useState(initialColumns)
-
-  const persistenceManager = useMemo<IPersistenceManager | undefined>(() => 
-    persistenceKey ? new LocalPersistenceManager(persistenceKey) : undefined
-  ,[persistenceKey])
-
+  const [quickFilterColumns, setQuickFilterColumns] = useState(initialColumns);
 
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
@@ -37,12 +28,13 @@ const QuickFiltersTemplate = ({
         filter,
       });
     },
-    [onApplyFilter]
+    [onApplyFilter],
   );
 
   const handleChangeQuickFilterColumns = useCallback((columns: string[]) => {
-    console.log('change columns',{columns})
-  },[])
+    console.log("change columns", { columns });
+    setQuickFilterColumns(columns);
+  }, []);
 
   return (
     <QuickFilters
@@ -76,9 +68,6 @@ export const OneColumn = () => {
 OneColumn.displaySequence = displaySequence++;
 
 export const ThreeColumns = () => {
-  const tableSchema = useMemo(() => getSchema("instruments"), []);
-  const { typeaheadHook } = vuuModule("SIMUL");
-
   const [availableColumns, quickFilterColumns] = useMemo<
     [ColumnDescriptor[], string[]]
   >(
@@ -94,30 +83,55 @@ export const ThreeColumns = () => {
       ],
       ["currency", "description", "exchange"],
     ],
-    []
+    [],
   );
   return (
     <QuickFiltersTemplate
       availableColumns={availableColumns}
       quickFilterColumns={quickFilterColumns}
-      suggestionProvider={typeaheadHook}
-      tableSchema={tableSchema}
     />
   );
 };
 ThreeColumns.displaySequence = displaySequence++;
 
-export const WithPersistence = () => {
+const PersistentFilter = () => {
+  const { load, save } = useViewContext();
+  const quickFilters = useMemo<string[]>(
+    () => (load?.("quick-filters") as string[]) ?? [],
+    [load],
+  );
 
-  const columns = useMemo(() => 
-    basketSchemas.basketTradingConstituentJoin.columns
-  ,[])
+  const saveFilters = useCallback(
+    (columns: string[]) => {
+      // this won't do anything useful in this context
+      // state will be saved in persistent-state store but because
+      // we are not rendered within a LayoutProvider, there will be
+      // no interaction with PersistenceManager to save state across
+      // sessions
+      save?.(columns, "quick-filters");
+    },
+    [save],
+  );
 
   return (
     <QuickFiltersTemplate
-      availableColumns={columns}
-      persistenceKey="quick-filters-with-persistence"
+      onChangeQuickFilterColumns={saveFilters}
+      quickFilterColumns={quickFilters}
     />
   );
 };
-SearchOnly.displaySequence = displaySequence++;
+
+export const WithPersistence = () => {
+  const id = "with-persistence-test";
+  useMemo(() => {
+    // 2) load time operation, normally performed during deserialization of UI from JSON
+    setPersistentState(id, { "quick-filters": ["currency"] });
+  }, []);
+
+  return (
+    <View id={id}>
+      <PersistentFilter />
+    </View>
+  );
+};
+WithPersistence.displaySequence = displaySequence++;
