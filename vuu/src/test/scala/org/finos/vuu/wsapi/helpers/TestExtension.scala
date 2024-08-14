@@ -4,9 +4,11 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{TableDef, ViewPortDef}
 import org.finos.vuu.core.IVuuServer
-import org.finos.vuu.core.module.{ModuleFactory, ModuleFactoryNode, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.module.ModuleFactoryNode
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.provider.{MockProvider, Provider, ProviderContainer}
+import org.finos.vuu.provider.{Provider, ProviderContainer}
+
+import scala.collection.immutable.ListMap
 
 object TestExtension {
   implicit class ModuleFactoryExtension(val moduleFactoryNode: ModuleFactoryNode) {
@@ -14,7 +16,7 @@ object TestExtension {
     def addTableForTest(tableDef: TableDef)(implicit clock: Clock, lifecycle: LifecycleContainer): ModuleFactoryNode = {
       moduleFactoryNode.addTable(
         tableDef,
-        (table, _) => new MockProvider(table)
+        (table, _) => new TestProvider(table, new FakeDataSource(ListMap.empty))
       )
     }
 

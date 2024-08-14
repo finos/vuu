@@ -16,90 +16,128 @@ import scala.collection.immutable.ListMap
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
   private val tableName = "TypeaheadTest"
+  private val tableNameEmpty = "TypeaheadTestEmpty"
   private val moduleName = "TEST"
 
   Feature("Server web socket api") {
-
     Scenario("Type ahead request for a column") {
 
-      Then("create viewport")
-      val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
-      vuuClient.send(sessionId, tokenId, createViewPortRequest)
-      val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-      val viewPortId = viewPortCreateResponse.get.viewPortId
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
 
-      //todo how to change the table data
-      //1. get access to provider and update directly - via adding new function to get provider from TableDefs in TableDefContainer?
-      //2. update the data source but have listener function to update the provider if data source change?
-      //3. only change when loading table for first time
-
-      val getTypeAheadRequest = ViewPortRpcCall(
-        viewPortId,
-        RpcNames.UniqueFieldValuesRpc,
-        params = Array(),
-        namedParams = Map(
-          "table" -> tableName,
-          "module" -> moduleName,
-          "column" -> "Account"
-        ))
+      When("request typeahead for Account column")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "Account")
       vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
       val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
-      assert(response.isDefined)
 
+      response.isDefined shouldBe true
       response.get.method shouldEqual "getUniqueFieldValues"
-
-      val action = response.get.action
-      action shouldBe a[DisplayResultAction]
-      val displayResultAction = action.asInstanceOf[DisplayResultAction]
-      displayResultAction.result shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
+      assertResponseReturns(response, List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854"))
     }
 
     Scenario("Type ahead request that start with a string for a column") {
 
-      Then("create viewport")
-      val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
-      vuuClient.send(sessionId, tokenId, createViewPortRequest)
-      val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-      val viewPortId = viewPortCreateResponse.get.viewPortId
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
 
-      val getTypeAheadRequest = ViewPortRpcCall(
-        viewPortId,
-        RpcNames.UniqueFieldValuesStartWithRpc,
-        params = Array(),
-        namedParams = Map(
-          "table" -> tableName,
-          "module" -> moduleName,
-          "column" -> "Name",
-          "starts" -> "Tom"
-        ))
+      When("request typeahead for Name column with start string Tom")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId,tableName, "Name", "Tom")
       vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
-      Then("return top 10 values in that column")
+      Then("return all Name values that start with Tom")
       val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
-      assert(response.isDefined)
 
+      response.isDefined shouldBe true
       response.get.method shouldEqual "getUniqueFieldValuesStartingWith"
+      assertResponseReturns(response, List("Tom Sawyer", "Tom Thatcher"))
+    }
 
-      val action = response.get.action
-      action shouldBe a[DisplayResultAction]
-      val displayResultAction = action.asInstanceOf[DisplayResultAction]
-      displayResultAction.result shouldEqual List("Tom Sawyer", "Tom Thatcher")
+    Scenario("Type ahead request with start with no matching value") {
 
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request typeahead for Name column with start string NoMatching")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "NoMatch")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return success response with empty list")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+
+      response.isDefined shouldBe true
+      response.get.method shouldEqual "getUniqueFieldValuesStartingWith"
+      assertResponseReturns(response, List.empty)
+    }
+
+    Scenario("Type ahead request for a column that does not exist") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request typeahead for column that does not exist")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "ColumnThatDoesNotExist")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return success response with empty list")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+
+      response.isDefined shouldBe true
+      response.get.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(response, List.empty)
+    }
+
+    Scenario("Type ahead request for a view port that does not exist") {
+
+      When("request typeahead for column that does not exist")
+      val getTypeAheadRequest = createTypeAheadRequest("viewPortThatDoesNotExist", tableName, "Account")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return helpful error response")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortMenuRpcReject]
+
+      response.isDefined shouldBe true
+      response.get.rpcName shouldEqual "getUniqueFieldValues"
+      response.get.error shouldEqual "No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
     }
 
     //create multiple view ports
-    // check type ahead work on view port columns rather than table columns
-    Scenario("Type ahead request for view port that does not exist") {}
-    Scenario("Type ahead request for column that does not exist") {}
-    Scenario("Type ahead request for empty table") {}
-    Scenario("Type ahead request with start with no matching value") {}
+    //check type ahead work on view port columns rather than table columns
+    //match response on request id?
+    Scenario("Type ahead request for empty table") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request typeahead for column when table is empty")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableNameEmpty, "Account")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return success response with empty list")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+
+      response.isDefined shouldBe true
+      response.get.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(response, List.empty)
+    }
+
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
     val tableDef = TableDef(
       name = tableName,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
+    )
+
+    val tableDef2 = TableDef(
+      name = tableNameEmpty,
       keyField = "Id",
       columns =
         new ColumnBuilder()
@@ -139,6 +177,48 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
+      .addTableForTest(tableDef2)
       .asModule()
+  }
+
+  private def createViewPort = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
+    vuuClient.send(sessionId, tokenId, createViewPortRequest)
+    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
+    val viewPortId = viewPortCreateResponse.get.viewPortId
+    viewPortId
+  }
+
+  private def createTypeAheadRequest(viewPortId: String, tableName: String, columnName: String): ViewPortRpcCall = {
+    ViewPortRpcCall(
+      viewPortId,
+      RpcNames.UniqueFieldValuesRpc,
+      params = Array(),
+      namedParams = Map(
+        "table" -> tableName,
+        "module" -> moduleName,
+        "column" -> columnName
+      ))
+  }
+
+  private def createTypeAheadStartWithRequest(viewPortId: String, tableName: String, columnName: String, startString: String): ViewPortRpcCall = {
+    ViewPortRpcCall(
+      viewPortId,
+      RpcNames.UniqueFieldValuesStartWithRpc,
+      params = Array(),
+      namedParams = Map(
+        "table" -> tableName,
+        "module" -> moduleName,
+        "column" -> columnName,
+        "starts" -> startString
+      ))
+  }
+
+  private def assertResponseReturns(response: Option[ViewPortRpcResponse], expectedResult: Any) = {
+    val action = response.get.action
+    action shouldBe a[DisplayResultAction]
+    val displayResultAction = action.asInstanceOf[DisplayResultAction]
+
+    displayResultAction.result shouldEqual expectedResult
   }
 }

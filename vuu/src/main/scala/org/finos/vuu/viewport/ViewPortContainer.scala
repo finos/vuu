@@ -79,6 +79,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
+
+    if(viewPort == null)
+      throw new Exception(s"No viewport $vpId found for RPC Call for $method")
+
     val viewPortDef = viewPort.getStructure.viewPortDef
     viewPortDef.service.processViewPortRpcCall(method, params, namedParams)(ctx)
   }
