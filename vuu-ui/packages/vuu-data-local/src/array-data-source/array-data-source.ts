@@ -50,6 +50,7 @@ import {
   vanillaConfig,
   withConfigDefaults,
   DataSourceConfigChanges,
+  selectionCount,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -278,10 +279,11 @@ export class ArrayDataSource
   }
 
   select(selected: Selection) {
-    this.#selectedRowsCount = selected.length;
+    this.#selectedRowsCount = selectionCount(selected);
     debug?.(`select ${JSON.stringify(selected)}`);
     this.selectedRows = selected;
     this.setRange(resetRange(this.#range), true);
+    this.emit("row-selection", selected, this.#selectedRowsCount);
   }
 
   openTreeNode(key: string) {

@@ -45,6 +45,7 @@ import {
   vanillaConfig,
   withConfigDefaults,
   DataSourceConfigChanges,
+  selectionCount,
 } from "@finos/vuu-utils";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -314,13 +315,14 @@ export class VuuDataSource
   select(selected: Selection) {
     //TODO this isn't always going to be correct - need to count
     // selection block items
-    this.#selectedRowsCount = selected.length;
+    this.#selectedRowsCount = selectionCount(selected);
     if (this.viewport) {
       this.server?.send({
         viewport: this.viewport,
         type: "select",
         selected,
       });
+      this.emit("row-selection", selected, this.#selectedRowsCount);
     }
   }
 

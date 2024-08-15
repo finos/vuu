@@ -330,3 +330,14 @@ export type SelectionDiff = {
   added: SelectionItem[];
   removed: SelectionItem[];
 };
+
+export const selectionCount = (selected: Selection) => {
+  let count = selected.length;
+  for (const selectionItem of selected){
+    if (Array.isArray(selectionItem)){
+      const [from, to] = selectionItem;
+      count += (to - (from + 1));
+    }
+  }
+  return count;
+}

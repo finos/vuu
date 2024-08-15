@@ -235,10 +235,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
           return rpcService.service(rpcRequest) as Promise<T>;
         }
       }
-      const selectedRows = this.getSelectedRows();
       return rpcService.service({
         ...rpcRequest,
-        selectedRows,
+        selectedRowIds: this.getSelectedRowIds(),
       }) as Promise<T>;
     } else {
       console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);

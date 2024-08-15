@@ -190,6 +190,14 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     return () => this.suggestionFetcher;
   }
 
+  protected get sessionTableMap() {
+    return this.#sessionTableMap;
+  }
+
+  protected get tables() {
+    return this.#tables;
+  }
+
   private getSessionTable() {
     if (Object.keys(this.#sessionTableMap).length === 1) {
       const [sessionTable] = Object.values(this.#sessionTableMap);
@@ -273,7 +281,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         const newRow = sessionTable.data[i];
         const { column, value } = rpcRequest.namedParams;
         const keyIndex = sessionTable.map[sessionTable.schema.key];
-        sessionTable.update(String(newRow[keyIndex]), column as string, value);
+        sessionTable.update(
+          String(newRow[keyIndex]),
+          column as string,
+          value as VuuRowDataItemType
+        );
       }
       return {
         action: {
@@ -310,7 +322,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     }
   };
 
-  private createSessionTableFromSelectedRows(
+  protected createSessionTableFromSelectedRows(
     { data, map, schema }: Table,
     selectedRowIds: string[]
   ) {
