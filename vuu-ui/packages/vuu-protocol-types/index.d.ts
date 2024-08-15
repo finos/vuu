@@ -411,7 +411,7 @@ export interface ServerToClientRPC {
 export interface ClientToServerViewportRpcCall {
   type: "VIEW_PORT_RPC_CALL";
   rpcName: string;
-  namedParams: { [key: string]: VuuRowDataItemType };
+  namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
   params: string[];
   vpId: string;
 }
@@ -424,7 +424,7 @@ export interface ServerToClientViewportRpcResponse {
   };
   type: "VIEW_PORT_RPC_REPONSE";
   method: string;
-  namedParams: { [key: string]: VuuRowDataItemType };
+  namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
   params: string[];
   vpId: string;
 }

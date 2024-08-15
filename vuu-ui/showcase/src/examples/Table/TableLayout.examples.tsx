@@ -14,17 +14,29 @@ import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 let displaySequence = 1;
 
-export const DataTable = (props: Partial<TableProps>) => {
+type DataTableProps = Partial<
+  Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
+>;
+
+export const DataTable = ({
+  dataSource: dataSourceProp,
+  navigationStyle = "cell",
+  width = 600,
+  ...props
+}: DataTableProps) => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
+      ...props.config,
       columns: getSchema("instruments").columns,
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, []);
+  }, [props.config]);
+
   const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+    return dataSourceProp ?? vuuModule("SIMUL").createDataSource("instruments");
+  }, [dataSourceProp]);
+
   return (
     <>
       <Table
@@ -33,7 +45,8 @@ export const DataTable = (props: Partial<TableProps>) => {
         dataSource={dataSource}
         height={500}
         renderBufferSize={20}
-        width={600}
+        navigationStyle={navigationStyle}
+        width={width}
       />
     </>
   );
@@ -55,19 +68,38 @@ const InlineDrawer = ({
   const list = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
+  const dataSource = useMemo(() => {
+    const ds = vuuModule("SIMUL").createDataSource("instruments");
+    return ds;
+  }, []);
+
   const handleSelectionChange: SelectionChangeHandler = useCallback(
     (selection: Selection) => {
       if (selection.length > 0) {
         setOpen(true);
+        dataSource
+          .rpcCall({
+            rpcName: "openEditSession",
+            type: "VIEW_PORT_RPC_CALL",
+            namedParams: {
+              table: dataSource.table,
+            },
+            params: [],
+          })
+          .then((response) => {
+            console.log(`response`, {
+              response,
+            });
+          });
       } else {
         setOpen(false);
       }
     },
-    []
+    [dataSource]
   );
 
   return (
-    <DockLayout style={{ width: 500, height: 500 }}>
+    <DockLayout style={{ height: 500 }}>
       <Drawer
         inline={inline}
         open={open}
@@ -90,13 +122,19 @@ const InlineDrawer = ({
           </List>
         </div>
       </Drawer>
-      <DataTable onSelectionChange={handleSelectionChange} />
+      <DataTable
+        config={{ columnLayout: "fit" }}
+        dataSource={dataSource}
+        navigationStyle="row"
+        onSelectionChange={handleSelectionChange}
+        width="100%"
+      />
     </DockLayout>
   );
 };
 
 export const RightInlineDrawerPeek = () => (
-  <InlineDrawer position="right" inline peekaboo />
+  <InlineDrawer position="right" inline />
 );
 RightInlineDrawerPeek.displaySequence = displaySequence++;
 

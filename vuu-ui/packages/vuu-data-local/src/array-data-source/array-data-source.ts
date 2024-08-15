@@ -50,6 +50,7 @@ import {
   vanillaConfig,
   withConfigDefaults,
   DataSourceConfigChanges,
+  selectionCount,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -117,6 +118,7 @@ export class ArrayDataSource
   #columnMap: ColumnMap;
   #config: WithFullConfig = vanillaConfig;
   #data: DataSourceRow[];
+  #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
@@ -130,7 +132,6 @@ export class ArrayDataSource
   public tableSchema: TableSchema;
   public viewport: string;
 
-  private keys = new KeySet(this.#range);
   protected processedData: DataSourceRow[] | undefined = undefined;
 
   constructor({
@@ -206,7 +207,7 @@ export class ArrayDataSource
       aggregations || columns || filterSpec || groupBy || sort;
     if (hasConfigProps) {
       if (range) {
-        this.#range = range;
+        this.setRange(range);
       }
       config = {
         ...config,
@@ -278,10 +279,11 @@ export class ArrayDataSource
   }
 
   select(selected: Selection) {
-    this.#selectedRowsCount = selected.length;
+    this.#selectedRowsCount = selectionCount(selected);
     debug?.(`select ${JSON.stringify(selected)}`);
     this.selectedRows = selected;
     this.setRange(resetRange(this.#range), true);
+    this.emit("row-selection", selected, this.#selectedRowsCount);
   }
 
   openTreeNode(key: string) {
@@ -563,7 +565,7 @@ export class ArrayDataSource
   private setRange(range: VuuRange, forceFullRefresh = false) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       this.#range = range;
-      const keysResequenced = this.keys.reset(range);
+      const keysResequenced = this.#keys.reset(range);
       this.sendRowsToClient(forceFullRefresh || keysResequenced);
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
@@ -576,7 +578,7 @@ export class ArrayDataSource
         clientViewportId: this.viewport,
         mode: "update",
         rows: [
-          toClientRow(row, this.keys, this.selectedRows, this.dataIndices),
+          toClientRow(row, this.#keys, this.selectedRows, this.dataIndices),
         ],
         type: "viewport-update",
       });
@@ -590,7 +592,7 @@ export class ArrayDataSource
       const rowsWithinViewport = data
         .slice(rowRange.from, rowRange.to)
         .map((row) =>
-          toClientRow(row, this.keys, this.selectedRows, this.dataIndices)
+          toClientRow(row, this.#keys, this.selectedRows, this.dataIndices)
         );
 
       this.clientCallback?.({

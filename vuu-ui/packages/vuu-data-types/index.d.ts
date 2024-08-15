@@ -340,6 +340,7 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
+  "row-selection": (selection: Selection, selectedRowCount: number) => void;
   subscribed: (subscription: DataSourceSubscribedMessage) => void;
   unsubscribed: DataSourceEventHandler;
   disabled: DataSourceEventHandler;

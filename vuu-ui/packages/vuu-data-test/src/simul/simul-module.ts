@@ -10,8 +10,9 @@ import { instrumentsExtendedTable } from "./reference-data/instruments-extended"
 import { ordersTable } from "./reference-data/orders";
 import { pricesTable } from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
-import { RpcService, RpcServiceRequest, VuuModule } from "../VuuModule";
+import { RpcService, RpcServiceRequest } from "../VuuModule";
 import { MenuRpcResponse } from "packages/vuu-data-types";
+import { SimulModule } from "./SimulModule";
 
 const undefinedTables = {
   childOrders: undefined,
@@ -122,7 +123,7 @@ const services: Record<SimulTableName, RpcService[] | undefined> = {
   ],
 };
 
-export const simulModule = new VuuModule<SimulTableName>({
+export const simulModule = new SimulModule({
   menus,
   name: "SIMUL",
   schemas,
