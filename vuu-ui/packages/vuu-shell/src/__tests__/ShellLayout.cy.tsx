@@ -63,7 +63,7 @@ describe("ShellLayout", () => {
         cy.mount(<SimpleShellMultiLayouts />);
         cy.findByRole("img", { name: "Create Tab" }).realClick();
         cy.findAllByRole("tab").should("have.length", 4);
-        cy.findByTestId("custom-placeholder2").should("be.visible");
+        cy.findByTestId("custom-placeholder").should("be.visible");
       });
     });
   });
