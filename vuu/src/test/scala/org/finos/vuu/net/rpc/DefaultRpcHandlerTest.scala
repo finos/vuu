@@ -1,7 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.net.{ClientSessionId, Error, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse}
-import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess}
+import org.finos.vuu.viewport.{DisplayResultAction, ViewPortRpcFailure, ViewPortRpcSuccess}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -15,40 +15,48 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     handler = new DefaultRpcHandler
   }
 
-  Feature("Default Rpc Handler") {
-    Scenario("Register Rpc Method Handler for a method") {
-      handler.registerRpc("myMethod", _ => RpcMethodSuccess("result"))
+  Feature("Default Rpc Handler for Viewport Rpc") {
+    Scenario("Can register and handle Rpc request that perform action") {
+      handler.registerRpc("myMethod", _ => new RpcMethodSuccess())
 
       handler.processViewPortRpcCall("myMethod", Array("param1"), Map("namedParam1" -> "value1"))(null) should be(ViewPortRpcSuccess())
     }
 
+    Scenario("Can register and handle Rpc request that returns result") {
+      handler.registerRpc("myMethod", _ => new RpcMethodSuccess("result"))
+
+      handler.processViewPortRpcCall("myMethod", Array("param1"), Map("namedParam1" -> "value1"))(null) should be(DisplayResultAction("result"))
+    }
+
     Scenario("Throw exception when registering a function under already registered name") {
 
-      handler.registerRpc("myMethod", _ => RpcMethodSuccess("result1"))
+      handler.registerRpc("myMethod", _ => new RpcMethodSuccess("result1"))
 
       assertThrows[IllegalArgumentException] {
-        handler.registerRpc("myMethod", _ => RpcMethodSuccess("result2"))
+        handler.registerRpc("myMethod", _ => RpcMethodSuccess(Some("result2")))
       }
     }
 
-    Scenario("ProcessViewPortRpcCall method with null params should return ViewPortRpcSuccess when the rpc method is successful") {
-      handler.registerRpc("myMethod", _ => RpcMethodSuccess("result"))
+    Scenario("Rpc request with null params should return ViewPortRpcSuccess when the rpc method is successful") {
+      handler.registerRpc("myMethod", _ => new RpcMethodSuccess())
 
       val result = handler.processViewPortRpcCall("myMethod", null, null)(null)
 
       result should be(ViewPortRpcSuccess())
     }
 
-    Scenario("The processViewPortRpcCall method with null params should return ViewPortRpcFailure when the rpc method fails") {
+    Scenario("Rpc request should return ViewPortRpcFailure when the rpc method fails") {
       handler.registerRpc("myMethod", _ => RpcMethodFailure(1, "error", new Exception("exception")))
 
       val result = handler.processViewPortRpcCall("myMethod", null, null)(null)
 
       result should be(ViewPortRpcFailure("Exception occurred calling rpc myMethod"))
     }
+  }
 
-    Scenario("The processRpcCall method should return Some(ViewServerMessage) when the rpc method is successful") {
-      handler.registerRpc("myMethod", _ => RpcMethodSuccess("result"))
+  Feature("Default Rpc Handler for global Rpc") {
+    Scenario("Rcp handler should return Some(ViewServerMessage) when the rpc method is successful") {
+      handler.registerRpc("myMethod", _ => new RpcMethodSuccess("result"))
 
       val rpcCall = RpcCall("myService", "myMethod", Array("param1"), Map("namedParam1" -> "value1"))
 
@@ -57,7 +65,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
       result should be(Some(JsonViewServerMessage("requestId", "sessionId", "token", "user", RpcResponse("myMethod", "result", null), module = "TEST_MODULE")))
     }
 
-    Scenario("The processRpcCall method should return Some(ViewServerMessage) when the rpc method fails") {
+    Scenario("Rpc handler should return Some(ViewServerMessage) when the rpc method fails") {
       handler.registerRpc("myMethod", _ => RpcMethodFailure(1, "error", new Exception("exception")))
 
       val rpcCall = RpcCall("myService", "myMethod", Array("param1"), Map("namedParam1" -> "value1"))
@@ -68,7 +76,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
       result should be(Some(JsonViewServerMessage("requestId", "sessionId", "token", "user", RpcResponse("myMethod", null, Error("error", 1)), "")))
     }
 
-    Scenario("The processRpcCall method should return Some(ViewServerMessage) when the rpc method is not found") {
+    Scenario("Rpc handler should return Some(ViewServerMessage) when the rpc method is not found") {
       val rpcCall = RpcCall("myService", "myMethod", Array("param1"), Map("namedParam1" -> "value1"))
       handler.processRpcCall(msg, rpcCall)(ctx) should be(Some(JsonViewServerMessage("requestId", "sessionId", "token", "user", RpcResponse("myMethod", null, Error("Could not find rpcMethodHandler myMethod", 1)), "TEST_MODULE")))
     }
