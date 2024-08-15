@@ -3,7 +3,7 @@ package org.finos.vuu.person;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.*;
-import scala.Function1;
+import scala.Some;
 
 import java.util.Arrays;
 
@@ -24,14 +24,14 @@ public class PersonRpcHandler extends DefaultRpcHandler {
                 params.namedParams().get("Id").get().toString(), //how to report error when expected param missing or fail to cast to right type
                 params.namedParams().get("Name").get().toString()
         );
-        return new RpcMethodSuccess(""); //how to control what viewport action to trigger?
+        return new RpcMethodSuccess(); //how to control what viewport action to trigger?
     }
 
     public RpcMethodCallResult processGetPeopleNameRpcRequest(RpcParams params) {
-        getPeopleWithNameThatStartWith(
+        var people = getPeopleWithNameThatStartWith(
                 Arrays.stream(params.params()).findFirst().toString()
         );
-        return new RpcMethodSuccess(""); //need to return result
+        return new RpcMethodSuccess(people); //need to return result
     }
 
     public String[] updateName(String id, String newName) {

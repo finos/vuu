@@ -29,8 +29,10 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val result = processRpcMethodHandler(methodName, params, namedParams, ctx)
     result match {
       case RpcMethodSuccess(result) =>
-        if(result == null) ViewPortRpcSuccess()
-        else DisplayResultAction(result)
+        result match {
+          case Some(value) => DisplayResultAction(value)
+          case None => ViewPortRpcSuccess()
+        }
       case _: RpcMethodFailure => ViewPortRpcFailure(s"Exception occurred calling rpc $methodName")
     }
   }
@@ -42,7 +44,7 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val module = Option(msg).map(_.module).getOrElse("")
 
     processRpcMethodHandler(method, params, namedPars, ctx) match {
-      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.result, error = null), module))
+      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
       case error: RpcMethodFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
   }

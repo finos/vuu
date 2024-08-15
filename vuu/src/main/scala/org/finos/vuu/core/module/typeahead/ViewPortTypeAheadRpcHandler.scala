@@ -17,7 +17,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
       params.namedParams("column").toString,
       null //todo what to do about request context
     )
-    RpcMethodSuccess(values)
+    new RpcMethodSuccess(values)
   }
 
   def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcMethodCallResult = {
@@ -28,7 +28,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
       params.namedParams("starts").toString,
       null //todo what to do about request context
     )
-    RpcMethodSuccess(values) //how to control what viewport action to trigger?
+    new RpcMethodSuccess(values) //how to control what viewport action to trigger?
   }
 
   def getUniqueFieldValues(tableName: String, moduleName: String, column: String, ctx: RequestContext): Array[String] = {

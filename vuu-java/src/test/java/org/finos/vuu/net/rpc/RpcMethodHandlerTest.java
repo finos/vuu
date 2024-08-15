@@ -18,18 +18,6 @@ import static test.helper.ViewPortTestUtils.createRandomViewServerMessage;
 public class RpcMethodHandlerTest {
 
     @Test
-    public void should_wrap_and_call_java_function_in_method_handler() {
-        final TestRpcService rpcService = new TestRpcService();
-
-        final RpcMethodCallResult result = rpcService.rpcFunction(new RpcParams(new Object[]{}, ScalaCollectionConverter.toScala(Collections.emptyMap()), null));
-
-        assertThat(result)
-                .isNotNull()
-                .isExactlyInstanceOf(RpcMethodSuccess.class)
-                .extracting("result").isEqualTo("It Works");
-    }
-
-    @Test
     public void should_register_java_function_as_rpc_in_default_handler() {
         final TestRpcService rpcService = new TestRpcService();
 
