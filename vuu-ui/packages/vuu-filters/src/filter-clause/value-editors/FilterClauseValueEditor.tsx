@@ -49,7 +49,6 @@ export const FilterClauseValueEditor = forwardRef(
         <FilterClauseValueEditorDate
           inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
-          data-field="value"
           // ref={forwardedRef}
           value={value as number}
           operator={operator as NumericFilterClauseOp}

@@ -20,6 +20,7 @@ import {
   useFloatingUI,
   useForkRef,
   useFormFieldProps,
+  useId,
 } from "@salt-ds/core";
 import { CalendarIcon } from "@salt-ds/icons";
 import {
@@ -130,6 +131,7 @@ export const DatePicker = forwardRef<
     dateFormatter,
     CalendarProps,
     className,
+    id: idProp,
     open: openProp,
     defaultOpen,
     onOpenChange: onOpenChangeProp,
@@ -157,6 +159,8 @@ export const DatePicker = forwardRef<
     name: "Calendar",
     state: "selectedDate",
   });
+
+  const id = useId(idProp);
 
   const [startVisibleMonth, setStartVisibleMonth] = useState<
     DateValue | undefined
@@ -248,12 +252,16 @@ export const DatePicker = forwardRef<
     getPanelPosition,
   };
 
+  const calendarId = `${id}-calendar`;
+
   return (
     <DatePickerContext.Provider value={datePickerContextValue}>
       <DateInput
+        aria-owns={calendarId}
         validationStatus={validationStatus}
         bordered={bordered}
         className={clsx(withBaseName(), className)}
+        id={id}
         ref={inputRef}
         {...getReferenceProps()}
         startInputRef={startInputRef}
@@ -279,7 +287,11 @@ export const DatePicker = forwardRef<
         ref={floatingRef}
         {...getFloatingProps()}
         onSelect={handleSelect}
-        CalendarProps={{ ...CalendarProps, borderedDropdown: bordered }}
+        CalendarProps={{
+          ...CalendarProps,
+          borderedDropdown: bordered,
+          id: calendarId,
+        }}
         helperText={helperText}
         visibleMonths={visibleMonths}
       />

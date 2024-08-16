@@ -23,7 +23,7 @@ export const DefaultDatePicker = () => {
 
   return (
     <DatePicker
-      selectedDate={selectedDate}
+      // selectedDate={selectedDate}
       style={{ width: 150 }}
       onSelectionChange={(_, date) => setDate(date as DateValue)}
     />
@@ -32,7 +32,7 @@ export const DefaultDatePicker = () => {
 DefaultDatePicker.displaySequence = displaySequence++;
 
 export const DefaultVuuDatePicker = () => {
-  const [selectedDate, setSelectedDate] = useState<DateValue>(_today);
+  const [selectedDate, setSelectedDate] = useState<DateValue>();
 
   const setDate = (date: DateValue) => {
     if (date) {
@@ -54,6 +54,30 @@ export const DefaultVuuDatePicker = () => {
   );
 };
 DefaultVuuDatePicker.displaySequence = displaySequence++;
+
+export const VuuDatePickerWithValue = () => {
+  const [selectedDate, setSelectedDate] = useState<DateValue>(_today);
+
+  const setDate = (date: DateValue) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const handleCommit: CommitHandler<HTMLElement, number> = (e, value) => {
+    console.log(`commit ${value} ${new Date(value).toString()}`);
+  };
+
+  return (
+    <VuuDatePicker
+      onCommit={handleCommit}
+      onSelectionChange={(_, date) => setDate(date as DateValue)}
+      selectedDate={selectedDate}
+      style={{ width: "250px" }}
+    />
+  );
+};
+VuuDatePickerWithValue.displaySequence = displaySequence++;
 
 export const WithFormField = () => {
   return (

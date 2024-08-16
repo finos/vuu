@@ -117,11 +117,20 @@ const DefaultFilterBarCore = ({
 let displaySequence = 1;
 
 const FilterBarTemplate = ({
+  QuickFilterProps,
   filterState: filterStateProp = { filters: [], activeIndices: [] },
   onFilterStateChanged,
   ...rest
 }: Partial<FilterBarProps>) => {
   const [filterState, setFilterState] = useState(filterStateProp);
+  const [quickFilterColumns, setQuickFilterColumns] = useState(
+    QuickFilterProps?.quickFilterColumns ?? [],
+  );
+
+  const handleChangeQuickFilterColumns = useCallback((columns: string[]) => {
+    console.log("change columns", { columns });
+    setQuickFilterColumns(columns);
+  }, []);
 
   const handleFilterStateChange = useCallback(
     (fs: FilterState) => {
@@ -134,6 +143,11 @@ const FilterBarTemplate = ({
   return (
     <DefaultFilterBarCore
       {...rest}
+      QuickFilterProps={{
+        ...QuickFilterProps,
+        quickFilterColumns,
+        onChangeQuickFilterColumns: handleChangeQuickFilterColumns,
+      }}
       filterState={filterState}
       onFilterStateChanged={handleFilterStateChange}
     />

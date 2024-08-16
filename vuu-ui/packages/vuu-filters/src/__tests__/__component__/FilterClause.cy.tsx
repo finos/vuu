@@ -1,7 +1,7 @@
 import {
   NewFilterClause,
   PartialFilterClauseColumnAndOperator,
-} from "../../../../../showcase/src/examples/Filters/FilterBar/FilterClause.examples";
+} from "../../../../../showcase/src/examples/Filters/FilterClause/FilterClause.examples";
 
 describe("FilterClause", () => {
   describe("WHEN new filter clause is rendered", () => {

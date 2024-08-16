@@ -22,6 +22,7 @@ import { getCurrentLocale } from "./internal/utils";
 
 export type CalendarProps = useCalendarProps & {
   className?: string;
+  id?: string;
   renderDayContents?: CalendarCarouselProps["renderDayContents"];
   hideYearDropdown?: CalendarNavigationProps["hideYearDropdown"];
   borderedDropdown?: CalendarNavigationProps["borderedDropdown"];
@@ -35,6 +36,7 @@ export const Calendar = forwardRef<HTMLDivElement, CalendarProps>(
   function Calendar(props, ref) {
     const {
       className,
+      id,
       renderDayContents,
       hideYearDropdown,
       TooltipProps,
@@ -77,6 +79,7 @@ export const Calendar = forwardRef<HTMLDivElement, CalendarProps>(
       >
         <div
           className={clsx(withBaseName(), className)}
+          id={id}
           role="application"
           aria-label={calendarLabel}
           ref={ref}

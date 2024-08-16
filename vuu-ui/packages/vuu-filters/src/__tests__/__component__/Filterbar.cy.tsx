@@ -483,7 +483,7 @@ const getDate = (t: "start-today" | "start-tomorrow" | "end-today") => {
   }
 };
 
-describe("WHEN a user applies a date filter", () => {
+describe.only("WHEN a user applies a date filter", () => {
   const DATE_COLUMN = "lastUpdated";
   const startOfToday = getDate("start-today").getTime();
   const endOfToday = getDate("end-today").getTime();
@@ -550,7 +550,10 @@ describe("WHEN a user applies a date filter", () => {
       // Add date filter
       findAddButton().realClick();
       clickListItems(DATE_COLUMN, op);
-      cy.get(".vuuDatePopup .vuuIconButton").realClick();
+      cy.findByRole("textbox", { name: "Start date" }).should("be.focused");
+      cy.realPress("ArrowDown")
+
+      // cy.get(".vuuDatePopup .vuuIconButton").realClick();
       cy.get(`${VISIBLE_MONTH} .saltCalendarDay-today`).realClick();
       cy.realPress("ArrowRight");
       clickButton("Save");

@@ -1,3 +1,12 @@
+import { CommitHandler } from "@finos/vuu-utils";
+import {
+  DateValue,
+  getLocalTimeZone,
+  isSameDay,
+  isSameMonth,
+  isSameYear,
+} from "@internationalized/date";
+import cx from "clsx";
 import {
   ChangeEvent,
   KeyboardEvent,
@@ -6,20 +15,16 @@ import {
   useRef,
   useState,
 } from "react";
-import { DatePicker, DatePickerProps } from "../date-picker";
-import {
-  DateValue,
-  getLocalTimeZone,
-  isSameDay,
-  isSameMonth,
-  isSameYear,
-  today,
-} from "@internationalized/date";
 import { SingleSelectionValueType } from "../calendar";
-import { CommitHandler } from "@finos/vuu-utils";
+import { DatePicker, DatePickerProps } from "../date-picker";
 
-const isSameDate = (d1: DateValue, d2: DateValue) =>
-  isSameDay(d1, d2) && isSameMonth(d1, d2) && isSameYear(d1, d2);
+const classBase = "VuuDatePicker";
+
+const isSameDate = (d1: DateValue, d2?: DateValue) =>
+  d2 !== undefined &&
+  isSameDay(d1, d2) &&
+  isSameMonth(d1, d2) &&
+  isSameYear(d1, d2);
 
 const datePattern = /^\d{1,2} [a-z]{3} \d{4}$/i;
 const isValidDate = (value?: string) =>
@@ -34,35 +39,89 @@ const toEpochMillis = (
   timezone: string = getLocalTimeZone(),
 ): number => date.toDate(timezone).getTime();
 
+type DateState =
+  | {
+      datePickerKey: "controlled";
+      defaultDate: undefined;
+      selectedDate: DateValue;
+    }
+  | {
+      datePickerKey: "uncontrolled";
+      defaultDate: DateValue | undefined;
+      selectedDate: undefined;
+    };
+
+const getDates = (selectedDate: DateValue | undefined): DateState => {
+  if (selectedDate) {
+    return {
+      datePickerKey: "controlled",
+      defaultDate: undefined,
+      selectedDate,
+    };
+  } else {
+    return {
+      datePickerKey: "uncontrolled",
+      defaultDate: undefined,
+      selectedDate,
+    };
+  }
+};
+
 export const VuuDatePicker = ({
+  className,
   onSelectionChange,
-  selectedDate = today(localTimeZone),
+  selectedDate: selectedDateProp,
   onCommit,
+  preserveFocusOnSelect,
   ...props
-}: DatePickerProps<SingleSelectionValueType> & {
+}: Omit<DatePickerProps<SingleSelectionValueType>, "defaultSelectedDate"> & {
   onCommit?: CommitHandler<HTMLElement, number>;
+  preserveFocusOnSelect?: boolean;
 }) => {
   const [open, _setOpen] = useState(false);
   const valueRef = useRef("");
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  const dateState = useRef<DateState>(getDates(selectedDateProp));
 
   const setOpen = (o: boolean) => {
     console.log(`setOpen ${o}`);
     _setOpen(o);
   };
 
-  const handleSelectionChange = useCallback(
+  const commitDateChange = useCallback(
     (e: SyntheticEvent<Element>, date: DateValue) => {
-      if (date && !isSameDate(date, selectedDate)) {
-        onSelectionChange?.(e, date);
-        setOpen(false);
-        console.log(`about to commit date ${date.toString()}`);
-        onCommit?.(
-          e as SyntheticEvent<HTMLElement>,
-          toEpochMillis(date, localTimeZone),
-        );
+      onSelectionChange?.(e, date);
+      setOpen(false);
+      onCommit?.(
+        e as SyntheticEvent<HTMLElement>,
+        toEpochMillis(date, localTimeZone),
+      );
+
+      if (preserveFocusOnSelect) {
+        requestAnimationFrame(() => {
+          datePickerRef.current?.querySelector("input")?.focus();
+        });
       }
     },
-    [onCommit, onSelectionChange, selectedDate],
+    [onCommit, onSelectionChange, preserveFocusOnSelect],
+  );
+
+  const handleSelectionChange = useCallback(
+    (e: SyntheticEvent<Element>, date: DateValue) => {
+      const { selectedDate } = dateState.current;
+      // id date is undefined, we're openung the picker on an empty field
+      if (date) {
+        if (selectedDate === undefined) {
+          dateState.current = getDates(date);
+          commitDateChange(e, date);
+        } else if (!isSameDate(date, selectedDate)) {
+          dateState.current.selectedDate = date;
+          commitDateChange(e, date);
+        }
+      }
+    },
+    [commitDateChange],
   );
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>, value = "") => {
@@ -93,18 +152,24 @@ export const VuuDatePicker = ({
     }
   };
 
+  const { datePickerKey, defaultDate, selectedDate } = dateState.current;
+
   return (
     <DatePicker
       {...props}
-      className="VuuDatePicker"
+      className={cx(classBase, className)}
+      defaultSelectedDate={defaultDate}
+      key={datePickerKey}
       open={open}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
       onKeyDownCapture={handleKeyDownCapture}
       onOpenChange={setOpen}
+      ref={datePickerRef}
       onSelectionChange={(e, date) =>
         handleSelectionChange(e, date as DateValue)
       }
+      selectedDate={selectedDate}
     />
   );
 };

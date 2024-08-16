@@ -131,7 +131,7 @@ export const FilterBar = ({
       {...htmlAttributes}
       className={cx(className, `${classBase}-${filterMode}`)}
     >
-      {startAdornment}
+      <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
       {filterMode === "custom-filter" ? (
         <CustomFilters
           columnDescriptors={columnDescriptors}
@@ -144,7 +144,7 @@ export const FilterBar = ({
           suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
-      ) : QuickFilterProps ? (
+      ) : (
         <QuickFilters
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
@@ -152,8 +152,6 @@ export const FilterBar = ({
           suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
-      ) : (
-        "Missing QuickFilterProps"
       )}
     </div>
   );

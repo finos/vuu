@@ -21,7 +21,7 @@ export interface QuickFilterProps
   allowFind?: boolean;
   availableColumns: ColumnDescriptor[];
   onChangeQuickFilterColumns?: (columns: string[]) => void;
-  quickFilterColumns: string[];
+  quickFilterColumns?: string[];
   /**
    * Render a general 'search' control.
    * if true, all columns of type 'string' will be included in the search. Otherwise

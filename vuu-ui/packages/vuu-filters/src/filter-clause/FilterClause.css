@@ -59,6 +59,10 @@
     padding: 0;
     height: 16px;
   }
+
+  .saltDateInput {
+    width: auto;
+  }
 }
 
 .salt-density-high .vuuFilterClause {

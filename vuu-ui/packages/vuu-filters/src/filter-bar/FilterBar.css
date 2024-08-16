@@ -8,6 +8,7 @@
   );
   --vuuFilterEditor-height: var(--filterbar-height);
   --flexbar-gap: var(--salt-spacing-100);
+  --icon-marginTop: 0;
 
   align-items: center;
   background-color: var(--salt-container-secondary-background);
@@ -23,10 +24,10 @@
   height: calc(var(--salt-spacing-100) + var(--filterbar-height));
   overflow: hidden;
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
-  /* transition: height 0.3s ease-in; */
 }
 
 .vuuFilterBar-quick-filter {
+  --icon-marginTop: 20px;
   --filterbar-height: var(
     --vuuFilterBar-height,
     calc(2 * var(--salt-size-base))
@@ -38,6 +39,15 @@
 .vuuFilterBar:has(.vuuFilterEditor) {
   grid-template-rows: 28px 28px;
   height: calc(1px + var(--flexbar-gap) + (2 * var(--filterbar-height)));
+}
+
+.vuuFilterBar-iconContainer {
+  height: 100%;
+
+  .saltToggleButtonGroup {
+    margin-top: var(--icon-marginTop);
+    transition: margin-top 0.1s ease-in;
+  }
 }
 
 .vuuFilterbar-icon {
