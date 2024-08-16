@@ -12,7 +12,7 @@ import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.util.schema.SchemaMapperBuilder
-import org.finos.vuu.viewport.ViewPort
+import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -82,6 +82,9 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] =
     igniteStore.getDistinct(columnName, starts, 10).toArray
 
+  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = ???
 }
 
 object IgniteOrderDataProvider {

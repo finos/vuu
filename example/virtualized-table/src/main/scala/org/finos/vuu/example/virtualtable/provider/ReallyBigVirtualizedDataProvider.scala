@@ -8,7 +8,7 @@ import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
-import org.finos.vuu.viewport.ViewPort
+import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
 class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
@@ -82,4 +82,8 @@ class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends Virtualize
   override def getUniqueValues(columnName: String): Array[String] = ???
 
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = ???
+
+  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = ???
 }

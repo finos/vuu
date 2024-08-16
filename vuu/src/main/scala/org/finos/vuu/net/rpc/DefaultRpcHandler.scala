@@ -25,8 +25,8 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     rpcHandlerMap.put(functionName, handlerFunc)
   }
 
-  override def processViewPortRpcCall(methodName: String, params: Array[Any], namedParams: Map[String, Any])(ctx: RequestContext): ViewPortAction = {
-    val result = processRpcMethodHandler(methodName, params, namedParams, ctx)
+  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
+    val result = processRpcMethodHandler(methodName, rpcParams)
     result match {
       case RpcMethodSuccess(result) =>
         result match {
@@ -43,17 +43,17 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val namedPars = rpc.namedParams
     val module = Option(msg).map(_.module).getOrElse("")
 
-    processRpcMethodHandler(method, params, namedPars, ctx) match {
+    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, ctx)) match {
       case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
       case error: RpcMethodFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
   }
 
-  private def processRpcMethodHandler(methodName: String, params: Array[Any], namedParams: Map[String, Any], ctx: RequestContext) = {
+  private def processRpcMethodHandler(methodName: String, rpcParams: RpcParams) = {
     if (rpcHandlerMap.containsKey(methodName)) {
       try {
         val handler = rpcHandlerMap.get(methodName)
-        handler(new RpcParams(params, namedParams, ctx))
+        handler(rpcParams)
       } catch {
         case e: Exception =>
           logger.error(s"Error processing rpc method $methodName", e)

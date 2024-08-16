@@ -40,7 +40,9 @@ trait RpcHandler extends StrictLogging {
 
   val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
 
-  def processViewPortRpcCall(methodName: String, params: Array[Any], namedParams: Map[String, Any])(ctx: RequestContext):ViewPortAction = {
+  def processViewPortRpcCall(methodName: String, rcpParams: RpcParams):ViewPortAction = {
+
+    val (params, ctx) = (rcpParams.params, rcpParams.ctx)
 
     if (!methodsAndParams.contains(methodName)) {
       ViewPortRpcFailure(s"Could not find method $methodName")

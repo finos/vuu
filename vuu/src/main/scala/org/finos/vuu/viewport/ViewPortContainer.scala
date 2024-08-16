@@ -16,7 +16,7 @@ import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.EmptyViewPortKeys
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.net.rpc.EditRpcHandler
+import org.finos.vuu.net.rpc.{EditRpcHandler, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -84,7 +84,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"No viewport $vpId found for RPC Call for $method")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
-    viewPortDef.service.processViewPortRpcCall(method, params, namedParams)(ctx)
+    viewPortDef.service.processViewPortRpcCall(method, new RpcParams(params, namedParams, Some(viewPort.getColumns), ctx))
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
