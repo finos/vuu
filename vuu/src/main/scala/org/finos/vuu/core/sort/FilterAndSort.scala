@@ -10,7 +10,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
-case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter {
+case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter with StrictLogging {
 
   private def doFilterByIndexIfPossible(parentSelectionKeys: Map[String, Int], parentColumn: Column,
                                         childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
@@ -64,18 +64,26 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     val parentColumn = viewPortVisualLink.parentColumn
     val childColumn = viewPortVisualLink.childColumn
 
-
-    val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
-    filtered
-
-
+    try {
+      doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
+    } catch {
+      case e: Exception =>
+        logger.error(s"Error while filtering by visual link $viewPortVisualLink", e)
+        InMemTablePrimaryKeys(ImmutableArray.empty[String])
+    }
   }
 }
 
-case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter {
+case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
+      try {
       checker.canSeeRow(source.pullRow(key, vpColumns))
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
+          false
+      }
     }).toArray
 
     InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
