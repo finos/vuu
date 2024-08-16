@@ -35,7 +35,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
     tableContainer.getTable(tableName) match {
       case dataTable: DataTable =>
         val columValueProvider = dataTable.getColumnValueProvider
-        columValueProvider.getUniqueValues(column)
+        columValueProvider.getUniqueValuesVPColumn(column)
       case null =>
         throw new Exception("Could not find table by name:" + tableName)
     }
@@ -45,7 +45,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
     tableContainer.getTable(tableName) match {
       case dataTable: DataTable =>
         val columValueProvider = dataTable.getColumnValueProvider
-        columValueProvider.getUniqueValuesStartingWith(column, starts)
+        columValueProvider.getUniqueValuesStartingWithVPColumn(column, starts)
       case null =>
         throw new Exception("Could not find table by name:" + tableName)
     }

@@ -71,6 +71,23 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       assertResponseReturns(response, List.empty)
     }
 
+    Scenario("Type ahead request for a column that is not in view port") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request typeahead for column that is hidden")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "HiddenColumn")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return success response with empty list")
+      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+
+      response.isDefined shouldBe true
+      response.get.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(response, List.empty)
+    }
+
     Scenario("Type ahead request for a column that does not exist") {
 
       Given("a view port exist")
@@ -122,6 +139,27 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       assertResponseReturns(response, List.empty)
     }
 
+    Scenario("Type ahead request when there is multiple viewports and multiple requests") {
+
+      Given("multiple view port exist")
+      val viewPortId1: String = createViewPort
+      val viewPortId2: String = createViewPort
+
+      When("request typeahead for different view ports")
+      val getTypeAheadRequest1 = createTypeAheadStartWithRequest(viewPortId1, tableName, "Name", "S")
+      val getTypeAheadRequest2 = createTypeAheadStartWithRequest(viewPortId2, tableName, "Name", "T")
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest1)
+      vuuClient.send(sessionId, tokenId, getTypeAheadRequest2)
+
+      Then("return success response for each request")
+      val response1 = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response2 = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+
+      response1.isDefined shouldBe true
+      response2.isDefined shouldBe true
+      assertResponseReturns(response1, List("Sid Sawyer","Sally Phelps"))
+      assertResponseReturns(response2, List("Tom Sawyer","Tom Thatcher"))
+    }
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
@@ -133,17 +171,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
           .addString("Id")
           .addString("Name")
           .addInt("Account")
-          .build()
-    )
-
-    val tableDef2 = TableDef(
-      name = tableNameEmpty,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
+          .addInt("HiddenColumn")
           .build()
     )
 
@@ -159,21 +187,30 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       )
 
     val dataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 12355),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 45321),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 89564),
-      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 12355),
-      "row5" -> Map("Id" -> "row5", "Name" -> "Sid Sawyer", "Account" -> 42262),
-      "row6" -> Map("Id" -> "row6", "Name" -> "Joe Harper", "Account" -> 65879),
-      "row7" -> Map("Id" -> "row7", "Name" -> "Jim Baker", "Account" -> 88875),
-      "row8" -> Map("Id" -> "row8", "Name" -> "Amy Lawrence", "Account" -> 45897),
-      "row9" -> Map("Id" -> "row9", "Name" -> "Ben Rodgers", "Account" -> 23564),
-      "row10" -> Map("Id" -> "row10", "Name" -> "John Murrell", "Account" -> 33657),
-      "row11" -> Map("Id" -> "row11", "Name" -> "Sally Phelps", "Account" -> 99854),
-      "row12" -> Map("Id" -> "row12", "Name" -> "Polly Phelps", "Account" -> 78458),
-      "row13" -> Map("Id" -> "row13", "Name" -> "Polly Phelps", "Account" -> 54874),
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 12355, "HiddenColumn" -> 10),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 45321, "HiddenColumn" -> 10),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 89564, "HiddenColumn" -> 11),
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 12355, "HiddenColumn" -> 10),
+      "row5" -> Map("Id" -> "row5", "Name" -> "Sid Sawyer", "Account" -> 42262, "HiddenColumn" -> 10),
+      "row6" -> Map("Id" -> "row6", "Name" -> "Joe Harper", "Account" -> 65879, "HiddenColumn" -> 10),
+      "row7" -> Map("Id" -> "row7", "Name" -> "Jim Baker", "Account" -> 88875, "HiddenColumn" -> 10),
+      "row8" -> Map("Id" -> "row8", "Name" -> "Amy Lawrence", "Account" -> 45897, "HiddenColumn" -> 15),
+      "row9" -> Map("Id" -> "row9", "Name" -> "Ben Rodgers", "Account" -> 23564, "HiddenColumn" -> 10),
+      "row10" -> Map("Id" -> "row10", "Name" -> "John Murrell", "Account" -> 33657, "HiddenColumn" -> 10),
+      "row11" -> Map("Id" -> "row11", "Name" -> "Sally Phelps", "Account" -> 99854, "HiddenColumn" -> 10),
+      "row12" -> Map("Id" -> "row12", "Name" -> "Polly Phelps", "Account" -> 78458, "HiddenColumn" -> 10),
+      "row13" -> Map("Id" -> "row13", "Name" -> "Polly Phelps", "Account" -> 54874, "HiddenColumn" -> 10),
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
+
+    val tableDef2 = TableDef(
+      name = tableNameEmpty,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .build()
+    )
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
