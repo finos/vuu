@@ -19,13 +19,17 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Can register and handle Rpc request that perform action") {
       handler.registerRpc("myMethod", _ => new RpcMethodSuccess())
 
-      handler.processViewPortRpcCall("myMethod", Array("param1"), Map("namedParam1" -> "value1"))(null) should be(ViewPortRpcSuccess())
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, ctx))
+
+      result should be(ViewPortRpcSuccess())
     }
 
     Scenario("Can register and handle Rpc request that returns result") {
       handler.registerRpc("myMethod", _ => new RpcMethodSuccess("result"))
 
-      handler.processViewPortRpcCall("myMethod", Array("param1"), Map("namedParam1" -> "value1"))(null) should be(DisplayResultAction("result"))
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, ctx))
+
+      result should be(DisplayResultAction("result"))
     }
 
     Scenario("Throw exception when registering a function under already registered name") {
@@ -40,7 +44,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request with null params should return ViewPortRpcSuccess when the rpc method is successful") {
       handler.registerRpc("myMethod", _ => new RpcMethodSuccess())
 
-      val result = handler.processViewPortRpcCall("myMethod", null, null)(null)
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, ctx))
 
       result should be(ViewPortRpcSuccess())
     }
@@ -48,7 +52,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request should return ViewPortRpcFailure when the rpc method fails") {
       handler.registerRpc("myMethod", _ => RpcMethodFailure(1, "error", new Exception("exception")))
 
-      val result = handler.processViewPortRpcCall("myMethod", null, null)(null)
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, ctx))
 
       result should be(ViewPortRpcFailure("Exception occurred calling rpc myMethod"))
     }

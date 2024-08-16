@@ -7,7 +7,7 @@ import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.test.{FakeDataSource, FakeInMemoryTable}
 import org.finos.vuu.util.schema.{ExternalEntitySchema, SchemaMapperBuilder, SchemaMapperFunctionalTestBase, SchemaTestData}
-import org.finos.vuu.viewport.ViewPort
+import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
 class SchemaMapperFunctionalTest  extends SchemaMapperFunctionalTestBase {
 
@@ -80,4 +80,8 @@ class TestVirtualProvider(fakeDataSource:FakeDataSource[SchemaTestData]) extends
     fakeDataSource.getColumnValues(queryName, columnName)
       .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
   }
+
+  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = ???
 }
