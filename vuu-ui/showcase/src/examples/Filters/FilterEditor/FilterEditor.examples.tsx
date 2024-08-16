@@ -7,29 +7,18 @@ import {
 import { useCallback, useMemo } from "react";
 import { getSchema, vuuModule } from "@finos/vuu-data-test";
 import { Filter } from "@finos/vuu-filter-types";
+import { SchemaColumn, TableSchema } from "packages/vuu-data-types";
+import { ColumnDescriptor } from "packages/vuu-table-types";
 
 let displaySequence = 1;
 
-const lastUpdatedColumn = {
-  name: "lastUpdated",
-  serverDataType: "long",
-  type: "date/time",
-} as const;
-
-export const NewFilter = ({
+const FilterEditorTemplate = ({
   onSave: onSaveProp,
+  tableSchema = getSchema("instruments"),
+  columnDescriptors = tableSchema.columns,
   ...props
 }: Partial<FilterEditorProps>) => {
-  const tableSchema = useMemo(() => getSchema("instruments"), []);
-
   const { typeaheadHook } = vuuModule("SIMUL");
-
-  const style = useMemo(
-    () => ({
-      background: "#eee",
-    }),
-    []
-  );
 
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
     console.log(`cancel  filter edit`);
@@ -41,40 +30,73 @@ export const NewFilter = ({
       ((filter) => {
         console.log(`save filter ${JSON.stringify(filter)}`);
       }),
-    [onSaveProp]
+    [onSaveProp],
   );
-
-  return (
-    <>
-      <FilterEditor
-        {...props}
-        columnDescriptors={tableSchema.columns}
-        onCancel={onCancel}
-        onSave={onSave}
-        style={style}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </>
-  );
-};
-NewFilter.displaySequence = displaySequence++;
-
-export const EditSimplerFilter = ({
-  onSave: onSaveProp,
-  ...props
-}: Partial<FilterEditorProps>) => {
-  const tableSchema = useMemo(() => getSchema("instruments"), []);
-
-  const { typeaheadHook } = vuuModule("SIMUL");
 
   const style = useMemo(
     () => ({
       background: "#eee",
     }),
-    []
+    [],
   );
 
+  return (
+    <FilterEditor
+      {...props}
+      columnDescriptors={columnDescriptors}
+      onCancel={onCancel}
+      onSave={onSave}
+      style={style}
+      suggestionProvider={typeaheadHook}
+      tableSchema={tableSchema}
+    />
+  );
+};
+
+export const NewFilter = (props: Partial<FilterEditorProps>) => (
+  <FilterEditorTemplate {...props} />
+);
+
+NewFilter.displaySequence = displaySequence++;
+
+export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
+  const [tableSchema, columnDescriptors] = useMemo<
+    [TableSchema, ColumnDescriptor[]]
+  >(() => {
+    const columns: SchemaColumn[] = [
+      {
+        name: "tradeDate",
+        serverDataType: "long",
+      },
+      {
+        name: "settlementDate",
+        serverDataType: "long",
+      },
+    ];
+
+    return [
+      {
+        columns,
+        key: "id",
+        table: { table: "Test", module: "test" },
+      },
+
+      columns.map<ColumnDescriptor>((col) => ({ ...col, type: "date/time" })),
+    ];
+  }, []);
+
+  return (
+    <FilterEditorTemplate
+      {...props}
+      columnDescriptors={columnDescriptors}
+      tableSchema={tableSchema}
+    />
+  );
+};
+
+NewFilterDateColumns.displaySequence = displaySequence++;
+
+export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
       column: "currency",
@@ -83,51 +105,11 @@ export const EditSimplerFilter = ({
     };
   }, []);
 
-  const onCancel = useCallback<FilterEditCancelHandler>(() => {
-    console.log(`cancel  filter edit`);
-  }, []);
-
-  const onSave = useMemo<FilterEditSaveHandler>(
-    () =>
-      onSaveProp ??
-      ((filter) => {
-        console.log(`save filter ${JSON.stringify(filter)}`);
-      }),
-    [onSaveProp]
-  );
-
-  return (
-    <>
-      <FilterEditor
-        {...props}
-        columnDescriptors={tableSchema.columns.concat(lastUpdatedColumn)}
-        filter={filter}
-        onCancel={onCancel}
-        onSave={onSave}
-        style={style}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };
 EditSimplerFilter.displaySequence = displaySequence++;
 
-export const EditMultiClauseAndFilter = ({
-  onSave: onSaveProp,
-  ...props
-}: Partial<FilterEditorProps>) => {
-  const tableSchema = useMemo(() => getSchema("instruments"), []);
-
-  const { typeaheadHook } = vuuModule("SIMUL");
-
-  const style = useMemo(
-    () => ({
-      background: "#eee",
-    }),
-    []
-  );
-
+export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
       op: "and",
@@ -146,51 +128,11 @@ export const EditMultiClauseAndFilter = ({
     };
   }, []);
 
-  const onCancel = useCallback<FilterEditCancelHandler>(() => {
-    console.log(`cancel  filter edit`);
-  }, []);
-
-  const onSave = useMemo<FilterEditSaveHandler>(
-    () =>
-      onSaveProp ??
-      ((filter) => {
-        console.log(`save filter ${JSON.stringify(filter)}`);
-      }),
-    [onSaveProp]
-  );
-
-  return (
-    <>
-      <FilterEditor
-        {...props}
-        columnDescriptors={tableSchema.columns}
-        filter={filter}
-        onCancel={onCancel}
-        onSave={onSave}
-        style={style}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };
 EditMultiClauseAndFilter.displaySequence = displaySequence++;
 
-export const EditMultiClauseOrFilter = ({
-  onSave: onSaveProp,
-  ...props
-}: Partial<FilterEditorProps>) => {
-  const tableSchema = useMemo(() => getSchema("instruments"), []);
-
-  const { typeaheadHook } = vuuModule("SIMUL");
-
-  const style = useMemo(
-    () => ({
-      background: "#eee",
-    }),
-    []
-  );
-
+export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
       op: "or",
@@ -209,32 +151,6 @@ export const EditMultiClauseOrFilter = ({
     };
   }, []);
 
-  const onCancel = useCallback<FilterEditCancelHandler>(() => {
-    console.log(`cancel  filter edit`);
-  }, []);
-
-  const onSave = useMemo<FilterEditSaveHandler>(
-    () =>
-      onSaveProp ??
-      ((filter) => {
-        console.log(`save filter ${JSON.stringify(filter)}`);
-      }),
-    [onSaveProp]
-  );
-
-  return (
-    <>
-      <FilterEditor
-        {...props}
-        columnDescriptors={tableSchema.columns}
-        filter={filter}
-        onCancel={onCancel}
-        onSave={onSave}
-        style={style}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };
 EditMultiClauseOrFilter.displaySequence = displaySequence++;

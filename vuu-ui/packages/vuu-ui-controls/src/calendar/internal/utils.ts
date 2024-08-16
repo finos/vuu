@@ -1,6 +1,7 @@
 import {
+  DateFormatter,
+  type DateValue,
   createCalendar,
-  DateValue,
   getLocalTimeZone,
   isSameMonth,
   startOfMonth,
@@ -8,7 +9,6 @@ import {
   startOfYear,
   today,
 } from "@internationalized/date";
-import { getDateFormatter } from "@finos/vuu-utils";
 
 const localTimezone = getLocalTimeZone();
 
@@ -16,18 +16,20 @@ export function getCurrentLocale() {
   return navigator.languages[0];
 }
 
+export function getDateFormatter(options?: Intl.DateTimeFormatOptions) {
+  return new DateFormatter(getCurrentLocale(), options);
+}
+
 export function formatDate(
   date: DateValue,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ) {
-  const formatter = getDateFormatter(getCurrentLocale(), options);
+  const formatter = getDateFormatter(options);
   return formatter.format(date.toDate(localTimezone));
 }
 
 export function getCalender() {
-  const calendarIdentifier = getDateFormatter(
-    getCurrentLocale()
-  ).resolvedOptions().calendar;
+  const calendarIdentifier = getDateFormatter().resolvedOptions().calendar;
   return createCalendar(calendarIdentifier);
 }
 
@@ -39,15 +41,15 @@ export function daysForLocale(weekday: WeekdayFormat = "long") {
       startOfWeek(today(getLocalTimeZone()), getCurrentLocale()).add({
         days: day,
       }),
-      { weekday }
-    )
+      { weekday },
+    ),
   );
 }
 
 export function monthsForLocale(currentYear: DateValue) {
   const calendar = getCalender();
   return [...Array(calendar.getMonthsInYear(currentYear)).keys()].map((month) =>
-    startOfYear(currentYear).add({ months: month })
+    startOfYear(currentYear).add({ months: month }),
   );
 }
 

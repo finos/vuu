@@ -2,15 +2,14 @@ import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Commithandler, MultiSelectionHandler } from "@finos/vuu-ui-controls";
-import { filterAsQuery, queryClosest } from "@finos/vuu-utils";
+import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
+import { CommitHandler, filterAsQuery, queryClosest } from "@finos/vuu-utils";
 import {
   ChangeEventHandler,
   RefCallback,
   useCallback,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { QuickFilterProps } from "./QuickFilters";
 
@@ -18,18 +17,18 @@ type QuickFilterValues = Record<string, VuuRowDataItemType>;
 
 const createFilterClause = (
   [identifier, value]: [string, VuuRowDataItemType],
-  availableColumns?: ColumnDescriptor[]
+  availableColumns?: ColumnDescriptor[],
 ): Filter => {
   if (identifier === "find") {
     if (availableColumns) {
       const targetColumns = availableColumns.filter(
-        ({ serverDataType }) => serverDataType === "string"
+        ({ serverDataType }) => serverDataType === "string",
       );
       if (targetColumns.length) {
         return {
           op: "or",
           filters: targetColumns.map((column) =>
-            createFilterClause([column.name, value])
+            createFilterClause([column.name, value]),
           ),
         };
       } else {
@@ -49,7 +48,7 @@ const createFilterClause = (
 
 const buildFilterStruct = (
   quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[]
+  availableColumns: ColumnDescriptor[],
 ): Filter => {
   const entries = Object.entries(quickFilters);
   if (entries.length === 1) {
@@ -59,7 +58,7 @@ const buildFilterStruct = (
       op: "and",
       filters: entries.map(
         (entry) => createFilterClause(entry, availableColumns),
-        availableColumns
+        availableColumns,
       ),
     };
   } else {
@@ -69,7 +68,7 @@ const buildFilterStruct = (
 
 const buildFilter = (
   quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[]
+  availableColumns: ColumnDescriptor[],
 ): DataSourceFilter => {
   const filterStruct = buildFilterStruct(quickFilters, availableColumns);
   return {
@@ -80,15 +79,17 @@ const buildFilter = (
 
 export type QuickFilterHookProps = Pick<
   QuickFilterProps,
-  "availableColumns" | "onApplyFilter" | "quickFilterColumns"
+  | "availableColumns"
+  | "onApplyFilter"
+  | "onChangeQuickFilterColumns"
+  | "quickFilterColumns"
 >;
 
 export const useQuickFilters = ({
   availableColumns,
   onApplyFilter,
-  quickFilterColumns = [],
+  onChangeQuickFilterColumns,
 }: QuickFilterProps) => {
-  const [quickFilters, setQuickFilters] = useState(quickFilterColumns);
   const filters = useRef<QuickFilterValues>({});
   const rootRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     if (el) {
@@ -101,33 +102,43 @@ export const useQuickFilters = ({
     (e) => {
       console.log(`onChange ${e.target.value}`);
     },
-    []
+    [],
   );
 
-  const handleCommit = useCallback<Commithandler>(
+  const handleCommit = useCallback<
+    CommitHandler<HTMLInputElement, string | number | undefined>
+  >(
     (e, value) => {
-      if (value.trim() !== "") {
-        const field = queryClosest(e.target, "[data-field]");
-        const column = field?.dataset.field;
-        if (column) {
+      const field = queryClosest(e.target, "[data-field]");
+      const column = field?.dataset.field;
+      if (column) {
+        if (
+          value === undefined ||
+          (typeof value === "string" && value.trim() === "")
+        ) {
+          if (filters.current[column] === undefined) {
+            return;
+          }
+          delete filters.current[column];
+        } else if (typeof value === "string" && value.trim() !== "") {
           filters.current[column] = value;
-          onApplyFilter?.(buildFilter(filters.current, availableColumns));
         }
+        onApplyFilter?.(buildFilter(filters.current, availableColumns));
       }
     },
-    [availableColumns, onApplyFilter]
+    [availableColumns, onApplyFilter],
   );
 
   const handleColumnsSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, newSelected) => {
-      setQuickFilters(newSelected);
+      onChangeQuickFilterColumns?.(newSelected);
     },
-    []
+    [onChangeQuickFilterColumns],
   );
 
   const availableColumnNames = useMemo(
     () => availableColumns.map((col) => col.name),
-    [availableColumns]
+    [availableColumns],
   );
 
   return {
@@ -135,7 +146,6 @@ export const useQuickFilters = ({
     onChange: handleChange,
     onColumnsSelectionChange: handleColumnsSelectionChange,
     onCommit: handleCommit,
-    quickFilters,
     rootRef,
   };
 };

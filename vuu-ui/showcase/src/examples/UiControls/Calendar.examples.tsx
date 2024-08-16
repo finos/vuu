@@ -31,7 +31,7 @@ export const DefaultCalendar = () => {
 
   useEffect(() => {
     const el = ref.current?.querySelector(
-      ".saltCalendarDay-selected:not(.saltCalendarDay-outOfRange)"
+      ".saltCalendarDay-selected:not(.saltCalendarDay-outOfRange)",
     ) as HTMLElement;
     el?.focus();
   }, []);
@@ -60,7 +60,7 @@ export const ControlledCalendar = () => {
   const hoveredDate = new CalendarDate(2024, 1, 11);
 
   const isDayUnselectable = (d: DateValue) => {
-    return d.compare(new CalendarDate(2024, 1, 11)) === 0;
+    return d.compare(new CalendarDate(2024, 1, 11)) === 0 ? "true" : false;
   };
 
   return (

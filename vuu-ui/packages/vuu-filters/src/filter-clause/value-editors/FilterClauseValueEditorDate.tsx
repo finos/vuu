@@ -1,10 +1,9 @@
-import React, { KeyboardEventHandler, useCallback, useState } from "react";
-import cx from "clsx";
+import React, { useCallback, useState } from "react";
 import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { DateInput, DateInputProps } from "@finos/vuu-ui-controls";
-import { queryClosest, toCalendarDate } from "@finos/vuu-utils";
+import { CommitHandler, toCalendarDate } from "@finos/vuu-utils";
 import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
+import { VuuDatePicker } from "@finos/vuu-ui-controls";
 
 interface FilterClauseValueEditorDateProps
   extends Pick<FilterClauseValueEditor, "onChangeValue" | "inputProps"> {
@@ -14,53 +13,41 @@ interface FilterClauseValueEditorDateProps
 }
 
 export const FilterClauseValueEditorDate = (
-  props: FilterClauseValueEditorDateProps
+  props: FilterClauseValueEditorDateProps,
 ) => {
   const { inputProps, className, onChangeValue, operator, value } = props;
   const toEpochMilliS = getEpochMillisConverter(operator);
 
   const [date, setDate] = useState<DateValue | undefined>(() =>
-    getInitialState(value)
+    getInitialState(value),
   );
 
-  const onSelectedDateChange = useCallback<DateInputProps["onChange"]>(
-    (d: DateValue | undefined, source) => {
-      setDate(d);
-      if (d && source === "calendar") {
-        onChangeValue(toEpochMilliS(d));
+  const handleCommit = useCallback<CommitHandler<HTMLElement, number>>(
+    (e, selectedDateInputValue) => {
+      console.log("change date");
+      if (selectedDateInputValue) {
+        const dateValue = toCalendarDate(new Date(selectedDateInputValue));
+        setDate(dateValue);
+        if (selectedDateInputValue /* && source === "calendar"*/) {
+          onChangeValue(toEpochMilliS(dateValue));
+        }
       }
     },
-    [onChangeValue, toEpochMilliS]
+    [onChangeValue, toEpochMilliS],
   );
 
   const onBlur = useCallback(() => {
     date && onChangeValue(toEpochMilliS(date));
   }, [date, onChangeValue, toEpochMilliS]);
 
-  const handleKeyDown = useCallback<KeyboardEventHandler>(
-    (evt) => {
-      if (evt.key === "Enter") {
-        if (date) {
-          const popup = queryClosest(evt.target, ".vuuDatePopup");
-          if (popup === null) {
-            onChangeValue(toEpochMilliS(date));
-          }
-        }
-      } else if (evt.key === "Tab") {
-        console.log("better handle tab");
-      }
-    },
-    [date, onChangeValue, toEpochMilliS]
-  );
-
   return (
-    <DateInput
+    <VuuDatePicker
+      data-field="value"
       inputProps={inputProps}
-      className={cx("vuuFilterClause-DatePicker", className)}
-      selectedDate={date}
+      className={className}
       onBlur={onBlur}
-      onChange={onSelectedDateChange}
-      onKeyDown={handleKeyDown}
+      onCommit={handleCommit}
+      selectedDate={date}
     />
   );
 };

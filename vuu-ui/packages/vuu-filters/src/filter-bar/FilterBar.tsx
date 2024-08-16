@@ -12,7 +12,7 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { CustomFilters } from "../custom-filters";
-import { QuickFilters } from "../quick-filters";
+import { QuickFilterProps, QuickFilters } from "../quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
 
 import filterBarCss from "./FilterBar.css";
@@ -23,6 +23,10 @@ export type FilterBarVariant =
   | "full-filters";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
+  QuickFilterProps?: Pick<
+    QuickFilterProps,
+    "quickFilterColumns" | "onChangeQuickFilterColumns"
+  >;
   /**
    * This is used to apply tailored filters based on column types and other attributes.
    * NOTE: Always make sure that these are passed with proper re-render optimization, otherwise,
@@ -38,7 +42,6 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
-  quickFilterColumns?: string[];
   suggestionProvider?: SuggestionProvider;
   tableSchema?: TableSchema;
   variant?: FilterBarVariant;
@@ -47,6 +50,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
 const classBase = "vuuFilterBar";
 
 export const FilterBar = ({
+  QuickFilterProps,
   className: classNameProp,
   columnDescriptors,
   defaultFilterMode,
@@ -58,7 +62,6 @@ export const FilterBar = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  quickFilterColumns,
   suggestionProvider,
   tableSchema,
   variant = "custom-filters",
@@ -77,8 +80,8 @@ export const FilterBar = ({
   const controlledFilterMode: FilterMode | undefined = !allowCustomFilters
     ? "quick-filter"
     : !allowQuickFilters
-    ? "custom-filter"
-    : filterModeProp;
+      ? "custom-filter"
+      : filterModeProp;
 
   const { filterMode, onChangeFilterMode } = useFilterBar({
     defaultFilterMode,
@@ -128,7 +131,7 @@ export const FilterBar = ({
       {...htmlAttributes}
       className={cx(className, `${classBase}-${filterMode}`)}
     >
-      {startAdornment}
+      <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
       {filterMode === "custom-filter" ? (
         <CustomFilters
           columnDescriptors={columnDescriptors}
@@ -143,9 +146,9 @@ export const FilterBar = ({
         />
       ) : (
         <QuickFilters
+          {...QuickFilterProps}
           availableColumns={columnDescriptors}
           onApplyFilter={onApplyFilter}
-          quickFilterColumns={quickFilterColumns}
           suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />

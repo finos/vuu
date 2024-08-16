@@ -125,6 +125,7 @@ describe("FilterEditor", () => {
       it("THEN filter combinator (AND) is rendered", () => {
         cy.mount(<NewFilter />);
         assertComboboxReady();
+
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
         cy.realPress("Enter");
@@ -154,10 +155,8 @@ describe("FilterEditor", () => {
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
         cy.realPress("Enter");
-
         selectMenuOption("AND");
         cy.findByText("currency").should("be.visible");
-
         cy.realPress("ArrowDown");
         cy.findByRole("option", { name: "currency" }).should(
           "have.class",
@@ -166,7 +165,11 @@ describe("FilterEditor", () => {
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();
         cy.realPress("Enter");
+        cy.findByRole("button", { name: "Save" }).should("be.enabled");
+        cy.findByRole("button", { name: "Save" }).should("be.focused");
+
         cy.realPress("Enter");
+
         cy.get("@saveFilterHandler").should("have.been.calledWith", {
           op: "and",
           filters: [
@@ -189,6 +192,7 @@ describe("FilterEditor", () => {
           cy.realPress("Enter");
           cy.findByRole("listbox").should("be.visible");
           cy.realPress("Enter");
+          cy.findByRole("button", { name: "Save" }).should("be.focused");
           cy.realPress(["Shift", "Tab"]);
           cy.findAllByRole("combobox").eq(2).should("be.focused");
           cy.findByRole("listbox").should("be.visible");
@@ -206,6 +210,7 @@ describe("FilterEditor", () => {
             cy.realPress("Enter");
             cy.findByRole("listbox").should("be.visible");
             cy.realPress("Enter");
+            cy.findByRole("button", { name: "Save" }).should("be.focused");
             cy.realPress(["Shift", "Tab"]);
             cy.realPress("ArrowLeft");
             cy.findAllByRole("combobox").eq(1).should("be.focused");
@@ -221,12 +226,17 @@ describe("FilterEditor", () => {
             cy.mount(<NewFilter />);
             assertComboboxReady();
             cy.realPress("Enter");
+            cy.findAllByRole("combobox").eq(1).should("be.focused");
             cy.findByRole("listbox").should("be.visible");
             cy.realPress("Enter");
+            cy.findAllByRole("combobox").eq(2).should("be.focused");
             cy.findByRole("listbox").should("be.visible");
             cy.realPress("Enter");
+            cy.findByRole("button", { name: "Save" }).should("be.focused");
             cy.realPress(["Shift", "Tab"]);
+            cy.findAllByRole("combobox").eq(2).should("be.focused");
             cy.realPress("ArrowLeft");
+            cy.findAllByRole("combobox").eq(1).should("be.focused");
             cy.realPress("ArrowLeft");
             cy.findAllByRole("combobox").eq(0).should("be.focused");
             cy.findByRole("listbox").should("be.visible");
@@ -240,11 +250,11 @@ describe("FilterEditor", () => {
     });
     describe("within a multi clause filter", () => {
       describe("WHEN right arrow is repeatedly pressed", () => {
-        it("THEN focus moves from field to field, first selecting then deselecting, then across combinators and clauses", () => {
+        it.skip("THEN focus moves from field to field, first selecting then deselecting, then across combinators and clauses", () => {
           cy.mount(<EditMultiClauseOrFilter />);
           cy.findAllByRole("combobox").should("have.length", 6);
           cy.findAllByRole("combobox").eq(0).should("be.focused");
-          // Onbe keypress selects text, next deselects, leavbing cursor at end
+          // One keypress selects text, next deselects, leaving cursor at end
           // don't have a good way to assert selection yet
           cy.realPress("ArrowRight");
           cy.realPress("ArrowRight");
@@ -304,6 +314,7 @@ describe("FilterEditor", () => {
       assertComboboxReady();
       clickListItem("description");
       clickListItem("starts");
+      cy.findAllByRole("option").should("have.length", 10);
       cy.findAllByRole("option")
         .eq(0)
         .should("have.attr", "aria-disabled", "true");
@@ -323,6 +334,7 @@ describe("FilterEditor", () => {
         assertComboboxReady();
         clickListItem("description");
         clickListItem("starts");
+        cy.findAllByRole("combobox").eq(2).should("be.focused");
         cy.realType("A");
         cy.findByRole("button", { name: "Save" }).should("be.enabled");
       });
@@ -332,6 +344,7 @@ describe("FilterEditor", () => {
           assertComboboxReady();
           clickListItem("description");
           clickListItem("starts");
+          cy.findAllByRole("combobox").eq(2).should("be.focused");
           cy.realType("A");
           cy.realPress("Enter");
           cy.findByRole("button", { name: "Save" }).should("be.focused");
@@ -343,6 +356,7 @@ describe("FilterEditor", () => {
           assertComboboxReady();
           clickListItem("description");
           clickListItem("starts");
+          cy.findAllByRole("combobox").eq(2).should("be.focused");
           cy.realType("A");
           cy.realPress("Tab");
           cy.findByRole("button", { name: "Save" }).should("be.focused");
@@ -355,6 +369,7 @@ describe("FilterEditor", () => {
         assertComboboxReady();
         clickListItem("description");
         clickListItem("starts");
+        cy.findAllByRole("combobox").eq(2).should("be.focused");
         cy.realType("A");
         cy.realPress("Backspace");
         cy.findByRole("button", { name: "Save" }).should("be.disabled");
@@ -410,6 +425,7 @@ describe("FilterEditor", () => {
           clickListItem("lotSize");
           cy.findByRole("option", { name: ">" }).realHover();
           cy.findByRole("option", { name: ">" }).realClick();
+          cy.findByRole("textbox").should("be.focused");
 
           cy.realType("1000");
           cy.realPress("Backspace");

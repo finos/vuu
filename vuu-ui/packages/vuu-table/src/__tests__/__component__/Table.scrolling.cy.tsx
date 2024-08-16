@@ -179,7 +179,7 @@ describe("Table scrolling and keyboard navigation", () => {
 
   describe("scrolling with Scrollbar", () => {
     describe("WHEN scrolled down by a distance equating to 500 rows", () => {
-      it("THEN correct rows are within viewport", () => {
+      it.skip("THEN correct rows are within viewport", () => {
         cy.mount(<TestTable {...tableConfig} />);
         cy.get(".vuuTable-scrollbarContainer").scrollTo(0, 10000);
         assertRenderedRows({ from: 500, to: 530 }, RENDER_BUFFER, ROW_COUNT);

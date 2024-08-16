@@ -50,19 +50,19 @@ const FilterContainer = ({
 };
 
 const DefaultFilterBarCore = ({
+  QuickFilterProps,
   filterState,
   onApplyFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  quickFilterColumns,
   variant,
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const tableSchema = useMemo(() => getSchema("instruments"), []);
   const columns = useMemo(
     () => [...tableSchema.columns, lastUpdatedColumn],
-    [tableSchema]
+    [tableSchema],
   );
   const { typeaheadHook } = vuuModule("SIMUL");
 
@@ -71,33 +71,34 @@ const DefaultFilterBarCore = ({
       onApplyFilter?.(filter);
       setFilterStruct(filter.filterStruct ?? null);
     },
-    [onApplyFilter]
+    [onApplyFilter],
   );
 
   const handleFilterStateChange = useCallback(
     (filterState: FilterState) => {
       onFilterStateChanged?.(filterState);
     },
-    [onFilterStateChanged]
+    [onFilterStateChanged],
   );
 
   const handleFilterDeleted = useCallback(
     (filter: Filter) => {
       onFilterDeleted?.(filter);
     },
-    [onFilterDeleted]
+    [onFilterDeleted],
   );
 
   const handleFilterRenamed = useCallback(
     (filter: Filter, name: string) => {
       onFilterRenamed?.(filter, name);
     },
-    [onFilterRenamed]
+    [onFilterRenamed],
   );
 
   return (
     <FilterContainer filter={filterStruct}>
       <FilterBar
+        QuickFilterProps={QuickFilterProps}
         columnDescriptors={columns}
         data-testid="filterbar"
         filterState={filterState}
@@ -105,7 +106,6 @@ const DefaultFilterBarCore = ({
         onFilterDeleted={handleFilterDeleted}
         onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}
-        quickFilterColumns={quickFilterColumns}
         suggestionProvider={typeaheadHook}
         tableSchema={{ ...tableSchema, columns }}
         variant={variant}
@@ -117,23 +117,37 @@ const DefaultFilterBarCore = ({
 let displaySequence = 1;
 
 const FilterBarTemplate = ({
+  QuickFilterProps,
   filterState: filterStateProp = { filters: [], activeIndices: [] },
   onFilterStateChanged,
   ...rest
 }: Partial<FilterBarProps>) => {
   const [filterState, setFilterState] = useState(filterStateProp);
+  const [quickFilterColumns, setQuickFilterColumns] = useState(
+    QuickFilterProps?.quickFilterColumns ?? [],
+  );
+
+  const handleChangeQuickFilterColumns = useCallback((columns: string[]) => {
+    console.log("change columns", { columns });
+    setQuickFilterColumns(columns);
+  }, []);
 
   const handleFilterStateChange = useCallback(
     (fs: FilterState) => {
       onFilterStateChanged?.(fs);
       setFilterState(fs);
     },
-    [onFilterStateChanged]
+    [onFilterStateChanged],
   );
 
   return (
     <DefaultFilterBarCore
       {...rest}
+      QuickFilterProps={{
+        ...QuickFilterProps,
+        quickFilterColumns,
+        onChangeQuickFilterColumns: handleChangeQuickFilterColumns,
+      }}
       filterState={filterState}
       onFilterStateChanged={handleFilterStateChange}
     />
@@ -229,7 +243,7 @@ export const FilterBarMultipleFilterSets = () => {
       const index = parseInt(value);
       setSelectedIndex(index);
     },
-    []
+    [],
   );
 
   const handleChangeFilterState = useCallback(
@@ -240,7 +254,7 @@ export const FilterBarMultipleFilterSets = () => {
         ...s.slice(selectedIndex + 1),
       ]);
     },
-    [selectedIndex]
+    [selectedIndex],
   );
 
   return (
@@ -324,7 +338,10 @@ QuickFilters.displaySequence = displaySequence++;
 
 export const QuickFiltersThreeColumns = () => {
   return (
-    <FilterBarTemplate variant="quick-filters" quickFilterColumns={["bbg"]} />
+    <FilterBarTemplate
+      variant="quick-filters"
+      QuickFilterProps={{ quickFilterColumns: ["bbg"] }}
+    />
   );
 };
 QuickFiltersThreeColumns.displaySequence = displaySequence++;

@@ -12,8 +12,8 @@ import {
   moveItem,
   subscribedOnly,
   useLayoutEffectSkipFirst,
+  CommitHandler,
 } from "@finos/vuu-utils";
-import { Commithandler } from "@finos/vuu-ui-controls/src";
 import {
   MouseEvent,
   SyntheticEvent,
@@ -25,7 +25,7 @@ import { ColumnChangeHandler } from "../column-list";
 
 const sortOrderFromAvailableColumns = (
   availableColumns: SchemaColumn[],
-  columns: ColumnDescriptor[]
+  columns: ColumnDescriptor[],
 ) => {
   const sortedColumns: ColumnDescriptor[] = [];
   for (const { name } of availableColumns) {
@@ -47,7 +47,7 @@ export type ColumnItem = Pick<
 
 const buildColumnItems = (
   availableColumns: SchemaColumn[],
-  configuredColumns: ColumnDescriptor[]
+  configuredColumns: ColumnDescriptor[],
 ): ColumnItem[] => {
   return availableColumns.map<ColumnItem>(({ name, serverDataType }) => {
     const configuredColumn = configuredColumns.find((col) => col.name === name);
@@ -81,7 +81,7 @@ export const useTableSettings = ({
 
   const columnItems = useMemo(
     () => buildColumnItems(availableColumns, tableConfig.columns),
-    [availableColumns, tableConfig.columns]
+    [availableColumns, tableConfig.columns],
   );
 
   const handleMoveListItem = useCallback(
@@ -90,11 +90,11 @@ export const useTableSettings = ({
         const newAvailableColumns = moveItem(
           state.availableColumns,
           fromIndex,
-          toIndex
+          toIndex,
         );
         const newColumns = sortOrderFromAvailableColumns(
           newAvailableColumns,
-          tableConfig.columns
+          tableConfig.columns,
         );
 
         return {
@@ -106,7 +106,7 @@ export const useTableSettings = ({
         };
       });
     },
-    [tableConfig.columns]
+    [tableConfig.columns],
   );
 
   const handleColumnChange = useCallback<ColumnChangeHandler>(
@@ -123,7 +123,7 @@ export const useTableSettings = ({
             tableConfig: {
               ...tableConfig,
               columns: tableConfig.columns.filter(
-                subscribedOnly(subscribedColumns)
+                subscribedOnly(subscribedColumns),
               ),
             },
           }));
@@ -136,7 +136,7 @@ export const useTableSettings = ({
             columns: addColumnToSubscribedColumns(
               tableConfig.columns,
               availableColumns,
-              name
+              name,
             ),
           };
           setColumnState((state) => ({
@@ -166,7 +166,7 @@ export const useTableSettings = ({
         }
       }
     },
-    [availableColumns, columnItems, onDataSourceConfigChange, tableConfig]
+    [availableColumns, columnItems, onDataSourceConfigChange, tableConfig],
   );
 
   const handleChangeColumnLabels = useCallback((evt: SyntheticEvent) => {
@@ -200,19 +200,25 @@ export const useTableSettings = ({
         }));
       }
     },
-    []
+    [],
   );
 
-  const handleCommitColumnWidth = useCallback<Commithandler>((_, value) => {
-    const columnDefaultWidth = parseInt(value);
-    if (!isNaN(columnDefaultWidth)) {
-      setColumnState((state) => ({
-        ...state,
-        tableConfig: {
-          ...state.tableConfig,
-          columnDefaultWidth,
-        },
-      }));
+  const handleCommitColumnWidth = useCallback<
+    CommitHandler<HTMLInputElement, string | undefined>
+  >((_, value) => {
+    if (value === undefined) {
+      console.log(`column width is undefined`);
+    } else {
+      const columnDefaultWidth = parseInt(value);
+      if (!isNaN(columnDefaultWidth)) {
+        setColumnState((state) => ({
+          ...state,
+          tableConfig: {
+            ...state.tableConfig,
+            columnDefaultWidth,
+          },
+        }));
+      }
     }
     console.log({ value });
   }, []);
@@ -225,8 +231,8 @@ export const useTableSettings = ({
     tableConfig.columnFormatHeader === undefined
       ? 0
       : tableConfig.columnFormatHeader === "capitalize"
-      ? 1
-      : 2;
+        ? 1
+        : 2;
 
   return {
     columnItems,

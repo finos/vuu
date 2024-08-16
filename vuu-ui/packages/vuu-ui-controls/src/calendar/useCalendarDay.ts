@@ -1,30 +1,32 @@
 import {
-  DateValue,
+  type DateValue,
   getLocalTimeZone,
   isSameDay,
   isSameMonth,
   isToday,
 } from "@internationalized/date";
 import {
-  ComponentPropsWithoutRef,
-  FocusEventHandler,
-  KeyboardEventHandler,
-  MouseEventHandler,
-  RefObject,
+  type ComponentPropsWithoutRef,
+  type FocusEventHandler,
+  type KeyboardEventHandler,
+  type MouseEventHandler,
+  type RefObject,
   useEffect,
 } from "react";
 import { useCalendarContext } from "./internal/CalendarContext";
 import { useFocusManagement } from "./internal/useFocusManagement";
 import { useSelectionDay } from "./useSelection";
 
-export type DayStatus = {
+export interface DayStatus {
   outOfRange?: boolean;
   selected?: boolean;
   today?: boolean;
-  unselectable?: "medium" | "low" | false;
+  unselectable?: string | false;
+  highlighted?: string | false;
   focused?: boolean;
+  disabled?: boolean;
   hidden?: boolean;
-};
+}
 
 export interface useCalendarDayProps {
   date: DateValue;
@@ -33,11 +35,16 @@ export interface useCalendarDayProps {
 
 export function useCalendarDay(
   { date, month }: useCalendarDayProps,
-  ref: RefObject<HTMLElement>
+  ref: RefObject<HTMLElement>,
 ) {
   const {
     state: { focusedDate, hideOutOfRangeDates, calendarFocused },
-    helpers: { isDayUnselectable, isOutsideAllowedMonths },
+    helpers: {
+      isDayUnselectable,
+      isDayHighlighted,
+      isDayDisabled,
+      isOutsideAllowedMonths,
+    },
   } = useCalendarContext();
   const selectionManager = useSelectionDay({ date });
   const focusManager = useFocusManagement({ date });
@@ -73,16 +80,13 @@ export function useCalendarDay(
   const tabIndex = isSameDay(date, focusedDate) && !outOfRange ? 0 : -1;
   const today = isToday(date, getLocalTimeZone());
 
-  const unselectableResult =
-    isDayUnselectable(date) || (outOfRange && isOutsideAllowedMonths(date));
-  const unselectableReason =
-    typeof unselectableResult !== "boolean" ? unselectableResult?.tooltip : "";
-  const unselectable =
-    typeof unselectableResult !== "boolean"
-      ? unselectableResult.emphasis
-      : unselectableResult
-      ? "low"
-      : false;
+  const unselectableReason = isDayUnselectable(date);
+  const highlightedReason = isDayHighlighted(date);
+
+  const disabled =
+    isDayDisabled(date) || (outOfRange && isOutsideAllowedMonths(date));
+  const unselectable = Boolean(unselectableReason);
+  const highlighted = Boolean(highlightedReason);
   const hidden = hideOutOfRangeDates && outOfRange;
 
   useEffect(() => {
@@ -98,6 +102,8 @@ export function useCalendarDay(
       unselectable,
       focused,
       hidden,
+      disabled,
+      highlighted,
       ...selectionManager.status,
     } as DayStatus,
     dayProps: {
@@ -108,5 +114,6 @@ export function useCalendarDay(
       ...selectionManager.dayProps,
     } as ComponentPropsWithoutRef<"button">,
     unselectableReason,
+    highlightedReason,
   };
 }

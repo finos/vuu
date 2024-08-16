@@ -1,11 +1,10 @@
-import { ComponentPropsWithRef, forwardRef } from "react";
-import { clsx } from "clsx";
 import { makePrefixer } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-
+import { clsx } from "clsx";
+import { type ComponentPropsWithRef, forwardRef } from "react";
 import { daysForLocale } from "./utils";
 
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import calendarWeekHeaderCss from "./CalendarWeekHeader.css";
 
 export type CalendarWeekHeaderProps = ComponentPropsWithRef<"div">;
@@ -16,15 +15,15 @@ export const CalendarWeekHeader = forwardRef<
   HTMLDivElement,
   CalendarWeekHeaderProps
 >(function CalendarWeekHeader({ className, ...rest }, ref) {
+  const weekdaysShort = daysForLocale("narrow");
+  const weekdaysLong = daysForLocale("long");
+
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "salt-calendar-month",
+    testId: "salt-calendar",
     css: calendarWeekHeaderCss,
     window: targetWindow,
   });
-
-  const weekdaysShort = daysForLocale("narrow");
-  const weekdaysLong = daysForLocale("long");
 
   return (
     <div
@@ -35,7 +34,7 @@ export const CalendarWeekHeader = forwardRef<
     >
       {weekdaysShort.map((day, index) => (
         <small
-          aria-hidden="true"
+          aria-hidden
           key={weekdaysLong[index]}
           className={withBaseName("dayOfWeek")}
         >

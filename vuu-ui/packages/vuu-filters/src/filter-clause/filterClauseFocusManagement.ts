@@ -23,20 +23,28 @@ const getFilterClauseDetails = ({ classList }: HTMLElement) => {
     return "value";
   } else {
     throw Error(
-      "getFilterClauseField, filterClauseElemnent is missing required class name"
+      "getFilterClauseField, filterClauseElemnent is missing required class name",
     );
   }
 };
 
 export const getFocusedFieldDetails = (): [number, string] | [] => {
   const el = document.activeElement as HTMLElement;
-  const field = queryClosest(el, ".vuuFilterClauseField");
-  const filterClause = queryClosest(field, ".vuuFilterClause");
-  if (filterClause && field) {
-    return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
-  } else {
-    return [];
+  const field = queryClosest(el, ".vuuFilterClauseField,.saltCalendar");
+  if (field?.matches(".vuuFilterClauseField")) {
+    const filterClause = queryClosest(field, ".vuuFilterClause");
+    if (filterClause && field) {
+      return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
+    }
+  } else if (field?.matches(".saltCalendar")) {
+    console.log("muthafucker is ins a calendar");
   }
+  // const filterClause = queryClosest(field, ".vuuFilterClause");
+  // if (filterClause && field) {
+  //   return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
+  // } else {
+  return [];
+  // }
 };
 
 // Focus the input control within field. If clause passed, will
@@ -52,24 +60,24 @@ const focusField = (fieldOrClause: HTMLElement | null) => {
 };
 
 export const elementIsFilterCombinator = (
-  element: Element | null
+  element: Element | null,
 ): element is HTMLElement =>
   element !== null && element.classList.contains("vuuFilterClauseCombinator");
 
 export const elementIsFilterClause = (
-  element: Element | null
+  element: Element | null,
 ): element is HTMLElement =>
   element !== null && element.classList.contains("vuuFilterClause");
 
 export const focusFilterClauseField = (
   filterEditor: HTMLElement,
   filterClauseIndex: number,
-  fieldName: FilterClauseFieldName = "value"
+  fieldName: FilterClauseFieldName = "value",
 ) => {
   if (filterEditor) {
     const fieldClassName = mapFilterFieldToClassName[fieldName];
     const field = filterEditor.querySelector(
-      `.vuuFilterClause[data-index="${filterClauseIndex}"] .${fieldClassName}`
+      `.vuuFilterClause[data-index="${filterClauseIndex}"] .${fieldClassName}`,
     ) as HTMLElement;
     focusField(field);
   }
@@ -78,7 +86,7 @@ export const focusFilterClauseField = (
 export const focusLastClauseValue = (filterEditor: HTMLElement) => {
   console.log("focusLastClauseValue");
   const field = Array.from(
-    filterEditor?.querySelectorAll(".vuuFilterClauseField")
+    filterEditor?.querySelectorAll(".vuuFilterClauseField"),
   ).at(-1) as HTMLElement;
   focusField(field);
 };
@@ -115,7 +123,7 @@ export const focusNextElement = () => {
   if (filterClause && filterClauseField) {
     if (filterClauseField.classList.contains("vuuFilterClauseValue")) {
       const clearButton = filterClause.querySelector(
-        ".vuuFilterClause-clearButton"
+        ".vuuFilterClause-clearButton",
       ) as HTMLButtonElement;
       clearButton?.focus();
     } else {
@@ -134,8 +142,8 @@ const getFieldName = (field: HTMLElement) =>
   field?.classList.contains("vuuFilterClauseColumn")
     ? "column"
     : field?.classList.contains("vuuFilterClauseOperator")
-    ? "operator"
-    : "value";
+      ? "operator"
+      : "value";
 
 export const clauseIsNotFirst = (el: HTMLElement) => {
   const clause = getFilterClauseElement(el);
@@ -160,14 +168,14 @@ export const tabToPreviousFilterCombinator = (currentElement: HTMLElement) => {
 
 export const navigateToNextFilterClause = (
   currentElement: HTMLElement,
-  direction: "bwd" | "fwd" = "fwd"
+  direction: "bwd" | "fwd" = "fwd",
 ) => {
   if (direction === "bwd") {
     if (elementIsFilterCombinator(currentElement)) {
       const nextClause = currentElement.previousElementSibling;
       if (elementIsFilterClause(nextClause)) {
         const nextField = nextClause.querySelector(
-          ".vuuFilterClauseValue"
+          ".vuuFilterClauseValue",
         ) as HTMLElement;
         console.log(`focus field Value ${nextField?.classList}`);
         focusField(nextField);
@@ -176,7 +184,7 @@ export const navigateToNextFilterClause = (
       const filterClause = getFilterClauseElement(currentElement);
       const nextClause = filterClause.previousSibling as HTMLElement;
       const nextField = nextClause.querySelector(
-        ".vuuFilterClauseValue"
+        ".vuuFilterClauseValue",
       ) as HTMLElement;
       focusField(nextField);
     }
@@ -189,7 +197,7 @@ export const navigateToNextFilterClause = (
 // The logic around preventDefault/stopPropagation is important
 // in this function
 export const navigateToNextItemIfAtBoundary = (
-  evt: KeyboardEvent<HTMLInputElement>
+  evt: KeyboardEvent<HTMLInputElement>,
 ) => {
   const input = evt.target as HTMLInputElement;
   const field = getFilterClauseFieldElement(input);
@@ -231,10 +239,10 @@ export const navigateToNextItemIfAtBoundary = (
 };
 
 export const focusFirstClauseIfAllClausesValid = (
-  filterEditor: HTMLElement
+  filterEditor: HTMLElement,
 ) => {
   const columInput = Array.from(
-    filterEditor.querySelectorAll(".vuuFilterClauseColumn input")
+    filterEditor.querySelectorAll(".vuuFilterClauseColumn input"),
   ) as HTMLInputElement[];
   if (columInput.every((input) => input.value.length > 0)) {
     setTimeout(() => {

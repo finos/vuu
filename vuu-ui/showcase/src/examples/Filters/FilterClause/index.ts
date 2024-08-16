@@ -1,1 +1,1 @@
-export * as ExpandoCombobox from "./ExpandoCombobox.examples";
+export * from "./FilterClause.examples";

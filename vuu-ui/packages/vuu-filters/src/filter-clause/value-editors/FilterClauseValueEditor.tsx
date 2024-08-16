@@ -38,19 +38,17 @@ export const FilterClauseValueEditor = forwardRef(
       table,
       value,
     }: FilterClauseValueEditorProps,
-    forwardedRef: ForwardedRef<HTMLDivElement>
+    forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
     if (selectedColumn === undefined || operator === undefined) {
       return null;
     }
 
     if (isDateTimeColumn(selectedColumn)) {
-      console.log(`return DateInput`);
       return (
         <FilterClauseValueEditorDate
           inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
-          data-field="value"
           // ref={forwardedRef}
           value={value as number}
           operator={operator as NumericFilterClauseOp}
@@ -77,8 +75,8 @@ export const FilterClauseValueEditor = forwardRef(
               value === undefined
                 ? ""
                 : Array.isArray(value)
-                ? value.map((val) => val.toString())
-                : (value.toString() as string | string[])
+                  ? value.map((val) => val.toString())
+                  : (value.toString() as string | string[])
             }
           />
         );
@@ -100,5 +98,5 @@ export const FilterClauseValueEditor = forwardRef(
         console.log("returning null");
         return null;
     }
-  }
+  },
 );

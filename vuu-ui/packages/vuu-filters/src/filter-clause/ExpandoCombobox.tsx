@@ -67,8 +67,10 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       onSelectionChange?.(evt, newSelected);
     } else {
       const [selectedValue] = newSelected;
-      onSelectionChange?.(evt, newSelected);
-      setValue(itemToString(selectedValue));
+      setTimeout(() => {
+        onSelectionChange?.(evt, newSelected);
+        setValue(itemToString(selectedValue));
+      }, 100);
     }
   };
 

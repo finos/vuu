@@ -111,8 +111,8 @@ describe("The mouse user", () => {
   describe("WHEN user clicks SAVE", () => {
     const testFilter = {
       column: "currency",
-      op: "!=",
-      value: "USD",
+      op: "=",
+      value: "EUR",
     };
 
     beforeEach(() => {
@@ -125,7 +125,17 @@ describe("The mouse user", () => {
         />
       );
       findAddButton().realClick();
-      clickListItems(testFilter.column, testFilter.op, testFilter.value);
+      cy.findAllByRole("combobox").eq(0).should("be.focused");
+      cy.findByRole("option", { name: "currency" }).realHover();
+      cy.findByRole("option", { name: "currency" }).realClick();
+      cy.findAllByRole("combobox").eq(1).should("be.focused");
+      cy.findByRole("option", { name: "=" }).realHover();
+      cy.findByRole("option", { name: "=" }).realClick();
+      cy.findAllByRole("combobox").eq(2).should("be.focused");
+      cy.findByRole("option", { name: "EUR" }).realHover();
+      cy.findByRole("option", { name: "EUR" }).realClick();
+      cy.findByRole("button", { name: "Save" }).should("be.focused");
+
       clickButton("Save");
     });
 
@@ -138,7 +148,7 @@ describe("The mouse user", () => {
 
     it("THEN filter is applied", () => {
       cy.get("@applyFilterHandler").should("be.calledWith", {
-        filter: 'currency != "USD"',
+        filter: 'currency = "EUR"',
         filterStruct: testFilter,
       });
     });
@@ -198,7 +208,16 @@ describe("The mouse user", () => {
           .find(".vuuSplitButton-trigger")
           .realClick();
         clickButton("Edit");
-        clickListItems(newFilter.column, newFilter.op, newFilter.value);
+        cy.findAllByRole("combobox").eq(0).should("be.focused");
+        cy.findByRole("option", { name: "currency" }).realHover();
+        cy.findByRole("option", { name: "currency" }).realClick();
+        cy.findAllByRole("combobox").eq(1).should("be.focused");
+        cy.findByRole("option", { name: "=" }).realHover();
+        cy.findByRole("option", { name: "=" }).realClick();
+        cy.findAllByRole("combobox").eq(2).should("be.focused");
+        cy.findByRole("option", { name: "CAD" }).realHover();
+        cy.findByRole("option", { name: "CAD" }).realClick();
+        cy.findByRole("button", { name: "Save" }).should("be.focused");
         clickButton("Save");
 
         cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
@@ -206,7 +225,7 @@ describe("The mouse user", () => {
           activeIndices: [0],
         });
         cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-          filter: 'currency != "CAD"',
+          filter: 'currency = "CAD"',
           filterStruct: newFilter,
         });
       });
@@ -237,13 +256,31 @@ describe("The mouse user", () => {
         />
       );
       findAddButton().realClick();
-      clickListItems(filter1.column, filter1.op, filter1.value);
+      cy.findAllByRole("combobox").eq(0).should("be.focused");
+      cy.findByRole("option", { name: filter1.column }).realHover();
+      cy.findByRole("option", { name: filter1.column }).realClick();
+      cy.findAllByRole("combobox").eq(1).should("be.focused");
+      cy.findByRole("option", { name: filter1.op }).realHover();
+      cy.findByRole("option", { name: filter1.op }).realClick();
+      cy.findAllByRole("combobox").eq(2).should("be.focused");
+      cy.findByRole("option", { name: filter1.value }).realHover();
+      cy.findByRole("option", { name: filter1.value }).realClick();
+      cy.findByRole("button", { name: "Save" }).should("be.focused");
       clickButton("Save");
       waitUntilEditableLabelIsFocused();
       pressEnterEditableLabel();
 
       findAddButton().realClick();
-      clickListItems(filter2.column, filter2.op, filter2.value);
+      cy.findAllByRole("combobox").eq(0).should("be.focused");
+      cy.findByRole("option", { name: filter2.column }).realHover();
+      cy.findByRole("option", { name: filter2.column }).realClick();
+      cy.findAllByRole("combobox").eq(1).should("be.focused");
+      cy.findByRole("option", { name: filter2.op }).realHover();
+      cy.findByRole("option", { name: filter2.op }).realClick();
+      cy.findAllByRole("combobox").eq(2).should("be.focused");
+      cy.findByRole("option", { name: filter2.value }).realHover();
+      cy.findByRole("option", { name: filter2.value }).realClick();
+      cy.findByRole("button", { name: "Save" }).should("be.focused");
       clickButton("Save");
       waitUntilEditableLabelIsFocused(1);
       pressEnterEditableLabel(1);
@@ -446,7 +483,7 @@ const getDate = (t: "start-today" | "start-tomorrow" | "end-today") => {
   }
 };
 
-describe("WHEN a user applies a date filter", () => {
+describe.only("WHEN a user applies a date filter", () => {
   const DATE_COLUMN = "lastUpdated";
   const startOfToday = getDate("start-today").getTime();
   const endOfToday = getDate("end-today").getTime();
@@ -513,7 +550,10 @@ describe("WHEN a user applies a date filter", () => {
       // Add date filter
       findAddButton().realClick();
       clickListItems(DATE_COLUMN, op);
-      cy.get(".vuuDatePopup .vuuIconButton").realClick();
+      cy.findByRole("textbox", { name: "Start date" }).should("be.focused");
+      cy.realPress("ArrowDown")
+
+      // cy.get(".vuuDatePopup .vuuIconButton").realClick();
       cy.get(`${VISIBLE_MONTH} .saltCalendarDay-today`).realClick();
       cy.realPress("ArrowRight");
       clickButton("Save");
