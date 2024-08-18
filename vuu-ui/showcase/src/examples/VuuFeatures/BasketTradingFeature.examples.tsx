@@ -2,7 +2,7 @@ import { getAllSchemas } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, ShellContextProvider, useWorkspace } from "@finos/vuu-shell";
 import {
-  FeatureProps,
+  DynamicFeatureProps,
   LookupTableProvider,
   registerComponent,
 } from "@finos/vuu-utils";
@@ -33,7 +33,7 @@ export const DefaultBasketTradingFeature = () => {
       console.log("layout change");
       saveApplicationLayout(layout);
     },
-    [saveApplicationLayout]
+    [saveApplicationLayout],
   );
   // ----------------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ DefaultBasketTradingFeature.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
-const featurePropsForEnv: Record<Environment, FeatureProps> = {
+const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
     url: "/src/features/BasketTrading.feature",
   },

@@ -1,9 +1,10 @@
 import { Palette, PaletteItem } from "@finos/vuu-layout";
 import { Icon, ListProps } from "@finos/vuu-ui-controls";
 import {
-  FeatureProps,
-  StaticFeatures,
+  DynamicFeatureProps,
+  StaticFeatureDescriptor,
   featureFromJson,
+  isStaticFeatures,
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -17,13 +18,14 @@ const classBase = "vuuFeatureList";
 
 export type GroupedFeatureProps<P extends object | undefined = object> = Record<
   string,
-  FeatureProps<P>[]
+  DynamicFeatureProps<P>[]
 >;
 
-export interface FeatureListProps<P extends object | undefined = object>
-  extends HTMLAttributes<HTMLDivElement> {
-  features: FeatureProps<P>[] | GroupedFeatureProps<P> | StaticFeatures;
-  isStatic?: boolean;
+export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
+  features:
+    | DynamicFeatureProps[]
+    | GroupedFeatureProps
+    | StaticFeatureDescriptor[];
 }
 
 const listPropsFullHeight: Partial<ListProps> = {
@@ -39,7 +41,6 @@ const listPropsAutoHeight: Partial<ListProps> = {
 export const FeatureList = ({
   features,
   title = "VUU TABLES",
-  isStatic = false,
   ...htmlAttributes
 }: FeatureListProps) => {
   const targetWindow = useWindow();
@@ -50,27 +51,21 @@ export const FeatureList = ({
   });
 
   const content = useMemo<JSX.Element[]>(() => {
-    if (isStatic) {
-      return Object.entries(features).map(([heading, feature], index) => {
+    if (isStaticFeatures(features)) {
+      return features.map(({ label, type }, idx) => {
         return (
-          <div className={`${classBase}-group`} key={index}>
-            <div className={`${classBase}-groupHeader`}>{heading}</div>
-            <PaletteItem
-              closeable
-              component={featureFromJson({
-                type: feature.type,
-                label: feature.label,
-              })}
-              // key={i}
-              label={feature.label}
-              resizeable
-              resize="defer"
-              header
-            >
-              <Icon name="draggable" size={18} />
-              <span className={`${classBase}-itemName`}>{feature.title}</span>
-            </PaletteItem>
-          </div>
+          <PaletteItem
+            closeable
+            component={featureFromJson({ type })}
+            key={idx}
+            label={label}
+            resizeable
+            resize="defer"
+            header
+          >
+            <Icon name="draggable" size={18} />
+            <span className={`${classBase}-itemName`}>{label}</span>
+          </PaletteItem>
         );
       });
     }
@@ -106,27 +101,29 @@ export const FeatureList = ({
         <div className={`${classBase}-group`} key={index}>
           <div className={`${classBase}-groupHeader`}>{heading}</div>
           <Palette orientation="vertical" ListProps={listPropsAutoHeight}>
-            {featureList.map((featureProps: FeatureProps<object>, i: Key) => (
-              <PaletteItem
-                closeable
-                component={<Feature {...featureProps} />}
-                key={i}
-                label={featureProps.title}
-                resizeable
-                resize="defer"
-                header
-              >
-                <Icon name="draggable" size={18} />
-                <span className={`${classBase}-itemName`}>
-                  {featureProps.title}
-                </span>
-              </PaletteItem>
-            ))}
+            {featureList.map(
+              (featureProps: DynamicFeatureProps<object>, i: Key) => (
+                <PaletteItem
+                  closeable
+                  component={<Feature {...featureProps} />}
+                  key={i}
+                  label={featureProps.title}
+                  resizeable
+                  resize="defer"
+                  header
+                >
+                  <Icon name="draggable" size={18} />
+                  <span className={`${classBase}-itemName`}>
+                    {featureProps.title}
+                  </span>
+                </PaletteItem>
+              ),
+            )}
           </Palette>
         </div>
       ));
     }
-  }, [features, isStatic]);
+  }, [features]);
 
   return (
     <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>

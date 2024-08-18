@@ -1,12 +1,19 @@
-import { Placeholder } from "@finos/vuu-layout";
+import { Placeholder, useLayoutProviderDispatch } from "@finos/vuu-layout";
 import {
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
   WorkspaceProps,
 } from "@finos/vuu-shell";
-import { registerComponent } from "@finos/vuu-utils";
-import { CSSProperties, HTMLAttributes, useMemo } from "react";
+import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+import {
+  CSSProperties,
+  HTMLAttributes,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 registerComponent("Placeholder", Placeholder, "component");
 
@@ -96,7 +103,7 @@ export const FullHeightLeftPanel = () => {
   return (
     <Shell
       shellLayoutProps={{
-        LeftSidePanelProps: {
+        SidePanelProps: {
           children: <div className="My Left Side">My left Side</div>,
           sizeOpen: 200,
         },
@@ -119,7 +126,7 @@ export const FullHeightLeftPanelLeftPanelClosed = () => {
   return (
     <Shell
       shellLayoutProps={{
-        LeftSidePanelProps: {
+        SidePanelProps: {
           children: <div className="My Left Side">My left Side</div>,
           open: false,
           sizeOpen: 200,
@@ -147,7 +154,7 @@ export const InlayLeftPanel = () => {
     <PersistenceProvider persistenceManager={persistNothing}>
       <Shell
         shellLayoutProps={{
-          LeftSidePanelProps: {
+          SidePanelProps: {
             children: <div className="My Left Side">My left Side</div>,
             sizeOpen: 200,
           },
@@ -166,6 +173,68 @@ export const InlayLeftPanel = () => {
   );
 };
 InlayLeftPanel.displaySequence = displaySequence++;
+
+const ToolbarTabs = () => {
+  const dispatchLayoutAction = useLayoutProviderDispatch();
+  const [active, setActive] = useState(0);
+  const handleTabSelection = useCallback(
+    (active: number) => {
+      console.log(`switch tab ${active}`);
+      dispatchLayoutAction({
+        type: "set-props",
+        path: `#${VuuShellLocation.MultiWorkspaceContainer}`,
+        props: { active },
+      });
+      setActive(active);
+    },
+    [dispatchLayoutAction],
+  );
+
+  return (
+    <Tabstrip
+      activeTabIndex={active}
+      animateSelectionThumb={false}
+      onActiveChange={handleTabSelection}
+      orientation="vertical"
+      style={{ "--overflow-container-width": "100%" } as CSSProperties}
+    >
+      <Tab data-icon="home" />
+      <Tab data-icon="preview" />
+      <Tab data-icon="workspace" />
+    </Tabstrip>
+  );
+};
+
+export const LeftMainTabs = () => {
+  const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
+  return (
+    <PersistenceProvider persistenceManager={persistNothing}>
+      <Shell
+        shellLayoutProps={{
+          ToolbarProps: {
+            children: <ToolbarTabs />,
+            width: 50,
+          },
+          htmlAttributes: {
+            style: {
+              padding: "4px 4px 4px 0",
+            },
+          },
+          layoutTemplateId: "left-main-tabs",
+        }}
+        loginUrl={window.location.toString()}
+        user={user}
+        style={
+          {
+            "--vuuShell-height": "100%",
+            "--vuuShell-width": "100%",
+          } as CSSProperties
+        }
+      />
+    </PersistenceProvider>
+  );
+};
+LeftMainTabs.displaySequence = displaySequence++;
 
 export const SimpleShellCustomPlaceholder = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);

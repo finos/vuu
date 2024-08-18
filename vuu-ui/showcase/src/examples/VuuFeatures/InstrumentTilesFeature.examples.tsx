@@ -1,7 +1,7 @@
 import { getSchema } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, useWorkspace } from "@finos/vuu-shell";
-import { FeatureProps, registerComponent } from "@finos/vuu-utils";
+import { DynamicFeatureProps, registerComponent } from "@finos/vuu-utils";
 import { InstrumentTilesFeature } from "../../features/InstrumentTiles.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
@@ -41,7 +41,7 @@ DefaultInstrumentTilesFeature.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
-const featurePropsForEnv: Record<Environment, FeatureProps> = {
+const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
     url: "/src/features/InstrumentTiles.feature",
   },

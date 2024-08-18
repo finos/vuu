@@ -1,5 +1,7 @@
+import { VuuDataSourceProvider } from "@finos/vuu-data-react/src/datasource-provider/VuuDataSourceProvider";
 import { FlexboxLayout, StackLayout } from "@finos/vuu-layout";
 import {
+  FeatureProvider,
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
@@ -12,12 +14,11 @@ import {
   TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
-import type { StaticFeatures, VuuUser } from "@finos/vuu-utils";
+import type { VuuUser } from "@finos/vuu-utils";
 import {
   assertComponentsRegistered,
   registerComponent,
 } from "@finos/vuu-utils";
-import { FeatureProvider } from "@finos/vuu-shell";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { useRpcResponseHandler } from "./useRpcResponseHandler";
@@ -43,6 +44,8 @@ const {
   features,
 } = await vuuConfig;
 
+const dynamicFeatures = Object.values(features);
+
 export const App = ({ user }: { user: VuuUser }) => {
   // this is causing full app re-render when tables are loaded
   const { handleRpcResponse } = useRpcResponseHandler();
@@ -51,24 +54,19 @@ export const App = ({ user }: { user: VuuUser }) => {
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
     }),
-    []
+    [],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
     () => ({
-      LeftSidePanelProps: {
+      SidePanelProps: {
         children: <LeftNav />,
         sizeOpen: 240,
       },
       layoutTemplateId: "full-height",
     }),
-    []
+    [],
   );
-  console.log(`render App`);
-
-  const staticFeatures: StaticFeatures = {
-    feature1: { label: "label", type: "type" },
-  };
 
   return (
     <PersistenceProvider persistenceManager={localPersistenceManager}>
@@ -76,14 +74,16 @@ export const App = ({ user }: { user: VuuUser }) => {
         <ShellContextProvider
           value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
-          <FeatureProvider features={features} staticFeatures={staticFeatures}>
-            <Shell
-              shellLayoutProps={ShellLayoutProps}
-              className="App"
-              serverUrl={serverUrl}
-              user={user}
-            />
-          </FeatureProvider>
+          <VuuDataSourceProvider>
+            <FeatureProvider dynamicFeatures={dynamicFeatures}>
+              <Shell
+                shellLayoutProps={ShellLayoutProps}
+                className="App"
+                serverUrl={serverUrl}
+                user={user}
+              />
+            </FeatureProvider>
+          </VuuDataSourceProvider>
         </ShellContextProvider>
       </DragDropProvider>
     </PersistenceProvider>

@@ -6,7 +6,7 @@ import { FilterTableFeature } from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { JsonTable } from "@finos/vuu-datatable";
 import {
-  type FeatureProps,
+  type DynamicFeatureProps,
   type JsonData,
   registerComponent,
 } from "@finos/vuu-utils";
@@ -33,7 +33,7 @@ export const DefaultFilterTableFeature = () => {
       saveApplicationLayout(layout);
       setSavedLayoutJson(layout);
     },
-    [saveApplicationLayout]
+    [saveApplicationLayout],
   );
   // ----------------------------------------------------------------------------------
 
@@ -110,7 +110,7 @@ FilterTableFeatureFlexBox.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
-const featurePropsForEnv: Record<Environment, FeatureProps> = {
+const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
     url: "/src/features/FilterTable.feature",
   },

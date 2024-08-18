@@ -1,7 +1,6 @@
 export * from "./application-provider";
 export * from "./app-header";
 export * from "./connection-status";
-export * from "./datasource-provider";
 export * from "./feature";
 export * from "./feature-provider";
 export * from "./left-nav";

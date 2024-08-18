@@ -1,4 +1,5 @@
 import { TableSchema } from "@finos/vuu-data-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 
 export type BasketsTableName =
   | "algoType"
@@ -128,3 +129,11 @@ export const schemas: Readonly<
     table: { module: "BASKET", table: "priceStrategyType" },
   },
 };
+
+export type BasketVuuTable = {
+  module: "BASKET";
+  table: BasketsTableName;
+};
+
+export const isBasketTable = (table: VuuTable): table is BasketVuuTable =>
+  table.module === "BASKET";

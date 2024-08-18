@@ -1,2 +1,2 @@
-export * from "./NewTheme.examples";
+export * as SampleApp from "./SampleApp.examples";
 export * from "./SimpleApp.examples";

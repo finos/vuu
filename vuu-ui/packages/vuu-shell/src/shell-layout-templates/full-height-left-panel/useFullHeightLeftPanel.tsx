@@ -7,7 +7,7 @@ import { useMemo } from "react";
 
 export const useFullHeightLeftPanel: ShellLayoutTemplateHook = ({
   appHeader,
-  LeftSidePanelProps,
+  SidePanelProps: LeftSidePanelProps,
   htmlAttributes,
 }) =>
   useMemo(
@@ -34,5 +34,5 @@ export const useFullHeightLeftPanel: ShellLayoutTemplateHook = ({
         <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
       </Flexbox>
     ),
-    [LeftSidePanelProps, appHeader, htmlAttributes]
+    [LeftSidePanelProps, appHeader, htmlAttributes],
   );

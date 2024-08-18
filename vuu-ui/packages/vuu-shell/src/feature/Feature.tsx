@@ -1,4 +1,8 @@
-import { FeatureProps, importCSS, registerComponent } from "@finos/vuu-utils";
+import {
+  DynamicFeatureProps,
+  importCSS,
+  registerComponent,
+} from "@finos/vuu-utils";
 import React, { Suspense, useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";
@@ -12,13 +16,13 @@ const useCachedFeature = (url: string) => {
     () => () => {
       componentsMap.delete(url);
     },
-    [url]
+    [url],
   );
 
   if (!componentsMap.has(url)) {
     componentsMap.set(
       url,
-      React.lazy(() => import(/* @vite-ignore */ url))
+      React.lazy(() => import(/* @vite-ignore */ url)),
     );
   }
 
@@ -36,7 +40,7 @@ function RawFeature<Params extends object | undefined>({
   css,
   ComponentProps: params,
   ...props
-}: FeatureProps<Params>) {
+}: DynamicFeatureProps<Params>) {
   if (css) {
     //   import(/* @vite-ignore */ css, { assert: { type: "css" } }).then(
     //     (cssModule) => {

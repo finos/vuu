@@ -1,4 +1,5 @@
 import { TableSchema } from "@finos/vuu-data-types";
+import { VuuTable } from "@finos/vuu-protocol-types";
 
 export type SimulTableName =
   | "instruments"
@@ -143,3 +144,11 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
       table: { module: "SIMUL", table: "prices" },
     },
   };
+
+export type SimulVuuTable = {
+  module: "SIMUL";
+  table: SimulTableName;
+};
+
+export const isSimulTable = (table: VuuTable): table is SimulVuuTable =>
+  table.module === "SIMUL";
