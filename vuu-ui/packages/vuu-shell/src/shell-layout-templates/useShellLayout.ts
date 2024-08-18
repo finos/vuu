@@ -1,12 +1,14 @@
 import { HTMLAttributes, ReactElement, ReactNode } from "react";
 import { useFullHeightLeftPanel } from "./full-height-left-panel/useFullHeightLeftPanel";
 import { useInlayLeftPanel } from "./inlay-left-panel/useInlayLeftPanel";
+import { useLeftMainTabs } from "./left-main-tabs/useLeftMainTabs";
 import { useSimpleContentPane } from "./simple-content-pane/useSimpleContentPane";
-import { SidePanelProps } from "./side-panel";
+import { SidePanelProps as ShellSidePanelProps } from "./side-panel";
 
 const LayoutHook = {
   "full-height": useFullHeightLeftPanel,
   inlay: useInlayLeftPanel,
+  "left-main-tabs": useLeftMainTabs,
   "simple-content-pane": useSimpleContentPane,
 };
 
@@ -17,8 +19,14 @@ export type ShellLayoutTemplateProps = Omit<
   "layoutTemplateId"
 >;
 
+export type ShellToolbarProps = {
+  children: ReactNode;
+  position?: "left";
+  width?: number;
+};
+
 export type ShellLayoutTemplateHook = (
-  props: ShellLayoutTemplateProps
+  props: ShellLayoutTemplateProps,
 ) => ReactElement;
 
 /**
@@ -44,7 +52,11 @@ export interface ShellLayoutProps {
   /**
    * If template renders SidePanel, these props will be provided
    */
-  LeftSidePanelProps?: SidePanelProps;
+  SidePanelProps?: ShellSidePanelProps;
+  /**
+   * If template renders Toolbar, these props will be provided
+   */
+  ToolbarProps?: ShellToolbarProps;
 }
 
 /**

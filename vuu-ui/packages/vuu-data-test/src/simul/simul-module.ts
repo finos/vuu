@@ -4,15 +4,15 @@ import {
   VuuLink,
   VuuMenu,
 } from "@finos/vuu-protocol-types";
+import { MenuRpcResponse } from "@finos/vuu-data-types";
 import { Table, buildDataColumnMap, joinTables } from "../Table";
+import { RpcService, RpcServiceRequest } from "../VuuModule";
+import { SimulModule } from "./SimulModule";
 import { instrumentsTable } from "./reference-data/instruments";
 import { instrumentsExtendedTable } from "./reference-data/instruments-extended";
 import { ordersTable } from "./reference-data/orders";
 import { pricesTable } from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
-import { RpcService, RpcServiceRequest } from "../VuuModule";
-import { MenuRpcResponse } from "packages/vuu-data-types";
-import { SimulModule } from "./SimulModule";
 
 const undefinedTables = {
   childOrders: undefined,
@@ -28,7 +28,7 @@ const tables: Record<SimulTableName, Table> = {
   childOrders: new Table(
     schemas.childOrders,
     [],
-    buildDataColumnMap<SimulTableName>(schemas, "childOrders")
+    buildDataColumnMap<SimulTableName>(schemas, "childOrders"),
   ),
   instruments: instrumentsTable,
   instrumentsExtended: instrumentsExtendedTable,
@@ -36,13 +36,13 @@ const tables: Record<SimulTableName, Table> = {
     { module: "SIMUL", table: "instrumentPrices" },
     instrumentsTable,
     pricesTable,
-    "ric"
+    "ric",
   ),
   orders: ordersTable,
   parentOrders: new Table(
     schemas.parentOrders,
     [],
-    buildDataColumnMap<SimulTableName>(schemas, "parentOrders")
+    buildDataColumnMap<SimulTableName>(schemas, "parentOrders"),
   ),
   prices: pricesTable,
 };
@@ -94,7 +94,7 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
 };
 
 async function cancelOrder(
-  rpcRequest: RpcServiceRequest
+  rpcRequest: RpcServiceRequest,
 ): Promise<Omit<MenuRpcResponse<ShowNotificationAction>, "requestId">> {
   const { rowKey } = rpcRequest as ClientToServerMenuRowRPC;
   const table = tables.orders;

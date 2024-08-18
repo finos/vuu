@@ -5,7 +5,9 @@
  */
 export const VuuShellLocation = {
   ContextPanel: "context-panel",
+  MultiWorkspaceContainer: "vuu-multi-workspace-container",
   SidePanel: "vuu-side-panel",
+  SideToolbar: "vuu-side-toolbar",
   Workspace: "vuu-workspace",
   WorkspaceContainer: "vuu-workspace-container",
 } as const;

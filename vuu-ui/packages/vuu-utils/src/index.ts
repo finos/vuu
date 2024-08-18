@@ -54,4 +54,6 @@ export * from "./useLayoutEffectSkipFirst";
 
 /** Context declarations hosted in utils to minimize intra package dependencies */
 export * from "./ShellContext";
+export * from "./context-definitions/DataSourceContext";
+export * from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";

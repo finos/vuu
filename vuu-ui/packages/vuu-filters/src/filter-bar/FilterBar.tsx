@@ -93,9 +93,7 @@ export const FilterBar = ({
 
   const startAdornment = useMemo(() => {
     if (!allowQuickFilters) {
-      return <Icon name="tune" />;
-    } else if (!allowCustomFilters) {
-      return <Icon name="grid" />;
+      return <Icon name="filter" size={16} style={{ top: 4 }} />;
     } else {
       return (
         <ToggleButtonGroup
@@ -124,14 +122,20 @@ export const FilterBar = ({
         </ToggleButtonGroup>
       );
     }
-  }, [allowCustomFilters, allowQuickFilters, filterMode, onChangeFilterMode]);
+  }, [allowQuickFilters, filterMode, onChangeFilterMode]);
 
   return (
     <div
       {...htmlAttributes}
-      className={cx(className, `${classBase}-${filterMode}`)}
+      className={cx(
+        className,
+        `${classBase}-${variant}`,
+        `${classBase}-${filterMode}`,
+      )}
     >
-      <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
+      {variant === "quick-filters" ? null : (
+        <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
+      )}
       {filterMode === "custom-filter" ? (
         <CustomFilters
           columnDescriptors={columnDescriptors}

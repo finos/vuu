@@ -1,8 +1,8 @@
 import {
-  DynamicFeatures,
-  FeatureProps,
+  DynamicFeatureDescriptor,
+  DynamicFeatureProps,
   FilterTableFeatureProps,
-  StaticFeatures,
+  StaticFeatureDescriptor,
   getCustomAndTableFeatures,
 } from "@finos/vuu-utils";
 import {
@@ -15,48 +15,49 @@ import {
 import { useVuuTables } from "@finos/vuu-data-react";
 
 export interface FeatureContextProps {
-  dynamicFeatures: FeatureProps[];
-  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
-  staticFeatures?: StaticFeatures;
+  dynamicFeatures?: DynamicFeatureProps[];
+  tableFeatures?: DynamicFeatureProps<FilterTableFeatureProps>[];
+  staticFeatures?: StaticFeatureDescriptor[];
 }
 
-const NO_FEATURES: FeatureContextProps["dynamicFeatures"] = [];
-const NO_TABLES: FeatureContextProps["tableFeatures"] = [];
-const NO_STATICFEATURES: FeatureContextProps["staticFeatures"] = {};
+const NO_FEATURES: DynamicFeatureDescriptor[] = [];
+const NO_STATICFEATURES: StaticFeatureDescriptor[] = [];
 
-const NO_FEATURES_VUU: {
-  dynamicFeatures: FeatureProps[];
-  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
-} = { dynamicFeatures: [], tableFeatures: [] };
+const NO_FEATURES_VUU = {
+  dynamicFeatures: NO_FEATURES,
+  tableFeatures: NO_FEATURES,
+};
 
 const FeatureContext = createContext<FeatureContextProps>({
   dynamicFeatures: NO_FEATURES,
-  tableFeatures: NO_TABLES,
+  tableFeatures: NO_FEATURES,
   staticFeatures: NO_STATICFEATURES,
 });
 
 export interface FeatureProviderProps extends Partial<FeatureContextProps> {
   children: ReactNode;
-  features: DynamicFeatures;
-  staticFeatures?: StaticFeatures;
+  dynamicFeatures?: DynamicFeatureDescriptor[];
+  staticFeatures?: StaticFeatureDescriptor[];
 }
 
 export const FeatureProvider = ({
   children,
-  features,
+  dynamicFeatures: dynamicFeaturesProp = [],
   staticFeatures,
 }: FeatureProviderProps): ReactElement => {
   const vuuTables = useVuuTables();
   const { dynamicFeatures, tableFeatures } = useMemo<{
-    dynamicFeatures: FeatureProps[];
-    tableFeatures: FeatureProps<FilterTableFeatureProps>[];
+    dynamicFeatures: DynamicFeatureProps[];
+    tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[];
   }>(
     () =>
       vuuTables
-        ? getCustomAndTableFeatures(features, vuuTables)
+        ? getCustomAndTableFeatures(dynamicFeaturesProp, vuuTables)
         : NO_FEATURES_VUU,
-    [features, vuuTables]
+    [dynamicFeaturesProp, vuuTables],
   );
+
+  console.log({ tableFeatures });
 
   return (
     <FeatureContext.Provider
@@ -71,26 +72,4 @@ export const FeatureProvider = ({
   );
 };
 
-export type FeaturesHook = (
-  props?: Partial<FeatureContextProps>
-) => FeatureContextProps;
-export const useFeatures: FeaturesHook = (localFeatures?) => {
-  const contextFeatures = useContext(FeatureContext);
-  if (
-    localFeatures === undefined ||
-    (localFeatures.dynamicFeatures === undefined &&
-      localFeatures.tableFeatures === undefined &&
-      localFeatures.staticFeatures === undefined)
-  ) {
-    return contextFeatures;
-  } else {
-    return {
-      dynamicFeatures:
-        localFeatures.dynamicFeatures ?? contextFeatures.dynamicFeatures,
-      tableFeatures:
-        localFeatures.tableFeatures ?? contextFeatures.tableFeatures,
-      staticFeatures:
-        localFeatures.staticFeatures ?? contextFeatures.staticFeatures,
-    };
-  }
-};
+export const useFeatures = () => useContext(FeatureContext);

@@ -6,7 +6,7 @@ import {
 } from "@finos/vuu-layout";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import {
-  FeatureProps,
+  DynamicFeatureProps,
   FilterTableFeatureProps,
   hasFilterTableFeatureProps,
 } from "@finos/vuu-utils";
@@ -36,7 +36,7 @@ export type NavDisplayStatus =
 
 const getDisplayStatus = (
   activeTabIndex: number,
-  expanded: boolean
+  expanded: boolean,
 ): NavDisplayStatus => {
   if (activeTabIndex === 0) {
     return expanded ? "menu-full" : "menu-icons";
@@ -46,19 +46,17 @@ const getDisplayStatus = (
 };
 
 export type NavDisplayStatusHandler = (
-  navDisplayStatus: NavDisplayStatus
+  navDisplayStatus: NavDisplayStatus,
 ) => void;
 export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   "data-path"?: string;
   defaultActiveTabIndex?: number;
   defaultExpanded?: boolean;
-  features?: FeatureProps[];
   onActiveChange?: (activeTabIndex: number) => void;
   onTogglePrimaryMenu?: (expanded: boolean) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
-  tableFeatures?: FeatureProps<FilterTableFeatureProps>[];
 }
 
 type NavState = {
@@ -67,8 +65,8 @@ type NavState = {
 };
 
 const byModule = (
-  f1: FeatureProps<FilterTableFeatureProps>,
-  f2: FeatureProps<FilterTableFeatureProps>
+  f1: DynamicFeatureProps<FilterTableFeatureProps>,
+  f2: DynamicFeatureProps<FilterTableFeatureProps>,
 ) => {
   const t1 = f1.ComponentProps?.tableSchema.table;
   const t2 = f2.ComponentProps?.tableSchema.table;
@@ -97,14 +95,12 @@ export const LeftNav = (props: LeftNavProps) => {
     "data-path": path,
     defaultExpanded = true,
     defaultActiveTabIndex = 0,
-    features: featuresProp,
     onActiveChange,
     onTogglePrimaryMenu,
     sizeCollapsed = 80,
     sizeContent = 300,
     sizeExpanded = 240,
     style: styleProp,
-    tableFeatures: tableFeaturesProp,
     ...htmlAttributes
   } = props;
   const targetWindow = useWindow();
@@ -114,10 +110,7 @@ export const LeftNav = (props: LeftNavProps) => {
     window: targetWindow,
   });
 
-  const { dynamicFeatures: features, tableFeatures } = useFeatures({
-    dynamicFeatures: featuresProp,
-    tableFeatures: tableFeaturesProp,
-  });
+  const { dynamicFeatures = [], tableFeatures = [] } = useFeatures();
 
   const [navState, setNavState] = useState<NavState>({
     activeTabIndex: defaultActiveTabIndex,
@@ -127,27 +120,26 @@ export const LeftNav = (props: LeftNavProps) => {
   const tableFeaturesByGroup = useMemo(
     () =>
       tableFeatures
-        .sort(byModule)
-        .reduce<GroupedFeatureProps<FilterTableFeatureProps>>(
-          (acc, filterTableFeature) => {
-            if (hasFilterTableFeatureProps(filterTableFeature)) {
-              const { table } = filterTableFeature.ComponentProps.tableSchema;
-              const key = `${table.module} Tables`;
-              if (!acc[key]) {
-                acc[key] = [];
-              }
-              return {
-                ...acc,
-                [key]: acc[key].concat(filterTableFeature),
-              };
-            } else {
-              return acc;
-              // throw Error("LeftNaV invalid tableFeature");
+        ?.sort(byModule)
+        .reduce<
+          GroupedFeatureProps<FilterTableFeatureProps>
+        >((acc, filterTableFeature) => {
+          if (hasFilterTableFeatureProps(filterTableFeature)) {
+            const { table } = filterTableFeature.ComponentProps.tableSchema;
+            const key = `${table.module} Tables`;
+            if (!acc[key]) {
+              acc[key] = [];
             }
-          },
-          {}
-        ),
-    [tableFeatures]
+            return {
+              ...acc,
+              [key]: acc[key].concat(filterTableFeature),
+            };
+          } else {
+            return acc;
+            // throw Error("LeftNaV invalid tableFeature");
+          }
+        }, {}),
+    [tableFeatures],
   );
 
   const getFullWidth = useCallback(
@@ -160,7 +152,7 @@ export const LeftNav = (props: LeftNavProps) => {
           : sizeCollapsed + sizeContent;
       }
     },
-    [sizeCollapsed, sizeContent, sizeExpanded]
+    [sizeCollapsed, sizeContent, sizeExpanded],
   );
 
   const handleTabSelection = useCallback(
@@ -178,12 +170,12 @@ export const LeftNav = (props: LeftNavProps) => {
       }
       onActiveChange?.(activeTabIndex);
     },
-    [dispatch, getFullWidth, navState, onActiveChange]
+    [dispatch, getFullWidth, navState, onActiveChange],
   );
 
   const displayStatus = getDisplayStatus(
     navState.activeTabIndex,
-    navState.expanded
+    navState.expanded,
   );
 
   const toggleExpanded = useCallback(() => {
@@ -252,7 +244,7 @@ export const LeftNav = (props: LeftNavProps) => {
         className={`${classBase}-menu-secondary`}
         showTabs={false}
       >
-        <FeatureList features={features} title="VUU FEATURES" />
+        <FeatureList features={dynamicFeatures} title="VUU FEATURES" />
         <FeatureList features={tableFeaturesByGroup} title="VUU TABLES" />
         <LayoutList title="MY LAYOUTS" />
       </Stack>

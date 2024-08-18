@@ -7,6 +7,7 @@
     calc(var(--salt-size-base) + var(--salt-spacing-100))
   );
   --vuuFilterEditor-height: var(--filterbar-height);
+  --icon-container-height: auto;
   --flexbar-gap: var(--salt-spacing-100);
   --icon-marginTop: 0;
 
@@ -27,6 +28,7 @@
 }
 
 .vuuFilterBar-quick-filter {
+  --icon-container-height: 100%;
   --icon-marginTop: 20px;
   --filterbar-height: var(
     --vuuFilterBar-height,
@@ -42,7 +44,7 @@
 }
 
 .vuuFilterBar-iconContainer {
-  height: 100%;
+  height: var(--icon-container-height);
 
   .saltToggleButtonGroup {
     margin-top: var(--icon-marginTop);

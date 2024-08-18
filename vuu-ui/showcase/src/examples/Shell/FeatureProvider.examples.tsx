@@ -1,39 +1,29 @@
 import { FeatureList, useFeatures } from "@finos/vuu-shell";
-import { StaticFeatures } from "@finos/vuu-utils";
+import { StaticFeatureDescriptor } from "@finos/vuu-utils";
 import { FeatureProvider } from "@finos/vuu-shell";
 
 let displaySequence = 1;
 
-const staticFeatures: StaticFeatures = {
-  feature1: { label: "label1", type: "Placeholder" },
-  feature2: { label: "label2", type: "Component" },
-  feature3: { label: "label3", type: "Placeholder" },
-  feature4: { label: "label4", type: "View" },
-  feature5: { label: "label5", type: "Placeholder" },
-};
+const staticFeatures: StaticFeatureDescriptor[] = [
+  { label: "label1", type: "Placeholder" },
+  { label: "label2", type: "Component" },
+  { label: "label3", type: "Placeholder" },
+  { label: "label4", type: "View" },
+  { label: "label5", type: "Placeholder" },
+];
 
 const StaticFeaturesTemplate = () => {
-  const features = useFeatures();
-  if (features.staticFeatures)
-    return (
-      <>
-        <FeatureList features={features.staticFeatures} isStatic />
-        <FeatureList features={features.dynamicFeatures} />
-        <FeatureList features={features.tableFeatures} />
-      </>
-    );
-  else
-    return (
-      <>
-        <FeatureList features={features.dynamicFeatures} />
-        <FeatureList features={features.tableFeatures} />
-      </>
-    );
+  const { staticFeatures = [] } = useFeatures();
+  return (
+    <>
+      <FeatureList features={staticFeatures} />
+    </>
+  );
 };
 
 export const DefaultStaticFeatures = () => {
   return (
-    <FeatureProvider features={{}} staticFeatures={staticFeatures}>
+    <FeatureProvider dynamicFeatures={[]} staticFeatures={staticFeatures}>
       <StaticFeaturesTemplate />
     </FeatureProvider>
   );

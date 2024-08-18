@@ -1,14 +1,14 @@
+import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import type { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
+import type { Filter } from "@finos/vuu-filter-types";
 import {
   FilterEditCancelHandler,
   FilterEditor,
-  FilterEditorProps,
-  FilterEditSaveHandler,
+  type FilterEditorProps,
+  type FilterEditSaveHandler,
 } from "@finos/vuu-filters";
+import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useCallback, useMemo } from "react";
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import { Filter } from "@finos/vuu-filter-types";
-import { SchemaColumn, TableSchema } from "packages/vuu-data-types";
-import { ColumnDescriptor } from "packages/vuu-table-types";
 
 let displaySequence = 1;
 

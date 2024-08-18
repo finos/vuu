@@ -19,7 +19,7 @@ import {
 import { ShellLayoutTemplateHook } from "../useShellLayout";
 
 export const useInlayLeftPanel: ShellLayoutTemplateHook = ({
-  LeftSidePanelProps,
+  SidePanelProps: LeftSidePanelProps,
   appHeader,
   htmlAttributes,
 }) => {
@@ -32,7 +32,7 @@ export const useInlayLeftPanel: ShellLayoutTemplateHook = ({
         setOpen(!open);
       }
     },
-    [open]
+    [open],
   );
 
   return useMemo(() => {
@@ -58,7 +58,7 @@ export const useInlayLeftPanel: ShellLayoutTemplateHook = ({
           >
             {leftSidePanel}
           </View>
-        </Drawer>
+        </Drawer>,
       );
 
       return drawers;
@@ -80,7 +80,7 @@ export const useInlayLeftPanel: ShellLayoutTemplateHook = ({
               id={VuuShellLocation.WorkspaceContainer}
               key="main-content"
               style={{ width: "100%", height: "100%" }}
-            />
+            />,
           )}
         </DockLayout>
       </Flexbox>

@@ -1,10 +1,10 @@
 import { FeatureList, GroupedFeatureProps } from "@finos/vuu-shell";
-import { FeatureProps } from "@finos/vuu-utils";
+import { DynamicFeatureProps } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 
 export const DefaultFeatureList = () => {
-  const features: FeatureProps[] = [
+  const features: DynamicFeatureProps[] = [
     { title: "Component 1", url: "test" },
     { title: "Component 2", url: "test" },
     { title: "Component 3", url: "test" },
@@ -16,7 +16,7 @@ export const DefaultFeatureList = () => {
 DefaultFeatureList.displaySequence = displaySequence++;
 
 export const FeatureListWithTitle = () => {
-  const features: FeatureProps[] = [
+  const features: DynamicFeatureProps[] = [
     { title: "Component 1", url: "test" },
     { title: "Component 2", url: "test" },
     { title: "Component 3", url: "test" },

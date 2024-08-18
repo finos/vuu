@@ -20,7 +20,7 @@ export interface ViewConfig {
   header?: boolean;
 }
 
-export interface FeatureProps<P extends object | undefined = object> {
+export interface DynamicFeatureProps<P extends object | undefined = object> {
   /**
     props that will be passed to the lazily loaded component.
    */
@@ -60,6 +60,16 @@ export interface StaticFeatureDescriptor {
   type: string;
 }
 
+const isStaticFeature = (
+  feature: unknown,
+): feature is StaticFeatureDescriptor =>
+  feature !== null && typeof feature === "object" && "type" in feature;
+
+export const isStaticFeatures = (
+  features: unknown,
+): features is StaticFeatureDescriptor[] =>
+  Array.isArray(features) && features.every(isStaticFeature);
+
 export interface FilterTableFeatureProps {
   tableSchema: TableSchema;
 }
@@ -68,21 +78,14 @@ export type DynamicFeatures = {
   [key: string]: DynamicFeatureDescriptor;
 };
 
-export type StaticFeatures = {
-  [key: string]: StaticFeatureDescriptor;
-};
-
-export function featureFromJson({
-  type,
-  label,
-}: StaticFeatureDescriptor): ReactElement {
+export function featureFromJson({ type }: { type: string }): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
   if (componentType === undefined) {
     throw Error(
-      `layoutUtils unable to create component from JSON, unknown type ${type}`
+      `layoutUtils unable to create feature component from JSON, unknown type ${type}`,
     );
   }
-  return React.createElement(componentType, { id: label, key: label });
+  return React.createElement(componentType);
 }
 
 export interface VuuConfig {
@@ -103,12 +106,12 @@ export const isTableSchema = (schema?: "*" | VuuTable): schema is VuuTable =>
   typeof schema.table === "string";
 
 export interface FeaturePropsWithFilterTableFeature
-  extends Omit<FeatureProps, "ComponentProps"> {
+  extends Omit<DynamicFeatureProps, "ComponentProps"> {
   ComponentProps: FilterTableFeatureProps;
 }
 
 export const hasFilterTableFeatureProps = (
-  props: FeatureProps
+  props: DynamicFeatureProps,
 ): props is FeaturePropsWithFilterTableFeature =>
   typeof props.ComponentProps === "object" &&
   props.ComponentProps !== null &&
@@ -135,15 +138,15 @@ export type GetFeaturePaths = (params: {
   env: Environment;
   fileName: string;
   withCss?: boolean;
-}) => FeatureProps;
+}) => DynamicFeatureProps;
 
 export const getFilterTableFeatures = (
   schemas: TableSchema[],
-  getFeaturePath: GetFeaturePaths
+  getFeaturePath: GetFeaturePaths,
 ) =>
   schemas
     .sort(byModule)
-    .map<FeatureProps<FilterTableFeatureProps>>((schema) => ({
+    .map<DynamicFeatureProps<FilterTableFeatureProps>>((schema) => ({
       ...getFeaturePath({ env, fileName: "FilterTable" }),
       ComponentProps: {
         tableSchema: schema,
@@ -161,11 +164,11 @@ export type Component = {
 
 export const assertComponentRegistered = (
   componentName: string,
-  component: unknown
+  component: unknown,
 ) => {
   if (typeof component !== "function") {
     console.warn(
-      `${componentName} module not loaded, will be unabale to deserialize from layout JSON`
+      `${componentName} module not loaded, will be unabale to deserialize from layout JSON`,
     );
   }
 };
@@ -177,19 +180,22 @@ export const assertComponentsRegistered = (componentList: Component[]) => {
 };
 
 export const getCustomAndTableFeatures = (
-  features: DynamicFeatures,
-  vuuTables: Map<string, TableSchema>
+  dynamicFeatures: DynamicFeatureDescriptor[],
+  vuuTables: Map<string, TableSchema>,
 ): {
-  dynamicFeatures: FeatureProps[];
-  tableFeatures: FeatureProps<FilterTableFeatureProps>[];
+  dynamicFeatures: DynamicFeatureProps[];
+  tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[];
 } => {
+  console.log(`getCustomAndTableFeatures`, {
+    vuuTables,
+  });
   const [customFeatureConfig, tableFeaturesConfig] = partition(
-    Object.values(features),
-    isCustomFeature
+    dynamicFeatures,
+    isCustomFeature,
   );
 
-  const customFeatures: FeatureProps[] = [];
-  const tableFeatures: FeatureProps<FilterTableFeatureProps>[] = [];
+  const customFeatures: DynamicFeatureProps[] = [];
+  const tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[] = [];
 
   for (const {
     featureProps = {},
@@ -205,7 +211,7 @@ export const getCustomAndTableFeatures = (
             tableSchema,
           },
           title: `${tableSchema.table.module} ${wordify(
-            tableSchema.table.table
+            tableSchema.table.table,
           )}`,
           ViewProps: {
             ...viewProps,
@@ -248,11 +254,11 @@ export const getCustomAndTableFeatures = (
         ComponentProps: schemas.reduce<Record<string, TableSchema>>(
           (map, schema) => {
             map[`${schema.table}Schema`] = vuuTables.get(
-              schema.table
+              schema.table,
             ) as TableSchema;
             return map;
           },
-          {}
+          {},
         ),
         ViewProps: viewProps,
       });
