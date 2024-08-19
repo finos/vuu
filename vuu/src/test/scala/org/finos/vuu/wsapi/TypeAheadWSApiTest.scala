@@ -27,14 +27,14 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Account column")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "Account")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValues"
-      assertResponseReturns(response, List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854"))
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(responseBody, List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854"))
     }
 
     Scenario("Type ahead request that start with a string for a column") {
@@ -44,14 +44,14 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Name column with start string Tom")
       val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId,tableName, "Name", "Tom")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return all Name values that start with Tom")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValuesStartingWith"
-      assertResponseReturns(response, List("Tom Sawyer", "Tom Thatcher"))
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValuesStartingWith"
+      assertResponseReturns(responseBody, List("Tom Sawyer", "Tom Thatcher"))
     }
 
     Scenario("Type ahead request with start with no matching value") {
@@ -61,14 +61,14 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Name column with start string NoMatching")
       val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "NoMatch")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return success response with empty list")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValuesStartingWith"
-      assertResponseReturns(response, List.empty)
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValuesStartingWith"
+      assertResponseReturns(responseBody, List.empty)
     }
 
     Scenario("Type ahead request for a column that is not in view port") {
@@ -78,14 +78,14 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column that is hidden")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "HiddenColumn")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return success response with empty list")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValues"
-      assertResponseReturns(response, List.empty)
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(responseBody, List.empty)
     }
 
     Scenario("Type ahead request for a column that does not exist") {
@@ -95,28 +95,28 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column that does not exist")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "ColumnThatDoesNotExist")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return success response with empty list")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValues"
-      assertResponseReturns(response, List.empty)
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(responseBody, List.empty)
     }
 
     Scenario("Type ahead request for a view port that does not exist") {
 
       When("request typeahead for column that does not exist")
       val getTypeAheadRequest = createTypeAheadRequest("viewPortThatDoesNotExist", tableName, "Account")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return helpful error response")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortMenuRpcReject]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.rpcName shouldEqual "getUniqueFieldValues"
-      response.get.error shouldEqual "No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
+      val responseBody = assertBodyIsInstanceOf[ViewPortMenuRpcReject](response)
+      responseBody.rpcName shouldEqual "getUniqueFieldValues"
+      responseBody.error shouldEqual "No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
     }
 
     //create multiple view ports
@@ -129,14 +129,14 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column when table is empty")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableNameEmpty, "Account")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
       Then("return success response with empty list")
-      val response = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response = vuuClient.awaitForResponse(requestId)
 
-      response.isDefined shouldBe true
-      response.get.method shouldEqual "getUniqueFieldValues"
-      assertResponseReturns(response, List.empty)
+      val responseBody = assertBodyIsInstanceOf[ViewPortRpcResponse](response)
+      responseBody.method shouldEqual "getUniqueFieldValues"
+      assertResponseReturns(responseBody, List.empty)
     }
 
     Scenario("Type ahead request when there is multiple viewports and multiple requests") {
@@ -148,18 +148,26 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       When("request typeahead for different view ports")
       val getTypeAheadRequest1 = createTypeAheadStartWithRequest(viewPortId1, tableName, "Name", "S")
       val getTypeAheadRequest2 = createTypeAheadStartWithRequest(viewPortId2, tableName, "Name", "T")
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest1)
-      vuuClient.send(sessionId, tokenId, getTypeAheadRequest2)
+      val requestId1 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest1)
+      val requestId2 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest2)
+
 
       Then("return success response for each request")
-      val response1 = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
-      val response2 = vuuClient.awaitForMsgWithBody[ViewPortRpcResponse]
+      val response1 = vuuClient.awaitForResponse(requestId1)
+      val response2 = vuuClient.awaitForResponse(requestId2)
 
-      response1.isDefined shouldBe true
-      response2.isDefined shouldBe true
-      assertResponseReturns(response1, List("Sid Sawyer","Sally Phelps"))
-      assertResponseReturns(response2, List("Tom Sawyer","Tom Thatcher"))
+      val responseBody1 = assertBodyIsInstanceOf[ViewPortRpcResponse](response1)
+      val responseBody2 = assertBodyIsInstanceOf[ViewPortRpcResponse](response2)
+      assertResponseReturns(responseBody1, List("Sid Sawyer","Sally Phelps"))
+      assertResponseReturns(responseBody2, List("Tom Sawyer","Tom Thatcher"))
     }
+  }
+
+  private def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
+    response.isDefined shouldBe true
+    assert(response.get.body.isInstanceOf[BodyType])
+    val responseBody = response.get.body.asInstanceOf[BodyType]
+    responseBody
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
@@ -251,8 +259,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       ))
   }
 
-  private def assertResponseReturns(response: Option[ViewPortRpcResponse], expectedResult: Any) = {
-    val action = response.get.action
+  private def assertResponseReturns(response:ViewPortRpcResponse, expectedResult: Any) = {
+    val action = response.action
     action shouldBe a[DisplayResultAction]
     val displayResultAction = action.asInstanceOf[DisplayResultAction]
 
