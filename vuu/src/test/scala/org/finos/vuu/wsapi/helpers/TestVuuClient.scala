@@ -87,9 +87,9 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging{
     expectedBodyType.isAssignableFrom(msg.body.getClass)
   }
 
-  private def lookupFromReceivedResponses(requestId: String): Option[ViewServerMessage] = {
-    Option(responsesMap.get(requestId))
-  }
+  private def lookupFromReceivedResponses(requestId: String): Option[ViewServerMessage] =
+    Option(responsesMap.remove(requestId))
+
 
   private def createViewServerMessage(sessionId: String, token: String, body: MessageBody): ViewServerMessage = {
     JsonViewServerMessage(RequestId.oneNew(),

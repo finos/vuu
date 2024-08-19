@@ -87,5 +87,12 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
 
   protected def defineModuleWithTestTables(): ViewServerModule
 
+  protected def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
+    response.isDefined shouldBe true
+    assert(response.get.body.isInstanceOf[BodyType])
+    val responseBody = response.get.body.asInstanceOf[BodyType]
+    responseBody
+  }
+
 }
 
