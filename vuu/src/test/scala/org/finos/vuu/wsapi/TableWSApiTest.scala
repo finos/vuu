@@ -5,7 +5,7 @@ import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
-import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse}
+import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse, ViewPortRpcResponse}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.ViewPortTable
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -20,48 +20,48 @@ class TableWSApiTest extends WebSocketApiTestBase {
   Feature("Server web socket api") {
     Scenario("client requests to get table metadata for a table") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", moduleName)))
+      val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", moduleName)))
 
       Then("return view port columns in response")
-      val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
-      assert(response.isDefined)
+      val response = vuuClient.awaitForResponse(requestId)
 
-      val responseMessage = response.get
-      responseMessage.columns.length shouldEqual 2
-      responseMessage.columns shouldEqual Array("Id", "Account")
+      val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
+      responseBody.columns.length shouldEqual 2
+      responseBody.columns shouldEqual Array("Id", "Account")
     }
 
     Scenario("client requests to get table metadata for a table with no view port def defined") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", moduleName)))
+      val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", moduleName)))
 
       Then("return table columns as default view port columns in response")
-      val response = vuuClient.awaitForMsgWithBody[GetTableMetaResponse]
-      assert(response.isDefined)
+      val response = vuuClient.awaitForResponse(requestId)
 
-      val responseMessage = response.get
-      responseMessage.columns.length shouldEqual 1
-      responseMessage.columns shouldEqual Array("Id")
+      val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
+      responseBody.columns.length shouldEqual 1
+      responseBody.columns shouldEqual Array("Id")
     }
 
     Scenario("client requests to get table metadata for a non existent") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", moduleName)))
+      val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", moduleName)))
 
       Then("return error response with helpful message")
-      val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
-      assert(response.isDefined)
-      response.get.msg shouldEqual "No such table found with name DoesNotExist in module " + moduleName
+      val response = vuuClient.awaitForResponse(requestId)
+
+      val responseBody = assertBodyIsInstanceOf[ErrorResponse](response)
+      responseBody.msg shouldEqual "No such table found with name DoesNotExist in module " + moduleName
     }
 
     Scenario("client requests to get table metadata for null table name") {
 
-      vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable(null, moduleName)))
+      val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable(null, moduleName)))
 
       Then("return error response with helpful message")
-      val response = vuuClient.awaitForMsgWithBody[ErrorResponse]
-      assert(response.isDefined)
-      response.get.msg shouldEqual "No such table found with name null in module " + moduleName + ". Table name and module should not be null"
+      val response = vuuClient.awaitForResponse(requestId)
+
+      val responseBody = assertBodyIsInstanceOf[ErrorResponse](response)
+      responseBody.msg shouldEqual "No such table found with name null in module " + moduleName + ". Table name and module should not be null"
     }
   }
 

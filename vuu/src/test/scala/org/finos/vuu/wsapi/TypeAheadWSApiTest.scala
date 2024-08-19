@@ -163,13 +163,6 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     }
   }
 
-  private def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
-    response.isDefined shouldBe true
-    assert(response.get.body.isInstanceOf[BodyType])
-    val responseBody = response.get.body.asInstanceOf[BodyType]
-    responseBody
-  }
-
   protected def defineModuleWithTestTables(): ViewServerModule = {
     val tableDef = TableDef(
       name = tableName,
@@ -258,6 +251,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
         "starts" -> startString
       ))
   }
+
 
   private def assertResponseReturns(response:ViewPortRpcResponse, expectedResult: Any) = {
     val action = response.action
