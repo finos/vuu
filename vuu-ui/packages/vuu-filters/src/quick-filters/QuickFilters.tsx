@@ -18,6 +18,7 @@ export interface QuickFilterProps
       FilterBarProps,
       "onApplyFilter" | "suggestionProvider" | "tableSchema"
     > {
+  allowAddColumn?: boolean;
   allowFind?: boolean;
   availableColumns: ColumnDescriptor[];
   onChangeQuickFilterColumns?: (columns: string[]) => void;
@@ -31,6 +32,7 @@ export interface QuickFilterProps
 }
 
 export const QuickFilters = ({
+  allowAddColumn = true,
   allowFind = true,
   availableColumns,
   onApplyFilter,
@@ -106,13 +108,15 @@ export const QuickFilters = ({
       <div className={`${classBase}-filter-container`}>
         {getFilterControls()}
       </div>
-      <ColumnPicker
-        columns={availableColumnNames}
-        icon="more-horiz"
-        iconSize={16}
-        onSelectionChange={onColumnsSelectionChange}
-        selected={quickFilterColumns}
-      />
+      {allowAddColumn ? (
+        <ColumnPicker
+          columns={availableColumnNames}
+          icon="more-horiz"
+          iconSize={16}
+          onSelectionChange={onColumnsSelectionChange}
+          selected={quickFilterColumns}
+        />
+      ) : null}
     </div>
   );
 };

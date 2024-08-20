@@ -3,7 +3,12 @@ import type { Filter } from "@finos/vuu-filter-types";
 import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
-import { CommitHandler, filterAsQuery, queryClosest } from "@finos/vuu-utils";
+import {
+  CommitHandler,
+  NoFilter,
+  filterAsQuery,
+  queryClosest,
+} from "@finos/vuu-utils";
 import {
   ChangeEventHandler,
   RefCallback,
@@ -49,7 +54,7 @@ const createFilterClause = (
 const buildFilterStruct = (
   quickFilters: QuickFilterValues,
   availableColumns: ColumnDescriptor[],
-): Filter => {
+): Filter | undefined => {
   const entries = Object.entries(quickFilters);
   if (entries.length === 1) {
     return createFilterClause(entries[0], availableColumns);
@@ -61,8 +66,6 @@ const buildFilterStruct = (
         availableColumns,
       ),
     };
-  } else {
-    throw Error("What no filter");
   }
 };
 
@@ -71,10 +74,14 @@ const buildFilter = (
   availableColumns: ColumnDescriptor[],
 ): DataSourceFilter => {
   const filterStruct = buildFilterStruct(quickFilters, availableColumns);
-  return {
-    filter: filterAsQuery(filterStruct),
-    filterStruct,
-  };
+  if (filterStruct) {
+    return {
+      filter: filterAsQuery(filterStruct),
+      filterStruct,
+    };
+  } else {
+    return NoFilter;
+  }
 };
 
 export type QuickFilterHookProps = Pick<

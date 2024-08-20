@@ -7,7 +7,7 @@ import {
   VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
 import { usePersistFilterState } from "@finos/vuu-datatable";
-import { FilterBarProps } from "@finos/vuu-filters";
+import { FilterBarProps, QuickFilterProps } from "@finos/vuu-filters";
 import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useShellContext } from "@finos/vuu-utils";
@@ -18,8 +18,9 @@ import {
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
+import { FilterMode } from "@finos/vuu-filters/src/filter-bar/useFilterBar";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -32,6 +33,8 @@ const defaultTableConfig: Partial<TableConfig> = {
 
 type FilterTableConfig = {
   "available-columns"?: SchemaColumn[];
+  "filter-config"?: Pick<FilterBarProps, "filterMode"> &
+    Pick<QuickFilterProps, "quickFilterColumns">;
   "table-config"?: TableConfig;
 };
 
@@ -49,8 +52,13 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
 
   const {
     "available-columns": availableColumnsFromState,
+    "filter-config": filterConfigFromState,
     "table-config": tableConfigFromState,
   } = useMemo<FilterTableConfig>(() => load?.() ?? NO_CONFIG, [load]);
+
+  const [quickFilterColumns, setQuickFilterColumns] = useState<string[]>(
+    filterConfigFromState?.quickFilterColumns ?? [],
+  );
 
   const dataSource = useSessionDataSource({ tableSchema });
 
@@ -58,9 +66,9 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     ([, column, pattern]: TypeaheadParams) =>
       (dataSource as TypeaheadSuggestionProvider).getTypeaheadSuggestions(
         column,
-        pattern
+        pattern,
       ),
-    [dataSource]
+    [dataSource],
   );
 
   const suggestionProvider = useMemo(() => {
@@ -111,14 +119,32 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
     (columns: SchemaColumn[]) => {
       save?.(columns, "available-columns");
     },
-    [save]
+    [save],
   );
 
   const handleTableConfigChange = useCallback<TableConfigChangeHandler>(
     (config) => {
       save?.(config, "table-config");
     },
-    [save]
+    [save],
+  );
+
+  const handleChangeFilterMode = useCallback(
+    (filterMode: FilterMode) => {
+      save?.({ ...filterConfigFromState, filterMode }, "filter-config");
+    },
+    [filterConfigFromState, save],
+  );
+
+  const handleChangeQuickFilterColumns = useCallback(
+    (columns: string[]) => {
+      setQuickFilterColumns(columns);
+      save?.(
+        { ...filterConfigFromState, quickFilterColumns: columns },
+        "filter-config",
+      );
+    },
+    [filterConfigFromState, save],
   );
 
   const handleVuuFeatureInvoked = useCallback(
@@ -150,7 +176,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
       removeVisualLink,
       highlightVisualLinkTarget,
       clearVisualLinkTarget,
-    ]
+    ],
   );
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
@@ -163,17 +189,24 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         tableConfigFromState?.columns ||
         applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
     }),
-    [getDefaultColumnConfig, tableConfigFromState, tableSchema]
+    [getDefaultColumnConfig, tableConfigFromState, tableSchema],
   );
 
   const filterBarProps: Omit<FilterBarProps, "onApplyFilter"> = {
+    QuickFilterProps: {
+      onChangeQuickFilterColumns: handleChangeQuickFilterColumns,
+      quickFilterColumns,
+    },
     columnDescriptors: tableConfig.columns,
+    defaultFilterMode: filterConfigFromState?.filterMode,
     filterState,
+    onChangeFilterMode: handleChangeFilterMode,
     onFilterDeleted,
     onFilterRenamed,
     onFilterStateChanged,
     suggestionProvider,
     tableSchema,
+    variant: "full-filters",
   };
 
   const tableProps = {
@@ -195,7 +228,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
         return load?.("visual-link") as DataSourceVisualLinkCreatedMessage;
       },
     }),
-    [load]
+    [load],
   );
 
   useEffect(() => {

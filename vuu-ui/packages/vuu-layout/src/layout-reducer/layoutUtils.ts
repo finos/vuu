@@ -23,7 +23,7 @@ interface ComponentWithId {
 }
 
 export const getManagedDimension = (
-  style: CSSProperties
+  style: CSSProperties,
 ): [dimension, dimension] =>
   style.flexDirection === "column" ? ["height", "width"] : ["width", "height"];
 
@@ -33,7 +33,7 @@ export const applyLayoutProps = (component: ReactElement, path = "0") => {
   const [layoutProps, children] = getChildLayoutProps(
     typeOf(component) as string,
     component.props,
-    path
+    path,
   );
   return React.cloneElement(component, layoutProps, children);
 };
@@ -58,7 +58,7 @@ export interface LayoutProps extends ComponentWithId {
  */
 export const cloneElementAddLayoutProps = (
   layoutElement: ReactElement,
-  previousLayout?: ReactElement
+  previousLayout?: ReactElement,
 ): ReactElement => {
   const type = typeOf(layoutElement) as string;
   const [layoutProps, children] = getChildLayoutProps(
@@ -66,7 +66,7 @@ export const cloneElementAddLayoutProps = (
     layoutElement.props,
     "0",
     undefined,
-    previousLayout
+    previousLayout,
   );
   return cloneElement(layoutElement, layoutProps, children);
 };
@@ -74,14 +74,14 @@ export const cloneElementAddLayoutProps = (
 export const applyLayout = (
   type: layoutType,
   props: LayoutProps,
-  previousLayout?: LayoutModel
+  previousLayout?: LayoutModel,
 ): LayoutModel => {
   const [layoutProps, children] = getChildLayoutProps(
     type,
     props,
     "0",
     undefined,
-    previousLayout
+    previousLayout,
   );
   return {
     ...props,
@@ -96,7 +96,7 @@ function getLayoutProps(
   props: LayoutProps,
   path = "0",
   parentType: string | null = null,
-  previousLayout?: LayoutModel
+  previousLayout?: LayoutModel,
 ): LayoutProps {
   const {
     active: prevActive = 0,
@@ -107,8 +107,8 @@ function getLayoutProps(
   } = getProps(previousLayout);
 
   const prevMatch = typeOf(previousLayout) === type && path === prevPath;
-  const id = prevMatch ? prevId : props.id ?? uuid();
-  const active = type === "Stack" ? props.active ?? prevActive : undefined;
+  const id = prevMatch ? prevId : (props.id ?? uuid());
+  const active = type === "Stack" ? (props.active ?? prevActive) : undefined;
 
   const key = id;
   const style = prevMatch ? prevStyle : getStyle(type, props, parentType);
@@ -122,14 +122,14 @@ function getChildLayoutProps(
   props: LayoutProps,
   path: string,
   parentType: string | null = null,
-  previousLayout?: LayoutModel
+  previousLayout?: LayoutModel,
 ): [LayoutProps, ReactElement[]] {
   const layoutProps = getLayoutProps(
     type,
     props,
     path,
     parentType,
-    previousLayout
+    previousLayout,
   );
 
   if (props.layout && !previousLayout) {
@@ -149,13 +149,13 @@ function getLayoutChildren(
   type: string,
   children?: ReactElement[],
   path = "0",
-  previousChildren?: ReactElement[]
+  previousChildren?: ReactElement[],
 ) {
   const kids = Array.isArray(children)
     ? children
     : React.isValidElement(children)
-    ? [children]
-    : [];
+      ? [children]
+      : [];
   return isContainer(type)
     ? kids.map((child, i) => {
         const childType = typeOf(child) as string;
@@ -167,7 +167,7 @@ function getLayoutChildren(
             child.props,
             `${path}.${i}`,
             type,
-            previousChildren?.[i]
+            previousChildren?.[i],
           );
           return React.cloneElement(child, layoutProps, children);
         }
@@ -180,7 +180,7 @@ function getLayoutChildren(
 const getStyle = (
   type: string,
   props: LayoutProps,
-  parentType?: string | null
+  parentType?: string | null,
 ) => {
   let { style = theKidHasNoStyle } = props;
   if (type === "Flexbox") {
@@ -220,13 +220,13 @@ const getStyle = (
 
 export function layoutFromJson(
   { id = uuid(), type, children, props, state }: LayoutJSON,
-  path: string
+  path: string,
 ): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
   if (componentType === undefined) {
     throw Error(
-      `layoutUtils unable to create component from JSON, unknown type ${type}`
+      `layoutUtils unable to create component from JSON, unknown type ${type}`,
     );
   }
 
@@ -244,7 +244,7 @@ export function layoutFromJson(
     },
     children
       ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
-      : undefined
+      : undefined,
   );
 }
 
@@ -303,7 +303,7 @@ export type LayoutQuery = "PARENT_CONTAINER";
 export const layoutQuery = (
   query: LayoutQuery,
   path?: string,
-  layoutRoot?: ReactElement
+  layoutRoot?: ReactElement,
 ) => {
   if (path && layoutRoot) {
     const parentElement = followPathToParent(layoutRoot, path);
@@ -325,9 +325,12 @@ export const layoutQuery = (
 export const getDefaultTabLabel: TabLabelFactory = (
   component,
   tabIndex,
-  existingLabels = []
+  existingLabels = [],
 ): string => {
-  let label = component.props?.title ?? component.props?.["data-tab-title"];
+  let label =
+    component.props?.title ??
+    component.props?.["data-tab-title"] ??
+    existingLabels[tabIndex];
   if (label) {
     return label;
   } else {

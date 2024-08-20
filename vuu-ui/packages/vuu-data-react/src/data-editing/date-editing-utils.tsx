@@ -1,7 +1,11 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { VuuInput, VuuTypeaheadInput } from "@finos/vuu-ui-controls";
+import {
+  VuuDatePicker,
+  VuuInput,
+  VuuTypeaheadInput,
+} from "@finos/vuu-ui-controls";
 import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler, isDateTimeColumn } from "@finos/vuu-utils";
 
 export interface DataItemEditControlProps {
   column: ColumnDescriptor;
@@ -16,7 +20,13 @@ export const getDataItemEditControl = ({
   suggestionProvider,
   table,
 }: DataItemEditControlProps) => {
-  if (column.serverDataType === "string" && suggestionProvider && table) {
+  if (isDateTimeColumn(column)) {
+    return <VuuDatePicker onCommit={onCommit as any} />;
+  } else if (
+    column.serverDataType === "string" &&
+    suggestionProvider &&
+    table
+  ) {
     return (
       <VuuTypeaheadInput
         column={column.name}
