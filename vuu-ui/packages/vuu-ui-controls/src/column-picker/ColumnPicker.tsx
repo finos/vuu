@@ -12,10 +12,15 @@ import {
   useForkRef,
   useIdMemo,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import cx from "clsx";
 import { forwardRef, useState } from "react";
 import { IconButton, IconButtonProps } from "../icon-button";
 import { ColumnSearch, ColumnSearchProps } from "./ColumnSearch";
+
+import columnPickerCss from "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
 
@@ -37,7 +42,7 @@ const FloatingColumnSearch = forwardRef<
         {
           [`${classBase}-collapsed`]: collapsed,
         },
-        className
+        className,
       )}
       role="listbox"
       open={open}
@@ -66,8 +71,15 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
       selected,
       ...htmlAttributes
     },
-    forwardedRef
+    forwardedRef,
   ) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-column-picker",
+      css: columnPickerCss,
+      window: targetWindow,
+    });
+
     const [open, setOpen] = useState(false);
 
     const listId = useIdMemo();
@@ -142,5 +154,5 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
         </FloatingColumnSearch>
       </>
     );
-  }
+  },
 );

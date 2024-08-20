@@ -73,6 +73,9 @@ export const useVuuTypeaheadInput = ({
           dispatchKeyboardEvent(input, "keydown", "ArrowUp");
         }, 150);
       }
+    } else if (newValue === "" && value) {
+      // treat clear value as a commit event
+      onCommit(evt, "");
     }
 
     setValue(newValue);

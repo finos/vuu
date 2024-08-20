@@ -43,6 +43,10 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
   suggestionProvider?: SuggestionProvider;
+  /**
+   * TableSchema is used both to populate list of available columns and to
+   * provide table in call to Typeahead service
+   */
   tableSchema?: TableSchema;
   variant?: FilterBarVariant;
 }

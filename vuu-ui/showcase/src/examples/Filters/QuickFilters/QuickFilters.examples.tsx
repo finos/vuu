@@ -9,6 +9,8 @@ import { setPersistentState } from "@finos/vuu-layout";
 let displaySequence = 1;
 
 const QuickFiltersTemplate = ({
+  allowAddColumn,
+  allowFind,
   onApplyFilter,
   quickFilterColumns: quickFilterColumnsProp = [],
   suggestionProvider = vuuModule("SIMUL").typeaheadHook,
@@ -38,6 +40,8 @@ const QuickFiltersTemplate = ({
 
   return (
     <QuickFilters
+      allowAddColumn={allowAddColumn}
+      allowFind={allowFind}
       availableColumns={availableColumns}
       onApplyFilter={handleApplyFilter}
       onChangeQuickFilterColumns={handleChangeQuickFilterColumns}
@@ -93,6 +97,62 @@ export const ThreeColumns = () => {
   );
 };
 ThreeColumns.displaySequence = displaySequence++;
+
+export const ThreeColumnsOnly = () => {
+  const [availableColumns, quickFilterColumns] = useMemo<
+    [ColumnDescriptor[], string[]]
+  >(
+    () => [
+      [
+        { label: "Currency", name: "currency", serverDataType: "string" },
+        { name: "description", serverDataType: "string" },
+        {
+          label: "Exchange",
+          name: "exchange",
+          serverDataType: "string",
+        },
+      ],
+      ["currency", "description", "exchange"],
+    ],
+    [],
+  );
+  return (
+    <QuickFiltersTemplate
+      availableColumns={availableColumns}
+      allowAddColumn={false}
+      quickFilterColumns={quickFilterColumns}
+    />
+  );
+};
+ThreeColumnsOnly.displaySequence = displaySequence++;
+
+export const QuickDateFilter = () => {
+  const [availableColumns, quickFilterColumns] = useMemo<
+    [ColumnDescriptor[], string[]]
+  >(
+    () => [
+      [
+        {
+          label: "Trade Date",
+          name: "tradeDate",
+          serverDataType: "long",
+          type: "date/time",
+        },
+      ],
+      ["tradeDate"],
+    ],
+    [],
+  );
+  return (
+    <QuickFiltersTemplate
+      availableColumns={availableColumns}
+      allowAddColumn={false}
+      allowFind={false}
+      quickFilterColumns={quickFilterColumns}
+    />
+  );
+};
+QuickDateFilter.displaySequence = displaySequence++;
 
 const PersistentFilter = () => {
   const { load, save } = useViewContext();

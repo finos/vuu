@@ -21,7 +21,7 @@ const classBase = "vuuTabs";
 const getDefaultTabIcon = () => undefined;
 
 const getChildElements = <T extends ReactElement = ReactElement>(
-  children: ReactNode
+  children: ReactNode,
 ): T[] => {
   const elements: T[] = [];
   React.Children.forEach(children, (child) => {
@@ -59,7 +59,7 @@ export const Stack = forwardRef(function Stack(
     showTabs = "top",
     style,
   }: StackProps,
-  ref: ForwardedRef<HTMLDivElement>
+  ref: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -69,7 +69,7 @@ export const Stack = forwardRef(function Stack(
   });
 
   const id = useId(idProp);
-  const tabLabels = useRef<string[]>([]);
+  const tabLabelsRef = useRef<string[]>([]);
   const {
     allowCloseTab,
     allowRenameTab,
@@ -81,11 +81,11 @@ export const Stack = forwardRef(function Stack(
       _oldText: string,
       newText: string,
       _allowDeactivation: boolean,
-      tabIndex: number
+      tabIndex: number,
     ) => {
       onTabEdit?.(tabIndex, newText);
     },
-    [onTabEdit]
+    [onTabEdit],
   );
 
   const activeChild = () => {
@@ -101,6 +101,10 @@ export const Stack = forwardRef(function Stack(
     return null;
   };
 
+  // The list of existing Tab Labels is required only when assigning a default label
+  // to a new Tab. We rebuild on each render
+  tabLabelsRef.current.length = 0;
+
   const renderTabs = () =>
     getChildElements(children).map((child, idx) => {
       const {
@@ -108,8 +112,8 @@ export const Stack = forwardRef(function Stack(
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
       } = child.props;
-      const label = getTabLabel(child, idx, tabLabels.current);
-      tabLabels.current.push(label);
+      const label = getTabLabel(child, idx, tabLabelsRef.current);
+      tabLabelsRef.current.push(label);
       return (
         <Tab
           ariaControls={childId}
