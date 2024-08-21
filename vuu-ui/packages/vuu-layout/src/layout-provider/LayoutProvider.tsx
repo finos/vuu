@@ -82,7 +82,7 @@ const getLayoutChangeReason = (
 export interface LayoutProviderProps {
   children: ReactElement;
   createNewChild?: (index?: number) => ReactElement;
-  workspaceJSON?: LayoutJSON;
+  workspaceJSON?: LayoutJSON | LayoutJSON[];
   onLayoutChange?: LayoutChangeHandler;
 }
 

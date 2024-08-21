@@ -1,9 +1,6 @@
-import {
-  useLayoutOperation,
-  useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
+import { useLayoutOperation } from "@finos/vuu-layout";
 import { Toolbar } from "@finos/vuu-ui-controls";
-import { ThemeMode, VuuShellLocation } from "@finos/vuu-utils";
+import { ThemeMode } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -28,7 +25,7 @@ export const AppHeader = ({
   useComponentCssInjection({
     testId: "vuu-app-header",
     css: appHeaderCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const className = cx(classBase, classNameProp);
@@ -43,9 +40,9 @@ export const AppHeader = ({
   const handleShowSettings = useCallback(() => {
     showComponentInContextPanel(
       {
-        type: "ApplicationSettings",
+        type: "ApplicationSettings"
       },
-      "Settings",
+      "Settings"
     );
   }, [showComponentInContextPanel]);
 

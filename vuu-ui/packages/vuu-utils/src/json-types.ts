@@ -17,7 +17,7 @@ export type ApplicationSetting = ValueOf<ApplicationSettings>;
 export type Settings = Record<string, string | number | boolean>;
 
 export interface ApplicationJSON {
-  workspaceJSON: LayoutJSON;
+  workspaceJSON: LayoutJSON | LayoutJSON[];
   settings?: ApplicationSettings;
   userSettings?: Settings;
 }
