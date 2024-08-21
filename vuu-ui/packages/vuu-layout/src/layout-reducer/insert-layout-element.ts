@@ -32,7 +32,7 @@ export function getInsertTabBeforeAfter(stack: LayoutModel, pos: DropPos) {
 export function insertIntoContainer(
   container: ReactElement,
   targetContainer: ReactElement,
-  newComponent: ReactElement
+  newComponent: ReactElement | ReactElement[],
 ): ReactElement {
   const {
     active: containerActive,
@@ -45,7 +45,7 @@ export function insertIntoContainer(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     containerPath!,
     existingComponentPath,
-    true
+    true,
   );
   const [insertedIdx, children] = finalStep
     ? insertIntoChildren(container, containerChildren, newComponent)
@@ -56,9 +56,9 @@ export function insertIntoContainer(
             ? (insertIntoContainer(
                 child,
                 targetContainer,
-                newComponent
+                newComponent,
               ) as ReactElement)
-            : child
+            : child,
         ),
       ];
   const active =
@@ -75,7 +75,7 @@ const getDefaultTitle = (
   containerType: string | undefined,
   component: ReactElement,
   index: number,
-  existingLabels: string[]
+  existingLabels: string[],
 ) =>
   containerType === "Stack"
     ? getDefaultTabLabel(component, index, existingLabels)
@@ -87,17 +87,31 @@ const getChildrenTitles = (children: ReactElement[]) =>
 function insertIntoChildren(
   container: ReactElement,
   containerChildren: ReactElement[],
-  newComponent: ReactElement
+  newComponent: ReactElement | ReactElement[],
 ): [number, ReactElement[]] {
+  if (Array.isArray(newComponent)) {
+    const [firstChild, ...rest] = newComponent;
+    let [idx, children] = insertIntoChildren(
+      container,
+      containerChildren,
+      firstChild,
+    );
+    for (const child of rest) {
+      [, children] = insertIntoChildren(container, children, child);
+    }
+    return [idx, children];
+  }
+
   const containerPath = getProp(container, "path");
   const count = containerChildren?.length;
+
   const {
     id = uuid(),
     title = getDefaultTitle(
       typeOf(container),
       newComponent,
       count ?? 0,
-      getChildrenTitles(containerChildren)
+      getChildrenTitles(containerChildren),
     ),
   } = getProps(newComponent);
 
@@ -109,7 +123,7 @@ function insertIntoChildren(
           id,
           key: id,
           title,
-        })
+        }),
       ),
     ];
   } else {
@@ -124,7 +138,7 @@ export function insertBesideChild(
   insertionPosition: insertionPosition,
   pos?: DropPos,
   clientRect?: any,
-  dropRect?: any
+  dropRect?: any,
 ): ReactElement {
   const {
     active: containerActive,
@@ -144,7 +158,7 @@ export function insertBesideChild(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         pos!,
         clientRect,
-        dropRect
+        dropRect,
       )
     : [
         containerActive,
@@ -157,9 +171,9 @@ export function insertBesideChild(
                 insertionPosition,
                 pos,
                 clientRect,
-                dropRect
+                dropRect,
               )
-            : child
+            : child,
         ),
       ];
 
@@ -175,7 +189,7 @@ function updateChildren(
   insertionPosition: insertionPosition,
   pos: DropPos,
   clientRect: DropTarget["clientRect"],
-  dropRect: DropTarget["dropRect"]
+  dropRect: DropTarget["dropRect"],
 ) {
   const intrinsicSize = getIntrinsicSize(newComponent);
   if (intrinsicSize?.width && intrinsicSize?.height) {
@@ -187,7 +201,7 @@ function updateChildren(
       insertionPosition,
       clientRect,
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      dropRect!
+      dropRect!,
     );
   } else {
     return insertFlexComponent(
@@ -197,7 +211,7 @@ function updateChildren(
       newComponent,
       insertionPosition,
       pos?.width || pos?.height,
-      clientRect
+      clientRect,
     );
   }
 }
@@ -206,7 +220,7 @@ const getLeadingPlaceholderSize = (
   flexDirection: flexDirection,
   insertionPosition: insertionPosition,
   { top, right, bottom, left }: DropTarget["clientRect"],
-  [rectLeft, rectTop, rectRight, rectBottom]: rectTuple
+  [rectLeft, rectTop, rectRight, rectBottom]: rectTuple,
 ) => {
   if (flexDirection === "column" && insertionPosition === "before") {
     return rectTop - top;
@@ -226,7 +240,7 @@ function insertIntrinsicSizedComponent(
   newComponent: ReactElement,
   insertionPosition: insertionPosition,
   clientRect: DropTarget["clientRect"],
-  dropRect: rectTuple
+  dropRect: rectTuple,
 ) {
   const {
     style: { flexDirection },
@@ -241,7 +255,7 @@ function insertIntrinsicSizedComponent(
     flexDirection,
     insertionPosition,
     clientRect,
-    dropRect
+    dropRect,
   );
 
   const [itemToInsert, size] =
@@ -252,7 +266,7 @@ function insertIntrinsicSizedComponent(
             contraDirection,
             path,
             clientRect,
-            dropRect
+            dropRect,
           ),
           intrinsicSize,
         ]
@@ -268,7 +282,7 @@ function insertIntrinsicSizedComponent(
         return child;
       } else {
         const { [crossDimension]: intrinsicCrossChildSize } = getIntrinsicSize(
-          child
+          child,
         ) as {
           height: number;
           width: number;
@@ -280,7 +294,7 @@ function insertIntrinsicSizedComponent(
           return wrapIntrinsicSizeComponentWithFlexbox(
             child,
             contraDirection,
-            getProp(child, "path")
+            getProp(child, "path"),
           );
         } else {
           return child;
@@ -297,7 +311,7 @@ function insertIntrinsicSizedComponent(
     insertionPosition,
     size,
     clientRect,
-    placeholder
+    placeholder,
   );
 }
 
@@ -309,7 +323,7 @@ function insertFlexComponent(
   insertionPosition: "before" | "after",
   size: number | undefined,
   targetRect: DropTarget["clientRect"],
-  placeholder?: ReactElement
+  placeholder?: ReactElement,
 ) {
   const containerPath = getProp(container, "path");
   let insertedIdx = 0;
@@ -341,7 +355,7 @@ function insertFlexComponent(
             return arr;
           }, [])
           .map((child, i) =>
-            i < insertedIdx ? child : resetPath(child, `${containerPath}.${i}`)
+            i < insertedIdx ? child : resetPath(child, `${containerPath}.${i}`),
           );
 
   return [insertedIdx, children];
@@ -351,7 +365,7 @@ function getStyledComponents(
   container: LayoutModel,
   existingComponent: ReactElement,
   newComponent: ReactElement,
-  targetRect: DropTarget["clientRect"]
+  targetRect: DropTarget["clientRect"],
 ): [ReactElement, ReactElement] {
   const id = uuid();
   let { version = 0 } = getProps(newComponent);
@@ -365,7 +379,7 @@ function getStyledComponents(
     const existingComponentStyle = getFlexOrIntrinsicStyle(
       existingComponent,
       dim,
-      size
+      size,
     );
     const newComponentStyle = getFlexOrIntrinsicStyle(newComponent, dim, size);
 

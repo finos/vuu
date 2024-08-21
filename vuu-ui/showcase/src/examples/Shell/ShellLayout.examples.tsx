@@ -1,12 +1,18 @@
-import { Placeholder, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import {
+  Placeholder,
+  useLayoutOperation,
+  useLayoutProviderDispatch,
+} from "@finos/vuu-layout";
 import {
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
   WorkspaceProps,
+  defaultWorkspaceJSON,
 } from "@finos/vuu-shell";
 import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
 import {
   CSSProperties,
   HTMLAttributes,
@@ -205,6 +211,28 @@ const ToolbarTabs = () => {
   );
 };
 
+const LayoutWithLink = ({ label }: { label: string }) => {
+  const { addComponentToWorkspace, switchWorkspace } = useLayoutOperation();
+  const onClick = useCallback(() => {
+    addComponentToWorkspace(<Placeholder title={label} />);
+    switchWorkspace(2);
+  }, [addComponentToWorkspace, label, switchWorkspace]);
+
+  return (
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <Button onClick={onClick}>Click Me ({label})</Button>
+    </div>
+  );
+};
+
+registerComponent("LayoutWithLink", LayoutWithLink, "view");
+
 export const LeftMainTabs = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
   return (
@@ -221,6 +249,19 @@ export const LeftMainTabs = () => {
             },
           },
           layoutTemplateId: "left-main-tabs",
+        }}
+        workspaceProps={{
+          workspaceJSON: [
+            {
+              type: "LayoutWithLink",
+              props: { label: "Steve", style: { background: "red" } },
+            },
+            {
+              type: "LayoutWithLink",
+              props: { label: "Martha", style: { background: "red" } },
+            },
+            defaultWorkspaceJSON,
+          ],
         }}
         loginUrl={window.location.toString()}
         user={user}

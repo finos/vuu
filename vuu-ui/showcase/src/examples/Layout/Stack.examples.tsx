@@ -135,8 +135,8 @@ export const VerticalTabsControlled = () => {
   return (
     <LayoutProvider>
       <StackLayout
-        TabstripProps={{ orientation: "vertical" }}
         active={active}
+        showTabs="left"
         style={{ width: 800, height: 500 }}
       >
         <Component

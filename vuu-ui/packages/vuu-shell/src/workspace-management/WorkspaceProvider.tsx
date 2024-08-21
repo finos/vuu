@@ -33,7 +33,7 @@ export type WorkspaceProps = WorkspaceStackProps & {
    * The Vuu workspace is the container into which layouts are loaded. By default, it will be
    * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
    */
-  workspaceJSON?: LayoutJSON;
+  workspaceJSON?: LayoutJSON | LayoutJSON[];
 };
 
 export interface WorkspaceProviderProps extends WorkspaceProps {
@@ -47,7 +47,7 @@ export interface WorkspaceProviderProps extends WorkspaceProps {
 
 const ensureLayoutHasTitle = (
   layout: LayoutJSON,
-  layoutMetadata: LayoutMetadataDto
+  layoutMetadata: LayoutMetadataDto,
 ) => {
   if (layout.props?.title !== undefined) {
     return layout;
@@ -103,7 +103,7 @@ export const WorkspaceProvider = ({
         forceRefresh({});
       }
     },
-    []
+    [],
   );
 
   const setWorkspaceJSON = useCallback(
@@ -113,10 +113,10 @@ export const WorkspaceProvider = ({
           ...applicationJSONRef.current,
           workspaceJSON,
         },
-        rerender
+        rerender,
       );
     },
-    [setApplicationJSON]
+    [setApplicationJSON],
   );
 
   const setApplicationSettings = useCallback(
@@ -129,10 +129,10 @@ export const WorkspaceProvider = ({
             ...settings,
           },
         },
-        false
+        false,
       );
     },
-    [setApplicationJSON]
+    [setApplicationJSON],
   );
 
   useEffect(() => {
@@ -165,7 +165,7 @@ export const WorkspaceProvider = ({
             customWorkspaceJSON,
             layoutJSON,
             activeLayoutIndex,
-            { TabstripProps, showTabs }
+            { TabstripProps, showTabs },
           );
           info?.(`applicationJSON not found, getting defaultWorkspaceJSON,
             ${JSON.stringify(workspaceJSON, null, 2)}
@@ -183,7 +183,7 @@ export const WorkspaceProvider = ({
         });
         console.error(
           "Error occurred while retrieving application layout",
-          error
+          error,
         );
       });
   }, [
@@ -206,7 +206,7 @@ export const WorkspaceProvider = ({
         console.error("Tried to save invalid application layout", layout);
       }
     },
-    [persistenceManager, setWorkspaceJSON]
+    [persistenceManager, setWorkspaceJSON],
   );
 
   const saveLayout = useCallback(
@@ -215,7 +215,7 @@ export const WorkspaceProvider = ({
       try {
         layoutToSave = resolveJSONPath(
           applicationJSONRef.current.workspaceJSON,
-          `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`
+          `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`,
         );
       } catch (e) {
         // ignore, code below will handle
@@ -249,13 +249,13 @@ export const WorkspaceProvider = ({
         });
       }
     },
-    [notify, persistenceManager]
+    [notify, persistenceManager],
   );
 
   const saveApplicationSettings = useCallback(
     (
       settings: ApplicationSettings | ApplicationSetting,
-      key?: keyof ApplicationSettings
+      key?: keyof ApplicationSettings,
     ) => {
       const { settings: applicationSettings } = applicationJSONRef.current;
       if (key) {
@@ -268,7 +268,7 @@ export const WorkspaceProvider = ({
       }
       persistenceManager?.saveApplicationJSON(applicationJSONRef.current);
     },
-    [persistenceManager, setApplicationSettings]
+    [persistenceManager, setApplicationSettings],
   );
 
   const getApplicationSettings = useCallback(
@@ -276,7 +276,7 @@ export const WorkspaceProvider = ({
       const { settings } = applicationJSONRef.current;
       return key ? settings?.[key] : settings;
     },
-    []
+    [],
   );
 
   const loadLayoutById = useCallback(
@@ -303,7 +303,7 @@ export const WorkspaceProvider = ({
           console.error("Error occurred while loading layout", error);
         });
     },
-    [notify, persistenceManager, setWorkspaceJSON]
+    [notify, persistenceManager, setWorkspaceJSON],
   );
 
   return (
