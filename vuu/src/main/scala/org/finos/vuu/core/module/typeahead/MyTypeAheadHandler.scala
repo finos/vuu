@@ -1,0 +1,58 @@
+package org.finos.vuu.core.module.typeahead
+
+import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.net.{RequestContext, RpcNames}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcMethodCallResult, RpcMethodSuccess, RpcParams}
+import org.finos.vuu.viewport.ViewPortColumns
+
+class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableContainer) {
+
+  def register(): Unit = {
+    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
+    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
+  }
+
+  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcMethodCallResult = {
+    val values = getUniqueFieldValues(
+      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
+      params.namedParams("module").toString,
+      params.namedParams("column").toString,
+      params.viewPortColumns.get,
+      null //todo what to do about request context
+    )
+    new RpcMethodSuccess(values)
+  }
+
+  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcMethodCallResult = {
+    val values = getUniqueFieldValuesStartingWith(
+      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
+      params.namedParams("module").toString,
+      params.namedParams("column").toString,
+      params.namedParams("starts").toString,
+      params.viewPortColumns.get,
+      null //todo what to do about request context
+    )
+    new RpcMethodSuccess(values) //how to control what viewport action to trigger?
+  }
+
+
+  def getUniqueFieldValues(tableName: String, moduleName: String, column: String, viewPortColumns: ViewPortColumns, ctx: RequestContext): Array[String] = {
+    tableContainer.getTable(tableName) match {
+      case dataTable: DataTable =>
+        val columValueProvider = dataTable.getColumnValueProvider
+        columValueProvider.getUniqueValuesVPColumn(column, viewPortColumns)
+      case null =>
+        throw new Exception("Could not find table by name:" + tableName)
+    }
+  }
+
+  def getUniqueFieldValuesStartingWith(tableName: String, moduleName: String, column: String, starts: String, viewPortColumns: ViewPortColumns, ctx: RequestContext): Array[String] = {
+    tableContainer.getTable(tableName) match {
+      case dataTable: DataTable =>
+        val columValueProvider = dataTable.getColumnValueProvider
+        columValueProvider.getUniqueValuesStartingWithVPColumn(column, starts, viewPortColumns)
+      case null =>
+        throw new Exception("Could not find table by name:" + tableName)
+    }
+  }
+}
