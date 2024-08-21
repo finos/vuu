@@ -1,9 +1,9 @@
 package org.finos.vuu.person;
 
+import org.finos.vuu.core.module.typeahead.MyTypeAheadHandler;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.*;
-import scala.Some;
 
 import java.util.Arrays;
 
@@ -14,6 +14,9 @@ public class PersonRpcHandler extends DefaultRpcHandler {
 
     public PersonRpcHandler(DataTable table, TableContainer tableContainer) {
         this.table = table;
+
+        var typeAheadHandler = new MyTypeAheadHandler(this, tableContainer);
+        typeAheadHandler.register();
 
         registerRpc("UpdateName", (params) -> processUpdateNameRpcRequest(params));
         registerRpc("GetPeopleWithName", (params) -> processGetPeopleNameRpcRequest(params));
