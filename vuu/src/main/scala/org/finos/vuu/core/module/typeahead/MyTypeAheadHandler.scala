@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.typeahead
 
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{RequestContext, RpcNames}
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcMethodCallResult, RpcMethodSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPortColumns
 
 class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableContainer) {
@@ -12,7 +12,7 @@ class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableCo
     rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
   }
 
-  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcMethodCallResult = {
+  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
     val values = getUniqueFieldValues(
       params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
       params.namedParams("module").toString,
@@ -20,10 +20,10 @@ class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableCo
       params.viewPortColumns.get,
       null //todo what to do about request context
     )
-    new RpcMethodSuccess(values)
+    new RpcFunctionSuccess(values)
   }
 
-  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcMethodCallResult = {
+  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
     val values = getUniqueFieldValuesStartingWith(
       params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
       params.namedParams("module").toString,
@@ -32,7 +32,7 @@ class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableCo
       params.viewPortColumns.get,
       null //todo what to do about request context
     )
-    new RpcMethodSuccess(values) //how to control what viewport action to trigger?
+    new RpcFunctionSuccess(values) //how to control what viewport action to trigger?
   }
 
 

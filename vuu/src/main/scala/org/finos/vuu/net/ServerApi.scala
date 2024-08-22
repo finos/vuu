@@ -55,5 +55,7 @@ trait ServerApi {
 
   def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def disconnect(session: ClientSessionId): Unit
 }

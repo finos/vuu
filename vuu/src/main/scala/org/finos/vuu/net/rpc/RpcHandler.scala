@@ -40,6 +40,8 @@ trait RpcHandler extends StrictLogging {
 
   val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
 
+  def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = ???
+
   def processViewPortRpcCall(methodName: String, rcpParams: RpcParams):ViewPortAction = {
 
     val (params, ctx) = (rcpParams.params, rcpParams.ctx)

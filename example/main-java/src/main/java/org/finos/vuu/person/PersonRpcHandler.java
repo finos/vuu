@@ -22,19 +22,19 @@ public class PersonRpcHandler extends DefaultRpcHandler {
         registerRpc("GetPeopleWithName", (params) -> processGetPeopleNameRpcRequest(params));
     }
 
-    public RpcMethodCallResult processUpdateNameRpcRequest(RpcParams params) {
+    public RpcFunctionResult processUpdateNameRpcRequest(RpcParams params) {
         updateName(
                 params.namedParams().get("Id").get().toString(), //how to report error when expected param missing or fail to cast to right type
                 params.namedParams().get("Name").get().toString()
         );
-        return new RpcMethodSuccess(); //how to control what viewport action to trigger?
+        return new RpcFunctionSuccess(); //how to control what viewport action to trigger?
     }
 
-    public RpcMethodCallResult processGetPeopleNameRpcRequest(RpcParams params) {
+    public RpcFunctionResult processGetPeopleNameRpcRequest(RpcParams params) {
         var people = getPeopleWithNameThatStartWith(
                 Arrays.stream(params.params()).findFirst().toString()
         );
-        return new RpcMethodSuccess(people); //need to return result
+        return new RpcFunctionSuccess(people); //need to return result
     }
 
     public String[] updateName(String id, String newName) {

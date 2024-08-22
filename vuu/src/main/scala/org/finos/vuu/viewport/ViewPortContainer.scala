@@ -16,7 +16,7 @@ import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.EmptyViewPortKeys
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcParams}
+import org.finos.vuu.net.rpc.{EditRpcHandler, RpcFunctionResult, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -77,6 +77,17 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     treeNodeStatesByVp.get(vpId)
   }
 
+  def handleRpcRequest(viewPortId: String, rpcName: String, params: Any) (ctx: RequestContext): RpcFunctionResult = {
+    val viewPort = this.getViewPortById(viewPortId)
+
+    if(viewPort == null)
+      throw new Exception(s"No viewport $viewPortId found for RPC Call for $rpcName")
+
+    val viewPortDef = viewPort.getStructure.viewPortDef
+
+    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(null, null, Some(params), Some(viewPort.getColumns), ctx))
+  }
+
   def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
 
@@ -84,7 +95,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"No viewport $vpId found for RPC Call for $method")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
-    viewPortDef.service.processViewPortRpcCall(method, new RpcParams(params, namedParams, Some(viewPort.getColumns), ctx))
+    viewPortDef.service.processViewPortRpcCall(method, new RpcParams(params, namedParams, None, Some(viewPort.getColumns), ctx))
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
