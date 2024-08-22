@@ -20,6 +20,31 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
   private val moduleName = "TEST"
 
   Feature("Server web socket api") {
+    Scenario("Type ahead request for a column using new request") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request typeahead for Account column")
+      val getTypeAheadRequest = createTypeAheadRequestNew(viewPortId, tableName, "Account")
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return top 10 unique values in that column")
+      val response = vuuClient.awaitForResponse(requestId)
+
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual "getUniqueFieldValues"
+    //  responseBody.result.isSuccess shouldBe true
+
+      //val result = responseBody.result.asInstanceOf[RpcSuccessResult]
+      responseBody.result.isSuccess shouldEqual true
+      responseBody.result.data shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
+
+//      val action = responseBody.action
+//      action shouldBe a[ShowNotificationAction]
+
+    }
+
     Scenario("Type ahead request for a column") {
 
       Given("a view port exist")
@@ -239,6 +264,18 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       ))
   }
 
+
+  private def createTypeAheadRequestNew(viewPortId: String, tableName: String, columnName: String): RpcRequest = {
+    RpcRequest(
+      RpcContext(viewPortId),
+      RpcNames.UniqueFieldValuesRpc,
+      params = Map(
+        "table" -> tableName,
+        "module" -> moduleName,
+        "column" -> columnName
+      ))
+  }
+
   private def createTypeAheadStartWithRequest(viewPortId: String, tableName: String, columnName: String, startString: String): ViewPortRpcCall = {
     ViewPortRpcCall(
       viewPortId,
@@ -251,7 +288,6 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
         "starts" -> startString
       ))
   }
-
 
   private def assertResponseReturns(response:ViewPortRpcResponse, expectedResult: Any) = {
     val action = response.action

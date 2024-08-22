@@ -28,12 +28,12 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
   override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
     val result = processRpcMethodHandler(methodName, rpcParams)
     result match {
-      case RpcMethodSuccess(result) =>
+      case RpcFunctionSuccess(result) =>
         result match {
           case Some(value) => DisplayResultAction(value)
           case None => ViewPortRpcSuccess()
         }
-      case _: RpcMethodFailure => ViewPortRpcFailure(s"Exception occurred calling rpc $methodName")
+      case _: RpcFunctionFailure => ViewPortRpcFailure(s"Exception occurred calling rpc $methodName")
     }
   }
 
@@ -43,9 +43,9 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val namedPars = rpc.namedParams
     val module = Option(msg).map(_.module).getOrElse("")
 
-    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, ctx)) match {
-      case result: RpcMethodSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
-      case error: RpcMethodFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
+    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, None, ctx)) match {
+      case result: RpcFunctionSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
+      case error: RpcFunctionFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
   }
 
@@ -57,10 +57,14 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
       } catch {
         case e: Exception =>
           logger.error(s"Error processing rpc method $methodName", e)
-          RpcMethodFailure(1, e.getMessage, e)
+          RpcFunctionFailure(1, e.getMessage, e)
       }
     } else {
-      new RpcMethodFailure(s"Could not find rpcMethodHandler $methodName")
+      new RpcFunctionFailure(s"Could not find rpcMethodHandler $methodName")
     }
   }
+
+  override def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult =
+    processRpcMethodHandler(rpcName, params)
+
 }

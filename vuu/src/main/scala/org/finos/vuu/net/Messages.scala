@@ -204,3 +204,32 @@ object UpdateType {
 @JsonDeserialize(using = classOf[RowUpdateDeserializer])
 case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
 
+/***
+ * New api for websocket messages - work in progress
+ */
+
+case class RpcRequest(context: RpcContext, rpcName: String, params: Any) extends MessageBody
+case class RpcContext(viewPortId: String)
+
+case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
+case class RpcResult(isSuccess: Boolean, data: Any, errorMessage: String)
+
+
+//trait RpcResult {
+//  val isSuccess: Boolean // todo use status enums? does that work with java
+//}
+//
+//case class RpcSuccessResult(data: Any) extends RpcResult {
+//   override val isSuccess: Boolean = true
+//}
+//case class RpcErrorResult(errorMessage: String) extends RpcResult {
+//  override val isSuccess: Boolean = false
+//}
+
+trait UIAction {
+  val actionType: String
+}
+
+case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction {
+  override val actionType: String = "SHOW_NOTIFICATION_ACTION"
+}

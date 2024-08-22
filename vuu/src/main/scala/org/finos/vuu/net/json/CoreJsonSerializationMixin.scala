@@ -80,5 +80,7 @@ import org.finos.vuu.net._
   new Type(value = classOf[ViewPortAddRowRpcCall], name = "VP_EDIT_ADD_ROW_RPC"),
   new Type(value = classOf[ViewPortEditRpcReject], name = "VP_EDIT_RPC_REJECT"),
   new Type(value = classOf[ViewPortEditRpcResponse], name = "VP_EDIT_RPC_RESPONSE"),
+  new Type(value = classOf[RpcRequest], name = "RPC_REQUEST"),
+  new Type(value = classOf[RpcResponseNew], name = "RPC_RESPONSE"),
 ))
 trait CoreJsonSerializationMixin {}

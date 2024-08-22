@@ -33,8 +33,8 @@ public class RpcMethodHandlerTest {
     }
 
     static class TestRpcService {
-        RpcMethodCallResult rpcFunction(RpcParams params) {
-            return new RpcMethodSuccess("It Works");
+        RpcFunctionResult rpcFunction(RpcParams params) {
+            return new RpcFunctionSuccess("It Works");
         }
     }
 }

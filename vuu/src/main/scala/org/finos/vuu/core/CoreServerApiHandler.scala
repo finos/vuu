@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net._
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 
@@ -93,7 +94,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: ViewPortEditSubmitFormRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcEditFormSubmit(msg.vpId,  ctx.session)) match {
+    Try(viewPortContainer.callRpcEditFormSubmit(msg.vpId, ctx.session)) match {
       case Success(action) =>
         logger.info("Processed VP Edit Submit From RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_SUBMIT_FORM_RPC", action))(ctx)
@@ -225,13 +226,13 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     else {
       val table = tableContainer.getTable(msg.table.table) //todo need to check module? what if modules with same table name
 
-      if(table == null)
+      if (table == null)
         errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}")(ctx)
-      else{
+      else {
 
         val viewPortDef = viewPortContainer.getViewPortDefinition(table)
         val columns = viewPortDef.columns.sortBy(_.index)
-        val columnNames =  columns.map(_.name)
+        val columnNames = columns.map(_.name)
         val dataTypes = columns.map(col => DataType.asString(col.dataType))
         vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
       }
@@ -290,11 +291,11 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   }
 
-  def validateColumns(table: RowSource, columns: Array[String]): Unit ={
+  def validateColumns(table: RowSource, columns: Array[String]): Unit = {
     val invalidColumns = columns
       .filter(!_.contains(":")) // remove calculated columns
-      .filter(name => ! table.asTable.getTableDef.columns.map(_.name).contains(name))
-    if(invalidColumns.nonEmpty){
+      .filter(name => !table.asTable.getTableDef.columns.map(_.name).contains(name))
+    if (invalidColumns.nonEmpty) {
       logger.error("Invalid columns specified in viewport request:" + invalidColumns.mkString(","))
       throw new Exception("Invalid columns specified in viewport request")
     }
@@ -330,7 +331,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
         val groupByColumns = msg.groupBy.filter(vpColumns.getColumnForName(_).get != null).flatMap(vpColumns.getColumnForName).toList
 
-        val aggs          = msg.aggregations.map(a => Aggregation(vpColumns.getColumnForName(a.column).get, a.aggType.toShort )).toList
+        val aggs = msg.aggregations.map(a => Aggregation(vpColumns.getColumnForName(a.column).get, a.aggType.toShort)).toList
 
         val groupBy = new GroupBy(groupByColumns, aggs)
 
@@ -407,5 +408,23 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: CloseTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     viewPortContainer.closeNode(msg.vpId, msg.treeKey)
     vsMsg(CloseTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
+  }
+
+
+  override def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    val response = Try(viewPortContainer.handleRpcRequest(msg.context.viewPortId, msg.rpcName, msg.params)(ctx)) match {
+      case Success(functionResult) =>
+        logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
+        functionResult match {
+          case RpcFunctionSuccess(data) =>
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult(true, data, null), null)
+          case RpcFunctionFailure(_, error, exception) =>
+            RpcResponseNew(rpcName = msg.rpcName, RpcResult(false, null, errorMessage = error), null)
+        }
+      case Failure(e) =>
+        logger.info(s"Failed to process VP RPC call ${ctx.requestId}", e)
+        RpcResponseNew(rpcName = msg.rpcName, RpcResult(false, null, errorMessage = e.getMessage), null)
+    }
+    vsMsg(response)(ctx)
   }
 }

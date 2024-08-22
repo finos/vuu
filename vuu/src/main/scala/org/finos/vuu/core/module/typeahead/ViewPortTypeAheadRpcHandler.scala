@@ -2,16 +2,31 @@ package org.finos.vuu.core.module.typeahead
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcMethodCallResult, RpcMethodSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.{RequestContext, RpcNames}
 import org.finos.vuu.viewport.ViewPortColumns
 
 class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
-  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
+  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequestNew(params))
   this.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
 
-  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcMethodCallResult = {
+
+  def processGetUniqueFieldValuesRequestNew(params: RpcParams): RpcFunctionResult = {
+
+    val inputParam =  params.data.get.asInstanceOf[Map[String, Any]]
+
+    val values = getUniqueFieldValues(
+      inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
+      inputParam("module").toString,
+      inputParam("column").toString,
+      params.viewPortColumns.get,
+      null //todo what to do about request context
+    )
+    new RpcFunctionSuccess(values)
+  }
+
+  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
     val values = getUniqueFieldValues(
       params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
       params.namedParams("module").toString,
@@ -19,10 +34,10 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
       params.viewPortColumns.get,
       null //todo what to do about request context
     )
-    new RpcMethodSuccess(values)
+    new RpcFunctionSuccess(values)
   }
 
-  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcMethodCallResult = {
+  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
     val values = getUniqueFieldValuesStartingWith(
       params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
       params.namedParams("module").toString,
@@ -31,7 +46,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
       params.viewPortColumns.get,
       null //todo what to do about request context
     )
-    new RpcMethodSuccess(values) //how to control what viewport action to trigger?
+    new RpcFunctionSuccess(values) //how to control what viewport action to trigger?
   }
 
   def getUniqueFieldValues(tableName: String, moduleName: String, column: String, viewPortColumns: ViewPortColumns, ctx: RequestContext): Array[String] = {
