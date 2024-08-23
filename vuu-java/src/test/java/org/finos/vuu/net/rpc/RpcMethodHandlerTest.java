@@ -12,7 +12,6 @@ import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static test.helper.ViewPortTestUtils.createRandomViewServerMessage;
 
 public class RpcMethodHandlerTest {

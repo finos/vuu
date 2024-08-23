@@ -89,10 +89,14 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
 
   protected def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
     response.isDefined shouldBe true
-    assert(response.get.body.isInstanceOf[BodyType])
-    val responseBody = response.get.body.asInstanceOf[BodyType]
-    responseBody
+    assertAndCastAsInstanceOf(response.get.body)
   }
+
+  def assertAndCastAsInstanceOf[T](data: Any): T = {
+    assert(data.isInstanceOf[T])
+    data.asInstanceOf[T]
+  }
+
 
 }
 

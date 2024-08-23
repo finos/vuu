@@ -17,8 +17,8 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
   private val moduleName = "TEST"
 
-  Feature("Server web socket api") {
-    Scenario("client requests to get table metadata for a table") {
+  Feature("[Web Socket API] Get table metadata") {
+    Scenario("For a table") {
 
       val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaTest", moduleName)))
 
@@ -30,7 +30,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       responseBody.columns shouldEqual Array("Id", "Account")
     }
 
-    Scenario("client requests to get table metadata for a table with no view port def defined") {
+    Scenario("For a table with no view port def defined") {
 
       val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("TableMetaDefaultVPTest", moduleName)))
 
@@ -42,7 +42,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       responseBody.columns shouldEqual Array("Id")
     }
 
-    Scenario("client requests to get table metadata for a non existent") {
+    Scenario("For a non existent table") {
 
       val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable("DoesNotExist", moduleName)))
 
@@ -53,7 +53,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       responseBody.msg shouldEqual "No such table found with name DoesNotExist in module " + moduleName
     }
 
-    Scenario("client requests to get table metadata for null table name") {
+    Scenario("For null table name") {
 
       val requestId = vuuClient.send(sessionId, tokenId, GetTableMetaRequest(ViewPortTable(null, moduleName)))
 
