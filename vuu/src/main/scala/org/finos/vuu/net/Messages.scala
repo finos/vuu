@@ -1,6 +1,7 @@
 package org.finos.vuu.net
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
 import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
@@ -226,10 +227,12 @@ case class RpcResult(isSuccess: Boolean, data: Any, errorMessage: String)
 //  override val isSuccess: Boolean = false
 //}
 
-trait UIAction {
-  val actionType: String
-}
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(Array(
+  new Type(value = classOf[NoAction], name = "NO_ACTION"),
+  new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION"),
+))
+trait UIAction
 
-case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction {
-  override val actionType: String = "SHOW_NOTIFICATION_ACTION"
-}
+case class NoAction() extends UIAction
+case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction

@@ -8,11 +8,10 @@ import org.finos.vuu.viewport.ViewPortColumns
 
 class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
-  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequestNew(params))
+  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
   this.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
 
-
-  def processGetUniqueFieldValuesRequestNew(params: RpcParams): RpcFunctionResult = {
+  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
 
     val inputParam =  params.data.get.asInstanceOf[Map[String, Any]]
 
@@ -26,23 +25,15 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
     new RpcFunctionSuccess(values)
   }
 
-  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
-    val values = getUniqueFieldValues(
-      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
-      params.namedParams("module").toString,
-      params.namedParams("column").toString,
-      params.viewPortColumns.get,
-      null //todo what to do about request context
-    )
-    new RpcFunctionSuccess(values)
-  }
-
   def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
+
+    val inputParam =  params.data.get.asInstanceOf[Map[String, Any]]
+
     val values = getUniqueFieldValuesStartingWith(
-      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
-      params.namedParams("module").toString,
-      params.namedParams("column").toString,
-      params.namedParams("starts").toString,
+      inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
+      inputParam("module").toString,
+      inputParam("column").toString,
+      inputParam("starts").toString,
       params.viewPortColumns.get,
       null //todo what to do about request context
     )

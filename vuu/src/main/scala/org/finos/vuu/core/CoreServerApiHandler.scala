@@ -417,14 +417,21 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
         functionResult match {
           case RpcFunctionSuccess(data) =>
-            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult(true, data, null), null)
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult(isSuccess = true, data, null), null)
           case RpcFunctionFailure(_, error, exception) =>
-            RpcResponseNew(rpcName = msg.rpcName, RpcResult(false, null, errorMessage = error), null)
+            createErrorRpcResponse(msg, error)
         }
       case Failure(e) =>
         logger.info(s"Failed to process VP RPC call ${ctx.requestId}", e)
-        RpcResponseNew(rpcName = msg.rpcName, RpcResult(false, null, errorMessage = e.getMessage), null)
+        createErrorRpcResponse(msg, e.getMessage)
     }
     vsMsg(response)(ctx)
+  }
+
+  private def createErrorRpcResponse(msg: RpcRequest, errorMessage: String) = {
+    RpcResponseNew(
+      rpcName = msg.rpcName,
+      result = RpcResult(isSuccess = false, null, errorMessage = errorMessage),
+      action = ShowNotificationAction("Error", s"Failed to process ${msg.rpcName} request", errorMessage))
   }
 }
