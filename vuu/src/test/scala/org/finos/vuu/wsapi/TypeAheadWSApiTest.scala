@@ -37,6 +37,9 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       responseBody.result.isSuccess shouldEqual true
       responseBody.result.data shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
+
+      And("return No Action")
+      responseBody.action shouldBe a[NoneAction]
     }
 
     Scenario("Start with a specified string for a column") {

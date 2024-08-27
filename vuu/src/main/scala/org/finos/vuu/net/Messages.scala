@@ -115,6 +115,7 @@ case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) ex
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 
 case class ViewPortRpcCall(vpId: String, rpcName: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
+
 case class ViewPortRpcResponse(vpId: String, method: String, action: ViewPortAction) extends MessageBody
 
 
@@ -131,19 +132,23 @@ case class ViewPortMenuRpcResponse(vpId: String, rpcName: String, action: ViewPo
 case class ViewPortMenuRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
 case class ViewPortEditRowRpcCall(vpId: String, rowKey: String, data: Map[String, Object]) extends MessageBody
+
 case class ViewPortEditCellRpcCall(vpId: String, rowKey: String, field: String, value: Object) extends MessageBody
+
 case class ViewPortEditSubmitFormRpcCall(vpId: String) extends MessageBody
 
 case class ViewPortEditCloseFormRpcCall(vpId: String, field: String, value: Object) extends MessageBody
+
 case class ViewPortAddRowRpcCall(vpId: String, rowKey: String, data: Map[String, Any]) extends MessageBody
-case class ViewPortDeleteCellRpcCall(vpId: String, rowKey: String, field: String) extends MessageBody{}
+
+case class ViewPortDeleteCellRpcCall(vpId: String, rowKey: String, field: String) extends MessageBody {}
+
 case class ViewPortDeleteRowRpcCall(vpId: String, rowKey: String) extends MessageBody
 
 
 case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
 
 case class ViewPortEditRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
-
 
 
 case class CloseTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
@@ -212,27 +217,52 @@ case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowInde
 case class RpcRequest(context: RpcContext, rpcName: String, params: Any) extends MessageBody
 case class RpcContext(viewPortId: String)
 
+//case class RpcContext(viewPortId: String, rowKey: String)
+//object RpcContext {
+//  def forViewPort(viewPortId: String) = RpcContext(viewPortId)
+//  def forViewPortRow(viewPortId: String, rowKey: String) = RpcContext(viewPortId)
+//}
+//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+//@JsonSubTypes(Array(
+//  new Type(value = classOf[GlobalContext], name = "GLOBAL_CONTEXT"),
+//  new Type(value = classOf[ViewPortContext], name = "VIEWPORT_CONTEXT"),
+//  new Type(value = classOf[ViewPortRowContext], name = "VIEWPORT_ROW_CONTEXT"),
+//))
+//trait RpcContext
+//case class GlobalContext() extends RpcContext
+//case class ViewPortContext(viewPortId: String) extends RpcContext
+//case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
+
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
 case class RpcResult(isSuccess: Boolean, data: Any, errorMessage: String)
 
+object RpcResult {
+  def fromError(errorMessage: String): RpcResult = RpcResult(isSuccess = false, data = null, errorMessage = errorMessage)
+  def fromSuccess(data: Any): RpcResult = RpcResult(isSuccess = true, data = data, errorMessage = null)
+}
 
-//trait RpcResult {
-//  val isSuccess: Boolean // todo use status enums? does that work with java
-//}
-//
-//case class RpcSuccessResult(data: Any) extends RpcResult {
-//   override val isSuccess: Boolean = true
-//}
-//case class RpcErrorResult(errorMessage: String) extends RpcResult {
-//  override val isSuccess: Boolean = false
-//}
+//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+//@JsonSubTypes(Array(
+//  new Type(value = classOf[RpcSuccessResult], name = "SUCCESS_RESULT"),
+//  new Type(value = classOf[RpcErrorResult], name = "ERROR_RESULT"),
+//))
+//trait RpcResult
+//case class RpcSuccessResult(data: Any) extends RpcResult
+//case class RpcErrorResult(errorMessage: String) extends RpcResult
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(
-  new Type(value = classOf[NoAction], name = "NO_ACTION"),
+  new Type(value = classOf[NoneAction], name = "NO_ACTION"),
   new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION"),
 ))
 trait UIAction
 
-case class NoAction() extends UIAction
+case class NoneAction() extends UIAction
+
 case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction
+
+object NotificationType {
+  final val Error = "Error"
+  final val Warning = "Warning"
+  final val Info = "Info"
+}
