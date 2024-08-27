@@ -1,4 +1,5 @@
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -8,7 +9,6 @@ import { Table } from "../Table";
 import { BulkEditRow, type EditValueChangeHandler } from "./BulkEditRow";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 const classBase = "vuuBulkEditPanel";
 

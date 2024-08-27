@@ -167,6 +167,7 @@ export const useVuuMenuActions = ({
 
   const showBulkEditDialog = useCallback(
     (table: VuuTable) => {
+      // NO send BULK_EDIT_BEGIN
       const sessionDs = dataSource.createSessionDataSource?.(table);
       const handleSubmit = () => {
         sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));

@@ -350,7 +350,7 @@ export type DataSourceEvents = {
  * return Promise<errorMessage> indicates failure
  */
 export type DataSourceEditHandler = (
-  row: DataSourceRow,
+  rowKey: string,
   columnName: string,
   value: VuuRowDataItemType,
 ) => Promise<true | string>;

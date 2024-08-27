@@ -7,19 +7,14 @@ import {
   DataSourceRow,
   DataSourceStatus,
   DataSourceSubscribedMessage,
-  MenuRpcResponse,
   Selection,
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
 import type {
-  VuuRpcEditRequest,
-  VuuRpcMenuRequest,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuGroupBy,
@@ -243,9 +238,7 @@ export class ArrayDataSource
         size: this.#data.length,
       });
       if (range) {
-        // set range and trigger dispatch of initial rows
         this.range = range;
-        this.sendRowsToClient();
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
       }
@@ -739,11 +732,11 @@ export class ArrayDataSource
   }
 
   applyEdit(
-    row: DataSourceRow,
+    rowKey: string,
     columnName: string,
     value: VuuRowDataItemType,
   ): Promise<true> {
-    console.log(`ArrayDataSource applyEdit ${row[0]} ${columnName} ${value}`);
+    console.log(`ArrayDataSource applyEdit ${rowKey} ${columnName} ${value}`);
     return Promise.resolve(true);
   }
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {

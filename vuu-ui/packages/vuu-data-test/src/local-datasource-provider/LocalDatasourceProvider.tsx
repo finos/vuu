@@ -37,11 +37,11 @@ const serverAPI: ServerAPI = {
 const getServerAPI = async () => serverAPI;
 
 class VuuDataSource {
-  constructor({ table }: DataSourceConstructorProps) {
+  constructor({ table, viewport }: DataSourceConstructorProps) {
     if (isSimulTable(table)) {
-      return simulModule.createDataSource(table.table);
+      return simulModule.createDataSource(table.table, viewport);
     } else if (isBasketTable(table)) {
-      return basketModule.createDataSource(table.table);
+      return basketModule.createDataSource(table.table, viewport);
     } else {
       throw Error(`unsupported module/table ${table.module}/${table.table}`);
     }
