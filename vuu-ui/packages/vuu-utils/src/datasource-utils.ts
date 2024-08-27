@@ -2,13 +2,11 @@ import {
   ConnectionQualityMetrics,
   ConnectionStatusMessage,
   DataSourceConfig,
-  MenuRpcResponse,
   RpcResponse,
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
   VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
   VuuUIMessageInTableMeta,
   VuuUIMessageOutViewport,
   WithFilter,
@@ -48,33 +46,33 @@ export type MaybeDataSourceConfigChanges = DataSourceConfigChanges & {
 
 type DataConfigPredicate = (
   config: DataSourceConfig,
-  newConfig: DataSourceConfig
+  newConfig: DataSourceConfig,
 ) => boolean;
 
 const equivalentAggregations: DataConfigPredicate = (
   { aggregations: agg1 },
-  { aggregations: agg2 }
+  { aggregations: agg2 },
 ) =>
   (agg1 === undefined && agg2?.length === 0) ||
   (agg2 === undefined && agg1?.length === 0);
 
 const equivalentColumns: DataConfigPredicate = (
   { columns: cols1 },
-  { columns: cols2 }
+  { columns: cols2 },
 ) =>
   (cols1 === undefined && cols2?.length === 0) ||
   (cols2 === undefined && cols1?.length === 0);
 
 const equivalentFilter: DataConfigPredicate = (
   { filterSpec: f1 },
-  { filterSpec: f2 }
+  { filterSpec: f2 },
 ) =>
   (f1 === undefined && f2?.filter === "") ||
   (f2 === undefined && f1?.filter === "");
 
 const equivalentGroupBy: DataConfigPredicate = (
   { groupBy: val1 },
-  { groupBy: val2 }
+  { groupBy: val2 },
 ) =>
   (val1 === undefined && val2?.length === 0) ||
   (val2 === undefined && val1?.length === 0);
@@ -105,7 +103,7 @@ const isAggregationsChanged: DataConfigPredicate = (config, newConfig) => {
   }
   return agg1.some(
     ({ column, aggType }, i) =>
-      column !== agg2[i].column || aggType !== agg2[i].aggType
+      column !== agg2[i].column || aggType !== agg2[i].aggType,
   );
 };
 
@@ -156,7 +154,7 @@ const isSortChanged: DataConfigPredicate = (config, newConfig) => {
   }
   return s1.sortDefs.some(
     ({ column, sortType }, i) =>
-      column !== s2.sortDefs[i].column || sortType !== s2.sortDefs[i].sortType
+      column !== s2.sortDefs[i].column || sortType !== s2.sortDefs[i].sortType,
   );
 };
 
@@ -177,7 +175,7 @@ export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {
 
 export const isConfigChanged = (
   config: DataSourceConfig | undefined,
-  newConfig: DataSourceConfig | undefined
+  newConfig: DataSourceConfig | undefined,
 ): MaybeDataSourceConfigChanges => {
   if (exactlyTheSame(config, newConfig)) {
     return NO_CONFIG_CHANGES;
@@ -232,22 +230,22 @@ export const hasSort = (config?: DataSourceConfig): config is WithSort =>
   config.sort.sortDefs.length > 0;
 
 export const isTypeaheadSuggestionProvider = (
-  source: unknown
+  source: unknown,
 ): source is TypeaheadSuggestionProvider =>
   typeof (source as TypeaheadSuggestionProvider)["getTypeaheadSuggestions"] ===
   "function";
 
 export const isTableSchemaMessage = (
-  message: VuuUIMessageIn
+  message: VuuUIMessageIn,
 ): message is VuuUIMessageInTableMeta => message.type === "TABLE_META_RESP";
 
 export const isConnectionStatusMessage = (
-  msg: object | ConnectionStatusMessage
+  msg: object | ConnectionStatusMessage,
 ): msg is ConnectionStatusMessage =>
   (msg as ConnectionStatusMessage).type === "connection-status";
 
 export const isConnectionQualityMetrics = (
-  msg: object
+  msg: object,
 ): msg is ConnectionQualityMetrics =>
   (msg as ConnectionQualityMetrics).type === "connection-metrics";
 
@@ -255,21 +253,16 @@ export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
 
 export const isErrorResponse = (
-  response?: Partial<RpcResponse>
+  response?: Partial<RpcResponse>,
 ): response is VuuUIMessageInRPCEditReject =>
   response?.type === "VP_EDIT_RPC_REJECT";
 
-export const hasAction = (
-  response?: Partial<RpcResponse>
-): response is MenuRpcResponse | VuuUIMessageInRPCEditResponse =>
-  response != undefined && "action" in response;
-
 export const isViewportMessage = (
-  msg: object
+  msg: object,
 ): msg is VuuUIMessageOutViewport => "viewport" in msg;
 
 export const withConfigDefaults = (
-  config: DataSourceConfig
+  config: DataSourceConfig,
 ): WithFullConfig & { visualLink?: LinkDescriptorWithLabel } => {
   if (
     config.aggregations &&

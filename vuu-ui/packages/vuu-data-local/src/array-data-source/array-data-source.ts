@@ -18,8 +18,8 @@ import {
 } from "@finos/vuu-data-types";
 import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
 import type {
-  ClientToServerEditRpc,
-  ClientToServerMenuRPC,
+  VuuRpcEditRequest,
+  VuuRpcMenuRequest,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuGroupBy,
@@ -27,6 +27,8 @@ import type {
   VuuRange,
   VuuRowDataItemType,
   VuuSort,
+  VuuRpcResponse,
+  VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
@@ -51,6 +53,7 @@ import {
   withConfigDefaults,
   DataSourceConfigChanges,
   selectionCount,
+  isEditCellRequest,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -81,7 +84,7 @@ const toDataSourceRow =
 
 const buildTableSchema = (
   columns: ColumnDescriptor[],
-  keyColumn?: string
+  keyColumn?: string,
 ): TableSchema => {
   const schema: TableSchema = {
     columns: columns.map(({ name, serverDataType = "string" }) => ({
@@ -152,7 +155,7 @@ export class ArrayDataSource
 
     if (!data || !columnDescriptors) {
       throw Error(
-        "ArrayDataSource constructor called without data or without columnDescriptors"
+        "ArrayDataSource constructor called without data or without columnDescriptors",
       );
     }
 
@@ -194,7 +197,7 @@ export class ArrayDataSource
       groupBy,
       filterSpec,
     }: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) {
     this.clientCallback = callback;
     this.viewport = viewport;
@@ -294,7 +297,7 @@ export class ArrayDataSource
       this.#config.groupBy,
       this.#columnMap,
       this.groupMap as GroupMap,
-      this.processedData as DataSourceRow[]
+      this.processedData as DataSourceRow[],
     );
     this.setRange(resetRange(this.#range), true);
   }
@@ -376,7 +379,7 @@ export class ArrayDataSource
           processedData = sortRows(
             processedData ?? this.#data,
             config.sort,
-            this.#columnMap
+            this.#columnMap,
           );
         }
 
@@ -399,7 +402,7 @@ export class ArrayDataSource
           const [groupedData, groupMap] = groupRows(
             processedData ?? this.#data,
             config.groupBy,
-            this.#columnMap
+            this.#columnMap,
           );
           this.groupMap = groupMap;
           processedData = groupedData;
@@ -411,7 +414,7 @@ export class ArrayDataSource
               this.#config.groupBy,
               this.#columnMap,
               this.groupMap as GroupMap,
-              processedData as DataSourceRow[]
+              processedData as DataSourceRow[],
             );
           }
         }
@@ -433,7 +436,7 @@ export class ArrayDataSource
   applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
       this.#config,
-      config
+      config,
     );
 
     if (noChanges !== true) {
@@ -494,7 +497,7 @@ export class ArrayDataSource
   private validateDataValue(columnName: string, value: VuuRowDataItemType) {
     console.log(`validate data value ${columnName} ${value}`);
     const columnDescriptor = this.columnDescriptors.find(
-      (col) => col.name === columnName
+      (col) => col.name === columnName,
     );
     if (columnDescriptor) {
       switch (columnDescriptor.serverDataType) {
@@ -522,7 +525,7 @@ export class ArrayDataSource
   protected updateDataItem = (
     keyValue: string,
     columnName: string,
-    value: VuuRowDataItemType
+    value: VuuRowDataItemType,
   ) => {
     this.validateDataValue(columnName, value);
     // TODO take sorting, filtering. grouping into account
@@ -592,7 +595,7 @@ export class ArrayDataSource
       const rowsWithinViewport = data
         .slice(rowRange.from, rowRange.to)
         .map((row) =>
-          toClientRow(row, this.#keys, this.selectedRows, this.dataIndices)
+          toClientRow(row, this.#keys, this.selectedRows, this.dataIndices),
         );
 
       this.clientCallback?.({
@@ -606,7 +609,7 @@ export class ArrayDataSource
         from: this.#range.from,
         to: Math.min(
           this.#range.to,
-          this.#range.from + rowsWithinViewport.length
+          this.#range.from + rowsWithinViewport.length,
         ),
       };
     }
@@ -622,7 +625,7 @@ export class ArrayDataSource
       const columnsWithoutDescriptors = getMissingItems(
         this.columnDescriptors,
         addedColumns,
-        (col) => col.name
+        (col) => col.name,
       );
       console.log(`columnsWithoutDescriptors`, {
         columnsWithoutDescriptors,
@@ -656,7 +659,7 @@ export class ArrayDataSource
       this.#config.groupBy,
       leafData,
       this.#columnMap,
-      this.groupMap as GroupMap
+      this.groupMap as GroupMap,
     );
     this.setRange(resetRange(this.#range), true);
 
@@ -738,38 +741,41 @@ export class ArrayDataSource
   applyEdit(
     row: DataSourceRow,
     columnName: string,
-    value: VuuRowDataItemType
+    value: VuuRowDataItemType,
   ): Promise<true> {
     console.log(`ArrayDataSource applyEdit ${row[0]} ${columnName} ${value}`);
     return Promise.resolve(true);
   }
+  async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
+    return Promise.reject<T>();
+  }
 
   async menuRpcCall(
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ): Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  > {
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+  ): Promise<VuuRpcResponse> {
     return new Promise((resolve) => {
-      const { type } = rpcRequest;
-      switch (type) {
-        case "VP_EDIT_CELL_RPC":
-          {
-            // TODO
-            const { rowKey, field, value } = rpcRequest;
-            try {
-              this.updateDataItem(rowKey, field, value);
-              resolve(undefined);
-            } catch (error) {
-              resolve({ error: String(error), type: "VP_EDIT_RPC_REJECT" });
-            }
-          }
-
-          break;
-        default:
-          resolve(undefined);
+      if (isEditCellRequest(rpcRequest)) {
+        const { rowKey, field, value } = rpcRequest;
+        try {
+          this.updateDataItem(rowKey, field, value);
+          resolve({
+            action: {
+              type: "VP_EDIT_SUCCESS",
+            },
+            rpcName: "VP_EDIT_CELL_RPC",
+            type: "VIEW_PORT_MENU_RESP",
+            vpId: this.viewport,
+          });
+        } catch (error) {
+          resolve({
+            error: String(error),
+            rpcName: "VP_EDIT_CELL_RPC",
+            type: "VIEW_PORT_MENU_REJ",
+            vpId: this.viewport,
+          });
+        }
+      } else {
+        throw Error("menuRpcCall invalid rpcRequest");
       }
     });
   }

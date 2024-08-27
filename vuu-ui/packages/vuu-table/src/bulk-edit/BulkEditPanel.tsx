@@ -8,6 +8,7 @@ import { Table } from "../Table";
 import { BulkEditRow, type EditValueChangeHandler } from "./BulkEditRow";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 const classBase = "vuuBulkEditPanel";
 
@@ -36,7 +37,7 @@ export const BulkEditPanel = ({
         params: [],
         rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
         type: "VIEW_PORT_RPC_CALL",
-      });
+      } as Omit<VuuRpcViewportRequest, "vpId">);
     };
     return <BulkEditRow onChange={onChange} />;
   }, [dataSource]);

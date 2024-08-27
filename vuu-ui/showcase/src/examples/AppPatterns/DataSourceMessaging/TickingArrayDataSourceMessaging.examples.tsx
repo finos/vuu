@@ -17,7 +17,7 @@ export const SyncedSelection = () => {
     const ds1 = vuuModule<SimulTableName>("SIMUL").createDataSource(tableName);
     const ds2 = vuuModule<SimulTableName>("SIMUL").createDataSource(tableName);
 
-    ds2.sendBroadcastMessage({
+    ds2.sendBroadcastMessage?.({
       sourceId: ds2.viewport,
       type: "subscribe-link-select",
       targetId: ds1.viewport,
@@ -47,7 +47,7 @@ export const SyncedFilter = () => {
     const ds1 = vuuModule<SimulTableName>("SIMUL").createDataSource(tableName);
     const ds2 = vuuModule<SimulTableName>("SIMUL").createDataSource(tableName);
 
-    ds2.sendBroadcastMessage({
+    ds2.sendBroadcastMessage?.({
       sourceId: ds2.viewport,
       type: "subscribe-link-filter",
       targetId: ds1.viewport,

@@ -4,8 +4,8 @@
  * All messages, in both directions (client to server and server to client) carry
  * a set of common properties. All variation is found within the message.body.
  */
-export interface VuuClientToServerMessage<
-  TBody extends ClientToServerBody = ClientToServerBody
+export interface VuuClientMessage<
+  TBody extends ClientMessageBody = ClientMessageBody,
 > {
   body: TBody;
   module: string;
@@ -15,8 +15,8 @@ export interface VuuClientToServerMessage<
   user: string;
 }
 
-export interface VuuServerToClientMessage<
-  TBody extends ServerToClientBody = ServerToClientBody
+export interface VuuServerMessage<
+  TBody extends ServerMessageBody = ServerMessageBody,
 > {
   body: TBody;
   module: string;
@@ -40,44 +40,44 @@ export interface VuuServerToClientMessage<
  * account existing active subscriptions within the users session
  * and can therefore change from one call to another.
  */
-export interface ClientToServerTableList {
+export interface VuuTableListRequest {
   type: "GET_TABLE_LIST";
 }
 
-export interface ServerToClientTableList {
+export interface VuuTableListResponse {
   type: "TABLE_LIST_RESP";
   tables: VuuTable[];
 }
 
-export interface ClientToServerTableMeta {
+export interface VuuTableMetaRequest {
   type: "GET_TABLE_META";
   table: VuuTable;
 }
 
-export interface ServerToClientTableMeta {
+export interface VuuTableMetaResponse {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
   key: string;
   table: VuuTable;
   type: "TABLE_META_RESP";
 }
-export interface ClientToServerMenus {
+export interface VuuViewportMenusRequest {
   type: "GET_VIEW_PORT_MENUS";
   vpId: string;
 }
 
-export interface ServerToClientMenus {
+export interface VuuViewportMenusResponse {
   type: "VIEW_PORT_MENUS_RESP";
   menu: VuuMenu;
   vpId: string;
 }
 
-export interface ClientToServerVisualLinks {
+export interface VuuViewportVisualLinksRequest {
   type: "GET_VP_VISUAL_LINKS";
   vpId: string;
 }
 
-export interface ServerToClientViewPortVisualLinks {
+export interface VuuViewportVisualLinksResponse {
   type: "VP_VISUAL_LINKS_RESP";
   links: VuuLinkDescriptor[];
   vpId: string;
@@ -87,7 +87,18 @@ export interface ServerToClientViewPortVisualLinks {
  * Viewport manipulation messages
  *
  */
-export interface ServerToClientCreateViewPortSuccess {
+
+export interface VuuViewportCreateRequest {
+  columns: VuuColumns;
+  filterSpec: VuuFilter;
+  groupBy: string[];
+  type: "CREATE_VP";
+  range: VuuRange;
+  sort: VuuSort;
+  table: VuuTable;
+}
+
+export interface VuuViewportCreateResponse {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: VuuFilter;
@@ -98,7 +109,17 @@ export interface ServerToClientCreateViewPortSuccess {
   table: string;
   viewPortId: string;
 }
-export interface ServerToClientChangeViewPortSuccess {
+export interface VuuViewportChangeRequest {
+  aggregations: VuuAggregation[];
+  columns: VuuColumns;
+  filterSpec: VuuFilter;
+  groupBy: string[];
+  sort: VuuSort;
+  type: "CHANGE_VP";
+  viewPortId: string;
+}
+
+export interface VuuViewportChangeResponse {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: VuuFilter;
@@ -108,7 +129,7 @@ export interface ServerToClientChangeViewPortSuccess {
   viewPortId: string;
 }
 
-export interface ServerToClientChangeViewPortRangeSuccess {
+export interface VuuViewportRangeRequest {
   type: "CHANGE_VP_RANGE_SUCCESS";
   viewPortId: string;
   from: number;
@@ -131,18 +152,6 @@ export interface ServerToClientSelectSuccess {
   vpId: string;
 }
 
-export interface ServerToClientEditRPC {
-  action: unknown;
-  type: "VP_EDIT_RPC_RESPONSE";
-  rpcName: string;
-  vpId: string;
-}
-export interface ServerToClientEditRPCRejected {
-  error: string;
-  rpcName: string;
-  type: "VP_EDIT_RPC_REJECT";
-  vpId: string;
-}
 export interface ServerToClientOpenTreeNodeSuccess {
   type: "OPEN_TREE_SUCCESS";
 }
@@ -171,34 +180,34 @@ export interface ServerToClientTableRows {
   timeStamp: number;
   type: "TABLE_ROW";
 }
-export declare type ServerToClientBody =
+export declare type ServerMessageBody =
   | ServerToClientHeartBeat
   | ServerToClientLoginSuccess
-  | ServerToClientCreateViewPortSuccess
-  | ServerToClientChangeViewPortSuccess
-  | ServerToClientChangeViewPortRangeSuccess
+  | VuuViewportCreateResponse
+  | VuuViewportChangeResponse
+  | VuuViewportRangeRequest
   | ServerToClientDisableViewPortSuccess
   | ServerToClientEnableViewPortSuccess
   | ServerToClientRemoveViewPortSuccess
   | ServerToClientSelectSuccess
-  | ServerToClientTableMeta
-  | ServerToClientTableList
+  | VuuTableMetaResponse
+  | VuuTableListResponse
   | ServerToClientTableRows
-  | ServerToClientMenus
-  | ServerToClientMenuResponse
-  | ServerToClientMenuReject
+  | VuuViewportMenusResponse
+  | VuuRpcMenuSuccess
+  | VuuRpcMenuError
   | ServerToClientMenuSessionTableAction
-  | ServerToClientRPC
-  | ServerToClientViewportRpcResponse
-  | ServerToClientViewPortVisualLinks
+  | VuuRpcServiceResponse
+  | VuuRpcViewportResponse
+  | VuuViewportVisualLinksResponse
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
   | ServerToClientCreateLinkSuccess
   | ServerToClientRemoveLinkSuccess
   | ServerToClientError
-  | ServerToClientEditRPC
-  | ServerToClientEditRPC
-  | ServerToClientEditRPCRejected;
+  | VuuRpcEditSuccess
+  | VuuRpcEditSuccess
+  | VuuRpcEditError;
 export interface ClientToServerAuth {
   type: "AUTH";
   username: string;
@@ -219,24 +228,6 @@ export interface ClientToServerDisable {
 }
 export interface ClientToServerEnable {
   type: "ENABLE_VP";
-  viewPortId: string;
-}
-export interface ClientToServerCreateViewPort {
-  columns: VuuColumns;
-  filterSpec: VuuFilter;
-  groupBy: string[];
-  type: "CREATE_VP";
-  range: VuuRange;
-  sort: VuuSort;
-  table: VuuTable;
-}
-export interface ClientToServerChangeViewPort {
-  aggregations: VuuAggregation[];
-  columns: VuuColumns;
-  filterSpec: VuuFilter;
-  groupBy: string[];
-  sort: VuuSort;
-  type: "CHANGE_VP";
   viewPortId: string;
 }
 export interface ClientToServerRemoveViewPort {
@@ -287,40 +278,7 @@ export declare type TypeAheadMethod =
 
 export declare type RpcMethod = TypeAheadMethod | "addRowsFromInstruments";
 
-export interface ClientToServerEditCellRpc {
-  rowKey: string;
-  type: "VP_EDIT_CELL_RPC";
-  field: string;
-  value: VuuRowDataItemType;
-}
-export interface ClientToServerEditRowRpc {
-  rowKey: string;
-  type: "VP_EDIT_ROW_RPC";
-  row: VuuDataRow;
-}
-
-export type VuuDataRowDto = { [key: string]: VuuRowDataItemType };
-export interface ClientToServerAddRowRpc {
-  rowKey: string;
-  type: "VP_EDIT_ADD_ROW_RPC";
-  data: VuuDataRowDto;
-}
-export interface ClientToServerDeleteRowRpc {
-  rowKey: string;
-  type: "VP_EDIT_DELETE_ROW_RPC";
-}
-export interface ClientToServerSubmitFormRpc {
-  type: "VP_EDIT_SUBMIT_FORM_RPC";
-}
-
-export type ClientToServerEditRpc =
-  | ClientToServerEditCellRpc
-  | ClientToServerAddRowRpc
-  | ClientToServerDeleteRowRpc
-  | ClientToServerEditRowRpc
-  | ClientToServerSubmitFormRpc;
-
-export type ClientToServerMenuRPCType =
+export declare type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENUS_SELECT_RPC"
   | "VIEW_PORT_MENU_TABLE_RPC"
   | "VIEW_PORT_MENU_ROW_RPC"
@@ -328,30 +286,30 @@ export type ClientToServerMenuRPCType =
 
 export declare type VuuRpcMessagesOut =
   | ClientToServerMenuSelectRPC
-  | ClientToServerEditCellRpc;
+  | VuuRpcEditCellRequest;
 
-export declare type ClientToServerBody =
+export declare type ClientMessageBody =
   | ClientToServerAuth
   | ClientToServerLogin
   | ClientToServerHeartBeat
   | ClientToServerDisable
   | ClientToServerEnable
-  | ClientToServerTableList
-  | ClientToServerTableMeta
-  | ClientToServerCreateViewPort
-  | ClientToServerChangeViewPort
+  | VuuTableListRequest
+  | VuuTableMetaRequest
+  | VuuViewportCreateRequest
+  | VuuViewportChangeRequest
   | ClientToServerRemoveViewPort
   | ClientToServerSelection
   | ClientToServerViewPortRange
-  | ClientToServerVisualLinks
-  | ClientToServerMenus
+  | VuuViewportVisualLinksRequest
+  | VuuViewportMenusRequest
   | ClientToServerOpenTreeNode
   | ClientToServerCloseTreeNode
   | ClientToServerCreateLink
   | ClientToServerRemoveLink
-  | ClientToServerMenuRPC
-  | ClientToServerViewportRpcCall
-  | ClientToServerRpcRequest;
+  | VuuRpcMenuRequest
+  | VuuRpcViewportRequest
+  | VuuRpcServiceRequest;
 
 /**
  * RPC type messages
@@ -386,7 +344,20 @@ export declare type ClientToServerBody =
  */
 
 // RPC
-export declare type ClientToServerRpcRequest = {
+
+export declare type VuuRpcRequest =
+  | VuuRpcServiceRequest
+  | VuuRpcViewportRequest
+  | VuuRpcMenuRequest
+  | VuuRpcEditRequest;
+
+export declare type VuuRpcResponse =
+  | VuuRpcServiceResponse
+  | VuuRpcViewportResponse
+  | VuuRpcMenuResponse
+  | VuuRpcEditResponse;
+
+export declare type VuuRpcServiceRequest = {
   type: "RPC_CALL";
   service: "TypeAheadRpcHandler";
 } & (
@@ -400,41 +371,43 @@ export declare type ClientToServerRpcRequest = {
     }
 );
 
-export interface ServerToClientRPC {
+export interface VuuRpcServiceResponse {
   error: null | unknown;
   type: "RPC_RESP";
   method: "getUniqueFieldValues" | "getUniqueFieldValuesStartingWith";
   result: string[];
 }
 
+export declare type RpcNamedParams = {
+  [key: string]: VuuRowDataItemType | VuuTable | string[];
+};
+
 // ViewportRPC
-export interface ClientToServerViewportRpcCall {
+export interface VuuRpcViewportRequest {
   type: "VIEW_PORT_RPC_CALL";
   rpcName: string;
-  namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
+  namedParams: RpcNamedParams;
   params: string[];
   vpId: string;
 }
 
-export interface ServerToClientViewportRpcResponse {
-  action: {
-    key?: string;
-    msg?: string;
-    type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS" | "VP_CREATE_SUCCESS";
-  };
+export interface VuuRpcViewportResponse {
+  action: VuuRpcViewportAction;
   type: "VIEW_PORT_RPC_REPONSE";
-  method: string;
+  // method: string;
   namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
   params: string[];
   vpId: string;
 }
 
 // MenuRPC
-export type ClientToServerMenuRPC =
+export declare type VuuRpcMenuRequest =
   | ClientToServerMenuRowRPC
   | ClientToServerMenuCellRPC
   | ClientToServerMenuSelectRPC
   | ClientToServerMenuGridRPC;
+
+export declare type VuuRpcMenuResponse = VuuRpcMenuSuccess | VuuRpcMenuError;
 
 export interface ClientToServerMenuSelectRPC {
   rpcName: string;
@@ -463,19 +436,104 @@ export interface ClientToServerMenuCellRPC {
   vpId: string;
 }
 
-export interface ServerToClientMenuResponse {
-  action: OpenDialogAction | NoAction | ShowNotificationAction;
+export interface VuuRpcMenuSuccess<
+  T extends VuuRpcMenuAction | VuuRpcEditAction = VuuRpcMenuAction,
+> {
+  action: T;
   rpcName: string;
   type: "VIEW_PORT_MENU_RESP";
   vpId: string;
 }
 
-export interface ServerToClientMenuReject {
+export interface VuuRpcMenuError {
   error: string;
   rpcName: string;
   type: "VIEW_PORT_MENU_REJ";
   vpId: string;
 }
+
+/**
+ * Note VuuRpcEditCellRequest gets success response of type  VuuRpcMenuSuccess, with
+ * rpcName "VP_EDIT_CELL_RPC"
+ * with action of type "VP_EDIT_SUCCESS"
+ *
+ * VuuRpcEditCommitRequest gets response of type VuuRpcEditSuccess or VuuRpcEditError
+ */
+// Edit RPC
+export declare type VuuRpcEditRequest =
+  | VuuRpcEditCellRequest
+  | VuuRpcEditAddRowRequest
+  | VuuRpcEditDeleteRowRequest
+  | VuuRpcEditUpdateRowRequest
+  | VuuRpcEditCommitRequest;
+
+export declare type VuuRpcEditResponse = VuuRpcEditSuccess | VuuRpcEditError;
+export interface VuuRpcEditSuccess {
+  action: unknown;
+  type: "VP_EDIT_RPC_RESPONSE";
+  rpcName: "VP_EDIT_SUBMIT_FORM_RPC";
+  vpId: string;
+}
+export interface VuuRpcEditError {
+  error: string;
+  rpcName: string;
+  type: "VP_EDIT_RPC_REJECT";
+  vpId: string;
+}
+
+export interface VuuRpcEditCellRequest {
+  rowKey: string;
+  type: "VP_EDIT_CELL_RPC";
+  field: string;
+  value: VuuRowDataItemType;
+  vpId: string;
+}
+export interface VuuRpcEditUpdateRowRequest {
+  rowKey: string;
+  type: "VP_EDIT_ROW_RPC";
+  row: VuuDataRow;
+  vpId: string;
+}
+
+export declare type VuuDataRowDto = { [key: string]: VuuRowDataItemType };
+export interface VuuRpcEditAddRowRequest {
+  rowKey: string;
+  type: "VP_EDIT_ADD_ROW_RPC";
+  data: VuuDataRowDto;
+  vpId: string;
+}
+export interface VuuRpcEditDeleteRowRequest {
+  rowKey: string;
+  type: "VP_EDIT_DELETE_ROW_RPC";
+  vpId: string;
+}
+export interface VuuRpcEditCommitRequest {
+  type: "VP_EDIT_SUBMIT_FORM_RPC";
+  vpId: string;
+}
+
+export declare type VuuRpcEditAction = {
+  error?: string;
+  type: "VP_EDIT_SUCCESS";
+};
+
+export declare type VuuRpcAction =
+  | VuuRpcViewportAction
+  | VuuRpcMenuAction
+  | VuuRpcEditAction;
+
+export declare type VuuRpcViewportAction = {
+  key?: string;
+  msg?: string;
+  type: "VP_RPC_FAILURE" | "VP_RPC_SUCCESS" | "VP_CREATE_SUCCESS";
+};
+
+export declare type VuuRpcMenuAction =
+  | OpenDialogAction
+  | CloseDialogAction
+  | NoAction
+  | ShowNotificationAction
+  | VuuRpcEditAction;
 
 // prettier-ignore
 export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
@@ -513,9 +571,9 @@ export interface VuuMenu {
   menus: (VuuMenuItem | VuuMenu)[];
 }
 
-export type VuuRowDataItemType = string | number | boolean;
+export declare type VuuRowDataItemType = string | number | boolean;
 
-export type VuuDataRow = VuuRowDataItemType[];
+export declare type VuuDataRow = VuuRowDataItemType[];
 
 export declare type VuuRow = {
   data: VuuDataRow;
@@ -558,7 +616,7 @@ export declare type VuuLinkDescriptor = {
 };
 
 // used in MenuRPC row message
-export type VuuRowRecord = { [key: string]: VuuRowDataItemType };
+export declare type VuuRowRecord = { [key: string]: VuuRowDataItemType };
 
 /**
  * LinkDescriptor with label is not strictly part of the Vuu Protocol
@@ -569,7 +627,7 @@ export type VuuRowRecord = { [key: string]: VuuRowDataItemType };
  * client vpId persists across sessions, whereas the server vpId does
  * not.
  */
-export type LinkDescriptorWithLabel = VuuLinkDescriptor & {
+export declare type LinkDescriptorWithLabel = VuuLinkDescriptor & {
   label?: string;
   parentClientVpId: string;
 };
@@ -585,7 +643,7 @@ export interface ServerToClientLoginSuccess {
   token: string;
 }
 
-export type VuuTableList = Pick<ServerToClientTableList, "tables">;
+export declare type VuuTableList = Pick<VuuTableListResponse, "tables">;
 
 // Menu Response Actions
 export interface ShowNotificationAction {
@@ -601,4 +659,7 @@ export interface OpenDialogAction {
 }
 export interface NoAction {
   type: "NO_ACTION";
+}
+export interface CloseDialogAction {
+  type: "CLOSE_DIALOG_ACTION";
 }

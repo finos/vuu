@@ -4,6 +4,7 @@ import { OpenChangeHandler } from "@finos/vuu-ui-controls";
 import { CommitHandler, buildColumnMap } from "@finos/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 export type NewBasketHookProps = Pick<
   NewBasketPanelProps,
@@ -27,7 +28,7 @@ export const useNewBasketPanel = ({
           params: [basketId, basketName],
           rpcName: "createBasket",
           type: "VIEW_PORT_RPC_CALL",
-        })
+        } as Omit<VuuRpcViewportRequest, "vpId">)
         .then((response) => {
           if (response?.action.type === "VP_CREATE_SUCCESS") {
             if (response?.action.key) {

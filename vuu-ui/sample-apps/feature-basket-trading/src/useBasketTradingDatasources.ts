@@ -9,6 +9,7 @@ import {
 import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { useNotifications } from "@finos/vuu-popups";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -53,7 +54,7 @@ export const useBasketTradingDataSources = ({
       basketDataSourceKey,
       TableSchema,
       number,
-      DataSourceConfig?
+      DataSourceConfig?,
     ][] = [
       ["data-source-basket", basketSchema, 100],
       [
@@ -114,7 +115,7 @@ export const useBasketTradingDataSources = ({
           params: [basketInstanceId],
           rpcName: "sendToMarket",
           type: "VIEW_PORT_RPC_CALL",
-        })
+        } as Omit<VuuRpcViewportRequest, "vpId">)
         .then((response) => {
           if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
@@ -126,7 +127,7 @@ export const useBasketTradingDataSources = ({
           }
         });
     },
-    [dataSourceBasketTradingControl, notify]
+    [dataSourceBasketTradingControl, notify],
   );
 
   const handleTakeOffMarket = useCallback(
@@ -137,7 +138,7 @@ export const useBasketTradingDataSources = ({
           params: [basketInstanceId],
           rpcName: "takeOffMarket",
           type: "VIEW_PORT_RPC_CALL",
-        })
+        } as Omit<VuuRpcViewportRequest, "vpId">)
         .then((response) => {
           if (response?.action.type === "VP_RPC_FAILURE") {
             notify({
@@ -149,7 +150,7 @@ export const useBasketTradingDataSources = ({
           }
         });
     },
-    [dataSourceBasketTradingControl, notify]
+    [dataSourceBasketTradingControl, notify],
   );
 
   // Note: we do not need to return the BasketConstituent dataSource, we just stash it

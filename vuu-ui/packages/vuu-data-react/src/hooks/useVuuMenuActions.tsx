@@ -1,4 +1,3 @@
-import { isSessionTableActionMessage } from "@finos/vuu-data-remote";
 import {
   ContextMenuItemDescriptor,
   DataSource,
@@ -18,6 +17,7 @@ import type {
   OpenDialogAction,
   VuuMenu,
   VuuMenuItem,
+  VuuRpcResponse,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { BulkEditPanel } from "@finos/vuu-table";
@@ -25,12 +25,14 @@ import {
   VuuServerMenuOptions,
   buildMenuDescriptorFromVuuMenu,
   getMenuRpcRequest,
-  hasAction,
   hasShowNotificationAction,
+  isActionMessage,
   isGroupMenuItemDescriptor,
   isOpenBulkEditResponse,
   isRoot,
+  isSessionTableActionMessage,
   isTableLocation,
+  viewportRpcRequest,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback } from "react";
@@ -100,7 +102,7 @@ const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
 };
 
 const getFormConfig = (
-  action: OpenDialogAction & { tableSchema: TableSchema }
+  action: OpenDialogAction & { tableSchema: TableSchema },
 ) => {
   const { tableSchema: schema } = action;
   const config = configFromSchema(schema) ?? defaultFormConfig;
@@ -146,7 +148,7 @@ export const useVuuMenuActions = ({
         const menuDescriptor = buildMenuDescriptorFromVuuMenu(
           menu,
           location,
-          options as VuuServerMenuOptions
+          options as VuuServerMenuOptions,
         );
         if (isRoot(menu) && isGroupMenuItemDescriptor(menuDescriptor)) {
           descriptors.push(...menuDescriptor.children);
@@ -157,7 +159,7 @@ export const useVuuMenuActions = ({
 
       return descriptors;
     },
-    [dataSource, menuActionConfig]
+    [dataSource, menuActionConfig],
   );
 
   const { showDialog, closeDialog } = useDialogContext();
@@ -167,12 +169,7 @@ export const useVuuMenuActions = ({
     (table: VuuTable) => {
       const sessionDs = dataSource.createSessionDataSource?.(table);
       const handleSubmit = () => {
-        sessionDs?.rpcCall?.({
-          namedParams: {},
-          params: [],
-          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
-          type: "VIEW_PORT_RPC_CALL",
-        });
+        sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
         closeDialog();
       };
 
@@ -187,13 +184,13 @@ export const useVuuMenuActions = ({
             <Button key="submit" onClick={handleSubmit}>
               Save
             </Button>,
-          ]
+          ],
         );
 
         return true;
       }
     },
-    [closeDialog, dataSource, showDialog]
+    [closeDialog, dataSource, showDialog],
   );
 
   const showSessionEditingForm = useCallback(
@@ -203,18 +200,13 @@ export const useVuuMenuActions = ({
         const formConfig = getFormConfig(action);
         showDialog(
           <SessionEditingForm {...formConfig} onClose={closeDialog} />,
-          "Set Parameters"
+          "Set Parameters",
         );
       }
 
       const sessionDs = dataSource.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
-        sessionDs?.rpcCall?.({
-          namedParams: {},
-          params: [],
-          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
-          type: "VIEW_PORT_RPC_CALL",
-        });
+        sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
         closeDialog();
       };
 
@@ -229,13 +221,13 @@ export const useVuuMenuActions = ({
             <Button key="submit" onClick={handleSubmit}>
               Save
             </Button>,
-          ]
+          ],
         );
 
         return true;
       }
     },
-    [closeDialog, dataSource, showDialog]
+    [closeDialog, dataSource, showDialog],
   );
 
   const handleMenuAction = useCallback(
@@ -245,29 +237,31 @@ export const useVuuMenuActions = ({
       } else if (menuId === "MENU_RPC_CALL") {
         const rpcRequest = getMenuRpcRequest(options as unknown as VuuMenuItem);
 
-        dataSource.menuRpcCall(rpcRequest).then((rpcResponse) => {
-          if (rpcResponse) {
-            if (onRpcResponse?.(rpcResponse) === true) {
-              return true;
-            }
-            if (hasAction(rpcResponse)) {
-              if (hasShowNotificationAction(rpcResponse)) {
-                const {
-                  action: { message, title = "Success" },
-                } = rpcResponse;
-                showNotification({
-                  type: "success",
-                  body: message,
-                  header: title,
-                });
-              } else if (isOpenBulkEditResponse(rpcResponse)) {
-                showBulkEditDialog(rpcResponse.action.table);
-              } else if (isSessionTableActionMessage(rpcResponse)) {
-                showSessionEditingForm(rpcResponse.action);
+        dataSource
+          .menuRpcCall(rpcRequest)
+          .then((rpcResponse: Omit<VuuRpcResponse, "requestId">) => {
+            if (rpcResponse) {
+              if (onRpcResponse?.(rpcResponse) === true) {
+                return true;
+              }
+              if (isActionMessage(rpcResponse)) {
+                if (hasShowNotificationAction(rpcResponse)) {
+                  const {
+                    action: { message, title = "Success" },
+                  } = rpcResponse;
+                  showNotification({
+                    type: "success",
+                    body: message,
+                    header: title,
+                  });
+                } else if (isOpenBulkEditResponse(rpcResponse)) {
+                  showBulkEditDialog(rpcResponse.action.table);
+                } else if (isSessionTableActionMessage(rpcResponse)) {
+                  showSessionEditingForm(rpcResponse.action);
+                }
               }
             }
-          }
-        });
+          });
         return true;
       } else if (menuId === "link-table") {
         return (
@@ -275,7 +269,7 @@ export const useVuuMenuActions = ({
         );
       } else {
         console.log(
-          `useViewServer handleMenuAction,  can't handle action type ${menuId}`
+          `useViewServer handleMenuAction,  can't handle action type ${menuId}`,
         );
       }
 
@@ -288,7 +282,7 @@ export const useVuuMenuActions = ({
       showBulkEditDialog,
       showNotification,
       showSessionEditingForm,
-    ]
+    ],
   );
 
   return {

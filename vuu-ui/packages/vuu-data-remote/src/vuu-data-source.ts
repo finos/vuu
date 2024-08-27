@@ -16,9 +16,9 @@ import {
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
-  ClientToServerEditRpc,
-  ClientToServerMenuRPC,
-  ClientToServerViewportRpcCall,
+  VuuRpcEditRequest,
+  VuuRpcMenuRequest,
+  VuuRpcViewportRequest,
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuDataRowDto,
@@ -28,6 +28,8 @@ import {
   VuuRowDataItemType,
   VuuSort,
   VuuTable,
+  VuuRpcResponse,
+  VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 
 import { parseFilter } from "@finos/vuu-filter-parser";
@@ -46,6 +48,9 @@ import {
   withConfigDefaults,
   DataSourceConfigChanges,
   selectionCount,
+  vuuAddRowRequest,
+  vuuDeleteRowRequest,
+  vuuEditCellRequest,
 } from "@finos/vuu-utils";
 import { getServerAPI, ServerAPI } from "./connection-manager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -133,7 +138,7 @@ export class VuuDataSource
       groupBy,
       filterSpec,
     }: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) {
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
@@ -184,7 +189,7 @@ export class VuuDataSource
         range: this.#range,
         title: this.#title,
       },
-      this.handleMessageFromServer
+      this.handleMessageFromServer,
     );
   }
 
@@ -465,7 +470,7 @@ export class VuuDataSource
   applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
       this.#config,
-      config
+      config,
     );
     if (noChanges !== true) {
       if (config) {
@@ -662,35 +667,38 @@ export class VuuDataSource
     }
   }
 
-  async rpcCall<T extends RpcResponse = RpcResponse>(
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
+  async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
+    return Promise.reject<T>();
+  }
+
+  /**  @deprecated */
+  async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) {
-    if (this.viewport) {
+    if (this.viewport && this.server) {
       return this.server?.rpcCall<T>({
-        vpId: this.viewport,
         ...rpcRequest,
-      } as ClientToServerViewportRpcCall);
+        vpId: this.viewport,
+      } as VuuRpcViewportRequest);
+    } else {
+      throw Error(`rpcCall server or viewport are undefined`);
     }
   }
 
-  async menuRpcCall(
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) {
+  /**  @deprecated */
+  async menuRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
-        vpId: this.viewport,
         ...rpcRequest,
-      } as ClientToServerMenuRPC);
+        vpId: this.viewport,
+      } as VuuRpcMenuRequest);
     }
   }
 
   applyEdit(row: DataSourceRow, columnName: string, value: VuuRowDataItemType) {
-    return this.menuRpcCall({
-      rowKey: row[KEY],
-      field: columnName,
-      value: value,
-      type: "VP_EDIT_CELL_RPC",
-    }).then((response) => {
+    return this.menuRpcCall(
+      vuuEditCellRequest(row[KEY], columnName, value),
+    ).then((response) => {
       if (response?.error) {
         return response.error;
       } else {
@@ -699,12 +707,8 @@ export class VuuDataSource
     });
   }
 
-  insertRow(key: string, data: VuuDataRowDto) {
-    return this.menuRpcCall({
-      rowKey: key,
-      data,
-      type: "VP_EDIT_ADD_ROW_RPC",
-    }).then((response) => {
+  insertRow(rowKey: string, data: VuuDataRowDto) {
+    return this.menuRpcCall(vuuAddRowRequest(rowKey, data)).then((response) => {
       if (response?.error) {
         return response.error;
       } else {
@@ -713,10 +717,7 @@ export class VuuDataSource
     });
   }
   deleteRow(rowKey: string) {
-    return this.menuRpcCall({
-      rowKey,
-      type: "VP_EDIT_DELETE_ROW_RPC",
-    }).then((response) => {
+    return this.menuRpcCall(vuuDeleteRowRequest(rowKey)).then((response) => {
       if (response?.error) {
         return response.error;
       } else {

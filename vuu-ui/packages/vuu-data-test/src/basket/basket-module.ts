@@ -2,18 +2,15 @@ import {
   VuuLink,
   VuuMenu,
   VuuRowDataItemType,
+  VuuRpcViewportAction,
+  VuuRpcViewportResponse,
 } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "@finos/vuu-utils";
+import { ColumnMap, isViewportRpcRequest } from "@finos/vuu-utils";
 import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
-import {
-  RpcService,
-  RpcServiceRequest,
-  VuuModule,
-  withParams,
-} from "../VuuModule";
+import { RpcService, ServiceHandler, VuuModule } from "../VuuModule";
 
 // This is a 'local' columnMap
 const buildDataColumnMap = (tableName: BasketsTableName) =>
@@ -22,7 +19,7 @@ const buildDataColumnMap = (tableName: BasketsTableName) =>
       map[col.name] = index;
       return map;
     },
-    {}
+    {},
   );
 
 const tableMaps: Record<BasketsTableName, ColumnMap> = {
@@ -32,7 +29,7 @@ const tableMaps: Record<BasketsTableName, ColumnMap> = {
   basketTradingConstituent: buildDataColumnMap("basketTradingConstituent"),
   basketConstituent: buildDataColumnMap("basketConstituent"),
   basketTradingConstituentJoin: buildDataColumnMap(
-    "basketTradingConstituentJoin"
+    "basketTradingConstituentJoin",
   ),
   priceStrategyType: buildDataColumnMap("priceStrategyType"),
 };
@@ -44,7 +41,7 @@ const tableMaps: Record<BasketsTableName, ColumnMap> = {
 const basketConstituent = new Table(
   schemas.basketConstituent,
   basketConstituentData,
-  tableMaps.basketConstituent
+  tableMaps.basketConstituent,
 );
 
 /**
@@ -53,7 +50,7 @@ const basketConstituent = new Table(
 const basketTrading = new Table(
   schemas.basketTrading,
   [],
-  tableMaps.basketTrading
+  tableMaps.basketTrading,
 );
 
 let basketIncrement = 1;
@@ -63,7 +60,7 @@ let basketIncrement = 1;
 const basketTradingConstituent = new Table(
   schemas.basketTradingConstituent,
   [],
-  tableMaps.basketTradingConstituent
+  tableMaps.basketTradingConstituent,
 );
 
 // export as convenience for showcase examples
@@ -71,7 +68,7 @@ export const createBasketTradingRow = (
   basketId: string,
   basketName: string,
   side = "BUY",
-  status = "OFF MARKET"
+  status = "OFF MARKET",
 ) => [
   basketId,
   basketName,
@@ -92,7 +89,7 @@ function createTradingBasket(basketId: string, basketName: string) {
 
   const { basketId: key } = buildDataColumnMap("basketConstituent");
   const constituents = basketConstituent.data.filter(
-    (c) => c[key] === basketId
+    (c) => c[key] === basketId,
   );
 
   const { instanceId } = tableMaps.basketTrading;
@@ -136,38 +133,60 @@ function createTradingBasket(basketId: string, basketName: string) {
   return basketTradingRow[instanceId] as string;
 }
 
-async function addConstituent(rpcRequest: RpcServiceRequest) {
-  console.log(`RPC call erceived ${rpcRequest.rpcName}`);
-}
-async function sendToMarket(rpcRequest: RpcServiceRequest) {
-  if (withParams(rpcRequest)) {
-    const [basketInstanceId] = rpcRequest.params;
+const addConstituent: ServiceHandler = async (rpcRequest) => {
+  if (isViewportRpcRequest(rpcRequest)) {
+    throw Error(`addConstituent not implemented`);
+  } else {
+    throw Error(`addConstituent invalid rpcRequest`);
+  }
+};
+
+const viewportRpcResponse = (
+  params: string[],
+  vpId: string,
+  action?: Partial<VuuRpcViewportAction>,
+): VuuRpcViewportResponse => ({
+  type: "VIEW_PORT_RPC_REPONSE",
+  action: {
+    type: "VP_RPC_SUCCESS",
+    ...action,
+  },
+  namedParams: {},
+  params,
+  vpId,
+});
+
+const sendToMarket: ServiceHandler = async (rpcRequest) => {
+  if (isViewportRpcRequest(rpcRequest)) {
+    const { params, vpId } = rpcRequest;
+    const [basketInstanceId] = params;
     basketTrading.update(basketInstanceId, "status", "ON_MARKET");
+    return viewportRpcResponse(params, vpId);
+  } else {
+    throw Error(`sendToMarket invalid rpcRequest`);
   }
-}
-async function takeOffMarket(rpcRequest: RpcServiceRequest) {
-  if (withParams(rpcRequest)) {
-    const [basketInstanceId] = rpcRequest.params;
+};
+const takeOffMarket: ServiceHandler = async (rpcRequest) => {
+  if (isViewportRpcRequest(rpcRequest)) {
+    const { params, vpId } = rpcRequest;
+    const [basketInstanceId] = params;
     basketTrading.update(basketInstanceId, "status", "OFF-MARKET");
+    return viewportRpcResponse(params, vpId);
+  } else {
+    throw Error(`takeOffMarket invalid rpcRequest`);
   }
-}
+};
 
-async function createNewBasket(rpcRequest: RpcServiceRequest) {
-  if (withParams(rpcRequest)) {
-    const {
-      params: [basketId, basketName],
-    } = rpcRequest;
+const createNewBasket: ServiceHandler = async (rpcRequest) => {
+  if (isViewportRpcRequest(rpcRequest)) {
+    const { params, vpId } = rpcRequest;
+    const [basketId, basketName] = params;
     const key = createTradingBasket(basketId, basketName);
-    return {
-      action: {
-        type: "VP_CREATE_SUCCESS",
-        key,
-      },
-    };
+    return viewportRpcResponse(params, vpId, { key });
+  } else {
+    throw Error(`createNewBasket invalid rpcRequest`);
   }
-}
-
-//-------------------
+};
 
 export const tables: Record<BasketsTableName, Table> = {
   algoType: new Table(
@@ -179,7 +198,7 @@ export const tables: Record<BasketsTableName, Table> = {
       ["POV", 3],
       ["Dynamic Close", 4],
     ],
-    tableMaps.algoType
+    tableMaps.algoType,
   ),
   basket: new Table(
     schemas.basket,
@@ -189,7 +208,7 @@ export const tables: Record<BasketsTableName, Table> = {
       [".FTSE100", ".FTSE100", 0, 0],
       [".SP500", ".SP500", 0, 0],
     ],
-    tableMaps.basket
+    tableMaps.basket,
   ),
   basketConstituent,
   basketTrading,
@@ -198,7 +217,7 @@ export const tables: Record<BasketsTableName, Table> = {
     { module: "BASKET", table: "basketTradingConstituentJoin" },
     basketTradingConstituent,
     pricesTable,
-    "ric"
+    "ric",
   ),
   priceStrategyType: new Table(
     schemas.priceStrategyType,
@@ -208,7 +227,7 @@ export const tables: Record<BasketsTableName, Table> = {
       ["Limit", 2],
       ["Algo", 3],
     ],
-    tableMaps.priceStrategyType
+    tableMaps.priceStrategyType,
   ),
 };
 

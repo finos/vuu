@@ -4,14 +4,16 @@ import {
   VuuColumnDataType,
   VuuDataRow,
   VuuRowDataItemType,
+  VuuRpcAction,
 } from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
-  hasAction,
+  isActionMessage,
   isErrorResponse,
   isValidNumber,
   queryClosest,
   shallowEquals,
+  vuuEditCellRequest,
 } from "@finos/vuu-utils";
 import {
   Button,
@@ -67,7 +69,7 @@ const classBase = "vuuSessionEditingForm";
 
 const getField = (
   fields: FormFieldDescriptor[],
-  name: string
+  name: string,
 ): FormFieldDescriptor => {
   const field = fields.find((f) => f.name === name);
   if (field) {
@@ -81,7 +83,7 @@ const getFieldNameAndValue = ({
   target,
 }: ChangeEvent<HTMLInputElement> | FocusEvent<HTMLInputElement>): [
   string,
-  string
+  string,
 ] => {
   const formField = queryClosest(target, ".saltFormField");
   if (formField) {
@@ -107,17 +109,17 @@ const Status = {
 function getTypedValue(
   value: string,
   type: VuuColumnDataType,
-  throwIfUndefined?: false
+  throwIfUndefined?: false,
 ): VuuRowDataItemType | undefined;
 function getTypedValue(
   value: string,
   type: VuuColumnDataType,
-  throwIfUndefined: true
+  throwIfUndefined: true,
 ): VuuRowDataItemType;
 function getTypedValue(
   value: string,
   type: VuuColumnDataType,
-  throwIfUndefined = false
+  throwIfUndefined = false,
 ): VuuRowDataItemType | undefined {
   switch (type) {
     case "int":
@@ -149,7 +151,7 @@ function getTypedValue(
 
 const getDataSource = (
   dataSource?: DataSource,
-  schema?: TableSchema
+  schema?: TableSchema,
 ): DataSource => {
   if (dataSource) {
     return dataSource;
@@ -161,7 +163,7 @@ const getDataSource = (
     }) as DataSource;
   } else {
     throw Error(
-      "SessionEditingForm: either a DataSource or a TableSchema must be provided"
+      "SessionEditingForm: either a DataSource or a TableSchema must be provided",
     );
   }
 };
@@ -240,12 +242,12 @@ export const SessionEditingForm = ({
         dataStatusRef.current = notUpdated
           ? Status.unchanged
           : typedValue !== undefined
-          ? Status.changed
-          : Status.invalid;
+            ? Status.changed
+            : Status.invalid;
         return newValues;
       });
     },
-    [fields]
+    [fields],
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
@@ -257,12 +259,7 @@ export const SessionEditingForm = ({
       const typedValue = getTypedValue(value, type, true);
       if (typeof rowKey === "string") {
         dataSource
-          .menuRpcCall({
-            rowKey,
-            field: field,
-            value: typedValue,
-            type: "VP_EDIT_CELL_RPC",
-          })
+          .menuRpcCall(vuuEditCellRequest(rowKey, field, typedValue))
           .then((response) => {
             if (isErrorResponse(response)) {
               console.log(`edit rejected ${response.error}`);
@@ -279,28 +276,26 @@ export const SessionEditingForm = ({
           });
       }
     },
-    [dataSource, fields, keyField, values]
+    [dataSource, fields, keyField, values],
   );
 
   const applyAction = useCallback(
-    (action: unknown) => {
-      if (typeof action === "object" && action !== null) {
-        if ("type" in action && action.type === "CLOSE_DIALOG_ACTION") {
-          onClose?.();
-        }
+    (action: VuuRpcAction) => {
+      if (action.type === "CLOSE_DIALOG_ACTION") {
+        onClose?.();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handleSubmit = useCallback(async () => {
-    const response = await dataSource.menuRpcCall({
+    const rpcResponse = await dataSource.menuRpcCall({
       type: "VP_EDIT_SUBMIT_FORM_RPC",
     });
-    if (isErrorResponse(response)) {
-      setErrorMessage(response.error);
-    } else if (hasAction(response)) {
-      applyAction(response.action);
+    if (isErrorResponse(rpcResponse)) {
+      setErrorMessage(rpcResponse.error);
+    } else if (isActionMessage(rpcResponse)) {
+      applyAction(rpcResponse.action);
     }
   }, [applyAction, dataSource]);
 
@@ -310,7 +305,7 @@ export const SessionEditingForm = ({
         handleSubmit();
       }
     },
-    [handleSubmit]
+    [handleSubmit],
   );
 
   const handleCancel = useCallback(() => {
@@ -339,7 +334,7 @@ export const SessionEditingForm = ({
   useEffect(() => {
     if (formContentRef.current) {
       const firstInput = formContentRef.current.querySelector(
-        "input"
+        "input",
       ) as HTMLInputElement;
       if (firstInput) {
         setTimeout(() => {

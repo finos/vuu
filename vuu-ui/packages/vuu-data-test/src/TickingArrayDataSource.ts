@@ -4,26 +4,29 @@ import {
 } from "@finos/vuu-data-local";
 import type {
   DataSourceRow,
-  MenuRpcResponse,
-  RpcResponse,
   Selection,
   SelectionItem,
   SubscribeCallback,
   SubscribeProps,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data-types";
 import type {
-  ClientToServerEditRpc,
-  ClientToServerMenuRPC,
-  ClientToServerViewportRpcCall,
+  VuuRpcMenuRequest,
   LinkDescriptorWithLabel,
+  RpcNamedParams,
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
   VuuTable,
+  VuuRpcResponse,
+  VuuRpcMenuResponse,
+  VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
-import { VuuBroadcastChannel, metadataKeys } from "@finos/vuu-utils";
+import {
+  VuuBroadcastChannel,
+  isViewportRpcRequest,
+  isVuuMenuRpcRequest,
+  metadataKeys,
+} from "@finos/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
 import { RpcService, SessionTableMap } from "./VuuModule";
@@ -161,7 +164,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
             type: "selection-changed",
             selectedValues: this.pickUniqueSelectedValues(columnName),
           });
-        }
+        },
       );
     }
   }
@@ -184,7 +187,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         }
         return rows;
       },
-      []
+      [],
     );
   }
 
@@ -206,78 +209,70 @@ export class TickingArrayDataSource extends ArrayDataSource {
         }
         return rowIds;
       },
-      []
+      [],
     );
   }
 
   applyEdit(
     row: DataSourceRow,
     columnName: string,
-    value: VuuRowDataItemType
+    value: VuuRowDataItemType,
   ): Promise<true> {
     const key = row[KEY];
     this.#table?.update(key, columnName, value);
     return Promise.resolve(true);
   }
 
-  async rpcCall<T extends RpcResponse = RpcResponse>(
-    rpcRequest: Omit<ClientToServerViewportRpcCall, "vpId">
-  ): Promise<T | undefined> {
-    const rpcService = this.#rpcServices?.find(
-      (service) =>
-        service.rpcName ===
-        (rpcRequest as ClientToServerViewportRpcCall).rpcName
-    );
-
-    if (rpcService) {
-      switch (rpcRequest.rpcName) {
-        case "VP_BULK_EDIT_COLUMN_CELLS_RPC": {
-          return rpcService.service(rpcRequest) as Promise<T>;
+  async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+  ): Promise<T> {
+    if (isViewportRpcRequest(rpcRequest)) {
+      const rpcService = this.#rpcServices?.find(
+        (service) => service.rpcName === rpcRequest.rpcName,
+      );
+      if (rpcService && isViewportRpcRequest(rpcRequest)) {
+        switch (rpcRequest.rpcName) {
+          case "VP_BULK_EDIT_COLUMN_CELLS_RPC": {
+            return rpcService.service({
+              ...rpcRequest,
+              vpId: this.viewport,
+            }) as Promise<T>;
+          }
         }
+        return rpcService.service({
+          ...rpcRequest,
+          namedParams: {
+            selectedRowIds: this.getSelectedRowIds(),
+            table: this.tableSchema.table,
+          },
+          vpId: this.viewport,
+        }) as Promise<T>;
       }
-      return rpcService.service({
-        ...rpcRequest,
-        selectedRowIds: this.getSelectedRowIds(),
-      }) as Promise<T>;
-    } else {
-      console.log(`no implementation for PRC service ${rpcRequest.rpcName}`);
     }
+    throw Error(`no implementation for PRC service ${rpcRequest.type}`);
   }
 
   async menuRpcCall(
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ): Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  > {
+    rpcRequest: Omit<VuuRpcRequest, "vpId"> & {
+      namedParams?: RpcNamedParams;
+    },
+  ): Promise<VuuRpcResponse> {
     const rpcService = this.#rpcServices?.find(
       (service) =>
-        service.rpcName === (rpcRequest as ClientToServerMenuRPC).rpcName
+        service.rpcName === (rpcRequest as VuuRpcMenuRequest).rpcName,
     );
 
-    if (rpcService) {
-      switch (rpcRequest.type) {
-        case "VIEW_PORT_MENU_ROW_RPC":
-        case "VIEW_PORT_MENUS_SELECT_RPC": {
-          // selectedRowIds is specific to the client implementation. Because the dataSource
-          //  itself stores the selected rows (rather than server) we need to inject these
-          // here so rpc service has access to them. In Vuu scenario, Vuu server module would
-          // already know selected rows.
-          return rpcService.service({
-            ...rpcRequest,
-            // vpId: this.viewport,
-            selectedRowIds: this.getSelectedRowIds(),
-            // include table for now in the rpcRequest. In future we will support
-            //a viewportId, same as server, but for that we have to map viewports
-            // to tables in module.
-            table: this.tableSchema.table,
-          } as any) as any;
-        }
-        default:
-      }
+    if (isVuuMenuRpcRequest(rpcRequest)) {
+      return rpcService?.service({
+        ...rpcRequest,
+        namedParams: {
+          selectedRowIds: this.getSelectedRowIds(),
+          table: this.tableSchema.table,
+        },
+        vpId: this.viewport,
+      }) as Promise<VuuRpcMenuResponse>;
     }
+
     return super.menuRpcCall(rpcRequest);
   }
 
@@ -286,7 +281,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       return makeSuggestions(this.#table, column, pattern);
     } else {
       throw Error(
-        "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided"
+        "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided",
       );
     }
   }
@@ -302,7 +297,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       });
     } else {
       throw Error(
-        "TickingDataSource cannot create session datasource, no session table ${table.table}"
+        "TickingDataSource cannot create session datasource, no session table ${table.table}",
       );
     }
   }
@@ -339,7 +334,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
           if (linkType === "subscribe-link-select") {
             for (const value of selectedValues) {
               const index = this.data.findIndex(
-                (row) => row[colIndex] === value
+                (row) => row[colIndex] === value,
               );
               selectedIndices.push(index);
             }
@@ -347,7 +342,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
           } else {
             this.filter = {
               filter: `${sourceColumnName} in ["${selectedValues.join(
-                '","'
+                '","',
               )}"]`,
             };
           }

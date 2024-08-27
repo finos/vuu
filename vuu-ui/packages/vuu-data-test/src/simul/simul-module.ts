@@ -1,18 +1,17 @@
 import {
   ClientToServerMenuRowRPC,
-  ShowNotificationAction,
   VuuLink,
   VuuMenu,
 } from "@finos/vuu-protocol-types";
-import { MenuRpcResponse } from "@finos/vuu-data-types";
 import { Table, buildDataColumnMap, joinTables } from "../Table";
-import { RpcService, RpcServiceRequest } from "../VuuModule";
+import { RpcService, ServiceHandler } from "../VuuModule";
 import { SimulModule } from "./SimulModule";
 import { instrumentsTable } from "./reference-data/instruments";
 import { instrumentsExtendedTable } from "./reference-data/instruments-extended";
 import { ordersTable } from "./reference-data/orders";
 import { pricesTable } from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
+import { isVuuMenuRpcRequest } from "@finos/vuu-utils";
 
 const undefinedTables = {
   childOrders: undefined,
@@ -93,25 +92,28 @@ const menus: Record<SimulTableName, VuuMenu | undefined> = {
   prices: undefined,
 };
 
-async function cancelOrder(
-  rpcRequest: RpcServiceRequest,
-): Promise<Omit<MenuRpcResponse<ShowNotificationAction>, "requestId">> {
-  const { rowKey } = rpcRequest as ClientToServerMenuRowRPC;
-  const table = tables.orders;
-  const row = table.findByKey(rowKey);
-  row[table.map.status] = "Cancelled";
-  table.updateRow(row);
+const cancelOrder: ServiceHandler = async (rpcRequest) => {
+  if (isVuuMenuRpcRequest(rpcRequest)) {
+    const { rowKey, vpId } = rpcRequest as ClientToServerMenuRowRPC;
+    const table = tables.orders;
+    const row = table.findByKey(rowKey);
+    row[table.map.status] = "Cancelled";
+    table.updateRow(row);
 
-  return {
-    action: {
-      type: "SHOW_NOTIFICATION_ACTION",
-      message: `Order id: ${rowKey}`,
-      title: "Order cancelled",
-    },
-    rpcName: "CANCEL_ORDER",
-    type: "VIEW_PORT_MENU_RESP",
-  };
-}
+    return {
+      action: {
+        type: "SHOW_NOTIFICATION_ACTION",
+        message: `Order id: ${rowKey}`,
+        title: "Order cancelled",
+      },
+      rpcName: "CANCEL_ORDER",
+      type: "VIEW_PORT_MENU_RESP",
+      vpId,
+    };
+  } else {
+    throw Error("cancelOrder invalid rpcRequest");
+  }
+};
 
 const services: Record<SimulTableName, RpcService[] | undefined> = {
   ...undefinedTables,

@@ -3,7 +3,7 @@ import { RpcResponseHandler } from "@finos/vuu-data-types";
 import { useDialog } from "@finos/vuu-popups";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { Feature } from "@finos/vuu-shell";
-import { hasAction } from "@finos/vuu-utils";
+import { isActionMessage } from "@finos/vuu-utils";
 import { useCallback } from "react";
 
 const withTable = (action: unknown): action is { table: VuuTable } =>
@@ -16,16 +16,20 @@ export const useRpcResponseHandler = () => {
   const { setDialogState } = useDialog();
 
   const handleRpcResponse = useCallback<RpcResponseHandler>(
-    (response) => {
+    (rpcResponse) => {
       if (
-        hasAction(response) &&
-        typeof response.action === "object" &&
-        response.action !== null &&
-        "type" in response.action &&
-        response.action?.type === "OPEN_DIALOG_ACTION"
+        isActionMessage(rpcResponse) &&
+        typeof rpcResponse.action === "object" &&
+        rpcResponse.action !== null &&
+        "type" in rpcResponse.action &&
+        rpcResponse.action?.type === "OPEN_DIALOG_ACTION"
       ) {
-        if (withTable(response.action) && tables && response.action.table) {
-          const schema = tables.get(response.action.table.table);
+        if (
+          withTable(rpcResponse.action) &&
+          tables &&
+          rpcResponse.action.table
+        ) {
+          const schema = tables.get(rpcResponse.action.table.table);
           if (schema) {
             // If we already have this table open in this viewport, ignore
             setDialogState({
@@ -45,7 +49,7 @@ export const useRpcResponseHandler = () => {
       }
       return false;
     },
-    [setDialogState, tables]
+    [setDialogState, tables],
   );
 
   return {
