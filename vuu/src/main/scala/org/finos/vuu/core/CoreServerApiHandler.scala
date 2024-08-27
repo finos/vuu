@@ -389,7 +389,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
-
   override def process(msg: RemoveVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.unlinkViewPorts(ctx.session, ctx.queue, msg.childVpId)) match {
       case Success(_) =>
@@ -410,15 +409,14 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     vsMsg(CloseTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 
-
   override def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     val response = Try(viewPortContainer.handleRpcRequest(msg.context.viewPortId, msg.rpcName, msg.params)(ctx)) match {
       case Success(functionResult) =>
         logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
         functionResult match {
           case RpcFunctionSuccess(data) =>
-            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult(isSuccess = true, data, null), null)
-          case RpcFunctionFailure(_, error, exception) =>
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult.fromSuccess(data), NoneAction())
+          case RpcFunctionFailure(errorCode, error, exception) =>
             createErrorRpcResponse(msg, error)
         }
       case Failure(e) =>
@@ -431,7 +429,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   private def createErrorRpcResponse(msg: RpcRequest, errorMessage: String) = {
     RpcResponseNew(
       rpcName = msg.rpcName,
-      result = RpcResult(isSuccess = false, null, errorMessage = errorMessage),
-      action = ShowNotificationAction("Error", s"Failed to process ${msg.rpcName} request", errorMessage))
+      result = RpcResult.fromError(errorMessage),
+      action = ShowNotificationAction(NotificationType.Error, s"Failed to process ${msg.rpcName} request", errorMessage))
   }
 }
