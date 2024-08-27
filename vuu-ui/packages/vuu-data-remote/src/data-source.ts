@@ -4,13 +4,7 @@ import type {
   DataSourceConfigMessage,
   DataSourceDataSizeMessage,
 } from "@finos/vuu-data-types";
-import type {
-  OpenDialogAction,
-  ServerMessageBody,
-  VuuRpcMenuSuccess,
-  VuuTable,
-} from "@finos/vuu-protocol-types";
-import { isOpenDialogAction } from "@finos/vuu-utils";
+import type {} from "@finos/vuu-protocol-types";
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage,

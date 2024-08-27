@@ -6,7 +6,7 @@ import {
 } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
 import { ContextMenuConfiguration, useNotifications } from "@finos/vuu-popups";
-import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import { buildColumnMap, ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./basket-selector";
@@ -17,6 +17,8 @@ import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
 import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+
+const { KEY } = metadataKeys;
 
 export class Basket {
   basketId: string;
@@ -226,12 +228,8 @@ export const useBasketTrading = ({
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
       if (basket) {
-        const { dataSourceRow } = basket;
-        return dataSourceBasketTradingControl.applyEdit(
-          dataSourceRow,
-          columnName,
-          value,
-        );
+        const key = basket.dataSourceRow[KEY];
+        return dataSourceBasketTradingControl.applyEdit(key, columnName, value);
       }
       return Promise.resolve(true);
     },

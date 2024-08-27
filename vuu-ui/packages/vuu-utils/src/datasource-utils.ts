@@ -1,7 +1,10 @@
 import {
   ConnectionQualityMetrics,
   ConnectionStatusMessage,
+  DataSourceCallbackMessage,
   DataSourceConfig,
+  DataSourceDataMessage,
+  DataSourceRow,
   RpcResponse,
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
@@ -260,6 +263,17 @@ export const isErrorResponse = (
 export const isViewportMessage = (
   msg: object,
 ): msg is VuuUIMessageOutViewport => "viewport" in msg;
+
+export type DataSourceDataMessageWithRows = Omit<
+  DataSourceDataMessage,
+  "rows"
+> & {
+  rows: DataSourceRow[];
+};
+export const messageHasDataRows = (
+  message: DataSourceCallbackMessage,
+): message is DataSourceDataMessageWithRows =>
+  message.type === "viewport-update" && Array.isArray(message.rows);
 
 export const withConfigDefaults = (
   config: DataSourceConfig,

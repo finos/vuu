@@ -112,7 +112,7 @@ const useNullDragDrop = () => NULL_DRAG_DROP;
 
 const addColumn = (
   tableConfig: TableConfig,
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): TableConfig => ({
   ...tableConfig,
   columns: tableConfig.columns.concat(column),
@@ -165,7 +165,7 @@ export const useTable = ({
 
   const menuBuilder = useMemo(
     () => buildContextMenuDescriptors(dataSource),
-    [dataSource]
+    [dataSource],
   );
 
   const onDataRowcountChange = useCallback((size: number) => {
@@ -207,12 +207,12 @@ export const useTable = ({
       tableConfigRef.current = config;
       onConfigChange?.(stripInternalProperties(config));
     },
-    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
+    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange],
   );
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
-    [dataSource.columns]
+    [dataSource.columns],
   );
 
   const onSubscribed = useCallback(
@@ -226,7 +226,7 @@ export const useTable = ({
         console.log("subscription message with no schema");
       }
     },
-    [dispatchTableModelAction]
+    [dispatchTableModelAction],
   );
 
   const {
@@ -281,7 +281,7 @@ export const useTable = ({
       tableConfigRef.current = tableConfig;
       onConfigChange?.(stripInternalProperties(tableConfig));
     },
-    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange]
+    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange],
   );
 
   const handleDataSourceConfigChanged = useCallback(
@@ -291,7 +291,7 @@ export const useTable = ({
         ...dataSourceConfig,
       };
     },
-    [dataSource]
+    [dataSource],
   );
 
   useEffect(() => {
@@ -317,7 +317,7 @@ export const useTable = ({
       dataSource.columns = dataSource.columns.concat(column.name);
       applyTableConfigChange(addColumn(tableConfig, column));
     },
-    [dataSource, tableConfig, applyTableConfigChange]
+    [dataSource, tableConfig, applyTableConfigChange],
   );
 
   const hideColumns = useCallback(
@@ -327,12 +327,12 @@ export const useTable = ({
       const newTableConfig = {
         ...tableConfig,
         columns: tableConfig.columns.map((col) =>
-          hiddenColumns.includes(col.name) ? { ...col, hidden: true } : col
+          hiddenColumns.includes(col.name) ? { ...col, hidden: true } : col,
         ),
       };
       applyTableConfigChange(newTableConfig);
     },
-    [tableConfig, applyTableConfigChange]
+    [tableConfig, applyTableConfigChange],
   );
 
   const pinColumn = useCallback(
@@ -345,7 +345,7 @@ export const useTable = ({
         }),
       });
     },
-    [tableConfig, applyTableConfigChange]
+    [tableConfig, applyTableConfigChange],
   );
 
   const { showColumnSettingsPanel, showTableSettingsPanel } =
@@ -386,7 +386,7 @@ export const useTable = ({
       pinColumn,
       showColumnSettingsPanel,
       showTableSettingsPanel,
-    ]
+    ],
   );
 
   const handleContextMenuAction = useHandleTableContextMenu({
@@ -401,11 +401,11 @@ export const useTable = ({
           dataSource.sort,
           column,
           extendSort,
-          sortType
+          sortType,
         );
       }
     },
-    [dataSource]
+    [dataSource],
   );
 
   const resizeCells = useRef<HTMLElement[] | undefined>();
@@ -434,16 +434,16 @@ export const useTable = ({
                   column,
                   columns,
                   width,
-                })
-              )
+                }),
+              ),
             );
           }
         } else {
           const byColIndex = `[aria-colindex='${column.index}']`;
           resizeCells.current = Array.from(
             containerRef.current?.querySelectorAll(
-              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`
-            ) ?? []
+              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`,
+            ) ?? [],
           );
           dispatchTableModelAction({
             type: "resizeColumn",
@@ -454,7 +454,7 @@ export const useTable = ({
         }
       } else {
         throw Error(
-          `useDataTable.handleColumnResize, column ${columnName} not found`
+          `useDataTable.handleColumnResize, column ${columnName} not found`,
         );
       }
     },
@@ -464,7 +464,7 @@ export const useTable = ({
       onConfigChange,
       tableConfig,
       containerRef,
-    ]
+    ],
   );
 
   const onToggleGroup = useCallback(
@@ -502,7 +502,7 @@ export const useTable = ({
         }
       }
     },
-    [columnMap, columns, dataSource, dispatchTableModelAction]
+    [columnMap, columns, dataSource, dispatchTableModelAction],
   );
 
   const {
@@ -540,7 +540,7 @@ export const useTable = ({
         editingFocus(e);
       }
     },
-    [editingFocus, navigationFocus]
+    [editingFocus, navigationFocus],
   );
 
   const onContextMenu = useTableContextMenu({
@@ -554,7 +554,7 @@ export const useTable = ({
     (columns: ColumnDescriptor[]) => {
       dataSource.groupBy = columns.map((col) => col.name);
     },
-    [dataSource]
+    [dataSource],
   );
 
   const onRemoveGroupColumn = useCallback(
@@ -564,12 +564,12 @@ export const useTable = ({
       } else {
         if (dataSource && dataSource.groupBy.includes(column.name)) {
           dataSource.groupBy = dataSource.groupBy.filter(
-            (columnName) => columnName !== column.name
+            (columnName) => columnName !== column.name,
           );
         }
       }
     },
-    [dataSource]
+    [dataSource],
   );
 
   const handleSelectionChange: SelectionChangeHandler = useCallback(
@@ -577,7 +577,7 @@ export const useTable = ({
       dataSource.select(selected);
       onSelectionChange?.(selected);
     },
-    [dataSource, onSelectionChange]
+    [dataSource, onSelectionChange],
   );
 
   const handleSelect = useCallback<TableRowSelectHandlerInternal>(
@@ -586,7 +586,7 @@ export const useTable = ({
         onSelect(row === null ? null : asDataSourceRowObject(row, columnMap));
       }
     },
-    [columnMap, onSelect]
+    [columnMap, onSelect],
   );
 
   const {
@@ -604,7 +604,7 @@ export const useTable = ({
       selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
       onRowClickProp?.(evt, asDataSourceRowObject(row, columnMap));
     },
-    [columnMap, onRowClickProp, selectionHookOnRowClick]
+    [columnMap, onRowClickProp, selectionHookOnRowClick],
   );
 
   const handleKeyDown = useCallback(
@@ -617,7 +617,7 @@ export const useTable = ({
         selectionHookKeyDown(e);
       }
     },
-    [navigationKeyDown, editingKeyDown, selectionHookKeyDown]
+    [navigationKeyDown, editingKeyDown, selectionHookKeyDown],
   );
 
   const onMoveColumn = useCallback(
@@ -643,20 +643,21 @@ export const useTable = ({
       dispatchTableModelAction,
       onConfigChange,
       tableConfig,
-    ]
+    ],
   );
 
   const handleDropRow = useCallback(
     (dragDropState) => {
       onDrop?.(dragDropState);
     },
-    [onDrop]
+    [onDrop],
   );
 
   const handleDataEdited = useCallback<DataCellEditHandler>(
-    async (row, columnName, value) =>
-      dataSource.applyEdit(row, columnName, value),
-    [dataSource]
+    async (row, columnName, value) => {
+      return dataSource.applyEdit(row[KEY], columnName, value);
+    },
+    [dataSource],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(
@@ -671,7 +672,7 @@ export const useTable = ({
       }
       onDragStart?.(dragDropState);
     },
-    [dataRef, onDragStart]
+    [dataRef, onDragStart],
   );
 
   const onHeaderHeightMeasured = useCallback((height: number) => {

@@ -5,10 +5,8 @@ import {
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceFilter,
-  DataSourceRow,
   DataSourceStatus,
   OptimizeStrategy,
-  RpcResponse,
   Selection,
   SubscribeCallback,
   SubscribeProps,
@@ -16,7 +14,6 @@ import {
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
-  VuuRpcEditRequest,
   VuuRpcMenuRequest,
   VuuRpcViewportRequest,
   LinkDescriptorWithLabel,
@@ -41,7 +38,6 @@ import {
   isVisualLinksAction,
   itemsOrOrderChanged,
   logger,
-  metadataKeys,
   throttle,
   uuid,
   vanillaConfig,
@@ -60,8 +56,6 @@ import { MenuRpcResponse } from "@finos/vuu-data-types";
 type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("VuuDataSource");
-
-const { KEY } = metadataKeys;
 
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
@@ -695,16 +689,16 @@ export class VuuDataSource
     }
   }
 
-  applyEdit(row: DataSourceRow, columnName: string, value: VuuRowDataItemType) {
-    return this.menuRpcCall(
-      vuuEditCellRequest(row[KEY], columnName, value),
-    ).then((response) => {
-      if (response?.error) {
-        return response.error;
-      } else {
-        return true;
-      }
-    });
+  applyEdit(rowKey: string, columnName: string, value: VuuRowDataItemType) {
+    return this.menuRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
+      (response) => {
+        if (response?.error) {
+          return response.error;
+        } else {
+          return true;
+        }
+      },
+    );
   }
 
   insertRow(rowKey: string, data: VuuDataRowDto) {

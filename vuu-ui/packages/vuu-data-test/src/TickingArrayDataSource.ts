@@ -16,7 +16,6 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
-  VuuTable,
   VuuRpcResponse,
   VuuRpcMenuResponse,
   VuuRpcRequest,
@@ -130,6 +129,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return subscription;
   }
 
+  unsubscribe() {
+    super.unsubscribe();
+    this.#table = undefined;
+  }
+
   set range(range: VuuRange) {
     super.range = range;
     // this.#updateGenerator?.setRange(range);
@@ -214,12 +218,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   applyEdit(
-    row: DataSourceRow,
+    rowKey: string,
     columnName: string,
     value: VuuRowDataItemType,
   ): Promise<true> {
-    const key = row[KEY];
-    this.#table?.update(key, columnName, value);
+    this.#table?.update(rowKey, columnName, value);
     return Promise.resolve(true);
   }
 
@@ -282,22 +285,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     } else {
       throw Error(
         "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided",
-      );
-    }
-  }
-
-  createSessionDataSource(vuuTable: VuuTable) {
-    const table = this.#sessionTables?.[vuuTable.table];
-    if (table) {
-      return new TickingArrayDataSource({
-        columnDescriptors: table.schema.columns,
-        keyColumn: table.schema.key,
-        table,
-        rpcServices: this.#rpcServices,
-      });
-    } else {
-      throw Error(
-        "TickingDataSource cannot create session datasource, no session table ${table.table}",
       );
     }
   }

@@ -5,8 +5,6 @@ import type {
   VuuAggregation,
   VuuRange,
   VuuSort,
-  VuuRpcMenuRequest,
-  VuuRpcEditRequest,
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
@@ -412,13 +410,11 @@ export class JsonDataSource
   }
 
   applyEdit(
-    row: DataSourceRow,
+    rowKey: string,
     columnName: string,
     value: VuuRowDataItemType,
   ): Promise<true> {
-    console.log(
-      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`,
-    );
+    console.log(`ArrayDataSource applyEdit ${rowKey} ${columnName} ${value}`);
     return Promise.resolve(true);
   }
 

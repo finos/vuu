@@ -1,67 +1,26 @@
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { getSchema } from "@finos/vuu-data-test";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { Table } from "@finos/vuu-table";
 import { TableConfig } from "@finos/vuu-table-types";
-import {
-  DataSource,
-  Selection,
-  SelectionChangeHandler,
-} from "@finos/vuu-data-types";
-import { isOpenBulkEditResponse } from "@finos/vuu-utils";
-import {
-  VuuRpcMenuRequest,
-  VuuRpcRequest,
-  VuuRpcResponse,
-} from "@finos/vuu-protocol-types";
+import { EditForm } from "./EditForm";
+import { useTableEditManager } from "./useTableEditManager";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
 
 let displaySequence = 0;
 
-const useTableEditManager = () => {
-  const [open, setOpen] = useState(false);
-  const [editSessionDataSource, setEditSessionDataSource] =
-    useState<DataSource | null>(null);
-
-  const dataSource = useMemo(() => {
-    const ds = vuuModule("SIMUL").createDataSource("instruments");
-    return ds;
-  }, []);
-
-  const handleSelectionChange = useCallback<SelectionChangeHandler>(
-    (selection: Selection) => {
-      if (selection.length > 0) {
-        setOpen(true);
-        dataSource
-          .menuRpcCall({
-            rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-            type: "VIEW_PORT_MENUS_SELECT_RPC",
-          } as Omit<VuuRpcMenuRequest, "vpId">)
-          .then((rpcResponse: VuuRpcResponse) => {
-            if (isOpenBulkEditResponse(rpcResponse)) {
-              const { table } = rpcResponse.action;
-              const sessionDs = dataSource.createSessionDataSource?.(table);
-              setEditSessionDataSource(sessionDs as DataSource);
-            }
-          });
-      } else {
-        setOpen(false);
-      }
-    },
-    [dataSource],
-  );
-
-  return {
-    dataSource,
-    editSessionDataSource,
-    open,
-    onSelectionChange: handleSelectionChange,
-  };
-};
+const instrumentsTable = { module: "SIMUL", table: "instruments" };
 
 const TableWithInlineEditForm = () => {
-  const list = useRef<HTMLDivElement>(null);
-
-  const { dataSource, open, onSelectionChange } = useTableEditManager();
+  const {
+    dataSource,
+    entity,
+    open,
+    onChangeFormField,
+    onCommitFieldValue,
+    onSelectionChange,
+    onSubmit,
+  } = useTableEditManager(instrumentsTable);
 
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -75,10 +34,12 @@ const TableWithInlineEditForm = () => {
   return (
     <DockLayout style={{ height: 500 }}>
       <Drawer inline={true} open={open} position="right" defaultOpen={false}>
-        <div
-          ref={list}
-          style={{ width: "100%", height: "100%", background: "yellow" }}
-        ></div>
+        <EditForm
+          editEntity={entity}
+          onChangeFormField={onChangeFormField}
+          onCommitFieldValue={onCommitFieldValue}
+          onSubmit={onSubmit}
+        />
       </Drawer>
       <Table
         config={tableConfig}
@@ -93,5 +54,9 @@ const TableWithInlineEditForm = () => {
   );
 };
 
-export const RightInlineEditForm = () => <TableWithInlineEditForm />;
+export const RightInlineEditForm = () => (
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <TableWithInlineEditForm />
+  </LocalDataSourceProvider>
+);
 RightInlineEditForm.displaySequence = displaySequence++;

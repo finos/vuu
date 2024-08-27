@@ -4,7 +4,6 @@ import {
   DataSourceRow,
   MenuRpcResponse,
   OpenDialogActionWithSchema,
-  RpcResponse,
 } from "@finos/vuu-data-types";
 import { getFilterPredicate } from "@finos/vuu-filter-parser";
 import {
