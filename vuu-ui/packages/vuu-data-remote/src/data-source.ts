@@ -6,19 +6,19 @@ import type {
 } from "@finos/vuu-data-types";
 import type {
   OpenDialogAction,
-  ServerToClientBody,
-  ServerToClientMenuResponse,
+  ServerMessageBody,
+  VuuRpcMenuSuccess,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { isOpenDialogAction } from "@finos/vuu-utils";
 
 export const isSizeOnly = (
-  message: DataSourceCallbackMessage
+  message: DataSourceCallbackMessage,
 ): message is DataSourceDataSizeMessage =>
   message.type === "viewport-update" && message.mode === "size-only";
 
 export const toDataSourceConfig = (
-  message: DataSourceConfigMessage
+  message: DataSourceConfigMessage,
 ): DataSourceConfig => {
   switch (message.type) {
     case "aggregate":
@@ -55,37 +55,15 @@ const datasourceMessages = [
 ];
 
 export const shouldMessageBeRoutedToDataSource = (
-  message: unknown
+  message: unknown,
 ): message is DataSourceCallbackMessage => {
   const type = (message as DataSourceCallbackMessage).type;
   return datasourceMessages.includes(type);
 };
 
 export const isDataSourceConfigMessage = (
-  message: DataSourceCallbackMessage
+  message: DataSourceCallbackMessage,
 ): message is DataSourceConfigMessage =>
   ["config", "aggregate", "columns", "filter", "groupBy", "sort"].includes(
-    message.type
+    message.type,
   );
-
-export const isSessionTableActionMessage = (
-  messageBody: ServerToClientBody
-): messageBody is ServerToClientMenuResponse & {
-  action: OpenDialogAction;
-} =>
-  messageBody.type === "VIEW_PORT_MENU_RESP" &&
-  isOpenDialogAction(messageBody.action) &&
-  isSessionTable(messageBody.action.table) &&
-  messageBody.action?.renderComponent === "inline-form";
-
-export const isSessionTable = (table?: unknown) => {
-  if (
-    table !== null &&
-    typeof table === "object" &&
-    "table" in table &&
-    "module" in table
-  ) {
-    return (table as VuuTable).table.startsWith("session");
-  }
-  return false;
-};

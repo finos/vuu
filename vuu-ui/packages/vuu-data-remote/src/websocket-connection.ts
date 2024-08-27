@@ -1,7 +1,4 @@
-import {
-  VuuServerToClientMessage,
-  VuuClientToServerMessage,
-} from "@finos/vuu-protocol-types";
+import { VuuServerMessage, VuuClientMessage } from "@finos/vuu-protocol-types";
 import { Connection } from "./connectionTypes";
 import { logger } from "@finos/vuu-utils";
 import {
@@ -12,13 +9,13 @@ import {
 } from "@finos/vuu-data-types";
 
 export type ConnectionMessage =
-  | VuuServerToClientMessage
+  | VuuServerMessage
   | ConnectionStatusMessage
   | ConnectionQualityMetrics;
 export type ConnectionCallback = (msg: ConnectionMessage) => void;
 
 const { debug, debugEnabled, error, info, infoEnabled, warn } = logger(
-  "websocket-connection"
+  "websocket-connection",
 );
 
 type ConnectionTracking = {
@@ -45,7 +42,7 @@ export async function connect(
   protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   retryLimitDisconnect = 10,
-  retryLimitStartup = 5
+  retryLimitStartup = 5,
 ): Promise<Connection> {
   connectionAttemptStatus[connectionString] = {
     status: "connecting",
@@ -77,7 +74,7 @@ async function makeConnection(
   url: string,
   protocol: WebSocketProtocol,
   callback: ConnectionCallback,
-  connection?: WebsocketConnection
+  connection?: WebsocketConnection,
 ): Promise<Connection> {
   const {
     status: currentStatus,
@@ -96,7 +93,7 @@ async function makeConnection(
     console.info(
       "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
-      "color:green; font-size: 14px;"
+      "color:green; font-size: 14px;",
     );
 
     if (connection !== undefined) {
@@ -143,7 +140,7 @@ const makeConnectionIn = (
   protocol: WebSocketProtocol,
   callback: ConnectionCallback,
   connection?: WebsocketConnection,
-  delay?: number
+  delay?: number,
 ): Promise<Connection> =>
   new Promise((resolve) => {
     setTimeout(() => {
@@ -153,7 +150,7 @@ const makeConnectionIn = (
 
 const createWebsocket = (
   websocketUrl: string,
-  protocol: WebSocketProtocol
+  protocol: WebSocketProtocol,
 ): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
     //TODO add timeout
@@ -170,25 +167,23 @@ const closeWarn = () => {
   warn?.(`Connection cannot be closed, socket not yet opened`);
 };
 
-const sendWarn = (msg: VuuClientToServerMessage) => {
+const sendWarn = (msg: VuuClientMessage) => {
   warn?.(`Message cannot be sent, socket closed ${msg.body.type}`);
 };
 
-const parseMessage = (message: string): VuuServerToClientMessage => {
+const parseMessage = (message: string): VuuServerMessage => {
   try {
-    return JSON.parse(message) as VuuServerToClientMessage;
+    return JSON.parse(message) as VuuServerMessage;
   } catch (e) {
     throw Error(`Error parsing JSON response from server ${message}`);
   }
 };
 
-export class WebsocketConnection
-  implements Connection<VuuClientToServerMessage>
-{
+export class WebsocketConnection implements Connection<VuuClientMessage> {
   [connectionCallback]: ConnectionCallback;
   close: () => void = closeWarn;
   requiresLogin = true;
-  send: (msg: VuuClientToServerMessage) => void = sendWarn;
+  send: (msg: VuuClientMessage) => void = sendWarn;
   status:
     | "closed"
     | "ready"
@@ -207,7 +202,7 @@ export class WebsocketConnection
     ws: WebSocket,
     url: string,
     protocol: WebSocketProtocol,
-    callback: ConnectionCallback
+    callback: ConnectionCallback,
   ) {
     this.url = url;
     this.protocol = protocol;
@@ -252,7 +247,7 @@ export class WebsocketConnection
         // our connection has errored before first server message has been received. This
         // is not a normal reconnect, more likely a websocket configuration issue
         error(
-          `Websocket connection lost before Vuu session established, check websocket configuration`
+          `Websocket connection lost before Vuu session established, check websocket configuration`,
         );
       } else if (this.status !== "closed") {
         reconnect(this);
@@ -279,7 +274,7 @@ export class WebsocketConnection
       }
     };
 
-    const send = (msg: VuuClientToServerMessage) => {
+    const send = (msg: VuuClientMessage) => {
       if (process.env.NODE_ENV === "development") {
         if (debugEnabled && msg.body.type !== "HB_RESP") {
           debug?.(`>>> ${msg.body.type}`);
@@ -288,7 +283,7 @@ export class WebsocketConnection
       ws.send(JSON.stringify(msg));
     };
 
-    const queue = (msg: VuuClientToServerMessage) => {
+    const queue = (msg: VuuClientMessage) => {
       info?.(`TODO queue message until websocket reconnected ${msg.body.type}`);
     };
 

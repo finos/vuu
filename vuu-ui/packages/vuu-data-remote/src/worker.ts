@@ -5,8 +5,8 @@ import {
   WithRequestId,
 } from "@finos/vuu-data-types";
 import {
-  ClientToServerMenuRPC,
-  ClientToServerRpcRequest,
+  VuuRpcMenuRequest,
+  VuuRpcServiceRequest,
 } from "@finos/vuu-protocol-types";
 import {
   isConnectionQualityMetrics,
@@ -27,7 +27,7 @@ async function connectToServer(
   username: string | undefined,
   onConnectionStatusChange: (msg: ConnectionStatusMessage) => void,
   retryLimitDisconnect?: number,
-  retryLimitStartup?: number
+  retryLimitStartup?: number,
 ) {
   const connection = await connectWebsocket(
     url,
@@ -49,7 +49,7 @@ async function connectToServer(
       }
     },
     retryLimitDisconnect,
-    retryLimitStartup
+    retryLimitStartup,
   );
 
   server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
@@ -67,8 +67,8 @@ const handleMessageFromClient = async ({
   data: message,
 }: MessageEvent<
   | VuuUIMessageOut
-  | WithRequestId<ClientToServerRpcRequest>
-  | WithRequestId<ClientToServerMenuRPC>
+  | WithRequestId<VuuRpcServiceRequest>
+  | WithRequestId<VuuRpcMenuRequest>
 >) => {
   switch (message.type) {
     case "connect":
@@ -80,7 +80,7 @@ const handleMessageFromClient = async ({
           message.username,
           postMessage,
           message.retryLimitDisconnect,
-          message.retryLimitStartup
+          message.retryLimitStartup,
         );
         postMessage({ type: "connected" });
       } catch (err: unknown) {

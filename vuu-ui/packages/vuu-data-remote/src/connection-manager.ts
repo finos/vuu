@@ -8,11 +8,11 @@ import {
   WebSocketProtocol,
 } from "@finos/vuu-data-types";
 import {
-  ClientToServerMenuRPC,
-  ClientToServerTableList,
-  ClientToServerTableMeta,
-  ClientToServerViewportRpcCall,
-  ClientToServerRpcRequest,
+  VuuRpcMenuRequest,
+  VuuTableListRequest,
+  VuuTableMetaRequest,
+  VuuRpcViewportRequest,
+  VuuRpcServiceRequest,
   VuuTable,
   VuuTableList,
 } from "@finos/vuu-protocol-types";
@@ -63,7 +63,7 @@ const serverAPI = new Promise<ServerAPI>((resolve, reject) => {
 export const getServerAPI = () => serverAPI;
 
 export type PostMessageToClientCallback = (
-  msg: DataSourceCallbackMessage
+  msg: DataSourceCallbackMessage,
 ) => void;
 
 const viewports = new Map<
@@ -167,7 +167,7 @@ function handleMessageFromWorker({
       viewport.postMessageToClientDataSource(message);
     } else {
       console.error(
-        `[ConnectionManager] ${message.type} message received, viewport not found`
+        `[ConnectionManager] ${message.type} message received, viewport not found`,
       );
     }
   } else if (isConnectionStatusMessage(message)) {
@@ -196,7 +196,7 @@ function handleMessageFromWorker({
     } else {
       console.warn(
         "%cConnectionManager Unexpected message from the worker",
-        "color:red;font-weight:bold;"
+        "color:red;font-weight:bold;",
       );
     }
   }
@@ -204,11 +204,11 @@ function handleMessageFromWorker({
 
 const asyncRequest = <T = unknown>(
   msg:
-    | ClientToServerRpcRequest
-    | ClientToServerMenuRPC
-    | ClientToServerTableList
-    | ClientToServerTableMeta
-    | ClientToServerViewportRpcCall
+    | VuuRpcServiceRequest
+    | VuuRpcMenuRequest
+    | VuuTableListRequest
+    | VuuTableMetaRequest
+    | VuuRpcViewportRequest,
 ): Promise<T> => {
   const requestId = uuid();
   worker.postMessage({
@@ -226,15 +226,12 @@ export interface ServerAPI {
   getTableList: (module?: string) => Promise<VuuTableList>;
   // TODO its not really unknown
   rpcCall: <T = unknown>(
-    msg:
-      | ClientToServerRpcRequest
-      | ClientToServerMenuRPC
-      | ClientToServerViewportRpcCall
+    msg: VuuRpcServiceRequest | VuuRpcMenuRequest | VuuRpcViewportRequest,
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
-    callback: PostMessageToClientCallback
+    callback: PostMessageToClientCallback,
   ) => void;
   unsubscribe: (viewport: string) => void;
 }
@@ -243,7 +240,7 @@ const connectedServerAPI: ServerAPI = {
   subscribe: (message, callback) => {
     if (viewports.get(message.viewport)) {
       throw Error(
-        `ConnectionManager attempting to subscribe with an existing viewport id`
+        `ConnectionManager attempting to subscribe with an existing viewport id`,
       );
     }
     // TODO we never use this status
@@ -270,10 +267,7 @@ const connectedServerAPI: ServerAPI = {
   },
 
   rpcCall: async <T = unknown>(
-    message:
-      | ClientToServerRpcRequest
-      | ClientToServerMenuRPC
-      | ClientToServerViewportRpcCall
+    message: VuuRpcServiceRequest | VuuRpcMenuRequest | VuuRpcViewportRequest,
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>
@@ -372,7 +366,7 @@ export const connectToServer = async ({
 };
 
 export const makeRpcCall = async <T = unknown>(
-  rpcRequest: ClientToServerRpcRequest
+  rpcRequest: VuuRpcServiceRequest,
 ) => {
   try {
     return (await serverAPI).rpcCall<T>(rpcRequest);

@@ -25,10 +25,10 @@ import {
   VuuUIMessageOutCloseTreeNode,
 } from "@finos/vuu-data-types";
 import {
-  ClientToServerChangeViewPort,
+  VuuViewportChangeRequest,
   ClientToServerCloseTreeNode,
   ClientToServerCreateLink,
-  ClientToServerCreateViewPort,
+  VuuViewportCreateRequest,
   ClientToServerDisable,
   ClientToServerEnable,
   ClientToServerOpenTreeNode,
@@ -36,7 +36,7 @@ import {
   ClientToServerSelection,
   ClientToServerViewPortRange,
   LinkDescriptorWithLabel,
-  ServerToClientCreateViewPortSuccess,
+  VuuViewportCreateResponse,
   VuuAggregation,
   VuuGroupBy,
   VuuMenu,
@@ -123,7 +123,7 @@ type AsyncOperation =
 type RangeRequestTuple = [
   ClientToServerViewPortRange | null,
   DataSourceRow[]?,
-  DataSourceDebounceRequest?
+  DataSourceDebounceRequest?,
 ];
 
 type LinkedParent = {
@@ -218,7 +218,7 @@ export class Viewport {
      * to send 'out of band' messageg, e.g cached SIZE messages when a timer
      * expires
      */
-    postMessageToClient: (message: DataSourceCallbackMessage) => void
+    postMessageToClient: (message: DataSourceCallbackMessage) => void,
   ) {
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
@@ -234,12 +234,12 @@ export class Viewport {
     this.title = title;
     infoEnabled &&
       info?.(
-        `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`
+        `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`,
       );
     this.dataWindow = new ArrayBackedMovingWindow(
       this.clientRange,
       range,
-      this.bufferSize
+      this.bufferSize,
     );
 
     this.postMessageToClient = postMessageToClient;
@@ -293,7 +293,7 @@ export class Viewport {
       sort: this.sort,
       groupBy: this.groupBy,
       filterSpec: { filter },
-    } as ClientToServerCreateViewPort;
+    } as VuuViewportCreateRequest;
   }
 
   handleSubscribed(
@@ -306,8 +306,8 @@ export class Viewport {
       sort,
       groupBy,
       table,
-    }: ServerToClientCreateViewPortSuccess,
-    baseTableSchema: TableSchema
+    }: VuuViewportCreateResponse,
+    baseTableSchema: TableSchema,
   ) {
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
@@ -355,7 +355,7 @@ export class Viewport {
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
       error(
-        `no matching operation found to complete for requestId ${requestId}`
+        `no matching operation found to complete for requestId ${requestId}`,
       );
       return;
     }
@@ -498,7 +498,7 @@ export class Viewport {
     if (this.dataWindow) {
       const [serverDataRequired, clientRows] = this.dataWindow.setClientRange(
         range.from,
-        range.to
+        range.to,
       );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
@@ -516,7 +516,7 @@ export class Viewport {
       if (serverRequest) {
         debugEnabled &&
           debug?.(
-            `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`
+            `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`,
           );
         // TODO check that there is not already a pending server request for more data
         this.awaitOperation(requestId, { type });
@@ -569,7 +569,7 @@ export class Viewport {
 
   setLinks(links: LinkDescriptorWithLabel[]) {
     this.links = links.filter(
-      (link) => link.parentVpId !== this.serverViewportId
+      (link) => link.parentVpId !== this.serverViewportId,
     );
     return [
       {
@@ -615,7 +615,7 @@ export class Viewport {
     requestId: string,
     colName: string,
     parentVpId: string,
-    parentColumnName: string
+    parentColumnName: string,
   ) {
     const message = {
       type: "CREATE_VISUAL_LINK",
@@ -726,7 +726,7 @@ export class Viewport {
                 filter: "",
               },
       },
-      true
+      true,
     );
   }
 
@@ -765,7 +765,7 @@ export class Viewport {
       ) {
         if (!isLast) {
           console.warn(
-            "removePendingRangeRequest TABLE_ROWS are not for latest request"
+            "removePendingRangeRequest TABLE_ROWS are not for latest request",
           );
         }
         this.pendingRangeRequests.splice(i, 1);
@@ -801,7 +801,7 @@ export class Viewport {
     if (rows.length === 1) {
       if (firstRow.vpSize === 0 && this.disabled) {
         debug?.(
-          `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`
+          `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`,
         );
         return;
       } else if (firstRow.updateType === "SIZE") {
@@ -926,7 +926,7 @@ export class Viewport {
         // @ts-ignore
         this.updateThrottleTimer = setTimeout(
           this.sendThrottledSizeMessage,
-          2000
+          2000,
         );
       }
       return true;
@@ -945,15 +945,15 @@ export class Viewport {
   };
 
   createRequest(
-    params: Partial<Omit<ClientToServerChangeViewPort, "type" | "viewPortId">>,
-    overWrite = false
+    params: Partial<Omit<VuuViewportChangeRequest, "type" | "viewPortId">>,
+    overWrite = false,
   ) {
     if (overWrite) {
       return {
         type: "CHANGE_VP",
         viewPortId: this.serverViewportId,
         ...params,
-      } as ClientToServerChangeViewPort;
+      } as VuuViewportChangeRequest;
     } else {
       return {
         type: "CHANGE_VP",
@@ -966,7 +966,7 @@ export class Viewport {
           filter: this.filter.filter,
         },
         ...params,
-      } as ClientToServerChangeViewPort;
+      } as VuuViewportChangeRequest;
     }
   }
 }
@@ -974,7 +974,7 @@ export class Viewport {
 const toClientRow = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
   keys: KeySet,
-  selectedRows: Selection
+  selectedRows: Selection,
 ) => {
   return [
     rowIndex,
@@ -991,7 +991,7 @@ const toClientRow = (
 const toClientRowTree = (
   { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
   keys: KeySet,
-  selectedRows: Selection
+  selectedRows: Selection,
 ) => {
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
     data;

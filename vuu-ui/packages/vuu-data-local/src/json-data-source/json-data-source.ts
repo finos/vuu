@@ -5,9 +5,11 @@ import type {
   VuuAggregation,
   VuuRange,
   VuuSort,
-  ClientToServerMenuRPC,
-  ClientToServerEditRpc,
+  VuuRpcMenuRequest,
+  VuuRpcEditRequest,
   VuuRowDataItemType,
+  VuuRpcResponse,
+  VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import type {
   DataSourceFilter,
@@ -98,7 +100,7 @@ export class JsonDataSource
     this.visibleRows = this.#data
       .filter((row) => row[DEPTH] === 0)
       .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2)),
       ) as DataSourceRow[];
     this.viewport = viewport || uuid();
     if (aggregations) {
@@ -132,7 +134,7 @@ export class JsonDataSource
       groupBy,
       filterSpec,
     }: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) {
     this.clientCallback = callback;
 
@@ -216,7 +218,7 @@ export class JsonDataSource
     this.visibleRows = this.#data
       .filter((row) => row[DEPTH] === 0)
       .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2))
+        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2)),
       ) as DataSourceRow[];
 
     requestAnimationFrame(() => {
@@ -391,8 +393,12 @@ export class JsonDataSource
     console.log("remove link");
   }
 
+  async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
+    return Promise.reject<T>();
+  }
+
   async menuRpcCall(
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ): Promise<
     | MenuRpcResponse
     | VuuUIMessageInRPCEditReject
@@ -408,10 +414,10 @@ export class JsonDataSource
   applyEdit(
     row: DataSourceRow,
     columnName: string,
-    value: VuuRowDataItemType
+    value: VuuRowDataItemType,
   ): Promise<true> {
     console.log(
-      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`
+      `ArrayDataSource applyEdit ${row.join(",")} ${columnName} ${value}`,
     );
     return Promise.resolve(true);
   }
@@ -434,7 +440,7 @@ export class JsonDataSource
       return childRows;
     } else {
       console.warn(
-        `JsonDataSource getChildRows row not found for key ${rowKey}`
+        `JsonDataSource getChildRows row not found for key ${rowKey}`,
       );
     }
 
@@ -471,7 +477,7 @@ function getVisibleRows(rows: DataSourceRow[], expandedKeys: Set<string>) {
 const cloneRow = (
   row: DataSourceRow,
   index: Index,
-  isExpanded: boolean
+  isExpanded: boolean,
 ): DataSourceRow => {
   const dolly = row.slice() as DataSourceRow;
   dolly[0] = index.value;

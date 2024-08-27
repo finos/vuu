@@ -1,9 +1,6 @@
 import type { Filter } from "@finos/vuu-filter-types";
 import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import type {
-  ClientToServerEditRpc,
-  ClientToServerMenuRPC,
-  ClientToServerViewportRpcCall,
   NoAction,
   OpenDialogAction,
   VuuAggregation,
@@ -17,6 +14,7 @@ import type {
   VuuRowDataItemType,
   VuuSort,
   VuuTable,
+  VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
 import type {
@@ -26,10 +24,10 @@ import type {
   TableSchema,
 } from "@finos/vuu-data-types";
 import type {
-  ClientToServerTableList,
-  ClientToServerTableMeta,
+  VuuTableListRequest,
+  VuuTableMetaRequest,
   LinkDescriptorWithLabel,
-  ServerToClientViewportRpcResponse,
+  VuuRpcViewportResponse,
   TypeAheadMethod,
   VuuRange,
 } from "@finos/vuu-protocol-types";
@@ -61,7 +59,7 @@ export type DataSourceRow = [
   ChildCount,
   RowKey,
   IsSelected,
-  ...VuuRowDataItemType[]
+  ...VuuRowDataItemType[],
 ];
 
 export type DataSourceRowObject = {
@@ -248,7 +246,7 @@ export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
  */
 export type MenuBuilder<L = string, O = unknown> = (
   location: L,
-  options: O
+  options: O,
 ) => ContextMenuItemDescriptor[];
 
 /**
@@ -260,7 +258,7 @@ export type MenuBuilder<L = string, O = unknown> = (
  * ActionHandlers to be chained.
  */
 export type MenuActionHandler = (
-  reason: MenuActionClosePopup
+  reason: MenuActionClosePopup,
 ) => boolean | undefined;
 
 export interface ContextMenuContextType {
@@ -335,7 +333,7 @@ export type DataSourceEvents = {
   config: (
     config: DataSourceConfig | undefined,
     confirmed?: boolean,
-    configChanges?: DataSourceConfigChanges
+    configChanges?: DataSourceConfigChanges,
   ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
@@ -354,13 +352,13 @@ export type DataSourceEvents = {
 export type DataSourceEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuRowDataItemType
+  value: VuuRowDataItemType,
 ) => Promise<true | string>;
 
 export type DataSourceDeleteHandler = (key: string) => Promise<true | string>;
 export type DataSourceInsertHandler = (
   key: string,
-  data: VuuDataRowDto
+  data: VuuDataRowDto,
 ) => Promise<true | string>;
 
 export type RpcResponse =
@@ -370,7 +368,7 @@ export type RpcResponse =
   | ViewportRpcResponse;
 
 export type RpcResponseHandler = (
-  response: Omit<RpcResponse, "requestId">
+  response: Omit<VuuRpcResponse, "vpId">,
 ) => boolean;
 
 export type RowSearchPredicate = (row: DataSourceRow) => boolean;
@@ -392,7 +390,7 @@ export type SuggestionProvider = () => SuggestionFetcher;
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
     columnName: string,
-    pattern?: string
+    pattern?: string,
   ) => Promise<string[]>;
 }
 
@@ -415,7 +413,7 @@ export interface DataSource
    * @returns true if config has been applied (will not be if existig config is same)
    */
   applyConfig: (
-    config: DataSourceConfig
+    config: DataSourceConfig,
   ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
@@ -478,21 +476,27 @@ export interface DataSource
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
+  /** @deprecated, use remoteProcedureCall instead */
   menuRpcCall: (
-    rpcRequest: Omit<ClientToServerMenuRPC, "vpId"> | ClientToServerEditRpc
-  ) => Promise<Omit<RpcResponse, "requestId"> | undefined>;
-  rpcCall?: <T extends RpcResponse = RpcResponse>(
-    message: Omit<ClientToServerViewportRpcCall, "vpId">
-  ) => Promise<T | undefined>;
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+  ) => Promise<VuuRpcMenuResponse>;
+  /* @deprecated, use remoteProcedureCall instead */
+  rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+  ) => Promise<T>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
+  remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
+    message: VuuRpcRequest,
+  ) => Promise<T>;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
+  sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
   readonly size: number;
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) => Promise<void>;
   table?: VuuTable;
   readonly tableSchema?: TableSchema;
@@ -508,7 +512,7 @@ export interface DataSource
 }
 
 export interface MenuRpcResponse<
-  TAction extends MenuRpcAction = MenuRpcAction
+  TAction extends MenuRpcAction = MenuRpcAction,
 > {
   action: TAction;
   error?: string;
@@ -609,7 +613,7 @@ export interface VuuUIMessageInTableMeta {
   type: "TABLE_META_RESP";
 }
 export interface ViewportRpcResponse {
-  action: ServerToClientViewportRpcResponse["action"] & {
+  action: VuuRpcViewportResponse["action"] & {
     // for SessionTable editing, we inject the schema after receiving server message
     // and before forwarding to UI
     tableSchema?: TableSchema;
@@ -789,5 +793,5 @@ export type VuuUIMessageOut =
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport
-  | WithRequestId<ClientToServerTableList>
-  | WithRequestId<ClientToServerTableMeta>;
+  | WithRequestId<VuuTableListRequest>
+  | WithRequestId<VuuTableMetaRequest>;

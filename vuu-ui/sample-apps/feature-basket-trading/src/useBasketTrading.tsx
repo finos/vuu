@@ -16,6 +16,7 @@ import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
 import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 export class Basket {
   basketId: string;
@@ -91,7 +92,7 @@ export const useBasketTrading = ({
 
   const basketConstituentMap = useMemo(
     () => buildColumnMap(basketConstituentSchema.columns),
-    [basketConstituentSchema]
+    [basketConstituentSchema],
   );
 
   const basketInstanceId = useMemo<string>(() => {
@@ -125,7 +126,7 @@ export const useBasketTrading = ({
 
   const columnMapBasketTrading = useMemo(
     () => buildColumnMap(dataSourceBasketTradingControl.columns),
-    [dataSourceBasketTradingControl.columns]
+    [dataSourceBasketTradingControl.columns],
   );
 
   const handleMessageFromBasketTradingControl = useCallback<SubscribeCallback>(
@@ -139,7 +140,7 @@ export const useBasketTrading = ({
         }
       }
     },
-    [columnMapBasketTrading]
+    [columnMapBasketTrading],
   );
 
   useMemo(() => {
@@ -147,7 +148,7 @@ export const useBasketTrading = ({
       {
         range: { from: 0, to: 1 },
       },
-      handleMessageFromBasketTradingControl
+      handleMessageFromBasketTradingControl,
     );
 
     // TEMP server is notsending TABLE_ROWS if size is zero
@@ -174,7 +175,7 @@ export const useBasketTrading = ({
       dataSourceBasketTradingConstituentJoin,
       dataSourceBasketTradingControl,
       save,
-    ]
+    ],
   );
 
   const handleBasketCreated = useCallback<BasketCreatedHandler>(
@@ -185,7 +186,7 @@ export const useBasketTrading = ({
         dialog: undefined,
       }));
     },
-    [handleSelectBasket]
+    [handleSelectBasket],
   );
 
   const handleAddBasket = useCallback(() => {
@@ -219,7 +220,7 @@ export const useBasketTrading = ({
       dataSourceBasketTradingSearch,
       handleAddBasket,
       handleSelectBasket,
-    ]
+    ],
   );
 
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
@@ -229,12 +230,12 @@ export const useBasketTrading = ({
         return dataSourceBasketTradingControl.applyEdit(
           dataSourceRow,
           columnName,
-          value
+          value,
         );
       }
       return Promise.resolve(true);
     },
-    [basket, dataSourceBasketTradingControl]
+    [basket, dataSourceBasketTradingControl],
   );
 
   const handleRpcResponse = useCallback((response) => {
@@ -266,7 +267,7 @@ export const useBasketTrading = ({
             rpcName: "addConstituent",
             namedParams: {},
             params: [ric],
-          })
+          } as Omit<VuuRpcViewportRequest, "vpId">)
           .then((response) => {
             if (response?.action.type === "VP_CREATE_SUCCESS") {
               notify?.({
@@ -284,21 +285,21 @@ export const useBasketTrading = ({
           });
       }
     },
-    [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify]
+    [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify],
   );
 
   const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(
     (config) => {
       save?.(config, "basket-edit-table-config");
     },
-    [save]
+    [save],
   );
 
   const handleConfigChangeLive = useCallback<TableConfigChangeHandler>(
     (config) => {
       save?.(config, "basket-live-table-config");
     },
-    [save]
+    [save],
   );
 
   useEffect(() => {

@@ -4,21 +4,20 @@ import {
   WithRequestId,
 } from "@finos/vuu-data-types";
 import {
-  ClientToServerMenuRPC,
-  ClientToServerViewportRpcCall,
-  ServerToClientTableMeta,
+  VuuRpcMenuRequest,
+  VuuRpcViewportRequest,
+  VuuTableMetaResponse,
   VuuRow,
-  ClientToServerRpcRequest,
+  VuuRpcServiceRequest,
 } from "@finos/vuu-protocol-types";
 
 export const isVuuRpcRequest = (
   message:
     | VuuUIMessageOut
-    | ClientToServerRpcRequest
-    | ClientToServerMenuRPC
-    | ClientToServerViewportRpcCall
-): message is ClientToServerViewportRpcCall =>
-  message["type"] === "VIEW_PORT_RPC_CALL";
+    | VuuRpcServiceRequest
+    | VuuRpcMenuRequest
+    | VuuRpcViewportRequest,
+): message is VuuRpcViewportRequest => message["type"] === "VIEW_PORT_RPC_CALL";
 
 export const stripRequestId = <T>({
   requestId,
@@ -26,7 +25,7 @@ export const stripRequestId = <T>({
 }: WithRequestId<T>): [string, T] => [requestId, rest as T];
 
 export const getFirstAndLastRows = (
-  rows: VuuRow[]
+  rows: VuuRow[],
 ): [VuuRow, VuuRow] | [VuuRow] => {
   let firstRow = rows.at(0) as VuuRow;
   if (firstRow.updateType === "SIZE") {
@@ -56,7 +55,7 @@ export const createSchemaFromTableMetadata = ({
   dataTypes,
   key,
   table,
-}: Omit<ServerToClientTableMeta, "type">): Readonly<TableSchema> => {
+}: Omit<VuuTableMetaResponse, "type">): Readonly<TableSchema> => {
   return {
     table,
     columns: columns.map((col, idx) => ({

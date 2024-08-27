@@ -11,6 +11,7 @@ import { TableConfig } from "@finos/vuu-table-types";
 import { List, ListItem } from "@finos/vuu-ui-controls";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
+import { VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
 
 let displaySequence = 1;
 
@@ -78,14 +79,11 @@ const InlineDrawer = ({
       if (selection.length > 0) {
         setOpen(true);
         dataSource
-          .rpcCall({
-            rpcName: "openEditSession",
-            type: "VIEW_PORT_RPC_CALL",
-            namedParams: {
-              table: dataSource.table,
-            },
-            params: [],
-          })
+          .menuRpcCall({
+            rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+            type: "VIEW_PORT_MENUS_SELECT_RPC",
+            namedParams: {},
+          } as Omit<VuuRpcMenuRequest, "vpId">)
           .then((response) => {
             console.log(`response`, {
               response,
@@ -95,7 +93,7 @@ const InlineDrawer = ({
         setOpen(false);
       }
     },
-    [dataSource]
+    [dataSource],
   );
 
   return (
@@ -245,7 +243,7 @@ export const CustomHeaderElementVirtualizedColumns = () => {
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSource = useMemo<DataSource>(() => {
@@ -279,7 +277,7 @@ export const MultipleCustomHeaders = () => {
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSource = useMemo<DataSource>(() => {
@@ -293,7 +291,7 @@ export const MultipleCustomHeaders = () => {
 
   const customHeader = useMemo(
     () => <CustomColumnHeader key="custom-header" />,
-    []
+    [],
   );
 
   return (

@@ -1,6 +1,6 @@
 import { VuuDataSource } from "@finos/vuu-data-remote";
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import { VuuGroupBy, VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -134,7 +134,7 @@ export const TreePerformance = () => {
     dataSourceParent.menuRpcCall({
       type: "VIEW_PORT_MENUS_SELECT_RPC",
       rpcName: "ADD_1M_ROWS",
-    });
+    } as Omit<VuuRpcMenuRequest, "vpId">);
   }, [dataSourceParent]);
 
   const handleGroupBy = useCallback(
@@ -151,7 +151,7 @@ export const TreePerformance = () => {
       const endTime = performance.now();
       setOperationStatus(`took ${((endTime - startTime) / 1000).toFixed(2)} s`);
     },
-    [dataSourceChild]
+    [dataSourceChild],
   );
 
   const handleSort = useCallback(
@@ -164,7 +164,7 @@ export const TreePerformance = () => {
       const endTime = performance.now();
       setOperationStatus(`took ${((endTime - startTime) / 1000).toFixed(2)} s`);
     },
-    [dataSourceChild]
+    [dataSourceChild],
   );
 
   const disableButtons = operationStatus === "in flight";

@@ -1,7 +1,7 @@
 import { makeRpcCall } from "@finos/vuu-data-remote";
 import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 import {
-  ClientToServerRpcRequest,
+  VuuRpcServiceRequest,
   TypeaheadParams,
 } from "@finos/vuu-protocol-types";
 import { useCallback } from "react";
@@ -10,7 +10,7 @@ export const getTypeaheadParams = (
   table: TableSchemaTable,
   column: string,
   text = "",
-  selectedValues: string[] = []
+  selectedValues: string[] = [],
 ): TypeaheadParams => {
   if (text !== "" && !selectedValues.includes(text.toLowerCase())) {
     return [table, column, text];
@@ -20,7 +20,7 @@ export const getTypeaheadParams = (
 
 export const useTypeaheadSuggestions = () =>
   useCallback<SuggestionFetcher>(async (params: TypeaheadParams) => {
-    const rpcMessage: ClientToServerRpcRequest =
+    const rpcMessage: VuuRpcServiceRequest =
       params.length === 2
         ? {
             type: "RPC_CALL",
