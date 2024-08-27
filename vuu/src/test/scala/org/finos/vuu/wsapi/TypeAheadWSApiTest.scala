@@ -35,8 +35,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
 
       And("return No Action")
       responseBody.action shouldBe a[NoneAction]
@@ -56,8 +56,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValuesStartingWith"
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
     }
 
     Scenario("Start with a specified string that has no matching value") {
@@ -74,8 +74,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValuesStartingWith"
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List.empty
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List.empty
     }
 
     Scenario("For a column that is not in view port") {
@@ -92,8 +92,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List.empty
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List.empty
     }
 
     Scenario("For a column that does not exist") {
@@ -110,8 +110,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List.empty
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List.empty
     }
 
     Scenario("For a viewport that does not exist") {
@@ -126,9 +126,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
-      responseBody.result.isSuccess shouldEqual false
-      responseBody.result.errorMessage shouldEqual "No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
-      //todo   responseBody.result.data should be(null)
+      val result = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      result.errorMessage shouldEqual "No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
 
       And("Show error notification action")
       val action = assertAndCastAsInstanceOf[ShowNotificationAction](responseBody.action)
@@ -151,8 +150,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
-      responseBody.result.isSuccess shouldEqual true
-      responseBody.result.data shouldEqual List.empty
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List.empty
     }
 
     Scenario("When there is multiple viewports and multiple requests") {
@@ -167,15 +166,17 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val requestId1 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest1)
       val requestId2 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest2)
 
-
       Then("return success response for each request")
       val response1 = vuuClient.awaitForResponse(requestId1)
-      val response2 = vuuClient.awaitForResponse(requestId2)
-
       val responseBody1 = assertBodyIsInstanceOf[RpcResponseNew](response1)
+      val result1 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody1.result)
+
+      val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
-      responseBody1.result.data shouldEqual List("Sid Sawyer", "Sally Phelps")
-      responseBody2.result.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
+      val result2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)
+
+      result1.data shouldEqual List("Sid Sawyer", "Sally Phelps")
+      result2.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
     }
   }
 
@@ -245,7 +246,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
   private def createTypeAheadRequest(viewPortId: String, tableName: String, columnName: String): RpcRequest = {
     RpcRequest(
-      RpcContext(viewPortId),
+      ViewPortContext(viewPortId),
       RpcNames.UniqueFieldValuesRpc,
       params = Map(
         "table" -> tableName,
@@ -256,7 +257,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
   private def createTypeAheadStartWithRequest(viewPortId: String, tableName: String, columnName: String, startString: String): RpcRequest = {
     RpcRequest(
-      RpcContext(viewPortId),
+      ViewPortContext(viewPortId),
       RpcNames.UniqueFieldValuesStartWithRpc,
       params = Map(
         "table" -> tableName,

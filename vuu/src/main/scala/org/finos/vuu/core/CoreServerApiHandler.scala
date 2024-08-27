@@ -409,13 +409,19 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     vsMsg(CloseTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 
-  override def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    val response = Try(viewPortContainer.handleRpcRequest(msg.context.viewPortId, msg.rpcName, msg.params)(ctx)) match {
+  override def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage] =
+    msg.context match {
+      case context: ViewPortContext => handleViewPortRpcRequest(msg, context.viewPortId, ctx)
+      case context => vsMsg(createErrorRpcResponse(msg, s"Unsupported request context type $context"))(ctx)
+    }
+
+  private def handleViewPortRpcRequest(msg: RpcRequest, viewPortId: String, ctx: RequestContext) = {
+    val response = Try(viewPortContainer.handleRpcRequest(viewPortId, msg.rpcName, msg.params)(ctx)) match {
       case Success(functionResult) =>
         logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
         functionResult match {
           case RpcFunctionSuccess(data) =>
-            RpcResponseNew(rpcName = msg.rpcName, result = RpcResult.fromSuccess(data), NoneAction())
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction())
           case RpcFunctionFailure(errorCode, error, exception) =>
             createErrorRpcResponse(msg, error)
         }
@@ -429,7 +435,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   private def createErrorRpcResponse(msg: RpcRequest, errorMessage: String) = {
     RpcResponseNew(
       rpcName = msg.rpcName,
-      result = RpcResult.fromError(errorMessage),
+      result = RpcErrorResult(errorMessage),
       action = ShowNotificationAction(NotificationType.Error, s"Failed to process ${msg.rpcName} request", errorMessage))
   }
 }
