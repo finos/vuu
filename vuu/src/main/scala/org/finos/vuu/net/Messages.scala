@@ -215,40 +215,28 @@ case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowInde
  */
 
 case class RpcRequest(context: RpcContext, rpcName: String, params: Any) extends MessageBody
-case class RpcContext(viewPortId: String)
 
-//case class RpcContext(viewPortId: String, rowKey: String)
-//object RpcContext {
-//  def forViewPort(viewPortId: String) = RpcContext(viewPortId)
-//  def forViewPortRow(viewPortId: String, rowKey: String) = RpcContext(viewPortId)
-//}
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-//@JsonSubTypes(Array(
-//  new Type(value = classOf[GlobalContext], name = "GLOBAL_CONTEXT"),
-//  new Type(value = classOf[ViewPortContext], name = "VIEWPORT_CONTEXT"),
-//  new Type(value = classOf[ViewPortRowContext], name = "VIEWPORT_ROW_CONTEXT"),
-//))
-//trait RpcContext
-//case class GlobalContext() extends RpcContext
-//case class ViewPortContext(viewPortId: String) extends RpcContext
-//case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(Array(
+  new Type(value = classOf[GlobalContext], name = "GLOBAL_CONTEXT"),
+  new Type(value = classOf[ViewPortContext], name = "VIEWPORT_CONTEXT"),
+  new Type(value = classOf[ViewPortRowContext], name = "VIEWPORT_ROW_CONTEXT"),
+))
+trait RpcContext
+case class GlobalContext() extends RpcContext
+case class ViewPortContext(viewPortId: String) extends RpcContext
+case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
 
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
-case class RpcResult(isSuccess: Boolean, data: Any, errorMessage: String)
 
-object RpcResult {
-  def fromError(errorMessage: String): RpcResult = RpcResult(isSuccess = false, data = null, errorMessage = errorMessage)
-  def fromSuccess(data: Any): RpcResult = RpcResult(isSuccess = true, data = data, errorMessage = null)
-}
-
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-//@JsonSubTypes(Array(
-//  new Type(value = classOf[RpcSuccessResult], name = "SUCCESS_RESULT"),
-//  new Type(value = classOf[RpcErrorResult], name = "ERROR_RESULT"),
-//))
-//trait RpcResult
-//case class RpcSuccessResult(data: Any) extends RpcResult
-//case class RpcErrorResult(errorMessage: String) extends RpcResult
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(Array(
+  new Type(value = classOf[RpcSuccessResult], name = "SUCCESS_RESULT"),
+  new Type(value = classOf[RpcErrorResult], name = "ERROR_RESULT"),
+))
+trait RpcResult
+case class RpcSuccessResult(data: Any) extends RpcResult
+case class RpcErrorResult(errorMessage: String) extends RpcResult
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(
@@ -256,9 +244,7 @@ object RpcResult {
   new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION"),
 ))
 trait UIAction
-
 case class NoneAction() extends UIAction
-
 case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction
 
 object NotificationType {
