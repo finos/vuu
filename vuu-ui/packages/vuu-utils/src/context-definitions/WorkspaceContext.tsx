@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import {
   ApplicationSetting,
   ApplicationSettings,
-  LayoutJSON,
+  LayoutJSON
 } from "../json-types";
 import { LayoutMetadata, LayoutMetadataDto } from "../layout-types";
 
@@ -19,7 +19,7 @@ export interface WorkspaceContextProps {
   ) => void;
   saveLayout: (n: LayoutMetadataDto) => void;
   saveApplicationLayout: (layout: LayoutJSON) => void;
-  workspaceJSON?: LayoutJSON;
+  workspaceJSON?: LayoutJSON | LayoutJSON[];
 }
 
 export const WorkspaceContext = React.createContext<WorkspaceContextProps>({
@@ -28,7 +28,7 @@ export const WorkspaceContext = React.createContext<WorkspaceContextProps>({
   saveLayout: () => undefined,
   saveApplicationLayout: () => undefined,
   saveApplicationSettings: () => undefined,
-  loadLayoutById: () => undefined,
+  loadLayoutById: () => undefined
 });
 
 export const usePlaceholderJSON = () => {

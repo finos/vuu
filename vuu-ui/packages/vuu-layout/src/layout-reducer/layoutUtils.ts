@@ -5,14 +5,14 @@ import {
   getLayoutComponent,
   isContainer,
   isLayoutComponent,
-  uuid,
+  uuid
 } from "@finos/vuu-utils";
 import React, { CSSProperties, ReactElement, cloneElement } from "react";
 import { TabLabelFactory } from "../stack";
 import {
   getPersistentState,
   hasPersistentState,
-  setPersistentState,
+  setPersistentState
 } from "../use-persistent-state";
 import { expandFlex, followPathToParent, getProps, typeOf } from "../utils";
 import { layoutType } from "./layoutTypes";
@@ -23,7 +23,7 @@ interface ComponentWithId {
 }
 
 export const getManagedDimension = (
-  style: CSSProperties,
+  style: CSSProperties
 ): [dimension, dimension] =>
   style.flexDirection === "column" ? ["height", "width"] : ["width", "height"];
 
@@ -33,7 +33,7 @@ export const applyLayoutProps = (component: ReactElement, path = "0") => {
   const [layoutProps, children] = getChildLayoutProps(
     typeOf(component) as string,
     component.props,
-    path,
+    path
   );
   return React.cloneElement(component, layoutProps, children);
 };
@@ -58,7 +58,7 @@ export interface LayoutProps extends ComponentWithId {
  */
 export const cloneElementAddLayoutProps = (
   layoutElement: ReactElement,
-  previousLayout?: ReactElement,
+  previousLayout?: ReactElement
 ): ReactElement => {
   const type = typeOf(layoutElement) as string;
   const [layoutProps, children] = getChildLayoutProps(
@@ -66,7 +66,7 @@ export const cloneElementAddLayoutProps = (
     layoutElement.props,
     "0",
     undefined,
-    previousLayout,
+    previousLayout
   );
   return cloneElement(layoutElement, layoutProps, children);
 };
@@ -74,20 +74,20 @@ export const cloneElementAddLayoutProps = (
 export const applyLayout = (
   type: layoutType,
   props: LayoutProps,
-  previousLayout?: LayoutModel,
+  previousLayout?: LayoutModel
 ): LayoutModel => {
   const [layoutProps, children] = getChildLayoutProps(
     type,
     props,
     "0",
     undefined,
-    previousLayout,
+    previousLayout
   );
   return {
     ...props,
     ...layoutProps,
     type,
-    children,
+    children
   };
 };
 
@@ -96,14 +96,14 @@ function getLayoutProps(
   props: LayoutProps,
   path = "0",
   parentType: string | null = null,
-  previousLayout?: LayoutModel,
+  previousLayout?: LayoutModel
 ): LayoutProps {
   const {
     active: prevActive = 0,
     "data-path": dataPath,
     path: prevPath = dataPath,
     id: prevId,
-    style: prevStyle,
+    style: prevStyle
   } = getProps(previousLayout);
 
   const prevMatch = typeOf(previousLayout) === type && path === prevPath;
@@ -122,14 +122,14 @@ function getChildLayoutProps(
   props: LayoutProps,
   path: string,
   parentType: string | null = null,
-  previousLayout?: LayoutModel,
+  previousLayout?: LayoutModel
 ): [LayoutProps, ReactElement[]] {
   const layoutProps = getLayoutProps(
     type,
     props,
     path,
     parentType,
-    previousLayout,
+    previousLayout
   );
 
   if (props.layout && !previousLayout) {
@@ -149,7 +149,7 @@ function getLayoutChildren(
   type: string,
   children?: ReactElement[],
   path = "0",
-  previousChildren?: ReactElement[],
+  previousChildren?: ReactElement[]
 ) {
   const kids = Array.isArray(children)
     ? children
@@ -167,7 +167,7 @@ function getLayoutChildren(
             child.props,
             `${path}.${i}`,
             type,
-            previousChildren?.[i],
+            previousChildren?.[i]
           );
           return React.cloneElement(child, layoutProps, children);
         }
@@ -180,14 +180,14 @@ function getLayoutChildren(
 const getStyle = (
   type: string,
   props: LayoutProps,
-  parentType?: string | null,
+  parentType?: string | null
 ) => {
   let { style = theKidHasNoStyle } = props;
   if (type === "Flexbox") {
     style = {
       flexDirection: props.column ? "column" : "row",
       ...style,
-      display: "flex",
+      display: "flex"
     };
   }
 
@@ -195,12 +195,12 @@ const getStyle = (
     const { flex, ...otherStyles } = style;
     style = {
       ...otherStyles,
-      ...expandFlex(typeof flex === "number" ? flex : 0),
+      ...expandFlex(typeof flex === "number" ? flex : 0)
     };
   } else if (parentType === "Stack") {
     style = {
       ...style,
-      ...expandFlex(1),
+      ...expandFlex(1)
     };
   } else if (
     parentType === "Flexbox" &&
@@ -211,7 +211,7 @@ const getStyle = (
       ...style,
       flexBasis: "auto",
       flexGrow: 0,
-      flexShrink: 0,
+      flexShrink: 0
     };
   }
 
@@ -219,14 +219,14 @@ const getStyle = (
 };
 
 export function layoutFromJson(
-  { id = uuid(), type, children, props, state }: LayoutJSON,
-  path: string,
+  { active, id = uuid(), type, children, props, state }: LayoutJSON,
+  path: string
 ): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
   if (componentType === undefined) {
     throw Error(
-      `layoutUtils unable to create component from JSON, unknown type ${type}`,
+      `layoutUtils unable to create component from JSON, unknown type ${type}`
     );
   }
 
@@ -237,14 +237,15 @@ export function layoutFromJson(
   return React.createElement(
     componentType,
     {
+      active,
       id,
       ...props,
       key: id,
-      path,
+      path
     },
     children
       ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
-      : undefined,
+      : undefined
   );
 }
 
@@ -263,7 +264,7 @@ export function componentToJson(component: ReactElement): LayoutJSON {
     type,
     props: serializeProps(props as LayoutProps),
     state,
-    children: React.Children.map(children, componentToJson),
+    children: React.Children.map(children, componentToJson)
   };
 }
 
@@ -303,7 +304,7 @@ export type LayoutQuery = "PARENT_CONTAINER";
 export const layoutQuery = (
   query: LayoutQuery,
   path?: string,
-  layoutRoot?: ReactElement,
+  layoutRoot?: ReactElement
 ) => {
   if (path && layoutRoot) {
     const parentElement = followPathToParent(layoutRoot, path);
@@ -312,12 +313,12 @@ export const layoutQuery = (
       const parentContainerType = typeOf(parentElement);
       return {
         parentContainerId,
-        parentContainerType,
+        parentContainerType
       };
     }
     return {
       parentContainerType: "Stack",
-      parentContainerId: "blah",
+      parentContainerId: "blah"
     };
   }
 };
@@ -325,7 +326,7 @@ export const layoutQuery = (
 export const getDefaultTabLabel: TabLabelFactory = (
   component,
   tabIndex,
-  existingLabels = [],
+  existingLabels = []
 ): string => {
   let label =
     component.props?.title ??

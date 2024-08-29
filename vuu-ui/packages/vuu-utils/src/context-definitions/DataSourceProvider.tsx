@@ -1,12 +1,12 @@
-import { DataSourceContext, DataSourceContextProps } from "@finos/vuu-utils";
 import { ReactNode, useContext } from "react";
+import { DataSourceContext, DataSourceContextProps } from "./DataSourceContext";
 
 export const DataSourceProvider = ({
   children,
   getServerAPI,
   isLocalData = true,
   VuuDataSource,
-  vuuModuleNames,
+  vuuModuleNames
 }: Omit<DataSourceContextProps, "isLocalData"> & {
   children: ReactNode;
   isLocalData?: boolean;

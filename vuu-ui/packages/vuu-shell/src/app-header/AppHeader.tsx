@@ -1,6 +1,6 @@
-import { useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { useLayoutOperation } from "@finos/vuu-layout";
 import { Toolbar } from "@finos/vuu-ui-controls";
-import { ThemeMode, VuuShellLocation } from "@finos/vuu-utils";
+import { ThemeMode } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -25,31 +25,26 @@ export const AppHeader = ({
   useComponentCssInjection({
     testId: "vuu-app-header",
     css: appHeaderCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const className = cx(classBase, classNameProp);
   const loginUrl = useLoginUrl();
 
-  const dispatchLayoutAction = useLayoutProviderDispatch();
+  const { showComponentInContextPanel } = useLayoutOperation();
 
   const handleLogout = useCallback(() => {
     logout(loginUrl);
   }, [loginUrl]);
 
   const handleShowSettings = useCallback(() => {
-    dispatchLayoutAction({
-      type: "set-props",
-      path: `#${VuuShellLocation.ContextPanel}`,
-      props: {
-        expanded: true,
-        content: {
-          type: "ApplicationSettings",
-        },
-        title: "Settings",
+    showComponentInContextPanel(
+      {
+        type: "ApplicationSettings"
       },
-    });
-  }, [dispatchLayoutAction]);
+      "Settings"
+    );
+  }, [showComponentInContextPanel]);
 
   return (
     <Toolbar

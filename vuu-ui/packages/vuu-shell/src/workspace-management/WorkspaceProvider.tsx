@@ -9,14 +9,14 @@ import {
   type ApplicationJSON,
   type ApplicationSetting,
   type ApplicationSettings,
-  type LayoutJSON,
+  type LayoutJSON
 } from "@finos/vuu-utils";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePersistenceManager } from "../persistence-manager";
 import {
   getWorkspaceWithLayoutJSON,
   loadingJSON,
-  type WorkspaceStackProps,
+  type WorkspaceStackProps
 } from "./defaultWorkspaceJSON";
 
 const { info } = logger("useLayoutManager");
@@ -33,7 +33,7 @@ export type WorkspaceProps = WorkspaceStackProps & {
    * The Vuu workspace is the container into which layouts are loaded. By default, it will be
    * a Tabbed Panel (Stack + Tabstrip), showing a tab per Layout.
    */
-  workspaceJSON?: LayoutJSON;
+  workspaceJSON?: LayoutJSON | LayoutJSON[];
 };
 
 export interface WorkspaceProviderProps extends WorkspaceProps {
@@ -56,14 +56,14 @@ const ensureLayoutHasTitle = (
       ...layout,
       props: {
         ...layout.props,
-        title: layoutMetadata.name,
-      },
+        title: layoutMetadata.name
+      }
     };
   }
 };
 
 const loadingApplicationJSON: ApplicationJSON = {
-  workspaceJSON: loadingJSON,
+  workspaceJSON: loadingJSON
 };
 
 /**
@@ -86,7 +86,7 @@ export const WorkspaceProvider = ({
   activeLayoutIndex,
   layoutPlaceholderJSON,
   showTabs,
-  workspaceJSON: customWorkspaceJSON,
+  workspaceJSON: customWorkspaceJSON
 }: WorkspaceProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
   // TODO this default should probably be a loading state rather than the placeholder
@@ -111,7 +111,7 @@ export const WorkspaceProvider = ({
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
-          workspaceJSON,
+          workspaceJSON
         },
         rerender
       );
@@ -126,8 +126,8 @@ export const WorkspaceProvider = ({
           ...applicationJSONRef.current,
           settings: {
             ...applicationJSONRef.current.settings,
-            ...settings,
-          },
+            ...settings
+          }
         },
         false
       );
@@ -146,7 +146,7 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Load Layouts",
-          body: "Could not load list of available layouts",
+          body: "Could not load list of available layouts"
         });
         console.error("Error occurred while retrieving metadata", error);
       });
@@ -171,7 +171,7 @@ export const WorkspaceProvider = ({
             ${JSON.stringify(workspaceJSON, null, 2)}
             `);
           setApplicationJSON({
-            workspaceJSON,
+            workspaceJSON
           });
         }
       })
@@ -179,7 +179,7 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Load Layout",
-          body: "Could not load your latest view",
+          body: "Could not load your latest view"
         });
         console.error(
           "Error occurred while retrieving application layout",
@@ -194,7 +194,7 @@ export const WorkspaceProvider = ({
     notify,
     persistenceManager,
     setApplicationJSON,
-    showTabs,
+    showTabs
   ]);
 
   const saveApplicationLayout = useCallback(
@@ -213,10 +213,15 @@ export const WorkspaceProvider = ({
     (metadata: LayoutMetadataDto) => {
       let layoutToSave: LayoutJSON | undefined;
       try {
-        layoutToSave = resolveJSONPath(
-          applicationJSONRef.current.workspaceJSON,
-          `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`
-        );
+        const { workspaceJSON } = applicationJSONRef.current;
+        if (Array.isArray(workspaceJSON)) {
+          console.log("how do we identify the right thing to save");
+        } else {
+          layoutToSave = resolveJSONPath(
+            workspaceJSON,
+            `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`
+          );
+        }
       } catch (e) {
         // ignore, code below will handle
       }
@@ -228,7 +233,7 @@ export const WorkspaceProvider = ({
             notify({
               type: "success",
               header: "Layout Saved Successfully",
-              body: `${metadata.name} saved successfully`,
+              body: `${metadata.name} saved successfully`
             });
             setLayoutMetadata((prev) => [...prev, metadata]);
           })
@@ -236,7 +241,7 @@ export const WorkspaceProvider = ({
             notify({
               type: "error",
               header: "Failed to Save Layout",
-              body: `Failed to save layout ${metadata.name}`,
+              body: `Failed to save layout ${metadata.name}`
             });
             console.error("Error occurred while saving layout", error);
           });
@@ -245,7 +250,7 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Save Layout",
-          body: "Cannot save invalid layout",
+          body: "Cannot save invalid layout"
         });
       }
     },
@@ -261,7 +266,7 @@ export const WorkspaceProvider = ({
       if (key) {
         setApplicationSettings({
           ...applicationSettings,
-          [key]: settings,
+          [key]: settings
         });
       } else {
         setApplicationSettings(settings as ApplicationSettings);
@@ -285,20 +290,24 @@ export const WorkspaceProvider = ({
         ?.loadLayout(id)
         .then((layoutJson) => {
           const { workspaceJSON: currentLayout } = applicationJSONRef.current;
-          setWorkspaceJSON({
-            ...currentLayout,
-            children: (currentLayout.children || []).concat(layoutJson),
-            props: {
-              ...currentLayout.props,
-              active: currentLayout.children?.length ?? 0,
-            },
-          });
+          if (Array.isArray(currentLayout)) {
+            console.log("how do we deal witha amulti layoput");
+          } else {
+            setWorkspaceJSON({
+              ...currentLayout,
+              children: (currentLayout.children || []).concat(layoutJson),
+              props: {
+                ...currentLayout.props,
+                active: currentLayout.children?.length ?? 0
+              }
+            });
+          }
         })
         .catch((error: Error) => {
           notify({
             type: "error",
             header: "Failed to Load Layout",
-            body: "Failed to load the requested layout",
+            body: "Failed to load the requested layout"
           });
           console.error("Error occurred while loading layout", error);
         });
@@ -316,7 +325,7 @@ export const WorkspaceProvider = ({
         workspaceJSON: applicationJSONRef.current.workspaceJSON,
         saveApplicationLayout,
         saveApplicationSettings,
-        loadLayoutById,
+        loadLayoutById
       }}
     >
       {children}
@@ -331,6 +340,6 @@ export const useWorkspace = () => {
 
   return {
     ...contextProps,
-    workspaceJSON,
+    workspaceJSON
   };
 };
