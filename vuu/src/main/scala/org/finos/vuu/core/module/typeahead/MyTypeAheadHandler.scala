@@ -13,10 +13,13 @@ class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableCo
   }
 
   def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
+
+    val inputParam =  params.namedParams
+
     val values = getUniqueFieldValues(
-      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
-      params.namedParams("module").toString,
-      params.namedParams("column").toString,
+      inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
+      inputParam("module").toString,
+      inputParam("column").toString,
       params.viewPortColumns.get,
       null //todo what to do about request context
     )
@@ -24,11 +27,14 @@ class MyTypeAheadHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableCo
   }
 
   def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
+
+    val inputParam =  params.namedParams
+
     val values = getUniqueFieldValuesStartingWith(
-      params.namedParams("table").toString, //how to report error when expected param missing or fail to cast to right type
-      params.namedParams("module").toString,
-      params.namedParams("column").toString,
-      params.namedParams("starts").toString,
+      inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
+      inputParam("module").toString,
+      inputParam("column").toString,
+      inputParam("starts").toString,
       params.viewPortColumns.get,
       null //todo what to do about request context
     )

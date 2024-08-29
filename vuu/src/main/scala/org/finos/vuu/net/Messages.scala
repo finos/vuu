@@ -214,7 +214,7 @@ case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowInde
  * New api for websocket messages - work in progress
  */
 
-case class RpcRequest(context: RpcContext, rpcName: String, params: Any) extends MessageBody
+case class RpcRequest(context: RpcContext, rpcName: String, params: Map[String, Any]) extends MessageBody
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(

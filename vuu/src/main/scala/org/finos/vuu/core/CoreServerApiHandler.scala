@@ -427,7 +427,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         }
       case Failure(e) =>
         logger.info(s"Failed to process VP RPC call ${ctx.requestId}", e)
-        createErrorRpcResponse(msg, e.getMessage)
+        createErrorRpcResponse(msg, e.toString)
     }
     vsMsg(response)(ctx)
   }
