@@ -5,8 +5,6 @@ import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.*;
 
-import java.util.Arrays;
-
 /* Work in Progress - do not use this as example yet
  * */
 public class PersonRpcHandler extends DefaultRpcHandler {
@@ -19,20 +17,21 @@ public class PersonRpcHandler extends DefaultRpcHandler {
         typeAheadHandler.register();
 
         registerRpc("UpdateName", (params) -> processUpdateNameRpcRequest(params));
-        registerRpc("GetPeopleWithName", (params) -> processGetPeopleNameRpcRequest(params));
+        registerRpc("GetAccountId", (params) -> processGetAccountIdRpcRequest(params));
     }
 
     public RpcFunctionResult processUpdateNameRpcRequest(RpcParams params) {
-        updateName(
-                params.namedParams().get("Id").get().toString(), //how to report error when expected param missing or fail to cast to right type
-                params.namedParams().get("Name").get().toString()
-        );
-        return new RpcFunctionSuccess(); //how to control what viewport action to trigger?
+
+        var paramData = params.namedParams();
+//      UpdateNameRequestParam x  = (UpdateNameRequestParam) paramData;
+//      updateName(x.Id(), x.Name());
+        updateName(paramData.get("Id").get().toString(), paramData.get("Name").get().toString());
+        return new RpcFunctionSuccess(); //how to control what viewport action to t rigger?
     }
 
-    public RpcFunctionResult processGetPeopleNameRpcRequest(RpcParams params) {
-        var people = getPeopleWithNameThatStartWith(
-                Arrays.stream(params.params()).findFirst().toString()
+    public RpcFunctionResult processGetAccountIdRpcRequest(RpcParams params) {
+        var people = getAccountId(
+                params.namedParams().get("rowKey").get().toString()
         );
         return new RpcFunctionSuccess(people); //need to return result
     }
@@ -43,8 +42,10 @@ public class PersonRpcHandler extends DefaultRpcHandler {
         return new String[0];
     }
 
-    public String[] getPeopleWithNameThatStartWith(String search) {
-        return new String[0];
+    public int getAccountId(String rowKey) {
+        var rowData = this.table.pullRow(rowKey);
+        var accountNumber = (int) rowData.get("Account");
+        return accountNumber;
     }
 }
 

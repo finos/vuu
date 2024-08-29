@@ -13,7 +13,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
 
   def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
 
-    val inputParam =  params.data.get.asInstanceOf[Map[String, Any]]
+    val inputParam =  params.namedParams
 
     val values = getUniqueFieldValues(
       inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
@@ -27,7 +27,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
 
   def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
 
-    val inputParam =  params.data.get.asInstanceOf[Map[String, Any]]
+    val inputParam =  params.namedParams
 
     val values = getUniqueFieldValuesStartingWith(
       inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
