@@ -1,7 +1,7 @@
 import { VuuDataSourceProvider } from "@finos/vuu-data-react/src/datasource-provider/VuuDataSourceProvider";
 import { FlexboxLayout, StackLayout } from "@finos/vuu-layout";
 import {
-  FeatureProvider,
+  FeatureAndLayoutProvider,
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
@@ -75,14 +75,14 @@ export const App = ({ user }: { user: VuuUser }) => {
           value={{ getDefaultColumnConfig, handleRpcResponse }}
         >
           <VuuDataSourceProvider>
-            <FeatureProvider dynamicFeatures={dynamicFeatures}>
+            <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
                 serverUrl={serverUrl}
                 user={user}
               />
-            </FeatureProvider>
+            </FeatureAndLayoutProvider>
           </VuuDataSourceProvider>
         </ShellContextProvider>
       </DragDropProvider>

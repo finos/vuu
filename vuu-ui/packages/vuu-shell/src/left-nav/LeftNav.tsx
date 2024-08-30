@@ -24,7 +24,7 @@ import { FeatureList, GroupedFeatureProps } from "../feature-list";
 import { LayoutList } from "../workspace-management";
 
 import leftNavCss from "./LeftNav.css";
-import { useFeatures } from "../feature-provider";
+import { useFeatures } from "../feature-and-layout-provider";
 
 const classBase = "vuuLeftNav";
 

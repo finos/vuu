@@ -3,6 +3,7 @@ import {
   DynamicFeatureProps,
   FilterTableFeatureProps,
   StaticFeatureDescriptor,
+  SystemLayoutMetadata,
   getCustomAndTableFeatures,
 } from "@finos/vuu-utils";
 import {
@@ -20,8 +21,13 @@ export interface FeatureContextProps {
   staticFeatures?: StaticFeatureDescriptor[];
 }
 
+export interface LayoutContextProps{
+  systemLayouts?: SystemLayoutMetadata[]
+}
+
 const NO_FEATURES: DynamicFeatureDescriptor[] = [];
 const NO_STATICFEATURES: StaticFeatureDescriptor[] = [];
+const NO_SYSTEMLAYOUTS: SystemLayoutMetadata[] = [];
 
 const NO_FEATURES_VUU = {
   dynamicFeatures: NO_FEATURES,
@@ -34,17 +40,23 @@ const FeatureContext = createContext<FeatureContextProps>({
   staticFeatures: NO_STATICFEATURES,
 });
 
-export interface FeatureProviderProps extends Partial<FeatureContextProps> {
+const LayoutContext = createContext<LayoutContextProps>({
+  systemLayouts: NO_SYSTEMLAYOUTS
+})
+
+export interface FeatureAndLayoutProviderProps extends Partial<FeatureContextProps> {
   children: ReactNode;
   dynamicFeatures?: DynamicFeatureDescriptor[];
   staticFeatures?: StaticFeatureDescriptor[];
+  systemLayouts?: SystemLayoutMetadata[];
 }
 
-export const FeatureProvider = ({
+export const FeatureAndLayoutProvider = ({
   children,
   dynamicFeatures: dynamicFeaturesProp = [],
   staticFeatures,
-}: FeatureProviderProps): ReactElement => {
+  systemLayouts
+}: FeatureAndLayoutProviderProps): ReactElement => {
   const vuuTables = useVuuTables();
   const { dynamicFeatures, tableFeatures } = useMemo<{
     dynamicFeatures: DynamicFeatureProps[];
@@ -58,6 +70,7 @@ export const FeatureProvider = ({
   );
 
   console.log({ tableFeatures });
+  console.log(systemLayouts)
 
   return (
     <FeatureContext.Provider
@@ -67,9 +80,16 @@ export const FeatureProvider = ({
         staticFeatures,
       }}
     >
-      {children}
+      <LayoutContext.Provider
+        value={{
+          systemLayouts
+        }}
+      > 
+        {children}
+      </LayoutContext.Provider> 
     </FeatureContext.Provider>
   );
 };
 
 export const useFeatures = () => useContext(FeatureContext);
+export const useLayouts = () => useContext(LayoutContext);
