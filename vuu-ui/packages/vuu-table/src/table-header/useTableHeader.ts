@@ -1,12 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   DropOptions,
-  useDragDrop as useDragDrop,
+  useDragDrop as useDragDrop
 } from "@finos/vuu-ui-controls";
 import {
   moveColumnTo,
   queryClosest,
-  visibleColumnAtIndex,
+  visibleColumnAtIndex
 } from "@finos/vuu-utils";
 import { RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
@@ -16,7 +16,11 @@ import { useForkRef } from "@salt-ds/core";
 export interface TableHeaderHookProps
   extends Pick<
     TableHeaderProps,
-    "columns" | "onMoveColumn" | "onSortColumn" | "tableConfig"
+    | "allowDragColumnHeader"
+    | "columns"
+    | "onMoveColumn"
+    | "onSortColumn"
+    | "tableConfig"
   > {
   label?: string;
   onHeightMeasured: (height: number) => void;
@@ -25,16 +29,17 @@ export interface TableHeaderHookProps
 }
 
 export const useTableHeader = ({
+  allowDragColumnHeader,
   columns,
   onHeightMeasured,
   onMoveColumn,
   onSortColumn,
-  tableConfig,
+  tableConfig
 }: TableHeaderHookProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
   const { rowRef } = useMeasuredHeight({
-    onHeightMeasured,
+    onHeightMeasured
   });
 
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -93,13 +98,13 @@ export const useTableHeader = ({
     draggable: draggableColumn,
     ...dragDropHook
   } = useDragDrop({
-    allowDragDrop: true,
+    allowDragDrop: allowDragColumnHeader,
     containerRef,
     draggableClassName: `vuuTable`,
     itemQuery: ".vuuTableHeaderCell",
     onDrop: handleDropColumnHeader,
     orientation: "horizontal",
-    scrollingContainerRef,
+    scrollingContainerRef
   });
 
   return {
@@ -107,6 +112,6 @@ export const useTableHeader = ({
     draggedColumnIndex: dragDropHook.draggedItemIndex,
     onClick: handleColumnHeaderClick,
     onMouseDown: columnHeaderDragMouseDown,
-    setContainerRef: useForkRef(setContainerRef, rowRef),
+    setContainerRef: useForkRef(setContainerRef, rowRef)
   };
 };

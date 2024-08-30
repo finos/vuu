@@ -1,7 +1,18 @@
 .vuuBulkEditRow {
+  height: 24px;
+
   .vuuBulkEditRow-filter {
     display: inline-block;
     padding: 1px;
+
+    .saltInput-primary.vuuInput {
+      border-color: var(--salt-separable-secondary-borderColor);
+      height: 22px;
+      min-height: 22px;
+      input::placeholder {
+        color: var(--tar-color-gray-25);
+      }
+    }
   }
 
   .vuuBulkEditRow-virtualColSpan {

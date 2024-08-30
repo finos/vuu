@@ -140,6 +140,11 @@
     --vuuTableColHeadings-background,
     var(--vuuTableColHeadings-background)
   );
+  border-bottom: solid 1px
+    var(
+      --vuuTableColHeaders-borderColor,
+      var(--salt-separable-secondary-borderColor)
+    );
   color: var(--salt-content-secondary-foreground);
   height: var(--vuu-table-col-header-height);
   white-space: nowrap;

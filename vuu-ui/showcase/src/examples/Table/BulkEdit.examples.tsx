@@ -5,11 +5,12 @@ import { Table, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
 
 let displaySequence = 1;
 
 const BulkEditTableTemplate = ({
-  table = "instruments",
+  table = "instruments"
 }: {
   table?: VuuTableName;
 }) => {
@@ -19,14 +20,15 @@ const BulkEditTableTemplate = ({
     () => ({
       config: {
         columns: applyDefaultColumnConfig(schema),
+        rowSeparators: true
       },
-      dataSource: vuuModule("SIMUL").createDataSource(table),
+      dataSource: vuuModule("SIMUL").createDataSource(table)
     }),
     [schema, table]
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
-    dataSource: tableProps.dataSource,
+    dataSource: tableProps.dataSource
   });
 
   return (
@@ -43,9 +45,11 @@ const BulkEditTableTemplate = ({
 
 export const BulkEditTable = () => {
   return (
-    <DialogProvider>
-      <BulkEditTableTemplate />
-    </DialogProvider>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DialogProvider>
+        <BulkEditTableTemplate />
+      </DialogProvider>
+    </LocalDataSourceProvider>
   );
 };
 BulkEditTable.displaySequence = displaySequence++;

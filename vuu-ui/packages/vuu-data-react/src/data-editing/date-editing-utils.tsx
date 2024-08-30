@@ -2,12 +2,14 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   VuuDatePicker,
   VuuInput,
-  VuuTypeaheadInput,
+  VuuTypeaheadInput
 } from "@finos/vuu-ui-controls";
 import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
 import { CommitHandler, isDateTimeColumn } from "@finos/vuu-utils";
+import { InputProps } from "@salt-ds/core";
 
 export interface DataItemEditControlProps {
+  InputProps?: Partial<InputProps>;
   column: ColumnDescriptor;
   onCommit: CommitHandler<HTMLInputElement, string | undefined>;
   suggestionProvider?: SuggestionProvider;
@@ -15,10 +17,11 @@ export interface DataItemEditControlProps {
 }
 
 export const getDataItemEditControl = ({
+  InputProps,
   column,
   onCommit,
   suggestionProvider,
-  table,
+  table
 }: DataItemEditControlProps) => {
   if (isDateTimeColumn(column)) {
     return <VuuDatePicker onCommit={onCommit as any} />;
@@ -39,9 +42,10 @@ export const getDataItemEditControl = ({
 
   return (
     <VuuInput
+      variant="secondary"
+      {...InputProps}
       data-field={column.name}
       onCommit={onCommit}
-      variant="secondary"
     />
   );
 };
