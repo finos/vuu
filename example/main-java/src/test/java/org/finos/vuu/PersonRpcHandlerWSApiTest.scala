@@ -37,7 +37,7 @@ class PersonRpcHandlerWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Custom Rpc request with a reference type as param") {
 
-       Given("a view port exist")
+      Given("a view port exist")
       val viewPortId: String = createViewPort
 
       When("request GetAccountId given the row key")
@@ -60,34 +60,32 @@ class PersonRpcHandlerWSApiTest extends WebSocketApiTestBase {
       responseBody.action shouldBe a[NoneAction]
     }
 
+    Scenario("Custom Rpc request with object as params") {
 
-  Scenario("Custom Rpc request with object as params") {
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
 
-    Given("a view port exist")
-    val viewPortId: String = createViewPort
+      When("request update name")
+      val getTypeAheadRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        "UpdateName",
+        params = Map("Id" -> "uniqueId1", "Name" -> "Chris"))
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
 
+      Then("return success response")
+      val response = vuuClient.awaitForResponse(requestId)
 
-    When("request update name")
-    val getTypeAheadRequest = RpcRequest(
-      ViewPortContext(viewPortId),
-      "UpdateName",
-      params =  Map("Id" -> "uniqueId1", "Name" -> "Chris"))
-    val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual "UpdateName"
 
-    Then("return success response")
-    val response = vuuClient.awaitForResponse(requestId)
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
 
-    val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
-    responseBody.rpcName shouldEqual "UpdateName"
+      And("return No Action")
+      responseBody.action shouldBe a[NoneAction]
 
-    val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-
-    And("return No Action")
-    responseBody.action shouldBe a[NoneAction]
-
-    And("return row update with new name")
+      And("return row update with new name")
+    }
   }
-}
 
   override protected def defineModuleWithTestTables(): ViewServerModule =
     new JavaExampleModule().create(new TableDefContainer(), new DefaultClock())
