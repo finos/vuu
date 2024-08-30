@@ -1,4 +1,8 @@
-import { LayoutMetadata } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  LayoutMetadata,
+  SystemLayoutMetadata,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
@@ -8,8 +12,8 @@ import layoutTileCss from "./LayoutTile.css";
 const classBase = "vuuLayoutTile";
 
 export interface LayoutTileProps extends HTMLAttributes<HTMLDivElement> {
-  metadata: LayoutMetadata;
-  onLoadLayout: (layoutId?: string) => void;
+  metadata: LayoutMetadata | SystemLayoutMetadata;
+  onLoadLayout: (layoutId?: string, layoutJSON?: LayoutJSON) => void;
 }
 
 export const LayoutTile = ({
@@ -29,7 +33,12 @@ export const LayoutTile = ({
       {...htmlAttributes}
       className={`${classBase}-layoutTile`}
       key={metadata?.id}
-      onClick={() => onLoadLayout(metadata?.id)}
+      onClick={() =>
+        onLoadLayout(
+          metadata?.id,
+          (metadata as SystemLayoutMetadata).layoutJSON,
+        )
+      }
     >
       <img className={`${classBase}-screenshot`} src={metadata?.screenshot} />
       <div>

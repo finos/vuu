@@ -1,6 +1,6 @@
 import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
 import {
-  FeatureProvider,
+  FeatureAndLayoutProvider,
   LeftNav,
   Shell,
   SidePanelProps,
@@ -18,6 +18,7 @@ import {
   registerComponent,
 } from "@finos/vuu-utils";
 import { CSSProperties, useMemo } from "react";
+import { sysLayouts } from "../_test-data/sysLayoutMetadata";
 
 import "./SampleApp.examples.css";
 
@@ -128,7 +129,10 @@ const ShellWithNewTheme = () => {
 
   return (
     <LocalDataSourceProvider modules={["BASKET", "SIMUL"]}>
-      <FeatureProvider dynamicFeatures={dynamicFeatures}>
+      <FeatureAndLayoutProvider
+        dynamicFeatures={dynamicFeatures}
+        systemLayouts={sysLayouts}
+      >
         <DragDropProvider dragSources={dragSource}>
           <Shell
             shellLayoutProps={{
@@ -145,7 +149,7 @@ const ShellWithNewTheme = () => {
             }
           ></Shell>
         </DragDropProvider>
-      </FeatureProvider>
+      </FeatureAndLayoutProvider>
     </LocalDataSourceProvider>
   );
 };

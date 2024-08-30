@@ -1,11 +1,18 @@
 import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
-import { LayoutMetadata } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  LayoutMetadata,
+  SystemLayoutMetadata,
+  VuuShellLocation,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useMemo } from "react";
 import { LayoutTile } from "./LayoutTile";
 import { useWorkspace } from "./WorkspaceProvider";
+import { useLayouts } from "../feature-and-layout-provider";
+import { layoutFromJson, useLayoutProviderDispatch } from "@finos/vuu-layout";
 
 import layoutListCss from "./LayoutList.css";
 
@@ -28,6 +35,7 @@ export const LayoutList = ({
   });
 
   const { layoutMetadata, loadLayoutById } = useWorkspace();
+  const { systemLayouts } = useLayouts();
 
   const handleLoadLayout = useCallback(
     (layoutId?: string) => {
@@ -35,8 +43,21 @@ export const LayoutList = ({
         loadLayoutById(layoutId);
       }
     },
-    [loadLayoutById]
+    [loadLayoutById],
   );
+
+  const dispatch = useLayoutProviderDispatch();
+  const handleLoadSysLayout = (layoutId?: string, layoutJSON?: LayoutJSON) => {
+    if (layoutJSON) {
+      dispatch({
+        type: "add",
+        path: `#${VuuShellLocation.Workspace}`,
+        component: layoutFromJson(layoutJSON, "0"),
+      });
+    } else {
+      throw Error("layoutJSON is required for system layouts");
+    }
+  };
 
   const layoutsByGroup = layoutMetadata.reduce((acc: LayoutGroups, cur) => {
     if (acc[cur.group]) {
@@ -50,6 +71,31 @@ export const LayoutList = ({
       [cur.group]: [cur],
     };
   }, {});
+
+  let sysContent: object | null | undefined = [];
+  if (systemLayouts) {
+    sysContent = [
+      <div className={`${classBase}-group`} key={0}>
+        <div className={`${classBase}-groupHeader`}>System Layout</div>
+        <List<SystemLayoutMetadata, "none">
+          height={undefined}
+          itemHeight={68}
+          selectionStrategy="none"
+          source={systemLayouts}
+          ListItem={({ item, ...props }) => (
+            <ListItem {...props}>
+              <LayoutTile
+                {...htmlAttributes}
+                key={item?.id}
+                metadata={item as SystemLayoutMetadata}
+                onLoadLayout={handleLoadSysLayout}
+              />
+            </ListItem>
+          )}
+        />
+      </div>,
+    ];
+  }
 
   const content = useMemo<JSX.Element[]>(() => {
     return Object.entries(layoutsByGroup).map(
@@ -79,14 +125,14 @@ export const LayoutList = ({
             )}
           />
         </div>
-      )
+      ),
     );
   }, [handleLoadLayout, htmlAttributes, layoutsByGroup]);
 
   return (
     <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
       <div className={`${classBase}-header`}>{title}</div>
-      <div className={`${classBase}-content`}>{content}</div>
+      <div className={`${classBase}-content`}>{[sysContent, ...content]}</div>
     </div>
   );
 };

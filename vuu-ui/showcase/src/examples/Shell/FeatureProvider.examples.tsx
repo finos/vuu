@@ -1,6 +1,6 @@
 import { FeatureList, useFeatures } from "@finos/vuu-shell";
 import { StaticFeatureDescriptor } from "@finos/vuu-utils";
-import { FeatureProvider } from "@finos/vuu-shell";
+import { FeatureAndLayoutProvider } from "@finos/vuu-shell";
 
 let displaySequence = 1;
 
@@ -23,9 +23,9 @@ const StaticFeaturesTemplate = () => {
 
 export const DefaultStaticFeatures = () => {
   return (
-    <FeatureProvider dynamicFeatures={[]} staticFeatures={staticFeatures}>
+    <FeatureAndLayoutProvider dynamicFeatures={[]} staticFeatures={staticFeatures}>
       <StaticFeaturesTemplate />
-    </FeatureProvider>
+    </FeatureAndLayoutProvider>
   );
 };
 DefaultStaticFeatures.displaySequence = displaySequence++;
