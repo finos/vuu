@@ -1,6 +1,6 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import { VirtualColSpan, useHeaderProps } from "@finos/vuu-table";
-import { CommitHandler, getFieldName, queryClosest } from "@finos/vuu-utils";
+import { CommitHandler, getFieldName } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback } from "react";
