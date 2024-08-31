@@ -4,10 +4,11 @@ import {
   Filter,
   MultiValueFilterClause,
   OrFilter,
-  SingleValueFilterClause,
+  SingleValueFilterClause
 } from "@finos/vuu-filter-types";
 import { ColumnMap } from "@finos/vuu-utils";
 import { parseFilter } from "./FilterParser";
+import { VuuDataRow } from "@finos/vuu-protocol-types";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const filterReject = () => false;
@@ -68,7 +69,7 @@ export function filterPredicate(
   }
 }
 
-export type FilterPredicate = (row: DataSourceRow) => boolean;
+export type FilterPredicate = (row: DataSourceRow | VuuDataRow) => boolean;
 
 const testInclude = (
   columnMap: ColumnMap,

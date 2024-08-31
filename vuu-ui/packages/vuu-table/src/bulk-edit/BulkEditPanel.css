@@ -1,7 +1,23 @@
 .vuuBulkEditPanel {
+  background-color: var(--salt-container-secondary-background);
   display: flex;
   flex-direction: column;
+  padding-top: var(--salt-spacing-300);
+
+  .vuuTable {
+    --vuuTableCell-padding: 0;
+    --table-background: var(--salt-container-secondary-background);
+  }
 }
+
+.vuuBulkEditPanel-toolbar {
+  background: var(--salt-container-primary-background);
+  border: solid 1px var(--salt-separable-tertiary-borderColor);
+  border-radius: 2px;
+  display: flex;
+  height: 42px;
+}
+
 .vuuBulkEditPanel-table {
   align-items: center;
   flex: 1 1 auto;

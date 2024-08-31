@@ -2,7 +2,7 @@ import {
   DataSource,
   SchemaColumn,
   SelectionChangeHandler,
-  VuuFeatureInvocationMessage,
+  VuuFeatureInvocationMessage
 } from "@finos/vuu-data-types";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
@@ -12,7 +12,7 @@ import {
   TableConfigChangeHandler,
   TableRowClickHandler,
   TableRowSelectHandler,
-  TableSelectionModel,
+  TableSelectionModel
 } from "@finos/vuu-table-types";
 import type { DragDropState } from "@finos/vuu-ui-controls";
 import {
@@ -20,7 +20,7 @@ import {
   MeasuredContainer,
   MeasuredContainerProps,
   MeasuredSize,
-  dragStrategy,
+  dragStrategy
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
@@ -34,7 +34,7 @@ import {
   RefObject,
   forwardRef,
   useRef,
-  useState,
+  useState
 } from "react";
 import { Row as DefaultRow, RowProxy } from "./Row";
 import { TableHeader } from "./table-header";
@@ -54,6 +54,13 @@ export interface TableProps
   extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
   Row?: FC<RowProps>;
   allowConfigEditing?: boolean;
+  /**
+   * Allow column headers to be dragged to re-arrange
+   */
+  allowDragColumnHeader?: boolean;
+  /**
+   * Allow rows to be draggable
+   */
   allowDragDrop?: boolean | dragStrategy;
   /**
    * required if a fully featured column picker is to be available
@@ -69,6 +76,8 @@ export interface TableProps
   /**
    * Allows additional custom element(s) to be embedded immediately below column headers.
    * Could be used to present inline filters for example.
+   * Accepts either a React Element or a Function Component or an array of these. If a React
+   * Function Component is used, it will be passed the props described in BaseRowProps.
    */
   customHeader?: CustomHeader | CustomHeader[];
   /**
@@ -144,6 +153,7 @@ export interface TableProps
 
 const TableCore = ({
   Row = DefaultRow,
+  allowDragColumnHeader = true,
   allowDragDrop,
   availableColumns,
   config,
@@ -169,7 +179,7 @@ const TableCore = ({
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
-  size,
+  size
 }: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
   rowHeight: number;
@@ -225,13 +235,13 @@ const TableCore = ({
     rowHeight,
     scrollingApiRef,
     selectionModel,
-    size,
+    size
   });
 
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
-    [`${classBase}-zebra`]: tableAttributes.zebraStripes,
+    [`${classBase}-zebra`]: tableAttributes.zebraStripes
   });
 
   const cssVariables = {
@@ -242,7 +252,7 @@ const TableCore = ({
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--total-header-height": `${headerHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
-    "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
+    "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`
   } as CSSProperties;
 
   return (
@@ -270,6 +280,7 @@ const TableCore = ({
         >
           {showColumnHeaders ? (
             <TableHeader
+              allowDragColumnHeader={allowDragColumnHeader}
               columns={scrollProps.columnsWithinViewport}
               customHeader={customHeader}
               headings={headings}
@@ -316,6 +327,7 @@ const TableCore = ({
 export const Table = forwardRef(function Table(
   {
     Row,
+    allowDragColumnHeader,
     allowDragDrop,
     availableColumns,
     className: classNameProp,
@@ -350,7 +362,7 @@ export const Table = forwardRef(function Table(
   useComponentCssInjection({
     testId: "vuu-table",
     css: tableCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -379,7 +391,7 @@ export const Table = forwardRef(function Table(
       ref={useForkRef(containerRef, forwardedRef)}
       style={
         {
-          "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
+          "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined
         } as CSSProperties
       }
     >
@@ -388,6 +400,7 @@ export const Table = forwardRef(function Table(
       {size && rowHeight ? (
         <TableCore
           Row={Row}
+          allowDragColumnHeader={allowDragColumnHeader}
           allowDragDrop={allowDragDrop}
           availableColumns={availableColumns}
           config={config}

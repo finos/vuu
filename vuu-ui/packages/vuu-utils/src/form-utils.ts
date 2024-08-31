@@ -1,20 +1,17 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { SyntheticEvent } from "react";
+import { queryClosest } from "./html-utils";
 
 /**
  * Use with the following convention:
  *
  * <FormField data-field="my-field-name">
  */
-export const getFieldName = (
-  input: HTMLInputElement | HTMLButtonElement,
-): string => {
-  const saltFormField = input.closest(".saltFormField") as HTMLElement;
-  if (saltFormField && saltFormField.dataset.field) {
-    const {
-      dataset: { field },
-    } = saltFormField;
-    return field;
+export const getFieldName = (target: EventTarget | HTMLElement): string => {
+  const saltFormField = queryClosest(target, "[data-field]") as HTMLElement;
+  const fieldName = saltFormField?.dataset.field;
+  if (fieldName) {
+    return fieldName;
   } else {
     throw Error("named form field not found");
   }
@@ -22,5 +19,5 @@ export const getFieldName = (
 
 export type CommitHandler<
   E extends HTMLElement = HTMLInputElement,
-  T extends VuuRowDataItemType | undefined = string,
+  T extends VuuRowDataItemType | undefined = string
 > = (evt: SyntheticEvent<E>, value: T) => void;

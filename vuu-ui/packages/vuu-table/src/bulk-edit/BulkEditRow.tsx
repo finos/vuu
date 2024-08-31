@@ -8,24 +8,30 @@ import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
 
 import bulkEditRowCss from "./BulkEditRow.css";
+import { InputProps } from "@salt-ds/core";
 
 const classBase = "vuuBulkEditRow";
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string,
+  value: string
 ) => void;
 export interface BulkEditProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange: EditValueChangeHandler;
 }
 
+const InputProps: Partial<InputProps> = {
+  placeholder: "Enter value",
+  variant: "primary"
+};
+
 export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-bulk-edit-row",
     css: bulkEditRowCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
@@ -45,7 +51,7 @@ export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
         }
       }
     },
-    [columns, onChange],
+    [columns, onChange]
   );
 
   return (
@@ -57,7 +63,7 @@ export const BulkEditRow = ({ onChange, ...htmlAttributes }: BulkEditProps) => {
           key={column.name}
           style={{ width: column.width }}
         >
-          {getDataItemEditControl({ column, onCommit })}
+          {getDataItemEditControl({ InputProps, column, onCommit })}
         </div>
       ))}
     </div>

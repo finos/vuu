@@ -5,7 +5,7 @@ import {
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
-  TableHeadings,
+  TableHeadings
 } from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "clsx";
@@ -21,6 +21,7 @@ export type ColumnSortHandler = (
 ) => void;
 
 export interface TableHeaderProps {
+  allowDragColumnHeader: boolean;
   classBase?: string;
   columns: RuntimeColumnDescriptor[];
   customHeader?: CustomHeader | CustomHeader[];
@@ -39,6 +40,7 @@ export interface TableHeaderProps {
 
 export const TableHeader = memo(
   ({
+    allowDragColumnHeader,
     classBase = "vuuTable",
     columns,
     customHeader,
@@ -52,20 +54,21 @@ export const TableHeader = memo(
     showColumnHeaderMenus,
     tableConfig,
     tableId,
-    virtualColSpan = 0,
+    virtualColSpan = 0
   }: TableHeaderProps) => {
     const {
       draggableColumn,
       draggedColumnIndex,
       onClick,
       onMouseDown,
-      setContainerRef,
+      setContainerRef
     } = useTableHeader({
+      allowDragColumnHeader,
       columns,
       onHeightMeasured,
       onMoveColumn,
       onSortColumn,
-      tableConfig,
+      tableConfig
     });
 
     const customHeaders = useMemo(() => {
@@ -135,7 +138,7 @@ export const TableHeader = memo(
               <HeaderCell
                 aria-colindex={col.index}
                 className={cx({
-                  "vuuDraggable-dragAway": i === draggedColumnIndex,
+                  "vuuDraggable-dragAway": i === draggedColumnIndex
                 })}
                 column={col}
                 data-index={i}

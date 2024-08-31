@@ -6,7 +6,7 @@
 
   align-items: center;
   background-color: var(--vuuTableHeaderCell-background, inherit);
-  border-bottom: 1px solid #ccc;
+  border-bottom: none;
   border-right-color: var(--cell-borderColor);
   border-right-style: solid;
   border-right-width: 1px;
@@ -14,7 +14,7 @@
   cursor: default;
   display: inline-flex;
   gap: 4px;
-  height: var(--vuu-table-col-header-height);
+  height: 100%;
   padding: 0 12px 0 4px;
   position: relative;
   vertical-align: top;
@@ -25,7 +25,7 @@
     --vuuTableCell-outline,
     solid var(--salt-focused-outlineColor) 2px
   );
-  outline-offset: -3px;
+  outline-offset: -2px;
 }
 
 .vuuTableHeaderCell-right {

@@ -5,12 +5,12 @@ import {
   MenuActionHandler,
   MenuBuilder,
   RpcResponseHandler,
-  TableSchema,
+  TableSchema
 } from "@finos/vuu-data-types";
 import {
   useDialogContext,
   useNotifications,
-  type MenuActionClosePopup,
+  type MenuActionClosePopup
 } from "@finos/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
@@ -18,7 +18,7 @@ import type {
   VuuMenu,
   VuuMenuItem,
   VuuRpcResponse,
-  VuuTable,
+  VuuTable
 } from "@finos/vuu-protocol-types";
 import { BulkEditPanel } from "@finos/vuu-table";
 import {
@@ -32,14 +32,15 @@ import {
   isRoot,
   isSessionTableActionMessage,
   isTableLocation,
-  viewportRpcRequest,
+  useDataSource,
+  viewportRpcRequest
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback } from "react";
 import {
   FormConfig,
   FormFieldDescriptor,
-  SessionEditingForm,
+  SessionEditingForm
 } from "../session-editing-form";
 
 const NO_CONFIG: MenuActionConfig = {};
@@ -79,7 +80,7 @@ const keyFirst = (c1: FormFieldDescriptor, c2: FormFieldDescriptor) =>
 const defaultFormConfig = {
   fields: [],
   key: "",
-  title: "",
+  title: ""
 };
 
 const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
@@ -94,29 +95,22 @@ const configFromSchema = (schema?: TableSchema): FormConfig | undefined => {
           label: col.name,
           name: col.name,
           type: col.serverDataType,
-          isKeyField: col.name === key,
+          isKeyField: col.name === key
         }))
-        .sort(keyFirst),
+        .sort(keyFirst)
     };
   }
 };
 
 const getFormConfig = (
-  action: OpenDialogAction & { tableSchema: TableSchema },
+  action: OpenDialogAction & { tableSchema: TableSchema }
 ) => {
   const { tableSchema: schema } = action;
   const config = configFromSchema(schema) ?? defaultFormConfig;
 
-  // if (rpcName !== undefined && rpcName in static_config) {
-  //   return {
-  //     config: getStaticConfig(rpcName, config),
-  //     schema,
-  //   };
-  // }
-
   return {
     config,
-    schema,
+    schema
   };
 };
 
@@ -124,8 +118,9 @@ export const useVuuMenuActions = ({
   clientSideMenuActionHandler,
   dataSource,
   menuActionConfig = NO_CONFIG,
-  onRpcResponse,
+  onRpcResponse
 }: VuuMenuActionHookProps): ViewServerHookResult => {
+  const { VuuDataSource } = useDataSource();
   const buildViewserverMenuOptions: MenuBuilder = useCallback(
     (location, options) => {
       const { links, menu } = dataSource;
@@ -139,7 +134,7 @@ export const useVuuMenuActions = ({
           descriptors.push({
             label: `Link to ${label}`,
             action: "link-table",
-            options: linkDescriptor,
+            options: linkDescriptor
           });
         });
       }
@@ -148,7 +143,7 @@ export const useVuuMenuActions = ({
         const menuDescriptor = buildMenuDescriptorFromVuuMenu(
           menu,
           location,
-          options as VuuServerMenuOptions,
+          options as VuuServerMenuOptions
         );
         if (isRoot(menu) && isGroupMenuItemDescriptor(menuDescriptor)) {
           descriptors.push(...menuDescriptor.children);
@@ -159,7 +154,7 @@ export const useVuuMenuActions = ({
 
       return descriptors;
     },
-    [dataSource, menuActionConfig],
+    [dataSource, menuActionConfig]
   );
 
   const { showDialog, closeDialog } = useDialogContext();
@@ -168,7 +163,10 @@ export const useVuuMenuActions = ({
   const showBulkEditDialog = useCallback(
     (table: VuuTable) => {
       // NO send BULK_EDIT_BEGIN
-      const sessionDs = dataSource.createSessionDataSource?.(table);
+      const sessionDs = new VuuDataSource({
+        table,
+        viewport: table.table
+      });
       const handleSubmit = () => {
         sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
         closeDialog();
@@ -177,21 +175,21 @@ export const useVuuMenuActions = ({
       if (sessionDs) {
         showDialog(
           <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
-          "Multi Row Edit",
+          "Bulk Amend",
           [
             <Button key="cancel" onClick={closeDialog}>
               Cancel
             </Button>,
             <Button key="submit" onClick={handleSubmit}>
               Save
-            </Button>,
-          ],
+            </Button>
+          ]
         );
 
         return true;
       }
     },
-    [closeDialog, dataSource, showDialog],
+    [VuuDataSource, closeDialog, showDialog]
   );
 
   const showSessionEditingForm = useCallback(
@@ -201,7 +199,7 @@ export const useVuuMenuActions = ({
         const formConfig = getFormConfig(action);
         showDialog(
           <SessionEditingForm {...formConfig} onClose={closeDialog} />,
-          "Set Parameters",
+          "Set Parameters"
         );
       }
 
@@ -221,14 +219,14 @@ export const useVuuMenuActions = ({
             </Button>,
             <Button key="submit" onClick={handleSubmit}>
               Save
-            </Button>,
-          ],
+            </Button>
+          ]
         );
 
         return true;
       }
     },
-    [closeDialog, dataSource, showDialog],
+    [closeDialog, dataSource, showDialog]
   );
 
   const handleMenuAction = useCallback(
@@ -248,12 +246,12 @@ export const useVuuMenuActions = ({
               if (isActionMessage(rpcResponse)) {
                 if (hasShowNotificationAction(rpcResponse)) {
                   const {
-                    action: { message, title = "Success" },
+                    action: { message, title = "Success" }
                   } = rpcResponse;
                   showNotification({
                     type: "success",
                     body: message,
-                    header: title,
+                    header: title
                   });
                 } else if (isOpenBulkEditResponse(rpcResponse)) {
                   showBulkEditDialog(rpcResponse.action.table);
@@ -270,7 +268,7 @@ export const useVuuMenuActions = ({
         );
       } else {
         console.log(
-          `useViewServer handleMenuAction,  can't handle action type ${menuId}`,
+          `useViewServer handleMenuAction,  can't handle action type ${menuId}`
         );
       }
 
@@ -282,12 +280,12 @@ export const useVuuMenuActions = ({
       onRpcResponse,
       showBulkEditDialog,
       showNotification,
-      showSessionEditingForm,
-    ],
+      showSessionEditingForm
+    ]
   );
 
   return {
     buildViewserverMenuOptions,
-    handleMenuAction,
+    handleMenuAction
   };
 };

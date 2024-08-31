@@ -27,7 +27,7 @@ export const BulkEditPanel = ({
   useComponentCssInjection({
     testId: "vuu-checkbox-cell",
     css: bulkEditPanelCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const bulkEditRow = useMemo(() => {
@@ -36,7 +36,7 @@ export const BulkEditPanel = ({
         namedParams: { column: column.name, value },
         params: [],
         rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-        type: "VIEW_PORT_RPC_CALL",
+        type: "VIEW_PORT_RPC_CALL"
       } as Omit<VuuRpcViewportRequest, "vpId">);
     };
     return <BulkEditRow onChange={onChange} />;
@@ -47,8 +47,9 @@ export const BulkEditPanel = ({
       columns: dataSource.columns.map((name) => ({
         editable: true,
         name,
-        serverDataType: "string",
+        serverDataType: "string"
       })),
+      rowSeparators: true
     };
   }, [dataSource]);
 
@@ -58,8 +59,10 @@ export const BulkEditPanel = ({
       className={cx(classBase, className)}
       style={{ display: "flex", flexDirection: "column" }}
     >
+      <div className={`${classBase}-toolbar`} />
       <div className={`${classBase}-table`}>
         <Table
+          allowDragColumnHeader={false}
           config={config}
           customHeader={bulkEditRow}
           dataSource={dataSource}
