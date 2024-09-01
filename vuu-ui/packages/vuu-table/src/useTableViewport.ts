@@ -24,7 +24,8 @@ export interface TableViewportHookProps {
    * this is the solid left/right `border` rendered on the selection block
    */
   selectionEndSize?: number;
-  size: MeasuredSize | undefined;
+  showPaginationControls?: boolean;
+  size: MeasuredSize;
 }
 
 export interface ViewportMeasurements {
@@ -73,20 +74,44 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   viewportWidth: 0,
 };
 
+const getViewportHeightProps = (
+  rowCount: number,
+  rowHeight: number,
+  size: MeasuredSize,
+  showPaginationControls = false,
+) => {
+  if (showPaginationControls) {
+    return {
+      pixelContentHeight: size.height,
+      virtualContentHeight: size.height,
+      virtualisedExtent: 0,
+    };
+  } else {
+    const virtualContentHeight = rowCount * rowHeight;
+    const pixelContentHeight = Math.min(virtualContentHeight, MAX_PIXEL_HEIGHT);
+    const virtualisedExtent = virtualContentHeight - pixelContentHeight;
+    return {
+      pixelContentHeight,
+      virtualContentHeight,
+      virtualisedExtent,
+    };
+  }
+};
+
 export const useTableViewport = ({
   columns,
   headerHeight,
   rowCount,
   rowHeight,
   selectionEndSize = 4,
+  showPaginationControls,
   size,
 }: TableViewportHookProps): TableViewportHookResult => {
   const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
-  // TODO we are limited by pixels not an arbitrary number of rows
-  const virtualContentHeight = rowCount * rowHeight;
-  const pixelContentHeight = Math.min(virtualContentHeight, MAX_PIXEL_HEIGHT);
-  const virtualisedExtent = virtualContentHeight - pixelContentHeight;
+
+  const { virtualContentHeight, pixelContentHeight, virtualisedExtent } =
+    getViewportHeightProps(rowCount, rowHeight, size, showPaginationControls);
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns, selectionEndSize),
@@ -136,13 +161,18 @@ export const useTableViewport = ({
       const horizontalScrollbarHeight =
         contentWidth > size.width ? scrollbarSize : 0;
       const measuredHeaderHeight = headerHeight === -1 ? 0 : headerHeight;
-      const visibleRows = (size.height - measuredHeaderHeight) / rowHeight;
+      const visibleRows = showPaginationControls
+        ? Math.floor((pixelContentHeight - headerHeight) / rowHeight)
+        : (size.height - headerHeight) / rowHeight;
       const count = Number.isInteger(visibleRows)
         ? visibleRows
         : Math.ceil(visibleRows);
       const viewportBodyHeight = size.height - measuredHeaderHeight;
-      const verticalScrollbarWidth =
-        pixelContentHeight > viewportBodyHeight ? scrollbarSize : 0;
+      const verticalScrollbarWidth = showPaginationControls
+        ? 0
+        : pixelContentHeight > viewportBodyHeight
+          ? scrollbarSize
+          : 0;
 
       const appliedPageSize =
         count * rowHeight * (pixelContentHeight / virtualContentHeight);
@@ -172,18 +202,19 @@ export const useTableViewport = ({
       return UNMEASURED_VIEWPORT;
     }
   }, [
-    getRowAtPosition,
-    getRowOffset,
-    headerHeight,
-    isVirtualScroll,
+    size,
     pinnedWidthLeft,
     unpinnedWidth,
     pinnedWidthRight,
-    pixelContentHeight,
+    headerHeight,
     rowHeight,
+    showPaginationControls,
+    pixelContentHeight,
+    virtualContentHeight,
+    getRowAtPosition,
+    getRowOffset,
+    isVirtualScroll,
     setInSituRowOffset,
     setScrollTop,
-    size,
-    virtualContentHeight,
   ]);
 };

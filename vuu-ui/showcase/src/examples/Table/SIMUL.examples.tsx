@@ -5,7 +5,7 @@ import { Table, TableProps } from "@finos/vuu-table";
 import type {
   ColumnDescriptor,
   ColumnLayout,
-  DefaultColumnConfiguration,
+  DefaultColumnConfiguration
 } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
@@ -28,10 +28,10 @@ const getDefaultColumnConfig = (
           name: "number",
           renderer: {
             name: "vuu.price-move-background",
-            flashStyle: "arrow-bg",
+            flashStyle: "arrow-bg"
           },
-          formatting: { decimals: 2, zeroPad: true },
-        },
+          formatting: { decimals: 2, zeroPad: true }
+        }
       };
     case "askSize":
     case "bidSize":
@@ -40,10 +40,10 @@ const getDefaultColumnConfig = (
           name: "number",
           renderer: {
             name: "vuu.price-move-background",
-            flashStyle: "bg-only",
+            flashStyle: "bg-only"
           },
-          formatting: { decimals: 0 },
-        },
+          formatting: { decimals: 0 }
+        }
       };
 
     case "last":
@@ -52,8 +52,8 @@ const getDefaultColumnConfig = (
       return {
         type: {
           name: "number",
-          formatting: { decimals: 2, zeroPad: true },
-        },
+          formatting: { decimals: 2, zeroPad: true }
+        }
       };
     case "wishlist":
       return { editable: true };
@@ -83,17 +83,16 @@ export const SimulTable = ({
         columns: applyDefaultColumnConfig(schema, getDefaultColumnConfig),
         rowClassNameGenerators,
         rowSeparators: true,
-        zebraStripes: true,
+        zebraStripes: true
       },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      dataSource: vuuModule<SimulTableName>("SIMUL").createDataSource(tableName)
     }),
     [
       columnLayout,
       getDefaultColumnConfig,
       rowClassNameGenerators,
       schema,
-      tableName,
+      tableName
     ]
   );
 
@@ -102,7 +101,7 @@ export const SimulTable = ({
   }, []);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
-    dataSource: tableProps.dataSource,
+    dataSource: tableProps.dataSource
   });
 
   return (

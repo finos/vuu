@@ -2,6 +2,7 @@ export * as TableList from "./TableList.examples";
 export * as Table from "./Table.examples";
 export * as TableSelection from "./TableSelection.examples";
 export * as BASKET from "./BASKET.examples";
+export * as Paging from "./Paging.examples";
 export * as SIMUL from "./SIMUL.examples";
 export * as TEST from "./TEST.examples";
 export * as BigData from "./BigData.examples";

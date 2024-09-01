@@ -93,6 +93,7 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "scrollingApiRef"
+      | "showPaginationControls"
     > {
   containerRef: RefObject<HTMLDivElement>;
   rowHeight: number;
@@ -138,6 +139,7 @@ export const useTable = ({
   rowHeight = 20,
   scrollingApiRef,
   selectionModel,
+  showPaginationControls,
   size,
 }: TableHookProps) => {
   const tableConfigRef = useRef<TableConfig>(config);
@@ -240,6 +242,7 @@ export const useTable = ({
     rowCount,
     rowHeight,
     size: size,
+    showPaginationControls,
   });
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
@@ -256,6 +259,7 @@ export const useTable = ({
     rowHeight,
     scrollingApiRef,
     setRange,
+    showPaginationControls,
     onVerticalScroll: viewportHookSetScrollTop,
     onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
     viewportMeasurements,

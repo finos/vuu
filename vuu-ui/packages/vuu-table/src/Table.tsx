@@ -20,9 +20,10 @@ import {
   MeasuredContainerProps,
   MeasuredSize,
   dragStrategy,
+  reduceSizeHeight,
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
-import { useForkRef } from "@salt-ds/core";
+import { GoToInput, Pagination, Paginator, useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -31,7 +32,11 @@ import {
   FC,
   ForwardedRef,
   RefObject,
+  SyntheticEvent,
   forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -143,6 +148,10 @@ export interface TableProps
    * from contexct menu
    */
   showColumnHeaderMenus?: boolean;
+  /**
+   * if true, pagination will be used to navigate data, scrollbars will not be rendered
+   */
+  showPaginationControls?: boolean;
 }
 
 const TableCore = ({
@@ -166,12 +175,13 @@ const TableCore = ({
   onRowClick: onRowClickProp,
   onSelect,
   onSelectionChange,
-  renderBufferSize = 5,
+  renderBufferSize = 0,
   rowHeight,
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
+  showPaginationControls,
   size,
 }: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
@@ -227,6 +237,7 @@ const TableCore = ({
     rowHeight,
     scrollingApiRef,
     selectionModel,
+    showPaginationControls,
     size,
   });
 
@@ -252,13 +263,15 @@ const TableCore = ({
       menuActionHandler={handleContextMenuAction}
       menuBuilder={menuBuilder}
     >
-      <div
-        className={`${classBase}-scrollbarContainer`}
-        ref={scrollProps.scrollbarContainerRef}
-        style={cssVariables}
-      >
-        <div className={`${classBase}-scrollbarContent`} />
-      </div>
+      {showPaginationControls !== true ? (
+        <div
+          className={`${classBase}-scrollbarContainer`}
+          ref={scrollProps.scrollbarContainerRef}
+          style={cssVariables}
+        >
+          <div className={`${classBase}-scrollbarContent`} />
+        </div>
+      ) : null}
       <div
         className={contentContainerClassName}
         ref={scrollProps.contentContainerRef}
@@ -344,6 +357,7 @@ export const Table = forwardRef(function Table(
     selectionModel,
     showColumnHeaders,
     showColumnHeaderMenus,
+    showPaginationControls,
     style: styleProp,
     ...htmlAttributes
   }: TableProps,
@@ -359,8 +373,11 @@ export const Table = forwardRef(function Table(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState<MeasuredSize>();
+  // TODO this will rerender entire table, move foter into seperate component
+  const [pageCount, setPageCount] = useState<number>(dataSource.pageCount);
 
   const { rowHeight, rowRef } = useMeasuredHeight({ height: rowHeightProp });
+  const { rowHeight: footerHeight, rowRef: footerRef } = useMeasuredHeight({});
 
   if (config === undefined) {
     throw Error(
@@ -371,12 +388,22 @@ export const Table = forwardRef(function Table(
     throw Error("vuu Table requires dataSource prop");
   }
 
+  useMemo(() => {
+    dataSource.on("page-count", (n: number) => setPageCount(n));
+  }, [dataSource]);
+
+  const handlePageChange = useCallback((_evt: SyntheticEvent, page: number) => {
+    console.log(`page is now ${page}`);
+  }, []);
+
   // TODO render TableHeader here and measure before row construction begins
   // TODO we could have MeasuredContainer render a Provider and make size available via a context hook ?
   return (
     <MeasuredContainer
       {...htmlAttributes}
-      className={cx(classBase, classNameProp)}
+      className={cx(classBase, classNameProp, {
+        [`${classBase}-pagination`]: showPaginationControls,
+      })}
       id={id}
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}
@@ -388,7 +415,7 @@ export const Table = forwardRef(function Table(
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
 
-      {size && rowHeight ? (
+      {size && rowHeight && (footerHeight || showColumnHeaders !== true) ? (
         <TableCore
           Row={Row}
           allowDragColumnHeader={allowDragColumnHeader}
@@ -416,8 +443,17 @@ export const Table = forwardRef(function Table(
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}
           showColumnHeaderMenus={showColumnHeaderMenus}
-          size={size}
+          showPaginationControls={showPaginationControls}
+          size={reduceSizeHeight(size, footerHeight)}
         />
+      ) : null}
+      {showPaginationControls ? (
+        <div className={`${classBase}-pagination-container`} ref={footerRef}>
+          <Pagination count={pageCount} onPageChange={handlePageChange}>
+            <GoToInput />
+            <Paginator />
+          </Pagination>
+        </div>
       ) : null}
     </MeasuredContainer>
   );

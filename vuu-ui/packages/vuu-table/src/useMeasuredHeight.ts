@@ -8,7 +8,7 @@ interface MeasuredHeightHookProps {
 
 export const useMeasuredHeight = ({
   onHeightMeasured,
-  height: heightProp = 0,
+  height: heightProp = 0
 }: MeasuredHeightHookProps) => {
   const [rowHeight, setRowHeight] = useState(heightProp);
 

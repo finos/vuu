@@ -119,6 +119,8 @@ export class ArrayDataSource
     vanillaConfig;
   #data: DataSourceRow[];
   #keys = new KeySet(NULL_RANGE);
+  #pageCount = -1;
+  #pageSize = -1;
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
@@ -311,6 +313,17 @@ export class ArrayDataSource
     if (this.processedData) {
       this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
+    }
+  }
+
+  get pageCount() {
+    return Math.ceil(this.size / this.#pageSize);
+  }
+
+  set pageSize(pageSize: number) {
+    if (pageSize !== this.#pageSize) {
+      this.#pageSize = pageSize;
+      this.emit("page-count", this.pageCount);
     }
   }
 

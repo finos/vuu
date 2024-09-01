@@ -165,6 +165,7 @@ export interface TableScrollHookProps {
   rowHeight: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
   setRange: (range: VuuRange) => void;
+  showPaginationControls?: boolean;
   viewportMeasurements: ViewportMeasurements;
 }
 
@@ -303,7 +304,6 @@ export const useTableScroll = ({
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: scrollPos } = contentContainerPosRef;
-
     if (contentContainer && scrollbarContainer) {
       const [
         scrollLeft,

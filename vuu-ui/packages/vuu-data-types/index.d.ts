@@ -454,6 +454,7 @@ export type DataSourceEvents = {
     configChanges?: DataSourceConfigChanges,
   ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
+  "page-count": (pageCount: number) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
   "row-selection": RowSelectionEventHandler;
@@ -546,6 +547,16 @@ export interface DataSource
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;
+
+  /**
+   * derived from pageSize and size
+   */
+  readonly pageCount: number;
+  /**
+   * If provided, this will be used to determine page count.
+   */
+  pageSize?: number;
+
   status: DataSourceStatus;
   /**
    *
