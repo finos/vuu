@@ -5,7 +5,7 @@ import {
   SaltProvider,
   ThemeContextProps,
   useDensity,
-  useTheme,
+  useTheme
 } from "@salt-ds/core";
 import {
   ReactElement,
@@ -13,11 +13,11 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useState,
+  useState
 } from "react";
 import {
   ApplicationContext,
-  ApplicationContextProps,
+  ApplicationContextProps
 } from "./ApplicationContext";
 import { usePersistenceManager } from "../persistence-manager";
 
@@ -29,7 +29,7 @@ export interface ApplicationProviderProps
 }
 
 const getThemeMode = (
-  mode: Mode,
+  mode: Mode = "light",
   userSettings?: Record<string, string | number | boolean>
 ) => {
   const themeMode = userSettings?.themeMode;
@@ -43,10 +43,10 @@ export const ApplicationProvider = ({
   children,
   density: densityProp,
   loginUrl,
-  mode = "light",
+  mode,
   theme,
   userSettingsSchema: userSettingsSchema,
-  user,
+  user
 }: ApplicationProviderProps): ReactElement | null => {
   const { mode: inheritedMode, theme: inheritedTheme } = useTheme();
   const density = useDensity(densityProp);
@@ -83,7 +83,7 @@ export const ApplicationProvider = ({
         onUserSettingChanged,
         userSettings,
         userSettingsSchema,
-        user: user ?? context.user,
+        user: user ?? context.user
       }}
     >
       <SaltProvider
@@ -114,7 +114,7 @@ export const useApplicationSettings = () => {
   return {
     onUserSettingChanged,
     userSettings,
-    userSettingsSchema,
+    userSettingsSchema
   };
 };
 
