@@ -13,10 +13,10 @@ import {
   useRef,
   useState,
 } from "react";
-
-import tabCss from "./TabNext.css";
 import { TabNextContext } from "./TabNextContext";
 import { useTabsNext } from "./TabsNextContext";
+
+import tabCss from "./TabNext.css";
 
 const withBaseName = makePrefixer("saltTabNext");
 
@@ -25,6 +25,10 @@ export interface TabNextProps extends ComponentPropsWithoutRef<"div"> {
    * If `true`, the tab will be disabled.
    */
   disabled?: boolean;
+
+  draggable?: boolean;
+  dragging?: boolean;
+
   /**
    * The value of the tab.
    */
@@ -38,6 +42,8 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
       children,
       className,
       disabled: disabledProp,
+      draggable,
+      dragging,
       onBlur,
       onMouseDown,
       onFocus,
@@ -132,6 +138,8 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
             className,
           )}
           data-overflowitem="true"
+          draggable={draggable}
+          id={id}
           ref={ref}
           onMouseDown={handleMouseDown}
           onFocusCapture={handleFocusCapture}

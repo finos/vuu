@@ -8,6 +8,7 @@ import {
   useContext,
 } from "react";
 import { GridLayoutDropHandler } from "./GridPlaceholder";
+import { GridLayoutDragStartHandler } from "./useDraggable";
 
 export type GridStyle = Pick<
   CSSProperties,
@@ -27,18 +28,13 @@ export type GridLayoutAction = GridLayoutCloseAction;
 export type GridLayoutProviderDispatch = Dispatch<GridLayoutAction>;
 
 const unconfiguredGridLayoutProviderDispatch: GridLayoutProviderDispatch = (
-  action
+  action,
 ) =>
   console.log(
-    `dispatch ${action.type}, have you forgotten to provide a GridLayoutProvider ?`
+    `dispatch ${action.type}, have you forgotten to provide a GridLayoutProvider ?`,
   );
 
 export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
-
-export type GridLayoutDragStartHandler = (
-  evt: DragEvent<HTMLElement>,
-  id: string
-) => void;
 
 export interface GridLayoutProviderContextProps {
   dispatchGridLayoutAction: GridLayoutProviderDispatch;
@@ -56,7 +52,7 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
     onDragStart: () => console.log("no GridLayoutProvider"),
     onDrop: () => console.log("no GridLayoutProvider"),
     version: -1,
-  }
+  },
 );
 
 export interface GridLayoutProviderProps
@@ -73,7 +69,7 @@ export interface GridLayoutProviderProps
 }
 
 export const GridLayoutProvider = (
-  props: GridLayoutProviderProps
+  props: GridLayoutProviderProps,
 ): ReactElement => {
   const {
     children,

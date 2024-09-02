@@ -5,14 +5,14 @@
   justify-content: center;
   appearance: none;
   -webkit-appearance: none;
-  gap: var(--salt-spacing-100);
+  gap: 0;
   border: none;
   border-left: var(--salt-size-border) var(--salt-container-borderStyle) transparent;
   border-right: var(--salt-size-border) var(--salt-container-borderStyle) transparent;
   white-space: pre;
   min-height: calc(var(--salt-size-base) + var(--salt-spacing-100));
   min-width: 4em;
-  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+  padding: var(--salt-spacing-50) var(--salt-spacing-400);
   position: relative;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -28,6 +28,7 @@
   letter-spacing: var(--salt-text-letterSpacing);
   line-height: var(--salt-text-lineHeight);
   font-size: var(--salt-text-fontSize);
+
 }
 
 .saltTabNext::after {
@@ -43,12 +44,20 @@
 }
 
 .saltTabListNext-transparent .saltTabNext::after {
-  bottom: 0;
+  bottom: 1px;
 }
 
 .saltTabNext:hover::after,
 .saltTabNext-focusVisible::after {
   background: var(--salt-navigable-indicator-hover);
+}
+
+.vuuDragContainer-dragging .saltTabNext:not(.saltTabNext-selected)::after {
+  content: none;    
+}
+
+.saltTabNext.vuuDragging:not(.saltTabNext-selected)::after {
+  content: '';    
 }
 
 .saltTabNext-disabled:hover::after,
@@ -74,3 +83,8 @@
   cursor: var(--salt-navigable-cursor-disabled);
   color: var(--salt-content-primary-foreground-disabled);
 }
+
+.saltTabNext.drag-away {
+  display: none;
+}
+

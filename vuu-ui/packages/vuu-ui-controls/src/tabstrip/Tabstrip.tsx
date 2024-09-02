@@ -43,6 +43,8 @@ export const Tabstrip = ({
     window: targetWindow,
   });
 
+  console.log(`Tabstrip render`);
+
   const rootRef = useRef<HTMLDivElement>(null);
   const {
     activeTabIndex,
@@ -124,7 +126,7 @@ export const Tabstrip = ({
             />
           ) : (
             []
-          )
+          ),
         ),
     [
       children,
@@ -142,7 +144,7 @@ export const Tabstrip = ({
       interactedTabState,
       focusVisible,
       location,
-    ]
+    ],
   );
 
   return (

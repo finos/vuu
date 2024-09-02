@@ -10,6 +10,7 @@ import { DebugGridItem } from "./components/DebugGridItem";
 import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
 import "./GridLayout.examples.css";
+import { GridLayoutStackedItem } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 registerComponent("DebugGridItem", DebugGridItem, "view");
 
@@ -944,6 +945,128 @@ export const EmptyWithPalette = () => {
         >
           <GridPalette paletteItems={paletteItems} />
         </GridLayoutItem>
+      </GridLayout>
+    </>
+  );
+};
+
+export const ShowCaseLayout = () => {
+  const paletteItems = useMemo<GridPaletteItem[]>(
+    () => [
+      {
+        id: "red",
+        label: "Red",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Red",
+          style: {
+            background: "red",
+          },
+        },
+      },
+      {
+        id: "green",
+        label: "Green",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Green",
+          style: {
+            background: "green",
+          },
+        },
+      },
+      {
+        id: "yellow",
+        label: "Yellow",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Yellow",
+          style: {
+            background: "yellow",
+          },
+        },
+      },
+      {
+        id: "brown",
+        label: "Brown",
+        type: "DebugGridItem",
+        props: {
+          debugLabel: "Brown",
+          style: {
+            background: "brown",
+          },
+        },
+      },
+    ],
+    [],
+  );
+  return (
+    <>
+      <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
+
+      <GridLayout
+        cols={["200px", "1fr", "200px"]}
+        rows={["48px", "40px", "1fr"]}
+        colCount={2}
+        id="GridLayoutE"
+        rowCount={3}
+      >
+        <GridLayoutItem
+          data-fixed
+          id="app-header"
+          isDropTarget={false}
+          style={{
+            gridColumnStart: 1,
+            gridColumnEnd: 4,
+            gridRowStart: 1,
+            gridRowEnd: 2,
+          }}
+        >
+          <div style={{ background: "yellow" }}>AppHeader</div>
+        </GridLayoutItem>
+        <GridLayoutItem
+          data-fixed
+          id="palette"
+          isDropTarget={false}
+          resizeable="hv"
+          style={{
+            gridColumnStart: 1,
+            gridColumnEnd: 2,
+            gridRowStart: 2,
+            gridRowEnd: 4,
+          }}
+        >
+          <GridPalette paletteItems={paletteItems} />
+        </GridLayoutItem>
+
+        <GridLayoutItem
+          data-fixed
+          id="app-toolbar"
+          isDropTarget={false}
+          style={{
+            gridColumnStart: 2,
+            gridColumnEnd: 3,
+            gridRowStart: 2,
+            gridRowEnd: 3,
+          }}
+        >
+          <div style={{ background: "brown", color: "white" }}>Toolbar</div>
+        </GridLayoutItem>
+
+        <GridLayoutStackedItem
+          id="main-tabs"
+          style={{
+            gridColumnStart: 2,
+            gridColumnEnd: 3,
+            gridRowStart: 3,
+            gridRowEnd: 4,
+          }}
+        >
+          <div title="Brown">Brown</div>
+          <div title="Navy">Navy</div>
+          <div title="Gray">Gray</div>
+          <div title="Black">Black</div>
+        </GridLayoutStackedItem>
       </GridLayout>
     </>
   );

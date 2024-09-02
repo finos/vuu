@@ -1,9 +1,4 @@
-import {
-  capitalize,
-  makePrefixer,
-  useForkRef,
-  useIsomorphicLayoutEffect,
-} from "@salt-ds/core";
+import { capitalize, makePrefixer, useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
@@ -11,13 +6,18 @@ import {
   type ComponentPropsWithoutRef,
   type KeyboardEvent,
   forwardRef,
+  useCallback,
+  useLayoutEffect,
   useRef,
 } from "react";
 
 import tablistNextCss from "./TabListNext.css";
+import draggableCss from "../drag-drop/Draggable.css";
 import { TabOverflowList } from "./TabOverflowList";
 import { useTabsNext } from "./TabsNextContext";
 import { useOverflow } from "./hooks/useOverflow";
+import { useDragDrop } from "./drag-drop/useDragDrop";
+import { DropHandler } from "./hooks/dragDropTypes";
 
 const withBaseName = makePrefixer("saltTabListNext");
 
@@ -28,19 +28,31 @@ export interface TabListNextProps
    */
   activeColor?: "primary" | "secondary" | "tertiary";
   /**
+   * when true Tabs may be re-arranged by dragging individual Tabs to new position within Tabstrip.
+   */
+  allowDragDrop?: boolean;
+
+  /**
    * The appearance of the tabs. Defaults to "bordered".
    */
   appearance?: "bordered" | "transparent";
+
+  /**
+   * Called when a draggable Tab has been dropped
+   */
+  onMoveTab?: (fromIndex: number, toIndex: number) => void;
 }
 
 export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
   function TabstripNext(props, ref) {
     const {
+      allowDragDrop,
       appearance = "bordered",
       activeColor = "primary",
       children,
       className,
       onKeyDown,
+      onMoveTab,
       ...rest
     } = props;
     const targetWindow = useWindow();
@@ -49,6 +61,13 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
       css: tablistNextCss,
       window: targetWindow,
     });
+    useComponentCssInjection({
+      testId: "salt-draggable",
+      css: draggableCss,
+      window: targetWindow,
+    });
+
+    console.log(`TabsListNext render`);
 
     const {
       selected,
@@ -104,7 +123,16 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
       }
     };
 
-    useIsomorphicLayoutEffect(() => {
+    const handleDrop = useCallback<DropHandler>(
+      ({ fromIndex, toIndex }) => {
+        onMoveTab?.(fromIndex, toIndex);
+      },
+      [onMoveTab],
+    );
+
+    const dragProps = useDragDrop({ onDrop: handleDrop });
+
+    useLayoutEffect(() => {
       if (!returnFocus.current || visible.length < 1 || selected === undefined)
         return;
 
@@ -120,6 +148,7 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
 
     return (
       <div
+        {...dragProps}
         role="tablist"
         className={clsx(
           withBaseName(),

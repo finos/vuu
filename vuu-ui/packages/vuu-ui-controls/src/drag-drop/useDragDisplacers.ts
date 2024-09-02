@@ -14,7 +14,7 @@ export type DragDisplacersHookResult = {
     size: number,
     useTransition?: boolean,
     direction?: Direction | "static",
-    orientation?: "horizontal" | "vertical"
+    orientation?: "horizontal" | "vertical",
   ) => number;
   displaceLastItem: (
     dropTargets: MeasuredDropTarget[],
@@ -22,19 +22,19 @@ export type DragDisplacersHookResult = {
     size: number,
     useTransition?: boolean,
     direction?: Direction | "static",
-    orientation?: "horizontal" | "vertical"
+    orientation?: "horizontal" | "vertical",
   ) => number;
   clearSpacers: (useAnimation?: boolean) => void;
   /** Insert the sized spacer at start or end of collection */
   setTerminalSpacer: (
     container: HTMLElement,
     position: "start" | "end",
-    size: number
+    size: number,
   ) => void;
 };
 
 export type DragDisplacersHook = (
-  orientation: orientationType
+  orientation: orientationType,
 ) => DragDisplacersHookResult;
 /**
  * Manage a pair of displacer elements to smoothly display a moving gap between
@@ -42,7 +42,7 @@ export type DragDisplacersHook = (
  * direction option should be used at drag start or following scroll.
  */
 export const useDragDisplacers: DragDisplacersHook = (
-  orientation = "horizontal"
+  orientation = "horizontal",
 ) => {
   const animationFrame = useRef(0);
   const transitioning = useRef(false);
@@ -50,7 +50,7 @@ export const useDragDisplacers: DragDisplacersHook = (
   const spacers = useMemo(
     // We only need to listen for transition end on one of the spacers
     () => [createDragDisplacer(transitioning), createDragDisplacer()],
-    []
+    [],
   );
 
   const animateTransition = useCallback(
@@ -64,7 +64,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         spacers[1] = spacer1;
       });
     },
-    [spacers]
+    [spacers],
   );
 
   const clearSpacers = useCallback(
@@ -82,7 +82,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         spacers.forEach((spacer) => spacer.remove());
       }
     },
-    [animateTransition, orientation, spacers]
+    [animateTransition, orientation, spacers],
   );
 
   const setTerminalSpacer = useCallback(
@@ -99,7 +99,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         container.lastChild?.after(spacer);
       }
     },
-    [clearSpacers, orientation, spacers]
+    [clearSpacers, orientation, spacers],
   );
 
   const cancelAnyPendingAnimation = useCallback(() => {
@@ -115,7 +115,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static"
+      direction: Direction | "static" = "static",
     ): number => {
       if (dropTarget) {
         const propertyName = orientation === "horizontal" ? "width" : "height";
@@ -146,7 +146,7 @@ export const useDragDisplacers: DragDisplacersHook = (
           dropTarget.element.before(spacer1);
         } else {
           throw Error(
-            "useDragDisplacers currently only supports noTransition for static displacement"
+            "useDragDisplacers currently only supports noTransition for static displacement",
           );
         }
         if (direction !== "static") {
@@ -162,7 +162,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       clearSpacers,
       orientation,
       spacers,
-    ]
+    ],
   );
   const displaceLastItem = useCallback(
     (
@@ -170,7 +170,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       dropTarget: MeasuredDropTarget,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static"
+      direction: Direction | "static" = "static",
     ): number => {
       const propertyName = orientation === "horizontal" ? "width" : "height";
       const [spacer1, spacer2] = spacers;
@@ -209,7 +209,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       clearSpacers,
       orientation,
       spacers,
-    ]
+    ],
   );
 
   return {

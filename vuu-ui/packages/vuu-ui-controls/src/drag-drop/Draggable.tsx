@@ -31,7 +31,7 @@ export interface DraggableProps extends HTMLAttributes<HTMLDivElement> {
 export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
   function Draggable(
     { wrapperClassName, element, onDropped, onTransitionEnd, style, scale = 1 },
-    forwardedRef
+    forwardedRef,
   ) {
     const targetWindow = useWindow();
     useComponentCssInjection({
@@ -55,7 +55,7 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
           el.addEventListener("vuu-dropped", handleVuuDrop);
         }
       },
-      [element, handleVuuDrop, scale]
+      [element, handleVuuDrop, scale],
     );
     const forkedRef = useForkRef<HTMLDivElement>(forwardedRef, callbackRef);
 
@@ -64,7 +64,7 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
         left: 0,
         top: 0,
       }),
-      []
+      [],
     );
 
     return (
@@ -84,13 +84,13 @@ export const Draggable = forwardRef<HTMLDivElement, DraggableProps>(
         </Popup>
       </Portal>
     );
-  }
+  },
 );
 
 // const colors = ["black", "red", "green", "yellow"];
 // let color_idx = 0;
 export const createDragSpacer = (
-  transitioning?: MutableRefObject<boolean>
+  transitioning?: MutableRefObject<boolean>,
 ): HTMLElement => {
   // const idx = color_idx++ % 4;
 
@@ -111,7 +111,7 @@ export const createDropIndicatorPosition = (): HTMLElement => {
 };
 
 export const createDropIndicator = (
-  transitioning?: MutableRefObject<boolean>
+  transitioning?: MutableRefObject<boolean>,
 ): HTMLElement => {
   // const idx = color_idx++ % 4;
   const spacer = document.createElement("div");

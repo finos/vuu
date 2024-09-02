@@ -4,20 +4,33 @@ import {
   MouseEventHandler,
   useCallback,
 } from "react";
-import {
-  GridLayoutDragEndHandler,
-  GridLayoutDragStartHandler,
-} from "./GridLayoutProvider";
+import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
+import { LayoutJSON } from "@finos/vuu-utils";
+
+export type DragStartIdOptions = {
+  id: string;
+  type: "text/plain";
+};
+export type DragStartJsonOptions = {
+  payload: LayoutJSON;
+  type: "text/json";
+};
+
+export type GridLayoutDragStartHandler = (
+  evt: DragEvent<HTMLElement>,
+  dragStartOptions: DragStartIdOptions | DragStartJsonOptions,
+) => void;
 
 export interface DraggableHookProps {
   draggableClassName?: string;
+  getDragImg?: (evt: DragEvent<Element>) => HTMLElement;
   getPayload: (evt: DragEvent<Element>) => [string, string];
   onDragEnd?: GridLayoutDragEndHandler;
   onDragStart?: GridLayoutDragStartHandler;
 }
 
 export const useDraggable = ({
-  draggableClassName,
+  getDragImg,
   getPayload,
   onDragEnd,
   onDragStart,
@@ -27,29 +40,27 @@ export const useDraggable = ({
       const [type, payload] = getPayload(e);
       e.dataTransfer.setData(type, payload);
       e.dataTransfer.effectAllowed = "move";
-
+      const dragImg = getDragImg?.(e);
+      if (dragImg) {
+        e.dataTransfer.setDragImage(dragImg, 0, 0);
+      }
       e.stopPropagation();
 
-      // if (type === "text/plain") {
-      onDragStart?.(e, payload);
-      // }
+      if (type === "text/plain") {
+        onDragStart?.(e, { id: payload, type });
+      } else if (type === "text/json") {
+        onDragStart?.(e, { payload: JSON.parse(payload), type });
+      }
     },
-    [getPayload, onDragStart]
+    [getDragImg, getPayload, onDragStart],
   );
 
   const handleDragEnd = useCallback<DragEventHandler<HTMLElement>>(
     (e) => {
       (e.target as HTMLElement).classList.remove("dragging");
-      console.log(
-        `%cuseDraggable onDragEnd dropEffect ${e.dataTransfer.dropEffect}`,
-        "color: brown",
-        {
-          e,
-        }
-      );
       onDragEnd?.(e);
     },
-    [onDragEnd]
+    [onDragEnd],
   );
 
   const onMouseDown = useCallback<MouseEventHandler>((e) => {

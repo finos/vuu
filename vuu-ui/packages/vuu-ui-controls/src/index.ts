@@ -20,7 +20,6 @@ export * from "./price-ticker";
 export * from "./split-button";
 export * from "./tabs-next";
 export * from "./tabstrip";
-export { Tabstrip as TabstripNext } from "./tabstrip-next";
 export * from "./toolbar";
 export * from "./utils";
 export * from "./vuu-date-picker";

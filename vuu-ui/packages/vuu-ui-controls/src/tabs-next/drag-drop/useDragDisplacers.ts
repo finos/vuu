@@ -1,6 +1,6 @@
 import type { orientationType } from "@finos/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
-import { Direction } from "./dragDropTypes";
+import { Direction } from "../hooks/dragDropTypes";
 import { createDragSpacer as createDragDisplacer } from "./Draggable";
 
 export type DragDisplacersHookResult = {
@@ -9,19 +9,19 @@ export type DragDisplacersHookResult = {
     size: number,
     useTransition?: boolean,
     direction?: Direction | "static",
-    orientation?: "horizontal" | "vertical"
+    orientation?: "horizontal" | "vertical",
   ) => void;
   clearSpacers: (useAnimation?: boolean) => void;
   /** Insert the sized spacer at start or end of collection */
   setTerminalSpacer: (
     container: HTMLElement,
     position: "start" | "end",
-    size: number
+    size: number,
   ) => void;
 };
 
 export type DragDisplacersHook = (
-  orientation?: orientationType
+  orientation?: orientationType,
 ) => DragDisplacersHookResult;
 /**
  * Manage a pair of displacer elements to smoothly display a moving gap between
@@ -29,7 +29,7 @@ export type DragDisplacersHook = (
  * direction option should be used at drag start or following scroll.
  */
 export const useDragDisplacers: DragDisplacersHook = (
-  orientation = "horizontal"
+  orientation = "horizontal",
 ) => {
   const animationFrame = useRef(0);
   const transitioning = useRef(false);
@@ -37,7 +37,7 @@ export const useDragDisplacers: DragDisplacersHook = (
   const spacers = useMemo(
     // We only need to listen for transition end on one of the spacers
     () => [createDragDisplacer(transitioning), createDragDisplacer()],
-    []
+    [],
   );
 
   const animateTransition = useCallback(
@@ -51,7 +51,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         spacers[1] = spacer1;
       });
     },
-    [spacers]
+    [spacers],
   );
 
   const clearSpacers = useCallback(
@@ -69,7 +69,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         spacers.forEach((spacer) => spacer.remove());
       }
     },
-    [animateTransition, orientation, spacers]
+    [animateTransition, orientation, spacers],
   );
 
   const setTerminalSpacer = useCallback(
@@ -86,7 +86,7 @@ export const useDragDisplacers: DragDisplacersHook = (
         container.lastChild?.after(spacer);
       }
     },
-    [clearSpacers, orientation, spacers]
+    [clearSpacers, orientation, spacers],
   );
 
   const cancelAnyPendingAnimation = useCallback(() => {
@@ -101,7 +101,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       draggedElement: HTMLElement,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static"
+      direction: Direction | "static" = "static",
     ) => {
       const propertyName = orientation === "horizontal" ? "width" : "height";
       const [spacer1, spacer2] = spacers;
@@ -136,7 +136,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       clearSpacers,
       orientation,
       spacers,
-    ]
+    ],
   );
 
   const displaceItem = useCallback(
@@ -144,7 +144,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       displacedElement: HTMLElement,
       size: number,
       useTransition = false,
-      direction: Direction | "static" = "static"
+      direction: Direction | "static" = "static",
     ) => {
       if (
         displacedElement === displacedElement.parentElement?.lastElementChild
@@ -153,7 +153,7 @@ export const useDragDisplacers: DragDisplacersHook = (
           displacedElement,
           size,
           useTransition,
-          direction
+          direction,
         );
       }
       if (displacedElement) {
@@ -165,6 +165,7 @@ export const useDragDisplacers: DragDisplacersHook = (
             clearSpacers();
             spacer1.style.cssText = `${propertyName}: ${size}px`;
             spacer2.style.cssText = `${propertyName}: 0px`;
+
             if (direction === "fwd") {
               displacedElement.before(spacer1);
               displacedElement.after(spacer2);
@@ -185,7 +186,7 @@ export const useDragDisplacers: DragDisplacersHook = (
           displacedElement.before(spacer1);
         } else {
           throw Error(
-            "useDragDisplacers currently only supports noTransition for static displacement"
+            "useDragDisplacers currently only supports noTransition for static displacement",
           );
         }
       }
@@ -198,7 +199,7 @@ export const useDragDisplacers: DragDisplacersHook = (
       displaceLastItem,
       orientation,
       spacers,
-    ]
+    ],
   );
 
   return {

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useDragDisplacers } from "./useDragDisplacers";
-import { Direction } from "./dragDropTypes";
+import { Direction } from "../hooks/dragDropTypes";
 
 export const useDragDropNaturalMovement = () => {
   const { clearSpacers, displaceItem } = useDragDisplacers();
@@ -16,14 +16,14 @@ export const useDragDropNaturalMovement = () => {
         draggedElement.classList.add("drag-away");
       });
     },
-    [displaceItem]
+    [displaceItem],
   );
 
   const dragEnterDropTarget = useCallback(
     (dropTarget: HTMLElement, direction: Direction) => {
       displaceItem(dropTarget, sizeRef.current, true, direction);
     },
-    [displaceItem]
+    [displaceItem],
   );
 
   const dragEnterDropContainer = useCallback(() => {
@@ -38,7 +38,7 @@ export const useDragDropNaturalMovement = () => {
       clearSpacers();
       draggedElement.classList.remove("drag-away");
     },
-    [clearSpacers]
+    [clearSpacers],
   );
 
   return {

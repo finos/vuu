@@ -83,8 +83,8 @@ export const TabNextTrigger = forwardRef<
       aria-disabled={disabled}
       aria-controls={panelId}
       // eslint-disable-next-line react/no-unknown-property
-      aria-actions={clsx(actions) || undefined}
-      aria-description={getAriaDescription(actions.length)}
+      // aria-actions={clsx(actions) || undefined}
+      // aria-description={getAriaDescription(actions.length)}
       tabIndex={focused || selected ? undefined : -1}
       role="tab"
       type="button"

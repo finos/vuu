@@ -2,7 +2,7 @@ import {
   useDraggable,
   useGridLayoutDragStartHandler,
   useGridLayoutProps,
-  useGridLayoutProviderDispatch
+  useGridLayoutProviderDispatch,
 } from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -13,7 +13,7 @@ import {
   DragEvent,
   HTMLAttributes,
   MouseEventHandler,
-  useCallback
+  useCallback,
 } from "react";
 import { GridResizeable } from "./GridLayout";
 import { useAsDropTarget } from "./useAsDropTarget";
@@ -58,12 +58,12 @@ export const GridLayoutItem = ({
   useComponentCssInjection({
     testId: "vuu-grid-layout",
     css: gridLayoutCss,
-    window: targetWindow
+    window: targetWindow,
   });
   useComponentCssInjection({
     testId: "vuu-grid-splitter",
     css: gridSplitterCss,
-    window: targetWindow
+    window: targetWindow,
   });
 
   const dispatch = useGridLayoutProviderDispatch();
@@ -75,7 +75,7 @@ export const GridLayoutItem = ({
       evt.stopPropagation();
       dispatch({ type: "close", id });
     },
-    [dispatch, id]
+    [dispatch, id],
   );
 
   const getPayload = useCallback(
@@ -86,7 +86,7 @@ export const GridLayoutItem = ({
       }
       throw Error("GridLayoutItem no found");
     },
-    []
+    [],
   );
 
   const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
@@ -94,19 +94,19 @@ export const GridLayoutItem = ({
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
     getPayload,
-    onDragStart
+    onDragStart,
   });
 
   const className = cx(classBaseItem, {
     [`${classBaseItem}-resizeable-h`]: resizeable === "h",
     [`${classBaseItem}-resizeable-v`]: resizeable === "v",
-    [`${classBaseItem}-resizeable-vh`]: resizeable === "hv"
+    [`${classBaseItem}-resizeable-vh`]: resizeable === "hv",
   });
 
   const style = {
     ...styleProp,
     ...layoutProps,
-    "--header-height": header ? "25px" : "0px"
+    "--header-height": header ? "25px" : "0px",
   };
 
   return (

@@ -34,6 +34,7 @@ export const getColumns = (el: HTMLElement) =>
     .map((value) => parseInt(value, 10));
 
 export const setColumns = (el: HTMLElement, cols: number[]) => {
+  // console.log(`setColumns [${cols.join(",")}]`);
   const trackTemplate = cols.map((r) => `${r}px`).join(" ");
   el.style.gridTemplateColumns = trackTemplate;
 };
@@ -88,10 +89,10 @@ export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
   const resizeable = el.classList.contains("vuuGridLayoutItem-resizeable-v")
     ? "v"
     : el.classList.contains("vuuGridLayoutItem-resizeable-h")
-    ? "h"
-    : el.classList.contains("vuuGridLayoutItem-resizeable-vh")
-    ? "vh"
-    : undefined;
+      ? "h"
+      : el.classList.contains("vuuGridLayoutItem-resizeable-vh")
+        ? "vh"
+        : undefined;
   return {
     column: { start: col[0], end: col[1] },
     fixed: el.dataset.fixed === "true",
@@ -109,7 +110,7 @@ export const getRowIndex = (el: HTMLElement) => {
 
 export const setGridColumn = (
   target: string | HTMLElement,
-  { start, end }: GridLayoutModelPosition
+  { start, end }: GridLayoutModelPosition,
 ) => {
   const el =
     typeof target === "string"
@@ -120,7 +121,7 @@ export const setGridColumn = (
 
 export const setGridRow = (
   target: string | HTMLElement,
-  { start, end }: GridLayoutModelPosition
+  { start, end }: GridLayoutModelPosition,
 ) => {
   const el =
     typeof target === "string"
@@ -131,7 +132,7 @@ export const setGridRow = (
 
 export const spansMultipleTracks = (
   gridItem: IGridLayoutModelItem,
-  direction: GridLayoutResizeDirection
+  direction: GridLayoutResizeDirection,
 ) => {
   const track = direction === "horizontal" ? "column" : "row";
   const { start, end } = gridItem[track];
@@ -140,8 +141,9 @@ export const spansMultipleTracks = (
 
 export const setGridTrackTemplate = (
   { grid, resizeDirection }: Pick<ResizeState, "grid" | "resizeDirection">,
-  tracks: number[]
+  tracks: number[],
 ) => {
+  // console.log(`setGridTrackTemplate ${resizeDirection} [${tracks.join(",")}]`);
   const trackTemplate = tracks.map((r) => `${r}px`).join(" ");
   if (grid && resizeDirection === "vertical") {
     grid.style.gridTemplateRows = trackTemplate;

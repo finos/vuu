@@ -1,7 +1,6 @@
 import { GridLayoutSplitDirection } from "@finos/vuu-utils";
 import {
   GridItemMaps,
-  GridLayoutModelItem,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   IGridLayoutModelItem,
@@ -20,7 +19,7 @@ import {
 const insertTrack = (tracks: number[], trackIndex: number, size = 0) => {
   if (tracks[trackIndex] < size) {
     throw Error(
-      `insertTrack target track ${tracks[trackIndex]} is not large enough to accommodate new track ${size}`
+      `insertTrack target track ${tracks[trackIndex]} is not large enough to accommodate new track ${size}`,
     );
   }
   return tracks.reduce<number[]>((list, track, i) => {
@@ -41,7 +40,7 @@ export const splitTrack = (tracks: number[], trackIndex: number) => {
 export const removeTrackFromTracks = (
   tracks: number[],
   trackIndex: number,
-  assignDirection: "bwd" | "fwd" = "fwd"
+  assignDirection: "bwd" | "fwd" = "fwd",
 ) => {
   if (trackIndex === tracks.length - 1) {
     const lastValue = tracks.at(-1) as number;
@@ -119,7 +118,7 @@ export const splitTracks = (tracks: number[], start: number, end: number) => {
 export const getBisectingGridLine = (
   tracks: number[],
   startLine: number,
-  endLine: number
+  endLine: number,
 ) => {
   if (endLine - startLine > 1) {
     // Total the sizes between start and end
@@ -163,7 +162,7 @@ export type ContrasAndSiblings = {
 export const getMatchingColspan = (
   targetGridItem: IGridLayoutModelItem,
   siblings: IGridLayoutModelItem[],
-  contras: IGridLayoutModelItem[]
+  contras: IGridLayoutModelItem[],
 ): ContrasAndSiblings | undefined => {
   const { column } = targetGridItem;
   const startCol = column.start;
@@ -217,7 +216,7 @@ export const getMatchingColspan = (
 export const getMatchingRowspan = (
   gridItem: IGridLayoutModelItem,
   siblings: IGridLayoutModelItem[],
-  contras: IGridLayoutModelItem[]
+  contras: IGridLayoutModelItem[],
 ): ContrasAndSiblings | undefined => {
   const { row } = gridItem;
   const startRow = row.start;
@@ -266,11 +265,11 @@ export const getMatchingRowspan = (
  */
 export const doesResizeRequireNewTrack = (
   splitters: ISplitter[],
-  splitter: ISplitter
+  splitter: ISplitter,
 ) => {
   const potentialCandidates = splitters.filter(
     ({ id, orientation }) =>
-      orientation === splitter.orientation && id !== splitter.id
+      orientation === splitter.orientation && id !== splitter.id,
   );
 
   if (potentialCandidates.length > 0) {
@@ -279,7 +278,7 @@ export const doesResizeRequireNewTrack = (
       [track]: { start: splitterStart },
     } = splitter;
     return potentialCandidates.some(
-      ({ [track]: { start } }) => start === splitterStart
+      ({ [track]: { start } }) => start === splitterStart,
     );
   }
   return false;
@@ -301,20 +300,20 @@ export const adjustDistance = (moveBy: number, adjustmentAmount: number) => {
 
 export const byColumnStart = (
   item1: GridLayoutModelItem,
-  item2: GridLayoutModelItem
+  item2: GridLayoutModelItem,
 ) => {
   return item1.column.start - item2.column.start;
 };
 
 export const byRowStart = (
   item1: GridLayoutModelItem,
-  item2: GridLayoutModelItem
+  item2: GridLayoutModelItem,
 ) => {
   return item1.row.start - item2.row.start;
 };
 
 export const gridResizeDirectionFromDropPosition = (
-  dropPosition: GridLayoutSplitDirection
+  dropPosition: GridLayoutSplitDirection,
 ): GridLayoutResizeDirection =>
   dropPosition === "north" || dropPosition === "south"
     ? "vertical"
@@ -322,7 +321,7 @@ export const gridResizeDirectionFromDropPosition = (
 
 export const getUnusedGridTrackLines = (
   gridItemMaps: GridItemMaps,
-  trackCount: number
+  trackCount: number,
 ): number[] => {
   const unusedStartPositions: number[] = [];
   const unusedTrackLines: number[] = [];
@@ -345,7 +344,7 @@ export const getUnusedGridTrackLines = (
 
 const gridLayoutPositionComparator = (
   p1: GridLayoutModelPosition,
-  p2: GridLayoutModelPosition
+  p2: GridLayoutModelPosition,
 ) => {
   if (p1.start < p2.start) {
     return -1;
@@ -360,17 +359,17 @@ const gridLayoutPositionComparator = (
 };
 export const byColumnPosition = (
   { column: pos1 }: GridLayoutModelItem,
-  { column: pos2 }: GridLayoutModelItem
+  { column: pos2 }: GridLayoutModelItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const byRowPosition = (
   { row: pos1 }: GridLayoutModelItem,
-  { row: pos2 }: GridLayoutModelItem
+  { row: pos2 }: GridLayoutModelItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const itemsFillColumn = (
   items: GridLayoutModelItem[],
-  pos: GridLayoutModelPosition
+  pos: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byColumnPosition);
   const firstItem = sortedItems.at(0);
@@ -397,7 +396,7 @@ export const itemsFillColumn = (
 };
 export const itemsFillRow = (
   items: GridLayoutModelItem[],
-  row: GridLayoutModelPosition
+  row: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byRowPosition);
   const firstItem = sortedItems.at(0);

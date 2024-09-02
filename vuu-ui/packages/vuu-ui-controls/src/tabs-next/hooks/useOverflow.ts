@@ -11,6 +11,7 @@ import {
   type RefObject,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import type { Item } from "./useCollection";
 
@@ -137,6 +138,12 @@ export function useOverflow({
     updateOverflow();
   }, [selected]);
 
+  /**
+   * Dragging tabs sometimnes triggers ResizeObserver to report tiny (sub half pixel) changes in the
+   * border width. Use this ref to ignore these discrepancies.
+   */
+  const borderWidthRef = useRef<number | undefined>();
+
   useEffect(() => {
     const element = container?.current;
     if (!element) return;
@@ -146,8 +153,16 @@ export function useOverflow({
     const resizeObserver = new win.ResizeObserver((entries) => {
       requestAnimationFrame(() => {
         if (entries.length === 0) return;
+        const [
+          {
+            borderBoxSize: [{ inlineSize: borderWidth }],
+          },
+        ] = entries;
 
-        updateOverflow();
+        borderWidthRef.current ??= borderWidth;
+        if (Math.abs(borderWidthRef.current - borderWidth) > 0.5) {
+          updateOverflow();
+        }
       });
     });
     resizeObserver.observe(element);

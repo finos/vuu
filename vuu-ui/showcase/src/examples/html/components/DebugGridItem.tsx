@@ -1,10 +1,4 @@
-import {
-  HTMLAttributes,
-  RefCallback,
-  useCallback,
-  useLayoutEffect,
-  useRef,
-} from "react";
+import { HTMLAttributes, RefCallback, useCallback, useRef } from "react";
 
 export interface DebugGridItemProps extends HTMLAttributes<HTMLDivElement> {
   debugLabel?: string;
@@ -19,20 +13,5 @@ export const DebugGridItem = ({ debugLabel = "", ...htmlAttributes }) => {
     ref.current = el;
   }, []);
 
-  const displayStats = useCallback(() => {
-    const style = getComputedStyle(ref.current as HTMLDivElement);
-    const width = style.getPropertyValue("width");
-    console.log(`${pad(debugLabel, 8)}width = ${width}`);
-  }, [debugLabel]);
-
-  useLayoutEffect(() => displayStats(), [debugLabel, displayStats]);
-
-  return (
-    <div
-      {...htmlAttributes}
-      className="vuuDebugGridItem"
-      onClick={displayStats}
-      ref={setRef}
-    />
-  );
+  return <div {...htmlAttributes} className="vuuDebugGridItem" ref={setRef} />;
 };

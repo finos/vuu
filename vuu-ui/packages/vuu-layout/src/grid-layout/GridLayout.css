@@ -1,5 +1,6 @@
 .vuuGridLayout {
   --vuu-grid-gap: 6px;
+  --vuu-grid-header-height: 25px;
   display: grid;
   padding: var(--vuu-grid-gap);
 
@@ -19,6 +20,8 @@
 
   &.vuuGridLayoutItem-dragging {
     display: none;
+    grid-column: 0/0 !important;
+    grid-row: 0/0;
   }
 }
 
@@ -36,10 +39,11 @@
 .vuuGridLayoutItemHeader {
   align-items: center;
   background-color: #ccc;
+  cursor: grab;
   display: flex;
-  flex: 0 0 var(--vuu-header-height);
+  flex: 0 0 var(--vuu-grid-header-height);
   inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap);
-  height: var(--vuu-header-height);
+  height: var(--vuu-grid-header-height);
   padding: 0 var(--salt-spacing-100) 0 0;
 
   [data-align="right"] {
@@ -54,15 +58,24 @@
   }
 }
 
+.vuuGridLayoutStackedItemHeader {
+  flex: 0 0 32px;
+  .saltTabsNext {
+    margin-top: 3px;
+  }
+}
+
 .vuuGridLayoutItemHeader-close {
   margin-left: auto;
 }
 
+.vuuGridLayoutStackedItemContent,
 .vuuGridLayoutItemContent {
   flex: 1 1 auto;
   position: relative;
 }
 
+.vuuGridLayoutStackedItemContent > *,
 .vuuGridLayoutItemContent > * {
   position: absolute;
   inset: 0;
@@ -140,3 +153,4 @@
   transition-timing-function: ease-in-out;
   width: var(--grid-dropzone-width);
 } */
+}

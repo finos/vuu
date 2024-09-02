@@ -1,14 +1,22 @@
 /* Component class applied to the root element */
 .saltTabListNext {
+  --tabstrip-height: var(
+    --vuuTabstrip-height,
+    calc(var(--salt-size-base) + var(--salt-spacing-100))
+  );
+
+
   display: flex;
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
   position: relative;
   background: transparent;
-  min-height: calc(var(--salt-size-base) + var(--salt-spacing-100));
-  gap: var(--salt-spacing-100);
+  min-height: var(--tabstrip-height);
+  gap: 0;
   max-width: 100%;
+
+
 }
 
 .saltTabListNext-center {
@@ -30,3 +38,4 @@
 .saltTabListNext-activeColorTertiary {
   --saltTabListNext-activeColor: var(--salt-container-tertiary-background);
 }
+

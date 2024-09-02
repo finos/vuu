@@ -107,7 +107,11 @@ export const GridLayout = ({
       splitGridCol,
       splitGridRow,
     }),
-    [addGridColumn, addGridRow, removeGridColumn, splitGridCol, splitGridRow]
+    [addGridColumn, addGridRow, removeGridColumn, splitGridCol, splitGridRow],
+  );
+
+  console.log(
+    `render GridLayout columns [${JSON.stringify(gridTemplateColumns)}]`,
   );
 
   const style = {
