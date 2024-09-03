@@ -2,10 +2,11 @@ package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.IVuuServer
-import org.finos.vuu.core.module.typeahead.ViewPortTypeAheadRpcHandler
+import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net._
+import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -201,7 +202,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
             .addString("Name")
             .addInt("Account")
             .build(),
-        service = new ViewPortTypeAheadRpcHandler(tableContainer)
+        service = new TypeAheadTestRpcHandler(tableContainer)
       )
 
     val dataSource = new FakeDataSource(ListMap(
@@ -266,4 +267,11 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
         "starts" -> startString
       ))
   }
+}
+
+class TypeAheadTestRpcHandler(tableContainer: TableContainer) extends DefaultRpcHandler {
+
+  val typeAheadHandler = new ViewportTypeAheadRpcHandler(this, tableContainer)
+  typeAheadHandler.register()
+
 }
