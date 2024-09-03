@@ -5,13 +5,19 @@ import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
+import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.wsapi.helpers.TestStartUp;
 import org.finos.vuu.wsapi.helpers.TestVuuClient;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
+import scala.Option;
 import scala.jdk.javaapi.OptionConverters;
 
+import static org.junit.Assert.assertTrue;
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class WebSocketApiJavaTestBase {
 
     protected TestVuuClient vuuClient;
@@ -22,7 +28,7 @@ public abstract class WebSocketApiJavaTestBase {
     protected LifecycleContainer lifecycle  = new LifecycleContainer(clock);
     protected TableDefContainer tableDefContainer  = new TableDefContainer();
 
-    @Before
+    @BeforeAll
     public void setUp() {
         vuuClient = testStartUp();
         tokenId = vuuClient.createAuthToken();
@@ -31,19 +37,25 @@ public abstract class WebSocketApiJavaTestBase {
         sessionId = sessionOption.get();
     }
 
-    public TestVuuClient testStartUp() {
+    @AfterAll
+    public void after() {
+        lifecycle.stop();
+    }
+
+    protected abstract ViewServerModule defineModuleWithTestTables();
+
+    protected <BodyType> BodyType assertBodyIsInstanceOf(Option<ViewServerMessage> message, String messageDescription) {
+        var messageOptional = OptionConverters.toJava(message);
+        assertTrue(messageDescription + " is present", messageOptional.isPresent());
+        return ((BodyType) messageOptional.get().body());
+    }
+
+    private TestVuuClient testStartUp() {
         var startUp = new TestStartUp(
                 this::defineModuleWithTestTables,
                 clock,
                 lifecycle,
                 tableDefContainer);
         return startUp.startServerAndClient();
-    }
-
-    public abstract ViewServerModule defineModuleWithTestTables();
-
-    @After
-    public void after(){
-        lifecycle.stop();
     }
 }
