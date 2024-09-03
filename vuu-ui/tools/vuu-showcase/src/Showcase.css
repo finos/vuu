@@ -14,7 +14,7 @@ body {
   align-items: center;
   display: flex;
   gap: 12px;
-  height: var(--vuuToolbarProxy-height, 36px);
+  height: var(--vuuToolbarProxy-height, 32px);
 }
 
 .vuuToolbarProxy-vertical {
