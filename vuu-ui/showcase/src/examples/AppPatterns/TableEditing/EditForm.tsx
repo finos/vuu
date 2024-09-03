@@ -39,7 +39,7 @@ export const EditForm = ({
       const fieldName = getField(evt.target);
       onCommitFieldValue(fieldName, value);
     },
-    [onCommitFieldValue],
+    [onCommitFieldValue]
   );
 
   return (

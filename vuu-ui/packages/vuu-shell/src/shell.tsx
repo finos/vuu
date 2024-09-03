@@ -5,7 +5,7 @@ import {
   ContextMenuProvider,
   DialogProvider,
   NotificationsProvider,
-  useNotifications,
+  useNotifications
 } from "@finos/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -17,15 +17,15 @@ import {
   IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
-  usePersistenceManager,
+  usePersistenceManager
 } from "./persistence-manager";
 import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
-import { UserSettingsPanel } from "./user-settings";
+import { SettingsSchema, UserSettingsPanel } from "./user-settings";
 import {
   WorkspaceProps,
   WorkspaceProvider,
   useWorkspace,
-  useWorkspaceContextMenuItems,
+  useWorkspaceContextMenuItems
 } from "./workspace-management";
 
 import shellCss from "./shell.css";
@@ -50,6 +50,7 @@ export type LayoutTemplateName = "full-height" | "inlay";
 
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   shellLayoutProps?: ShellLayoutProps;
+  userSettingsSchema?: SettingsSchema;
   workspaceProps?: WorkspaceProps;
   children?: ReactNode;
   loginUrl?: string;
@@ -64,14 +65,14 @@ const getAppHeader = (shellLayoutProps?: ShellLayoutProps) =>
   shellLayoutProps?.appHeader ?? defaultAppHeader;
 
 const defaultHTMLAttributes: HTMLAttributes<HTMLDivElement> = {
-  className: "vuuShell",
+  className: "vuuShell"
 };
 
 const getHTMLAttributes = (props?: ShellLayoutProps) => {
   if (props?.htmlAttributes) {
     return {
       ...defaultHTMLAttributes,
-      ...props.htmlAttributes,
+      ...props.htmlAttributes
     };
   } else {
     return defaultHTMLAttributes;
@@ -83,13 +84,16 @@ const VuuApplication = ({
   children,
   // loginUrl, // need to make this available to app header
   serverUrl,
-  user,
-}: Omit<ShellProps, "ContentLayoutProps" | "loginUrl" | "workspaceProps">) => {
+  user
+}: Omit<
+  ShellProps,
+  "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
+>) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
     css: shellCss,
-    window: targetWindow,
+    window: targetWindow
   });
 
   const notify = useNotifications();
@@ -113,13 +117,13 @@ const VuuApplication = ({
       const connectionStatus = await connectToServer({
         authToken: user.token,
         url: serverUrl,
-        username: user.username,
+        username: user.username
       });
       if (connectionStatus === "rejected") {
         notify({
           type: "error",
           body: "Unable to connect to VUU Server",
-          header: "Error",
+          header: "Error"
         });
       }
     } else {
@@ -137,7 +141,7 @@ const VuuApplication = ({
   const initialLayout = useShellLayout({
     ...ShellLayoutProps,
     appHeader: getAppHeader(ShellLayoutProps),
-    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
+    htmlAttributes: getHTMLAttributes(ShellLayoutProps)
   });
 
   return isLayoutLoading ? null : (
@@ -159,6 +163,7 @@ const VuuApplication = ({
 export const Shell = ({
   loginUrl,
   user,
+  userSettingsSchema,
   workspaceProps,
   ...props
 }: ShellProps) => {
@@ -188,6 +193,7 @@ export const Shell = ({
       loginUrl={loginUrl}
       theme="vuu-theme"
       user={user}
+      userSettingsSchema={userSettingsSchema}
     >
       <WorkspaceProvider {...workspaceProps}>
         <DialogProvider>

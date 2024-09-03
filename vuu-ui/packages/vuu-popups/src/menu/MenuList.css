@@ -2,21 +2,27 @@
   --salt-focused-outlineStyle: dashed !important;
   --salt-focused-outlineWidth: 1px !important;
   --vuuListItem-padding: 8px;
-  --context-menu-color: var(--vuuMenuList-color,#161616);
+  --context-menu-color: var(--vuuMenuList-color, #161616);
   --context-menu-padding: var(--hw-list-item-padding, 0 6px);
-  --context-menu-shadow: var(--hw-dialog-shadow, 0 6px 12px rgba(0, 0, 0, 0.175));
-  --focus-visible-border-color: var(--hw-focus-visible-border-color, rgb(141, 154, 179));
+  --context-menu-shadow: var(
+    --hw-dialog-shadow,
+    0 6px 12px rgba(0, 0, 0, 0.175)
+  );
+  --focus-visible-border-color: var(
+    --hw-focus-visible-border-color,
+    rgb(141, 154, 179)
+  );
   --context-menu-highlight-bg: var(--salt-selectable-background-hover);
   --menu-item-icon-color: black;
   --menu-item-twisty-color: black;
-  --menu-item-twisty-content: '';
+  --menu-item-twisty-content: "";
   --menu-item-twisty-top: 50%;
   --menu-item-twisty-left: auto;
   --menu-item-twisty-right: 0px;
   --menu-icon-size: 12px;
 
   background-clip: padding-box;
-  background-color: white;
+  background-color: var(--salt-container-primary-background);
   font-size: var(--vuuMenuList-fontSize, var(--salt-text-label-fontSize));
   font-weight: var(--salt-typography-fontWeight-medium);
   list-style: none;
@@ -58,7 +64,7 @@
   width: var(--menu-icon-size);
 }
 
-.vuuMenuItem[aria-expanded='true'] {
+.vuuMenuItem[aria-expanded="true"] {
   --menu-item-twisty-color: var(--salt-selectable-foreground-selected);
   color: var(--salt-selectable-foreground-selected);
   background-color: var(--salt-selectable-background-selected);
@@ -68,7 +74,7 @@
   border-top: solid 1px var(--context-menu-blur-focus-bg);
 }
 
-.vuuMenuItem[aria-haspopup='true']:after {
+.vuuMenuItem[aria-haspopup="true"]:after {
   content: var(--menu-item-twisty-content);
   mask: var(--vuu-svg-chevron-right) center center/8px 8px no-repeat;
   -webkit-mask: var(--vuu-svg-chevron-right) center center/8px 8px no-repeat;
@@ -93,7 +99,7 @@
 }
 
 .vuuMenuItem.focusVisible:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -136,5 +142,4 @@
   border-color: var(--salt-container-primary-borderColor);
   border-style: solid !important;
   border-width: 1px;
-
 }

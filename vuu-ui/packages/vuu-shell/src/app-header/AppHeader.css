@@ -6,10 +6,9 @@
   --vuuOverflowContainer-gap: 8px;
   --vuu-icon-color: var(--vuu-color-gray-45);
   --vuu-icon-size: 16px;
-  --vuuToolbar-background: var(--vuuAppHeader-background, var(--vuu-color-gray-28));
   --vuuToolbar-borderWidth: 1px;
-  --vuuToolbar-borderStyle: solid; 
-  --vuuToolbar-borderColor: var(--vuu-color-gray-30);
+  --vuuToolbar-borderStyle: solid;
+  --vuuToolbar-borderColor: var(--salt-separable-primary-borderColor);
 
   align-items: center;
   display: flex;
@@ -18,7 +17,6 @@
 
 .vuu-theme .vuuAppHeader {
   border-radius: 8px;
-   
+
   margin-bottom: 8px;
 }
-
