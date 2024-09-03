@@ -1,4 +1,5 @@
 export * from "./data-editing";
+export * from "./datasource-provider";
 export * from "./hooks/useLookupValues";
 export * from "./hooks/useVuuMenuActions";
 export * from "./hooks/useVuuTables";
