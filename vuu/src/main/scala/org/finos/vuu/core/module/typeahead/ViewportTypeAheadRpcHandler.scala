@@ -1,15 +1,16 @@
 package org.finos.vuu.core.module.typeahead
 
-import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.{RequestContext, RpcNames}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPortColumns
 
-class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
+class ViewportTypeAheadRpcHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableContainer) {
 
-  this.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
-  this.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
+  def register(): Unit = {
+    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
+    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
+  }
 
   def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
 
@@ -40,6 +41,7 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
     new RpcFunctionSuccess(values) //how to control what viewport action to trigger?
   }
 
+
   def getUniqueFieldValues(tableName: String, moduleName: String, column: String, viewPortColumns: ViewPortColumns, ctx: RequestContext): Array[String] = {
     tableContainer.getTable(tableName) match {
       case dataTable: DataTable =>
@@ -59,5 +61,4 @@ class ViewPortTypeAheadRpcHandler(tableContainer: TableContainer) extends Defaul
         throw new Exception("Could not find table by name:" + tableName)
     }
   }
-
 }
