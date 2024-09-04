@@ -1,208 +1,197 @@
 .vuuBasketToolbar {
+  --basket-selector-gridColumn: 1;
+  --basket-selector-gridRow: 1/5;
+  --basket-side-gridColumn: 2;
+  --basket-side-gridRow: 1/5;
+  --basket-units-gridColumn: 3;
+  --basket-units-gridRow: 1/5;
+  --basket-notionalUsd-gridColumn: 4;
+  --basket-notionalUsd-gridRow: 1/5;
+  --basket-notional-gridColumn: 5;
+  --basket-notional-gridRow: 1/5;
+  --basket-sendtomarket-gridColumn: 6;
+  --basket-sendtomarket-gridRow: 1/5;
 
-    --basket-selector-gridColumn: 1;
-    --basket-selector-gridRow: 1/5;
-    --basket-side-gridColumn: 2;
-    --basket-side-gridRow: 1/5;
-    --basket-units-gridColumn: 3;
-    --basket-units-gridRow: 1/5;
-    --basket-notionalUsd-gridColumn: 4;
-    --basket-notionalUsd-gridRow: 1/5;
-    --basket-notional-gridColumn: 5;
-    --basket-notional-gridRow: 1/5;
-    --basket-sendtomarket-gridColumn: 6;
-    --basket-sendtomarket-gridRow: 1/5;
+  --saltFormField-width: fit-content;
 
-    --saltFormField-width: fit-content;
-
-    border-bottom: solid 1px var(--vuu-color-gray-05);
-    flex: 0 0 var(--basket-toolbar-height, 110px); 
-    margin-bottom: 8px;
-    padding: 8px 16px;
+  border-bottom: solid 1px var(--vuu-color-gray-05);
+  flex: 0 0 var(--basket-toolbar-height, 110px);
+  margin-bottom: 8px;
+  padding: 8px 16px;
 }
 
 .vuuBasketToolbar-design {
-    container-name: basket-toolbar;
-    container-type: inline-size;
+  container-name: basket-toolbar;
+  container-type: inline-size;
 }
 
 .vuuBasketToolbar-on-market {
-    container-name: basket-toolbar-live;
-    container-type: inline-size;
+  container-name: basket-toolbar-live;
+  container-type: inline-size;
 }
-
 
 .vuuBasketToolbar-inner {
-    align-items: center;
-    display: grid;
-    column-gap: 24px;
-    row-gap: 0px;
-    grid-template-columns: auto auto auto auto auto 1fr;
-    grid-template-rows: 15px 15px 15px 16px 32px;
+  --vuuExpandoInput-background: var(--vuuWorkspace-background);
+  align-items: center;
+  display: grid;
+  column-gap: 24px;
+  row-gap: 0px;
+  grid-template-columns: auto auto auto auto auto 1fr;
+  grid-template-rows: 15px 15px 15px 16px 32px;
 }
 
-.vuuBasketToolbar-on-market   {
-    --basket-status-gridColumn: 2;
-    --basket-status-gridRow: 1/5;
-    --basket-side-gridColumn: 3;
-    --basket-side-gridRow: 1/5;
-    --basket-units-gridColumn: 4;
-    --basket-units-gridRow: 1/5;
-    --basket-notionalUsd-gridColumn: 5;
-    --basket-notionalUsd-gridRow: 1/5;
-    --basket-notional-gridColumn: 6;
-    --basket-notional-gridRow: 1/5;
-    --basket-pctfilled-gridColumn: 7;
-    --basket-pctfilled-gridRow: 1/5;
-    --basket-actions-gridColumn: 8;
-    --basket-actions-gridRow: 1/5;
-    --basket-takeoffmarket-gridColumn: 9;
-    --basket-takeoffmarket-gridRow: 1/5;
+.vuuBasketToolbar-on-market {
+  --basket-status-gridColumn: 2;
+  --basket-status-gridRow: 1/5;
+  --basket-side-gridColumn: 3;
+  --basket-side-gridRow: 1/5;
+  --basket-units-gridColumn: 4;
+  --basket-units-gridRow: 1/5;
+  --basket-notionalUsd-gridColumn: 5;
+  --basket-notionalUsd-gridRow: 1/5;
+  --basket-notional-gridColumn: 6;
+  --basket-notional-gridRow: 1/5;
+  --basket-pctfilled-gridColumn: 7;
+  --basket-pctfilled-gridRow: 1/5;
+  --basket-actions-gridColumn: 8;
+  --basket-actions-gridRow: 1/5;
+  --basket-takeoffmarket-gridColumn: 9;
+  --basket-takeoffmarket-gridRow: 1/5;
 
-    grid-template-columns: auto auto auto auto auto auto 1fr;
+  grid-template-columns: auto auto auto auto auto auto 1fr;
 }
 
 .vuuBasketToolbar .saltFormFieldLabel {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .vuuBasketToolbar-side {
-    --saltButton-height: 32px;
-    --saltButton-minWidth: 80px;
-    color: white;
+  --saltButton-height: 32px;
+  --saltButton-minWidth: 80px;
+  color: white;
 }
 
 .vuuCycleStateButton-buy {
-    background-color: var(--vuu-color-green-50);
-  
+  background-color: var(--vuu-color-green-50);
 }
 .vuuCycleStateButton-sell {
-    background-color: var(--vuu-color-red-50);
-  
+  background-color: var(--vuu-color-red-50);
 }
-
 
 .vuuBasketToolbar-side,
 .vuuBasketToolbar-units {
-    --saltInput-minWidth: 60px!important;
-    --vuuExpandoInput-border: solid 1px var(--salt-editable-borderColor);
-    --vuuExpandoInput-borderRadius: 6px;
-    --vuuExpandoInput-height: 32px;
-    margin-right: 24px;
-    min-width: 80px;
+  --saltInput-minWidth: 60px !important;
+  --vuuExpandoInput-border: solid 1px var(--salt-editable-borderColor);
+  --vuuExpandoInput-borderRadius: 6px;
+  --vuuExpandoInput-height: 32px;
+  margin-right: 24px;
+  min-width: 80px;
 }
 
 .vuuBasketToolbar-on-market .vuuBasketToolbar-side,
-    .vuuBasketToolbar-on-market .vuuBasketToolbar-units {
-        color: var(--vuu-color-gray-80);
-    font-size: 20px;
-    font-weight: 700;
+.vuuBasketToolbar-on-market .vuuBasketToolbar-units {
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .vuuBasketToolbar-pctFilled,
 .vuuBasketToolbar-notional {
-    font-size: 20px;
-    font-weight: 700;
-    height: 24px;
-    line-height: 24px;
-    min-width: 80px;
+  font-size: 20px;
+  font-weight: 700;
+  height: 24px;
+  line-height: 24px;
+  min-width: 80px;
 }
 
 .vuuBasketToolbar-notionalField {
-    margin: 0 24px;
-
+  margin: 0 24px;
 }
 
 .vuuBasketToolbar-notionalField:before,
 .vuuBasketToolbar-notionalUsdField:before {
-    content: '';
-    position: absolute;
-    left: -24px;
-    top: -12px;
-    width: 1px;
-    height: 60px;
-    background-color: var(--vuu-color-gray-05);
-
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: -12px;
+  width: 1px;
+  height: 60px;
+  background-color: var(--vuu-color-gray-05);
 }
 
 .vuuBasketToolbar-takeOffMarket,
 .vuuBasketToolbar-sendToMarket {
-    --saltButton-borderRadius: 6px;
-    --saltButton-height: 24px;
-    --saltButton-padding: 16px;
-    justify-self: end;;
+  --saltButton-borderRadius: 6px;
+  --saltButton-height: 24px;
+  --saltButton-padding: 16px;
+  justify-self: end;
 }
-    
 
 .vuuBasketToolbar-sendToMarket {
-    --vuu-icon-size: 16px;
+  --vuu-icon-size: 16px;
 }
 
 .vuuBasketToolbar .vuuBasketSelector {
-    grid-column: var(--basket-selector-gridColumn);
-    grid-row: var(--basket-selector-gridRow);
+  grid-column: var(--basket-selector-gridColumn);
+  grid-row: var(--basket-selector-gridRow);
 }
 .vuuBasketToolbar-statusField {
-    grid-column: var(--basket-status-gridColumn);
-    grid-row: var(--basket-status-gridRow);
+  grid-column: var(--basket-status-gridColumn);
+  grid-row: var(--basket-status-gridRow);
 }
 .vuuBasketToolbar-sideField {
-    grid-column: var(--basket-side-gridColumn);
-    grid-row: var(--basket-side-gridRow);
+  grid-column: var(--basket-side-gridColumn);
+  grid-row: var(--basket-side-gridRow);
 }
 .vuuBasketToolbar-unitsField {
-    grid-column: var(--basket-units-gridColumn);
-    grid-row: var(--basket-units-gridRow);
+  grid-column: var(--basket-units-gridColumn);
+  grid-row: var(--basket-units-gridRow);
 }
 .vuuBasketToolbar-notionalUsdField {
-    grid-column: var(--basket-notionalUsd-gridColumn);
-    grid-row: var(--basket-notionalUsd-gridRow);
+  grid-column: var(--basket-notionalUsd-gridColumn);
+  grid-row: var(--basket-notionalUsd-gridRow);
 }
 .vuuBasketToolbar-notionalField {
-    grid-column: var(--basket-notional-gridColumn);
-    grid-row: var(--basket-notional-gridRow);
+  grid-column: var(--basket-notional-gridColumn);
+  grid-row: var(--basket-notional-gridRow);
 }
 .vuuBasketToolbar-pctFilledField {
-    grid-column: var(--basket-pctfilled-gridColumn);
-    grid-row: var(--basket-pctfilled-gridRow);
+  grid-column: var(--basket-pctfilled-gridColumn);
+  grid-row: var(--basket-pctfilled-gridRow);
 }
 .vuuBasketToolbar-actions {
-    grid-column: var(--basket-actions-gridColumn);
-    grid-row: var(--basket-actions-gridRow);
+  grid-column: var(--basket-actions-gridColumn);
+  grid-row: var(--basket-actions-gridRow);
 }
 .vuuBasketToolbar-sendToMarket {
-    grid-column: var(--basket-sendtomarket-gridColumn);
-    grid-row: var(--basket-sendtomarket-gridRow);
+  grid-column: var(--basket-sendtomarket-gridColumn);
+  grid-row: var(--basket-sendtomarket-gridRow);
 }
 .vuuBasketToolbar-takeOffMarket {
-    grid-column: var(--basket-takeoffmarket-gridColumn);
-    grid-row: var(--basket-takeoffmarket-gridRow);
+  grid-column: var(--basket-takeoffmarket-gridColumn);
+  grid-row: var(--basket-takeoffmarket-gridRow);
 }
 
 .vuuBasketToolbar-status {
-    background-color: var(--vuu-color-green-60);
-    border-radius: 12px;
-    color: white;
-    padding: 3px 9px;
-    white-space: nowrap;
+  background-color: var(--vuu-color-green-60);
+  border-radius: 12px;
+  color: white;
+  padding: 3px 9px;
+  white-space: nowrap;
 }
 
 @container basket-toolbar (width <  1200px) {
-    .vuuBasketToolbar-inner {
-        --basket-sendtomarket-gridColumn: 1;
-        --basket-sendtomarket-gridRow: 5/6;
+  .vuuBasketToolbar-inner {
+    --basket-sendtomarket-gridColumn: 1;
+    --basket-sendtomarket-gridRow: 5/6;
 
-        grid-template-columns: auto auto auto auto 1fr;
-    }
+    grid-template-columns: auto auto auto auto 1fr;
+  }
 }
 @container basket-toolbar-live (width <  1450px) {
+  .vuuBasketToolbar-inner {
+    --basket-takeoffmarket-gridColumn: 1;
+    --basket-takeoffmarket-gridRow: 5/6;
 
-    .vuuBasketToolbar-inner  {
-        --basket-takeoffmarket-gridColumn: 1;
-        --basket-takeoffmarket-gridRow: 5/6;
-    
-        grid-template-columns: auto auto auto auto auto 1fr;
-    }
-    
+    grid-template-columns: auto auto auto auto auto 1fr;
+  }
 }
-    

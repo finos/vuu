@@ -88,7 +88,6 @@ export interface TableHookProps
       | "onConfigChange"
       | "onDragStart"
       | "onDrop"
-      | "onFeatureInvocation"
       | "onHighlight"
       | "onSelect"
       | "onSelectionChange"
@@ -132,7 +131,6 @@ export const useTable = ({
   onConfigChange,
   onDragStart,
   onDrop,
-  onFeatureInvocation,
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
@@ -251,7 +249,6 @@ export const useTable = ({
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     // We need to factor this out of Table
-    onFeatureInvocation,
     renderBufferSize,
     onSizeChange: onDataRowcountChange,
     onSubscribed,

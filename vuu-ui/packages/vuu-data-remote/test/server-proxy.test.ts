@@ -88,7 +88,7 @@ describe("ServerProxy", () => {
 
       expect(serverProxy["viewports"].size).toEqual(1);
       expect(
-        serverProxy["mapClientToServerViewport"].get("client-vp-1")
+        serverProxy["mapClientToServerViewport"].get("client-vp-1"),
       ).toEqual("server-vp-1");
       const { clientViewportId, serverViewportId, status } = serverProxy[
         "viewports"
@@ -1062,10 +1062,11 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(110);
       expect(
-        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.clientRange
+        serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]
+          ?.clientRange,
       ).toEqual({
         from: 0,
         to: 10,
@@ -1981,7 +1982,7 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(4);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -2067,7 +2068,7 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(4);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -2182,7 +2183,7 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(4);
       // prettier-ignore
 
@@ -2318,7 +2319,7 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(4);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -2359,7 +2360,7 @@ describe("ServerProxy", () => {
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
           "internalData"
-        ]
+        ],
       ).toHaveLength(4);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -2524,11 +2525,12 @@ describe("ServerProxy", () => {
       });
 
       serverProxy.handleMessageFromClient({
-        type: "createLink",
-        parentClientVpId: "client-vp-1",
+        requestId: "req1",
+        type: "CREATE_VISUAL_LINK",
+        parentVpId: "client-vp-1",
         parentColumnName: "col-1",
         childColumnName: "col-1",
-        viewport: "client-vp-2",
+        childVpId: "client-vp-2",
       });
 
       postMessageToClient.mockClear();
@@ -3480,7 +3482,7 @@ describe("ServerProxy", () => {
         viewport: "client-vp-1",
       });
       expect(serverProxy["viewports"].get("server-vp-1")?.suspended).toBe(
-        false
+        false,
       );
       expect(connection.send).not.toHaveBeenCalled();
     });

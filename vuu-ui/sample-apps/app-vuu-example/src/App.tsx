@@ -5,19 +5,20 @@ import {
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
+  SettingsSchema,
   Shell,
   ShellContextProvider,
-  ShellLayoutProps
+  ShellLayoutProps,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
-  TableSettingsPanel
+  TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import type { VuuUser } from "@finos/vuu-utils";
 import {
   assertComponentsRegistered,
-  registerComponent
+  registerComponent,
 } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
@@ -30,8 +31,20 @@ registerComponent("TableSettings", TableSettingsPanel, "view");
 
 assertComponentsRegistered([
   { componentName: "Flexbox", component: FlexboxLayout },
-  { componentName: "Stack", component: StackLayout }
+  { componentName: "Stack", component: StackLayout },
 ]);
+
+const userSettingsSchema: SettingsSchema = {
+  properties: [
+    {
+      name: "themeMode",
+      label: "Mode",
+      values: ["light", "dark"],
+      defaultValue: "light",
+      type: "string",
+    },
+  ],
+};
 
 const localPersistenceManager = new LocalPersistenceManager();
 
@@ -41,7 +54,7 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 const {
   ssl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
-  features
+  features,
 } = await vuuConfig;
 
 const dynamicFeatures = Object.values(features);
@@ -52,20 +65,20 @@ export const App = ({ user }: { user: VuuUser }) => {
 
   const dragSource = useMemo(
     () => ({
-      "basket-instruments": { dropTargets: "basket-constituents" }
+      "basket-instruments": { dropTargets: "basket-constituents" },
     }),
-    []
+    [],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
     () => ({
       SidePanelProps: {
         children: <LeftNav />,
-        sizeOpen: 240
+        sizeOpen: 240,
       },
-      layoutTemplateId: "full-height"
+      layoutTemplateId: "full-height",
     }),
-    []
+    [],
   );
 
   return (
@@ -81,6 +94,7 @@ export const App = ({ user }: { user: VuuUser }) => {
                 className="App"
                 serverUrl={serverUrl}
                 user={user}
+                userSettingsSchema={userSettingsSchema}
               />
             </FeatureAndLayoutProvider>
           </VuuDataSourceProvider>

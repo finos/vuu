@@ -189,10 +189,6 @@ export interface DataSourceVisualLinksMessage
   links: VuuLinkDescriptor[];
 }
 
-export type VuuFeatureInvocationMessage =
-  | DataSourceVisualLinkCreatedMessage
-  | DataSourceVisualLinkRemovedMessage;
-
 export type VuuFeatureMessage =
   | DataSourceMenusMessage
   | DataSourceVisualLinksMessage;
@@ -343,6 +339,8 @@ export type DataSourceEvents = {
   unsubscribed: DataSourceEventHandler;
   disabled: DataSourceEventHandler;
   enabled: DataSourceEventHandler;
+  "visual-link-created": (message: DataSourceVisualLinkCreatedMessage) => void;
+  "visual-link-removed": () => void;
 };
 
 /**
@@ -709,12 +707,6 @@ export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
   key: string;
   type: "closeTreeNode";
 }
-export interface VuuUIMessageOutCreateLink extends ViewportMessageOut {
-  childColumnName: string;
-  parentColumnName: string;
-  parentClientVpId: string;
-  type: "createLink";
-}
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
   type: "removeLink";
 }
@@ -766,7 +758,6 @@ export type VuuUIMessageOutViewport =
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
   | VuuUIMessageOutConfig
-  | VuuUIMessageOutCreateLink
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
   | VuuUIMessageOutOpenTreeNode

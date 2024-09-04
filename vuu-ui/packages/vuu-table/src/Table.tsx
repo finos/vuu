@@ -2,7 +2,6 @@ import {
   DataSource,
   SchemaColumn,
   SelectionChangeHandler,
-  VuuFeatureInvocationMessage
 } from "@finos/vuu-data-types";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
@@ -12,7 +11,7 @@ import {
   TableConfigChangeHandler,
   TableRowClickHandler,
   TableRowSelectHandler,
-  TableSelectionModel
+  TableSelectionModel,
 } from "@finos/vuu-table-types";
 import type { DragDropState } from "@finos/vuu-ui-controls";
 import {
@@ -20,7 +19,7 @@ import {
   MeasuredContainer,
   MeasuredContainerProps,
   MeasuredSize,
-  dragStrategy
+  dragStrategy,
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
@@ -34,7 +33,7 @@ import {
   RefObject,
   forwardRef,
   useRef,
-  useState
+  useState,
 } from "react";
 import { Row as DefaultRow, RowProxy } from "./Row";
 import { TableHeader } from "./table-header";
@@ -100,11 +99,6 @@ export interface TableProps
   onConfigChange?: TableConfigChangeHandler;
   onDragStart?: DragStartHandler;
   onDrop?: (dragDropState: DragDropState) => void;
-  /**
-   * When a Vuu feature e.g. context menu action, has been invoked, the Vuu server
-   * response must be handled. This callback provides that response.
-   */
-  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
 
   onHighlight?: (idx: number) => void;
   /**
@@ -168,7 +162,6 @@ const TableCore = ({
   onConfigChange,
   onDragStart,
   onDrop,
-  onFeatureInvocation,
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
@@ -179,7 +172,7 @@ const TableCore = ({
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
-  size
+  size,
 }: Omit<TableProps, "rowHeight"> & {
   containerRef: RefObject<HTMLDivElement>;
   rowHeight: number;
@@ -226,7 +219,6 @@ const TableCore = ({
     onConfigChange,
     onDragStart,
     onDrop,
-    onFeatureInvocation,
     onHighlight,
     onRowClick: onRowClickProp,
     onSelect,
@@ -235,13 +227,13 @@ const TableCore = ({
     rowHeight,
     scrollingApiRef,
     selectionModel,
-    size
+    size,
   });
 
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
     [`${classBase}-rowLines`]: tableAttributes.rowSeparators,
-    [`${classBase}-zebra`]: tableAttributes.zebraStripes
+    [`${classBase}-zebra`]: tableAttributes.zebraStripes,
   });
 
   const cssVariables = {
@@ -252,7 +244,7 @@ const TableCore = ({
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--total-header-height": `${headerHeight}px`,
     "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
-    "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`
+    "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
   return (
@@ -342,7 +334,6 @@ export const Table = forwardRef(function Table(
     onConfigChange,
     onDragStart,
     onDrop,
-    onFeatureInvocation,
     onHighlight,
     onRowClick,
     onSelect,
@@ -356,13 +347,13 @@ export const Table = forwardRef(function Table(
     style: styleProp,
     ...htmlAttributes
   }: TableProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-table",
     css: tableCss,
-    window: targetWindow
+    window: targetWindow,
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -373,7 +364,7 @@ export const Table = forwardRef(function Table(
 
   if (config === undefined) {
     throw Error(
-      "vuu Table requires config prop. Minimum config is list of Column Descriptors"
+      "vuu Table requires config prop. Minimum config is list of Column Descriptors",
     );
   }
   if (dataSource === undefined) {
@@ -391,7 +382,7 @@ export const Table = forwardRef(function Table(
       ref={useForkRef(containerRef, forwardedRef)}
       style={
         {
-          "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined
+          "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
         } as CSSProperties
       }
     >
@@ -415,7 +406,6 @@ export const Table = forwardRef(function Table(
           onConfigChange={onConfigChange}
           onDragStart={onDragStart}
           onDrop={onDrop}
-          onFeatureInvocation={onFeatureInvocation}
           onHighlight={onHighlight}
           onRowClick={onRowClick}
           onSelect={onSelect}

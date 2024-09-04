@@ -2,7 +2,7 @@ import {
   DataSource,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
-  TableSchema
+  TableSchema,
 } from "@finos/vuu-data-types";
 import {
   VuuRpcMenuRequest,
@@ -17,7 +17,11 @@ import {
   VuuRpcRequest,
   VuuRpcResponse,
   VuuRpcMenuResponse,
-  VuuRpcViewportResponse
+  VuuRpcViewportResponse,
+  VuuCreateVisualLink,
+  VuuRemoveVisualLink,
+  VuuCreateVisualLinkResponse,
+  VuuRemoveVisualLinkResponse,
 } from "@finos/vuu-protocol-types";
 import { isViewportRpcRequest, uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
@@ -49,17 +53,17 @@ export type RpcServiceRequest =
   | VuuRpcMenuRequest;
 
 export const withParams = (
-  rpcRequest: VuuRpcRequest
+  rpcRequest: VuuRpcRequest,
 ): rpcRequest is RpcServiceRequestWithParams => "namedParams" in rpcRequest;
 
 export const withNamedParams = (
-  rpcRequest: RpcServiceRequest
+  rpcRequest: RpcServiceRequest,
 ): rpcRequest is RpcServiceRequestWithParams => "namedParams" in rpcRequest;
 
 export type ServiceHandler = (
   rpcRequest: VuuRpcRequest & {
     namedParams?: RpcNamedParams;
-  }
+  },
 ) => Promise<VuuRpcResponse>;
 
 export type RpcService = {
@@ -87,7 +91,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     schemas,
     services,
     tables,
-    vuuLinks: visualLinks
+    vuuLinks: visualLinks,
   }: VuuModuleConstructorProps<T>) {
     this.#menus = menus;
     this.#name = name;
@@ -117,9 +121,20 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     }
   };
 
+  getSubscribedDataSource(vpId: string): DataSource {
+    for (const subscriptions of this.#subscriptionMap.values()) {
+      for (const { viewportId, dataSource } of subscriptions) {
+        if (viewportId === vpId) {
+          return dataSource;
+        }
+      }
+    }
+    throw Error(`getSubscribedDataSource #${vpId} not in subscriptionMap`);
+  }
+
   getLink = (
     subscriptionMap: Map<string, Subscription[]>,
-    vuuLinks: VuuLink[]
+    vuuLinks: VuuLink[],
   ) => {
     const visualLinks: LinkDescriptorWithLabel[] = [];
     for (let i = 0; i < vuuLinks.length; i++) {
@@ -129,7 +144,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
             .viewportId as string,
           parentVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
             .viewportId as string,
-          link: vuuLinks[i]
+          link: vuuLinks[i],
         };
         visualLinks.push(newLink);
       }
@@ -137,13 +152,29 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     return visualLinks;
   };
 
+  createVisualLink = (
+    message: VuuCreateVisualLink | VuuRemoveVisualLink,
+  ): Promise<VuuCreateVisualLinkResponse | VuuRemoveVisualLinkResponse> =>
+    new Promise((resolve) => {
+      if (message.type === "CREATE_VISUAL_LINK") {
+        // const { parentVpId } = message;
+        // const dataSource = this.getSubscribedDataSource(parentVpId);
+        // register a selection listener on this datasource
+        // create a visual link which connects selection to filter on child
+        resolve({} as VuuCreateVisualLinkResponse);
+      } else {
+        console.log("remove visual link");
+        resolve({} as VuuRemoveVisualLinkResponse);
+      }
+    });
+
   createDataSource = (tableName: T, viewport?: string) => {
     const visualLinks =
       this.#visualLinks?.[tableName] === undefined
         ? undefined
         : this.getLink(
             this.#subscriptionMap,
-            this.#visualLinks[tableName] as VuuLink[]
+            this.#visualLinks[tableName] as VuuLink[],
           );
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const table = this.#tables[tableName];
@@ -160,20 +191,21 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
       viewport,
-      visualLinks
+      visualLinks,
+      visualLinkService: this.createVisualLink,
     });
 
     dataSource.on("unsubscribed", this.unregisterViewport);
 
     this.#subscriptionMap.set(tableName, [
-      { viewportId: dataSource.viewport as string, dataSource }
+      { viewportId: dataSource.viewport as string, dataSource },
     ]);
 
     for (const key of this.#subscriptionMap.keys()) {
       if (this.#visualLinks?.[key as T] && key !== tableName) {
         const vLink = this.getLink(
           this.#subscriptionMap,
-          this.#visualLinks?.[key as T] as VuuLink[]
+          this.#visualLinks?.[key as T] as VuuLink[],
         );
         const ds = this.#subscriptionMap.get(key)?.[0].dataSource;
         if (ds?.links) {
@@ -212,7 +244,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       return sessionTable;
     } else {
       throw Error(
-        `getSessionTable: no session table with name ${sessionTableName}`
+        `getSessionTable: no session table with name ${sessionTableName}`,
       );
     }
   }
@@ -224,7 +256,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       return schema.columns;
     } else {
       throw Error(
-        ` no schema found for module ${this.#name} table ${tableName}`
+        ` no schema found for module ${this.#name} table ${tableName}`,
       );
     }
   }
@@ -232,7 +264,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   private suggestionFetcher: SuggestionFetcher = ([
     vuuTable,
     column,
-    pattern
+    pattern,
   ]: TypeaheadParams) => {
     const table = this.#tables[vuuTable.table as T];
     if (table) {
@@ -241,7 +273,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       throw Error(
         `${this.#name} suggestionFetcher, unknown table ${vuuTable.module} ${
           vuuTable.table
-        }`
+        }`,
       );
     }
   };
@@ -257,7 +289,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         if (dataTable) {
           const sessionTable = this.createSessionTableFromSelectedRows(
             dataTable,
-            selectedRowIds
+            selectedRowIds,
           );
           const sessionTableName = `session-${uuid()}`;
           this.#sessionTableMap[sessionTableName] = sessionTable;
@@ -267,14 +299,14 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
               renderComponent: "grid",
               table: {
                 module: table.module,
-                table: sessionTableName
+                table: sessionTableName,
               },
               tableSchema: dataTable.schema,
-              type: "OPEN_DIALOG_ACTION"
+              type: "OPEN_DIALOG_ACTION",
             } as OpenDialogActionWithSchema,
             rpcName: "VP_BULK_EDIT_BEGIN_RPC",
             type: "VIEW_PORT_MENU_RESP",
-            vpId
+            vpId,
           } as VuuRpcMenuResponse;
         } else {
           return {
@@ -283,7 +315,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
             error: "No Table found",
             rpcName: "VP_BULK_EDIT_REJECT",
             type: "VIEW_PORT_MENU_REJ",
-            vpId
+            vpId,
           } as VuuRpcMenuResponse;
         }
       }
@@ -300,7 +332,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         namedParams: {},
         params: [],
         type: "VIEW_PORT_RPC_REPONSE",
-        vpId
+        vpId,
       } as VuuRpcViewportResponse;
     } else {
       throw Error("endEditSession invalid request");
@@ -319,16 +351,16 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         sessionTable.update(
           String(newRow[keyIndex]),
           column as string,
-          value as VuuRowDataItemType
+          value as VuuRowDataItemType,
         );
       }
       return {
         action: {
-          type: "NO_ACTION"
+          type: "NO_ACTION",
         },
         rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
         type: "VIEW_PORT_MENU_RESP",
-        vpId
+        vpId,
       } as VuuRpcMenuResponse;
     }
     throw Error("applyBulkEdits expects column and value as namedParams");
@@ -349,12 +381,12 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
         return {
           action: {
-            type: "NO_ACTION"
+            type: "NO_ACTION",
           },
           requestId: "request_id",
           rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
           type: "VIEW_PORT_MENU_RESP",
-          vpId
+          vpId,
         } as VuuRpcMenuResponse;
       }
     }
@@ -363,7 +395,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
   protected createSessionTableFromSelectedRows(
     { data, map, schema }: Table,
-    selectedRowIds: string[]
+    selectedRowIds: string[],
   ) {
     const keyIndex = map[schema.key];
     const sessionData: VuuRowDataItemType[][] = [];
@@ -385,19 +417,19 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #moduleServices: RpcService[] = [
     {
       rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-      service: this.openBulkEdits
+      service: this.openBulkEdits,
     },
     {
       rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-      service: this.applyBulkEdits
+      service: this.applyBulkEdits,
     },
     {
       rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
-      service: this.saveBulkEdits
+      service: this.saveBulkEdits,
     },
     {
       rpcName: "VP_BULK_EDIT_END_RPC",
-      service: this.endEditSession
-    }
+      service: this.endEditSession,
+    },
   ];
 }
