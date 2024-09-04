@@ -6,7 +6,7 @@ import {
   SaltProvider,
   Text,
   ToggleButton,
-  ToggleButtonGroup,
+  ToggleButtonGroup
 } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -33,14 +33,14 @@ const sourceFromImports = (
         return {
           id,
           icon: "rings",
-          label,
+          label
         };
       }
       return {
         id,
         icon,
         label,
-        childNodes: sourceFromImports(stories, `${id}/`, "box"),
+        childNodes: sourceFromImports(stories, `${id}/`, "box")
       };
     });
 export interface AppProps {
@@ -55,19 +55,19 @@ const availableThemes: ThemeDescriptor[] = [
   { id: "no-theme", label: "No Theme" },
   { id: "salt-theme", label: "Salt" },
   { id: "vuu-theme", label: "Vuu" },
-  { id: "tar-theme", label: "Tar" },
+  { id: "tar-theme", label: "Tar" }
 ];
 
 const availableThemeModes: ThemeModeDescriptor[] = [
   { id: "light", label: "Light" },
-  { id: "dark", label: "Dark" },
+  { id: "dark", label: "Dark" }
 ];
 
 const availableDensity: DensityDescriptor[] = [
   { id: "high", label: "High" },
   { id: "medium", label: "Medium" },
   { id: "low", label: "Low" },
-  { id: "touch", label: "Touch" },
+  { id: "touch", label: "Touch" }
 ];
 
 export const App = ({ stories }: AppProps) => {
@@ -112,8 +112,8 @@ export const App = ({ stories }: AppProps) => {
     setDensityIndex(parseInt(value));
   }, []);
 
-  const handleThemeModeSwitch = useCallback((evt) => {
-    if (evt === "light") {
+  const handleThemeModeSwitch = useCallback((themeMode: ThemeMode) => {
+    if (themeMode === "light") {
       setThemeModeIndex(0);
     } else {
       setThemeModeIndex(1);
@@ -146,7 +146,7 @@ export const App = ({ stories }: AppProps) => {
             <div
               className="vuuToolbarProxy ShowcaseContentToolbar"
               style={{
-                height: 30,
+                height: 30
               }}
               data-mode="light"
             >
@@ -191,7 +191,7 @@ export const App = ({ stories }: AppProps) => {
               className={`ShowcaseContent`}
               style={{
                 flex: "1 1 auto",
-                position: "relative",
+                position: "relative"
               }}
             >
               <IFrame
