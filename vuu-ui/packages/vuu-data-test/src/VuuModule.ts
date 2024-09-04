@@ -157,11 +157,8 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   ): Promise<VuuCreateVisualLinkResponse | VuuRemoveVisualLinkResponse> =>
     new Promise((resolve) => {
       if (message.type === "CREATE_VISUAL_LINK") {
-        const { parentVpId } = message;
-        console.log(`subscription  ${parentVpId}map`, {
-          subscriptionMap: this.#subscriptionMap,
-        });
-        const dataSource = this.getSubscribedDataSource(parentVpId);
+        // const { parentVpId } = message;
+        // const dataSource = this.getSubscribedDataSource(parentVpId);
         // register a selection listener on this datasource
         // create a visual link which connects selection to filter on child
         resolve({} as VuuCreateVisualLinkResponse);

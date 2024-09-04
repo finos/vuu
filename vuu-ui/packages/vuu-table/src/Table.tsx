@@ -2,7 +2,6 @@ import {
   DataSource,
   SchemaColumn,
   SelectionChangeHandler,
-  VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {

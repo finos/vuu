@@ -11,7 +11,6 @@ import { useViewContext } from "@finos/vuu-layout";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { useShellContext } from "@finos/vuu-utils";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
-import { IconButton } from "@finos/vuu-ui-controls";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,

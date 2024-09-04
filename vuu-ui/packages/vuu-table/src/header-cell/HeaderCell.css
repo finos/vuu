@@ -5,7 +5,10 @@
   --vuuColumnHeaderPill-flex: 0 0 24px;
 
   align-items: center;
-  background-color: var(--vuuTableHeaderCell-background, inherit);
+  background-color: var(
+    --vuuTableHeaderCell-background,
+    var(--table-background)
+  );
   border-bottom: none;
   border-right-color: var(--cell-borderColor);
   border-right-style: solid;
@@ -18,6 +21,14 @@
   padding: 0 12px 0 4px;
   position: relative;
   vertical-align: top;
+
+  &.vuuPinLeft,
+  &.vuuPinRight {
+    background-color: var(
+      --vuuTableHeaderCell-background,
+      var(--table-background)
+    );
+  }
 }
 
 .vuuTableHeaderCell:focus {

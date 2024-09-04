@@ -1,5 +1,4 @@
 .vuuExpandoInput {
-  --salt-editable-secondary-background: white;
   --expandoInput-height: var(--vuuExpandoInput-height, 26px);
   --expandoInput-padding: var(--vuuExpandoInput-padding, 6px);
 
@@ -18,6 +17,13 @@
   outline: none;
   padding: 0 var(--expandoInput-padding);
   position: relative;
+
+  .saltInput-secondary {
+    --saltInput-background: var(
+      --vuuExpandoInput-background,
+      var(--salt-container-primary-background)
+    );
+  }
 }
 
 .vuuExpandoInput:before {

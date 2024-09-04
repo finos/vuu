@@ -11,7 +11,6 @@ import type {
   VuuUIMessageOutColumns,
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
-  VuuUIMessageOutCreateLink,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
@@ -992,16 +991,17 @@ export class ServerProxy {
             if (pendingLink) {
               const { link, parentClientVpId } = pendingLink;
               const requestId = nextRequestId();
-              const serverViewportId =
+              const parentVpId =
                 this.mapClientToServerViewport.get(parentClientVpId);
 
-              if (serverViewportId) {
-                const message = viewport.createLink(
-                  requestId,
-                  link.fromColumn,
-                  serverViewportId,
-                  link.toColumn,
-                );
+              if (parentVpId) {
+                const message = viewport.createLink(requestId, {
+                  childVpId: body.vpId,
+                  childColumnName: link.fromColumn,
+                  parentColumnName: link.toColumn,
+                  parentVpId,
+                  type: "CREATE_VISUAL_LINK",
+                });
                 this.sendMessageToServer(message, requestId);
               }
             }

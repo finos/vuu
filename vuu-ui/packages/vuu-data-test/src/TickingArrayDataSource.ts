@@ -3,7 +3,6 @@ import {
   ArrayDataSourceConstructorProps,
 } from "@finos/vuu-data-local";
 import type {
-  DataSourceRow,
   SelectionItem,
   SubscribeCallback,
   SubscribeProps,

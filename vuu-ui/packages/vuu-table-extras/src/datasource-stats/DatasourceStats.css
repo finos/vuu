@@ -1,5 +1,4 @@
 .vuuDatasourceStats {
-  color: black;
   display: flex;
   font-size: 10px;
   gap: var(--salt-spacing-100);
@@ -7,5 +6,5 @@
 }
 
 .vuuDatasourceStats-label {
-  color: var(--vuu-color-gray-50);
+  color: var(--salt-content-secondary-foreground);
 }

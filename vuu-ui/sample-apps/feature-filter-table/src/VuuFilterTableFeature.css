@@ -5,7 +5,7 @@
 
 .vuuFilterTableFeature-footer {
   --vuuToolbarProxy-height: auto;
-  background: var(--salt-container-secondary-background);
+  background: var(--salt-container-primary-background);
   border-top: var(--salt-container-primary-borderColor) solid 1px;
 
   flex: 0 0 18px;
