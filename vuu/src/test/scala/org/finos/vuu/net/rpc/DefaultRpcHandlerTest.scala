@@ -1,7 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.net.{ClientSessionId, Error, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse}
-import org.finos.vuu.viewport.{DisplayResultAction, ViewPortRpcFailure, ViewPortRpcSuccess}
+import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -22,14 +22,6 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
       val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, ctx))
 
       result should be(ViewPortRpcSuccess())
-    }
-
-    Scenario("Can register and handle Rpc request that returns result") {
-      handler.registerRpc("myMethod", _ => new RpcFunctionSuccess("result"))
-
-      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, ctx))
-
-      result should be(DisplayResultAction("result"))
     }
 
     Scenario("Throw exception when registering a function under already registered name") {
