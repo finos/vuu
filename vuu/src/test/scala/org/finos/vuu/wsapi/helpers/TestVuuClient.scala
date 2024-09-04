@@ -73,13 +73,8 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging{
 
   def login(token: String, user: String): Option[String] = {
     send("not used", "not used", LoginRequest(token, user))
-
-    //capture messages rather than dismissing, - how to cap size
-    // need to match on request id to ensure correct response?
     awaitForMsg[LoginSuccess]
       .map(x => x.sessionId)
-    //todo handle no response
-    //todo what to do if LoginFailure
   }
 
   private def isExpectedBodyType[T <: AnyRef](t: ClassTag[T], msg: ViewServerMessage) = {
