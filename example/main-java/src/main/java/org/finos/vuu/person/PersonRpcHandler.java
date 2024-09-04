@@ -5,8 +5,6 @@ import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.*;
 
-/* Work in Progress - do not use this as example yet
- * */
 public class PersonRpcHandler extends DefaultRpcHandler {
     private final DataTable table;
 
@@ -21,12 +19,9 @@ public class PersonRpcHandler extends DefaultRpcHandler {
     }
 
     public RpcFunctionResult processUpdateNameRpcRequest(RpcParams params) {
-
         var paramData = params.namedParams();
-//      UpdateNameRequestParam x  = (UpdateNameRequestParam) paramData;
-//      updateName(x.Id(), x.Name());
         updateName(paramData.get("Id").get().toString(), paramData.get("Name").get().toString());
-        return new RpcFunctionSuccess(); //how to control what viewport action to t rigger?
+        return new RpcFunctionSuccess();
     }
 
     public RpcFunctionResult processGetAccountIdRpcRequest(RpcParams params) {
