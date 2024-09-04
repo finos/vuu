@@ -40,7 +40,10 @@ trait RpcHandler extends StrictLogging {
 
   val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
 
-  def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = ???
+  /***
+   * This is new RPC request message and any RpcHandler that wishes to use this message should extend DefaultRpcHandler
+   */
+  def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = new RpcFunctionFailure("Unsupported request type")
 
   def processViewPortRpcCall(methodName: String, rcpParams: RpcParams):ViewPortAction = {
 
