@@ -12,6 +12,16 @@ import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
 import { RpcService, ServiceHandler, VuuModule } from "../VuuModule";
 
+const undefinedTables = {
+  algoType: undefined,
+  basket: undefined,
+  basketTrading: undefined,
+  basketTradingConstituent: undefined,
+  basketConstituent: undefined,
+  basketTradingConstituentJoin: undefined,
+  priceStrategyType: undefined,
+};
+
 // This is a 'local' columnMap
 const buildDataColumnMap = (tableName: BasketsTableName) =>
   Object.values(schemas[tableName].columns).reduce<ColumnMap>(
@@ -232,19 +242,14 @@ export const tables: Record<BasketsTableName, Table> = {
 };
 
 const vuuLinks: Record<BasketsTableName, VuuLink[] | undefined> = {
-  algoType: undefined,
-  basket: undefined,
+  ...undefinedTables,
   basketConstituent: [
     { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
   ],
-  basketTrading: undefined,
-  basketTradingConstituent: undefined,
-  basketTradingConstituentJoin: undefined,
-  priceStrategyType: undefined,
 };
 
 const menus: Record<BasketsTableName, VuuMenu | undefined> = {
-  algoType: undefined,
+  ...undefinedTables,
   basket: {
     name: "ROOT",
     menus: [
@@ -256,22 +261,16 @@ const menus: Record<BasketsTableName, VuuMenu | undefined> = {
       },
     ],
   },
-  basketConstituent: undefined,
-  basketTrading: undefined,
-  basketTradingConstituent: undefined,
-  basketTradingConstituentJoin: undefined,
-  priceStrategyType: undefined,
 };
 
 const services: Record<BasketsTableName, RpcService[] | undefined> = {
-  algoType: undefined,
+  ...undefinedTables,
   basket: [
     {
       rpcName: "createBasket",
       service: createNewBasket,
     },
   ],
-  basketConstituent: undefined,
   basketTrading: [
     {
       rpcName: "sendToMarket",
@@ -282,14 +281,12 @@ const services: Record<BasketsTableName, RpcService[] | undefined> = {
       service: takeOffMarket,
     },
   ],
-  basketTradingConstituent: undefined,
   basketTradingConstituentJoin: [
     {
       rpcName: "addConstituent",
       service: addConstituent,
     },
   ],
-  priceStrategyType: undefined,
 };
 
 export const basketModule = new VuuModule<BasketsTableName>({

@@ -19,7 +19,9 @@ import {
 } from "@finos/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
+  VuuCreateVisualLink,
   VuuFilter,
+  VuuRemoveVisualLink,
   VuuSort,
 } from "@finos/vuu-protocol-types";
 
@@ -259,6 +261,11 @@ export const isErrorResponse = (
   response?: Partial<RpcResponse>,
 ): response is VuuUIMessageInRPCEditReject =>
   response?.type === "VP_EDIT_RPC_REJECT";
+
+export const isVisualLinkMessage = (
+  msg: unknown,
+): msg is VuuCreateVisualLink | VuuRemoveVisualLink =>
+  (msg as VuuCreateVisualLink).type.endsWith("_VISUAL_LINK");
 
 export const isViewportMessage = (
   msg: object,

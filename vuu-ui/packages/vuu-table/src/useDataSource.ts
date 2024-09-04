@@ -3,31 +3,22 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
-  VuuFeatureInvocationMessage,
 } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE, rangesAreSame } from "@finos/vuu-utils";
-import { GridAction } from "@finos/vuu-table-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 
 export interface DataSourceHookProps {
   dataSource: DataSource;
-  onFeatureInvocation?: (message: VuuFeatureInvocationMessage) => void;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
   range?: VuuRange;
   renderBufferSize?: number;
 }
 
-export const isVuuFeatureInvocation = (
-  action: GridAction
-): action is VuuFeatureInvocationMessage =>
-  action.type === "vuu-link-created" || action.type === "vuu-link-removed";
-
 export const useDataSource = ({
   dataSource,
-  onFeatureInvocation,
   onSizeChange,
   onSubscribed,
   range = NULL_RANGE,
@@ -42,7 +33,7 @@ export const useDataSource = ({
   const dataWindow = useMemo(
     () => new MovingWindow(getFullRange(range, renderBufferSize)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const setData = useCallback(
@@ -58,7 +49,7 @@ export const useDataSource = ({
         // do nothing
       }
     },
-    [dataWindow]
+    [dataWindow],
   );
 
   const datasourceMessageHandler: SubscribeCallback = useCallback(
@@ -82,13 +73,11 @@ export const useDataSource = ({
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
-      } else if (isVuuFeatureInvocation(message)) {
-        onFeatureInvocation?.(message);
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onFeatureInvocation, onSizeChange, onSubscribed, setData]
+    [dataWindow, onSizeChange, onSubscribed, setData],
   );
 
   const getSelectedRows = useCallback(() => {
@@ -111,7 +100,7 @@ export const useDataSource = ({
       //TODO could we improve this by using a ref for range ?
       dataSource?.subscribe(
         { range: getFullRange(range, renderBufferSize) },
-        datasourceMessageHandler
+        datasourceMessageHandler,
       );
     }
   }, [dataSource, datasourceMessageHandler, range, renderBufferSize]);
@@ -129,7 +118,7 @@ export const useDataSource = ({
         dataSource.emit("range", range);
       }
     },
-    [dataSource, dataWindow, renderBufferSize]
+    [dataSource, dataWindow, renderBufferSize],
   );
 
   return {

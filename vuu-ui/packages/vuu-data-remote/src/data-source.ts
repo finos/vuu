@@ -40,8 +40,6 @@ const datasourceMessages = [
   "enabled",
   "filter",
   "groupBy",
-  "vuu-link-created",
-  "vuu-link-removed",
   "vuu-links",
   "vuu-menu",
   "sort",

@@ -83,6 +83,32 @@ export interface VuuViewportVisualLinksResponse {
   vpId: string;
 }
 
+export interface VuuCreateVisualLink {
+  childColumnName: string;
+  childVpId: string;
+  parentColumnName: string;
+  parentVpId: string;
+  type: "CREATE_VISUAL_LINK";
+}
+
+export interface VuuCreateVisualLinkResponse {
+  childVpId: string;
+  childColumnName: string;
+  parentVpId: string;
+  parentColumnName: string;
+  type: "CREATE_VISUAL_LINK_SUCCESS";
+}
+
+export interface VuuRemoveVisualLink {
+  childVpId: string;
+  type: "REMOVE_VISUAL_LINK";
+}
+
+export interface VuuRemoveVisualLinkResponse {
+  childVpId: string;
+  type: "REMOVE_VISUAL_LINK_SUCCESS";
+}
+
 /**
  * Viewport manipulation messages
  *
@@ -162,17 +188,6 @@ export interface ServerToClientError {
   msg: string;
   type: "ERROR";
 }
-export interface ServerToClientCreateLinkSuccess {
-  childVpId: string;
-  childColumnName: string;
-  parentVpId: string;
-  parentColumnName: string;
-  type: "CREATE_VISUAL_LINK_SUCCESS";
-}
-export interface ServerToClientRemoveLinkSuccess {
-  childVpId: string;
-  type: "REMOVE_VISUAL_LINK_SUCCESS";
-}
 export interface ServerToClientTableRows {
   batch: string;
   isLast: boolean;
@@ -202,8 +217,8 @@ export declare type ServerMessageBody =
   | VuuViewportVisualLinksResponse
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
-  | ServerToClientCreateLinkSuccess
-  | ServerToClientRemoveLinkSuccess
+  | VuuCreateVisualLinkResponse
+  | VuuRemoveVisualLinkResponse
   | ServerToClientError
   | VuuRpcEditSuccess
   | VuuRpcEditSuccess
@@ -255,16 +270,6 @@ export interface ClientToServerCloseTreeNode {
   vpId: string;
   treeKey: string;
 }
-export interface ClientToServerCreateLink {
-  childVpId: string;
-  parentColumnName: string;
-  parentVpId: string;
-  type: "CREATE_VISUAL_LINK";
-}
-export interface ClientToServerRemoveLink {
-  childVpId: string;
-  type: "REMOVE_VISUAL_LINK";
-}
 
 export declare type RpcService = "TypeAheadRpcHandler" | "OrderEntryRpcHandler";
 
@@ -305,8 +310,8 @@ export declare type ClientMessageBody =
   | VuuViewportMenusRequest
   | ClientToServerOpenTreeNode
   | ClientToServerCloseTreeNode
-  | ClientToServerCreateLink
-  | ClientToServerRemoveLink
+  | VuuCreateVisualLink
+  | VuuRemoveVisualLink
   | VuuRpcMenuRequest
   | VuuRpcViewportRequest
   | VuuRpcServiceRequest;

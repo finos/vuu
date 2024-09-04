@@ -6,6 +6,7 @@ import {
   DataSourceEvents,
   DataSourceFilter,
   DataSourceStatus,
+  DataSourceVisualLinkCreatedMessage,
   OptimizeStrategy,
   Selection,
   SubscribeCallback,
@@ -27,6 +28,7 @@ import {
   VuuTable,
   VuuRpcResponse,
   VuuRpcRequest,
+  VuuCreateVisualLink,
 } from "@finos/vuu-protocol-types";
 
 import { parseFilter } from "@finos/vuu-filter-parser";
@@ -631,22 +633,31 @@ export class VuuDataSource
       } = visualLink;
 
       if (this.viewport) {
-        this.server?.send({
-          viewport: this.viewport,
-          type: "createLink",
-          parentClientVpId,
-          parentColumnName: toColumn,
-          childColumnName: fromColumn,
-        });
+        this.server
+          ?.rpcCall<DataSourceVisualLinkCreatedMessage>({
+            childColumnName: fromColumn,
+            childVpId: this.viewport,
+            parentColumnName: toColumn,
+            parentVpId: parentClientVpId,
+            type: "CREATE_VISUAL_LINK",
+          } as VuuCreateVisualLink)
+          .then((response) => {
+            this.emit("visual-link-created", response);
+          });
       }
     } else {
       if (this.viewport) {
-        this.server?.send({
-          type: "removeLink",
-          viewport: this.viewport,
-        });
+        this.server
+          ?.rpcCall({
+            type: "REMOVE_VISUAL_LINK",
+            childVpId: this.viewport,
+          })
+          .then(() => {
+            this.emit("visual-link-removed");
+          });
       }
     }
+
     this.emit("config", this.#config);
   }
 

@@ -23,16 +23,17 @@ import {
   ServerProxySubscribeMessage,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutCloseTreeNode,
+  WithRequestId,
 } from "@finos/vuu-data-types";
 import {
   VuuViewportChangeRequest,
   ClientToServerCloseTreeNode,
-  ClientToServerCreateLink,
+  VuuCreateVisualLink,
   VuuViewportCreateRequest,
   ClientToServerDisable,
   ClientToServerEnable,
   ClientToServerOpenTreeNode,
-  ClientToServerRemoveLink,
+  VuuRemoveVisualLink,
   ClientToServerSelection,
   ClientToServerViewPortRange,
   LinkDescriptorWithLabel,
@@ -117,8 +118,8 @@ type AsyncOperation =
   | ChangeViewportRange
   | Disable
   | Enable
-  | ClientToServerCreateLink
-  | ClientToServerRemoveLink;
+  | VuuCreateVisualLink
+  | VuuRemoveVisualLink;
 
 type RangeRequestTuple = [
   ClientToServerViewPortRange | null,
@@ -463,18 +464,20 @@ export class Viewport {
       } as LinkedParent;
       this.pendingLinkedParent = undefined;
       return {
+        requestId,
         type: "vuu-link-created",
         clientViewportId,
         colName,
         parentViewportId,
         parentColName,
-      } as DataSourceVisualLinkCreatedMessage;
+      } as WithRequestId<DataSourceVisualLinkCreatedMessage>;
     } else if (type === "REMOVE_VISUAL_LINK") {
       this.linkedParent = undefined;
       return {
+        requestId,
         type: "vuu-link-removed",
         clientViewportId,
-      } as DataSourceVisualLinkRemovedMessage;
+      } as WithRequestId<DataSourceVisualLinkRemovedMessage>;
     }
   }
 
@@ -611,34 +614,26 @@ export class Viewport {
     } as ClientToServerCloseTreeNode;
   }
 
-  createLink(
-    requestId: string,
-    colName: string,
-    parentVpId: string,
-    parentColumnName: string,
-  ) {
+  createLink(requestId: string, vuuCreateVisualLink: VuuCreateVisualLink) {
     const message = {
-      type: "CREATE_VISUAL_LINK",
-      parentVpId,
+      ...vuuCreateVisualLink,
       childVpId: this.serverViewportId,
-      parentColumnName,
-      childColumnName: colName,
-    } as ClientToServerCreateLink;
+    } as VuuCreateVisualLink;
     this.awaitOperation(requestId, message);
     if (this.useBatchMode) {
       // next TABLE_ROWS we get will be triggered by selection on parent
       this.batchMode = true;
     }
-    return message as ClientToServerCreateLink;
+    return message as VuuCreateVisualLink;
   }
 
   removeLink(requestId: string) {
     const message = {
       type: "REMOVE_VISUAL_LINK",
       childVpId: this.serverViewportId,
-    } as ClientToServerRemoveLink;
+    } as VuuRemoveVisualLink;
     this.awaitOperation(requestId, message);
-    return message as ClientToServerRemoveLink;
+    return message as VuuRemoveVisualLink;
   }
 
   suspend() {

@@ -15,6 +15,8 @@ import {
   VuuRpcServiceRequest,
   VuuTable,
   VuuTableList,
+  VuuCreateVisualLink,
+  VuuRemoveVisualLink,
 } from "@finos/vuu-protocol-types";
 import {
   EventEmitter,
@@ -208,7 +210,9 @@ const asyncRequest = <T = unknown>(
     | VuuRpcMenuRequest
     | VuuTableListRequest
     | VuuTableMetaRequest
-    | VuuRpcViewportRequest,
+    | VuuRpcViewportRequest
+    | VuuCreateVisualLink
+    | VuuRemoveVisualLink,
 ): Promise<T> => {
   const requestId = uuid();
   worker.postMessage({
@@ -226,7 +230,12 @@ export interface ServerAPI {
   getTableList: (module?: string) => Promise<VuuTableList>;
   // TODO its not really unknown
   rpcCall: <T = unknown>(
-    msg: VuuRpcServiceRequest | VuuRpcMenuRequest | VuuRpcViewportRequest,
+    msg:
+      | VuuRpcServiceRequest
+      | VuuRpcMenuRequest
+      | VuuRpcViewportRequest
+      | VuuCreateVisualLink
+      | VuuRemoveVisualLink,
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
@@ -267,7 +276,12 @@ const connectedServerAPI: ServerAPI = {
   },
 
   rpcCall: async <T = unknown>(
-    message: VuuRpcServiceRequest | VuuRpcMenuRequest | VuuRpcViewportRequest,
+    message:
+      | VuuRpcServiceRequest
+      | VuuRpcMenuRequest
+      | VuuRpcViewportRequest
+      | VuuCreateVisualLink
+      | VuuRemoveVisualLink,
   ) => asyncRequest<T>(message),
 
   getTableList: async () =>

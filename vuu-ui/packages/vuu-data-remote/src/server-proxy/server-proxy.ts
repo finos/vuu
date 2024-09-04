@@ -35,6 +35,8 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
   VuuRpcRequest,
+  VuuCreateVisualLink,
+  VuuRemoveVisualLink,
 } from "@finos/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -44,6 +46,7 @@ import {
   isOpenDialogAction,
   isSessionTable,
   isSessionTableActionMessage,
+  isVisualLinkMessage,
 } from "@finos/vuu-utils";
 import type { Connection } from "../connectionTypes";
 import {
@@ -505,25 +508,29 @@ export class ServerProxy {
     }
   }
 
-  private createLink(viewport: Viewport, message: VuuUIMessageOutCreateLink) {
-    const { parentClientVpId, parentColumnName, childColumnName } = message;
-    const requestId = nextRequestId();
-    const parentVpId = this.mapClientToServerViewport.get(parentClientVpId);
+  private createLink(
+    viewport: Viewport,
+    message: WithRequestId<VuuCreateVisualLink>,
+  ) {
+    const [requestId, visualLinkRequest] =
+      stripRequestId<VuuCreateVisualLink>(message);
+    const parentVpId = this.mapClientToServerViewport.get(message.parentVpId);
     if (parentVpId) {
-      const request = viewport.createLink(
-        requestId,
-        childColumnName,
+      const request = viewport.createLink(requestId, {
+        ...visualLinkRequest,
         parentVpId,
-        parentColumnName,
-      );
+      });
       this.sendMessageToServer(request, requestId);
     } else {
-      error("ServerProxy unable to create link, viewport not found");
+      throw Error(`createLink parent viewport not found ${message.parentVpId}`);
     }
   }
 
-  private removeLink(viewport: Viewport) {
-    const requestId = nextRequestId();
+  private removeLink(
+    viewport: Viewport,
+    message: WithRequestId<VuuRemoveVisualLink>,
+  ) {
+    const { requestId } = message;
     const request = viewport.removeLink(requestId);
     this.sendMessageToServer(request, requestId);
   }
@@ -599,9 +606,11 @@ export class ServerProxy {
           | VuuUIMessageOutUnsubscribe
         >
       | WithRequestId<VuuRpcServiceRequest>
-      | WithRequestId<VuuRpcMenuRequest>,
+      | WithRequestId<VuuRpcMenuRequest>
+      | WithRequestId<VuuCreateVisualLink>
+      | WithRequestId<VuuRemoveVisualLink>,
   ) {
-    if (isViewportMessage(message)) {
+    if (isViewportMessage(message) || isVisualLinkMessage(message)) {
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
@@ -611,7 +620,10 @@ export class ServerProxy {
           return;
         }
       } else {
-        const viewport = this.getViewportForClient(message.viewport);
+        const viewport = isVisualLinkMessage(message)
+          ? this.getViewportForClient(message.childVpId)
+          : this.getViewportForClient(message.viewport);
+
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
@@ -633,10 +645,10 @@ export class ServerProxy {
             return this.openTreeNode(viewport, message);
           case "closeTreeNode":
             return this.closeTreeNode(viewport, message);
-          case "createLink":
+          case "CREATE_VISUAL_LINK":
             return this.createLink(viewport, message);
-          case "removeLink":
-            return this.removeLink(viewport);
+          case "REMOVE_VISUAL_LINK":
+            return this.removeLink(viewport, message);
           case "setColumns":
             return this.setColumns(viewport, message);
           case "setTitle":
