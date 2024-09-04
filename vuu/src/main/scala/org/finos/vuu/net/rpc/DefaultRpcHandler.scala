@@ -2,7 +2,7 @@ package org.finos.vuu.net.rpc
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.{Error, RequestContext, RpcCall, RpcResponse, ViewServerMessage, VsMsg}
-import org.finos.vuu.viewport.{DisplayResultAction, ViewPortAction, ViewPortRpcFailure, ViewPortRpcSuccess}
+import org.finos.vuu.viewport.{ViewPortAction, ViewPortRpcFailure, ViewPortRpcSuccess}
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -28,11 +28,7 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
   override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
     val result = processRpcMethodHandler(methodName, rpcParams)
     result match {
-      case RpcFunctionSuccess(result) =>
-        result match {
-          case Some(value) => DisplayResultAction(value)
-          case None => ViewPortRpcSuccess()
-        }
+      case RpcFunctionSuccess(result) => ViewPortRpcSuccess()
       case _: RpcFunctionFailure => ViewPortRpcFailure(s"Exception occurred calling rpc $methodName")
     }
   }
