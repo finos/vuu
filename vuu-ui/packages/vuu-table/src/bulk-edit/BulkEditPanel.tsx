@@ -1,6 +1,6 @@
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
-import type { TableConfig } from "@finos/vuu-table-types";
+import type { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -13,14 +13,18 @@ import bulkEditPanelCss from "./BulkEditPanel.css";
 const classBase = "vuuBulkEditPanel";
 
 export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
+  columns?: ColumnDescriptor[];
   dataSource: DataSource;
   response?: RpcResponse;
   mainTableName?: string;
+  parentDs: DataSource;
 }
 
 export const BulkEditPanel = ({
   className,
+  columns,
   dataSource,
+  parentDs,
   ...htmlAttributes
 }: BulkEditPanelProps): JSX.Element => {
   const targetWindow = useWindow();
@@ -39,19 +43,29 @@ export const BulkEditPanel = ({
         type: "VIEW_PORT_RPC_CALL"
       } as Omit<VuuRpcViewportRequest, "vpId">);
     };
-    return <BulkEditRow onChange={onChange} />;
-  }, [dataSource]);
+    return <BulkEditRow onChange={onChange} dataSource={parentDs} />;
+  }, [dataSource, parentDs]);
 
   const config: TableConfig = useMemo(() => {
     return {
-      columns: dataSource.columns.map((name) => ({
-        editable: true,
-        name,
-        serverDataType: "string"
-      })),
+      columns: columns
+        ? columns.map((col) => {
+            return {
+              editable: col.editableBulk === "bulk",
+              hidden: col.editableBulk === false,
+              name: col.name,
+              serverDataType: col.serverDataType ?? "string",
+              type: col.name === "date" ? col.type : "string"
+            };
+          })
+        : dataSource.columns.map((name) => ({
+            editable: true,
+            name,
+            serverDataType: "string"
+          })),
       rowSeparators: true
     };
-  }, [dataSource]);
+  }, [columns, dataSource.columns]);
 
   return (
     <div

@@ -1,39 +1,39 @@
 import type {
   DataSourceRow,
   SchemaColumn,
-  TableSchema,
+  TableSchema
 } from "@finos/vuu-data-types";
 import type {
-  VuuAggregation,
   VuuAggType,
+  VuuAggregation,
   VuuColumnDataType,
   VuuDataRow,
   VuuGroupBy,
   VuuRowRecord,
-  VuuSort,
+  VuuSort
 } from "@finos/vuu-protocol-types";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
+  ColumnLayout,
   ColumnType,
   ColumnTypeDescriptor,
   ColumnTypeFormatting,
   ColumnTypeRendering,
   ColumnTypeSimple,
   ColumnTypeWithValidationRules,
+  DateTimeColumnDescriptor,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
   LookupRenderer,
   MappedValueTypeRenderer,
   PinLocation,
   RuntimeColumnDescriptor,
+  TableCellRendererProps,
+  TableConfig,
   TableHeading,
   TableHeadings,
-  ValueListRenderer,
-  DateTimeColumnDescriptor,
-  TableCellRendererProps,
-  ColumnLayout,
-  TableConfig,
+  ValueListRenderer
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -61,7 +61,7 @@ export const AggregationType: { [key: string]: VuuAggType } = {
   Distinct: 6,
   Sum: 1,
   High: 4,
-  Low: 5,
+  Low: 5
 };
 
 export function mapSortCriteria(
@@ -88,8 +88,8 @@ export const getDefaultAlignment = (
   serverDataType === undefined
     ? "left"
     : numericTypes.includes(serverDataType)
-    ? "right"
-    : "left";
+      ? "right"
+      : "left";
 
 export const getRuntimeColumnWidth = (
   col: ColumnDescriptor,
@@ -114,9 +114,9 @@ export const applyRuntimeColumnWidthsToConfig = (
     ...tableConfig,
     columns: columns.map((column) => ({
       ...column,
-      width: column.width ?? getRuntimeColumnWidth(column, columns),
+      width: column.width ?? getRuntimeColumnWidth(column, columns)
     })),
-    columnLayout: "manual",
+    columnLayout: "manual"
   };
 };
 
@@ -138,7 +138,7 @@ const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
   "int",
   "string",
   "char",
-  "boolean",
+  "boolean"
 ];
 
 export const isVuuColumnDataType = (
@@ -198,7 +198,7 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     : serverDataType === "char" || serverDataType === "string";
 
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
-  name,
+  name
 });
 
 /**
@@ -287,7 +287,7 @@ export const metadataKeys = {
   PARENT_IDX: "parent_idx",
   IDX_POINTER: "idx_pointer",
   FILTER_COUNT: "filter_count",
-  NEXT_FILTER_IDX: "next_filter_idx",
+  NEXT_FILTER_IDX: "next_filter_idx"
 } as const;
 
 // This method mutates the passed columns array
@@ -340,7 +340,7 @@ export function extractGroupColumn(
         if (groupBy.includes(column.name)) {
           g.push({
             ...column,
-            originalIdx: i,
+            originalIdx: i
           });
         } else {
           r.push(column);
@@ -365,7 +365,7 @@ export function extractGroupColumn(
       ) as RuntimeColumnDescriptor;
       return {
         ...column,
-        groupLevel: groupCount - idx,
+        groupLevel: groupCount - idx
       };
     });
 
@@ -375,7 +375,7 @@ export function extractGroupColumn(
       isGroup: true,
       columns: groupCols,
       groupConfirmed: confirmed,
-      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
+      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100
     } as GroupColumnDescriptor;
 
     return [groupCol, rest];
@@ -430,7 +430,7 @@ export const sortPinnedColumns = (
   if (leftPinnedColumns.length) {
     leftPinnedColumns.push({
       ...(leftPinnedColumns.pop() as RuntimeColumnDescriptor),
-      endPin: true,
+      endPin: true
     });
   }
 
@@ -444,7 +444,7 @@ export const sortPinnedColumns = (
     for (const column of rightPinnedColumns) {
       measuredRightPinnedColumns.unshift({
         ...column,
-        pinnedOffset: pinnedWidthRight,
+        pinnedOffset: pinnedWidthRight
       });
       pinnedWidthRight += column.width;
     }
@@ -476,7 +476,7 @@ export const measurePinnedColumns = (
   return {
     pinnedWidthLeft: pinnedWidthLeft + selectionEndSize,
     pinnedWidthRight: pinnedWidthRight + selectionEndSize,
-    unpinnedWidth,
+    unpinnedWidth
   };
 };
 
@@ -516,21 +516,21 @@ export const getColumnStyle = ({
   // the 4 is `selectionEndSize`, unfortunate if we need to be passed it from cell
   // need to think about how to make this available
   pinnedOffset = pin === "left" ? 0 : 4,
-  width,
+  width
 }: RuntimeColumnDescriptor) =>
   pin === "left"
     ? ({
         left: pinnedOffset,
         width,
-        "--pin-width": `${pinnedOffset + width - 3}px`,
+        "--pin-width": `${pinnedOffset + width - 3}px`
       } as CSSProperties)
     : pin === "right"
-    ? ({
-        right: pinnedOffset,
-        width,
-        "--pin-width": `${pinnedOffset + width}px`,
-      } as CSSProperties)
-    : { width };
+      ? ({
+          right: pinnedOffset,
+          width,
+          "--pin-width": `${pinnedOffset + width}px`
+        } as CSSProperties)
+      : { width };
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
@@ -571,12 +571,12 @@ export const applySortToColumns = (
     if (sorted !== undefined) {
       return {
         ...column,
-        sorted,
+        sorted
       };
     } else if (column.sorted) {
       return {
         ...column,
-        sorted: undefined,
+        sorted: undefined
       };
     } else {
       return column;
@@ -818,8 +818,8 @@ export const updateColumnRenderProps = <
       type: {
         ...type,
         // TODO do we need to preserve any existing attributes from renderer ?
-        renderer,
-      },
+        renderer
+      }
     };
   } else {
     return { ...column, type: { name: type, renderer } };
@@ -868,7 +868,7 @@ export const addColumnToSubscribedColumns = (
   }
 
   const newColumn = {
-    ...availableColumns[indexOfAvailableColumn],
+    ...availableColumns[indexOfAvailableColumn]
   } as ColumnDescriptor;
 
   // find the nearest preceding available column which is subscribed
@@ -916,7 +916,7 @@ export const getCalculatedColumnDetails = (
       expression: expression ?? "",
       serverDataType: isVuuColumnDataType(serverDataType)
         ? serverDataType
-        : undefined,
+        : undefined
     };
   } else {
     throw Error(`column.name is nor a calculated column`);
@@ -930,7 +930,7 @@ export const setCalculatedColumnName = (
   const [, type, expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:${expression}`,
+    name: `${name}:${type}:${expression}`
   };
 };
 
@@ -941,7 +941,7 @@ export const setCalculatedColumnType = (
   const [name, , expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:${expression}`,
+    name: `${name}:${type}:${expression}`
   };
 };
 
@@ -953,7 +953,7 @@ export const setCalculatedColumnExpression = (
   const [name, type] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:=${expression}`,
+    name: `${name}:${type}:=${expression}`
   };
 };
 
@@ -982,7 +982,7 @@ export const applyDefaultColumnConfig = (
       if (config) {
         return {
           ...column,
-          ...config,
+          ...config
         };
       } else {
         return column;
@@ -1068,7 +1068,7 @@ export function applyWidthToColumns(
     columnLayout = "static",
     defaultWidth = DEFAULT_COL_WIDTH,
     defaultMinWidth = DEFAULT_MIN_WIDTH,
-    defaultMaxWidth = DEFAULT_MAX_WIDTH,
+    defaultMaxWidth = DEFAULT_MAX_WIDTH
   }: // defaultFlex = DEFAULT_FLEX,
   columnOptions
 ): RuntimeColumnDescriptor[] {
@@ -1114,7 +1114,7 @@ const assignMaxWidthToAll = (
     } else {
       return {
         ...column,
-        width: maxWidth,
+        width: maxWidth
       };
     }
   });
@@ -1137,7 +1137,7 @@ const shrinkColumnsToFitAvailableSpace = (
     const {
       minWidth = defaultMinWidth,
       width = defaultWidth,
-      flex = 0,
+      flex = 0
     } = column;
     if (inFlexMode && flex === 0) {
       return column;
@@ -1183,7 +1183,7 @@ const stretchColumnsToFillAvailableSpace = (
     const {
       maxWidth = defaultMaxWidth,
       width = defaultWidth,
-      flex = 0,
+      flex = 0
     } = column;
     if (flexCount > 0 && flex === 0) {
       return column;

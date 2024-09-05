@@ -7,20 +7,20 @@ import type {
   VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
-  VuuTable,
+  VuuTable
 } from "@finos/vuu-protocol-types";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type {
   ColumnMap,
   DateTimePattern,
-  RowClassNameGenerator,
+  RowClassNameGenerator
 } from "@finos/vuu-utils";
 import type {
   CSSProperties,
   FunctionComponent,
   HTMLAttributes,
   MouseEvent,
-  ReactElement,
+  ReactElement
 } from "react";
 
 export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
@@ -246,6 +246,8 @@ export type PinLocation = "left" | "right" | "floating";
 
 export type ColumnAlignment = "left" | "right";
 
+export type BulkEdit = "bulk" | false | "read-only";
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
@@ -255,6 +257,7 @@ export interface ColumnDescriptor {
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
   editable?: boolean;
+  editableBulk?: BulkEdit;
   flex?: number;
   /**
    Optional additional level(s) of heading to display above label.

@@ -23,9 +23,11 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "isin", serverDataType: "string" },
         { name: "lotSize", serverDataType: "int" },
         { name: "ric", serverDataType: "string" },
+        { name: "price", serverDataType: "double" },
+        { name: "date", serverDataType: "long" }
       ],
       key: "ric",
-      table: { module: "SIMUL", table: "instruments" },
+      table: { module: "SIMUL", table: "instruments" }
     },
     instrumentsExtended: {
       columns: [
@@ -38,10 +40,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "ric", serverDataType: "string" },
         { name: "supported", serverDataType: "boolean" },
         { name: "wishlist", serverDataType: "boolean" },
-        { name: "lastUpdated", serverDataType: "long" },
+        { name: "lastUpdated", serverDataType: "long" }
       ],
       key: "ric",
-      table: { module: "SIMUL", table: "instrumentsExtended" },
+      table: { module: "SIMUL", table: "instrumentsExtended" }
     },
     instrumentPrices: {
       columns: [
@@ -60,10 +62,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "open", serverDataType: "double" },
         { name: "phase", serverDataType: "string" },
         { name: "ric", serverDataType: "string" },
-        { name: "scenario", serverDataType: "string" },
+        { name: "scenario", serverDataType: "string" }
       ],
       key: "ric",
-      table: { module: "SIMUL", table: "instrumentPrices" },
+      table: { module: "SIMUL", table: "instrumentPrices" }
     },
     orders: {
       columns: [
@@ -76,10 +78,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "quantity", serverDataType: "double" },
         { name: "ric", serverDataType: "string" },
         { name: "side", serverDataType: "string" },
-        { name: "trader", serverDataType: "string" },
+        { name: "trader", serverDataType: "string" }
       ],
       key: "orderId",
-      table: { module: "SIMUL", table: "orders" },
+      table: { module: "SIMUL", table: "orders" }
     },
     childOrders: {
       columns: [
@@ -99,10 +101,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "side", serverDataType: "string" },
         { name: "status", serverDataType: "string" },
         { name: "strategy", serverDataType: "string" },
-        { name: "volLimit", serverDataType: "int" },
+        { name: "volLimit", serverDataType: "int" }
       ],
       key: "id",
-      table: { module: "SIMUL", table: "childOrders" },
+      table: { module: "SIMUL", table: "childOrders" }
     },
     parentOrders: {
       columns: [
@@ -122,10 +124,10 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "ric", serverDataType: "string" },
         { name: "side", serverDataType: "string" },
         { name: "status", serverDataType: "string" },
-        { name: "volLimit", serverDataType: "int" },
+        { name: "volLimit", serverDataType: "int" }
       ],
       key: "id",
-      table: { module: "SIMUL", table: "parentOrders" },
+      table: { module: "SIMUL", table: "parentOrders" }
     },
     prices: {
       columns: [
@@ -138,11 +140,11 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "open", serverDataType: "double" },
         { name: "phase", serverDataType: "string" },
         { name: "ric", serverDataType: "string" },
-        { name: "scenario", serverDataType: "string" },
+        { name: "scenario", serverDataType: "string" }
       ],
       key: "ric",
-      table: { module: "SIMUL", table: "prices" },
-    },
+      table: { module: "SIMUL", table: "prices" }
+    }
   };
 
 export type SimulVuuTable = {

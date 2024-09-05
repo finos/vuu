@@ -1,18 +1,19 @@
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
-  MenuBuilder,
+  MenuBuilder
 } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   isGroupMenuItemDescriptor,
-  useThemeAttributes,
+  useThemeAttributes
 } from "@finos/vuu-utils";
 import { cloneElement, useCallback, useContext, useMemo } from "react";
 import {
   MenuActionClosePopup,
   PopupCloseReason,
   PopupService,
-  reasonIsMenuAction,
+  reasonIsMenuAction
 } from "../popup";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -20,6 +21,7 @@ import { ContextMenuContext } from "./context-menu-provider";
 
 export type ContextMenuOptions = {
   [key: string]: unknown;
+  columns?: ColumnDescriptor[];
   contextMenu?: JSX.Element;
   ContextMenuProps?: Partial<ContextMenuProps> & {
     className?: string;
@@ -52,7 +54,7 @@ export const useContextMenu = (
     () => ({
       themeClass,
       densityClass,
-      dataMode,
+      dataMode
     }),
     [dataMode, densityClass, themeClass]
   );
@@ -78,7 +80,7 @@ export const useContextMenu = (
         return showContextMenuComponent(
           {
             x: e.clientX,
-            y: e.clientY,
+            y: e.clientY
           },
           contextMenu
         );
@@ -119,9 +121,9 @@ export const useContextMenu = (
           // have access to the ContextMenuContext. Pass the theme attributes here
           showContextMenu(e, menuItemDescriptors, menuHandler, {
             PortalProps: {
-              themeAttributes,
+              themeAttributes
             },
-            ...ContextMenuProps,
+            ...ContextMenuProps
           });
         }
       } else {
@@ -150,7 +152,7 @@ const showContextMenuComponent = (
     focus: true,
     left: 0,
     top: 0,
-    component: cloneElement(contextMenu, { position }),
+    component: cloneElement(contextMenu, { position })
   });
 };
 
@@ -199,7 +201,7 @@ const showContextMenu = (
 
   const position = positionProp ?? {
     x: e.clientX,
-    y: e.clientY,
+    y: e.clientY
   };
 
   const component = (
