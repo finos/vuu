@@ -324,6 +324,10 @@ export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
 export type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export type DataSourceEventHandler = (viewportId: string) => void;
+export type RowSelectionEventHandler = (
+  selection: Selection,
+  selectedRowCount: number,
+) => void;
 
 export type DataSourceEvents = {
   config: (
@@ -334,7 +338,7 @@ export type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
-  "row-selection": (selection: Selection, selectedRowCount: number) => void;
+  "row-selection": RowSelectionEventHandler;
   subscribed: (subscription: DataSourceSubscribedMessage) => void;
   unsubscribed: DataSourceEventHandler;
   disabled: DataSourceEventHandler;

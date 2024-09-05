@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceVisualLinkCreatedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -20,13 +21,12 @@ import {
   VuuRpcViewportResponse,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
-  VuuCreateVisualLinkResponse,
-  VuuRemoveVisualLinkResponse,
 } from "@finos/vuu-protocol-types";
 import { isViewportRpcRequest, uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { makeSuggestions } from "./makeSuggestions";
+import { RuntimeVisualLink } from "./RuntimeVisualLink";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -78,6 +78,7 @@ type Subscription = {
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #menus: Record<T, VuuMenu | undefined> | undefined;
   #name: string;
+  #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
   #schemas: Record<T, Readonly<TableSchema>>;
   #sessionTableMap: SessionTableMap = {};
   #tables: Record<T, Table>;
@@ -152,19 +153,44 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     return visualLinks;
   };
 
-  createVisualLink = (
+  visualLinkService = (
     message: VuuCreateVisualLink | VuuRemoveVisualLink,
-  ): Promise<VuuCreateVisualLinkResponse | VuuRemoveVisualLinkResponse> =>
+  ): Promise<DataSourceVisualLinkCreatedMessage | void> =>
     new Promise((resolve) => {
       if (message.type === "CREATE_VISUAL_LINK") {
-        // const { parentVpId } = message;
-        // const dataSource = this.getSubscribedDataSource(parentVpId);
-        // register a selection listener on this datasource
-        // create a visual link which connects selection to filter on child
-        resolve({} as VuuCreateVisualLinkResponse);
+        const { childColumnName, childVpId, parentColumnName, parentVpId } =
+          message;
+        const childDataSource = this.getSubscribedDataSource(childVpId);
+        const parentDataSource = this.getSubscribedDataSource(parentVpId);
+        const runtimeVisualLink = new RuntimeVisualLink(
+          childDataSource,
+          parentDataSource,
+          childColumnName,
+          parentColumnName,
+        );
+
+        this.#runtimeVisualLinks.set(childVpId, runtimeVisualLink);
+
+        resolve({
+          clientViewportId: childVpId,
+          colName: childColumnName,
+          parentColName: parentColumnName,
+          parentViewportId: parentVpId,
+          type: "vuu-link-created",
+        } as DataSourceVisualLinkCreatedMessage);
       } else {
-        console.log("remove visual link");
-        resolve({} as VuuRemoveVisualLinkResponse);
+        const runtimeVisualLink = this.#runtimeVisualLinks.get(
+          message.childVpId,
+        );
+        if (runtimeVisualLink) {
+          runtimeVisualLink.remove();
+          this.#runtimeVisualLinks.delete(message.childVpId);
+        } else {
+          throw Error(
+            `visualLinkService no visual link found for viewport #${message.childVpId}`,
+          );
+        }
+        resolve();
       }
     });
 
@@ -192,7 +218,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       sessionTables: this.#sessionTableMap,
       viewport,
       visualLinks,
-      visualLinkService: this.createVisualLink,
+      visualLinkService: this.visualLinkService,
     });
 
     dataSource.on("unsubscribed", this.unregisterViewport);
