@@ -162,7 +162,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   useEffect(() => {
-    if (dataSource.title !== title) {
+    if (title && dataSource.title !== title) {
       dataSource.title = title;
     }
   }, [dataSource, title]);

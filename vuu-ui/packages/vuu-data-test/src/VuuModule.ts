@@ -103,8 +103,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   }
 
   private unregisterViewport = (viewportId: string) => {
-    console.log(`<subscription-closed> unregister viewport ${viewportId}`);
-
     for (const [tableName, subscriptions] of this.#subscriptionMap) {
       if (subscriptions[0].viewportId.toString() === viewportId) {
         this.#subscriptionMap.delete(tableName);
@@ -133,21 +131,22 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     throw Error(`getSubscribedDataSource #${vpId} not in subscriptionMap`);
   }
 
-  getLink = (
+  getLinks = (
     subscriptionMap: Map<string, Subscription[]>,
     vuuLinks: VuuLink[],
   ) => {
     const visualLinks: LinkDescriptorWithLabel[] = [];
     for (let i = 0; i < vuuLinks.length; i++) {
-      if (subscriptionMap.get(vuuLinks[i].toTable)) {
-        const newLink: LinkDescriptorWithLabel = {
-          parentClientVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
-            .viewportId as string,
-          parentVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
-            .viewportId as string,
-          link: vuuLinks[i],
-        };
-        visualLinks.push(newLink);
+      const subscriptions = subscriptionMap.get(vuuLinks[i].toTable);
+      if (subscriptions) {
+        subscriptions.forEach(({ viewportId }) => {
+          const newLink: LinkDescriptorWithLabel = {
+            parentClientVpId: viewportId,
+            parentVpId: viewportId,
+            link: vuuLinks[i],
+          };
+          visualLinks.push(newLink);
+        });
       }
     }
     return visualLinks;
@@ -198,7 +197,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     const visualLinks =
       this.#visualLinks?.[tableName] === undefined
         ? undefined
-        : this.getLink(
+        : this.getLinks(
             this.#subscriptionMap,
             this.#visualLinks[tableName] as VuuLink[],
           );
@@ -223,13 +222,20 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
     dataSource.on("unsubscribed", this.unregisterViewport);
 
-    this.#subscriptionMap.set(tableName, [
-      { viewportId: dataSource.viewport as string, dataSource },
-    ]);
+    const existingSubscriptions = this.#subscriptionMap.get(tableName);
+    const subscription = {
+      viewportId: dataSource.viewport as string,
+      dataSource,
+    };
+    if (existingSubscriptions) {
+      existingSubscriptions.push(subscription);
+    } else {
+      this.#subscriptionMap.set(tableName, [subscription]);
+    }
 
     for (const key of this.#subscriptionMap.keys()) {
       if (this.#visualLinks?.[key as T] && key !== tableName) {
-        const vLink = this.getLink(
+        const vLink = this.getLinks(
           this.#subscriptionMap,
           this.#visualLinks?.[key as T] as VuuLink[],
         );

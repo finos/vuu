@@ -1,6 +1,5 @@
 .salt-theme.vuu-theme {
   .vuuHeader-title {
-    height: 100%;
     border-bottom: solid 2px var(--vuu-color-purple-10);
   }
 }

@@ -1,5 +1,4 @@
 import { useViewContext } from "@finos/vuu-layout";
-import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
@@ -10,6 +9,7 @@ import { useCallback, useMemo } from "react";
 import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
 import { useNotifications } from "@finos/vuu-popups";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+import { useDataSource } from "@finos/vuu-utils";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -31,6 +31,7 @@ export const useBasketTradingDataSources = ({
 }) => {
   const notify = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
+  const { VuuDataSource } = useDataSource();
 
   const [
     dataSourceBasket,
@@ -80,7 +81,7 @@ export const useBasketTradingDataSources = ({
 
     const dataSources: DataSource[] = [];
     for (const [key, schema, bufferSize, config] of dataSourceConfig) {
-      let dataSource = loadSession?.(key) as VuuDataSource;
+      let dataSource = loadSession?.(key) as DataSource;
       if (dataSource === undefined) {
         dataSource = new VuuDataSource({
           ...config,
@@ -102,6 +103,7 @@ export const useBasketTradingDataSources = ({
     basketTradingConstituentJoinSchema,
     basketConstituentSchema,
     loadSession,
+    VuuDataSource,
     id,
     title,
     saveSession,

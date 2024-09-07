@@ -343,6 +343,7 @@ export type DataSourceEvents = {
   unsubscribed: DataSourceEventHandler;
   disabled: DataSourceEventHandler;
   enabled: DataSourceEventHandler;
+  "title-changed": (id: string, title: string) => void;
   "visual-link-created": (message: DataSourceVisualLinkCreatedMessage) => void;
   "visual-link-removed": () => void;
 };
@@ -507,7 +508,7 @@ export interface DataSource
    * Users can edit titles on components. If so, and this is a table component, we will display this title in
    * the context menu rather than the underlying table name (which may not be unique within the layout)
    */
-  title?: string;
+  title: string;
   unsubscribe: () => void;
   viewport?: string;
   visualLink?: LinkDescriptorWithLabel;

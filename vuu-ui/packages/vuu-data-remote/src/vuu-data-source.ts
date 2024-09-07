@@ -108,7 +108,7 @@ export class VuuDataSource
 
     this.bufferSize = bufferSize;
     this.table = table;
-    this.viewport = viewport;
+    this.viewport = viewport ?? "";
 
     this.#config = {
       ...this.#config,
@@ -126,7 +126,7 @@ export class VuuDataSource
 
   async subscribe(
     {
-      viewport = this.viewport ?? (this.viewport = uuid()),
+      viewport = this.viewport || (this.viewport = uuid()),
       columns,
       aggregations,
       range,
@@ -605,15 +605,18 @@ export class VuuDataSource
     return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
-  set title(title: string | undefined) {
+  set title(title: string) {
     this.#title = title;
     if (this.viewport && title) {
+      // This message doesn't actually trigger a message to Vuu server
+      // it will be used to recompute visual link labels
       this.server?.send({
         type: "setTitle",
         title,
         viewport: this.viewport,
       });
     }
+    this.emit("title-changed", this.viewport ?? "'", title);
   }
 
   get visualLink() {

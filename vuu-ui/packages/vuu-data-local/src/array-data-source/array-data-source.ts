@@ -148,7 +148,7 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
-
+    console.log(`ArrayDataSource #${viewport}`);
     if (!data || !columnDescriptors) {
       throw Error(
         "ArrayDataSource constructor called without data or without columnDescriptors",
@@ -700,8 +700,9 @@ export class ArrayDataSource
     return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
-  set title(title: string | undefined) {
+  set title(title: string) {
     this.#title = title;
+    this.emit("title-changed", this.viewport, title);
   }
 
   get _clientCallback() {
