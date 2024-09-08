@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
@@ -193,7 +194,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       }
     });
 
-  createDataSource = (tableName: T, viewport?: string) => {
+  createDataSource = (
+    tableName: T,
+    viewport?: string,
+    config?: DataSourceConfig,
+  ) => {
     const visualLinks =
       this.#visualLinks?.[tableName] === undefined
         ? undefined
@@ -206,6 +211,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     const sessionTable = this.#sessionTableMap[tableName];
 
     const dataSource: DataSource = new TickingArrayDataSource({
+      ...config,
       columnDescriptors,
       keyColumn:
         this.#schemas[tableName] === undefined

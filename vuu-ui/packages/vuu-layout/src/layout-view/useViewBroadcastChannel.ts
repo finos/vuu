@@ -34,7 +34,6 @@ export const useViewBroadcastChannel = (
     const broadcastChannel: VuuBroadcastChannel<ViewBroadcastMessage> =
       new BroadcastChannel("vuu");
     broadcastChannel.onmessage = (evt) => {
-      console.log(`message received by ${id}`);
       if (isMessageForSelf(evt.data, id, path)) {
         onMessageReceived?.(evt.data);
       }
@@ -47,9 +46,6 @@ export const useViewBroadcastChannel = (
   }, [id, onMessageReceived, path]);
 
   const sendMessage = useCallback((message: ViewBroadcastMessage) => {
-    console.log(`send message from ${id} to ${message.targetId}`, {
-      message,
-    });
     broadcastChannelRef.current?.postMessage(message);
   }, []);
 

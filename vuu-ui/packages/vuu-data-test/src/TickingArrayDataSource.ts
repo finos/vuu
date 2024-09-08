@@ -56,6 +56,7 @@ type LinkSubscription = {
 
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
+  #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
   #sessionTables: SessionTableMap | undefined;
@@ -70,6 +71,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     sessionTables,
     table,
     menu,
+    visualLink,
     visualLinks,
     visualLinkService,
     ...arrayDataSourceProps
@@ -82,12 +84,15 @@ export class TickingArrayDataSource extends ArrayDataSource {
       data: data ?? table?.data ?? [],
     });
     this._menu = menu;
+
     this.#menuRpcServices = menuRpcServices;
-    this.#sessionTables = sessionTables;
+    this.#pendingVisualLink = visualLink;
     this.#rpcServices = rpcServices;
+    this.#sessionTables = sessionTables;
     this.#table = table;
-    this.links = visualLinks;
     this.#visualLinkService = visualLinkService;
+
+    this.links = visualLinks;
 
     if (table) {
       this.tableSchema = table.schema;
@@ -101,6 +106,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
     // if (subscribeProps.range) {
     //   this.#updateGenerator?.setRange(subscribeProps.range);
     // }
+    if (this.#pendingVisualLink) {
+      this.visualLink = this.#pendingVisualLink;
+      this.#pendingVisualLink = undefined;
+    }
+
     return subscription;
   }
 

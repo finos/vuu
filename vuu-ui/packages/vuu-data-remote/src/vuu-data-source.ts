@@ -75,6 +75,7 @@ export class VuuDataSource
   #config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
     vanillaConfig;
   #groupBy: VuuGroupBy = [];
+  #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
@@ -117,8 +118,8 @@ export class VuuDataSource
       filterSpec: filterSpec || this.#config.filterSpec,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
-      visualLink: visualLink || this.#config.visualLink,
     };
+    this.#pendingVisualLink = visualLink;
 
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
@@ -194,6 +195,10 @@ export class VuuDataSource
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
       this.clientCallback?.(message);
+      if (this.#pendingVisualLink) {
+        this.visualLink = this.#pendingVisualLink;
+        this.#pendingVisualLink = undefined;
+      }
       this.emit("subscribed", message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
