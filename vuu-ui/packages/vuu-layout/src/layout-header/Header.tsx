@@ -84,7 +84,7 @@ export const Header = ({
     originalValue = "",
     finalValue = "",
     allowDeactivation = true,
-    editCancelled = false
+    editCancelled = false,
   ) => {
     setEditing(false);
     if (editCancelled) {
@@ -113,7 +113,7 @@ export const Header = ({
         break;
       default:
         postTitleContributedItems.push(
-          cloneElement(contribution.content, { key: i })
+          cloneElement(contribution.content, { key: i }),
         );
     }
   });
@@ -130,8 +130,7 @@ export const Header = ({
         onExitEditMode={handleExitEditMode}
         onKeyDown={handleTitleKeyDown}
         ref={labelFieldRef}
-        tabIndex={0}
-      />
+      />,
     );
 
   allowRename &&
@@ -143,8 +142,9 @@ export const Header = ({
         key="edit-button"
         onClick={handleClickEdit}
         onMouseDown={handleButtonMouseDown}
+        tabIndex={0}
         variant="secondary"
-      />
+      />,
     );
 
   closeable &&
@@ -156,21 +156,21 @@ export const Header = ({
         onClick={handleClose}
         onMouseDown={handleButtonMouseDown}
         variant="secondary"
-      />
+      />,
     );
 
   postTitleContributedItems.length > 0 &&
     toolbarItems.push(
       <div data-align="end" key="contributions">
         {postTitleContributedItems}
-      </div>
+      </div>,
     );
 
   actionButtons.length > 0 &&
     toolbarItems.push(
       <div data-align="end" key="actions">
         {actionButtons}
-      </div>
+      </div>,
     );
 
   return (

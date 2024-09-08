@@ -23,7 +23,7 @@ export type ExitEditModeHandler = (
   originalLabel: string | undefined,
   editedLabel: string | undefined,
   allowDeactivation?: boolean,
-  editCancelled?: boolean
+  editCancelled?: boolean,
 ) => void;
 
 export interface EditAPI {
@@ -61,7 +61,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     value: valueProp,
     ...restProps
   }: EditableLabelProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ): ReactElement<EditableLabelProps> {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -91,7 +91,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     (value: boolean) => {
       _setEditing((editingRef.current = value));
     },
-    [_setEditing]
+    [_setEditing],
   );
 
   const initialValue = useRef(value);
@@ -115,7 +115,7 @@ export const EditableLabel = forwardRef(function EditableLabel(
     () => ({
       beginEdit,
     }),
-    [beginEdit]
+    [beginEdit],
   );
 
   const exitEditMode = useCallback(
@@ -130,14 +130,14 @@ export const EditableLabel = forwardRef(function EditableLabel(
           originalValue,
           originalValue,
           allowDeactivation,
-          cancelEdit
+          cancelEdit,
         );
       } else {
         initialValue.current = value;
         onExitEditMode?.(originalValue, value, allowDeactivation, cancelEdit);
       }
     },
-    [onExitEditMode, setEditing, setValue, value]
+    [onExitEditMode, setEditing, setValue, value],
   );
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -186,7 +186,6 @@ export const EditableLabel = forwardRef(function EditableLabel(
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           inputRef={inputRef}
-          style={{ padding: 0 }}
           textAlign="left"
           variant="secondary"
         />

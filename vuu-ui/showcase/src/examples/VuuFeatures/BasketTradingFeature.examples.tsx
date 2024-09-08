@@ -8,7 +8,7 @@ import {
 } from "@finos/vuu-utils";
 import { useCallback, useEffect } from "react";
 import { BasketTradingFeatureProps } from "sample-apps/feature-basket-trading";
-import { BasketTradingFeature } from "../../features/BasketTrading.feature";
+import BasketTradingFeature from "../../features/BasketTrading.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
 registerComponent("BasketTradingFeature", BasketTradingFeature, "view");

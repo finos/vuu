@@ -3,6 +3,7 @@ import {
   ArrayDataSourceConstructorProps,
 } from "@finos/vuu-data-local";
 import type {
+  DataSourceVisualLinkCreatedMessage,
   SelectionItem,
   SubscribeCallback,
   SubscribeProps,
@@ -19,8 +20,6 @@ import type {
   VuuRpcRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
-  VuuCreateVisualLinkResponse,
-  VuuRemoveVisualLinkResponse,
 } from "@finos/vuu-protocol-types";
 import {
   isViewportRpcRequest,
@@ -35,7 +34,7 @@ const { KEY } = metadataKeys;
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
-) => Promise<VuuCreateVisualLinkResponse | VuuRemoveVisualLinkResponse>;
+) => Promise<DataSourceVisualLinkCreatedMessage | void>;
 
 export interface TickingArrayDataSourceConstructorProps
   extends Omit<ArrayDataSourceConstructorProps, "data"> {
@@ -49,31 +48,6 @@ export interface TickingArrayDataSourceConstructorProps
   visualLinkService?: VisualLinkHandler;
 }
 
-// type DataSourceBroadcastSubscribeMessage = {
-//   type: "subscribe-link-filter" | "subscribe-link-select" | "unsubscribe";
-//   targetId: string;
-//   targetColumn: string;
-//   sourceId: string;
-//   sourceColumn?: string;
-// };
-
-// type DataSourceBroadcastSelectionMessage = {
-//   sourceColumnName?: string;
-//   columnName: string;
-//   linkType: "subscribe-link-filter" | "subscribe-link-select";
-//   targetId: string;
-//   type: "selection-changed";
-//   selectedValues: string[];
-//   sourceId: string;
-// };
-
-// type DataSourceBroadcastMessage =
-//   | DataSourceBroadcastSubscribeMessage
-//   | DataSourceBroadcastSelectionMessage;
-
-// const isMessageForSelf = (message: DataSourceBroadcastMessage, id: string) =>
-//   message.targetId === id;
-
 type LinkSubscription = {
   sourceColumnName?: string;
   columnName: string;
@@ -82,12 +56,11 @@ type LinkSubscription = {
 
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
+  #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
   #sessionTables: SessionTableMap | undefined;
   #table?: Table;
-  // #broadcastChannel: VuuBroadcastChannel<DataSourceBroadcastMessage> =
-  // new BroadcastChannel("vuu-datasource");
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
 
@@ -98,6 +71,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     sessionTables,
     table,
     menu,
+    visualLink,
     visualLinks,
     visualLinkService,
     ...arrayDataSourceProps
@@ -110,24 +84,21 @@ export class TickingArrayDataSource extends ArrayDataSource {
       data: data ?? table?.data ?? [],
     });
     this._menu = menu;
+
     this.#menuRpcServices = menuRpcServices;
-    this.#sessionTables = sessionTables;
+    this.#pendingVisualLink = visualLink;
     this.#rpcServices = rpcServices;
+    this.#sessionTables = sessionTables;
     this.#table = table;
-    this.links = visualLinks;
     this.#visualLinkService = visualLinkService;
+
+    this.links = visualLinks;
 
     if (table) {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
       table.on("update", this.updateRow);
     }
-
-    // this.#broadcastChannel.onmessage = (evt) => {
-    //   if (isMessageForSelf(evt.data, this.viewport)) {
-    //     this.receiveBroadcastMessage(evt.data);
-    //   }
-    // };
   }
 
   async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
@@ -135,6 +106,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
     // if (subscribeProps.range) {
     //   this.#updateGenerator?.setRange(subscribeProps.range);
     // }
+    if (this.#pendingVisualLink) {
+      this.visualLink = this.#pendingVisualLink;
+      this.#pendingVisualLink = undefined;
+    }
+
     return subscription;
   }
 
@@ -150,59 +126,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
   get range() {
     return super.range;
   }
-
-  // private pickUniqueSelectedValues(column: string) {
-  //   const map = this.columnMap;
-  //   const set = new Set();
-  //   const colIndex = map[column];
-  //   for (const row of this.getSelectedRows()) {
-  //     set.add(row[colIndex]);
-  //   }
-  //   return Array.from(set) as string[];
-  // }
-
-  // select(selected: Selection) {
-  //   super.select(selected);
-  // const numberOfSelectionSubscribers =
-  // this.#selectionLinkSubscribers?.size ?? 0;
-  // if (numberOfSelectionSubscribers > 0) {
-  // this.#selectionLinkSubscribers?.forEach(
-  //   ({ sourceColumnName, columnName, linkType }, targetId) => {
-  //     this.sendBroadcastMessage({
-  //       sourceColumnName,
-  //       columnName,
-  //       linkType,
-  //       sourceId: this.viewport,
-  //       targetId,
-  //       type: "selection-changed",
-  //       selectedValues: this.pickUniqueSelectedValues(columnName),
-  //     });
-  //   },
-  // );
-  // }
-  // }
-
-  // private getSelectedRows() {
-  //   return this.selectedRows.reduce<DataSourceRow[]>(
-  //     (rows: DataSourceRow[], selected: SelectionItem) => {
-  //       if (Array.isArray(selected)) {
-  //         for (let i = selected[0]; i <= selected[1]; i++) {
-  //           const row = this.data[i];
-  //           if (row) {
-  //             rows.push(row);
-  //           }
-  //         }
-  //       } else {
-  //         const row = this.data[selected];
-  //         if (row) {
-  //           rows.push(row);
-  //         }
-  //       }
-  //       return rows;
-  //     },
-  //     [],
-  //   );
-  // }
 
   private getSelectedRowIds() {
     return this.selectedRows.reduce<string[]>(
@@ -298,59 +221,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   }
 
-  // sendBroadcastMessage(message: DataSourceBroadcastMessage) {
-  //   this.#broadcastChannel.postMessage(message);
-  // }
-
-  // protected receiveBroadcastMessage = (message: DataSourceBroadcastMessage) => {
-  //   switch (message.type) {
-  //     case "subscribe-link-filter":
-  //     case "subscribe-link-select":
-  //       {
-  //         const subscribers =
-  //           this.#selectionLinkSubscribers ||
-  //           (this.#selectionLinkSubscribers = new Map<
-  //             string,
-  //             LinkSubscription
-  //           >());
-  //         subscribers.set(message.sourceId, {
-  //           sourceColumnName: message.sourceColumn,
-  //           columnName: message.targetColumn,
-  //           linkType: message.type,
-  //         });
-  //       }
-  //       break;
-
-  //     case "selection-changed":
-  //       {
-  //         const { sourceColumnName, columnName, linkType, selectedValues } =
-  //           message;
-  //         const selectedIndices = [];
-  //         const colIndex = this.columnMap[columnName];
-  //         if (linkType === "subscribe-link-select") {
-  //           for (const value of selectedValues) {
-  //             const index = this.data.findIndex(
-  //               (row) => row[colIndex] === value,
-  //             );
-  //             selectedIndices.push(index);
-  //           }
-  //           this.select(selectedIndices);
-  //         } else {
-  //           this.filter = {
-  //             filter: `${sourceColumnName} in ["${selectedValues.join(
-  //               '","',
-  //             )}"]`,
-  //           };
-  //         }
-  //       }
-
-  //       break;
-  //     default:
-  //       console.log(`unrecognised message ${message.type}`);
-  //   }
-  // };
+  get visualLink() {
+    return this.config.visualLink;
+  }
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
+    this._config = {
+      ...this._config,
+      visualLink,
+    };
+
     if (visualLink) {
       const {
         parentClientVpId,
@@ -366,8 +246,20 @@ export class TickingArrayDataSource extends ArrayDataSource {
           parentColumnName: toColumn,
         }).then((response) => {
           console.log({ response });
+          this.emit(
+            "visual-link-created",
+            response as DataSourceVisualLinkCreatedMessage,
+          );
         });
       }
+    } else {
+      this.#visualLinkService?.({
+        childVpId: this.viewport,
+        type: "REMOVE_VISUAL_LINK",
+      }).then((response) => {
+        console.log({ response });
+        this.emit("visual-link-removed");
+      });
     }
   }
 }

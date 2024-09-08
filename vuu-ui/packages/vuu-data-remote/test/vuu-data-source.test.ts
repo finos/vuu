@@ -35,7 +35,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table"
+          "RemoteDataSource was created without table",
         );
       }
       try {
@@ -45,7 +45,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table"
+          "RemoteDataSource was created without table",
         );
       }
       try {
@@ -58,7 +58,7 @@ describe("RemoteDataSource", () => {
         throw Error("RemoteDataSource was created without table");
       } catch (err) {
         expect(err.message).toEqual(
-          "RemoteDataSource constructor called without table"
+          "RemoteDataSource constructor called without table",
         );
       }
     });
@@ -100,7 +100,7 @@ describe("RemoteDataSource", () => {
             resolve({
               subscribe: serverSubscribe,
             });
-          })
+          }),
       );
       const dataSource = new VuuDataSource({ table });
       await dataSource.subscribe({}, callback);
@@ -114,7 +114,7 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -124,7 +124,7 @@ describe("RemoteDataSource", () => {
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => resolvedPromise
+        () => resolvedPromise,
       );
       const dataSource = new VuuDataSource({ table });
 
@@ -139,7 +139,7 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -167,7 +167,7 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -193,7 +193,7 @@ describe("RemoteDataSource", () => {
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => resolvedPromise
+        () => resolvedPromise,
       );
       const dataSource = new VuuDataSource({
         aggregations,
@@ -222,9 +222,8 @@ describe("RemoteDataSource", () => {
             table: "instruments",
           },
           viewport: "uuid-1",
-          visualLink,
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
     it("uses options passed with subscription, in preference to objects passed at creation", async () => {
@@ -245,7 +244,7 @@ describe("RemoteDataSource", () => {
 
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => resolvedPromise
+        () => resolvedPromise,
       );
       const dataSource = new VuuDataSource({
         aggregations,
@@ -266,7 +265,7 @@ describe("RemoteDataSource", () => {
           sort: sort2,
           viewport: "test-2",
         },
-        callback
+        callback,
       );
 
       expect(serverSubscribe).toHaveBeenCalledWith(
@@ -285,7 +284,7 @@ describe("RemoteDataSource", () => {
           viewport: "test-2",
           visualLink: undefined,
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -309,7 +308,7 @@ describe("RemoteDataSource", () => {
 
       await dataSource.subscribe(
         { range: { from: 0, to: 20 }, groupBy: ["test1"] },
-        callback
+        callback,
       );
 
       expect(serverSubscribe).toHaveBeenCalledWith(
@@ -323,7 +322,7 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -334,7 +333,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -352,7 +351,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -371,7 +370,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -389,7 +388,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -420,7 +419,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -447,7 +446,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -493,7 +492,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -528,7 +527,7 @@ describe("RemoteDataSource", () => {
       const serverSend = vi.fn();
       vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
         // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
+        () => Promise.resolve({ send: serverSend, subscribe: callback }),
       );
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);

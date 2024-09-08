@@ -75,6 +75,7 @@ export class VuuDataSource
   #config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
     vanillaConfig;
   #groupBy: VuuGroupBy = [];
+  #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
@@ -108,7 +109,7 @@ export class VuuDataSource
 
     this.bufferSize = bufferSize;
     this.table = table;
-    this.viewport = viewport;
+    this.viewport = viewport ?? "";
 
     this.#config = {
       ...this.#config,
@@ -117,8 +118,8 @@ export class VuuDataSource
       filterSpec: filterSpec || this.#config.filterSpec,
       groupBy: groupBy || this.#config.groupBy,
       sort: sort || this.#config.sort,
-      visualLink: visualLink || this.#config.visualLink,
     };
+    this.#pendingVisualLink = visualLink;
 
     this.#title = title;
     this.rangeRequest = this.throttleRangeRequest;
@@ -126,7 +127,7 @@ export class VuuDataSource
 
   async subscribe(
     {
-      viewport = this.viewport ?? (this.viewport = uuid()),
+      viewport = this.viewport || (this.viewport = uuid()),
       columns,
       aggregations,
       range,
@@ -194,6 +195,10 @@ export class VuuDataSource
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
       this.clientCallback?.(message);
+      if (this.#pendingVisualLink) {
+        this.visualLink = this.#pendingVisualLink;
+        this.#pendingVisualLink = undefined;
+      }
       this.emit("subscribed", message);
     } else if (message.type === "disabled") {
       this.#status = "disabled";
@@ -605,15 +610,18 @@ export class VuuDataSource
     return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
-  set title(title: string | undefined) {
+  set title(title: string) {
     this.#title = title;
     if (this.viewport && title) {
+      // This message doesn't actually trigger a message to Vuu server
+      // it will be used to recompute visual link labels
       this.server?.send({
         type: "setTitle",
         title,
         viewport: this.viewport,
       });
     }
+    this.emit("title-changed", this.viewport ?? "'", title);
   }
 
   get visualLink() {

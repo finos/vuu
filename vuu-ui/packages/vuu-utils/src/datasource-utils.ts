@@ -163,9 +163,17 @@ const isSortChanged: DataConfigPredicate = (config, newConfig) => {
   );
 };
 
-const isVisualLinkChanged: DataConfigPredicate = () => {
-  // TODO
-  return false;
+const isVisualLinkChanged: DataConfigPredicate = (
+  { visualLink: v1 },
+  { visualLink: v2 },
+) => {
+  if (exactlyTheSame(v1, v2)) {
+    return false;
+  }
+  if (v1 === undefined || v2 === undefined) {
+    return true;
+  }
+  return v1.label !== v2.label || v2.parentVpId !== v2.parentVpId;
 };
 
 export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {

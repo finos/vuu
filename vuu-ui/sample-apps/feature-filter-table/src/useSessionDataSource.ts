@@ -1,10 +1,9 @@
-import { VuuDataSource } from "@finos/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
   TableSchema,
 } from "@finos/vuu-data-types";
-import { isConfigChanged, resetRange } from "@finos/vuu-utils";
+import { isConfigChanged, resetRange, useDataSource } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo } from "react";
 
@@ -22,6 +21,9 @@ export const useSessionDataSource = ({
   tableSchema: TableSchema;
 }) => {
   const { id, load, save, loadSession, saveSession, title } = useViewContext();
+  const { VuuDataSource } = useDataSource();
+
+  console.log(`useSessionDataSource #${id}`);
 
   const { "datasource-config": dataSourceConfigFromState } =
     useMemo<SessionDataSourceConfig>(() => load?.() ?? NO_CONFIG, [load]);
@@ -32,25 +34,19 @@ export const useSessionDataSource = ({
       if (confirmed === undefined) {
         const { noChanges } = isConfigChanged(
           dataSourceConfigFromState,
-          config
+          config,
         );
         if (noChanges === false) {
           save?.(config, "datasource-config");
         }
       }
     },
-    [dataSourceConfigFromState, save]
+    [dataSourceConfigFromState, save],
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.(dataSourceSessionKey) as VuuDataSource;
+    let ds = loadSession?.(dataSourceSessionKey) as DataSource;
     if (ds) {
-      // Only required when injecting a dataSource into session
-      // state in Showcase examples
-      if (!ds.hasListener("config", handleDataSourceConfigChange)) {
-        ds.on("config", handleDataSourceConfigChange);
-      }
-
       if (dataSourceConfigFromState) {
         // this won't do anything if dataSource config already matches this
         // This is only really used when injecting a dataSource into session
@@ -82,6 +78,7 @@ export const useSessionDataSource = ({
     saveSession?.(ds, "data-source");
     return ds;
   }, [
+    VuuDataSource,
     dataSourceConfigFromState,
     dataSourceSessionKey,
     handleDataSourceConfigChange,
