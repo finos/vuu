@@ -49,12 +49,11 @@
 }
 
 .vuu-workspace-tabs > .vuuTabstrip {
-  left: -1px;
+  left: 0px;
   padding-bottom: 7px;
   position: absolute !important;
-  right: 1px;
+  right: 0px;
   top: 0;
-  width: calc(100% + 2px) !important;
 }
 
 .vuuShell-content {
