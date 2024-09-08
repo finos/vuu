@@ -83,8 +83,10 @@
 }
 
 .vuuTab .vuuTab-text {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
   height: 100%;
+  line-height: var(--tab-height);
   position: relative;
   overflow: hidden;
   text-align: var(--salt-text-textAlign-embedded);

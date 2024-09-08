@@ -8,19 +8,17 @@
   --vuuWorkspace-background: var(--salt-color-gray-400);
 }
 
-/* --vuu-workspace-background: var(--vuu-color-gray-25);
-  .vuuShell {
-    background-color: var(--vuu-color-gray-25);
-  }
-  /* .vuu-workspace-tabs {
-    background-color: var(--vuu-workspace-background);
-  } */
-
-/* --vuu-workspace-background: brown;
-  .vuuShell {
-    background-color: var(--salt-container-primary-background);
-  }
-
+.salt-theme.vuu-theme {
   .vuu-workspace-tabs {
-    background-color: var(--vuu-workspace-background);
-  } */
+    border: none;
+    border-radius: 0 0 6px 6px;
+    padding: 35px 0 0 0;
+
+    & > .vuuTabs-tabPanel {
+      border: solid 1px var(--salt-separable-primary-borderColor);
+      border-top: none !important;
+      border-radius: 0 0 6px 6px;
+      padding: 0 8px 8px 8px;
+    }
+  }
+}
