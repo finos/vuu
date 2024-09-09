@@ -10,7 +10,7 @@ import org.finos.toolbox.time.TimeIt.{timeIt, timeItThen}
 import org.finos.toolbox.time.{Clock, TimeIt}
 import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
-import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.{Filter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -431,7 +431,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           AntlrBasedFilter(clause)
         case Failure(err) =>
           logger.error(s"could not parse filter ${filterSpec.filter}", err)
-          NoFilter
+          FilterOutEverythingFilter
       }
     }
   }
