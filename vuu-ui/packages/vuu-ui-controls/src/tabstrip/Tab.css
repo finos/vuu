@@ -83,7 +83,10 @@
 }
 
 .vuuTab .vuuTab-text {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  height: 100%;
+  line-height: var(--tab-height);
   position: relative;
   overflow: hidden;
   text-align: var(--salt-text-textAlign-embedded);
@@ -100,20 +103,6 @@
   display: block;
   visibility: hidden;
   font-weight: var(--salt-navigable-fontWeight-active);
-}
-
-/* FIXME: these are all focusVisible styles, but with a bespoke inset */
-.vuuTab-editing:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  outline-color: var(--salt-focused-outlineColor);
-  outline-style: var(--salt-focused-outlineStyle);
-  outline-width: var(--salt-focused-outlineWidth);
-  outline-offset: -2px;
 }
 
 .vuuTab.vuuFocusVisible {

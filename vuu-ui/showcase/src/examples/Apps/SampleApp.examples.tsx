@@ -4,11 +4,11 @@ import {
   LeftNav,
   SettingsSchema,
   Shell,
-  SidePanelProps
+  SidePanelProps,
 } from "@finos/vuu-shell";
 import {
   ColumnSettingsPanel,
-  TableSettingsPanel
+  TableSettingsPanel,
 } from "@finos/vuu-table-extras";
 import { DragDropProvider } from "@finos/vuu-ui-controls";
 import {
@@ -16,7 +16,7 @@ import {
   DynamicFeatureProps,
   GetFeaturePaths,
   env,
-  registerComponent
+  registerComponent,
 } from "@finos/vuu-utils";
 import { CSSProperties, useMemo } from "react";
 import { sysLayouts } from "../_test-data/sysLayoutMetadata";
@@ -33,17 +33,17 @@ let displaySequence = 1;
 const getFeaturePath: GetFeaturePaths = ({
   env,
   fileName,
-  withCss = env === "production"
+  withCss = env === "production",
 }) => {
   if (env === "production") {
     const url = `/features/${fileName}.feature.js`;
     return {
       url,
-      css: withCss ? `/features/${fileName}.feature.css` : undefined
+      css: withCss ? `/features/${fileName}.feature.css` : undefined,
     };
   } else {
     return {
-      url: `/src/features/${fileName}.feature`
+      url: `/src/features/${fileName}.feature`,
     };
   }
 };
@@ -51,7 +51,7 @@ const getFeaturePath: GetFeaturePaths = ({
 const featurePaths: Record<string, DynamicFeatureProps> = {
   FilterTableFeature: getFeaturePath({ env, fileName: "FilterTable" }),
   InstrumentTiles: getFeaturePath({ env, fileName: "InstrumentTiles" }),
-  BasketTrading: getFeaturePath({ env, fileName: "BasketTrading" })
+  BasketTrading: getFeaturePath({ env, fileName: "BasketTrading" }),
 };
 
 const dynamicFeatures: DynamicFeatureDescriptor[] = [
@@ -60,9 +60,9 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
     name: "filter-table",
     ...featurePaths.FilterTableFeature,
     featureProps: {
-      schema: "*"
+      schema: "*",
     },
-    leftNavLocation: "vuu-tables"
+    leftNavLocation: "vuu-tables",
   },
   {
     title: "Instrument Price Tiles",
@@ -72,41 +72,41 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
       schemas: [
         {
           module: "SIMUL",
-          table: "instrumentPrices"
-        }
-      ]
+          table: "instrumentPrices",
+        },
+      ],
     },
-    leftNavLocation: "vuu-features"
+    leftNavLocation: "vuu-features",
   },
   {
     title: "Basket Trading",
     name: "basket-trading",
     ...featurePaths.BasketTrading,
     viewProps: {
-      header: false
+      header: false,
     },
     featureProps: {
       schemas: [
         {
           module: "BASKET",
-          table: "basket"
+          table: "basket",
         },
         {
           module: "BASKET",
-          table: "basketTrading"
+          table: "basketTrading",
         },
         {
           module: "BASKET",
-          table: "basketTradingConstituentJoin"
+          table: "basketTradingConstituentJoin",
         },
         {
           module: "BASKET",
-          table: "basketConstituent"
-        }
-      ]
+          table: "basketConstituent",
+        },
+      ],
     },
-    leftNavLocation: "vuu-features"
-  }
+    leftNavLocation: "vuu-features",
+  },
 ];
 
 const userSettingsSchema: SettingsSchema = {
@@ -116,9 +116,9 @@ const userSettingsSchema: SettingsSchema = {
       label: "Mode",
       values: ["light", "dark"],
       defaultValue: "light",
-      type: "string"
-    }
-  ]
+      type: "string",
+    },
+  ],
 };
 
 const SampleApp = () => {
@@ -126,18 +126,18 @@ const SampleApp = () => {
     () => ({
       "basket-instruments": {
         dropTargets: "basket-constituents",
-        payloadType: "key"
-      }
+        payloadType: "key",
+      },
     }),
-    []
+    [],
   );
 
   const SidePanelProps = useMemo<SidePanelProps>(
     () => ({
       children: <LeftNav />,
-      sizeOpen: 240
+      sizeOpen: 240,
     }),
-    []
+    [],
   );
 
   return (
@@ -150,14 +150,14 @@ const SampleApp = () => {
           <Shell
             shellLayoutProps={{
               SidePanelProps,
-              layoutTemplateId: "full-height"
+              layoutTemplateId: "full-height",
             }}
             loginUrl={window.location.toString()}
             user={user}
             style={
               {
                 "--vuuShell-height": "100vh",
-                "--vuuShell-width": "100vw"
+                "--vuuShell-width": "100vw",
               } as CSSProperties
             }
             userSettingsSchema={userSettingsSchema}
@@ -170,7 +170,11 @@ const SampleApp = () => {
 
 export const SampleAppDefaultFeatures = () => {
   document.cookie = `vuu-username=${user.username}`;
-  return <SampleApp />;
+  return (
+    <LocalDataSourceProvider modules={["BASKET", "SIMUL"]}>
+      <SampleApp />
+    </LocalDataSourceProvider>
+  );
 };
 
 SampleAppDefaultFeatures.displaySequence = displaySequence++;

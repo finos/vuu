@@ -2,7 +2,7 @@ import {
   VuuShellLocation,
   logger,
   usePlaceholderJSON,
-  type LayoutJSON
+  type LayoutJSON,
 } from "@finos/vuu-utils";
 import {
   useCallback,
@@ -12,7 +12,7 @@ import {
   useRef,
   useState,
   type MutableRefObject,
-  type ReactElement
+  type ReactElement,
 } from "react";
 import {
   LayoutActionType,
@@ -24,13 +24,13 @@ import {
   layoutToJSON,
   type LayoutChangeHandler,
   type LayoutChangeReason,
-  type LayoutReducerAction
+  type LayoutReducerAction,
 } from "../layout-reducer";
 import type { SaveAction } from "../layout-view";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,
-  LayoutProviderDispatch
+  LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
 
@@ -49,11 +49,11 @@ const shouldSave = (action: LayoutReducerAction) =>
     "remove",
     "set-title",
     "splitter-resize",
-    "switch-tab"
+    "switch-tab",
   ].includes(action.type);
 
 const getLayoutChangeReason = (
-  action: LayoutReducerAction | SaveAction
+  action: LayoutReducerAction | SaveAction,
 ): LayoutChangeReason => {
   switch (action.type) {
     case "switch-tab":
@@ -114,7 +114,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         onLayoutChange(serializedModel, layoutChangeReason);
       }
     },
-    [onLayoutChange]
+    [onLayoutChange],
   );
 
   const dispatchLayoutAction = useCallback(
@@ -128,7 +128,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         }
       }
     },
-    [forceRefresh, serializeState]
+    [forceRefresh, serializeState],
   );
 
   const addComponentToWorkspace = useCallback(
@@ -136,10 +136,10 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       dispatchLayoutAction({
         type: "add",
         path: `#${VuuShellLocation.Workspace}`,
-        component
+        component,
       });
     },
-    [dispatchLayoutAction]
+    [dispatchLayoutAction],
   );
 
   const switchWorkspace = useCallback(
@@ -147,10 +147,10 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       dispatchLayoutAction({
         type: "switch-tab",
         nextIdx: idx,
-        path: `#${VuuShellLocation.MultiWorkspaceContainer}`
+        path: `#${VuuShellLocation.MultiWorkspaceContainer}`,
       });
     },
-    [dispatchLayoutAction]
+    [dispatchLayoutAction],
   );
 
   const showComponentInContextPanel = useCallback(
@@ -161,11 +161,11 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         props: {
           expanded: true,
           content: component,
-          title
-        }
+          title,
+        },
       });
     },
-    [dispatchLayoutAction]
+    [dispatchLayoutAction],
   );
 
   const layoutActionDispatcher = useCallback<LayoutProviderDispatch>(
@@ -192,13 +192,13 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dispatchLayoutAction, serializeState]
+    [dispatchLayoutAction, serializeState],
   );
 
   const prepareToDragLayout = useLayoutDragDrop(
     state as MutableRefObject<ReactElement>,
     layoutActionDispatcher,
-    pathToDropTarget
+    pathToDropTarget,
   );
 
   useEffect(() => {
@@ -207,47 +207,47 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
       if (Array.isArray(workspaceJSON)) {
         const targetContainer = findTarget(
           state.current,
-          isMultiWorkspaceContainer
+          isMultiWorkspaceContainer,
         ) as ReactElement;
         if (targetContainer) {
           const target = getChildProp(targetContainer);
           const newLayouts = workspaceJSON.map((ws, i) =>
-            layoutFromJson(ws, `${targetContainer.props.path}.${i}`)
+            layoutFromJson(ws, `${targetContainer.props.path}.${i}`),
           );
           const action = target
             ? {
                 type: LayoutActionType.REPLACE,
                 target,
-                replacement: newLayouts
+                replacement: newLayouts,
               }
             : {
                 type: LayoutActionType.ADD,
                 path: targetContainer.props.path,
-                component: newLayouts
+                component: newLayouts,
               };
           dispatchLayoutAction(action, true);
         }
       } else {
         const targetContainer = findTarget(
           state.current,
-          isWorkspaceContainer
+          isWorkspaceContainer,
         ) as ReactElement;
         if (targetContainer) {
           const target = getChildProp(targetContainer);
           const newLayout = layoutFromJson(
             workspaceJSON,
-            `${targetContainer.props.path}.0`
+            `${targetContainer.props.path}.0`,
           );
           const action = target
             ? {
                 type: LayoutActionType.REPLACE,
                 target,
-                replacement: newLayout
+                replacement: newLayout,
               }
             : {
                 type: LayoutActionType.ADD,
                 path: targetContainer.props.path,
-                component: newLayout
+                component: newLayout,
               };
           dispatchLayoutAction(action, true);
         } else if (workspaceJSON.id === getProp(state.current, "id")) {
@@ -255,9 +255,13 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           const action = {
             type: LayoutActionType.REPLACE,
             target: state.current,
-            replacement: newLayout
+            replacement: newLayout,
           };
           dispatchLayoutAction(action, true);
+        } else {
+          throw Error(
+            `LayoutProvider unable to render new workspaceJson, no valid target container. Use a valid Shell Layout Template or include a container with the standard workspace id '${VuuShellLocation.Workspace}' `,
+          );
         }
       }
     }
@@ -278,7 +282,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
         dispatchLayoutProvider: layoutActionDispatcher,
         showComponentInContextPanel,
         switchWorkspace,
-        version: 0
+        version: 0,
       }}
     >
       {state.current}
@@ -295,12 +299,12 @@ export const useLayoutOperation = () => {
   const {
     addComponentToWorkspace,
     showComponentInContextPanel,
-    switchWorkspace
+    switchWorkspace,
   } = useContext(LayoutProviderContext);
   return {
     addComponentToWorkspace,
     showComponentInContextPanel,
-    switchWorkspace
+    switchWorkspace,
   };
 };
 
@@ -323,11 +327,11 @@ export const useLayoutCreateNewChild = () => {
                   ...props?.style,
                   flexGrow: 1,
                   flexShrink: 0,
-                  flexBasis: 0
-                }
-              }
+                  flexBasis: 0,
+                },
+              },
             },
-            "0"
+            "0",
           );
         }
         return layoutFromJson(
@@ -338,14 +342,14 @@ export const useLayoutCreateNewChild = () => {
               style: {
                 flexGrow: 1,
                 flexShrink: 0,
-                flexBasis: 0
-              }
-            }
+                flexBasis: 0,
+              },
+            },
           },
-          "0"
+          "0",
         );
       },
-    [layoutPlaceholderJSON]
+    [layoutPlaceholderJSON],
   );
 
   return createNewChild ?? defaultCreateNewChild;

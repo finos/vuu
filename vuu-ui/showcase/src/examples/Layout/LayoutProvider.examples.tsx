@@ -4,9 +4,19 @@ import {
   LayoutChangeHandler,
   LayoutProvider,
 } from "@finos/vuu-layout";
-import { LayoutJSON } from "@finos/vuu-utils";
+import {
+  LayoutJSON,
+  VuuShellLocation,
+  registerComponent,
+} from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useState } from "react";
+import VuuFilterTableFeature from "feature-vuu-filter-table";
+
+import { schemas } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
+
+registerComponent("FilterTable", VuuFilterTableFeature, "view");
 
 let displaySequence = 1;
 
@@ -39,6 +49,8 @@ export const StaticTemplateNoChrome = () => {
   const showYellowContent = () => setLayout(contentYellow);
   const showBlueContent = () => setLayout(contentBlue);
 
+  console.log(JSON.stringify(layout));
+
   return (
     <>
       <div
@@ -60,7 +72,7 @@ export const StaticTemplateNoChrome = () => {
       >
         <LayoutContainer
           dropTarget
-          id="layout-root"
+          id={VuuShellLocation.WorkspaceContainer}
           style={{
             inset: "60px 0 0 0",
             position: "absolute",
@@ -104,7 +116,6 @@ export const LeftRightChrome = () => {
         workspaceJSON={layout}
       >
         <LayoutContainer
-          id="layout-root"
           style={{
             inset: "60px 0 0 0",
             position: "absolute",
@@ -121,7 +132,7 @@ export const LeftRightChrome = () => {
             <div style={{ backgroundColor: "gray", width: 100 }} />
             <LayoutContainer
               className="the-goat"
-              dropTarget
+              id={VuuShellLocation.WorkspaceContainer}
               key="main-content"
               style={{ flex: 1 }}
             >
@@ -135,3 +146,204 @@ export const LeftRightChrome = () => {
   );
 };
 LeftRightChrome.displaySequence = displaySequence++;
+
+const LayoutProviderTemplate = ({
+  workspaceJSON,
+}: {
+  workspaceJSON: LayoutJSON;
+}) => (
+  <LayoutProvider workspaceJSON={workspaceJSON}>
+    <LayoutContainer
+      dropTarget
+      id={VuuShellLocation.WorkspaceContainer}
+      style={{
+        inset: 0,
+        position: "absolute",
+      }}
+    />
+  </LayoutProvider>
+);
+
+export const SimpleStaticLayoutJson = () => (
+  <LayoutProviderTemplate
+    workspaceJSON={{
+      type: "Flexbox",
+      props: {
+        style: { flexDirection: "column", height: "100%" },
+      },
+      children: [
+        { type: "div", props: { style: { background: "blue", flex: 1 } } },
+        { type: "div", props: { style: { background: "yellow", flex: 1 } } },
+      ],
+    }}
+  />
+);
+
+SimpleStaticLayoutJson.displaySequence = displaySequence++;
+
+export const SimpleStaticLayoutJsonWithViews = () => (
+  <LayoutProviderTemplate
+    workspaceJSON={{
+      type: "Flexbox",
+      props: {
+        style: { flexDirection: "column", height: "100%" },
+      },
+      children: [
+        {
+          type: "View",
+          props: {
+            header: TransformStreamDefaultController,
+            style: { flex: 1 },
+            title: "Blue Hawaii",
+          },
+          children: [
+            {
+              type: "div",
+              props: {
+                style: { background: "blue", margin: 4 },
+              },
+            },
+          ],
+        },
+        {
+          type: "View",
+          props: {
+            header: TransformStreamDefaultController,
+            style: { flex: 1 },
+            title: "Yellow Submarine",
+          },
+          children: [
+            {
+              type: "div",
+              props: { style: { background: "yellow", margin: 4 } },
+            },
+          ],
+        },
+      ],
+    }}
+  />
+);
+
+SimpleStaticLayoutJsonWithViews.displaySequence = displaySequence++;
+
+export const LayoutJsonWithPreloadedFeatures = () => (
+  <LocalDataSourceProvider modules={["BASKET"]}>
+    <LayoutProviderTemplate
+      workspaceJSON={{
+        type: "Flexbox",
+        props: {
+          style: { flexDirection: "column", height: "100%" },
+        },
+        children: [
+          {
+            type: "View",
+            props: {
+              header: TransformStreamDefaultController,
+              resizeable: true,
+              style: { flex: 1 },
+              title: "Basket",
+            },
+            children: [
+              {
+                type: "FilterTable",
+                props: {
+                  style: { margin: 4 },
+                  tableSchema: schemas.basket,
+                },
+              },
+            ],
+          },
+          {
+            type: "View",
+            props: {
+              header: TransformStreamDefaultController,
+              resizeable: true,
+              style: { flex: 1 },
+              title: "Basket Constituents",
+            },
+            children: [
+              {
+                type: "FilterTable",
+                props: {
+                  style: { margin: 4 },
+                  tableSchema: schemas.basketConstituent,
+                },
+              },
+            ],
+          },
+        ],
+      }}
+    />
+  </LocalDataSourceProvider>
+);
+
+LayoutJsonWithPreloadedFeatures.displaySequence = displaySequence++;
+
+export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
+  <LocalDataSourceProvider modules={["BASKET"]}>
+    <LayoutProviderTemplate
+      workspaceJSON={{
+        type: "Flexbox",
+        props: {
+          style: { flexDirection: "column", height: "100%" },
+        },
+        children: [
+          {
+            id: "view-basket",
+            type: "View",
+            props: {
+              header: TransformStreamDefaultController,
+              resizeable: true,
+              style: { flex: 1 },
+              title: "Basket",
+            },
+            children: [
+              {
+                type: "FilterTable",
+                props: {
+                  style: { margin: 4 },
+                  tableSchema: schemas.basket,
+                },
+              },
+            ],
+          },
+          {
+            id: "view-basket-constituent",
+            type: "View",
+            props: {
+              header: TransformStreamDefaultController,
+              resizeable: true,
+              style: { flex: 1 },
+              title: "Basket Constituents",
+            },
+            children: [
+              {
+                type: "FilterTable",
+                props: {
+                  style: { margin: 4 },
+                  tableSchema: schemas.basketConstituent,
+                },
+              },
+            ],
+            state: {
+              "datasource-config": {
+                visualLink: {
+                  label: "Basket",
+                  link: {
+                    fromColumn: "basketId",
+                    toColumn: "id",
+                    toTable: "basket",
+                  },
+                  parentClientVpId: "view-basket",
+                  parentVpId: "view-basket",
+                },
+              },
+            },
+          },
+        ],
+      }}
+    />
+  </LocalDataSourceProvider>
+);
+
+LayoutJsonWithPreloadedFeaturesVisualLinks.displaySequence = displaySequence++;

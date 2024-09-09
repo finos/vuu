@@ -12,7 +12,7 @@ export type BroadcastMessageHandler = (message: ViewBroadcastMessage) => void;
 const isMessageForSelf = (
   message: ViewBroadcastMessage,
   id?: string,
-  path?: string
+  path?: string,
 ) => {
   if (id && message.targetId === id) {
     return true;
@@ -25,7 +25,7 @@ const isMessageForSelf = (
 export const useViewBroadcastChannel = (
   id?: string,
   path?: string,
-  onMessageReceived?: BroadcastMessageHandler
+  onMessageReceived?: BroadcastMessageHandler,
 ) => {
   const broadcastChannelRef =
     useRef<VuuBroadcastChannel<ViewBroadcastMessage>>();

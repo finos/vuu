@@ -369,10 +369,10 @@ export class JsonDataSource
   }
 
   get title() {
-    return this.#title;
+    return this.#title ?? "";
   }
 
-  set title(title: string | undefined) {
+  set title(title: string) {
     this.#title = title;
   }
 
