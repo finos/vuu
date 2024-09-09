@@ -1,21 +1,20 @@
 package org.finos.vuu.wsapi.helpers
 
-import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.{VuuClientConnectionOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
+import org.finos.vuu.core._
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
+import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   implicit val timeProvider: Clock,
                   implicit val lifecycle: LifecycleContainer,
-                  implicit val tableDefContainer: TableDefContainer) extends StrictLogging {
+                  implicit val tableDefContainer: TableDefContainer){
 
 
   def startServerAndClient(): TestVuuClient = {
@@ -62,7 +61,6 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     //lifecycle registration is done in constructor of service classes, so sequence of create is important
     lifecycle.start()
 
-    logger.info(s"[TEST CLIENT] Starting vuu client at ${client.uri}")
     vuuClient
   }
 }

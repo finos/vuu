@@ -26,10 +26,12 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
 
     }
 
-    logger.info("Websocket should be up.")
+    logger.info(s"[WSClient] Websocket on ${ws.uri} should be up.")
   }
 
-  override def doStop(): Unit = {}
+  override def doStop(): Unit = {
+    logger.info(s"[WSClient] Websocket on ${ws.uri} stopping.")
+  }
 
   override def doInitialize(): Unit = {}
 

@@ -19,7 +19,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
       case Success(action) =>
-        logger.info("Processed VP RPC call" + msg)
+        logger.info("Processed VP RPC call " + msg)
         vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
         logger.info("Failed to process VP RPC call", e)
@@ -418,7 +418,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   private def handleViewPortRpcRequest(msg: RpcRequest, viewPortId: String, ctx: RequestContext) = {
     val response = Try(viewPortContainer.handleRpcRequest(viewPortId, msg.rpcName, msg.params)(ctx)) match {
       case Success(functionResult) =>
-        logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
+        logger.info(s"Processed Rpc Request ${ctx.requestId} " + msg)
         functionResult match {
           case RpcFunctionSuccess(data) =>
             RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction())
@@ -426,7 +426,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
             createErrorRpcResponse(msg, error)
         }
       case Failure(e) =>
-        logger.info(s"Failed to process VP RPC call ${ctx.requestId}", e)
+        logger.info(s"Failed to process Rpc Request ${ctx.requestId}", e)
         createErrorRpcResponse(msg, e.toString)
     }
     vsMsg(response)(ctx)
