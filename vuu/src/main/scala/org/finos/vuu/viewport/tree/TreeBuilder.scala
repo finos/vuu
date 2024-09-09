@@ -5,7 +5,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.auths.RowPermissionChecker
-import org.finos.vuu.core.filter.{FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.{FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.{AntlrBasedFilter, RowPermissionFilter, Sort, TwoStepCompoundFilter}
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -54,7 +54,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
             AntlrBasedFilter(clause)
           case Failure(err) =>
             logger.error(s"could not parse filter ${filter.filter}", err)
-            NoFilter
+            FilterOutEverythingFilter
         }
       }else{
         NoFilter

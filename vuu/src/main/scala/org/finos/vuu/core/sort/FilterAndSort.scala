@@ -149,15 +149,4 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
 
 }
 
-class NoFilterNoSort() extends FilterAndSort {
-
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
-    primaryKeys
-  }
-
-  override def filter: Filter = NoFilter
-
-  override def sort: Sort = NoSort
-}
-
 
