@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
-class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging{
+class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
 
   type SessionId = String
   type Token = String
