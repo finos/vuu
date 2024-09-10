@@ -10,6 +10,7 @@ import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
+import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   implicit val timeProvider: Clock,
@@ -23,15 +24,15 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     lifecycle.autoShutdownHook()
 
-    val rand = new scala.util.Random
-    val http = rand.between(10011, 10500)
-    val ws = rand.between(10011, 10500)
+    val minValue = 10011
+    val rand = new SecureRandom()
+    val http = rand.nextInt(500) + minValue
+    val ws = rand.nextInt(500) + minValue
 
     val module: ViewServerModule = moduleFactoryFunc()
 
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
-        .withWebRoot("vuu/src/main/resources/www")
         .withSslDisabled()
         .withDirectoryListings(true)
         .withPort(http),
@@ -61,6 +62,12 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     //lifecycle registration is done in constructor of service classes, so sequence of create is important
     lifecycle.start()
 
+    WaitForWebSocketConnectionToBeEstablished()
+
     vuuClient
+  }
+
+  private def WaitForWebSocketConnectionToBeEstablished(): Unit = {
+    Thread.sleep(200)
   }
 }
