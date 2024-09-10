@@ -10,8 +10,7 @@ import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
-
-import scala.util.Random
+import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   implicit val timeProvider: Clock,
@@ -25,9 +24,10 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     lifecycle.autoShutdownHook()
 
-    val rand = new Random
-    val http = rand.between(10011, 10500)
-    val ws = rand.between(10011, 10500)
+    val minValue = 10011
+    val rand = new SecureRandom()
+    val http = rand.nextInt(500) + minValue
+    val ws = rand.nextInt(500) + minValue
 
     val module: ViewServerModule = moduleFactoryFunc()
 
