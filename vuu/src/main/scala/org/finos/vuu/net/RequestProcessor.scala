@@ -52,7 +52,7 @@ class RequestProcessor(authenticator: Authenticator,
 
     val id = ClientSessionId(session, user)
 
-    logger.info(s"Creating Session for user ${user} $id ")
+    logger.debug(s"Creating Session for user ${user} $id ")
 
     val handler = createMessageHandler(channel, id)
 

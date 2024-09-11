@@ -23,7 +23,7 @@ object IgniteLocalConfig {
   def create(k8sEnvironment: Boolean = isK8s,
              clientMode: Boolean = true,
              persistenceEnabled: Boolean = false): IgniteLocalConfig = {
-    logger.info("K8s enabled : {}", k8sEnvironment)
+    logger.debug("K8s enabled : {}", k8sEnvironment)
     if (k8sEnvironment) {
       createConfig(k8sDiscovery(), clientMode, persistenceEnabled)
     } else {
@@ -44,7 +44,7 @@ object IgniteLocalConfig {
   }
 
   private def k8sDiscovery(): TcpDiscoverySpi = {
-    logger.info("Creating K8S config, Service : {}, NameSpace : {}", k8sServiceName, k8sServiceNamespace)
+    logger.debug("Creating K8S config, Service : {}, NameSpace : {}", k8sServiceName, k8sServiceNamespace)
     val k8sConnectionConfig = new KubernetesConnectionConfiguration()
     k8sConnectionConfig.setNamespace(k8sServiceNamespace)
     k8sConnectionConfig.setServiceName(k8sServiceName)
@@ -71,7 +71,7 @@ class IgniteLocalConfig(private val clientMode: Boolean,
                         private val tcpDiscoverySpi: TcpDiscoverySpi,
                         private val metricConfig: MetricConfig = MetricConfig.defaultMetricsConfig()) {
   def igniteConfiguration(): IgniteConfiguration = {
-    logger.info(s"Ignite Client mode = $clientMode, Persistence Enabled = $persistenceEnabled, TcpDiscovery = $tcpDiscoverySpi")
+    logger.debug(s"Ignite Client mode = $clientMode, Persistence Enabled = $persistenceEnabled, TcpDiscovery = $tcpDiscoverySpi")
     val cfg = new IgniteConfiguration()
 
     cfg.setGridLogger(new Slf4jLogger())

@@ -582,7 +582,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
 
       if (fk == null) {
-        logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
+        logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
       }
       else {
         table.pullRow(fk, sourceColumns) match {

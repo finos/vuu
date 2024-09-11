@@ -8,6 +8,7 @@ import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 import scala.util.{Failure, Success, Try}
+
 trait ViewServerClient extends LifecycleEnabled {
   def send(msg: ViewServerMessage): Unit
 
@@ -26,11 +27,11 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
 
     }
 
-    logger.info(s"[WSClient] Websocket on ${ws.uri} should be up.")
+    logger.debug(s"[WSClient] Websocket on ${ws.uri} should be up.")
   }
 
   override def doStop(): Unit = {
-    logger.info(s"[WSClient] Websocket on ${ws.uri} stopping.")
+    logger.debug(s"[WSClient] Websocket on ${ws.uri} stopping.")
   }
 
   override def doInitialize(): Unit = {}
@@ -42,17 +43,19 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
   override def send(msg: ViewServerMessage): Unit = {
     val json = serializer.serialize(msg)
     ws.write(json)
-    logger.info(s"[Sent] $json")
+    logger.whenTraceEnabled(
+      logger.trace(s"[Sent] $json")
+    )
   }
 
   override def awaitMsg: ViewServerMessage = {
     val msg = ws.awaitMessage()
     if (msg == null) {
-      logger.info("No messages received")
+      logger.trace("No messages received")
       null
     }
     else {
-      logger.info(s"[Received] $msg")
+      logger.trace(s"[Received] $msg")
       Try(serializer.deserialize(msg)) match {
         case Success(vsMsg) =>
           vsMsg

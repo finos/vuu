@@ -70,7 +70,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
     val (counter, buffer) = mapToString(results)
 
-    logger.info(s"Loaded Distinct Ignite ChildOrder column $columnName for $counter rows")
+    logger.debug(s"Loaded Distinct Ignite ChildOrder column $columnName for $counter rows")
 
     buffer
   }
@@ -78,12 +78,12 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
   def getDistinct(columnName: String, startsWith: String, rowCount: Int): Iterable[String] = {
     val query = new SqlFieldsQuery(s"select distinct $columnName from ChildOrder where $columnName LIKE \'$startsWith%\' limit ?")
     query.setArgs(rowCount)
-    logger.info(query.getSql)
+    logger.debug(query.getSql)
     val results = childOrderCache.query(query)
 
     val (counter, buffer) = mapToString(results)
 
-    logger.info(s"Loaded Distinct Ignite ChildOrder column $columnName that starts with $startsWith for $counter rows")
+    logger.debug(s"Loaded Distinct Ignite ChildOrder column $columnName that starts with $startsWith for $counter rows")
 
     buffer
 
@@ -98,7 +98,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     val countValue = cursor.getAll.get(0).get(0)
     val totalCount = countValue.asInstanceOf[Long]
 
-    logger.info(s"Ignite returned total count of `$totalCount` for ChildOrder with filter `$filterSql`")
+    logger.debug(s"Ignite returned total count of `$totalCount` for ChildOrder with filter `$filterSql`")
     totalCount
   }
 
@@ -113,7 +113,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
       .appendQuery(limitAndOffsetClause, QuerySeparator.SPACE)
 
     val results = childOrderCache.query(query.buildFieldsQuery()).asScala.iterator.map(i => toChildOrder(i.asScala.toList))
-    logger.info(s"Loaded Ignite ChildOrder for $rowCount rows, from index : $startIndex with " +
+    logger.debug(s"Loaded Ignite ChildOrder for $rowCount rows, from index : $startIndex with " +
       s"WHERE CLAUSE: `$whereClause` | ORDER BY CLAUSE: `$orderByClause`")
 
     results
@@ -155,7 +155,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
 
   def childOrderCount(): Long = {
     val cacheSize = childOrderCache.sizeLong(CachePeekMode.ALL)
-    logger.info(s"Ignite Child order has cache size of $cacheSize")
+    logger.debug(s"Ignite Child order has cache size of $cacheSize")
     cacheSize
   }
 

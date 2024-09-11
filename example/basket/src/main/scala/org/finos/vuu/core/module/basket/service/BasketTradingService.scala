@@ -29,7 +29,7 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
   override def sendToMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
-    logger.info("Sending basket to market:" + basketInstanceId + " (row:" + tableRow + ")")
+    logger.debug("Sending basket to market:" + basketInstanceId + " (row:" + tableRow + ")")
 
     val constituents = getConstituents(basketInstanceId)
 
@@ -43,7 +43,7 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
 
       val nos = NewOrder(side, symbol, quantity, price, instanceIdRic)
 
-      logger.info(s"Sending constituent to market $nos")
+      logger.debug(s"Sending constituent to market $nos")
 
       omsApi.createOrder(nos)
     })
@@ -59,7 +59,7 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
   override def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
-    logger.info("Tasking basket off market:" + basketInstanceId + " (row:" + tableRow + ")")
+    logger.debug("Tasking basket off market:" + basketInstanceId + " (row:" + tableRow + ")")
 
     updateBasketTradeStatus(basketInstanceId, BasketStates.OFF_MARKET)
 
@@ -86,14 +86,14 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    logger.info("Change requested for cell value for key:" + key + "(" + columnName + ":" + data + ")")
+    logger.debug("Change requested for cell value for key:" + key + "(" + columnName + ":" + data + ")")
 
     val currentData = getRowData(key, columnName)
     if (currentData == data) {
-      logger.info("Current cell value is same and therefore skipping update for key:" + key + "(" + columnName + ":" + data + ")")
+      logger.debug("Current cell value is same and therefore skipping update for key:" + key + "(" + columnName + ":" + data + ")")
     }
     else {
-      logger.info("Changing cell value for key:" + key + "(" + columnName + ":" + data + ")")
+      logger.debug("Changing cell value for key:" + key + "(" + columnName + ":" + data + ")")
       table.processUpdate(key, RowWithData(key, Map(BT.InstanceId -> key, columnName -> data)), clock.now())
 
       columnName match {

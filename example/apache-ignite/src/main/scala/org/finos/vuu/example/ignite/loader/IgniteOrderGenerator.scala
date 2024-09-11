@@ -18,7 +18,7 @@ class IgniteOrderGenerator(orderStore: OrderStore) (implicit clock: Clock, lifec
 
   def save(): Unit = {
 
-    logger.info("[Ignite] Saving orders to ignite.")
+    logger.debug("[Ignite] Saving orders to ignite.")
     (0 until 4_000).foreach(i =>
       executor.execute { () =>
         val parent = ordersModel.createParent()

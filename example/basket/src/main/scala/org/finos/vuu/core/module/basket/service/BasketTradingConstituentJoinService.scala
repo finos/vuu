@@ -188,7 +188,7 @@ class BasketTradingConstituentJoinService(val table: DataTable, val tableContain
     updateJoinTable(updateRows.toArray) match {
       case Right(_) => NoAction()
       case Left(errorReason) =>
-        logger.info(s"Could not update selection values${errorReason.reason}")
+        logger.debug(s"Could not update selection values${errorReason.reason}")
         NoAction()
     }
   }

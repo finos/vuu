@@ -3,7 +3,7 @@ package org.finos.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{Column, DataType, TablePrimaryKeys, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
@@ -128,6 +128,11 @@ trait FilterAndSort {
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
   override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
+    if(primaryKeys == null || primaryKeys.length == 0) {
+      // nothing to filter or sort
+      return primaryKeys
+    }
+
     try {
       val realizedFilter = checkerOption match {
         case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
@@ -137,13 +142,13 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
 
       val sortedKeys = sort.doSort(source, filteredKeys, vpColumns)
-      logger.debug("sorted")
+      logger.trace("sorted")
       sortedKeys
     } catch {
       case e: Throwable =>
-        logger.error("went bad", e)
+        logger.error("Error during filtering and sorting", e)
         //debugData(source, primaryKeys)
-        primaryKeys
+        EmptyTablePrimaryKeys
     }
   }
 

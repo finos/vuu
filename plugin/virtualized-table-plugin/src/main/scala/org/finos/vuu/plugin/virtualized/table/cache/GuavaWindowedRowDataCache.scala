@@ -21,7 +21,7 @@ class GuavaWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) exten
       val count = removalCounter.incrementAndGet()
 
       if(logAtFrequency.shouldLog()){
-        logger.info(s"[ROWCACHE] Removing ${count} rowCache keys in last 10 seconds")
+        logger.debug(s"[ROWCACHE] Removing ${count} rowCache keys in last 10 seconds")
         removalCounter.set(0)
       }
 

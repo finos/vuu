@@ -50,7 +50,7 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
   def isOpen() = ch.isOpen
 
   override def doStart(): Unit = {
-    logger.info("Starting websocket server")
+    logger.debug("Starting websocket server")
     ch = b.bind(options.bindAddress, options.wsPort).sync().channel();
     while (!isOpen()) {}
     logger.info("Websocket server open and ready")

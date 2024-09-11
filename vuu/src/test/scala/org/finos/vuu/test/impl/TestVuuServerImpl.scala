@@ -63,17 +63,17 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   val queue = new OutboundRowPublishQueue()
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
-    logger.info(s"Creating joinTable ${joinDef.name}")
+    logger.debug(s"Creating joinTable ${joinDef.name}")
     tableContainer.createJoinTable(joinDef)
   }
 
   def createAutoSubscribeTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating autoSubTable ${tableDef.name}")
+    logger.debug(s"Creating autoSubTable ${tableDef.name}")
     tableContainer.createAutoSubscribeTable(tableDef)
   }
 
   def createTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating table ${tableDef.name}")
+    logger.debug(s"Creating table ${tableDef.name}")
     tableContainer.createTable(tableDef)
   }
 
@@ -105,7 +105,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
     moduleContainer.register(realized)
 
-    logger.info(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
+    logger.debug(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
 
     module.tableDefs.foreach {
 
@@ -128,7 +128,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
       case tableDef: TableDef if !tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createTable(tableDef)
-        logger.info(s"Loading provider for table ${table.name}...")
+        logger.debug(s"Loading provider for table ${table.name}...")
         val provider = new MockProvider(table)
         registerProvider(table, provider)
     }

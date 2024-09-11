@@ -16,7 +16,7 @@ class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: Lifecycle
   def getSubRequestCount = subscriptionRequestsCount
 
   override def subscribe(key: String): Unit = {
-    logger.info(s"[mockProvider.${table.getTableDef.name}] was asked to subscribe to $key")
+    logger.debug(s"[mockProvider.${table.getTableDef.name}] was asked to subscribe to $key")
     val count = subscriptionRequestsCount.getOrDefault(key, 0)
     subscriptionRequestsCount.put(key, count + 1)
   }
@@ -29,11 +29,11 @@ class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: Lifecycle
   }
 
   override def doStart(): Unit = {
-    logger.info("Mock Provider - Starting")
+    logger.debug("Mock Provider - Starting")
   }
 
   override def doStop(): Unit = {
-    logger.info("Mock Provider - Stopping")
+    logger.debug("Mock Provider - Stopping")
   }
 
   override def doInitialize(): Unit = {}

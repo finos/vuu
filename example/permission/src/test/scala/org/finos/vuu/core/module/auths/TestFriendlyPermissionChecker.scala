@@ -12,12 +12,12 @@ class TestFriendlyPermissionChecker(val viewPort: ViewPort) extends RowPermissio
 
   def addRole(mask: Int): Unit = {
     permissions = PermissionSet.addRole(permissions, mask)
-    logger.info(s"AUTHS: added mask $mask permissions $permissions")
+    logger.debug(s"AUTHS: added mask $mask permissions $permissions")
   }
 
   def removeRole(mask: Int): Unit = {
     permissions = PermissionSet.removeRole(permissions, mask)
-    logger.info(s"AUTHS: removed mask $mask permissions $permissions")
+    logger.debug(s"AUTHS: removed mask $mask permissions $permissions")
   }
 
   override def canSeeRow(row: RowData): Boolean = {

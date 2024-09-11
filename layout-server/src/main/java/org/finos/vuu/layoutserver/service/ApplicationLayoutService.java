@@ -26,7 +26,7 @@ public class ApplicationLayoutService {
 
     public ApplicationLayout getApplicationLayout(String username) {
         return repository.findById(username).orElseGet(() -> {
-            logger.info("No application layout for user, returning default");
+            logger.debug("No application layout for user, returning default");
             return defaultLoader.getDefaultLayout();
         });
     }

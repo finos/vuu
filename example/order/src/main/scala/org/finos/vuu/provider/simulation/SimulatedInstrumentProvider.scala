@@ -24,12 +24,12 @@ class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: Data
 
         val rowData = RowWithData(ric, rowAsMap)
 
-        logger.info(s"[INSTRUMENTS] Adding row $rowData")
+        logger.debug(s"[INSTRUMENTS] Adding row $rowData")
 
         table.processUpdate(ric, rowData, timeProvider.now())
 
       } else {
-        logger.info(s"dropped $row")
+        logger.debug(s"dropped $row")
       }
 
     })

@@ -34,7 +34,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
   }
 
   override def channelInactive(ctx: ChannelHandlerContext) {
-    logger.info("WebSocket Client disconnected!")
+    logger.trace("WebSocket Client disconnected!")
   }
 
 
@@ -42,7 +42,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     val ch: Channel = ctx.channel
     if (!handshaker.isHandshakeComplete) {
       handshaker.finishHandshake(ch, msg.asInstanceOf[FullHttpResponse])
-      logger.info("WebSocket Client connected!")
+      logger.trace("WebSocket Client connected!")
       handshakeFuture.setSuccess
       return
     }
@@ -53,14 +53,14 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     val frame: WebSocketFrame = msg.asInstanceOf[WebSocketFrame]
     if (frame.isInstanceOf[TextWebSocketFrame]) {
       val textFrame: TextWebSocketFrame = frame.asInstanceOf[TextWebSocketFrame]
-      logger.debug("[WS CLIENT] on msg " + textFrame.text())
+      logger.trace("[WS CLIENT] on msg " + textFrame.text())
       queue.add(textFrame.text())
     }
     else if (frame.isInstanceOf[PongWebSocketFrame]) {
-      System.out.println("WebSocket Client received pong")
+      logger.trace("WebSocket Client received pong")
     }
     else if (frame.isInstanceOf[CloseWebSocketFrame]) {
-      System.out.println("WebSocket Client received closing")
+      logger.trace("WebSocket Client received closing")
       ch.close
     }
   }
