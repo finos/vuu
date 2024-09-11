@@ -578,10 +578,29 @@ export interface VuuMenu {
 
 export declare type VuuRowDataItemType = string | number | boolean;
 
+export type VuuGroupDepth = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type VuuGroupExpanded = true | false;
+export type VuuGroupPath = string;
+export type VuuGroupLeaf = true | false;
+export type VuuGroupLabel = string;
+export type VuuGroupCount = number;
+
+export declare type VuuGroupDataRow = [
+  VuuGroupDepth,
+  VuuGroupExpanded,
+  VuuGroupPath,
+  VuuGroupLeaf,
+  VuuGroupLabel,
+  VuuGroupCount,
+  ...data: VuuRowDataItemType[],
+];
+
 export declare type VuuDataRow = VuuRowDataItemType[];
 
-export declare type VuuRow = {
-  data: VuuDataRow;
+export declare type VuuRow<
+  T extends VuuDataRow | VuuGroupDataRow = VuuDataRow | VuuGroupDataRow,
+> = {
+  data: T;
   rowIndex: number;
   rowKey: string;
   sel: 0 | 1;
