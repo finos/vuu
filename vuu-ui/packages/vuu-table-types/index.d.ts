@@ -31,13 +31,13 @@ export type TableHeadings = TableHeading[][];
 export type ValueFormatter = (value: unknown) => string;
 
 export type ClientSideValidationChecker = (
-  value?: VuuRowDataItemType
+  value?: VuuRowDataItemType,
 ) => string | false | undefined;
 
 export type DataCellEditHandler = (
   row: DataSourceRow,
   columnName: string,
-  value: VuuRowDataItemType
+  value: VuuRowDataItemType,
 ) => Promise<string | true>;
 
 export interface TableCellProps {
@@ -52,7 +52,7 @@ export interface TableCellProps {
 export type CommitResponse = Promise<true | string>;
 
 export type DataItemCommitHandler<
-  T extends VuuRowDataItemType = VuuRowDataItemType
+  T extends VuuRowDataItemType = VuuRowDataItemType,
 > = (value: T) => CommitResponse;
 
 export type TableRowSelectHandler = (row: DataSourceRowObject | null) => void;
@@ -63,14 +63,14 @@ export type TableRowSelectHandlerInternal = (row: DataSourceRow | null) => void;
  */
 export type TableRowClickHandler = (
   evt: MouseEvent<HTMLDivElement>,
-  row: DataSourceRowObject
+  row: DataSourceRowObject,
 ) => void;
 
 export type TableRowClickHandlerInternal = (
   evt: MouseEvent<HTMLDivElement>,
   row: DataSourceRow,
   rangeSelect: boolean,
-  keepExistingSelection: boolean
+  keepExistingSelection: boolean,
 ) => void;
 
 export interface TableCellRendererProps
@@ -216,7 +216,7 @@ export declare type ColumnTypeDescriptorCustomRenderer = {
 };
 
 export interface FormattingSettingsProps<
-  T extends ColumnDescriptor = ColumnDescriptor
+  T extends ColumnDescriptor = ColumnDescriptor,
 > {
   column: T;
   onChangeFormatting: (formatting: ColumnTypeFormatting) => void;
@@ -246,6 +246,8 @@ export type PinLocation = "left" | "right" | "floating";
 
 export type ColumnAlignment = "left" | "right";
 
+export type BulkEdit = "bulk" | false | "read-only";
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor {
@@ -255,6 +257,10 @@ export interface ColumnDescriptor {
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
   editable?: boolean;
+  /**
+   There are three values for editableBulk. When editableBulk is false, user will not see the column in BulkEditPanel. When editableBulk is "bulk", user will see the column in BulkEditPanel and be able to bulk-edit on BulkEditRow. When editableBulk is "read-only", user will see the column but won't be able to edit.
+  */
+  editableBulk?: BulkEdit;
   flex?: number;
   /**
    Optional additional level(s) of heading to display above label.
@@ -381,11 +387,11 @@ export interface TableSettingsProps {
 
 export type DefaultColumnConfiguration = <T extends string = string>(
   tableName: T,
-  columnName: string
+  columnName: string,
 ) => Partial<ColumnDescriptor> | undefined;
 
 export type DefaultTableConfiguration = (
-  vuuTable?: VuuTable
+  vuuTable?: VuuTable,
 ) => Partial<Omit<TableConfig, "columns">> | undefined;
 
 export type ResizePhase = "begin" | "resize" | "end";
@@ -393,7 +399,7 @@ export type ResizePhase = "begin" | "resize" | "end";
 export type TableColumnResizeHandler = (
   phase: ResizePhase,
   columnName: string,
-  width?: number
+  width?: number,
 ) => void;
 
 export interface BaseRowProps {

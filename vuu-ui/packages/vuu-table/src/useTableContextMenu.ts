@@ -17,7 +17,7 @@ export const useTableContextMenu = ({
   columns,
   data,
   dataSource,
-  getSelectedRows,
+  getSelectedRows
 }: TableContextMenuHookProps) => {
   const [showContextMenu] = usePopupContextMenu();
 
@@ -38,9 +38,10 @@ export const useTableContextMenu = ({
         showContextMenu(evt, "grid", {
           columnMap,
           columnName,
+          columns,
           row,
           selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
-          viewport: dataSource.viewport,
+          viewport: dataSource.viewport
         });
       }
     },

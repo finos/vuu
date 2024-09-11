@@ -21,6 +21,7 @@ import type {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import { BulkEditPanel } from "@finos/vuu-table";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   VuuServerMenuOptions,
   buildMenuDescriptorFromVuuMenu,
@@ -161,7 +162,7 @@ export const useVuuMenuActions = ({
   const showNotification = useNotifications();
 
   const showBulkEditDialog = useCallback(
-    (table: VuuTable) => {
+    (table: VuuTable, columns?: ColumnDescriptor[]) => {
       // NO send BULK_EDIT_BEGIN
       const sessionDs = new VuuDataSource({
         table,
@@ -174,7 +175,12 @@ export const useVuuMenuActions = ({
 
       if (sessionDs) {
         showDialog(
-          <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
+          <BulkEditPanel
+            columns={columns}
+            dataSource={sessionDs}
+            onSubmit={handleSubmit}
+            parentDs={dataSource}
+          />,
           "Bulk Amend",
           [
             <Button key="cancel" onClick={closeDialog}>
@@ -211,7 +217,11 @@ export const useVuuMenuActions = ({
 
       if (sessionDs) {
         showDialog(
-          <BulkEditPanel dataSource={sessionDs} onSubmit={handleSubmit} />,
+          <BulkEditPanel
+            dataSource={sessionDs}
+            onSubmit={handleSubmit}
+            parentDs={dataSource}
+          />,
           "Multi Row Edit",
           [
             <Button key="cancel" onClick={closeDialog}>
@@ -254,7 +264,7 @@ export const useVuuMenuActions = ({
                     header: title,
                   });
                 } else if (isOpenBulkEditResponse(rpcResponse)) {
-                  showBulkEditDialog(rpcResponse.action.table);
+                  showBulkEditDialog(rpcResponse.action.table, options.columns);
                 } else if (isSessionTableActionMessage(rpcResponse)) {
                   showSessionEditingForm(rpcResponse.action);
                 }
