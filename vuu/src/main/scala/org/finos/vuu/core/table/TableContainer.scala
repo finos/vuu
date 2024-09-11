@@ -153,7 +153,7 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
       .map(_.getValue.asInstanceOf[SessionTable])
       .toArray
 
-    logger.info(s"Removing ${sessionTables.length} session tables on disconnect of $session")
+    logger.debug(s"Removing ${sessionTables.length} session tables on disconnect of $session")
 
     sessionTables.foreach(sessTable => tables.remove(sessTable.name))
   }

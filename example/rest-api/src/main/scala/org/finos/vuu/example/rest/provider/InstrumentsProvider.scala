@@ -21,7 +21,7 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
   private val keyField = table.getTableDef.keyField
 
   override def doStart(): Unit = {
-    logger.info("Populating REST Instruments table...")
+    logger.debug("Populating REST Instruments table...")
     client.getInstruments(limit = INSTRUMENTS_COUNT) match {
       case Failure(ex) => logger.error("An unexpected error occurred when querying instrument service:", ex)
       case Success(instruments) => instruments.iterator

@@ -10,15 +10,15 @@ class TestProvider(table: DataTable, fakeDataSource: FakeDataSource)(implicit cl
   override def subscribe(key: String): Unit = {}
 
   override def doStart(): Unit = {
-    logger.info(s"Test Provider for ${table.name}- Starting")
+    logger.debug(s"Test Provider for ${table.name}- Starting")
   }
 
   override def doStop(): Unit = {
-    logger.info(s"Test Provider for ${table.name}- Stopping")
+    logger.debug(s"Test Provider for ${table.name}- Stopping")
   }
 
   override def doInitialize(): Unit = {
-    logger.info(s"Test Provider for ${table.name}- Initialising")
+    logger.debug(s"Test Provider for ${table.name}- Initialising")
     fakeDataSource.get()
       .foreach(row => {
         table.processUpdate(row._1, RowWithData(row._1, row._2), clock.now())

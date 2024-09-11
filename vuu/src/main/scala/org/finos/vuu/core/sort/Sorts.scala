@@ -137,7 +137,7 @@ case class GenericSort(spec: SortSpec, columns: List[Column])(implicit clock: Cl
       ImmutableArray.from(sortedArray)
     }
 
-    logger.info(s"[SORT]: DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
+    logger.debug(s"[SORT]: DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
 
     InMemTablePrimaryKeys(immutableArray)
   }

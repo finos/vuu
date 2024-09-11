@@ -224,7 +224,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
   override def addJoinTable(join: DataTable): Unit = {
 
-    logger.info("Adding joinDef for " + join.getTableDef.name)
+    logger.debug("Adding joinDef for " + join.getTableDef.name)
 
     val tableDef = join.getTableDef.asInstanceOf[JoinTableDef]
     joinDefs = joinDefs ++ List(JoinDefToJoinTable(tableDef, join))

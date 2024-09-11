@@ -28,19 +28,19 @@ class ProviderContainer(joinTableProvider: JoinTableProvider)(implicit lifecycle
   }
 
   override def doStart(): Unit = {
-    logger.info("[PROVIDERS] Starting....")
+    logger.debug("[PROVIDERS] Starting....")
   }
 
   override def doStop(): Unit = {
-    logger.info("[PROVIDERS] Stopping....")
+    logger.debug("[PROVIDERS] Stopping....")
   }
 
   override def doInitialize(): Unit = {
-    logger.info("[PROVIDERS] INITIALIZING....")
+    logger.debug("[PROVIDERS] INITIALIZING....")
   }
 
   override def doDestroy(): Unit = {
-    logger.info("[PROVIDERS] DESTROYING....")
+    logger.debug("[PROVIDERS] DESTROYING....")
   }
 
   override val lifecycleId: String = "providerContainer"

@@ -95,7 +95,7 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
 
     if (doEvery5Mins.shouldLog()) {
       val startOfOpen = timeProvider.now() + 5_000
-      logger.info("[PRICES] Moving into Closed Market...")
+      logger.debug("[PRICES] Moving into Closed Market...")
       entrySet.foreach(me => {
         closeMarket(me.getKey, startOfOpen)
       })

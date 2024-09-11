@@ -149,13 +149,13 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
     buildAction match {
       case FastBuildBranchesOfTree(table, oldTreeOption) =>
-        logger.info("[TREE] Fast Building Branches: " + table.name + "@" + table.sourceTable.name)
+        logger.trace("[TREE] Fast Building Branches: " + table.name + "@" + table.sourceTable.name)
         buildEntireTree(sortedKeys, onlyBranches = true, latestNodeState, updateCounter, paramsHashCode)
       case BuildEntireTree(table, oldTreeOption) =>
-        logger.info("[TREE] Building Entire Tree: " + table.name + "@" + table.sourceTable.name)
+        logger.trace("[TREE] Building Entire Tree: " + table.name + "@" + table.sourceTable.name)
         buildEntireTree(sortedKeys, onlyBranches = false, latestNodeState, updateCounter, paramsHashCode)
       case OnlyRecalculateTreeKeys(table, oldTreeOption) =>
-        logger.info("[TREE] Only recalcing keys: " + table.name + "@" + table.sourceTable.name)
+        logger.trace("[TREE] Only recalcing keys: " + table.name + "@" + table.sourceTable.name)
         oldTreeOption.get
     }
   }

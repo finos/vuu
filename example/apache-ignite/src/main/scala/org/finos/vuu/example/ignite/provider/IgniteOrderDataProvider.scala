@@ -39,7 +39,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     internalTable.setSize(totalSize)//todo should this be long?
     internalTable.setRange(VirtualizedRange(startIndex, endIndex))
 
-    logger.info(s"Loading data between $startIndex and $endIndex for $rowCount rows where total size $totalSize")
+    logger.debug(s"Loading data between $startIndex and $endIndex for $rowCount rows where total size $totalSize")
 
     val index = new AtomicInteger(startIndex) // todo: get rid of working assumption here that the dataset is fairly immutable.
     def updateTableRowAtIndex = tableUpdater(internalTable)

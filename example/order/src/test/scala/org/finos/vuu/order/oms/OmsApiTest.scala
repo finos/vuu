@@ -20,26 +20,26 @@ class TestListener extends OmsListener with StrictLogging {
   }
 
   override def onAck(ack: Ack): Unit = {
-    logger.info("onAck:" + ack)
+    logger.trace("onAck:" + ack)
     ordersMap.put(ack.clientOrderId, TestOrderState(ack.symbol, ack.qty, ack.price, "ACKED", 0L, 0D))
   }
 
   override def onCancelAck(ack: CancelAck): Unit = {
-    logger.info("onCancelAck:" + ack)
+    logger.trace("onCancelAck:" + ack)
     ordersMap.get(ack.clientOrderId) match {
       case state: TestOrderState => ordersMap.put(ack.clientOrderId, state.copy(state = "CANCELLED"))
     }
   }
 
   override def onReplaceAck(ack: ReplaceAck): Unit = {
-    logger.info("onReplaceAck:" + ack)
+    logger.trace("onReplaceAck:" + ack)
     ordersMap.get(ack.clientOrderId) match {
       case state: TestOrderState => ordersMap.put(ack.clientOrderId, state.copy(state = "ACKED"))
     }
   }
 
   override def onFill(fill: Fill): Unit = {
-    logger.info("onFill:" + fill)
+    logger.trace("onFill:" + fill)
     ordersMap.get(fill.clientOrderId) match {
       case state: TestOrderState => ordersMap.put(fill.clientOrderId, state.copy(filledQty = state.filledQty + fill.fillQty))
     }

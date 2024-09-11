@@ -69,7 +69,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Long]
 
       if(sequencerNumber > 0){
-        logger.info("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
+        logger.debug("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
         CloseDialogViewPortAction(vp.id)
       }else{
         logger.error("Seq number not set, returning error")

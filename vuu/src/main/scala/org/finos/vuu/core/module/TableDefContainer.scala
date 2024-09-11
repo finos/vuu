@@ -10,7 +10,7 @@ class TableDefContainer(var tablesByModule : Map[String, TableDefs] = Map()) ext
   }
 
   def add(module: String, tableDefs: TableDefs): Unit = {
-    logger.info(s"Adding table defs for module $module " + this.hashCode() )
+    logger.debug(s"Adding table defs for module $module " + this.hashCode() )
     tablesByModule = tablesByModule ++ Map(module -> tableDefs)
   }
 

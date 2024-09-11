@@ -56,9 +56,9 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
   val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
 
   for(a <- 0 until 5000){
-    logger.info("Starting tree build")
+    logger.debug("Starting tree build")
     val (millis, tree) = timeIt{ builder.buildEntireTree() }
-    logger.info(s"Built tree in $millis")
+    logger.debug(s"Built tree in $millis")
   }
 
 }

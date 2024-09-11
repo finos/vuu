@@ -58,7 +58,7 @@ class Runner(name: String, func: () => Unit, minCycleTime: Long = 1000, runOnce:
           case NonFatal(e) => logger.error(s"[$name] threw an exception in run", e)
         }
 
-        logger.info(s"[$name] is exiting")
+        logger.debug(s"[$name] is exiting")
       }
     }
   }

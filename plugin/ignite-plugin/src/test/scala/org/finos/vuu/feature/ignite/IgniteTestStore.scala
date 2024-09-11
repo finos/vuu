@@ -120,7 +120,7 @@ class IgniteTestStore (private val orderCache: IgniteCache[Int, TestOrderEntity]
   }
 
   private def getSQLAndMapResult(sqlQuery: IgniteSqlQuery): Iterable[TestOrderEntity] = {
-    logger.info("Querying ignite for " + sqlQuery)
+    logger.debug("Querying ignite for " + sqlQuery)
 
     val results = orderCache.query(sqlQuery.buildFieldsQuery())
 

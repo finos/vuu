@@ -47,12 +47,14 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
       if (isExpectedBodyType(t, msg)) {
         Some(msg)
       } else {
-        logger.info(s"Received ${msg.body.getClass} but was expecting ${t.runtimeClass}. Dismissing message and waiting for next one.")
+        logger.whenDebugEnabled(
+          logger.debug(s"Received ${msg.body.getClass} but was expecting ${t.runtimeClass}. Dismissing message and waiting for next one.")
+        )
         getNextMessageUntilBodyIsExpectedType()
       }
     }
     else {
-      logger.info(s"Did not receive any message in response. Try waiting again.")
+      logger.debug(s"Did not receive any message in response. Try waiting again.")
       getNextMessageUntilBodyIsExpectedType()
     }
   }
@@ -69,18 +71,18 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
   private def getNextMessageUntilResponseForRequestId(requestId: String): Option[ViewServerMessage] = {
     lookupFromReceivedResponses(requestId)
       .map(msg => {
-        logger.info(s"Found response for $requestId in cache")
+        logger.debug(s"Found response for $requestId in cache")
         Some(msg)
       })
 
     val msg = vsClient.awaitMsg
     if (msg != null)
       if (msg.requestId == requestId) {
-        logger.info(s"Received response for $requestId")
+        logger.debug(s"Received response for $requestId")
         Some(msg)
       } else {
         responsesMap.put(msg.requestId, msg)
-        logger.info(s"Added response for $requestId in cache")
+        logger.debug(s"Added response for $requestId in cache")
         getNextMessageUntilResponseForRequestId(requestId)
       }
     else {

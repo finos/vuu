@@ -12,12 +12,12 @@ import scala.jdk.CollectionConverters._
 class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedColumnBaseVisitor[CalculatedColumnClause] with StrictLogging {
 
   override def visitExpression(ctx: CalculatedColumnParser.ExpressionContext): CalculatedColumnClause = {
-    logger.debug("VISIT: Expression:" + ctx)
+    logger.trace("VISIT: Expression:" + ctx)
     ExpressionClause(visit(ctx.term()))
   }
 
   override def visitTerm(ctx: CalculatedColumnParser.TermContext): CalculatedColumnClause = {
-    logger.info("VISIT TERM:" + ctx.getText)
+    logger.trace("VISIT TERM:" + ctx.getText)
 
     val children = CollectionHasAsScala(ctx.children).asScala.toList
 
@@ -199,7 +199,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
     else{
       val leftChild :: op :: rightChild :: _ = children
 
-      logger.info(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+      logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
       val leftClause = processOperatorSideTerm(leftChild)
 
