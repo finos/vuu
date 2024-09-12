@@ -111,7 +111,7 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
         filteredKeys
       case Error(msg) =>
         logger.error(s"Unexpected error occurred while filtering (skipping filters): \n$msg")
-        primaryKeys
+        EmptyTablePrimaryKeys
     }
   }
 }
