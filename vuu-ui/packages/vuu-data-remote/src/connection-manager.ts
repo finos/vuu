@@ -16,7 +16,7 @@ import {
   VuuTable,
   VuuTableList,
   VuuCreateVisualLink,
-  VuuRemoveVisualLink,
+  VuuRemoveVisualLink, NewVuuRpcServiceRequest,
 } from "@finos/vuu-protocol-types";
 import {
   EventEmitter,
@@ -232,6 +232,7 @@ export interface ServerAPI {
   rpcCall: <T = unknown>(
     msg:
       | VuuRpcServiceRequest
+      | NewVuuRpcServiceRequest
       | VuuRpcMenuRequest
       | VuuRpcViewportRequest
       | VuuCreateVisualLink
@@ -381,6 +382,16 @@ export const connectToServer = async ({
 
 export const makeRpcCall = async <T = unknown>(
   rpcRequest: VuuRpcServiceRequest,
+) => {
+  try {
+    return (await serverAPI).rpcCall<T>(rpcRequest);
+  } catch (err) {
+    throw Error("Error accessing server api");
+  }
+};
+
+export const newMakeRpcCall = async <T = unknown>(
+  rpcRequest: NewVuuRpcServiceRequest,
 ) => {
   try {
     return (await serverAPI).rpcCall<T>(rpcRequest);

@@ -35,7 +35,7 @@ import type {
   VuuTable,
   VuuRpcRequest,
   VuuCreateVisualLink,
-  VuuRemoveVisualLink,
+  VuuRemoveVisualLink, NewVuuRpcServiceRequest,
 } from "@finos/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -596,6 +596,13 @@ export class ServerProxy {
     this.sendMessageToServer(rpcRequest, requestId, { module });
   }
 
+  private newRpcCall(message: WithRequestId<NewVuuRpcServiceRequest>) {
+    const [requestId, rpcRequest] =
+      stripRequestId<NewVuuRpcServiceRequest>(message);
+    const module = getRpcServiceModule("TypeAheadRpcHandler");
+    this.sendMessageToServer(rpcRequest, requestId, { module });
+  }
+
   public handleMessageFromClient(
     message:
       | Exclude<
@@ -605,11 +612,13 @@ export class ServerProxy {
           | VuuUIMessageOutUnsubscribe
         >
       | WithRequestId<VuuRpcServiceRequest>
+      | WithRequestId<NewVuuRpcServiceRequest>
       | WithRequestId<VuuRpcMenuRequest>
       | WithRequestId<VuuCreateVisualLink>
       | WithRequestId<VuuRemoveVisualLink>,
   ) {
     if (isViewportMessage(message) || isVisualLinkMessage(message)) {
+
       if (message.type === "disable") {
         // Viewport may already have been unsubscribed
         const viewport = this.getViewportForClient(message.viewport, false);
@@ -693,6 +702,8 @@ export class ServerProxy {
         }
         case "RPC_CALL":
           return this.rpcCall(message);
+        case "RPC_REQUEST":
+          return this.newRpcCall(message);
         default:
       }
     }

@@ -277,6 +277,13 @@ export declare type TypeaheadParams =
   | [VuuTable, string]
   | [VuuTable, string, string];
 
+export declare type NewTypeaheadParams = {
+  table: string;
+  module: string;
+  column: string;
+}
+
+
 export declare type TypeAheadMethod =
   | "getUniqueFieldValues"
   | "getUniqueFieldValuesStartingWith";
@@ -361,6 +368,13 @@ export declare type VuuRpcResponse =
   | VuuRpcViewportResponse
   | VuuRpcMenuResponse
   | VuuRpcEditResponse;
+
+export declare type NewVuuRpcServiceRequest = {
+  type: "RPC_REQUEST";
+  context: VuuContext;
+  rpcName: string;
+  params: NewTypeaheadParams;
+}
 
 export declare type VuuRpcServiceRequest = {
   type: "RPC_CALL";
@@ -551,6 +565,12 @@ export declare type VuuRange = {
   from: number;
   to: number;
 };
+
+export declare type VuuContextType = "GLOBAL_CONTEXT" | "VIEWPORT_CONTEXT"|"VIEWPORT_ROW_CONTEXT";
+export declare type VuuContext = {
+  type: VuuContextType;
+  viewPortId: string;
+}
 
 export declare type VuuSortType = "A" | "D";
 

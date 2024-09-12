@@ -3,6 +3,7 @@ package org.finos.vuu.net.json
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.{JsonViewServerMessage, MessageBody, ViewServerMessage}
 
 trait Serializer[R, SERTYPE] {
@@ -11,7 +12,7 @@ trait Serializer[R, SERTYPE] {
   def deserialize(message: R): ViewServerMessage
 }
 
-object JsonVsSerializer extends Serializer[String, MessageBody] {
+object JsonVsSerializer extends Serializer[String, MessageBody] with StrictLogging {
 
   def getMapper = {
     val mapper = new ObjectMapper()
@@ -24,6 +25,7 @@ object JsonVsSerializer extends Serializer[String, MessageBody] {
 
   def deserialize(s: String): JsonViewServerMessage = {
     val mapper = getMapper
+    logger.info(s);
     mapper.readValue(s, classOf[JsonViewServerMessage])
   }
 
