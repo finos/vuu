@@ -49,6 +49,7 @@ import {
   DataSourceConfigChanges,
   selectionCount,
   isEditCellRequest,
+  rangesAreSame,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -238,7 +239,7 @@ export class ArrayDataSource
         type: "viewport-update",
         size: this.#data.length,
       });
-      if (range) {
+      if (range && !rangesAreSame(this.#range, range)) {
         this.range = range;
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
