@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceRow,
   Selection,
   SelectionChangeHandler,
 } from "@finos/vuu-data-types";
@@ -11,8 +10,8 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 import {
-  ColumnMap,
   buildColumnMap,
+  dataSourceRowToEntity,
   isOpenBulkEditResponse,
   messageHasDataRows,
   queryClosest,
@@ -25,13 +24,6 @@ import {
   Instrument,
   isValidInstrument,
 } from "./instrument-editing";
-
-type Entity = { [key: string]: VuuRowDataItemType };
-const dataSourceRowToEntity = (row: DataSourceRow, columnMap: ColumnMap) =>
-  Object.entries(columnMap).reduce((entity, [name, index]) => {
-    entity[name] = row[index];
-    return entity;
-  }, {} as Entity);
 
 const getField = (target: EventTarget | HTMLElement) => {
   const fieldElement = queryClosest(target, "[data-field]");
@@ -107,6 +99,7 @@ export const useTableEditManager = (vuuTable: VuuTable) => {
   const handleChangeFormField = useCallback((evt) => {
     const fieldName = getField(evt.target);
     const value = evt.target.value as string;
+    console.log(`edit form field ${fieldName} => ${value}`);
     if (fieldName) {
       setEntity((currentEntity) => ({ ...currentEntity, [fieldName]: value }));
     }
@@ -114,6 +107,7 @@ export const useTableEditManager = (vuuTable: VuuTable) => {
 
   const handleCommitFieldValue = useCallback(
     (field: string, value: VuuRowDataItemType) => {
+      console.log(`commit value ${value} for ${field}`);
       const { current: ds } = sessionRef;
       const { ric: key } = entity;
       if (ds && key) {

@@ -31,6 +31,85 @@ import type {
   TypeAheadMethod,
   VuuRange,
 } from "@finos/vuu-protocol-types";
+import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
+
+/**
+ * EditRuleValidator is a function registered with component registry. It can then
+ * be referenced in editRules applied to table columns or form fields.
+ *
+ * @returns value to indicate whether validation rule passed:
+ * - true value passes validation
+ * - false value fails validation
+ * - string value fails validation, this message described failure
+ */
+export type EditRuleValidator = (
+  editRule: EditValidationRule,
+  value?: VuuRowDataItemType,
+) => boolean | string;
+
+/**
+ * Edit validation functions (EditRuleValidator) must be registered with the component registry.
+ * They can then be referenced by name from EditValidationRule(s)
+ */
+export interface EditValidationRule {
+  /**
+   * when is the rule applied
+   * - 'commit' - when suer commits change, e.g. by pressent ENTER (on an input), or TAB
+   * - 'change' - for a text input, on every keystroke
+   * */
+  apply?: "commit" | "change";
+  name: string;
+  message?: string;
+  value?: string;
+}
+
+export declare type DataValueTypeSimple =
+  | "string"
+  | "number"
+  | "boolean"
+  | "json"
+  | DateTimeDataValueTypeSimple
+  | "checkbox";
+
+export declare type DataValueType =
+  | DataValueTypeSimple
+  | DataValueTypeDescriptor;
+
+export declare type DateTimeDataValueTypeSimple = "date/time";
+
+export declare type DateTimeDataValueType =
+  | DateTimeColumnTypeSimple
+  | (Omit<DataValueTypeDescriptor, "name"> & {
+      name: DateTimeColumnTypeSimple;
+    });
+
+export declare type BulkEdit = "bulk" | false | "read-only";
+
+export interface DataValueDescriptor {
+  editable?: boolean;
+  /**
+   There are three values for editableBulk. 
+    - false user will not see these values when applying a bulk edit. 
+    - "bulk" user can edit these values when applying a bulk edit. 
+    - "read-only" user will see these values when applying a bulk edit, but not be allowed to edit them.
+  */
+  editableBulk?: BulkEdit;
+  /** Display label for form fields, table column headings etc.  */
+  label?: string;
+  /** unique name for this data value */
+  name: string;
+  /** The type defined on server for this data value */
+  serverDataType?: VuuColumnDataType;
+  /** Type hints for the UI that supplement the serverDataType */
+  type?: DataValueType;
+}
+
+export declare type DateTimeDataValueDescriptor = Omit<
+  DataValueDescriptor,
+  "type"
+> & {
+  type: DateTimeDataValueType;
+};
 
 export interface DataSourceFilter extends VuuFilter {
   filterStruct?: Filter;

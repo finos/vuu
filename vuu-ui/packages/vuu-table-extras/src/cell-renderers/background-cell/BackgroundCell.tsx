@@ -1,4 +1,4 @@
-import { ColumnType, TableCellProps } from "@finos/vuu-table-types";
+import { TableCellProps } from "@finos/vuu-table-types";
 import {
   dataAndColumnUnchanged,
   DOWN1,
@@ -9,12 +9,13 @@ import {
   UP1,
   UP2,
 } from "@finos/vuu-utils";
-import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import { memo } from "react";
 import { useDirection } from "./useDirection";
 
+import { DataValueType } from "@finos/vuu-data-types";
 import backgroundCellCss from "./BackgroundCell.css";
 import backgroundKeyFramesCss from "./BackgroundKeyframes.css";
 
@@ -32,7 +33,7 @@ const FlashStyle = {
   ArrowBackground: "arrow-bg",
 };
 
-const getFlashStyle = (colType?: ColumnType) => {
+const getFlashStyle = (colType?: DataValueType) => {
   if (isTypeDescriptor(colType) && colType.renderer) {
     if ("flashStyle" in colType.renderer) {
       return colType.renderer["flashStyle"];
@@ -71,8 +72,8 @@ export const BackgroundCell = memo(function BackgroundCell({
       ? direction === UP1 || direction === UP2
         ? CHAR_ARROW_UP
         : direction === DOWN1 || direction === DOWN2
-        ? CHAR_ARROW_DOWN
-        : null
+          ? CHAR_ARROW_DOWN
+          : null
       : null;
 
   const dirClass = direction ? ` ` + direction : "";
@@ -89,8 +90,7 @@ export const BackgroundCell = memo(function BackgroundCell({
       {valueFormatter(row[dataIdx])}
     </div>
   );
-},
-dataAndColumnUnchanged);
+}, dataAndColumnUnchanged);
 
 registerComponent(
   "vuu.price-move-background",
@@ -101,5 +101,5 @@ registerComponent(
     configEditor: "BackgroundCellConfigurationEditor",
     label: "Background Flash",
     serverDataType: ["long", "int", "double"],
-  }
+  },
 );

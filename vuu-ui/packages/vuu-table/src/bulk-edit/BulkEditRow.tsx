@@ -2,14 +2,14 @@ import { getDataItemEditControl } from "@finos/vuu-data-react";
 import {
   DataSource,
   SuggestionFetcher,
-  TypeaheadSuggestionProvider
+  TypeaheadSuggestionProvider,
 } from "@finos/vuu-data-types";
 import { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   CommitHandler,
   isTypeaheadSuggestionProvider,
-  queryClosest
+  queryClosest,
 } from "@finos/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -23,7 +23,7 @@ const classBase = "vuuBulkEditRow";
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string
+  value: string,
 ) => void;
 export interface BulkEditProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -33,7 +33,7 @@ export interface BulkEditProps
 
 const InputProps: Partial<InputProps> = {
   placeholder: "Enter value",
-  variant: "primary"
+  variant: "primary",
 };
 
 export const BulkEditRow = ({
@@ -45,7 +45,7 @@ export const BulkEditRow = ({
   useComponentCssInjection({
     testId: "vuu-bulk-edit-row",
     css: bulkEditRowCss,
-    window: targetWindow
+    window: targetWindow,
   });
 
   const fieldRef = useRef("");
@@ -66,7 +66,7 @@ export const BulkEditRow = ({
         }
       }
     },
-    [columns, onChange]
+    [columns, onChange],
   );
 
   const handleFocus = useCallback((evt) => {
@@ -87,7 +87,7 @@ export const BulkEditRow = ({
       console.log(a);
       return a;
     },
-    [dataSource]
+    [dataSource],
   );
 
   const suggestionProvider = useMemo(() => {
@@ -108,10 +108,10 @@ export const BulkEditRow = ({
         >
           {getDataItemEditControl({
             InputProps,
-            column,
+            dataDescriptor: column,
             onCommit,
             suggestionProvider,
-            table: dataSource.table
+            table: dataSource.table,
           })}
         </div>
       ))}

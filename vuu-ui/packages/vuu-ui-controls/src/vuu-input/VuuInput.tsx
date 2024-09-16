@@ -1,16 +1,16 @@
-import { Tooltip, TooltipHookProps, useTooltip } from "@finos/vuu-popups";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { CommitHandler, isValidNumber, useId } from "@finos/vuu-utils";
-import { Input, InputProps } from "@salt-ds/core";
-import cx from "clsx";
+import { Input, InputProps, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
   FocusEventHandler,
   ForwardedRef,
-  forwardRef,
   KeyboardEventHandler,
   ReactElement,
+  ReactNode,
+  forwardRef,
   useCallback,
 } from "react";
 
@@ -18,15 +18,11 @@ import vuuInputCss from "./VuuInput.css";
 
 const classBase = "vuuInput";
 
-const constantInputProps = {
-  autoComplete: "off",
-};
-
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
-  extends InputProps {
+  extends Omit<InputProps, "validationStatus"> {
+  errorMessage?: ReactNode;
   onCommit: CommitHandler<HTMLInputElement, T | undefined>;
   type?: T;
-  TooltipProps?: Pick<TooltipHookProps, "placement" | "tooltipContent">;
 }
 
 /**
@@ -38,11 +34,11 @@ export const VuuInput = forwardRef(function VuuInput<
 >(
   {
     className,
+    errorMessage,
     id: idProp,
     onCommit,
     onKeyDown,
     type,
-    TooltipProps,
     ...props
   }: VuuInputProps<T>,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -55,11 +51,6 @@ export const VuuInput = forwardRef(function VuuInput<
   });
 
   const id = useId(idProp);
-  const { anchorProps, tooltipProps } = useTooltip({
-    id,
-    placement: TooltipProps?.placement,
-    tooltipContent: TooltipProps?.tooltipContent,
-  });
 
   const commitValue = useCallback<CommitHandler>(
     (evt, value) => {
@@ -101,12 +92,10 @@ export const VuuInput = forwardRef(function VuuInput<
     [commitValue],
   );
 
-  const endAdornment = TooltipProps?.tooltipContent ? (
-    <span
-      {...anchorProps}
-      className={`${classBase}-errorIcon`}
-      data-icon="error"
-    />
+  const endAdornment = errorMessage ? (
+    <Tooltip content={errorMessage} status="error">
+      <span className={`${classBase}-errorIcon`} data-icon="error" />
+    </Tooltip>
   ) : undefined;
 
   return (
@@ -116,17 +105,16 @@ export const VuuInput = forwardRef(function VuuInput<
         endAdornment={endAdornment}
         id={id}
         inputProps={{
-          ...constantInputProps,
+          autoComplete: "off",
           ...props.inputProps,
         }}
         className={cx(classBase, className, {
-          [`${classBase}-error`]: TooltipProps?.tooltipContent,
+          [`${classBase}-error`]: errorMessage,
         })}
         onBlur={handleBlur}
         ref={forwardedRef}
         onKeyDown={handleKeyDown}
       />
-      {tooltipProps ? <Tooltip {...tooltipProps} status="error" /> : null}
     </>
   );
 }) as <T extends VuuRowDataItemType = string>(

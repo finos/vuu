@@ -90,7 +90,7 @@ export const QuickFilters = ({
           <FormField key={column.label ?? column.name} data-field={column.name}>
             <FormFieldLabel>{column.label ?? column.name}</FormFieldLabel>
             {getDataItemEditControl({
-              column,
+              dataDescriptor: column,
               onCommit,
               suggestionProvider,
               table: tableSchema?.table,

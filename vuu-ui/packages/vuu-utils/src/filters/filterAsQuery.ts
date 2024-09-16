@@ -4,7 +4,7 @@ import {
   SingleValueFilterClause,
 } from "@finos/vuu-filter-types";
 import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { isDateTimeColumn } from "../column-utils";
+import { isDateTimeDataValue } from "../column-utils";
 import { isMultiClauseFilter, isMultiValueFilter } from "./utils";
 
 const filterValue = (value: string | number | boolean) =>
@@ -17,14 +17,14 @@ const removeOuterMostParentheses = (s: string) => s.replace(/^\((.*)\)$/, "$1");
 
 export const filterAsQuery = (
   f: Filter,
-  opts?: { columnsByName?: ColumnDescriptorsByName }
+  opts?: { columnsByName?: ColumnDescriptorsByName },
 ): string => {
   return removeOuterMostParentheses(filterAsQueryCore(f, opts));
 };
 
 const filterAsQueryCore = (
   f: Filter,
-  opts?: { columnsByName?: ColumnDescriptorsByName }
+  opts?: { columnsByName?: ColumnDescriptorsByName },
 ): string => {
   if (isMultiClauseFilter(f)) {
     const multiClauseFilter = f.filters
@@ -40,10 +40,10 @@ const filterAsQueryCore = (
 
 function singleValueFilterAsQuery(
   f: SingleValueFilterClause,
-  opts?: { columnsByName?: ColumnDescriptorsByName }
+  opts?: { columnsByName?: ColumnDescriptorsByName },
 ): string {
   const column = opts?.columnsByName?.[f.column];
-  if (column && isDateTimeColumn(column)) {
+  if (column && isDateTimeDataValue(column)) {
     return dateFilterAsQuery(f as SingleValueFilterClause<number>);
   } else {
     return defaultSingleValueFilterAsQuery(f);
@@ -85,7 +85,7 @@ const defaultSingleValueFilterAsQuery = (f: SingleValueFilterClause) =>
 
 export const removeColumnFromFilter = (
   column: RuntimeColumnDescriptor,
-  filter: Filter
+  filter: Filter,
 ): [Filter | undefined, string] => {
   if (isMultiClauseFilter(filter)) {
     const [clause1, clause2] = filter.filters;

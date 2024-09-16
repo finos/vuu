@@ -7,7 +7,7 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { isDateTimeColumn, isTypeDescriptor } from "@finos/vuu-utils";
+import { isDateTimeDataValue, isTypeDescriptor } from "@finos/vuu-utils";
 import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { FormattingSettingsProps } from "@finos/vuu-table-types";
@@ -32,7 +32,7 @@ export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
       const value = event.currentTarget.value as ToggleValue;
       onChangeType(value);
     },
-    [onChangeType]
+    [onChangeType],
   );
 
   return (
@@ -52,7 +52,7 @@ export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
         </ToggleButtonGroup>
       </FormField>
 
-      {isDateTimeColumn(column) ? (
+      {isDateTimeDataValue(column) ? (
         <DateTimeFormattingSettings {...props} column={column} />
       ) : (
         <BaseNumericFormattingSettings {...props} />

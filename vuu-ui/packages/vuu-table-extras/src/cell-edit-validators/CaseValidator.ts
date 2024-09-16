@@ -1,5 +1,6 @@
-import { EditRuleValidator, registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { EditRuleValidator } from "@finos/vuu-data-types";
 
 const isString = (value?: VuuRowDataItemType): value is string =>
   typeof value === "string";

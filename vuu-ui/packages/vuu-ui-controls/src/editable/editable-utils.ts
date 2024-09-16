@@ -1,9 +1,7 @@
-import {
-  ClientSideValidationChecker,
-  EditValidationRule,
-} from "@finos/vuu-table-types";
+import { ClientSideValidationChecker } from "@finos/vuu-table-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { getEditRuleValidator } from "@finos/vuu-utils";
+import { EditValidationRule } from "@finos/vuu-data-types";
 
 export const buildValidationChecker =
   (rules: EditValidationRule[]): ClientSideValidationChecker =>
@@ -12,7 +10,7 @@ export const buildValidationChecker =
 
 function applyRules(
   rules: EditValidationRule[],
-  value?: VuuRowDataItemType
+  value?: VuuRowDataItemType,
 ): string | false | undefined {
   let result: false | string | undefined = undefined;
   for (const rule of rules) {
@@ -36,7 +34,7 @@ function applyRules(
       }
     } else {
       throw Error(
-        `editable-utils applyRules, no validator registered for rule '${rule.name}'`
+        `editable-utils applyRules, no validator registered for rule '${rule.name}'`,
       );
     }
   }

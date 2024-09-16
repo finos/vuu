@@ -1,7 +1,10 @@
 import type {
   DataSourceRow,
+  DataValueType,
+  DataValueTypeSimple,
+  DateTimeDataValueDescriptor,
   SchemaColumn,
-  TableSchema
+  TableSchema,
 } from "@finos/vuu-data-types";
 import type {
   VuuAggType,
@@ -10,19 +13,16 @@ import type {
   VuuDataRow,
   VuuGroupBy,
   VuuRowRecord,
-  VuuSort
+  VuuSort,
 } from "@finos/vuu-protocol-types";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
   ColumnLayout,
-  ColumnType,
-  ColumnTypeDescriptor,
+  DataValueTypeDescriptor,
   ColumnTypeFormatting,
   ColumnTypeRendering,
-  ColumnTypeSimple,
   ColumnTypeWithValidationRules,
-  DateTimeColumnDescriptor,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
   LookupRenderer,
@@ -33,7 +33,7 @@ import type {
   TableConfig,
   TableHeading,
   TableHeadings,
-  ValueListRenderer
+  ValueListRenderer,
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -61,13 +61,13 @@ export const AggregationType: { [key: string]: VuuAggType } = {
   Distinct: 6,
   Sum: 1,
   High: 4,
-  Low: 5
+  Low: 5,
 };
 
 export function mapSortCriteria(
   sortCriteria: SortCriteriaItem[],
   columnMap: ColumnMap,
-  metadataOffset = 0
+  metadataOffset = 0,
 ): [number, "asc"][] {
   return sortCriteria.map((s) => {
     if (typeof s === "string") {
@@ -83,7 +83,7 @@ export function mapSortCriteria(
 
 const numericTypes = ["int", "long", "double"];
 export const getDefaultAlignment = (
-  serverDataType?: VuuColumnDataType
+  serverDataType?: VuuColumnDataType,
 ): ColumnAlignment =>
   serverDataType === undefined
     ? "left"
@@ -93,7 +93,7 @@ export const getDefaultAlignment = (
 
 export const getRuntimeColumnWidth = (
   col: ColumnDescriptor,
-  runtimeColumns: RuntimeColumnDescriptor[]
+  runtimeColumns: RuntimeColumnDescriptor[],
 ) => {
   const runtimeColumn = runtimeColumns.find(({ name }) => name === col.name);
   if (runtimeColumn) {
@@ -108,15 +108,15 @@ export const getRuntimeColumnWidth = (
 // layout becomes manual - there will be no further automatic column sizing.
 export const applyRuntimeColumnWidthsToConfig = (
   tableConfig: TableConfig,
-  columns: RuntimeColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[],
 ): TableConfig => {
   return {
     ...tableConfig,
     columns: columns.map((column) => ({
       ...column,
-      width: column.width ?? getRuntimeColumnWidth(column, columns)
+      width: column.width ?? getRuntimeColumnWidth(column, columns),
     })),
-    columnLayout: "manual"
+    columnLayout: "manual",
   };
 };
 
@@ -138,16 +138,16 @@ const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
   "int",
   "string",
   "char",
-  "boolean"
+  "boolean",
 ];
 
 export const isVuuColumnDataType = (
-  value: string | undefined | null
+  value: string | undefined | null,
 ): value is VuuColumnDataType => VUU_COLUMN_DATA_TYPES.includes(value);
 
 export const fromServerDataType = (
-  serverDataType: VuuColumnDataType
-): ColumnTypeSimple => {
+  serverDataType: VuuColumnDataType,
+): DataValueTypeSimple => {
   switch (serverDataType) {
     case "double":
     case "int":
@@ -178,9 +178,9 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
-export const isDateTimeColumn = (
-  column: ColumnDescriptor
-): column is DateTimeColumnDescriptor =>
+export const isDateTimeDataValue = (
+  column: ColumnDescriptor,
+): column is DateTimeDataValueDescriptor =>
   (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
   "date/time";
 
@@ -198,52 +198,49 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     : serverDataType === "char" || serverDataType === "string";
 
 export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
-  name
+  name,
 });
 
 /**
  *
  */
 export const isTypeDescriptor = (
-  type?: ColumnType
-): type is ColumnTypeDescriptor =>
+  type?: DataValueType,
+): type is DataValueTypeDescriptor =>
   typeof type !== "undefined" && typeof type !== "string";
 
 const EMPTY_COLUMN_MAP = {} as const;
 
 export const isColumnTypeRenderer = (
-  renderer?: unknown
+  renderer?: unknown,
 ): renderer is ColumnTypeRendering =>
   typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
 
 export const isLookupRenderer = (
-  renderer?: unknown
+  renderer?: unknown,
 ): renderer is LookupRenderer =>
   typeof (renderer as LookupRenderer)?.name !== "undefined" &&
   "lookup" in (renderer as LookupRenderer);
 
 export const isValueListRenderer = (
-  renderer?: unknown
+  renderer?: unknown,
 ): renderer is ValueListRenderer =>
   typeof (renderer as ValueListRenderer)?.name !== "undefined" &&
   Array.isArray((renderer as ValueListRenderer).values);
 
 export const hasValidationRules = (
-  type?: ColumnType
+  type?: DataValueType,
 ): type is ColumnTypeWithValidationRules =>
-  isTypeDescriptor(type) &&
-  isColumnTypeRenderer(type.renderer) &&
-  Array.isArray(type.renderer.rules) &&
-  type.renderer.rules.length > 0;
+  isTypeDescriptor(type) && Array.isArray(type.rules) && type.rules.length > 0;
 
 export const isMappedValueTypeRenderer = (
-  renderer?: unknown
+  renderer?: unknown,
 ): renderer is MappedValueTypeRenderer =>
   renderer !== undefined &&
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[]
+  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[],
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
@@ -287,13 +284,13 @@ export const metadataKeys = {
   PARENT_IDX: "parent_idx",
   IDX_POINTER: "idx_pointer",
   FILTER_COUNT: "filter_count",
-  NEXT_FILTER_IDX: "next_filter_idx"
+  NEXT_FILTER_IDX: "next_filter_idx",
 } as const;
 
 // This method mutates the passed columns array
 const insertColumn = (
   columns: RuntimeColumnDescriptor[],
-  column: RuntimeColumnDescriptor
+  column: RuntimeColumnDescriptor,
 ) => {
   const { originalIdx } = column;
   if (typeof originalIdx === "number") {
@@ -310,12 +307,12 @@ const insertColumn = (
 };
 
 export const flattenColumnGroup = (
-  columns: RuntimeColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[],
 ): RuntimeColumnDescriptor[] => {
   if (columns[0]?.isGroup) {
     const [groupColumn, ...nonGroupedColumns] = columns as [
       GroupColumnDescriptor,
-      ...RuntimeColumnDescriptor[]
+      ...RuntimeColumnDescriptor[],
     ];
     groupColumn.columns.forEach((groupColumn) => {
       insertColumn(nonGroupedColumns, groupColumn);
@@ -329,7 +326,7 @@ export const flattenColumnGroup = (
 export function extractGroupColumn(
   columns: RuntimeColumnDescriptor[],
   groupBy?: VuuGroupBy,
-  confirmed = true
+  confirmed = true,
 ): [GroupColumnDescriptor | null, RuntimeColumnDescriptor[]] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
@@ -340,7 +337,7 @@ export function extractGroupColumn(
         if (groupBy.includes(column.name)) {
           g.push({
             ...column,
-            originalIdx: i
+            originalIdx: i,
           });
         } else {
           r.push(column);
@@ -348,24 +345,24 @@ export function extractGroupColumn(
 
         return result;
       },
-      [[], []] as [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]]
+      [[], []] as [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]],
     );
     if (groupedColumns.length !== groupBy.length) {
       throw Error(
         `extractGroupColumn: no column definition found for all groupBy cols ${JSON.stringify(
-          groupBy
-        )} `
+          groupBy,
+        )} `,
       );
     }
     const groupCount = groupBy.length;
     const groupCols: RuntimeColumnDescriptor[] = groupBy.map((name, idx) => {
       // Keep the cols in same order defined on groupBy
       const column = groupedColumns.find(
-        (col) => col.name === name
+        (col) => col.name === name,
       ) as RuntimeColumnDescriptor;
       return {
         ...column,
-        groupLevel: groupCount - idx
+        groupLevel: groupCount - idx,
       };
     });
 
@@ -375,7 +372,7 @@ export function extractGroupColumn(
       isGroup: true,
       columns: groupCols,
       groupConfirmed: confirmed,
-      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100
+      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
     return [groupCol, rest];
@@ -384,7 +381,7 @@ export function extractGroupColumn(
 }
 
 export const isGroupColumn = (
-  column: RuntimeColumnDescriptor
+  column: RuntimeColumnDescriptor,
 ): column is GroupColumnDescriptor => column.isGroup === true;
 
 export const isJsonAttribute = (value: unknown) =>
@@ -393,16 +390,16 @@ export const isJsonAttribute = (value: unknown) =>
 export const isJsonGroup = (
   column: RuntimeColumnDescriptor,
   row: VuuDataRow,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ) =>
-  (column.type as ColumnTypeDescriptor)?.name === "json" &&
+  (column.type as DataValueTypeDescriptor)?.name === "json" &&
   isJsonAttribute(row[columnMap[column.name]]);
 
 export const isJsonColumn = (column: RuntimeColumnDescriptor) =>
-  (column.type as ColumnTypeDescriptor)?.name === "json";
+  (column.type as DataValueTypeDescriptor)?.name === "json";
 
 export const sortPinnedColumns = (
-  columns: RuntimeColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[],
 ): RuntimeColumnDescriptor[] => {
   const leftPinnedColumns: RuntimeColumnDescriptor[] = [];
   const rightPinnedColumns: RuntimeColumnDescriptor[] = [];
@@ -430,7 +427,7 @@ export const sortPinnedColumns = (
   if (leftPinnedColumns.length) {
     leftPinnedColumns.push({
       ...(leftPinnedColumns.pop() as RuntimeColumnDescriptor),
-      endPin: true
+      endPin: true,
     });
   }
 
@@ -444,7 +441,7 @@ export const sortPinnedColumns = (
     for (const column of rightPinnedColumns) {
       measuredRightPinnedColumns.unshift({
         ...column,
-        pinnedOffset: pinnedWidthRight
+        pinnedOffset: pinnedWidthRight,
       });
       pinnedWidthRight += column.width;
     }
@@ -457,7 +454,7 @@ export const sortPinnedColumns = (
 
 export const measurePinnedColumns = (
   columns: RuntimeColumnDescriptor[],
-  selectionEndSize: number
+  selectionEndSize: number,
 ) => {
   let pinnedWidthLeft = 0;
   let pinnedWidthRight = 0;
@@ -476,17 +473,17 @@ export const measurePinnedColumns = (
   return {
     pinnedWidthLeft: pinnedWidthLeft + selectionEndSize,
     pinnedWidthRight: pinnedWidthRight + selectionEndSize,
-    unpinnedWidth
+    unpinnedWidth,
   };
 };
 
 export const getTableHeadings = (
-  columns: RuntimeColumnDescriptor[]
+  columns: RuntimeColumnDescriptor[],
 ): TableHeadings => {
   if (columns.some(hasHeadings)) {
     const maxHeadingDepth = columns.reduce<number>(
       (max, { heading }) => Math.max(max, heading?.length ?? 0),
-      0
+      0,
     );
 
     let heading: TableHeading | undefined = undefined;
@@ -516,26 +513,26 @@ export const getColumnStyle = ({
   // the 4 is `selectionEndSize`, unfortunate if we need to be passed it from cell
   // need to think about how to make this available
   pinnedOffset = pin === "left" ? 0 : 4,
-  width
+  width,
 }: RuntimeColumnDescriptor) =>
   pin === "left"
     ? ({
         left: pinnedOffset,
         width,
-        "--pin-width": `${pinnedOffset + width - 3}px`
+        "--pin-width": `${pinnedOffset + width - 3}px`,
       } as CSSProperties)
     : pin === "right"
       ? ({
           right: pinnedOffset,
           width,
-          "--pin-width": `${pinnedOffset + width}px`
+          "--pin-width": `${pinnedOffset + width}px`,
         } as CSSProperties)
       : { width };
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
   column: RuntimeColumnDescriptor,
-  aggType: VuuAggType
+  aggType: VuuAggType,
 ) => {
   return aggregations
     .filter((agg) => agg.column !== column.name)
@@ -545,13 +542,13 @@ export const setAggregations = (
 export const applyGroupByToColumns = (
   columns: RuntimeColumnDescriptor[],
   groupBy: VuuGroupBy,
-  confirmed = true
+  confirmed = true,
 ) => {
   if (groupBy.length) {
     const [groupColumn, nonGroupedColumns] = extractGroupColumn(
       columns,
       groupBy,
-      confirmed
+      confirmed,
     );
     if (groupColumn) {
       return [groupColumn as RuntimeColumnDescriptor].concat(nonGroupedColumns);
@@ -564,19 +561,19 @@ export const applyGroupByToColumns = (
 
 export const applySortToColumns = (
   columns: RuntimeColumnDescriptor[],
-  sort: VuuSort
+  sort: VuuSort,
 ) =>
   columns.map((column) => {
     const sorted = getSortType(column, sort);
     if (sorted !== undefined) {
       return {
         ...column,
-        sorted
+        sorted,
       };
     } else if (column.sorted) {
       return {
         ...column,
-        sorted: undefined
+        sorted: undefined,
       };
     } else {
       return column;
@@ -622,14 +619,14 @@ export const getColumnLabel = (column: ColumnDescriptor) => {
 
 export const findColumn = (
   columns: RuntimeColumnDescriptor[],
-  columnName: string
+  columnName: string,
 ): RuntimeColumnDescriptor | undefined => {
   const column = columns.find((col) => col.name === columnName);
   if (column) {
     return column;
   } else {
     const groupColumn = columns.find(
-      (col) => col.isGroup
+      (col) => col.isGroup,
     ) as GroupColumnDescriptor;
     if (groupColumn) {
       return findColumn(groupColumn.columns, columnName);
@@ -639,17 +636,17 @@ export const findColumn = (
 
 export function updateColumn<T extends ColumnDescriptor>(
   columns: T[],
-  column: T
+  column: T,
 ): T[];
 export function updateColumn(
   columns: RuntimeColumnDescriptor[],
   column: string,
-  options: Partial<ColumnDescriptor>
+  options: Partial<ColumnDescriptor>,
 ): RuntimeColumnDescriptor[];
 export function updateColumn(
   columns: RuntimeColumnDescriptor[],
   column: string | RuntimeColumnDescriptor,
-  options?: Partial<ColumnDescriptor>
+  options?: Partial<ColumnDescriptor>,
 ) {
   const targetColumn =
     typeof column === "string"
@@ -660,7 +657,7 @@ export function updateColumn(
       ? { ...targetColumn, ...options }
       : targetColumn;
     return columns.map((col) =>
-      col.name === replacementColumn.name ? replacementColumn : col
+      col.name === replacementColumn.name ? replacementColumn : col,
     );
   } else {
     throw Error("column-utils.replaceColun, column not found");
@@ -671,14 +668,14 @@ export const toDataSourceColumns = (column: ColumnDescriptor) => column.name;
 
 export const getRowRecord = (
   row: DataSourceRow,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): VuuRowRecord => {
   return Object.entries(columnMap).reduce<VuuRowRecord>(
     (map, [colName, key]) => {
       map[colName] = row[key];
       return map;
     },
-    {}
+    {},
   );
 };
 
@@ -689,7 +686,7 @@ export const isDataLoading = (columns: RuntimeColumnDescriptor[]) => {
 export const getColumnsInViewport = (
   columns: RuntimeColumnDescriptor[],
   vpStart: number,
-  vpEnd: number
+  vpEnd: number,
 ): [RuntimeColumnDescriptor[], number] => {
   const visibleColumns: RuntimeColumnDescriptor[] = [];
   let preSpan = 0;
@@ -732,7 +729,7 @@ export const isNotHidden = (column: RuntimeColumnDescriptor) =>
 
 export const visibleColumnAtIndex = (
   columns: RuntimeColumnDescriptor[],
-  index: number
+  index: number,
 ) => {
   if (columns.every(isNotHidden)) {
     return columns[index];
@@ -746,7 +743,7 @@ const { DEPTH, IS_LEAF } = metadataKeys;
 export const getGroupValueAndOffset = (
   columns: RuntimeColumnDescriptor[],
   row: DataSourceRow,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): [unknown, number] => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
@@ -764,8 +761,8 @@ export const getGroupValueAndOffset = (
 };
 
 export const getDefaultColumnType = (
-  serverDataType?: VuuColumnDataType
-): ColumnTypeSimple => {
+  serverDataType?: VuuColumnDataType,
+): DataValueTypeSimple => {
   switch (serverDataType) {
     case "int":
     case "long":
@@ -779,10 +776,10 @@ export const getDefaultColumnType = (
 };
 
 export const updateColumnFormatting = <
-  T extends ColumnDescriptor = ColumnDescriptor
+  T extends ColumnDescriptor = ColumnDescriptor,
 >(
   column: T,
-  formatting: ColumnTypeFormatting
+  formatting: ColumnTypeFormatting,
 ): T => {
   const { serverDataType, type = getDefaultColumnType(serverDataType) } =
     column;
@@ -796,7 +793,7 @@ export const updateColumnFormatting = <
 
 export function updateColumnType<T extends ColumnDescriptor = ColumnDescriptor>(
   column: T,
-  type: ColumnTypeSimple
+  type: DataValueTypeSimple,
 ): T {
   return isTypeDescriptor(column.type)
     ? { ...column, type: { ...column.type, name: type } }
@@ -804,10 +801,10 @@ export function updateColumnType<T extends ColumnDescriptor = ColumnDescriptor>(
 }
 
 export const updateColumnRenderProps = <
-  T extends ColumnDescriptor = ColumnDescriptor
+  T extends ColumnDescriptor = ColumnDescriptor,
 >(
   column: T,
-  renderer: ColumnTypeRendering
+  renderer: ColumnTypeRendering,
 ): T => {
   const { serverDataType, type = getDefaultColumnType(serverDataType) } =
     column;
@@ -818,8 +815,8 @@ export const updateColumnRenderProps = <
       type: {
         ...type,
         // TODO do we need to preserve any existing attributes from renderer ?
-        renderer
-      }
+        renderer,
+      },
     };
   } else {
     return { ...column, type: { name: type, renderer } };
@@ -828,7 +825,7 @@ export const updateColumnRenderProps = <
 
 const NO_TYPE_SETTINGS = {};
 export const getTypeFormattingFromColumn = (
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): ColumnTypeFormatting => {
   if (isTypeDescriptor(column.type)) {
     return column.type.formatting ?? NO_TYPE_SETTINGS;
@@ -849,7 +846,7 @@ export const subscribedOnly =
 export const addColumnToSubscribedColumns = (
   subscribedColumns: ColumnDescriptor[],
   availableColumns: SchemaColumn[],
-  columnName: string
+  columnName: string,
 ) => {
   const byColName =
     (n = columnName) =>
@@ -857,18 +854,18 @@ export const addColumnToSubscribedColumns = (
       column.name === n;
   if (subscribedColumns.findIndex(byColName()) !== -1) {
     throw Error(
-      `column-utils, addColumnToSubscribedColumns column ${columnName} is already subscribed`
+      `column-utils, addColumnToSubscribedColumns column ${columnName} is already subscribed`,
     );
   }
   const indexOfAvailableColumn = availableColumns.findIndex(byColName());
   if (indexOfAvailableColumn === -1) {
     throw Error(
-      `column-utils, addColumnToSubscribedColumns column ${columnName} is not available`
+      `column-utils, addColumnToSubscribedColumns column ${columnName} is not available`,
     );
   }
 
   const newColumn = {
-    ...availableColumns[indexOfAvailableColumn]
+    ...availableColumns[indexOfAvailableColumn],
   } as ColumnDescriptor;
 
   // find the nearest preceding available column which is subscribed
@@ -902,13 +899,13 @@ export const isCalculatedColumn = (columnName?: string) =>
   columnName !== undefined && CalculatedColumnPattern.test(columnName);
 
 export const getCalculatedColumnDetails = (
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): Partial<CalculatedColumn> => {
   if (isCalculatedColumn(column.name)) {
     const [name, serverDataType, expression] = column.name.split(/:=?/);
     if (serverDataType && !isVuuColumnDataType(serverDataType)) {
       throw Error(
-        `column-utils, getCalculatedColumnDetails ${serverDataType} is not valid type for column ${column.name}`
+        `column-utils, getCalculatedColumnDetails ${serverDataType} is not valid type for column ${column.name}`,
       );
     }
     return {
@@ -916,7 +913,7 @@ export const getCalculatedColumnDetails = (
       expression: expression ?? "",
       serverDataType: isVuuColumnDataType(serverDataType)
         ? serverDataType
-        : undefined
+        : undefined,
     };
   } else {
     throw Error(`column.name is nor a calculated column`);
@@ -925,56 +922,56 @@ export const getCalculatedColumnDetails = (
 
 export const setCalculatedColumnName = (
   column: ColumnDescriptor,
-  name: string
+  name: string,
 ): ColumnDescriptor => {
   const [, type, expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:${expression}`
+    name: `${name}:${type}:${expression}`,
   };
 };
 
 export const setCalculatedColumnType = (
   column: ColumnDescriptor,
-  type: string
+  type: string,
 ): ColumnDescriptor => {
   const [name, , expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:${expression}`
+    name: `${name}:${type}:${expression}`,
   };
 };
 
 // TODO should we validate the expression here ?
 export const setCalculatedColumnExpression = (
   column: ColumnDescriptor,
-  expression: string
+  expression: string,
 ): ColumnDescriptor => {
   const [name, type] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:=${expression}`
+    name: `${name}:${type}:=${expression}`,
   };
 };
 
 export const moveColumnTo = (
   columns: ColumnDescriptor[],
   column: ColumnDescriptor,
-  newIndex: number
+  newIndex: number,
 ) => {
   const index = columns.findIndex((col) => col.name === column.name);
   return moveItem(columns, index, newIndex);
 };
 
 export function replaceColumn<
-  C extends ColumnDescriptor = RuntimeColumnDescriptor
+  C extends ColumnDescriptor = RuntimeColumnDescriptor,
 >(columns: C[], column: C) {
   return columns.map((col) => (col.name === column.name ? column : col));
 }
 
 export const applyDefaultColumnConfig = (
   { columns, table }: TableSchema,
-  getDefaultColumnConfig?: DefaultColumnConfiguration
+  getDefaultColumnConfig?: DefaultColumnConfiguration,
 ) => {
   if (typeof getDefaultColumnConfig === "function") {
     return columns.map((column) => {
@@ -982,7 +979,7 @@ export const applyDefaultColumnConfig = (
       if (config) {
         return {
           ...column,
-          ...config
+          ...config,
         };
       } else {
         return column;
@@ -995,7 +992,7 @@ export const applyDefaultColumnConfig = (
 
 export const getColumnByName = (
   schema: TableSchema,
-  name?: string
+  name?: string,
 ): SchemaColumn | undefined => {
   if (name === undefined) {
     return undefined;
@@ -1005,7 +1002,7 @@ export const getColumnByName = (
       return column;
     } else {
       throw Error(
-        `getColumnByName no column '${name}' in schema for ${schema.table.table}`
+        `getColumnByName no column '${name}' in schema for ${schema.table.table}`,
       );
     }
   }
@@ -1043,7 +1040,7 @@ type ColumnStats = {
 const measureColumns = (
   columns: RuntimeColumnDescriptor[],
   defaultMaxWidth: number,
-  defaultMinWidth: number
+  defaultMinWidth: number,
 ) =>
   columns.reduce<ColumnStats>(
     (aggregated, column) => {
@@ -1053,12 +1050,12 @@ const measureColumns = (
       aggregated.flexCount += column.flex ?? 0;
       return aggregated;
     },
-    { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 }
+    { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 },
   );
 
 export function applyWidthToColumns(
   columns: RuntimeColumnDescriptor[],
-  options: StaticColumnLayoutOptions | FitColumnLayoutOptions
+  options: StaticColumnLayoutOptions | FitColumnLayoutOptions,
 ): RuntimeColumnDescriptor[];
 
 export function applyWidthToColumns(
@@ -1068,9 +1065,9 @@ export function applyWidthToColumns(
     columnLayout = "static",
     defaultWidth = DEFAULT_COL_WIDTH,
     defaultMinWidth = DEFAULT_MIN_WIDTH,
-    defaultMaxWidth = DEFAULT_MAX_WIDTH
+    defaultMaxWidth = DEFAULT_MAX_WIDTH,
   }: // defaultFlex = DEFAULT_FLEX,
-  columnOptions
+  columnOptions,
 ): RuntimeColumnDescriptor[] {
   if (columnLayout === "fit") {
     const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
@@ -1087,7 +1084,7 @@ export function applyWidthToColumns(
         totalWidth,
         defaultMinWidth,
         defaultWidth,
-        flexCount
+        flexCount,
       );
     } else if (totalWidth < availableWidth) {
       return stretchColumnsToFillAvailableSpace(
@@ -1096,7 +1093,7 @@ export function applyWidthToColumns(
         totalWidth,
         defaultMaxWidth,
         defaultWidth,
-        flexCount
+        flexCount,
       );
     }
   }
@@ -1105,7 +1102,7 @@ export function applyWidthToColumns(
 
 const assignMaxWidthToAll = (
   columns: RuntimeColumnDescriptor[],
-  defaultMaxWidth: number
+  defaultMaxWidth: number,
 ) => {
   return columns.map((column) => {
     const { maxWidth = defaultMaxWidth } = column;
@@ -1114,7 +1111,7 @@ const assignMaxWidthToAll = (
     } else {
       return {
         ...column,
-        width: maxWidth
+        width: maxWidth,
       };
     }
   });
@@ -1126,7 +1123,7 @@ const shrinkColumnsToFitAvailableSpace = (
   totalWidth: number,
   defaultMinWidth: number,
   defaultWidth: number,
-  flexCount: number
+  flexCount: number,
 ) => {
   const excessWidth = totalWidth - availableWidth;
   const inFlexMode = flexCount > 0;
@@ -1137,7 +1134,7 @@ const shrinkColumnsToFitAvailableSpace = (
     const {
       minWidth = defaultMinWidth,
       width = defaultWidth,
-      flex = 0
+      flex = 0,
     } = column;
     if (inFlexMode && flex === 0) {
       return column;
@@ -1173,17 +1170,17 @@ const stretchColumnsToFillAvailableSpace = (
   totalWidth: number,
   defaultMaxWidth: number,
   defaultWidth: number,
-  flexCount: number
+  flexCount: number,
 ) => {
   let freeSpaceToBeFilled = availableWidth - totalWidth;
   const additionalWidthPerColumn = Math.floor(
-    freeSpaceToBeFilled / (flexCount || columns.length)
+    freeSpaceToBeFilled / (flexCount || columns.length),
   );
   const newColumns = columns.map((column) => {
     const {
       maxWidth = defaultMaxWidth,
       width = defaultWidth,
-      flex = 0
+      flex = 0,
     } = column;
     if (flexCount > 0 && flex === 0) {
       return column;
@@ -1197,11 +1194,11 @@ const stretchColumnsToFillAvailableSpace = (
     }
   });
   const columnsNotYetAtMaxWidth = newColumns.filter(
-    (col) => col.canStretch
+    (col) => col.canStretch,
   ).length;
   const finalAdjustmentPerColumn = Math.min(
     1,
-    Math.ceil(freeSpaceToBeFilled / columnsNotYetAtMaxWidth)
+    Math.ceil(freeSpaceToBeFilled / columnsNotYetAtMaxWidth),
   );
   return newColumns.map<RuntimeColumnDescriptor>(
     ({ canStretch, ...column }) => {
@@ -1211,7 +1208,7 @@ const stretchColumnsToFillAvailableSpace = (
       } else {
         return column;
       }
-    }
+    },
   );
 };
 
@@ -1224,7 +1221,7 @@ const stretchColumnsToFillAvailableSpace = (
  */
 export const dataAndColumnUnchanged = (
   p: TableCellRendererProps,
-  p1: TableCellRendererProps
+  p1: TableCellRendererProps,
 ) =>
   p.column === p1.column &&
   p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
@@ -1240,7 +1237,7 @@ export const dataAndColumnUnchanged = (
  */
 export const dataColumnAndKeyUnchanged = (
   p: TableCellRendererProps,
-  p1: TableCellRendererProps
+  p1: TableCellRendererProps,
 ) =>
   p.column === p1.column &&
   p.row[KEY] === p1.row[KEY] &&

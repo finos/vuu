@@ -13,7 +13,7 @@ const classBase = "vuuInlineFilter";
 
 export type FilterValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string
+  value: string,
 ) => void;
 export interface InlineFilterProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -22,7 +22,7 @@ export interface InlineFilterProps
 
 const InputProps: Partial<InputProps> = {
   placeholder: "Enter value",
-  variant: "primary"
+  variant: "primary",
 };
 
 export const InlineFilter = ({
@@ -33,7 +33,7 @@ export const InlineFilter = ({
   useComponentCssInjection({
     testId: "vuu-inline-filter",
     css: inlineFilteCss,
-    window: targetWindow
+    window: targetWindow,
   });
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
@@ -48,7 +48,7 @@ export const InlineFilter = ({
         onChange(column, value.toString());
       }
     },
-    [columns, onChange]
+    [columns, onChange],
   );
 
   return (
@@ -60,7 +60,11 @@ export const InlineFilter = ({
           key={column.name}
           style={{ width: column.width }}
         >
-          {getDataItemEditControl({ InputProps, column, onCommit })}
+          {getDataItemEditControl({
+            InputProps,
+            dataDescriptor: column,
+            onCommit,
+          })}
         </div>
       ))}
     </div>

@@ -33,7 +33,7 @@ const formatNotional = (notional?: number) => {
 
 export type BasketChangeHandler = (
   columnName: string,
-  value: VuuRowDataItemType
+  value: VuuRowDataItemType,
 ) => CommitResponse;
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
   basket?: Basket;
@@ -62,11 +62,11 @@ export const BasketToolbar = ({
         return onCommit?.("units", value);
       } else {
         throw Error(
-          "BasketToolbar onCommit prop not supplied for editable Basket"
+          "BasketToolbar onCommit prop not supplied for editable Basket",
         );
       }
     },
-    [onCommit]
+    [onCommit],
   );
 
   const { warningMessage: unitErrorMessage, ...unitProps } =
@@ -82,11 +82,11 @@ export const BasketToolbar = ({
         return onCommit?.("side", value);
       } else {
         throw Error(
-          "BasketToolbar onCommit prop not supplied for editable Basket"
+          "BasketToolbar onCommit prop not supplied for editable Basket",
         );
       }
     },
-    [onCommit]
+    [onCommit],
   );
 
   const handleSendToMarket = useCallback(() => {
@@ -135,9 +135,8 @@ export const BasketToolbar = ({
       <FormFieldLabel>Units</FormFieldLabel>
       <ExpandoInput
         {...unitProps}
-        TooltipProps={{tooltipContent: unitErrorMessage}}
         className={`${classBase}-units`}
-        // value={basket?.units ?? ""}
+        errorMessage={unitErrorMessage}
       />
     </FormField>
   );
@@ -213,7 +212,7 @@ export const BasketToolbar = ({
         inputUnits,
         notionalUSD,
         notional,
-        sendToMarket
+        sendToMarket,
       );
     } else {
       toolbarItems.push(
@@ -224,7 +223,7 @@ export const BasketToolbar = ({
         notional,
         pctFilled,
         basketMenu,
-        takeOffMarket
+        takeOffMarket,
       );
     }
     return toolbarItems;

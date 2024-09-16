@@ -1,7 +1,7 @@
 .EditForm {
   display: flex;
   flex-direction: column;
-  gap: var(--salt-spacing-200);
+  gap: var(--salt-spacing-400);
   height: 100%;
   padding: var(--salt-spacing-200);
   width: 100%;

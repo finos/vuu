@@ -1,13 +1,9 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import {
-  VuuColumnDataType,
-  VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
+import { DataSourceRow, EditRuleValidator } from "@finos/vuu-data-types";
+import { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
-  EditValidationRule,
   HeaderCellProps,
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
@@ -24,11 +20,11 @@ export interface CellConfigPanelProps extends HTMLAttributes<HTMLDivElement> {
 
 export type PropertyChangeHandler = (
   propertyName: string,
-  propertyValue: string | number | boolean
+  propertyValue: string | number | boolean,
 ) => void;
 
 export type ColumnRenderPropsChangeHandler = (
-  renderProps: ColumnTypeRendering
+  renderProps: ColumnTypeRendering,
 ) => void;
 
 export interface ConfigurationEditorProps {
@@ -38,7 +34,7 @@ export interface ConfigurationEditorProps {
 
 export type RowClassNameGenerator = (
   row: DataSourceRow,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ) => string | undefined;
 
 export type RowClassGenerator = {
@@ -60,11 +56,6 @@ const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
 const optionsMap = new Map<string, CellRendererOptions>();
 const rowClassGeneratorsMap = new Map<string, RowClassGenerator>();
-
-export type EditRuleValidator = (
-  editRule: EditValidationRule,
-  value?: VuuRowDataItemType
-) => boolean | string;
 
 export type layoutComponentType = "container" | "view";
 
@@ -96,7 +87,7 @@ const isTypeCompatible = (
     | "json"
     | "private"
     | undefined,
-  serverDataType: VuuColumnDataType | "json"
+  serverDataType: VuuColumnDataType | "json",
 ) => {
   if (rendererType === undefined || rendererType === "private") {
     return true;
@@ -128,52 +119,52 @@ export const isView = (componentType: string) => {
  * is not registered, it will log a warning.
  */
 export const isLayoutComponent = (
-  componentType: string
+  componentType: string,
 ): componentType is layoutComponentType =>
   isContainer(componentType) || isView(componentType);
 
 const isCellRenderer = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is FC<TableCellRendererProps> =>
   component !== undefined && type === "cell-renderer";
 
 const isColumnHeaderContentRenderer = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is FC<HeaderCellProps> =>
   type === "column-header-content-renderer";
 const isColumnHeaderLabelRenderer = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is FC<HeaderCellProps> => type === "column-header-label-renderer";
 
 const isCellConfigPanel = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is FC<CellConfigPanelProps> => type === "cell-config-panel";
 
 const isEditRuleValidator = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is EditRuleValidator => type === "data-edit-validator";
 
 const isRowClassGenerator = (
   type: ComponentType,
-  component: unknown
+  component: unknown,
 ): component is RowClassGenerator => type === "row-class-generator";
 
 export function registerComponent(
   componentName: string,
   component: RowClassGenerator,
   componentType: "row-class-generator",
-  options?: CellRendererOptions
+  options?: CellRendererOptions,
 ): void;
 export function registerComponent(
   componentName: string,
   component: EditRuleValidator,
   componentType: "data-edit-validator",
-  options?: CellRendererOptions
+  options?: CellRendererOptions,
 ): void;
 export function registerComponent(
   componentName: string,
@@ -186,7 +177,7 @@ export function registerComponent(
     ComponentType,
     "data-edit-validator" | "row-class-generator"
   >,
-  options?: CellRendererOptions
+  options?: CellRendererOptions,
 ): void;
 export function registerComponent(
   componentName: string,
@@ -194,7 +185,7 @@ export function registerComponent(
   component: any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   componentType: any,
-  options?: CellRendererOptions
+  options?: CellRendererOptions,
 ): void {
   if (
     componentType === "container" ||
@@ -227,7 +218,7 @@ export function registerComponent(
 
 export const registerConfigurationEditor = (
   componentName: string,
-  configurationEditor: FC<ConfigurationEditorProps>
+  configurationEditor: FC<ConfigurationEditorProps>,
 ) => {
   configEditorsMap.set(componentName, configurationEditor);
 };
@@ -236,7 +227,7 @@ export const registerConfigurationEditor = (
 // non-default, cell renderers. Ignore renderers registered
 // with the attribute userCanAssign = false
 export const getRegisteredCellRenderers = (
-  serverDataType?: VuuColumnDataType | "json"
+  serverDataType?: VuuColumnDataType | "json",
 ): CellRendererDescriptor[] => {
   const rendererNames = Array.from(cellRenderersMap.keys());
   const allRenderers = rendererNames
@@ -247,7 +238,7 @@ export const getRegisteredCellRenderers = (
     .filter(({ userCanAssign }) => userCanAssign !== false);
   if (serverDataType) {
     return allRenderers.filter((renderer) =>
-      isTypeCompatible(renderer.serverDataType, serverDataType)
+      isTypeCompatible(renderer.serverDataType, serverDataType),
     );
   } else {
     return allRenderers;
@@ -260,7 +251,7 @@ export const getLayoutComponent = (componentName: string) => {
     return layoutComponent;
   } else {
     throw Error(
-      `layout component ${componentName} not found in ComponentRegistry`
+      `layout component ${componentName} not found in ComponentRegistry`,
     );
   }
 };

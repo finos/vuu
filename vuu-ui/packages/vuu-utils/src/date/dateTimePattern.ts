@@ -1,4 +1,4 @@
-import { DateTimeColumnDescriptor } from "@finos/vuu-table-types";
+import { DateTimeDataValueDescriptor } from "@finos/vuu-data-types";
 import { isTypeDescriptor } from "../column-utils";
 import { DateTimePattern, isDateTimePattern } from "./types";
 
@@ -12,7 +12,7 @@ export const fallbackDateTimePattern: DateTimePattern = {
 };
 
 export function dateTimePattern(
-  type: DateTimeColumnDescriptor["type"]
+  type: DateTimeDataValueDescriptor["type"],
 ): DateTimePattern {
   if (isTypeDescriptor(type)) {
     if (type.formatting && isDateTimePattern(type.formatting.pattern)) {
